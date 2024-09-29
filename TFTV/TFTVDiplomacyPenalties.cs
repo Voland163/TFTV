@@ -34,11 +34,11 @@ namespace TFTV
 
                 if (faction.GetParticipatingFaction() == faction.GeoLevel.AnuFaction && targetFaction == faction.GeoLevel.PhoenixFaction)
                 {
-                    /* TFTVLogger.Always("The record for event PROG_AN2 states that choice " + eventSystem.GetEventRecord("PROG_AN2")?.SelectedChoice + " was chosen");
-                     TFTVLogger.Always("The record for event PROG_AN4 states that choice " + eventSystem.GetEventRecord("PROG_AN4")?.SelectedChoice + " was chosen");
-                     TFTVLogger.Always("The record for event PROG_AN6 states that choice " + eventSystem.GetEventRecord("PROG_AN6")?.SelectedChoice + " was chosen");
-                     TFTVLogger.Always("The record shows PROG_AN4 was completed on " + eventSystem.GetEventRecord("PROG_AN4")?.CompletedAt + " it is now " + faction.GeoLevel.Timing.Now);
-                    */
+                  //  TFTVLogger.Always("The record for event PROG_AN2 states that choice " + eventSystem.GetEventRecord("PROG_AN2")?.SelectedChoice + " was chosen");
+                  //   TFTVLogger.Always("The record for event PROG_AN4 states that choice " + eventSystem.GetEventRecord("PROG_AN4")?.SelectedChoice + " was chosen");
+                  //   TFTVLogger.Always("The record for event PROG_AN6 states that choice " + eventSystem.GetEventRecord("PROG_AN6")?.SelectedChoice + " was chosen");
+                  //   TFTVLogger.Always("The record shows PROG_AN4 was completed on " + eventSystem.GetEventRecord("PROG_AN4")?.CompletedAt + " it is now " + faction.GeoLevel.Timing.Now);
+                    
                     // GetEventRecord can return null, implying that this event has never spawned. Not sure that should happen in postpone check, but the choice conditional will be false either way
                     if (newValue == 24 && eventSystem.GetEventRecord("PROG_AN2")?.SelectedChoice == 0) // choice 0 is postpone for this event, according to TFTVDefsWithConfigDependency.cs
                     {
@@ -48,7 +48,8 @@ namespace TFTV
                     {
                         eventSystem.TriggerGeoscapeEvent("PROG_AN4", geoscapeEventContext);
                     }
-                    else if (newValue == 74 && eventSystem.GetEventRecord("PROG_AN6")?.SelectedChoice == 2)
+                    else if (newValue == 74 && eventSystem.GetEventRecord("PROG_AN6")?.SelectedChoice == 2 
+                        || eventSystem.GetEventRecord("PROG_AN6")?.SelectedChoice == 1 && eventSystem.GetEventRecord("PROG_AN6_2")?.SelectedChoice ==1)
                     {
                         eventSystem.TriggerGeoscapeEvent("PROG_AN6", geoscapeEventContext);
                     }
@@ -159,15 +160,15 @@ namespace TFTV
                     }
                     else if (eventID == ProgAnuAlliance.EventID)
                     {
-                        ProgAnuAlliance.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -10));
-                        ProgAnuAlliance.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -20));
-                        ProgAnuAlliance.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -15));
+                        ProgAnuAlliance.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -10)); 
                         TFTVCommonMethods.GenerateGeoEventChoice(ProgAnuAlliance, "PROG_AN4_CHOICE_1_TEXT", "PROG_AN4_CHOICE_1_OUTCOME_GENERAL");
                         ProgAnuAlliance.GeoscapeEventData.Choices[2].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -8));
                         TFTVLogger.Always($"Harder diplomacy is on, changing event {eventID}");
                     }
                     else if (eventID == ProgAnuAllianceNoSynod.EventID)
                     {
+                        ProgAnuAllianceNoSynod.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(NewJericho, PhoenixPoint, -20));
+                        ProgAnuAllianceNoSynod.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Synedrion, PhoenixPoint, -15));
                         TFTVCommonMethods.GenerateGeoEventChoice(ProgAnuAllianceNoSynod, "PROG_AN4_CHOICE_1_TEXT", "PROG_AN4_CHOICE_1_OUTCOME_GENERAL");
                         ProgAnuAllianceNoSynod.GeoscapeEventData.Choices[1].Outcome.Diplomacy.Add(TFTVCommonMethods.GenerateDiplomacyOutcome(Anu, PhoenixPoint, -8));
                         TFTVLogger.Always($"Harder diplomacy is on, changing event {eventID}");
@@ -309,6 +310,7 @@ namespace TFTV
                     }
                     else if (__instance.EventID == ProgAnuAllianceNoSynod.EventID)
                     {
+                        ProgAnuAllianceNoSynod.GeoscapeEventData.Choices[0].Outcome.Diplomacy.Clear();
                         ProgAnuAllianceNoSynod.GeoscapeEventData.Choices.RemoveLast();
                         TFTVLogger.Always("Harder diplomacy is on, changing event " + __instance.EventID + " back to keep things nice and tidy");
                     }

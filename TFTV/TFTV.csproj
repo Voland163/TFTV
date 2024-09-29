@@ -132,6 +132,7 @@
     <Compile Include="TFTVAcid.cs" />
     <Compile Include="TFTVBackgrounds.cs" />
     <Compile Include="TFTVCustomPortraits.cs" />
+    <Compile Include="TFTVEvacAll.cs" />
     <Compile Include="TFTVExperienceDistribution.cs" />
     <Compile Include="TFTVVehicleFixes.cs" />
     <Compile Include="TFTVBehemothAndRaids.cs" />

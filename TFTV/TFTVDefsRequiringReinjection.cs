@@ -976,8 +976,8 @@ namespace TFTV
                 onAttackStatus.DamageTypeDefs = new DamageTypeBaseEffectDef[1];
                 onAttackStatus.Visuals.DisplayName1.LocalizationKey = "TBTV_ON_ATTACK_TITLE";
                 onAttackStatus.Visuals.Description.LocalizationKey = "TBTV_ON_ATTACK_TEXT";
-                onAttackStatus.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("TBTV_MarkForDeath.png");
-                onAttackStatus.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile("TBTV_MarkForDeath.png");
+                onAttackStatus.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("tbtv_markofdeathattack_icon.png");
+                onAttackStatus.Visuals.SmallIcon = onAttackStatus.Visuals.LargeIcon;
 
                 string onTurnEndStatusDefName = "TBTV_OnTurnEnd_StatusDef";
                 DamageMultiplierStatusDef onTurnEndStatus = Helper.CreateDefFromClone(
@@ -996,8 +996,8 @@ namespace TFTV
 
                 onTurnEndStatus.Visuals.DisplayName1.LocalizationKey = "TBTV_ON_TURN_END_TITLE";
                 onTurnEndStatus.Visuals.Description.LocalizationKey = "TBTV_ON_TURN_END_TEXT";
-                onTurnEndStatus.Visuals.LargeIcon = DefCache.GetDef<CallReinforcementsAbilityDef>("Acheron_CallReinforcements_AbilityDef").ViewElementDef.LargeIcon;
-                onTurnEndStatus.Visuals.SmallIcon = DefCache.GetDef<CallReinforcementsAbilityDef>("Acheron_CallReinforcements_AbilityDef").ViewElementDef.SmallIcon;
+                onTurnEndStatus.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("tbtv_reinforcements_icon.png");
+                onTurnEndStatus.Visuals.SmallIcon = onTurnEndStatus.Visuals.LargeIcon;
 
 
                 //need to clone belcher abilities so that they can be covertly applied in case the character gets one-shot killed
@@ -1017,8 +1017,8 @@ namespace TFTV
                 oilCrabStatusDef.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
                 oilCrabStatusDef.Visuals.DisplayName1.LocalizationKey = "KEY_AC_DEATHBELCH_NAME";
                 oilCrabStatusDef.Visuals.Description.LocalizationKey = "KEY_AC_DEATHBELCH_DESCRIPTION";
-                oilCrabStatusDef.Visuals.LargeIcon = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef").ViewElementDef.LargeIcon;
-                oilCrabStatusDef.Visuals.SmallIcon = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef").ViewElementDef.SmallIcon;
+                oilCrabStatusDef.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile("tbtv_spawnumbra_icon.png");
+                oilCrabStatusDef.Visuals.SmallIcon = oilCrabStatusDef.Visuals.LargeIcon;
 
                 AddAbilityStatusDef oilFishStatusDef = DefCache.GetDef<AddAbilityStatusDef>("OilFish_AddAbilityStatusDef");
                 oilFishStatusDef.EffectName = "OilFishOnDeath";
@@ -1032,15 +1032,18 @@ namespace TFTV
                 oilFishStatusDef.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
                 oilFishStatusDef.Visuals.DisplayName1.LocalizationKey = "KEY_AC_DEATHBELCH_NAME";
                 oilFishStatusDef.Visuals.Description.LocalizationKey = "KEY_AC_DEATHBELCH_DESCRIPTION";
-                oilFishStatusDef.Visuals.LargeIcon = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef").ViewElementDef.LargeIcon;
-                oilFishStatusDef.Visuals.SmallIcon = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef").ViewElementDef.SmallIcon;
+                oilFishStatusDef.Visuals.LargeIcon = oilCrabStatusDef.Visuals.LargeIcon;
+                oilFishStatusDef.Visuals.SmallIcon = oilCrabStatusDef.Visuals.LargeIcon;
 
                 DeathBelcherAbilityDef oilCrabDie = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef");
                 oilCrabDie.ViewElementDef.ShowInStatusScreen = false;
+                oilCrabDie.ViewElementDef.LargeIcon = oilCrabStatusDef.Visuals.LargeIcon;
+                oilCrabDie.ViewElementDef.SmallIcon = oilCrabStatusDef.Visuals.LargeIcon;
 
                 DeathBelcherAbilityDef oilFishDie = DefCache.GetDef<DeathBelcherAbilityDef>("Oilfish_Die_DeathBelcher_AbilityDef");
                 oilFishDie.ViewElementDef.ShowInStatusScreen = false;
-
+                oilFishDie.ViewElementDef.LargeIcon = oilCrabStatusDef.Visuals.LargeIcon;
+                oilFishDie.ViewElementDef.SmallIcon = oilCrabStatusDef.Visuals.LargeIcon;
 
 
                 /*   string onDeathStatusDefName = "TBTV_OnDeath_StatusDef";
@@ -1095,7 +1098,7 @@ namespace TFTV
                 hiddenTBTVAbility.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
                 hiddenTBTVAbility.ViewElementDef.DisplayName1.LocalizationKey = "TBTV_HIDDEN_ABILITY_NAME";
                 hiddenTBTVAbility.ViewElementDef.Description.LocalizationKey = "TBTV_HIDDEN_ABILITY_DESCRIPTION";
-                hiddenTBTVAbility.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("Void-04P.png");
+                hiddenTBTVAbility.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("tbtv_icon.png");
                 hiddenTBTVAbility.ViewElementDef.SmallIcon = hiddenTBTVAbility.ViewElementDef.LargeIcon;
 
                 AddAbilityStatusDef sourceAbilityStatusDef = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");

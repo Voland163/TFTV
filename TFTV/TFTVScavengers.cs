@@ -1139,23 +1139,7 @@ namespace TFTV
                         newSpec.ViewElementDef = Helper.CreateDefFromClone(specializationDefSource.ViewElementDef, "{CDDDC201-F141-4A26-A542-DD7C06507033}", $"{newSpec.name}");
                         newSpec.AbilityTrack = Helper.CreateDefFromClone(specializationDefSource.AbilityTrack, "{0875C025-2FAF-4E1D-B843-AA5A6965226F}", $"{newSpec.name}");
 
-                        /*  for (int x = 1; x < newSpec.AbilityTrack.AbilitiesByLevel.Count(); x++)
-                          {
-                              newSpec.AbilityTrack.AbilitiesByLevel = new PhoenixPoint.Common.Entities.Characters.AbilityTrackSlot[]
-                          {
-                              new PhoenixPoint.Common.Entities.Characters.AbilityTrackSlot()
-                              {Ability = specializationDefSource.AbilityTrack.AbilitiesByLevel[x].Ability, RequiresPrevAbility = false }
-
-                          };
-
-                          }*/
-
-
-
                         newSpec.ClassTag = _assaultRaiderTag;
-
-
-
                         _assaultRaiderSpecialization = newSpec;
 
                     }

@@ -1,24 +1,81 @@
 ﻿using Base.Core;
 using HarmonyLib;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers;
+using PhoenixPoint.Geoscape.View.ViewControllers.PhoenixBase;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
+using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using UnityEngine;
+using static TFTV.TFTVUI.EditScreen;
+using static UITooltip;
+using static UnityStandardAssets.Utility.TimedObjectActivator;
 
 namespace TFTV
 {
     internal class TFTVHarmonyGeoscapeUI
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
+
+        [HarmonyPatch(typeof(UITooltip), "Init", new Type[] { typeof(string), typeof(int), typeof(float), typeof(float), typeof(float), typeof(Position), typeof(GameObject) })]
+        public static class UITooltip_Init_patch
+        {
+            public static void Prefix(UITooltip __instance, string tipText, ref int maxWidth, float appearTime, float fadeInTime, float fadeOutTime, Position pos, GameObject parent,
+                   ref float ____appearDelay, ref float ____fadeInSpeed, ref float ____fadeOutSpeed, ref GameObject ____target, ref Position ____position)
+            {
+
+                try
+                {
+                    if (GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>() != null)
+                    {
+                        TFTVUIGeoMap.UnpoweredFacilitiesInfo.CheckTopBarTooltip(__instance, parent);
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(UIFacilityInfoPopup), "Show")]
+        public static class UIFacilityInfoPopup_Show_PreventBadDemolition_patch
+        {
+
+            public static void Postfix(UIFacilityInfoPopup __instance, GeoPhoenixFacility facility)
+            {
+                try
+                {
+                    TFTVBaseDefenseGeoscape.BaseFacilities.EnsureCorrectLayout.ProhibitDemolitionToAvoidCuttingEntranceOff(__instance, facility);
+                    TFTVBaseDefenseGeoscape.BaseFacilities.PreventPowerOn(__instance, facility);
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+        }
+
+
 
         [HarmonyPatch(typeof(UIModuleInfoBar), "Init")]
         public static class TFTV_UIModuleInfoBar_Init_GeoscapeUI_Patch
@@ -27,7 +84,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVUIGeoMap.AdjustInfoBarGeoscape(__instance);
+                    TFTVUIGeoMap.TopInfoBar.AdjustInfoBarGeoscape(__instance);
 
 
 
@@ -107,7 +164,8 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVAAAgendaTracker.ExtendedAgendaTracker.RecolorTimerBaseAndAncientSiteAttacks(__instance, site);
+                    TFTVAAAgendaTracker.ExtendedAgendaTracker.RecolorTimerBaseAndAncientSiteAttacks(__instance, site); 
+                    TFTVUIGeoMap.UnpoweredFacilitiesInfo.AddBlinkingPowerMarkerGeoMap(__instance, site);
                     TFTVBaseDefenseGeoscape.Visuals.RefreshBaseDefenseVisuals(__instance, site);
                 }
                 catch (Exception e)
@@ -152,11 +210,77 @@ namespace TFTV
             }
         }
 
-        
+        [HarmonyPatch(typeof(UIInventoryList), "UpdateList")]
+        public static class UIInventoryList_UpdateList_patch
+        {
+            public static bool Prefix(UIInventoryList __instance, TacticalActorBaseDef ____vehicle)
+            {
+                try
+                {
+                   // MethodInfo methodInfoRecalculateVehicleFilter = typeof(UIInventoryList).GetMethod("RecalculateVehicleFilter", BindingFlags.Instance | BindingFlags.NonPublic);
+
+
+                    __instance.EnsureSize();
+                  
+                    if (____vehicle != null)
+                    {
+
+                        foreach (UIInventorySlot slot in __instance.Slots)
+                        {
+                            slot.TryRecalculateSlotsFilter(____vehicle);
+                        }
+
+
+                        // methodInfoRecalculateVehicleFilter.Invoke(__instance, new object[] { ____vehicle }); 
+                    }
+
+                    List<ICommonItem> filteredItems = __instance.FilteredItems;
+                    List<ICommonItem> list = new List<ICommonItem>();
+
+                    foreach (ICommonItem item in filteredItems)
+                    {
+                        UIInventorySlot firstAvailableSlot = __instance.GetFirstAvailableSlot(item);
+                        if (!(firstAvailableSlot == null))
+                        {
+                            if (firstAvailableSlot.Item != null)
+                            {
+                                //TFTVLogger.Always($"Inventory list trying to stack filtered items {item.ItemDef.name}, {firstAvailableSlot.name}, vehicle: {____vehicle?.name}");
+
+                              /*  if (____vehicle != null)
+                                {
+
+                                    firstAvailableSlot.Item.CommonItemData.AddItem(item);
+                                    list.Add(item);
+                                }*/
+                            }
+                            else
+                            {
+                                firstAvailableSlot.Item = item;
+                            }
+                        }
+                    }
+
+                    var field = AccessTools.Property(typeof(UIInventoryList), "FilteredItems");
+                    if (field != null)
+                    {
+                        field.SetValue(__instance, __instance.FilteredItems.Except(list).ToList());
+                    }
+
+                    __instance.NavigationElementsHolder?.RefreshNavigation();
+
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
 
 
-          [HarmonyPatch(typeof(UIInventoryList), "SetItems")]
+        [HarmonyPatch(typeof(UIInventoryList), "SetItems")]
         public static class UIInventoryList_SetItems_patch
         {
             public static void Prefix(UIInventoryList __instance)

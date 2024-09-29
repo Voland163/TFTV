@@ -13,6 +13,7 @@ using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Common.View.ViewModules;
+using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Research;
@@ -1156,10 +1157,20 @@ namespace TFTV
 
                         if (slugAbilities.Contains(tacticalAbility.TacticalAbilityDef))
                         {
-                            int enduranceToSubtract = (int)Math.Ceiling(tacticalActor.CharacterStats.Endurance.IntMax * 0.15);
+                            int maxEndurance = tacticalActor.CharacterStats.Endurance.IntMax;
+
+                            if (!TFTVRevenant.TFTVRevenantResearch.SlugOGStrength.ContainsKey(tacticalActor.GeoUnitId))
+                            {
+                                TFTVRevenant.TFTVRevenantResearch.SlugOGStrength.Add(tacticalActor.GeoUnitId, maxEndurance);
+                            }
+
+                            int enduranceToSubtract = (int)Math.Ceiling(maxEndurance * 0.15);
 
                             tacticalActor.CharacterStats.Endurance.Subtract(enduranceToSubtract);
                             tacticalActor.UpdateStats();
+
+                           
+
                             TFTVLogger.Always($"reducing endurance of {tacticalActor.DisplayName} by {enduranceToSubtract} from use of {tacticalAbility.TacticalAbilityDef.name}");
                         }
 

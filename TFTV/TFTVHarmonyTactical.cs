@@ -17,11 +17,14 @@ using PhoenixPoint.Tactical.Levels.Mist;
 using PhoenixPoint.Tactical.UI;
 using PhoenixPoint.Tactical.View;
 using PhoenixPoint.Tactical.View.ViewControllers;
+using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static PhoenixPoint.Tactical.View.ViewControllers.SquadMemberScrollerController;
+using static TFTV.TFTVUITactical;
+
 
 namespace TFTV
 {
@@ -31,6 +34,45 @@ namespace TFTV
         //   private static readonly DefRepository Repo = TFTVMain.Repo;
         //   private static readonly SharedData Shared = TFTVMain.Shared;
 
+        [HarmonyPatch(typeof(SpottedTargetsElement), "SetActorClassIcon")]
+        public static class SpottedTargetsElement_SetActorClassIcon_patch
+        {
+            public static void Postfix(SpottedTargetsElement __instance, GameObject obj, TacticalActorBase target)
+            {
+                try
+                {
+                    ODITactical.ManageTBTVIconToSpottedEnemies(__instance, obj, target);
+                    Enemies.ManageRankIconToSpottedEnemies(__instance, obj, target);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+        [HarmonyPatch(typeof(UIModuleObjectives), "Init")]
+        public static class UIModuleObjectives_Init_patch
+        {
+            public static void Postfix(UIModuleObjectives __instance, TacticalViewContext Context)
+            {
+                try
+                {
+                    CachePuristaSemiboldFont(__instance);     
+                    TFTVUITactical.ODITactical.CreateODITacticalWidget(__instance);
+                    TFTVUITactical.CaptureTacticalWidget.CreateCaptureTacticalWidget(__instance);
+                    TFTVUITactical.Enemies.ActivateOrAdjustLeaderWidgets();
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
 
         [HarmonyPatch(typeof(TacticalAbility), "GetTargetActors", new Type[] { typeof(TacticalTargetData), typeof(TacticalActorBase), typeof(Vector3) })]
@@ -136,6 +178,7 @@ namespace TFTV
                 {
                     // TFTVLogger.Always($"actor is {actor.name} (postfix)");
 
+
                     TFTVDeliriumPerks.ImplementDeliriumPerks(actor, __instance);
                     TFTVEconomyExploitsFixes.AddReinforcementTagToImplementNoDropsOption(actor, __instance);
                     TFTVHumanEnemies.GiveRankAndNameToHumaoidEnemy(actor, __instance);
@@ -144,6 +187,7 @@ namespace TFTV
                     TFTVSpecialDifficulties.OnTactical.AddSpecialDifficultiesBuffsAndVulnerabilities(actor, __instance);
                     TFTVPalaceMission.Revenants.TryToTurnIntoRevenant(actor, __instance);
                     TFTVPalaceMission.MissionObjectives.CheckFinalMissionWinConditionWhereDeployingItem(actor, __instance);
+                    TFTVRevenant.Spawning.RevenentEntersPlayAfterLoad(actor);
                 //    TFTVRaiders.AdjustDeploymentNeutralFaction(actor, __instance.TacMission.MissionData.MissionType);
 
                 }
@@ -264,6 +308,7 @@ namespace TFTV
                 {
                     TFTVInfestation.StoryFirstInfestedHaven.CreateOutroInfestation(__instance, deathReport);
                     TFTVTouchedByTheVoid.TBTVRolls.TBTVTriggeres.TouchByTheVoidDeath(deathReport);
+                    TFTVRevenant.RecordUpkeep.RevenantKilled(deathReport, __instance);
                 }
                 catch (Exception e)
                 {
@@ -277,7 +322,7 @@ namespace TFTV
                 try
                 {
                     TFTVRevenant.RecordUpkeep.RecordPhoenixDeadForRevenantsAndOsiris(deathReport, __instance);
-                    TFTVRevenant.RecordUpkeep.RevenantKilled(deathReport, __instance);
+                   
                     TFTVAncients.CyclopsAbilities.CyclopsResistance.AncientKilled(__instance, deathReport);
                     TFTVHumanEnemies.HumanEnemiesTacticsOnDeath(deathReport);
                 }
@@ -405,6 +450,7 @@ namespace TFTV
                     TFTVArtOfCrab.GetBestWeaponForOWRF(__instance);
                     TFTVVehicleFixes.CheckSquashing(ability, __instance);
                     TFTVVoxels.TFTVGoo.ClearActorGooPositions();
+                    
                 }
 
                 catch (Exception e)

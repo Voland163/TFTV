@@ -111,6 +111,7 @@ namespace TFTV
                 TFTVStamina.charactersWithDisabledBodyParts = new Dictionary<int, List<string>>();
 
                 TFTVHumanEnemies.HumanEnemiesAndTactics = new Dictionary<string, int>();
+                TFTVHumanEnemies.HumanEnemiesGangNames = new List<string>();
                 TFTVHumanEnemiesNames.names.Clear();
                 TFTVHumanEnemiesNames.CreateNamesDictionary();
 
@@ -147,7 +148,10 @@ namespace TFTV
              
                 ClearHints();
                 TFTVCustomPortraits.CharacterPortrait.ClearPortraitData();
-               
+
+                TFTVUIGeoMap.UnpoweredFacilitiesInfo.ClearInternalDataForUIGeo();
+
+                TFTVUITactical.ClearDataOnLoadAndStateChange();
 
                 TFTVLogger.Always($"Internal variables cleared on State change or Load");
             }
@@ -235,6 +239,7 @@ namespace TFTV
 
 
                 TFTVHumanEnemies.HumanEnemiesAndTactics = new Dictionary<string, int>();
+                TFTVHumanEnemies.HumanEnemiesGangNames = new List<string>();
                 TFTVHumanEnemiesNames.names.Clear();
                 TFTVHumanEnemiesNames.CreateNamesDictionary();
 
@@ -686,7 +691,7 @@ namespace TFTV
 
         }
 
-        public static void CreateObjectiveReminder(string guid, string description_key, int experienceReward)
+        public static KeepSoldiersAliveFactionObjectiveDef CreateObjectiveReminder(string guid, string description_key, int experienceReward)
         {
             try
             {
@@ -702,10 +707,12 @@ namespace TFTV
                 objective.IsUiSummaryHidden = true;
                 //   TFTVLogger.Always("FactionObjective " + DefCache.GetDef<FactionObjectiveDef>(objectiveName).name + " created");
 
+                return objective;
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
+                throw;
             }
 
         }

@@ -4,32 +4,34 @@ using Base.Lighting;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewStates;
-using PhoenixPoint.Geoscape.View;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using static PhoenixPoint.Geoscape.Levels.GeoSceneReferences;
 using UnityEngine;
+using static PhoenixPoint.Geoscape.Levels.GeoSceneReferences;
 
 namespace TFTV
 {
     internal class TFTVBackgrounds
     {
-        /*
+
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         private static Sprite _backgroundSquadDeploy = null;
         private static Sprite _backgroundContainment = null;
+        private static Sprite _backgroundBionics = null;
         private static Sprite _activeBackground = null;
         private static Sprite _backgroundMutation = null;
         private static Sprite _backgroundCustomization = null;
+        private static Sprite _backgroundMemorial = null;
+        private static Sprite _backgroundAirForce = null;
+
+
 
         private static CharacterClassWorldDisplay _copyCharacterClassWorldDisplay = null;
 
@@ -38,13 +40,19 @@ namespace TFTV
         {
             try
             {
-
                 SceneLightingDef sceneLightingDef = DefCache.GetDef<SceneLightingDef>("EditSoldier_LightingDef");
 
                 if (_activeBackground == _backgroundContainment)
                 {
                     sceneLightingDef.LightingData.ambientEquatorColor.b = 0.5f;
                     sceneLightingDef.LightingData.ambientEquatorColor.g = 0.5f;
+                    sceneLightingDef.LightingData.ambientEquatorColor.r = 0.0f;
+                    transform.gameObject.SetActive(true);
+                }
+                else if (_activeBackground == _backgroundBionics)
+                {
+                    sceneLightingDef.LightingData.ambientEquatorColor.b = 1.0f;
+                    sceneLightingDef.LightingData.ambientEquatorColor.g = 1.0f;
                     sceneLightingDef.LightingData.ambientEquatorColor.r = 0.0f;
                     transform.gameObject.SetActive(true);
                 }
@@ -55,14 +63,22 @@ namespace TFTV
                     sceneLightingDef.LightingData.ambientEquatorColor.r = 0.7f;
                     transform.gameObject.SetActive(false);
                 }
-                else if (_activeBackground == _backgroundMutation) 
+                else if (_activeBackground == _backgroundMutation)
                 {
                     sceneLightingDef.LightingData.ambientEquatorColor.b = 0.3f;
                     sceneLightingDef.LightingData.ambientEquatorColor.g = 0.5f;
                     sceneLightingDef.LightingData.ambientEquatorColor.r = 0.3f;
                     transform.gameObject.SetActive(true);
                 }
-                else 
+                else if (_activeBackground == _backgroundMemorial)
+                {
+                    sceneLightingDef.LightingData.ambientEquatorColor.b = 0.3f;
+                    sceneLightingDef.LightingData.ambientEquatorColor.g = 0.5f;
+                    sceneLightingDef.LightingData.ambientEquatorColor.r = 0.3f;
+                    transform.gameObject.SetActive(true);
+                }
+
+                else
                 {
                     sceneLightingDef.LightingData.ambientEquatorColor.b = 0.06f;
                     sceneLightingDef.LightingData.ambientEquatorColor.g = 0.14f;
@@ -73,7 +89,7 @@ namespace TFTV
                 //    sceneLightingDef.LightingData.ambientEquatorColor.b = 0.5660378f;
                 //    sceneLightingDef.LightingData.ambientEquatorColor.g = 0.5343573f;
                 //    sceneLightingDef.LightingData.ambientEquatorColor.r = 0.520647943f;
-                
+
             }
             catch (Exception e)
             {
@@ -109,6 +125,25 @@ namespace TFTV
 
 
 
+        [HarmonyPatch(typeof(UIStateVehicleRoster), "EnterState")]
+        public static class TFTV_UIStateVehicleRoster_EnterState_patch
+        {
+
+            public static void Prefix(UIStateRosterAliens __instance)
+            {
+                try
+                {
+                    _activeBackground = _backgroundAirForce;
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
 
         [HarmonyPatch(typeof(UIStateRosterAliens), "PushState")]
         public static class TFTV_UIStateRosterAliens_PushState_patch
@@ -138,7 +173,7 @@ namespace TFTV
                 try
                 {
                     _activeBackground = _backgroundSquadDeploy;
-                  //  TFTVLogger.Always($"entering UIStateRosterDeployment ");
+                    //  TFTVLogger.Always($"entering UIStateRosterDeployment ");
 
                 }
 
@@ -159,7 +194,7 @@ namespace TFTV
                 try
                 {
                     _activeBackground = _backgroundSquadDeploy;
-                   // TFTVLogger.Always($"entering UIStateGeoCharacterStatus ");
+                    // TFTVLogger.Always($"entering UIStateGeoCharacterStatus ");
 
                 }
 
@@ -180,7 +215,7 @@ namespace TFTV
                 try
                 {
                     _activeBackground = _backgroundSquadDeploy;
-                   // TFTVLogger.Always($"entering UIStateGeoRoster");
+                    // TFTVLogger.Always($"entering UIStateGeoRoster");
 
                 }
 
@@ -201,7 +236,7 @@ namespace TFTV
                 try
                 {
                     _activeBackground = _backgroundSquadDeploy;
-                  //  TFTVLogger.Always($"entering UIStateInitial");
+                    //  TFTVLogger.Always($"entering UIStateInitial");
 
                 }
 
@@ -222,8 +257,24 @@ namespace TFTV
             {
                 try
                 {
-                    _activeBackground = _backgroundSquadDeploy;
-                   // TFTVLogger.Always($"entering UIStateMemorial");
+                    _activeBackground = _backgroundMemorial;
+
+                    // TFTVLogger.Always($"entering UIStateMemorial");
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+            public static void Postfix(UIStateMemorial __instance)
+            {
+                try
+                {
+                    _activeBackground = _backgroundMemorial;
+
 
                 }
 
@@ -245,7 +296,7 @@ namespace TFTV
                 try
                 {
                     _activeBackground = _backgroundSquadDeploy;
-                  //  TFTVLogger.Always($"entering UIStateEditVehicle");
+                    //  TFTVLogger.Always($"entering UIStateEditVehicle");
 
                 }
 
@@ -266,7 +317,7 @@ namespace TFTV
                 try
                 {
                     _activeBackground = _backgroundMutation;
-                   // TFTVLogger.Always($"entering UIStateMutate");
+                    // TFTVLogger.Always($"entering UIStateMutate");
 
                 }
 
@@ -287,8 +338,8 @@ namespace TFTV
             {
                 try
                 {
-                    _activeBackground = _backgroundSquadDeploy;
-                  //  TFTVLogger.Always($"entering UIStateBuyMutoid");
+                    _activeBackground = _backgroundMutation;
+                    //  TFTVLogger.Always($"entering UIStateBuyMutoid");
 
                 }
 
@@ -308,8 +359,8 @@ namespace TFTV
             {
                 try
                 {
-                    _activeBackground = _backgroundSquadDeploy;
-                   // TFTVLogger.Always($"entering UIStateBionics");
+                    _activeBackground = _backgroundBionics;
+                    // TFTVLogger.Always($"entering UIStateBionics");
 
                 }
 
@@ -373,7 +424,7 @@ namespace TFTV
                 try
                 {
                     _activeBackground = _backgroundCustomization;
-                   // TFTVLogger.Always($"entering UIStateSoldierCustomization ");
+                    // TFTVLogger.Always($"entering UIStateSoldierCustomization ");
                 }
 
                 catch (Exception e)
@@ -392,6 +443,10 @@ namespace TFTV
                 _backgroundContainment = Helper.CreateSpriteFromImageFile("containment.jpg");
                 _backgroundMutation = Helper.CreateSpriteFromImageFile("scenemutation.jpg");
                 _backgroundCustomization = Helper.CreateSpriteFromImageFile("scenecustomization.jpg");
+                _backgroundBionics = Helper.CreateSpriteFromImageFile("scenebionics.jpg");
+                _backgroundMemorial = Helper.CreateSpriteFromImageFile("scenememorial.jpg");
+                _backgroundAirForce = Helper.CreateSpriteFromImageFile("sceneairforce.jpg");
+
             }
             catch (Exception e)
             {
@@ -423,20 +478,69 @@ namespace TFTV
                 TFTVLogger.Error(e);
                 throw;
             }
-
         }
-
-       
-
 
         public static void ChangeSceneBackgroundSquadDeploy(GeoSceneReferences geoSceneReferences)
         {
             try
             {
+               /* if (_deactivateBackgroundPic)
+                {
+                    if (_copyCharacterClassWorldDisplay != null)
+                    {
+                        _copyCharacterClassWorldDisplay.gameObject.SetActive(false);
+                    }
+                    return;
+                }*/
+
+
                 if (_copyCharacterClassWorldDisplay != null)
                 {
+                    _copyCharacterClassWorldDisplay.gameObject.SetActive(true);
+
                     _copyCharacterClassWorldDisplay.SingleClassImage.sprite = _activeBackground ?? _backgroundSquadDeploy;
-                    RemoveSceneDoF();
+                    RectTransform backgroundPicRT = _copyCharacterClassWorldDisplay.SingleClassImage.GetComponent<RectTransform>();
+                    float imageAspectCurrentBackground = (float)_activeBackground.texture.width / _activeBackground.texture.height;
+
+                   /* TFTVLogger.Always($"Before changes: background {_activeBackground.name}, " +
+                        $"anchoredPostion3d {backgroundPicRT.anchoredPosition3D}, " +
+                        $"imageAspectCurrentBackground {imageAspectCurrentBackground}, " +
+                        $"backgroundPicRT.sizeDelta {backgroundPicRT.sizeDelta}");*/
+
+                    if (_activeBackground == _backgroundMutation || _activeBackground == _backgroundBionics)
+                    {
+                        backgroundPicRT.sizeDelta = new Vector2(backgroundPicRT.rect.height * imageAspectCurrentBackground, backgroundPicRT.rect.height);
+                        backgroundPicRT.localScale = new Vector2(imageAspectCurrentBackground * 1.08f, imageAspectCurrentBackground * 1.08f);
+                        backgroundPicRT.anchoredPosition3D = new Vector3(backgroundPicRT.anchoredPosition3D.x, backgroundPicRT.anchoredPosition3D.y, 0);
+                    }
+                    else if (_activeBackground == _backgroundCustomization)
+                    {
+                        backgroundPicRT.sizeDelta = new Vector2(backgroundPicRT.rect.height * imageAspectCurrentBackground, backgroundPicRT.rect.height);
+                        backgroundPicRT.localScale = new Vector2(imageAspectCurrentBackground * 1.1f, imageAspectCurrentBackground * 1.1f);
+                        backgroundPicRT.anchoredPosition3D = new Vector3(backgroundPicRT.anchoredPosition3D.x, backgroundPicRT.anchoredPosition3D.y, 0);
+                        RemoveSceneDoF();
+                    }
+                    else if (_activeBackground == _backgroundMemorial)
+                    {
+                        backgroundPicRT.sizeDelta = new Vector2(backgroundPicRT.rect.height * imageAspectCurrentBackground, backgroundPicRT.rect.height);
+                        backgroundPicRT.localScale = new Vector2(imageAspectCurrentBackground * 1.15f, imageAspectCurrentBackground * 1.15f);
+                        
+                        backgroundPicRT.anchoredPosition3D = new Vector3(backgroundPicRT.anchoredPosition3D.x, backgroundPicRT.anchoredPosition3D.y, backgroundPicRT.anchoredPosition3D.z+20);
+                        RemoveSceneDoF();
+                    }
+                    else
+                    {
+                        backgroundPicRT.sizeDelta = new Vector2(backgroundPicRT.rect.height * imageAspectCurrentBackground, backgroundPicRT.rect.height);
+                        backgroundPicRT.localScale = new Vector2(imageAspectCurrentBackground * 1.31f, imageAspectCurrentBackground * 1.31f);
+                        backgroundPicRT.anchoredPosition3D = new Vector3(backgroundPicRT.anchoredPosition3D.x, backgroundPicRT.anchoredPosition3D.y, 0);
+                        RemoveSceneDoF();
+                    }
+
+                   /* TFTVLogger.Always($"After changes: background {_activeBackground.name}, " +
+                       $"anchoredPostion3d {backgroundPicRT.anchoredPosition3D}, " +
+                       $"imageAspectCurrentBackground {imageAspectCurrentBackground}, " +
+                       $"backgroundPicRT.sizeDelta {backgroundPicRT.sizeDelta}");*/
+
                     return;
                 }
 
@@ -490,13 +594,14 @@ namespace TFTV
                 try
                 {
 
-                    TFTVLogger.Always($"{activeScene} {__instance.name}");
+                   // TFTVLogger.Always($"{activeScene} {__instance.name}");
 
                     if (activeScene == ActiveSceneReference.SquadBay)
                     {
                         ChangeSceneBackgroundSquadDeploy(__instance);
                         ModifyLightningAndPlatform(__instance.SquadBay.CharBuilderPlatform);
                     }
+
                 }
 
                 catch (Exception e)
@@ -504,8 +609,8 @@ namespace TFTV
                     TFTVLogger.Error(e);
                     throw;
                 }
-            } 
-        }*/
+            }
+        }
 
     }
 }

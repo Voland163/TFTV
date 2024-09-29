@@ -132,7 +132,7 @@ namespace TFTV
 
                 if (PandasForFoodProcessing > 0)
                 {
-                    UITooltipText tooltipText = uIModuleInfoBar.GetComponentsInChildren<UITooltipText>().FirstOrDefault(utt => utt.TipKey.LocalizeEnglish().Contains("FOOD") || utt.TipKey.LocalizeEnglish().Contains("Pandoran meat"));
+                    UITooltipText tooltipText = uIModuleInfoBar.GetComponentsInChildren<UITooltipText>().FirstOrDefault(utt => utt.TipKey != null && utt.TipKey.LocalizationKey != null && (utt.TipKey.LocalizeEnglish().Contains("FOOD") || utt.TipKey.LocalizeEnglish().Contains("Pandoran meat")));
 
                     string processingPandoranMeat = new LocalizedTextBind() { LocalizationKey = "KEY_PANDORAN_MEAT_PROCESSING" }.Localize();
                     string pandoranMeatToProcess = new LocalizedTextBind() { LocalizationKey = "KEY_PANDORAN_MEAT_TO_PROCESS" }.Localize();
@@ -174,7 +174,7 @@ namespace TFTV
                     string maxExtractionPerDay = new LocalizedTextBind() { LocalizationKey = "KEY_MAX_EXTRACTION_PER_DAY_TFTV" }.Localize();
 
                     string tipText = $"{extractingMutagens}.\n{mutagenFromFacilities} {incomeFromLabs}\n{mutagenFromPandorans} {incomeFromCapturedPandas}\n{maxExtractionPerDay} {50 * mutationLabsCount}";
-                    UITooltipText tooltipText = uIModuleInfoBar.GetComponentsInChildren<UITooltipText>().FirstOrDefault(utt => utt.TipKey.LocalizationKey.Equals("KEY_MUTAGENS_RESOURCE_TT") || utt.TipKey.LocalizeEnglish().Contains("Extracting mutagens"));
+                    UITooltipText tooltipText = uIModuleInfoBar.GetComponentsInChildren<UITooltipText>().FirstOrDefault(utt => utt.TipKey!=null && utt.TipKey.LocalizationKey!=null && (utt.TipKey.LocalizationKey.Equals("KEY_MUTAGENS_RESOURCE_TT") || utt.TipKey.LocalizeEnglish().Contains("Extracting mutagens")));
 
                     //    TFTVLogger.Always($"{tipText}");
 

@@ -679,14 +679,14 @@ namespace TFTV
 
                     CreateNewTacticalHint(tagTBTVOnTurnEndName + "_Hint", HintTrigger.ActorHurt, "VoidTouchedOnTurnEnd_GameTagDef", "TBTV_ON_TURN_END_TITLE_HINT", "TBTV_ON_TURN_END_TEXT_HINT", 1, true, "E7365C33-7222-44E3-B397-77DA892E6D9F", "Hint_TBTV_EoT.jpg");
 
-                    string tagVoidBlightName = "VoidBlight";
+                  /*  string tagVoidBlightName = "VoidBlight";
 
                     Helper.CreateDefFromClone(
                         source,
                         "D3276B4D-4A50-48AF-B21D-EB831287811B",
                         tagVoidBlightName + "_GameTagDef");
 
-                    CreateNewTacticalHint(tagVoidBlightName, HintTrigger.StatusApplied, "TBTV_Target", "VOID_BLIGHT_NAME_HINT", "VOID_BLIGHT_DESCRIPTION_HINT", 2, true, "24D1EE1C-90A2-47FC-A999-FC0A4B63997C", "acheron_void_blight.jpg");
+                    CreateNewTacticalHint(tagVoidBlightName, HintTrigger.StatusApplied, "TBTV_Target", "VOID_BLIGHT_NAME_HINT", "VOID_BLIGHT_DESCRIPTION_HINT", 2, true, "24D1EE1C-90A2-47FC-A999-FC0A4B63997C", "acheron_void_blight.jpg");*/
 
                 }
                 catch (Exception e)
@@ -1208,6 +1208,7 @@ namespace TFTV
                                     alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintDef);
                                     _hintDefSpriteFileNameDictionary.Remove(hintDef);
                                     TFTVHumanEnemies.TacticsHint.Remove(hintDef);
+                                    TFTVUITactical.Enemies.ActivateOrAdjustLeaderWidgets(true);
                                     break;
                                 }
                             }

@@ -28,7 +28,7 @@ namespace TFTVVehicleRework.Scarab
             GroundVehicleModuleDef FiberPlating = (GroundVehicleModuleDef)Repo.GetDef("983eb90b-29bf-15e4-fa76-d7f731069bd1"); //"PX_Scarab_Fiber_Plating_GroundVehicleModuleDef"
             FiberPlating.ViewElementDef.DisplayName1 = new LocalizedTextBind("PX_LAZARUS_NAME");
             FiberPlating.Armor = 0f;
-            FiberPlating.BodyPartAspectDef.Stealth = 1f;
+            FiberPlating.BodyPartAspectDef.Stealth = 0.95f;
             FiberPlating.ManufactureTech = 30f;
 
             AdjustSubaddons(FiberPlating);

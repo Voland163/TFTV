@@ -36,18 +36,26 @@ namespace TFTV
 {
     internal class TFTVVoidOmens
     {
-        public static readonly TFTVConfig Config = new TFTVConfig();
+        private static readonly TFTVConfig Config = new TFTVConfig();
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData sharedData = TFTVMain.Shared;
 
         private static readonly FesteringSkiesSettingsDef festeringSkiesSettingsDef = DefCache.GetDef<FesteringSkiesSettingsDef>("FesteringSkiesSettingsDef");
         private static readonly TacticalPerceptionDef tacticalPerceptionDef = DefCache.GetDef<TacticalPerceptionDef>("Soldier_PerceptionDef");
-        private static readonly CustomMissionTypeDef AmbushALN = DefCache.GetDef<CustomMissionTypeDef>("AmbushAlien_CustomMissionTypeDef");
         private static readonly TacCrateDataDef cratesNotResources = DefCache.GetDef<TacCrateDataDef>("Default_TacCrateDataDef");
         private static readonly TacticalFactionEffectDef defendersCanBeRecruited = DefCache.GetDef<TacticalFactionEffectDef>("CanBeRecruitedByPhoenix_FactionEffectDef");
         private static readonly GeoHavenZoneDef havenLab = DefCache.GetDef<GeoHavenZoneDef>("Research_GeoHavenZoneDef");
 
+        private static readonly List<CustomMissionTypeDef> _ambushMissions = new List<CustomMissionTypeDef>()
+        {DefCache.GetDef<CustomMissionTypeDef>("AmbushFallen_CustomMissionTypeDef"),
+            DefCache.GetDef<CustomMissionTypeDef>("AmbushAlien_CustomMissionTypeDef"),
+            DefCache.GetDef<CustomMissionTypeDef>("AmbushAN_CustomMissionTypeDef"),
+        DefCache.GetDef<CustomMissionTypeDef>("AmbushBandits_CustomMissionTypeDef"),
+        DefCache.GetDef<CustomMissionTypeDef>("AmbushNJ_CustomMissionTypeDef"),
+        DefCache.GetDef<CustomMissionTypeDef>("AmbushPure_CustomMissionTypeDef"),
+        DefCache.GetDef<CustomMissionTypeDef>("AmbushAlien_CustomMissionTypeDef"),
+        DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")};
 
         private static readonly GeoFactionDef nJFactionDef = DefCache.GetDef<GeoFactionDef>("NewJericho_GeoFactionDef");
         private static readonly GeoFactionDef sYNFactionDef = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
@@ -77,7 +85,9 @@ namespace TFTV
 
         //V0#18 is extra defense points, less rewards
 
-        public static void ModifyVoidOmenTacticalObjectives(TacMissionTypeDef missionType)
+
+        //Void Omens objectives replaced by Oneiric Delirium Effects widget
+       /* public static void ModifyVoidOmenTacticalObjectives(TacMissionTypeDef missionType)
         {
             try
             {
@@ -132,7 +142,7 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-        }
+        }*/
 
         public static void CheckVoidOmensBeforeImplementing(GeoLevelController level)
         {
@@ -293,21 +303,27 @@ namespace TFTV
                     //VoidOmen1Active = true;
                     VoidOmensCheck[1] = true;
 
+                    foreach (CustomMissionTypeDef ambushMission in _ambushMissions)
+                    {
 
-                    AmbushALN.ParticipantsData[0].ReinforcementsTurns.Max = 1;
-                    AmbushALN.ParticipantsData[0].ReinforcementsTurns.Min = 1;
-                    AmbushALN.CratesDeploymentPointsRange.Min = 50;
-                    AmbushALN.CratesDeploymentPointsRange.Max = 70;
+                        ambushMission.ParticipantsData[0].ReinforcementsTurns.Max = 1;
+                        ambushMission.ParticipantsData[0].ReinforcementsTurns.Min = 1;
+                        ambushMission.CratesDeploymentPointsRange.Min = 50;
+                        ambushMission.CratesDeploymentPointsRange.Max = 70;
+                    }
                     // VoidOmensCheck[1] = true;
                 }
                 else if (!CheckFordVoidOmensInPlay(controller).Contains(1) && VoidOmensCheck[1])
                 {
                     VoidOmensCheck[1] = false;
-                    AmbushALN.ParticipantsData[0].ReinforcementsTurns.Max = 2;
-                    AmbushALN.ParticipantsData[0].ReinforcementsTurns.Min = 2;
-                    AmbushALN.CratesDeploymentPointsRange.Min = 30;
-                    AmbushALN.CratesDeploymentPointsRange.Max = 50;
 
+                    foreach (CustomMissionTypeDef ambushMission in _ambushMissions)
+                    {
+                        ambushMission.ParticipantsData[0].ReinforcementsTurns.Max = 2;
+                        ambushMission.ParticipantsData[0].ReinforcementsTurns.Min = 2;
+                        ambushMission.CratesDeploymentPointsRange.Min = 30;
+                        ambushMission.CratesDeploymentPointsRange.Max = 50;
+                    }
                     //  VoidOmensCheck[1] = false;
                     TFTVLogger.Always("The check for VO#1 went ok");
                 }
@@ -1636,131 +1652,7 @@ namespace TFTV
             }
         }
 
-        //Adjusted for all haven defenses because parapsychosis bug. Check if necessary for other WipeEnemyFactionObjective missions
-        [HarmonyPatch(typeof(WipeEnemyFactionObjective), "EvaluateObjective")]
-        public static class TFTV_HavenDefendersHostileFactionObjective_EvaluateObjective_Patch
-        {
-            public static bool Prefix(FactionObjective __instance, ref FactionObjectiveState __result,
-                List<TacticalFaction> ____enemyFactions, List<TacticalFactionDef> ____overrideFactions, bool ____ignoreDeployment)
-            {
-                try
-                {
-                    //  TFTVLogger.Always($"evaluating {__instance.GetDescription()} and the result is {__result}");
-
-                    //   if (VoidOmensCheck[5])
-                    //   {
-                    TacticalLevelController controller = __instance.Level;
-                    string MissionType = controller.TacticalGameParams.MissionData.MissionType.SaveDefaultName;
-
-                    if (MissionType == "HavenDefense")
-                    {
-                        if (!__instance.IsUiHidden)
-                        {
-
-                            //  TFTVLogger.Always("WipeEnemyFactionObjetive invoked");
-
-                            if (!__instance.Faction.HasTacActorsThatCanWin() && !__instance.Faction.HasUndeployedTacActors())
-                            {
-                                __result = FactionObjectiveState.Failed;
-                                //  TFTVLogger.Always("WipeEnemyFactionObjetive failed");
-                                return false; // skip original method
-                            }
-
-                            foreach (TacticalFaction enemyFaction in controller.Factions)
-                            {
-                                if (enemyFaction.ParticipantKind == TacMissionParticipant.Intruder)
-                                {
-                                    // TFTVLogger.Always("The faction is " + faction.TacticalFactionDef.name);
-                                    if (!enemyFaction.HasTacActorsThatCanWin())
-                                    {
-                                        //  TFTVLogger.Always("HavenDefense, no intruders alive, so mission should be a win");
-                                        __result = FactionObjectiveState.Achieved;
-                                        return false;
-                                    }
-
-                                }
-                            }
-
-
-                        }
-                        return true;
-                    }
-                    return true;
-                    //  }
-                    //  return true;
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
-        //Patch to set VO objective test in uppercase to match other objectives
-        [HarmonyPatch(typeof(ObjectivesManager), "Add")]
-        public static class FactionObjective_ModifyObjectiveColor_Patch
-        {
-
-            public static void Postfix(ObjectivesManager __instance, FactionObjective objective)
-            {
-                try
-                {
-                    //  TFTVLogger.Always("FactionObjective Invoked");
-                    if (objective.Description.LocalizationKey.Contains("VOID"))
-                    {
-                        objective.Description = new LocalizedTextBind(objective.Description.Localize().ToUpper(), true);
-                    }
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-
-        //Patch to avoid triggering "failed" state for VO objectives when player loses a character
-        [HarmonyPatch(typeof(KeepSoldiersAliveFactionObjective), "EvaluateObjective")]
-        public static class KeepSoldiersAliveFactionObjective_EvaluateObjective_Patch
-        {
-
-            public static void Postfix(KeepSoldiersAliveFactionObjective __instance, ref FactionObjectiveState __result)
-            {
-                try
-                {
-                    KeepSoldiersAliveFactionObjectiveDef containmentPresent = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACIY_BASE");
-                    KeepSoldiersAliveFactionObjectiveDef aircraftCapture = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACIY_AIRCRAFT");
-                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_3 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_3");
-                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_5 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_5");
-                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_7 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_7");
-                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_10 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_10");
-                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_14 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_14");
-                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_15 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_15");
-                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_16 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_16");
-                    KeepSoldiersAliveFactionObjectiveDef VOID_OMEN_TITLE_19 = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("VOID_OMEN_TITLE_19");
-
-                    List<KeepSoldiersAliveFactionObjectiveDef> voidOmens = new List<KeepSoldiersAliveFactionObjectiveDef> { VOID_OMEN_TITLE_3, VOID_OMEN_TITLE_5, VOID_OMEN_TITLE_7, VOID_OMEN_TITLE_10, VOID_OMEN_TITLE_14, VOID_OMEN_TITLE_15, VOID_OMEN_TITLE_16, VOID_OMEN_TITLE_19 };
-
-                    //  TFTVLogger.Always("FactionObjective Evaluate " + __instance.Description.ToString());
-                    foreach (KeepSoldiersAliveFactionObjectiveDef keepSoldiersAliveFactionObjectiveDef in voidOmens)
-                    {
-                        // TFTVLogger.Always(keepSoldiersAliveFactionObjectiveDef.MissionObjectiveData.Description.LocalizeEnglish());
-                        // TFTVLogger.Always(__instance.Description.LocalizationKey);
-
-                        if (keepSoldiersAliveFactionObjectiveDef.MissionObjectiveData.Description.LocalizeEnglish().ToUpper() == __instance.Description.LocalizationKey)
-                        {
-                            // TFTVLogger.Always("FactionObjective check passed");
-                            __result = FactionObjectiveState.InProgress;
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
+       
 
     }
 }

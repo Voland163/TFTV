@@ -1,5 +1,6 @@
-﻿using Epic.OnlineServices;
+﻿using Base.Entities.Statuses;
 using HarmonyLib;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape.Levels;
@@ -11,13 +12,11 @@ using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.Missions;
 using PhoenixPoint.Tactical.Levels.Mist;
-using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using UnityEngine;
 using static PhoenixPoint.Tactical.Entities.Abilities.CallReinforcementsAbilityDef;
 
 namespace TFTV
@@ -32,10 +31,16 @@ namespace TFTV
         public static int TBTVVariable = 0;
         public static bool UmbraResearched = false;
 
-        private static readonly AddAbilityStatusDef hiddenTBTVAddAbilityStatus = DefCache.GetDef<AddAbilityStatusDef>("TBTV_Hidden_AddAbilityStatusDef");
+        public static readonly AddAbilityStatusDef hiddenTBTVAddAbilityStatus = DefCache.GetDef<AddAbilityStatusDef>("TBTV_Hidden_AddAbilityStatusDef");
+        public static readonly DamageMultiplierStatusDef onAttackTBTVStatus = DefCache.GetDef<DamageMultiplierStatusDef>("TBTV_OnAttack_StatusDef");
+        public static readonly DamageMultiplierStatusDef onTurnEndTBTVStatus = DefCache.GetDef<DamageMultiplierStatusDef>("TBTV_OnTurnEnd_StatusDef");
+        public static readonly AddAbilityStatusDef oilCrabAddAbilityStatus = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");
+        public static readonly AddAbilityStatusDef oilTritonAddAbilityStatus = DefCache.GetDef<AddAbilityStatusDef>("OilFish_AddAbilityStatusDef");
 
-        private static readonly DamageMultiplierStatusDef onAttackTBTVStatus = DefCache.GetDef<DamageMultiplierStatusDef>("TBTV_OnAttack_StatusDef");
-        private static readonly DamageMultiplierStatusDef onTurnEndTBTVStatus = DefCache.GetDef<DamageMultiplierStatusDef>("TBTV_OnTurnEnd_StatusDef");
+        public static readonly List <StatusDef> tbtvStatuses = new List <StatusDef>() 
+        { 
+        hiddenTBTVAddAbilityStatus, onAttackTBTVStatus, onTurnEndTBTVStatus,oilCrabAddAbilityStatus, oilTritonAddAbilityStatus        
+        };
 
         private static readonly PassiveModifierAbilityDef acheronTributary = DefCache.GetDef<PassiveModifierAbilityDef>("Acheron_Tributary_AbilityDef");
 
@@ -63,8 +68,7 @@ namespace TFTV
 
         internal class TBTVRolls
         {
-            private static readonly AddAbilityStatusDef oilCrabAddAbilityStatus = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");
-            private static readonly AddAbilityStatusDef oilTritonAddAbilityStatus = DefCache.GetDef<AddAbilityStatusDef>("OilFish_AddAbilityStatusDef");
+            
             public static int MakeTBTVRoll()
             {
                 try
@@ -168,7 +172,9 @@ namespace TFTV
                             tacticalActor.Status.ApplyStatus(onTurnEndTBTVStatus);
                             tacticalActor.GameTags.Add(voidTouchedOnTurnEndTag);
 
-                            TFTVLogger.Always("CallReinforcements status applied " + tacticalActor.name);
+                            TacticalFactionVision.IncrementKnownCounterToAll(tacticalActor, KnownState.Revealed, 1, true);
+
+                            TFTVLogger.Always($"CallReinforcements status applied {tacticalActor.name}, should be revealed to all!");
                         }
                     }
                     else if ((roll >= 31 && roll <= 36) || roll >= 97)
@@ -372,6 +378,9 @@ namespace TFTV
 
         internal class Umbra
         {
+
+
+
             internal class UmbraGeoscape
             {
                 public static void CheckForUmbraResearch(GeoLevelController level)
@@ -435,10 +444,6 @@ namespace TFTV
 
             internal class UmbraTactical
             {
-
-                public static int totalCharactersWithDelirium;
-                public static int totalDeliriumOnMission;
-
                 public static void CheckVO15(TacticalLevelController controller, TacticalFaction faction)
                 {
                     try
@@ -463,7 +468,62 @@ namespace TFTV
                     }
                 }
 
-                public static void SpawnUmbra(TacticalLevelController controller)
+
+                public static int GetTouchedByTheVoidChances(TacticalLevelController controller)
+                {
+                    try
+                    {
+                        TacticalFaction phoenix = controller.GetFactionByCommandName("px");
+
+                        int totalDeliriumOnMission = 0;
+
+                        if (TFTVVoidOmens.VoidOmensCheck[16])
+                        {
+                            int baseChance = 16;
+
+                            if (TFTVVoidOmens.VoidOmensCheck[15])
+                            {
+                             baseChance = 32;
+                            }
+
+                           
+                                totalDeliriumOnMission = baseChance + CheckForAcheronHarbingers(controller) * 10;
+                          
+                        }
+                        else
+                        {
+                            totalDeliriumOnMission = 0;
+
+                            foreach (TacticalActor actor in phoenix.TacticalActors)
+                            {
+                                if (actor.CharacterStats.Corruption.Value > 0)
+                                {
+                                    totalDeliriumOnMission += (int)actor.CharacterStats.Corruption.Value.BaseValue;
+                                }
+                            }
+
+                            if (!TFTVVoidOmens.VoidOmensCheck[15])
+                            {
+                                totalDeliriumOnMission /= 2;
+                            }
+                           
+                                totalDeliriumOnMission += CheckForAcheronHarbingers(controller) * 10;
+                            
+                           
+                        }
+
+                        return totalDeliriumOnMission;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+
+                }
+
+                public static void RollTouchByTheVoid(TacticalLevelController controller)
                 {
                     try
                     {
@@ -475,80 +535,28 @@ namespace TFTV
                                 {
                                     TacticalFaction phoenix = controller.GetFactionByCommandName("px");
                                     TacticalFaction pandorans = controller.GetFactionByCommandName("aln");
-                                    totalCharactersWithDelirium = 0;
-                                    totalDeliriumOnMission = 0;
 
-                                    foreach (TacticalActor actor in phoenix.TacticalActors)
-                                    {
-                                        if (actor.CharacterStats.Corruption.Value > 0)
-                                        {
-                                            totalCharactersWithDelirium++;
-                                            totalDeliriumOnMission += (int)actor.CharacterStats.Corruption.Value.BaseValue;
-                                        }
-                                    }
-
-                                    if (totalDeliriumOnMission > 0)
-                                    {
-                                        TFTVLogger.Always("There are " + CheckForAcheronHarbingers(controller) + " harbingers and total Delirium is " + totalDeliriumOnMission);
-                                        totalDeliriumOnMission += CheckForAcheronHarbingers(controller) * 10;
-                                    }
-
-                                    TFTVLogger.Always("Total Delirium on mission taking into account Harbingers is " + totalDeliriumOnMission);
-                                    TFTVLogger.Always("Number of characters with Delirium is " + totalCharactersWithDelirium);
+                                    int totalDeliriumOnMission=GetTouchedByTheVoidChances(controller);
 
                                     foreach (TacticalActor actor in pandorans.TacticalActors)
                                     {
 
                                         // TFTVLogger.Always("The actor is " + actor.name);
-                                        if (actor.GameTags.Contains(crabTag) && !actor.GameTags.Contains(voidTouchedTag)
-                                            && !actor.name.Contains("Oilcrab") && !actor.GameTags.Contains(anyRevenantGameTag) && !TBTVRolls.CheckForTBTVAbilities(actor))
+                                        if ((actor.GameTags.Contains(crabTag) || actor.GameTags.Contains(fishTag)) && !actor.GameTags.Contains(voidTouchedTag)
+                                            && !actor.name.Contains("Oilcrab") && !actor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag) && !TBTVRolls.CheckForTBTVAbilities(actor))
 
                                         {
                                             UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                                             int roll = UnityEngine.Random.Range(1, 101);
-                                            if (TFTVVoidOmens.VoidOmensCheck[15] && roll <= totalDeliriumOnMission)
-                                            {
-                                                TFTVLogger.Always("This Arthron here " + actor + ", got past the TBTV check!");
-                                                actor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
-                                                actor.GameTags.Add(voidTouchedTag);
-                                                actor.AddAbility(oilcrabDeathBelcherAbility, actor);
-
-
-                                            }
-                                            else if (!TFTVVoidOmens.VoidOmensCheck[15] && roll <= totalDeliriumOnMission / 2)
+                                            if (roll <= totalDeliriumOnMission)
                                             {
                                                 TFTVLogger.Always("This Arthron here " + actor + ", got past the TBTV check!");
                                                 actor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
                                                 actor.GameTags.Add(voidTouchedTag);
                                                 actor.AddAbility(oilcrabDeathBelcherAbility, actor);
                                             }
-
                                         }
-                                        if (actor.GameTags.Contains(fishTag) && !actor.GameTags.Contains(voidTouchedTag)
-                                            && !actor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag) && !TBTVRolls.CheckForTBTVAbilities(actor))
-                                        {
-                                            UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                                            int roll = UnityEngine.Random.Range(1, 101);
-                                            if (TFTVVoidOmens.VoidOmensCheck[15] && roll <= totalDeliriumOnMission)
-                                            {
-                                                TFTVLogger.Always("This Triton here " + actor + ", got past the TBTV check!");
-                                                actor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
 
-                                                actor.GameTags.Add(voidTouchedTag);
-                                                actor.AddAbility(oilfishDeathBelcherAbility, actor);
-
-
-                                            }
-                                            else if (!TFTVVoidOmens.VoidOmensCheck[15] && roll <= totalDeliriumOnMission / 2)
-                                            {
-                                                TFTVLogger.Always("This Triton here " + actor + ", got past the TBTV check!");
-                                                actor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
-
-                                                actor.GameTags.Add(voidTouchedTag);
-                                                actor.AddAbility(oilfishDeathBelcherAbility, actor);
-
-                                            }
-                                        }
                                     }
                                 }
                             }
@@ -561,18 +569,35 @@ namespace TFTV
                     }
                 }
 
-                public static int CheckForAcheronHarbingers(TacticalLevelController controller)
+                public static int CheckForAcheronHarbingers(TacticalLevelController controller, bool checkVisibleOnly = false)
                 {
                     try
                     {
-                        TacticalFaction pandorans = controller.GetFactionByCommandName("aln");
+                        if (!controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln"))) 
+                        {
+                            return 0;
+                        }
+
+                            TacticalFaction pandoranFaction = controller.GetFactionByCommandName("aln");
                         int harbingers = 0;
 
-                        foreach (TacticalActor actor in pandorans.TacticalActors)
+                        List<TacticalActor> pandorans = pandoranFaction.TacticalActors.ToList();
+
+                        if (checkVisibleOnly)
+                        {
+
+                            IEnumerable<TacticalActor> tacticalActors = from a in controller.GetFactionByCommandName("px").Vision.GetKnownActors(KnownState.Revealed, FactionRelation.Enemy, false).OfType<TacticalActor>()
+                                                                        where a.InPlay && a.Interactable
+                                                                        select a;
+
+                            pandorans = tacticalActors.ToList();
+                        }
+
+                        foreach (TacticalActor actor in pandorans)
                         {
                             if (actor.IsAlive && actor.GetAbilityWithDef<PassiveModifierAbility>(acheronHarbinger) != null)
                             {
-                                TFTVLogger.Always("This harbinger is " + actor.name);
+                               // TFTVLogger.Always("This harbinger is " + actor.name);
                                 harbingers++;
                             }
 
@@ -591,7 +616,7 @@ namespace TFTV
                 //To prevent Umbras from attacking characters without Delirium
                 public static void ImplementUmbraTargeting(ref IEnumerable<TacticalAbilityTarget> __result, TacticalActorBase sourceActor)
                 {
-                    try 
+                    try
                     {
                         //Design choice to allow decoys to be targeted by Umbra if decoy is in mist 
                         //  SpawnedActorTagDef decoyTag = DefCache.GetDef<SpawnedActorTagDef>("Decoy_SpawnedActorTagDef");
@@ -618,11 +643,11 @@ namespace TFTV
                     catch (Exception e)
                     {
                         TFTVLogger.Error(e);
-                     
+
                     }
                 }
 
-             
+
                 public static void UmbraEverywhereVoidOmenImplementation(TacticalActorBase actor, TacticalLevelController controller)
                 {
 
@@ -631,13 +656,15 @@ namespace TFTV
                         // TFTVLogger.Always("ActorEnteredPlay invoked");
                         if (UmbraResearched)
                         {
-
                             if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")) && TFTVVoidOmens.VoidOmensCheck[16])
                             {
+
+                                int totalDeliriumOnMission = GetTouchedByTheVoidChances(controller);
+
                                 //   TFTVLogger.Always("found aln faction and checked that VO is in place");
 
-                                if (actor.GameTags.Contains(crabTag) && !actor.GameTags.Contains(voidTouchedTag)
-                                && !actor.name.Contains("Oilcrab") && !actor.GameTags.Contains(anyRevenantGameTag)
+                                if ((actor.GameTags.Contains(crabTag) || actor.GameTags.Contains(fishTag)) && !actor.GameTags.Contains(voidTouchedTag)
+                                && !actor.name.Contains("Oilcrab") && !actor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag)
                                 && actor.TacticalFaction.Faction.FactionDef.MatchesShortName("aln") && !TBTVRolls.CheckForTBTVAbilities(actor as TacticalActor))
 
                                 {
@@ -646,46 +673,12 @@ namespace TFTV
                                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                                     int roll = UnityEngine.Random.Range(1, 101);
                                     // TFTVLogger.Always("The roll is " + roll);
-                                    if (TFTVVoidOmens.VoidOmensCheck[15] && roll <= 32 + CheckForAcheronHarbingers(controller) * 10)
+                                    if (roll <= totalDeliriumOnMission)
                                     {
                                         TFTVLogger.Always("VO16+VO15 This Arthron here " + actor + ", got past the TBTV check!");
                                         tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
 
                                         actor.GameTags.Add(voidTouchedTag);
-
-
-                                    }
-                                    else if (!TFTVVoidOmens.VoidOmensCheck[15] && roll <= 16 + CheckForAcheronHarbingers(controller) * 5)
-                                    {
-                                        TFTVLogger.Always("VO16 This Arthron here " + actor + ", got past the TBTV check!");
-                                        tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
-
-                                        actor.GameTags.Add(voidTouchedTag);
-                                    }
-                                }
-                                if (actor.GameTags.Contains(fishTag) && !actor.GameTags.Contains(voidTouchedTag)
-                                && !actor.name.Contains("Oilfish") && !actor.GameTags.Contains(anyRevenantGameTag)
-                                && actor.TacticalFaction.Faction.FactionDef.MatchesShortName("aln") && !TBTVRolls.CheckForTBTVAbilities(actor as TacticalActor))
-                                {
-                                    TacticalActor tacticalActor = actor as TacticalActor;
-
-                                    UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                                    int roll = UnityEngine.Random.Range(1, 101);
-                                    if (TFTVVoidOmens.VoidOmensCheck[15] && roll <= 32 + CheckForAcheronHarbingers(controller) * 10)
-                                    {
-                                        TFTVLogger.Always("VO16+VO15 This Triton here " + actor + ", got past the TBTV check!");
-                                        tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
-
-                                        actor.GameTags.Add(voidTouchedTag);
-
-                                    }
-                                    else if (!TFTVVoidOmens.VoidOmensCheck[15] && roll <= 16 + CheckForAcheronHarbingers(controller) * 5)
-                                    {
-                                        TFTVLogger.Always("VO16 This Triton here " + actor + ", got past the TBTV check!");
-                                        tacticalActor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
-
-                                        actor.GameTags.Add(voidTouchedTag);
-
                                     }
                                 }
                             }

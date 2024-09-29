@@ -401,6 +401,8 @@ namespace TFTV
                 internal static List<int> listTeamA = new List<int>();
                 internal static List<int> listTeamB = new List<int>();
 
+                private static List <PhoenixGeneralButton> _buttonList = new List<PhoenixGeneralButton>();
+
                 [HarmonyPatch(typeof(LaunchBehemothMissionAbility), "ActivateInternal")]
                 public static class TFTV_LaunchBehemothMissionAbility_ActivateInternal_patch
                 {
@@ -521,6 +523,8 @@ namespace TFTV
                             checkButton.GetComponent<UIButtonIconController>().Icon.sprite = iconTeamA;
                         }
 
+                        _buttonList.Add(checkButton);
+
                         //   checkButton.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("TFTV_helmet_off_icon.png");
                         // TFTVLogger.Always($"original icon position {newPhoenixGeneralButton.transform.position}, edit button position {__instance.EditButton.transform.position}");
                         checkButton.transform.position += new Vector3(-100 * resolutionFactorWidth, 0);
@@ -624,6 +628,11 @@ namespace TFTV
                             return;
                         }
 
+                        foreach(PhoenixGeneralButton button in _buttonList) 
+                        {
+                            button.gameObject.SetActive(false);
+                        
+                        }
 
                         listTeamA.Clear();
                         listTeamB.Clear();

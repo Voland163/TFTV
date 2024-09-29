@@ -1,13 +1,11 @@
 ﻿using Base;
 using Base.AI.Defs;
-using Base.Cameras.CameraNodes;
 using Base.Core;
 using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
-using Base.Lighting;
 using Base.UI;
 using Base.Utils;
 using Code.PhoenixPoint.Tactical.Entities.Equipments;
@@ -24,7 +22,6 @@ using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Entities.RedeemableCodes;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
-using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Interception;
@@ -157,12 +154,16 @@ namespace TFTV
 
                 AddAlwaysDeployTagToUniqueDeployments();
 
-               // CreateBackgrounds();
+                CreateBackgrounds();
 
-              //  TFTVBackgrounds.LoadTFTVBackgrounds();
+                TFTVBackgrounds.LoadTFTVBackgrounds();
 
-                
-              //  Print();
+                TFTVUITactical.Enemies.PopulateFactionViewElementDictionary();
+
+                //  TFTVTacticalObjectives.Defs.CreateHumanTacticsRemindersInTactical();
+
+
+                //  Print();
 
             }
             catch (Exception e)
@@ -171,13 +172,37 @@ namespace TFTV
             }
         }
 
+
         private static void CreateBackgrounds()
+        {
+            try
+            {
+                //TFTVBackgrounds.LoadTFTVBackgrounds();
+
+                ChangeBuilderViewParams();
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        private static void AdjustColorDefs()
         {
             try 
             {
-                //TFTVBackgrounds.LoadTFTVBackgrounds();
-               
-                ChangeBuilderViewParams();
+                Color voidColor = TFTVUITactical.VoidColor;
+                Color negativeColor = TFTVUITactical.NegativeColor;
+
+                DefCache.GetDef<UIColorDef>("UIColorDef_Corruption").Color = voidColor;
+
+                Color alphaColor = new Color(voidColor.r, voidColor.g, voidColor.b, 0.5f);
+
+                DefCache.GetDef<UIColorDef>("UIColorDef_Corruption_Alpha").Color = alphaColor;
+
+                DefCache.GetDef<UIColorDef>("UIColorDef_UIColor_Negative").Color = negativeColor;
 
             }
             catch (Exception e)
@@ -206,7 +231,7 @@ namespace TFTV
 
         }
 
-        
+
 
         private static void AddAlwaysDeployTagToUniqueDeployments()
         {
@@ -554,7 +579,10 @@ namespace TFTV
                 RemoveOrganicConditionForSlowedStatus();
                 AdjustMistSentinelDetection();
                 Create_StarvedAbility();
-              //  ChangeBuilderViewParams();
+                TFTVUITactical.SecondaryObjectivesTactical.Defs.CreateDefs();
+                AdjustColorDefs();
+
+                //  ChangeBuilderViewParams();
             }
             catch (Exception e)
             {
@@ -562,7 +590,7 @@ namespace TFTV
             }
         }
 
-        
+       
 
         private static void Create_StarvedAbility()
         {
@@ -706,11 +734,27 @@ namespace TFTV
                 FixSilentInfiltrators();
                 FixResearchRequirements();
                 FixMindControlImmunityNotRestoredWhenHeadReenabled();
+                FixChironStompIgnoringFriendlies();
+                // FixUmbraFire(); doesn't work because status removed before check
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        private static void FixChironStompIgnoringFriendlies()
+        {
+            try 
+            {
+                DefCache.GetDef<AIAttackPositionConsiderationDef>("Chiron_StompAttackPosition_AIConsiderationDef").FriendlyHitScoreMultiplier = 0.7f;       
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
         }
 
         private static void FixMindControlImmunityNotRestoredWhenHeadReenabled()
@@ -1101,7 +1145,7 @@ namespace TFTV
         {
             try
             {
-                CreateObjectiveCaptureCapacity();
+                // CreateObjectiveCaptureCapacity(); Removed because now in Capture Widget.
                 ChangeResourceRewardsForAutopsies();
                 AdjustPandoranVolumes();
                 ChangesToCapturingPandorans();
@@ -1159,6 +1203,8 @@ namespace TFTV
                 removeCaptureStatusAbility.ViewElementDef = Helper.CreateDefFromClone(applyStatusAbilitySource.ViewElementDef, "{19FF369F-868B-4DFA-90AE-E72D4075B868}", removeCaptureAbilityName);
                 removeCaptureStatusAbility.ViewElementDef.DisplayName1.LocalizationKey = "CANCEL_CAPTURE_NAME";
                 removeCaptureStatusAbility.ViewElementDef.Description.LocalizationKey = "CANCEL_CAPTURE_DESCRIPTION";
+                removeCaptureStatusAbility.TargetingDataDef = Helper.CreateDefFromClone(applyStatusAbilitySource.TargetingDataDef, "{910F0071-BDD3-4FA2-9CD4-17199D938637}", removeCaptureAbilityName);
+                removeCaptureStatusAbility.TargetingDataDef.Origin.LineOfSight = LineOfSightType.Ignore;
 
                 newCaptureAbility.ViewElementDef = Helper.CreateDefFromClone(applyStatusAbilitySource.ViewElementDef, "{C740EF09-6068-4ADB-9E38-7F6F504ACC07}", captureAbilityName);
                 newCaptureAbility.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("ability_capture.png");
@@ -1166,7 +1212,9 @@ namespace TFTV
                 newCaptureAbility.ViewElementDef.DisplayName1.LocalizationKey = "CAPTURE_ABILITY_NAME";
                 newCaptureAbility.ViewElementDef.Description.LocalizationKey = "CAPTURE_ABILITY_DESCRIPTION";
 
+
                 newCaptureAbility.TargetingDataDef = Helper.CreateDefFromClone(applyStatusAbilitySource.TargetingDataDef, "{AB7A060C-2CB1-4DD6-A21F-A018BC8B0600}", captureAbilityName);
+                newCaptureAbility.TargetingDataDef.Origin.LineOfSight = LineOfSightType.Ignore;
                 newCaptureAbility.WillPointCost = 0;
 
                 string captureStatusName = "CapturePandoran_Status";
@@ -4728,17 +4776,6 @@ namespace TFTV
 
         }
 
-
-
-
-
-
-
-
-
-
-
-
         public static void ModifyCratesToAddArmor()
         {
             try
@@ -4950,7 +4987,7 @@ namespace TFTV
         {
             try
             {
-                
+
 
                 UnusableHandStatusDef unUsableLeftHandStatus = DefCache.GetDef<UnusableHandStatusDef>("UnusableLeftHand_StatusDef");
 
@@ -6021,6 +6058,8 @@ namespace TFTV
             }
 
         }
+
+
 
 
 
@@ -7263,7 +7302,7 @@ namespace TFTV
 
 
                 //Creating special status that will allow Umbra to target the character
-                string umbraTargetStatusDefName = "TBTV_Target";
+              /*  string umbraTargetStatusDefName = "TBTV_Target";
                 DamageMultiplierStatusDef sourceForTargetAbility = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
 
                 DamageMultiplierStatusDef umbraTargetStatus = Helper.CreateDefFromClone(
@@ -7282,7 +7321,7 @@ namespace TFTV
                 umbraTargetStatus.Visuals.DisplayName1.LocalizationKey = "VOID_BLIGHT_NAME";
                 umbraTargetStatus.Visuals.Description.LocalizationKey = "VOID_BLIGHT_DESCRIPTION";
                 umbraTargetStatus.Visuals.LargeIcon = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef").ViewElementDef.LargeIcon;
-                umbraTargetStatus.Visuals.SmallIcon = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef").ViewElementDef.SmallIcon;
+                umbraTargetStatus.Visuals.SmallIcon = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef").ViewElementDef.SmallIcon;*/
             }
             catch (Exception e)
             {
@@ -8518,7 +8557,25 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
         {
             try
             {
-                Sprite umbraIcon = Helper.CreateSpriteFromImageFile("Void-03P.png");
+                TFTVUITactical.Enemies.SetUmbraIcons();
+
+
+                ViewElementDef umbraFishViewElement = DefCache.GetDef<ViewElementDef>("ViewElement [Oilfish_ViewElementDef]");
+                ViewElementDef umbraCrabViewElement = DefCache.GetDef<ViewElementDef>("ViewElement [Oilcrab_ViewElementDef]");
+
+
+
+                Sprite umbraArthronIcon = TFTVUITactical.Enemies.GetUmbraArthronIcon();
+                Sprite umbraTritonIcon = TFTVUITactical.Enemies.GetUmbraTritonIcon();
+
+                umbraCrabViewElement.SmallIcon = umbraArthronIcon;
+                umbraCrabViewElement.LargeIcon = umbraArthronIcon;
+
+                umbraFishViewElement.SmallIcon = umbraTritonIcon;
+                umbraFishViewElement.LargeIcon = umbraTritonIcon;
+
+                Sprite umbraArthronRepresentation = Helper.CreateSpriteFromImageFile("Crabman_Oil_Portrait_uinomipmaps.png");
+                Sprite umbraTritonRepresenation = Helper.CreateSpriteFromImageFile("Fishman_Oil_Portrait_uinomipmaps.png");
 
                 RandomValueEffectConditionDef randomValueFishUmbra = DefCache.GetDef<RandomValueEffectConditionDef>("E_RandomValue [UmbralFishmen_FactionEffectDef]");
                 RandomValueEffectConditionDef randomValueCrabUmbra = DefCache.GetDef<RandomValueEffectConditionDef>("E_RandomValue [UmbralCrabmen_FactionEffectDef]");
@@ -8549,16 +8606,16 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
                 ViewElementDef oilCrabViewElementDef = DefCache.GetDef<ViewElementDef>("E_View [Oilcrab_Torso_BodyPartDef]");
                 oilCrabViewElementDef.DisplayName1.LocalizationKey = "TFTV_KEY_UMBRA_TARGET_DISPLAY_NAME";
                 oilCrabViewElementDef.Description.LocalizationKey = "TFTV_KEY_UMBRA_TARGET_DISPLAY_DESCRIPTION";
-                oilCrabViewElementDef.SmallIcon = umbraIcon;
-                oilCrabViewElementDef.LargeIcon = umbraIcon;
-                oilCrabViewElementDef.InventoryIcon = umbraIcon;
+                oilCrabViewElementDef.SmallIcon = umbraArthronRepresentation;
+                oilCrabViewElementDef.LargeIcon = umbraArthronRepresentation;
+                oilCrabViewElementDef.InventoryIcon = umbraArthronRepresentation;
 
                 ViewElementDef oilFishViewElementDef = DefCache.GetDef<ViewElementDef>("E_View [Oilfish_Torso_BodyPartDef]");
                 oilFishViewElementDef.DisplayName1.LocalizationKey = "TFTV_KEY_UMBRA_TARGET_DISPLAY_NAME";
                 oilFishViewElementDef.Description.LocalizationKey = "TFTV_KEY_UMBRA_TARGET_DISPLAY_DESCRIPTION";
-                oilFishViewElementDef.SmallIcon = umbraIcon;
-                oilFishViewElementDef.LargeIcon = umbraIcon;
-                oilFishViewElementDef.InventoryIcon = umbraIcon;
+                oilFishViewElementDef.SmallIcon = umbraTritonRepresenation;
+                oilFishViewElementDef.LargeIcon = umbraTritonRepresenation;
+                oilFishViewElementDef.InventoryIcon = umbraTritonRepresenation;
 
                 TacticalPerceptionDef oilCrabPerceptionDef = DefCache.GetDef<TacticalPerceptionDef>("Oilcrab_PerceptionDef");
                 TacticalPerceptionDef oilFishPerceptionDef = DefCache.GetDef<TacticalPerceptionDef>("Oilfish_PerceptionDef");
@@ -8569,6 +8626,12 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
                 oilTritonAddAbilityStatus.ApplicationConditions = new EffectConditionDef[] { };
                 AddAbilityStatusDef oilCrabAddAbilityStatus = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");
                 oilCrabAddAbilityStatus.ApplicationConditions = new EffectConditionDef[] { };
+
+                TacticalActorDef oilfishActorDef = DefCache.GetDef<TacticalActorDef>("Oilfish_ActorDef");
+                TacticalActorDef oilcrabActorDef = DefCache.GetDef<TacticalActorDef>("Oilcrab_ActorDef");
+
+                oilcrabActorDef.GameTags.Remove(DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef"));
+                oilfishActorDef.GameTags.Remove(DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef"));
 
                 CreateUmbraImmunities();
 

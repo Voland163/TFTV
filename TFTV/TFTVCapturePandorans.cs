@@ -1,13 +1,12 @@
-﻿using Base.Core;
+﻿using Base;
+using Base.Core;
 using Base.Defs;
 using Base.Serialization.General;
-using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
-using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.Entities.Missions;
@@ -58,6 +57,8 @@ namespace TFTV
         public static bool ContainmentFacilityPresent = false;
         public static bool ScyllaCaptureModulePresent = false;
         public static int ContainmentSpaceAvailable = 0;
+        public static string AircraftName = "";
+        public static string AircraftViewElement = "";
         //   public static int CachedACC = 0;
 
         internal class InternalData
@@ -70,148 +71,73 @@ namespace TFTV
                     ContainmentFacilityPresent = false;
                     ScyllaCaptureModulePresent = false;
                     ContainmentSpaceAvailable = 0;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
-            }
-
-        }
-
-        public static void ModifyCapturePandoransTacticalObjectives(TacMissionTypeDef missionType)
-        {
-            try
-            {
-                TFTVLogger.Always("ModifyCapturePandoransObjectives");
-
-                List<FactionObjectiveDef> listOfFactionObjectives = missionType.CustomObjectives.ToList();
-
-                KeepSoldiersAliveFactionObjectiveDef containmentPresent = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_BASE");
-                KeepSoldiersAliveFactionObjectiveDef aircraftCapture = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_AIRCRAFT");
-
-                if (ContainmentFacilityPresent)
-                {
-                    if (!listOfFactionObjectives.Contains(containmentPresent))
-                    {
-                        listOfFactionObjectives.Add(containmentPresent);
-                    }
-                }
-                else
-                {
-                    if (listOfFactionObjectives.Contains(containmentPresent))
-                    {
-                        listOfFactionObjectives.Remove(containmentPresent);
-                    }
-                }
-                if (AircraftCaptureCapacity < 0)
-                {
-                    TFTVLogger.Always($"AircraftCaptureCapacity is {AircraftCaptureCapacity}");
-
-                    if (listOfFactionObjectives.Contains(aircraftCapture))
-                    {
-                        listOfFactionObjectives.Remove(aircraftCapture);
-                    }
-                }
-                else
-                {
-                    if (!listOfFactionObjectives.Contains(aircraftCapture))
-                    {
-                        listOfFactionObjectives.Add(aircraftCapture);
-                        TFTVLogger.Always("AircraftCapture capacity objective added");
-                    }
-
-                }
-
-                missionType.CustomObjectives = listOfFactionObjectives.ToArray();
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
-
-
-        [HarmonyPatch(typeof(ObjectivesManager), "Add")]
-        public static class FactionObjective_ModifyObjectiveColor_CapturePandorans_Patch
-        {
-
-            public static void Postfix(ObjectivesManager __instance, FactionObjective objective)
-            {
-                try
-                {
-                    TFTVConfig config = TFTVMain.Main.Config;
-
-                    if (TFTVNewGameOptions.LimitedCaptureSetting)
-                    {
-
-                        KeepSoldiersAliveFactionObjectiveDef aircraftCapture = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_AIRCRAFT");
-
-                        //  TFTVLogger.Always($"FactionObjective Invoked, {objective.Summary.LocalizationKey}");
-                        if (objective.Summary.LocalizationKey.Contains("CAPACITY_AIRCRAFT"))
-                        {
-                            LocalizedTextBind aircraftCapacityText = new LocalizedTextBind("CAPTURE_CAPACITY_AIRCRAFT");
-                            LocalizedTextBind totalCapacityText = new LocalizedTextBind("CAPTURE_CAPACITY_TOTAL");
-                            string aircraftContainment = $"{aircraftCapacityText.Localize()} {AircraftCaptureCapacity}. {totalCapacityText.Localize()} {ContainmentSpaceAvailable}";
-
-                            // TFTVLogger.Always("FactionObjective Invoked check passed");
-                            objective.Description = new LocalizedTextBind(aircraftContainment, true);
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-
-
-        [HarmonyPatch(typeof(KeepSoldiersAliveFactionObjective), "EvaluateObjective")]
-        public static class KeepSoldiersAliveFactionObjective_EvaluateObjective_CapturePandorans_Patch
-        {
-
-            public static void Postfix(KeepSoldiersAliveFactionObjective __instance, ref FactionObjectiveState __result)
-            {
-                try
-                {
-                    TFTVConfig config = TFTVMain.Main.Config;
-
-
-                    KeepSoldiersAliveFactionObjectiveDef containmentPresent = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_BASE");
-                    KeepSoldiersAliveFactionObjectiveDef aircraftCapture = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_AIRCRAFT");
-
-                    //   TFTVLogger.Always($"Evaluating objective {__instance.Summary.LocalizationKey}");
-
-
-                    if (__instance.Summary.LocalizationKey.Contains("CAPACITY_AIRCRAFT"))//Localize() == aircraftCapture.MissionObjectiveData.Description.Localize())
-                    {
-
-                        LocalizedTextBind aircraftCapacityText = new LocalizedTextBind("CAPTURE_CAPACITY_AIRCRAFT");
-                        LocalizedTextBind totalCapacityText = new LocalizedTextBind("CAPTURE_CAPACITY_TOTAL");
-                        string aircraftContainment = $"{aircraftCapacityText.Localize()} {AircraftCaptureCapacity}. {totalCapacityText.Localize()} {ContainmentSpaceAvailable}";
-                        __instance.Description = new LocalizedTextBind(aircraftContainment, true);
-                        // TFTVLogger.Always($"FactionObjective check passed; description: {__instance.Description},{aircraftCapture.MissionObjectiveData.Description.Localize()} {AircraftCaptureCapacity} ");
-                        __result = FactionObjectiveState.InProgress;
-                    }
-
-                    if (__instance.Summary.LocalizationKey.Contains("CAPACITY_BASE"))//__instance.Description.Localize() == containmentPresent.MissionObjectiveData.Description.Localize()) 
-                    {
-                        //    TFTVLogger.Always("FactionObjective check passed");
-                        __result = FactionObjectiveState.InProgress;
-
-                    }
+                    AircraftName = "";
+                    AircraftViewElement = "";
 
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
+
             }
+
         }
+
+        //Removed because now in Capture Widget
+        /* public static void ModifyCapturePandoransTacticalObjectives(TacMissionTypeDef missionType)
+         {
+             try
+             {
+                 TFTVLogger.Always("ModifyCapturePandoransObjectives");
+
+                 List<FactionObjectiveDef> listOfFactionObjectives = missionType.CustomObjectives.ToList();
+
+                 KeepSoldiersAliveFactionObjectiveDef containmentPresent = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_BASE");
+                 KeepSoldiersAliveFactionObjectiveDef aircraftCapture = DefCache.GetDef<KeepSoldiersAliveFactionObjectiveDef>("CAPTURE_CAPACITY_AIRCRAFT");
+
+                 if (ContainmentFacilityPresent)
+                 {
+                     if (!listOfFactionObjectives.Contains(containmentPresent))
+                     {
+                         listOfFactionObjectives.Add(containmentPresent);
+                     }
+                 }
+                 else
+                 {
+                     if (listOfFactionObjectives.Contains(containmentPresent))
+                     {
+                         listOfFactionObjectives.Remove(containmentPresent);
+                     }
+                 }
+                 if (AircraftCaptureCapacity < 0)
+                 {
+                     TFTVLogger.Always($"AircraftCaptureCapacity is {AircraftCaptureCapacity}");
+
+                     if (listOfFactionObjectives.Contains(aircraftCapture))
+                     {
+                         listOfFactionObjectives.Remove(aircraftCapture);
+                     }
+                 }
+                 else
+                 {
+                     if (!listOfFactionObjectives.Contains(aircraftCapture))
+                     {
+                         listOfFactionObjectives.Add(aircraftCapture);
+                         TFTVLogger.Always("AircraftCapture capacity objective added");
+                     }
+
+                 }
+
+                 missionType.CustomObjectives = listOfFactionObjectives.ToArray();
+
+             }
+             catch (Exception e)
+             {
+                 TFTVLogger.Error(e);
+             }
+
+         }*/
 
         public static void CheckCaptureCapability(GeoMission geoMission)
         {
@@ -227,8 +153,6 @@ namespace TFTV
 
                         PhoenixFacilityDef containmentFacility = DefCache.GetDef<PhoenixFacilityDef>("AlienContainment_PhoenixFacilityDef");
 
-                        // TFTVLogger.Always($"are we here?");
-
                         if (geoMission.MissionDef.ParticipantsData.Any(tcpd => tcpd.FactionDef == DefCache.GetDef<PPFactionDef>("Alien_FactionDef")))
                         {
 
@@ -241,15 +165,20 @@ namespace TFTV
                                 {
 
                                     TFTVLogger.Always($"This is a Phoenix base mission, and there is a functioning Containment Facility, so capture capacity is not limited");
+                                    ContainmentSpaceAvailable = geoMission.Site.GeoLevel.PhoenixFaction.GetTotalContaimentCapacity() - geoMission.Site.GeoLevel.PhoenixFaction.ContaimentUsage;
                                     ContainmentFacilityPresent = true;
                                     AircraftCaptureCapacity = -1;
+                                    AircraftName = geoMission.Site.LocalizedSiteName;
+                                    AircraftViewElement = "d2b8ebe9-54c0-01d1-4ae5-dcab1ddcb112"; //E_ViewElement [AlienContainment_PhoenixFacilityDef]
                                     return;
                                 }
 
                             }
 
-                            if (!ContainmentFacilityPresent)
+                            if (!ContainmentFacilityPresent && geoMission.Site.GetPlayerVehiclesOnSite() != null)
                             {
+                                AircraftCaptureCapacity = 0;
+
                                 GeoVehicleDef manticore6slots = DefCache.GetDef<GeoVehicleDef>("PP_Manticore_Def_6_Slots");
                                 GeoVehicleDef manticore = DefCache.GetDef<GeoVehicleDef>("PP_Manticore_Def");
                                 GeoVehicleDef helios5slots = DefCache.GetDef<GeoVehicleDef>("SYN_Helios_Def_5_Slots");
@@ -263,40 +192,47 @@ namespace TFTV
 
                                 List<GeoVehicle> geoVehicles = geoMission.Site.GetPlayerVehiclesOnSite().ToList();
 
-                                if (geoVehicles.Any(gv => gv.VehicleDef.Equals(blimp12slots) || gv.VehicleDef.Equals(blimp8slots) || gv.VehicleDef.Equals(maskedManticore) || gv.VehicleDef.Equals(maskedManticore8slots)))
-                                {
-                                    AircraftCaptureCapacity = 8;
-                                }
-                                else if (geoVehicles.Any(gv => gv.VehicleDef.Equals(thunderbird) || gv.VehicleDef.Equals(thunderbird7slots)))
-                                {
-                                    AircraftCaptureCapacity = 7;
-
-                                }
-                                else if (geoVehicles.Any(gv => gv.VehicleDef.Equals(manticore6slots) || gv.VehicleDef.Equals(manticore)))
-                                {
-                                    AircraftCaptureCapacity = 6;
-                                }
-                                else if (geoVehicles.Any(gv => gv.VehicleDef.Equals(helios) || gv.VehicleDef.Equals(helios5slots)))
-                                {
-                                    AircraftCaptureCapacity = 5;
-                                }
-
-                                if (geoVehicles.Any(gv => gv.Modules.Any(m => m != null && m.ModuleDef != null && m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.SurvivalOdds)))
+                                if (geoVehicles.Any(v => v.Modules.Any(m => m != null && m.ModuleDef != null && m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.SurvivalOdds)))
                                 {
                                     ScyllaCaptureModulePresent = true;
                                     AircraftCaptureCapacity += 8;
+                                    geoVehicles = geoVehicles.Where(v => v.Modules.Any(m => m != null && m.ModuleDef != null && m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.SurvivalOdds)).ToList();
                                     TFTVLogger.Always($"Scylla Capture Module present!");
                                 }
 
-                                ContainmentSpaceAvailable = geoMission.Site.GeoLevel.PhoenixFaction.GetTotalContaimentCapacity() - geoMission.Site.GeoLevel.PhoenixFaction.ContaimentUsage;
+                                geoVehicles = geoVehicles.OrderByDescending(v => v.MaxCharacterSpace).ToList();
 
-                                if (ContainmentSpaceAvailable == 0)
+                                GeoVehicle gv = geoVehicles.First();
+
+                                if (gv.VehicleDef.Equals(blimp12slots) || gv.VehicleDef.Equals(blimp8slots) || gv.VehicleDef.Equals(maskedManticore) || gv.VehicleDef.Equals(maskedManticore8slots))
                                 {
-                                    AircraftCaptureCapacity = -1;
+                                    AircraftCaptureCapacity += 8;
+                                }
+                                else if (gv.VehicleDef.Equals(thunderbird) || gv.VehicleDef.Equals(thunderbird7slots))
+                                {
+                                    AircraftCaptureCapacity += 7;
 
                                 }
+                                else if (gv.VehicleDef.Equals(manticore6slots) || gv.VehicleDef.Equals(manticore))
+                                {
+                                    AircraftCaptureCapacity += 6;
+                                }
+                                else if (gv.VehicleDef.Equals(helios) || gv.VehicleDef.Equals(helios5slots))
+                                {
+                                    AircraftCaptureCapacity += 5;
+                                }
 
-                                TFTVLogger.Always($"There is an aircraft with {AircraftCaptureCapacity} slots available for capture and there is {ContainmentSpaceAvailable} containment capacity");
+                                AircraftName = gv.Name;
+                                AircraftViewElement = gv.VehicleDef.ViewElement.Guid;
+
+                                ContainmentSpaceAvailable = geoMission.Site.GeoLevel.PhoenixFaction.GetTotalContaimentCapacity() - geoMission.Site.GeoLevel.PhoenixFaction.ContaimentUsage;
+
+                                if (ContainmentSpaceAvailable <= 0)
+                                {
+                                    AircraftCaptureCapacity = -1;
+                                }
+
+                                TFTVLogger.Always($"There is an aircraft {AircraftName} with ViewElement {gv.VehicleDef.ViewElement.name} with {AircraftCaptureCapacity} slots available for capture and there is {ContainmentSpaceAvailable} containment capacity");
                                 return;
                             }
                         }
@@ -394,9 +330,7 @@ namespace TFTV
 
                     if (TFTVNewGameOptions.LimitedCaptureSetting)
                     {
-
-
-                        if (ability != null && (ContainmentFacilityPresent || AircraftCaptureCapacity >= 0))
+                        if (ability != null && AircraftCaptureCapacity >= 0)
                         {
 
                             ApplyStatusAbilityDef capturePandoranAbility = DefCache.GetDef<ApplyStatusAbilityDef>("CapturePandoran_Ability");
@@ -407,40 +341,14 @@ namespace TFTV
 
                             if (ability.TacticalAbilityDef != null && ability.TacticalAbilityDef == capturePandoranAbility)
                             {
-
                                 TacticalActor tacticalActor = __instance.SelectionInfo.Actor as TacticalActor;
-
 
                                 if (!ContainmentFacilityPresent && tacticalActor != null)
                                 {
-                                    TacticalFaction pxFaction = controller.GetFactionByCommandName("px");
-                                    FactionObjective captureSlotsRemainingReminder = pxFaction.Objectives.FirstOrDefault(o => o.Summary.LocalizationKey.Contains("CAPACITY_AIRCRAFT"));
-
                                     tacticalActor.Status.ApplyStatus(readyForCaptureStatus);
-
-                                    TFTVLogger.Always($"Capacity {AircraftCaptureCapacity} slot cost {CalculateCaptureSlotCost(tacticalActor.GameTags.ToList())}");
 
                                     AircraftCaptureCapacity -= CalculateCaptureSlotCost(tacticalActor.GameTags.ToList());
                                     TFTVLogger.Always($"Capacity now {AircraftCaptureCapacity}");
-
-
-                                    if (captureSlotsRemainingReminder != null)
-                                    {
-
-                                        captureSlotsRemainingReminder.Description = new LocalizedTextBind($"{aircraftCapture.MissionObjectiveData.Description.Localize()} {AircraftCaptureCapacity}", true);
-                                        TFTVLogger.Always($"{captureSlotsRemainingReminder.Description.LocalizeEnglish()}");
-
-
-                                        UIModuleObjectives uIModuleObjectives = controller.View.TacticalModules.ObjectivesModule;
-                                        TacticalViewContext context = Traverse.Create(uIModuleObjectives).Field("_context").GetValue<TacticalViewContext>();
-
-
-                                        uIModuleObjectives.Init(context);
-
-                                    }
-
-
-
                                 }
                                 __state = 1;
                                 return false;
@@ -451,43 +359,23 @@ namespace TFTV
 
                                 if (tacticalActor != null)
                                 {
-                                    TacticalFaction pxFaction = controller.GetFactionByCommandName("px");
-                                    FactionObjective captureSlotsRemainingReminder = pxFaction.Objectives.FirstOrDefault(o => o.Summary.LocalizationKey.Contains("CAPACITY_AIRCRAFT"));
-
-                                    TFTVLogger.Always($"Capacity {AircraftCaptureCapacity} slot cost {CalculateCaptureSlotCost(tacticalActor.GameTags.ToList())}");
                                     tacticalActor.Status.UnapplyStatus(tacticalActor.Status.GetStatusByName(readyForCaptureStatus.EffectName));
 
-                                    if (!ContainmentFacilityPresent)
-                                    {
 
-                                        AircraftCaptureCapacity += CalculateCaptureSlotCost(tacticalActor.GameTags.ToList());
-
-                                        TFTVLogger.Always($"Capacity now {AircraftCaptureCapacity}");
-
-                                        if (captureSlotsRemainingReminder != null)
-                                        {
-
-                                            captureSlotsRemainingReminder.Description = new LocalizedTextBind($"{aircraftCapture.MissionObjectiveData.Description.Localize()} {AircraftCaptureCapacity}", true);
-                                            TFTVLogger.Always($"{captureSlotsRemainingReminder.Description.LocalizeEnglish()}");
-                                            UIModuleObjectives uIModuleObjectives = controller.View.TacticalModules.ObjectivesModule;
-                                            TacticalViewContext context = Traverse.Create(uIModuleObjectives).Field("_context").GetValue<TacticalViewContext>();
+                                    AircraftCaptureCapacity += CalculateCaptureSlotCost(tacticalActor.GameTags.ToList());
 
 
-                                            uIModuleObjectives.Init(context);
-                                        }
-
-                                        // controller.GetFactionByCommandName("px").Objectives.FirstOrDefault(o => o.Summary.LocalizationKey.Contains("CAPACITY_AIRCRAFT")).Evaluate();
-                                    }
-
-                                    __state = 2;
-                                    return false;
                                 }
-                            }
 
+
+                                __state = 2;
+                                return false;
+                            }
                         }
-                        return true;
+
                     }
                     return true;
+
                 }
 
                 catch (Exception e)
@@ -518,7 +406,7 @@ namespace TFTV
 
                                 TacticalContextualMenuItem tacticalContextualMenuItem = ____menuItems.Where(tcm => tcm.Ability == ability).FirstOrDefault();
                                 tacticalContextualMenuItem.gameObject.SetActive(value: false);
-
+                                TFTVUITactical.CaptureTacticalWidget.UpdateCaptureUI();
                             }
                         }
                         else if (__state == 2)
@@ -527,12 +415,10 @@ namespace TFTV
                             {
 
                                 TacticalContextualMenuItem tacticalContextualMenuItem = ____menuItems.Where(tcm => tcm.Ability == ability).FirstOrDefault();
-
-
                                 tacticalContextualMenuItem.gameObject.SetActive(value: false);
+                                TFTVUITactical.CaptureTacticalWidget.UpdateCaptureUI();
 
                             }
-
 
                         }
 
@@ -564,7 +450,7 @@ namespace TFTV
                     if (TFTVNewGameOptions.LimitedCaptureSetting)
                     {
 
-                        if (ContainmentFacilityPresent || AircraftCaptureCapacity >= 0)
+                        if (AircraftCaptureCapacity >= 0)
                         {
 
                             ParalysedStatusDef paralysedStatusDef = DefCache.GetDef<ParalysedStatusDef>("Paralysed_StatusDef");
@@ -584,9 +470,7 @@ namespace TFTV
                                 if (!Pandoran.HasStatus(readyForCaptureStatus))
                                 {
                                     if (AircraftCaptureCapacity >= CalculateCaptureSlotCost(Pandoran.GameTags.ToList()))
-                                    {
-
-                                        TFTVLogger.Always($"the Pandoran is {Pandoran.name}, aircraft capture Capacity is {AircraftCaptureCapacity}, required space is {CalculateCaptureSlotCost(Pandoran.GameTags.ToList())}");
+                                    {  
                                         selectedActor.AddAbility(capturePandoranAbility, selectedActor);
                                         ApplyStatusAbility markForCapture = selectedActor.GetAbilityWithDef<ApplyStatusAbility>(capturePandoranAbility);
                                         rawAbilities.Add(markForCapture);
@@ -703,6 +587,20 @@ namespace TFTV
 
         }
 
+        /*  private static void AdjustCaptureList()
+          {
+              try 
+              { 
+
+
+              }
+              catch (Exception e)
+              {
+                  TFTVLogger.Error(e);
+                  throw;
+              }
+          }*/
+
 
         [HarmonyPatch(typeof(GeoMission), "CaptureLiveAlien")]
         public static class GeoMission_CaptureLiveAlien_patch
@@ -712,7 +610,7 @@ namespace TFTV
             {
                 try
                 {
-                  
+
                     if (TFTVNewGameOptions.LimitedCaptureSetting)
                     {
                         CheckCaptureCapability(__instance);

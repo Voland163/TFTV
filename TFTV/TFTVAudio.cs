@@ -1,4 +1,5 @@
-﻿using Base.Eventus;
+﻿using Base.Entities;
+using Base.Eventus;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Tactical.Eventus.Contexts;
@@ -6,8 +7,6 @@ using PhoenixPoint.Tactical.Eventus.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TFTV
 {
@@ -15,6 +14,48 @@ namespace TFTV
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
+
+        [HarmonyPatch(typeof(HasTagsEventFilterDef), "ShouldPlayEvent")]
+        public static class HasTagsEventFilterDef_ShouldPlayEvent_patch
+        {
+            public static void Postfix(BaseEventContext context, ref bool __result)
+            {
+                try
+                {
+                    if (!(context is TacActorEventContext tacActorEventContext))
+                    {
+
+                    }
+                    else
+                    {
+                        //GameTagDef humanTag = DefCache.GetDef<GameTagDef>("Human_TagDef");
+                        GameTagDef mutoidTag = DefCache.GetDef<GameTagDef>("Mutoid_TagDef");
+                        TFTVConfig config = TFTVMain.Main.Config;
+
+                        ActorComponentDef actorComponentDef = tacActorEventContext.Actor.ActorDef;
+
+                        if (actorComponentDef.name.Equals("Oilcrab_ActorDef") || actorComponentDef.name.Equals("Oilfish_ActorDef"))
+                        {
+                            //  TFTVLogger.Always($"HasTagsEventFilterDef: bark from {tacActorEventContext.Actor.name}");
+                            __result = false;
+                        }
+
+
+                        if (config.NoBarks && tacActorEventContext.Actor.Health.Value > 0 &&
+                            tacActorEventContext.Actor.HasGameTag(mutoidTag))
+                        {
+                            //  TFTVLogger.Always($"HasTagsEventFilterDef: stopping bark from {tacActorEventContext.Actor.name}");
+                            __result = false;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
 
         private static readonly List<GameTagDef> _palaceMissionGameTagsToCheck = new List<GameTagDef>()
@@ -29,7 +70,7 @@ namespace TFTV
                  };
 
         [HarmonyPatch(typeof(TacActorHeadMutationsFilterDef), "ShouldPlayEvent")]
-        public static class UTacActorHeadMutationsFilterDef_ShouldPlayEvent_patch
+        public static class TacActorHeadMutationsFilterDef_ShouldPlayEvent_patch
         {
             public static void Postfix(BaseEventContext context, ref bool __result)
             {
@@ -42,12 +83,16 @@ namespace TFTV
                     else
                     {
                         GameTagDef humanTag = DefCache.GetDef<GameTagDef>("Human_TagDef");
+                        //  GameTagDef mutoidTag = DefCache.GetDef<GameTagDef>("Mutoid_TagDef");
                         TFTVConfig config = TFTVMain.Main.Config;
 
-                        if (tacActorEventContext.Actor.Health.Value>0 && (tacActorEventContext.Actor.HasGameTag(humanTag) && config.NoBarks || 
+                        //  TFTVLogger.Always($"TacActorHeadMutationsFilterDef: bark from {tacActorEventContext.Actor.name}");
+
+                        if (config.NoBarks && tacActorEventContext.Actor.Health.Value > 0 &&
+                            (tacActorEventContext.Actor.HasGameTag(humanTag) ||
                             _palaceMissionGameTagsToCheck.Any(gt => tacActorEventContext.Actor.GameTags.Contains(gt))))
                         {
-                           // TFTVLogger.Always($"stopping bark from {tacActorEventContext.Actor.name}");
+                            //    TFTVLogger.Always($"TacActorHeadMutationsFilterDef: stopping bark from {tacActorEventContext.Actor.name}");
                             __result = false;
                         }
                     }

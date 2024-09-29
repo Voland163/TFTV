@@ -5,9 +5,9 @@ using Base.Defs;
 using Base.Entities.Effects;
 using Base.Entities.Statuses;
 using Base.Utils.Maths;
-using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
@@ -30,8 +30,6 @@ using System.Linq;
 using System.Reflection;
 using TFTV.Tactical.Entities.Statuses;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
-using static UnityStandardAssets.Utility.TimedObjectActivator;
 
 namespace TFTV
 {
@@ -101,6 +99,136 @@ namespace TFTV
             }
         }
 
+        private static Weapon _weaponChanged = null;
+        private static int _autoFireShotCountInitial;
+
+
+        [HarmonyPatch(typeof(TacAIActor), "EndTurn")]
+        public static class TacAIActor_EndTurn_patch
+        {
+            private static void Postfix(TacAIActor __instance)
+            {
+                try
+                {
+                    RevertAdjustForMultipleSingleAPAttack();
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+        }
+        private static void CheckAndAdjustForMultipleSingleAPAttack(TacticalActor shooter, TacticalActorBase target, Weapon weapon)
+        {
+            try
+            {
+                TFTVLogger.Always($"{shooter.DisplayName} has {shooter.CharacterStats.ActionPoints.Ratio}");
+
+                if (weapon.WeaponDef.APToUsePerc == 25 && !weapon.WeaponDef.Traits.Contains("rocket_launcher"))
+                {
+                    TFTVLogger.Always($"target.Health: {target.Health} weapon.GetDamage(): {weapon.GetDamage()}");
+
+                    if (target.Health > weapon.GetDamage() * 3 && shooter.CharacterStats.ActionPoints.Ratio >= 1f && weapon.CommonItemData.CurrentCharges >= 4)
+                    {
+                        _autoFireShotCountInitial = weapon.WeaponDef.DamagePayload.AutoFireShotCount;
+                        weapon.WeaponDef.APToUsePerc = 100;
+                        weapon.WeaponDef.DamagePayload.AutoFireShotCount *= 4;
+                        _weaponChanged = weapon;
+
+                    }
+                    else
+                    if (target.Health > weapon.GetDamage() * 2 && shooter.CharacterStats.ActionPoints.Ratio >= 0.75f && weapon.CommonItemData.CurrentCharges >= 3)
+                    {
+                        _autoFireShotCountInitial = weapon.WeaponDef.DamagePayload.AutoFireShotCount;
+                        weapon.WeaponDef.APToUsePerc = 75;
+                        weapon.WeaponDef.DamagePayload.AutoFireShotCount *= 3;
+                        _weaponChanged = weapon;
+
+                    }
+                    else
+                    if (target.Health > weapon.GetDamage() && shooter.CharacterStats.ActionPoints.Ratio >= 0.5f && weapon.CommonItemData.CurrentCharges >= 2)
+                    {
+                        _autoFireShotCountInitial = weapon.WeaponDef.DamagePayload.AutoFireShotCount;
+                        weapon.WeaponDef.APToUsePerc = 50;
+                        weapon.WeaponDef.DamagePayload.AutoFireShotCount *= 2;
+                        _weaponChanged = weapon;
+
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        public static void RevertAdjustForMultipleSingleAPAttack()
+        {
+            try
+            {
+                if (_weaponChanged != null)
+                {
+
+                    TFTVLogger.Always($"reverted {_weaponChanged.DisplayName}");
+                    _weaponChanged.WeaponDef.APToUsePerc = 25;
+                    _weaponChanged.WeaponDef.DamagePayload.AutoFireShotCount = _autoFireShotCountInitial;
+                    _weaponChanged = null;
+
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+
+
+        [HarmonyPatch(typeof(AIActionMoveAndAttack), "GetAttackTarget")]
+        public static class AIActionMoveAndAttack_GetAttackTarget_patch
+        {
+            private static void Prefix(AIActionMoveAndAttack __instance, TacticalAbility ability, TacAITarget aiTarget)
+            {
+                try
+                {
+                    if (!ability.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsAndEquipmentNotSelected))
+                    {
+                        return;
+                    }
+
+                    if (ability is ShootAbility shootAbility)
+                    {
+                        if (aiTarget.TacticalAbilityTarget != null 
+                            || shootAbility.TacticalActor == null 
+                            || shootAbility.TacticalActor.TacticalFaction == null
+                            ||shootAbility.Weapon == null)
+                        {
+                            return;
+                        }
+
+                        CheckAndAdjustForMultipleSingleAPAttack(shootAbility.TacticalActor, aiTarget.Actor, shootAbility.Weapon);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+        }
+
+
+
+
         [HarmonyPatch(typeof(AIActionMoveToPosition), "Execute")]
         public static class AIActionMoveToPosition_Execute_patch
         {
@@ -154,6 +282,8 @@ namespace TFTV
             }
 
         }
+
+
 
 
         // TacticalActorBase
@@ -1827,16 +1957,19 @@ namespace TFTV
                         TacticalFaction phoenix = actor.TacticalLevel.GetFactionByCommandName("px");
 
 
-                        if (phoenix == null || actor.TacticalFaction!=null && (actor.TacticalFaction == phoenix || target.TacticalFaction == phoenix))
+                        if (phoenix == null
+                            || actor.TacticalFaction != null &&
+                            (actor.TacticalFaction == phoenix && !actor.HasGameTag(DefCache.GetDef<ClassTagDef>("TechTurret_ClassTagDef")) || target.TacticalFaction == phoenix))
+
                         {
                             return true;
                         }
 
                         ParalysedStatusDef paralysedStatusDef = DefCache.GetDef<ParalysedStatusDef>("Paralysed_StatusDef");
 
-                       // TFTVLogger.Always($"{target.HasStatus(paralysedStatusDef)} {actor.TacticalFaction.GetRelationTo(phoenix) == FactionRelation.Friend}");
+                        // TFTVLogger.Always($"{target.HasStatus(paralysedStatusDef)} {actor.TacticalFaction.GetRelationTo(phoenix) == FactionRelation.Friend}");
 
-                        if (target.HasStatus(paralysedStatusDef) && actor.TacticalFaction.GetRelationTo(phoenix) == FactionRelation.Friend)
+                        if (target.HasStatus(paralysedStatusDef) && (actor.TacticalFaction.GetRelationTo(phoenix) == FactionRelation.Friend || actor.TacticalFaction == phoenix))
                         {
                             return false;
                         }

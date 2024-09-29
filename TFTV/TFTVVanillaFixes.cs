@@ -1,7 +1,10 @@
 ﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
 using Base;
+using Base.AI;
 using Base.Core;
+using Base.Defs;
 using Base.Entities;
+using Base.Entities.Statuses;
 using Base.Levels;
 using Base.Rendering.ObjectRendering;
 using Base.UI;
@@ -9,9 +12,12 @@ using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.Equipments;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
@@ -21,14 +27,18 @@ using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Geoscape.View.ViewControllers.HavenDetails;
+using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewControllers.SiteEncounters;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.AI;
+using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
+using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
@@ -48,14 +58,14 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using static PhoenixPoint.Tactical.Entities.SquadPortraitsDef;
 
+
 namespace TFTV
 {
     internal class TFTVVanillaFixes
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
-
-        
+        private static readonly DefRepository Repo = TFTVMain.Repo;
 
         internal class Stealth
         {
@@ -284,7 +294,7 @@ namespace TFTV
                 }
             }
 
-
+            private static MethodInfo _drawAllEnemyVisionMarkersMethodInfo = null;
 
             //Fixes size of ground marker for eggs/sentinels etc.
             public static void FixSurveillanceAbilityGroundMarker(Harmony harmony)
@@ -306,8 +316,12 @@ namespace TFTV
                     {
                         MethodInfo zoneOfControlMarkerCreatorMethod = internalType.GetMethod("ZoneOfControlMarkerCreator", BindingFlags.NonPublic | BindingFlags.Instance);
                         MethodInfo prepareShortActorInfoMethod = internalType.GetMethod("PrepareShortActorInfo", BindingFlags.NonPublic | BindingFlags.Instance);
+                        MethodInfo selectCharacterInfoMethod = internalType.GetMethod("SelectCharacter", BindingFlags.NonPublic | BindingFlags.Instance);
+                        //   MethodInfo EnemyVisionMarkerCreatorMethodInfo = internalType.GetMethod("EnemyVisionMarkerCreator", BindingFlags.NonPublic | BindingFlags.Instance);
+                        _drawAllEnemyVisionMarkersMethodInfo = internalType.GetMethod("DrawAllEnemyVisionMarkers", BindingFlags.NonPublic | BindingFlags.Instance);
+
                         //    MethodInfo updateStateInfoMethod = internalType.GetMethod("UpdateState", BindingFlags.NonPublic | BindingFlags.Instance);
-                        // MethodInfo selectCharacterInfoMethod = internalType.GetMethod("SelectCharacter", BindingFlags.NonPublic | BindingFlags.Instance);
+
 
                         if (zoneOfControlMarkerCreatorMethod != null)
                         {
@@ -318,6 +332,16 @@ namespace TFTV
                             // TFTVLogger.Always($"patch should be running");
                             harmony.Patch(prepareShortActorInfoMethod, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes.UI), nameof(PrepareShortActorInfo)));
                         }
+                        if (selectCharacterInfoMethod != null)
+                        {
+                            //  TFTVLogger.Always($"updateStateInfoMethod patch should be running");
+                            harmony.Patch(selectCharacterInfoMethod, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes.UI), nameof(PatchShowEnemyVisionMarkers)));
+                        }
+                        //   if(EnemyVisionMarkerCreatorMethodInfo != null) 
+                        //   {
+                        //  harmony.Patch(EnemyVisionMarkerCreatorMethodInfo, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes.UI), nameof(PatchEnemyVisionMarkerCreator)));
+                        //   }
+
                         /*  if (updateStateInfoMethod != null)
                           {
                               // TFTVLogger.Always($"patch should be running");
@@ -342,6 +366,119 @@ namespace TFTV
 
             }
 
+
+            private static void PatchShowEnemyVisionMarkers(object __instance, MethodBase __originalMethod, TacticalActor character)
+            {
+                try
+                {
+                    bool lazarusScarab = false;
+
+                    if (character.BodyState != null && character.BodyState.GetVehicleModules() != null && character.BodyState.GetVehicleModules().Any(e => e.TacticalItemDef == (GroundVehicleModuleDef)Repo.GetDef("983eb90b-29bf-15e4-fa76-d7f731069bd1")))
+                    {
+                        lazarusScarab = true;
+
+                    }
+
+
+                    if (character.GameTags.Contains(DefCache.GetDef<GameTagDef>("Infiltrator_ClassTagDef"))
+                        || lazarusScarab)
+                    {
+                        _drawAllEnemyVisionMarkersMethodInfo.Invoke(__instance, new object[] { });
+                    }
+
+                    // TFTVUITactical.CaptureTacticalWidget.UpdateCaptureUIPosition(character.TacticalLevel);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+
+            [HarmonyPatch(typeof(TacticalGroundMarkers), "ClearGroundMarkers", new Type[] { typeof(GroundMarkerGroup) })]
+            public static class TacticalGroundMarkers_ClearGroundMarkers_patch
+            {
+
+                public static void Postfix(GroundMarkerGroup group, TacticalGroundMarkers __instance)
+                {
+                    try
+                    {
+                        if (group != GroundMarkerGroup.Selection)
+                        {
+                            return;
+                        }
+
+                        if (GameUtl.CurrentLevel() == null || GameUtl.CurrentLevel().GetComponent<TacticalLevelController>() == null)
+                        {
+                            return;
+                        }
+
+
+                        TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
+
+
+                        TacticalActor selectedActor = controller.View.SelectedActor;
+
+                        bool lazarusScarab = false;
+
+                        if (selectedActor != null && selectedActor.BodyState != null && selectedActor.BodyState.GetVehicleModules() != null && selectedActor.BodyState.GetVehicleModules().Any(e => e.TacticalItemDef == (GroundVehicleModuleDef)Repo.GetDef("983eb90b-29bf-15e4-fa76-d7f731069bd1")))
+                        {
+                            lazarusScarab = true;
+
+                        }
+
+                        if (selectedActor != null && selectedActor.GameTags.Contains(DefCache.GetDef<GameTagDef>("Infiltrator_ClassTagDef")) || lazarusScarab)
+                        {
+
+                            IEnumerable<TacticalActor> tacticalActors = from a in selectedActor.TacticalFaction.Vision.GetKnownActors(KnownState.Revealed, FactionRelation.Enemy, false).OfType<TacticalActor>()
+                                                                        where a.InPlay && a.Interactable
+                                                                        select a;
+
+                            foreach (TacticalActor tacticalActor in tacticalActors)
+                            {
+                                GroundMarker groundMarker = new GroundMarker(GroundMarkerType.EnemyVisionSphere, tacticalActor.VisionPoint, 0f)
+                                {
+                                    StartScale = 2f * selectedActor.GetPossibleVisionRangeTowardsMe(tacticalActor) * Vector3.one
+                                };
+                                controller.View.Markers.AddGroundMarker(GroundMarkerGroup.Selection, groundMarker, false);
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+            [HarmonyPatch(typeof(TacticalActor), "GetPossibleVisionRangeTowardsMe")]
+            public static class TacticalActor_GetPossibleVisionRangeTowardsMe_patch
+            {
+
+                public static void Postfix(ref float __result, TacticalActor fromActor, TacticalActor __instance)
+                {
+                    try
+                    {
+                        if (__result < fromActor.CharacterStats.HearingRange.Value.EndValue || __result < __instance.TacticalLevel.TacticalLevelControllerDef.DetectionRange)
+                        {
+                            __result = Math.Max(fromActor.CharacterStats.HearingRange.Value.EndValue, __instance.TacticalLevel.TacticalLevelControllerDef.DetectionRange);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+
+
+
+
             public static void PatchResizeGroundMarker(MethodBase __originalMethod, object context, ref GroundMarker __result)
             {
                 try
@@ -362,6 +499,9 @@ namespace TFTV
 
             //Shows correct movement info and more info in tactical tooltip; also shows info for currently selected character
 
+            private static Sprite _vivisectionIcon = null;
+            private static Sprite _moonIcon = null;
+
             private static ShortActorInfoTooltipData GenerateData(TacticalActor actor, UIModuleShortActorInfoTooltip uIModuleShortActorInfoTooltip)
             {
                 try
@@ -376,6 +516,7 @@ namespace TFTV
                         TextContent = actor.DisplayName.ToUpper(),
                         ValueContent = string.Empty
                     });
+
                     shortActorInfoTooltipData.Entries.Add(new ShortActorInfoTooltipDataEntry
                     {
                         TextContent = uIModuleShortActorInfoTooltip.HealthTextKey.Localize(null),
@@ -430,6 +571,65 @@ namespace TFTV
                     shortActorInfoTooltipData.Entries.Add(perception);
                     shortActorInfoTooltipData.Entries.Add(stealth);
                     shortActorInfoTooltipData.Entries.Add(accuracy);
+
+                    TacticalActor selectedActor = actor.TacticalLevel.View.SelectedActor;
+
+                    if (selectedActor != null && selectedActor.Status != null)
+                    {
+                        DamageMultiplierStatusDef moonProject = DefCache.GetDef<DamageMultiplierStatusDef>("E_Status [DamageBonusToAliens_FactionEffectDef]");
+                        //   Sprite moonProjectIcon = DefCache.GetDef<ViewElementDef>("E_ViewElement [MoonLaunch_GeoHavenZoneDef]").SmallIcon;
+
+                        DamageMultiplierStatus damageMultiplierStatusVivisection =
+     selectedActor.Status.Statuses
+     .OfType<DamageMultiplierStatus>()
+     .FirstOrDefault(d =>
+         d.DamageMultiplierStatusDef.OutgoingDamageTargetTags.Count() > 0
+         && d.DamageMultiplierStatusDef.OutgoingDamageTargetTags[0] is ClassTagDef classTag
+         && actor.HasGameTag(classTag));
+
+
+                        if (damageMultiplierStatusVivisection != null)
+                        {
+                            float multiplier = damageMultiplierStatusVivisection.DamageMultiplierStatusDef.Multiplier;
+
+                            if (multiplier > 0)
+                            {
+                                if (_vivisectionIcon == null)
+                                {
+                                    _vivisectionIcon = Helper.CreateSpriteFromImageFile("vivisection_icon.png");
+
+                                }
+
+                              //  TFTVLogger.Always($"adding vivisection status to {actor.name} from {damageMultiplierStatusVivisection.DamageMultiplierStatusDef.name}");
+
+                                shortActorInfoTooltipData.Entries.Add(new ShortActorInfoTooltipDataEntry
+                                {
+                                    Icon = _vivisectionIcon,
+                                    IconColor = new Color(1, 1, 1, 1),
+                                    TextContent = TFTVCommonMethods.ConvertKeyToString("TFTV_VIVISECTED_SHORT_INFO"),
+                                    ValueContent = $"{multiplier * 100 - 100}% {TFTVCommonMethods.ConvertKeyToString("TFTV_VIVISECTED_SHORT_INFO_DAMAGE")}" // Adjust based on the actual multiplier field
+                                });
+                            }
+                        }
+
+                        if (selectedActor.HasStatus(moonProject) && actor.HasGameTag(Shared.SharedGameTags.AlienTag))
+                        {
+
+                            if (_moonIcon == null)
+                            {
+                                _moonIcon = Helper.CreateSpriteFromImageFile("moon_icon.png");
+                            }
+
+                            shortActorInfoTooltipData.Entries.Add(new ShortActorInfoTooltipDataEntry
+                            {
+                                Icon = _moonIcon,
+                                IconColor = new Color(1, 1, 1, 1),
+                                TextContent = TFTVCommonMethods.ConvertKeyToString("TFTV_MOONPROJECT_SHORT_INFO"),
+                                ValueContent = $"{moonProject.Multiplier * 100 - 100}% {TFTVCommonMethods.ConvertKeyToString("TFTV_VIVISECTED_SHORT_INFO_DAMAGE")}" // Adjust based on the actual multiplier field
+                            });
+                        }
+
+                    }
 
                     foreach (TacticalActorViewBase.StatusInfo statusInfo in actor.TacticalActorView.GetCharacterStatusActorStatuses())
                     {
@@ -759,7 +959,7 @@ namespace TFTV
         {
             try
             {
-                
+
                 if ((__instance is ShootAbility || __instance is BashAbility || __instance is RetrieveDeployedItemAbility) && targetData.Range < 4f)
                 {
                     List<TacticalAbilityTarget> list = new List<TacticalAbilityTarget>();
@@ -1624,7 +1824,7 @@ namespace TFTV
 
                     if (__instance.GetComponent<PowerFacilityComponent>() != null)
                     {
-                        CheckFacilitesNotWorking(__instance.PxBase); 
+                        CheckFacilitesNotWorking(__instance.PxBase);
                         //  __instance.PxBase.RoutePower();
                     }
 
@@ -1648,7 +1848,7 @@ namespace TFTV
                 try
                 {
                     __instance.UpdateStats();
-                   
+
                 }
                 catch (Exception e)
                 {
@@ -1663,16 +1863,16 @@ namespace TFTV
             try
             {
                 phoenixBase.RoutePower();
-             /*   foreach (GeoPhoenixFacility baseFacility in phoenixBase.Layout.Facilities)
-                {
-                    
-                    if (baseFacility.IsPowered && baseFacility.GetComponent<PrisonFacilityComponent>() == null)
-                    {
-                        baseFacility.SetPowered(false);
-                        baseFacility.SetPowered(true);
-                    }
-                    // TFTVLogger.Always($"{baseFacility.ViewElementDef.name} at {phoenixBase.name} is working? {baseFacility.IsWorking}. is it powered? {baseFacility.IsPowered} ");
-                }*/
+                /*   foreach (GeoPhoenixFacility baseFacility in phoenixBase.Layout.Facilities)
+                   {
+
+                       if (baseFacility.IsPowered && baseFacility.GetComponent<PrisonFacilityComponent>() == null)
+                       {
+                           baseFacility.SetPowered(false);
+                           baseFacility.SetPowered(true);
+                       }
+                       // TFTVLogger.Always($"{baseFacility.ViewElementDef.name} at {phoenixBase.name} is working? {baseFacility.IsWorking}. is it powered? {baseFacility.IsPowered} ");
+                   }*/
             }
             catch (Exception e)
             {
@@ -1682,6 +1882,307 @@ namespace TFTV
         }
 
 
+        /// <summary>
+        /// Fixes crash w weird interception screen 
+        /// </summary>
+        [HarmonyPatch(typeof(InterceptionBriefDataBind), "ModalShowHandler")]
+        public static class InterceptionBriefDataBind_ModalShowHandler_patch
+        {
+            public static bool Prefix(InterceptionBriefDataBind __instance, UIModal modal)
+            {
+                try
+                {
+
+                    InterceptionInfoData data = (InterceptionInfoData)modal.Data;
+
+                    if (data.CurrentPlayerAircraft == null && data.GetDefaultPlayerAircraft() == null || data.CurrentEnemyAircraft == null && data.GetDefaultEnemyAircraft() == null)
+                    {
+                        modal.Close();
+                        return false;
+                    }
+
+                    return true;
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Fixes Umbra appearing when host had fire status
+        /// </summary>
+        /// <param name="tacticalActorBase"></param>
+        /// <returns></returns>
+        private static bool CheckUmbraEffectAndFire(TacticalActorBase tacticalActorBase)
+        {
+            try
+            {
+                DeathBelcherAbilityDef umbraCrabDeathBelcher = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef");
+                DeathBelcherAbilityDef umbraFishDeathBelcher = DefCache.GetDef<DeathBelcherAbilityDef>("Oilfish_Die_DeathBelcher_AbilityDef");
+
+
+                if (tacticalActorBase is TacticalActor tacticalActor &&
+                    tacticalActor.Status != null && (
+                    tacticalActor.GetAbilityWithDef<DeathBelcherAbility>(umbraCrabDeathBelcher) != null
+                    || tacticalActor.GetAbilityWithDef<DeathBelcherAbility>(umbraFishDeathBelcher) != null) &&
+                    tacticalActor.Status.HasStatus<FireStatus>())
+                {
+                    return true;
+
+                }
+                return false;
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+
+
+        [HarmonyPatch(typeof(TacticalActorBase), "Die")]
+        public static class TacticalActorBase_Die_patch
+        {
+            public static void Prefix(TacticalActorBase __instance)
+            {
+                try
+                {
+                    if (CheckUmbraEffectAndFire(__instance))
+                    {
+                        PropertyInfo propertyInfo = typeof(TacticalActorBase).GetProperty("LastDamageType", BindingFlags.Public | BindingFlags.Instance);
+
+                        propertyInfo.SetValue(__instance, DefCache.GetDef<StandardDamageTypeEffectDef>("Fire_StandardDamageTypeEffectDef"));
+                        // TFTVLogger.Always($"Last damage source set to fire for {__instance.name}, check {__instance.LastDamageType.name}");                       
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(AIAttackPositionConsideration), "EvaluateWithAbility")]
+        public static class AIAttackPositionConsideration_EvaluateWithAbilityPatch
+        {
+            public static bool Prefix(AIAttackPositionConsideration __instance, IAIActor actor, IAITarget target, ref float __result)
+            {
+                try
+                {
+
+                    MethodInfo getDamagePayloadMethodInfo = typeof(AIAttackPositionConsideration).GetMethod("GetDamagePayload", BindingFlags.NonPublic| BindingFlags.Instance);
+
+                    TacticalActor tacActor = (TacticalActor)actor;
+                    TacAITarget tacAITarget = (TacAITarget)target;
+                    Weapon weapon = (Weapon)tacAITarget.Equipment;
+                    ShootAbility shootAbility = weapon?.DefaultShootAbility;
+                    if (weapon == null || shootAbility == null)
+                    {
+                        Debug.LogError($"{__instance.Def.name} has invalid target weapon {weapon} for {tacActor}", tacActor);
+                        __result = 0f;
+                        return false;
+                    }
+
+                    IgnoredAbilityDisabledStatesFilter ignoreNoValidTargetsEquipmentNotSelectedAndNotEnoughActionPoints = IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsEquipmentNotSelectedAndNotEnoughActionPoints;
+                    if (!shootAbility.IsEnabled(ignoreNoValidTargetsEquipmentNotSelectedAndNotEnoughActionPoints))
+                    {
+                        __result = 0f;
+                        return false;
+                    }
+
+                    if (__instance.Def.IsOverwatch)
+                    {
+                        OverwatchAbility ability = tacActor.GetAbility<OverwatchAbility>(weapon);
+                        if (ability == null || !ability.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreEquipmentNotSelected))
+                        {
+                            __result = 0f;
+                            return false;
+                        }
+
+                        tacAITarget.AngleInRadians = __instance.Def.OverwatchFOV / 2f * ((float)Math.PI / 180f);
+                    }
+
+                    TacticalAbilityTarget tacticalAbilityTarget = new TacticalAbilityTarget();
+                    List<TacticalActorBase> list = new List<TacticalActorBase>(5);
+                    float num = 1f;
+                    if (tacAITarget.Actor == null)
+                    {
+                        __result = 0f;
+                        return false;
+                    }
+
+                    tacticalAbilityTarget.Actor = tacAITarget.Actor;
+                    tacticalAbilityTarget.ActorGridPosition = tacAITarget.Actor.Pos;
+                    int num2 = 1;
+                    if (tacAITarget.Actor is TacticalActor)
+                    {
+                        num2 = ((TacticalActor)tacAITarget.Actor).BodyState.GetHealthSlots().Count();
+                    }
+
+                    list.Clear();
+                    List<KeyValuePair<TacticalAbilityTarget, float>> shootTargetsWithScores = tacActor.TacticalFaction.AIBlackboard.GetShootTargetsWithScores(weapon, tacticalAbilityTarget, tacAITarget.Pos);
+                    TacticalAbilityTarget key = shootTargetsWithScores.FirstOrDefault().Key;
+                    if (key != null)
+                    {
+                        list.AddRange(AIUtil.GetAffectedTargetsByShooting(key.ShootFromPos, tacActor, weapon, key));
+                        if (list.Count == 0)
+                        {
+                            __result = 0f;
+                            return false;
+                        }
+
+                        int num3 = 0;
+                        foreach (TacticalActorBase item in list)
+                        {
+                            if (tacActor.RelationTo(item) == FactionRelation.Friend)
+                            {
+                                num *= __instance.Def.FriendlyHitScoreMultiplier;
+                            }
+                            else if (tacActor.RelationTo(item) == FactionRelation.Neutral)
+                            {
+                                num *= __instance.Def.NeutralHitScoreMultiplier;
+                            }
+                            else if (tacActor.RelationTo(item) == FactionRelation.Enemy)
+                            {
+
+                                if (item.Status.HasStatus<MindControlStatus>() && item.Status.GetStatus<MindControlStatus>().OriginalFaction == tacActor.TacticalFaction.TacticalFactionDef)
+                                {
+                                }
+                                else
+                                {
+                                    num3++;
+                                }
+                            }
+                        }
+
+                        if (num < Mathf.Epsilon || num3 == 0)
+                        {
+                            __result = 0f;
+                            return false;
+                        }
+
+                        
+
+                        object[] parameters = new object[] { tacAITarget.Pos, weapon.GetDamagePayload(), list.Where((TacticalActorBase ac) => tacActor.RelationTo(ac) == FactionRelation.Enemy), weapon };
+
+                        float damagePayLoadResult = (float)getDamagePayloadMethodInfo.Invoke(__instance, parameters);
+
+                        float num4 = damagePayLoadResult.ClampHigh(__instance.Def.MaxDamage);
+
+                        num *= num4 / __instance.Def.MaxDamage;
+                        if (num < Mathf.Epsilon)
+                        {
+                            __result = 0f;
+                            return false;
+                        }
+
+                        DamageDeliveryType damageDeliveryType = weapon.GetDamagePayload().DamageDeliveryType;
+                        if (damageDeliveryType != DamageDeliveryType.Parabola && damageDeliveryType != DamageDeliveryType.Sphere && AIUtil.CheckActorType(tacAITarget.Actor, ActorType.Civilian | ActorType.Combatant))
+                        {
+                            Vector3 vector = key.ShootFromPos - tacAITarget.Actor.Pos;
+                            if ((!vector.x.IsZero() || !vector.z.IsZero()) && !__instance.Def.IsOverwatch)
+                            {
+                                num *= Mathf.Clamp((float)shootTargetsWithScores.Count / (float)num2, 0f, 1f);
+                            }
+                        }
+
+                        num *= AIUtil.GetEnemyWeight(tacActor.TacticalFaction.AIBlackboard, tacAITarget.Actor);
+                        __result = Mathf.Clamp(num, 0f, 1f);
+                        return false;
+
+                    }
+
+                    __result = 0f;
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+      /*  [HarmonyPatch(typeof(AIAttackPositionConsideration), "EvaluateWithAbility")]
+        public static class AIAttackPositionConsideration_EvaluateWithAbilityPatch
+        {
+            static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+            {
+                var codes = new List<CodeInstruction>(instructions);
+                var targetMethod = AccessTools.Method(typeof(TacticalFactionVision), "IsRevealed");
+                var statusCheckMethod = AccessTools.Method(typeof(StatusComponent), "HasStatus")
+                                             .MakeGenericMethod(typeof(MindControlStatus));
+
+                for (int i = 0; i < codes.Count; i++)
+                {
+                    // Look for the IsRevealed call
+                    if (codes[i].Calls(targetMethod))
+                    {
+                        // Insert additional check for !a.Status.HasStatus<MindControlStatus>()
+                        // This modifies the condition for filtering "a" (actors)
+                        codes.InsertRange(i + 1, new[]
+                        {
+                    new CodeInstruction(OpCodes.Ldloc_3), // Load the actor (local variable 3)
+                    new CodeInstruction(OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(TacticalActorBase), "Status")),
+                    new CodeInstruction(OpCodes.Callvirt, statusCheckMethod), // Call HasStatus<MindControlStatus>()
+                    new CodeInstruction(OpCodes.Ldc_I4_0), // Load "false" (0)
+                    new CodeInstruction(OpCodes.Ceq), // Check if HasStatus is false
+                    new CodeInstruction(OpCodes.And) // Combine with existing IsRevealed result
+                });
+                        break;
+                    }
+                }
+
+                return (IEnumerable<CodeInstruction>)codes.AsEnumerable();
+            }
+        }*/
+
+
+
+
+        /*  [HarmonyPatch(typeof(ApplyDamageEffectAbility), "GetCharactersToIgnore")]
+          public static class ApplyDamageEffectAbility_GetCharactersToIgnore_patch
+          {
+              public static void Postfix(ApplyDamageEffectAbility __instance, ref IEnumerable<TacticalActorBase> __result)
+              {
+                  try
+                  {
+                      if (!__instance.ApplyDamageEffectAbilityDef.IgnoreFriendlies) 
+                      {
+                          List<TacticalActorBase> adjustedList = __result.ToList();
+
+                          foreach (TacticalActorBase tacticalActorBase in __result)
+                          {
+                              if(tacticalActorBase.Status!=null && tacticalActorBase.Status.HasStatus<MindControlStatus>()) 
+                              {
+                                  adjustedList.Remove(tacticalActorBase);
+                              }
+                          }
+
+                          __result = adjustedList;
+                      }
+
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                      throw;
+                  }
+              }
+          }*/
 
 
 

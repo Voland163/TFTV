@@ -203,7 +203,7 @@ namespace TFTV
                     if (aircraftItemDef != null && !aircraftItemDef.ScrapPrice.IsEmpty)
                     {
                         messageBoxText = messageBoxText + "\n" + ____utilsModule.ScrapResourcesBack.Localize(null) + "\n \n";
-                        foreach (ResourceUnit resourceUnit in ((IEnumerable<ResourceUnit>)aircraftItemDef.ScrapPrice))
+                        foreach (ResourceUnit resourceUnit in aircraftItemDef.ScrapPrice)
                         {
                             if (resourceUnit.RoundedValue > 0)
                             {

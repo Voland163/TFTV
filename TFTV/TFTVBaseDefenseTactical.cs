@@ -208,6 +208,149 @@ namespace TFTV
             }
         }
 
+        public static ContextHelpHintDef GetReinforcementHintFromStratNumber(int stratNumber) 
+        {
+            try
+            {
+                TacContextHelpManager hintManager = GameUtl.CurrentLevel().GetComponent<TacContextHelpManager>();
+                ContextHelpHintDef contextHelpHintDef = null;
+
+                switch (stratNumber)
+                {
+                    case 1:
+                        {
+                            // WormDropStrat(controller);
+                            contextHelpHintDef = hintManager.HintDb.Hints.FirstOrDefault((ContextHelpHintDef h) => h.name == "BaseDefenseWormsStrat");
+
+                        }
+                        break;
+
+                    case 2:
+                        {
+                            //   MyrmidonAssaultStrat(controller);
+                            contextHelpHintDef = hintManager.HintDb.Hints.FirstOrDefault((ContextHelpHintDef h) => h.name == "BaseDefenseWormsStrat");
+                        }
+                        break;
+
+                    case 3:
+                        {
+                            //  UmbraStrat(controller);
+                            contextHelpHintDef = hintManager.HintDb.Hints.FirstOrDefault((ContextHelpHintDef h) => h.name == "BaseDefenseUmbraStrat");
+
+                        }
+                        break;
+                    case 4:
+                        {
+                            //  GenerateSecondaryForce(controller);
+                            contextHelpHintDef = hintManager.HintDb.Hints.FirstOrDefault((ContextHelpHintDef h) => h.name == "BaseDefenseForce2Strat");
+                        }
+                        break;
+                    case 5:
+                        {
+                            //  UmbraStrat(controller);
+                            contextHelpHintDef = hintManager.HintDb.Hints.FirstOrDefault((ContextHelpHintDef h) => h.name == "BaseDefenseUmbraStrat");
+
+                        }
+                        break;
+                }
+
+                return contextHelpHintDef;
+
+            }
+
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+    
+
+        public static TacticalActorBase GetTacticalActorBaseForCameraChase(int stratNumber)
+        {
+            try
+            {
+               
+                TacticalActorBase tacticalActorBase = null;
+
+                switch (stratNumber)
+                {
+                    case 1:
+                        {
+                            // WormDropStrat(controller);
+                            tacticalActorBase = Map.DeploymentZones.VehicleBayCentralDeployZone;
+
+                        }
+                        break;
+
+                    case 2:
+                        {
+                            //   MyrmidonAssaultStrat(controller);
+                            tacticalActorBase = Map.DeploymentZones.VehicleBayCentralDeployZone;
+                        }
+                        break;
+
+                    case 4:
+                        {
+                            //  GenerateSecondaryForce(controller);
+                            tacticalActorBase = Map.DeploymentZones.SecondaryStrikeForceSpawn;
+                        }
+                        break;
+                   
+                }
+
+                return tacticalActorBase;
+
+            }
+
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+        public static void ActivateUpdateBaseDefenseWidget()
+        {
+            try 
+            {
+                ContextHelpHintDef contextHelpHinDef = GetReinforcementHintFromStratNumber(StratToBeImplemented);
+                TacticalActorBase chaseTarget = GetTacticalActorBaseForCameraChase(StratToBeImplemented);
+
+
+                string title = "";
+                string description = "";
+
+                if (contextHelpHinDef != null) 
+                {
+                    title = contextHelpHinDef.Title.Localize();
+                    description = contextHelpHinDef.Text.Localize();
+                }
+
+                float generatorHP = Map.Consoles.ActivateConsole.GetGeneratorsHealth();
+                int consoles = ConsolePositions.Values.Where(v => v != 1000).Count();
+
+                TFTVLogger.Always($"generatorHP: {generatorHP}, consoles: {consoles}");
+
+
+
+
+                TFTVUITactical.BaseDefenseUI.ActivateOrAdjustBaseDefenseWidget
+                           (title, description, generatorHP, consoles, chaseTarget );
+
+            }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+        }
+
 
         internal class Defs
         {
@@ -867,6 +1010,7 @@ namespace TFTV
                                 {
                                     VentingHintShown = true;
                                     InteractionPointPlacement();
+                                    ActivateUpdateBaseDefenseWidget();
                                 }
                                 TFTVLogger.Always($"Base defense:");
                                 TFTVLogger.Always($"breach? {Breach}", false);
@@ -992,17 +1136,56 @@ namespace TFTV
 
                 internal class ActivateConsole
                 {
+                    public static List<StructuralTarget> GetGenerators()
+                    {
+                        try 
+                        {
+                            return UnityEngine.Object.FindObjectsOfType<StructuralTarget>().Where(st => st.Deployment != null).Where(st => st.Deployment.name.Equals("PP_Cover_Generator_2x2_A_StructuralTarget")).ToList();
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+
+                    public static float GetGeneratorsHealth() 
+                    {
+                        try
+                        {
+                            List<StructuralTarget> generators = GetGenerators();
+
+                            float generatorsHealth = 0;
+
+                            foreach (StructuralTarget structuralTarget in generators)
+                            {
+                                generatorsHealth += structuralTarget.Health/3;
+                            }
+
+                            generatorsHealth /= generators.Count();
+
+                            return generatorsHealth;
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+
+
+                    }
+
                     public static void BaseDefenseConsoleActivated(StatusComponent statusComponent, Status status, TacticalLevelController controller)
                     {
                         try
                         {
-
                             if (controller != null && CheckIfBaseDefenseVsAliens(controller))
                             {
                                 if (status.Def == DefCache.GetDef<StatusDef>("ConsoleActivated_StatusDef"))
                                 {
                                     StructuralTarget console = statusComponent.transform.GetComponent<StructuralTarget>();
-                                    List<StructuralTarget> generators = UnityEngine.Object.FindObjectsOfType<StructuralTarget>().Where(st => st.Deployment != null).Where(st => st.Deployment.name.Equals("PP_Cover_Generator_2x2_A_StructuralTarget")).ToList();
+                                    List<StructuralTarget> generators = GetGenerators();
 
                                     TFTVLogger.Always($"Console {console.name} activated. Generators count: {generators.Count}");
 
@@ -1018,19 +1201,26 @@ namespace TFTV
 
                                             StratToBeImplemented = 0;
 
-                                            if (generators.Count > 0)
+                                            int usedConsoles = ConsolePositions.Values.Where(v => v == 1000).Count();
+
+                                            if ( usedConsoles > 1)
                                             {
-                                                foreach (StructuralTarget structuralTarget in generators)
+                                                if (generators.Count > 0)
                                                 {
+                                                    foreach (StructuralTarget structuralTarget in generators)
+                                                    {
 
-                                                    TFTVLogger.Always($"Applying damage to generators: current health is {structuralTarget.GetHealth()}, reducing it by {60}");
-                                                    structuralTarget.Health.Subtract(60);
-                                                    TFTVLogger.Always($"Current health is {structuralTarget.GetHealth()}");
+                                                        TFTVLogger.Always($"Applying damage to generators: current health is {structuralTarget.GetHealth()}, reducing it by {60}");
+                                                        structuralTarget.Health.Subtract(60+60*(Math.Max(usedConsoles-2, 0)));
+                                                        TFTVLogger.Always($"Current health is {structuralTarget.GetHealth()}");
 
-                                                }
+                                                    }
 
-                                                Explosions.GenerateRandomExplosions();
+                                                    Explosions.GenerateRandomExplosions();
+                                                }         
                                             }
+
+                                            ActivateUpdateBaseDefenseWidget();
                                         }
                                     }
                                 }
@@ -3350,48 +3540,9 @@ namespace TFTV
                         }
 
                         TacContextHelpManager hintManager = GameUtl.CurrentLevel().GetComponent<TacContextHelpManager>();
-                        ContextHelpHintDef contextHelpHintDef = null;
+                        ContextHelpHintDef contextHelpHintDef = GetReinforcementHintFromStratNumber(StratToBeAnnounced);
                         FieldInfo hintsPendingDisplayField = typeof(ContextHelpManager).GetField("_hintsPendingDisplay", BindingFlags.NonPublic | BindingFlags.Instance);
-
-
-                        switch (StratToBeAnnounced)
-                        {
-                            case 1:
-                                {
-                                    // WormDropStrat(controller);
-                                    contextHelpHintDef = hintManager.HintDb.Hints.FirstOrDefault((ContextHelpHintDef h) => h.name == "BaseDefenseWormsStrat");
-
-                                }
-                                break;
-
-                            case 2:
-                                {
-                                    //   MyrmidonAssaultStrat(controller);
-                                    contextHelpHintDef = hintManager.HintDb.Hints.FirstOrDefault((ContextHelpHintDef h) => h.name == "BaseDefenseWormsStrat");
-                                }
-                                break;
-
-                            case 3:
-                                {
-                                    //  UmbraStrat(controller);
-                                    contextHelpHintDef = hintManager.HintDb.Hints.FirstOrDefault((ContextHelpHintDef h) => h.name == "BaseDefenseUmbraStrat");
-
-                                }
-                                break;
-                            case 4:
-                                {
-                                    //  GenerateSecondaryForce(controller);
-                                    contextHelpHintDef = hintManager.HintDb.Hints.FirstOrDefault((ContextHelpHintDef h) => h.name == "BaseDefenseForce2Strat");
-                                }
-                                break;
-                            case 5:
-                                {
-                                    //  UmbraStrat(controller);
-                                    contextHelpHintDef = hintManager.HintDb.Hints.FirstOrDefault((ContextHelpHintDef h) => h.name == "BaseDefenseUmbraStrat");
-
-                                }
-                                break;
-                        }
+                
 
 
                         if (!hintManager.RegisterContextHelpHint(contextHelpHintDef, isMandatory: true, null))
@@ -3448,6 +3599,8 @@ namespace TFTV
                             VentingHintShown = true;
                             Map.Consoles.SpawnConsoles.InteractionPointPlacement();
                         }
+
+                        ActivateUpdateBaseDefenseWidget();
 
                     }
                 }
@@ -4064,7 +4217,7 @@ namespace TFTV
                     Dictionary<ClassTagDef, int> reinforcements = new Dictionary<ClassTagDef, int>
                     {
                         { crabTag, 3 },
-                        {sirenTag, 1 }
+                        { sirenTag, 1 }
                     };
 
                     // TFTVLogger.Always("2");

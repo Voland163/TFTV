@@ -10,12 +10,12 @@ using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
-using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Geoscape.View.ViewControllers.AugmentationScreen;
 using PhoenixPoint.Geoscape.View.ViewModules;
-using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Geoscape.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,7 +32,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(UIModuleMutate), "OnNewCharacter")]//InitCharacterInfo")]
+       /* [HarmonyPatch(typeof(UIModuleMutate), "OnNewCharacter")]//InitCharacterInfo")]
         public static class UIModuleMutate_InitCharacterInfo_Patch
         {
             public static void Postfix(Dictionary<AddonSlotDef, UIModuleMutationSection> ____augmentSections, GeoCharacter newCharacter)
@@ -41,7 +41,7 @@ namespace TFTV
                 {
                     if (newCharacter.TemplateDef != null && newCharacter.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag))
                     {
-                       // TFTVLogger.Always($"current character is {newCharacter.DisplayName} and it has mercenary tag? {newCharacter.TemplateDef.GetGameTags().Contains(MercenaryTag)}");
+                        // TFTVLogger.Always($"current character is {newCharacter.DisplayName} and it has mercenary tag? {newCharacter.TemplateDef.GetGameTags().Contains(MercenaryTag)}");
 
                         foreach (KeyValuePair<AddonSlotDef, UIModuleMutationSection> augmentSection in ____augmentSections)
                         {
@@ -56,27 +56,36 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
-        }
+        }*/
 
+        
 
-
-        [HarmonyPatch(typeof(UIModuleBionics), "OnNewCharacter")]//InitCharacterInfo")]
-        public static class UIModuleBionics_InitCharacterInfo_Patch
+        [HarmonyPatch(typeof(UIStateMutate), "EnterState")]//InitCharacterInfo")]
+        public static class UIStateMutate_EnterState_Patch
         {
-            public static void Postfix(Dictionary<AddonSlotDef, UIModuleMutationSection> ____augmentSections, GeoCharacter newCharacter)
+            public static void Prefix(ref List<GeoCharacter> ____characters)
             {
                 try
                 {
-                    if (newCharacter.TemplateDef != null && newCharacter.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag))
-                    {
-                       // TFTVLogger.Always($"current character is {newCharacter.DisplayName} and it has mercenary tag? {newCharacter.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag)}");
+                   
+                    ____characters.RemoveAll(e => e.TemplateDef != null && e.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag));
+                    
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
-                        foreach (KeyValuePair<AddonSlotDef, UIModuleMutationSection> augmentSection in ____augmentSections)
-                        {
-                            augmentSection.Value.ResetContainer(AugumentSlotState.BlockedByPermenantAugument, "KEY_ABILITY_NOAUGMENTATONS");
-                        }
-
-                    }
+        [HarmonyPatch(typeof(UIStateBionics), "EnterState")]//InitCharacterInfo")]
+        public static class UIStateBionics_EnterState_Patch
+        {
+            public static void Prefix(ref List<GeoCharacter> ____characters)
+            {
+                try
+                {
+                    ____characters.RemoveAll(e => e.TemplateDef != null && e.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag));
 
                 }
                 catch (Exception e)
@@ -85,6 +94,103 @@ namespace TFTV
                 }
             }
         }
+
+        
+
+        
+
+            
+
+        /*[HarmonyPatch(typeof(UIModuleBionics), "OnNewCharacter")]//InitCharacterInfo")]
+        public static class UIModuleBionics_InitCharacterInfo_Patch
+        {          
+            public static void Postfix()
+            {
+                try
+                {
+                    if (all_units == null)
+                    {
+
+                        UIModuleActorCycle uIModuleActorCycle = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ActorCycleModule;
+                        FieldInfo fieldInfoUnitList = typeof(UIModuleActorCycle).GetField("_units", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                        List<UnitDisplayData> units = (List<UnitDisplayData>)fieldInfoUnitList.GetValue(uIModuleActorCycle);
+
+                        all_units = new List<UnitDisplayData>();
+                        all_units.AddRange(units);
+
+                        foreach (UnitDisplayData unit in all_units)
+                        {
+                            if (unit.BaseObject is GeoCharacter geoCharacter
+                                && geoCharacter.TemplateDef != null
+                                && geoCharacter.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag))
+                            {
+                                units.Remove(unit);
+                                TFTVLogger.Always($"removing {geoCharacter.DisplayName}");
+                            }
+                        }
+
+                        fieldInfoUnitList.SetValue(uIModuleActorCycle, units);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+            public static void Postfix()
+            {
+                try
+                {
+                    if (all_units != null)
+                    {
+
+                        UIModuleActorCycle uIModuleActorCycle = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ActorCycleModule;
+                        FieldInfo fieldInfoUnitList = typeof(UIModuleActorCycle).GetField("_units", BindingFlags.Instance | BindingFlags.NonPublic);
+
+
+
+                        fieldInfoUnitList.SetValue(uIModuleActorCycle, all_units);
+
+                        all_units = null;
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }*/
+
+
+
+        /* [HarmonyPatch(typeof(UIModuleBionics), "OnNewCharacter")]//InitCharacterInfo")]
+         public static class UIModuleBionics_InitCharacterInfo_Patch
+         {
+             public static void Postfix(Dictionary<AddonSlotDef, UIModuleMutationSection> ____augmentSections, GeoCharacter newCharacter)
+             {
+                 try
+                 {
+                     if (newCharacter.TemplateDef != null && newCharacter.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag))
+                     {
+
+                        // TFTVLogger.Always($"current character is {newCharacter.DisplayName} and it has mercenary tag? {newCharacter.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag)}");
+
+                        foreach (KeyValuePair<AddonSlotDef, UIModuleMutationSection> augmentSection in ____augmentSections)
+                         {
+                             augmentSection.Value.ResetContainer(AugumentSlotState.BlockedByPermenantAugument, "KEY_ABILITY_NOAUGMENTATONS");
+                         }
+
+                     }
+
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                 }
+             }
+         }*/
 
 
 
@@ -146,7 +252,7 @@ namespace TFTV
         [HarmonyPatch(typeof(EditUnitButtonsController), "CheckIsBionicsIsAvailable")]
         public static class EditUnitButtonsController_CheckIsBionicsIsAvailable_Bionics_patch
         {
-            public static void Postfix(GeoPhoenixFaction phoenixFaction, ref bool ____bionicsAvailable, 
+            public static void Postfix(GeoPhoenixFaction phoenixFaction, ref bool ____bionicsAvailable,
                 EditUnitButtonsController __instance, UIModuleActorCycle ____parentModule)
             {
                 try
@@ -165,11 +271,11 @@ namespace TFTV
                         }
                     }
 
-                  //  PassiveModifierAbilityDef noAugAbility = DefCache.GetDef<PassiveModifierAbilityDef>("NoAug_AbilityDef");
+                    //  PassiveModifierAbilityDef noAugAbility = DefCache.GetDef<PassiveModifierAbilityDef>("NoAug_AbilityDef");
 
                     if (flag) //&& ____parentModule != null && ____parentModule.CurrentCharacter != null && !____parentModule.CurrentCharacter.GetTacticalAbilities().Contains(noAugAbility))
                     {
-                        
+
 
                     }
                     else
@@ -179,7 +285,7 @@ namespace TFTV
 
                         methodInfo.Invoke(__instance, new object[] { __instance.BionicsButton, ____bionicsAvailable });
                     }
-                   
+
                 }
 
                 catch (Exception e)
@@ -192,7 +298,7 @@ namespace TFTV
 
         [HarmonyPatch(typeof(EditUnitButtonsController), "CheckIsMutationIsAvailable")]
         public static class EditUnitButtonsController_CheckIsMutationIsAvailable_Mutations_patch
-        {                   
+        {
             public static void Postfix(GeoPhoenixFaction phoenixFaction, ref bool ____mutationAvailable, EditUnitButtonsController __instance, UIModuleActorCycle ____parentModule)
             {
                 try
@@ -211,7 +317,7 @@ namespace TFTV
                         }
                     }
 
-                   // PassiveModifierAbilityDef noAugAbility = DefCache.GetDef<PassiveModifierAbilityDef>("NoAug_AbilityDef");
+                    // PassiveModifierAbilityDef noAugAbility = DefCache.GetDef<PassiveModifierAbilityDef>("NoAug_AbilityDef");
 
                     if (flag) //&& ____parentModule !=null && ____parentModule.CurrentCharacter!=null && !____parentModule.CurrentCharacter.GetTacticalAbilities().Contains(noAugAbility))
                     {
@@ -439,7 +545,7 @@ namespace TFTV
 
         }
 
-    
+
 
     }
 

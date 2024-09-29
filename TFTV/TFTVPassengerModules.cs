@@ -3,6 +3,8 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
+using PhoenixPoint.Geoscape.Entities.Research;
+using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
@@ -12,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using static PhoenixPoint.Geoscape.InterceptionPrototype.ModableValue;
 
 namespace TFTV
 {
@@ -297,26 +300,15 @@ namespace TFTV
             }
         }
 
+       
         [HarmonyPatch(typeof(GeoVehicle), "UpdateVehicleBonusCache")]
         internal static class BG_GeoVehicle_UpdateVehicleBonusCache_PassengerModulesIncreaseSpaceForUnits_patch
         {
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
-
             private static void Postfix(GeoVehicle __instance)//, Dictionary<GeoVehicleModuleDef.GeoVehicleModuleBonusType, float> ____vehicleModuleBonusCache)
             {
                 try
                 {
-                    /*   TFTVLogger.Always($"{__instance.VehicleDef.ViewElement.Name}");
-
-                       TFTVLogger.Always($"Modules present {__instance?.Modules?.Count()}");
-
-                       foreach(GeoVehicleEquipment geoVehicleEquipment in __instance.Modules) 
-                       {
-                           TFTVLogger.Always($"{geoVehicleEquipment?.ModuleDef?.name}");
-
-
-                       }*/
-
+                 
 
                     bool passengerModulePresent = __instance.Modules != null && __instance.Modules.Count() > 0 && __instance.Modules.Any(m =>
                        m != null && m.ModuleDef != null && (
@@ -329,7 +321,9 @@ namespace TFTV
 
                     string geoVehicle = __instance.VehicleDef.ViewElement.Name;
 
-                    //  TFTVLogger.Always($"{__instance.VehicleDef.ViewElement.Name} {passengerModulePresent}");
+                //    FieldInfo propertyInfo = typeof(GeoVehicle).GetField("MaxCharacterSpace", BindingFlags.Instance|BindingFlags.Public);
+
+                  //  TFTVLogger.Always($"propertyInfo null? ");
 
                     switch (geoVehicle)
                     {
@@ -338,12 +332,11 @@ namespace TFTV
                                 if (passengerModulePresent)
                                 {
 
-                                    __instance.BaseDef = manticore6slots;
+                                 __instance.BaseDef = manticore6slots;
 
                                 }
                                 else
                                 {
-
                                     __instance.BaseDef = manticore;
 
                                 }
@@ -416,6 +409,35 @@ namespace TFTV
 
                             }
                     }
+
+                    
+
+                   /* if (__instance.GeoLevel!=null && __instance.GeoLevel.PhoenixFaction!=null && __instance.GeoLevel.PhoenixFaction.Research!=null && __instance.GeoLevel.PhoenixFaction.Research.HasCompleted("SYN_MoonMission_ResearchDef"))
+                    {
+
+                        GeoPhoenixFaction phoenixFaction = __instance.GeoLevel.PhoenixFaction;
+
+                        List<GeoVehicleStatModifier> AircraftModifiers = phoenixFaction.FactionStatModifiers.AircraftModifiers;
+
+                        GeoVehicleStatModifier geoVehicleStatModifier = AircraftModifiers.FirstOrDefault((GeoVehicleStatModifier t) => t.IsGlobal);
+                        GeoVehicleStatModifier geoVehicleStatModifier2 = new GeoVehicleStatModifier();
+                        if (geoVehicleStatModifier != null)
+                        {
+                            TFTVLogger.Always($"geoVehicleStatModifier not null");
+                            geoVehicleStatModifier2 += geoVehicleStatModifier;
+                        }
+
+                        foreach (GeoVehicleStatModifier item in AircraftModifiers.Where((GeoVehicleStatModifier t) => t.VehicleDef == __instance.VehicleDef))
+                        {
+                            geoVehicleStatModifier2 += item;
+                        }
+
+                        geoVehicleStatModifier2.UpdateBaseVehicleStats(__instance);
+
+
+                      
+
+                    }*/
 
                 }
                 catch (Exception e)

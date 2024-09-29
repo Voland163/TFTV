@@ -1,5 +1,6 @@
 ﻿using Base.Core;
 using Base.UI.MessageBox;
+using EnviroSamples;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
@@ -86,10 +87,12 @@ namespace TFTV
 
                     TFTVCapturePandorans.CheckCaptureCapability(__instance);
                     TFTVBaseDefenseGeoscape.Deployment.ModifyMissionDataBaseDefense(__instance, missionData);
-                    TFTVVoidOmens.ModifyVoidOmenTacticalObjectives(missionData.MissionType);
-                    TFTVCapturePandorans.ModifyCapturePandoransTacticalObjectives(missionData.MissionType);
+                   // TFTVVoidOmens.ModifyVoidOmenTacticalObjectives(missionData.MissionType);
+                   // TFTVCapturePandorans.ModifyCapturePandoransTacticalObjectives(missionData.MissionType);
                     TFTVBaseDefenseTactical.Objectives.ModifyBaseDefenseTacticalObjectives(missionData.MissionType);
-
+                    TFTVUITactical.SecondaryObjectivesTactical.PopulateAvailableObjectives(__instance.Site.GeoLevel);
+                    TFTVUITactical.SecondaryObjectivesTactical.AddAllAvailableSecondaryObjectivesToMission(missionData.MissionType);
+                    
                     // __instance.GameController.SaveManager.IsSaveEnabled = true;
                 }
                 catch (Exception e)
@@ -111,6 +114,8 @@ namespace TFTV
                 {
                     TFTVAncientsGeo.AncientSites.OnTakingAncientSiteFromAncients(__instance);
                     TFTVAncientsGeo.DefendCyclopsStoryMission.OnCompletingDefendCyclopsMission(__instance, viewerFactionResult);
+                    TFTVEconomyExploitsFixes.ClearTimerNoSecondChances(__instance);
+
                 }
 
                 catch (Exception e)

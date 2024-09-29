@@ -10,7 +10,7 @@ PR_BC_RECOVER_DESC,Text,,Recover Will Points equal to half Willpower. Divide any
 PR_BC_HIDDEN,Text,,UNREVEALED,,NON RÉVÉLÉ,,,,СКРЫТ,,
 PR_BC_HIDDEN_DESC,Text,,Indicates when the character is unrevealed and not spotted.,,Indique quand le personnage est non révélé et non repéré.,,,,"Показывает, что боец замаскировался и не обнаруживается врагами",,
 PR_BC_INFILTRATOR_HIDDEN,Text,,HIDDEN: +25% stealth and completely undetected.,,CACHÉ : +25% de furtivité et complètement indétectable.,,,,"СКРЫТ: +25% скрытности, враги даже не подозревают о вас",,
-PR_BC_INFILTRATOR_LOCATED,Text,,"LOCATED: +25% stealth and still invisible, but enemies know the characters position and can target him.",,"LOCALISÉ : +25% de furtivité et toujours invisible, mais les ennemis connaissent la position du personnage et peuvent le cibler.",,,,"УСЛЫШАН: +25% скрытности и все еще скрыт, но враги вас услышали и могут попытаться найти вас",,
+PR_BC_INFILTRATOR_LOCATED,Text,,"LOCATED: +25% stealth and still invisible, but enemies know the characters position and can target him.",,"LOCALISÉ : +25% de furtivité et toujours invisible, mais les ennemis connaissent la position du personnage et peuvent le cibler.",,,,"УСЛЫШАН: +25% скрытности и все еще скрыт, но враги знают позицию бойца и могут попытаться атаковать его",,
 PR_BC_INFILTRATOR_REVEALED,Text,,REVEALED: No Stealth bonus!,,RÉVÉLÉ : Pas de bonus de furtivité !,,,,ОБНАРУЖЕН: Бонуса скрытности больше нет!,,
 PR_BC_BATTLE_FOCUS,Text,,BATTLE FOCUS,,FOCUS DE BATAILLE,,,,БОЕВОЙ НАСТРОЙ,,
 PR_BC_BATTLE_FOCUS_DESC,Text,,If there are enemies within 10 tiles your attacks gain +20% damage,,"Si des ennemis se trouvent dans un rayon de 10 cases, vos attaques subissent +20% de dégâts.",,,,"Если в 10 клетках от вас есть враги, ваши атаки наносят +20% урона",,
@@ -18,21 +18,21 @@ PR_BC_QUICK_AIM,Text,,QUICK AIM,,VISEE RAPIDE,,,,ВЫСТРЕЛ НАВСКИДК
 PR_BC_QUICK_AIM_DESC,Text,,The action point cost of the next shot with proficient weapon is reduced by 1 with -30% accuracy. Limited to 2 uses per turn.,,Le coût en points d'action du prochain tir avec une arme maîtrisée est réduit de 1 avec une précision de -30%. Limité à 2 utilisations par tour.,,,,"Следующий выстрел из профильного оружия стоит на 1 Очко Действий меньше, но имеет штраф к точности -30%.
 2 раза за ход",,
 PR_BC_KILL_N_RUN,Text,,KILL'N'RUN,,TUER ET COURIR,,,,МАНЕВР СКОРОСТЬЮ,,
-PR_BC_KILL_N_RUN_DESC,Text,,"Once per turn, take a free move after killing an enemy",,"Une fois par tour, faire un mouvement gratuit après avoir tué un ennemi.",,,,"Если вы убили противника, то переместитесь бесплатно на 7 клеток.
+PR_BC_KILL_N_RUN_DESC,Text,,"Once per turn, take a free move after killing an enemy",,"Une fois par tour, faire un mouvement gratuit après avoir tué un ennemi.",,,,"При убийстве врага получите возможность переместиться бесплатно на 7 клеток.
 1 раз за ход",,
 PR_BC_RAPID_CLEARANCE,Text,,RAPID CLEARANCE,,NETTOYAGE RAPIDE,,,,МАНЕВР ОГНЕМ,,
-PR_BC_RAPID_CLEARANCE_DESC,Text,,"Until end of turn, after killing an enemy next attack cost -2 AP",,"Jusqu'à la fin du tour, après avoir tué un ennemi, la prochaine attaque coûte -2 PA.",,,,"После убийства врага следующая атака стоит на 2 Очка Действий меньше.
+PR_BC_RAPID_CLEARANCE_DESC,Text,,"Until end of turn, after killing an enemy next attack cost -2 AP",,"Jusqu'à la fin du tour, après avoir tué un ennemi, la prochaine attaque coûte -2 PA.",,,,"При убийстве врага следующая атака будет стоить на 2 Очка Действий меньше.
 Эффект до конца хода",,
 PR_BC_AIMED_BURST,Text,,AIMED BURST,,RAFALE VISEE,,,,ОГОНЬ НА ПОРАЖЕНИЕ,,
 PR_BC_AIMED_BURST_DESC,Text,,Next shot with Assault Rifle uses double burst and gains +30% accuracy,,Le prochain tir avec le fusil d'assaut utilise une double rafale et gagne +30% de précision.,,,,Следующий выстрел из автомата будет двойным (две очереди) с точностью +30%,,
 PR_BC_EXTREME_FOCUS,Text,,EXTREME FOCUS,,CONCENTRATION EXTREME,,,,ПРЕДЕЛЬНОЕ ВНИМАНИЕ,,
 PR_BC_EXTREME_FOCUS_DESC,Text,,Overwatch cost is set to 1 Action Point for all weapons,,Le coût de la vigilance est fixé à 1 point d'action pour toutes les armes.,,,,Режим наблюдения стоит 1 Очко Действий для любого оружия,,
 PR_BC_ARMOR_BREAK,Text,,ARMOR BREAK,,BRISE-ARMURE,,,,БРОНЕБОЙНЫЕ ПАТРОНЫ,,
-PR_BC_ARMOR_BREAK_DESC,Text,,"Gain +15 shred for the next attack with direct-fire projectile weapon, divided and rounded down by the amount of projectiles for burst weapons and shotguns.",,,,,,"При следующей атаке получить +15 урона разрыва (shred damage) для профильного огнестрельного оружия, разделенное на количество путь (дробин) для автоматического оружия и дробовиков.",,
+PR_BC_ARMOR_BREAK_DESC,Text,,"Gain +15 shred for the next attack with direct-fire projectile weapon, divided and rounded down by the amount of projectiles for burst weapons and shotguns.",,,,,,"При следующей атаке получить +15 урона разрыва для огнестрельного оружия прямой наводки, разделенного на количество путь для автоматического оружия (дробин для дробовиков)",,
 PR_BC_GUNSLINGER,Text,,GUNSLINGER,,BANDIT ARME,,,,ГАНФАЙТЕР,,
 PR_BC_GUNSLINGER_DESC,Text,,Shoot handgun 3 times at -50% accuracy. Uses AP cost of the weapon.,,Tirez 3 fois avec votre arme de poing avec une précision de -50%. Utilise le coût en PA de l'arme.,,,,Совершить 3 выстрела из пистолета со штрафом точности -50% за обычные Очки Действий оружия,,
 PR_BC_KILL_ZONE,Text,,KILL ZONE,,ZONE DE MORT,,,,СТРЕЛЬБА ДУПЛЕТОМ,,
-PR_BC_KILL_ZONE_DESC,Text,,When you take an Overwatch shot you fire twice at the target,,"Lorsque vous effectuez un tir de vigilance, vous tirez deux fois sur la cible.",,,,В режиме наблюдения cделать два выстрела по перехваченной цели,,
+PR_BC_KILL_ZONE_DESC,Text,,When you take an Overwatch shot you fire twice at the target,,"Lorsque vous effectuez un tir de vigilance, vous tirez deux fois sur la cible.",,,,В режиме наблюдения производится два выстрела по перехваченной цели,,
 PR_BC_HUNKER_DOWN,Text,,HUNKER DOWN,,,,,,СИЛОВОЙ ЩИТ,,
 PR_BC_HUNKER_DOWN_DESC,Text,,Gain 10 armor until your next turn. Ends turn. Your next attack cost -1 AP.,,,,,,"Получить +10 брони до конца вашего следующего хода. Следующая атака стоит на 1 Очко Действий меньше.
 Завершить ход",,
@@ -79,9 +79,9 @@ PR_BC_NEURAL_FEEDBACK,Text,,NEURAL FEEDBACK,,,,,,НЕЙРОННАЯ СВЯЗЬ,,
 PR_BC_NEURAL_FEEDBACK_DESC,Text,,Gain 2AP the first time you daze an enemy during the turn,,,,,,"Если вы оглушили врага, получите 2 Очка Действий.
 1 раз за ход",,
 PR_BC_JAMMING_FIELD,Text,,JAMMING FIELD,,,,,,ГЛУШИЛКА,,
-PR_BC_JAMMING_FIELD_DESC,Text,,Enemies within 10 tiles have 50% fumble chance with firearms,,,,,,Враги в пределах 10 клеток получают 50% шанс отказа оружия,,
+PR_BC_JAMMING_FIELD_DESC,Text,,Enemies within 10 tiles have 50% fumble chance with firearms,,,,,,Враги в радиусе 10 клеток получают 50% шанс отказа оружия,,
 PR_BC_PARAPSYCHOSIS,Text,,PARAPSYCHOSIS,,,,,,ГИПНОЗ,,
-PR_BC_PARAPSYCHOSIS_DESC,Text,,Target human-sized enemy within 12 tiles becomes Wild,,,,,,Врага человеческого размера в пределах 12 клеток охватывает Ярость (атакует всех вокруг без разбора),,
+PR_BC_PARAPSYCHOSIS_DESC,Text,,Target human-sized enemy within 12 tiles becomes Wild,,,,,,Вызвать Ярость у врага человеческого размера в радиусе 12 клеток (будет атаковать всех вокруг без разбора),,
 PR_BC_ELECTRIC_REINFORCEMENT,Text,,ELECTRIC REINFORCEMENT,,RENFORCEMENT ÉLECTRIQUE,,,,СИЛОВОЕ ПОЛЕ,,
 PR_BC_ELECTRIC_REINFORCEMENT_DESC,Text,,Give yourself and allies within 10 tiles a bonus of 10 armor for 1 turn. This effect does not stack,,Accordez à vous-même et à vos alliés dans un rayon de 10 cases un bonus de 10 d'armure pendant 1 tour. Cet effet ne s'accumule pas,,,,Вы и союзники в радиусе 10 клеток получают +10 брони до начала следующего хода. Повторное применение не удваивает эффект,,
 PR_BC_STABILITY,Text,,STABILITY,,STABILITÉ,,,,МЕТКИЙ СТРЕЛОК,,
@@ -111,9 +111,9 @@ PR_BC_PUNISHER,Text,,PUNISHER,,PUNISHER,,,,МОНСТР,,
 PR_BC_PUNISHER_DESC,Text,,"When you kill an enemy, his allies lose 2 additional Will Points",,"Lorsque vous tuez un ennemi, ses alliés perdent 2 points de volonté supplémentaires.",,,,"<b>Когда вы убиваете врага, остальные враги теряют 2 Очка Воли.</b>
 <i>Кем надо быть, чтобы при виде вас монстры начинали плакать и проситься к маме на ручки?</i>",,
 PR_BC_PEPPER_CLOUD,Text,,PEPPER CLOUD,,NUAGE DE POIVRE,,,,ГАЗОВАЯ АТАКА,,
-PR_BC_PEPPER_CLOUD_DESC,Text,,Enemies in 8 tile radius suffer -50% accuracy,,Les ennemis dans un rayon de 8 cases subissent une perte de précision de 50 %.,,,,Враги в пределах 8 клеток получают -50% точности,,
+PR_BC_PEPPER_CLOUD_DESC,Text,,Enemies in 8 tile radius suffer -50% accuracy,,Les ennemis dans un rayon de 8 cases subissent une perte de précision de 50 %.,,,,Враги в радиусе 8 клеток получают -50% точности,,
 PR_BC_AR_TARGETTING,Text,,AR TARGETING,,CIBLAGE ALLIE,,,,КОРРЕКТИРОВКА ОГНЯ,,
-PR_BC_AR_TARGETTING_DESC,Text,,Target ally within 10 tiles gains +20% accuracy,,L'allié cible dans un rayon de 10 cases gagne +20% de précision.,,,,Выбранный союзник в радиусе 10 клеток получает +30% точности,,
+PR_BC_AR_TARGETTING_DESC,Text,,Target ally within 10 tiles gains +20% accuracy,,L'allié cible dans un rayon de 10 cases gagne +20% de précision.,,,,Выбранный союзник в радиусе 10 клеток получит +20% точности,,
 PR_BC_PHANTOM_PROTOCOL,Text,,PHANTOM PROTOCOL,,PROTOCOLE FANTOME,,,,"ПРОТОКОЛ ""ФАНТОМ""",,
 PR_BC_PHANTOM_PROTOCOL_DESC,Text,,"Gain +15% stealth and accuracy, provides immunity to Sentinels surveillance ability",,"Gagne +15% de furtivité et de précision, procure une immunité à la capacité de surveillance des Sentinelles.",,,,"Получить +15% к точности и скрытности. Стражи вас не замечают, вообще",,
 PR_BC_SOWER_OF_CHANGE,Text,,SOWER OF CHANGE,,SEMEUR DE CHANGEMENT,,,,ВИРУСОЛОГ,,
@@ -207,7 +207,7 @@ PR_BC_LAB_ASSISTANT,Text,,LAB ASSISTANT,,LABORANTIN,,,,УЧЕНЫЙ,,
 PR_BC_LAB_ASSISTANT_DESC,Text,,"<b>Acid Resistance</b>
 <i>All those little accidents throughout the years have taught you a lot about safely dealing with acid spills</i>",,"<b>Résistance à l'acide</b>
 <i>Tous ces petits accidents au fil des ans vous ont appris à gérer en toute sécurité les déversements d'acide.</i>",,,,"<b>Защита от кислоты.</b>
-<i>Годы в лаборатории многому научили вас о мерах предосторожности при работе с кислотой.</i>",,
+<i>Все эти мелкие происшествия на протяжении многих лет исследований хорошо обучили вас мерам защиты при работе с кислотой.</i>",,
 PR_BC_ROCKETEER,Text,,ROCKETEER,,ROCKETEER,,,,ЛЮБИТЕЛЬ АВИАЦИИ,,
 PR_BC_ROCKETEER_DESC,Text,,"<b>Jetpack Proficiency</b>
 <i>Since you were a child you dreamt of flying rockets. Perhaps now you can!</i>",,"<b>Compétence Jetpack</b>
@@ -217,11 +217,11 @@ PR_BC_PRIVILEGED,Text,,PRIVILEGED,,PRIVILEGIE,,,,БЫВШИЙ МИЛЛИОНЕР
 PR_BC_PRIVILEGED_DESC,Text,,"<b>Speed +2, Perception +4, Carry Weight -25%</b>
 <i>You were riding out the Apocalypse in First Class and letting others carry your load for you. It didn't last, and the run for your life that followed gave you a new awareness.</i>",,"<b>Vitesse +2, Perception +4, mais Poids transportable -25%</b>
 <i>Vous traversiez l'Apocalypse en première classe en laissant les autres porter votre charge à votre place. Cela n'a pas duré, et la course pour votre vie qui a suivi vous a donné une nouvelle conscience.</i>",,,,"<b>Скорость +2, Восприятие +4, Грузоподъемность -25%</b>
-<i>Вы улетали от Апокалипсиса в первом классе, а прислуга несла ваш багаж. Но борьба за выживание привела к переосмыслению жизненных ценностей.</i>",,
+<i>Вы пережидали Апокалипсис в люксовом бункере, пока другие отдувались за вас. Но вскоре и вам пришлось заново переосмыслить жизненные ценности.</i>",,
 PR_BC_FRENZY,Text,,FRENZY,,FRENESIE,,,,ИССУПЛЕНИЕ,,
 PR_BC_FRENZY_DESC,Text,,"Instils Frenzy in friendly characters within 20 tiles for two turns, increasing their Speed by 33% and making them immune to panic",,"Instille la frénésie aux personnages alliés situés dans un rayon de 20 cases pendant deux tours, augmentant leur vitesse de 33% et les rendant immunisés contre la panique.",,,,Союзники в радиусе 20 клеток впадают в Иссупление на 2 хода (невосприимчивость к панике и увеличение скорости на 33%),,
 PR_BC_FRENZY_STATUS_DESC,Text,,Speed increased by 33% and immune to panic,,Vitesse augmentée de 33% et immunisée contre la panique,,,,"Скорость увеличена на 33%, невосприимчивость к панике",,
-KEY_RETURNFIRE_DESCRIPTION,Text,,"Shoot back at an enemy when it attacks, provided the soldier is using a direct-fire projectile weapon with proficiency, and the enemy is within half perception range. Once per turn.",,,,,,"Стреляйте в ответ по врагу, когда он атакует, если у бойца активно профильное огнестрельное оружие, а враг находится в пределах половины диапазона Восприятия. 1 раз за ход.",,
+KEY_RETURNFIRE_DESCRIPTION,Text,,"Shoot back at an enemy when it attacks, provided the soldier is using a direct-fire projectile weapon with proficiency, and the enemy is within half perception range. Once per turn.",,,,,,"При вражеской атаке инициируется ответный огонь, если у бойца в руках профильное огнестрельное оружие прямой наводки, а враг находится в пределах половины диапазона Восприятия. 1 раз за ход.",,
 KEY_TECHNICIAN_REMOTE_DEPLOYMENT_DESCRIPTION,Text,,Turrets can be thrown for 1 Action Point and 2 Will Points,,,,,,Турели можно бросать вдаль за 1 Очко Действий и 2 Очка Воли,,
 KEY_ASSAULT_RIFLES_TALENT_DESCRIPTION,Text,,Proficiency with Assault Rifles,,,,,,Обучен применению автоматов в бою,,
 KEY_GRENADES_TALENT_DESCRIPTION,Text,,Proficiency with Grenades,,,,,,Обучен применению гранат в бою,,

@@ -69,7 +69,7 @@ namespace TFTV
 
                 StrongerPandorans.ImplementStrongerPandorans();
                 HandGrenadeScatter.ImplementHandGrenadeScatterConfig();
-
+                PandoranCapture.ChangesToPandoranCapture();
             }
             catch (Exception e)
             {
@@ -529,7 +529,13 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
             {
                 try
                 {
-                    TFTVConfig config = TFTVMain.Main.Config;
+                    //This is for when a tactical save is loaded, as tactical saves don't keep track of this variable. 
+                    if (TFTVCapturePandorans.ContainmentFacilityPresent || TFTVCapturePandorans.AircraftCaptureCapacity > 0)
+                    {
+                        TFTVNewGameOptions.LimitedCaptureSetting = true;
+                    }
+
+
 
                     if (!_changesToCapturingPandoransImplemented && TFTVNewGameOptions.LimitedCaptureSetting)
                     {

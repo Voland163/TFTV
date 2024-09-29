@@ -5,6 +5,7 @@ using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace TFTV
 {
@@ -49,6 +50,10 @@ namespace TFTV
         public bool ContainmentFacilityPresent;
         public bool ScyllaCaptureModule;
         public int AvailableContainment;
+
+        public string AircraftName;
+        public string AircraftViewElement;
+
         public bool Update35TacticalCheck;
         public bool StrongerPandoransTactical;
         public bool NerfAncientsWeaponsTactical;
@@ -63,6 +68,10 @@ namespace TFTV
         public int RevenantPoints;
         public Dictionary<string, int> UnDesirablesActorsSpawned;
         public Dictionary<int, string> OperativesPortraits;
+        public List<string> AvailableSecondaryObjectives;
+        public int AccumulatedRevenantPoints;
+        public List<string> HumanEnemiesGangNames;
+        public string RevenantResistanceDamageTypeGuid;
     }
 
     /// <summary>
@@ -81,6 +90,7 @@ namespace TFTV
                 TFTVPalaceMission.CheckPalaceMission();
                 TFTVAncients.CyclopsAbilities.CyclopsResistance.ResetCyclopsDefense();
                 TFTVAncientsGeo.AncientsResearch.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(null);
+               
             }
             catch (Exception e)
             {
@@ -243,7 +253,7 @@ namespace TFTV
                 TFTVLogger.Always("Tactical save is being processed");
 
                 TFTVCommonMethods.ClearInternalVariablesOnStateChangeAndLoad();
-                TFTVDefsWithConfigDependency.ImplementConfigChoicesForTactical();
+                
                 TFTVTacInstanceData data = (TFTVTacInstanceData)instanceData;
                 TFTVStamina.charactersWithDisabledBodyParts = data.charactersWithBrokenLimbs;
                 TFTVVoidOmens.VoidOmensCheck = data.VoidOmensCheck;
@@ -256,8 +266,11 @@ namespace TFTV
                 TFTVRevenant.revenantCanSpawn = data.revenantCanSpawnSaveDate;
                 TFTVRevenant.TFTVRevenantResearch.ProjectOsirisStats = data.ProjectOsirisStatsTacticalSaveData;
                 TFTVRevenant.TFTVRevenantResearch.ProjectOsiris = data.ProjectOrisisCompletedSaveData;
+                TFTVRevenant.TFTVRevenantResearch.PreviousRevenantPoints = data.AccumulatedRevenantPoints;
+                TFTVRevenant.Resistance.RevenantResistanceDamageTypeGuid = data.RevenantResistanceDamageTypeGuid;
 
                 TFTVHumanEnemies.HumanEnemiesAndTactics = data.humanEnemiesLeaderTacticsSaveData;
+                TFTVHumanEnemies.HumanEnemiesGangNames = data.HumanEnemiesGangNames;
                 TFTVInfestation.HavenPopulation = data.infestedHavenPopulationSaveData;
                 TFTVInfestation.OriginalOwner = data.infestedHavenOriginalOwnerSaveData;
                 TFTVRevenant.revenantID = data.RevenantId;
@@ -270,11 +283,13 @@ namespace TFTV
                 TFTVCapturePandorans.AircraftCaptureCapacity = data.DeployedAircraftCaptureCapacity;
                 TFTVCapturePandorans.ContainmentFacilityPresent = data.ContainmentFacilityPresent;
                 TFTVCapturePandorans.ScyllaCaptureModulePresent = data.ScyllaCaptureModule;
+                TFTVCapturePandorans.AircraftName = data.AircraftName;
+                TFTVCapturePandorans.AircraftViewElement = data.AircraftViewElement;
                 TFTVODIandVoidOmenRoll.CurrentODI_Level = data.ODILevel;
 
-                TFTVVoidOmens.ModifyVoidOmenTacticalObjectives(Controller.TacMission.MissionData.MissionType);
-                TFTVCapturePandorans.ModifyCapturePandoransTacticalObjectives(Controller.TacMission.MissionData.MissionType);
-                TFTVBaseDefenseTactical.Objectives.ModifyBaseDefenseTacticalObjectives(Controller.TacMission.MissionData.MissionType);
+              //  TFTVVoidOmens.ModifyVoidOmenTacticalObjectives(Controller.TacMission.MissionData.MissionType);
+                //TFTVCapturePandorans.ModifyCapturePandoransTacticalObjectives(Controller.TacMission.MissionData.MissionType);
+                TFTVBaseDefenseTactical.Objectives.ModifyBaseDefenseTacticalObjectives(Controller.TacMission.MissionData.MissionType);          
                 TFTVVoidOmens.ImplementHavenDefendersAlwaysHostile(Controller);
                 TFTVAncients.AutomataResearched = data.AutomataResearched;
                 TFTVAncients.AlertedHoplites = data.HopliteKillList;
@@ -285,6 +300,14 @@ namespace TFTV
                 TFTVNewGameOptions.InternalDifficultyCheckTactical = data.internalDifficultyCheck;
                 TFTVBaseDefenseTactical.Map.DeploymentZones.SecondaryStrikeForceVector = data.SecondaryStrikeForceCoordinates;
                 TFTVRevenant.TFTVRevenantResearch.RevenantPoints = data.RevenantPoints;
+                TFTVUITactical.SecondaryObjectivesTactical.AvailableSecondaryObjectivesTactical = data.AvailableSecondaryObjectives;
+
+              //  TFTVLogger.Always($"TFTVUITactical.SecondaryObjectivesTactical.AvailableSecondaryObjectivesTactical.Count: {TFTVUITactical.SecondaryObjectivesTactical.AvailableSecondaryObjectivesTactical.Count}");
+
+                TFTVUITactical.SecondaryObjectivesTactical.AddAllAvailableSecondaryObjectivesToMission(Controller.TacMission.MissionData.MissionType);
+
+                TFTVDefsWithConfigDependency.ImplementConfigChoicesForTactical();
+
                 if (data.UnDesirablesActorsSpawned != null)
                 {
                     TFTVTacticalDeploymentEnemies.UndesirablesSpawned = data.UnDesirablesActorsSpawned;
@@ -356,9 +379,11 @@ namespace TFTV
                 revenantSpawned = TFTVRevenant.revenantSpawned,
                 revenantSpecialResistance = TFTVRevenant.revenantSpecialResistance,
                 revenantCanSpawnSaveDate = TFTVRevenant.revenantCanSpawn,
+                RevenantResistanceDamageTypeGuid = TFTVRevenant.Resistance.RevenantResistanceDamageTypeGuid,
                 ProjectOsirisStatsTacticalSaveData = TFTVRevenant.TFTVRevenantResearch.ProjectOsirisStats,
                 ProjectOrisisCompletedSaveData = TFTVRevenant.TFTVRevenantResearch.ProjectOsiris,
                 humanEnemiesLeaderTacticsSaveData = TFTVHumanEnemies.HumanEnemiesAndTactics,
+                HumanEnemiesGangNames = TFTVHumanEnemies.HumanEnemiesGangNames,
                 infestedHavenPopulationSaveData = TFTVInfestation.HavenPopulation,
                 infestedHavenOriginalOwnerSaveData = TFTVInfestation.OriginalOwner,
                 RevenantId = TFTVRevenant.revenantID,
@@ -372,6 +397,8 @@ namespace TFTV
                 HopliteKillList = TFTVAncients.AlertedHoplites,
                 DeployedAircraftCaptureCapacity = TFTVCapturePandorans.AircraftCaptureCapacity,
                 ContainmentFacilityPresent = TFTVCapturePandorans.ContainmentFacilityPresent,
+                AircraftName = TFTVCapturePandorans.AircraftName,
+                AircraftViewElement = TFTVCapturePandorans.AircraftViewElement,
                 ScyllaCaptureModule = TFTVCapturePandorans.ScyllaCaptureModulePresent,
                 AvailableContainment = TFTVCapturePandorans.ContainmentSpaceAvailable,
                 Update35TacticalCheck = TFTVNewGameOptions.Update35Check,
@@ -387,6 +414,8 @@ namespace TFTV
                 EtermesVulnerabilityResistanceTactical = TFTVNewGameOptions.EtermesResistanceAndVulnerability,
                 UnDesirablesActorsSpawned = TFTVTacticalDeploymentEnemies.UndesirablesSpawned,
                 OperativesPortraits = TFTVCustomPortraits.CharacterPortrait.characterPics,
+                AvailableSecondaryObjectives = TFTVUITactical.SecondaryObjectivesTactical.AvailableSecondaryObjectivesTactical,
+                AccumulatedRevenantPoints = TFTVRevenant.TFTVRevenantResearch.PreviousRevenantPoints,
 
                 internalDifficultyCheck = Controller.Difficulty.Order,
 
@@ -443,9 +472,9 @@ namespace TFTV
 
                     // TFTVRevenant.Resistance.ApplySpecialRevenantResistanceArmorStack(Controller);
                     // TFTVRevenant.revenantSpecialResistance.Clear();
-                    TFTVTouchedByTheVoid.Umbra.UmbraTactical.SpawnUmbra(Controller);
+                    TFTVTouchedByTheVoid.Umbra.UmbraTactical.RollTouchByTheVoid(Controller);
                     TFTVHumanEnemies.ChampRecoverWPAura(Controller);
-                    TFTVHumanEnemies.ApplyTacticStartOfPlayerTurn(Controller);
+                    TFTVHumanEnemies.ApplyTacticStartOfPlayerTurn(Controller); 
                     TFTVSpecialDifficulties.CounterSpawned = 0;
                 }
                 else

@@ -3,6 +3,7 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Modding;
 using System;
 using System.Collections.Generic;
@@ -31,6 +32,7 @@ namespace TFTV
         public int infestedHavenPopulationSaveData = TFTVInfestation.HavenPopulation;
         public string infestedHavenOriginalOwnerSaveData = TFTVInfestation.OriginalOwner;
         public Dictionary<int, int[]> ProjectOsirisStatsSaveData = TFTVRevenant.TFTVRevenantResearch.ProjectOsirisStats;
+        public Dictionary<int, int> ProjectOsirisSlugOGStrength = TFTVRevenant.TFTVRevenantResearch.SlugOGStrength;
         public Dictionary<int, Dictionary<string, double>> PhoenixBasesUnderAttack = TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack;
         public Dictionary<int, int> PhoenixBasesContainmentBreach = TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttackSchedule;
         public List<int> InfestedPhoenixBases = new List<int>();
@@ -73,6 +75,7 @@ namespace TFTV
 
     public class TFTVGeoscape : ModGeoscape
     {
+
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         /// <summary>
@@ -117,7 +120,7 @@ namespace TFTV
             TFTVODIandVoidOmenRoll.Calculate_ODI_Level(Controller);
             TFTVBetaSaveGamesFixes.CheckResearches(Controller);
             TFTVPassengerModules.ImplementFarMConfig(Controller);
-            TFTVBetaSaveGamesFixes.RemoveBadSlug(Controller);
+          //  TFTVBetaSaveGamesFixes.RemoveBadSlug(Controller);
             TFTVCustomPortraits.CharacterPortrait.PopulatePortraitFileList();
             TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
         
@@ -154,9 +157,11 @@ namespace TFTV
 
             TFTVRevenant.PrespawnChecks.CheckRevenantTime(gsController);
             TFTVRevenant.TFTVRevenantResearch.CheckProjectOsiris(gsController);
+            TFTVRevenant.TFTVRevenantResearch.RecordAccumulatedRevenantPoints(gsController);
             TFTVDiplomacyPenalties.VoidOmensImplemented = false;
             TFTVAncientsGeo.AncientsResearch.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(gsController);
             TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
+            
         }
 
         /// <summary>
@@ -192,6 +197,7 @@ namespace TFTV
                 infestedHavenOriginalOwnerSaveData = TFTVInfestation.OriginalOwner,
                 infestedHavenPopulationSaveData = TFTVInfestation.HavenPopulation,
                 ProjectOsirisStatsSaveData = TFTVRevenant.TFTVRevenantResearch.ProjectOsirisStats,
+                ProjectOsirisSlugOGStrength = TFTVRevenant.TFTVRevenantResearch.SlugOGStrength,
                 PhoenixBasesUnderAttack = TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack,
                 PhoenixBasesContainmentBreach = TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttackSchedule,
                 InfestedPhoenixBases = TFTVBaseDefenseGeoscape.PhoenixBasesInfested,

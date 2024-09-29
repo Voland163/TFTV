@@ -331,7 +331,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(GeoMission), "TryReloadItem")]
+      /*  [HarmonyPatch(typeof(GeoMission), "TryReloadItem")]
         public static class GeoMission_TryReloadItem_patch
         {
 
@@ -367,7 +367,7 @@ namespace TFTV
                     throw;
                 }
             }
-        }
+        }*/
 
         public static void CheckScyllaCaptureTechResearch(GeoLevelController controller)
         {

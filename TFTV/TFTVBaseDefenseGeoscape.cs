@@ -1,8 +1,10 @@
 ﻿using Base;
 using Base.Core;
 using Base.Defs;
+using Base.Entities.Abilities;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.UI;
+using Base.UI.MessageBox;
 using Base.Utils;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
@@ -41,7 +43,7 @@ using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Prompts;
-using PhoenixPoint.Tactical.View.ViewStates;
+using RootMotion;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -59,7 +61,7 @@ namespace TFTV
         public static Dictionary<int, int> PhoenixBasesUnderAttackSchedule = new Dictionary<int, int>(); //actually not only breaches, but any time other than 18 hours
         public static Dictionary<int, bool> ContainmentBreachSchedule = new Dictionary<int, bool>();
         public static Dictionary<int, List<string>> PandoransThatCanEscape = new Dictionary<int, List<string>>();
-        
+
 
         private static readonly SharedData Shared = TFTVMain.Shared;
         public static List<int> PhoenixBasesInfested = new List<int>();
@@ -84,6 +86,86 @@ namespace TFTV
 
         internal static GameTagDef KillInfestationTag;
         internal static GameTagDef ScatterEnemiesTag;
+
+        public static float GetAttackProgress(GeoSite site)
+        {
+            try 
+            {
+                double timeSpanHoursTimer = site.ExpiringTimerAt.TimeSpan.TotalHours;
+                double timeSpanHoursNow = site.GeoLevel.Timing.Now.TimeSpan.TotalHours;
+
+                //  TFTVLogger.Always($"timeSpanHoursTimer {timeSpanHoursTimer}");
+                //  TFTVLogger.Always($"timeSpanHoursNow {timeSpanHoursNow}");
+
+                double superClockTimer = timeSpanHoursTimer - timeSpanHoursNow;
+
+                float totalTimeForAttack = 18;
+
+                if (PhoenixBasesUnderAttackSchedule.ContainsKey(site.SiteId))
+                {
+                    totalTimeForAttack = PhoenixBasesUnderAttackSchedule[site.SiteId];
+                }
+
+                float timer = (float)superClockTimer; //(site.ExpiringTimerAt.DateTime - site.GeoLevel.Timing.Now.DateTime).Hours;
+
+                if (timer > totalTimeForAttack)
+                {
+                    TFTVLogger.Always($"timer {timer} is higher than totalTimeForAttack ({totalTimeForAttack}), setting timer to totalTimeForAttack");
+                    timer = totalTimeForAttack;
+                }
+
+              //  TFTVLogger.Always($"timer: {timer}");
+
+                float progress = 1f - timer / totalTimeForAttack;
+
+                return progress;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        public static float GetAttackTimer(GeoSite site)
+        {
+            try
+            {
+                double timeSpanHoursTimer = site.ExpiringTimerAt.TimeSpan.TotalHours;
+                double timeSpanHoursNow = site.GeoLevel.Timing.Now.TimeSpan.TotalHours;
+
+                //  TFTVLogger.Always($"timeSpanHoursTimer {timeSpanHoursTimer}");
+                //  TFTVLogger.Always($"timeSpanHoursNow {timeSpanHoursNow}");
+
+                double superClockTimer = timeSpanHoursTimer - timeSpanHoursNow;
+
+                float timer = (float)superClockTimer; //(site.ExpiringTimerAt.DateTime - site.GeoLevel.Timing.Now.DateTime).Hours;
+
+                float totalTimeForAttack = 18;
+
+                if (PhoenixBasesUnderAttackSchedule.ContainsKey(site.SiteId))
+                {
+                    totalTimeForAttack = PhoenixBasesUnderAttackSchedule[site.SiteId];
+                }
+
+                if (timer > totalTimeForAttack)
+                {
+                    TFTVLogger.Always($"timer {timer} is higher than totalTimeForAttack ({totalTimeForAttack}), setting timer to totalTimeForAttack");
+                    timer = totalTimeForAttack;
+                }
+
+                return timer;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+        }
+
 
 
         internal class Defs
@@ -409,9 +491,6 @@ namespace TFTV
                 throw;
             }
         }
-
-
-
 
 
         [HarmonyPatch(typeof(GeoAlienFaction), "PhoenixBaseAttackCheck")]
@@ -836,7 +915,7 @@ namespace TFTV
                         {
 
                             GenerateCapturedUnitsList(geoSite.GeoLevel.PhoenixFaction, geoSite);
-                            if (PandoransThatCanEscape[geoSite.SiteId].Count > 0)
+                            if (PandoransThatCanEscape.Keys.Contains(geoSite.SiteId) && PandoransThatCanEscape[geoSite.SiteId].Count > 0)
                             {
                                 TFTVLogger.Always($"{geoSite.LocalizedSiteName} can have containment breach!");
                                 return true;
@@ -1380,7 +1459,7 @@ namespace TFTV
                             }
                         }
 
-                        if (objective.Title!=null && objective.Title.LocalizeEnglish().Contains("Phoenix base") && objective.Title.LocalizeEnglish().Contains("is under attack!"))
+                        if (objective.Title != null && objective.Title.LocalizeEnglish().Contains("Phoenix base") && objective.Title.LocalizeEnglish().Contains("is under attack!"))
                         {
 
                             //   MethodInfo getObjectiveTooltipMethod = __instance.GetType().GetMethod("GetObjectiveTooltip", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -1670,7 +1749,7 @@ namespace TFTV
                         {
                             if (!listEntrance.Contains(geoCharacter.Id))
                             {
-                               // TFTVLogger.Always($"adding {geoCharacter.Id} to Entrance List");
+                                // TFTVLogger.Always($"adding {geoCharacter.Id} to Entrance List");
                                 listEntrance.Add(geoCharacter.Id);
                             }
 
@@ -1702,16 +1781,16 @@ namespace TFTV
                             }
                         }
 
-                      
-                      /*      TFTVLogger.Always($"{geoCharacter.DisplayName}, geoId? {geoCharacter.Id} is in entrance list? {listEntrance.Contains(geoCharacter.Id)}" +
-                                $"is in hangar list? {listHangar.Contains(geoCharacter.Id)}"+
-                                $"is in lift list? {listLift.Contains(geoCharacter.Id)}" +
-                                $"iconEntrance {checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconEntrance}" +
-                                $"\nEnrollForDeployment " +
-                                $"{geoRosterDeploymentItem.EnrollForDeployment}");
-                      */
-                      
-                       
+
+                        /*      TFTVLogger.Always($"{geoCharacter.DisplayName}, geoId? {geoCharacter.Id} is in entrance list? {listEntrance.Contains(geoCharacter.Id)}" +
+                                  $"is in hangar list? {listHangar.Contains(geoCharacter.Id)}"+
+                                  $"is in lift list? {listLift.Contains(geoCharacter.Id)}" +
+                                  $"iconEntrance {checkButton.GetComponent<UIButtonIconController>().Icon.sprite == iconEntrance}" +
+                                  $"\nEnrollForDeployment " +
+                                  $"{geoRosterDeploymentItem.EnrollForDeployment}");
+                        */
+
+
                     }
                     catch (Exception e)
                     {
@@ -1793,16 +1872,16 @@ namespace TFTV
 
                 public static void CheckBeforeDeployment(UIStateRosterDeployment uIStateRosterDeployment)
                 {
-                    try 
+                    try
                     {
                         if (!PhoenixBasesUnderAttack.ContainsKey(uIStateRosterDeployment.Mission.Site.SiteId) && !PhoenixBasesInfested.Contains(uIStateRosterDeployment.Mission.Site.SiteId))
                         {
                             return;
                         }
 
-                        foreach (GeoRosterDeploymentItem geoRosterDeploymentItem in keyValuePairs.Keys) 
-                        { 
-                                AssignTeam(keyValuePairs[geoRosterDeploymentItem], geoRosterDeploymentItem);
+                        foreach (GeoRosterDeploymentItem geoRosterDeploymentItem in keyValuePairs.Keys)
+                        {
+                            AssignTeam(keyValuePairs[geoRosterDeploymentItem], geoRosterDeploymentItem);
                         }
 
                         keyValuePairs.Clear();
@@ -1817,12 +1896,21 @@ namespace TFTV
                 {
                     try
                     {
+                        if (keyValuePairs.Count > 0)
+                        {
+                            foreach (PhoenixGeneralButton button in keyValuePairs.Values)
+                            {
+                                button.gameObject.SetActive(false);
+                            }
+                            keyValuePairs.Clear();
+                        }
+
                         if (!PhoenixBasesUnderAttack.ContainsKey(uIStateRosterDeployment.Mission.Site.SiteId) && !PhoenixBasesInfested.Contains(uIStateRosterDeployment.Mission.Site.SiteId))
                         {
+
                             return;
+
                         }
-                      
-                        keyValuePairs.Clear();
 
                         SetBaseDefenseSitrep(uIStateRosterDeployment.Mission);
 
@@ -1863,12 +1951,12 @@ namespace TFTV
                     {
                         TFTVLogger.Always($"{tacMissionFactionData.FactionDef} {tacMissionFactionData.InitialDeploymentPoints}");
 
-                        if (tacMissionFactionData.FactionDef == Shared.NewJerichoFactionDef && difficulty <= 2 
+                        if (tacMissionFactionData.FactionDef == Shared.NewJerichoFactionDef && difficulty <= 2
                             && geoMission.MissionDef == DefCache.GetDef<CustomMissionTypeDef>("StoryLE0_CustomMissionTypeDef"))
                         {
                             tacMissionFactionData.InitialDeploymentPoints *= 0.75f;
                             TFTVLogger.Always($"After adjustment, {geoMission.MissionDef.name} {tacMissionFactionData.FactionDef} {tacMissionFactionData.InitialDeploymentPoints}");
-                        } 
+                        }
                     }
 
 
@@ -1876,7 +1964,7 @@ namespace TFTV
                     {
 
                         PPFactionDef alienFaction = DefCache.GetDef<PPFactionDef>("Alien_FactionDef");
-                     //   int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(geoMission.GameController.CurrentDifficulty.Order);
+                        //   int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(geoMission.GameController.CurrentDifficulty.Order);
 
                         ContextHelpHintDef hintDef = DefCache.GetDef<ContextHelpHintDef>("TFTVBaseDefense");
 
@@ -1913,12 +2001,12 @@ namespace TFTV
                             {
                                 TFTVBaseDefenseTactical.ScyllaLoose = true;
                             }
-                            else 
+                            else
                             {
                                 TFTVBaseDefenseTactical.ScyllaLoose = false;
                             }
                         }
-                        else 
+                        else
                         {
                             TFTVBaseDefenseTactical.Breach = false;
                         }
@@ -2268,60 +2356,61 @@ namespace TFTV
                     }
                 }
 
+               
 
-                [HarmonyPatch(typeof(UIFacilityInfoPopup), "Show")]
-                public static class UIFacilityInfoPopup_Show_PreventBadDemolition_patch
+
+                public static void ProhibitDemolitionToAvoidCuttingEntranceOff(UIFacilityInfoPopup facilityInfoPopup, GeoPhoenixFacility facility)
                 {
-
-                    public static void Postfix(UIFacilityInfoPopup __instance, GeoPhoenixFacility facility)
+                    try
                     {
-                        try
+                        // TFTVLogger.Always($"facility is {facility.ViewElementDef.name} at {facility.GridPosition} and it can't be demolished? {facility.CannotDemolish}");
+
+                        PhoenixFacilityDef entranceFacilityDef = DefCache.GetDef<PhoenixFacilityDef>("Entrance_PhoenixFacilityDef");
+
+                        List<Vector2Int> positionsToExclude = GetVectorsOccupiedByFacility(facility);
+
+                        List<Vector2Int> adjacentTiles = CheckAdjacency(facility);
+
+                        GeoPhoenixBaseLayout layout = facility.PxBase.Layout;
+
+                        foreach (GeoPhoenixFacility baseFacility in layout.Facilities.Where(bf => bf != facility && bf.Def != entranceFacilityDef))
                         {
-                            // TFTVLogger.Always($"facility is {facility.ViewElementDef.name} at {facility.GridPosition} and it can't be demolished? {facility.CannotDemolish}");
+                            //  TFTVLogger.Always($"considering {baseFacility.Def.name}");
 
-                            PhoenixFacilityDef entranceFacilityDef = DefCache.GetDef<PhoenixFacilityDef>("Entrance_PhoenixFacilityDef");
-
-                            List<Vector2Int> positionsToExclude = GetVectorsOccupiedByFacility(facility);
-
-                            List<Vector2Int> adjacentTiles = CheckAdjacency(facility);
-
-                            GeoPhoenixBaseLayout layout = facility.PxBase.Layout;
-
-                            foreach (GeoPhoenixFacility baseFacility in layout.Facilities.Where(bf => bf != facility && bf.Def != entranceFacilityDef))
+                            if (CheckConnectionToEntrance(layout, positionsToExclude, baseFacility))
                             {
-                                //  TFTVLogger.Always($"considering {baseFacility.Def.name}");
-
-                                if (CheckConnectionToEntrance(layout, positionsToExclude, baseFacility))
-                                {
-                                    // TFTVLogger.Always($"{baseFacility.Def.name} at {baseFacility.GridPosition} is connected to Hangar");
-                                }
-                                else
-                                {
-                                    // connectionToHangarLoss = true;
-                                    //    TFTVLogger.Always($"if {facility.Def.name} at {facility.GridPosition} is demolished, {baseFacility.Def.name} at {baseFacility.GridPosition} will lose connection to Hangar");
-                                    __instance.DemolishFacilityBtn.SetInteractable(false);
-                                    //  __instance.CanDemolish = false;
-                                    __instance.Description.text += $"\n\n{TFTVCommonMethods.ConvertKeyToString("KEY_CANT_DEMOLISH")}";
-
-                                    return;
-                                }
+                                // TFTVLogger.Always($"{baseFacility.Def.name} at {baseFacility.GridPosition} is connected to Hangar");
                             }
-                            if (!facility.CannotDemolish)
+                            else
                             {
-                                __instance.DemolishFacilityBtn.SetInteractable(true);
-                            }
+                                // connectionToHangarLoss = true;
+                                //    TFTVLogger.Always($"if {facility.Def.name} at {facility.GridPosition} is demolished, {baseFacility.Def.name} at {baseFacility.GridPosition} will lose connection to Hangar");
+                                facilityInfoPopup.DemolishFacilityBtn.SetInteractable(false);
+                                //  __instance.CanDemolish = false;
+                                facilityInfoPopup.Description.text += $"\n\n{TFTVCommonMethods.ConvertKeyToString("KEY_CANT_DEMOLISH")}";
 
-                            // TFTVLogger.Always($"{facility.Def.name} is demolished, some facility will lose connection to Hangar is {connectionToHangarLoss}");
+                                return;
+                            }
+                        }
+                        if (!facility.CannotDemolish)
+                        {
+                            facilityInfoPopup.DemolishFacilityBtn.SetInteractable(true);
                         }
 
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            throw;
-                        }
+                        // TFTVLogger.Always($"{facility.Def.name} is demolished, some facility will lose connection to Hangar is {connectionToHangarLoss}");
                     }
 
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+
+
                 }
+
+
+                
 
             }
 
@@ -2370,9 +2459,9 @@ namespace TFTV
                             foreach (GeoPhoenixFacility facility in geoPhoenixFacilities)
                             {
                                 stateProperty.SetValue(facility, GeoPhoenixFacility.FacilityState.Damaged);
-                                if(facility.Def == DefCache.GetDef<PhoenixFacilityDef>("SecurityStation_PhoenixFacilityDef")) 
-                                {   
-                                    TFTVBaseDefenseTactical.StartingDeployment.SecurityStationsUnderConstruction+=1;
+                                if (facility.Def == DefCache.GetDef<PhoenixFacilityDef>("SecurityStation_PhoenixFacilityDef"))
+                                {
+                                    TFTVBaseDefenseTactical.StartingDeployment.SecurityStationsUnderConstruction += 1;
                                     TFTVLogger.Always($"Security station under construction, increasing counter, now at {TFTVBaseDefenseTactical.StartingDeployment.SecurityStationsUnderConstruction}");
                                 }
                             }
@@ -2426,7 +2515,7 @@ namespace TFTV
                             //this is still necessary
 
                             __state = SetFacilitiesUnderConstructionToCompleted(__instance);
-                            
+
 
                             //This should not be necessary anymore
 
@@ -2540,29 +2629,38 @@ namespace TFTV
                         throw;
                     }
                 }
+            }
 
+            public static void PreventPowerOn(UIFacilityInfoPopup facilityInfoPopup, GeoPhoenixFacility facility)
+            {
+                try
+                {
+                    if (PhoenixBasesUnderAttack.ContainsKey(facility.PxBase.Site.SiteId) && GetAttackTimer(facility.PxBase.Site)<12 &&
+                        facility.GetComponent<SecurityStationFacilityComponent>() == null && facility.GetComponent<PrisonFacilityComponent>() == null)
+                    {
+                        facilityInfoPopup.TogglePowerBtn.SetInteractable(false);
+                    }
 
-
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
             }
 
             public static void DisableFacilitiesAtBase(GeoPhoenixBase phoenixBase)
             {
                 try
                 {
-                    foreach (GeoPhoenixFacility facility in phoenixBase.Layout.Facilities)
+                    foreach (GeoPhoenixFacility facility in phoenixBase.Layout.Facilities.Where(f=>f.Def.PowerCost>0 && f.IsPowered))
                     {
-                        if (facility.GetComponent<HealFacilityComponent>() != null)
+                        if (facility.GetComponent<SecurityStationFacilityComponent>() == null && facility.GetComponent<PrisonFacilityComponent>() == null)
                         {
+                           // TFTVLogger.Always($"Facility unpowered: {facility.Def.name}");
                             facility.SetPowered(false);
-                        }
-                        if (facility.GetComponent<ExperienceFacilityComponent>() != null)
-                        {
-                            facility.SetPowered(false);
-                        }
-                        if (facility.GetComponent<VehicleSlotFacilityComponent>() != null)
-                        {
-                            facility.SetPowered(false);
-                        }
+                            TFTVUIGeoMap.UnpoweredFacilitiesInfo.RemoveFacilityFromList(facility);
+                        }              
                     }
                 }
                 catch (Exception e)
@@ -2735,6 +2833,11 @@ namespace TFTV
                                     title.GetComponent<I2.Loc.Localize>().enabled = false;
                                     title.text = new LocalizedTextBind() { LocalizationKey = "BASEDEFENSE_DEFEAT_TITLE" }.Localize();
 
+                                    foreach(GeoPhoenixFacility facility in geoMission.Site.GetComponent<GeoPhoenixBase>().Layout.Facilities) 
+                                    {
+                                        TFTVUIGeoMap.UnpoweredFacilitiesInfo.RemoveFacilityFromList(facility);                                   
+                                    }
+
                                     if (geoMission.Site.CharactersCount > 0)
                                     {
                                         List<GeoSite> phoenixBases = new List<GeoSite>();
@@ -2868,32 +2971,8 @@ namespace TFTV
                                 GeoUpdatedableMissionVisualsController missionPrefab = GeoSiteVisualsDefs.Instance.HavenDefenseVisualsPrefab;
                                 missionVisualsController = UnityEngine.Object.Instantiate(missionPrefab, geoSiteVisualsController.VisualsContainer);
                                 missionVisualsController.name = "kludge";
-
-                                double timeSpanHoursTimer = site.ExpiringTimerAt.TimeSpan.TotalHours;
-                                double timeSpanHoursNow = site.GeoLevel.Timing.Now.TimeSpan.TotalHours;
-
-                                TFTVLogger.Always($"timeSpanHoursTimer {timeSpanHoursTimer}");
-                                TFTVLogger.Always($"timeSpanHoursNow {timeSpanHoursNow}");
-
-                                double superClockTimer = timeSpanHoursTimer - timeSpanHoursNow;
-
-                                float totalTimeForAttack = 18;
-
-                                if (PhoenixBasesUnderAttackSchedule.ContainsKey(site.SiteId))
-                                {
-                                    totalTimeForAttack = PhoenixBasesUnderAttackSchedule[site.SiteId];
-                                }
-
-                                float timer = (float)superClockTimer; //(site.ExpiringTimerAt.DateTime - site.GeoLevel.Timing.Now.DateTime).Hours;
-                                                                      //   TFTVLogger.Always($"timer: {timer}");
-
-                                if (timer > totalTimeForAttack)
-                                {
-                                    TFTVLogger.Always($"timer {timer} is higher than totalTimeForAttack ({totalTimeForAttack}), setting timer to totalTimeForAttack");
-                                    timer = totalTimeForAttack;
-                                }
-
-                                float progress = 1f - timer / totalTimeForAttack;
+                              
+                                float progress = GetAttackProgress(site); 
                                 //   TFTVLogger.Always($"timeToCompleteAttack is {timer}, total time for attack is {totalTimeForAttack} progress is {progress}");
 
                                 var accessor = AccessTools.Field(typeof(GeoUpdatedableMissionVisualsController), "_progressRenderer");
@@ -2933,31 +3012,10 @@ namespace TFTV
 
                                 var accessor = AccessTools.Field(typeof(GeoUpdatedableMissionVisualsController), "_progressRenderer");
                                 MeshRenderer progressRenderer = (MeshRenderer)accessor.GetValue(missionVisualsController);
-                                double timeSpanHoursTimer = site.ExpiringTimerAt.TimeSpan.TotalHours;
-                                double timeSpanHoursNow = site.GeoLevel.Timing.Now.TimeSpan.TotalHours;
+                               
 
-                                //  TFTVLogger.Always($"timeSpanHoursTimer {timeSpanHoursTimer}");
-                                //  TFTVLogger.Always($"timeSpanHoursNow {timeSpanHoursNow}");
-
-                                double superClockTimer = timeSpanHoursTimer - timeSpanHoursNow;
-
-                                float totalTimeForAttack = 18;
-
-                                if (PhoenixBasesUnderAttackSchedule.ContainsKey(site.SiteId))
-                                {
-                                    totalTimeForAttack = PhoenixBasesUnderAttackSchedule[site.SiteId];
-                                }
-
-                                float timer = (float)superClockTimer; //(site.ExpiringTimerAt.DateTime - site.GeoLevel.Timing.Now.DateTime).Hours;
-                                                                      //   TFTVLogger.Always($"timer: {timer}");
-
-                                if (timer > totalTimeForAttack)
-                                {
-                                    TFTVLogger.Always($"timer {timer} is higher than totalTimeForAttack ({totalTimeForAttack}), setting timer to totalTimeForAttack");
-                                    timer = totalTimeForAttack;
-                                }
-
-                                float progress = 1f - timer / totalTimeForAttack;
+                                float progress = GetAttackProgress(site);
+                                float timer = GetAttackTimer(site);
                                 //  TFTVLogger.Always($"timeToCompleteAttack is {timer}, total time for attack is {totalTimeForAttack} progress is {progress}");
 
                                 progressRenderer.material.SetFloat("_Progress", progress);
@@ -3269,25 +3327,7 @@ namespace TFTV
 
                         }
 
-                        double timeSpanHoursTimer = phoenixBase.ExpiringTimerAt.TimeSpan.TotalHours;
-                        double timeSpanHoursNow = phoenixBase.GeoLevel.Timing.Now.TimeSpan.TotalHours;
-
-                        //  TFTVLogger.Always($"timeSpanHoursTimer {timeSpanHoursTimer}");
-                        //  TFTVLogger.Always($"timeSpanHoursNow {timeSpanHoursNow}");
-
-                        double superClockTimer = timeSpanHoursTimer - timeSpanHoursNow;
-
-                        float totalTimeForAttack = 18;
-
-                        if (PhoenixBasesUnderAttackSchedule.ContainsKey(phoenixBase.SiteId))
-                        {
-                            totalTimeForAttack = PhoenixBasesUnderAttackSchedule[phoenixBase.SiteId];
-                        }
-
-                        float timer = (float)superClockTimer; //(site.ExpiringTimerAt.DateTime - site.GeoLevel.Timing.Now.DateTime).Hours;
-                        TFTVLogger.Always($"timer: {timer}");
-
-                        float progress = 1f - timer / totalTimeForAttack;
+                        float progress = GetAttackProgress(phoenixBase); 
 
                         TFTVLogger.Always($"attack progress is {progress}");
 
@@ -3385,25 +3425,7 @@ namespace TFTV
 
                     GeoSite phoenixBase = __instance.Site;
 
-                    double timeSpanHoursTimer = phoenixBase.ExpiringTimerAt.TimeSpan.TotalHours;
-                    double timeSpanHoursNow = phoenixBase.GeoLevel.Timing.Now.TimeSpan.TotalHours;
-
-                    //  TFTVLogger.Always($"timeSpanHoursTimer {timeSpanHoursTimer}");
-                    //  TFTVLogger.Always($"timeSpanHoursNow {timeSpanHoursNow}");
-
-                    double superClockTimer = timeSpanHoursTimer - timeSpanHoursNow;
-
-                    float totalTimeForAttack = 18;
-
-                    if (PhoenixBasesUnderAttackSchedule.ContainsKey(phoenixBase.SiteId))
-                    {
-                        totalTimeForAttack = PhoenixBasesUnderAttackSchedule[phoenixBase.SiteId];
-                    }
-
-                    float timer = (float)superClockTimer; //(site.ExpiringTimerAt.DateTime - site.GeoLevel.Timing.Now.DateTime).Hours;
-                    TFTVLogger.Always($"timer: {timer}");
-
-                    float progress = 1f - timer / totalTimeForAttack;
+                    float progress = GetAttackProgress(phoenixBase); 
 
                     TFTVLogger.Always($"GeoPhoenixBaseDefenseMission Cancel method invoked. Progress is {progress}");
 
@@ -3509,6 +3531,35 @@ namespace TFTV
 
         }
 
+        [HarmonyPatch(typeof(GeoSite), "VehicleArrived")]
+        public static class GeoSite_VehicleArrived_patch
+        {
+            public static void Postfix(GeoSite __instance, GeoVehicle vehicle)
+            {
+                try
+                {
+                    GeoLevelController controller = __instance.GeoLevel;
+
+                    if (__instance.Owner==controller.PhoenixFaction && __instance.GetComponent<GeoPhoenixBase>()!=null && vehicle.Owner != controller.PhoenixFaction) 
+                    {
+                        TFTVLogger.Always($"{__instance.LocalizedSiteName} under attack by {vehicle.Owner.Name.Localize()}!");
+                        controller.Timing.Paused = true;
+                        controller.View.ChaseTarget(__instance, true);
+
+                        string warning = TFTVCommonMethods.ConvertKeyToString("KEY_BASE_UNDER_ATTACK_RED");
+
+                        GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
 
         /* [HarmonyPatch(typeof(UIModuleCharacterProgression), "BuyAbility")]
          public static class UIModuleCharacterProgression_BuyAbility_patch
@@ -3559,30 +3610,11 @@ namespace TFTV
                             TFTVLogger.Always("Closing modal because mission is not in play");
                         }
 
-                      
+
 
                         if (PhoenixBasesUnderAttack.ContainsKey(geoSite.SiteId) && geoSite.CharactersCount == 0)
                         {
-
-                            double timeSpanHoursTimer = geoSite.ExpiringTimerAt.TimeSpan.TotalHours;
-                            double timeSpanHoursNow = geoSite.GeoLevel.Timing.Now.TimeSpan.TotalHours;
-
-                            //  TFTVLogger.Always($"timeSpanHoursTimer {timeSpanHoursTimer}");
-                            //  TFTVLogger.Always($"timeSpanHoursNow {timeSpanHoursNow}");
-
-                            double superClockTimer = timeSpanHoursTimer - timeSpanHoursNow;
-
-                            float totalTimeForAttack = 18;
-
-                            if (PhoenixBasesUnderAttackSchedule.ContainsKey(geoSite.SiteId))
-                            {
-                                totalTimeForAttack = PhoenixBasesUnderAttackSchedule[geoSite.SiteId];
-                            }
-
-                            float timer = (float)superClockTimer; //(site.ExpiringTimerAt.DateTime - site.GeoLevel.Timing.Now.DateTime).Hours;
-                            TFTVLogger.Always($"timer: {timer}");
-
-                            float progress = 1f - timer / totalTimeForAttack;
+                            float progress = GetAttackProgress(geoSite); 
 
                             List<IGeoCharacterContainer> characterContainers = geoMission.GetDeploymentSources(geoSite.Owner);
 
@@ -3619,25 +3651,6 @@ namespace TFTV
 
                             commonMissionDataController.InfectedAreaGroup.gameObject.SetActive(false);
                         }
-
-
-
-
-                        /*  MissionTypeTagDef ancientSiteDefense = DefCache.GetDef<MissionTypeTagDef>("MissionTypeAncientSiteDefense_MissionTagDef");
-                          if ((geoSite.Type == GeoSiteType.AncientHarvest || geoSite.Type == GeoSiteType.AncientRefinery) && geoMission.MissionDef.MissionTags.Contains(ancientSiteDefense))
-                          {
-                              if (geoSite.ActiveMission != null)
-                              {
-                                  geoSite.ActiveMission.Launch(new GeoSquad() { });
-                              }
-                              else 
-                              {
-                                  geoMission.Cancel();
-                                  geoSite.Owner = geoSite.GeoLevel.PhoenixFaction;
-                                  __instance.Close();
-                                  TFTVLogger.Always("Closing modal because no Active Mission on Site.");
-                              }
-                          }*/
 
                     }
                 }

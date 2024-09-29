@@ -44,6 +44,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting.Contexts;
 using UnityEngine;
 using UnityEngine.UI;
 using static PhoenixPoint.Tactical.View.ViewControllers.SoldierResultElement;
@@ -598,6 +599,121 @@ namespace TFTV
                 private static readonly string equipmentItemsString = "EquipmentItems";
                 private static readonly string inventoryItemsString = "InventoryItems";
 
+                private static bool _mutationBionicsShaded = false;
+
+                private static void ShadeMutationBionics(UIModuleActorCycle uIModuleActorCycle)
+                {
+                    try
+                    {
+                        GeoCharacter geoCharacter = uIModuleActorCycle.CurrentCharacter;
+                        if (geoCharacter == null || geoCharacter.TemplateDef == null || !geoCharacter.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag) && !_mutationBionicsShaded)
+                        {
+                            return;
+                        }
+
+                        PhoenixGeneralButton mutationButton = uIModuleActorCycle.EditUnitButtonsController.MutationButton;
+                        PhoenixGeneralButton bionicsButton = uIModuleActorCycle.EditUnitButtonsController.BionicsButton;
+
+                        FieldInfo mutationAvailableFieldInfo = typeof(EditUnitButtonsController).GetField("_mutationAvailable", BindingFlags.NonPublic | BindingFlags.Instance);
+                        FieldInfo bionicsAvailableFieldInfo = typeof(EditUnitButtonsController).GetField("_bionicsAvailable", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                        bool mutationAvailable = (bool)mutationAvailableFieldInfo.GetValue(uIModuleActorCycle.EditUnitButtonsController);
+                        bool bionicsAvailable = (bool)bionicsAvailableFieldInfo.GetValue(uIModuleActorCycle.EditUnitButtonsController);
+
+                        if (!mutationAvailable && !bionicsAvailable)
+                        {
+                            return;
+                        }
+
+                        Text bionicsText = null;
+                        Text mutateText = null;
+
+                        if (bionicsAvailable)
+                        {
+                            bionicsText = uIModuleActorCycle.EditUnitButtonsController.GetComponentsInChildren<Text>().FirstOrDefault(c => c.text == TFTVCommonMethods.ConvertKeyToString("KEY_AUMGENTATION_ACTION"));
+                        }
+
+                        if (mutationAvailable)
+                        {
+                            mutateText = uIModuleActorCycle.EditUnitButtonsController.GetComponentsInChildren<Text>().FirstOrDefault(c => c.text == TFTVCommonMethods.ConvertKeyToString("KEY_GEOSCAPE_MUTATE"));
+                        }
+
+                        if (geoCharacter.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag))
+                        {
+                            _mutationBionicsShaded = true;
+
+                            if (mutateText != null)
+                            {
+                                mutationButton.SetInteractable(false);
+
+                                if (mutationButton.gameObject.GetComponent<UITooltipText>() != null)
+                                {
+                                    mutationButton.gameObject.GetComponent<UITooltipText>().enabled = true;
+
+                                }
+                                else
+                                {
+                                    mutationButton.gameObject.AddComponent<UITooltipText>().TipText = TFTVCommonMethods.ConvertKeyToString("KEY_ABILITY_NOAUGMENTATONS");
+                                }
+                                mutateText.color = Color.gray;
+
+                            }
+
+                            if (bionicsText != null)
+                            {
+                                bionicsButton.SetInteractable(false);
+
+                                if (bionicsButton.gameObject.GetComponent<UITooltipText>() != null)
+                                {
+                                    bionicsButton.gameObject.GetComponent<UITooltipText>().enabled = true;
+
+                                }
+                                else
+                                {
+                                    bionicsButton.gameObject.AddComponent<UITooltipText>().TipText = TFTVCommonMethods.ConvertKeyToString("KEY_ABILITY_NOAUGMENTATONS");
+                                }
+                                bionicsText.color = Color.gray;
+                            }
+                        }
+                        else
+                        {
+                            _mutationBionicsShaded = false;
+
+                            if (mutateText != null)
+                            {
+
+                                mutationButton.SetInteractable(true);
+
+                                if (mutationButton.gameObject.GetComponent<UITooltipText>() != null)
+                                {
+                                    mutationButton.gameObject.GetComponent<UITooltipText>().enabled = false;
+                                }
+
+                                mutateText.color = new Color(0.820f, 0.859f, 0.914f);
+                            }
+
+                            if (bionicsText != null)
+                            {
+
+                                bionicsButton.SetInteractable(true);
+                                if (bionicsButton.gameObject.GetComponent<UITooltipText>() != null)
+                                {
+                                    bionicsButton.gameObject.GetComponent<UITooltipText>().enabled = false;
+                                }
+
+                                bionicsText.color = new Color(0.820f, 0.859f, 0.914f);
+
+                            }
+
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+
+                }
+
 
                 [HarmonyPatch(typeof(EditUnitButtonsController), "SetEditUnitButtonsBasedOnType")]
                 internal static class TFTV_EditUnitButtonsController_SetEditUnitButtonsBasedOnType_ToggleHelmetButton_patch
@@ -662,6 +778,7 @@ namespace TFTV
                                             HelmetToggle.ResetButtonAnimations();
                                         }
 
+                                        ShadeMutationBionics(____parentModule);
 
                                         break;
                                     case UIModuleActorCycle.ActorCycleState.EditVehicleSection:
@@ -703,6 +820,33 @@ namespace TFTV
                                             LoadLoadout.ResetButtonAnimations();
                                         }
                                         break;
+                                    case UIModuleActorCycle.ActorCycleState.RecruitSection:
+                                        if (HelmetToggle != null)
+                                        {
+                                            HelmetToggle.gameObject.SetActive(false);
+                                            HelmetToggle.ResetButtonAnimations();
+                                            UnequipAll.gameObject.SetActive(false);
+                                            UnequipAll.ResetButtonAnimations();
+                                            SaveLoadout.gameObject.SetActive(false);
+                                            SaveLoadout.ResetButtonAnimations();
+                                            LoadLoadout.gameObject.SetActive(false);
+                                            LoadLoadout.ResetButtonAnimations();
+                                        }
+                                        break;
+                                    case UIModuleActorCycle.ActorCycleState.Memorial:
+                                        if (HelmetToggle != null)
+                                        {
+                                            HelmetToggle.gameObject.SetActive(false);
+                                            HelmetToggle.ResetButtonAnimations();
+                                            UnequipAll.gameObject.SetActive(false);
+                                            UnequipAll.ResetButtonAnimations();
+                                            SaveLoadout.gameObject.SetActive(false);
+                                            SaveLoadout.ResetButtonAnimations();
+                                            LoadLoadout.gameObject.SetActive(false);
+                                            LoadLoadout.ResetButtonAnimations();
+                                        }
+                                        break;
+
                                 }
 
                                 if (____parentModule.CurrentState == UIModuleActorCycle.ActorCycleState.SubmenuSection)//EditUnitButtonsController.CustomizeButton.gameObject.activeInHierarchy)
@@ -760,6 +904,80 @@ namespace TFTV
                     }
 
                 }
+
+
+                private static bool _equipAllRunning = false;
+
+                [HarmonyPatch(typeof(UIInventoryList), "GetTotalUsedStorage")]
+                internal static class TFTV_UIInventoryList_GetTotalUsedStorage_patch
+                {
+
+                    public static void Postfix(UIInventoryList __instance, ref int __result)
+                    {
+                        try
+                        {
+                            if (_equipAllRunning)
+                            {
+                                __result = 0;
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+
+                }
+
+
+
+             /*   [HarmonyPatch(typeof(UIInventoryList), "CanAcceptItem", new Type[] { typeof(ItemDef) })]
+                internal static class TFTV_UIInventoryList_CanAcceptItem_patch
+                {
+
+                    public static bool Prefix(UIInventoryList __instance, ItemDef item, ref bool __result, bool ____isFiltering)
+                    {
+                        try
+                        {
+                            if (____isFiltering)
+                            {
+                                TFTVLogger.Always($"{item.name} is filtering, returning true");
+                                __result = true;
+                                return false;
+                            }
+
+                            MethodInfo methodInfoCreateFilterData = typeof(UIInventoryList).GetMethod("CreateFilterData", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                            FilterData filterData = (FilterData)methodInfoCreateFilterData.Invoke(__instance, new object[] { item, null }); // __instance.CreateFilterData(item);
+
+                            TFTVLogger.Always($"filterData.AddedItem: {filterData?.AddedItem}, " +
+                                $"filterData:RemovedItem: {filterData?.RemovedItem}, " +
+                                $"filterData.CurrentStorageUsed: {filterData?.CurrentStorageUsed}" +
+                                $"filterData?.CurrentItems?.Count(): {filterData?.CurrentItems?.Count()}");
+
+                            if (!(__instance.InventoryListFilter == null) && !__instance.InventoryListFilter.CanAddItem(filterData, __instance.currentInventorySlotsBonus))
+                            {
+                                __result = __instance.InventoryListFilter.CanSwapItems(filterData, __instance.currentInventorySlotsBonus);
+                                TFTVLogger.Always($"{item.name} {__result}");
+                                return false;
+                            }
+                            __result = true;
+                            return false;
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+
+                }*/
+
+
+
+
 
                 private static void CreateAdditionalButtonsForUIEditScreen(EditUnitButtonsController editUnitButtonsController)
                 {
@@ -831,10 +1049,15 @@ namespace TFTV
                 /// <param name="squad"></param>
 
                 private static List<string> _allMissingEquipment = new List<string>();
+
+
+
                 public static void EquipAll(List<GeoCharacter> squad)
                 {
                     try
                     {
+                        _equipAllRunning = true;
+
                         GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
                         UIModuleActorCycle uIModuleActorCycle = controller.View.GeoscapeModules.ActorCycleModule;
@@ -862,8 +1085,9 @@ namespace TFTV
 
                         if (_allMissingEquipment.Count == 0)     //All got equipped on the first pass! ending
                         {
-                            TFTVLogger.Always($"and got here");
+                            //  TFTVLogger.Always($"and got here");
                             stateStack.SwitchToPreviousState();
+                            _equipAllRunning = false;
                             return;
                         }
 
@@ -902,7 +1126,7 @@ namespace TFTV
                         }
 
                         stateStack.SwitchToPreviousState();
-
+                        _equipAllRunning = false;
                     }
                     catch (Exception e)
                     {
@@ -931,10 +1155,13 @@ namespace TFTV
 
                                 if (item != null && _allMissingEquipment.Contains(item.ItemDef.Guid))
                                 {
-                                    // TFTVLogger.Always($"{item} should be removed");
+                                   // TFTVLogger.Always($"{item} should be removed");
                                     inventoryLists[x].RemoveItem(item, slot);
+                                   // TFTVLogger.Always($"{item} got here 0 ");
                                     _allMissingEquipment.Remove(item.ItemDef.Guid);
+                                  //  TFTVLogger.Always($"{item} got here 1");
                                     uIModuleSoldierEquip.StorageList.AddItem(item);
+                                  //  TFTVLogger.Always($"{item} got here 2");
                                 }
                             }
                         }
@@ -1058,21 +1285,21 @@ namespace TFTV
                         {
                             TacticalItemDef itemDef = (TacticalItemDef)Repo.GetDef(missingItems[x]);
                             string itemName = itemDef.GetDisplayName().Localize();
-                        
+
                             if (itemDef.ManufacturePointsCost == 0 && phoenixFaction.Manufacture.Contains(itemDef))
                             {
                                 // TFTVLogger.Always($"adding missing instant manufacture item {itemDef}");
                                 missingInstantItems.Add(itemDef.Guid);
-                                
-                                if (instantManufactureItems.ContainsKey(itemName)) 
+
+                                if (instantManufactureItems.ContainsKey(itemName))
                                 {
-                                    instantManufactureItems[itemName] += 1; 
+                                    instantManufactureItems[itemName] += 1;
                                 }
-                                else 
+                                else
                                 {
-                                    instantManufactureItems.Add(itemName, 1); 
+                                    instantManufactureItems.Add(itemName, 1);
                                 }
-                               // instantItemList += $"\n-{itemDef.GetDisplayName().Localize()}";
+                                // instantItemList += $"\n-{itemDef.GetDisplayName().Localize()}";
                             }
                             else
                             {
@@ -1080,9 +1307,9 @@ namespace TFTV
                                 {
                                     otherItems[itemName] += 1;
                                 }
-                                else 
+                                else
                                 {
-                                    otherItems.Add(itemName, 1);                                
+                                    otherItems.Add(itemName, 1);
                                 }
                                 //message += $"\n-{itemDef.GetDisplayName().Localize()}";
                             }
@@ -1114,7 +1341,7 @@ namespace TFTV
                                     instantManufactureItems.Add(itemName, 1);
                                 }
                             }
-                            else 
+                            else
                             {
                                 if (otherItems.ContainsKey(itemName))
                                 {
@@ -1126,11 +1353,11 @@ namespace TFTV
                                 }
                             }
 
-                          //  
+                            //  
                             // missingItems.Add(item.ItemDef.Guid);
                         }
 
-                        foreach(string instantItem in instantManufactureItems.Keys) 
+                        foreach (string instantItem in instantManufactureItems.Keys)
                         {
                             instantItemList += $"\n-{instantManufactureItems[instantItem]} {instantItem}";
                         }
@@ -1184,6 +1411,33 @@ namespace TFTV
                     }
                 }
 
+                private static bool CheckItemEligibleForManufacture(ItemDef itemDef) 
+                {
+                    try
+                    {
+                        GameTagDef manufacturableTag = Shared.SharedGameTags.ManufacturableTag;
+                        GeoPhoenixFaction geoPhoenix = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction;
+
+                        if (!itemDef.Tags.Contains(manufacturableTag))
+                        {
+                            return false;
+                        }
+                        if (!geoPhoenix.Manufacture.Contains(itemDef))
+                        {
+                            return false;
+                        }
+
+                        return true;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+
+                }
+
+
                 private static void TryReplenish(List<string> missingItems, GeoCharacter character,
                     UIModuleSoldierEquip uIModuleSoldierEquip, GeoLevelController controller, bool equipAllInvoked = false)
                 {
@@ -1195,22 +1449,22 @@ namespace TFTV
 
                         List<ICommonItem> itemsMissingAmmo = new List<ICommonItem>();
 
-                        itemsMissingAmmo.AddRange(uIModuleSoldierEquip.ReadyList.UnfilteredItems.Where(i => i.CommonItemData.CurrentCharges < i.ItemDef.ChargesMax));
-                        itemsMissingAmmo.AddRange(uIModuleSoldierEquip.ArmorList.UnfilteredItems.Where(i => i.CommonItemData.CurrentCharges < i.ItemDef.ChargesMax));
-                        itemsMissingAmmo.AddRange(uIModuleSoldierEquip.InventoryList.UnfilteredItems.Where(i => i.CommonItemData.CurrentCharges < i.ItemDef.ChargesMax));
+                        itemsMissingAmmo.AddRange(uIModuleSoldierEquip.ReadyList.UnfilteredItems.Where(i => i.CommonItemData.CurrentCharges < i.ItemDef.ChargesMax && CheckItemEligibleForManufacture(i.ItemDef)));
+                        itemsMissingAmmo.AddRange(uIModuleSoldierEquip.ArmorList.UnfilteredItems.Where(i => i.CommonItemData.CurrentCharges < i.ItemDef.ChargesMax && CheckItemEligibleForManufacture(i.ItemDef)));
+                        itemsMissingAmmo.AddRange(uIModuleSoldierEquip.InventoryList.UnfilteredItems.Where(i => i.CommonItemData.CurrentCharges < i.ItemDef.ChargesMax && CheckItemEligibleForManufacture(i.ItemDef)));
 
                         List<string> missingInstantItems = new List<string>();
 
-                        if (missingItems.Count == 0 && itemsMissingAmmo.Count == 0) 
-                        {                        
-                            return;    
+                        if (missingItems.Count == 0 && itemsMissingAmmo.Count == 0)
+                        {
+                            return;
                         }
 
                         ResourcePack totalCost = new ResourcePack();
                         string message = CreateMessageMissingItemsAndAmmo(missingItems, character, uIModuleSoldierEquip, itemsMissingAmmo, ref missingInstantItems, ref totalCost);
 
-                        if (missingInstantItems.Count>0 || itemsMissingAmmo.Count>0)
-                        {                          
+                        if (missingInstantItems.Count > 0 || itemsMissingAmmo.Count > 0)
+                        {
                             if (uIModuleSoldierEquip.ModuleData.Wallet.HasResources(totalCost))
                             {
                                 GameUtl.GetMessageBox().ShowSimplePrompt(message.Replace("{1}", GetTotalPriceText(totalCost)), MessageBoxIcon.Warning, MessageBoxButtons.YesNo, new MessageBox.MessageBoxCallback(OnMissingEquipmentCallback));
@@ -1222,7 +1476,7 @@ namespace TFTV
                                 {
                                     if (equipAllInvoked)
                                     {
-                                        controller.View.ToEditUnitState(character);                                       
+                                        controller.View.ToEditUnitState(character);
                                     }
 
                                     ReloadWeapons(uIModuleSoldierEquip, totalCost);
@@ -1231,7 +1485,7 @@ namespace TFTV
 
                                     if (equipAllInvoked)
                                     {
-                                        stateStack.SwitchToPreviousState();                                     
+                                        stateStack.SwitchToPreviousState();
                                     }
                                 }
                             }
@@ -1331,6 +1585,9 @@ namespace TFTV
                                         break;
                                 }
                                 resourcesInfo = resourcesInfo.Replace("{0}", resourceUnit.RoundedValue.ToString());
+
+                                TFTVLogger.Always($"{resourcesInfo}");
+
                                 message += resourcesInfo;
                             }
                         }
@@ -1369,7 +1626,7 @@ namespace TFTV
                 {
                     try
                     {
-                        TFTVLogger.Always($"Checking WeaponCost of {item} with charges max {item?.ItemDef?.ChargesMax} and current charges {item?.CommonItemData?.CurrentCharges}");
+                       // TFTVLogger.Always($"Checking WeaponCost of {item} with charges max {item?.ItemDef?.ChargesMax} and current charges {item?.CommonItemData?.CurrentCharges}");
 
                         if (item != null && item.ItemDef.ChargesMax > 0 && item.CommonItemData.CurrentCharges < item.ItemDef.ChargesMax)
                         {
@@ -1580,21 +1837,21 @@ namespace TFTV
 
                                 if (list == inventoryItemsString)
                                 {
-                                    TFTVLogger.Always($"removing from character {item.ItemDef.name}, 0");
+                                  //  TFTVLogger.Always($"removing from character {item.ItemDef.name}, 0");
                                     uIModuleSoldierEquip.InventoryList.RemoveItem(item, null);
                                 }
                                 else if (list == equipmentItemsString)
                                 {
-                                    TFTVLogger.Always($"removing from character {item.ItemDef.name}, 1");
+                                  //  TFTVLogger.Always($"removing from character {item.ItemDef.name}, 1");
                                     uIModuleSoldierEquip.ReadyList.RemoveItem(item, null);
                                 }
                                 else
                                 {
-                                    TFTVLogger.Always($"removing from character {item.ItemDef.name}, 2");
+                                  //  TFTVLogger.Always($"removing from character {item.ItemDef.name}, 2");
                                     uIModuleSoldierEquip.ArmorList.RemoveItem(item, null);
                                 }
 
-                                TFTVLogger.Always($"transferring {item.ItemDef.name}");
+                               // TFTVLogger.Always($"transferring {item.ItemDef.name}");
                                 uIModuleSoldierEquip.StorageList.AddItem(item);
                             }
 
@@ -1802,12 +2059,12 @@ namespace TFTV
 
                         List<GeoCharacter> charactersOnSite = new List<GeoCharacter>();
 
-                        List<GeoRosterDeploymentItem> deploymentItems =(from g in uIModuleGeoRoster.Slots
-                        where g.gameObject.activeSelf
-                        select g into s
-                        select s.GetComponent<GeoRosterDeploymentItem>()).ToList();
+                        List<GeoRosterDeploymentItem> deploymentItems = (from g in uIModuleGeoRoster.Slots
+                                                                         where g.gameObject.activeSelf
+                                                                         select g into s
+                                                                         select s.GetComponent<GeoRosterDeploymentItem>()).ToList();
 
-                        foreach (GeoRosterDeploymentItem geoRosterItem in deploymentItems) 
+                        foreach (GeoRosterDeploymentItem geoRosterItem in deploymentItems)
                         {
                             TFTVLogger.Always($"{geoRosterItem.Character.DisplayName}");
 
@@ -1817,7 +2074,7 @@ namespace TFTV
                                 charactersOnSite.Add(geoRosterItem.Character);
                             }
                         }
-                            
+
                         if (charactersOnSite != null && charactersOnSite.Count > 0)
                         {
                             GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.ToEditUnitState(charactersOnSite.FirstOrDefault());
@@ -1967,21 +2224,7 @@ namespace TFTV
                     GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
                     UIModuleDeploymentMissionBriefing uIModuleDeploymentMissionBriefing = controller.View.GeoscapeModules.DeploymentMissionBriefingModule;
 
-                    
-
-                    // uIModuleDeploymentMissionBriefing.transform.gameObject.SetActive(false);
-
                     UIModuleGeneralPersonelRoster uIModuleGeoRoster = controller.View.GeoscapeModules.GeneralPersonelRosterModule;
-    
-                    
-                   
-                   
-                    // UIModuleGeneralPersonelRoster uIModuleGeoRoster = controller.View.GeoscapeModules.GeneralPersonelRosterModule;
-
-                    //  uIModuleGeoRoster.transform.gameObject.SetActive(false);
-
-                    //  controller.View.GeoscapeModules.ActorCycleModule.transform.gameObject.SetActive(false);
-
 
                     if (uIModuleDeploymentMissionBriefing.transform.GetComponentsInChildren<PhoenixGeneralButton>().FirstOrDefault(b => b.name == "EquipAllButton") != null)
 
@@ -1998,26 +2241,25 @@ namespace TFTV
 
                     TFTVLogger.Always($"CreateBestEquipmentButton running");
 
-                    Resolution resolution = Screen.currentResolution;                 
+                    Resolution resolution = Screen.currentResolution;
                     float resolutionFactorWidth = (float)resolution.width / 1920f;
                     float resolutionFactorHeight = (float)resolution.height / 1080f;
-                  
+
                     EditUnitButtonsController editUnitButtonsController = controller.View.GeoscapeModules.ActorCycleModule.EditUnitButtonsController;
 
                     PhoenixGeneralButton useBestEquipmentButton = UnityEngine.Object.Instantiate(uIModuleDeploymentMissionBriefing.DeployButton, uIModuleDeploymentMissionBriefing.SquadSlotsUsedText.transform);
 
-                    uIModuleDeploymentMissionBriefing.SquadSlotsUsedText.transform.position += new Vector3(105 * resolutionFactorWidth, 5*resolutionFactorHeight, 0);
+                    uIModuleDeploymentMissionBriefing.SquadSlotsUsedText.transform.position += new Vector3(105 * resolutionFactorWidth, 5 * resolutionFactorHeight, 0);
                     uIModuleDeploymentMissionBriefing.SquadSlotsUsedText.fontSize -= 10;
 
                     useBestEquipmentButton.gameObject.SetActive(true);
 
                     useBestEquipmentButton.name = "EquipAllButton";
-             
+
                     Text text = useBestEquipmentButton.GetComponentsInChildren<Transform>().FirstOrDefault(t => t.name == "UIText3Big").GetComponent<Text>();
                     text.GetComponent<I2.Loc.Localize>().enabled = false;
                     text.text = TFTVCommonMethods.ConvertKeyToString("KEY_UI_LOADUP_TEXT").ToUpper();
-                    //TFTVLogger.Always($"the font name is {text.font.name}");
-                  
+
                     Image image = useBestEquipmentButton.GetComponentsInChildren<Image>().FirstOrDefault(i => i.name == "Hotkey");
                     image.sprite = Helper.CreateSpriteFromImageFile("Lockers.png");
 

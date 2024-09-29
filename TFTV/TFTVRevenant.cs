@@ -12,8 +12,9 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Game;
-using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Research;
+using PhoenixPoint.Geoscape.Entities.Research.Requirement;
+using PhoenixPoint.Geoscape.InterceptionPrototype.DamageTypes;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -28,6 +29,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
+using Action = System.Action;
 
 
 namespace TFTV
@@ -100,7 +102,7 @@ namespace TFTV
 
         //private static readonly DamageKeywordDef paralisingDamageKeywordDef =DefCache.GetDef<DamageKeywordDef>("Paralysing_DamageKeywordDataDef"));
 
-        internal class InternalData 
+        internal class InternalData
         {
             public static void RevenantDataToClearOnStateChangeAndLoad()
             {
@@ -110,7 +112,9 @@ namespace TFTV
                     revenantSpecialResistance = new List<string>();
                     revenantCanSpawn = false;
                     daysRevenantLastSeen = 0;
+                    Resistance.RevenantResistanceDamageTypeGuid = null;
                     TFTVRevenantResearch.ProjectOsirisStats = new Dictionary<int, int[]>();
+                    TFTVRevenantResearch.SlugOGStrength = new Dictionary<int, int>();
                     TFTVRevenantResearch.ProjectOsiris = false;
                 }
                 catch (Exception e)
@@ -124,9 +128,12 @@ namespace TFTV
             {
                 try
                 {
+
                     revenantSpawned = false;
                     revenantID = 0;
+                    Resistance.RevenantResistanceDamageTypeGuid = null;
                     TFTVRevenantResearch.RevenantPoints = 0;
+                    TFTVRevenantResearch.PreviousRevenantPoints = 0;
                 }
                 catch (Exception e)
                 {
@@ -141,7 +148,9 @@ namespace TFTV
                 {
                     revenantSpawned = false;
                     revenantID = 0;
+                    Resistance.RevenantResistanceDamageTypeGuid = null;
                     TFTVRevenantResearch.ProjectOsirisStats = new Dictionary<int, int[]>();
+                    TFTVRevenantResearch.SlugOGStrength = new Dictionary<int, int>();
                 }
                 catch (Exception e)
                 {
@@ -573,35 +582,37 @@ namespace TFTV
             }
             public static void CreateRevenantGameTags()
             {
-                string skillName = "RevenantTier";
-                GameTagDef source = DefCache.GetDef<GameTagDef>("Takeshi_Tutorial3_GameTagDef");
-                RevenantTier1GameTag = Helper.CreateDefFromClone(
-                     source,
-                     "1677F9F4-5B45-47FA-A119-83A76EF0EC70",
-                     skillName + "_1_" + "GameTagDef");
-                RevenantTier2GameTag = Helper.CreateDefFromClone(
-                    source,
-                    "9A807A62-D51D-404E-ADCF-ABB4A888202E",
-                    skillName + "_2_" + "GameTagDef");
-                RevenantTier3GameTag = Helper.CreateDefFromClone(
-                    source,
-                    "B4BD3091-8522-4F3C-8A0F-9EE522E0E6B4",
-                    skillName + "_3_" + "GameTagDef");
-                AnyRevenantGameTag = Helper.CreateDefFromClone(
-                       source,
-                       "D2904A22-FE23-45B3-8879-9236E389C9E4",
-                       "Any_Revenant_TagDef");
-                string tagName = "RevenantResistance";
-                RevenantResistanceGameTag = Helper.CreateDefFromClone(
-                     source,
-                     "D424B077-6731-40AD-BFA8-7020BD3A9F9A",
-                     tagName + "_GameTagDef");
+                try
+                {
+                    string skillName = "RevenantTier";
+                    GameTagDef source = DefCache.GetDef<GameTagDef>("Takeshi_Tutorial3_GameTagDef");
+                    RevenantTier1GameTag = Helper.CreateDefFromClone(
+                         source,
+                         "1677F9F4-5B45-47FA-A119-83A76EF0EC70",
+                         skillName + "_1_" + "GameTagDef");
+                    RevenantTier2GameTag = Helper.CreateDefFromClone(
+                        source,
+                        "9A807A62-D51D-404E-ADCF-ABB4A888202E",
+                        skillName + "_2_" + "GameTagDef");
+                    RevenantTier3GameTag = Helper.CreateDefFromClone(
+                        source,
+                        "B4BD3091-8522-4F3C-8A0F-9EE522E0E6B4",
+                        skillName + "_3_" + "GameTagDef");
+                    AnyRevenantGameTag = Helper.CreateDefFromClone(
+                           source,
+                           "D2904A22-FE23-45B3-8879-9236E389C9E4",
+                           "Any_Revenant_TagDef");
+                    string tagName = "RevenantResistance";
+                    RevenantResistanceGameTag = Helper.CreateDefFromClone(
+                         source,
+                         "D424B077-6731-40AD-BFA8-7020BD3A9F9A",
+                         tagName + "_GameTagDef");
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
             }
-
-
-
-
-
 
         }
 
@@ -960,10 +971,10 @@ namespace TFTV
             {
                 try
                 {
-                    if (controller.IsFromSaveGame && revenantID != 0)
+                    if (controller.IsFromSaveGame && (revenantID != 0 || controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")) && TFTVVoidOmens.VoidOmensCheck[19] && revenantID == 0))
                     {
-                        TFTVLogger.Always("Game is loading and Revenant is present; adjusting revenant resistance check");
-                        AdjustRevenantResistanceStatusDescription();
+                        TFTVLogger.Always("Game is loading and Revenant is present or V019 in effect; adjusting revenant resistance check");
+                        ModifyRevenantResistanceAbility(controller);
 
                     }
                 }
@@ -974,33 +985,33 @@ namespace TFTV
                 }
             }
 
-           /* private static void ApplyRevenantSpecialResistance(ref DamageAccumulation.TargetData data)
-            {
-                try
-                {
+            /* private static void ApplyRevenantSpecialResistance(ref DamageAccumulation.TargetData data)
+             {
+                 try
+                 {
 
-                    if (data.Target.GetActor() != null && _revenantResistanceStatus.DamageTypeDefs[0] == null
-                        && data.Target.GetActor().Status != null && data.Target.GetActor().Status.HasStatus(_revenantResistanceStatus))
-                    {
-                        float multiplier = 0.5f;
+                     if (data.Target.GetActor() != null && _revenantResistanceStatus.DamageTypeDefs[0] == null
+                         && data.Target.GetActor().Status != null && data.Target.GetActor().Status.HasStatus(_revenantResistanceStatus))
+                     {
+                         float multiplier = 0.5f;
 
-                        if (!revenantSpecialResistance.Contains(data.Target.GetActor().name))
-                        {
-                            //  TFTVLogger.Always("This check was passed");
-                            data.DamageResult.HealthDamage = Math.Min(data.Target.GetHealth(), data.DamageResult.HealthDamage * multiplier);
-                            data.AmountApplied = Math.Min(data.Target.GetHealth(), data.AmountApplied * multiplier);
-                            if (!data.Target.IsBodyPart())
-                            {
-                                revenantSpecialResistance.Add(data.Target.GetActor().name);
-                            }
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }*/
+                         if (!revenantSpecialResistance.Contains(data.Target.GetActor().name))
+                         {
+                             //  TFTVLogger.Always("This check was passed");
+                             data.DamageResult.HealthDamage = Math.Min(data.Target.GetHealth(), data.DamageResult.HealthDamage * multiplier);
+                             data.AmountApplied = Math.Min(data.Target.GetHealth(), data.AmountApplied * multiplier);
+                             if (!data.Target.IsBodyPart())
+                             {
+                                 revenantSpecialResistance.Add(data.Target.GetActor().name);
+                             }
+                         }
+                     }
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                 }
+             }*/
 
             // Adopted from MadSkunky BetterClasses. Harmony Patch to calculate shred resistance, vanilla has no implementation for this
             [HarmonyPatch(typeof(ShreddingDamageKeywordData), "ProcessKeywordDataInternal")]
@@ -1064,10 +1075,18 @@ namespace TFTV
                   }
               }*/
 
+            public static string RevenantResistanceDamageTypeGuid = null;
+
             public static DamageTypeBaseEffectDef GetPreferredDamageType(TacticalLevelController controller)
             {
                 try
                 {
+
+                    if (RevenantResistanceDamageTypeGuid != null && RevenantResistanceDamageTypeGuid != "")
+                    {
+                        return (DamageTypeBaseEffectDef)Repo.GetDef(RevenantResistanceDamageTypeGuid);
+                    }
+
                     List<SoldierStats> allSoldierStats = controller.TacticalGameParams.Statistics.LivingSoldiers.Values.ToList();
                     TFTVLogger.Always("AllSoldierStats count is " + allSoldierStats.Count());
                     allSoldierStats.AddRange(controller.TacticalGameParams.Statistics.DeadSoldiers.Values.ToList());
@@ -1119,7 +1138,7 @@ namespace TFTV
                                     if (damageKeywordPair.DamageKeywordDef == Shared.SharedDamageKeywords.AcidKeyword)
                                     {
                                         scoreAcidDamage += stat.UsedCount;
-                                       // TFTVLogger.Always($"this is an acid weapon: {weaponDef.name}, used {stat.UsedCount}");
+                                        // TFTVLogger.Always($"this is an acid weapon: {weaponDef.name}, used {stat.UsedCount}");
                                     }
                                     if (damageKeywordPair.DamageKeywordDef == Shared.SharedDamageKeywords.ParalysingKeyword)
                                     {
@@ -1231,16 +1250,24 @@ namespace TFTV
                             {
                                 damageTypeDef = null; //projectileDamage;
                             }
+
+                            if (damageTypeDef != null)
+                            {
+                                RevenantResistanceDamageTypeGuid = damageTypeDef.Guid;
+                            }
+
                             return damageTypeDef;
                         }
                         else
                         {
+                            RevenantResistanceDamageTypeGuid = projectileDamage.Guid;
                             return projectileDamage;
                         }
                     }
 
                     else
                     {
+                        RevenantResistanceDamageTypeGuid = projectileDamage.Guid;
                         return projectileDamage;
                     }
                 }
@@ -1324,8 +1351,8 @@ namespace TFTV
             {
                 try
                 {
-                    if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")) && 
-                        controller.GetFactionByCommandName("aln").TacticalActors.Any(ta=> ta.IsAlive && ta.Status.HasStatus(_revenantResistanceStatus)) &&
+                    if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")) &&
+                        controller.GetFactionByCommandName("aln").TacticalActors.Any(ta => ta.IsAlive && ta.Status.HasStatus(_revenantResistanceStatus)) &&
                         controller.GetFactionByCommandName("Px") == faction && !controller.IsLoadingSavedGame)
                     {
 
@@ -1525,6 +1552,30 @@ namespace TFTV
                 }
                 throw new InvalidOperationException();
             }
+
+            public static void RevenentEntersPlayAfterLoad(TacticalActorBase actor)
+            {
+                try
+                {
+                    if (actor is TacticalActor)
+                    {
+
+                        if (actor.HasGameTag(AnyRevenantGameTag))
+                        {
+
+                            UIandFX.Breath.AddRevenantStatusEffect(actor);
+                        }
+
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
             public static void TryToSpawnRevenant(TacticalLevelController controller)
             {
                 try
@@ -1859,43 +1910,100 @@ namespace TFTV
             }
 
 
+            //NEED TO REMOVE
+            /* public static bool SkillPointsForRevenantKillAwarded = false;
 
-            public static bool SkillPointsForRevenantKillAwarded = false;
+             [HarmonyPatch(typeof(TacticalFaction), "get_Skillpoints")]
+             public static class TacticalFaction_GiveExperienceForObjectives_Revenant_Patch
+             {
+                 public static void Postfix(TacticalFaction __instance, ref int __result)
+                 {
+                     try
+                     {
+                         // TFTVLogger.Always("get_Skillpoints");
 
-            [HarmonyPatch(typeof(TacticalFaction), "get_Skillpoints")]
-            public static class TacticalFaction_GiveExperienceForObjectives_Revenant_Patch
+                         if (__instance == __instance.TacticalLevel.GetFactionByCommandName("PX") && !SkillPointsForRevenantKillAwarded)
+                         {
+                             TacticalFaction phoenix = __instance;
+
+                             if (TFTVRevenantResearch.RevenantPoints == 10)
+                             {
+                                 __result += 6;
+                                 // TFTVLogger.Always(__instance.Skillpoints + " awarded for killing Revenant");
+                                 SkillPointsForRevenantKillAwarded = true;
+                             }
+                             else if (TFTVRevenantResearch.RevenantPoints == 5)
+                             {
+                                 __result += 4;
+                                 //    TFTVLogger.Always(__instance.Skillpoints + " awarded for killing Revenant");
+                                 SkillPointsForRevenantKillAwarded = true;
+                             }
+                             else if (TFTVRevenantResearch.RevenantPoints == 1)
+                             {
+                                 __result += 2;
+                                 //   TFTVLogger.Always(__instance.Skillpoints + " awarded for killing Revenant");
+                                 SkillPointsForRevenantKillAwarded = true;
+                             }
+                             else
+                             {
+                                 return;
+                             }
+                         }
+                     }
+                     catch (Exception e)
+                     {
+                         TFTVLogger.Error(e);
+                     }
+                 }
+             }*/
+
+        }
+
+        internal class UIandFX
+        {
+            internal class Breath
             {
-                public static void Postfix(TacticalFaction __instance, ref int __result)
+
+
+
+                private static void CreateFakeOutline(TacticalActorBase actor, Color outlineColor, float outlineScale = 1.05f)
                 {
                     try
                     {
-                        // TFTVLogger.Always("get_Skillpoints");
+                        // Get all SkinnedMeshRenderers in the actor's hierarchy
+                        var renderers = actor.AddonsManager.RigRoot.GetComponentsInChildren<SkinnedMeshRenderer>();
 
-                        if (__instance == __instance.TacticalLevel.GetFactionByCommandName("PX") && !SkillPointsForRevenantKillAwarded)
+                        foreach (var renderer in renderers)
                         {
-                            TacticalFaction phoenix = __instance;
+                            if (renderer.name != "WPN_NJ_Piercer_Assault_Rifle_V01_Ready" && !renderer.name.Contains("VFX_OilCrabman_Breath") && !renderer.name.Contains("head fog"))
+                            {
 
-                            if (TFTVRevenantResearch.RevenantPoints == 10)
-                            {
-                                __result += 6;
-                                // TFTVLogger.Always(__instance.Skillpoints + " awarded for killing Revenant");
-                                SkillPointsForRevenantKillAwarded = true;
-                            }
-                            else if (TFTVRevenantResearch.RevenantPoints == 5)
-                            {
-                                __result += 4;
-                                //    TFTVLogger.Always(__instance.Skillpoints + " awarded for killing Revenant");
-                                SkillPointsForRevenantKillAwarded = true;
-                            }
-                            else if (TFTVRevenantResearch.RevenantPoints == 1)
-                            {
-                                __result += 2;
-                                //   TFTVLogger.Always(__instance.Skillpoints + " awarded for killing Revenant");
-                                SkillPointsForRevenantKillAwarded = true;
-                            }
-                            else
-                            {
-                                return;
+                                // Check if the SkinnedMeshRenderer has a mesh assigned
+                                if (renderer.sharedMesh == null) continue;
+
+                                // Duplicate the object for the outline
+                                GameObject outlineObject = new GameObject($"{renderer.name}_Outline");
+                                outlineObject.transform.SetParent(renderer.transform);
+                                outlineObject.transform.position = renderer.transform.position;
+                                outlineObject.transform.rotation = renderer.transform.rotation;
+                                outlineObject.transform.localScale = renderer.transform.lossyScale * outlineScale;
+
+                                // Add a MeshFilter and MeshRenderer for the outline
+                                var meshFilter = outlineObject.AddComponent<MeshFilter>();
+                                meshFilter.sharedMesh = renderer.sharedMesh;
+
+                                var meshRenderer = outlineObject.AddComponent<MeshRenderer>();
+                                var outlineMaterial = new Material(Shader.Find("Unlit/Color"));
+                                outlineMaterial.color = outlineColor;
+
+                                meshRenderer.material = outlineMaterial;
+
+                                // Optional: Disable shadows for the outline object
+                                meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                                meshRenderer.receiveShadows = false;
+
+                                // Ensure the outline appears behind the original object by offsetting the render order
+                                outlineMaterial.SetInt("_ZWrite", 1);
                             }
                         }
                     }
@@ -1904,19 +2012,196 @@ namespace TFTV
                         TFTVLogger.Error(e);
                     }
                 }
-            }
 
-        }
 
-        internal class UIandFX
-        {
-            internal class Breath
-            {
+
+
+
+                public static void MakeActorShiny(TacticalActorBase actor, float metallic = 10f, float smoothness = 10f)
+                {
+                    try
+                    {
+                        // Find all renderers attached to the actor
+                        var renderers = actor.AddonsManager.RigRoot.GetComponentsInChildren<Renderer>();
+
+
+
+
+                        Shader shinyShader = Shader.Find("Standard");
+
+                        foreach (var renderer in renderers)
+                        {
+
+
+                            foreach (var material in renderer.materials)
+                            {
+                                /*  if (material.HasProperty("_Metallic"))
+                                  {
+                                      material.SetFloat("_Metallic", metallic);
+                                  }
+                                  if (material.HasProperty("_Glossiness")) // Standard shader uses "_Glossiness"
+                                  {
+                                      material.SetFloat("_Glossiness", smoothness);
+                                  }
+                                  if (material.HasProperty("_Smoothness")) // Some shaders use "_Smoothness"
+                                  {
+                                      material.SetFloat("_Smoothness", smoothness);
+                                  }
+                                  if (material.HasProperty("_EmissionColor"))
+                                  {
+                                      material.EnableKeyword("_EMISSION");
+                                      material.SetColor("_EmissionColor", Color.white * 10);
+                                  }*/
+
+                                if (shinyShader != null)
+                                {
+                                    material.shader = shinyShader;
+                                    material.SetFloat("_Metallic", 0.9f);
+                                    material.SetFloat("_Glossiness", 0.9f);
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void ModifyArmorColor(TacticalActorBase actor)
+                {
+                    try
+                    {
+                        var renderers = actor.AddonsManager.RigRoot.GetComponentsInChildren<Renderer>();
+                        foreach (var renderer in renderers)
+                        {
+                            if (renderer.name != "WPN_NJ_Piercer_Assault_Rifle_V01_Ready" &&
+                               !renderer.name.Contains("VFX_OilCrabman_Breath") &&
+                               !renderer.name.Contains("head fog"))
+                            {
+
+                                TFTVLogger.Always($"Renderer {renderer.name}", false);
+
+                                foreach (var material in renderer.materials)
+                                {
+                                    if (!material.name.Contains("Armor"))
+                                    {
+
+                                        Color color = Color.red;
+
+                                        material.color = color;
+
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void ModifyMaterialToPurple(TacticalActorBase actor)
+                {
+                    try
+                    {
+                        var renderers = actor.AddonsManager.RigRoot.GetComponentsInChildren<Renderer>();
+                        foreach (var renderer in renderers)
+                        {
+                            if (!renderer.name.Contains("WPN") &&
+                                !renderer.name.Contains("FX") &&
+                                !renderer.name.Contains("head fog") &&
+                                !renderer.name.Contains("EQP") &&
+                                !renderer.name.Contains("SHD") &&
+                                !renderer.name.Contains("Shield") &&
+                                !renderer.name.Contains("Blood") &&
+                                !renderer.name.Contains("Armoured"))
+                            {
+                                foreach (var material in renderer.materials)
+                                {
+
+
+                                    if (material.HasProperty("_Color") && !material.name.Contains("Armor"))
+                                    {
+                                        TFTVLogger.Always($"{material.name} {material.color}");
+
+                                        actor.Timing.Start(ColorTransitionCoroutine(material, actor));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static IEnumerator<NextUpdate> ColorTransitionCoroutine(Material material, TacticalActorBase actor)
+                {
+                    // Define the colors to transition between
+                    Color originalColor = material.color;
+                    Color black = Color.black;
+                    Color red = Color.red;
+
+                    Color hdrBrightRed = new Color(2f, 0f, 0f, 1f); // Very bright red for HDR
+                    Color veryDarkRed = new Color(0.1f, 0f, 0f, 1f); // Extremely dark red
+
+
+                    while (true)
+                    {
+                        // Transition to black
+                        yield return actor.Timing.Call(TransitionToColor(material, hdrBrightRed, 1f));
+
+                        // Transition to red
+                        yield return actor.Timing.Call(TransitionToColor(material, veryDarkRed, 1f));
+
+                        // Transition back to the original color
+                        //   yield return actor.Timing.Call(TransitionToColor(material, originalColor, 1f));
+                    }
+                }
+
+                private static IEnumerator<NextUpdate> TransitionToColor(Material material, Color targetColor, float duration)
+                {
+                    // Get the current color
+                    Color startColor = material.color;
+
+                    // Gradually transition the color
+                    float elapsed = 0f;
+                    while (elapsed < duration)
+                    {
+                        elapsed += Time.deltaTime;
+                        float t = Mathf.Clamp01(elapsed / duration);
+
+                        // Lerp between the start and target colors
+                        material.color = Color.Lerp(startColor, targetColor, t);
+
+                        // Wait for the next frame
+                        yield return NextUpdate.NextFrame;
+                    }
+
+                    // Ensure the final color is set
+                    material.color = targetColor;
+                }
+
+
+
+               
+
+
+
                 public static void AddRevenantStatusEffect(TacticalActorBase actor)
                 {
                     try
                     {
                         actor.Status.ApplyStatus(_revenantStatusAbility);
+                        // TacticalActor tacticalActor = actor as TacticalActor;
+                        // tacticalActor.SetSpecialShader(Shader.Find("_PX_FX/DarknessEdgeFade"));
+                        //  ModifyArmorColor(actor);
+                        //  ModifyMaterialToPurple(actor);
+                        //  CreateFakeOutline(actor, Color.red);
 
                         Action delayedAction = () => ModifyMistBreath(actor, Color.red, Color.red);
                         actor.Timing.Start(RunOnNextFrame(delayedAction));
@@ -1995,10 +2280,9 @@ namespace TFTV
                     ));
                 }
 
-                private static void ModifyMistBreath(TacticalActorBase actor, Color from, Color to)
+                private static void ModifyMistBreath(TacticalActorBase actor, Color from, Color to, float newSizeMultiplier = 1f)
                 {
                     string targetVfxName = "VFX_OilCrabman_Breath";
-                    //string targetVfxName = tacStatus.TacStatusDef.ParticleEffectPrefab.GetComponent<ParticleSpawnSettings>().name;
 
                     var pssArray = actor.AddonsManager
                         .RigRoot.GetComponentsInChildren<ParticleSpawnSettings>()
@@ -2010,13 +2294,39 @@ namespace TFTV
                     foreach (var ps in particleSystems)
                     {
                         var mainModule = ps.main;
+
+                        // Update color
                         UnityEngine.ParticleSystem.MinMaxGradient minMaxGradient = mainModule.startColor;
                         minMaxGradient.mode = ParticleSystemGradientMode.Color;
                         minMaxGradient.colorMin = from;
                         minMaxGradient.colorMax = to;
                         mainModule.startColor = minMaxGradient;
+
+                        // Update size
+                        var currentStartSize = mainModule.startSize;
+                        if (currentStartSize.mode == ParticleSystemCurveMode.Constant)
+                        {
+                            currentStartSize.constant *= newSizeMultiplier;
+                        }
+                        else if (currentStartSize.mode == ParticleSystemCurveMode.TwoConstants)
+                        {
+                            currentStartSize.constantMin *= newSizeMultiplier;
+                            currentStartSize.constantMax *= newSizeMultiplier;
+                        }
+                        else if (currentStartSize.mode == ParticleSystemCurveMode.Curve ||
+                                 currentStartSize.mode == ParticleSystemCurveMode.TwoCurves)
+                        {
+                            AnimationCurve newCurve = new AnimationCurve();
+                            foreach (Keyframe key in currentStartSize.curve.keys)
+                            {
+                                newCurve.AddKey(new Keyframe(key.time, key.value * newSizeMultiplier));
+                            }
+                            currentStartSize.curve = newCurve;
+                        }
+                        mainModule.startSize = currentStartSize;
                     }
                 }
+
 
             }
 
@@ -2152,12 +2462,27 @@ namespace TFTV
             //   private static readonly DefRepository Repo = TFTVMain.Repo;
 
             public static bool RevenantCaptured = false;
-            private static readonly string RevenantCapturedVariable = "RevenantCapturedVariable";
-            private static readonly string RevenantsDestroyed = "RevenantsDestroyed";
+            public static readonly string RevenantCapturedVariable = "RevenantCapturedVariable";
+            public static readonly string RevenantsDestroyed = "RevenantsDestroyed";
             public static string NameOfCapturedRevenant = "";
             public static int RevenantPoints = 0;
+            public static int PreviousRevenantPoints = 0;
             public static bool ProjectOsiris = false;
             public static Dictionary<int, int[]> ProjectOsirisStats = new Dictionary<int, int[]>();
+            public static Dictionary<int, int> SlugOGStrength = new Dictionary<int, int>();
+            public static int RequieredRevenantPoints = 0;
+
+            public static void RecordAccumulatedRevenantPoints(GeoLevelController controller)
+            {
+                try
+                {
+                    PreviousRevenantPoints = controller.EventSystem.GetVariable(RevenantsDestroyed);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
 
             public static void CreateRevenantRewardsDefs()
             {
@@ -2172,6 +2497,12 @@ namespace TFTV
                 {
                     TacticalActor actor = deadSoldier as TacticalActor;
                     int endurance = actor.CharacterStats.Endurance.Value.BaseValueInt;
+
+                    if (SlugOGStrength.ContainsKey(actor.GeoUnitId))
+                    {
+                        endurance = SlugOGStrength[actor.GeoUnitId];
+                    }
+
                     int willpower = actor.CharacterStats.Willpower.Value.BaseValueInt;
                     int speed = actor.CharacterStats.Speed.Value.BaseValueInt;
 
@@ -2271,6 +2602,7 @@ namespace TFTV
                     enoughRevenantsKilledResearch.RevealRequirements.Container = revenantReseachRevealRequirementContainer;
                     enoughRevenantsKilledResearch.RevealRequirements.Operation = ResearchContainerOperation.ALL;
 
+                    RequieredRevenantPoints = revenantEncounterVariableResearch.Value;
                 }
 
                 catch (Exception e)
@@ -2331,7 +2663,7 @@ namespace TFTV
                       }*/
 
                     RevenantPoints = 0;
-                    TFTVRevenant.RecordUpkeep.SkillPointsForRevenantKillAwarded = false;
+                    //  TFTVRevenant.RecordUpkeep.SkillPointsForRevenantKillAwarded = false;
                 }
 
                 catch (Exception e)

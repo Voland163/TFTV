@@ -606,11 +606,13 @@ KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH
                         else//this is in case the roll is not made, so that list is cleared for when Project Osiris is run again 
                         {
                             TFTVRevenant.TFTVRevenantResearch.ProjectOsirisStats.Clear();
+                            TFTVRevenant.TFTVRevenantResearch.SlugOGStrength.Clear();
                         }
                     }
                     else //this is in case a GeoTacUnitId is present in the stats list, but is not actually dead, because savescumming 
                     {
                         TFTVRevenant.TFTVRevenantResearch.ProjectOsirisStats.Clear();
+                        TFTVRevenant.TFTVRevenantResearch.SlugOGStrength.Clear();
                     }
                 }
             }
@@ -785,7 +787,7 @@ KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH
                 //  geoCharacterCloneFromDead.LevelProgression.SetLevel(geoCharacterCloneFromDead.LevelProgression.Level);
                 // TFTVLogger.Always("The clone has a secondary class " + geoCharacterCloneFromDead.Progression.SecondarySpecDef.name);
 
-                if (_geoCharacterCloneFromDead.Progression.SecondarySpecDef != null)
+                if (_geoCharacterCloneFromDead.Progression.SecondarySpecDef != null && returned.Progression.SecondarySpecDef==null)
                 {
                     returned.Progression.AddSecondaryClass(_geoCharacterCloneFromDead.Progression.SecondarySpecDef);
                 }
@@ -809,6 +811,7 @@ KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH
                 IdProjectOsirisCandidate = new GeoTacUnitId();
                 SaveTemplateData = new TacCharacterData();
                 TFTVRevenant.TFTVRevenantResearch.ProjectOsirisStats.Clear();
+                TFTVRevenant.TFTVRevenantResearch.SlugOGStrength.Clear();
                 NewBodyGeoID = new GeoTacUnitId();
 
                 GeoscapeEventDef deliveryEvent = controller.EventSystem.GetEventByID(RoboCopDeliveryEvent);

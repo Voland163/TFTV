@@ -1,51 +1,209 @@
-﻿using Base.Core;
-using Base.Defs;
-using Base.Levels;
-using Base.Lighting;
-using Base.UI.MessageBox;
-using HarmonyLib;
-using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities.GameTags;
-using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Common.View.ViewControllers;
-using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.Research.Requirement;
-using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Geoscape.View;
-using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
-using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
-using PhoenixPoint.Geoscape.View.ViewStates;
-using PhoenixPoint.Tactical.Entities;
-using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.DamageKeywords;
-using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.Entities.Weapons;
-using PhoenixPoint.Tactical.UI;
-using PhoenixPoint.Tactical.View;
+﻿using PhoenixPoint.Tactical.Entities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using UnityEngine;
-using static PhoenixPoint.Geoscape.Levels.GeoSceneReferences;
+
+
 
 namespace TFTV
 {
+
+
     internal class TFTVExperimental
     {
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
-       
 
-        // Research
 
-        // GeoPhoenixFaction
-        //Wallet
 
-        // ResearchBonusResearchReward
 
-        //AlienBaseDataBind
 
+
+
+
+
+
+
+
+
+        /*  [HarmonyPatch(typeof(InterceptionBriefDataBind), "DisplayData")]
+          public static class InterceptionBriefDataBind_DisplayData_patch
+          {
+              public static bool Prefix(InterceptionBriefDataBind __instance, InterceptionInfoData data)
+              {
+                  try
+                  {
+                      MethodInfo displayDataMethodInfo = typeof(InterceptionBriefDataBind).GetMethod("DisplayData", BindingFlags.Instance | BindingFlags.NonPublic);
+                      MethodInfo setAircraftImageMethodInfo = typeof(InterceptionBriefDataBind).GetMethod("SetAircraftImage", BindingFlags.Instance | BindingFlags.NonPublic);
+                      MethodInfo setAircraftButtonAndEquipmentMethodInfo = typeof(InterceptionBriefDataBind).GetMethod("SetAircraftImage", BindingFlags.Instance | BindingFlags.NonPublic);
+                      MethodInfo setEnemyButtonAndEquipmentMethodInfo = typeof(InterceptionBriefDataBind).GetMethod("SetEnemy", BindingFlags.Instance | BindingFlags.NonPublic);
+                      MethodInfo setWeatherConditionButtonAndEquipmentMethodInfo = typeof(InterceptionBriefDataBind).GetMethod("SetWeatherCondition", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                      TFTVLogger.Always($"running InterceptionBriefDataBind.DisplayData. Data is null? {data == null}");
+
+                      if (data.CurrentPlayerAircraft == null)
+                      {
+                          TFTVLogger.Always($"currentplayeraircraft is null");
+                          data.CurrentPlayerAircraft = data.GetDefaultPlayerAircraft();
+                          TFTVLogger.Always($"got the default player aircraft. is it null though? {data.CurrentPlayerAircraft == null}");
+                      }
+
+                      if (data.CurrentEnemyAircraft == null)
+                      {
+                          TFTVLogger.Always($"currentenemyaircraft is null");
+                          data.CurrentEnemyAircraft = data.GetDefaultEnemyAircraft();
+                          TFTVLogger.Always($"got the currentenemyaircraft. is it null though? {data.CurrentEnemyAircraft == null}");
+                      }
+
+                      GeoVehicle currentPlayerAircraft = data.CurrentPlayerAircraft;
+                      GeoVehicle currentEnemyAircraft = data.CurrentEnemyAircraft;
+                      __instance.PlayerAircraftName.text = currentPlayerAircraft.Name;
+                      setAircraftImageMethodInfo.Invoke(__instance, new object[] { __instance.PlayerAircraftImagesRoot, currentPlayerAircraft.VehicleDef.WorldVisuals.WorldObjectSprite });
+                      __instance.EnemyAircraftName.text = currentEnemyAircraft.Name;
+                      setAircraftImageMethodInfo.Invoke(__instance, new object[] { __instance.EnemyAircraftImagesRoot, currentEnemyAircraft.VehicleDef.WorldVisuals.WorldObjectSprite });
+
+                      TFTVLogger.Always($"got here 0");
+
+                      setAircraftButtonAndEquipmentMethodInfo.Invoke(__instance, new object[] { __instance.PlayerHull, __instance.PlayerAircraftEquipment, __instance.FesteringSkiesSettingsDef.UISettings.ActionsToSelectEquipments, currentPlayerAircraft, true });
+                      setAircraftButtonAndEquipmentMethodInfo.Invoke(__instance, new object[] { __instance.EnemyHull, __instance.EnemyAircraftEquipment, __instance.FesteringSkiesSettingsDef.UISettings.ActionsToTargetEnemy, currentEnemyAircraft, false });
+                      __instance.PlayerAircraftArmour.text = $"{currentPlayerAircraft.Stats.Armor}";
+                      __instance.EnemyAircraftArmour.text = $"{currentEnemyAircraft.Stats.Armor}";
+
+                      TFTVLogger.Always($"got here 1");
+
+                      displayAvailableAircrafts(__instance.PlayerAircraftSelectionButtons, __instance.PlayerAircraftSelectionPages, data.PlayerAircrafts, currentPlayerAircraft, delegate (GeoVehicle vehicle)
+                      {
+                          data.CurrentPlayerAircraft = vehicle;
+                          displayDataMethodInfo.Invoke(__instance, new object[] { data });
+                      });
+                      displayAvailableAircrafts(__instance.EnemyAircraftSelectionButtons, __instance.EnemyAircraftSelectionPages, data.EnemyAircrafts, currentEnemyAircraft, delegate (GeoVehicle vehicle)
+                      {
+                          data.CurrentEnemyAircraft = vehicle;
+                          displayDataMethodInfo.Invoke(__instance, new object[] { data });
+                      });
+
+                      TFTVLogger.Always($"got here 2");
+
+                      __instance.CrewContainer.SetCrew(currentPlayerAircraft.Soldiers, currentPlayerAircraft.MaxCharacterSpace);
+                      setEnemyButtonAndEquipmentMethodInfo.Invoke(__instance, new object[] { currentEnemyAircraft });
+                      setWeatherConditionButtonAndEquipmentMethodInfo.Invoke(__instance, new object[] { data });
+
+                      TFTVLogger.Always($"got here 3");
+
+                      void displayAvailableAircrafts(ButtonTabbingController aircraftsContainer, ButtonTabbingController pagesContainer, IEnumerable<GeoVehicle> allAircrafts, GeoVehicle selectedAircraft, Action<GeoVehicle> onClickCallback)
+                      {
+                          IEnumerable<IEnumerable<GeoVehicle>> slices = createSlices();
+                          List<PhoenixGeneralButton> createdPageButtons = new List<PhoenixGeneralButton>();
+                          PhoenixGeneralButton selectedPageButton = null;
+                          pagesContainer.gameObject.SetActive(slices.Count() > 1);
+                          UIUtil.EnsureActiveComponentsInContainer(pagesContainer.transform, __instance.PageChangeButton, slices, delegate (PhoenixGeneralButton button, IEnumerable<GeoVehicle> slice)
+                          {
+                              button.PointerClicked = delegate
+                              {
+                                  displayAircraftSlice(slice);
+                                  pagesContainer.SelectedButton = button;
+                              };
+                              createdPageButtons.Add(button);
+                              if (slice.Contains(selectedAircraft))
+                              {
+                                  displayAircraftSlice(slice);
+                                  selectedPageButton = button;
+                              }
+                          });
+                          pagesContainer.TabbingList = createdPageButtons.ToArray();
+                          pagesContainer.SelectedButton = selectedPageButton;
+                          IEnumerable<IEnumerable<GeoVehicle>> createSlices()
+                          {
+                              IEnumerable<GeoVehicle> vehiclesLeft = allAircrafts;
+                              while (vehiclesLeft.Any())
+                              {
+                                  yield return vehiclesLeft.Take(__instance.MaxSelectionButtons);
+                                  vehiclesLeft = vehiclesLeft.Skip(__instance.MaxSelectionButtons);
+                              }
+                          }
+
+                          void displayAircraftSlice(IEnumerable<GeoVehicle> slice)
+                          {
+                              PhoenixGeneralButton selectedButton = null;
+                              List<PhoenixGeneralButton> createdButtons = new List<PhoenixGeneralButton>();
+                              UIUtil.EnsureActiveComponentsInContainer(aircraftsContainer.transform, __instance.AircraftSelectionButtonPrefab, slice, delegate (PhoenixGeneralButton button, GeoVehicle vehicle)
+                              {
+                                  button.GetComponent<UIButtonIconController>().Icon.sprite = vehicle.VehicleDef.ViewElement.SmallIcon;
+                                  button.PointerClicked = delegate
+                                  {
+                                      onClickCallback(vehicle);
+                                  };
+                                  createdButtons.Add(button);
+                                  if (vehicle == selectedAircraft)
+                                  {
+                                      selectedButton = button;
+                                  }
+                              });
+                              aircraftsContainer.TabbingList = createdButtons.ToArray();
+                              aircraftsContainer.SelectedButton = selectedButton;
+                              aircraftsContainer.gameObject.SetActive(value: true);
+                              if (slices.Count() == 1 && createdButtons.Count == 1)
+                              {
+                                  aircraftsContainer.gameObject.SetActive(value: false);
+                              }
+                          }
+                      }
+
+                      TFTVLogger.Always($"got here final");
+
+
+
+
+                      return false;
+
+
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                      throw;
+                  }
+              }
+          }*/
+
+
+
+
+
+        /* [HarmonyPatch(typeof(ActorLastDamageTypeEffectConditionDef), "ActorChecks")]
+         public static class ActorLastDamageTypeEffectConditionDef_ActorChecks_patch
+         {
+             public static void Prefix(TacticalActorBase actor, ActorLastDamageTypeEffectConditionDef __instance)
+             {
+                 try
+                 {
+
+
+                     TFTVLogger.Always($"ActorCheck: {__instance.name} {__instance.DamageType.name}, {actor.name}, {actor.LastDamageType.name}");
+
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
+
+             public static void Postfix(TacticalActorBase actor, ActorLastDamageTypeEffectConditionDef __instance, bool __result)
+             {
+                 try
+                 {
+
+
+                     TFTVLogger.Always($"ActorCheck: {__instance.name}, {actor.name}, {__result}");
+
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
+         }*/
 
 
 
