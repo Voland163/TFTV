@@ -81,9 +81,23 @@ namespace TFTV
         {
             try
             {
-                ODITactical.ClearData();
+                ODITactical.ClearDataOnLoadAndStateChange();
                 CaptureTacticalWidget.ClearData();
-                SecondaryObjectivesTactical.ClearData();
+                SecondaryObjectivesTactical.ClearDataOnGameLoadAndStateChange();
+                Enemies.ClearData();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        public static void ClearDataOnMissionRestart()
+        {
+            try
+            {
+                CaptureTacticalWidget.ClearData();
                 Enemies.ClearData();
             }
             catch (Exception e)
@@ -1652,14 +1666,12 @@ namespace TFTV
 
             }
 
-            public static void ClearData()
+            public static void ClearDataOnGameLoadAndStateChange()
             {
                 try
                 {
                     _secondaryObjectivesTitle = null;
                     _secondaryObjectives = null;
-
-
                     AvailableSecondaryObjectivesTactical?.Clear();
                     _secondaryObjectiveDefsInPlay?.Clear();
                     _objectivesTargetsDictionary?.Clear();
@@ -1670,6 +1682,24 @@ namespace TFTV
                     throw;
                 }
             }
+
+           /* public static void ClearDataOnMissionRestart()
+            {
+                try
+                {
+                    _secondaryObjectivesTitle = null;
+                    _secondaryObjectives = null;
+                    AvailableSecondaryObjectivesTactical?.Clear();
+                    _secondaryObjectiveDefsInPlay?.Clear();
+                    _objectivesTargetsDictionary?.Clear();
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }*/
+
 
             public static bool IsSecondaryObjective(FactionObjective objective)
             {
@@ -2164,7 +2194,21 @@ namespace TFTV
                 try
                 {
                     TacticalFaction alienFaction = controller.GetFactionByCommandName("aln");
-                    return alienFaction.TacticalActors.Any(ta => ta.HasGameTag(killTag) && !ta.IsEvacuated && ta.IsDead);
+
+                 /*   foreach (TacticalActor tacticalActor in alienFaction.TacticalActors.Where(ta=>ta.IsAlive))
+                    {
+
+                        TFTVLogger.Always($"{tacticalActor.name}");
+
+                        foreach(Status status in tacticalActor.Status.Statuses) 
+                        {
+                            TFTVLogger.Always($"{status.Def.name} {status.GetType()}");
+                        
+                        }
+
+                    }*/
+
+                    return alienFaction.TacticalActors.Any(ta => ta.HasGameTag(killTag) && !ta.IsEvacuated && (ta.IsDead || ta.Status!=null && ta.Status.HasStatus<ParalysedStatus>()));
 
                 }
                 catch (Exception e)
@@ -2410,6 +2454,7 @@ namespace TFTV
             {
                 try
                 {
+                    TFTVLogger.Always($"enemies data cleared");
                     _leaderWidgets.Clear();
 
                 }
@@ -3238,7 +3283,7 @@ namespace TFTV
                 {
                     try
                     {
-
+                      
                         if (!parent.GetComponent<EventTrigger>())
                         {
                             parent.AddComponent<EventTrigger>();
@@ -3382,8 +3427,6 @@ namespace TFTV
                             }
                             else
                             {
-
-
                                 _leaderWidgets[factionCode].ModifyWidget(leader, status, squadName, factionName, tacticData[1], leaderDead, leaderFled, tacticActive);
 
                             }
@@ -3990,7 +4033,7 @@ namespace TFTV
 
 
 
-            public static void ClearData()
+            public static void ClearDataOnLoadAndStateChange()
             {
                 try
                 {

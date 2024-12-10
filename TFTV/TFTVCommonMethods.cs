@@ -250,6 +250,7 @@ namespace TFTV
 
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
                 TFTVAncients.AlertedHoplites.Clear();
+                TFTVUITactical.ClearDataOnMissionRestart();
 
                 TFTVLogger.Always($"Internal variables cleared on Mission Restart");
 

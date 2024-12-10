@@ -639,7 +639,7 @@ namespace TFTV
                                 }
                                 else
                                 {
-                                    TFTVLogger.Always($"{tacticalActorBase.name} has mind controlled status!");
+                                  //  TFTVLogger.Always($"{tacticalActorBase.name} has mind controlled status!");
 
                                 }
                             }

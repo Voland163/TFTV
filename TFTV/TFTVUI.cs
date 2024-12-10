@@ -599,14 +599,15 @@ namespace TFTV
                 private static readonly string equipmentItemsString = "EquipmentItems";
                 private static readonly string inventoryItemsString = "InventoryItems";
 
-                private static bool _mutationBionicsShaded = false;
+              //  private static bool _mutationBionicsShaded = false;
 
                 private static void ShadeMutationBionics(UIModuleActorCycle uIModuleActorCycle)
                 {
                     try
                     {
                         GeoCharacter geoCharacter = uIModuleActorCycle.CurrentCharacter;
-                        if (geoCharacter == null || geoCharacter.TemplateDef == null || !geoCharacter.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag) && !_mutationBionicsShaded)
+                     
+                        if (geoCharacter == null) //|| geoCharacter.TemplateDef == null || !geoCharacter.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag) && !_mutationBionicsShaded)
                         {
                             return;
                         }
@@ -631,16 +632,46 @@ namespace TFTV
                         if (bionicsAvailable)
                         {
                             bionicsText = uIModuleActorCycle.EditUnitButtonsController.GetComponentsInChildren<Text>().FirstOrDefault(c => c.text == TFTVCommonMethods.ConvertKeyToString("KEY_AUMGENTATION_ACTION"));
+
+                            if (bionicsText != null)
+                            {
+
+                                bionicsButton.SetInteractable(true);
+                                if (bionicsButton.gameObject.GetComponent<UITooltipText>() != null)
+                                {
+                                    bionicsButton.gameObject.GetComponent<UITooltipText>().enabled = false;
+                                }
+
+                                bionicsText.color = new Color(0.820f, 0.859f, 0.914f);
+
+                            }
+
+
                         }
 
                         if (mutationAvailable)
                         {
                             mutateText = uIModuleActorCycle.EditUnitButtonsController.GetComponentsInChildren<Text>().FirstOrDefault(c => c.text == TFTVCommonMethods.ConvertKeyToString("KEY_GEOSCAPE_MUTATE"));
+
+                            if (mutateText != null)
+                            {
+                                mutationButton.SetInteractable(true);
+
+                                if (mutationButton.gameObject.GetComponent<UITooltipText>() != null)
+                                {
+                                    mutationButton.gameObject.GetComponent<UITooltipText>().enabled = false;
+                                }
+
+                                mutateText.color = new Color(0.820f, 0.859f, 0.914f);
+                            }
+
                         }
+
+                        
 
                         if (geoCharacter.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag))
                         {
-                            _mutationBionicsShaded = true;
+                           // _mutationBionicsShaded = true;
 
                             if (mutateText != null)
                             {
@@ -675,37 +706,7 @@ namespace TFTV
                                 bionicsText.color = Color.gray;
                             }
                         }
-                        else
-                        {
-                            _mutationBionicsShaded = false;
-
-                            if (mutateText != null)
-                            {
-
-                                mutationButton.SetInteractable(true);
-
-                                if (mutationButton.gameObject.GetComponent<UITooltipText>() != null)
-                                {
-                                    mutationButton.gameObject.GetComponent<UITooltipText>().enabled = false;
-                                }
-
-                                mutateText.color = new Color(0.820f, 0.859f, 0.914f);
-                            }
-
-                            if (bionicsText != null)
-                            {
-
-                                bionicsButton.SetInteractable(true);
-                                if (bionicsButton.gameObject.GetComponent<UITooltipText>() != null)
-                                {
-                                    bionicsButton.gameObject.GetComponent<UITooltipText>().enabled = false;
-                                }
-
-                                bionicsText.color = new Color(0.820f, 0.859f, 0.914f);
-
-                            }
-
-                        }
+                        
                     }
                     catch (Exception e)
                     {

@@ -88,6 +88,7 @@ namespace TFTV
                 try
                 {
                     _resourcePowerWarnings.Clear();
+                    _savedTooltips.Clear();
                 }
                 catch (Exception e)
                 {
@@ -131,12 +132,15 @@ namespace TFTV
                                         ResourceIconContainer resourceIconContainer2 = uIModuleInfoBar.GroundVehiclesLabel.transform.parent.GetComponent<ResourceIconContainer>();
                                         Transform transformIconContainerGroundVehicles = resourceIconContainer2.transform;
                                         resourceIconContainer2.Value.color = Color.white;
+
+                                       
                                     }
                                     else
                                     {
 
                                         ResourceIconContainer resourceIconContainer = transform.GetComponent<ResourceIconContainer>() ?? transform.GetComponentInParent<ResourceIconContainer>();
                                         resourceIconContainer.Value.color = resourceIconContainer.DefaultColor;
+                                      
 
                                     }
                                 }
@@ -187,6 +191,35 @@ namespace TFTV
                 }
             }
 
+            public static void CheckUnpoweredBasesOnGeoscapeStart()
+            {
+                try 
+                {
+                    if (_resourcePowerWarnings != null && _resourcePowerWarnings.Count > 0)
+
+                    {
+                        foreach(Transform transform in _resourcePowerWarnings.Keys) 
+                        {
+                            foreach (GeoPhoenixFacility geoPhoenixFacility in _resourcePowerWarnings[transform])
+                            {
+                                geoPhoenixFacility.PxBase.Site.RefreshVisuals();
+                            }
+                        
+                        }
+
+
+                    }
+                
+              
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+            }
 
             private static void AddClickChangeTooltipAndColor(Transform label, GeoPhoenixFacility geoPhoenixFacility, Transform separateTextHook = null)
             {
@@ -260,7 +293,7 @@ namespace TFTV
 
                         uITooltipText.TipText = tip;
                         uITooltipText.Position = UITooltip.Position.Bottom;
-                        uITooltipText.enabled = true;
+                        uITooltipText.enabled = true;                     
                     }
                     else
                     {
@@ -332,8 +365,10 @@ namespace TFTV
                     }
                     else if (facility.Def == DefCache.GetDef<PhoenixFacilityDef>("VehicleBay_PhoenixFacilityDef"))
                     {
-
+    
                         ResourceIconContainer resourceIconContainerAirVehicles = uIModuleInfoBar.AirVehiclesLabel.transform.parent.GetComponent<ResourceIconContainer>();
+
+                        
                         Transform transformIconContainerAirVehicles = resourceIconContainerAirVehicles.transform;
                         resourceIconContainerAirVehicles.Value.color = warningColor.Color;
 
@@ -342,8 +377,9 @@ namespace TFTV
                         ResourceIconContainer resourceIconContainerGroundVehicles = uIModuleInfoBar.GroundVehiclesLabel.transform.parent.GetComponent<ResourceIconContainer>();
                         Transform transformIconContainerGroundVehicles = resourceIconContainerGroundVehicles.transform;
                         resourceIconContainerGroundVehicles.Value.color = warningColor.Color;
-
+                     
                         AddClickChangeTooltipAndColor(transformIconContainerGroundVehicles, facility, uIModuleInfoBar.GroundVehiclesLabel.transform);
+                        
 
                     }
                     else if (facility.Def == DefCache.GetDef<PhoenixFacilityDef>("AlienContainment_PhoenixFacilityDef"))
@@ -371,7 +407,7 @@ namespace TFTV
                         resourceIconContainer.Value.color = warningColor.Color;
 
                         AddClickChangeTooltipAndColor(transformIconContainer, facility, uIModuleInfoBar.FoodController.transform);
-                    }
+                    }                 
                 }
                 catch (Exception e)
                 {
@@ -455,7 +491,7 @@ namespace TFTV
 
                             if (site.Owner == site.GeoLevel.PhoenixFaction && !TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.ContainsKey(site.SiteId))
                             {
-                                // TFTVLogger.Always($"adding {geoPhoenixFacility.Def.name} at {site.LocalizedSiteName}");
+                                TFTVLogger.Always($"adding {geoPhoenixFacility.Def.name} at {site.LocalizedSiteName}");
                                 DisplayWarningInfoBar(site.GeoLevel, geoPhoenixFacility);
                             }
 

@@ -123,7 +123,7 @@ namespace TFTV
           //  TFTVBetaSaveGamesFixes.RemoveBadSlug(Controller);
             TFTVCustomPortraits.CharacterPortrait.PopulatePortraitFileList();
             TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
-        
+            TFTVUIGeoMap.UnpoweredFacilitiesInfo.CheckUnpoweredBasesOnGeoscapeStart();
 
             /* GeoSite geoSite = Controller.Map.AllSites.FirstOrDefault(s=>s.GetComponent<GeoPhoenixBase>()!=null && s.ActiveMission!=null);
 

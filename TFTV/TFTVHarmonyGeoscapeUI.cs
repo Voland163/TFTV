@@ -1,7 +1,6 @@
 ﻿using Base.Core;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities;
-using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
@@ -13,15 +12,11 @@ using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
-using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
-using static TFTV.TFTVUI.EditScreen;
 using static UITooltip;
-using static UnityStandardAssets.Utility.TimedObjectActivator;
 
 namespace TFTV
 {
@@ -164,7 +159,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVAAAgendaTracker.ExtendedAgendaTracker.RecolorTimerBaseAndAncientSiteAttacks(__instance, site); 
+                    TFTVAAAgendaTracker.ExtendedAgendaTracker.RecolorTimerBaseAndAncientSiteAttacks(__instance, site);
                     TFTVUIGeoMap.UnpoweredFacilitiesInfo.AddBlinkingPowerMarkerGeoMap(__instance, site);
                     TFTVBaseDefenseGeoscape.Visuals.RefreshBaseDefenseVisuals(__instance, site);
                 }
@@ -217,11 +212,11 @@ namespace TFTV
             {
                 try
                 {
-                   // MethodInfo methodInfoRecalculateVehicleFilter = typeof(UIInventoryList).GetMethod("RecalculateVehicleFilter", BindingFlags.Instance | BindingFlags.NonPublic);
+                    // MethodInfo methodInfoRecalculateVehicleFilter = typeof(UIInventoryList).GetMethod("RecalculateVehicleFilter", BindingFlags.Instance | BindingFlags.NonPublic);
 
 
                     __instance.EnsureSize();
-                  
+
                     if (____vehicle != null)
                     {
 
@@ -246,12 +241,12 @@ namespace TFTV
                             {
                                 //TFTVLogger.Always($"Inventory list trying to stack filtered items {item.ItemDef.name}, {firstAvailableSlot.name}, vehicle: {____vehicle?.name}");
 
-                              /*  if (____vehicle != null)
-                                {
+                                /*  if (____vehicle != null)
+                                  {
 
-                                    firstAvailableSlot.Item.CommonItemData.AddItem(item);
-                                    list.Add(item);
-                                }*/
+                                      firstAvailableSlot.Item.CommonItemData.AddItem(item);
+                                      list.Add(item);
+                                  }*/
                             }
                             else
                             {
@@ -286,7 +281,7 @@ namespace TFTV
             public static void Prefix(UIInventoryList __instance)
             {
                 try
-                {               
+                {
                     __instance.ShouldHidePartialMagazines = false;
                 }
                 catch (Exception e)

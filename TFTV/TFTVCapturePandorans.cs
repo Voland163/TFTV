@@ -151,6 +151,12 @@ namespace TFTV
                     if (geoMission.Site.GeoLevel.PhoenixFaction.Research.HasCompleted("PX_CaptureTech_ResearchDef"))
                     {
 
+                       // TFTVLogger.Always($"geoMission.Site.LocalizedSiteName: {geoMission.Site.LocalizedSiteName}");
+
+                      //  TFTVLogger.Always($"geoMission.Site.GetPlayerVehiclesOnSite() not null?: {geoMission.Site.GetPlayerVehiclesOnSite()!=null}");
+
+                       // TFTVLogger.Always($"geoMission.Site.GetPlayerVehiclesOnSite() count: {geoMission.Site.GetPlayerVehiclesOnSite().Count()}");
+
                         PhoenixFacilityDef containmentFacility = DefCache.GetDef<PhoenixFacilityDef>("AlienContainment_PhoenixFacilityDef");
 
                         if (geoMission.MissionDef.ParticipantsData.Any(tcpd => tcpd.FactionDef == DefCache.GetDef<PPFactionDef>("Alien_FactionDef")))
@@ -175,7 +181,7 @@ namespace TFTV
 
                             }
 
-                            if (!ContainmentFacilityPresent && geoMission.Site.GetPlayerVehiclesOnSite() != null)
+                            if (!ContainmentFacilityPresent && geoMission.Site.GetPlayerVehiclesOnSite() != null && geoMission.Site.GetPlayerVehiclesOnSite().Count() > 0)
                             {
                                 AircraftCaptureCapacity = 0;
 

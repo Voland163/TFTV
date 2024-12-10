@@ -43,6 +43,7 @@ namespace PRMBetterClasses
                 LocalizationDirectory = Path.Combine(ModDirectory, "Assets", "Localization");
                 if (File.Exists(Path.Combine(LocalizationDirectory, SkillLocalizationFileName)))
                 {
+             
                     AddLocalizationFromCSV(SkillLocalizationFileName, null);
                 }
                 //if (File.Exists(Path.Combine(LocalizationDirectory, FsStoryLocalizationFileName)) && TFTVMain.Main.Settings.ActivateStoryRework)
@@ -109,6 +110,9 @@ namespace PRMBetterClasses
             try
             {
                 string CSVstring = File.ReadAllText(Path.Combine(LocalizationDirectory, LocalizationFileName));
+
+                TFTVLogger.Always($"{LocalizationFileName}");
+
                 if (!CSVstring.EndsWith("\n"))
                 {
                     CSVstring += "\n";
