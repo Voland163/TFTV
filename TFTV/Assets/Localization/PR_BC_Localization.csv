@@ -105,7 +105,7 @@ PR_BC_DIE_HARD_KEEPALIVE,Text,,DIE HARDER,,,,,,КРЕПКИЙ ОРЕШЕК: ЧУ
 PR_BC_DIE_HARD_KEEPALIVE_DESC,Text,,You took lethal damage this turn and Die Hard saved your life. You are invulnerable until the end of this turn.,,,,,,"Вы не погибли только чудом! До конца хода вы - полностью неуязвимый Крепчайший из Орешков, муахахахаха!",,
 PR_BC_BATTLEHARDENED,Text,,BATTLE HARDENED,,ENDURCI AU COMBAT,,,,ВЕТЕРАН,,
 PR_BC_BATTLEHARDENED_DESC,Text,,"Gain +2 to all primary stats, +10% to accuracy and +4 to perception",,"Gagne +2 à toutes les stats primaires, +10% à la précision et +4 à la perception",,,,"Бонус +2 к основным характеристикам, а также +10% Точности и +4 Восприятия",,
-PR_BC_TAKEDOWN,Text,,TAKEDOWN,,DEMOLITION,,,,ПРИМЕНИТЬ КУНГ-ФУ,,
+PR_BC_TAKEDOWN,Text,,TAKEDOWN,,DEMOLITION,,,,КУНГ-ФУ,,
 PR_BC_TAKEDOWN_DESC,Text,,Deal 80 damage and 160 shock damage to an adjacent target. Replaces Bash.,,Inflige 80 points de dégâts et 160 points de dégâts de choc à une cible adjacente.,,,,"Рукопашная атака, наносящая 80 урона и 160 оглушения. Заменяет обычный ""Удар""",,
 PR_BC_PUNISHER,Text,,PUNISHER,,PUNISHER,,,,МОНСТР,,
 PR_BC_PUNISHER_DESC,Text,,"When you kill an enemy, his allies lose 2 additional Will Points",,"Lorsque vous tuez un ennemi, ses alliés perdent 2 points de volonté supplémentaires.",,,,"<b>Когда вы убиваете врага, остальные враги теряют 2 Очка Воли.</b>
@@ -168,7 +168,8 @@ PR_BC_HUNTER_DESC,Text,,"<b>Accuracy +10%</b>
 <i>There used to be game and hunger around these parts</i>",,"<b>Précision +10%</b>
 <i>Il y avait autrefois du gibier et de la nourriture par ici.</i>",,,,"<b>Точность +10%</b>
 <i>Когда-то в этих краях не люди были добычей.</i>",,
-PR_BC_TROUBLEMAKER,Text,,TROUBLEMAKER,,PERTURBATEUR,,,,МАСТЕР-ГРЕНАДЕР,,
+PR_BC_TROUBLEMAKER,Text,,TROUBLEMAKER,,PERTURBATEUR,,,"КУНГ-ФУ
+",ГРЕНАДЕР,,
 PR_BC_TROUBLEMAKER_DESC,Text,,"<b>Hand grenades deal +10% damage</b>
 <i>You have a knack for irritating the authorities. Maybe that's why you are here? Think about it</i>",,"<b>Les grenades infligent +10% de dégâts</b>
 <i>Vous avez le don d'irriter les autorités. C'est peut-être pour cela que vous êtes ici ? Pensez-y</i>",,,,"<b>Ручные гранаты наносят +10% урона.</b>

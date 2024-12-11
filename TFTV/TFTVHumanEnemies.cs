@@ -45,8 +45,6 @@ namespace TFTV
         public static readonly GameTagDef HumanEnemyTier4GameTag = DefCache.GetDef<GameTagDef>("HumanEnemyTier_4_GameTagDef");
         public static readonly GameTagDef humanEnemyTagDef = DefCache.GetDef<GameTagDef>("HumanEnemy_GameTagDef");
 
-        private static readonly GameTagDef heavy = DefCache.GetDef<GameTagDef>("Heavy_ClassTagDef");
-
         private static readonly ApplyStatusAbilityDef regeneration = DefCache.GetDef<ApplyStatusAbilityDef>("Regeneration_Torso_Passive_AbilityDef");
         private static readonly HealthChangeStatusDef regenerationStatus = DefCache.GetDef<HealthChangeStatusDef>("Regeneration_Torso_Constant_StatusDef");
         private static readonly AddAttackBoostStatusDef startingVolleyStatus = DefCache.GetDef<AddAttackBoostStatusDef>("E_Status [StartingVolley]");

@@ -16,6 +16,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using PhoenixPoint.Tactical.Entities.Statuses;
 
 namespace TFTV
 {
@@ -27,6 +28,22 @@ namespace TFTV
         /// </summary>
 
         private static PhoenixGeneralButton _evacAll = null;
+
+        public static void ClearData() 
+        {
+            try 
+            {
+                _evacAll = null;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+        }
+
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         internal static class SmartEvacuation
         {
@@ -41,37 +58,41 @@ namespace TFTV
                     // Callback Helper
                     void OnEvacuateSquadConfirmationResult(MessageBoxCallbackResult res)
                     {
-                        if (res.DialogResult != MessageBoxResult.Yes)
+                        try
                         {
-                            InitEvacAll(__instance.TacticalLevel.View.TacticalModules.EndTurnContainer, res.UserData);
-                            return;
-                        }
-
-                        // Evacuate current actor
-                        TacticalAbility tacticalAbility = res.UserData as TacticalAbility;
-                        TacticalAbilityTarget tacticalAbilityTarget = tacticalAbility?.GetTargets().FirstOrDefault();
-                        if (tacticalAbilityTarget != null)
-                        {
-                            tacticalAbility.Activate(tacticalAbilityTarget);
-                        }
-
-                        // Evacuate squadmembers
-                        foreach (TacticalActor tActor in allActiveSquadmembers)
-                        {
-                            TacticalAbility tAbility = tActor.GetAbility<ExitMissionAbility>();
-                            if (tAbility == null)
+                            if (res.DialogResult != MessageBoxResult.Yes)
                             {
-                                tAbility = tActor.GetAbility<EvacuateMountedActorsAbility>();
+                                InitEvacAll(__instance.TacticalLevel.View.TacticalModules.EndTurnContainer, res.UserData);
+                                return;
                             }
-                            TacticalAbilityTarget taTarget = tAbility?.GetTargets().FirstOrDefault();
-                            //Logger.Info($"[GeoFaction_ShowExitMissionPrompt_PREFIX] ActorGridPosition: {taTarget.ActorGridPosition}");
 
-                            if (taTarget != null)
+                            // Evacuate current actor
+                            TacticalAbility tacticalAbility = res.UserData as TacticalAbility;
+                            TacticalAbilityTarget tacticalAbilityTarget = tacticalAbility?.GetTargets().FirstOrDefault();
+                            if (tacticalAbilityTarget != null)
                             {
-                                tAbility.Activate(taTarget);
+                                tacticalAbility.Activate(tacticalAbilityTarget);
                             }
+
+                            // Evacuate squadmembers
+                            foreach (TacticalActor tActor in allActiveSquadmembers)
+                            {
+                                TacticalAbility tAbility = (TacticalAbility)tActor.GetAbility<ExitMissionAbility>() ?? tActor.GetAbility<EvacuateMountedActorsAbility>();
+                                TacticalAbilityTarget taTarget = tAbility?.GetTargets().FirstOrDefault();
+                               
+                                if (taTarget != null)
+                                {
+                                    tAbility.Activate(taTarget);
+                                }
+                            }
+                            __instance.ResetViewState();
+                            
                         }
-                        __instance.ResetViewState();
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
                     }
 
                     void InitEvacAll(UIModuleEndTurnContainer uIModuleEndTurnContainer, object tacticalAbility)
@@ -105,12 +126,10 @@ namespace TFTV
                                 text.alignment = TextAnchor.MiddleCenter;
                                 _evacAll.PointerClicked += () => OnEvacuateSquadConfirmationResult(new MessageBoxCallbackResult { DialogResult = MessageBoxResult.Yes, UserData = tacticalAbility });
 
-
-
-                                foreach (Component component in _evacAll.GetComponentsInChildren<Component>().Where(c => c is Image))
+                               /* foreach (Component component in _evacAll.GetComponentsInChildren<Component>().Where(c => c is Image))
                                 {
                                     TFTVLogger.Always($"{component.name}");
-                                }
+                                }*/
                             }
                             else
                             {
@@ -164,7 +183,7 @@ namespace TFTV
                                 evacuateAbility = ____selectedActor.GetAbility<EvacuateMountedActorsAbility>();
                             }
 
-                            allActiveSquadmembers = __instance.TacticalLevel.CurrentFaction.TacticalActors.Where(a => a != ____selectedActor && a.IsActive);
+                            allActiveSquadmembers = __instance.TacticalLevel.CurrentFaction.TacticalActors.Where(a => a != ____selectedActor && a.IsActive && (a.Status==null || a.Status!=null && a.Status.GetStatus<MindControlStatus>()==null));
                             //   Logger.Info($"[TacticalView_OnAbilityExecuted_PREFIX] allActiveSquadmembers: {allActiveSquadmembers.Select(a => a.DisplayName).ToArray().Join(null, ", ")}");
 
                             bool isSquadInExitZone = true;

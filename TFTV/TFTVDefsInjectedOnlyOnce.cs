@@ -6,6 +6,7 @@ using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
+using Base.Input;
 using Base.UI;
 using Base.Utils;
 using Code.PhoenixPoint.Tactical.Entities.Equipments;
@@ -160,6 +161,8 @@ namespace TFTV
 
                 TFTVUITactical.Enemies.PopulateFactionViewElementDictionary();
 
+                HotkeysTest();
+
                 //  TFTVTacticalObjectives.Defs.CreateHumanTacticsRemindersInTactical();
 
 
@@ -172,6 +175,126 @@ namespace TFTV
             }
         }
 
+        private static void HotkeysTest()
+        {
+            try
+            {
+                //TFTVBackgrounds.LoadTFTVBackgrounds();
+
+                InputMapDef inputMapDef = DefCache.GetDef<InputMapDef>("PhoenixInput");
+
+
+
+                // Create a new InputKey for the "V" key
+                InputKey vKey = new InputKey
+                {
+                    Name = "v",
+                    Hash = (int)KeyCode.V, // Assuming KeyCode.V maps correctly
+                    InputSource = InputSource.Key,
+                    DeadzoneOverride = -1.0f
+
+                };
+
+                // Create a new InputChord using the "V" key
+                InputChord vChord = new InputChord
+                {
+                    OverridingBehavior = 0,
+                    Keys = new InputKey[] { vKey }
+                };
+
+                // Create the new InputAction
+                InputAction displayPerceptionCirclesAction = new InputAction
+                {
+                    Name = "DisplayPerceptionCircles",
+                    ActionSection = InputAction.ActionCategory.Tactical, // Assign to a relevant category
+                    ActionDisplayText = new LocalizedTextBind("Display Perception Circles"), // Display name
+                    Chords = new InputChord[] { vChord },
+                    Hash = inputMapDef.Actions.Last().Hash + 1
+                };
+
+                InputSetDef inputSetDef = DefCache.GetDef<InputSetDef>("SetCharacterSelectedControls");
+                inputSetDef.ActionNames = inputSetDef.ActionNames.AddToArray("DisplayPerceptionCircles");
+                inputMapDef.Actions = inputMapDef.Actions.AddToArray(displayPerceptionCirclesAction);
+
+                // TFTVLogger.Always($"inputMapDef.Actions.Contains(displayPerceptionCirclesAction): {inputMapDef.Actions.Contains(displayPerceptionCirclesAction)}");
+
+                /* foreach (InputAction inputAction in inputMapDef.Actions)
+                 {
+                     TFTVLogger.Always($"{inputAction.Name}, {inputAction.Hash}, {inputAction.Chords[0]?.Keys[0]?.Name}");
+                 }*/
+
+
+
+
+                /* FieldInfo fieldInfo = typeof(PhoenixGame).GetField("_input", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                 TFTVLogger.Always($"fieldInfo {fieldInfo==null}");
+
+                 InputController inputController = (InputController)fieldInfo.GetValue(GameUtl.GameComponent<PhoenixGame>());
+
+                // inputController.InitPlatformInput(GameUtl.GameComponent<PhoenixGame>().GetComponent<PlatformComponent>().Platform.GetPlatformInput());
+
+
+                 FieldInfo inputCacheFieldInfo = typeof(InputController).GetField("_inputCache", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                 FieldInfo activeActionsMapFieldInfo = typeof(InputController).GetField("_activeActionsMap", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                 InputCache inputCache = (InputCache)inputCacheFieldInfo.GetValue(inputController);
+
+                 inputCache = new InputCache(inputController.InputDisplay.FinalKeyDisplays.ToArray(), inputController.DefaultInputMap.Actions).Init();
+                 inputCacheFieldInfo.SetValue(inputController, inputCache);
+
+                 InputAction[] newInputAction = new InputAction[inputController.DefaultInputMap.Actions.Length * 2];
+
+              //   activeActionsMapFieldInfo.SetValue(inputController, newInputAction);
+
+                 TFTVLogger.Always($"{inputCache.GetActionHash("DisplayPerceptionCircles")} {inputCache.GetKeyHash("DisplayPerceptionCircles")}") ;
+
+
+
+                // inputCache.CacheAction(displayPerceptionCirclesAction);
+
+              /*   FieldInfo fieldInfoDictionary = typeof(InputController).GetField("_actionsToInputSetDict", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                 Dictionary<string, List<InputSetDef>> dictionary = (Dictionary<string, List<InputSetDef>>)fieldInfoDictionary.GetValue(inputController);
+
+
+                 dictionary.Add("DisplayPerceptionCircles", new List<InputSetDef>() { inputSetDef });*/
+
+                /*   foreach (InputSetDef item in Repo.GetAllDefs<InputSetDef>().ToList())
+                   {
+                       string[] actionNames = item.ActionNames;
+
+                     //  TFTVLogger.Always($"item is {item?.name}");
+
+                       foreach(string actionName in item.ActionNames) 
+                       {
+                           foreach (string key in actionNames)
+                           {
+                               TFTVLogger.Always($"{actionName}", false);
+
+                               dictionary[key].Contains()
+
+                               if (!dictionary.ContainsKey(key))
+                               {
+                                   _actionsToInputSetDict[key] = new List<InputSetDef>();
+                               }
+
+                               _actionsToInputSetDict[key].Add(item);
+                           }
+                       }
+
+
+                   }*/
+
+                // inputCacheFieldInfo.SetValue(input, inputCache);
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
         private static void CreateBackgrounds()
         {
@@ -191,7 +314,7 @@ namespace TFTV
 
         private static void AdjustColorDefs()
         {
-            try 
+            try
             {
                 Color voidColor = TFTVUITactical.VoidColor;
                 Color negativeColor = TFTVUITactical.NegativeColor;
@@ -590,8 +713,6 @@ namespace TFTV
             }
         }
 
-       
-
         private static void Create_StarvedAbility()
         {
             try
@@ -735,6 +856,7 @@ namespace TFTV
                 FixResearchRequirements();
                 FixMindControlImmunityNotRestoredWhenHeadReenabled();
                 FixChironStompIgnoringFriendlies();
+                FixMindWard();
                 // FixUmbraFire(); doesn't work because status removed before check
             }
             catch (Exception e)
@@ -743,11 +865,25 @@ namespace TFTV
             }
         }
 
-        private static void FixChironStompIgnoringFriendlies()
+        private static void FixMindWard()
         {
             try 
             {
-                DefCache.GetDef<AIAttackPositionConsiderationDef>("Chiron_StompAttackPosition_AIConsiderationDef").FriendlyHitScoreMultiplier = 0.7f;       
+                DefCache.GetDef<DamageMultiplierStatusDef>("PsychicWard_StatusDef").ApplicationConditions = new EffectConditionDef[] { };
+            
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        private static void FixChironStompIgnoringFriendlies()
+        {
+            try
+            {
+                DefCache.GetDef<AIAttackPositionConsiderationDef>("Chiron_StompAttackPosition_AIConsiderationDef").FriendlyHitScoreMultiplier = 0.7f;
             }
 
             catch (Exception e)
@@ -1163,6 +1299,12 @@ namespace TFTV
             {
 
                 ResearchDef scyllaCaptureModule = DefCache.GetDef<ResearchDef>("PX_Aircraft_EscapePods_ResearchDef");
+
+                scyllaCaptureModule.ViewElementDef.DisplayName1.LocalizationKey = "KEY_TFTV_CAPTURE_MODULE_RESEARCHDEF_NAME";
+                scyllaCaptureModule.ViewElementDef.RevealText.LocalizationKey = "KEY_TFTV_CAPTURE_MODULE_RESEARCHDEF_REVEAL";
+                scyllaCaptureModule.ViewElementDef.UnlockText.LocalizationKey = "KEY_TFTV_CAPTURE_MODULE_RESEARCHDEF_REVEAL";
+                scyllaCaptureModule.ViewElementDef.CompleteText.LocalizationKey = "KEY_TFTV_CAPTURE_MODULE_RESEARCHDEF_COMPLETE";
+
                 ExistingResearchRequirementDef existingResearchRequirementDef = DefCache.GetDef<ExistingResearchRequirementDef>("PX_Aircraft_EscapePods_ResearchDef_ExistingResearchRequirementDef_1");
                 existingResearchRequirementDef.ResearchID = "PX_Alien_Queen_ResearchDef";
 
@@ -1173,6 +1315,11 @@ namespace TFTV
                 scyllaCaptureModule.ResearchCost = 500;
 
                 GeoVehicleModuleDef captureModule = DefCache.GetDef<GeoVehicleModuleDef>("PX_EscapePods_GeoVehicleModuleDef");
+
+                captureModule.ViewElementDef.DisplayName1.LocalizationKey = "KEY_TFTV_CAPTURE_MODULE_NAME";
+                captureModule.ViewElementDef.DisplayName2.LocalizationKey = "KEY_TFTV_CAPTURE_MODULE_NAME";
+                captureModule.ViewElementDef.Description.LocalizationKey = "KEY_TFTV_CAPTURE_MODULE_DESCRIPTION";
+
                 captureModule.ManufactureMaterials = 600;
                 captureModule.ManufactureTech = 75;
                 captureModule.ManufacturePointsCost = 505;
@@ -4973,7 +5120,7 @@ namespace TFTV
                 loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_9" });
                 loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_10" });
                 loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_11" });
-
+                loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_12" });
                 loadingTipsRepositoryDef.TacticalLoadingTips[3].LocalizationKey = "KEY_TACTICAL_LOADING_TIP_4_TFTV";
 
             }
@@ -7302,26 +7449,26 @@ namespace TFTV
 
 
                 //Creating special status that will allow Umbra to target the character
-              /*  string umbraTargetStatusDefName = "TBTV_Target";
-                DamageMultiplierStatusDef sourceForTargetAbility = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
+                /*  string umbraTargetStatusDefName = "TBTV_Target";
+                  DamageMultiplierStatusDef sourceForTargetAbility = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
 
-                DamageMultiplierStatusDef umbraTargetStatus = Helper.CreateDefFromClone(
-                   sourceForTargetAbility,
-                   "0C4558E8-2791-4669-8F5B-2DA1D20B2ADD",
-                   umbraTargetStatusDefName);
+                  DamageMultiplierStatusDef umbraTargetStatus = Helper.CreateDefFromClone(
+                     sourceForTargetAbility,
+                     "0C4558E8-2791-4669-8F5B-2DA1D20B2ADD",
+                     umbraTargetStatusDefName);
 
-                umbraTargetStatus.EffectName = "UmbraTarget";
-                umbraTargetStatus.Visuals = Helper.CreateDefFromClone(
-                    sourceForTargetAbility.Visuals,
-                    "49A5DC8D-50B9-4CCC-A3D4-7576A1DDD375",
-                    umbraTargetStatus.EffectName);
-                umbraTargetStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
-                umbraTargetStatus.VisibleOnPassiveBar = true;
-                umbraTargetStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
-                umbraTargetStatus.Visuals.DisplayName1.LocalizationKey = "VOID_BLIGHT_NAME";
-                umbraTargetStatus.Visuals.Description.LocalizationKey = "VOID_BLIGHT_DESCRIPTION";
-                umbraTargetStatus.Visuals.LargeIcon = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef").ViewElementDef.LargeIcon;
-                umbraTargetStatus.Visuals.SmallIcon = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef").ViewElementDef.SmallIcon;*/
+                  umbraTargetStatus.EffectName = "UmbraTarget";
+                  umbraTargetStatus.Visuals = Helper.CreateDefFromClone(
+                      sourceForTargetAbility.Visuals,
+                      "49A5DC8D-50B9-4CCC-A3D4-7576A1DDD375",
+                      umbraTargetStatus.EffectName);
+                  umbraTargetStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+                  umbraTargetStatus.VisibleOnPassiveBar = true;
+                  umbraTargetStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                  umbraTargetStatus.Visuals.DisplayName1.LocalizationKey = "VOID_BLIGHT_NAME";
+                  umbraTargetStatus.Visuals.Description.LocalizationKey = "VOID_BLIGHT_DESCRIPTION";
+                  umbraTargetStatus.Visuals.LargeIcon = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef").ViewElementDef.LargeIcon;
+                  umbraTargetStatus.Visuals.SmallIcon = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef").ViewElementDef.SmallIcon;*/
             }
             catch (Exception e)
             {

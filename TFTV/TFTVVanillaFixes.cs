@@ -4,10 +4,9 @@ using Base.AI;
 using Base.Core;
 using Base.Defs;
 using Base.Entities;
-using Base.Entities.Statuses;
+using Base.Input;
 using Base.Levels;
 using Base.Rendering.ObjectRendering;
-using Base.UI;
 using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -53,7 +52,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static PhoenixPoint.Tactical.Entities.SquadPortraitsDef;
@@ -296,6 +294,7 @@ namespace TFTV
 
             private static MethodInfo _drawAllEnemyVisionMarkersMethodInfo = null;
 
+
             //Fixes size of ground marker for eggs/sentinels etc.
             public static void FixSurveillanceAbilityGroundMarker(Harmony harmony)
             {
@@ -317,10 +316,8 @@ namespace TFTV
                         MethodInfo zoneOfControlMarkerCreatorMethod = internalType.GetMethod("ZoneOfControlMarkerCreator", BindingFlags.NonPublic | BindingFlags.Instance);
                         MethodInfo prepareShortActorInfoMethod = internalType.GetMethod("PrepareShortActorInfo", BindingFlags.NonPublic | BindingFlags.Instance);
                         MethodInfo selectCharacterInfoMethod = internalType.GetMethod("SelectCharacter", BindingFlags.NonPublic | BindingFlags.Instance);
-                        //   MethodInfo EnemyVisionMarkerCreatorMethodInfo = internalType.GetMethod("EnemyVisionMarkerCreator", BindingFlags.NonPublic | BindingFlags.Instance);
                         _drawAllEnemyVisionMarkersMethodInfo = internalType.GetMethod("DrawAllEnemyVisionMarkers", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                        //    MethodInfo updateStateInfoMethod = internalType.GetMethod("UpdateState", BindingFlags.NonPublic | BindingFlags.Instance);
+                        MethodInfo updateStateInfoMethod = internalType.GetMethod("UpdateState", BindingFlags.NonPublic | BindingFlags.Instance);
 
 
                         if (zoneOfControlMarkerCreatorMethod != null)
@@ -337,16 +334,16 @@ namespace TFTV
                             //  TFTVLogger.Always($"updateStateInfoMethod patch should be running");
                             harmony.Patch(selectCharacterInfoMethod, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes.UI), nameof(PatchShowEnemyVisionMarkers)));
                         }
-                        //   if(EnemyVisionMarkerCreatorMethodInfo != null) 
-                        //   {
+                        //  if(EnemyVisionMarkerCreatorMethodInfo != null) 
+                        //  {
                         //  harmony.Patch(EnemyVisionMarkerCreatorMethodInfo, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes.UI), nameof(PatchEnemyVisionMarkerCreator)));
                         //   }
 
-                        /*  if (updateStateInfoMethod != null)
-                          {
-                              // TFTVLogger.Always($"patch should be running");
-                            //  harmony.Patch(updateStateInfoMethod, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes), nameof(UpdateState)));
-                          }*/
+                        if (updateStateInfoMethod != null)
+                        {
+                            //  TFTVLogger.Always($"patch should be running");
+                            harmony.Patch(updateStateInfoMethod, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes.UI), nameof(UpdateState)));
+                        }
                         /*   if (selectCharacterInfoMethod != null)
                            {
                                // TFTVLogger.Always($"patch should be running");
@@ -371,17 +368,8 @@ namespace TFTV
             {
                 try
                 {
-                    bool lazarusScarab = false;
 
-                    if (character.BodyState != null && character.BodyState.GetVehicleModules() != null && character.BodyState.GetVehicleModules().Any(e => e.TacticalItemDef == (GroundVehicleModuleDef)Repo.GetDef("983eb90b-29bf-15e4-fa76-d7f731069bd1")))
-                    {
-                        lazarusScarab = true;
-
-                    }
-
-
-                    if (character.GameTags.Contains(DefCache.GetDef<GameTagDef>("Infiltrator_ClassTagDef"))
-                        || lazarusScarab)
+                    if (character!=null && (_showBoolCircles == 1 && CheckCharacterInfiltratorOrLazarus(character) || _showBoolCircles == 2))
                     {
                         _drawAllEnemyVisionMarkersMethodInfo.Invoke(__instance, new object[] { });
                     }
@@ -395,6 +383,82 @@ namespace TFTV
                 }
             }
 
+            private static int _showBoolCircles = 1;
+
+            private static bool CheckCharacterInfiltratorOrLazarus(TacticalActor character)
+            {
+                try
+                {
+                    bool lazarusScarab = false;
+                    if (character.BodyState != null && character.BodyState.GetVehicleModules() != null && character.BodyState.GetVehicleModules().Any(e => e.TacticalItemDef == (GroundVehicleModuleDef)Repo.GetDef("983eb90b-29bf-15e4-fa76-d7f731069bd1")))
+                    {
+                        lazarusScarab = true;
+                    }
+
+                    foreach(TacticalFaction faction in character.TacticalLevel.Factions.Where(f => f.GetRelationTo(character.TacticalFaction) == FactionRelation.Enemy)) 
+                    {
+                        if (faction.Vision.IsRevealed(character)) 
+                        {
+                            return false;
+                        }    
+                    }
+
+                    if ( character.GameTags.Contains(DefCache.GetDef<GameTagDef>("Infiltrator_ClassTagDef"))
+                        || lazarusScarab)
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+            public static void UpdateState(object __instance)
+            {
+                try
+                {
+
+                    TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
+                    FieldInfo tacticalViewContextFieldInfo = typeof(TacticalView).GetField("_context", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                    TacticalViewContext tacticalViewContext = (TacticalViewContext)tacticalViewContextFieldInfo.GetValue(controller.View);
+
+                    TacticalActor selectedCharacter = controller.View.SelectedActor;
+
+                    // TFTVLogger.Always($"tacticalViewContext.Input.GetActiveAction() null? {tacticalViewContext.Input.GetActiveAction("DisplayPerceptionCircles") == null}"); 
+                    InputActionState inputKey = tacticalViewContext.Input.GetKey("DisplayPerceptionCircles");
+
+                    if (inputKey.IsJustPressed)
+                    {
+                        //  TFTVLogger.Always($"justPressed!");
+                        _showBoolCircles += 1;
+
+                        if (_showBoolCircles > 2)
+                        {
+                            _showBoolCircles = 0;
+                        }
+
+                        if (selectedCharacter != null && (_showBoolCircles == 1 && CheckCharacterInfiltratorOrLazarus(selectedCharacter) || _showBoolCircles == 2))
+                        {
+                            _drawAllEnemyVisionMarkersMethodInfo.Invoke(__instance, new object[] { });
+                        }
+                        else
+                        {
+                            controller.View.Markers.ClearGroundMarkers();
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
 
             [HarmonyPatch(typeof(TacticalGroundMarkers), "ClearGroundMarkers", new Type[] { typeof(GroundMarkerGroup) })]
             public static class TacticalGroundMarkers_ClearGroundMarkers_patch
@@ -404,6 +468,7 @@ namespace TFTV
                 {
                     try
                     {
+
                         if (group != GroundMarkerGroup.Selection)
                         {
                             return;
@@ -417,19 +482,9 @@ namespace TFTV
 
                         TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
-
-
                         TacticalActor selectedActor = controller.View.SelectedActor;
 
-                        bool lazarusScarab = false;
-
-                        if (selectedActor != null && selectedActor.BodyState != null && selectedActor.BodyState.GetVehicleModules() != null && selectedActor.BodyState.GetVehicleModules().Any(e => e.TacticalItemDef == (GroundVehicleModuleDef)Repo.GetDef("983eb90b-29bf-15e4-fa76-d7f731069bd1")))
-                        {
-                            lazarusScarab = true;
-
-                        }
-
-                        if (selectedActor != null && selectedActor.GameTags.Contains(DefCache.GetDef<GameTagDef>("Infiltrator_ClassTagDef")) || lazarusScarab)
+                        if (selectedActor!=null && (_showBoolCircles == 1 && CheckCharacterInfiltratorOrLazarus(selectedActor) || _showBoolCircles == 2))
                         {
 
                             IEnumerable<TacticalActor> tacticalActors = from a in selectedActor.TacticalFaction.Vision.GetKnownActors(KnownState.Revealed, FactionRelation.Enemy, false).OfType<TacticalActor>()
@@ -600,7 +655,7 @@ namespace TFTV
 
                                 }
 
-                              //  TFTVLogger.Always($"adding vivisection status to {actor.name} from {damageMultiplierStatusVivisection.DamageMultiplierStatusDef.name}");
+                                //  TFTVLogger.Always($"adding vivisection status to {actor.name} from {damageMultiplierStatusVivisection.DamageMultiplierStatusDef.name}");
 
                                 shortActorInfoTooltipData.Entries.Add(new ShortActorInfoTooltipDataEntry
                                 {
@@ -717,53 +772,8 @@ namespace TFTV
             }
 
 
-            public static void UpdateState(MethodBase __originalMethod, ref TacticalActor ____currentlyDisplayedActor)
-            {
-                try
-                {
-
-                    TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
-                    UIModuleShortActorInfoTooltip uIModuleShortActorInfoTooltip = controller.View.TacticalModules.ShortActorTooltipModule;
 
 
-                    //   FieldInfo fieldInfo = typeof(UIModuleShortActorInfoTooltip).GetField("_objectTracker", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                    TacticalActor selectedActor = controller.View.SelectedActor;
-
-
-
-                    //  TFTVLogger.Always($"selectedActor: {selectedActor.DisplayName} ____currentlyDisplayedActor: {____currentlyDisplayedActor.DisplayName}");
-
-                    if (____currentlyDisplayedActor == null)
-                    {
-                        ____currentlyDisplayedActor = selectedActor;
-
-                        // fieldInfo.SetValue(uIModuleShortActorInfoTooltip, selectedActor.GetComponent<UIObjectTracker>());
-                        uIModuleShortActorInfoTooltip.InitTooltip(controller.GetComponent<UIObjectTrackersController>());
-                        //UIObjectTracker uIObjectTracker = (UIObjectTracker)fieldInfo.GetValue(uIModuleShortActorInfoTooltip);
-                        uIModuleShortActorInfoTooltip.SetData(GenerateData(selectedActor, uIModuleShortActorInfoTooltip));
-                        // controller.View.Markers.AddGroundMarker(GroundMarkerGroup.Selection, new GroundMarker(GroundMarkerType.FriendlySelection));
-                        //  TFTVLogger.Always($"{GenerateData(selectedActor, uIModuleShortActorInfoTooltip).TrackRoot.name}");
-
-
-                    }
-                    if (!uIModuleShortActorInfoTooltip.IsShown && controller.View.SelectActorAtCursor<TacticalActor>() != null && controller.View.SelectActorAtCursor<TacticalActor>() == selectedActor)
-                    {
-                        //  TFTVLogger.Always($"should showing tooltip now");
-                        uIModuleShortActorInfoTooltip.Show();
-                    }
-                    //   ____currentlyDisplayedActor = null;
-
-
-
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
 
             public static void PrepareShortActorInfo(TacticalActor actor, ref ShortActorInfoTooltipData __result)
             {
@@ -1981,7 +1991,7 @@ namespace TFTV
                 try
                 {
 
-                    MethodInfo getDamagePayloadMethodInfo = typeof(AIAttackPositionConsideration).GetMethod("GetDamagePayload", BindingFlags.NonPublic| BindingFlags.Instance);
+                    MethodInfo getDamagePayloadMethodInfo = typeof(AIAttackPositionConsideration).GetMethod("GetDamagePayload", BindingFlags.NonPublic | BindingFlags.Instance);
 
                     TacticalActor tacActor = (TacticalActor)actor;
                     TacAITarget tacAITarget = (TacAITarget)target;
@@ -2072,7 +2082,7 @@ namespace TFTV
                             return false;
                         }
 
-                        
+
 
                         object[] parameters = new object[] { tacAITarget.Pos, weapon.GetDamagePayload(), list.Where((TacticalActorBase ac) => tacActor.RelationTo(ac) == FactionRelation.Enemy), weapon };
 
@@ -2116,39 +2126,39 @@ namespace TFTV
 
 
 
-      /*  [HarmonyPatch(typeof(AIAttackPositionConsideration), "EvaluateWithAbility")]
-        public static class AIAttackPositionConsideration_EvaluateWithAbilityPatch
-        {
-            static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                var codes = new List<CodeInstruction>(instructions);
-                var targetMethod = AccessTools.Method(typeof(TacticalFactionVision), "IsRevealed");
-                var statusCheckMethod = AccessTools.Method(typeof(StatusComponent), "HasStatus")
-                                             .MakeGenericMethod(typeof(MindControlStatus));
+        /*  [HarmonyPatch(typeof(AIAttackPositionConsideration), "EvaluateWithAbility")]
+          public static class AIAttackPositionConsideration_EvaluateWithAbilityPatch
+          {
+              static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+              {
+                  var codes = new List<CodeInstruction>(instructions);
+                  var targetMethod = AccessTools.Method(typeof(TacticalFactionVision), "IsRevealed");
+                  var statusCheckMethod = AccessTools.Method(typeof(StatusComponent), "HasStatus")
+                                               .MakeGenericMethod(typeof(MindControlStatus));
 
-                for (int i = 0; i < codes.Count; i++)
-                {
-                    // Look for the IsRevealed call
-                    if (codes[i].Calls(targetMethod))
-                    {
-                        // Insert additional check for !a.Status.HasStatus<MindControlStatus>()
-                        // This modifies the condition for filtering "a" (actors)
-                        codes.InsertRange(i + 1, new[]
-                        {
-                    new CodeInstruction(OpCodes.Ldloc_3), // Load the actor (local variable 3)
-                    new CodeInstruction(OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(TacticalActorBase), "Status")),
-                    new CodeInstruction(OpCodes.Callvirt, statusCheckMethod), // Call HasStatus<MindControlStatus>()
-                    new CodeInstruction(OpCodes.Ldc_I4_0), // Load "false" (0)
-                    new CodeInstruction(OpCodes.Ceq), // Check if HasStatus is false
-                    new CodeInstruction(OpCodes.And) // Combine with existing IsRevealed result
-                });
-                        break;
-                    }
-                }
+                  for (int i = 0; i < codes.Count; i++)
+                  {
+                      // Look for the IsRevealed call
+                      if (codes[i].Calls(targetMethod))
+                      {
+                          // Insert additional check for !a.Status.HasStatus<MindControlStatus>()
+                          // This modifies the condition for filtering "a" (actors)
+                          codes.InsertRange(i + 1, new[]
+                          {
+                      new CodeInstruction(OpCodes.Ldloc_3), // Load the actor (local variable 3)
+                      new CodeInstruction(OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(TacticalActorBase), "Status")),
+                      new CodeInstruction(OpCodes.Callvirt, statusCheckMethod), // Call HasStatus<MindControlStatus>()
+                      new CodeInstruction(OpCodes.Ldc_I4_0), // Load "false" (0)
+                      new CodeInstruction(OpCodes.Ceq), // Check if HasStatus is false
+                      new CodeInstruction(OpCodes.And) // Combine with existing IsRevealed result
+                  });
+                          break;
+                      }
+                  }
 
-                return (IEnumerable<CodeInstruction>)codes.AsEnumerable();
-            }
-        }*/
+                  return (IEnumerable<CodeInstruction>)codes.AsEnumerable();
+              }
+          }*/
 
 
 

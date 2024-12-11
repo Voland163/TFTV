@@ -153,6 +153,8 @@ namespace TFTV
 
                 TFTVUITactical.ClearDataOnLoadAndStateChange();
 
+                TFTVEvacAll.ClearData();
+
                 TFTVLogger.Always($"Internal variables cleared on State change or Load");
             }
             catch (Exception e)
@@ -251,6 +253,8 @@ namespace TFTV
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
                 TFTVAncients.AlertedHoplites.Clear();
                 TFTVUITactical.ClearDataOnMissionRestart();
+
+                TFTVEvacAll.ClearData();
 
                 TFTVLogger.Always($"Internal variables cleared on Mission Restart");
 

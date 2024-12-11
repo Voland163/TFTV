@@ -95,30 +95,12 @@ We have located a New Jericho archive facility harboring the NG+ Weapon Systems 
 
 Если вы сочтете что это стоит наших усилий, Директор, то мы нашли архив на территории Нового Иерихона, где хранятся исследования ОСНП.",,
 PROG_LE1_TITLE,Text,,Impossible Weapons,,Armes Impossibles,,,,Супер-оружие,,
-OLENA_PUZZLE_CHOICE,Text,,Weapons? That sounds interesting.,,,,,,Оружие? Звучит неплохо...,,
+OLENA_PUZZLE_CHOICE,Text,,Weapons? That sounds interesting.,,,,,,Оружие? Звучит заманчиво...,,
 OLENA_PUZZLE_TEXT,Text,,"Strange… there is nothing like a CPU, nothing like a memory module. I suppose we should have expected that they would be very different from what we could have designed. There must be something here we are not seeing. We should secure and analyze samples of the Living Crystal and of the Protean Mutane as soon as possible.
 
 One more thing: I have been talking to Helena about her time at Vanadium, and she recalls another ""moonshot"" division, charged with designing a new generation of weapon systems.",,,,,,"Странно... Здесь нет ничего похожего на процессор, ничего похожего на модуль памяти. Полагаю, нам следовало ожидать, что они будут сильно отличаться от наших компьютеров. Должно быть, здесь есть что-то, чего мы не видим. Мы должны как можно скорее получить и проанализировать образцы Живого Кристалла и Белкового Мутагена.
 
 И еще одно: я разговаривала с Хеленой о ее работе в корпорации ""Ванадий"", и она вспомнила, что у там было еще один ""лунный"" филиал, которому было поручено разработка нового поколения систем вооружения.",,
-PROG_KE1_TITLE,Text,,Mind Tricks,,Trucs et astuces pour l'esprit,,,,Игры разума,,
-PROG_KE1_CHOICE_0_TEXT,Text,,Enter the crypt and retrieve the Drop-Ka stone.,,Entrez dans la crypte et récupérez la pierre de Drop-Ka.,,,,"Войдите в склеп и возьмите ""Брось-Ка"" камень.",,
-PROG_KE1_TEXT_GENERAL_0,Text,,"The coordinates provided by the Maker take you to the overgrown ruins of the collector's estate. It would have taken you weeks to find the Drop-Ka stone, but for the precise instructions given by Markus, directing you towards the ancient family crypt. ",,"Les coordonnées fournies par le Créateur vous emmènent aux ruines envahies du domaine du collectionneur. Il vous aurait fallu des semaines pour trouver la pierre Drop-Ka, mais avec les instructions précises données par Markus, vous vous diriger vers l’ancienne crypte familiale. ",,,,"Координаты, предоставленные Создателем, ведут вас к заросшим руинам большого здания. На поиски ""Брось-Ка"" камня ушли бы недели, если бы не точные указания Маркуса, направляющие вас к древнему фамильному склепу рядом.",,
-PROG_KE1_TEXT_OUTCOME_0,Text,,"As you step inside the crypt, alien thoughts are projected into your mind. You are *listening* to a *voice* you cannot *hear*.
-
-<i>""Soon you will be contacted by string Subject integer twenty four. Accept proposal. Share data. Satisfactory outcome will lead to much preferred customer status. Beware of your Amygdala, it reeks of betrayal.""</i>
-
-There is no Drop-Ka stone to be found, but you suspect that's not why you were sent here anyway.
-",,"Lorsque vous entrez dans la crypte, des pensées extraterrestres sont projetées dans votre esprit. Vous *écoutez* une *voix* que vous ne pouvez pas *entendre*.
-
-<i>""Bientôt, vous serez contacté par Sujet numéro vingt-quatre. Accepter la proposition. Partager les données. Un résultat satisfaisant mènera à un statut de client privilégié. Méfiez-vous de votre Amygdale, elle sent la trahison.""</i>
-
-Il n’y a pas de pierre Drop-Ka à trouver, mais vous soupçonnez que ce n’est pas pourquoi vous avez été envoyé ici de toute façon.
-",,,,"Когда вы входите в склеп, в ваш разум проникают чужие мысли. Вы «слышите» голос, «который» невозможно «услышать».
-
-<i>""Ожидайте подключение Подопытного №24. Предоставьте доступ к данным. Удовлетворительный результат приведет к получению статуса предпочтительного клиента. Не поддавайтесь эмоциям, они только мешают!""</i>
-
-Вы не нашли «Брось-Ka» камень, но вы подозреваете, что вас послали сюда не за этим.",,
 PROG_LE0_MISS_CHOICE_2_TEXT,Text,,Ask West to release Dr. Helena,,Demandez à West de libérer le Dr. Helena,,,,Попросить Уэста освободить доктора Хелену,,
 PROG_LE0_MISS_CHOICE_2_OUTCOME_GENERAL,Text,,"MESSAGE
 FROM: Tobias West (New Jericho) 
@@ -247,11 +229,11 @@ Cela fait partie de notre nature. Nous devons le reconnaître et mettre en place
 ОТ: Эбигейл Смит (Новый Иерихон)
 КОМУ: Проект Феникс
 
-Я не буду спрашивать вас, как вы получили эту информацию, но я очень ценю ее. В отличие от других, я ни сколько не удивлена, что Синедрион занимается подобными исследованиями.
+Я не буду спрашивать вас, как вы получили эту информацию, но оно стоило того. В отличие от других, я ни сколько не удивлена, что Синедрион занимается подобными исследованиями.
 
-Они проповедуют о ""радикальной прозрачности"" и ""неиерархических общественных структурах, основанных на отсутствии материального дефицита"", но люди есть люди, и если есть что-то, чего они никогда не могут насытиться, так это власть, властвование над своими собратьями-людьми.
+Они проповедуют о «радикальной прозрачности» и «неиерархических общественных структурах, основанных на отсутствии материального дефицита», но люди есть люди, и если есть что-то, чего они никогда не могут насытиться, так это власть, властвование над своими собратьями-людьми.
 
-Это часть нашей натуры. Мы должны признать это и установить систему сдержек и противовесов, чтобы сохранить наши свободы. Это единственный способ.",,
+Это часть нашей натуры. Мы должны признать это и установить систему сдержек и противовесов, чтобы сохранить наши свободы. Это единственный путь.",,
 PROG_PU12_NEWNJOPT_TITLE,Text,,Of Human Bondage,,De la Servitude Humaine,,,,Бремя страстей человеческих,,
 PROG_PU12_MISS_CHOICE_3_TEXT,Text,,Sell the information about the secret Synedrion lab at [HavenName] to New Jericho,,Vendre les informations sur le laboratoire secret Synedrion à [HavenName] à la Nouvelle Jericho,,,,Продать информацию о секретной лаборатории Синедриона в [HavenName] Новому Иерихону.,,
 PROG_PU12_MISS_CHOICE_2_TEXT,Text,,Join Synedrion in the defense against the raid by the Pure,,Rejoignez le Synedrion dans la défense contre le raid des Purs,,,,Присоединиться к Синедриону в защите от набега Непорочных,,
@@ -282,7 +264,7 @@ PROG_PU12_WIN2_TITLE,Text,,Just Doing Our Job,,Faite Juste Notre Travail,,,,Пр
 PROG_PU12_WIN2_CHOICE_0_TEXT,Text,,OK,,OK,,,,Ок,,
 PROG_PU12_WIN2_TEXT_GENERAL_0,Text,,"Given the good relations between Phoenix Project and Synedrion, [HavenLeaderForename] [HavenLeaderSurname] was not surprised at the presence of [AircraftName] in the [HavenName] at the time of the attack, and [HavenLeaderForename] assumed that you were aware of the research going on in the restricted research campus. After defending [HavenName] from the raid, Phoenix operatives stole the secrets to Synderion bionics research.",,,,,,"Учитывая хорошие отношения между Проектом Феникс и Синдерионом, [HavenLeaderForename] [HavenLeaderSurname] не сильно удивлен присутствием [AircraftName] в [HavenName] во время атаки, и [HavenLeaderForename] предположил, что вы были осведомлены об исследованиях, проводимых в режимном исследовательском объекте. Защитив [HavenName] от налета, бойцы Феникса незаметно скачали секретные исследования Синдериона в области бионики.",,
 PROG_PU12_FAIL2_TITLE,Text,,Miserable Failure!,,Misérable Echec !,,,,Это провал!,,
-PROG_PU12_FAIL2_TEXT_GENERAL_0,Text,,You suck!,,T'es nul !,,,,Ты жалок!,,
+PROG_PU12_FAIL2_TEXT_GENERAL_0,Text,,You suck!,,T'es nul !,,,,Ничтожество!,,
 PROG_PU12_FAIL2_CHOICE_0_TEXT,Text,,:(,,:(,,,,:(,,
 ANU_PISSED_BIONICS_TEXT_GENERAL_0,Text,,"Your clumsy experiments with bionics have not gone unnoticed. We are sorely disappointed. You are shredding the Imperfect Double Helix to replace it with mean metal. An evolutionary deadend, beyond the Salvation of the Evermutable. O! But how do you try Our patience, yes...",,"Vos expériences maladroites avec la bionique ne sont pas passées inaperçues. Nous sommes très déçus. Vous êtes en train de déchiqueter la Double Hélice Imparfaite pour la remplacer par du métal moyen. Une mort évolutionnaire, au-delà du Salut de Sans-Mutation. Oh ! Mais comment testez-vous notre patience, oui…",,,,"Ваши неуклюжие эксперименты с бионикой не остались незамеченными. Мы глубоко разочарованы. Вы уничтожаете двойную спираль ДНК, чтобы заменить ее на обычный металл. Это эволюционный тупик, в котором невозможно спасти Неизменное. Ох... Как же вы испытываете Наше терпение, да...",,
 ANU_PISSED_BIONICS_TITLE,Text,,Genes and Metals,,Gènes et Mlétaux,,,,Гены и Металлы,,

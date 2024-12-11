@@ -475,12 +475,14 @@ namespace TFTV
                     TFTVTouchedByTheVoid.Umbra.UmbraTactical.RollTouchByTheVoid(Controller);
                     TFTVHumanEnemies.ChampRecoverWPAura(Controller);
                     TFTVHumanEnemies.ApplyTacticStartOfPlayerTurn(Controller); 
-                    TFTVSpecialDifficulties.CounterSpawned = 0;
+                    TFTVSpecialDifficulties.CounterSpawned = 0;                
                 }
                 else
                 {
                     TFTVLogger.Always($"Playing tutorial mission");
                 }
+
+                TFTVArtOfCrab.ClearData();
 
             }
             catch (Exception e)

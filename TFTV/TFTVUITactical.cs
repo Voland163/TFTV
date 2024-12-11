@@ -3,7 +3,6 @@ using Base.Core;
 using Base.Defs;
 using Base.Entities.Statuses;
 using Base.UI;
-using Epic.OnlineServices;
 using HarmonyLib;
 using hoenixPoint.Tactical.View.ViewControllers;
 using I2.Loc;
@@ -55,6 +54,99 @@ namespace TFTV
         private static Color _regularNoLOSColor = Color.gray;
         private static Color _whiteColor = new Color(0.820f, 0.859f, 0.914f);
         public static Color VoidColor = new Color(0.525f, 0.243f, 0.937f);
+
+
+
+        /*  [HarmonyPatch(typeof(InputController), "RefreshActions")]
+          public static class InputController_Init_patch
+          {
+              public static bool Prefix(InputController __instance, ref InputAction[] ____activeActionsMap,
+                 ref List<int> ____activeActionHashes, ref List<InputAction> ____actionList, ref List<AxisValue> ____axisValues,
+                ref List<KeyValue> ____keyValuesList, ref KeyValue[] ____keyValues, ref List<ActionAxisValue> ____actionAxisValues)
+              {
+                  try
+                  {
+                      MethodInfo InitSuperChordsMethodInfo = typeof(InputController).GetMethod("InitSuperChords", BindingFlags.Instance | BindingFlags.NonPublic);
+                      MethodInfo IsAllowedAndSupportedMethodInfo = typeof(InputController).GetMethod("IsAllowedAndSupported", BindingFlags.Instance | BindingFlags.NonPublic);
+                      MethodInfo GetAxisRawMethodInfo = typeof(InputController).GetMethod("GetAxisRaw", BindingFlags.Static | BindingFlags.NonPublic);
+                      PropertyInfo KeyMaxHashFieldInfo = typeof(InputController).GetProperty("KeyMaxHash", BindingFlags.Instance | BindingFlags.NonPublic);
+
+
+
+                      for (int i = 0; i < ____activeActionsMap.Length; i++)
+                      {
+                          ____activeActionsMap[i] = null;
+                      }
+
+                      TFTVLogger.Always($"got here0");
+
+                      List<InputAction> list = ____activeActionHashes.Select(__instance.GetDefaultAction).ToList();
+                      TFTVLogger.Always($"got here0bis; list count is {list.Count}, while  ____activeActionsMap.Length is {____activeActionsMap.Length}");
+
+                      foreach (InputAction item in list)
+                      {
+                          TFTVLogger.Always($"item is {item?.Name} hash: {item?.Hash} ____activeActionsMap.Contains(item): {____activeActionsMap.Contains(item)}");
+
+                          //  if (____activeActionsMap.Contains(item))
+
+                              ____activeActionsMap[item.Hash] = item;
+
+                      }
+                      TFTVLogger.Always($"got here0ter");
+
+                      ____actionList = list;
+                      List<InputKey> source = (from action in list
+                                               from chord in action.Chords
+                                               from key in chord.Keys
+                                               where (bool)IsAllowedAndSupportedMethodInfo.Invoke(__instance, new object[] { key.GetInputType() })// IsAllowedAndSupported(key.GetInputType())
+                                               select key).Distinct().ToList();
+
+                      TFTVLogger.Always($"got here1");
+
+                      IEnumerable<InputKey> source2 = source.Where((InputKey key) => key.InputSource == InputSource.AxisTriggerPositive || key.InputSource == InputSource.AxisTriggerNegative || key.InputSource == InputSource.Axis);
+                      List<AxisValue> prevAxisValues = ____axisValues ?? new List<AxisValue>();
+                      ____axisValues = source2.Select((InputKey k) => new AxisValue(k.Name, k.GetInputType(), (AxisValue)GetAxisRawMethodInfo.Invoke(__instance, new object[] { k.Name, prevAxisValues }), __instance)).ToList();
+
+                      TFTVLogger.Always($"and here2");
+
+                      IEnumerable<InputKey> source3 = source.Where((InputKey key) => key.InputSource == InputSource.Key || key.InputSource == InputSource.AxisTriggerNegative || key.InputSource == InputSource.AxisTriggerPositive);
+                      KeyValue[] prevKeyValues = ____keyValues ?? new KeyValue[(int)KeyMaxHashFieldInfo.GetValue(__instance)];
+
+                      TFTVLogger.Always($"and here3");
+                      ____keyValuesList = source3.Select((InputKey k) => new KeyValue(k, prevKeyValues[k.GetHashCode()], __instance)).ToList();
+                      ____keyValues = new KeyValue[(int)KeyMaxHashFieldInfo.GetValue(__instance)];
+
+                      TFTVLogger.Always($"whatabout here4");
+                      for (int j = 0; j < ____keyValuesList.Count; j++)
+                      {
+                          int hashCode = ____keyValuesList[j].Key.GetHashCode();
+                          ____keyValues[hashCode] = ____keyValuesList[j];
+                      }
+
+                      ____actionAxisValues = (from a in list
+                                              where a.IsAxis
+                                              select new ActionAxisValue(a, __instance)).ToList();
+
+                      TFTVLogger.Always($"dont tell me this is the problem!");
+                      InitSuperChordsMethodInfo.Invoke(__instance, new object[] { });// InitSuperChords();
+                      __instance.IsInputSetLoaded = true;
+
+                      TFTVLogger.Always($"got to the end! A miracle");
+
+                      return false;
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                      throw;
+                  }
+              }
+          }*/
+
+
+
+
+
 
         public static void CachePuristaSemiboldFont(UIModuleObjectives uIModuleObjectives)
         {
@@ -569,7 +661,7 @@ namespace TFTV
                 private Text _description;
                 Color greenColor = new Color(0.4f, 0.729f, 0.416f);
 
-                public void ShowNewObjective(string title, List<string> descriptions, bool victoryObjective = false, float displayDuration = 3f)
+                public void ShowNewObjective(string title, List<string> descriptions, Sprite icon, bool victoryObjective = false, float displayDuration = 3f)
                 {
                     try
                     {
@@ -578,7 +670,7 @@ namespace TFTV
                         currentDescriptionIndex = 0; // Reset index for each new objective
                         descriptionDisplayTime = displayDuration / descriptions.Count; // Time per description
 
-                        CreateUIElement(title, descriptions[currentDescriptionIndex], victoryObjective);
+                        CreateUIElement(title, descriptions[currentDescriptionIndex], icon, victoryObjective);
                         StartFadeIn();
                     }
                     catch (Exception e)
@@ -592,7 +684,7 @@ namespace TFTV
                 private float descriptionDisplayTime;
 
 
-                private void CreateUIElement(string title, string initialDescription, bool victoryObjective = false)
+                private void CreateUIElement(string title, string initialDescription, Sprite classIcon, bool victoryObjective = false)
                 {
                     try
                     {
@@ -656,6 +748,9 @@ namespace TFTV
                         iconRect.pivot = new Vector2(0.5f, 1);
                         iconRect.anchoredPosition = new Vector2(0, 130); // Moved higher
 
+                        AddOutlineToIcon addOutlineToObjectiveIcon = icon.GetComponent<AddOutlineToIcon>() ?? icon.AddComponent<AddOutlineToIcon>();
+                        addOutlineToObjectiveIcon.icon = icon;
+                        addOutlineToObjectiveIcon.InitOrUpdate();
 
                         // Title Text
                         GameObject titleTextObj = new GameObject("TitleText");
@@ -693,6 +788,24 @@ namespace TFTV
                         descRect.pivot = new Vector2(0.5f, 1);
                         descRect.localScale = new Vector3(0.5f, 0.5f, 0.5f); // Scaling down to improve text clarity
                         descRect.anchoredPosition = new Vector2(0, 40);
+
+
+                        // Class Icon below
+                        GameObject targetIcon = new GameObject("TargetIcon");
+                        targetIcon.transform.SetParent(uiObject.transform);
+                        Image targetIconImage = targetIcon.AddComponent<Image>();
+                        targetIconImage.sprite = classIcon;
+                        targetIconImage.color = NegativeColor;
+                        RectTransform targetIconRect = targetIcon.GetComponent<RectTransform>();
+                        targetIconRect.sizeDelta = new Vector2(120, 120);
+                        targetIconRect.anchorMin = new Vector2(0.5f, 1);
+                        targetIconRect.anchorMax = new Vector2(0.5f, 1);
+                        targetIconRect.pivot = new Vector2(0.5f, 1);
+                        targetIconRect.anchoredPosition = new Vector2(0, -500); // Moved higher
+
+                        AddOutlineToIcon addOutlineToIcon = targetIcon.GetComponent<AddOutlineToIcon>() ?? targetIcon.AddComponent<AddOutlineToIcon>();
+                        addOutlineToIcon.icon = targetIcon;
+                        addOutlineToIcon.InitOrUpdate();
 
                         if (victoryObjective)
                         {
@@ -835,7 +948,9 @@ namespace TFTV
 
                     List<TacticalActor> relevantActors = aliens.TacticalActors.
                         Where(ta =>
-                        (ta.HasGameTag(relevantTag) || ta.Equipments.GetWeapons().Any(w => w.GameTags.Contains(relevantTag)))).ToList();
+                        (ta.HasGameTag(relevantTag) || ta.Equipments.GetWeapons().Any(w => w.GameTags.Contains(relevantTag)))).ToList().
+                        Concat(phoenix.TacticalActors.Where(ta=>
+                        (ta.HasGameTag(relevantTag) || ta.Equipments.GetWeapons().Any(w => w.GameTags.Contains(relevantTag))) && ta.Status!=null && ta.Status.HasStatus<MindControlStatus>())).ToList();
 
                     if (onlyAlive)
                     {
@@ -907,7 +1022,7 @@ namespace TFTV
             private static UIHider _uIHider = null;
 
 
-            public static void CreateSecondaryObjectiveAnnouncement(List<string> descriptions, bool victoryObjective = false)
+            public static void CreateSecondaryObjectiveAnnouncement(List<string> descriptions, Sprite icon, bool victoryObjective = false)
             {
                 try
                 {
@@ -925,7 +1040,7 @@ namespace TFTV
                     GameObject gameObject = new GameObject();
                     NewObjectiveUI newObjectiveUI = gameObject.AddComponent<NewObjectiveUI>();
                     newObjectiveUI.IconSprite = Helper.CreateSpriteFromImageFile("objective.png");
-                    newObjectiveUI.ShowNewObjective(title, descriptions, victoryObjective);
+                    newObjectiveUI.ShowNewObjective(title, descriptions, icon, victoryObjective);
                     _newObjectiveWidget = newObjectiveUI;
                     //  TacticalUIOverlayController.ToggleUI();
 
@@ -1194,7 +1309,7 @@ namespace TFTV
                         _uIHider = null;
                     }
 
-                    if (_targetUIActorElement != null)
+                  /*  if (_targetUIActorElement != null)
                     {
                         _targetUIActorElement.SetHighlighted(false);
                         _targetUIActorElement.gameObject.SetActive(false);
@@ -1202,7 +1317,7 @@ namespace TFTV
                         _targetUIActorElement.GetComponent<HealthbarUIActorElement>().HealthBar.gameObject.SetActive(true);
                         _targetUIActorElement.GetComponent<HealthbarUIActorElement>().ArmorBar.gameObject.SetActive(true);
                         _targetUIActorElement = null;
-                    }
+                    }*/
                     //  TacticalUIOverlayController.ToggleUI();
                     InitObjectivesTFTV(uIModuleObjectives);
                 }
@@ -1213,13 +1328,37 @@ namespace TFTV
                 }// Code to execute after 3 seconds
             }
 
+            private static bool CheckCapacityForCaptureObjective(GeoPhoenixFaction phoenixFaction, int spaceRequired)
+            {
+                try 
+                {
+                    int captureCapacity = AircraftCaptureCapacity;
+                    int availableContainmentSpace = phoenixFaction.ContaimentCapacity - phoenixFaction.ContaimentUsage;
+                    bool limitedCaptureSetting = TFTVNewGameOptions.LimitedCaptureSetting;
+
+                    if (limitedCaptureSetting && captureCapacity > spaceRequired || !limitedCaptureSetting && availableContainmentSpace > spaceRequired)
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
             public static void PopulateAvailableObjectives(GeoLevelController controller)
             {
                 try
                 {
                     GeoPhoenixFaction phoenixFaction = controller.PhoenixFaction;
 
-                    if (TFTVRevenant.DeadSoldiersDelirium.Count > 0 && controller.EventSystem.GetVariable(TFTVRevenant.TFTVRevenantResearch.RevenantCapturedVariable) == 0)
+                  
+
+                    if (TFTVRevenant.DeadSoldiersDelirium.Count > 0 && controller.EventSystem.GetVariable(TFTVRevenant.TFTVRevenantResearch.RevenantCapturedVariable) == 0 
+                        && CheckCapacityForCaptureObjective(phoenixFaction, 2))
                     {
                         if (!AvailableSecondaryObjectivesTactical.Contains(_captureAnyRevenant.Guid))
                         {
@@ -1228,7 +1367,8 @@ namespace TFTV
                         }
                     }
 
-                    if (phoenixFaction.Research.HasCompleted("PX_Aircraft_EscapePods_ResearchDef") && phoenixFaction.Research.GetResearchById("PX_Alien_LiveQueen_ResearchDef").IsRevealed)
+                    if (phoenixFaction.Research.HasCompleted("PX_Aircraft_EscapePods_ResearchDef") && phoenixFaction.Research.GetResearchById("PX_Alien_LiveQueen_ResearchDef").IsRevealed
+                        && CheckCapacityForCaptureObjective(phoenixFaction, 8))
                     {
                         if (!AvailableSecondaryObjectivesTactical.Contains(_captureScylla.Guid))
                         {
@@ -1239,7 +1379,7 @@ namespace TFTV
 
                     if (phoenixFaction.Research.GetResearchById("PX_Alien_LiveSiren_ResearchDef").IsRevealed)
                     {
-                        if (!AvailableSecondaryObjectivesTactical.Contains(_captureSiren.Guid))
+                        if (!AvailableSecondaryObjectivesTactical.Contains(_captureSiren.Guid) && CheckCapacityForCaptureObjective(phoenixFaction, 3))
                         {
                             AvailableSecondaryObjectivesTactical.Add(_captureSiren.Guid);
                             //  TFTVLogger.Always($"_captureSiren available");
@@ -1248,7 +1388,7 @@ namespace TFTV
 
                     if (phoenixFaction.Research.GetResearchById("PX_GooRepeller_ResearchDef").IsRevealed)
                     {
-                        if (!AvailableSecondaryObjectivesTactical.Contains(_captureGooAlien.Guid))
+                        if (!AvailableSecondaryObjectivesTactical.Contains(_captureGooAlien.Guid) && CheckCapacityForCaptureObjective(phoenixFaction, 4))
                         {
                             AvailableSecondaryObjectivesTactical.Add(_captureGooAlien.Guid);
                             // TFTVLogger.Always($"_captureGooAlien available");
@@ -1257,14 +1397,14 @@ namespace TFTV
 
                     if (phoenixFaction.Research.GetResearchById("PX_AlienVirusInfection_ResearchDef").IsRevealed)
                     {
-                        if (!AvailableSecondaryObjectivesTactical.Contains(_captureViralAlien.Guid))
+                        if (!AvailableSecondaryObjectivesTactical.Contains(_captureViralAlien.Guid) && CheckCapacityForCaptureObjective(phoenixFaction, 3))
                         {
                             AvailableSecondaryObjectivesTactical.Add(_captureViralAlien.Guid);
                             // TFTVLogger.Always($"_captureViralAlien available");
                         }
                     }
 
-                    if (phoenixFaction.Research.GetResearchById("PX_PyschicAttack_ResearchDef").IsRevealed)
+                    if (phoenixFaction.Research.GetResearchById("PX_PyschicAttack_ResearchDef").IsRevealed && CheckCapacityForCaptureObjective(phoenixFaction, 3))
                     {
                         if (!AvailableSecondaryObjectivesTactical.Contains(_capturePsychicAlien.Guid))
                         {
@@ -1326,7 +1466,6 @@ namespace TFTV
                         listOfFactionObjectives.RemoveAll(obj => _secondaryObjectiveDefsALL.Contains(obj));
 
                         missionType.CustomObjectives = listOfFactionObjectives.ToArray();
-
 
                         foreach (string factionObjectiveDefGUID in AvailableSecondaryObjectivesTactical)
                         {
@@ -1683,22 +1822,22 @@ namespace TFTV
                 }
             }
 
-           /* public static void ClearDataOnMissionRestart()
-            {
-                try
-                {
-                    _secondaryObjectivesTitle = null;
-                    _secondaryObjectives = null;
-                    AvailableSecondaryObjectivesTactical?.Clear();
-                    _secondaryObjectiveDefsInPlay?.Clear();
-                    _objectivesTargetsDictionary?.Clear();
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }*/
+            /* public static void ClearDataOnMissionRestart()
+             {
+                 try
+                 {
+                     _secondaryObjectivesTitle = null;
+                     _secondaryObjectives = null;
+                     AvailableSecondaryObjectivesTactical?.Clear();
+                     _secondaryObjectiveDefsInPlay?.Clear();
+                     _objectivesTargetsDictionary?.Clear();
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }*/
 
 
             public static bool IsSecondaryObjective(FactionObjective objective)
@@ -1742,12 +1881,12 @@ namespace TFTV
                             relevantTag = (GameTagDef)fieldInfo.GetValue(killObjective);
                         }
 
-                        if (relevantTag != null && !controller.GetFactionByCommandName("aln").TacticalActors.Any(ta => ta.HasGameTag(relevantTag)))
+                        if (relevantTag != null && !controller.GetFactionByCommandName("aln").TacticalActors.Any(ta => ta.HasGameTag(relevantTag)) 
+                            && !controller.GetFactionByCommandName("px").TacticalActors.Any(ta => ta.HasGameTag(relevantTag) && ta.Status!=null && ta.Status.HasStatus<MindControlStatus>()))
                         {
 
                             TFTVLogger.Always($"Not adding {objective.Description.Localize()} because it's never relevant");
                             objective.IsUiSummaryHidden = true;
-
 
                             PropertyInfo propertyInfo = typeof(FactionObjective).GetProperty("State", BindingFlags.Instance | BindingFlags.Public);
                             propertyInfo.SetValue(objective, FactionObjectiveState.InProgress);
@@ -1799,12 +1938,12 @@ namespace TFTV
                     TacticalActor target = _pendingObjectivesTargets.Keys.ElementAt(x);
                     target.TacticalActorView.DoCameraChase(true);
 
-                    _targetUIActorElement = target.TacticalActorViewBase.UIActorElement;
+                  /*  _targetUIActorElement = target.TacticalActorViewBase.UIActorElement;
 
                     //  _targetUIActorElement.SetVisible(true);
                     _targetUIActorElement.GetComponent<HealthbarUIActorElement>().HealthBar.gameObject.SetActive(false);
                     _targetUIActorElement.GetComponent<HealthbarUIActorElement>().ArmorBar.gameObject.SetActive(false);
-                    _targetUIActorElement.SetHighlighted(true);
+                    _targetUIActorElement.SetHighlighted(true);*/
 
 
                     List<FactionObjective> factionObjectives = _pendingObjectivesTargets[target];
@@ -1831,7 +1970,7 @@ namespace TFTV
 
                     _pendingObjectivesTargets.Clear();
 
-                    CreateSecondaryObjectiveAnnouncement(description);
+                    CreateSecondaryObjectiveAnnouncement(description, target.ViewElementDef.LargeIcon);
                 }
             }
 
@@ -1862,8 +2001,6 @@ namespace TFTV
 
                     TacticalLevelController controller = objective.Level;
 
-
-
                     if (objective is KillActorFactionObjective killObjective)
                     {
                         FieldInfo fieldInfo = typeof(KillActorFactionObjective).GetField("_killTargetsGameTag", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -1884,7 +2021,12 @@ namespace TFTV
                         ta.IsAlive && phoenix.Vision.IsRevealed(ta)
                         && (ta.HasGameTag(relevantTag) || ta.Equipments.GetWeapons().Any(w => w.GameTags.Contains(relevantTag)))
                         && CheckTargetIsNotToCaptureUncapturableScylla(ta, objective)
-                        ).ToList();
+                        ).ToList().
+                        Concat(phoenix.TacticalActors.Where(ta=>
+                        ta.IsAlive 
+                        && (ta.HasGameTag(relevantTag) || ta.Equipments.GetWeapons().Any(w => w.GameTags.Contains(relevantTag)))
+                        && CheckTargetIsNotToCaptureUncapturableScylla(ta, objective)
+                        && ta.Status!=null && ta.Status.HasStatus<MindControlStatus>())).ToList();
 
                     if (relevantTag != null && relevantActors.Count > 0)
                     {
@@ -1926,7 +2068,7 @@ namespace TFTV
             [HarmonyPatch(typeof(ActorHasStatusFactionObjective), "GetTargets")]
             public static class ActorHasStatusFactionObjective_GetTargets_Patch
             {
-                static bool Prefix(ActorHasStatusFactionObjective __instance, GameTagDef ____targetsGameTag, ref IEnumerable<TacticalActorBase> __result)
+                public static bool Prefix(ActorHasStatusFactionObjective __instance, GameTagDef ____targetsGameTag, ref IEnumerable<TacticalActorBase> __result)
                 {
                     try
                     {
@@ -1997,17 +2139,17 @@ namespace TFTV
 
                     if (!targets.Any())
                     {
-                        // TFTVLogger.Always($"returning fail state for {objective.Description.Localize()}");
+                        TFTVLogger.Always($"returning fail state for {objective.Description.Localize()}");
                         return FactionObjectiveState.Failed;
                     }
 
                     if (targets.Any((TacticalActorBase x) => x.Status.HasStatus<ParalysedStatus>()))
                     {
-                        // TFTVLogger.Always($"returning achieved state for {objective.Description.Localize()}");
+                        TFTVLogger.Always($"returning achieved state for {objective.Description.Localize()}");
                         return FactionObjectiveState.Achieved;
                     }
 
-                    // TFTVLogger.Always($"returning inprogress state for {objective.Description.Localize()}");
+                    TFTVLogger.Always($"returning inprogress state for {objective.Description.Localize()}");
                     return FactionObjectiveState.InProgress;
                 }
 
@@ -2046,8 +2188,6 @@ namespace TFTV
 
                         }
 
-
-
                         target.TacticalActorView.DoCameraChase(true);
 
                         string descriptionToAdd = objective.GetDescription().ToUpper();
@@ -2059,7 +2199,7 @@ namespace TFTV
 
                         List<string> description = new List<string>() { descriptionToAdd };
 
-                        CreateSecondaryObjectiveAnnouncement(description, true);
+                        CreateSecondaryObjectiveAnnouncement(description, target.ViewElementDef.LargeIcon, true);
 
                     }
                 }
@@ -2070,6 +2210,56 @@ namespace TFTV
                     throw;
                 }
             }
+
+            private static bool CheckCaptureObjectiveCompleted(ActorHasStatusFactionObjective captureObjective)
+            {
+                try
+                {
+                    TacticalFaction alienFaction = captureObjective.Faction.TacticalLevel.GetFactionByCommandName("aln");
+
+                    var captureTargetsGameTagField = AccessTools.Field(typeof(ActorHasStatusFactionObjective), "_targetsGameTag");
+
+                    GameTagDef captureTag = (GameTagDef)captureTargetsGameTagField.GetValue(captureObjective);
+
+
+                    return alienFaction.TacticalActors.Any(ta => ta.HasGameTag(captureTag) && !ta.IsEvacuated && ta.Status != null && ta.Status.HasStatus<ParalysedStatus>());
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+
+            [HarmonyPatch(typeof(ActorHasStatusFactionObjective), "EvaluateObjective")]
+            public static class ActorHasStatusFactionObjective_EvaluateObjective_Patch
+            {
+                public static void Postfix(ActorHasStatusFactionObjective __instance, ref FactionObjectiveState __result)
+                {
+                    try
+                    {
+                        if (_secondaryObjectiveDefsInPlay.Any(o =>
+                        o.MissionObjectiveData.Description.LocalizationKey == __instance.Description.LocalizationKey) && __result == FactionObjectiveState.Failed)
+                        {
+                            // TFTVLogger.Always($"{__instance.GetDescription()} {__result}");
+
+                            if (CheckCaptureObjectiveCompleted(__instance))
+                            {
+                                __result = FactionObjectiveState.Achieved;
+                            }
+
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
 
             [HarmonyPatch(typeof(FactionObjective), "Evaluate")]
             public static class FactionObjective_Evaluate_Patch
@@ -2082,16 +2272,22 @@ namespace TFTV
                         __state = __instance.State;
 
                         if (__instance.Faction != null && __instance.Faction.State == TacFactionState.Won)
-
                         {
+                            TFTVLogger.Always($"Objective {__instance.Description.Localize()} state {__instance.State}");
 
                             if (__instance is ActorHasStatusFactionObjective captureObjective &&
                                     _secondaryObjectiveDefsInPlay.Any(o => o.MissionObjectiveData.Description.LocalizationKey == __instance.Description.LocalizationKey))
                             {
-                                return false;
-                            }
+                                TFTVLogger.Always($"Got here and examining {__instance.Description.Localize()}");
 
-                            if (__instance is KillActorFactionObjective killObjective &&
+
+                                if (!CheckCaptureObjectiveCompleted(captureObjective))
+                                {
+                                    TFTVLogger.Always($"Objective {__instance.Description.Localize()} should fail!");
+                                    return false;
+                                }
+                            }
+                            else if (__instance is KillActorFactionObjective killObjective &&
                                    _secondaryObjectiveDefsInPlay.Any(o => o.MissionObjectiveData.Description.LocalizationKey == __instance.Description.LocalizationKey))
                             {
                                 // TFTVLogger.Always($"Not going to evaluate {__instance.Description.Localize()}");
@@ -2101,13 +2297,13 @@ namespace TFTV
                                 GameTagDef killTag = (GameTagDef)killTargetsGameTagField.GetValue(killObjective);
 
                                 if (!CheckIfActorDeadNotEvaced(__instance.Faction.TacticalLevel, killTag))
-                                {  
+                                {
                                     TFTVLogger.Always($"Objective {__instance.Description.Localize()} should fail!");
                                     return false;
                                 }
                             }
                         }
-                        
+
                         return true;
                     }
                     catch (Exception e)
@@ -2139,7 +2335,7 @@ namespace TFTV
                             if (__instance is ActorHasStatusFactionObjective captureObjective &&
                                 _secondaryObjectiveDefsInPlay.Any(o => o.MissionObjectiveData.Description.LocalizationKey == __instance.Description.LocalizationKey))
                             {
-                                //  TFTVLogger.Always($"{__instance.Description.Localize()} Initial State: {__state}, faction state: {__instance.Faction.State}");
+                                TFTVLogger.Always($"{__instance.Description.Localize()} Initial State: {__state}, faction state: {__instance.Faction.State}");
 
                                 if (__instance.Faction.State == TacFactionState.Won)
                                 {
@@ -2193,22 +2389,9 @@ namespace TFTV
             {
                 try
                 {
-                    TacticalFaction alienFaction = controller.GetFactionByCommandName("aln");
+                    TacticalFaction alienFaction = controller.GetFactionByCommandName("aln");            
 
-                 /*   foreach (TacticalActor tacticalActor in alienFaction.TacticalActors.Where(ta=>ta.IsAlive))
-                    {
-
-                        TFTVLogger.Always($"{tacticalActor.name}");
-
-                        foreach(Status status in tacticalActor.Status.Statuses) 
-                        {
-                            TFTVLogger.Always($"{status.Def.name} {status.GetType()}");
-                        
-                        }
-
-                    }*/
-
-                    return alienFaction.TacticalActors.Any(ta => ta.HasGameTag(killTag) && !ta.IsEvacuated && (ta.IsDead || ta.Status!=null && ta.Status.HasStatus<ParalysedStatus>()));
+                    return alienFaction.TacticalActors.Any(ta => ta.HasGameTag(killTag) && !ta.IsEvacuated && (ta.IsDead || ta.Status != null && ta.Status.HasStatus<ParalysedStatus>()));
 
                 }
                 catch (Exception e)
@@ -2388,9 +2571,6 @@ namespace TFTV
                     }
 
                 }
-
-
-
             }
         }
 
@@ -2764,15 +2944,16 @@ namespace TFTV
                                 actorClassIconElement.MainClassIcon.color = NegativeColor;
                             }
                         }
+                        else if(tacticalActorBase.Status!=null && !tacticalActorBase.Status.HasStatus<MindControlStatus>())
+                        {
+                            actorClassIconElement.MainClassIcon.color = Color.white;
+                        }
                     }
 
 
                     AddOutlineToIcon addOutlineToIcon = actorClassIconElement.MainClassIcon.GetComponent<AddOutlineToIcon>() ?? actorClassIconElement.MainClassIcon.gameObject.AddComponent<AddOutlineToIcon>();
                     addOutlineToIcon.icon = actorClassIconElement.MainClassIcon.gameObject;
                     addOutlineToIcon.InitOrUpdate();
-
-
-
                 }
                 catch (Exception e)
                 {
@@ -2956,7 +3137,7 @@ namespace TFTV
                             squadNameRect.localScale = new Vector3(0.5f, 0.5f, 0.5f);
                             //   textObj.GetComponent<RectTransform>().pivot = new Vector2(5, -5);
                             Text squadNameText = _squadName.GetComponent<Text>();
-                            squadNameText.text = $"Leader of {squadName.ToUpper()}";
+                            squadNameText.text = $"{TFTVCommonMethods.ConvertKeyToString("HUMAN_ENEMIES_KEY_LEADER")}{TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_GRAMMAR_OF")}{squadName.ToUpper()}";
                             squadNameText.font = _PuristaSemiboldCached ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                             squadNameText.fontSize = 30; //70                          
                             squadNameText.color = Color.white;
@@ -3092,7 +3273,7 @@ namespace TFTV
                         iconFactionObj.transform.SetParent(headerObject.transform);
                         Image iconFactionImage = iconFactionObj.AddComponent<Image>();
                         iconFactionImage.sprite = factionIcon;
-                        iconFactionImage.color = Color.red; //factionColor;
+                        iconFactionImage.color = NegativeColor; //factionColor;
                         iconFactionImage.preserveAspect = true;
                         RectTransform iconFactionImageRect = iconFactionImage.GetComponent<RectTransform>();
                         iconFactionImageRect.sizeDelta = new Vector2(30, 30);
@@ -3132,7 +3313,7 @@ namespace TFTV
                         GameObject nameTextObj = new GameObject("NameText");
                         nameTextObj.transform.SetParent(headerObject.transform);
                         Text nameText = nameTextObj.AddComponent<Text>();
-                        nameText.text = leader.name.ToUpper();
+                        nameText.text = leader?.name?.ToUpper();
                         nameText.horizontalOverflow = HorizontalWrapMode.Overflow;
                         nameText.alignment = TextAnchor.MiddleLeft;
                         nameText.fontSize = 40;
@@ -3185,7 +3366,10 @@ namespace TFTV
                         leaderWidgetPrefab.transform.SetParent(widgetContainer);
                         leaderWidgetPrefab.SetActive(true);
 
-                        AddChaseTargetOnClick(leaderWidgetPrefab, leader);
+                        if (leader != null)
+                        {
+                            AddChaseTargetOnClick(_factionIcon.transform.parent.gameObject, leader);
+                        }
 
                         _widgetTooltip = leaderWidgetPrefab.AddComponent<OpposingLeaderWidgetTooltip>();
                         _widgetTooltip.CreateUIElement(leaderWidgetPrefab.transform, status, iconFactionObj, iconObj, nameTextObj,
@@ -3218,7 +3402,17 @@ namespace TFTV
 
                             rankIconCreator.RemoveRankTriangles(_leaderClassIcon.gameObject);
                             rankIconCreator.SetIconWithRank(_leaderClassIcon.gameObject, _leaderClassIcon.sprite, 4, false, true);
+                        }
+                        else
+                        {
+                            AddStrikethrough(_nameOfLeader, Vector2.one, 0, true);
+                            _factionIcon.color = NegativeColor;
+                            _leaderClassIcon.color = _leaderColor;
+                            _nameOfLeader.color = _leaderColor;
 
+                            RankIconCreator rankIconCreator = new RankIconCreator();
+                            rankIconCreator.RemoveRankTriangles(_leaderClassIcon.gameObject);
+                            rankIconCreator.SetIconWithRank(_leaderClassIcon.gameObject, _leaderClassIcon.sprite, 4);
                         }
 
 
@@ -3228,8 +3422,18 @@ namespace TFTV
                             _titleOfTactic.color = Color.gray;
                             //  _titleOfTactic.text += "<color=#ec1c24><b> X</b></color>";
                         }
+                        else
+                        {
+                            AddStrikethrough(_titleOfTactic, Vector2.one, 0, true);
+                            _titleOfTactic.color = Color.white;
 
-                        AddChaseTargetOnClick(leaderWidgetPrefab, leader);
+                        }
+
+                        if (leader != null)
+                        {
+                            AddChaseTargetOnClick(leaderWidgetPrefab, leader);
+                        }
+
 
                         _widgetTooltip.CreateUIElement(leaderWidgetPrefab.transform, status, _factionIcon.gameObject,
                             _leaderClassIcon.gameObject, _nameOfLeader.gameObject, squadName, factionName, _titleOfTactic.gameObject, tacticDescription, tacticActive);
@@ -3241,7 +3445,7 @@ namespace TFTV
                     }
                 }
 
-                private void AddStrikethrough(Text textElement, Vector2 offset, int size)
+                private void AddStrikethrough(Text textElement, Vector2 offset, int size, bool remove = false)
                 {
                     try
                     {
@@ -3249,8 +3453,23 @@ namespace TFTV
                         Transform existingStrikethrough = textElement.transform.Find("Strikethrough");
                         if (existingStrikethrough != null)
                         {
+                            if (remove)
+                            {
+                                existingStrikethrough.gameObject.SetActive(false);
+                            }
+                            else
+                            {
+                                existingStrikethrough.gameObject.SetActive(true);
+                            }
+
                             return; // Strikethrough already exists
                         }
+
+                        if (remove)
+                        {
+                            return;
+                        }
+
 
                         // Create a new Text element for the strikethrough
                         GameObject strikethrough = new GameObject("Strikethrough");
@@ -3283,8 +3502,8 @@ namespace TFTV
                 {
                     try
                     {
-                      
-                        if (!parent.GetComponent<EventTrigger>())
+
+                        if (parent.GetComponent<EventTrigger>() == null)
                         {
                             parent.AddComponent<EventTrigger>();
                         }
@@ -3298,8 +3517,11 @@ namespace TFTV
 
                         click.callback.AddListener((eventData) =>
                         {
+                            TFTVLogger.Always($"checking for whether should chase target");
+
                             if (target.TacticalLevel.GetFactionByCommandName("px").Vision.IsRevealed(target))
                             {
+                                TFTVLogger.Always($"should chase target");
                                 target.TacticalActorView.DoCameraChase();
                             }
                         });
@@ -3358,6 +3580,36 @@ namespace TFTV
                 }
             }
 
+            private static TacticalActor FindMissingLeader(TacticalLevelController controller, string factionName)
+            {
+                try
+                {
+
+
+                    foreach (TacticalFaction tacticalFaction in controller.Factions)
+                    {
+                        if (tacticalFaction.TacticalActors.Any(ta => ta.HasGameTag(TFTVHumanEnemies.HumanEnemyTier1GameTag) && ta.GameTags.Any(t => t.name.Contains(factionName))))
+                        {
+                            TacticalActor leader = tacticalFaction.TacticalActors.FirstOrDefault(ta => ta.HasGameTag(TFTVHumanEnemies.HumanEnemyTier1GameTag) && ta.GameTags.Any(t => t.name.Contains(factionName)));
+
+                           // TFTVLogger.Always($"found leader {leader.name}");
+                            return leader;
+
+                        }
+
+                    }
+
+                    return null;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+            }
+
             public static void ActivateOrAdjustLeaderWidgets(bool hintShown = false)
             {
                 try
@@ -3370,7 +3622,6 @@ namespace TFTV
                     {
                         for (int x = 0; x < HumanEnemiesAndTactics.Keys.Count(); x++)
                         {
-
                             string factionCode = HumanEnemiesAndTactics.Keys.ElementAt(x);
                             TacticalFaction humanEnemy = controller.GetFactionByCommandName(factionCode);
 
@@ -3383,18 +3634,23 @@ namespace TFTV
 
                             if (TFTVHumanEnemies.HumanEnemiesGangNames != null && TFTVHumanEnemies.HumanEnemiesGangNames.Count > 0)
                             {
-
                                 squadName = TFTVHumanEnemies.HumanEnemiesGangNames.ElementAt(x);
                             }
-                            TacticalActor leader = humanEnemy.TacticalActors.FirstOrDefault(ta => ta.HasGameTag(TFTVHumanEnemies.HumanEnemyTier1GameTag));
 
+                            TacticalActor leader = humanEnemy.TacticalActors.FirstOrDefault(ta => ta.HasGameTag(TFTVHumanEnemies.HumanEnemyTier1GameTag));
                             string status = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_STATUS_ALIVE");
 
                             bool leaderDead = false;
                             bool leaderFled = false;
                             bool tacticActive = true;
 
-                            if (!leader.IsAlive)
+                            if (leader == null)
+                            {
+                                leaderFled = true;
+                                status = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_STATUS_FLED");
+                                leader = FindMissingLeader(controller, factionCode);
+                            }
+                            else if (!leader.IsAlive)
                             {
                                 leaderDead = true;
                                 status = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_STATUS_DEAD");
@@ -3586,6 +3842,7 @@ namespace TFTV
             private static string _tbtvOnAttackStatusViewElementName = "E_Visuals [TBTV_OnAttack_StatusDef]";
             private static string _tbtvTurnEndStatusViewElementName = "E_Visuals [TBTV_OnTurnEnd_StatusDef]";
             private static string _deliriumStatusViewElementName = "E_Visuals [Corruption_StatusDef]";
+            private static string _voidOmenViewElementName = "E_ViewElement [Acheron_Harbinger_AbilityDef]";
 
             public static void ManageTBTVIconToSpottedEnemies(SpottedTargetsElement __instance, GameObject obj, TacticalActorBase target)
             {
@@ -3950,6 +4207,7 @@ namespace TFTV
                         Sprite onTurnEndIcon = DefCache.GetDef<ViewElementDef>(_tbtvTurnEndStatusViewElementName).LargeIcon;
                         Sprite tbtvIcon = DefCache.GetDef<ViewElementDef>(_tbtvGeneralStatusViewElementName).LargeIcon;
                         Sprite corruptionIcon = DefCache.GetDef<ViewElementDef>(_deliriumStatusViewElementName).LargeIcon;
+                        Sprite voidOmenIcon = DefCache.GetDef<ViewElementDef>(_voidOmenViewElementName).LargeIcon;
 
                         tooltipInstance = CreateTooltipPanel();
 
@@ -3997,14 +4255,17 @@ namespace TFTV
                                 separator = true;
                             }
 
+                            if(icon == voidOmenIcon && details.ElementAt(x-1).icon == voidOmenIcon) 
+                            {
+                                distanceToPreviousElement *= 0.75f;
+                            }
+
                             distanceCounter += distanceToPreviousElement;
 
                             GameObject detailItem = CreateDetailItem(details.ElementAt(x).icon, details.ElementAt(x).text, distanceCounter, tab, separator);
                             detailItem.transform.SetParent(tooltipInstance.transform, false);
                         }
 
-                        //  tooltipRect.sizeDelta = new Vector2(1200, distanceCounter);
-                        //  TFTVLogger.Always($" tooltipInstance.GetComponent<RectTransform>().sizeDelta {tooltipInstance.GetComponent<RectTransform>().sizeDelta}, {tooltipRect.sizeDelta}");
                         tooltipInstance.SetActive(true);
                     }
                     catch (Exception e)
@@ -4352,7 +4613,7 @@ namespace TFTV
                         }
                     }
 
-                    TFTVLogger.Always($"canHaveTBTV: {canHaveTBTV}, relevantVoidOmens: {relevantVoidOmens}");
+                    // TFTVLogger.Always($"canHaveTBTV: {canHaveTBTV}, relevantVoidOmens: {relevantVoidOmens}");
 
                     if (relevantVoidOmens || canHaveTBTV)
                     {
@@ -4500,8 +4761,6 @@ namespace TFTV
                 }
             }
         }
-
-
 
         internal class CaptureTacticalWidget
         {

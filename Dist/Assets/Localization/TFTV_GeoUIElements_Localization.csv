@@ -1,19 +1,10 @@
-﻿Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
-KEY_DLC3_MOUNTEGG_NAME,Text,,HAMMERFALL CRATER,,,,,,"КРАТЕР «УДАР МОЛОТА»",,
+Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
+KEY_DLC3_MOUNTEGG_NAME,Text,,HAMMERFALL CRATER,,,,,,"КРАТЕР ""УДАР МОЛОТА""",,
 KEY_DLC3_THE_GIFT,Text,,AURORA,,,,,,АВРОРА,,
 KEY_MARKETPLACE_HAVEN_ADDITIONAL_HEADER,Text,,The Bazaar,,Le Bazar,,,,Рынок,,
-KEY_MARKETPLACE_DESCRIPTION_1,Text,not used,"The leader of the haven, Sol ""Maker"" Markus, is fascinated by the esoteric and the occult. He has requested that we retrieve a Drop-Ka stone that he has located in a Pre-War collection. ",,"Le chef du refuge, Sol ""Maker"" Markus, est fasciné par l’ésotérique et l’occulte. Il a demandé que nous récupérions une pierre Drop-Ka qu’il a localisée dans une collection d’avant-guerre. ",,,,"Лидер убежища, Сол «Создатель» Маркус, увлекается эзотерикой и оккультизмом. Он попросил нас достать камень Брось-Ка, следы которого он обнаружил в каком-то довоенном музее.",,
-KEY_MARKETPLACE_DESCRIPTION_2,Text,not used,Sol is happy and reminds us to do as we are told if we want to receive further blessings,,"Sol est heureux et nous rappelle de faire ce qu’on nous dit, si nous voulons recevoir d’autres bénédictions",,,,"Сол счастлив и напоминает нам, что нужно делать то, что нам говорят, если мы хотим получать дальнейшие благословления",,
-KEY_MARKETPLACE_DESCRIPTION_3,Text,not used,Sol has received the Bionics tech. He hints that Subject 24 should be destroyed.,,Sol a reçu la technologie bionique. Il suggère que le sujet 24 devrait être détruit.,,,,"Сол получил технологию бионики. Он намекает, что Подопытный №24 должен быть уничтожен.",,
-KEY_MARKETPLACE_DESCRIPTION_4,Text,not used,Sol is happy because we destroyed the fortress,,Sol est heureux parce que nous avons détruit la forteresse,,,,"Сол счастлив, потому что мы уничтожили крепость.",,
 KEY_MARKETPLACE_DESCRIPTION_5,Text,,Enjoy the sights and pungent smells! ,,Profitez des vues et des odeurs piquantes !,,,,Наслаждайтесь пестрыми видами и необычными запахами!,,
 DLC5/KEY_MARKETPLACE_HAVEN_HEADER,Text,,BAZAAR HAVEN,,REFUGE DU BAZAR,,,,УБЕЖИЩЕ-БАЗАР,,
 DLC5/KEY_KAOS_SYNDICATE,Text,,The Bazaar,,Le Bazar,,,,Рынок,,
-DLC5/KEY_MARKETPLACE_ACCEPT_MISSION,Text,not used,ACCEPT ,,ACCEPTER,,,,ПРИНЯТЬ МИССИЮ,,
-DLC5/KEY_MARKETPLACE_LOCATE_MISSION,Text,not used,DO NOT TRY SOL'S PATIENCE,,NE JOUER PAS AVEC LA PATIENCE DE SOL,,,,НЕ ИСПЫТЫВАЙТЕ ТЕРПЕНИЕ СОЛА,,
-DLC5/KEY_MARKETPLACE_MISSION_AVAILABLE,Text,not used,NEW MISSION AVAILABLE,,NOUVELLE MISSION DISPONIBLE,,,,ДОСТУПНА НОВАЯ МИССИЯ,,
-DLC5/KEY_MARKETPLACE_MISSION_IN_PROGRESS,Text,not used,DO AS SOL COMMANDS,,FAITES CE QUE SOL VOUS DEMANDE,,,,ИСПОЛНЕНИЕ ПРИКАЗОВ СОЛА,,
-DLC5/KEY_MARKETPLACE_NO_MISSIONS,Text,not used,SOL IS PLEASED,,SOL EST SATISFAIT,,,,СОЛ ОДОБРЯЕТ,,
 KEY_MISSION_HAVEN_INFESTED_VICTORY_NAME,Text,,MISSION COMPLETE,,,,,,МИССИЯ ЗАВЕРШЕНА,,
 KEY_MISSION_HAVEN_INFESTED_VICTORY_DESCRIPTION,Text,,NODE DESTROYED,,,,,,УЗЕЛ ПОРЧИ УНИЧТОЖЕН,,
 KEY_MISSION_HAVEN_INFESTED_DEFEAT_DESCRIPTION,Text,,Infestation remains.,,L'infestation demeure.,,,,Заражение сохраняется,,
@@ -79,9 +70,9 @@ EXTENDED_AGENDA_KEY_EXCAVATING,Text,,EXCAVATING:,,,,,,ВЕДУТСЯ РАСКО�
 EXTENDED_AGENDA_KEY_SECURE,Text,,SECURE,,,,,,ОХРАНЯЕТ:,,
 EXTENDED_AGENDA_KEY_WILL_ATTACK,Text,,WILL ATTACK:,,,,,,АТАКУЕТ:,,
 EXTENDED_AGENDA_KEY_WILL_COMPLETE_ATTACK_ON,Text,,WILL COMPLETE ATTACK ON,,,,,,ЗАВЕРШИТ АТАКУ НА:,,
-KEY_DESTROYED_HAMMERFALL,Text,,was destroyed by Hammerfall!,,,,,,"уничтожено падением астероида «Удар Молота»!",,
-KEY_HEAVY_DAMAGE_HAMMERFALL,Text,,suffered heavy damage from Harmmerfall!,,,,,,"в результате падения астероида «Удар Молота» получены тяжелые повреждения",,
-KEY_DAMAGE_HAMMERFALL,Text,,suffered some damage from Hammerfall,,,,,,"в результате падения астероида «Удар Молота» получены незначительные повреждения",,
+KEY_DESTROYED_HAMMERFALL,Text,,was destroyed by Hammerfall!,,,,,,"уничтожено падением астероида ""Удар Молота""!",,
+KEY_HEAVY_DAMAGE_HAMMERFALL,Text,,suffered heavy damage from Harmmerfall!,,,,,,"в результате падения астероида ""Удар Молота"" получены тяжелые повреждения",,
+KEY_DAMAGE_HAMMERFALL,Text,,suffered some damage from Hammerfall,,,,,,"в результате падения астероида ""Удар Молота"" получены незначительные повреждения",,
 KEY_SOS_BROADCAST,Text,,"is broadcasting an SOS, they are under attack!",,,,,,"передаёт сигнал SOS, их атакуют!",,
 KEY_PANDORAN_MEAT_PROCESSING,Text,,<b>Processing Pandoran meat</b>,,,,,,<b>Переработка Пандоранского мяса</b>,,
 KEY_PANDORAN_MEAT_TO_PROCESS,Text,,-Meat to process:,,,,,,- Мясо для переработки:,,
@@ -93,14 +84,14 @@ KEY_MUTAGENS_FROM_PANDORANS_TFTV,Text,,-Mutagens from Pandorans:,,,,,,- Мута
 KEY_MAX_EXTRACTION_PER_DAY_TFTV,Text,,-Max extraction per day:,,,,,,- Максимальная добыча в день:,,
 KEY_FOOD_PROCESSING_WARNING_TFTV,Text,,Food processing facilities storage capacity almost reached! Rendering this Pandoran for food will waste,,,,,,Склады пищевых комбинатов почти полностью заполнены! Переработка этого Пандорана в пищу приведет к ее утере.,,
 KEY_DELIRIUM_PERK_PROMPT_CONNECTOR,Text,,is afflicted with,,,,,,страдает от побочного эффекта,,
-KEY_DELIRIUM_PERK_PROMPT_RULES,Text,,"as a result of the experimental mutagen treatment. The subject may overcome this condition as they continue to be deployed in the field. However, acquiring additional afflictions from this experimental treatment will reset any progress made in adjusting to this condition.",,,,,,"Причина - экспериментальное лечение мутагенами. Субъект постепенно сможет избавиться от этого состояния в течение некоторого времени, однако повторное экспериментальное лечение и получение других болезненных состояний обнулит прогресс исцеления, достигнутый в ходе выздоровления.",,
+KEY_DELIRIUM_PERK_PROMPT_RULES,Text,,"as a result of the experimental mutagen treatment. The subject may overcome this condition as they continue to be deployed in the field. However, acquiring additional afflictions from this experimental treatment will reset any progress made in adjusting to this condition.",,,,,,"Причина - экспериментальное лечение мутагенами. Субъект постепенно сможет избавиться от этого состояния в течение некоторого времени, однако повторное экспериментальное лечение и получение других болезненых состояний обнулит прогресс исцеления, достигнутый в ходе выздоровления.",,
 KEY_DELIRIUM_PERK_PROMPT_NO_PERK,Text,,"did not suffer any lasting side effects, but had to be heavily sedated.
 
 
 <i>STAMINA reduced to zero</i>",,,,,,"
-«Никаких длительных побочных эффектов не выявлено, но пришлось накачать сильным... э... успокоительным.»
+""Никаких длительных побочных эффектов не выявлено, но пришлось накачать сильным... э... успокоительным.""
 
-«<i>Выносливость снижена до нуля</i>»",,
+""<i>Выносливость снижена до нуля</i>""",,
 KEY_DELIRIUM_PERK_RECOVERY,Text,,has fully recovered from the effects caused by the experimental Delirium Treatment!,,,,,,"полностью оправился от последствий, вызванных экспериментальным лечением Сонного Безумия!",,
 KEY_LOG_ENTRY_SUCCUMB_INFESTATION,Text,,has succumbed to Pandoran infestation!,,,,,,жертва Пандоранской инфекции!,,
 KEY_INFESTATION_AROUND,Text,,Around,,,,,,Некоторому количеству жителей убежища удалось выжить:,,
@@ -115,10 +106,10 @@ KEY_GRAMMAR_PRONOUNS_HE,Text,,he,,,,,,он,,
 KEY_GRAMMAR_PRONOUNS_HIM,Text,,him,,,,,,его,,
 KEY_GRAMMAR_PRONOUNS_THEY,Text,,they,,,,,,они,,
 KEY_GRAMMAR_PRONOUNS_THEM,Text,,them,,,,,,их,,
-KEY_GRAMMAR_PLURAL_SUFFIX,Text,,s,,,,,," ",,
+KEY_GRAMMAR_PLURAL_SUFFIX,Text,,s,,,,,, ,,
 KEY_GRAMMAR_SINGLE_SUFFIX,Text,,,,,,,,,,
 KEY_GRAMMAR_AND,Text,,and,,,,,,и,,
-KEY_GRAMMAR_INDEFINITEARTICLE,Text,, a ,,,,,," ",,
+KEY_GRAMMAR_INDEFINITEARTICLE,Text,, a ,,,,,, ,,
 KEY_TEXT_PHOENIX_OPERATIVES,Text,,Phoenix operatives,,,,,,бойцы Феникса,,
 KEY_TEXT_DIRECTOR,Text,,Director,,,,,,Директор,,
 KEY_UI_EDIT_SCREEN_TOGGLEHELMET_TIP,Text,,Toggles helmet visibility on/off.,,,,,,Включение/выключение отображения шлема,,
@@ -168,7 +159,7 @@ KEY_SECRET_MARKETPLACE_TEXT15,Text,,That's why this place looks so desert-y; I s
 KEY_SECRET_MARKETPLACE_TEXT16,Text,,It's better to start changing the world right from where you are. More convenient.,,,,,,"Если уж хотите изменить мир, начинайте прямо с того места, где Вы находитесь. Как минимум, так удобнее...",,
 KEY_SECRET_MARKETPLACE_TEXT17,Text,,Come see me after you save the world and I will pitch you my plans for it.  ,,,,,,"Приходите ко мне после того, как спасете мир, и я поделюсь с вами своими планами на этот счет.",,
 KEY_SECRET_MARKETPLACE_TEXT18,Text,,"Hint: Don't dismantle the flamethrowers. If you need the mats, raid a haven or something.",,,,,,"Совет: не разбирайте огнеметы. Если вам нужны запчасти, совершите набег на убежище или что-то еще в этом роде.",,
-KEY_SECRET_MARKETPLACE_TEXT19,Text,,"YES, MY FRIEND, TOGETHER WE SHALL BRING KAOS THE WORLD! <i> (just like Saber Minsk intended with all the bugs in this DLC) </i>",,,,,,"ДА, МОЙ ДРУГ, ВМЕСТЕ МЫ ПРИНЕСЕМ KАОС МИРУ! <i>(как и задумывали разрабы из «Saber Minsk» со всеми этими багами в том самом Каос-дополнении)</i>",,
+KEY_SECRET_MARKETPLACE_TEXT19,Text,,"YES, MY FRIEND, TOGETHER WE SHALL BRING KAOS THE WORLD! <i> (just like Saber Minsk intended with all the bugs in this DLC) </i>",,,,,,"ДА, МОЙ ДРУГ, ВМЕСТЕ МЫ ПРИНЕСЕМ KАОС МИРУ! <i>(как и задумывали разрабы из ""Saber Minsk"" со всеми этими багами в том самом Каос-дополнении)</i>",,
 KEY_MARKETPLACE_NEW_STOCK,Text,,Marketplace has new stock! Come visit!,,,,,,"На Рынке появились новые товары! Налетай, торопись!",,
 KEY_MARKETPLACE_SPECIAL_VEHICLES,Text,,Great prices on vehicles and equipment for them! ,,,,,,Лучшие цены на машины и оборудование для них! Только у нас!,,
 KEY_MARKETPLACE_SPECIAL_WEAPONS,Text,,Personnel weapons special!,,,,,,Лучшее оружие для ваших бойцов! Уникальные разработки!,,
@@ -189,9 +180,9 @@ KEY_VIVISECTION_WARNING,Text,,Are you sure? You have not vivisected this Pandora
 KEY_CANT_DEMOLISH,Text,,"<b>Can't demolish this facility, as otherwise other facilities will be cut off from the base entrance!</b>",,,,,,"<b>Мы не можем снести этот объект, это отрежет другие сооружения от центра базы!</b>",,
 KEY_MESSAGE_HAVEN_LEADER_DOESNT_TRADE,Text,,Diplomatic relations with the Haven are too low. The Haven leader refuses to trade with you.,,,,,,Дипломатические отношения с этим убежищем находятся на слишком низком уровне. Лидер убежища отказывается торговать с вами.,,
 KEY_BASE_PANDORAN_BASE_REVEALED_FAILED_DESCRIPTION,Text,,"Analysis of the Pandoran’s movement patterns have failed to identify their origin. The exact location of the Pandoran Colony responsible for the attack remains unknown. If a colony attacks from within Phoenix Base scanning range, there is a higher chance that it will be detected.",,,,,,"Анализ атаки Пандоранов не позволил установить исходные координаты нашествия. Точное местоположение Колонии Пандоранов, ответственной за атаку, остается неизвестным. Если Колония атакует из зоны сканирования базы Феникса, вероятность того, что она будет обнаружена, выше.",,
-KEY_DLC3_INT_S1_P1,Text,,<color=#13c233>Eileen:</color> What the hell? This thing is huge!,,,,,,"<color=#13c233>Эйлин:</color> «Какого черта? Эта штука просто огромная!»",,
-KEY_DLC3_INT_S1_P2,Text,,<color=#ec7762>Aurora:</color> HOSTILE DETECTED. COMBAT SOFTWARE SUITE MISSING.,,,,,,"<color=#ec7762>Аврора:</color> «ОБНАРУЖЕН ВРАГ. ОРУЖЕЙНЫЕ СИСТЕМЫ ОТКЛЮЧЕНЫ.»",,
-KEY_DLC3_INT_S2_P1,Text,,"<color=#13c233>Eileen:</color> We are under fire! Sartorius, do something!",,,,,,"<color=#13c233>Эйлин:</color> «Мы под огнем! Сарториус, сделайте что-нибудь!»",,
+KEY_DLC3_INT_S1_P1,Text,,<color=#13c233>Eileen:</color> What the hell? This thing is huge!,,,,,,"<color=#13c233>Эйлин:</color> ""Какого черта? Эта штука просто огромная!""",,
+KEY_DLC3_INT_S1_P2,Text,,<color=#ec7762>Aurora:</color> HOSTILE DETECTED. COMBAT SOFTWARE SUITE MISSING.,,,,,,"<color=#ec7762>Аврора:</color> ""ОБНАРУЖЕН ВРАГ. ОРУЖЕЙНЫЕ СИСТЕМЫ ОТКЛЮЧЕНЫ.""",,
+KEY_DLC3_INT_S2_P1,Text,,"<color=#13c233>Eileen:</color> We are under fire! Sartorius, do something!",,,,,,"<color=#13c233>Эйлин:</color> ""Мы под огнем! Сарториус, сделайте что-нибудь!""",,
 KEY_DLC3_INT_S2_P2,Text,,"<color=#ECBA62>Sartorius:</color> Eileen, my knowledge is not readily transferable. I need full system integration.
 
 <color=#ec7762> Aurora:</color> MERGE WITH ME.
@@ -206,20 +197,20 @@ KEY_DLC3_INT_S2_P4,Text,,Make sure to Disengage before that happens!,,,,,,"По�
 KEY_DLC3_INT_S3_P1,Text,,"<color=#ec7762>Aurora:</color> YOU
 <color=#ECBA62>Sartorius:</color> I
 <color=#607c7d>Aurora Sartorius:</color> WE... ARE... ONE...
-WEAPON systems READY. Nomad LAUNCHER operational.",,,,,,"<color=#ec7762>Аврора:</color> «ВЫ»
-<color=#ECBA62>Сарториус:</color> «Я»
-<color=#607c7d>Аврора-Сарториус:</color> «МЫ... СОЕ... ДИНИЛИСЬ!»
-«Оружейные системы включены. Ракетная установка «Кочевник» готова к бою.»",,
-KEY_DLC3_INT_S3_P2,Text,,<color=#607c7d>Aurora Sartorius:</color> FEEL OUR WRATH!,,,,,,"<color=#607c7d>Аврора-Сарториус:</color> «УЗРИТЕ НАШ ГНЕВ!»",,
+WEAPON systems READY. Nomad LAUNCHER operational.",,,,,,"<color=#ec7762>Аврора:</color> ""ВЫ""
+<color=#ECBA62>Сарториус:</color> ""Я""
+<color=#607c7d>Аврора-Сарториус:</color> ""МЫ... СОЕ... ДИНИЛИСЬ!""
+""Оружейные системы включены. Ракетная установка ""Кочевник"" готова к бою.""",,
+KEY_DLC3_INT_S3_P2,Text,,<color=#607c7d>Aurora Sartorius:</color> FEEL OUR WRATH!,,,,,,"<color=#607c7d>Аврора-Сарториус:</color> ""УЗРИТЕ НАШ ГНЕВ!""",,
 KEY_DLC3_INT_S3_P3_C,Text,,"To aim a weapon system, select your Weapon, then select the target icon.",,,,,,"Чтобы прицелиться оружейной установкой, выберите свое Оружие, затем выберите значок цели.",,
 KEY_DLC3_INT_S3_P3_K,Text,,"To aim a weapon system left click your Weapon, then left-click the target icon.",,,,,,"Чтобы прицелиться оружейной установкой, щелкните левой кнопкой мыши на своем Оружии, затем щелкните левой кнопкой мыши на значке цели.",,
-KEY_DLC3_INT_S4_P1,Text,,"Our aircraft has a defensive Module. The Afterburner makes us dodge any visually guided projectile, including the acid spit used by this Pandoran flyer.",,,,,,"Наш самолет оснащен защитным модулем «Форсаж» - позволяет уклоняться от любых снарядов с визуальным наведением, в том числе от кислотных брызг, которые использует этот Пандоранский летун.",,
-KEY_DLC3_INT_S4_P2,Text,,<color=#607c7d>Aurora Sartorius:</color> WE have INCOMING… engaging AFTERBURNER,,,,,,"<color=#607c7d>Аврора-Сарториус:</color> «ВРАЖЕСКИЕ СНАРЯДЫ ПРИБЛИЖАЮТСЯ... включаю ФОРСАЖ!»",,
+KEY_DLC3_INT_S4_P1,Text,,"Our aircraft has a defensive Module. The Afterburner makes us dodge any visually guided projectile, including the acid spit used by this Pandoran flyer.",,,,,,"Наш самолет оснащен защитным модулем ""Форсаж"" - позволяет уклоняться от любых снарядов с визуальным наведением, в том числе от кислотных брызг, которые использует этот Пандоранский летун.",,
+KEY_DLC3_INT_S4_P2,Text,,<color=#607c7d>Aurora Sartorius:</color> WE have INCOMING… engaging AFTERBURNER,,,,,,"<color=#607c7d>Аврора-Сарториус:</color> ""ВРАЖЕСКИЕ СНАРЯДЫ ПРИБЛИЖАЮТСЯ... включаю ФОРСАЖ!""",,
 KEY_DLC3_INT_S5_P1,Text,,Damage done to disabled Modules is transferred directly to the Hull.,,,,,,"Повреждения, наносимые выведенным из строя модулям, переносятся непосредственно на корпус.",,
 KEY_DLC3_INT_S5_P2,Text,,<color=#ECBA62>Eileen:</color> Finish it! Blow this fragging monster out of the sky!,,,,,,"<color=#ECBA62>Эйлин:</color> «Ну же! Взорвите, наконец, этого чертова монстра!»",,
-KEY_DLC3_INT_S5_P3,Text,,<color=#607c7d> Aurora Sartorius:</color> Splash ONE!,,,,,,"<color=#607c7d> Аврора-Сарториус:</color> «ГОТОВ!»",,
-KEY_DLC3_INT_S6_P1,Text,,<color=#607c7d> Aurora Sartorius:</color> CODE RED! EMERGENCY DISENGAGE PROTOCOL ACTIVATED.,,,,,,"<color=#607c7d> Аврора-Сарториус:</color> «КРАСНЫЙ КОД! АКТИВИРОВАН ПРОТОКОЛ АВАРИЙНОГО ОТКЛЮЧЕНИЯ!»",,
-KEY_DLC3_INT_S6_P2,Text,,"<color=#ECBA62>Eileen:</color> Thanks for sharing! Now go, go, go!",,,,,,"<color=#ECBA62>Эйлин:</color> «Спасибо, что поделились! А теперь - вперед, вперед, вперед!»",,
+KEY_DLC3_INT_S5_P3,Text,,<color=#607c7d> Aurora Sartorius:</color> Splash ONE!,,,,,,"<color=#607c7d> Аврора-Сарториус:</color> ""ГОТОВ!""",,
+KEY_DLC3_INT_S6_P1,Text,,<color=#607c7d> Aurora Sartorius:</color> CODE RED! EMERGENCY DISENGAGE PROTOCOL ACTIVATED.,,,,,,"<color=#607c7d> Аврора-Сарториус:</color> ""КРАСНЫЙ КОД! АКТИВИРОВАН ПРОТОКОЛ АВАРИЙНОГО ОТКЛЮЧЕНИЯ!""",,
+KEY_DLC3_INT_S6_P2,Text,,"<color=#ECBA62>Eileen:</color> Thanks for sharing! Now go, go, go!",,,,,,"<color=#ECBA62>Эйлин:</color> ""Спасибо, что поделились! А теперь - вперед, вперед, вперед!""",,
 KEY_INFESTED_HAVEN_OBJECTIVE,Text,,Deploy a search and rescue team to the infested haven,,,,,,Направить поисково-спасательную команду в зараженное убежище!,,
 KEY_SCRAP_AIRCRAFT,Text,,SCRAP AIRCRAFT,,,,,,УНИЧТОЖИТЬ САМОЛЕТ,,
 KEY_BASE_UNDER_ATTACK_RED,Text,,!!! WARNING !!! A PHOENIX BASE IS UNDER ATTACK,,,,,,!!!ВНИМАНИЕ!!! БАЗА ФЕНИКСА АТАКОВАНА,,
@@ -229,6 +220,7 @@ KEY_UI_REPLENISH_CONSUMABLES_TFTV,Text,,Instantly manufacture and equip {0} for 
 KEY_UI_MISSING_LOADOUT_ITEMS_TFTV,Text,,Insufficient stocks to equip {0} with:,,,,,,Не хватает предмета {0} для:,,
 KEY_TFTV_BASE_UNDERATTACK_GEOOBJECTIVE,Text,,Phoenix base {0} is under attack!,,,,,,База Феникса {0} атакована!,,
 KEY_TFTV_OTHER,Text,,OTHER,,,,,,ДРУГОЕ,,
-KEY_TFTV_UNPOWERED_MARKER_RESEARCH,Text,,LAB PROVIDING RESEARCH,,,,,,"ЛАБОРАТОРИЯ, ПРОВОДЯЩАЯ ИССЛЕДОВАНИЯ",,
-KEY_TFTV_UNPOWERED_MARKER_TOOLTIP,Text,,There is at least one unpowered {0}. Click to go to base with unpowered facility.,,,,,,"Обнаружено отключенное оборудование {0}. Щелкните на ссылку, что бы перейти на базу с отключенным объектом.",,
-KEY_TFTV_UNPOWERED_UNDER_ATTACK_TOOLTIP,Text,,"The base is being attacked, and the assailants have penetrated the defenses. The facility is not operational.",,,,,,"На базу совершено нападение, и нападавшие прорвали оборону. Объект отключен.",,
+KEY_TFTV_UNPOWERED_MARKER_RESEARCH,Text,,LAB PROVIDING RESEARCH,,,,,,ИССЛЕДОВАТЕЛЬСКАЯ ЛАБОРАТОРИЯ,,
+KEY_TFTV_UNPOWERED_MARKER_TOOLTIP,Text,,There is at least one unpowered {0}. Click to go to base with unpowered facility.,,,,,,"Обнаружено отключенное оборудование: {0}. Щелкните сюда, что бы перейти на базу с отключенным объектом.",,
+KEY_TFTV_UNPOWERED_UNDER_ATTACK_TOOLTIP,Text,,"The base is being attacked, and the assailants have penetrated the defenses. The facility is not operational.",,,,,,,,
+KEY_TFTV_GRAMMAR_OF,Text,, of ,,,,,, ,,

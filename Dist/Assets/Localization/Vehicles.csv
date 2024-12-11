@@ -16,7 +16,7 @@ UI_JUNKER_SCREAMER,Text,,Junker Sonic Turret,,,,,,Акустическая ту�
 UI_JUNKER_TITAN,Text,,Junker Grenade Launcher Turret,,,,,,Гранатомет Бронетрактора НИ-1,,
 UI_JUNKER_MINIGUN,Text,,Junker Minigun,,,,,,Пулемет Бронетрактора НИ-1,,
 UI_JUNKER_WHEEL,Text,,Junker Wheel,,,,,,Колесо Бронетрактора НИ-1,,
-AN_MUTOG_BASHER_NAME,Text,,BASHER TAIL,,,,,,БОЕВОЙ ХЛЫСТ,,
+AN_MUTOG_BASHER_NAME,Text,,BASHER TAIL,,,,,,БОЕВОЙ ХВОСТ,,
 AN_MUTOG_BASHER_DESC,Text,,Performs an attack that can shred armor and daze an enemy,,,,,,"Выполняет атаку, которая может Оглушить врага и Разорвать его броню",,
 KB_DEATHPROOF_NAME,Text,,Deathproof,,,,,,Турбина,,
 KB_KNR_NAME,Text,,KILL'N'RUN,,,,,,МАНЕВР СКОРОСТЬЮ,,

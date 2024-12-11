@@ -106,13 +106,11 @@ namespace TFTV
         [HarmonyPatch(typeof(TacAIActor), "EndTurn")]
         public static class TacAIActor_EndTurn_patch
         {
-            private static void Postfix(TacAIActor __instance)
+            public static void Postfix(TacAIActor __instance)
             {
                 try
                 {
                     RevertAdjustForMultipleSingleAPAttack();
-
-
                 }
                 catch (Exception e)
                 {
@@ -120,8 +118,52 @@ namespace TFTV
                     throw;
                 }
             }
+        }
+
+        private static Dictionary<WeaponDef, int> _kludgedWeapons = new Dictionary<WeaponDef, int>();
+
+        private static void AddWeaponToKludgeWeaponsList(WeaponDef weapon, int ogShots)
+        {
+            try
+            {
+                if (!_kludgedWeapons.ContainsKey(weapon))
+                {
+                    _kludgedWeapons.Add(weapon, ogShots);
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        public static void ClearData()
+        {
+            try
+            {
+                if (_kludgedWeapons != null && _kludgedWeapons.Count > 0)
+                {
+                    foreach (WeaponDef weapon in _kludgedWeapons.Keys)
+                    {
+                        TFTVLogger.Always($"reverted {weapon.name} on new turn start");
+                        weapon.APToUsePerc = 25;
+                        weapon.DamagePayload.AutoFireShotCount = _kludgedWeapons[weapon];
+                    }
+
+                    _kludgedWeapons.Clear();
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
 
         }
+
+
         private static void CheckAndAdjustForMultipleSingleAPAttack(TacticalActor shooter, TacticalActorBase target, Weapon weapon)
         {
             try
@@ -134,25 +176,29 @@ namespace TFTV
 
                     if (target.Health > weapon.GetDamage() * 3 && shooter.CharacterStats.ActionPoints.Ratio >= 1f && weapon.CommonItemData.CurrentCharges >= 4)
                     {
+
                         _autoFireShotCountInitial = weapon.WeaponDef.DamagePayload.AutoFireShotCount;
+                        AddWeaponToKludgeWeaponsList(weapon.WeaponDef, _autoFireShotCountInitial);
                         weapon.WeaponDef.APToUsePerc = 100;
                         weapon.WeaponDef.DamagePayload.AutoFireShotCount *= 4;
                         _weaponChanged = weapon;
 
+
                     }
-                    else
-                    if (target.Health > weapon.GetDamage() * 2 && shooter.CharacterStats.ActionPoints.Ratio >= 0.75f && weapon.CommonItemData.CurrentCharges >= 3)
+                    else if (target.Health > weapon.GetDamage() * 2 && shooter.CharacterStats.ActionPoints.Ratio >= 0.75f && weapon.CommonItemData.CurrentCharges >= 3)
                     {
                         _autoFireShotCountInitial = weapon.WeaponDef.DamagePayload.AutoFireShotCount;
+                        AddWeaponToKludgeWeaponsList(weapon.WeaponDef, _autoFireShotCountInitial);
                         weapon.WeaponDef.APToUsePerc = 75;
                         weapon.WeaponDef.DamagePayload.AutoFireShotCount *= 3;
                         _weaponChanged = weapon;
 
+
                     }
-                    else
-                    if (target.Health > weapon.GetDamage() && shooter.CharacterStats.ActionPoints.Ratio >= 0.5f && weapon.CommonItemData.CurrentCharges >= 2)
+                    else if (target.Health > weapon.GetDamage() && shooter.CharacterStats.ActionPoints.Ratio >= 0.5f && weapon.CommonItemData.CurrentCharges >= 2)
                     {
                         _autoFireShotCountInitial = weapon.WeaponDef.DamagePayload.AutoFireShotCount;
+                        AddWeaponToKludgeWeaponsList(weapon.WeaponDef, _autoFireShotCountInitial);
                         weapon.WeaponDef.APToUsePerc = 50;
                         weapon.WeaponDef.DamagePayload.AutoFireShotCount *= 2;
                         _weaponChanged = weapon;
@@ -172,14 +218,17 @@ namespace TFTV
         {
             try
             {
-                if (_weaponChanged != null)
+                if (_weaponChanged != null && _weaponChanged.WeaponDef != null)
                 {
-
-                    TFTVLogger.Always($"reverted {_weaponChanged.DisplayName}");
                     _weaponChanged.WeaponDef.APToUsePerc = 25;
                     _weaponChanged.WeaponDef.DamagePayload.AutoFireShotCount = _autoFireShotCountInitial;
+                    if (_kludgedWeapons.ContainsKey(_weaponChanged.WeaponDef))
+                    {
+                        _kludgedWeapons.Remove(_weaponChanged.WeaponDef);
+                    }
+                    TFTVLogger.Always($"reverted {_weaponChanged.DisplayName} normally");
                     _weaponChanged = null;
-
+                    
                 }
             }
             catch (Exception e)
@@ -195,7 +244,7 @@ namespace TFTV
         [HarmonyPatch(typeof(AIActionMoveAndAttack), "GetAttackTarget")]
         public static class AIActionMoveAndAttack_GetAttackTarget_patch
         {
-            private static void Prefix(AIActionMoveAndAttack __instance, TacticalAbility ability, TacAITarget aiTarget)
+            public static void Prefix(AIActionMoveAndAttack __instance, TacticalAbility ability, TacAITarget aiTarget)
             {
                 try
                 {
@@ -206,10 +255,10 @@ namespace TFTV
 
                     if (ability is ShootAbility shootAbility)
                     {
-                        if (aiTarget.TacticalAbilityTarget != null 
-                            || shootAbility.TacticalActor == null 
+                        if (aiTarget.TacticalAbilityTarget != null
+                            || shootAbility.TacticalActor == null
                             || shootAbility.TacticalActor.TacticalFaction == null
-                            ||shootAbility.Weapon == null)
+                            || shootAbility.Weapon == null)
                         {
                             return;
                         }
