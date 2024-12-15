@@ -15,6 +15,7 @@ using PhoenixPoint.Common.Entities.Equipments;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.Game;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
@@ -369,7 +370,7 @@ namespace TFTV
                 try
                 {
 
-                    if (character!=null && (_showBoolCircles == 1 && CheckCharacterInfiltratorOrLazarus(character) || _showBoolCircles == 2))
+                    if (character != null && (_showBoolCircles == 1 && CheckCharacterInfiltratorOrLazarus(character) || _showBoolCircles == 2))
                     {
                         _drawAllEnemyVisionMarkersMethodInfo.Invoke(__instance, new object[] { });
                     }
@@ -395,15 +396,15 @@ namespace TFTV
                         lazarusScarab = true;
                     }
 
-                    foreach(TacticalFaction faction in character.TacticalLevel.Factions.Where(f => f.GetRelationTo(character.TacticalFaction) == FactionRelation.Enemy)) 
+                    foreach (TacticalFaction faction in character.TacticalLevel.Factions.Where(f => f.GetRelationTo(character.TacticalFaction) == FactionRelation.Enemy))
                     {
-                        if (faction.Vision.IsRevealed(character)) 
+                        if (faction.Vision.IsRevealed(character))
                         {
                             return false;
-                        }    
+                        }
                     }
 
-                    if ( character.GameTags.Contains(DefCache.GetDef<GameTagDef>("Infiltrator_ClassTagDef"))
+                    if (character.GameTags.Contains(DefCache.GetDef<GameTagDef>("Infiltrator_ClassTagDef"))
                         || lazarusScarab)
                     {
                         return true;
@@ -417,6 +418,66 @@ namespace TFTV
                     throw;
                 }
             }
+
+            [HarmonyPatch(typeof(InputController), "GetDefaultAction", typeof(int))]
+            public static class InputController_GetDefaultAction_patch
+            {
+                public static bool Prefix(InputController __instance, int hash, ref InputAction __result)
+                {
+                    try
+                    {
+
+                        if (__instance.AllActionMap.IsEmpty<InputAction>())
+                        {
+                            __instance.AllActionMap.Clear();
+                            __instance.AllActionMap.AddRange(__instance.DefaultInputMap.Actions);
+                        }
+                        if (hash < __instance.AllActionMap.Count && hash != InputCache.InvalidHash)
+                        {
+                            __result = __instance.AllActionMap[hash];
+                            return false;
+                        }
+
+                        InputRebindingComponent inputRebindingComponent = GameUtl.GameComponent<PhoenixGame>().GetComponent<InputRebindingComponent>();
+
+                        List<InputAction> overrides = new List<InputAction>();
+                        foreach (object obj in inputRebindingComponent.BindingsOverrides.Values.Values)
+                        {
+                            if (obj is InputAction inputAction)
+                            {
+                                overrides.Add(inputAction);
+                            }
+                        }
+
+                        __instance.ApplyKeybindings(overrides);
+
+                        if (hash < __instance.AllActionMap.Count && hash != InputCache.InvalidHash)
+                        {
+                            __result = __instance.AllActionMap[hash];
+                            return false;
+                        }
+
+                        __result = null;
+
+                        TFTVLogger.Always($"{hash} is null!, __instance.AllActionMap.Count: {__instance.AllActionMap.Count} ");
+
+                        foreach (InputAction inputAction in __instance.AllActionMap)
+                        {
+                            TFTVLogger.Always($"__instance.AllActionMap: {inputAction.Name}, {inputAction.Hash}, {inputAction.Chords[0]?.Keys[0]?.Name}");
+                        }
+
+                        return false;
+                    }
+
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+
             public static void UpdateState(object __instance)
             {
                 try
@@ -484,7 +545,7 @@ namespace TFTV
 
                         TacticalActor selectedActor = controller.View.SelectedActor;
 
-                        if (selectedActor!=null && (_showBoolCircles == 1 && CheckCharacterInfiltratorOrLazarus(selectedActor) || _showBoolCircles == 2))
+                        if (selectedActor != null && (_showBoolCircles == 1 && CheckCharacterInfiltratorOrLazarus(selectedActor) || _showBoolCircles == 2))
                         {
 
                             IEnumerable<TacticalActor> tacticalActors = from a in selectedActor.TacticalFaction.Vision.GetKnownActors(KnownState.Revealed, FactionRelation.Enemy, false).OfType<TacticalActor>()

@@ -3924,6 +3924,7 @@ namespace TFTV
                     }
 
 
+
                     if (tacticalActor.HasGameTag(crabTag) || tacticalActor.HasGameTag(fishmanTag))
                     {
                         if (TFTVArtOfCrab.Has1APWeapon(tacCharacterDef))
@@ -3936,7 +3937,7 @@ namespace TFTV
                             TFTVLogger.Always($"{tacticalActor.name} receiving {reinforcementStatusUnder2AP.EffectName}");
                         }
                     }
-                    else if (tacticalActor.HasGameTag(sirenTag))
+                    else if (tacticalActor.HasGameTag(sirenTag) || tacticalActor.HasGameTag(DefCache.GetDef<ClassTagDef>("Facehugger_ClassTagDef")))
                     {
                         tacticalActor.Status.ApplyStatus(reinforcementStatusUnder1AP);
                         TFTVLogger.Always($"{tacticalActor.name} receiving {reinforcementStatusUnder1AP.EffectName}");
@@ -4143,9 +4144,12 @@ namespace TFTV
 
                             actorDeployData.InitializeInstanceData();
                             TacticalActorBase tacticalActorBase = zoneToDeployAt.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, zoneToDeployAt);
-                            TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
-                            TFTVLogger.Always($"deploying {tacticalActor.name}");
-                            ApplyReinforcementStatus(tacticalActor, tacCharacterDef);
+                            if (tacticalActorBase != null)
+                            {
+                                TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
+                                TFTVLogger.Always($"deploying {tacticalActor.name}");
+                                ApplyReinforcementStatus(tacticalActor, tacCharacterDef);
+                            }
                         }
                     }
                 }

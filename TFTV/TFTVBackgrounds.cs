@@ -2,6 +2,7 @@
 using Base.Defs;
 using Base.Lighting;
 using HarmonyLib;
+using Newtonsoft.Json.Linq;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View;
@@ -11,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.UI;
 using static PhoenixPoint.Geoscape.Levels.GeoSceneReferences;
 
 namespace TFTV
@@ -568,15 +570,7 @@ namespace TFTV
 
                 Transform transform = geoSceneReferences.SquadBay.CharBuilderPlatform;
 
-                // transform.gameObject.SetActive(false);
-
-                // DualObjectShadowReceiver.Start(transform);
-
-
-
                 RemoveSceneDoF();
-
-
             }
 
             catch (Exception e)
@@ -585,6 +579,8 @@ namespace TFTV
                 throw;
             }
         }
+
+        private static Sprite _airForceBackground = null;
 
         [HarmonyPatch(typeof(GeoSceneReferences), "ActivateScene")]
         public static class TFTV_GeoSceneReferences_ActivateScene_patch
@@ -600,6 +596,38 @@ namespace TFTV
                     {
                         ChangeSceneBackgroundSquadDeploy(__instance);
                         ModifyLightningAndPlatform(__instance.SquadBay.CharBuilderPlatform);
+                    }
+                    else if(activeScene == ActiveSceneReference.VehicleBay)
+                    {
+
+                        CharacterClassWorldDisplay characterClassWorldDisplay = __instance.SquadBay.ClassWorldDisplay;
+
+
+                        GameObject copy = UnityEngine.Object.Instantiate(characterClassWorldDisplay.gameObject, __instance.VehicleBay.transform);
+                        CharacterClassWorldDisplay copyDisplay = copy.GetComponent<CharacterClassWorldDisplay>();
+                        // _copyCharacterClassWorldDisplay = copyDisplay;
+
+
+                        if (_airForceBackground == null) 
+                        { 
+                        _airForceBackground = Helper.CreateSpriteFromImageFile("sceneairforce.jpg");
+                        }
+
+                        copyDisplay.SingleClassImage.sprite = _airForceBackground;
+
+                        RectTransform rt = copyDisplay.SingleClassImage.GetComponent<RectTransform>();
+                        float imageAspect = (float)_backgroundSquadDeploy.texture.width / _backgroundSquadDeploy.texture.height;
+                        rt.sizeDelta = new Vector2(rt.rect.height * imageAspect, rt.rect.height);
+                        rt.localScale = new Vector2(imageAspect * 1.31f, imageAspect * 1.31f);
+
+                        rt.anchoredPosition3D = new Vector3(rt.anchoredPosition3D.x - 45, rt.anchoredPosition3D.y - 25, rt.anchoredPosition3D.z);
+                        rt.eulerAngles = new Vector3(2.8f, 346, 0);
+
+
+                        copyDisplay.SingleClassImage.gameObject.SetActive(true);
+                        copyDisplay.RightClassImage.gameObject.SetActive(false);
+                        copyDisplay.LeftClassImage.gameObject.SetActive(false);
+
                     }
 
                 }

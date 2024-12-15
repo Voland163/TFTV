@@ -138,7 +138,7 @@ namespace TFTV
                         missionTypeDef.Outcomes[0].DestroySite = true;
                         missionTypeDef.Outcomes[0].Outcomes[2] = mutagenRewardInfestation;
                         missionTypeDef.Outcomes[0].BriefingModalBind.Title.LocalizationKey = "KEY_MISSION_HAVEN_INFESTED_VICTORY_NAME";
-                        missionTypeDef.Outcomes[0].BriefingModalBind.Description.LocalizationKey = "KEY_MISSION_HAVEN_INFESTED_VICTORY_DESCRIPTION";
+                        missionTypeDef.Outcomes[0].BriefingModalBind.Description.LocalizationKey = "TFTV_KEY_MISSION_HAVEN_INFESTED_VICTORY_DESCRIPTION";
                         missionTypeDef.BriefingModalBind.Title.LocalizationKey = "KEY_MISSION_HAVEN_INFESTED_NAME";
                         missionTypeDef.BriefingModalBind.Description.LocalizationKey = "KEY_MISSION_HAVEN_INFESTED_DESCRIPTION";
 

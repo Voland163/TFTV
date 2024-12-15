@@ -218,7 +218,7 @@ namespace TFTV
 
                 // TFTVLogger.Always($"inputMapDef.Actions.Contains(displayPerceptionCirclesAction): {inputMapDef.Actions.Contains(displayPerceptionCirclesAction)}");
 
-                /* foreach (InputAction inputAction in inputMapDef.Actions)
+               /*  foreach (InputAction inputAction in inputMapDef.Actions)
                  {
                      TFTVLogger.Always($"{inputAction.Name}, {inputAction.Hash}, {inputAction.Chords[0]?.Keys[0]?.Name}");
                  }*/
