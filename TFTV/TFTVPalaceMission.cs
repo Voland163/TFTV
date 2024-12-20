@@ -12,6 +12,7 @@ using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.ActorDeployment;
 using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -23,12 +24,14 @@ using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.ActorDeployment;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Levels.Mist;
+using PhoenixPoint.Tactical.View;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting.Messaging;
 using UnityEngine;
 using static PhoenixPoint.Tactical.View.ViewControllers.SquadMemberScrollerController;
 
@@ -2598,9 +2601,12 @@ namespace TFTV
                                     TFTVRevenant.UIandFX.Breath.AddRevenantStatusEffect(tacticalActorBase);
                                     TFTVRevenant.StatsAndClasses.SetRevenantClassAbility(theChosen, controller, tacticalActor);
 
+                                    ActorClassIconElement actorClassIconElement = tacticalActorBase.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
+                                    
                                     //  SpreadResistance(__instance);
                                     tacticalActorBase.UpdateStats();
                                     PermaKillRevenant(theChosen);
+                                    TFTVUITactical.Enemies.ChangeHealthBarIcon(actorClassIconElement, tacticalActorBase);
                                     //  TFTVLogger.Always("Crab's name has been changed to " + actor.GetDisplayName());
                                     // revenantCanSpawn = false;
                                 }
@@ -2622,7 +2628,7 @@ namespace TFTV
 
                     if (controller.TacMission.IsFinalMission)
                     {
-                        List<TacticalActor> revenants = controller.GetFactionByCommandName("px").TacticalActors.Where(ta => ta.HasGameTag(anyRevenantGameTag)).ToList();
+                        List<TacticalActor> revenants = controller.GetFactionByCommandName("px").TacticalActors.Where(ta => ta.HasGameTag(anyRevenantGameTag) && ta.IsAlive).ToList();
 
                         if (revenants.Count > 0)
                         {

@@ -80,11 +80,11 @@ We have located a New Jericho archive facility harboring the NG+ Weapon Systems 
 
 Bien qu’à l’époque on ait considéré qu’il ne s’agissait que d’un coup de publicité et qu’il faisait partie de la stratégie de rétention des talents de Vanadium, nous supposons que ces armes pourraient être développées en utilisant les matériaux utilisés par les Anciens.
 
-Nous avons localisé une installation d’archives de la Nouvelle Jericho abritant la recherche sur les systèmes d’armes NG+.",,,,"В корпорации ""Ванадий"" существовал научно-исследовательский филиал Оружейные системы нового поколения"" занимавшийся разработкой вооружений для которых требовались еще не открытые технологии источники энергии или материалы с невозможной прочностью на разрыв или проводимостью. 
+Nous avons localisé une installation d’archives de la Nouvelle Jericho abritant la recherche sur les systèmes d’armes NG+.",,,,"У корпорации «Ванадий» был научно-исследовательский филиал «Оружейные системы нового поколения», занимавшийся разработкой вооружений, для которых требовались еще не открытые технологии, источники энергии или материалы с невозможной прочностью на разрыв или проводимостью. 
 
-Хотя в то время это считалось не более чем рекламным трюком и частью стратегии удержания талантов в корпорации ""Ванадий"" мы предполагаем что такое оружие действительно могло быть разработано с использованием материалов Древних.
+Хотя в то время это считалось не более чем рекламным трюком и частью стратегии удержания талантов в корпорации «Ванадий», мы предполагаем, что такое оружие действительно могло быть разработано с использованием материалов Древних.
 
-Мы обнаружили архив на территории Нового Иерихона где хранятся исследования ОСНП.",,
+Мы обнаружили архив на территории Нового Иерихона, где хранятся материалы этих исследований.",,
 OLENA_PUZZLE_OUTCOME,Text,,"Yes, apparently Vanadium Co had an R & D division, Next Generation+ Weapon Systems, focused on designing armaments that required as of yet undiscovered technologies, energy sources or materials with impossible tensile strengths or conductivity. 
 
 According to Helena, at the time it was deemed little more than a publicity stunt, but I have a hunch that maybe these weapons could be indeed developed using the exotic materials...
@@ -616,13 +616,13 @@ En utilisant des données provenant de sources publiques et d’images satellita
 
 La chronologie des événements et leur relation de cause à effet reste floues, certains au sein de Synedrion accusent NJ d’avoir provoqué l’attaque du Pandoran et NJ affirme qu’ils ont agi en légitime défense.
 
-Les disciples d’Anu insistent sur le fait que l’émergence de ce qu’ils appellent le ""Béhémoth"" et le ""Ciel fétide"" était prédestinée et inévitable.",,,,"Нападение на [HavenName] было совершено из кратера ""Удар Молота"". Мы предполагаем, что именно это убежище стало мишенью, потому что в нем находилось яйцо, найденное гражданкой Эйлин.
+Les disciples d’Anu insistent sur le fait que l’émergence de ce qu’ils appellent le ""Béhémoth"" et le ""Ciel fétide"" était prédestinée et inévitable.",,,,"Нападение на [HavenName] было совершено из кратера «Удара Молота». Мы предполагаем, что именно это убежище стало мишенью, поскольку в нем находилось яйцо, подобранное гражданкой Эйлин.
 
-Благодаря публичной информации и спутниковым снимкам, мы теперь точно знаем, что Новый Иерихон нанес ракетный удар по кратеру ""Удар Молота"", в рамках Операции Мангуст, которую спланировал Уэст. Отправленный позже десант Нового Иерихона, в свою очередь, был уничтожен невообразимо огромным Пандораном, окруженным мириадами летающих существ.
+Из новостей и спутниковых снимков, мы теперь точно знаем, что в рамках спланированной Уэстом «Операции Мангуст» Новый Иерихон нанес ракетный удар по кратеру «Удара Молота». Отправленный позже десант Нового Иерихона был уничтожен невообразимо огромным Пандораном, окруженным мириадами летающих существ.
 
 Хронология событий и их причинно-следственная связь остаются неясными: некоторые члены Синедриона обвиняют Новый Иерихон в провоцировании нападения Пандоранов, а Новый Иерихон утверждает, что это была самооборона.
 
-Последователи Ану провозгласили, что появление того, что они называют ""Бегемот"" и ""Гнойное Небо"", было предопределено и неизбежно.",,
+Последователи Ану провозгласили, что появление того, что они называют «Бегемот» и «Гнойное Небо», было предопределено и неизбежно.",,
 PROG_FS1_FAIL_TITLE,Text,,A Sole Survivor,,Un unique survivant,,,,Единственный выживший,,
 PROG_FS1_MISS_CHOICE_0_TEXT,Text,,"Doesn't sound too difficult . Let's do it, and get samples of the egg for our labs.",,"Ça n' a pas l' air difficile . Faisons-le, et prenons des échantillons de l'oeuf pour nos labos.",,,,Звучит не так уж сложно. Давайте сделаем это и возьмем образцы яйца для наших лабораторий!,,
 PROG_FS1_MISS_CHOICE_1_TEXT,Text,,We will be back.,,Nous reviendrons.,,,,Мы вернемся!,,
@@ -673,13 +673,13 @@ En utilisant des données provenant de sources publiques et d’images satellita
 
 La chronologie des événements et leur relation de cause à effet reste floues, certains au sein de Synedrion accusent NJ d’avoir provoqué l’attaque du Pandoran et NJ affirme qu’ils ont agi en légitime défense.
 
-Les disciples d’Anu insistent sur le fait que l’émergence de ce qu’ils appellent le ""Béhémoth"" et le ""Ciel fétide"" était prédestinée et inévitable.",,,,"Нападение на убежище  [HavenName] было совершено из кратера ""Удар Молота"". Мы предполагаем, что именно это убежище стало мишенью, потому что в нем находилось яйцо, найденное гражданкой Эйлин.
+Les disciples d’Anu insistent sur le fait que l’émergence de ce qu’ils appellent le ""Béhémoth"" et le ""Ciel fétide"" était prédestinée et inévitable.",,,,"Нападение на убежище  [HavenName] было совершено из кратера «Удара Молота». Мы предполагаем, что именно это убежище стало мишенью, поскольку в нем находилось яйцо, подобранное гражданкой Эйлин.
 
-Благодаря публичной информации и спутниковым снимкам, мы теперь точно знаем, что Новый Иерихон нанес массированный ракетный удар по кратеру ""Удар Молота"" в рамках Операции Мангуст, спланированной Уэстом. Отправленный позже десант Нового Иерихона был уничтожен невообразимо огромным Пандораном, окруженным мириадами летающих существ.
+Из новостей и спутниковых снимков, мы теперь точно знаем, что в рамках спланированной Уэстом «Операции Мангуст» Новый Иерихон нанес ракетный удар по кратеру «Удара Молота». Отправленный позже десант Нового Иерихона был уничтожен невообразимо огромным Пандораном, окруженным мириадами летающих существ.
 
 Хронология событий и их причинно-следственная связь остаются неясными: некоторые члены Синедриона обвиняют Новый Иерихон в провоцировании нападения Пандоранов, а Новый Иерихон утверждает, что это была самооборона.
 
-Последователи Ану провозгласили, что появление того, что они называют ""Бегемот"" и ""Гнойное Небо"", было предопределено и неизбежно.",,
+Последователи Ану провозгласили, что появление того, что они называют «Бегемот» и «Гнойное Небо», было предопределено и неизбежно.",,
 PROG_FS1_WIN_CHOICE_0_TEXT,Text,,OK.,,OK.,,,,Ок,,
 PROG_FS1_WIN_TEXT_GENERAL_0,Text,,"Our team has successfully reached the Aurora and managed to escape the raided haven below. The machine is fully operational and heavily armed. 
 
@@ -706,13 +706,13 @@ En utilisant des données provenant de sources publiques et d’images satellita
 
 La chronologie des événements et leur relation de cause à effet reste floues, certains au sein de Synedrion accusent NJ d’avoir provoqué l’attaque du Pandoran et NJ affirme qu’ils ont agi en légitime défense.
 
-Les disciples d’Anu insistent sur le fait que l’émergence de ce qu’ils appellent le ""Béhémoth"" et le ""Ciel fétide"" était prédestinée et inévitable.",,,,"Нападение на Убежище [HavenName] было совершено из кратера ""Удар Молота"". Мы предполагаем, что именно это убежище стало мишенью, потому что в нем находилось яйцо, найденное гражданкой Эйлин.
+Les disciples d’Anu insistent sur le fait que l’émergence de ce qu’ils appellent le ""Béhémoth"" et le ""Ciel fétide"" était prédestinée et inévitable.",,,,"Нападение на Убежище [HavenName] было совершено из кратера «Удара Молота». Мы предполагаем, что именно это убежище стало мишенью, поскольку в нем находилось яйцо, подобранное гражданкой Эйлин.
 
-Благодаря публичной информации и спутниковым снимкам, мы теперь точно знаем, что Новый Иерихон нанес массированный ракетный удар по кратеру ""Удар Молота"" в рамках Операции Мангуст, спланированной Уэстом. Отправленный позже десант Нового Иерихона был уничтожен невообразимо огромным Пандораном, окруженным мириадами летающих существ.
+Из новостей и спутниковых снимков, мы теперь точно знаем, что в рамках спланированной Уэстом «Операции Мангуст» Новый Иерихон нанес ракетный удар по кратеру «Удара Молота». Отправленный позже десант Нового Иерихона был уничтожен невообразимо огромным Пандораном, окруженным мириадами летающих существ.
 
 Хронология событий и их причинно-следственная связь остаются неясными: некоторые члены Синедриона обвиняют Новый Иерихон в провоцировании нападения Пандоранов, а Новый Иерихон утверждает, что это была самооборона.
 
-Последователи Ану провозгласили, что появление того, что они называют ""Бегемот"" и ""Гнойное Небо"", было предопределено и неизбежно.",,
+Последователи Ану провозгласили, что появление того, что они называют «Бегемот» и «Гнойное Небо», было предопределено и неизбежно.",,
 PROG_FS1_WIN_TITLE,Text,,Homecoming,,Retour à la maison,,,,Возвращение домой,,
 FIRST_HAVEN_ATTACK_TITLE,Text,,Grim Harvest,,Sinistre récolte,,,,Мрачная жатва,,
 FIRST_HAVEN_ATTACK_TEXT,Text,,"<i>""It was hard to tell the Kaiju apart from the winged creatures that surrounded it… Together they were one, and the horror they wrought was complete. A machine fueled by life. It devoured without mercy or pleasure.""</i>
@@ -741,7 +741,7 @@ PROG_FS20_TITLE,Text,,An Education into the Consequences of Resistance,,Un ensei
 OLENA_ON_FIRST_FLYER_TITLE,Text,,Bogey!,,Bogey !,,,,Летун!,,
 OLENA_ON_FIRST_FLYER_TEXT,Text,,One of the flyers is detaching itself from the swarm! If it reaches a haven it will wreak havoc on the civilians. We should attempt to triangulate its destination and set an armed aircraft on course to intercept.,,"L'une des créatures volantes se détache de l’essaim ! S’il atteint un refuge, il fera des ravages parmi les civils. Nous devrions tenter de trianguler sa destination et mettre un avion armé en route pour l’intercepter.",,,,"Один из летунов отделяется от стаи! Если он достигнет убежища, это вызовет панику среди гражданского населения. Мы должны попытаться определить место его назначения и направить вооруженный самолет на перехват.",,
 OLENA_ON_FIRST_HAVEN_TARGET_TITLE,Text,,Moving!,,En mouvement !,,,,Оно движется!,,
-OLENA_ON_FIRST_HAVEN_TARGET_TEXT,Text,,The Behemoth is on the move! It's targeting a haven previously visited by one of the stray flyers that returned to the Festering Skies.,,Le Béhémoth est en mouvement! Il vise un refuge déjà visité par l’une des créatures errantes qui sont retournés dans le ciel fétide.,,,,"Чудовище движется! Оно нацелилось на убежище, которое ранее посетил один из заблудившихся летунов, вернувшихся в ""Гнойное Небо"".",,
+OLENA_ON_FIRST_HAVEN_TARGET_TEXT,Text,,The Behemoth is on the move! It's targeting a haven previously visited by one of the stray flyers that returned to the Festering Skies.,,Le Béhémoth est en mouvement! Il vise un refuge déjà visité par l’une des créatures errantes qui sont retournés dans le ciel fétide.,,,,"Чудовище движется! Оно нацелилось на убежище, которое ранее посетил один из отделившихся летунов, вернувшийся в «Гнойное Небо».",,
 FIRST_HAVEN_ATTACK_OUTCOME,Text,,"We have to think of the Behemoth as a highly resilient colony of pathogens, or a self-propelled ecosystem of extremophiles, rather than as a <i>Kaiju</i>.
 
 If we want to destroy it we need the right antibodies... or more like the right biological WMD... and a method of delivering it. We will come up with something, as we always do. But in the meantime you must keep shooting down the… airborne cephalopods? If they reach a haven and return to the Behemoth, that haven will be targeted for “harvesting”.
@@ -1012,7 +1012,7 @@ KEY_OSIRIS_MORE_MUTATION_LAB_BIONICS_RESEARCH,Text,,To enhance Project Osiris an
 KEY_OSIRIS_MORE_MUTATION_LAB_MUTATION_BIONICS_RESEARCH,Text,,To enhance Project Osiris and increase our options we should build a mutation lab and acquire new bionic and mutation research.,,,,,,"Чтобы улучшить Проект Осирис и расширить наши возможности, мы должны построить лабораторию мутаций и провести новые исследования в области бионики и мутаций.",,
 KEY_OSIRIS_MORE_BIONICS_LAB_BIONICS_RESEARCH,Text,,To enhance Project Osiris and increase our options we should build a bionics lab and acquire new bionic research.,,,,,,"Чтобы улучшить Проект Осирис и расширить наши возможности, мы должны построить лабораторию бионики и провести новые бионические исследования.",,
 KEY_OSIRIS_MORE_BIONICS_LAB_MUTATION_RESEARCH,Text,,To enhance Project Osiris and increase our options we should build a bionics lab and acquire new mutation research.,,,,,,"Чтобы улучшить Проект Осирис и расширить наши возможности, мы должны построить лабораторию бионики и провести новые исследования мутаций.",,
-KEY_OSIRIS_MORE_BIONICS_LAB_MUTATION_BIONICS_RESEARCH,Text,,To enhance Project Osiris and increase our options we should build a bionics lab and acquire new mutation and bionic research.,,,,,,"Чтобы улучшить Проект Осирис и расширить наши возможности, мы должны построить лабораторию бионики и провести новые исследования в области мутаций и бионики.",,
+KEY_OSIRIS_MORE_BIONICS_LAB_MUTATION_RESEARCH_BIONICS_RESEARCH,Text,,To enhance Project Osiris and increase our options we should build a bionics lab and acquire new mutation and bionic research.,,,,,,"Чтобы улучшить Проект Осирис и расширить наши возможности, мы должны построить лабораторию бионики и провести новые исследования в области мутаций и бионики.",,
 KEY_OSIRIS_MORE_MUTATION_RESEARCH,Text,,To enhance Project Osiris and increase our options we should acquire new mutation research.,,,,,,"Чтобы улучшить Проект Осирис и расширить наши возможности, мы должны провести новые исследования в области мутаций.",,
 KEY_OSIRIS_MORE_BIONICS_RESEARCH,Text,,To enhance Project Osiris and increase our options we should acquire new bionic research.,,,,,,"Чтобы улучшить Проект Осирис и расширить наши возможности, мы должны провести новые исследования в области бионики.",,
 KEY_OSIRIS_MORE_MUTATION_RESEARCH_BIONICS_RESEARCH,Text,,To enhance Project Osiris and increase our options we should acquire new bionic and mutation research.,,,,,,"Чтобы улучшить Проект Осирис и расширить наши возможности, мы должны провести новые исследования в области бионики и мутаций.",,

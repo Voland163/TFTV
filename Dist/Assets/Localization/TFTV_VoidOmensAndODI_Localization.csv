@@ -22,7 +22,7 @@ VOID_OMEN_TITLE_12,Text,,Strength of Pandoran attacks on Havens increased by 50%
 VOID_OMEN_TITLE_13,Text,,New Pandoran Colonies are built 100% faster,,Les nouvelles colonies pandoriennes sont construites 100 % plus rapidement.,,,,Негатив: новые колонии Пандоранов строятся на 100% быстрее,,
 VOID_OMEN_TITLE_14,Text,,Human perception lowered to 20 from 30,,Perception humaine diminuée de 35 à 20,,,,Негатив: базовое восприятие людей снижено с 30 до 20,,
 VOID_OMEN_TITLE_15,Text,,"More Touched by the Void, but Umbra disappear after 1 turn",,Plus d'Ombres,,,,"Негатив: увеличилось количество Благословленных Пустотой 
-Позитив: Фиолетовые Твари дохнут сами через 1 ход",,
+Позитив: Фиолетовые Твари дохнут сами в конце хода",,
 VOID_OMEN_TITLE_16,Text,,Touched by the Void can appear anywhere and Umbras can attack anyone,,Les Ombres peuvent apparaître n'importe où et attaquer n'importe qui,,,,"Негатив: Благословленные Пустотой могут появиться где угодно, а Фиолетовые Твари могут напасть на кого угодно",,
 VOID_OMEN_TITLE_17,Text,,Destroyed havens in Mist always become infested,,Les refuges détruits dans la brume deviennent toujours infestés,,,,Негатив: разрушенные в Тумане убежища всегда становятся зараженными,,
 VOID_OMEN_TITLE_18,Text,,"Havens defense rating higher, rewards from haven defense missions lower",,"Le taux de défense des refuges est plus élevé, mais les récompenses des missions de défense sont plus faibles.",,,,"Негатив: награды за выполнение миссий по защите убежищ уменьшены.

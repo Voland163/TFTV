@@ -1150,6 +1150,7 @@ namespace TFTV
                                     weaponDef.DamagePayload.ArmourShred = 0;
                                     weaponDef.DamagePayload.ArmourShredProbabilityPerc = 0;
                                     weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.BurningKeyword, Value = 20 });
+                                    weaponDef.ViewElementDef.Description.LocalizationKey = "KEY_TFTV_REBUKE_DESCRIPTION";
                                     break;
 
                                 case "1fd630cb-c45f-cf14-8a4e-095ee3c672d1": //AC_ShardGun_WeaponDef
@@ -1158,6 +1159,7 @@ namespace TFTV
                                     weaponDef.DamagePayload.DamageKeywords[1].Value = 10;
                                     weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.PsychicKeyword, Value = 1 });
                                     weaponDef.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_KEY_AC_SHOTGUN_NAME";
+                                    weaponDef.ViewElementDef.Description.LocalizationKey = "KEY_TFTV_SHOTGUN_DESCRIPTION";
                                     DefCache.GetDef<ResearchViewElementDef>("PX_ShardGun_ViewElementDef").CompleteText.LocalizationKey = "TFTV_PX_SHARDGUN_RESEARCHDEF_COMPLETE";
                                     // DefCache.GetDef<ResearchViewElementDef>("ANU_AdvancedInfectionTech_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_ANU_ADVANCEDINFECTIONTECH_RESEARCHDEF_BENEFITS";
 
@@ -1170,6 +1172,7 @@ namespace TFTV
                                     weaponDef.DamagePayload.DamageKeywords[0].Value = 110;
                                     weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.SyphonKeyword, Value = 80 });
                                     weaponDef.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_KEY_AC_MACE_NAME";
+                                    weaponDef.ViewElementDef.Description.LocalizationKey = "KEY_TFTV_MACE_DESCRIPTION";
                                     // DefCache.GetDef<ResearchViewElementDef>("PX_MattockoftheAncients_ViewElementDef").CompleteText.LocalizationKey = "TFTV_PX_MATTOCKOFTHEANCIENTS_RESEARCHDEF_COMPLETE";
 
                                     break;
@@ -1182,6 +1185,7 @@ namespace TFTV
                                     weaponDef.DamagePayload.StopWhenNoRemainingDamage = false;
                                     // weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShreddingKeyword, Value = 10 });
                                     weaponDef.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_KEY_AC_SNIPER_NAME";
+                                    weaponDef.ViewElementDef.Description.LocalizationKey = "KEY_TFTV_SCORPION_DESCRIPTION";
                                     DefCache.GetDef<ResearchViewElementDef>("PX_Scorpion_ViewElementDef").CompleteText.LocalizationKey = "TFTV_PX_SCORPION_RESEARCHDEF_COMPLETE";
                                     // DefCache.GetDef<ResearchViewElementDef>("NJ_VehicleTech_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_NJ_VEHICLETECH_RESEARCHDEF_BENEFITS";
                                     break;
@@ -1193,8 +1197,13 @@ namespace TFTV
                                     weaponDef.DamagePayload.ArmourShred = 0;
                                     weaponDef.DamagePayload.ArmourShredProbabilityPerc = 0;
                                     weaponDef.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_KEY_AC_SCYTHE_NAME";
+                                    weaponDef.ViewElementDef.Description.LocalizationKey = "KEY_TFTV_SCYTHE_DESCRIPTION";
                                     DefCache.GetDef<ResearchViewElementDef>("PX_Scyther_ViewElementDef").CompleteText.LocalizationKey = "TFTV_PX_SCYTHER_RESEARCHDEF_COMPLETE";
                                     //  DefCache.GetDef<ResearchViewElementDef>("SYN_Bionics3_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_SYN_BIONICS3_RESEARCHDEF_BENEFITS";
+                                    break;
+
+                                case "b4eb6fad-62ad-fab4-ca2e-b2a906007dea"://AC_CrystalCrossbow_WeaponDef
+                                    weaponDef.ViewElementDef.Description.LocalizationKey = "KEY_TFTV_CROSSBOW_DESCRIPTION";
                                     break;
                             }
                             ImpossibleWeaponsAdjusted = true;
@@ -1206,6 +1215,18 @@ namespace TFTV
                         foreach (WeaponDef weaponDef in Repo.GetAllDefs<WeaponDef>())
                         {
 
+                            /*
+                             * KEY_TFTV_SHOTGUN_DESCRIPTION
+KEY_TFTV_SCYTHE_DESCRIPTION
+KEY_TFTV_SCORPION_DESCRIPTION
+KEY_TFTV_CROSSBOW_DESCRIPTION
+KEY_TFTV_REBUKE_DESCRIPTION
+KEY_TFTV_MACE_DESCRIPTION
+
+                             * 
+                             */
+
+
                             switch (weaponDef.Guid)
                             {
                                 case "831be08f-d0d7-2764-4833-02ce83ff7277": // AC_Rebuke_WeaponDef
@@ -1214,6 +1235,7 @@ namespace TFTV
                                     weaponDef.DamagePayload.ArmourShred = 10;
                                     weaponDef.DamagePayload.ArmourShredProbabilityPerc = 100;
                                     weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShreddingKeyword, Value = 30 });
+                                    weaponDef.ViewElementDef.Description.LocalizationKey = "KEY_AC_HEAVY_DESCRIPTION";
                                     break;
 
                                 case "1fd630cb-c45f-cf14-8a4e-095ee3c672d1": //AC_ShardGun_WeaponDef
@@ -1222,6 +1244,7 @@ namespace TFTV
                                     weaponDef.DamagePayload.ProjectilesPerShot = 15;
                                     weaponDef.DamagePayload.DamageKeywords[1].Value = 15;
                                     weaponDef.ViewElementDef.DisplayName1.LocalizationKey = "KEY_AC_SHOTGUN_NAME";
+                                    weaponDef.ViewElementDef.Description.LocalizationKey = "KEY_AC_SHOTGUN_DESCRIPTION";
                                     DefCache.GetDef<ResearchViewElementDef>("PX_ShardGun_ViewElementDef").CompleteText.LocalizationKey = "PX_SHARDGUN_RESEARCHDEF_COMPLETE";
                                     break;
 
@@ -1232,6 +1255,7 @@ namespace TFTV
                                     weaponDef.DamagePayload.DamageKeywords[0].Value = 220;
                                     weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShockKeyword, Value = 440 });
                                     weaponDef.ViewElementDef.DisplayName1.LocalizationKey = "KEY_AC_MACE_NAME";
+                                    weaponDef.ViewElementDef.Description.LocalizationKey = "KEY_AC_MACE_DESCRIPTION";
                                     // DefCache.GetDef<ResearchViewElementDef>("PX_MattockoftheAncients_ViewElementDef").CompleteText.LocalizationKey = "TFTV_PX_MATTOCKOFTHEANCIENTS_RESEARCHDEF_COMPLETE";
 
                                     break;
@@ -1242,6 +1266,7 @@ namespace TFTV
                                     weaponDef.DamagePayload.ArmourPiercing = 50;
                                     weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.PiercingKeyword, Value = 80 });
                                     weaponDef.ViewElementDef.DisplayName1.LocalizationKey = "KEY_AC_SNIPER_NAME";
+                                    weaponDef.ViewElementDef.Description.LocalizationKey = "KEY_AC_SNIPER_DESCRIPTION";
                                     weaponDef.DamagePayload.StopOnFirstHit = true;
                                     weaponDef.DamagePayload.StopWhenNoRemainingDamage = true;
                                     DefCache.GetDef<ResearchViewElementDef>("PX_Scorpion_ViewElementDef").CompleteText.LocalizationKey = "PX_SCORPION_RESEARCHDEF_COMPLETE";
@@ -1255,8 +1280,13 @@ namespace TFTV
                                     weaponDef.DamagePayload.ArmourShred = 10;
                                     weaponDef.DamagePayload.ArmourShredProbabilityPerc = 0;
                                     weaponDef.ViewElementDef.DisplayName1.LocalizationKey = "KEY_AC_SCYTHE_NAME";
+                                    weaponDef.ViewElementDef.Description.LocalizationKey = "KEY_AC_SCYTHE_DESCRIPTION";
                                     DefCache.GetDef<ResearchViewElementDef>("PX_Scyther_ViewElementDef").CompleteText.LocalizationKey = "PX_SCYTHER_RESEARCHDEF_COMPLETE";
                                     //  DefCache.GetDef<ResearchViewElementDef>("SYN_Bionics3_ViewElementDef").BenefitsText.LocalizationKey = "TFTV_SYN_BIONICS3_RESEARCHDEF_BENEFITS";
+                                    break;
+
+                                case "b4eb6fad-62ad-fab4-ca2e-b2a906007dea"://AC_CrystalCrossbow_WeaponDef
+                                    weaponDef.ViewElementDef.Description.LocalizationKey = "KEY_AC_CROSSBOW_DESCRIPTION";
                                     break;
                             }
                             ImpossibleWeaponsAdjusted = false;

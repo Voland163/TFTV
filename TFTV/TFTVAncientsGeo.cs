@@ -208,7 +208,7 @@ namespace TFTV
         }
         internal class ImpossibleWeapons
         {
-            //Method additional requirements texts to Impossible Weapons if nerf is on.
+            //Method additional requirements texts to Impossible Weapons if nerf is on. Not used because removed.
             public static void CheckImpossibleWeaponsAdditionalRequirements(GeoLevelController controller)
             {
                 try
@@ -426,6 +426,12 @@ namespace TFTV
             {
                 try
                 {
+                    if (controller.EventSystem.GetEventRecord("Cyclops_Dreams")!=null && controller.EventSystem.GetEventRecord("Cyclops_Dreams").Completed && controller.EventSystem.GetVariable("SymesAlternativeCompleted") == 0)
+                    {
+                        TFTVLogger.Always($"SymesAlternativeCompleted setting to 1");
+                        controller.EventSystem.SetVariable("SymesAlternativeCompleted", 1);
+                    }
+
                     //alternative Reveal text for YuggothianEntity Research: 
 
                     ResearchViewElementDef yuggothianEntityVED = DefCache.GetDef<ResearchViewElementDef>("PX_YuggothianEntity_ViewElementDef");
@@ -847,6 +853,7 @@ namespace TFTV
                             if (controller.EventSystem.GetVariable("Sphere") == 0)
                             {
                                 controller.EventSystem.SetVariable("Sphere", 1);
+                                controller.EventSystem.SetVariable("SymesAlternativeCompleted", 1);
                                 //triggers Digitize my Dreams, the Cyclops said event
                                 GeoscapeEventContext context = new GeoscapeEventContext(controller.AlienFaction, controller.PhoenixFaction);
                                 controller.EventSystem.TriggerGeoscapeEvent("Cyclops_Dreams", context);

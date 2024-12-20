@@ -149,6 +149,7 @@ namespace TFTV
         /// <summary>
         /// Recolor the timer on geoscape sites for base/ancient site attacks
         /// Controls visuals for Base Defense
+        /// Add marker for base with unpowered facilities
         /// </summary>
 
         [HarmonyPatch(typeof(GeoSiteVisualsController), "RefreshSiteVisuals")]
@@ -169,6 +170,41 @@ namespace TFTV
                 }
             }
         }
+
+     /*   [HarmonyPatch(typeof(GeoFaction), "GetEligibleTemplatesForMission")]
+        public static class GeoFaction_GetEligibleTemplatesForMission_Patch
+        {
+
+            public static void Postfix(GeoFaction __instance, IEnumerable<TacCharacterDef> __result)
+            {
+                try
+                {
+                    foreach(TacCharacterDef tacCharacterDef in __result) 
+                    {
+
+                        TFTVLogger.Always($"{tacCharacterDef.name}");
+                    }
+
+                    TFTVLogger.Always($"unlockedTemplates:");
+
+                    foreach (TacCharacterDef tacCharacterDef in __instance.UnlockedUnitTemplates)
+                    {
+
+                        TFTVLogger.Always($"{tacCharacterDef.name}");
+                    }
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }*/
+
+
+         
+
 
         [HarmonyPatch(typeof(UIStateRosterDeployment), "SetUpInitialDeployment")]
         public static class TFTV_UIStateRosterDeployment_SetUpInitialDeployment_patch

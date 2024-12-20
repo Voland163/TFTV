@@ -142,10 +142,15 @@ namespace TFTV
         public static void CheckCaptureCapability(GeoMission geoMission)
         {
             try
-            {
-                TFTVConfig config = TFTVMain.Main.Config;
+            { 
+                if (geoMission.MissionDef.FinalMission) 
+                {
+                    return;            
+                }
 
-                if (TFTVNewGameOptions.LimitedCaptureSetting && !geoMission.MissionDef.FinalMission)
+                ContainmentSpaceAvailable = geoMission.Site.GeoLevel.PhoenixFaction.GetTotalContaimentCapacity() - geoMission.Site.GeoLevel.PhoenixFaction.ContaimentUsage;
+
+                if (TFTVNewGameOptions.LimitedCaptureSetting)
                 {
 
                     if (geoMission.Site.GeoLevel.PhoenixFaction.Research.HasCompleted("PX_CaptureTech_ResearchDef"))
@@ -171,7 +176,7 @@ namespace TFTV
                                 {
 
                                     TFTVLogger.Always($"This is a Phoenix base mission, and there is a functioning Containment Facility, so capture capacity is not limited");
-                                    ContainmentSpaceAvailable = geoMission.Site.GeoLevel.PhoenixFaction.GetTotalContaimentCapacity() - geoMission.Site.GeoLevel.PhoenixFaction.ContaimentUsage;
+                                    
                                     ContainmentFacilityPresent = true;
                                     AircraftCaptureCapacity = -1;
                                     AircraftName = geoMission.Site.LocalizedSiteName;
@@ -230,8 +235,6 @@ namespace TFTV
 
                                 AircraftName = gv.Name;
                                 AircraftViewElement = gv.VehicleDef.ViewElement.Guid;
-
-                                ContainmentSpaceAvailable = geoMission.Site.GeoLevel.PhoenixFaction.GetTotalContaimentCapacity() - geoMission.Site.GeoLevel.PhoenixFaction.ContaimentUsage;
 
                                 if (ContainmentSpaceAvailable <= 0)
                                 {

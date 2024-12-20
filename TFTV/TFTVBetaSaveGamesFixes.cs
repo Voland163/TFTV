@@ -54,6 +54,23 @@ namespace TFTV
             }
         }
 
+
+        public static void SpecialFixBeesGuy()
+        {
+            try
+            {
+                TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = true;
+                TFTVNewGameOptions.StaminaPenaltyFromInjurySetting = true;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+        }
+
+
         public static void SpecialFixForCatGuy(GeoLevelController controller)
         {
             try
@@ -677,6 +694,8 @@ namespace TFTV
         {
             try
             {
+        
+
                 if (controller.EventSystem.GetEventRecord("PROG_AN2")?.SelectedChoice == -1)
                 {
                     controller.EventSystem.GetEventRecord("PROG_AN2").SelectChoice(0);
@@ -687,6 +706,7 @@ namespace TFTV
                     controller.EventSystem.GetEventRecord("PROG_AN4").SelectChoice(1);
                     controller.EventSystem.GetEventRecord("PROG_AN4").Complete(controller.Timing.Now);
                 }
+                
             }
             catch (Exception e)
             {

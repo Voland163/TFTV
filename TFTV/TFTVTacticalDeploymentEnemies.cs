@@ -330,6 +330,8 @@ namespace TFTV
 
                 foreach (ActorDeployData actorDeployData in results)
                 {
+                    //TFTVLogger.Always($"{actorDeployData?.GetName()}");
+
                     if (actorDeployData.InstanceData != null)
                     {
 

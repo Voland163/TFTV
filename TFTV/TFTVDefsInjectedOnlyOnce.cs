@@ -54,6 +54,7 @@ using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 using static PhoenixPoint.Common.Entities.Addons.AddonDef;
@@ -98,6 +99,34 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+
+        public static void DisplayTimerProperties()
+        {
+            try
+            {
+                // Display the timer frequency and resolution.
+                if (Stopwatch.IsHighResolution)
+                {
+                    TFTVLogger.Always("Operations timed using the system's high-resolution performance counter.");
+                }
+                else
+                {
+                    TFTVLogger.Always("Operations timed using the DateTime class.");
+                }
+
+                long frequency = Stopwatch.Frequency;
+                TFTVLogger.Always($"Timer frequency in ticks per second = {frequency}");
+                long nanosecPerTick = (1000L * 1000L * 1000L) / frequency;
+                TFTVLogger.Always($"Timer is accurate within {nanosecPerTick} nanoseconds");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
 
         public static void InjectDefsInjectedOnlyOnceBatch1()
         {
@@ -161,10 +190,15 @@ namespace TFTV
 
                 TFTVUITactical.Enemies.PopulateFactionViewElementDictionary();
 
-                HotkeysTest();
+                CreateHotkeys();
 
+                DisplayTimerProperties();
+
+                VirophageDamage();
+
+                AddViralBodyPartTagToEliteViralArthronGun();
                 //  TFTVTacticalObjectives.Defs.CreateHumanTacticsRemindersInTactical();
-
+                ShockDamagePriority();
 
                 //  Print();
 
@@ -175,119 +209,197 @@ namespace TFTV
             }
         }
 
-        private static void HotkeysTest()
+        private static void ShockDamagePriority()
         {
             try
             {
-                //TFTVBackgrounds.LoadTFTVBackgrounds();
+                //StunDamageKeywordData
+                StunDamageKeywordDataDef shockDamageKeywordDef = DefCache.GetDef<StunDamageKeywordDataDef>("Shock_DamageKeywordDataDef");
+                DamageKeywordDef damageKeywordDef = DefCache.GetDef<DamageKeywordDef>("Damage_DamageKeywordDataDef");
 
-                InputMapDef inputMapDef = DefCache.GetDef<InputMapDef>("PhoenixInput");
+                shockDamageKeywordDef.KeywordApplicationPriority = -1000;
 
 
 
-                // Create a new InputKey for the "V" key
-                InputKey vKey = new InputKey
+                List<WeaponDef> weapons = new List<WeaponDef>()
                 {
-                    Name = "v",
-                    Hash = (int)KeyCode.V, // Assuming KeyCode.V maps correctly
+                DefCache.GetDef<WeaponDef>("AN_Hammer_WeaponDef"),
+                DefCache.GetDef<WeaponDef>("KS_Devastator_WeaponDef"),
+                DefCache.GetDef<WeaponDef>("FS_Autocannon_WeaponDef"),
+                DefCache.GetDef<WeaponDef>("FS_SlamstrikeShotgun_WeaponDef"),
+                DefCache.GetDef<WeaponDef>("PX_HeavyCannon_WeaponDef"),
+                DefCache.GetDef<WeaponDef>("PX_Scarab_Taurus_GroundVehicleWeaponDef"),
+                DefCache.GetDef<WeaponDef>("PX_HeavyCannon_Headhunter_WeaponDef"),
+                DefCache.GetDef<WeaponDef>("Mutog_HeadRamming_BodyPartDef"),
+                DefCache.GetDef<WeaponDef>("Mutog_Tail_Basher_WeaponDef")
+                };
+
+                foreach (WeaponDef weaponDef in weapons)
+                {
+                    float standardDamageAdjustment = weaponDef.DamagePayload.DamageKeywords.FirstOrDefault(dk => dk.DamageKeywordDef == damageKeywordDef).Value - 30;
+                    weaponDef.DamagePayload.DamageKeywords.FirstOrDefault(dk => dk.DamageKeywordDef == shockDamageKeywordDef).Value += standardDamageAdjustment;
+                }
+
+              /*  foreach (WeaponDef weaponDef in weapons)
+                {
+                    TFTVLogger.Always($"{weaponDef.name} does shock damage; {weaponDef.DamagePayload.DamageKeywords.FirstOrDefault(dk => dk.DamageKeywordDef == shockDamageKeywordDef).Value}");
+                }*/
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void AddViralBodyPartTagToEliteViralArthronGun()
+        {
+            try
+            {
+                DefCache.GetDef<WeaponDef>("Crabman_RightHand_Viral_EliteGun_WeaponDef").Tags.Add(DefCache.GetDef<ItemTypeTagDef>("ViralBodypart_TagDef"));
+                DefCache.GetDef<WeaponDef>("Crabman_RightHand_Viral_Gun_WeaponDef").Tags.Add(DefCache.GetDef<ItemTypeTagDef>("ViralBodypart_TagDef"));
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+        private static void VirophageDamage()
+        {
+            try
+            {
+                GameTagDamageKeywordDataDef virophageDamageKeyWordDataDef = DefCache.GetDef<GameTagDamageKeywordDataDef>("Virophage_DamageKeywordDataDef");
+                StandardDamageTypeEffectDef projectileStandardDamageTypeEffectDef = DefCache.GetDef<StandardDamageTypeEffectDef>("Projectile_StandardDamageTypeEffectDef");
+                DamageEffectDef genericDamageEffectDef = DefCache.GetDef<DamageEffectDef>("Generic_DamageEffectDef");
+
+                DamageEffectDef newViroDamageEffectDef = Helper.CreateDefFromClone(genericDamageEffectDef, "{088D8BAC-4A0F-4D2A-813A-D7AF951B3C41}", $"TFTV_Viro_{genericDamageEffectDef.name}");
+                newViroDamageEffectDef.ArmourPiercing = 200;
+                StandardDamageTypeEffectDef newViroStandardDamageTypeEffectDef
+                    = Helper.CreateDefFromClone(projectileStandardDamageTypeEffectDef, "{47979269-E470-4176-AC1E-DBD23076E90D}", $"TFTV_Viro_{projectileStandardDamageTypeEffectDef.name}");
+                newViroStandardDamageTypeEffectDef.FormulaEffect = newViroDamageEffectDef;
+                virophageDamageKeyWordDataDef.DamageTypeDef = newViroStandardDamageTypeEffectDef;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+        private static InputAction CreateHotkey(KeyCode keyCode, string keyName, string actionName, InputAction.ActionCategory actionCategory, int hash, InputSetDef inputSetDef)
+        {
+            try
+            {
+                InputKey inputKey = new InputKey
+                {
+                    Name = keyName,
+                    Hash = (int)keyCode,
                     InputSource = InputSource.Key,
                     DeadzoneOverride = -1.0f
 
                 };
 
                 // Create a new InputChord using the "V" key
-                InputChord vChord = new InputChord
+                InputChord inputChord = new InputChord
                 {
-                    OverridingBehavior = 0,
-                    Keys = new InputKey[] { vKey }
+                    OverridingBehavior = InputChord.ActionOverriding.OverridingHidden,
+                    Keys = new InputKey[] { inputKey }
                 };
 
-                // Create the new InputAction
-                InputAction displayPerceptionCirclesAction = new InputAction
+                InputAction inputAction = new InputAction
                 {
-                    Name = "DisplayPerceptionCircles",
-                    ActionSection = InputAction.ActionCategory.Tactical, // Assign to a relevant category
-                    ActionDisplayText = new LocalizedTextBind("Display Perception Circles"), // Display name
-                    Chords = new InputChord[] { vChord },
-                    Hash = inputMapDef.Actions.Last().Hash + 1
+                    Name = actionName,
+                    ActionSection = actionCategory,
+                    ActionDisplayText = new LocalizedTextBind(),
+                    Chords = new InputChord[] { inputChord },
+                    Hash = hash
                 };
 
-                InputSetDef inputSetDef = DefCache.GetDef<InputSetDef>("SetCharacterSelectedControls");
-                inputSetDef.ActionNames = inputSetDef.ActionNames.AddToArray("DisplayPerceptionCircles");
-                inputMapDef.Actions = inputMapDef.Actions.AddToArray(displayPerceptionCirclesAction);
+                InputMapDef inputMapDef = DefCache.GetDef<InputMapDef>("PhoenixInput");
+                inputMapDef.Actions = inputMapDef.Actions.AddToArray(inputAction);
+                inputSetDef.ActionNames = inputSetDef.ActionNames.AddToArray(inputAction.Name);
 
-                // TFTVLogger.Always($"inputMapDef.Actions.Contains(displayPerceptionCirclesAction): {inputMapDef.Actions.Contains(displayPerceptionCirclesAction)}");
+                return inputAction;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
 
-               /*  foreach (InputAction inputAction in inputMapDef.Actions)
+        private static void CreateAircraftHotkeys()
+        {
+            try
+            {
+                InputMapDef inputMapDef = DefCache.GetDef<InputMapDef>("PhoenixInput");
+
+
+                for (int x = 1; x < 10; x++)
+                {
+
+                    int hash = inputMapDef.Actions.Last().Hash + x;
+                    KeyCode keyCode = (KeyCode)62 + x;
+
+
+
+                    //   TFTVLogger.Always($"SelectAircraft{x} hash: {hash}, keycode = {keyCode}, {keyCode.GetHashCode()}");
+
+
+
+                    InputAction inputAction = CreateHotkey(keyCode, x.ToString(), $"SelectAircraft{x}", InputAction.ActionCategory.Geoscape, hash, DefCache.GetDef<InputSetDef>("SetVehicleSelectedControls"));
+                    TFTVDragandDropFunctionality.VehicleRoster.ActionsAircraftHotkeys.Add(inputAction);
+                }
+
+
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        private static void CreateHotkeys()
+        {
+            try
+            {
+                CreateAircraftHotkeys();
+
+                InputMapDef inputMapDef = DefCache.GetDef<InputMapDef>("PhoenixInput");
+
+                InputAction inputAction = CreateHotkey((KeyCode)46, "v", "DisplayPerceptionCircles", InputAction.ActionCategory.Tactical,
+                    inputMapDef.Actions.Last().Hash + 1, DefCache.GetDef<InputSetDef>("SetCharacterSelectedControls"));
+                TFTVVanillaFixes.UI.ShowPerceptionCircles = inputAction;
+
+
+
+                /*  foreach (InputAction inputAction1 in inputMapDef.Actions)
+                  {
+                      foreach (InputChord inputChord in inputAction1.Chords)
+                      {
+                          foreach (InputKey inputKey in inputChord.Keys)
+                          {
+                              TFTVLogger.Always($"{inputAction1?.Name} {inputAction1?.Hash} {inputKey?.Name} {inputKey?.Hash}");
+                          }
+                      }
+                  }*/
+
+                /* foreach (string inputAction in inputSetDef.ActionNames)
                  {
-                     TFTVLogger.Always($"{inputAction.Name}, {inputAction.Hash}, {inputAction.Chords[0]?.Keys[0]?.Name}");
+                     TFTVLogger.Always($"{inputAction}");
                  }*/
 
 
 
-
-                /* FieldInfo fieldInfo = typeof(PhoenixGame).GetField("_input", BindingFlags.Instance | BindingFlags.NonPublic);
-
-                 TFTVLogger.Always($"fieldInfo {fieldInfo==null}");
-
-                 InputController inputController = (InputController)fieldInfo.GetValue(GameUtl.GameComponent<PhoenixGame>());
-
-                // inputController.InitPlatformInput(GameUtl.GameComponent<PhoenixGame>().GetComponent<PlatformComponent>().Platform.GetPlatformInput());
-
-
-                 FieldInfo inputCacheFieldInfo = typeof(InputController).GetField("_inputCache", BindingFlags.Instance | BindingFlags.NonPublic);
-
-                 FieldInfo activeActionsMapFieldInfo = typeof(InputController).GetField("_activeActionsMap", BindingFlags.Instance | BindingFlags.NonPublic);
-
-                 InputCache inputCache = (InputCache)inputCacheFieldInfo.GetValue(inputController);
-
-                 inputCache = new InputCache(inputController.InputDisplay.FinalKeyDisplays.ToArray(), inputController.DefaultInputMap.Actions).Init();
-                 inputCacheFieldInfo.SetValue(inputController, inputCache);
-
-                 InputAction[] newInputAction = new InputAction[inputController.DefaultInputMap.Actions.Length * 2];
-
-              //   activeActionsMapFieldInfo.SetValue(inputController, newInputAction);
-
-                 TFTVLogger.Always($"{inputCache.GetActionHash("DisplayPerceptionCircles")} {inputCache.GetKeyHash("DisplayPerceptionCircles")}") ;
-
-
-
-                // inputCache.CacheAction(displayPerceptionCirclesAction);
-
-              /*   FieldInfo fieldInfoDictionary = typeof(InputController).GetField("_actionsToInputSetDict", BindingFlags.Instance | BindingFlags.NonPublic);
-
-                 Dictionary<string, List<InputSetDef>> dictionary = (Dictionary<string, List<InputSetDef>>)fieldInfoDictionary.GetValue(inputController);
-
-
-                 dictionary.Add("DisplayPerceptionCircles", new List<InputSetDef>() { inputSetDef });*/
-
-                /*   foreach (InputSetDef item in Repo.GetAllDefs<InputSetDef>().ToList())
-                   {
-                       string[] actionNames = item.ActionNames;
-
-                     //  TFTVLogger.Always($"item is {item?.name}");
-
-                       foreach(string actionName in item.ActionNames) 
-                       {
-                           foreach (string key in actionNames)
-                           {
-                               TFTVLogger.Always($"{actionName}", false);
-
-                               dictionary[key].Contains()
-
-                               if (!dictionary.ContainsKey(key))
-                               {
-                                   _actionsToInputSetDict[key] = new List<InputSetDef>();
-                               }
-
-                               _actionsToInputSetDict[key].Add(item);
-                           }
-                       }
-
-
-                   }*/
-
-                // inputCacheFieldInfo.SetValue(input, inputCache);
+                //SelectAircraftHotkeys();
 
             }
             catch (Exception e)
@@ -341,11 +453,73 @@ namespace TFTV
             try
             {
                 CharacterBuilderViewParametersDef smallCharacters = DefCache.GetDef<CharacterBuilderViewParametersDef>("SmallCharBuilderViewParametersDef");
+                CharacterBuilderViewParametersDef defaultCharacters = DefCache.GetDef<CharacterBuilderViewParametersDef>("DefaultCharBuilderViewParametersDef");
                 CharacterBuilderViewParametersDef bigCharacters = DefCache.GetDef<CharacterBuilderViewParametersDef>("3x3CharBuilderViewParametersDef");
+                CharacterBuilderViewParametersDef hugeCharacters = DefCache.GetDef<CharacterBuilderViewParametersDef>("5x5CharBuilderViewParametersDef");
 
-                smallCharacters.ObjectWorldPosition.y -= 0.3f;
-                bigCharacters.ObjectWorldPosition.y -= 0.5f;
-                bigCharacters.ObjectScale = new Vector3(0.6f, 0.6f, 0.6f);
+                CharacterBuilderViewParametersDef newDefault = Helper.CreateDefFromClone(defaultCharacters, "{89E6A4EB-7F0D-43FD-9C2D-88C80D9AE190}", "PandoranDefaultCharBuilderViewParametersDef");
+                CharacterBuilderViewParametersDef newSmall = Helper.CreateDefFromClone(smallCharacters, "{00822DEA-B807-4A22-9176-709ABCA42561}", "PandoranSmallCharBuilderViewParametersDef");
+                CharacterBuilderViewParametersDef newBig = Helper.CreateDefFromClone(bigCharacters, "{8EA294A4-648E-40B8-AF85-0FC906144C01}", "PandoranBigCharBuilderViewParametersDef");
+                CharacterBuilderViewParametersDef newHuge = Helper.CreateDefFromClone(hugeCharacters, "{4ABB0218-790D-4C37-AB9A-ECC9AB0A8EB0}", "PandoranHugeCharBuilderViewParametersDef");
+
+                newDefault.ObjectWorldPosition.z -= 0.45f;
+                newSmall.ObjectWorldPosition.z -= 0.45f;
+                newSmall.ObjectWorldPosition.y -= 0.3f;
+                newBig.ObjectWorldPosition.z -= 0.45f;
+                newBig.ObjectScale = new Vector3(0.80f, 0.80f, 0.80f);
+                newBig.ObjectWorldPosition.y -=  0.5f;
+                newHuge.ObjectWorldPosition.z -= 0.45f;
+
+
+
+
+                //Default size
+                List<ViewElementDef> defaultSize = new List<ViewElementDef>()
+                {
+                DefCache.GetDef<ViewElementDef>("E_View [Crabman_ActorViewDef]"),
+                DefCache.GetDef<ViewElementDef>("E_View [Fishman_ActorViewDef]"),
+                DefCache.GetDef<ViewElementDef>("E_View [Siren_ActorViewDef]")
+                };
+
+                foreach (var viewElementDef in defaultSize)
+                {
+                    viewElementDef.BuilderViewParamDef = newDefault;
+                }
+
+
+
+                List<ViewElementDef> smallSize = new List<ViewElementDef>()
+                { DefCache.GetDef<ViewElementDef>("E_View [Acidworm_ActorViewDef]"),
+                DefCache.GetDef<ViewElementDef>("E_View [Facehugger_ActorViewDef]"),
+                DefCache.GetDef<ViewElementDef>("E_View [Poisonworm_ActorViewDef]"),
+                (ViewElementDef)Repo.GetDef("832a0ad2-507a-ab61-ee68-5afb4da8d982") //E_View [Fireworm_ActorViewDef]
+                };
+
+                foreach (var viewElementDef in smallSize)
+                {
+                    viewElementDef.BuilderViewParamDef = newSmall;
+                }
+
+
+
+                List<ViewElementDef> bigSize = new List<ViewElementDef>()
+                {
+                DefCache.GetDef<ViewElementDef>("E_View [Acheron_ActorViewDef]"),
+                DefCache.GetDef<ViewElementDef>("E_View [Chiron_ActorViewDef]"),
+
+                };
+
+                foreach (var viewElementDef in bigSize)
+                {
+                    viewElementDef.BuilderViewParamDef = newBig;
+                }
+
+
+                DefCache.GetDef<ViewElementDef>("E_ViewElement [Queen_ActorViewDef]").BuilderViewParamDef = newHuge;
+
+
+
+
             }
             catch (Exception e)
             {
@@ -867,10 +1041,10 @@ namespace TFTV
 
         private static void FixMindWard()
         {
-            try 
+            try
             {
                 DefCache.GetDef<DamageMultiplierStatusDef>("PsychicWard_StatusDef").ApplicationConditions = new EffectConditionDef[] { };
-            
+
             }
             catch (Exception e)
             {
@@ -8065,13 +8239,27 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
                 //Olena about Symes
                 GeoscapeEventDef olenaOnSymes = TFTVCommonMethods.CreateNewEvent("OlenaOnSymes", "PROG_PX1_WIN_TITLE", "KEY_OLENAONSYMES_DESCRIPTION", null);
                 //Olena about ending 
-                GeoscapeEventDef olenaOnEnding = TFTVCommonMethods.CreateNewEvent("OlenaOnEnding", "KEY_ALISTAIR_ROADS_TITLE", "KEY_OLENAONENDING_DESCRIPTION", null);
+                GeoscapeEventDef olenaOnEnding = TFTVCommonMethods.CreateNewEventWithFixedGUID("OlenaOnEnding", "KEY_ALISTAIR_ROADS_TITLE", "KEY_OLENAONENDING_DESCRIPTION", null, "{DBC7B84C-FC51-4704-ACFB-8413DC6C616C}");
                 //Olena about Bionics Lab sabotage
                 GeoscapeEventDef olenaOnBionicsLabSabotage = TFTVCommonMethods.CreateNewEvent("OlenaOnBionicsLabSabotage", "ANU_REALLY_PISSED_BIONICS_TITLE", "ANU_REALLY_PISSED_BIONICS_CHOICE_0_OUTCOME", null);
                 //Olena about Mutations Lab sabotage
                 GeoscapeEventDef olenaOnMutationsLabSabotage = TFTVCommonMethods.CreateNewEvent("OlenaOnMutationsLabSabotage", "NJ_REALLY_PISSED_MUTATIONS_TITLE", "NJ_REALLY_PISSED_MUTATIONS_CHOICE_0_OUTCOME", null);
                 //Olena First LOTA Event 
                 TFTVCommonMethods.CreateNewEvent("OlenaLotaStart", "TFTV_LOTA_START_EVENT_TITLE", "TFTV_LOTA_START_EVENT_DESCRIPTION", null);
+
+                /*olenaOnEnding.EventTypes = new GeoscapeEventType[] { GeoscapeEventType.Undefined};
+
+                List<GeoscapeEventType> list = olenaOnEnding.EventTypes.ToList<GeoscapeEventType>();
+               
+
+                    TFTVLogger.Always($"{list.Count}");
+
+                foreach(GeoscapeEventType eventType in list) 
+                {
+                    TFTVLogger.Always($"{eventType.GetName()}");
+                
+                }*/
+
 
                 CreateEventFirstFlyer();
                 CreateEventFirstHavenTarget();
@@ -8112,23 +8300,26 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
                 //   string answerAboutHelena = "KEY_ALISTAIRONHELENA_DESCRIPTION";
                 string promptMoreQuestions = "KEY_ALISTAIR_ROADS_DESCRIPTION_2";
 
-                GeoscapeEventDef alistairRoads = TFTVCommonMethods.CreateNewEvent(startingEvent, title, description, null);
-                GeoscapeEventDef alistairRoadsAfterWest = TFTVCommonMethods.CreateNewEvent(afterWest, title, promptMoreQuestions, null);
-                GeoscapeEventDef alistairRoadsAfterSynedrion = TFTVCommonMethods.CreateNewEvent(afterSynedrion, title, promptMoreQuestions, null);
-                GeoscapeEventDef alistairRoadsAfterAnu = TFTVCommonMethods.CreateNewEvent(afterAnu, title, promptMoreQuestions, null);
-                GeoscapeEventDef alistairRoadsAfterVirophage = TFTVCommonMethods.CreateNewEvent(afterVirophage, title, promptMoreQuestions, null);
+                GeoscapeEventDef alistairRoads = TFTVCommonMethods.CreateNewEventWithFixedGUID(startingEvent, title, description, null, "{4228E183-2167-4E03-9D28-D620BC47C4D4}");
+                GeoscapeEventDef alistairRoadsAfterWest = TFTVCommonMethods.CreateNewEventWithFixedGUID(afterWest, title, promptMoreQuestions, null, "{210A6D83-7FF6-4F4A-A9F6-509003E26446}");
+                GeoscapeEventDef alistairRoadsAfterSynedrion = TFTVCommonMethods.CreateNewEventWithFixedGUID(afterSynedrion, title, promptMoreQuestions, null, "{3563AC82-7683-4F47-A09F-B27E56116427}");
+                GeoscapeEventDef alistairRoadsAfterAnu = TFTVCommonMethods.CreateNewEventWithFixedGUID(afterAnu, title, promptMoreQuestions, null, "{9934068A-F0F2-4497-8EA5-169FA4243523}");
+                GeoscapeEventDef alistairRoadsAfterVirophage = TFTVCommonMethods.CreateNewEventWithFixedGUID(afterVirophage, title, promptMoreQuestions, null, "{90CEABA2-00F4-4E44-85A9-D3F707C8AC4E}");
+
+
+                // List<GeoscapeEventDef> geoscapeEventDefs = new List<GeoscapeEventDef>() {alistairRoadsAfterWest, alistairRoadsAfterSynedrion, alistairRoadsAfterAnu, alistairRoadsAfterVirophage};
 
                 alistairRoads.GeoscapeEventData.Choices[0].Text.LocalizationKey = noMoreQuestions;
                 alistairRoads.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = passToOlena;
-                TFTVCommonMethods.GenerateGeoEventChoice(alistairRoads, questionAboutWest, answerAboutWest);
-                TFTVCommonMethods.GenerateGeoEventChoice(alistairRoads, questionAboutSynedrion, answerAboutSynedrion);
-                TFTVCommonMethods.GenerateGeoEventChoice(alistairRoads, questionAboutAnu, answerAboutAnu);
+                TFTVCommonMethods.GenerateGeoEventChoiceWithEventTrigger(alistairRoads, questionAboutWest, answerAboutWest, afterWest);
+                TFTVCommonMethods.GenerateGeoEventChoiceWithEventTrigger(alistairRoads, questionAboutSynedrion, answerAboutSynedrion, afterSynedrion);
+                TFTVCommonMethods.GenerateGeoEventChoiceWithEventTrigger(alistairRoads, questionAboutAnu, answerAboutAnu, afterAnu);
 
                 alistairRoadsAfterWest.GeoscapeEventData.Choices[0].Text.LocalizationKey = noMoreQuestions;
                 alistairRoadsAfterWest.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = passToOlena;
-                TFTVCommonMethods.GenerateGeoEventChoice(alistairRoadsAfterWest, questionAboutSynedrion, answerAboutSynedrion);
-                TFTVCommonMethods.GenerateGeoEventChoice(alistairRoadsAfterWest, questionAboutAnu, answerAboutAnu);
-                TFTVCommonMethods.GenerateGeoEventChoice(alistairRoadsAfterWest, questionAboutVirophage, answerAboutVirophage);
+                TFTVCommonMethods.GenerateGeoEventChoiceWithEventTrigger(alistairRoadsAfterWest, questionAboutSynedrion, answerAboutSynedrion, afterSynedrion);
+                TFTVCommonMethods.GenerateGeoEventChoiceWithEventTrigger(alistairRoadsAfterWest, questionAboutAnu, answerAboutAnu, afterAnu);
+                TFTVCommonMethods.GenerateGeoEventChoiceWithEventTrigger(alistairRoadsAfterWest, questionAboutVirophage, answerAboutVirophage, afterVirophage);
 
                 alistairRoadsAfterSynedrion.GeoscapeEventData.Choices[0].Text.LocalizationKey = noMoreQuestions;
                 alistairRoadsAfterSynedrion.GeoscapeEventData.Choices[0].Outcome.TriggerEncounterID = passToOlena;
@@ -8149,21 +8340,25 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
                 TFTVCommonMethods.GenerateGeoEventChoice(alistairRoadsAfterVirophage, questionAboutAnu, answerAboutAnu);
 
 
-                alistairRoads.GeoscapeEventData.Choices[1].Outcome.TriggerEncounterID = afterWest;
-                alistairRoads.GeoscapeEventData.Choices[2].Outcome.TriggerEncounterID = afterSynedrion;
-                alistairRoads.GeoscapeEventData.Choices[3].Outcome.TriggerEncounterID = afterAnu;
+                /*  alistairRoads.GeoscapeEventData.Choices[1].Outcome.TriggerEncounterID = afterWest;
+                  alistairRoads.GeoscapeEventData.Choices[2].Outcome.TriggerEncounterID = afterSynedrion;
+                  alistairRoads.GeoscapeEventData.Choices[3].Outcome.TriggerEncounterID = afterAnu;*/
 
-                alistairRoadsAfterWest.GeoscapeEventData.Choices[1].Outcome.TriggerEncounterID = afterSynedrion;
-                alistairRoadsAfterWest.GeoscapeEventData.Choices[2].Outcome.TriggerEncounterID = afterAnu;
-                alistairRoadsAfterWest.GeoscapeEventData.Choices[3].Outcome.TriggerEncounterID = afterVirophage;
+                /* alistairRoadsAfterWest.GeoscapeEventData.Choices[1].Outcome.TriggerEncounterID = afterSynedrion;
+                 alistairRoadsAfterWest.GeoscapeEventData.Choices[2].Outcome.TriggerEncounterID = afterAnu;
+                 alistairRoadsAfterWest.GeoscapeEventData.Choices[3].Outcome.TriggerEncounterID = afterVirophage;*/
 
                 alistairRoadsAfterSynedrion.GeoscapeEventData.Choices[1].Outcome.TriggerEncounterID = afterWest;
                 alistairRoadsAfterSynedrion.GeoscapeEventData.Choices[2].Outcome.TriggerEncounterID = afterAnu;
                 alistairRoadsAfterSynedrion.GeoscapeEventData.Choices[3].Outcome.TriggerEncounterID = afterVirophage;
 
+
+
                 alistairRoadsAfterAnu.GeoscapeEventData.Choices[1].Outcome.TriggerEncounterID = afterWest;
                 alistairRoadsAfterAnu.GeoscapeEventData.Choices[2].Outcome.TriggerEncounterID = afterSynedrion;
                 alistairRoadsAfterAnu.GeoscapeEventData.Choices[3].Outcome.TriggerEncounterID = afterVirophage;
+
+
 
                 alistairRoadsAfterVirophage.GeoscapeEventData.Choices[1].Outcome.TriggerEncounterID = afterWest;
                 alistairRoadsAfterVirophage.GeoscapeEventData.Choices[2].Outcome.TriggerEncounterID = afterSynedrion;

@@ -38,3 +38,6 @@ TFTV_KEY_CAPTURE_GOO_OBJECTIVE,Text,,CAPTURE A PANDORAN WITH GOO ABILITY,,,,,,З
 TFTV_KEY_SECONDARY_OBJECTIVES,Text,,SECONDARY OBJECTIVES,,,,,,ВТОРИЧНЫЕ ЦЕЛИ,,
 TFTV_KEY_OBJECTIVE_ACCOMPLISHED,Text,,OBJECTVE ACCOMPLISHED,,,,,,ЦЕЛЬ ДОСТИГНУТА,,
 TFTV_KEY_NEW_SECONDARY_OBJECTIVE,Text,,NEW SECONDARY OBJECTIVE,,,,,,НОВАЯ ВТОРИЧНАЯ ЦЕЛЬ,,
+TFTV_KEY_BASE_DEFENSE_GENERATORS,Text,,"Generators at {0}%, can be vented {1} times",,,,,,,,
+TFTV_KEY_CAPTURE_FREE_SLOTS,Text,,Free capture slots: ,,,,,,,,
+BASEDEFENSE_VENTING_PROMPT0,Text,,Activate Emergency Venting? This will stop the incoming wave of Pandoran reinforcements. You will not be able to use this console again. The <b>next time</b> you use a console it will damage the Power Generators and cause explosions and fires around the base.,,,,,,,,

@@ -155,6 +155,10 @@ namespace TFTV
 
                 TFTVEvacAll.ClearData();
 
+                TFTVDragandDropFunctionality.VehicleRoster.PlayerVehicles = new List<int>();
+                TFTVDragandDropFunctionality.VehicleRoster.AircraftHotkeysBindingsApplied = false;
+                TFTVVanillaFixes.UI.ShowPerceptionCirclesBindingApplied = false;    
+
                 TFTVLogger.Always($"Internal variables cleared on State change or Load");
             }
             catch (Exception e)
@@ -464,13 +468,35 @@ namespace TFTV
             }
         }
 
+        public static void GenerateGeoEventChoiceWithEventTrigger(GeoscapeEventDef geoEvent, string choice, string outcome, string eventToTrigger)
+        {
+            try
+            {
+                geoEvent.GeoscapeEventData.Choices.Add(new GeoEventChoice()
+                {
+                    Text = new LocalizedTextBind(choice),
+                    Outcome = new GeoEventChoiceOutcome()
+                    {
+                        OutcomeText = new EventTextVariation()
+                        {
+                            General = new LocalizedTextBind(outcome)
+                        },
+                        TriggerEncounterID = eventToTrigger
+                    }
+                    
+                });
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
         public static void GenerateGeoEventChoice(GeoscapeEventDef geoEvent, string choice, string outcome)
         {
             try
             {
                 geoEvent.GeoscapeEventData.Choices.Add(new GeoEventChoice()
-
                 {
                     Text = new LocalizedTextBind(choice),
                     Outcome = new GeoEventChoiceOutcome()
@@ -487,6 +513,8 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+
         public static OutcomeDiplomacyChange GenerateDiplomacyOutcome(GeoFactionDef partyFaction, GeoFactionDef targetFaction, int value)
         {
             try
@@ -523,7 +551,29 @@ namespace TFTV
             throw new InvalidOperationException();
         }
 
-
+        public static GeoscapeEventDef CreateNewEventWithFixedGUID(string name, string title, string description, string outcome, string gUID)
+        {
+            try
+            {
+                GeoscapeEventDef sourceLoseGeoEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_PU12_FAIL_GeoscapeEventDef");
+                GeoscapeEventDef newEvent = Helper.CreateDefFromClone(sourceLoseGeoEvent, gUID, name);
+                newEvent.GeoscapeEventData.Choices[0].Outcome.ReEneableEvent = false;
+                newEvent.GeoscapeEventData.Choices[0].Outcome.ReactiveEncounters.Clear();
+                newEvent.GeoscapeEventData.EventID = name;
+                newEvent.GeoscapeEventData.Title.LocalizationKey = title;
+                newEvent.GeoscapeEventData.Description[0].General.LocalizationKey = description;
+                if (outcome != null)
+                {
+                    newEvent.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = outcome;
+                }
+                return newEvent;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+            throw new InvalidOperationException();
+        }
 
 
 
@@ -782,8 +832,9 @@ namespace TFTV
                     geoSite.RevealSite(controller.PhoenixFaction);
                     GeoscapeLogEntry entry = new GeoscapeLogEntry
                     {
-                        Text = new LocalizedTextBind($"{geoSite.Owner} {geoSite.LocalizedSiteName} {sOSBroadcast}", true)
+                        Text = new LocalizedTextBind($"{geoSite.LocalizedSiteName} ({geoSite.Owner}) {sOSBroadcast}", true)
                     };
+
                     typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(controller.Log, new object[] { entry, null });
                     controller.View.SetGamePauseState(true);
                 }

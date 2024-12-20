@@ -228,7 +228,7 @@ namespace TFTV
                     }
                     TFTVLogger.Always($"reverted {_weaponChanged.DisplayName} normally");
                     _weaponChanged = null;
-                    
+
                 }
             }
             catch (Exception e)
@@ -310,15 +310,15 @@ namespace TFTV
 
                     Weapon weapon = weapons.First();
 
-                    TFTVLogger.Always($"lowest AP ranged weapon is {weapon.DisplayName}, with {weapon.ApToUse}");
+                  //  TFTVLogger.Always($"lowest AP ranged weapon is {weapon.DisplayName}, with {weapon.ApToUse}");
 
                     if (actor.CharacterStats.ActionPoints <= weapon.ApToUse)
                     {
-                        TFTVLogger.Always($"{actor.name} has {actor.CharacterStats.ActionPoints} AP is at POS {actor.Pos}, current target POS {target.Pos}");
+                    //    TFTVLogger.Always($"{actor.name} has {actor.CharacterStats.ActionPoints} AP is at POS {actor.Pos}, current target POS {target.Pos}");
 
                         if (!Cover(actor, target))
                         {
-                            TFTVLogger.Always($"Position has no cover!");
+                      //      TFTVLogger.Always($"Position has no cover!");
                             target.Pos = actor.Pos;
                         }
                     }
@@ -1883,19 +1883,35 @@ namespace TFTV
                      }
                  }*/
 
+
                 //Patch to prevent Scylla from MELEE targeting tiny critters like worms and spider drones
                 [HarmonyPatch(typeof(TacticalAbility), "GetTargetActors", new Type[] { typeof(TacticalTargetData), typeof(TacticalActorBase), typeof(Vector3) })]
                 public static class TFTV_TacticalAbility_GetTargetActors_Scylla_Patch
                 {
                     public static IEnumerable<TacticalAbilityTarget> Postfix(IEnumerable<TacticalAbilityTarget> results, TacticalActorBase sourceActor, TacticalAbility __instance)
                     {
-
                         foreach (TacticalAbilityTarget target in results)
                         {
-                            if (IsValidTarget(__instance.TacticalActor, target, __instance.SelectedEquipment as Weapon)) // <- create a method to check the target
+                            if (__instance.AbilityDef == DefCache.GetDef<TacticalAbilityDef>("BehemothMassStomp_ApplyEffectAbilityDef"))
                             {
+                               // TFTVLogger.Always($"got here for {__instance.AbilityDef?.name}");
                                 yield return target;
                             }
+                            else
+                            {
+                                Weapon weapon = null;
+
+                                if (__instance.SelectedEquipment != null && __instance.SelectedEquipment is Weapon)
+                                {
+                                    weapon = __instance.SelectedEquipment as Weapon;
+                                }
+
+                                if (IsValidTarget(__instance.TacticalActor, target, weapon))
+                                {
+                                    yield return target;
+                                }
+                            }
+
                         }
 
                     }
@@ -1906,6 +1922,9 @@ namespace TFTV
                     try
                     {
                         // bool isValid = true;
+
+
+                        // TFTVLogger.Always($"culling targets for {actor.name}");
 
                         TacticalActor targetActor = target.GetTargetActor() as TacticalActor;
 

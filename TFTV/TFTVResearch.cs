@@ -18,6 +18,7 @@ using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.View.ViewStates;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -239,6 +240,44 @@ namespace TFTV
 
         }
 
+        private static bool CheckTriggerHelenaVirophageEvent(ResearchElement research)
+        {
+            try 
+            {
+                GeoPhoenixFaction phoenixFaction = research.Faction.GeoLevel.PhoenixFaction;
+
+                List<string> researchIds = new List<string>()
+                { 
+                    "PX_VirophageWeapons_ResearchDef", "PX_TelepathicNodule_ResearchDef", "PX_YuggothianReceptacle_ResearchDef"
+                };
+
+                int count = 0;
+
+                foreach (string researchId in researchIds)
+                {
+                    if(researchId == research.ResearchID) 
+                    {
+                        count++;
+                    }
+                    else if (phoenixFaction.Research.HasCompleted(researchId)) 
+                    {
+                        count++;
+                    }
+                }
+
+                if (count >= 3) 
+                { 
+                return true;
+                }
+                return false;
+            
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
 
 
         [HarmonyPatch(typeof(Research), "CompleteResearch")]
@@ -305,9 +344,9 @@ namespace TFTV
                         citadel.SpawnMonster(queenTag, startingScylla);
 
                     }
-                    else if (research.ResearchID == "PX_VirophageWeapons_ResearchDef")
+                    else if (research.ResearchID == "PX_VirophageWeapons_ResearchDef" || research.ResearchID == "PX_TelepathicNodule_ResearchDef" || research.ResearchID == "PX_YuggothianReceptacle_ResearchDef")
                     {
-                        if (controller.EventSystem.GetVariable("SymesAlternativeCompleted") == 1)
+                        if (controller.EventSystem.GetVariable("SymesAlternativeCompleted") == 1 && CheckTriggerHelenaVirophageEvent(research))
                         {
                             GeoscapeEventContext context = new GeoscapeEventContext(research.Faction.GeoLevel.AlienFaction, research.Faction.GeoLevel.PhoenixFaction);
                             research.Faction.GeoLevel.EventSystem.TriggerGeoscapeEvent("Helena_Virophage", context);

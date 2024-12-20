@@ -75,6 +75,8 @@ namespace TFTV
 
 
 
+
+
         //Invokes changes to MissionObjectives always, and if base defense vs aliens changes deployment and hint
         [HarmonyPatch(typeof(GeoMission), "ModifyMissionData")]
         public static class GeoMission_ModifyMissionData_patch
@@ -87,8 +89,6 @@ namespace TFTV
 
                     TFTVCapturePandorans.CheckCaptureCapability(__instance);
                     TFTVBaseDefenseGeoscape.Deployment.ModifyMissionDataBaseDefense(__instance, missionData);
-                   // TFTVVoidOmens.ModifyVoidOmenTacticalObjectives(missionData.MissionType);
-                   // TFTVCapturePandorans.ModifyCapturePandoransTacticalObjectives(missionData.MissionType);
                     TFTVBaseDefenseTactical.Objectives.ModifyBaseDefenseTacticalObjectives(missionData.MissionType);
                     TFTVUITactical.SecondaryObjectivesTactical.PopulateAvailableObjectives(__instance.Site.GeoLevel);
                     TFTVUITactical.SecondaryObjectivesTactical.AddAllAvailableSecondaryObjectivesToMission(missionData.MissionType);
@@ -154,6 +154,7 @@ namespace TFTV
                 {
                    
                     TFTVDiplomacyPenalties.ImplementDiplomaticPenalties(@event, null);
+                   
                 }
 
 
@@ -163,6 +164,7 @@ namespace TFTV
                     throw;
                 }
             }
+       
         }
 
         [HarmonyPatch(typeof(GeoscapeEvent), "CompleteEvent")]

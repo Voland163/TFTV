@@ -43,6 +43,7 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Levels.Missions;
 using PhoenixPoint.Tactical.UI.SoldierPortraits;
 using PhoenixPoint.Tactical.View;
@@ -318,7 +319,8 @@ namespace TFTV
                         MethodInfo prepareShortActorInfoMethod = internalType.GetMethod("PrepareShortActorInfo", BindingFlags.NonPublic | BindingFlags.Instance);
                         MethodInfo selectCharacterInfoMethod = internalType.GetMethod("SelectCharacter", BindingFlags.NonPublic | BindingFlags.Instance);
                         _drawAllEnemyVisionMarkersMethodInfo = internalType.GetMethod("DrawAllEnemyVisionMarkers", BindingFlags.NonPublic | BindingFlags.Instance);
-                        MethodInfo updateStateInfoMethod = internalType.GetMethod("UpdateState", BindingFlags.NonPublic | BindingFlags.Instance);
+                        //   MethodInfo updateStateInfoMethod = internalType.GetMethod("UpdateState", BindingFlags.NonPublic | BindingFlags.Instance);
+                        MethodInfo onInputEvenMethodInfo = internalType.GetMethod("OnInputEvent", BindingFlags.NonPublic | BindingFlags.Instance);
 
 
                         if (zoneOfControlMarkerCreatorMethod != null)
@@ -340,10 +342,10 @@ namespace TFTV
                         //  harmony.Patch(EnemyVisionMarkerCreatorMethodInfo, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes.UI), nameof(PatchEnemyVisionMarkerCreator)));
                         //   }
 
-                        if (updateStateInfoMethod != null)
+                        if (onInputEvenMethodInfo != null)
                         {
                             //  TFTVLogger.Always($"patch should be running");
-                            harmony.Patch(updateStateInfoMethod, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes.UI), nameof(UpdateState)));
+                            harmony.Patch(onInputEvenMethodInfo, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes.UI), nameof(OnInputEvent)));
                         }
                         /*   if (selectCharacterInfoMethod != null)
                            {
@@ -426,11 +428,24 @@ namespace TFTV
                 {
                     try
                     {
+                        /*   if (_missingInputActions.Count > 0) 
+                           { 
+                           TFTVLogger.Always($"_missingInputActions.Count: {_missingInputActions.Count}");
+
+                           }*/
+
 
                         if (__instance.AllActionMap.IsEmpty<InputAction>())
                         {
                             __instance.AllActionMap.Clear();
                             __instance.AllActionMap.AddRange(__instance.DefaultInputMap.Actions);
+
+                            /*   if (_missingInputActions.Count > 0) 
+                               {
+                                   TFTVLogger.Always($"adding _missingInputActions to AllActionMap");
+                               __instance.AllActionMap.AddRange(_missingInputActions);
+                               }*/
+
                         }
                         if (hash < __instance.AllActionMap.Count && hash != InputCache.InvalidHash)
                         {
@@ -448,6 +463,14 @@ namespace TFTV
                                 overrides.Add(inputAction);
                             }
                         }
+
+                        /*  if (_missingInputActions.Count > 0)
+                          {
+                              TFTVLogger.Always($"adding _missingInputActions to overrides");
+                              overrides.AddRange(_missingInputActions);
+
+                          }*/
+
 
                         __instance.ApplyKeybindings(overrides);
 
@@ -477,40 +500,114 @@ namespace TFTV
                 }
             }
 
+            //   private static List<InputAction> _missingInputActions = new List<InputAction>();
 
-            public static void UpdateState(object __instance)
+            public static InputAction ShowPerceptionCircles = new InputAction();
+
+            /*  [HarmonyPatch(typeof(InputController), "RefreshActions")]
+              public static class InputController_Init_patch
+              {
+                  public static void Postfix(InputController __instance, InputAction[] ____activeActionsMap)
+                  {
+                      try
+                      {
+                          _missingInputActions.Clear();
+
+                          if (GameUtl.CurrentLevel() != null && GameUtl.CurrentLevel().GetComponent<TacticalLevelController>() != null && !____activeActionsMap.Any(a => a != null && a.Name != null && a.Name == ShowPerceptionCircles.Name))
+                          {
+                              TFTVLogger.Always($"{ShowPerceptionCircles.Name} not found! adding to the list");
+                              _missingInputActions.Add(ShowPerceptionCircles);
+                              // __instance.ApplyKeybinding(ShowPerceptionCircles);
+                          }
+                          else if (GameUtl.CurrentLevel() != null && GameUtl.CurrentLevel().GetComponent<GeoLevelController>() != null)
+                          {
+                              List<InputAction> aircraftSelectKeys = TFTVDragandDropFunctionality.VehicleRoster.ActionsAircraftHotkeys;
+
+                              foreach (InputAction inputAction in aircraftSelectKeys.Where(ia => !____activeActionsMap.Contains(ia)))
+                              {
+                                  TFTVLogger.Always($"{inputAction.Name} not found! adding to the list");
+                                  _missingInputActions.Add(inputAction);
+
+                                  //  __instance.ApplyKeybinding(inputAction);
+
+                              }
+                          }
+
+
+                      }
+                      catch (Exception e)
+                      {
+                          TFTVLogger.Error(e);
+                          throw;
+                      }
+                  }
+              }*/
+
+            public static bool ShowPerceptionCirclesBindingApplied = false;
+            public static void OnInputEvent(object __instance, InputEvent ev)
             {
                 try
                 {
 
                     TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
-                    FieldInfo tacticalViewContextFieldInfo = typeof(TacticalView).GetField("_context", BindingFlags.Instance | BindingFlags.NonPublic);
-
-                    TacticalViewContext tacticalViewContext = (TacticalViewContext)tacticalViewContextFieldInfo.GetValue(controller.View);
-
-                    TacticalActor selectedCharacter = controller.View.SelectedActor;
-
-                    // TFTVLogger.Always($"tacticalViewContext.Input.GetActiveAction() null? {tacticalViewContext.Input.GetActiveAction("DisplayPerceptionCircles") == null}"); 
-                    InputActionState inputKey = tacticalViewContext.Input.GetKey("DisplayPerceptionCircles");
-
-                    if (inputKey.IsJustPressed)
+                    if (!ShowPerceptionCirclesBindingApplied)
                     {
-                        //  TFTVLogger.Always($"justPressed!");
-                        _showBoolCircles += 1;
 
-                        if (_showBoolCircles > 2)
-                        {
-                            _showBoolCircles = 0;
-                        }
+                        FieldInfo tacticalViewContextFieldInfo = typeof(TacticalView).GetField("_context", BindingFlags.Instance | BindingFlags.NonPublic);
+                        TacticalViewContext tacticalViewContext = (TacticalViewContext)tacticalViewContextFieldInfo.GetValue(controller.View);
+                        //   TFTVLogger.Always($"tacticalViewContext.Input.GetActiveAction() null? {tacticalViewContext.Input.GetActiveAction("DisplayPerceptionCircles") == null}");
+                        //  InputActionState inputKey = tacticalViewContext.Input.GetKey("DisplayPerceptionCircles");
+                        InputController inputController = tacticalViewContext.Input;
+                        FieldInfo field = inputController.GetType().GetField("_activeActionsMap", BindingFlags.NonPublic | BindingFlags.Instance);
 
-                        if (selectedCharacter != null && (_showBoolCircles == 1 && CheckCharacterInfiltratorOrLazarus(selectedCharacter) || _showBoolCircles == 2))
+                        InputAction[] inputActions = (InputAction[])field.GetValue(inputController);
+
+                        if (!inputActions.Any(a => a != null && a.Name != null && a.Name == ShowPerceptionCircles.Name))
                         {
-                            _drawAllEnemyVisionMarkersMethodInfo.Invoke(__instance, new object[] { });
+                            // TFTVLogger.Always($"{ShowPerceptionCircles.Name} not found! adding to the list");
+                            inputController.ApplyKeybinding(ShowPerceptionCircles);
                         }
-                        else
+                        ShowPerceptionCirclesBindingApplied = true;
+                    }
+
+                    if (ev.Type == InputEventType.Pressed)
+                    {
+
+                        TacticalActor selectedCharacter = controller.View.SelectedActor;
+
+                        // TFTVLogger.Always($"tacticalViewContext.Input.GetActiveAction() null? {tacticalViewContext.Input.GetActiveAction("DisplayPerceptionCircles") == null}"); 
+                        //  InputActionState inputKey = tacticalViewContext.Input.GetKey("DisplayPerceptionCircles");
+                        /*  InputController inputController = tacticalViewContext.Input;
+                          FieldInfo field = inputController.GetType().GetField("_activeActionsMap", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                          InputAction[] inputActions = (InputAction[])field.GetValue(inputController);
+
+                          if (!inputActions.Any(a => a != null && a.Name != null && a.Name == ShowPerceptionCircles.Name))
+                          {
+                              TFTVLogger.Always($"{ShowPerceptionCircles.Name} not found! adding to the list");
+                              inputController.ApplyKeybinding(ShowPerceptionCircles);
+                          }*/
+
+
+                        //   TFTVLogger.Always($"evName: {ev.Name}");
+                        if (ev.Name == ShowPerceptionCircles.Name)
                         {
-                            controller.View.Markers.ClearGroundMarkers();
+                            _showBoolCircles += 1;
+
+                            if (_showBoolCircles > 2)
+                            {
+                                _showBoolCircles = 0;
+                            }
+
+                            if (selectedCharacter != null && (_showBoolCircles == 1 && CheckCharacterInfiltratorOrLazarus(selectedCharacter) || _showBoolCircles == 2))
+                            {
+                                _drawAllEnemyVisionMarkersMethodInfo.Invoke(__instance, new object[] { });
+                            }
+                            else
+                            {
+                                controller.View.Markers.ClearGroundMarkers();
+                            }
                         }
                     }
                 }
@@ -581,6 +678,11 @@ namespace TFTV
                         if (__result < fromActor.CharacterStats.HearingRange.Value.EndValue || __result < __instance.TacticalLevel.TacticalLevelControllerDef.DetectionRange)
                         {
                             __result = Math.Max(fromActor.CharacterStats.HearingRange.Value.EndValue, __instance.TacticalLevel.TacticalLevelControllerDef.DetectionRange);
+                        }
+
+                        if (fromActor.GetAbility<SurveillanceAbility>() != null && fromActor.GetAbility<SurveillanceAbility>().SurveillanceAbilityDef.TargetingDataDef.Origin.Range > __result)
+                        {
+                            __result = fromActor.GetAbility<SurveillanceAbility>().SurveillanceAbilityDef.TargetingDataDef.Origin.Range;
                         }
                     }
                     catch (Exception e)
@@ -749,24 +851,63 @@ namespace TFTV
 
                     foreach (TacticalActorViewBase.StatusInfo statusInfo in actor.TacticalActorView.GetCharacterStatusActorStatuses())
                     {
+
+
                         if (statusInfo.Def.VisibleOnHealthbar != TacStatusDef.HealthBarVisibility.Hidden)
                         {
-                            ShortActorInfoTooltipDataEntry item = new ShortActorInfoTooltipDataEntry
+                            if (statusInfo.Def != TFTVRevenant.RevenantResistanceStatus)
                             {
-                                Icon = statusInfo.Def.Visuals.SmallIcon,
-                                IconColor = statusInfo.Def.Visuals.Color,
-                                TextContent = statusInfo.Def.Visuals.DisplayName1.Localize(null),
-                                ValueContent = string.Format("{0}/{1}", statusInfo.Value, statusInfo.Limit)
-                            };
-                            if (float.IsNaN(statusInfo.Value) && float.IsNaN(statusInfo.Limit) || statusInfo.Def is ArmorStackStatusDef)
-                            {
-                                item.ValueContent = string.Empty;
+
+                                ShortActorInfoTooltipDataEntry item = new ShortActorInfoTooltipDataEntry
+                                {
+                                    Icon = statusInfo.Def.Visuals.SmallIcon,
+                                    IconColor = statusInfo.Def.Visuals.Color,
+                                    TextContent = statusInfo.Def.Visuals.DisplayName1.Localize(null),
+                                    ValueContent = string.Format("{0}/{1}", statusInfo.Value, statusInfo.Limit)
+                                };
+                                if (float.IsNaN(statusInfo.Value) && float.IsNaN(statusInfo.Limit) || statusInfo.Def is ArmorStackStatusDef)
+                                {
+                                    item.ValueContent = string.Empty;
+                                }
+                                else if (float.IsNaN(statusInfo.Limit))
+                                {
+                                    item.ValueContent = string.Format("{0}", statusInfo.Value);
+                                }
+                                shortActorInfoTooltipData.Entries.Add(item);
                             }
-                            else if (float.IsNaN(statusInfo.Limit))
+                            else
                             {
-                                item.ValueContent = string.Format("{0}", statusInfo.Value);
+                                string displayName = statusInfo.Def.Visuals.DisplayName1.Localize(null);
+
+                                // TFTVLogger.Always($"displayName: {displayName}");
+
+                                string[] parts = displayName.Split(new char[] { '-' }, 2);
+
+                                string title = parts[0]; // "part1"
+                                                         // TFTVLogger.Always($"title: {title}");
+                                string description = parts.Length > 1 ? parts[1] : ""; // "part2"
+                                description = $"-50%\n{description.Trim()}";
+                                //   TFTVLogger.Always($"description: {description}, statusInfo.Value: {statusInfo.Value}");
+
+                                ShortActorInfoTooltipDataEntry item = new ShortActorInfoTooltipDataEntry
+                                {
+                                    Icon = statusInfo.Def.Visuals.SmallIcon,
+                                    IconColor = statusInfo.Def.Visuals.Color,
+                                    TextContent = title,
+                                    ValueContent = description //string.Format("{0}/{1}", statusInfo.Value, statusInfo.Limit)
+                                };
+                                if (float.IsNaN(statusInfo.Value) && float.IsNaN(statusInfo.Limit) || statusInfo.Def is ArmorStackStatusDef)
+                                {
+                                    //item.ValueContent = string.Empty;
+                                }
+                                else
+                                {
+                                    item.ValueContent = $"{description} {statusInfo.Value}";
+                                }
+
+                                shortActorInfoTooltipData.Entries.Add(item);
+
                             }
-                            shortActorInfoTooltipData.Entries.Add(item);
                         }
                     }
 
@@ -1046,6 +1187,10 @@ namespace TFTV
                                 list.Add(target);
 
                             }
+                        }
+                        else
+                        {
+                            list.Add(target);
                         }
                     }
                     __result = list;
@@ -1715,6 +1860,109 @@ namespace TFTV
         }
 
 
+
+        /*    [HarmonyPatch(typeof(DamageAccumulation), "AddTarget")]
+            public static class TFTV_DamageAccumulation_AddTarget
+            {
+
+                public static bool Prefix(DamageAccumulation __instance, ref List<DamageAccumulation.TargetData> ____targetsData,
+         IDamageReceiver target, Vector3 damageOrigin, Vector3 impactForce, CastHit impactHit, DamagePredictor predictor = null)
+                {
+                    try
+                    {
+                        MethodInfo methodInfoProcessDamageKeyword = typeof(DamageAccumulation).GetMethod("ProcessDamageKeyword", BindingFlags.Instance | BindingFlags.NonPublic);
+                        MethodInfo methodInfoIsJunkData = typeof(DamageAccumulation).GetMethod("IsJunkData", BindingFlags.Static | BindingFlags.NonPublic);
+
+                        DamageAccumulation.TargetData data = null;
+
+                        if (predictor == null)
+                        {
+                            predictor = TacUtil.GetSourceOfType<ProjectileLogic>(__instance.Source)?.Predictor;
+                        }
+
+                        if (__instance.Attenuating)
+                        {
+                            IDamageDealer sourceOfType = TacUtil.GetSourceOfType<IDamageDealer>(__instance.Source);
+                            if (sourceOfType != null)
+                            {
+                                float magnitude = (damageOrigin - impactHit.Point).magnitude;
+                                __instance.Amount *= Utl.AttenuationMultiplier(magnitude, sourceOfType.GetMaxRange());
+                                __instance.Amount = (Utl.GreaterThanOrEqualTo(__instance.Amount, 1f) ? Mathf.Floor(__instance.Amount) : Mathf.Ceil(__instance.Amount));
+                            }
+                        }
+
+                        // Process standard damage first
+                         if (__instance.DamageKeywords == null || !__instance.DamageKeywords.Any())
+                          {
+                              TFTVLogger.Always($"got here2");
+                              data = __instance.GenerateStandardDamageTargetData(target, damageOrigin, impactForce, impactHit, out __instance.Amount);
+                              ____targetsData.Add(data);
+
+
+                          }
+                          else
+                          {
+
+
+                        // Separate standard damage keyword from other keywords
+                        var standardDamageKeyword = __instance.DamageKeywords.FirstOrDefault(k => k.DamageKeywordDef.AppliesStandardDamage);
+                        var otherKeywords = __instance.DamageKeywords.Where(k => !k.DamageKeywordDef.AppliesStandardDamage).ToList();
+
+                        // Process standard damage keyword first
+                        if (standardDamageKeyword != null)
+                        {
+                            TFTVLogger.Always($"standardDamageKeyword: {standardDamageKeyword.DamageKeywordDef.name}");
+                            object[] parameters = { standardDamageKeyword, target, damageOrigin, impactForce, impactHit, predictor, data };
+                            methodInfoProcessDamageKeyword.Invoke(__instance, parameters);
+                            data = (DamageAccumulation.TargetData)parameters[6];
+                            TFTVLogger.Always($"data.AmountApplied: {data.AmountApplied}, HealthDamage: {data.DamageResult.HealthDamage}, data.DamageResult.DamageTypeDef.name: {data.DamageResult.DamageTypeDef.name}");
+                            data?.ApplyToTarget();
+                        }
+
+                        // Process other keywords (including shock damage) after standard damage
+                        foreach (var damageKeyword in otherKeywords)
+                        {
+                            TFTVLogger.Always($"otherDamageKeyword: {damageKeyword.DamageKeywordDef.name}");
+                            object[] parameters = { damageKeyword, target, damageOrigin, impactForce, impactHit, predictor, data };
+                            methodInfoProcessDamageKeyword.Invoke(__instance, parameters);
+                            data = (DamageAccumulation.TargetData)parameters[6];
+                            TFTVLogger.Always($"data.AmountApplied: {data.AmountApplied}, HealthDamage: {data.DamageResult.HealthDamage}," +
+                                $" data.DamageResult.DamageTypeDef.name: {data.DamageResult.DamageTypeDef.name}");
+                            if(data.DamageResult.ApplyStatuses!=null && data.DamageResult.ApplyStatuses.Count > 0)
+                            {
+                                TFTVLogger.Always($"data.DamageResult.ApplyStatuses.Count: {data.DamageResult.ApplyStatuses.Count}");
+                                foreach(var status in data.DamageResult.ApplyStatuses)
+                                {
+                                    TFTVLogger.Always($"status: {status.StatusDef.name}");
+                                }
+                            }
+
+                        }
+
+                        bool junkData = (bool)methodInfoIsJunkData.Invoke(__instance, new object[] { data });
+                        TFTVLogger.Always($"data null? {data == null} junkData? {junkData}");
+
+
+                        if (data != null && !junkData)
+                        {
+                            ____targetsData.Add(data);
+                        }
+
+                        // Apply the accumulated damage to the target
+
+
+                        return false;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+            }*/
+
+
         //REPLACED ABOVE
         //Strates fix for bloodlust
         /*   [HarmonyPatch(typeof(DamageAccumulation), "GenerateStandardDamageTargetData")]
@@ -1934,6 +2182,8 @@ namespace TFTV
             try
             {
                 phoenixBase.RoutePower();
+                TFTVUIGeoMap.UnpoweredFacilitiesInfo.CheckUnpoweredBasesOnGeoscapeStart();
+
                 /*   foreach (GeoPhoenixFacility baseFacility in phoenixBase.Layout.Facilities)
                    {
 
@@ -2176,6 +2426,105 @@ namespace TFTV
 
                     __result = 0f;
                     return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+        /// <summary>
+        /// Fix no SP no XP when evacuating rescue vehicle/soldier last
+        /// </summary>
+        /// <param name="actor"></param>
+
+        private static void FixRescueMissionEvac(TacticalActor actor)
+        {
+            try
+            {
+
+                TacticalFaction phoenixFaction = actor.TacticalLevel.GetFactionByCommandName("px");
+
+                if (!phoenixFaction.Objectives.Any(obj => obj is RescueSoldiersFactionObjective))
+                {
+                    return;
+                }
+
+        //        TFTVLogger.Always($"phoenixFaction.TacticalActors.Any(a => a.IsAlive && !a.IsEvacuated && a!=actor) {phoenixFaction.TacticalActors.Any(a => a.IsAlive && !a.IsEvacuated && a != actor && !a.IsMounted)}");
+
+                if (phoenixFaction.TacticalActors.Any(a => a.IsAlive && !a.IsEvacuated && a != actor && !a.IsMounted))
+                {
+                    return;
+                }
+
+                RescueSoldiersFactionObjective objective = (RescueSoldiersFactionObjective)phoenixFaction.Objectives.FirstOrDefault(obj => obj is RescueSoldiersFactionObjective);
+
+              //  TFTVLogger.Always($"got here! actor.TacticalFaction.Faction.FactionDef == objective.RescuedFaction {actor.TacticalFaction.Faction.FactionDef.name} {objective.RescuedFaction.name}");
+
+                MindControlStatus status = actor.Status?.GetStatus<MindControlStatus>();
+
+                if (actor.TacticalFaction.Faction.FactionDef == objective.RescuedFaction || status != null && status.OriginalFaction.FactionDef == objective.RescuedFaction)
+                {
+                    int rescuedActors = objective.RescuedPeople + 1;
+
+                    TFTVLogger.Always($"{actor.DisplayName} is an objective for the Rescue mission! Total RescuedActors: {rescuedActors}");
+
+                   PropertyInfo propertyInfoState = typeof(FactionObjective).GetProperty("State", BindingFlags.Instance | BindingFlags.Public);
+                   propertyInfoState.SetValue(objective, FactionObjectiveState.Achieved);
+
+                    PropertyInfo propertyInfoRescuedPeople = typeof(RescueSoldiersFactionObjective).GetProperty("RescuedPeople", BindingFlags.Instance | BindingFlags.Public);
+                    propertyInfoRescuedPeople.SetValue(objective, rescuedActors);
+
+                    //  VehicleEvaced = true;
+                  //  TFTVLogger.Always($"objective.State: {objective.State}");
+                   phoenixFaction.Objectives.Evaluate();
+                  //  TFTVLogger.Always($"objective.State: {objective.State}");
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+        [HarmonyPatch(typeof(EvacuateMountedActorsAbility), "Activate")]
+        public static class EvacuateMountedActorsAbility_Activate_patch
+        {
+            public static void Prefix(EvacuateMountedActorsAbility __instance)
+            {
+                try
+                {
+                   // TFTVLogger.Always($"running activate exit mission ability for {__instance.TacticalActor.DisplayName}, {__instance.TacticalActor.TacticalFaction.Faction.FactionDef.name} {__instance.TacticalActor.Status?.HasStatus<MindControlStatus>()}");
+
+                    FixRescueMissionEvac(__instance.TacticalActor);
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(ExitMissionAbility), "Activate")]
+        public static class ExitMissionAbility_Activate_patch
+        {
+            public static void Prefix(ExitMissionAbility __instance)
+            {
+                try
+                {
+                  //  TFTVLogger.Always($"running activate exit mission ability for {__instance.TacticalActor.DisplayName}, {__instance.TacticalActor.TacticalFaction.Faction.FactionDef.name} {__instance.TacticalActor.Status?.HasStatus<MindControlStatus>()}");
+
+                    FixRescueMissionEvac(__instance.TacticalActor);
+
                 }
                 catch (Exception e)
                 {

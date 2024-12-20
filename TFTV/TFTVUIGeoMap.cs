@@ -15,6 +15,7 @@ using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
+using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers.PhoenixBase;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using System;
@@ -46,9 +47,126 @@ namespace TFTV
         internal static Color nj = new Color(0.156862751f, 0.6156863f, 1.0f, 1.0f);
         internal static Color syn = new Color(0.160784319f, 0.8862745f, 0.145098045f, 1.0f);
 
-
         internal class Miscelaneous
         {
+
+
+            [HarmonyPatch(typeof(GeoscapeLogEntryController), "SetEntry")]
+            public static class GeoscapeLogEntryController_SetEntry_patch
+            {
+                public static void Postfix(GeoscapeLogEntryController __instance, GeoscapeLogEntry logEntry)
+                {
+                    try
+                    {
+                       TFTVLogger.Always($"GeoscapeLogEntryController_SetEntry_patch {__instance?.Text?.text}");
+
+                        if (__instance.Text.text != null)
+                        {
+                            GeoActor targetActor = null;
+
+                            GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                            List<GeoSite> allSites = controller.Map.AllSites.Where(s => s.LocalizedSiteName != null && s.LocalizedSiteName != "").ToList();
+
+
+                            GeoSite geoSite = allSites.FirstOrDefault(s => __instance.Text.text.Contains(s.LocalizedSiteName));
+
+                            if (geoSite != null)
+                            {
+
+                                targetActor = geoSite;
+
+                                TFTVLogger.Always($"found geosite {geoSite.LocalizedSiteName} referenced by {__instance.Text.text}");
+
+
+                            }
+                            else
+                            {
+                                GeoCharacter geoCharacter = controller.PhoenixFaction.Soldiers.FirstOrDefault(c => __instance.Text.text.Contains(c.Identity.Name));
+                             
+                                if (geoCharacter != null)
+                                {
+                                    TFTVLogger.Always($"found character {geoCharacter.Identity.Name} referenced by {__instance.Text.text}");
+
+                                    GeoSite geoSite1 = controller.PhoenixFaction.Bases.FirstOrDefault(b => b.SoldiersInBase.Contains(geoCharacter))?.Site;
+
+                                    if(geoSite1 != null)
+                                    {
+                                        TFTVLogger.Always($"found site at which the character is: {geoSite1?.LocalizedSiteName}");
+
+                                        targetActor = geoSite1;
+                                    }
+                                    else 
+                                    {
+                                        foreach (GeoVehicle geoVehicle in controller.PhoenixFaction.Vehicles)
+                                        {
+                                            if (geoVehicle.GetAllCharacters().Contains(geoCharacter)) 
+                                            {
+                                                TFTVLogger.Always($"found vehicle at which the character is: {geoVehicle.Name}");
+
+                                                targetActor = geoVehicle;
+                                                break;
+
+                                            }
+
+                                        }
+
+                                    }             
+                                }
+                                else 
+                                {
+                                    List<GeoVehicle> geoVehicles = new List<GeoVehicle>();
+
+                                    geoVehicles.AddRange(controller.PhoenixFaction.Vehicles.Where(v => __instance.Text.text.Contains(v.Name))?.ToList());
+
+                                   // TFTVLogger.Always($"geoVehicles==null: {geoVehicles==null}");
+
+                                    if (geoVehicles != null && geoVehicles.Count>0)
+                                    {
+                                        TFTVLogger.Always($"found {geoVehicles.Last().Name} referenced by {__instance.Text.text}");
+                                        targetActor = geoVehicles.Last();
+                                    }
+                                }
+                            }
+
+                            if (targetActor != null)
+                            {
+
+                                GameObject go = __instance.gameObject;
+
+                                if (!go.GetComponent<EventTrigger>())
+                                {
+                                    go.AddComponent<EventTrigger>();
+                                }
+
+                                EventTrigger eventTrigger = go.GetComponent<EventTrigger>();
+                                eventTrigger.triggers.Clear();
+                                EventTrigger.Entry click = new EventTrigger.Entry
+                                {
+                                    eventID = EventTriggerType.PointerClick
+                                };
+
+                                click.callback.AddListener((eventData) =>
+                                {
+                                    controller.Timing.Paused = true;
+                                    controller.View.ChaseTarget(targetActor, false);
+
+                                });
+
+                                eventTrigger.triggers.Add(click);
+                            }
+
+                        }
+                    }
+
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+
             [HarmonyPatch(typeof(UIModuleCorruptionReport), "Init")]
             public static class UIModuleCorruptionReport_Init_patch
             {
@@ -81,7 +199,7 @@ namespace TFTV
             private static Dictionary<Transform, List<GeoPhoenixFacility>> _resourcePowerWarnings = new Dictionary<Transform, List<GeoPhoenixFacility>>();
             private static Dictionary<Transform, UITooltipText> _savedTooltips = new Dictionary<Transform, UITooltipText>();
 
-          
+
 
             public static void ClearInternalDataForUIGeo()
             {
@@ -133,14 +251,13 @@ namespace TFTV
                                         Transform transformIconContainerGroundVehicles = resourceIconContainer2.transform;
                                         resourceIconContainer2.Value.color = Color.white;
 
-                                       
+
                                     }
                                     else
                                     {
 
                                         ResourceIconContainer resourceIconContainer = transform.GetComponent<ResourceIconContainer>() ?? transform.GetComponentInParent<ResourceIconContainer>();
                                         resourceIconContainer.Value.color = resourceIconContainer.DefaultColor;
-                                      
 
                                     }
                                 }
@@ -173,12 +290,12 @@ namespace TFTV
                 try
                 {
 
-                   // TFTVLogger.Always($"{parent.name}");
+                    // TFTVLogger.Always($"{parent.name}");
 
-                    if (parent!=null && parent.name!=null && _savedTooltips!=null && _savedTooltips.Count > 0 && _savedTooltips.Values.Any(k => k.name == parent.name))
+                    if (parent != null && parent.name != null && _savedTooltips != null && _savedTooltips.Count > 0 && _savedTooltips.Values.Any(k => k.name == parent.name))
                     {
                         RectTransform rectTransform = tooltip.gameObject.GetComponent<RectTransform>();
-                     //   TFTVLogger.Always($"found {tooltip.name} pivot: {rectTransform.pivot}");
+                        //   TFTVLogger.Always($"found {tooltip.name} pivot: {rectTransform.pivot}");
 
                         rectTransform.pivot = new Vector2(0.5f, 1);
                     }
@@ -193,24 +310,18 @@ namespace TFTV
 
             public static void CheckUnpoweredBasesOnGeoscapeStart()
             {
-                try 
+                try
                 {
                     if (_resourcePowerWarnings != null && _resourcePowerWarnings.Count > 0)
-
                     {
-                        foreach(Transform transform in _resourcePowerWarnings.Keys) 
+                        foreach (Transform transform in _resourcePowerWarnings.Keys)
                         {
                             foreach (GeoPhoenixFacility geoPhoenixFacility in _resourcePowerWarnings[transform])
                             {
                                 geoPhoenixFacility.PxBase.Site.RefreshVisuals();
                             }
-                        
                         }
-
-
                     }
-                
-              
                 }
 
                 catch (Exception e)
@@ -293,7 +404,7 @@ namespace TFTV
 
                         uITooltipText.TipText = tip;
                         uITooltipText.Position = UITooltip.Position.Bottom;
-                        uITooltipText.enabled = true;                     
+                        uITooltipText.enabled = true;
                     }
                     else
                     {
@@ -365,10 +476,10 @@ namespace TFTV
                     }
                     else if (facility.Def == DefCache.GetDef<PhoenixFacilityDef>("VehicleBay_PhoenixFacilityDef"))
                     {
-    
+
                         ResourceIconContainer resourceIconContainerAirVehicles = uIModuleInfoBar.AirVehiclesLabel.transform.parent.GetComponent<ResourceIconContainer>();
 
-                        
+
                         Transform transformIconContainerAirVehicles = resourceIconContainerAirVehicles.transform;
                         resourceIconContainerAirVehicles.Value.color = warningColor.Color;
 
@@ -377,9 +488,9 @@ namespace TFTV
                         ResourceIconContainer resourceIconContainerGroundVehicles = uIModuleInfoBar.GroundVehiclesLabel.transform.parent.GetComponent<ResourceIconContainer>();
                         Transform transformIconContainerGroundVehicles = resourceIconContainerGroundVehicles.transform;
                         resourceIconContainerGroundVehicles.Value.color = warningColor.Color;
-                     
+
                         AddClickChangeTooltipAndColor(transformIconContainerGroundVehicles, facility, uIModuleInfoBar.GroundVehiclesLabel.transform);
-                        
+
 
                     }
                     else if (facility.Def == DefCache.GetDef<PhoenixFacilityDef>("AlienContainment_PhoenixFacilityDef"))
@@ -407,7 +518,7 @@ namespace TFTV
                         resourceIconContainer.Value.color = warningColor.Color;
 
                         AddClickChangeTooltipAndColor(transformIconContainer, facility, uIModuleInfoBar.FoodController.transform);
-                    }                 
+                    }
                 }
                 catch (Exception e)
                 {
@@ -441,8 +552,8 @@ namespace TFTV
 
                         foreach (GeoPhoenixFacility geoPhoenixFacility in
                             site.GetComponent<GeoPhoenixBase>().Layout.Facilities.Where
-                            (f => f.Def.PowerCost > 0 && 
-                            f.State != GeoPhoenixFacility.FacilityState.UnderContstruction && 
+                            (f => f.Def.PowerCost > 0 &&
+                            f.State != GeoPhoenixFacility.FacilityState.UnderContstruction &&
                             f.State != GeoPhoenixFacility.FacilityState.Damaged &&
                             f.State != GeoPhoenixFacility.FacilityState.Repairing &&
                             !f.IsAvailableForRepair))
@@ -572,21 +683,25 @@ namespace TFTV
                         if (existingRepairCostDisplay == null)
                         {
                             // Create the RepairCostDisplay if it doesn't exist
-                            repairCostDisplay = new GameObject("RepairCostDisplay");
+                            repairCostDisplay = new GameObject("RepairCostDisplay", typeof(RectTransform), typeof(Image), typeof(HorizontalLayoutGroup));
                             repairCostDisplay.transform.SetParent(parentContainer, false);
-                            Image background = repairCostDisplay.AddComponent<Image>();
-                            background.color = new Color(0, 0, 0, 0.0f);
+                            Image background = repairCostDisplay.GetComponent<Image>();
+                            background.color = new Color(0, 0, 0, 0.8f);
                             //  background.type = Image.Type.Sliced;  // Optionally make it sliced for better scaling
-                            background.rectTransform.sizeDelta = new Vector2(350, 50);
+                            //   background.rectTransform.sizeDelta = new Vector2(350, 100);
                             RectTransform rectTransform = repairCostDisplay.GetComponent<RectTransform>();
                             //    rectTransform.localScale = new Vector3(scale, scale, scale); // Adjust the size if necessary
                             rectTransform.anchoredPosition = Vector2.zero - new Vector2(0, 120);
-                            rectTransform.sizeDelta = new Vector2(350, 50);
+                            rectTransform.sizeDelta = new Vector2(450, 100);
                             // Position it over the facility
                             // Use VerticalLayoutGroup to display costs in a vertical arrangement
-                            HorizontalLayoutGroup horizontalLayoutGroup0 = repairCostDisplay.AddComponent<HorizontalLayoutGroup>();
-                            horizontalLayoutGroup0.childAlignment = TextAnchor.MiddleLeft;
-                            horizontalLayoutGroup0.spacing = 0; // Adjust spacing between resource entries
+                            HorizontalLayoutGroup horizontalLayoutGroup0 = repairCostDisplay.GetComponent<HorizontalLayoutGroup>();
+                            horizontalLayoutGroup0.childScaleHeight = false;
+                            horizontalLayoutGroup0.childScaleWidth = false;
+                            horizontalLayoutGroup0.childControlHeight = false;
+                            horizontalLayoutGroup0.childControlWidth = false;
+                            horizontalLayoutGroup0.childAlignment = TextAnchor.MiddleCenter;
+                            horizontalLayoutGroup0.spacing = 5; // Adjust spacing between resource entries*/
                         }
                         else
                         {
@@ -610,19 +725,19 @@ namespace TFTV
                                 bool isValid = (type == ResourceType.Materials) ? isValidMaterials : isValidTech;
 
                                 // Create a horizontal layout to display both the icon and the text
-                                GameObject resourceDisplay = new GameObject($"{type}CostDisplay");
+                                GameObject resourceDisplay = new GameObject($"{type}CostDisplay", typeof(RectTransform), typeof(HorizontalLayoutGroup));
                                 resourceDisplay.transform.SetParent(repairCostDisplay.transform, false);
-                                RectTransform resourceDislayRect = resourceDisplay.AddComponent<RectTransform>();
-                                resourceDislayRect.sizeDelta = new Vector2(175, 50);
+                                RectTransform resourceDislayRect = resourceDisplay.GetComponent<RectTransform>();
+                                resourceDislayRect.sizeDelta = new Vector2(225, 50);
                                 resourceDislayRect.anchoredPosition = Vector2.zero;
-                                HorizontalLayoutGroup horizontalLayout = resourceDisplay.AddComponent<HorizontalLayoutGroup>();
+                                HorizontalLayoutGroup horizontalLayout = resourceDisplay.GetComponent<HorizontalLayoutGroup>();
                                 horizontalLayout.spacing = 1; // Add spacing between icon and text
                                 horizontalLayout.childAlignment = TextAnchor.MiddleCenter;
 
                                 // Icon Image
-                                GameObject iconObject = new GameObject($"{type}Icon");
+                                GameObject iconObject = new GameObject($"{type}Icon", typeof(RectTransform), typeof(Image));
                                 iconObject.transform.SetParent(resourceDisplay.transform);
-                                Image iconImage = iconObject.AddComponent<Image>();
+                                Image iconImage = iconObject.GetComponent<Image>();
                                 Dictionary<Sprite, Color> keyValuePairs = GetResourceIcon(type);
                                 iconImage.sprite = keyValuePairs.Keys.First();
                                 iconImage.color = keyValuePairs.Values.First();
@@ -630,7 +745,7 @@ namespace TFTV
 
                                 // Resize the icon
                                 RectTransform iconRectTransform = iconImage.GetComponent<RectTransform>();
-                                iconRectTransform.sizeDelta = new Vector2(50, 50); // Set the width and height to 20x20, adjust as needed
+                                iconRectTransform.sizeDelta = new Vector2(20, 20); // Set the width and height to 20x20, adjust as needed
                                                                                    //   iconImage.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
 
                                 // Text for resource cost using Unity's standard Text component
@@ -647,6 +762,7 @@ namespace TFTV
                                 resourceText.color = Color.white;
                                 resourceText.fontSize = 30;
                                 resourceText.alignment = TextAnchor.MiddleLeft;
+                                resourceText.horizontalOverflow = HorizontalWrapMode.Overflow;
                                 resourceText.transform.localScale = new Vector3(1, 1, 1);
                             }
                         }
@@ -696,8 +812,8 @@ namespace TFTV
                 {
                     DisplayRepairCost(facilityController);
 
-                    bool flagCanbeUnpowered = facilityController.ContainedFacility != null 
-                        && facilityController.ContainedFacility.Def.PowerCost > 0 
+                    bool flagCanbeUnpowered = facilityController.ContainedFacility != null
+                        && facilityController.ContainedFacility.Def.PowerCost > 0
                         && facilityController.Facility.State != GeoPhoenixFacility.FacilityState.UnderContstruction
                         && !facilityController.Facility.IsAvailableForRepair
                         && !facilityController.Facility.IsRepairing;

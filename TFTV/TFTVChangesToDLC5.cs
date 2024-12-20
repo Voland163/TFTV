@@ -100,6 +100,11 @@ namespace TFTV
                         || recruit.GameTags.Contains(TFTVProjectOsiris.OCPProductTag)) 
                         && toContainer != null && toContainer is GeoSite)
                     {
+                        if (recruit.GameTags.Contains(TFTVProjectOsiris.OCPProductTag)) 
+                        { 
+                        recruit.LevelProgression.SetLevel(__instance.GeoLevel.DeadSoldiers[TFTVProjectOsiris.IdProjectOsirisCandidate].Level);
+                        }
+
                         __instance.GeoLevel.View.PrepareDeployAsset(__instance, recruit, null, null, manufactured: false, spaceFull: false);
                         __result = null;
                         return false;

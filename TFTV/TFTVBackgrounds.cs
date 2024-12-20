@@ -1,15 +1,27 @@
 ﻿using Base.Core;
 using Base.Defs;
 using Base.Lighting;
+using Base.UI;
 using HarmonyLib;
-using Newtonsoft.Json.Linq;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.View.ViewModules;
+using PhoenixPoint.Geoscape;
+using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Research;
+using PhoenixPoint.Geoscape.Entities.Research.Requirement;
+using PhoenixPoint.Geoscape.Entities.Research.Reward;
+using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
+using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
+using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Levels.FactionEffects;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
@@ -24,6 +36,748 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
+
+        private static GameObject infoPanel;
+        private static Text infoText;
+
+        public static void RemoveContainmentInfoPanel()
+        {
+            try
+            {
+                if (infoPanel != null)
+                {
+                    UnityEngine.Object.Destroy(infoPanel);
+                    infoPanel = null;
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+        }
+
+        internal class ContainmentScreen
+        {
+            [HarmonyPatch(typeof(UIStateRosterAliens), "OnActorCycled")]
+            public static class TFTV_UIStateRosterAliens_OnActorCycled_patch
+            {
+                public static void Postfix(UIStateRosterAliens __instance)
+                {
+                    try
+                    {
+                        GetInfoAboutAlien();
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+            [HarmonyPatch(typeof(UIStateRosterAliens), "EnterState")]
+            public static class TFTV_UIStateRosterAliens_EnterState_patch
+            {
+
+                public static void Postfix(UIStateRosterAliens __instance)
+                {
+                    try
+                    {
+                        GetInfoAboutAlien();
+                    }
+
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+            private static Font _cachedFont = null;
+
+            private static void InitializeInfoPanel()
+            {
+                try
+                {
+                    if (infoPanel != null) return;
+
+                    infoPanel = new GameObject("InfoPanel");
+                    Canvas canvas = infoPanel.AddComponent<Canvas>();
+                    canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                    CanvasScaler canvasScaler = infoPanel.AddComponent<CanvasScaler>();
+                    canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                    infoPanel.AddComponent<GraphicRaycaster>();
+
+                    // Add a black background
+                    GameObject backgroundObject = new GameObject("Background", typeof(RectTransform));
+                    backgroundObject.transform.SetParent(infoPanel.transform);
+                    Image backgroundImage = backgroundObject.AddComponent<Image>();
+                    backgroundImage.color = new Color(0, 0, 0, 0.7f);
+                    RectTransform backgroundRect = backgroundObject.GetComponent<RectTransform>();
+                    backgroundRect.sizeDelta = new Vector2(230, 200);
+                    backgroundRect.anchoredPosition = new Vector2(280, -30);
+
+                    GameObject descriptionObject = new GameObject("DescriptionText");
+                    descriptionObject.transform.SetParent(backgroundObject.transform);
+                    Text descriptionText = descriptionObject.AddComponent<Text>();
+                    descriptionText.font = _cachedFont ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                    descriptionText.fontSize = 10;
+                    descriptionText.alignment = TextAnchor.UpperLeft;
+                    descriptionText.color = Color.white;
+                    descriptionText.verticalOverflow = VerticalWrapMode.Overflow;
+                    RectTransform descriptionRect = descriptionObject.GetComponent<RectTransform>();
+                    descriptionRect.sizeDelta = new Vector2(220, 100);
+                    descriptionRect.anchoredPosition = new Vector2(0, 40);
+
+                    GameObject volumeObject = new GameObject("VolumeText");
+                    volumeObject.transform.SetParent(backgroundObject.transform);
+                    Text volumeText = volumeObject.AddComponent<Text>();
+                    volumeText.font = _cachedFont ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                    volumeText.fontSize = 12;
+                    volumeText.alignment = TextAnchor.UpperLeft;
+                    volumeText.color = Color.white;
+                    RectTransform volumeRect = volumeObject.GetComponent<RectTransform>();
+                    volumeRect.sizeDelta = new Vector2(220, 30);
+                    volumeRect.anchoredPosition = new Vector2(0, -40);
+
+                    // Create icon object
+                    GameObject iconObject = new GameObject("Icon");
+                    iconObject.transform.SetParent(backgroundObject.transform);
+                    Image iconImage = iconObject.AddComponent<Image>();
+                    iconImage.preserveAspect = true;
+                    RectTransform iconRect = iconObject.GetComponent<RectTransform>();
+                    iconRect.sizeDelta = new Vector2(20, 20);
+                    iconRect.anchoredPosition = new Vector2(-105, -55);
+
+                    GameObject mutagenTextObject = new GameObject("MutagenText");
+                    mutagenTextObject.transform.SetParent(backgroundObject.transform);
+                    Text mutagenText = mutagenTextObject.AddComponent<Text>();
+                    mutagenText.font = _cachedFont ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                    mutagenText.fontSize = 12;
+                    mutagenText.alignment = TextAnchor.UpperLeft;
+                    mutagenText.color = Color.white;
+                    RectTransform mutagenTextRect = mutagenTextObject.GetComponent<RectTransform>();
+                    mutagenTextRect.sizeDelta = new Vector2(200, 30);
+                    mutagenTextRect.anchoredPosition = new Vector2(5, -60);
+
+                    // Create autopsied/vivisected text object
+                    GameObject statusObject = new GameObject("StatusText");
+                    statusObject.transform.SetParent(backgroundObject.transform);
+                    Text statusText = statusObject.AddComponent<Text>();
+                    statusText.font = _cachedFont ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                    statusText.fontSize = 12;
+                    statusText.alignment = TextAnchor.UpperLeft;
+                    statusText.color = Color.white;
+                    RectTransform statusRect = statusObject.GetComponent<RectTransform>();
+                    statusRect.sizeDelta = new Vector2(220, 30);
+                    statusRect.anchoredPosition = new Vector2(0, -90);
+
+                    // Store references to the text components
+                    infoText = descriptionText;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            private static int CalculateFontSize(string text)
+            {
+                TFTVLogger.Always($"length: {text.Length}");
+
+                if (text.Length <= 200)
+                {
+                    return 12;
+                }
+                else if (text.Length <= 400)
+                {
+                    return 10;
+                }
+                else
+                {
+                    return 8;
+                }
+            }
+
+            private static void GetInfoAboutAlien()
+            {
+                try
+                {
+                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                    GeoPhoenixFaction phoenixFaction = controller.PhoenixFaction;
+                    UIModuleActorCycle actorCycleModule = controller.View.GeoscapeModules.ActorCycleModule;
+                    GeoUnitDescriptor current = actorCycleModule.GetCurrent<GeoUnitDescriptor>();
+
+                    int volume = current.Volume;
+                    float mutagenPerDay = (float)phoenixFaction.GetHarvestingUnitResourceAmount(current, ResourceType.Mutagen) / 10;
+                    bool vivisected = false;
+                    bool autopsied = false;
+                    string description = "";
+
+                    foreach (ResearchElement alnResearch in controller.AlienFaction.Research.FactionResearches)
+                    {
+                        if (alnResearch.ResearchDef.Unlocks.Any(u => u is UnitTemplateResearchRewardDef templateReward && templateReward.Template == current.UnitType.TemplateDef))
+                        {
+                            description = alnResearch.ResearchDef.ViewElementDef.CompleteText.Localize();
+                        }
+                    }
+
+                    foreach (TacticalFactionEffectDef buff in phoenixFaction.ActorModifierEffects)
+                    {
+                        if (buff.ActorEffectDef is TacStatusEffectDef tacStatusEffectDef && tacStatusEffectDef.StatusDef is DamageMultiplierStatusDef damageMultiplierStatusDef)
+                        {
+                            if (damageMultiplierStatusDef.OutgoingDamageTargetTags.Any(t => current.UnitType.TemplateDef.ClassTag == t))
+                            {
+                                vivisected = true;
+                                autopsied = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!autopsied)
+                    {
+                        foreach (ResearchElement researchElement in phoenixFaction.Research.Completed)
+                        {
+                            if (researchElement.GetRevealRequirements().Any(r => r is ActorResearchRequirement researchRequirement
+                            && researchRequirement.RequirementDef is ActorResearchRequirementDef actorResearchRequirementDef
+                            && actorResearchRequirementDef.Actor != null && actorResearchRequirementDef.Actor.GameTags != null && actorResearchRequirementDef.Actor.GameTags.Contains(current.UnitType.TemplateDef.ClassTag)))
+                            {
+                                autopsied = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    string info = $"{current.GetName()}, {description}\n volume: {volume}, mutagens per day: {mutagenPerDay}, vivisected: {vivisected}, autopsied {autopsied}";
+                    TFTVLogger.Always(info);
+
+                    // Initialize and update the info panel
+                    InitializeInfoPanel();
+                    //infoText.text = info;
+                    infoText.fontSize = CalculateFontSize(description);
+
+
+                    // Update the text components
+                    infoPanel.transform.Find("Background").Find("DescriptionText").GetComponent<Text>().text = description;
+                    infoPanel.transform.Find("Background").Find("VolumeText").GetComponent<Text>().text = $"Containment slots occupied: {volume}";
+                    infoPanel.transform.Find("Background").Find("MutagenText").GetComponent<Text>().text = $"per day: {mutagenPerDay}";
+
+                    // Update the status text
+                    string status = "";
+                    if (autopsied && !vivisected)
+                    {
+                        status = "AUTOPSIED";
+                    }
+                    else if (vivisected)
+                    {
+                        status = "VIVISECTED";
+                    }
+                    infoPanel.transform.Find("Background").Find("StatusText").GetComponent<Text>().text = status;
+
+                    // Set the icon sprite (assuming you have a sprite for the icon)
+                    Sprite iconSprite = DefCache.GetDef<ResourceViewElementDef>("MutagenResourceViewElementDef").Visual;
+                    infoPanel.transform.Find("Background").Find("Icon").GetComponent<Image>().sprite = iconSprite;
+                    infoPanel.transform.Find("Background").Find("Icon").GetComponent<Image>().color = DefCache.GetDef<UIColorsDef>("UIColors_MutagenCost_Def").PrimaryUIColor;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+
+            [HarmonyPatch(typeof(GeoRosterItem))]
+            [HarmonyPatch("Init", typeof(GeoUnitDescriptor), typeof(IGeoCharacterContainer), typeof(GeoFaction))]
+            public static class GeoRosterItemPatch
+            {
+                public static void Postfix(GeoRosterItem __instance, IGeoCharacterContainer characterContainer)
+                {
+                    try
+                    {
+
+
+                        // UIModuleGeneralPersonelRoster uIModuleGeneralPersonelRoster = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.GeneralPersonelRosterModule;
+                        //  uIModuleGeneralPersonelRoster.RosterList.gameObject.SetActive(true);
+
+                        RectTransform rectTransform = __instance.RowButton.GetComponentsInChildren<RectTransform>().FirstOrDefault(r => r.name.Contains("SlotContainer_Layout"));
+
+                        if (rectTransform == null)
+                        {
+                            return;
+                        }
+
+                        GeoRosterAlienContainmentItem geoRosterAlienContainmentItem = __instance.RowButton.GetComponent<GeoRosterAlienContainmentItem>();
+
+                        if (geoRosterAlienContainmentItem == null)
+                        {
+                            return;
+                        }
+
+                        TFTVLogger.Always($"rectTransform.sizeDelta.x {rectTransform.sizeDelta.x}");
+                        if (rectTransform.sizeDelta.x == 1250)
+                        {
+                            float sizeToCut = rectTransform.sizeDelta.x * 1 / 3;
+                            rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x - sizeToCut, rectTransform.sizeDelta.y);
+
+
+                            geoRosterAlienContainmentItem.KillAlienButton.GetComponent<RectTransform>().anchoredPosition =
+                                new Vector2(geoRosterAlienContainmentItem.KillAlienButton.GetComponent<RectTransform>().anchoredPosition.x - sizeToCut, geoRosterAlienContainmentItem.KillAlienButton.GetComponent<RectTransform>().anchoredPosition.y);
+
+                        }
+                        if (_cachedFont == null)
+                        {
+                            _cachedFont = __instance.CharacterName.font;
+                            // TFTVLogger.Always($"_cachedFont.name: {_cachedFont.name}");
+                        }
+
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+        }
+
+
+        internal class PersonnelRosterAdjustments 
+        { 
+            private static bool _scrollAdjusted = false;
+
+
+            private static Transform _rosterVehicles = null;
+
+
+
+            private static Dictionary<GeoSite, List<GeoVehicle>> _sitesVehiclesDict = new Dictionary<GeoSite, List<GeoVehicle>>();
+            private static List<GeoVehicle> _vehiclesInTransit = new List<GeoVehicle>();
+            private static List<GeoSite> _garrisonPhoenixBases = new List<GeoSite>();
+
+
+            private static void SortOutSitesAndVehicles(UIModuleGeneralPersonelRoster uIModuleGeneralPersonelRoster)
+            {
+                try
+                {
+                   // GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                    Transform roster = uIModuleGeneralPersonelRoster.RosterList;
+
+                   
+
+                    foreach (GeoSite geoSite in _sitesVehiclesDict.Keys)
+                    {
+                        TFTVLogger.Always($"{geoSite?.LocalizedSiteName}");
+
+                        GeoRosterContainterItem siteContainer = roster.GetComponentsInChildren<GeoRosterContainterItem>().FirstOrDefault(ci => ci.ContainerName.text == geoSite.LocalizedSiteName);
+
+                        TFTVLogger.Always($"siteContainer: {siteContainer?.ContainerName.text}");
+
+                       // Transform vehiclesTransform = UnityEngine.Object.Instantiate(siteContainer.transform, siteContainer.transform);
+                       // vehiclesTransform.position = new Vector3(siteContainer.transform.position.x + 400, siteContainer.transform.position.y, siteContainer.transform.position.z);
+                        foreach (GeoVehicle geoVehicle in _sitesVehiclesDict[geoSite])
+                        {
+                            TFTVLogger.Always($"{geoVehicle.Name}");
+
+                            GeoRosterContainterItem vehicleContainer = roster.GetComponentsInChildren<GeoRosterContainterItem>().FirstOrDefault(ci => ci.ContainerName.text == geoVehicle.Name);
+                            TFTVLogger.Always($"vehicleContainer: {vehicleContainer?.ContainerName.text}");
+                            vehicleContainer.transform.SetParent(_rosterVehicles, true);
+                            vehicleContainer.transform.position = new Vector3(siteContainer.transform.position.x + 400, siteContainer.transform.position.y, siteContainer.transform.position.z);
+
+                        }
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+            }
+
+
+         /*   [HarmonyPatch(typeof(UIModuleGeneralPersonelRoster), "InitGroupItem")]
+            public static class UIModuleGeneralPersonelRoster_InitGroupItem_Patch
+            {
+                public static bool Prefix(UIModuleGeneralPersonelRoster __instance, IGeoCharacterContainer container, int groupIndex, GeoRosterFilter filter, ref GeoRosterContainterItem __result)
+                {
+                    try
+                    {
+                        if (filter.GroupPrefab == null)
+                        {
+                            __result = null;
+                        }
+
+
+                       // if (_rosterVehicles == null)
+                       // {
+                       //     _rosterVehicles = UnityEngine.Object.Instantiate(__instance.RosterList);
+                            // _rosterVehicles.position = new Vector3(__instance.RosterList.position.x+800, __instance.RosterList.position.y, __instance.RosterList.position.z);
+                       // }
+
+                        string containerName = container.Name;
+
+                        GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                        GeoSite site = null;
+                        GeoVehicle aircraft = null;
+
+                        bool containerIsRelevant = false;
+
+                        foreach (GeoSite geoSite in controller.Map.AllSites)
+                        {
+                            if (geoSite.LocalizedSiteName != null && geoSite.LocalizedSiteName == containerName)
+                            {
+                                TFTVLogger.Always($"found location at which {containerName} is. It's {geoSite.LocalizedSiteName}");
+                                site = geoSite;
+                                break;
+                            }
+                        }
+
+                        foreach (GeoVehicle geoVehicle in controller.PhoenixFaction.Vehicles)
+                        {
+                            if (containerName == geoVehicle.Name)
+                            {
+                                aircraft = geoVehicle;
+
+                                TFTVLogger.Always($"found aircraft for {containerName}");
+                                if (geoVehicle.CurrentSite != null && geoVehicle.CurrentSite.GetComponent<GeoPhoenixBase>()!=null)
+                                {
+                                    TFTVLogger.Always($"and it's at {site?.LocalizedSiteName}");
+                                    site = geoVehicle.CurrentSite;
+
+                                    if (_sitesVehiclesDict.ContainsKey(site))
+                                    {
+                                        _sitesVehiclesDict[site].Add(geoVehicle);
+                                    }
+                                    else
+                                    {
+                                        _sitesVehiclesDict.Add(site, new List<GeoVehicle> { geoVehicle });
+                                    }
+
+                                }
+                                else
+                                {
+                                    _vehiclesInTransit.Add(geoVehicle);
+                                }
+
+                                break;
+                            }
+                        }
+
+                        if (site != null)
+                        {
+                            IEnumerable<GeoVehicle> geoVehicles = site.GetPlayerVehiclesOnSite();
+                            if ((geoVehicles != null && geoVehicles.Count() > 0 && geoVehicles.Any(v => v.Owner == controller.PhoenixFaction && v.Units.Count() > 0)))
+                            {
+                                containerIsRelevant = true;
+                            }
+                            else if (site.Units.Any(u => u.Faction == controller.PhoenixFaction))
+                            {
+                                containerIsRelevant = true;
+                                _garrisonPhoenixBases.Add(site);
+
+                            }
+                        }
+                        else if (aircraft != null)
+                        {
+                            if (aircraft.Owner == controller.PhoenixFaction && aircraft.Units.Count() > 0)
+                            {
+                                containerIsRelevant = true;
+                            }
+                        }
+
+                        if (containerIsRelevant)
+                        {
+                            GeoRosterContainterItem geoRosterContainterItem;
+                            if (__instance.Groups.Count <= groupIndex)
+                            {
+                                //geoRosterContainterItem = UnityEngine.Object.Instantiate(filter.GroupPrefab, __instance.RosterList);
+
+                                TFTVLogger.Always($"Creating new group for {containerName} at index {groupIndex}");
+                                geoRosterContainterItem = UnityEngine.Object.Instantiate(filter.GroupPrefab, __instance.RosterList);
+
+                                __instance.Groups.Add(geoRosterContainterItem);
+                            }
+                            else
+                            {
+                                TFTVLogger.Always($"adding item {containerName} at index {groupIndex}");
+                                geoRosterContainterItem = __instance.Groups[groupIndex];
+                               
+
+                            }
+
+                            geoRosterContainterItem.Init(container);
+                            __result = geoRosterContainterItem;
+
+                        }
+                        else
+                        {
+                            TFTVLogger.Always($"{containerName} is relevant? {containerIsRelevant}, so should not appear");
+                            __result = null;
+                        }
+
+                        return false;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }*/
+
+
+/*
+[HarmonyPatch(typeof(UIModuleGeneralPersonelRoster), "InitRosterSlots")]
+    public static class UIModuleGeneralPersonelRoster_InitRosterSlots_Patch
+    {
+        public static void Postfix(UIModuleGeneralPersonelRoster __instance, IGeoCharacterContainer primaryContainer, GeoRosterFilter filter)
+        {
+            // Use reflection to access the private _unitContainers field
+            FieldInfo unitContainersField = typeof(UIModuleGeneralPersonelRoster).GetField("_unitContainers", BindingFlags.NonPublic | BindingFlags.Instance);
+            List<object> unitContainers = (List<object>)unitContainersField.GetValue(__instance);
+
+            // Clear existing slots and groups
+            __instance.Slots.Clear();
+            __instance.Groups.Clear();
+
+            // Separate GeoSites and GeoVehicles
+            var geoSites = new List<GeoRosterContainterItem>();
+            var geoVehicles = new List<GeoRosterContainterItem>();
+            var otherItems = new List<GeoRosterContainterItem>();
+
+            foreach (var unitContainer in unitContainers)
+            {
+                IGeoCharacterContainer container = (IGeoCharacterContainer)unitContainer.GetType().GetProperty("Container").GetValue(unitContainer);
+                var containerItem = __instance.InitGroupItem(container, __instance.Groups.Count, filter);
+                if (containerItem != null)
+                {
+                    if (container is GeoSite)
+                    {
+                        geoSites.Add(containerItem);
+                    }
+                    else if (container is GeoVehicle)
+                    {
+                        geoVehicles.Add(containerItem);
+                    }
+                    else
+                    {
+                        otherItems.Add(containerItem);
+                    }
+                }
+            }
+
+            // Arrange GeoSites on the left and GeoVehicles to the right of their corresponding GeoSite
+            int siblingIndex = 0;
+            foreach (var site in geoSites)
+            {
+                site.transform.SetSiblingIndex(siblingIndex++);
+                site.gameObject.SetActive(true);
+
+                // Find and arrange GeoVehicles to the right of their corresponding GeoSite
+                foreach (var vehicle in geoVehicles.Where(v => ((GeoVehicle)v.Container).CurrentSite == site.Container))
+                {
+                    vehicle.transform.SetSiblingIndex(siblingIndex++);
+                    vehicle.transform.localPosition = new Vector3(site.transform.localPosition.x + 200, site.transform.localPosition.y, site.transform.localPosition.z); // Adjust the x offset as needed
+                    vehicle.gameObject.SetActive(true);
+                }
+            }
+
+            // Arrange remaining items below
+            foreach (var item in otherItems)
+            {
+                item.transform.SetSiblingIndex(siblingIndex++);
+                item.gameObject.SetActive(true);
+            }
+
+            // Refresh navigation
+            __instance.RefreshNavigation();
+        }
+    }*/
+
+
+
+
+
+    /*[HarmonyPatch(typeof(UIModuleGeneralPersonelRoster), "InitRosterSlots")]
+             public static class UIModuleGeneralPersonelRosterPatch
+             {
+                 public static void Postfix(UIModuleGeneralPersonelRoster __instance, IGeoCharacterContainer primaryContainer, 
+                     GeoRosterFilter filter, Predicate<GeoRosterItem> ____selectedCheck)
+                 {
+                     try
+                     {
+                        SortOutSitesAndVehicles(__instance);
+
+                       /*  // Clear existing slots
+                         __instance.Slots.Clear();
+                         __instance.Slots.AddRange(__instance.RosterList.GetComponentsInChildren<GeoRosterItem>(includeInactive: true).Where(r => r.RowMode == filter.Filter));
+
+                         // Use reflection to set the Groups property
+                         var groupsProperty = typeof(UIModuleGeneralPersonelRoster).GetProperty("Groups", BindingFlags.Public | BindingFlags.Instance);
+                         var groups = __instance.RosterList.GetComponentsInChildren<GeoRosterContainterItem>(includeInactive: true).ToList();
+
+
+
+                         groupsProperty.SetValue(__instance, groups);
+
+
+
+                         // Use reflection to get the InitGroupItem method
+                         var initGroupItemMethod = typeof(UIModuleGeneralPersonelRoster).GetMethod("InitGroupItem", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                         // Use reflection to get the InitRosterSlot method
+                         var initRosterSlotMethod = typeof(UIModuleGeneralPersonelRoster).GetMethod("InitRosterSlot", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                         // Use reflection to get the _unitContainers field
+
+                         var unitContainersField = typeof(UIModuleGeneralPersonelRoster).GetField("_unitContainers", BindingFlags.NonPublic | BindingFlags.Instance);
+
+
+                         var unitContainers = unitContainersField.GetValue(__instance) as IEnumerable<object>;
+
+                         int num = 0;
+                         int num2 = 0;
+                         int num3 = 0;
+                         int num4 = -1;
+
+                         foreach (var unitContainer in unitContainers)
+                         {
+                             num4++;
+                             var container = unitContainer.GetType().GetProperty("Container").GetValue(unitContainer);
+                             var geoRosterContainterItem = (GeoRosterContainterItem)initGroupItemMethod.Invoke(__instance, new object[] { container, num4, filter });
+                             if (geoRosterContainterItem != null)
+                             {
+                                 geoRosterContainterItem.transform.SetSiblingIndex(num3);
+                                 geoRosterContainterItem.gameObject.SetActive(true);
+                                 num2++;
+                                 num3++;
+                             }
+
+                             var geoTacUnits = unitContainer.GetType().GetProperty("GeoTacUnits").GetValue(unitContainer) as IEnumerable<object>;
+                             var units = geoTacUnits ?? (IEnumerable<object>)unitContainer.GetType().GetProperty("Units").GetValue(unitContainer);
+                             foreach (var item in units)
+                             {
+                                 var slot = (GeoRosterItem)initRosterSlotMethod.Invoke(__instance, new object[] { item, container, num, filter });
+                                 if (slot != null)
+                                 {
+
+                                     slot.transform.SetSiblingIndex(num3);                   
+                                     slot.PrimaryContainer = primaryContainer;
+                                     slot.Selected = ____selectedCheck != null ? ____selectedCheck(slot) : false;
+
+
+                                     if (slot.RowMode == GeoRosterFilterMode.Soldiers)
+                                     {
+                                         if (_unitContainers.Where((ContainerData c) => c.Container != slot.Container && c.Container.CanTransferBetweenContainer(slot.Container)).Count() > 0)
+                                         {
+                                             slot.TransferButton.SetInteractable(isInteractable: true);
+                                             slot.TransferDisplayArrow.SetActive(value: true);
+                                         }
+                                         else
+                                         {
+                                             slot.TransferButton.SetInteractable(isInteractable: false);
+                                             slot.TransferDisplayArrow.SetActive(value: false);
+                                         }
+                                     }
+
+                                     slot.gameObject.SetActive(value: true);
+                                     num3++;
+                                     num++;
+
+                                     slot.gameObject.SetActive(true);
+                                     num3++;
+                                     num++;
+                                 }
+                             }
+                         }
+
+                         for (int i = num2; i < groups.Count; i++)
+                         {
+                             groups[i].gameObject.SetActive(false);
+                         }
+
+                         for (int j = num; j < __instance.Slots.Count; j++)
+                          {
+                              __instance.Slots[j].gameObject.SetActive(false);
+                          }*/
+
+
+
+
+
+
+
+
+
+            /*
+                      }
+                     catch (Exception e)
+                     {
+                         TFTVLogger.Error(e);
+                         throw;
+                     }
+                 }
+             }*/
+
+
+
+
+
+
+           /* [HarmonyPatch(typeof(GeoRosterItem))]
+            [HarmonyPatch("Init", typeof(GeoCharacter), typeof(IGeoCharacterContainer), typeof(GeoFaction))]
+            public static class GeoRosterGeoCharacterItemPatch
+            {
+                public static void Postfix(GeoRosterItem __instance, IGeoCharacterContainer characterContainer, GeoFaction faction, GeoCharacter character)
+                {
+                    try
+                    {
+
+                        //   __instance.transform.localScale = new Vector3(0.7f, 0.7f, 0.7f);
+                        UIModuleGeneralPersonelRoster uIModuleGeneralPersonelRoster = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.GeneralPersonelRosterModule;
+                        VerticalLayoutGroup verticalLayoutGroup = uIModuleGeneralPersonelRoster.ScrollController.ScrollRect.content.GetComponent<VerticalLayoutGroup>();
+
+                        
+//[TFTV @ 1/5/2025 6:57:27 PM] ScrollController: Content UnityEngine.RectTransform
+//[TFTV @ 1/5/2025 6:57:27 PM] ScrollController: Content UnityEngine.UI.VerticalLayoutGroup
+//[TFTV @ 1/5/2025 6:57:27 PM] ScrollController: Content UnityEngine.UI.ContentSizeFitter
+//[TFTV @ 1/5/2025 6:57:27 PM] ScrollController: Content Base.UI.UINavigationalElementsHolder
+                        
+
+
+                        if (verticalLayoutGroup != null && !_scrollAdjusted)
+                        {
+                            verticalLayoutGroup.GetComponent<RectTransform>().localScale = new Vector3(0.7f, 0.7f, 0.7f);
+                            verticalLayoutGroup.GetComponent<RectTransform>().anchoredPosition
+                                = new Vector2(verticalLayoutGroup.GetComponent<RectTransform>().anchoredPosition.x - 200, 0);
+
+                            verticalLayoutGroup.SetLayoutVertical();
+                            _scrollAdjusted = true;
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }*/
+        }
+
+
+
         private static Sprite _backgroundSquadDeploy = null;
         private static Sprite _backgroundContainment = null;
         private static Sprite _backgroundBionics = null;
@@ -35,7 +789,7 @@ namespace TFTV
 
 
 
-        private static CharacterClassWorldDisplay _copyCharacterClassWorldDisplay = null;
+        private static CharacterClassWorldDisplay _copyCharacterClassWorldDisplayMain = null;
 
 
         private static void ModifyLightningAndPlatform(Transform transform)
@@ -127,24 +881,6 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(UIStateVehicleRoster), "EnterState")]
-        public static class TFTV_UIStateVehicleRoster_EnterState_patch
-        {
-
-            public static void Prefix(UIStateRosterAliens __instance)
-            {
-                try
-                {
-                    _activeBackground = _backgroundAirForce;
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
 
 
         [HarmonyPatch(typeof(UIStateRosterAliens), "PushState")]
@@ -155,6 +891,9 @@ namespace TFTV
             {
                 try
                 {
+                 //   UIModuleGeneralPersonelRoster uIModuleGeneralPersonelRoster = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.GeneralPersonelRosterModule;
+                 //   uIModuleGeneralPersonelRoster.RosterList.gameObject.SetActive(true);
+
                     _activeBackground = _backgroundContainment;
                 }
 
@@ -250,6 +989,7 @@ namespace TFTV
             }
         }
 
+        public static bool MemorialPushStateRunning = false;
 
         [HarmonyPatch(typeof(UIStateMemorial), "PushState")]
         public static class TFTV_UIStateMemorial_PushState_patch
@@ -259,6 +999,10 @@ namespace TFTV
             {
                 try
                 {
+                    
+
+
+
                     _activeBackground = _backgroundMemorial;
 
                     // TFTVLogger.Always($"entering UIStateMemorial");
@@ -271,21 +1015,7 @@ namespace TFTV
                     throw;
                 }
             }
-            public static void Postfix(UIStateMemorial __instance)
-            {
-                try
-                {
-                    _activeBackground = _backgroundMemorial;
-
-
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
+          
         }
 
 
@@ -482,32 +1212,34 @@ namespace TFTV
             }
         }
 
+
         public static void ChangeSceneBackgroundSquadDeploy(GeoSceneReferences geoSceneReferences)
         {
             try
             {
-               /* if (_deactivateBackgroundPic)
+                /* if (_deactivateBackgroundPic)
+                 {
+                     if (_copyCharacterClassWorldDisplay != null)
+                     {
+                         _copyCharacterClassWorldDisplay.gameObject.SetActive(false);
+                     }
+                     return;
+                 }*/
+
+                //   ChangeContainmentScreen(geoSceneReferences);
+
+                if (_copyCharacterClassWorldDisplayMain != null)
                 {
-                    if (_copyCharacterClassWorldDisplay != null)
-                    {
-                        _copyCharacterClassWorldDisplay.gameObject.SetActive(false);
-                    }
-                    return;
-                }*/
+                    _copyCharacterClassWorldDisplayMain.gameObject.SetActive(true);
 
-
-                if (_copyCharacterClassWorldDisplay != null)
-                {
-                    _copyCharacterClassWorldDisplay.gameObject.SetActive(true);
-
-                    _copyCharacterClassWorldDisplay.SingleClassImage.sprite = _activeBackground ?? _backgroundSquadDeploy;
-                    RectTransform backgroundPicRT = _copyCharacterClassWorldDisplay.SingleClassImage.GetComponent<RectTransform>();
+                    _copyCharacterClassWorldDisplayMain.SingleClassImage.sprite = _activeBackground ?? _backgroundSquadDeploy;
+                    RectTransform backgroundPicRT = _copyCharacterClassWorldDisplayMain.SingleClassImage.GetComponent<RectTransform>();
                     float imageAspectCurrentBackground = (float)_activeBackground.texture.width / _activeBackground.texture.height;
 
-                   /* TFTVLogger.Always($"Before changes: background {_activeBackground.name}, " +
-                        $"anchoredPostion3d {backgroundPicRT.anchoredPosition3D}, " +
-                        $"imageAspectCurrentBackground {imageAspectCurrentBackground}, " +
-                        $"backgroundPicRT.sizeDelta {backgroundPicRT.sizeDelta}");*/
+                    /* TFTVLogger.Always($"Before changes: background {_activeBackground.name}, " +
+                         $"anchoredPostion3d {backgroundPicRT.anchoredPosition3D}, " +
+                         $"imageAspectCurrentBackground {imageAspectCurrentBackground}, " +
+                         $"backgroundPicRT.sizeDelta {backgroundPicRT.sizeDelta}");*/
 
                     if (_activeBackground == _backgroundMutation || _activeBackground == _backgroundBionics)
                     {
@@ -526,8 +1258,8 @@ namespace TFTV
                     {
                         backgroundPicRT.sizeDelta = new Vector2(backgroundPicRT.rect.height * imageAspectCurrentBackground, backgroundPicRT.rect.height);
                         backgroundPicRT.localScale = new Vector2(imageAspectCurrentBackground * 1.15f, imageAspectCurrentBackground * 1.15f);
-                        
-                        backgroundPicRT.anchoredPosition3D = new Vector3(backgroundPicRT.anchoredPosition3D.x, backgroundPicRT.anchoredPosition3D.y, backgroundPicRT.anchoredPosition3D.z+20);
+
+                        backgroundPicRT.anchoredPosition3D = new Vector3(backgroundPicRT.anchoredPosition3D.x, backgroundPicRT.anchoredPosition3D.y, backgroundPicRT.anchoredPosition3D.z + 20);
                         RemoveSceneDoF();
                     }
                     else
@@ -538,10 +1270,10 @@ namespace TFTV
                         RemoveSceneDoF();
                     }
 
-                   /* TFTVLogger.Always($"After changes: background {_activeBackground.name}, " +
-                       $"anchoredPostion3d {backgroundPicRT.anchoredPosition3D}, " +
-                       $"imageAspectCurrentBackground {imageAspectCurrentBackground}, " +
-                       $"backgroundPicRT.sizeDelta {backgroundPicRT.sizeDelta}");*/
+                    /* TFTVLogger.Always($"After changes: background {_activeBackground.name}, " +
+                        $"anchoredPostion3d {backgroundPicRT.anchoredPosition3D}, " +
+                        $"imageAspectCurrentBackground {imageAspectCurrentBackground}, " +
+                        $"backgroundPicRT.sizeDelta {backgroundPicRT.sizeDelta}");*/
 
                     return;
                 }
@@ -551,7 +1283,7 @@ namespace TFTV
 
                 GameObject copy = UnityEngine.Object.Instantiate(characterClassWorldDisplay.gameObject, characterClassWorldDisplay.transform.parent);
                 CharacterClassWorldDisplay copyDisplay = copy.GetComponent<CharacterClassWorldDisplay>();
-                _copyCharacterClassWorldDisplay = copyDisplay;
+                _copyCharacterClassWorldDisplayMain = copyDisplay;
 
                 copyDisplay.SingleClassImage.sprite = _activeBackground ?? _backgroundSquadDeploy;
 
@@ -580,7 +1312,30 @@ namespace TFTV
             }
         }
 
-        private static Sprite _airForceBackground = null;
+        // private static Sprite _airForceBackground = null;
+
+
+
+        [HarmonyPatch(typeof(UIStateVehicleRoster), "EnterState")]
+        public static class TFTV_UIStateVehicleRoster_EnterState_patch
+        {
+
+            public static void Prefix(UIStateRosterAliens __instance)
+            {
+                try
+                {
+                    _activeBackground = _backgroundAirForce;
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+        private static CharacterClassWorldDisplay _copyCharacterClassWorldDisplayVehicleRoster = null;
 
         [HarmonyPatch(typeof(GeoSceneReferences), "ActivateScene")]
         public static class TFTV_GeoSceneReferences_ActivateScene_patch
@@ -590,45 +1345,50 @@ namespace TFTV
                 try
                 {
 
-                   // TFTVLogger.Always($"{activeScene} {__instance.name}");
+                    // TFTVLogger.Always($"{activeScene} {__instance.name}");
 
                     if (activeScene == ActiveSceneReference.SquadBay)
                     {
                         ChangeSceneBackgroundSquadDeploy(__instance);
                         ModifyLightningAndPlatform(__instance.SquadBay.CharBuilderPlatform);
                     }
-                    else if(activeScene == ActiveSceneReference.VehicleBay)
+                    else if (activeScene == ActiveSceneReference.VehicleBay)
                     {
-
-                        CharacterClassWorldDisplay characterClassWorldDisplay = __instance.SquadBay.ClassWorldDisplay;
-
-
-                        GameObject copy = UnityEngine.Object.Instantiate(characterClassWorldDisplay.gameObject, __instance.VehicleBay.transform);
-                        CharacterClassWorldDisplay copyDisplay = copy.GetComponent<CharacterClassWorldDisplay>();
-                        // _copyCharacterClassWorldDisplay = copyDisplay;
-
-
-                        if (_airForceBackground == null) 
-                        { 
-                        _airForceBackground = Helper.CreateSpriteFromImageFile("sceneairforce.jpg");
+                        if (_copyCharacterClassWorldDisplayVehicleRoster != null)
+                        {
+                            _copyCharacterClassWorldDisplayVehicleRoster.gameObject.SetActive(true);
                         }
-
-                        copyDisplay.SingleClassImage.sprite = _airForceBackground;
-
-                        RectTransform rt = copyDisplay.SingleClassImage.GetComponent<RectTransform>();
-                        float imageAspect = (float)_backgroundSquadDeploy.texture.width / _backgroundSquadDeploy.texture.height;
-                        rt.sizeDelta = new Vector2(rt.rect.height * imageAspect, rt.rect.height);
-                        rt.localScale = new Vector2(imageAspect * 1.31f, imageAspect * 1.31f);
-
-                        rt.anchoredPosition3D = new Vector3(rt.anchoredPosition3D.x - 45, rt.anchoredPosition3D.y - 25, rt.anchoredPosition3D.z);
-                        rt.eulerAngles = new Vector3(2.8f, 346, 0);
+                        else
+                        {
+                            CharacterClassWorldDisplay characterClassWorldDisplay = __instance.SquadBay.ClassWorldDisplay;
 
 
-                        copyDisplay.SingleClassImage.gameObject.SetActive(true);
-                        copyDisplay.RightClassImage.gameObject.SetActive(false);
-                        copyDisplay.LeftClassImage.gameObject.SetActive(false);
+                            GameObject copy = UnityEngine.Object.Instantiate(characterClassWorldDisplay.gameObject, __instance.VehicleBay.transform);
+                            CharacterClassWorldDisplay copyDisplay = copy.GetComponent<CharacterClassWorldDisplay>();
+                            // _copyCharacterClassWorldDisplay = copyDisplay;
 
+                            copy.SetActive(true);
+
+                            copyDisplay.SingleClassImage.sprite = _backgroundAirForce;
+
+                            RectTransform rt = copyDisplay.SingleClassImage.GetComponent<RectTransform>();
+                            float imageAspect = (float)_backgroundSquadDeploy.texture.width / _backgroundSquadDeploy.texture.height;
+                            rt.sizeDelta = new Vector2(rt.rect.height * imageAspect, rt.rect.height);
+                            rt.localScale = new Vector2(imageAspect * 1.31f, imageAspect * 1.31f);
+
+                            rt.anchoredPosition3D = new Vector3(rt.anchoredPosition3D.x - 45, rt.anchoredPosition3D.y - 25, rt.anchoredPosition3D.z);
+                            rt.eulerAngles = new Vector3(2.8f, 346, 0);
+
+
+                            copyDisplay.SingleClassImage.gameObject.SetActive(true);
+                            copyDisplay.RightClassImage.gameObject.SetActive(false);
+                            copyDisplay.LeftClassImage.gameObject.SetActive(false);
+
+                            _copyCharacterClassWorldDisplayVehicleRoster = copyDisplay;
+                        }
                     }
+
+                    RemoveContainmentInfoPanel();
 
                 }
 

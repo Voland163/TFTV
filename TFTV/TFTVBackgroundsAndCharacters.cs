@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using Base.Core;
+using HarmonyLib;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
@@ -113,6 +114,77 @@ namespace TFTV
         }
 
 
+        public static void AdjustAlistairRoads()
+        {
+            try 
+            { 
+                GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                GeoscapeEventSystem eventSystem = controller.EventSystem;
+
+                GeoscapeEventDef afterWest = DefCache.GetDef<GeoscapeEventDef>("AlistairRoadsNoWest");
+                GeoscapeEventDef afterSynedrion = DefCache.GetDef<GeoscapeEventDef>("AlistairRoadsNoSynedrion");
+                GeoscapeEventDef afterAnu = DefCache.GetDef<GeoscapeEventDef>("AlistairRoadsNoAnu");
+
+                List<GeoscapeEventDef> eventsDef = new List<GeoscapeEventDef>() {afterWest, afterSynedrion, afterAnu };
+
+                string answerAboutVirophage = "KEY_ALISTAIRONVIROPHAGE_DESCRIPTION";
+                string questionAboutVirophage = "KEY_ALISTAIRONVIROPHAGE_CHOICE";
+                string answerAboutHelena = "KEY_ALISTAIRONHELENA_DESCRIPTION";
+                string questionAboutHelena = "KEY_ALISTAIRONHELENA_CHOICE";
+
+                bool completedTelepathicNoduleResearch = controller.PhoenixFaction.Research.HasCompleted("PX_TelepathicNodule_ResearchDef") && controller.PhoenixFaction.Research.HasCompleted("PX_YuggothianReceptacle_ResearchDef");
+
+                TFTVLogger.Always($"context.Level.EventSystem.GetVariable(SymesAlternativeCompleted): {controller.EventSystem.GetVariable("SymesAlternativeCompleted")}");
+
+                TFTVLogger.Always($"context.Level.PhoenixFaction.Research.HasCompleted: {completedTelepathicNoduleResearch}");
+
+                if (!completedTelepathicNoduleResearch) 
+                {
+                    foreach(GeoscapeEventDef geoscapeEventDef in eventsDef) 
+                    {
+                        if (geoscapeEventDef.GeoscapeEventData.Choices.Count > 3) 
+                        {
+                            geoscapeEventDef.GeoscapeEventData.Choices.RemoveAt(3);
+                        } 
+                    } 
+                }
+                else 
+                {
+                    foreach (GeoscapeEventDef geoscapeEventDef in eventsDef)
+                    {
+                        if (geoscapeEventDef.GeoscapeEventData.Choices.Count < 3)
+                        {
+                            TFTVCommonMethods.GenerateGeoEventChoice(geoscapeEventDef, questionAboutVirophage, answerAboutVirophage);
+                        }
+                    }
+
+                    if (eventSystem.GetVariable("SymesAlternativeCompleted") == 1)
+                    {
+                        foreach (GeoscapeEventDef geoscapeEventDef in eventsDef)
+                        {
+                            geoscapeEventDef.GeoscapeEventData.Choices[3].Outcome.OutcomeText.General.LocalizationKey = answerAboutHelena;
+                            geoscapeEventDef.GeoscapeEventData.Choices[3].Text.LocalizationKey = questionAboutHelena;
+                        }
+                    }
+                    else
+                    {
+                        foreach (GeoscapeEventDef geoscapeEventDef in eventsDef)
+                        {
+                            geoscapeEventDef.GeoscapeEventData.Choices[3].Outcome.OutcomeText.General.LocalizationKey = answerAboutVirophage;
+                            geoscapeEventDef.GeoscapeEventData.Choices[3].Text.LocalizationKey = questionAboutVirophage;
+                        }
+                    }
+
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
         //This is a patch to trigger events that introduce lines from characters;
         //needs to be done this way because if TriggerEncounter is assigned to only Outcome, that event is triggered before the Outcome! 
 
@@ -173,38 +245,12 @@ namespace TFTV
                     }
                     else if (eventId == "PROG_FS2_WIN")
                     {
-
-                        GeoscapeEventDef afterWest = DefCache.GetDef<GeoscapeEventDef>("AlistairRoadsNoWest");
-                        GeoscapeEventDef afterSynedrion = DefCache.GetDef<GeoscapeEventDef>("AlistairRoadsNoSynedrion");
-                        GeoscapeEventDef afterAnu = DefCache.GetDef<GeoscapeEventDef>("AlistairRoadsNoAnu");
-                        string answerAboutVirophage = "KEY_ALISTAIRONVIROPHAGE_DESCRIPTION";
-                        string questionAboutVirophage = "KEY_ALISTAIRONVIROPHAGE_CHOICE";
-                        string answerAboutHelena = "KEY_ALISTAIRONHELENA_DESCRIPTION";
-                        string questionAboutHelena = "KEY_ALISTAIRONHELENA_CHOICE";
-
-
-                        if (context.Level.EventSystem.GetVariable("SymesAlternativeCompleted") == 1)
-                        {
-                            afterWest.GeoscapeEventData.Choices[3].Outcome.OutcomeText.General.LocalizationKey = answerAboutHelena;
-                            afterWest.GeoscapeEventData.Choices[3].Text.LocalizationKey = questionAboutHelena;
-                            afterSynedrion.GeoscapeEventData.Choices[3].Outcome.OutcomeText.General.LocalizationKey = answerAboutHelena;
-                            afterSynedrion.GeoscapeEventData.Choices[3].Text.LocalizationKey = questionAboutHelena;
-                            afterAnu.GeoscapeEventData.Choices[3].Outcome.OutcomeText.General.LocalizationKey = answerAboutHelena;
-                            afterAnu.GeoscapeEventData.Choices[3].Text.LocalizationKey = questionAboutHelena;
-                        }
-                        else
-                        {
-                            afterWest.GeoscapeEventData.Choices[3].Outcome.OutcomeText.General.LocalizationKey = answerAboutVirophage;
-                            afterWest.GeoscapeEventData.Choices[3].Text.LocalizationKey = questionAboutVirophage;
-                            afterSynedrion.GeoscapeEventData.Choices[3].Outcome.OutcomeText.General.LocalizationKey = answerAboutVirophage;
-                            afterSynedrion.GeoscapeEventData.Choices[3].Text.LocalizationKey = questionAboutVirophage;
-                            afterAnu.GeoscapeEventData.Choices[3].Outcome.OutcomeText.General.LocalizationKey = answerAboutVirophage;
-                            afterAnu.GeoscapeEventData.Choices[3].Text.LocalizationKey = questionAboutVirophage;
-                        }
+                            
+                        AdjustAlistairRoads();
 
                         // TFTVThirdAct.ActivateFS3Event(context.Level);
                         TFTVVoidOmens.RemoveAllVoidOmens(context.Level);
-                        __instance.TriggerGeoscapeEvent("AlistairRoads", context);
+                        __instance.TriggerGeoscapeEvent("AlistairRoads", new GeoscapeEventContext(context.Level.PhoenixFaction, context.Level.PhoenixFaction));
                         TFTVDelirium.RemoveDeliriumFromAllCharactersWithoutMutations(context.Level);
                         TFTVBehemothAndRaids.behemothScenicRoute.Clear();
                         TFTVBehemothAndRaids.targetsForBehemoth.Clear();

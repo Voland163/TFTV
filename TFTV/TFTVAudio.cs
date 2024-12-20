@@ -2,6 +2,7 @@
 using Base.Eventus;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Eventus.Contexts;
 using PhoenixPoint.Tactical.Eventus.Filters;
 using System;
@@ -86,13 +87,20 @@ namespace TFTV
                         //  GameTagDef mutoidTag = DefCache.GetDef<GameTagDef>("Mutoid_TagDef");
                         TFTVConfig config = TFTVMain.Main.Config;
 
-                        //  TFTVLogger.Always($"TacActorHeadMutationsFilterDef: bark from {tacActorEventContext.Actor.name}");
+                        TacticalActorBase tacticalActorBase = tacActorEventContext.Actor;
+
+                       /* TFTVLogger.Always($"TacActorHeadMutationsFilterDef: bark from {tacticalActorBase.DisplayName} {_palaceMissionGameTagsToCheck.Any(gt => tacticalActorBase.GameTags.Contains(gt))}");
+                   
+                        foreach (GameTagDef gameTagDef in tacticalActorBase.GameTags)
+                        {
+                            TFTVLogger.Always($"{tacticalActorBase.DisplayName} has tag {gameTagDef.name}");
+                        }*/
 
                         if (config.NoBarks && tacActorEventContext.Actor.Health.Value > 0 &&
-                            (tacActorEventContext.Actor.HasGameTag(humanTag) ||
-                            _palaceMissionGameTagsToCheck.Any(gt => tacActorEventContext.Actor.GameTags.Contains(gt))))
+                            tacActorEventContext.Actor.HasGameTag(humanTag) ||
+                            _palaceMissionGameTagsToCheck.Any(gt => tacticalActorBase.GameTags.Contains(gt)))
                         {
-                            //    TFTVLogger.Always($"TacActorHeadMutationsFilterDef: stopping bark from {tacActorEventContext.Actor.name}");
+                           // TFTVLogger.Always($"TacActorHeadMutationsFilterDef: stopping bark from {tacticalActorBase.DisplayName}");
                             __result = false;
                         }
                     }

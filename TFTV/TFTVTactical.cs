@@ -142,7 +142,7 @@ namespace TFTV
                 TFTVHumanEnemies.RollCount = 0;
                 TFTVSpecialDifficulties.DefModifying.CheckForSpecialDifficulties();
                 TFTVRevenant.Resistance.CheckIfRevenantPresent(controller);
-                TFTVUITactical.RemoveDamagePredictionBar();
+                TFTVUITactical.DamagePrediction.RemoveDamagePredictionBar();
             }
 
             catch (Exception e)

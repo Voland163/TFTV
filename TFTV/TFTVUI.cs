@@ -8,6 +8,7 @@ using Base.UI.MessageBox;
 using Base.UI.VideoPlayback;
 using Code.PhoenixPoint.Tactical.Entities.Equipments;
 using HarmonyLib;
+using Mono.Cecil.Cil;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Characters;
@@ -2217,7 +2218,6 @@ namespace TFTV
 
         internal class MissionDeployment
         {
-
             private static void CreateBestEquipmentButton(GeoSite geoSite)
             {
                 try
@@ -2258,12 +2258,25 @@ namespace TFTV
                     useBestEquipmentButton.name = "EquipAllButton";
 
                     Text text = useBestEquipmentButton.GetComponentsInChildren<Transform>().FirstOrDefault(t => t.name == "UIText3Big").GetComponent<Text>();
+
                     text.GetComponent<I2.Loc.Localize>().enabled = false;
                     text.text = TFTVCommonMethods.ConvertKeyToString("KEY_UI_LOADUP_TEXT").ToUpper();
 
                     Image image = useBestEquipmentButton.GetComponentsInChildren<Image>().FirstOrDefault(i => i.name == "Hotkey");
-                    image.sprite = Helper.CreateSpriteFromImageFile("Lockers.png");
+                   
 
+                    if (image == null)
+                    { TFTVLogger.Always($"image==null: {image == null}");
+                        /*  GameObject iconObject = new GameObject("IconObject", typeof(Image), typeof(RectTransform));
+                          iconObject.GetComponent<RectTransform>().SetParent(useBestEquipmentButton.transform);
+                          image = iconObject.GetComponent<Image>();
+                          image.preserveAspect = true;
+                          image.SetNativeSize();*/
+                    }
+                    else
+                    {
+                        image.sprite = Helper.CreateSpriteFromImageFile("Lockers.png");
+                    }
 
                     useBestEquipmentButton.gameObject.AddComponent<UITooltipText>().TipText = TFTVCommonMethods.ConvertKeyToString("KEY_UI_LOADUP_TIP");
 
@@ -2298,7 +2311,8 @@ namespace TFTV
                         {
                             foreach (GeoVehicle geoVehicle in controller.PhoenixFaction.Vehicles)
                             {
-                                if (geoCharacter.GameTags.Contains(Shared.SharedGameTags.VehicleClassTag) && geoVehicle.GroundVehicles.Contains(geoCharacter)
+                                if (geoCharacter.GameTags.Contains(Shared.SharedGameTags.VehicleClassTag) && geoVehicle.GroundVehicles.Contains(geoCharacter) || 
+                                    geoCharacter.GameTags.Contains(Shared.SharedGameTags.MutogTag)
                                     || geoVehicle.Soldiers.Contains(uIModuleActorCycle.CurrentCharacter))
                                 {
                                     geoSite = geoVehicle.CurrentSite;

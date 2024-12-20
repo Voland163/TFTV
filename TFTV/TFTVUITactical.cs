@@ -57,99 +57,6 @@ namespace TFTV
         private static Color _whiteColor = new Color(0.820f, 0.859f, 0.914f);
         public static Color VoidColor = new Color(0.525f, 0.243f, 0.937f);
 
-
-
-        /* [HarmonyPatch(typeof(InputController), "RefreshActions")]
-           public static class InputController_Init_patch
-           {
-               public static bool Prefix(InputController __instance, ref InputAction[] ____activeActionsMap,
-                  ref List<int> ____activeActionHashes, ref List<InputAction> ____actionList, ref List<AxisValue> ____axisValues,
-                 ref List<KeyValue> ____keyValuesList, ref KeyValue[] ____keyValues, ref List<ActionAxisValue> ____actionAxisValues)
-               {
-                   try
-                   {
-                       MethodInfo InitSuperChordsMethodInfo = typeof(InputController).GetMethod("InitSuperChords", BindingFlags.Instance | BindingFlags.NonPublic);
-                       MethodInfo IsAllowedAndSupportedMethodInfo = typeof(InputController).GetMethod("IsAllowedAndSupported", BindingFlags.Instance | BindingFlags.NonPublic);
-                       MethodInfo GetAxisRawMethodInfo = typeof(InputController).GetMethod("GetAxisRaw", BindingFlags.Static | BindingFlags.NonPublic);
-                       PropertyInfo KeyMaxHashFieldInfo = typeof(InputController).GetProperty("KeyMaxHash", BindingFlags.Instance | BindingFlags.NonPublic);
-
-
-
-                       for (int i = 0; i < ____activeActionsMap.Length; i++)
-                       {
-                           ____activeActionsMap[i] = null;
-                       }
-
-                       TFTVLogger.Always($"got here0");
-
-                       List<InputAction> list = ____activeActionHashes.Select(__instance.GetDefaultAction).ToList();
-                       TFTVLogger.Always($"got here0bis; list count is {list.Count}, while  ____activeActionsMap.Length is {____activeActionsMap.Length}");
-
-                       foreach (InputAction item in list)
-                       {
-                           TFTVLogger.Always($"item is {item?.Name} hash: {item?.Hash} ____activeActionsMap.Contains(item): {____activeActionsMap.Contains(item)}");
-
-                           //  if (____activeActionsMap.Contains(item))
-
-                               ____activeActionsMap[item.Hash] = item;
-
-                       }
-                       TFTVLogger.Always($"got here0ter");
-
-                       ____actionList = list;
-                       List<InputKey> source = (from action in list
-                                                from chord in action.Chords
-                                                from key in chord.Keys
-                                                where (bool)IsAllowedAndSupportedMethodInfo.Invoke(__instance, new object[] { key.GetInputType() })// IsAllowedAndSupported(key.GetInputType())
-                                                select key).Distinct().ToList();
-
-                       TFTVLogger.Always($"got here1");
-
-                       IEnumerable<InputKey> source2 = source.Where((InputKey key) => key.InputSource == InputSource.AxisTriggerPositive || key.InputSource == InputSource.AxisTriggerNegative || key.InputSource == InputSource.Axis);
-                       List<AxisValue> prevAxisValues = ____axisValues ?? new List<AxisValue>();
-                       ____axisValues = source2.Select((InputKey k) => new AxisValue(k.Name, k.GetInputType(), (AxisValue)GetAxisRawMethodInfo.Invoke(__instance, new object[] { k.Name, prevAxisValues }), __instance)).ToList();
-
-                       TFTVLogger.Always($"and here2");
-
-                       IEnumerable<InputKey> source3 = source.Where((InputKey key) => key.InputSource == InputSource.Key || key.InputSource == InputSource.AxisTriggerNegative || key.InputSource == InputSource.AxisTriggerPositive);
-                       KeyValue[] prevKeyValues = ____keyValues ?? new KeyValue[(int)KeyMaxHashFieldInfo.GetValue(__instance)];
-
-                       TFTVLogger.Always($"and here3");
-                       ____keyValuesList = source3.Select((InputKey k) => new KeyValue(k, prevKeyValues[k.GetHashCode()], __instance)).ToList();
-                       ____keyValues = new KeyValue[(int)KeyMaxHashFieldInfo.GetValue(__instance)];
-
-                       TFTVLogger.Always($"whatabout here4");
-                       for (int j = 0; j < ____keyValuesList.Count; j++)
-                       {
-                           int hashCode = ____keyValuesList[j].Key.GetHashCode();
-                           ____keyValues[hashCode] = ____keyValuesList[j];
-                       }
-
-                       ____actionAxisValues = (from a in list
-                                               where a.IsAxis
-                                               select new ActionAxisValue(a, __instance)).ToList();
-
-                       TFTVLogger.Always($"dont tell me this is the problem!");
-                       InitSuperChordsMethodInfo.Invoke(__instance, new object[] { });// InitSuperChords();
-                       __instance.IsInputSetLoaded = true;
-
-                       TFTVLogger.Always($"got to the end! A miracle");
-
-                       return false;
-                   }
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                       throw;
-                   }
-               }
-           }*/
-
-
-
-
-
-
         public static void CachePuristaSemiboldFont(UIModuleObjectives uIModuleObjectives)
         {
             try
@@ -339,7 +246,7 @@ namespace TFTV
                         GameObject generatorHealthTextObj = new GameObject("PowerGeneratorsHealthText");
                         generatorHealthTextObj.transform.SetParent(baseDefenseWidgetPrefab.transform);
                         Text generatorHealthText = generatorHealthTextObj.AddComponent<Text>();
-                        generatorHealthText.text = $"Generators at {powerGeneratorHP}%, can be vented {consolesLeft} times";
+                        generatorHealthText.text = TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_BASE_DEFENSE_GENERATORS").Replace("{0}", powerGeneratorHP.ToString()).Replace("{1}", consolesLeft.ToString()); // $"Generators at {powerGeneratorHP}%, can be vented {consolesLeft} times";
                         generatorHealthText.alignment = TextAnchor.MiddleLeft;
                         generatorHealthText.fontSize = 35;
                         generatorHealthText.color = color;
@@ -502,7 +409,7 @@ namespace TFTV
                             Outline outline = icon.GetComponent<Outline>() ?? icon.AddComponent<Outline>();
                             outline.effectColor = Color.black;         // Outline color
 
-                            if (icon.GetComponent<Image>() != null && icon.GetComponent<Image>().sprite == DefCache.GetDef<ViewElementDef>(ODITactical._tbtvGeneralStatusViewElementName).SmallIcon)
+                            if (icon.GetComponent<Image>() != null && icon.GetComponent<Image>().sprite == DefCache.GetDef<ViewElementDef>("E_ViewElement [TBTV_Hidden_AbilityDef]").SmallIcon)
                             {
                                 // TFTVLogger.Always($"got here");
                                 outline.effectColor = VoidColor;
@@ -523,7 +430,34 @@ namespace TFTV
             }
 
 
+            [HarmonyPatch(typeof(UIModuleBattleSummary), "Initialize")]
+            public static class UIModuleBattleSummary_Initialize_patch
+            {
+                public static void Prefix(UIModuleBattleSummary __instance)
+                {
+                    try
+                    {
+                        RectTransform rectTransformToCopy = null;
 
+                        foreach (Component component in __instance.ObjectivesResultContainer)
+                        {
+                            if (component is RectTransform transform)
+                            {
+                                rectTransformToCopy = transform;
+                                break;
+                            }
+                        }
+
+                        UnityEngine.Object.Instantiate(rectTransformToCopy, __instance.ObjectivesResultContainer.transform);
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
 
 
 
@@ -663,7 +597,7 @@ namespace TFTV
                 private Text _description;
                 Color greenColor = new Color(0.4f, 0.729f, 0.416f);
 
-                public void ShowNewObjective(string title, List<string> descriptions, Sprite icon, bool victoryObjective = false, float displayDuration = 3f)
+                public void ShowNewObjective(string title, List<string> descriptions, Sprite icon, bool isRevenant = false, bool victoryObjective = false, float displayDuration = 3f)
                 {
                     try
                     {
@@ -672,7 +606,7 @@ namespace TFTV
                         currentDescriptionIndex = 0; // Reset index for each new objective
                         descriptionDisplayTime = displayDuration / descriptions.Count; // Time per description
 
-                        CreateUIElement(title, descriptions[currentDescriptionIndex], icon, victoryObjective);
+                        CreateUIElement(title, descriptions[currentDescriptionIndex], icon, victoryObjective, isRevenant);
                         StartFadeIn();
                     }
                     catch (Exception e)
@@ -686,7 +620,7 @@ namespace TFTV
                 private float descriptionDisplayTime;
 
 
-                private void CreateUIElement(string title, string initialDescription, Sprite classIcon, bool victoryObjective = false)
+                private void CreateUIElement(string title, string initialDescription, Sprite classIcon, bool victoryObjective = false, bool isRevenant = false)
                 {
                     try
                     {
@@ -798,6 +732,12 @@ namespace TFTV
                         Image targetIconImage = targetIcon.AddComponent<Image>();
                         targetIconImage.sprite = classIcon;
                         targetIconImage.color = NegativeColor;
+
+                        if (isRevenant)
+                        {
+                            targetIconImage.color = _leaderColor;
+                        }
+
                         RectTransform targetIconRect = targetIcon.GetComponent<RectTransform>();
                         targetIconRect.sizeDelta = new Vector2(120, 120);
                         targetIconRect.anchorMin = new Vector2(0.5f, 1);
@@ -1027,15 +967,15 @@ namespace TFTV
             }
 
             private static UIHider _uIHider = null;
+            private static bool _objectiveVictoryAnnouncementRunning = false;
 
-
-            public static void CreateSecondaryObjectiveAnnouncement(List<string> descriptions, Sprite icon, bool victoryObjective = false)
+            public static void CreateSecondaryObjectiveAnnouncement(List<string> descriptions, Sprite icon, bool isRevenant = false, bool victoryObjective = false)
             {
                 try
                 {
                     //  if (_newObjectiveWidget == null)
                     //   {
-                    TFTVLogger.Always($"Running objective announcement: {descriptions.First()}");
+                    TFTVLogger.Always($"Running objective announcement: {descriptions.First()}, _objectiveVictoryAnnouncementRunning? {_objectiveVictoryAnnouncementRunning}");
 
                     string title = TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_NEW_SECONDARY_OBJECTIVE");
 
@@ -1044,16 +984,25 @@ namespace TFTV
                         title = TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_OBJECTIVE_ACCOMPLISHED");
                     }
 
-                    GameObject gameObject = new GameObject();
-                    NewObjectiveUI newObjectiveUI = gameObject.AddComponent<NewObjectiveUI>();
-                    newObjectiveUI.IconSprite = Helper.CreateSpriteFromImageFile("objective.png");
-                    newObjectiveUI.ShowNewObjective(title, descriptions, icon, victoryObjective);
-                    _newObjectiveWidget = newObjectiveUI;
-                    //  TacticalUIOverlayController.ToggleUI();
+                    if (!_objectiveVictoryAnnouncementRunning)
+                    {
+                        GameObject gameObject = new GameObject();
+                        NewObjectiveUI newObjectiveUI = gameObject.AddComponent<NewObjectiveUI>();
+                        newObjectiveUI.IconSprite = Helper.CreateSpriteFromImageFile("objective.png");
+                        newObjectiveUI.ShowNewObjective(title, descriptions, icon, isRevenant, victoryObjective);
+                        _newObjectiveWidget = newObjectiveUI;
+                        //  TacticalUIOverlayController.ToggleUI();
 
-                    _uIHider = new GameObject("UIHider").AddComponent<UIHider>();
-                    _uIHider.HideUI();
-                    ExecuteAfterDelay(2f, RestoreUI);
+                        _uIHider = new GameObject("UIHider").AddComponent<UIHider>();
+                        _uIHider.HideUI();
+                        ExecuteAfterDelay(2f, RestoreUI);
+                    }
+                    if (victoryObjective)
+                    {
+                        _objectiveVictoryAnnouncementRunning = true;
+                    }
+
+                    //ExecuteAfterDelay(10f, );
                     //  }
                     /* else
                      {
@@ -1177,8 +1126,6 @@ namespace TFTV
                 {
                     try
                     {
-
-
                         if (mainCanvasGroup == null)
                         {
                             TFTVLogger.Always("Cannot hide UI. Main CanvasGroup is missing.");
@@ -1301,6 +1248,8 @@ namespace TFTV
                 GameObject.Destroy(helper.gameObject); // Clean up helper
             }
 
+
+
             public static void RestoreUI()
             {
                 try
@@ -1310,22 +1259,8 @@ namespace TFTV
                     UIModuleObjectives uIModuleObjectives = tacticalLevelController.View.TacticalModules.ObjectivesModule;
                     //  TFTVLogger.Always($"_uIHider null? {_uIHider == null}");
 
-                    if (_uIHider != null)
-                    {
-                        _uIHider.RestoreUIVisibility();
-                        _uIHider = null;
-                    }
-
-                    /*  if (_targetUIActorElement != null)
-                      {
-                          _targetUIActorElement.SetHighlighted(false);
-                          _targetUIActorElement.gameObject.SetActive(false);
-                          _targetUIActorElement.gameObject.SetActive(true);
-                          _targetUIActorElement.GetComponent<HealthbarUIActorElement>().HealthBar.gameObject.SetActive(true);
-                          _targetUIActorElement.GetComponent<HealthbarUIActorElement>().ArmorBar.gameObject.SetActive(true);
-                          _targetUIActorElement = null;
-                      }*/
-                    //  TacticalUIOverlayController.ToggleUI();
+                    _uIHider?.RestoreUIVisibility();
+                    _objectiveVictoryAnnouncementRunning = false;
                     InitObjectivesTFTV(uIModuleObjectives);
                 }
                 catch (Exception e)
@@ -1343,7 +1278,7 @@ namespace TFTV
                     int availableContainmentSpace = phoenixFaction.ContaimentCapacity - phoenixFaction.ContaimentUsage;
                     bool limitedCaptureSetting = TFTVNewGameOptions.LimitedCaptureSetting;
 
-                    if (limitedCaptureSetting && captureCapacity > spaceRequired || !limitedCaptureSetting && availableContainmentSpace > spaceRequired)
+                    if (limitedCaptureSetting && Mathf.Min(captureCapacity, availableContainmentSpace) > spaceRequired || !limitedCaptureSetting && availableContainmentSpace > spaceRequired)
                     {
                         return true;
                     }
@@ -1404,10 +1339,10 @@ namespace TFTV
 
                     if (phoenixFaction.Research.GetResearchById("PX_AlienVirusInfection_ResearchDef").IsRevealed)
                     {
-                        if (!AvailableSecondaryObjectivesTactical.Contains(_captureViralAlien.Guid) && CheckCapacityForCaptureObjective(phoenixFaction, 3))
+                        if (!AvailableSecondaryObjectivesTactical.Contains(_captureViralAlien.Guid) && CheckCapacityForCaptureObjective(phoenixFaction, 2))
                         {
                             AvailableSecondaryObjectivesTactical.Add(_captureViralAlien.Guid);
-                            // TFTVLogger.Always($"_captureViralAlien available");
+                            TFTVLogger.Always($"_captureViralAlien available, Aircraft capture capacity is {AircraftCaptureCapacity}");
                         }
                     }
 
@@ -1829,23 +1764,6 @@ namespace TFTV
                 }
             }
 
-            /* public static void ClearDataOnMissionRestart()
-             {
-                 try
-                 {
-                     _secondaryObjectivesTitle = null;
-                     _secondaryObjectives = null;
-                     AvailableSecondaryObjectivesTactical?.Clear();
-                     _secondaryObjectiveDefsInPlay?.Clear();
-                     _objectivesTargetsDictionary?.Clear();
-                 }
-                 catch (Exception e)
-                 {
-                     TFTVLogger.Error(e);
-                     throw;
-                 }
-             }*/
-
 
             public static bool IsSecondaryObjective(FactionObjective objective)
             {
@@ -1933,7 +1851,7 @@ namespace TFTV
                 }
             }
 
-            private static UIActorElement _targetUIActorElement = null;
+            // private static UIActorElement _targetUIActorElement = null;
 
             private static IEnumerator RunPendingObjectivesCoroutine()
             {
@@ -1957,6 +1875,8 @@ namespace TFTV
 
                     List<string> description = new List<string>();
 
+                    bool isRevenant = false;
+
                     foreach (FactionObjective factionObjective in factionObjectives)
                     {
                         string descriptionToAdd = "";
@@ -1964,6 +1884,7 @@ namespace TFTV
                         if (IsKillOrCaptureRevenantObjective(factionObjective))
                         {
                             descriptionToAdd = GetTextForRevenantObjective(factionObjective);
+                            isRevenant = true;
                         }
                         else
                         {
@@ -1977,9 +1898,9 @@ namespace TFTV
 
                     _pendingObjectivesTargets.Clear();
 
-                    TFTVLogger.Always($"target.ViewElementDef.name: {target.ViewElementDef.name}", false);
+                    // TFTVLogger.Always($"target.ViewElementDef.name: {target.ViewElementDef.name}", false);
 
-                    CreateSecondaryObjectiveAnnouncement(description, target.ViewElementDef.SmallIcon);
+                    CreateSecondaryObjectiveAnnouncement(description, target.ViewElementDef.SmallIcon, isRevenant);
                 }
             }
 
@@ -1989,7 +1910,10 @@ namespace TFTV
                 {
                     ClassTagDef scyllaTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
 
-                    return !TFTVNewGameOptions.LimitedCaptureSetting || !tacticalActor.HasGameTag(scyllaTag) || !_secondaryObjectiveDefsInPlay.Contains(_killScylla) || objective.Description.LocalizationKey == _killScylla.MissionObjectiveData.Description.LocalizationKey;
+                    return !TFTVNewGameOptions.LimitedCaptureSetting
+                        || !tacticalActor.HasGameTag(scyllaTag)
+                        || !_secondaryObjectiveDefsInPlay.Contains(_killScylla)
+                        || objective.Description.LocalizationKey == _killScylla.MissionObjectiveData.Description.LocalizationKey;
 
 
 
@@ -2025,17 +1949,58 @@ namespace TFTV
                     TacticalFaction aliens = controller.GetFactionByCommandName("aln");
                     TacticalFaction phoenix = controller.GetFactionByCommandName("px");
 
+                    /*   TFTVLogger.Always($"relevantTag: {relevantTag.name}");
+
+                       foreach(TacticalActor actor in aliens.TacticalActors)
+                       {
+                           TFTVLogger.Always($"Alien: {actor.name}");
+
+                           foreach(Weapon weapon in actor.Equipments.GetWeapons())
+                           {
+                               TFTVLogger.Always($"Weapon: {weapon.WeaponDef.name}");
+
+                               foreach(GameTagDef gameTagDef in weapon.WeaponDef.Tags)
+                               {
+                                   TFTVLogger.Always($"Tag: {gameTagDef.name}");
+                               }
+                           }
+                       }*/
+
+
                     List<TacticalActor> relevantActors = aliens.TacticalActors.
                         Where(ta =>
                         ta.IsAlive && phoenix.Vision.IsRevealed(ta)
-                        && (ta.HasGameTag(relevantTag) || ta.Equipments.GetWeapons().Any(w => w.GameTags.Contains(relevantTag)))
+                        && (ta.HasGameTag(relevantTag) || ta.Equipments.GetWeapons().Any(w => w.WeaponDef.Tags.Contains(relevantTag)))
                         && CheckTargetIsNotToCaptureUncapturableScylla(ta, objective)
                         ).ToList().
                         Concat(phoenix.TacticalActors.Where(ta =>
                         ta.IsAlive
-                        && (ta.HasGameTag(relevantTag) || ta.Equipments.GetWeapons().Any(w => w.GameTags.Contains(relevantTag)))
+                        && (ta.HasGameTag(relevantTag) || ta.Equipments.GetWeapons().Any(w => w.WeaponDef.Tags.Contains(relevantTag)))
                         && CheckTargetIsNotToCaptureUncapturableScylla(ta, objective)
                         && ta.Status != null && ta.Status.HasStatus<MindControlStatus>())).ToList();
+
+
+                    List<TacticalActor> notCapturableActors = new List<TacticalActor>();
+
+                    if (objective is ActorHasStatusFactionObjective && TFTVNewGameOptions.LimitedCaptureSetting)
+                    {
+
+                        //   TFTVLogger.Always($"AircraftCaptureCapacity, ContainmentSpaceAvailable {AircraftCaptureCapacity} {ContainmentSpaceAvailable}");
+
+                        int availableSpace = Math.Min(AircraftCaptureCapacity, ContainmentSpaceAvailable);
+
+                        foreach (TacticalActor tacticalActor in relevantActors)
+                        {
+                            int requiredSlots = CalculateCaptureSlotCost(tacticalActor.GameTags.ToList());
+                            //     TFTVLogger.Always($"required slots is {requiredSlots} for {tacticalActor.name}");
+                            if (requiredSlots > availableSpace)
+                            {
+                                notCapturableActors.Add(tacticalActor);
+                            }
+                        }
+                    }
+
+                    relevantActors.RemoveRange(notCapturableActors);
 
                     if (relevantTag != null && relevantActors.Count > 0)
                     {
@@ -2092,7 +2057,8 @@ namespace TFTV
                         {
                             List<TacticalActorBase> allValidTargets = new List<TacticalActorBase>();
 
-                            foreach (TacticalActor tacticalActor in __instance.Level.GetFactionByCommandName("aln").TacticalActors.Where(ta => ta.IsAlive && ta.Status != null))
+                            foreach (TacticalActor tacticalActor in __instance.Level.GetFactionByCommandName("aln").TacticalActors.Where(ta => ta.IsAlive && ta.Status != null).Concat
+                                (__instance.Level.GetFactionByCommandName("px").TacticalActors.Where(ta => ta.IsAlive && ta.Status != null && ta.Status.HasStatus<MindControlStatus>())))
                             {
                                 if (tacticalActor.Equipments.GetWeapons().Any(w => w.GameTags.Contains(____targetsGameTag)))
                                 {
@@ -2133,7 +2099,8 @@ namespace TFTV
 
                     if (targetTag is ItemTypeTagDef)
                     {
-                        foreach (TacticalActor tacticalActor in objective.Level.GetFactionByCommandName("aln").TacticalActors.Where(ta => ta.IsAlive && ta.Status != null))
+                        foreach (TacticalActor tacticalActor in objective.Level.GetFactionByCommandName("aln").TacticalActors.Where(ta => ta.IsAlive && ta.Status != null).
+                            Concat(objective.Level.GetFactionByCommandName("px").TacticalActors.Where(ta => ta.IsAlive && ta.Status != null && ta.Status.HasStatus<MindControlStatus>())))
                         {
                             if (tacticalActor.Equipments.GetWeapons().Any(w => w.GameTags.Contains(targetTag)))
                             {
@@ -2143,7 +2110,8 @@ namespace TFTV
                     }
                     else
                     {
-                        targets = objective.Level.GetFactionByCommandName("aln").TacticalActors.Where(ta => ta.IsAlive).ToList();
+                        targets = objective.Level.GetFactionByCommandName("aln").TacticalActors.Where(ta => ta.IsAlive).
+                            Concat(objective.Level.GetFactionByCommandName("px").TacticalActors.Where(ta => ta.IsAlive && ta.Status != null && ta.Status.HasStatus<MindControlStatus>())).ToList();
                     }
 
                     if (!targets.Any())
@@ -2152,7 +2120,7 @@ namespace TFTV
                         return FactionObjectiveState.Failed;
                     }
 
-                    if (targets.Any((TacticalActorBase x) => x.Status.HasStatus<ParalysedStatus>()))
+                    if (targets.Any((TacticalActorBase x) => x.Status.HasStatus<ParalysedStatus>() && CaptureTacticalWidget.CaptureUI.capturedAliens.Contains(x)))
                     {
                         TFTVLogger.Always($"returning achieved state for {objective.Description.Localize()}");
                         return FactionObjectiveState.Achieved;
@@ -2181,14 +2149,14 @@ namespace TFTV
 
                         var targets = GetTargetsForObjective(objective, false, false);
 
-                        if (targets == null) 
+                        if (targets == null)
                         {
                             return;
                         }
 
                         TacticalActor target = targets.FirstOrDefault();
 
-                        if(target == null) 
+                        if (target == null)
                         {
                             return;
                         }
@@ -2206,6 +2174,7 @@ namespace TFTV
                         target.TacticalActorView.DoCameraChase(true);
 
                         string descriptionToAdd = objective.GetDescription().ToUpper();
+                        bool isRevenant = false;
 
                         if (IsKillOrCaptureRevenantObjective(objective))
                         {
@@ -2214,7 +2183,7 @@ namespace TFTV
 
                         List<string> description = new List<string>() { descriptionToAdd };
 
-                        CreateSecondaryObjectiveAnnouncement(description, target.ViewElementDef.SmallIcon, true);
+                        CreateSecondaryObjectiveAnnouncement(description, target.ViewElementDef.SmallIcon, isRevenant, true);
 
                     }
                 }
@@ -2237,7 +2206,10 @@ namespace TFTV
                     GameTagDef captureTag = (GameTagDef)captureTargetsGameTagField.GetValue(captureObjective);
 
 
-                    return alienFaction.TacticalActors.Any(ta => ta.HasGameTag(captureTag) && !ta.IsEvacuated && ta.Status != null && ta.Status.HasStatus<ParalysedStatus>());
+                    return alienFaction.TacticalActors.Any(ta => ta.HasGameTag(captureTag)
+                    && !ta.IsEvacuated && ta.Status != null
+                    && ta.Status.HasStatus<ParalysedStatus>()
+                    && CaptureTacticalWidget.CaptureUI.capturedAliens.Contains(ta));
 
                 }
                 catch (Exception e)
@@ -2333,13 +2305,27 @@ namespace TFTV
                 {
                     try
                     {
-                     
+                        ModifySecondaryObjectivesEvaluateBehavior(__instance, ref __result, __state);
+                       // TFTVVanillaFixes.ModifyVehicleRescueEvaluateBehavior(__instance, ref __result);
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
 
-                        if (__instance.Faction == null ||
-                            !__instance.Level.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
-                        {
-                            return;
-                        }
+            public static void ModifySecondaryObjectivesEvaluateBehavior(FactionObjective __instance, ref FactionObjectiveState __result, FactionObjectiveState __state)
+            {
+                try
+                {
+
+
+                    if (__instance.Faction != null &&
+                        __instance.Level.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
+                    {
+
 
                         if (__state != FactionObjectiveState.Achieved)
                         {
@@ -2392,15 +2378,20 @@ namespace TFTV
                             }
 
                         }
+                    }
 
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
                 }
             }
+
+
+           
+
+
 
             private static bool CheckIfActorDeadNotEvaced(TacticalLevelController controller, GameTagDef killTag)
             {
@@ -2461,6 +2452,9 @@ namespace TFTV
                         element.SetObjective(objective);
                     });
 
+
+
+                    // FailsafeRestoreUI();
                 }
                 catch (Exception e)
                 {
@@ -2938,9 +2932,15 @@ namespace TFTV
                         actorClassIconElement.MainClassIcon.color = color;
 
                     }
+                    else if (tacticalActorBase.GameTags.Contains(TFTVRevenant.AnyRevenantGameTag))
+                    {
+                        actorClassIconElement.MainClassIcon.color = _leaderColor;
+                        actorClassIconElement.SecondaryClassIcon.color = _leaderColor;
+                    }
                     else
                     {
-                        if (tacticalActorBase.TacticalFaction.GetRelationTo(tacticalActorBase.TacticalLevel.GetFactionByCommandName("px")) == FactionRelation.Enemy)
+                        if (tacticalActorBase.TacticalFaction.GetRelationTo(tacticalActorBase.TacticalLevel.GetFactionByCommandName("px")) == FactionRelation.Enemy
+                            && tacticalActorBase.GetAbilityWithDef<ApplyStatusAbility>(DefCache.GetDef<ApplyStatusAbilityDef>("InfestedWithMindfragger_StatusAbilityDef")) == null)
                         {
                             if (tacticalActorBase.ActorDef.name.Equals("Oilcrab_ActorDef") || tacticalActorBase.ActorDef.name.Equals("Oilfish_ActorDef"))
                             {
@@ -2961,11 +2961,16 @@ namespace TFTV
                                 actorClassIconElement.MainClassIcon.color = NegativeColor;
                             }
                         }
-                        else if (tacticalActorBase.Status != null && !tacticalActorBase.Status.HasStatus<MindControlStatus>())
+                        else if (tacticalActorBase.Status != null &&
+                            (!tacticalActorBase.Status.HasStatus<MindControlStatus>() || tacticalActorBase.Status.HasStatus(DefCache.GetDef<MindControlStatusDef>("UnderPhoenixControl_StatusDef")))
+                            || tacticalActorBase.GetAbilityWithDef<ApplyStatusAbility>(DefCache.GetDef<ApplyStatusAbilityDef>("InfestedWithMindfragger_StatusAbilityDef")) != null
+                            )
                         {
                             actorClassIconElement.MainClassIcon.color = Color.white;
                         }
+
                     }
+
 
 
                     AddOutlineToIcon addOutlineToIcon = actorClassIconElement.MainClassIcon.GetComponent<AddOutlineToIcon>() ?? actorClassIconElement.MainClassIcon.gameObject.AddComponent<AddOutlineToIcon>();
@@ -3784,9 +3789,6 @@ namespace TFTV
             {
                 try
                 {
-
-
-
                     ActorClassIconElement actorClassIconElement = obj.GetComponentInChildren<ActorClassIconElement>();
                     RankIconCreator rankIconCreator = new RankIconCreator();
                     rankIconCreator.RemoveRankTriangles(actorClassIconElement.MainClassIcon.gameObject);
@@ -3838,6 +3840,23 @@ namespace TFTV
                         }
 
                         actorClassIconElement.MainClassIcon.color = color;
+                    }
+                    else if (target.GameTags.Contains(TFTVRevenant.AnyRevenantGameTag))
+                    {
+                        Color color = actorClassIconElement.MainClassIcon.color;
+
+                        if (hasNoLOS)
+                        {
+                            color = _regularNoLOSColor;
+                        }
+                        else
+                        {
+
+                            color = _leaderColor;
+                        }
+
+                        actorClassIconElement.MainClassIcon.color = color;
+
                     }
                     else if (target.TacticalFaction.GetRelationTo(target.TacticalLevel.GetFactionByCommandName("px")) == FactionRelation.Enemy &&
                        target.Status != null && !target.Status.HasStatus<MindControlStatus>())
@@ -3893,12 +3912,14 @@ namespace TFTV
 
         internal class ODITactical
         {
-            internal static string _tbtvGeneralStatusViewElementName = "E_ViewElement [TBTV_Hidden_AbilityDef]";
-            private static string _tbtvOnDeathStatusViewElementName = "E_Visuals [OilCrabOnDeath]";
-            private static string _tbtvOnAttackStatusViewElementName = "E_Visuals [TBTV_OnAttack_StatusDef]";
-            private static string _tbtvTurnEndStatusViewElementName = "E_Visuals [TBTV_OnTurnEnd_StatusDef]";
-            private static string _deliriumStatusViewElementName = "E_Visuals [Corruption_StatusDef]";
-            private static string _voidOmenViewElementName = "E_ViewElement [Acheron_Harbinger_AbilityDef]";
+            private static Sprite _tbtvGeneralSprite;
+            private static Sprite _tbtvOnDeathSprite;
+            private static Sprite _tbtvOnTurnEndSprite;
+            private static Sprite _tbtvOnAttackSprite;
+            private static Sprite _deliriumStatusSprite;
+            private static Sprite _voidOmenSprite;
+
+
 
             public static void ManageTBTVIconToSpottedEnemies(SpottedTargetsElement __instance, GameObject obj, TacticalActorBase target)
             {
@@ -3909,29 +3930,28 @@ namespace TFTV
                     Image statusIconImage = existingIconTransform ? existingIconTransform.GetComponent<Image>() : null;
 
 
+                    TacticalAbilityDef revenantAbility = TFTVRevenant.RevenantAbility;
+
                     // Check if the target satisfies the condition to display the icon
-                    bool shouldDisplayIcon = target.Status != null &&
+                    bool shouldDisplayIcon = //target.GetAbilityWithDef<PassiveModifierAbility>(revenantAbility)!=null || (
+                        target.Status != null &&
                                              target.Status.Statuses.Any(s => TFTVTouchedByTheVoid.tbtvStatuses.Contains(s.Def));
 
                     if (shouldDisplayIcon)
                     {
-                        // TFTVLogger.Always($"should display icon for {target.DisplayName}");
-
                         // Get the appropriate sprite from the target's status
                         StatusDef statusDef = target.Status.Statuses
      .Where(s => TFTVTouchedByTheVoid.tbtvStatuses.Contains(s.Def) && s.Def != TFTVTouchedByTheVoid.hiddenTBTVAddAbilityStatus)
      .Select(s => s.Def)
      .FirstOrDefault() ?? (target.Status.Statuses
                                 .FirstOrDefault(s => s.Def == TFTVTouchedByTheVoid.hiddenTBTVAddAbilityStatus)?.Def);
+
+
                         ViewElementDef viewElementDef = statusDef is AddAbilityStatusDef addAbilityStatusDef
                             ? addAbilityStatusDef.AbilityDef.ViewElementDef
                             : (statusDef is DamageMultiplierStatusDef damageMultiplierStatusDef ? damageMultiplierStatusDef.Visuals : null);
 
                         Sprite sprite = viewElementDef?.SmallIcon;
-
-                        //TFTVLogger.Always($"should display icon for {target.DisplayName}, {viewElementDef.name}");
-
-                        //   TFTVLogger.Always($"sprite==null: {sprite==null}");
 
                         if (sprite != null)
                         {
@@ -3944,7 +3964,9 @@ namespace TFTV
 
                                 uITooltipText.TipText = $"{viewElementDef.DisplayName1.Localize()}: {viewElementDef.Description.Localize()}";
                                 uITooltipText.Enabled = true;
+
                                 statusIconImage.color = VoidColor;
+
                                 // statusIconImage.gameObject.SetActive(false);
                                 statusIconImage.enabled = true;
 
@@ -3968,6 +3990,7 @@ namespace TFTV
                                 uITooltipText.Position = Position.Top;
                                 uITooltipText.enabled = true;
                                 newIconImage.sprite = sprite;
+
                                 newIconImage.color = VoidColor;
 
                                 // Adjust the size and position of the icon
@@ -4019,15 +4042,18 @@ namespace TFTV
             private static GameObject _oDIWidget = null;
             private static Sprite _voidIcon = null;
 
-            private static Dictionary<string, string> _ODISitrepDictionary = new Dictionary<string, string>();
-
+            private static List<(Sprite icon, string text, ODIDetailType)> _ODISitrepList = new List<(Sprite icon, string text, ODIDetailType)>();
+            public enum ODIDetailType
+            {
+                ODIDescription, VoidOmen, TBTVDescription, TBTVEffect, TBTVChance, TBTVModifier
+            }
 
             public class ODIWidgetTooltip : MonoBehaviour
             {
                 private GameObject _uIElement;
                 private GameObject tooltipInstance;
                 private Transform _parentTransform;
-                private List<(Sprite icon, string text)> _details;
+                private List<(Sprite icon, string text, ODIDetailType)> _details;
                 private GameObject CreateTooltipPanel()
                 {
                     try
@@ -4068,6 +4094,8 @@ namespace TFTV
                 {
                     try
                     {
+
+
                         // Create a container for the detail item
                         GameObject detail = new GameObject("DetailItem", typeof(RectTransform));
                         RectTransform detailRect = detail.GetComponent<RectTransform>();
@@ -4093,7 +4121,7 @@ namespace TFTV
                             iconObj.GetComponent<Image>().preserveAspect = true;
                             iconObj.transform.SetParent(detail.transform, false);
 
-                            if (icon != DefCache.GetDef<ViewElementDef>("E_ViewElement [Acheron_Harbinger_AbilityDef]").LargeIcon)
+                            if (icon != _voidOmenSprite)
                             {
                                 iconObj.GetComponent<Image>().color = VoidColor;
                             }
@@ -4150,7 +4178,7 @@ namespace TFTV
                     }
                 }
 
-                public void CreateUIElement(Vector3 position, string mainText, Sprite mainIcon, List<(Sprite icon, string text)> details, Transform parentTransform)
+                public void CreateUIElement(Vector3 position, string mainText, Sprite mainIcon, List<(Sprite icon, string text, ODIDetailType)> details, Transform parentTransform)
                 {
                     try
                     {
@@ -4216,16 +4244,20 @@ namespace TFTV
                     {
                         Vector3 position = _uIElement.GetComponent<RectTransform>().position;
 
-                        List<(Sprite icon, string text)> adjustedDetails = new List<(Sprite icon, string text)>();
+                        List<(Sprite icon, string text, ODIDetailType)> adjustedDetails = new List<(Sprite icon, string text, ODIDetailType)>();
 
                         for (int x = 0; x < _details.Count; x++)
                         {
-                            string description = AdjustODIElementText(_ODISitrepDictionary.Keys.ElementAt(x)) ?? _details.ElementAt(x).text;
+                            string description = AdjustODIElementText(_details.ElementAt(x).text);
 
                             if (description != null && !description.Contains("{0}"))
                             {
-                                adjustedDetails.Add((_details.ElementAt(x).icon, description));
+                                adjustedDetails.Add((_details.ElementAt(x).icon, description, _details.ElementAt(x).Item3));
                             }
+                            /* else
+                             {
+                                 adjustedDetails.Add((_details.ElementAt(x).icon, _details.ElementAt(x).text, _details.ElementAt(x).Item3));
+                             }*/
                         }
 
 
@@ -4253,16 +4285,16 @@ namespace TFTV
 
                 }
 
-                private void ShowTooltip(Vector3 position, List<(Sprite icon, string text)> details)
+                private void ShowTooltip(Vector3 position, List<(Sprite icon, string text, ODIDetailType)> details)
                 {
                     try
                     {
-                        Sprite umbraIcon = DefCache.GetDef<ViewElementDef>(_tbtvOnDeathStatusViewElementName).LargeIcon;
-                        Sprite modIcon = DefCache.GetDef<ViewElementDef>(_tbtvOnAttackStatusViewElementName).LargeIcon;
-                        Sprite onTurnEndIcon = DefCache.GetDef<ViewElementDef>(_tbtvTurnEndStatusViewElementName).LargeIcon;
-                        Sprite tbtvIcon = DefCache.GetDef<ViewElementDef>(_tbtvGeneralStatusViewElementName).LargeIcon;
-                        Sprite corruptionIcon = DefCache.GetDef<ViewElementDef>(_deliriumStatusViewElementName).LargeIcon;
-                        Sprite voidOmenIcon = DefCache.GetDef<ViewElementDef>(_voidOmenViewElementName).LargeIcon;
+                        Sprite umbraIcon = _tbtvOnDeathSprite;
+                        Sprite modIcon = _tbtvOnAttackSprite;
+                        Sprite onTurnEndIcon = _tbtvOnTurnEndSprite;
+                        Sprite tbtvIcon = _tbtvGeneralSprite;
+                        Sprite corruptionIcon = _deliriumStatusSprite;
+                        Sprite voidOmenIcon = _voidOmenSprite;
 
                         tooltipInstance = CreateTooltipPanel();
 
@@ -4270,8 +4302,6 @@ namespace TFTV
                         RectTransform tooltipRect = tooltipInstance.GetComponent<RectTransform>();
                         // tooltipRect.sizeDelta = new Vector2(1200, details.Count * 200);
                         tooltipRect.position = position;
-
-
 
                         // Clear existing content
                         foreach (Transform child in tooltipInstance.transform)
@@ -4288,32 +4318,36 @@ namespace TFTV
                             float distanceToPreviousElement = Mathf.Min(200, 200 * x);
 
                             Sprite icon = details.ElementAt(x).icon;
+                            ODIDetailType type = details.ElementAt(x).Item3;
 
                             bool tab = false;
 
-                            if (icon == null && x == 0 || icon == umbraIcon || icon == modIcon || icon == onTurnEndIcon || icon == corruptionIcon && x > 1
-                                || x + 1 == details.Count() || x + 2 == details.Count() && icon != null)
+                            if (type == ODIDetailType.ODIDescription || type == ODIDetailType.VoidOmen || type == ODIDetailType.TBTVDescription || type == ODIDetailType.TBTVChance)
+                            {
+                                distanceToPreviousElement *= 0.75f;
+                            }
+
+                            if (type == ODIDetailType.TBTVEffect || type == ODIDetailType.TBTVModifier && details.ElementAt(x - 1).Item3 != ODIDetailType.TBTVModifier)
                             {
                                 distanceToPreviousElement *= 0.75f;
                                 tab = true;
                             }
 
+                            if (type == ODIDetailType.TBTVModifier && details.ElementAt(x - 1).Item3 == ODIDetailType.TBTVModifier)
+                            {
+                                distanceToPreviousElement *= 0.55f;
+                                tab = true;
+                            }
+
                             bool separator = false;
 
-                            if (x == 0)
+                            //Adds separator if general description or last TBTVEffect
+                            if (type == ODIDetailType.ODIDescription || type == ODIDetailType.VoidOmen && details.ElementAt(x + 1).Item3 != ODIDetailType.VoidOmen
+                                || type == ODIDetailType.TBTVEffect && details.ElementAt(x).Item3 != ODIDetailType.TBTVEffect)
                             {
                                 separator = true;
                             }
 
-                            if (icon == umbraIcon && details.ElementAt(x + 1).icon != modIcon || icon == modIcon && details.ElementAt(x + 1).icon != onTurnEndIcon || icon == onTurnEndIcon)
-                            {
-                                separator = true;
-                            }
-
-                            if (icon == voidOmenIcon && details.ElementAt(x - 1).icon == voidOmenIcon)
-                            {
-                                distanceToPreviousElement *= 0.75f;
-                            }
 
                             distanceCounter += distanceToPreviousElement;
 
@@ -4347,15 +4381,13 @@ namespace TFTV
                 }
             }
 
-
-
             public static void ClearDataOnLoadAndStateChange()
             {
                 try
                 {
                     _voidIcon = null;
                     _oDIWidget = null;
-                    _ODISitrepDictionary.Clear();
+                    _ODISitrepList.Clear();
                 }
                 catch (Exception e)
                 {
@@ -4444,7 +4476,7 @@ namespace TFTV
                         {
                             if (vo != 5 || vo == 5 && havenDefense)
                             {
-                                _ODISitrepDictionary.Add("VOID_OMEN_TITLE_" + vo, "E_ViewElement [Acheron_Harbinger_AbilityDef]");
+                                _ODISitrepList.Add((_voidOmenSprite, TFTVCommonMethods.ConvertKeyToString("VOID_OMEN_TITLE_" + vo), ODIDetailType.VoidOmen));
                             }
                         }
                     }
@@ -4456,78 +4488,115 @@ namespace TFTV
                 }
             }
 
+            private static readonly string _deliriumMaxTipKey = "KEY_DELIRIUM_UI_MAX_TIP";
+            private static readonly string _deliriumMedTipKey = "KEY_DELIRIUM_UI_MED_TIP";
+            private static readonly string _deliriumMinTipKey = "KEY_DELIRIUM_UI_LOW_TIP";
+            private static readonly string _justVoidOmens = "TFTV_ODI_WIDGET_VOID_OMENS";
+            private static readonly string _umbraTBTV = "TFTV_TBTV_UMBRA_EFFECT_DESC";
+            private static readonly string _evolvedUmbraTBTV = "TFTV_TBTV_UMBRA_EVOLVED_EFFECT_DESC";
+            private static readonly string _tbtvGeneralDescription = "TFTV_TBTV_GENERAL_DESC";
+            private static readonly string _tbtvMFDStatus = "TFTV_TBTV_MFD_EFFECT_DESC";
+            private static readonly string _tbtvCallReinforcements = "TFTV_TBTV_CALLREINFORCEMENTS_EFFECT_DESC";
+            private static readonly string _tbtvChances = "TFTV_TBTV_CHANCES_DESC";
+            private static readonly string _tbtvChancesVOTBTVEverywhere = "TFTV_TBTV_CHANCES_VO_TBTV_EVERYWHERE";
+            private static readonly string _tbtvChancesBase = "TFTV_TBTV_CHANCES_BASE";
+            private static readonly string _tbtvChancesMoreTBTV = "TFTV_TBTV_CHANCES_VO_MORE_TBTV";
+            private static readonly string _tbtvChancesAcheron = "TFTV_TBTV_CHANCES_ACHERONS";
 
 
             private static void PopulateDictionary(bool TBTVRelevant)
             {
                 try
                 {
-                    if (_ODISitrepDictionary.Count > 0)
+                    _tbtvGeneralSprite = DefCache.GetDef<ViewElementDef>("E_ViewElement [TBTV_Hidden_AbilityDef]").SmallIcon;
+                    _tbtvOnAttackSprite = DefCache.GetDef<ViewElementDef>("E_Visuals [TBTV_OnAttack_StatusDef]").SmallIcon;
+                    _tbtvOnDeathSprite = DefCache.GetDef<ViewElementDef>("E_Visuals [OilCrabOnDeath]").SmallIcon;
+                    _tbtvOnTurnEndSprite = DefCache.GetDef<ViewElementDef>("E_Visuals [TBTV_OnTurnEnd_StatusDef]").SmallIcon;
+                    _voidOmenSprite = DefCache.GetDef<ViewElementDef>("E_ViewElement [Acheron_Harbinger_AbilityDef]").SmallIcon;
+                    _deliriumStatusSprite = DefCache.GetDef<ViewElementDef>("E_Visuals [Corruption_StatusDef]").SmallIcon;
+
+                    if (ODITactical._ODISitrepList.Count > 0)
                     {
                         return;
                     }
 
                     if (!TBTVRelevant)
                     {
-                        _ODISitrepDictionary.Add("TFTV_ODI_WIDGET_VOID_OMENS", null);
+
+                        _ODISitrepList.Add((null, TFTVCommonMethods.ConvertKeyToString(_justVoidOmens), ODIDetailType.ODIDescription));
                         GetVoidOmensTacticalText(TBTVRelevant);
                         return;
                     }
 
-                    if (TFTVTouchedByTheVoid.TBTVVariable >= 4 || TFTVVoidOmens.VoidOmensCheck[10])
+                    if (TFTVTouchedByTheVoid.TBTVVariable >= 4)
                     {
-                        _ODISitrepDictionary.Add("KEY_DELIRIUM_UI_MAX_TIP", _deliriumStatusViewElementName);
+                        _ODISitrepList.Add((_deliriumStatusSprite, TFTVCommonMethods.ConvertKeyToString(_deliriumMaxTipKey).Replace("-", ""), ODIDetailType.ODIDescription));
                         GetVoidOmensTacticalText();
-                        _ODISitrepDictionary.Add("TFTV_TBTV_GENERAL_DESC", _tbtvGeneralStatusViewElementName);
-                        _ODISitrepDictionary.Add("TFTV_TBTV_UMBRA_EVOLVED_EFFECT_DESC", _tbtvOnDeathStatusViewElementName);
-                        _ODISitrepDictionary.Add("TFTV_TBTV_MFD_EFFECT_DESC", _tbtvOnAttackStatusViewElementName);
-                        _ODISitrepDictionary.Add("TFTV_TBTV_CALLREINFORCEMENTS_EFFECT_DESC", _tbtvTurnEndStatusViewElementName);
+                        _ODISitrepList.Add((_tbtvGeneralSprite, TFTVCommonMethods.ConvertKeyToString(_tbtvGeneralDescription), ODIDetailType.TBTVDescription));
+                        _ODISitrepList.Add((_tbtvOnDeathSprite, TFTVCommonMethods.ConvertKeyToString(_evolvedUmbraTBTV), ODIDetailType.TBTVEffect));
+                        _ODISitrepList.Add((_tbtvOnAttackSprite, TFTVCommonMethods.ConvertKeyToString(_tbtvMFDStatus), ODIDetailType.TBTVEffect));
+                        _ODISitrepList.Add((_tbtvOnTurnEndSprite, TFTVCommonMethods.ConvertKeyToString(_tbtvCallReinforcements), ODIDetailType.TBTVEffect));
 
                     }
                     else if (TFTVTouchedByTheVoid.TBTVVariable >= 2)
                     {
-                        _ODISitrepDictionary.Add("KEY_DELIRIUM_UI_MED_TIP", _deliriumStatusViewElementName);
-                        GetVoidOmensTacticalText();
-                        _ODISitrepDictionary.Add("TFTV_TBTV_GENERAL_DESC", _tbtvGeneralStatusViewElementName);
-                        if (TFTVTouchedByTheVoid.TBTVVariable == 3)
+                        if (TFTVVoidOmens.VoidOmensCheck[10])
                         {
-
-                            _ODISitrepDictionary.Add("TFTV_TBTV_UMBRA_EVOLVED_EFFECT_DESC", _tbtvOnDeathStatusViewElementName);
+                            _ODISitrepList.Add((_deliriumStatusSprite, TFTVCommonMethods.ConvertKeyToString(_deliriumMaxTipKey).Replace("-", ""), ODIDetailType.ODIDescription));
                         }
                         else
                         {
-                            _ODISitrepDictionary.Add("TFTV_TBTV_UMBRA_EFFECT_DESC", _tbtvOnDeathStatusViewElementName);
+                            _ODISitrepList.Add((_deliriumStatusSprite, TFTVCommonMethods.ConvertKeyToString(_deliriumMedTipKey).Replace("-", ""), ODIDetailType.ODIDescription));
+                        }
+                        GetVoidOmensTacticalText();
+                        _ODISitrepList.Add((_tbtvGeneralSprite, TFTVCommonMethods.ConvertKeyToString(_tbtvGeneralDescription), ODIDetailType.TBTVDescription));
+                        if (TFTVTouchedByTheVoid.TBTVVariable == 3)
+                        {
 
+                            _ODISitrepList.Add((_tbtvOnDeathSprite, TFTVCommonMethods.ConvertKeyToString(_evolvedUmbraTBTV), ODIDetailType.TBTVEffect));
+                        }
+                        else
+                        {
+                            _ODISitrepList.Add((_tbtvOnDeathSprite, TFTVCommonMethods.ConvertKeyToString(_umbraTBTV), ODIDetailType.TBTVEffect));
                         }
 
-                        _ODISitrepDictionary.Add("TFTV_TBTV_MFD_EFFECT_DESC", _tbtvOnAttackStatusViewElementName);
+                        _ODISitrepList.Add((_tbtvOnAttackSprite, TFTVCommonMethods.ConvertKeyToString(_tbtvMFDStatus), ODIDetailType.TBTVEffect));
 
                     }
                     else
                     {
-                        _ODISitrepDictionary.Add("KEY_DELIRIUM_UI_LOW_TIP", _deliriumStatusViewElementName);
+                        if (TFTVVoidOmens.VoidOmensCheck[10])
+                        {
+                            _ODISitrepList.Add((_deliriumStatusSprite, TFTVCommonMethods.ConvertKeyToString(_deliriumMaxTipKey).Replace("-", ""), ODIDetailType.ODIDescription));
+                        }
+                        else
+                        {
+                            _ODISitrepList.Add((_deliriumStatusSprite, TFTVCommonMethods.ConvertKeyToString(_deliriumMinTipKey).Replace("-", ""), ODIDetailType.ODIDescription));
+                        }
+
                         GetVoidOmensTacticalText();
-                        _ODISitrepDictionary.Add("TFTV_TBTV_GENERAL_DESC", _tbtvGeneralStatusViewElementName);
-                        _ODISitrepDictionary.Add("TFTV_TBTV_UMBRA_EFFECT_DESC", _tbtvOnDeathStatusViewElementName);
+                        _ODISitrepList.Add((_tbtvGeneralSprite, TFTVCommonMethods.ConvertKeyToString(_tbtvGeneralDescription), ODIDetailType.TBTVDescription));
+                        ODITactical._ODISitrepList.Add((_tbtvOnDeathSprite, TFTVCommonMethods.ConvertKeyToString(_umbraTBTV), ODIDetailType.TBTVEffect));
                     }
 
-                    _ODISitrepDictionary.Add("TFTV_TBTV_CHANCES_DESC", null);
+                    ODITactical._ODISitrepList.Add(((Sprite icon, string text, ODIDetailType))(null, _tbtvChances, ODIDetailType.TBTVChance));
 
                     if (TFTVVoidOmens.VoidOmensCheck[16])
                     {
-                        _ODISitrepDictionary.Add("TFTV_TBTV_CHANCES_VO_TBTV_EVERYWHERE", "E_ViewElement [Acheron_Harbinger_AbilityDef]");
+                        ODITactical._ODISitrepList.Add((_voidOmenSprite, TFTVCommonMethods.ConvertKeyToString(_tbtvChancesVOTBTVEverywhere), ODIDetailType.TBTVModifier));
                     }
                     else
                     {
-                        _ODISitrepDictionary.Add("TFTV_TBTV_CHANCES_BASE", _deliriumStatusViewElementName);
+                        ODITactical._ODISitrepList.Add((_voidOmenSprite, _tbtvChancesBase, ODIDetailType.TBTVModifier));
                     }
 
                     if (TFTVVoidOmens.VoidOmensCheck[15])
                     {
-                        _ODISitrepDictionary.Add("TFTV_TBTV_CHANCES_VO_MORE_TBTV", "E_ViewElement [Acheron_Harbinger_AbilityDef]");
+                        ODITactical._ODISitrepList.Add((_voidOmenSprite, TFTVCommonMethods.ConvertKeyToString(_tbtvChancesMoreTBTV), ODIDetailType.TBTVModifier));
                     }
 
-                    _ODISitrepDictionary.Add("TFTV_TBTV_CHANCES_ACHERONS", "E_ViewElement [Acheron_Harbinger_AbilityDef]");
+                    _ODISitrepList.Add((_voidOmenSprite, _tbtvChancesAcheron, ODIDetailType.TBTVModifier));
+
                     //  _ODISitrepDictionary.Add("TFTV_TBTV_CHANCES_TOTAL", null);
                 }
 
@@ -4541,8 +4610,8 @@ namespace TFTV
 
 
 
-            private static int _baseChanceTBTV = 0;
-            private static int _acheronChanceTBTV = 0;
+            //   private static int _baseChanceTBTV = 0;
+            //  private static int _acheronChanceTBTV = 0;
 
 
             public static int GetBaseTouchedByTheVoidChances(TacticalLevelController controller)
@@ -4570,7 +4639,7 @@ namespace TFTV
                         totalDeliriumOnMission /= 2;
                     }
 
-                    _baseChanceTBTV = totalDeliriumOnMission;
+                    // _baseChanceTBTV = totalDeliriumOnMission;
 
                     return totalDeliriumOnMission;
 
@@ -4581,56 +4650,6 @@ namespace TFTV
                     throw;
                 }
             }
-
-
-
-
-
-            /*     public static bool ModifyODITooltip(UITooltip __instance, string tipText, ref int maxWidth, float appearTime, float fadeInTime, float fadeOutTime, Position pos, GameObject parent,
-                            ref float ____appearDelay, ref float ____fadeInSpeed, ref float ____fadeOutSpeed, ref GameObject ____target, ref Position ____position)
-                 {
-
-                     try
-                     {
-
-                         //  TFTVLogger.Always($"{parent.name} {_voidOmens.name} ");
-
-                         if (_voidOmens != null && parent.name == _voidOmens.name)
-                         {
-
-                             MethodInfo showMethodInfo = typeof(UITooltip).GetMethod("Show", BindingFlags.NonPublic | BindingFlags.Instance);
-                             MethodInfo updatePositionMethodInfo = typeof(UITooltip).GetMethod("UpdatePosition", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                             CreateODITooltip(__instance);
-
-                             UpdateHorizontalFit(__instance.gameObject, __instance.Background.gameObject, maxWidth);
-                             ____target = parent;
-                             ____appearDelay = appearTime;
-                             ____fadeInSpeed = fadeInTime;
-                             ____fadeOutSpeed = fadeOutTime;
-                             ____position = pos;
-                             updatePositionMethodInfo.Invoke(__instance, new object[] { });
-                             showMethodInfo.Invoke(__instance, new object[] { false });
-
-                             RectTransform rectTransform = __instance.gameObject.GetComponent<RectTransform>();
-                             rectTransform.pivot = new Vector2(0.25f, 0.5f);
-                             //rectTransform.sizeDelta = new Vector2(1000, rectTransform.sizeDelta.y);
-                             // __instance.transform.position -= new Vector3(400, 20, 0);
-                             // rectTransform.anchoredPosition -= new Vector2(400, 20); 
-
-                             return false;
-
-                         }
-
-                         return true;
-                     }
-                     catch (Exception e)
-                     {
-                         TFTVLogger.Error(e);
-                         throw;
-                     }
-                 }*/
-
 
 
             private static bool CheckIfODIWidgetRelevant(TacticalLevelController controller)
@@ -4710,13 +4729,13 @@ namespace TFTV
 
                     totalChances += harbingers * 10;
 
-                    if (element == "TFTV_TBTV_CHANCES_BASE" || element == "TFTV_TBTV_CHANCES_ACHERONS")
+                    if (element == _tbtvChancesBase || element == _tbtvChancesAcheron)
                     {
-                        if (element == "TFTV_TBTV_CHANCES_BASE")
+                        if (element == _tbtvChancesBase)
                         {
                             adjustedText = TFTVCommonMethods.ConvertKeyToString(element).Replace("{0}", chances.ToString());
                         }
-                        else if (element == "TFTV_TBTV_CHANCES_ACHERONS")
+                        else if (element == _tbtvChancesAcheron)
                         {
                             if (harbingers == 0)
                             {
@@ -4724,15 +4743,19 @@ namespace TFTV
                             }
                             else
                             {
-                                _acheronChanceTBTV = harbingers * 10;
+                                //  int _acheronChanceTBTV = harbingers * 10;
                                 adjustedText = TFTVCommonMethods.ConvertKeyToString(element).Replace("{0}", (harbingers).ToString());
                             }
                         }
 
                     }
-                    else if (element == "TFTV_TBTV_CHANCES_DESC")
+                    else if (element == _tbtvChances)
                     {
                         adjustedText = TFTVCommonMethods.ConvertKeyToString(element).Replace("{0}", totalChances.ToString());
+                    }
+                    else
+                    {
+                        adjustedText = element;
                     }
 
 
@@ -4773,33 +4796,10 @@ namespace TFTV
                         dynamicTooltipWithHover.transform.SetParent(_oDIWidget.transform, false);
                         _oDIWidget.transform.position = position;
 
-                        List<(Sprite, string)> odInfo = new List<(Sprite, string)>();
-
-                        foreach (string element in _ODISitrepDictionary.Keys)
-                        {
-                            string description = TFTVCommonMethods.ConvertKeyToString(element);
-
-                            if (element.Contains("KEY_DELIRIUM_UI"))
-                            {
-                                description = description.Replace("-", "");
-                            }
-
-                            if (_ODISitrepDictionary[element] != null)
-                            {
-
-                                odInfo.Add((DefCache.GetDef<ViewElementDef>(_ODISitrepDictionary[element]).LargeIcon, description));
-
-                            }
-                            else
-                            {
-                                odInfo.Add((null, description));
-                            }
-                        }
-
                         string mainText = TFTVCommonMethods.ConvertKeyToString("TFTV_ODI_WIDGET");
                         Sprite voidIcon = GetRightVoidIcon();
 
-                        dynamicTooltipWithHover.CreateUIElement(position, mainText, voidIcon, odInfo, uIModuleNavigation.transform);
+                        dynamicTooltipWithHover.CreateUIElement(position, mainText, voidIcon, _ODISitrepList, uIModuleNavigation.transform);
                     }
                     else
                     {
@@ -4933,13 +4933,7 @@ namespace TFTV
 
 
 
-                        AddOutlineToIcon addOutlineToIcon = iconObject.GetComponent<AddOutlineToIcon>();
-
-                        if (addOutlineToIcon == null)
-                        {
-                            addOutlineToIcon = iconObject.AddComponent<AddOutlineToIcon>();
-                        }
-
+                        AddOutlineToIcon addOutlineToIcon = iconObject.GetComponent<AddOutlineToIcon>() ?? iconObject.AddComponent<AddOutlineToIcon>();
                         addOutlineToIcon.icon = iconObject;
                         addOutlineToIcon.InitOrUpdate();
 
@@ -5212,7 +5206,7 @@ namespace TFTV
 
                         //   TFTVLogger.Always($"Free capture slots: {freeSpaces.ToString()}/{totalCapacity.ToString()}");
 
-                        freeSpaceTextObject.GetComponent<Text>().text = $"Free capture slots: {freeSpaces}/{totalCapacity}";
+                        freeSpaceTextObject.GetComponent<Text>().text = $"{TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_CAPTURE_FREE_SLOTS")} {freeSpaces}/{totalCapacity}";
 
                     }
                     catch (Exception e)
@@ -5228,7 +5222,7 @@ namespace TFTV
             {
                 try
                 {
-                    _captureUI = null;
+                    CaptureUI = null;
                 }
                 catch (Exception e)
                 {
@@ -5238,8 +5232,12 @@ namespace TFTV
 
             }
 
-            private static AircraftUI _captureUI = null;
+            public static AircraftUI CaptureUI = null;
 
+
+            /// <summary>
+            /// This is run on UIModuleObjectives.Init(). It's aborted if Limite Capture is off, no capture is possible due to lack of space/capability, or if there are no aliens.
+            /// </summary>
             public static void CreateCaptureTacticalWidget(UIModuleObjectives moduleObjectives)
             {
                 try
@@ -5258,7 +5256,7 @@ namespace TFTV
                         return;
                     }
 
-                    if (_captureUI == null)
+                    if (CaptureUI == null)
                     {
 
                         // TFTVLogger.Always($"got here");
@@ -5280,12 +5278,6 @@ namespace TFTV
                         aircraftRectTransform.anchorMin = new Vector2(0.5f, 0.5f); // Center the UI element
                         aircraftRectTransform.anchorMax = new Vector2(0.5f, 0.5f); // Center the UI element
                         aircraftRectTransform.pivot = new Vector2(0.5f, 0.5f);     // Set pivot to center
-
-                        // Set the size of the UI panel
-                        //  aircraftRectTransform.sizeDelta = new Vector2(300 * resolutionFactorWidth, 150 * resolutionFactorHeight); // Adjust size as needed
-
-                        // Set the local position relative to the center
-                        //  aircraftRectTransform.position = new Vector3(550 * resolutionFactorWidth, 1045 * resolutionFactorHeight, 0.0f);  // Center in the parent, adjust if necessary
 
                         // Add your UI logic (AircraftUI)
                         AircraftUI uiScript = aircraftUIPanel.AddComponent<AircraftUI>();
@@ -5330,7 +5322,7 @@ namespace TFTV
 
                         uiScript.filledSpaces = 0;    // Example, adjust accordingly
 
-                        _captureUI = uiScript;
+                        CaptureUI = uiScript;
 
                         //  TFTVLogger.Always($"widget setup");
                         // Call the UI creation method to build the interface
@@ -5346,6 +5338,10 @@ namespace TFTV
                 }
             }
 
+
+            /// <summary>
+            /// This is run when a Pandoran is chosen or removed from priority extraction list and on UIModuleObjectives.Init()
+            /// </summary>
             public static void UpdateCaptureUI()
             {
                 try
@@ -5369,37 +5365,37 @@ namespace TFTV
                     && !priorityAliens.Contains(a))
                         .ToList();
 
-                    _captureUI.capturedAliens.Clear();
-                    _captureUI.filledSpaces = 0;
-                    int availableCaptureslotsCounter = _captureUI.totalCapacity;//CachedACC;
+                    CaptureUI.capturedAliens.Clear();
+                    CaptureUI.filledSpaces = 0;
+                    int availableCaptureslotsCounter = CaptureUI.totalCapacity;//CachedACC;
 
                     foreach (TacticalActor priorityCaptureAlien in priorityAliens)
                     {
                         int slotCost = CalculateCaptureSlotCost(priorityCaptureAlien.GameTags.ToList());
 
                         availableCaptureslotsCounter -= slotCost;
-                        _captureUI.capturedAliens.Add(priorityCaptureAlien);
-                        _captureUI.filledSpaces += slotCost;
+                        CaptureUI.capturedAliens.Add(priorityCaptureAlien);
+                        CaptureUI.filledSpaces += slotCost;
                     }
 
                     paralyzedAliens = paralyzedAliens.OrderByDescending(taur => CalculateCaptureSlotCost(taur.GameTags.ToList())).ToList();
 
                     foreach (TacticalActor otherParalyzedAlien in paralyzedAliens)
                     {
-                        // TFTVLogger.Always($"paralyzed {otherParalyzedAlien.TacticalActorBaseDef.name}, aircraftCaptureCapacity is {availableCaptureslotsCounter}, space required is {CalculateCaptureSlotCost(otherParalyzedAlien.GameTags)}");
+                        //  TFTVLogger.Always($"paralyzed {otherParalyzedAlien.TacticalActorBaseDef.name}, aircraftCaptureCapacity is {availableCaptureslotsCounter}");
                         int slotCost = CalculateCaptureSlotCost(otherParalyzedAlien.GameTags.ToList());
 
                         if (availableCaptureslotsCounter >= slotCost)
                         {
                             //  TFTVLogger.Always($"{tacActorUnitResult1.TacticalActorBaseDef.name} added to capture list; available slots before that {availableCaptureslotsCounter}");
-                            _captureUI.capturedAliens.Add(otherParalyzedAlien);
-                            _captureUI.filledSpaces += slotCost;
+                            CaptureUI.capturedAliens.Add(otherParalyzedAlien);
+                            CaptureUI.filledSpaces += slotCost;
                             availableCaptureslotsCounter -= slotCost;
                             //  TFTVLogger.Always($"{otherParalyzedAlien.TacticalActorBaseDef.name} added to capture list; available slots after {availableCaptureslotsCounter}");
                         }
                     }
 
-                    _captureUI.UpdateUI();
+                    CaptureUI.UpdateUI();
                 }
                 catch (Exception e)
                 {
@@ -5411,65 +5407,140 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(TacticalActorViewBase), "GetStatusesFiltered")]
-        public static class TacticalActorViewBase_GetStatusesFiltered_patch
+        internal class DamagePrediction
         {
-            public static void Postfix(ref List<TacticalActorViewBase.StatusInfo> __result)
+
+            /// <summary>
+            /// This method is run on Tactical Start and it removes the damage prediction bar when aiming, because it's inaccurate
+            /// </summary>
+
+            public static void RemoveDamagePredictionBar()
             {
                 try
                 {
-                    if (__result != null && __result.Count > 0 && __result.Any(si => si.Def != null && si.Def is ArmorStackStatusDef))
+                    if (GameUtl.CurrentLevel() != null && GameUtl.CurrentLevel().GetComponent<TacticalLevelController>() != null)
                     {
-                        __result.FirstOrDefault(si => si.Def is ArmorStackStatusDef).Value = float.NaN;
+                        UIModuleShootTargetHealthbar uIModuleShootTargetHealthbar = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>().View.TacticalModules.ShootTargetHealthBar;
+                        uIModuleShootTargetHealthbar.ModulePanel.GetComponentsInChildren<Image>().FirstOrDefault(c => c.name.Equals("DamagePrediction")).gameObject.SetActive(false);
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+
+            [HarmonyPatch(typeof(UIStateShoot), "GetMinMaxPossibleDamage")]
+            public static class UIStateShoot_GetMinMaxPossibleDamage_patch
+            {
+                public static bool Prefix(UIStateShoot __instance)
+                {
+                    try
+                    {
+
+                        return false;
                     }
 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
 
-        public static void RemoveDamagePredictionBar()
-        {
-            try
-            {
-                if (GameUtl.CurrentLevel() != null && GameUtl.CurrentLevel().GetComponent<TacticalLevelController>() != null)
-                {
-                    UIModuleShootTargetHealthbar uIModuleShootTargetHealthbar = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>().View.TacticalModules.ShootTargetHealthBar;
-                    uIModuleShootTargetHealthbar.ModulePanel.GetComponentsInChildren<Image>().FirstOrDefault(c => c.name.Equals("DamagePrediction")).gameObject.SetActive(false);
-                }
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-
-
-        }
-
-        [HarmonyPatch(typeof(UIStateShoot), "GetMinMaxPossibleDamage")]
-        public static class UIStateShoot_GetMinMaxPossibleDamage_patch
-        {
-            public static bool Prefix(UIStateShoot __instance)
-            {
-                try
-                {
-
-                    return false;
-                }
-
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
                 }
             }
         }
+
+
+
+        /*[HarmonyPatch(typeof(InputController), "RefreshActions")]
+            public static class InputController_Init_patch
+            {
+                public static bool Prefix(InputController __instance, ref InputAction[] ____activeActionsMap,
+                   ref List<int> ____activeActionHashes, ref List<InputAction> ____actionList, ref List<AxisValue> ____axisValues,
+                  ref List<KeyValue> ____keyValuesList, ref KeyValue[] ____keyValues, ref List<ActionAxisValue> ____actionAxisValues)
+                {
+                    try
+                    {
+                        MethodInfo InitSuperChordsMethodInfo = typeof(InputController).GetMethod("InitSuperChords", BindingFlags.Instance | BindingFlags.NonPublic);
+                        MethodInfo IsAllowedAndSupportedMethodInfo = typeof(InputController).GetMethod("IsAllowedAndSupported", BindingFlags.Instance | BindingFlags.NonPublic);
+                        MethodInfo GetAxisRawMethodInfo = typeof(InputController).GetMethod("GetAxisRaw", BindingFlags.Static | BindingFlags.NonPublic);
+                        PropertyInfo KeyMaxHashFieldInfo = typeof(InputController).GetProperty("KeyMaxHash", BindingFlags.Instance | BindingFlags.NonPublic);
+
+
+
+                        for (int i = 0; i < ____activeActionsMap.Length; i++)
+                        {
+                            ____activeActionsMap[i] = null;
+                        }
+
+                        TFTVLogger.Always($"got here0");
+
+                        List<InputAction> list = ____activeActionHashes.Select(__instance.GetDefaultAction).ToList();
+                        TFTVLogger.Always($"got here0bis; list count is {list.Count}, while  ____activeActionsMap.Length is {____activeActionsMap.Length}");
+
+                        foreach (InputAction item in list)
+                        {
+                            TFTVLogger.Always($"item is {item?.Name} hash: {item?.Hash} ____activeActionsMap.Contains(item): {____activeActionsMap.Contains(item)}");
+
+                            //  if (____activeActionsMap.Contains(item))
+
+                                ____activeActionsMap[item.Hash] = item;
+
+                        }
+                        TFTVLogger.Always($"got here0ter");
+
+                        ____actionList = list;
+                        List<InputKey> source = (from action in list
+                                                 from chord in action.Chords
+                                                 from key in chord.Keys
+                                                 where (bool)IsAllowedAndSupportedMethodInfo.Invoke(__instance, new object[] { key.GetInputType() })// IsAllowedAndSupported(key.GetInputType())
+                                                 select key).Distinct().ToList();
+
+                        TFTVLogger.Always($"got here1");
+
+                        IEnumerable<InputKey> source2 = source.Where((InputKey key) => key.InputSource == InputSource.AxisTriggerPositive || key.InputSource == InputSource.AxisTriggerNegative || key.InputSource == InputSource.Axis);
+                        List<AxisValue> prevAxisValues = ____axisValues ?? new List<AxisValue>();
+                        ____axisValues = source2.Select((InputKey k) => new AxisValue(k.Name, k.GetInputType(), (AxisValue)GetAxisRawMethodInfo.Invoke(__instance, new object[] { k.Name, prevAxisValues }), __instance)).ToList();
+
+                        TFTVLogger.Always($"and here2");
+
+                        IEnumerable<InputKey> source3 = source.Where((InputKey key) => key.InputSource == InputSource.Key || key.InputSource == InputSource.AxisTriggerNegative || key.InputSource == InputSource.AxisTriggerPositive);
+                        KeyValue[] prevKeyValues = ____keyValues ?? new KeyValue[(int)KeyMaxHashFieldInfo.GetValue(__instance)];
+
+                        TFTVLogger.Always($"and here3");
+                        ____keyValuesList = source3.Select((InputKey k) => new KeyValue(k, prevKeyValues[k.GetHashCode()], __instance)).ToList();
+                        ____keyValues = new KeyValue[(int)KeyMaxHashFieldInfo.GetValue(__instance)];
+
+                        TFTVLogger.Always($"whatabout here4");
+                        for (int j = 0; j < ____keyValuesList.Count; j++)
+                        {
+                            int hashCode = ____keyValuesList[j].Key.GetHashCode();
+                            ____keyValues[hashCode] = ____keyValuesList[j];
+                        }
+
+                        ____actionAxisValues = (from a in list
+                                                where a.IsAxis
+                                                select new ActionAxisValue(a, __instance)).ToList();
+
+                        TFTVLogger.Always($"dont tell me this is the problem!");
+                        InitSuperChordsMethodInfo.Invoke(__instance, new object[] { });// InitSuperChords();
+                        __instance.IsInputSetLoaded = true;
+
+                        TFTVLogger.Always($"got to the end! A miracle");
+
+                        return false;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }*/
+
     }
 }

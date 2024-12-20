@@ -3,20 +3,19 @@ using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers;
-using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
-using PhoenixPoint.Tactical.View.ViewModules;
+using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.View;
+using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
-using PhoenixPoint.Tactical.Entities.Statuses;
 
 namespace TFTV
 {
@@ -29,9 +28,9 @@ namespace TFTV
 
         private static PhoenixGeneralButton _evacAll = null;
 
-        public static void ClearData() 
+        public static void ClearData()
         {
-            try 
+            try
             {
                 _evacAll = null;
 
@@ -47,6 +46,10 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         internal static class SmartEvacuation
         {
+
+            
+
+
             [HarmonyPatch(typeof(TacticalView), "OnAbilityExecuted")]
             public static class TacticalView_OnAbilityExecuted_Patch
             {
@@ -79,14 +82,14 @@ namespace TFTV
                             {
                                 TacticalAbility tAbility = (TacticalAbility)tActor.GetAbility<ExitMissionAbility>() ?? tActor.GetAbility<EvacuateMountedActorsAbility>();
                                 TacticalAbilityTarget taTarget = tAbility?.GetTargets().FirstOrDefault();
-                               
+
                                 if (taTarget != null)
                                 {
                                     tAbility.Activate(taTarget);
                                 }
                             }
                             __instance.ResetViewState();
-                            
+
                         }
                         catch (Exception e)
                         {
@@ -126,10 +129,10 @@ namespace TFTV
                                 text.alignment = TextAnchor.MiddleCenter;
                                 _evacAll.PointerClicked += () => OnEvacuateSquadConfirmationResult(new MessageBoxCallbackResult { DialogResult = MessageBoxResult.Yes, UserData = tacticalAbility });
 
-                               /* foreach (Component component in _evacAll.GetComponentsInChildren<Component>().Where(c => c is Image))
-                                {
-                                    TFTVLogger.Always($"{component.name}");
-                                }*/
+                                /* foreach (Component component in _evacAll.GetComponentsInChildren<Component>().Where(c => c is Image))
+                                 {
+                                     TFTVLogger.Always($"{component.name}");
+                                 }*/
                             }
                             else
                             {
@@ -183,7 +186,7 @@ namespace TFTV
                                 evacuateAbility = ____selectedActor.GetAbility<EvacuateMountedActorsAbility>();
                             }
 
-                            allActiveSquadmembers = __instance.TacticalLevel.CurrentFaction.TacticalActors.Where(a => a != ____selectedActor && a.IsActive && (a.Status==null || a.Status!=null && a.Status.GetStatus<MindControlStatus>()==null));
+                            allActiveSquadmembers = __instance.TacticalLevel.CurrentFaction.TacticalActors.Where(a => a != ____selectedActor && a.IsActive && (a.Status == null || a.Status != null && a.Status.GetStatus<MindControlStatus>() == null));
                             //   Logger.Info($"[TacticalView_OnAbilityExecuted_PREFIX] allActiveSquadmembers: {allActiveSquadmembers.Select(a => a.DisplayName).ToArray().Join(null, ", ")}");
 
                             bool isSquadInExitZone = true;

@@ -1554,7 +1554,7 @@ namespace TFTV
         }
 
         [HarmonyPatch(typeof(GeoscapeLog), "AddEntry")]
-        public static void Prefix(ref GeoscapeLogEntry entry, GeoActor actor, GeoscapeLogMessagesDef ____messagesDef)
+        public static void Prefix(ref GeoscapeLogEntry entry, GeoActor actor, GeoscapeLogMessagesDef ____messagesDef, GeoscapeLog __instance)
         {
             try
             {
@@ -1565,6 +1565,7 @@ namespace TFTV
                         entry.Parameters[0] = _destroyedAlienBase;
                     }
                 }
+               
             }
             catch (Exception e)
             {

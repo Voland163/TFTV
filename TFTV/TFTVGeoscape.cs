@@ -65,6 +65,7 @@ namespace TFTV
         public Dictionary<int, bool> BaseDefensePandoranBreach;
         public int RevenantPoints;
         public Dictionary<int, string> CharacterPortraits;
+        public List <int> PlayerVehicles;
     }
 
 
@@ -124,7 +125,9 @@ namespace TFTV
             TFTVCustomPortraits.CharacterPortrait.PopulatePortraitFileList();
             TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
             TFTVUIGeoMap.UnpoweredFacilitiesInfo.CheckUnpoweredBasesOnGeoscapeStart();
-
+           // TFTVDragandDropFunctionality.VehicleRoster.RestoreVehicleOrder(Controller);
+           
+            // TFTVBetaSaveGamesFixes.SpecialFixBeesGuy();
             /* GeoSite geoSite = Controller.Map.AllSites.FirstOrDefault(s=>s.GetComponent<GeoPhoenixBase>()!=null && s.ActiveMission!=null);
 
              geoSite.ActiveMission = null;
@@ -182,6 +185,7 @@ namespace TFTV
             //  TFTVLogger.Always($"Items currently available in Aircraft inventory {TFTVUI.CurrentlyAvailableInv.Values.Count}");
             //  TFTVLogger.Always($"Items currently hidden in Aircraft inventory {TFTVUI.CurrentlyHiddenInv.Values.Count}");
             TFTVRevenant.RecordUpkeep.UpdateRevenantTimer(Controller);
+            TFTVDragandDropFunctionality.VehicleRoster.RecordVehicleOrder(Controller);
             return new TFTVGSInstanceData()
             {
 
@@ -224,8 +228,8 @@ namespace TFTV
                 PandoransContainmentBaseAttack = TFTVBaseDefenseGeoscape.PandoransThatCanEscape,
                 BaseDefensePandoranBreach = TFTVBaseDefenseGeoscape.ContainmentBreachSchedule,
                 RevenantPoints = TFTVRevenant.TFTVRevenantResearch.RevenantPoints,
-                CharacterPortraits = TFTVCustomPortraits.CharacterPortrait.characterPics
-
+                CharacterPortraits = TFTVCustomPortraits.CharacterPortrait.characterPics,
+                PlayerVehicles = TFTVDragandDropFunctionality.VehicleRoster.PlayerVehicles
                 //   Update35GeoscapeCheck = TFTVNewGameOptions.Update35Check,
 
             };
@@ -269,6 +273,11 @@ namespace TFTV
                 TFTVNewGameOptions.ConfigImplemented = data.NewConfigUsedInstance;
                 TFTVAmbushes.AN_FallenOnes_Hotspots = data.FO_Hotspots;
                 TFTVAmbushes.NJ_Purists_Hotspots = data.PU_Hotspots;
+
+                if (data.PlayerVehicles != null) 
+                { 
+                TFTVDragandDropFunctionality.VehicleRoster.PlayerVehicles = data.PlayerVehicles;
+                }
 
                 if (data.PandoransContainmentBaseAttack != null)
                 {
@@ -331,7 +340,7 @@ namespace TFTV
                     $"\nNoSecondChances: {TFTVNewGameOptions.NoSecondChances}");
 
                 TFTVDefsWithConfigDependency.ImplementConfigChoices();
-
+                TFTVDragandDropFunctionality.VehicleRoster.RestoreVehicleOrder(Controller);
                 //   TFTVBetaSaveGamesFixes.Fix(Controller);
 
                 // TFTVNewGameOptions.Update35Check = data.Update35GeoscapeCheck;

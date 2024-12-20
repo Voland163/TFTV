@@ -127,26 +127,7 @@ namespace TFTV
             }
 
 
-            public static void RemoveDeathBelcherAbilities(TacticalActor tacticalActor)
-            {
-                try
-                {
-                    if (tacticalActor.GetAbilityWithDef<DeathBelcherAbility>(oilcrabDeathBelcherAbility) != null)
-                    {
-                        tacticalActor.RemoveAbility(oilcrabDeathBelcherAbility);
-                    }
-                    else if (tacticalActor.GetAbilityWithDef<DeathBelcherAbility>(oilfishDeathBelcherAbility) != null)
-                    {
-                        tacticalActor.RemoveAbility(oilfishDeathBelcherAbility);
-                    }
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-
-                }
-            }
+           
 
 
             public static void GiveTBTVAbility(TacticalActor tacticalActor, int roll)
@@ -329,10 +310,9 @@ namespace TFTV
                             if (__instance.GameTags.Contains(voidTouchedTag))
                             {
                                 TFTVLogger.Always($"{__instance.name} getting TBTV ability on equipment damaged");
-                                RemoveDeathBelcherAbilities(__instance);
+
+                                RemoveTouchedByTheVoid(__instance);
                                 int roll = MakeTBTVRoll();
-                                __instance.RemoveAbility(hiddenTBTVAbilityDef);
-                                __instance.GameTags.Remove(voidTouchedTag);
                                 GiveTBTVAbility(__instance, roll);
                             }
                         }
@@ -350,10 +330,8 @@ namespace TFTV
                         if (actor.GameTags.Contains(voidTouchedTag))
                         {
                             TFTVLogger.Always($"{actor.name} getting TBTV on getting damaged");
-                            RemoveDeathBelcherAbilities(actor);
+                            RemoveTouchedByTheVoid(actor);
                             int roll = MakeTBTVRoll();
-                            actor.RemoveAbility(hiddenTBTVAbilityDef);
-                            actor.GameTags.Remove(voidTouchedTag);
                             GiveTBTVAbility(actor, roll);
                         }
 
@@ -371,6 +349,52 @@ namespace TFTV
                     catch (Exception e)
                     {
                         TFTVLogger.Error(e);
+                    }
+                }
+
+
+                private static void RemoveTouchedByTheVoid(TacticalActor actor)
+                {
+                    try 
+                    {
+                        RemoveDeathBelcherAbilities(actor);
+                        actor.RemoveAbility(hiddenTBTVAbilityDef);
+
+                        Status hiddenTBTVStatus = actor.Status.GetStatusByName(hiddenTBTVAddAbilityStatus.EffectName);
+
+                        if (hiddenTBTVAddAbilityStatus != null)
+                        {
+                            actor.Status.UnapplyStatus(hiddenTBTVStatus);
+                        }
+
+                        actor.GameTags.Remove(voidTouchedTag);
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+
+                }
+
+                private static void RemoveDeathBelcherAbilities(TacticalActor tacticalActor)
+                {
+                    try
+                    {
+                        if (tacticalActor.GetAbilityWithDef<DeathBelcherAbility>(oilcrabDeathBelcherAbility) != null)
+                        {
+                            tacticalActor.RemoveAbility(oilcrabDeathBelcherAbility);
+                        }
+                        else if (tacticalActor.GetAbilityWithDef<DeathBelcherAbility>(oilfishDeathBelcherAbility) != null)
+                        {
+                            tacticalActor.RemoveAbility(oilfishDeathBelcherAbility);
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+
                     }
                 }
             }
