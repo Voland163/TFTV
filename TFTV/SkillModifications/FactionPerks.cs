@@ -544,7 +544,7 @@ namespace PRMBetterClasses.SkillModifications
         {
             string skillName = "BC_Takedown_AbilityDef";
             float bashDamage = 80f;
-            float bashShock = 160f;
+            float bashShock = 210f;
             //float meleeShockAddition = 100.0f;
             //LocalizedTextBind displayName = new LocalizedTextBind("TAKEDOWN", PRMBetterClassesMain.Main.Settings.DoNotLocalizeChangedTexts);
             //LocalizedTextBind description = new LocalizedTextBind($"Deal {(int)bashDamage} damage and {(int)bashShock} shock damage to an adjacent target. Replaces Bash.", PRMBetterClassesMain.Main.Settings.DoNotLocalizeChangedTexts);

@@ -11,6 +11,7 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Missions;
@@ -27,6 +28,7 @@ using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionEffects;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Levels.Mist;
+using PhoenixPoint.Tactical.View;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -1227,7 +1229,6 @@ namespace TFTV
         {
             try
             {
-
                 if (VoidOmensCheck[5])
                 {
                     TacMissionTypeDef MissionType = controller.TacticalGameParams.MissionData.MissionType;
@@ -1257,7 +1258,8 @@ namespace TFTV
                                         {
                                             TFTVLogger.Always("Found civvy");
                                             tacticalActor.SetFaction(environment, TacMissionParticipant.Environment);
-
+                                            ActorClassIconElement actorClassIconElement = tacticalActor.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
+                                            TFTVUITactical.Enemies.ChangeHealthBarIcon(actorClassIconElement, tacticalActor);
 
                                         }
                                     }

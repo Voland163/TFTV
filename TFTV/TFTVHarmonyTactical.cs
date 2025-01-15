@@ -1,13 +1,19 @@
 ﻿using Base.Core;
+using Base.Entities.Effects;
 using Base.Entities.Statuses;
+using Base.Levels;
+using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Levels.ActorDeployment;
+using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
+using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
@@ -21,7 +27,9 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
+using static PhoenixPoint.Tactical.Entities.Effects.DamageEffect;
 using static PhoenixPoint.Tactical.View.ViewControllers.SquadMemberScrollerController;
+using static TFTV.TFTVTauntsAndQuips;
 using static TFTV.TFTVUITactical;
 
 
@@ -51,7 +59,7 @@ namespace TFTV
                         float speedMultiplier = optionsManager.CurrentGameplayOptions.AnimationSpeedLevel;
                         //  TFTVLogger.Always($"speedmultiplier: {speedMultiplier}, speedMultiplier+1/4: {(1+speedMultiplier) / 4}");
                         controller.OverwatchTimeScale = 0.1f * ((1 + speedMultiplier) / 4);
-                        TFTVLogger.Always($"OverwatchTimeScale: {controller.OverwatchTimeScale}");
+                      //  TFTVLogger.Always($"OverwatchTimeScale: {controller.OverwatchTimeScale}");
                     }
                 }
                 catch (Exception e)
@@ -74,7 +82,7 @@ namespace TFTV
                         return false;
                     }
 
-                    
+
 
                     if (tacActor.IdleAbility.IsExecuting)//tacActor.TimingScale.Timing.Scale == 1f)
                     {
@@ -94,26 +102,26 @@ namespace TFTV
 
 
 
-       /* [HarmonyPatch(typeof(TacticalLevelController), "TriggerOverwatch")]
-        public static class TacticalLevelController_TriggerOverwatch_patch
-        {
-            public static void Prefix(TacticalLevelController __instance)
-            {
-                try
-                {
-                    OptionsManager optionsManager = GameUtl.GameComponent<OptionsManager>();
-                    float speedMultiplier = optionsManager.CurrentGameplayOptions.AnimationSpeedLevel;
-                    //  TFTVLogger.Always($"speedmultiplier: {speedMultiplier}, speedMultiplier+1/4: {(1+speedMultiplier) / 4}");
-                    __instance.OverwatchTimeScale = 0.1f * ((1 + speedMultiplier) / 4);
-                    //  TFTVLogger.Always($"OW timescale={__instance.OverwatchTimeScale}");
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }*/
+        /* [HarmonyPatch(typeof(TacticalLevelController), "TriggerOverwatch")]
+         public static class TacticalLevelController_TriggerOverwatch_patch
+         {
+             public static void Prefix(TacticalLevelController __instance)
+             {
+                 try
+                 {
+                     OptionsManager optionsManager = GameUtl.GameComponent<OptionsManager>();
+                     float speedMultiplier = optionsManager.CurrentGameplayOptions.AnimationSpeedLevel;
+                     //  TFTVLogger.Always($"speedmultiplier: {speedMultiplier}, speedMultiplier+1/4: {(1+speedMultiplier) / 4}");
+                     __instance.OverwatchTimeScale = 0.1f * ((1 + speedMultiplier) / 4);
+                     //  TFTVLogger.Always($"OW timescale={__instance.OverwatchTimeScale}");
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
+         }*/
 
 
         [HarmonyPatch(typeof(IdleAbility), "Activate")]
@@ -479,8 +487,6 @@ namespace TFTV
         }
 
 
-
-
         [HarmonyPatch(typeof(TacticalLevelController), "ActorDamageDealt")]
         public static class TFTV_TacticalLevelController_ActorDamageDealt_Patch
         {
@@ -488,7 +494,13 @@ namespace TFTV
             {
                 try
                 {
+
                     TFTVTouchedByTheVoid.TBTVRolls.TBTVTriggeres.TBTVTriggerOnActorDamageDealt(actor, damageDealer);
+
+               
+
+                    //  string taunt = "Is that all you've got?";  // Example
+                    //  FloatingTextManager.ShowFloatingText(actor, taunt, Color.white);
 
                 }
                 catch (Exception e)
@@ -502,8 +514,6 @@ namespace TFTV
             {
                 try
                 {
-
-
                     TFTVAncients.HoplitesAbilities.HoplitesMolecularTargeting.CyclopsMolecularTargeting(actor, damageDealer);
                     TFTVBallistics.RemoveDCoy(actor, damageDealer);
                     TFTVHumanEnemies.HumanEnemiesRetributionTacticCheckOnActorDamageDealt(actor, damageDealer);
@@ -514,6 +524,8 @@ namespace TFTV
                 }
             }
         }
+
+
 
 
 

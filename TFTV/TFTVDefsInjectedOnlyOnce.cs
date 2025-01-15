@@ -240,10 +240,16 @@ namespace TFTV
                     weaponDef.DamagePayload.DamageKeywords.FirstOrDefault(dk => dk.DamageKeywordDef == shockDamageKeywordDef).Value += standardDamageAdjustment;
                 }
 
-              /*  foreach (WeaponDef weaponDef in weapons)
-                {
-                    TFTVLogger.Always($"{weaponDef.name} does shock damage; {weaponDef.DamagePayload.DamageKeywords.FirstOrDefault(dk => dk.DamageKeywordDef == shockDamageKeywordDef).Value}");
+            //    DefCache.GetDef<ApplyDamageEffectAbilityDef>("StomperLegs_Stomp_AbilityDef").DamagePayload.DamageKeywords.FirstOrDefault(dk => dk.DamageKeywordDef == damageKeywordDef).Value+=20;
+                
+              //  DefCache.GetDef<BashAbilityDef>("Takedown_Bash_AbilityDef").DamagePayload.DamageKeywords.FirstOrDefault(dk => dk.DamageKeywordDef == damageKeywordDef).Value += 50;
+
+              /*  foreach (ApplyDamageEffectAbilityDef ApplyDamageEffectAbilityDef in 
+                    Repo.GetAllDefs<ApplyDamageEffectAbilityDef>().Where(a=>a.DamagePayload.DamageKeywords.Any(k=>k.DamageKeywordDef== shockDamageKeywordDef)))
+                    {
+                    TFTVLogger.Always($"{ApplyDamageEffectAbilityDef.name} does shock damage; {ApplyDamageEffectAbilityDef.DamagePayload.DamageKeywords.FirstOrDefault(dk => dk.DamageKeywordDef == shockDamageKeywordDef).Value}");
                 }*/
+               
             }
             catch (Exception e)
             {
@@ -7105,6 +7111,8 @@ namespace TFTV
                 ancientPowerUp.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
                 ancientPowerUp.HealthbarPriority = -1;
                 ancientPowerUp.ExpireOnEndOfTurn = false;
+                ancientPowerUp.SingleInstance = true;
+              //  ancientPowerUp.StackMultipleStatusesAsSingleIcon = true;
                 ancientPowerUp.ParticleEffectPrefab = DefCache.GetDef<AddAttackBoostStatusDef>("E_Status [Aura_ProteanMutaneFire_AbilityDef]").ParticleEffectPrefab;
 
 

@@ -50,7 +50,7 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
-        private static Font _PuristaSemiboldCached = null;
+        public static Font PuristaSemiboldFontCache = null;
         private static Color _leaderColor = new Color(1f, 0.72f, 0f);
         public static Color NegativeColor = new Color(1.0f, 0.145f, 0.286f);
         private static Color _regularNoLOSColor = Color.gray;
@@ -63,9 +63,9 @@ namespace TFTV
             {
                 // TFTVLogger.Always($"uIModuleObjectives.transform.Find(\"Objectives_Text\").GetComponentInChildren<Text>().font: {uIModuleObjectives.transform.Find("Objectives_Text").GetComponentInChildren<Text>().font}");
 
-                if (_PuristaSemiboldCached == null)
+                if (PuristaSemiboldFontCache == null)
                 {
-                    _PuristaSemiboldCached = uIModuleObjectives.transform.Find("Objectives_Text").GetComponentInChildren<Text>().font;
+                    PuristaSemiboldFontCache = uIModuleObjectives.transform.Find("Objectives_Text").GetComponentInChildren<Text>().font;
                 }
 
             }
@@ -250,7 +250,7 @@ namespace TFTV
                         generatorHealthText.alignment = TextAnchor.MiddleLeft;
                         generatorHealthText.fontSize = 35;
                         generatorHealthText.color = color;
-                        generatorHealthText.font = _PuristaSemiboldCached ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                        generatorHealthText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                         RectTransform rectGeneratorsHealthText = generatorHealthText.GetComponent<RectTransform>();
                         rectGeneratorsHealthText.sizeDelta = new Vector2(800, 60);
                         rectGeneratorsHealthText.localScale = new Vector2(0.5f, 0.5f);
@@ -265,7 +265,7 @@ namespace TFTV
                         reinforcementTitleText.fontSize = 40;
                         reinforcementTitleText.color = Color.white;
                         reinforcementTitleText.alignment = TextAnchor.MiddleLeft;
-                        reinforcementTitleText.font = _PuristaSemiboldCached ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                        reinforcementTitleText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                         RectTransform rectReinforcementTitleText = reinforcementTitleText.GetComponent<RectTransform>();
                         rectReinforcementTitleText.sizeDelta = new Vector2(820, 60);
                         rectReinforcementTitleText.localScale = new Vector2(0.5f, 0.5f);
@@ -277,7 +277,7 @@ namespace TFTV
                         reinforcementDescriptionTextObj.transform.SetParent(backgroundImage.transform);
                         Text reinforcementDescriptionText = reinforcementDescriptionTextObj.AddComponent<Text>();
                         reinforcementDescriptionText.text = reinforcementsDescription;//need to complete
-                        reinforcementDescriptionText.font = _PuristaSemiboldCached ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                        reinforcementDescriptionText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                         reinforcementDescriptionText.fontSize = 30;
                         reinforcementDescriptionText.color = Color.grey;
                         reinforcementDescriptionText.alignment = TextAnchor.MiddleLeft;
@@ -693,7 +693,7 @@ namespace TFTV
                         titleTextObj.transform.SetParent(uiObject.transform);
                         Text titleText = titleTextObj.AddComponent<Text>();
                         titleText.text = title;
-                        titleText.font = _PuristaSemiboldCached ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                        titleText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                         titleText.fontSize = 80; // Doubled font size
                         titleText.color = Color.gray;
                         titleText.alignment = TextAnchor.MiddleCenter;
@@ -713,7 +713,7 @@ namespace TFTV
                         descriptionText.text = initialDescription;
                         descriptionText.horizontalOverflow = HorizontalWrapMode.Overflow;
                         descriptionText.verticalOverflow = VerticalWrapMode.Overflow;
-                        descriptionText.font = _PuristaSemiboldCached ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                        descriptionText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                         descriptionText.fontSize = 120; // Doubled font size
                         descriptionText.color = Color.white;
                         descriptionText.alignment = TextAnchor.MiddleCenter;
@@ -1881,6 +1881,11 @@ namespace TFTV
                     {
                         string descriptionToAdd = "";
 
+                        if(factionObjective.Description.LocalizationKey== _captureAnyRevenant.MissionObjectiveData.Description.LocalizationKey) 
+                        {
+                            isRevenant = true;
+                        }
+
                         if (IsKillOrCaptureRevenantObjective(factionObjective))
                         {
                             descriptionToAdd = GetTextForRevenantObjective(factionObjective);
@@ -2120,7 +2125,7 @@ namespace TFTV
                         return FactionObjectiveState.Failed;
                     }
 
-                    if (targets.Any((TacticalActorBase x) => x.Status.HasStatus<ParalysedStatus>() && CaptureTacticalWidget.CaptureUI.capturedAliens.Contains(x)))
+                    if (targets.Any((TacticalActorBase x) => x.Status.HasStatus<ParalysedStatus>() && (CaptureTacticalWidget.CaptureUI==null || CaptureTacticalWidget.CaptureUI.capturedAliens.Contains(x))))
                     {
                         TFTVLogger.Always($"returning achieved state for {objective.Description.Localize()}");
                         return FactionObjectiveState.Achieved;
@@ -2205,12 +2210,29 @@ namespace TFTV
 
                     GameTagDef captureTag = (GameTagDef)captureTargetsGameTagField.GetValue(captureObjective);
 
-
-                    return alienFaction.TacticalActors.Any(ta => ta.HasGameTag(captureTag)
+                    if (!alienFaction.TacticalActors.Any(ta => ta.HasGameTag(captureTag)
                     && !ta.IsEvacuated && ta.Status != null
-                    && ta.Status.HasStatus<ParalysedStatus>()
-                    && CaptureTacticalWidget.CaptureUI.capturedAliens.Contains(ta));
+                    && ta.Status.HasStatus<ParalysedStatus>()))
+                    {
+                        return false;
+                    }
 
+                    List<TacticalActor> eligibleAliens = alienFaction.TacticalActors.Where(ta => ta.HasGameTag(captureTag)
+                    && !ta.IsEvacuated && ta.Status != null
+                    && ta.Status.HasStatus<ParalysedStatus>()).ToList();
+
+                    if (CaptureTacticalWidget.CaptureUI == null)
+                    {
+                        return true;
+                    }
+                    else if (eligibleAliens.Any(ta => CaptureTacticalWidget.CaptureUI.capturedAliens.Contains(ta)))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
                 catch (Exception e)
                 {
@@ -2306,7 +2328,7 @@ namespace TFTV
                     try
                     {
                         ModifySecondaryObjectivesEvaluateBehavior(__instance, ref __result, __state);
-                       // TFTVVanillaFixes.ModifyVehicleRescueEvaluateBehavior(__instance, ref __result);
+                        // TFTVVanillaFixes.ModifyVehicleRescueEvaluateBehavior(__instance, ref __result);
                     }
                     catch (Exception e)
                     {
@@ -2389,7 +2411,7 @@ namespace TFTV
             }
 
 
-           
+
 
 
 
@@ -3125,7 +3147,7 @@ namespace TFTV
                             //   textObj.GetComponent<RectTransform>().pivot = new Vector2(5, -5);
                             Text statusText = _status.GetComponent<Text>();
                             statusText.text = status.ToUpper();
-                            statusText.font = _PuristaSemiboldCached ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                            statusText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                             statusText.fontSize = 40; //70
 
                             if (status == "DEAD" || status == "FLED")
@@ -3160,7 +3182,7 @@ namespace TFTV
                             //   textObj.GetComponent<RectTransform>().pivot = new Vector2(5, -5);
                             Text squadNameText = _squadName.GetComponent<Text>();
                             squadNameText.text = $"{TFTVCommonMethods.ConvertKeyToString("HUMAN_ENEMIES_KEY_LEADER")}{TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_GRAMMAR_OF")}{squadName.ToUpper()}";
-                            squadNameText.font = _PuristaSemiboldCached ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                            squadNameText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                             squadNameText.fontSize = 30; //70                          
                             squadNameText.color = Color.white;
                             squadNameText.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -3177,7 +3199,7 @@ namespace TFTV
                             //   textObj.GetComponent<RectTransform>().pivot = new Vector2(5, -5);
                             Text factionNameText = _factionName.GetComponent<Text>();
                             factionNameText.text = factionName;
-                            factionNameText.font = _PuristaSemiboldCached ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                            factionNameText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                             factionNameText.fontSize = 30; //70
                             factionNameText.color = Color.white;
                             factionNameText.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -3198,7 +3220,7 @@ namespace TFTV
                             //   textObj.GetComponent<RectTransform>().pivot = new Vector2(5, -5);
                             Text tacticDescriptionText = _tacticDescription.GetComponent<Text>();
                             tacticDescriptionText.text = tacticDescription;
-                            tacticDescriptionText.font = _PuristaSemiboldCached ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                            tacticDescriptionText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                             tacticDescriptionText.fontSize = 40; //70
                             tacticDescriptionText.color = Color.white;
                             tacticDescriptionText.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -3340,7 +3362,7 @@ namespace TFTV
                         nameText.alignment = TextAnchor.MiddleLeft;
                         nameText.fontSize = 40;
                         nameText.color = _leaderColor;
-                        nameText.font = _PuristaSemiboldCached ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                        nameText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                         RectTransform rectNameText = nameText.GetComponent<RectTransform>();
                         rectNameText.sizeDelta = new Vector2(600, 60);
                         rectNameText.localScale = new Vector2(0.5f, 0.5f);
@@ -3374,7 +3396,7 @@ namespace TFTV
                         tacticNameText.fontSize = 40;
                         tacticNameText.color = Color.white;
                         tacticNameText.alignment = TextAnchor.MiddleLeft;
-                        tacticNameText.font = _PuristaSemiboldCached ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                        tacticNameText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                         RectTransform recttacticNameText = tacticNameText.GetComponent<RectTransform>();
                         recttacticNameText.sizeDelta = titleBackgroundRect.sizeDelta * 2;
                         recttacticNameText.localScale = new Vector2(0.5f, 0.5f);
@@ -4142,7 +4164,7 @@ namespace TFTV
                         //   textObj.GetComponent<RectTransform>().pivot = new Vector2(5, -5);
                         Text textComponent = textObj.GetComponent<Text>();
                         textComponent.text = text;
-                        textComponent.font = _PuristaSemiboldCached ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                        textComponent.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                         textComponent.fontSize = 40; //70
                         textComponent.color = Color.white;
                         textComponent.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -4217,7 +4239,7 @@ namespace TFTV
                             Text textComponent = textObj.GetComponent<Text>();
                             textComponent.text = mainText;
                             textComponent.horizontalOverflow = HorizontalWrapMode.Overflow;
-                            textComponent.font = _PuristaSemiboldCached ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                            textComponent.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                             textComponent.fontSize = 100;
                             textComponent.alignment = TextAnchor.MiddleLeft;
 
@@ -4914,7 +4936,7 @@ namespace TFTV
                         nameTextObject.transform.SetParent(aircraftPanel.transform, false);
                         Text nameText = nameTextObject.AddComponent<Text>();
                         nameText.text = aircraftName;
-                        nameText.font = _PuristaSemiboldCached;
+                        nameText.font = PuristaSemiboldFontCache;
                         nameText.fontSize = 35;
                         nameText.color = Color.white;
                         nameText.alignment = TextAnchor.MiddleLeft;
@@ -4943,7 +4965,7 @@ namespace TFTV
                         freeSpaceTextObject = new GameObject("FreeSpaceText");
                         freeSpaceTextObject.transform.SetParent(aircraftPanel.transform, false);
                         Text freeSpaceText = freeSpaceTextObject.AddComponent<Text>();
-                        freeSpaceText.font = _PuristaSemiboldCached; //Resources.GetBuiltinResource<Font>("Arial.ttf");
+                        freeSpaceText.font = PuristaSemiboldFontCache; //Resources.GetBuiltinResource<Font>("Arial.ttf");
                         freeSpaceText.fontSize = 30;
                         freeSpaceText.color = Color.white;
                         RectTransform freeSpaceTextRect = freeSpaceText.GetComponent<RectTransform>();

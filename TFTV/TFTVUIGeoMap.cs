@@ -70,7 +70,7 @@ namespace TFTV
 
                             GeoSite geoSite = allSites.FirstOrDefault(s => __instance.Text.text.Contains(s.LocalizedSiteName));
 
-                            if (geoSite != null)
+                            if (geoSite != null && geoSite.GetVisible(controller.PhoenixFaction) && geoSite.GetInspected(controller.PhoenixFaction))
                             {
 
                                 targetActor = geoSite;

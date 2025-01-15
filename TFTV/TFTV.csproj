@@ -136,6 +136,7 @@
     <Compile Include="TFTVExperienceDistribution.cs" />
     <Compile Include="TFTVDragandDropFunctionality.cs" />
     <Compile Include="TFTVPersonnelRoster.cs" />
+    <Compile Include="TFTVTauntsAndQuips.cs" />
     <Compile Include="TFTVVehicleFixes.cs" />
     <Compile Include="TFTVBehemothAndRaids.cs" />
     <Compile Include="TFTVAmbushes.cs" />

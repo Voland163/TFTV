@@ -7,7 +7,9 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers;
+using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
@@ -296,6 +298,300 @@ namespace TFTV
 
         internal class Manufacturing
         {
+            private static readonly string _amountInInventoryTextObject = "AmountInInventory";
+            private static readonly string _techCostTextObject = "TextContainerTechCost";
+            private static readonly string _matsCostTextObject = "TextContainerMatsCost";
+            private static readonly string _matsIconObject = "IconTech";
+            private static readonly string _techIconObject = "IconMats";
+
+            private static readonly ViewElementDef _matsViewDef = DefCache.GetDef<ViewElementDef>("Materials_ResourceDef");
+            private static readonly ViewElementDef _techViewDef = DefCache.GetDef<ViewElementDef>("Tech_ResourceDef");
+
+            private static GameObject AddManufactureAmmoButton(GeoManufactureItem geoManufactureItem,
+                GeoFaction faction, ItemDef ammoItemDef)
+            {
+                try
+                {
+                    ResourcePack cost = ammoItemDef.ManufacturePrice;
+                    bool enoughMats = faction.Wallet.HasResources(cost.FirstOrDefault(ru => ru.Type == ResourceType.Materials));
+                    bool enoughTech = faction.Wallet.HasResources(cost.FirstOrDefault(ru => ru.Type == ResourceType.Tech));
+
+                    GameObject originalButton = geoManufactureItem.AddToQueueButton.gameObject;
+                    Transform transform = geoManufactureItem.CurrentlyOwnedQuantityText.transform;
+                    GameObject manufactureAmmoButton = UnityEngine.Object.Instantiate(originalButton, transform);
+
+                    manufactureAmmoButton.name = "ManufactureAmmoButton";
+
+
+                    // Set the position slightly to the left
+                    RectTransform rectTransform = manufactureAmmoButton.GetComponent<RectTransform>();
+                    rectTransform.sizeDelta = new Vector2(125, 100);
+                    rectTransform.anchoredPosition += new Vector2(-135, -50); // Adjust the offset as needed
+
+                    manufactureAmmoButton.GetComponent<HorizontalLayoutGroup>().enabled = false;
+                    manufactureAmmoButton.GetComponent<ContentSizeFitter>().enabled = false;
+                  //  manufactureAmmoButton.GetComponent<UITooltipText>().UpdateText("MANUFACTURE AMMO OR CHARGES FOR THIS ITEM");
+
+                    GameObject textAmountInventoryObject = new GameObject(_amountInInventoryTextObject, typeof(Text), typeof(RectTransform));
+                    Text textInventoryAmount = textAmountInventoryObject.GetComponent<Text>();
+                    RectTransform textRect = textAmountInventoryObject.GetComponent<RectTransform>();
+                    textRect.anchoredPosition = new Vector2(-10, 30);
+
+                    textInventoryAmount.color = Color.white;
+                    textInventoryAmount.font = geoManufactureItem.CurrentlyOwnedQuantityText.font;
+                    textInventoryAmount.fontSize = geoManufactureItem.CurrentlyOwnedQuantityText.fontSize - 4;
+                    textInventoryAmount.text = ammoItemDef.GetQuantity(faction, true).ToString();
+                    textAmountInventoryObject.transform.SetParent(rectTransform, false);
+
+                    GameObject iconTechContainer = new GameObject(_techIconObject, typeof(Image), typeof(RectTransform));
+                    Image imageTech = iconTechContainer.GetComponent<Image>();
+                    imageTech.sprite = _techViewDef.SmallIcon;
+                    imageTech.color = _techViewDef.Color;
+
+                    RectTransform iconTechRect = iconTechContainer.GetComponent<RectTransform>();
+                    iconTechRect.sizeDelta = new Vector2(30, 30);
+                    iconTechRect.anchoredPosition = new Vector2(-50, -60);
+                    iconTechContainer.transform.SetParent(rectTransform, false);
+
+                    GameObject textContainerTech = new GameObject(_techCostTextObject, typeof(Text), typeof(RectTransform));
+                    Text textTech = textContainerTech.GetComponent<Text>();
+                    RectTransform textTechRect = textContainerTech.GetComponent<RectTransform>();
+                    textTechRect.anchoredPosition = new Vector2(20, -85);
+                    //  textTechRect.sizeDelta = new Vector2(40, 40);
+
+                    if (enoughTech)
+                    {   
+                        textTech.color = _techViewDef.Color;
+                    }
+                    else
+                    {
+                        textTech.color = Color.red;
+                    }
+
+                    textTech.font = geoManufactureItem.CurrentlyOwnedQuantityText.font;
+                    textTech.fontSize = geoManufactureItem.CurrentlyOwnedQuantityText.fontSize - 10;
+                    textTech.text = ammoItemDef.ManufacturePrice.FirstOrDefault(ru => ru.Type == ResourceType.Tech).Value.ToString();
+                    // textTech.alignment = TextAnchor.MiddleRight;
+                    textContainerTech.transform.SetParent(rectTransform, false);
+
+                    GameObject iconMatsContainer = new GameObject(_matsIconObject, typeof(Image), typeof(RectTransform));
+                    Image imageMats = iconMatsContainer.GetComponent<Image>(); 
+                    imageMats.sprite = _matsViewDef.SmallIcon;
+                    imageMats.color = _matsViewDef.Color;
+
+                    RectTransform iconMatsRect = iconMatsContainer.GetComponent<RectTransform>();
+                    iconMatsRect.sizeDelta = new Vector2(28, 30);
+                    iconMatsRect.anchoredPosition = new Vector2(25, -60);
+                    iconMatsContainer.transform.SetParent(rectTransform, false);
+
+                    GameObject textContainerMats = new GameObject(_matsCostTextObject, typeof(Text), typeof(RectTransform));
+                    Text textMats = textContainerMats.GetComponent<Text>();
+                    RectTransform textMatsRect = textContainerMats.GetComponent<RectTransform>();
+                    textMatsRect.anchoredPosition = new Vector2(87, -85);
+                    //   textMatsRect.sizeDelta = new Vector2(40, 40);   
+
+
+                    textMats.font = geoManufactureItem.CurrentlyOwnedQuantityText.font;
+                    textMats.fontSize = geoManufactureItem.CurrentlyOwnedQuantityText.fontSize - 10;
+                    textMats.text = ammoItemDef.ManufacturePrice.FirstOrDefault(ru => ru.Type == ResourceType.Materials).Value.ToString();
+                    //   textMats.alignment = TextAnchor.MiddleRight;
+                    textContainerMats.transform.SetParent(rectTransform, false);
+
+                    if (enoughMats)
+                    {
+                       
+                        textMats.color = _matsViewDef.Color;
+                    }
+                    else
+                    {
+                        textMats.color = Color.red;
+                    }
+
+                    //  GameObject textContainer = UnityEngine.Object.Instantiate(__instance.CurrentlyOwnedQuantityTextContainer, clonedButton.transform);
+                    //  textContainer.GetComponentInChildren<Text>().text = ammoItemDef.GetQuantity(____faction, true).ToString();
+
+                    // Set a different sprite
+                    Image actionIcon = manufactureAmmoButton.GetComponentsInChildren<Image>().FirstOrDefault(i => i.name == "Icon");
+                    actionIcon.SetNativeSize();
+                    actionIcon.sprite = ammoItemDef.ViewElementDef.InventoryIcon; // Set to a different sprite
+
+                    return manufactureAmmoButton;
+
+                }
+                catch (Exception e)
+                {
+
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            private static void UpdateManufactureButton(GameObject manufactureAmmoButton, GeoFaction faction, ItemDef ammoItemDef)
+            {
+                try
+                {
+
+                    ResourcePack cost = ammoItemDef.ManufacturePrice;
+                    bool enoughMats = faction.Wallet.HasResources(cost.FirstOrDefault(ru => ru.Type == ResourceType.Materials));
+                    bool enoughTech = faction.Wallet.HasResources(cost.FirstOrDefault(ru => ru.Type == ResourceType.Tech));
+
+                    manufactureAmmoButton.SetActive(true);
+                    Image actionIcon = manufactureAmmoButton.GetComponentsInChildren<Image>().FirstOrDefault(i => i.name == "Icon");
+                    actionIcon.sprite = ammoItemDef.ViewElementDef.InventoryIcon;
+                    Text techCostText = manufactureAmmoButton.transform.Find(_techCostTextObject).GetComponent<Text>();
+                    techCostText.text = ammoItemDef.ManufacturePrice.FirstOrDefault(ru => ru.Type == ResourceType.Tech).Value.ToString();
+
+                    if (enoughTech)
+                    {
+                        techCostText.color = _techViewDef.Color;
+                    }
+                    else
+                    {
+                        techCostText.color = Color.red;
+                    }
+
+                    Text matsCostText = manufactureAmmoButton.transform.Find(_matsCostTextObject).GetComponent<Text>();
+                    matsCostText.text = ammoItemDef.ManufacturePrice.FirstOrDefault(ru => ru.Type == ResourceType.Materials).Value.ToString();
+
+                    if (enoughMats)
+                    {
+                        matsCostText.color = _matsViewDef.Color;
+                    }
+                    else
+                    {
+                        matsCostText.color = Color.red;
+                    }
+
+                    Text amountInventory = manufactureAmmoButton.transform.Find(_amountInInventoryTextObject).GetComponent<Text>();
+                    amountInventory.text = ammoItemDef.GetQuantity(faction, true).ToString();
+                }
+                catch (Exception e)
+                {
+
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            private static void AddorUpdateAmmoButton(GeoManufactureItem geoManufactureItem, GeoFaction faction)
+            {
+                try
+                {
+                    //   TFTVLogger.Always($"looking at item {__instance.ItemName.text}");
+
+                    Transform transform = geoManufactureItem.CurrentlyOwnedQuantityText.transform;
+                    GameObject manufactureAmmoButton = transform.Find("ManufactureAmmoButton")?.gameObject;
+
+                    if (geoManufactureItem.ItemDef.CompatibleAmmunition == null || geoManufactureItem.ItemDef.CompatibleAmmunition.Count() == 0)
+                    {
+                        manufactureAmmoButton?.SetActive(false);
+                        return;
+                    }
+
+                    UIModuleManufacturing uIModuleManufacturing = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ManufacturingModule;
+
+                    if(uIModuleManufacturing.Mode != UIModuleManufacturing.UIMode.Manufacture) 
+                    {
+                        manufactureAmmoButton?.SetActive(false);
+                        return;
+                    }
+
+                    ItemDef ammoItemDef = geoManufactureItem.ItemDef.CompatibleAmmunition[0];
+                    
+                    if (manufactureAmmoButton == null)
+                    {
+                        manufactureAmmoButton = AddManufactureAmmoButton(geoManufactureItem, faction, ammoItemDef);
+                    }
+                    else
+                    {
+                        UpdateManufactureButton(manufactureAmmoButton, faction, ammoItemDef);
+                    }
+                    // Add click event
+                    Button clonedButtonComponent = manufactureAmmoButton.GetComponent<Button>();
+
+                    clonedButtonComponent.onClick.RemoveAllListeners();
+
+                    clonedButtonComponent.onClick.AddListener(() =>
+                    {
+                        try
+                        {
+                            ResourcePack cost = ammoItemDef.ManufacturePrice;
+                            bool enoughMats = faction.Wallet.HasResources(cost.FirstOrDefault(ru => ru.Type == ResourceType.Materials));
+                            bool enoughTech = faction.Wallet.HasResources(cost.FirstOrDefault(ru => ru.Type == ResourceType.Tech));
+
+                            if (enoughMats && enoughTech && faction.ItemStorage.GetStorageUsed()+ammoItemDef.Weight<faction.GetTotalAvailableStorage())
+                            {
+                                // UIModuleManufacturing uIModuleManufacturing = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ManufacturingModule;
+                                GeoItem geoItem = new GeoItem(ammoItemDef);
+                                faction.ItemStorage.AddItem(geoItem);
+                                faction.Wallet.Take(cost, OperationReason.Purchase);
+                                geoManufactureItem.UpdateItemData();
+                                geoManufactureItem.UpdateCostData();
+                                UpdateManufactureButton(manufactureAmmoButton, faction, ammoItemDef);
+                                //MethodInfo methodInfoAddToQueue = typeof(UIModuleManufacturing).GetMethod("AddToQueue", BindingFlags.Instance|BindingFlags.NonPublic);
+
+                                // Define what happens when the cloned button is clicked
+                            }
+                           // TFTVLogger.Always("Cloned button clicked!");
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                        }
+                    });
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+
+            }
+
+
+            [HarmonyPatch(typeof(GeoManufactureItem), "Init",
+                typeof(ItemDef), typeof(GeoFaction), typeof(UIModuleManufacturing.UIMode), typeof(ItemStorage), typeof(VehicleEquipmentStorage), typeof(bool))]
+            public static class GeoManufactureItem_Init_Patch
+            {
+                public static void Postfix(GeoManufactureItem __instance, GeoFaction ____faction)
+                {
+                    try
+                    {
+                        AddorUpdateAmmoButton(__instance, ____faction);
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+
+            private static bool _scrapFromSoldierEquip = false;
+
+            [HarmonyPatch(typeof(UIModuleSoldierEquip), "AreaEndDragHandler")]
+            public static class UIModuleSoldierEquip_AreaEndDragHandler_Patch
+            {
+                public static void Prefix(UIModuleSoldierEquip __instance, UIInventorySlot sourceSlot, UIInventoryDropArea destinationArea)
+                {
+                    try
+                    {
+                        if (destinationArea == __instance.ManufactureItemArea)
+                        {
+                            //TFTVLogger.Always($"setting _scrapFromSoldierEquip to true");
+                            _scrapFromSoldierEquip = true;
+                        }
+
+                      
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+
+
             [HarmonyPatch(typeof(UIModuleManufacturing))]
             public static class UIModuleManufacturingPatch2
             {
@@ -305,18 +601,27 @@ namespace TFTV
                 {
                     try
                     {
-                        List<ItemDef> itemDefs = new List<ItemDef>();
-
-                        foreach (ItemDef itemDef in availableItemRecipes)
+                        if (__instance.Mode == UIModuleManufacturing.UIMode.Manufacture && !_scrapFromSoldierEquip)
                         {
-                            if (!itemDef.Tags.Contains(DefCache.GetDef<GameTagDef>("AmmoItem_TagDef")))
+
+                            List<ItemDef> itemDefs = new List<ItemDef>();
+
+                            foreach (ItemDef itemDef in availableItemRecipes)
                             {
-                                itemDefs.Add(itemDef);
+                                if (!itemDef.Tags.Contains(DefCache.GetDef<GameTagDef>("AmmoItem_TagDef")))
+                                {
+                                    itemDefs.Add(itemDef);
+                                }
                             }
+
+                            availableItemRecipes = itemDefs.ToArray();
                         }
 
-                        availableItemRecipes = itemDefs.ToArray();
-
+                        if (_scrapFromSoldierEquip) 
+                        {
+                            TFTVLogger.Always($"setting _scrapFromSoldierEquip to false");
+                           _scrapFromSoldierEquip = false;
+                        }
                     }
                     catch (Exception e)
                     {
@@ -384,6 +689,30 @@ namespace TFTV
                     }
                 }
 
+
+
+
+
+                /*    [HarmonyPatch(typeof(UIModuleManufacturing), "CancelItem")]
+                    public static class UIModuleManufacturing_CancelItem_patch
+                    {
+
+                        public static void Prefix(UIModuleManufacturing __instance, GeoManufactureQueueItem item)
+                        {
+                            try
+                            {
+                                TFTVLogger.Always($"Cancel item: {item.ItemDef.name} Index: {item.transform.GetSiblingIndex() + 1}, transform: {item.transform.name}");
+
+
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+                    }*/
+
                 private static void AddDragHandlers(GeoManufactureQueueItem item, UIModuleManufacturing instance)
                 {
                     try
@@ -404,6 +733,34 @@ namespace TFTV
                     }
                 }
             }
+
+            /*  [HarmonyPatch(typeof(ItemManufacturing), "Cancel")]
+              public static class ItemManufacturing_CancelItem_patch
+              {
+
+                  public static void Prefix(UIModuleManufacturing __instance, int index, List<ItemManufacturing.ManufactureQueueItem> ____queue)
+                  {
+                      try
+                      {
+                          TFTVLogger.Always($"{index}");
+
+                          foreach (ItemManufacturing.ManufactureQueueItem manufactureQueueItem in ____queue)
+                          {
+                              TFTVLogger.Always($"{manufactureQueueItem.ManufacturableItem.Name.Localize()} index: {____queue.IndexOf(manufactureQueueItem)}");
+
+                          }
+
+                      }
+                      catch (Exception e)
+                      {
+                          TFTVLogger.Error(e);
+                          throw;
+                      }
+                  }
+              }*/
+
+
+
             public class DragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
             {
                 private GeoManufactureQueueItem _item;
@@ -494,13 +851,27 @@ namespace TFTV
                             ItemManufacturing.ManufactureQueueItem item = _item.QueueElement;
                             phoenixFaction.Manufacture.Queue.Remove(item);
                             phoenixFaction.Manufacture.Queue.Insert(newIndex, item);
-
+                            _item.transform.SetSiblingIndex(newIndex);
                             // TFTVLogger.Always($"Moved {item.ManufacturableItem.Name.Localize()} from index {_originalIndex} to {newIndex}");
                         }
 
                         UIModuleManufacturing uIModuleManufacturing = phoenixFaction.GeoLevel.View.GeoscapeModules.ManufacturingModule;
+
+                        /* foreach (ItemManufacturing.ManufactureQueueItem manufactureQueueItem in phoenixFaction.Manufacture.Queue)
+                         {
+
+                             TFTVLogger.Always($"{manufactureQueueItem.ManufacturableItem.Name.Localize()} {phoenixFaction.Manufacture.Queue.IndexOf(manufactureQueueItem)}");
+
+                         }*/
                         MethodInfo method = uIModuleManufacturing.GetType().GetMethod("SetupQueue", BindingFlags.NonPublic | BindingFlags.Instance);
                         method.Invoke(uIModuleManufacturing, null);
+
+                        /* foreach (ItemManufacturing.ManufactureQueueItem manufactureQueueItem in phoenixFaction.Manufacture.Queue)
+                         {
+
+                             TFTVLogger.Always($"{manufactureQueueItem.ManufacturableItem.Name.Localize()} {phoenixFaction.Manufacture.Queue.IndexOf(manufactureQueueItem)}");
+
+                         }*/
 
                         // Re-enable the ScrollRect after the drag ends
                         /* if (_scrollRect != null)
@@ -531,6 +902,8 @@ namespace TFTV
                     {
                         ItemManufacturing.ManufactureQueueItem manufactureQueueItem = manufactureQueueItems[i];
 
+                        // TFTVLogger.Always($"in the loop: {manufactureQueueItem.ManufacturableItem.Name} {i}");
+
                         foreach (var child in uIModuleManufacturing.QueueScroller.Scroll.content.GetComponentsInChildren<GeoManufactureQueueItem>())
                         {
                             if (child.QueueElement == manufactureQueueItem && child != _item)
@@ -542,6 +915,8 @@ namespace TFTV
 
                                 if (RectTransformUtility.RectangleContainsScreenPoint((RectTransform)child.transform, position))
                                 {
+                                    // TFTVLogger.Always($"returning: {manufactureQueueItem.ManufacturableItem.Name.Localize()} {i}");
+
                                     return i;
                                 }
                             }
@@ -657,13 +1032,13 @@ namespace TFTV
                 {
                     try
                     {
-                       // TFTVLogger.Always($"UpdateLocation Running");
+                        // TFTVLogger.Always($"UpdateLocation Running");
                         GeoPhoenixBase pxBase = ____soldierComponent.Context.Facility.PxBase;
                         GeoVehicle geoVehicle = pxBase.VehiclesAtBase.FirstOrDefault((GeoVehicle p) => p.Units.Contains(__instance.Character));
 
                         if (geoVehicle != null)
                         {
-                         //   TFTVLogger.Always($"looking at {geoVehicle.Name} {geoVehicle.VehicleID}");
+                            //   TFTVLogger.Always($"looking at {geoVehicle.Name} {geoVehicle.VehicleID}");
                             Text text = __instance.ThirdLocationSpotText;
                             text.text = (geoVehicle.VehicleID + 1).ToString();
 
@@ -848,7 +1223,7 @@ namespace TFTV
                                 Debug.Log($"DragHandler already exists for slot: {slot.name}");
                             }
 
-                            EnableRaycastTargets(slot.gameObject);
+                            //  EnableRaycastTargets(slot.gameObject);
 
                         }
 
@@ -1208,23 +1583,33 @@ namespace TFTV
                     try
                     {
                         Debug.Log("Updating vehicle order...");
-                        _roster.GetType().GetField("_vehicles", BindingFlags.NonPublic | BindingFlags.Instance)
-                            ?.SetValue(_roster, _roster.Slots.Select(slot => slot.Vehicle).ToList());
 
-                        List<GeoVehicle> vehicles = _roster.Slots.Select(slot => (GeoVehicle)slot.Vehicle.BaseObject).ToList();
+                        List<GeoVehicleRosterSlot> geoVehicleRosterSlots = _roster.Slots.Where(s => s.Vehicle != null).ToList();
+
+                        _roster.GetType().GetField("_vehicles", BindingFlags.NonPublic | BindingFlags.Instance)
+                            ?.SetValue(_roster, geoVehicleRosterSlots.Select(slot => slot.Vehicle).ToList());
+
+                        List<GeoVehicle> vehicles = geoVehicleRosterSlots.Select(slot => (GeoVehicle)slot.Vehicle.BaseObject).ToList();
 
                         GeoPhoenixFaction phoenixFaction = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction;
+
 
                         FieldInfo fieldInfo = phoenixFaction.GeoLevel.Map.GetType().GetField("_factionVehiclesCache", BindingFlags.NonPublic | BindingFlags.Instance);
 
                         FactionActorCache<GeoVehicle> factionActorCache = (FactionActorCache<GeoVehicle>)fieldInfo.GetValue(phoenixFaction.GeoLevel.Map);
                         factionActorCache.Cache[phoenixFaction] = vehicles;
                         fieldInfo.SetValue(phoenixFaction.GeoLevel.Map, factionActorCache);
+
+
                         //  phoenixFaction.GeoLevel.View.GeoscapeModules.VehicleSelectionModule.Uninit();
                         RecordVehicleOrder(phoenixFaction.GeoLevel);
+
+
+
                         FieldInfo fieldInfo_context = typeof(GeoscapeView).GetField("_context", BindingFlags.NonPublic | BindingFlags.Instance);
                         GeoscapeViewContext context = (GeoscapeViewContext)fieldInfo_context.GetValue(GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View);
                         phoenixFaction.GeoLevel.View.GeoscapeModules.VehicleSelectionModule.Init(context);
+                        // TFTVLogger.Always($"TESTING got here END");
 
                         //   MethodInfo method = phoenixFaction.GeoLevel.View.GeoscapeModules.VehicleSelectionModule.GetType().GetMethod("Start", BindingFlags.NonPublic | BindingFlags.Instance);
                         //  method.Invoke(phoenixFaction.GeoLevel.View.GeoscapeModules.VehicleSelectionModule, null);

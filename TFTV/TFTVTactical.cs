@@ -483,6 +483,7 @@ namespace TFTV
                 }
 
                 TFTVArtOfCrab.ClearData();
+                TFTVVanillaFixes.ClearDataActorsParalysisDamage();
 
             }
             catch (Exception e)

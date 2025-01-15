@@ -332,7 +332,7 @@ namespace PRMBetterClasses.VariousAdjustments
         }
         public static void Change_Stomp(SharedData shared)
         {
-            int StompShockValue = 200;
+            int StompShockValue = 220;
             int StompBlastValue = 50;
 
             ApplyDamageEffectAbilityDef stomp = DefCache.GetDef<ApplyDamageEffectAbilityDef>("StomperLegs_Stomp_AbilityDef");

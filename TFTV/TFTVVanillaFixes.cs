@@ -4,6 +4,7 @@ using Base.AI;
 using Base.Core;
 using Base.Defs;
 using Base.Entities;
+using Base.Entities.Effects;
 using Base.Input;
 using Base.Levels;
 using Base.Rendering.ObjectRendering;
@@ -33,11 +34,13 @@ using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewControllers.SiteEncounters;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
+using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
+using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
@@ -56,6 +59,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static PhoenixPoint.Tactical.Entities.Effects.DamageEffect;
 using static PhoenixPoint.Tactical.Entities.SquadPortraitsDef;
 
 
@@ -720,6 +724,54 @@ namespace TFTV
             private static Sprite _vivisectionIcon = null;
             private static Sprite _moonIcon = null;
 
+            private static int GetAdjustedSpeedValueForParalyisDamage(TacticalActor actor, int value)
+            {
+                try
+                {
+                    ParalysisDamageOverTimeStatus status = actor.Status.GetStatus<ParalysisDamageOverTimeStatus>();
+
+                    if (status == null)
+                    {
+                        return value;
+                    }
+                    else
+                    {
+                        float paralysisDamage = status.FullDamageValue;
+                        float actorStrength = (float)actor.Status.GetStat(StatModificationTarget.Endurance.ToString());
+                        float a = paralysisDamage / actorStrength;
+
+                        if (Utl.GreaterThanOrEqualTo(a, 1f))
+                        {
+                            return 0;
+                        }
+                        else if (Utl.GreaterThanOrEqualTo(a, 0.75f))
+                        {
+                            return (int)(value * 0.25f);
+                        }
+                        else if (Utl.GreaterThanOrEqualTo(a, 0.5f))
+                        {
+                            return (int)(value * 0.5f);
+                        }
+                        else if (Utl.GreaterThanOrEqualTo(a, 0.25f))
+                        {
+                            return (int)(value * 0.75f);
+                        }
+                        else
+                        {
+                            return value;
+                        }
+
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+            }
+
             private static ShortActorInfoTooltipData GenerateData(TacticalActor actor, UIModuleShortActorInfoTooltip uIModuleShortActorInfoTooltip)
             {
                 try
@@ -745,10 +797,13 @@ namespace TFTV
                         TextContent = uIModuleShortActorInfoTooltip.WillpointsTextKey.Localize(null),
                         ValueContent = string.Format("{0}/{1}", actor.CharacterStats.WillPoints.IntValue, actor.CharacterStats.WillPoints.IntMax)
                     });
-                    string value = string.Format("{0}/{1}", actor.CharacterStats.ActionPoints.IntMax, actor.CharacterStats.ActionPoints.IntMax);
+
+                    int maxActionPoints = GetAdjustedSpeedValueForParalyisDamage(actor, actor.CharacterStats.ActionPoints.IntMax);
+
+                    string value = string.Format("{0}/{1}", maxActionPoints, maxActionPoints);
                     if (actor.TacticalLevel.CurrentFaction == actor.TacticalFaction)
                     {
-                        value = string.Format("{0}/{1}", actor.CharacterStats.ActionPoints.IntValue, actor.CharacterStats.ActionPoints.IntMax);
+                        value = string.Format("{0}/{1}", Mathf.Min(actor.CharacterStats.ActionPoints.IntValue, maxActionPoints), maxActionPoints);
                     }
 
                     shortActorInfoTooltipData.Entries.Add(new ShortActorInfoTooltipDataEntry
@@ -2454,7 +2509,7 @@ namespace TFTV
                     return;
                 }
 
-        //        TFTVLogger.Always($"phoenixFaction.TacticalActors.Any(a => a.IsAlive && !a.IsEvacuated && a!=actor) {phoenixFaction.TacticalActors.Any(a => a.IsAlive && !a.IsEvacuated && a != actor && !a.IsMounted)}");
+                //        TFTVLogger.Always($"phoenixFaction.TacticalActors.Any(a => a.IsAlive && !a.IsEvacuated && a!=actor) {phoenixFaction.TacticalActors.Any(a => a.IsAlive && !a.IsEvacuated && a != actor && !a.IsMounted)}");
 
                 if (phoenixFaction.TacticalActors.Any(a => a.IsAlive && !a.IsEvacuated && a != actor && !a.IsMounted))
                 {
@@ -2463,7 +2518,7 @@ namespace TFTV
 
                 RescueSoldiersFactionObjective objective = (RescueSoldiersFactionObjective)phoenixFaction.Objectives.FirstOrDefault(obj => obj is RescueSoldiersFactionObjective);
 
-              //  TFTVLogger.Always($"got here! actor.TacticalFaction.Faction.FactionDef == objective.RescuedFaction {actor.TacticalFaction.Faction.FactionDef.name} {objective.RescuedFaction.name}");
+                //  TFTVLogger.Always($"got here! actor.TacticalFaction.Faction.FactionDef == objective.RescuedFaction {actor.TacticalFaction.Faction.FactionDef.name} {objective.RescuedFaction.name}");
 
                 MindControlStatus status = actor.Status?.GetStatus<MindControlStatus>();
 
@@ -2473,16 +2528,16 @@ namespace TFTV
 
                     TFTVLogger.Always($"{actor.DisplayName} is an objective for the Rescue mission! Total RescuedActors: {rescuedActors}");
 
-                   PropertyInfo propertyInfoState = typeof(FactionObjective).GetProperty("State", BindingFlags.Instance | BindingFlags.Public);
-                   propertyInfoState.SetValue(objective, FactionObjectiveState.Achieved);
+                    PropertyInfo propertyInfoState = typeof(FactionObjective).GetProperty("State", BindingFlags.Instance | BindingFlags.Public);
+                    propertyInfoState.SetValue(objective, FactionObjectiveState.Achieved);
 
                     PropertyInfo propertyInfoRescuedPeople = typeof(RescueSoldiersFactionObjective).GetProperty("RescuedPeople", BindingFlags.Instance | BindingFlags.Public);
                     propertyInfoRescuedPeople.SetValue(objective, rescuedActors);
 
                     //  VehicleEvaced = true;
-                  //  TFTVLogger.Always($"objective.State: {objective.State}");
-                   phoenixFaction.Objectives.Evaluate();
-                  //  TFTVLogger.Always($"objective.State: {objective.State}");
+                    //  TFTVLogger.Always($"objective.State: {objective.State}");
+                    phoenixFaction.Objectives.Evaluate();
+                    //  TFTVLogger.Always($"objective.State: {objective.State}");
                 }
 
             }
@@ -2501,7 +2556,7 @@ namespace TFTV
             {
                 try
                 {
-                   // TFTVLogger.Always($"running activate exit mission ability for {__instance.TacticalActor.DisplayName}, {__instance.TacticalActor.TacticalFaction.Faction.FactionDef.name} {__instance.TacticalActor.Status?.HasStatus<MindControlStatus>()}");
+                    // TFTVLogger.Always($"running activate exit mission ability for {__instance.TacticalActor.DisplayName}, {__instance.TacticalActor.TacticalFaction.Faction.FactionDef.name} {__instance.TacticalActor.Status?.HasStatus<MindControlStatus>()}");
 
                     FixRescueMissionEvac(__instance.TacticalActor);
 
@@ -2521,7 +2576,7 @@ namespace TFTV
             {
                 try
                 {
-                  //  TFTVLogger.Always($"running activate exit mission ability for {__instance.TacticalActor.DisplayName}, {__instance.TacticalActor.TacticalFaction.Faction.FactionDef.name} {__instance.TacticalActor.Status?.HasStatus<MindControlStatus>()}");
+                    //  TFTVLogger.Always($"running activate exit mission ability for {__instance.TacticalActor.DisplayName}, {__instance.TacticalActor.TacticalFaction.Faction.FactionDef.name} {__instance.TacticalActor.Status?.HasStatus<MindControlStatus>()}");
 
                     FixRescueMissionEvac(__instance.TacticalActor);
 
@@ -2534,6 +2589,145 @@ namespace TFTV
             }
         }
 
+        public static void ClearDataActorsParalysisDamage() 
+        {
+            try 
+            {
+               // TFTVLogger.Always($"_actorsWithAppliedParalysisDamage.Clear()");
+                _actorsWithAppliedParalysisDamage.Clear();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        private static Dictionary<TacticalActor, float> _actorsWithAppliedParalysisDamage = new Dictionary<TacticalActor, float>();
+
+        private static bool CheckActorsWithAppliedParalysisDict(TacticalActor actor, float apLost)
+        {
+            try
+            {
+                if (_actorsWithAppliedParalysisDamage.ContainsKey(actor) && _actorsWithAppliedParalysisDamage[actor] >= apLost)
+                {
+                    TFTVLogger.Always($"{actor.DisplayName} already lost {apLost} from PD application this turn");
+                    return true;
+                }
+
+                if (_actorsWithAppliedParalysisDamage.ContainsKey(actor))
+                {
+                    _actorsWithAppliedParalysisDamage[actor] = apLost;
+                }
+                else
+                {
+                    _actorsWithAppliedParalysisDamage.Add(actor, apLost);
+                }
+
+                return false;
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+        }
+
+        /// <summary>
+        /// Fixes inconsistency in paralysis damage application
+        /// </summary>
+        [HarmonyPatch(typeof(ParalysisDamageEffect), "AddTarget")]
+        public static class TFTV_ParalysisDamageEffect_AddTarget_Patch
+        {
+
+            public static bool Prefix(ParalysisDamageEffect __instance, EffectTarget target, DamageAccumulation accum, IDamageReceiver recv, Vector3 damageOrigin, Vector3 impactForce, CastHit impactHit)
+            {
+                try
+                {
+                    TacticalActor tacticalActor = (__instance.IsSimulation(target) ? (target.GetParam<Params>().Predictor.GetPredictingReceiver(recv.GetActor()) as TacticalActor) : (recv.GetActor() as TacticalActor));
+                    if (tacticalActor == null)
+                    {
+                        return false;
+                    }
+
+                    //added
+                    bool attackNotSoT = false; //flag to check that the PD application is coming from an attack, not the SoT effect
+                    //added
+
+                    DamageOverTimeStatus status = tacticalActor.Status.GetStatus<DamageOverTimeStatus>(__instance.ParalysisDamageEffectDef.ParalysisStacksStatus);
+                    bool flag = false;
+                    float num = accum.Amount;
+
+                    TFTVLogger.Always($"num: {num}; fullDamageValue: {status?.FullDamageValue}");
+
+                    if (status != null && status != __instance.Source) //this triggers only if the PD is added as an attack. The other case would be if status==null
+                    {
+                        flag = true;
+                        num += status.FullDamageValue;
+                        TFTVLogger.Always($"it's an attack, not SoT effect! status.FullDamageValue: {status.FullDamageValue}, so num {num}");
+                    }
+
+                    //added
+                    if (flag || status == null || status != null && status.FullDamageValue == 0)
+                    {
+                        attackNotSoT = true;
+                    }
+
+                    float currentPD = (float)tacticalActor.Status.GetStat(__instance.ParalysisDamageEffectDef.TargetStat.ToString());
+
+                    if (!attackNotSoT)
+                    {
+                        num -= 1; //As this SoT effect, but the application is carried before  
+                        TFTVLogger.Always($"As this SoT effect, num reduced by 1 to: {num}");
+                    }
+                    //added
+
+                    float a = num / (float)tacticalActor.Status.GetStat(__instance.ParalysisDamageEffectDef.TargetStat.ToString());
+
+
+                    TFTVLogger.Always($"(float)tacticalActor.Status.GetStat(__instance.ParalysisDamageEffectDef.TargetStat.ToString()): {(float)tacticalActor.Status.GetStat(__instance.ParalysisDamageEffectDef.TargetStat.ToString())}" +
+                       $"\nso, a: {a}");
+
+                    if (Utl.GreaterThanOrEqualTo(a, 1f))
+                    {
+                        TFTVLogger.Always($"1 or more");
+
+                        tacticalActor.CharacterStats.ActionPoints.Subtract(tacticalActor.CharacterStats.ActionPoints.Max);
+                        if (flag || Utl.GreaterThan(a, 1f))
+                        {
+                            TacticalActorBase sourceTacticalActorBase = TacUtil.GetSourceTacticalActorBase(status?.Source ?? __instance.Source);
+                            tacticalActor.Status.ApplyStatus(__instance.ParalysisDamageEffectDef.ParalysedStatus, sourceTacticalActorBase);
+                        }
+                    }
+                    else if (Utl.GreaterThanOrEqualTo(a, 0.75f) && !CheckActorsWithAppliedParalysisDict(tacticalActor, 0.75f))
+                    {
+                        TFTVLogger.Always($"0.75 or more");
+                        tacticalActor.CharacterStats.ActionPoints.Subtract(0.75f * (float)tacticalActor.CharacterStats.ActionPoints.Max);
+
+                    }
+                    else if (Utl.GreaterThanOrEqualTo(a, 0.5f) && !CheckActorsWithAppliedParalysisDict(tacticalActor, 0.5f))
+                    {
+                        TFTVLogger.Always($"0.5 or more");
+                        tacticalActor.CharacterStats.ActionPoints.Subtract(0.5f * (float)tacticalActor.CharacterStats.ActionPoints.Max);
+                    }
+                    else if (Utl.GreaterThanOrEqualTo(a, 0.25f) && !CheckActorsWithAppliedParalysisDict(tacticalActor, 0.25f))
+                    {
+                        TFTVLogger.Always($"0.25 or more");
+                        tacticalActor.CharacterStats.ActionPoints.Subtract(0.25f * (float)tacticalActor.CharacterStats.ActionPoints.Max);
+                    }
+
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
 
         /*  [HarmonyPatch(typeof(AIAttackPositionConsideration), "EvaluateWithAbility")]
