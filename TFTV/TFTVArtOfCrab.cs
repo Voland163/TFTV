@@ -248,6 +248,10 @@ namespace TFTV
             {
                 try
                 {
+                   // TacticalActor actor = (TacticalActor)aiTarget.Actor;
+
+                 //   TFTVLogger.Always($"AIActionMoveAndAttack for actor: {actor.DisplayName}, AP: {actor.CharacterStats.ActionPoints.Value}");
+
                     if (!ability.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsAndEquipmentNotSelected))
                     {
                         return;

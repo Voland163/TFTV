@@ -350,10 +350,8 @@ namespace TFTV
 
         internal class PersonnelRosterAdjustments 
         { 
-            private static bool _scrollAdjusted = false;
-
-
-            private static Transform _rosterVehicles = null;
+         
+         /*   private static Transform _rosterVehicles = null;
 
 
 
@@ -401,7 +399,7 @@ namespace TFTV
                     throw;
                 }
 
-            }
+            }*/
 
 
          /*   [HarmonyPatch(typeof(UIModuleGeneralPersonelRoster), "InitGroupItem")]

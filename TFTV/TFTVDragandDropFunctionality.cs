@@ -482,7 +482,9 @@ namespace TFTV
                     Transform transform = geoManufactureItem.CurrentlyOwnedQuantityText.transform;
                     GameObject manufactureAmmoButton = transform.Find("ManufactureAmmoButton")?.gameObject;
 
-                    if (geoManufactureItem.ItemDef.CompatibleAmmunition == null || geoManufactureItem.ItemDef.CompatibleAmmunition.Count() == 0)
+                    if (geoManufactureItem.ItemDef.CompatibleAmmunition == null 
+                        || geoManufactureItem.ItemDef.CompatibleAmmunition.Count() == 0 
+                        || geoManufactureItem.ItemDef.CompatibleAmmunition.Count()>0 && geoManufactureItem.ItemDef.CompatibleAmmunition[0] == DefCache.GetDef<ItemDef>("SharedFreeReload_AmmoClip_ItemDef"))
                     {
                         manufactureAmmoButton?.SetActive(false);
                         return;
@@ -975,7 +977,7 @@ namespace TFTV
 
                             if (ActionsAircraftHotkeys.Any(a => a.Name == ev.Name))
                             {
-                                int id = int.Parse(ActionsAircraftHotkeys.FirstOrDefault(a => a.Name == ev.Name).Chords[0].Keys[0].Name) - 1;
+                                int id = int.Parse(ActionsAircraftHotkeys.FirstOrDefault(a => a.Name == ev.Name).Chords[0].Keys[0].Name);
                                 GeoVehicle vehicle = controller.PhoenixFaction.Vehicles.FirstOrDefault(v => v.VehicleID == id);
                                 if (vehicle != null)
                                 {
@@ -994,7 +996,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(GeoRosterItem), "UpdateLocations")]
+          /*  [HarmonyPatch(typeof(GeoRosterItem), "UpdateLocations")]
             public static class GeoRosterItem_UpdateLocations_patch
             {
 
@@ -1102,6 +1104,8 @@ namespace TFTV
                 {
                     try
                     {
+                        //TFTVLogger.Always($"{__instance.VehicleDef.ViewElement.DisplayName1.Localize(null)} {__instance.VehicleID}");
+
                         if (string.IsNullOrWhiteSpace(____vehicleName))
                         {
                             __result = string.Format(__instance.VehicleDef.ViewElement.DisplayName1.Localize(null), __instance.VehicleID + 1);
@@ -1119,7 +1123,7 @@ namespace TFTV
                         throw;
                     }
                 }
-            }
+            }*/
 
 
             public static List<int> PlayerVehicles = new List<int>();
@@ -1135,10 +1139,11 @@ namespace TFTV
                     List<GeoVehicle> vehicles = factionActorCache.Cache[phoenixFaction];
                     for (int x = 0; x < vehicles.Count; x++)
                     {
-                        vehicles[x].VehicleID = x;
+                        vehicles[x].VehicleID = x+1;
                         PlayerVehicles.Add(vehicles[x].VehicleID);
+                        TFTVLogger.Always($"Recording {vehicles[x].Name} {vehicles[x].VehicleID}");
                     }
-                    TFTVLogger.Always($"Recorded PlayerVehicles: {string.Join(", ", PlayerVehicles)}");
+                    
                 }
                 catch (Exception e)
                 {
@@ -1152,21 +1157,31 @@ namespace TFTV
             {
                 try
                 {
+                   
+
                     if (PlayerVehicles != null && PlayerVehicles.Count > 0)
                     {
                         GeoPhoenixFaction phoenixFaction = controller.PhoenixFaction;
-
                         FieldInfo fieldInfo = phoenixFaction.GeoLevel.Map.GetType().GetField("_factionVehiclesCache", BindingFlags.NonPublic | BindingFlags.Instance);
 
                         FactionActorCache<GeoVehicle> factionActorCache = (FactionActorCache<GeoVehicle>)fieldInfo.GetValue(phoenixFaction.GeoLevel.Map);
 
                         List<GeoVehicle> vehicles = new List<GeoVehicle>();
 
-                        for (int x = 0; x < PlayerVehicles.Count; x++)
+                      /*  if(phoenixFaction.Vehicles.Any(vehicle => vehicle.VehicleID == 0)) 
                         {
-                            GeoVehicle geoVehicle = phoenixFaction.Vehicles.FirstOrDefault(vehicle => vehicle.VehicleID == PlayerVehicles[x]);
+                            foreach (GeoVehicle geoVehicle in phoenixFaction.Vehicles)
+                            {
+                                geoVehicle.VehicleID += 1;
+                            }
+                        }*/
+
+                        for (int x = 1; x<= PlayerVehicles.Count; x++)
+                        {
+                            GeoVehicle geoVehicle = phoenixFaction.Vehicles.FirstOrDefault(vehicle => vehicle.VehicleID == PlayerVehicles[x-1] && !vehicles.Contains(vehicle));
                             geoVehicle.VehicleID = x;
                             vehicles.Add(geoVehicle);
+                            TFTVLogger.Always($"Restoring {geoVehicle.Name} {geoVehicle.VehicleID}");
                         }
 
                         factionActorCache.Cache[phoenixFaction] = vehicles;
@@ -1179,6 +1194,8 @@ namespace TFTV
                           GeoscapeViewContext context = (GeoscapeViewContext)fieldInfo_context.GetValue(controller.View);
                           phoenixFaction.GeoLevel.View.GeoscapeModules.VehicleSelectionModule.Init(context);*/
                     }
+
+                
 
                 }
                 catch (Exception e)

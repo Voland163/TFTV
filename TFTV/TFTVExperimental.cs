@@ -1,4 +1,5 @@
-﻿using PhoenixPoint.Tactical.Entities;
+﻿using PhoenixPoint.Geoscape.Entities.Research.Requirement;
+using PhoenixPoint.Tactical.Entities;
 using System;
 using UnityEngine;
 
@@ -11,19 +12,6 @@ namespace TFTV
     internal class TFTVExperimental
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         /*  [HarmonyPatch(typeof(InterceptionBriefDataBind), "DisplayData")]
           public static class InterceptionBriefDataBind_DisplayData_patch

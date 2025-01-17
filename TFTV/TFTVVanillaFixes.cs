@@ -1282,10 +1282,7 @@ namespace TFTV
                                                             select t)
                         {
 
-                            //  if(item.Statuses.Any(s => s.Def.EffectName == "Paralysed") && )
-
-                            // TFTVLogger.Always($"considering {item.SourceTemplate.name}");
-
+                          
                             if (__instance.IsValidUnit(item))
                             {
                                 MethodInfo updateProgressMethod = typeof(ResearchRequirement).GetMethod("UpdateProgress", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -2593,7 +2590,7 @@ namespace TFTV
         {
             try 
             {
-               // TFTVLogger.Always($"_actorsWithAppliedParalysisDamage.Clear()");
+              //  TFTVLogger.Always($"Clearing paralysis damage");
                 _actorsWithAppliedParalysisDamage.Clear();
             }
             catch (Exception e)
@@ -2605,10 +2602,16 @@ namespace TFTV
 
         private static Dictionary<TacticalActor, float> _actorsWithAppliedParalysisDamage = new Dictionary<TacticalActor, float>();
 
+
+
+
         private static bool CheckActorsWithAppliedParalysisDict(TacticalActor actor, float apLost)
         {
             try
             {
+
+                TFTVLogger.Always($"actor: {actor.DisplayName} ap value: {actor.CharacterStats.ActionPoints.Value} max value: {actor.CharacterStats.ActionPoints.IntMax}");
+
                 if (_actorsWithAppliedParalysisDamage.ContainsKey(actor) && _actorsWithAppliedParalysisDamage[actor] >= apLost)
                 {
                     TFTVLogger.Always($"{actor.DisplayName} already lost {apLost} from PD application this turn");
@@ -2661,7 +2664,7 @@ namespace TFTV
                     bool flag = false;
                     float num = accum.Amount;
 
-                    TFTVLogger.Always($"num: {num}; fullDamageValue: {status?.FullDamageValue}");
+                    TFTVLogger.Always($"{tacticalActor.DisplayName} num: {num}; fullDamageValue: {status?.FullDamageValue}");
 
                     if (status != null && status != __instance.Source) //this triggers only if the PD is added as an attack. The other case would be if status==null
                     {

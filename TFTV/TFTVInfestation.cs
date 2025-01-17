@@ -458,7 +458,6 @@ namespace TFTV
                             //  TFTVLogger.Always(faction);
                             if (DefenseMission == null)
                             {
-
                                 return true;
                             }
 

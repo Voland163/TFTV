@@ -4364,7 +4364,7 @@ namespace TFTV
                             bool separator = false;
 
                             //Adds separator if general description or last TBTVEffect
-                            if (type == ODIDetailType.ODIDescription || type == ODIDetailType.VoidOmen && details.ElementAt(x + 1).Item3 != ODIDetailType.VoidOmen
+                            if (type == ODIDetailType.ODIDescription || type == ODIDetailType.VoidOmen && details.Count()>=x+2 && details.ElementAt(x + 1).Item3 != ODIDetailType.VoidOmen
                                 || type == ODIDetailType.TBTVEffect && details.ElementAt(x).Item3 != ODIDetailType.TBTVEffect)
                             {
                                 separator = true;
@@ -4793,6 +4793,19 @@ namespace TFTV
 
             }
 
+            public static void HideODITooltipFailSafe()
+            {
+                try 
+                {
+                  //  TFTVLogger.Always($"running hideODITooltipFailSafe");
+                    _oDIWidget?.GetComponent<ODIWidgetTooltip>()?.HideTooltip();
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
 
             public static void CreateODITacticalWidget(UIModuleObjectives moduleObjectives)
             {

@@ -2,6 +2,7 @@
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.View;
 using System;
@@ -13,6 +14,118 @@ namespace TFTV
 {
     internal class TFTVTauntsAndQuips
     {
+
+        public class Quip
+        {
+            public string Key { get; set; }
+            public int Id { get; set; }
+            public string TacticalFaction { get; set; }
+            public QuipPriority Priority { get; set; }
+            public QuipTrigger Trigger { get; set; }
+            public TacticalActor Speaker { get; set; }
+            public TacticalActor Target { get; set; }
+            public TacticalItem Item { get; set; }
+            public string Text { get; set; }
+
+            public Quip(string key, string text)
+            {
+                Key = key;
+                Text = text;
+                Id = ExtractIdFromKey(key);
+                TacticalFaction = ExtractFactionFromKey(key);
+            }
+
+            private int ExtractIdFromKey(string key)
+            {
+                // Implement logic to extract Id from key
+                // Example: if key is "Faction_123", extract 123
+                string[] parts = key.Split('_');
+                return int.TryParse(parts[1], out int id) ? id : 0;
+            }
+
+            private string ExtractFactionFromKey(string key)
+            {
+                // Implement logic to extract TacticalFaction from key
+                // Example: if key is "Faction_123", extract "Faction"
+                string[] parts = key.Split('_');
+                return parts[0];
+            }
+        }
+
+        public enum QuipPriority
+        {
+            Story,
+            Hint,
+            Flavor,
+            EasterEgg
+        }
+
+        public enum QuipTrigger
+        {
+            Damage,
+            Death,
+            Panic,
+            Status,
+            Detection,
+            AnotherQuip
+        }
+
+        public enum QuipContext 
+        { 
+        None,
+        Self, 
+        Friendly, 
+        Target,
+        Enemy 
+        }
+
+        public enum QuipConditions 
+        { 
+            NoCondition,
+            HighDamageDealt, 
+            LowDamageDealt,
+            NoDamageDealt,
+            DisabledHead,
+            DisabledArm,
+            DisabledLeg,
+            HighValueCharacterKilled,
+            LowValueCharacterKilled,
+            LowMorale
+
+
+        } 
+
+        public class QuipManager
+        {
+            private float lastQuipTime = 0f;
+            private const float quipCooldown = 5f;  // 10-second cooldown
+
+            public bool CanShowQuip(string quip)
+            {
+                try
+                {
+                    float currentTime = Time.time;  // Time.time gives elapsed time in seconds since the game started
+
+                    if (currentTime - lastQuipTime >= quipCooldown)
+                    {
+                        return true;
+
+                    }
+                    return false;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+
+        }
+
+
+
         public class FloatingText : MonoBehaviour
         {
             public Text TextComponent;  // Standard Text component
@@ -97,12 +210,12 @@ namespace TFTV
                     Vector3 screenPosition = Camera.main.WorldToScreenPoint(actor.transform.position);
                     RectTransform rectTransform = textObject.GetComponent<RectTransform>();
                     rectTransform.sizeDelta = new Vector2(200, 100); // Set size for better visibility
-                   // rectTransform.anchoredPosition = new Vector2(0, rectTransform.sizeDelta.y); // Position above the parent
+                                                                     // rectTransform.anchoredPosition = new Vector2(0, rectTransform.sizeDelta.y); // Position above the parent
 
-                 
+
                     // Ensure the text object is active and visible
                     textObject.SetActive(true);
-                   // textObject.transform.position = screenPosition;
+                    // textObject.transform.position = screenPosition;
                 }
                 catch (Exception e)
                 {
@@ -127,7 +240,7 @@ namespace TFTV
                     rectTransform.pivot = new Vector2(0.5f, 0.5f);
 
                     // Set the position above the parent
-                   rectTransform.anchoredPosition += new Vector2(-50, -200);
+                    rectTransform.anchoredPosition += new Vector2(-50, -200);
 
                     Text textComponent = textObj.AddComponent<Text>();
                     textComponent.font = TFTVUITactical.PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");

@@ -125,6 +125,7 @@ namespace TFTV
             TFTVCustomPortraits.CharacterPortrait.PopulatePortraitFileList();
             TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
             TFTVUIGeoMap.UnpoweredFacilitiesInfo.CheckUnpoweredBasesOnGeoscapeStart();
+         //   TFTVBetaSaveGamesFixes.SpecialFixInfestedHaven(Controller);
            // TFTVDragandDropFunctionality.VehicleRoster.RestoreVehicleOrder(Controller);
            
             // TFTVBetaSaveGamesFixes.SpecialFixBeesGuy();

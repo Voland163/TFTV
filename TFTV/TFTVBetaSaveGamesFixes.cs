@@ -15,11 +15,13 @@ using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Permissions;
 using System.Security.Policy;
 
 
@@ -61,6 +63,34 @@ namespace TFTV
             {
                 TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = true;
                 TFTVNewGameOptions.StaminaPenaltyFromInjurySetting = true;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+        }
+
+        public static void SpecialFixInfestedHaven(GeoLevelController controller)
+        {
+            try 
+            {
+                controller.EventSystem.SetVariable("Infestation_Encounter_Variable", 0);
+                controller.EventSystem.SetVariable("Number_of_Infested_Havens", 0);
+                controller.EventSystem.SetVariable("TrappedInTheMistTriggered", 0);
+
+               /* foreach (var item in controller.PhoenixFaction.Objectives)
+                {
+                    TFTVLogger.Always($"{item.Title.Localize()} {item.Description.Localize()}");
+                    
+                }*/
+
+
+                GeoFactionObjective objective = controller.PhoenixFaction.Objectives.FirstOrDefault(o => o !=null && o.Title!=null && o.Title.Localize().Contains("Deploy a search"));
+                controller.PhoenixFaction.RemoveObjective(objective);
+
+
             }
             catch (Exception e)
             {

@@ -1,19 +1,13 @@
 ﻿using Base.Core;
-using Base.Entities.Effects;
 using Base.Entities.Statuses;
-using Base.Levels;
-using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Levels.ActorDeployment;
-using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
-using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
@@ -27,9 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using static PhoenixPoint.Tactical.Entities.Effects.DamageEffect;
 using static PhoenixPoint.Tactical.View.ViewControllers.SquadMemberScrollerController;
-using static TFTV.TFTVTauntsAndQuips;
 using static TFTV.TFTVUITactical;
 
 
@@ -59,7 +51,7 @@ namespace TFTV
                         float speedMultiplier = optionsManager.CurrentGameplayOptions.AnimationSpeedLevel;
                         //  TFTVLogger.Always($"speedmultiplier: {speedMultiplier}, speedMultiplier+1/4: {(1+speedMultiplier) / 4}");
                         controller.OverwatchTimeScale = 0.1f * ((1 + speedMultiplier) / 4);
-                      //  TFTVLogger.Always($"OverwatchTimeScale: {controller.OverwatchTimeScale}");
+                        //  TFTVLogger.Always($"OverwatchTimeScale: {controller.OverwatchTimeScale}");
                     }
                 }
                 catch (Exception e)
@@ -175,6 +167,7 @@ namespace TFTV
                         methodInfoApplyScaleToActor.Invoke(tacTimeScaleRegulator, new object[] { tacticalActor });
                     }
 
+                    TFTVUITactical.ODITactical.HideODITooltipFailSafe();
                 }
                 catch (Exception e)
                 {
@@ -358,6 +351,7 @@ namespace TFTV
                     }
 
                     TFTVBaseDefenseTactical.PandoranTurn.ImplementBaseDefenseVsAliensPostAISortingOut(__instance);
+
                 }
                 catch (Exception e)
                 {
@@ -452,6 +446,11 @@ namespace TFTV
             {
                 try
                 {
+                    TFTVLogger.Always($"TacticalFactionVision.OnFactionStartTurn for faction " +
+                        $"{__instance?.Faction?.Faction?.FactionDef?.GetName()}, turn: {__instance?.Faction?.TacticalLevel?.TurnNumber}");
+
+                    TFTVVanillaFixes.ClearDataActorsParalysisDamage();
+                    TFTVArtOfCrab.ClearData();
                     TFTVAncients.AncientsNewTurn.AncientsNewTurnCheck(__instance.Faction);
                     TFTVPalaceMission.PalaceTacticalNewTurn(__instance.Faction);
                     TFTVBaseDefenseTactical.PlayerTurn.PhoenixBaseDefenseVSAliensTurnStart(__instance.Faction.TacticalLevel, __instance.Faction);
@@ -497,7 +496,7 @@ namespace TFTV
 
                     TFTVTouchedByTheVoid.TBTVRolls.TBTVTriggeres.TBTVTriggerOnActorDamageDealt(actor, damageDealer);
 
-               
+
 
                     //  string taunt = "Is that all you've got?";  // Example
                     //  FloatingTextManager.ShowFloatingText(actor, taunt, Color.white);

@@ -125,27 +125,6 @@ namespace TFTV
                 }
             }
 
-
-            /*   public static void GenerateWarningMessagePandoranVivisection(UIStateRosterAliens uIStateRosterAliens)
-               {
-                   try
-                   {
-                       MethodInfo methodInfo = typeof(UIStateRosterAliens).GetMethod("OnKillAlienDialogCallback", BindingFlags.Instance | BindingFlags.NonPublic);
-
-                       string warningText = new LocalizedTextBind() { LocalizationKey = "KEY_VIVISECTION_WARNING" }.Localize();
-
-                           GameUtl.GetMessageBox().ShowSimplePrompt(warningText, MessageBoxIcon.Warning, MessageBoxButtons.YesNo, (MessageBox.MessageBoxCallback)methodInfo.Invoke(uIStateRosterAliens, new object[] {}));
-
-
-                   }
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                       throw;
-                   }
-               }*/
-
-
             public static bool IsPandoranVivisectionRelevant(GeoUnitDescriptor geoUnitDescriptor, GeoPhoenixFaction phoenixFaction)
             {
                 try

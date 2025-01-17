@@ -431,7 +431,7 @@ namespace TFTV
         {
             try
             {
-                TFTVLogger.Always("The turn is " + turnNumber);
+                TFTVLogger.Always($"The turn is {turnNumber} for faction{Controller?.CurrentFaction?.Faction?.FactionDef?.GetName()}");
 
                 if (!Controller.TacMission.MissionData.MissionType.name.Contains("Tutorial"))
                 {
@@ -482,8 +482,8 @@ namespace TFTV
                     TFTVLogger.Always($"Playing tutorial mission");
                 }
 
-                TFTVArtOfCrab.ClearData();
-                TFTVVanillaFixes.ClearDataActorsParalysisDamage();
+                
+              //  TFTVVanillaFixes.ClearDataActorsParalysisDamage();
 
             }
             catch (Exception e)
