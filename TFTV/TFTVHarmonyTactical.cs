@@ -1,7 +1,6 @@
 ﻿using Base.Core;
 using Base.Entities.Statuses;
 using HarmonyLib;
-using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Levels.ActorDeployment;
@@ -19,10 +18,12 @@ using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
+using System.Linq;
 using UnityEngine;
 using static PhoenixPoint.Tactical.View.ViewControllers.SquadMemberScrollerController;
-using static TFTV.TFTVUITactical;
+using static TFTV.TFTVNJQuestline.IntroMission;
+using static UnityStandardAssets.Utility.TimedObjectActivator;
+
 
 
 namespace TFTV
@@ -35,114 +36,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(TacTimeScaleRegulator), "UpdateCurrentTimeScale")]
-        public static class TacTimeScaleRegulator_UpdateCurrentTimeScale_patch
-        {
-            public static void Postfix(TacTimeScaleRegulator __instance)
-            {
-                try
-                {
 
-                    OptionsManager optionsManager = GameUtl.GameComponent<OptionsManager>();
-                    TacticalLevelController controller = GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>();
-                    if (controller != null)
-                    {
-
-                        float speedMultiplier = optionsManager.CurrentGameplayOptions.AnimationSpeedLevel;
-                        //  TFTVLogger.Always($"speedmultiplier: {speedMultiplier}, speedMultiplier+1/4: {(1+speedMultiplier) / 4}");
-                        controller.OverwatchTimeScale = 0.1f * ((1 + speedMultiplier) / 4);
-                        //  TFTVLogger.Always($"OverwatchTimeScale: {controller.OverwatchTimeScale}");
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(TacTimeScaleRegulator), "ApplyScaleToActor")]
-        public static class TacTimeScaleRegulator_ApplyScaleToActor_patch
-        {
-            public static bool Prefix(TacTimeScaleRegulator __instance, TacticalActor tacActor)
-            {
-                try
-                {
-                    if (!tacActor.IsAlive)
-                    {
-                        return false;
-                    }
-
-
-
-                    if (tacActor.IdleAbility.IsExecuting)//tacActor.TimingScale.Timing.Scale == 1f)
-                    {
-                        return false;
-                    }
-
-                    return true;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
-
-
-
-
-        /* [HarmonyPatch(typeof(TacticalLevelController), "TriggerOverwatch")]
-         public static class TacticalLevelController_TriggerOverwatch_patch
-         {
-             public static void Prefix(TacticalLevelController __instance)
-             {
-                 try
-                 {
-                     OptionsManager optionsManager = GameUtl.GameComponent<OptionsManager>();
-                     float speedMultiplier = optionsManager.CurrentGameplayOptions.AnimationSpeedLevel;
-                     //  TFTVLogger.Always($"speedmultiplier: {speedMultiplier}, speedMultiplier+1/4: {(1+speedMultiplier) / 4}");
-                     __instance.OverwatchTimeScale = 0.1f * ((1 + speedMultiplier) / 4);
-                     //  TFTVLogger.Always($"OW timescale={__instance.OverwatchTimeScale}");
-                 }
-                 catch (Exception e)
-                 {
-                     TFTVLogger.Error(e);
-                     throw;
-                 }
-             }
-         }*/
-
-
-        [HarmonyPatch(typeof(IdleAbility), "Activate")]
-        public static class IdleAbility_Activate_patch
-        {
-            public static void Prefix(IdleAbility __instance)
-            {
-                try
-                {
-
-                    TacticalActor tacticalActor = __instance.TacticalActor;
-
-                    if (tacticalActor != null)
-                    {
-                        // TFTVLogger.Always($"activating IdleAbility for {tacticalActor.DisplayName}");
-                        TacTimeScaleRegulator tacTimeScaleRegulator = tacticalActor.TacticalLevel.GetComponent<TacTimeScaleRegulator>();
-                        tacticalActor.TimingScale.RemoveScale(tacTimeScaleRegulator);
-                        float num = 1;
-                        tacticalActor.TimingScale.AddScale(num, tacTimeScaleRegulator);
-                    }
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
 
         [HarmonyPatch(typeof(IdleAbility), "OnPlayingActionEnd")]
         public static class IdleAbility_OnPlayingActionEnd_patch
@@ -154,20 +48,9 @@ namespace TFTV
                 try
                 {
 
-                    TacticalActor tacticalActor = __instance.TacticalActor;
-
-                    if (tacticalActor != null)
-                    {
-                        //  TFTVLogger.Always($"ending IdleAbility for {tacticalActor.DisplayName}");
-                        tacticalActor.TimingScale.Timing.Scale = 1.1f;
-                        TacTimeScaleRegulator tacTimeScaleRegulator = tacticalActor.TacticalLevel.GetComponent<TacTimeScaleRegulator>();
-                        MethodInfo methodInfoApplyScaleToActor = typeof(TacTimeScaleRegulator).GetMethod("ApplyScaleToActor", BindingFlags.NonPublic | BindingFlags.Instance);
-                        MethodInfo methodInfoUpdateCurrentTimeScale = typeof(TacTimeScaleRegulator).GetMethod("UpdateCurrentTimeScale", BindingFlags.NonPublic | BindingFlags.Instance);
-                        methodInfoUpdateCurrentTimeScale.Invoke(tacTimeScaleRegulator, new object[] { });
-                        methodInfoApplyScaleToActor.Invoke(tacTimeScaleRegulator, new object[] { tacticalActor });
-                    }
-
+                    TFTVTimeScaling.EnsureStandardTimeScaleForIdleActor(__instance);
                     TFTVUITactical.ODITactical.HideODITooltipFailSafe();
+                   // MissionQuips.RunPhoenixOverlayQuip(__instance.TacticalActor, "IdleAbilityActionEnd, I finished doing nothing!");
                 }
                 catch (Exception e)
                 {
@@ -176,76 +59,6 @@ namespace TFTV
                 }
             }
         }
-
-
-        /* [HarmonyPatch(typeof(MoveAbility), "Activate")]
-         public static class MoveAbility_Activate_patch
-         {
-             public static void Prefix(MoveAbility __instance)
-             {
-                 try
-                 {
-
-                     TacticalActor tacticalActor = __instance.TacticalActor;
-
-                     if (tacticalActor != null)
-                     {
-                        OptionsManager optionsManager = GameUtl.GameComponent<OptionsManager>();
-
-                         TacTimeScaleRegulator tacTimeScaleRegulator = tacticalActor.TacticalLevel.GetComponent<TacTimeScaleRegulator>();
-                        // FieldInfo fieldInfo_currentTimeScale = typeof(TacTimeScaleRegulator).GetField("_currentTimeScale", BindingFlags.Instance | BindingFlags.NonPublic);
-                        // fieldInfo_currentTimeScale.SetValue(tacTimeScaleRegulator, optionsManager.CurrentGameplayOptions.AnimationSpeedLevel);
-
-
-                         tacticalActor.TimingScale.RemoveScale(tacTimeScaleRegulator);
-                         float num = optionsManager.CurrentGameplayOptions.AnimationSpeedLevel;
-                         tacticalActor.TimingScale.AddScale(num, tacTimeScaleRegulator);
-
-                       //  TFTVLogger.Always($"setting scale to animation speed level, which is {optionsManager.CurrentGameplayOptions.AnimationSpeedLevel}");
-                      //   tacticalActor.TimingScale.Timing.Scale = 3f;
-                     }
-
-                 }
-                 catch (Exception e)
-                 {
-                     TFTVLogger.Error(e);
-                     throw;
-                 }
-             }
-         }
-
-       [HarmonyPatch(typeof(MoveAbility), "OnPlayingActionEnd")]
-         public static class MoveAbility_OnPlayingActionEnd_patch
-         {
-             //  
-
-             public static void Postfix(MoveAbility __instance)
-             {
-                 try
-                 {
-
-                     TacticalActor tacticalActor = __instance.TacticalActor;
-
-                     if (tacticalActor != null)
-                     {
-
-                         TacTimeScaleRegulator tacTimeScaleRegulator = tacticalActor.TacticalLevel.GetComponent<TacTimeScaleRegulator>();
-
-                         tacticalActor.TimingScale.RemoveScale(tacTimeScaleRegulator);
-
-                        // tacticalActor.TimingScale.AddScale(num, tacTimeScaleRegulator);
-                     }
-
-                 }
-                 catch (Exception e)
-                 {
-                     TFTVLogger.Error(e);
-                     throw;
-                 }
-             }
-         }*/
-
-
 
 
 
@@ -258,8 +71,8 @@ namespace TFTV
             {
                 try
                 {
-                    ODITactical.ManageTBTVIconToSpottedEnemies(__instance, obj, target);
-                    Enemies.ManageRankIconToSpottedEnemies(__instance, obj, target);
+                    TFTVUITactical.ODITactical.ManageTBTVIconToSpottedEnemies(__instance, obj, target);
+                    TFTVUITactical.Enemies.ManageRankIconToSpottedEnemies(__instance, obj, target);
                 }
                 catch (Exception e)
                 {
@@ -271,17 +84,21 @@ namespace TFTV
 
 
 
+
+
         [HarmonyPatch(typeof(UIModuleObjectives), "Init")]
         public static class UIModuleObjectives_Init_patch
         {
+
             public static void Postfix(UIModuleObjectives __instance, TacticalViewContext Context)
             {
                 try
                 {
-                    CachePuristaSemiboldFont(__instance);
+                    TFTVUITactical.CachePuristaSemiboldFont(__instance);
                     TFTVUITactical.ODITactical.CreateODITacticalWidget(__instance);
                     TFTVUITactical.CaptureTacticalWidget.CreateCaptureTacticalWidget(__instance);
                     TFTVUITactical.Enemies.ActivateOrAdjustLeaderWidgets();
+                  //  MissionQuips.RunPhoenixOverlayQuip(Context.LevelController.GetFactionByCommandName("PX").TacticalActors.FirstOrDefault(), "oBJECTIVes Module Inited!");
                 }
                 catch (Exception e)
                 {
@@ -301,7 +118,7 @@ namespace TFTV
                 try
                 {
                     TFTVTouchedByTheVoid.Umbra.UmbraTactical.ImplementUmbraTargeting(ref __result, sourceActor);
-                    TFTVVanillaFixes.FixMeleeTooHighAttack(__instance, ref __result, sourceActor, targetData, sourcePosition);
+                    TFTVVanillaFixes.Tactical.FixMeleeTooHighAttack(__instance, ref __result, sourceActor, targetData, sourcePosition);
                 }
                 catch (Exception e)
                 {
@@ -374,7 +191,8 @@ namespace TFTV
                     TFTVBaseDefenseTactical.Map.Consoles.ActivateConsole.BaseDefenseConsoleActivated(__instance, status, controller);
                     TFTVPalaceMission.Consoles.PalaceConsoleActivated(__instance, status, controller);
                     TFTVRescueVIPMissions.TalkingPointConsoleActivated(__instance, status, controller);
-
+                    TFTVNJQuestline.IntroMission.MissionQuips.Propaganda.StopPropaganda(controller, status);
+                   // TFTVAncients.AncientDeployment.SmelterConsoleActivated(__instance, status, controller);
                 }
                 catch (Exception e)
                 {
@@ -394,9 +212,6 @@ namespace TFTV
             {
                 try
                 {
-                    // TFTVLogger.Always($"actor is {actor.name} (postfix)");
-
-
                     TFTVDeliriumPerks.ImplementDeliriumPerks(actor, __instance);
                     TFTVEconomyExploitsFixes.AddReinforcementTagToImplementNoDropsOption(actor, __instance);
                     TFTVHumanEnemies.GiveRankAndNameToHumaoidEnemy(actor, __instance);
@@ -406,7 +221,7 @@ namespace TFTV
                     TFTVPalaceMission.Revenants.TryToTurnIntoRevenant(actor, __instance);
                     TFTVPalaceMission.MissionObjectives.CheckFinalMissionWinConditionWhereDeployingItem(actor, __instance);
                     TFTVRevenant.Spawning.RevenentEntersPlayAfterLoad(actor);
-                    //    TFTVRaiders.AdjustDeploymentNeutralFaction(actor, __instance.TacMission.MissionData.MissionType);
+
 
                 }
                 catch (Exception e)
@@ -449,7 +264,7 @@ namespace TFTV
                     TFTVLogger.Always($"TacticalFactionVision.OnFactionStartTurn for faction " +
                         $"{__instance?.Faction?.Faction?.FactionDef?.GetName()}, turn: {__instance?.Faction?.TacticalLevel?.TurnNumber}");
 
-                    TFTVVanillaFixes.ClearDataActorsParalysisDamage();
+                    TFTVVanillaFixes.Tactical.ParalysisDamage.ClearDataActorsParalysisDamage();
                     TFTVArtOfCrab.ClearData();
                     TFTVAncients.AncientsNewTurn.AncientsNewTurnCheck(__instance.Faction);
                     TFTVPalaceMission.PalaceTacticalNewTurn(__instance.Faction);
@@ -458,6 +273,8 @@ namespace TFTV
                     TFTVHumanEnemies.ImplementStartingVolleyHumanEnemiesTactic(__instance.Faction);
                     TFTVRevenant.Resistance.ApplySpecialRevenantResistanceArmorStack(__instance.Faction.TacticalLevel, __instance.Faction);
                     PRMBetterClasses.SkillModifications.FactionPerks.DieHardOnFactionStartTurn(__instance.Faction);
+                    TFTVNJQuestline.IntroMission.MissionQuips.NJQuips.OnNewTurn(__instance.Faction);
+
                 }
                 catch (Exception e)
                 {
@@ -494,6 +311,7 @@ namespace TFTV
                 try
                 {
 
+
                     TFTVTouchedByTheVoid.TBTVRolls.TBTVTriggeres.TBTVTriggerOnActorDamageDealt(actor, damageDealer);
 
 
@@ -516,6 +334,14 @@ namespace TFTV
                     TFTVAncients.HoplitesAbilities.HoplitesMolecularTargeting.CyclopsMolecularTargeting(actor, damageDealer);
                     TFTVBallistics.RemoveDCoy(actor, damageDealer);
                     TFTVHumanEnemies.HumanEnemiesRetributionTacticCheckOnActorDamageDealt(actor, damageDealer);
+
+                    //  TFTVTauntsAndQuips.CollectQuips(actor, TFTVTauntsAndQuips.QuipTrigger.Damage, TFTVTauntsAndQuips.QuipContext.Self);
+
+                    /* if(damageDealer != null && damageDealer.GetTacticalActorBase() != null && damageDealer.GetTacticalActorBase() is TacticalActor tacticalActor) 
+                     {
+                         TFTVTauntsAndQuips.CollectQuips(tacticalActor, TFTVTauntsAndQuips.QuipTrigger.Damage, TFTVTauntsAndQuips.QuipContext.Any);
+                     }*/
+
                 }
                 catch (Exception e)
                 {
@@ -651,6 +477,7 @@ namespace TFTV
                 {
                     TFTVBaseDefenseTactical.Map.DeploymentZones.InitDeployZonesForBaseDefenseVsAliens(__instance.TacticalLevel);
                     TFTVPalaceMission.EnemyDeployments.TacticalDeployZones.InitDeployZonesForPalaceMission(__instance.TacticalLevel);
+                    TFTVNJQuestline.IntroMission.MissionStartChanges.ModifyDeployZones(__instance.TacticalLevel);
                 }
                 catch (Exception e)
                 {
@@ -679,6 +506,8 @@ namespace TFTV
                     TFTVArtOfCrab.GetBestWeaponForOWRF(__instance);
                     TFTVVehicleFixes.CheckSquashing(ability, __instance);
                     TFTVVoxels.TFTVGoo.ClearActorGooPositions();
+
+                  //  TFTVTauntsAndQuips.SelectAndShowQuip(__instance);
 
                 }
 

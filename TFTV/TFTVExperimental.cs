@@ -1,5 +1,11 @@
-﻿using PhoenixPoint.Geoscape.Entities.Research.Requirement;
+﻿using Base.Audio;
+using Base.Core;
+using Base.Eventus;
+using HarmonyLib;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Game;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Levels;
 using System;
 using UnityEngine;
 
@@ -12,6 +18,41 @@ namespace TFTV
     internal class TFTVExperimental
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
+
+       /* public static void AdjustMusicLevelAncientMaps(TacticalLevelController controller)
+        {
+            try
+            {
+
+                MissionTypeTagDef ancientsMission = DefCache.GetDef<MissionTypeTagDef>("MissionTypeAncientSite_MissionTagDef");
+
+                AudioManager audioManager = GameUtl.GameComponent<PhoenixGame>().GetComponent<AudioManager>();
+
+                TFTVLogger.Always($"current music setting is: {audioManager.GetAudioLevel(MixerKey.Music)}");
+
+                if (TFTVAncients.CheckIfAncientsPresent(controller))
+                {
+                    TFTVLogger.Always($"Ancients Map. Adjusting music");
+
+                    audioManager.SetAudioLevel(MixerKey.Music, Mathf.Min(0.25f, _playerSetMusicVolume));
+                }
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+
+
+        }*/
+
+       
+
+
 
         /*  [HarmonyPatch(typeof(InterceptionBriefDataBind), "DisplayData")]
           public static class InterceptionBriefDataBind_DisplayData_patch

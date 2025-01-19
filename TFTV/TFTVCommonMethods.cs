@@ -1,7 +1,9 @@
 ﻿using Base.Core;
 using Base.Defs;
 using Base.Entities.Statuses;
+using Base.Levels;
 using Base.UI;
+using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -17,6 +19,7 @@ using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Objectives;
+using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Statuses;
@@ -33,6 +36,25 @@ namespace TFTV
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
+
+
+        public static void CreateNewGeoObjectivePhoenixFaction(GeoLevelController controller, string titleKey, string descriptionKey)
+        {
+            try
+            {
+                DiplomaticGeoFactionObjective newObjective = new DiplomaticGeoFactionObjective(controller.PhoenixFaction, controller.PhoenixFaction)
+                {
+                    Title = new LocalizedTextBind(titleKey),
+                    Description = new LocalizedTextBind(descriptionKey),
+                };
+
+                controller.PhoenixFaction.AddObjective(newObjective);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
 
         public static int D12DifficultyModifiedRoll(int unModifiedDifficultyOrder)
@@ -92,6 +114,8 @@ namespace TFTV
         {
             try
             {
+                TFTVChangesToDLC4Events.ClearDataOnLoad();
+
                 TFTVBehemothAndRaids.InternalData.BehemothDataToClearOnStateChangeAndLoad();
                 
                 TFTVBaseDefenseTactical.InternalData.BaseDefenseDataToClearOnStateChangeAndLoad();
@@ -123,7 +147,7 @@ namespace TFTV
                 TFTVTactical.TurnZeroMethodsExecuted = false;
 
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
-                TFTVAncients.AutomataResearched = false;
+                TFTVAncientsGeo.AutomataResearched = false;
                 TFTVAncients.AlertedHoplites.Clear();
 
                 TFTVUI.EditScreen.LoadoutsAndHelmetToggle.CharacterLoadouts?.Clear();
@@ -276,13 +300,15 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModulePauseScreen), "OnRestartConfirmed")]
         public static class TFTV_UIModulePauseScreen_OnRestartConfirmed_RestartMission_patch
         {
-            public static void Postfix()
+            public static void Postfix(MessageBoxCallbackResult res)
             {
                 try
                 {
-                    VariablesClearedOnMissionRestart();
-                    TFTVLogger.Always("Game restarted");
-
+                    if (res.DialogResult == MessageBoxResult.OK || res.DialogResult == MessageBoxResult.Yes)
+                    {
+                        VariablesClearedOnMissionRestart();
+                        TFTVLogger.Always("Game restarted");
+                    }
                 }
                 catch (Exception e)
                 {
@@ -687,14 +713,30 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
-        public static CaptureActorResearchRequirementDef CreateNewTagCaptureActorResearchRequirementDef(string gUID, string defName, string revealText)
+        public static CaptureActorResearchRequirementDef CreateCaptureActorResearchRequirementDef(string gUID, string defName, string revealText, GameTagDef actorTag = null, TacticalActorDef actorDef = null)
         {
             try
             {
                 CaptureActorResearchRequirementDef captureActorResearchRequirementDef
                     = DefCache.GetDef<CaptureActorResearchRequirementDef>("PX_Alien_EvolvedAliens_ResearchDef_CaptureActorResearchRequirementDef_0");
                 CaptureActorResearchRequirementDef newCaptureActorResearchRequirementDef = Helper.CreateDefFromClone(captureActorResearchRequirementDef, gUID, defName);
-                newCaptureActorResearchRequirementDef.RequirementText = new LocalizedTextBind(revealText, true);
+                newCaptureActorResearchRequirementDef.RequirementText.LocalizationKey = revealText;
+
+                if (actorDef != null)
+                {
+                    newCaptureActorResearchRequirementDef.Actor = actorDef;
+                }
+                else
+                {
+                    newCaptureActorResearchRequirementDef.Actor = null;
+                }
+
+                if (actorTag != null) 
+                { 
+                   newCaptureActorResearchRequirementDef.Tag = actorTag;
+
+                }
+
                 return newCaptureActorResearchRequirementDef;
             }
 
@@ -938,6 +980,9 @@ namespace TFTV
             }
 
         }
+
+
+
     }
 }
 

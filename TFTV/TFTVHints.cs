@@ -629,6 +629,10 @@ namespace TFTV
                     string hintHopliteMaxPower = "ANCIENTS_HOPLITSMAXPOWER";
                     string hopliteMaxPowerTitle = "HINT_ANCIENTS_HOPLITSMAXPOWER_TITLE";
                     string hopliteMaxPowerText = "HINT_ANCIENTS_HOPLITSMAXPOWER_TEXT";
+                    string ancientAutomataResearched = "HINT_ANCIENT_AUTOMATA_INFO";
+                    string ancientAutomataResearchedText = "KEY_ANCIENT_AUTOMATA_INFO_TEXT";
+                    string ancientAutomataResearchedTitle = "KEY_ANCIENT_AUTOMATA_INFO_TITLE";
+
 
                     CreateNewTacticalHint(hintCyclops, HintTrigger.ActorSeen, cyclopsTag.name, cyclopsTitle, cyclopsText, 1, true, "41B73D60-433A-4F75-9E8B-CA30FBE45622", "HINT_TFTV_Ancients_Tactical_CyclopsDefense.jpg");
                     CreateNewTacticalHint(hintHoplites, HintTrigger.ActorSeen, hopliteTag.name, hoplitesTitle, hoplitesText, 1, true, "2DC1BC66-F42F-4E84-9680-826A57C28E48", "HINT_TFTV_Ancients_Tactical_Hoplites.jpg");
@@ -638,7 +642,7 @@ namespace TFTV
                     hoplitesHint.Conditions.Add(Constructors.ActorHasStatusHintConditionDefCreateNewConditionForTacticalHint("Alerted_StatusDef"));
                     CreateNewTacticalHint(hintHopliteRepair, HintTrigger.ActorSeen, AddAutoRepairStatusAbility.name, hoplitesRepairTitle, hoplitesRepairText, 2, true, "B25F1794-5641-40D3-88B5-0AA104FC75A1", "HINT_TFTV_Ancients_Tactical_Hoplites_Overpower.jpg");
                     CreateNewTacticalHint(hintHopliteMaxPower, HintTrigger.ActorSeen, ancientsPowerUpStatus.name, hopliteMaxPowerTitle, hopliteMaxPowerText, 2, true, "0DC75121-325A-406E-AC37-5F1AAB4E7778", "HINT_TFTV_Ancients_Tactical_Hoplites_Overpower.jpg");
-
+                    TFTVAncientsGeo.AncientAutomataInfoHint =  CreateNewTacticalHint(ancientAutomataResearched, HintTrigger.MissionStart, ancientMissionTag.name, ancientAutomataResearchedTitle, ancientAutomataResearchedText, 3, true, "{F77D8357-21F1-4B56-847F-54AA816A7291}", "Olena_static.jpg");
                 }
                 catch (Exception e)
                 {
@@ -1186,6 +1190,7 @@ namespace TFTV
                 }
             }
 
+        
 
             [HarmonyPatch(typeof(UIModuleContextHelp), "ShowPanel")]
             public static class UIModuleContextHelp_Show_Hints_Patch

@@ -285,3 +285,5 @@ Pandorans arriving as reinforcements will not receive the resistance.",,,,,,"П�
 Пандоран, прибывший с подкреплением, однако, будет лишен этого статуса.",,
 KEY_REVENANT_RESISTANCE_VO19_TITLE,Text,,Adaptive Resistance Void Omen,,,,,,"Знамение Пустоты: ""Сила адаптации""",,
 KEY_REVENANT_RESISTANCE_TITLE,Text,,Revenant resistance,,,,,,Сила Возвращенца,,
+KEY_ANCIENT_AUTOMATA_INFO_TEXT,Text,,"Director, our research into the Ancient Automata has uncovered valuable information about their functionality. I have upgraded your Tactical Combat Interface to allow for easy reference.",,,,,,,,
+KEY_ANCIENT_AUTOMATA_INFO_TITLE,Text,,New information on the Ancient Automata ,,,,,,,,

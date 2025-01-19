@@ -21,6 +21,7 @@ using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Entities.StructuralTargets;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.Mist;
@@ -30,6 +31,7 @@ using System.Linq;
 using System.Reflection;
 using TFTV.Tactical.Entities.Statuses;
 using UnityEngine;
+using static PhoenixPoint.Tactical.Entities.DamageAccumulation;
 
 namespace TFTV
 {
@@ -1998,22 +2000,265 @@ namespace TFTV
                     }
                 }
 
-
-                //IMPORTANT! METHOD FROM MADSKUNKY ON IEnumerable Harmony Patch!!!
-                [HarmonyPatch(typeof(Weapon), "GetShootTargets")]
-                public static class TFTV_Weapon_GetShootTargets_Patch
+                public static bool CheckIfTargetingAcheron(TacticalAbilityTarget target)
                 {
-                    public static IEnumerable<TacticalAbilityTarget> Postfix(IEnumerable<TacticalAbilityTarget> results, Weapon __instance)
+                    try 
+                    {
+                        if(target.Actor!=null && !target.Actor.IsDead && target.Actor is TacticalActor tacticalActor && tacticalActor.GameTags!=null && tacticalActor.HasGameTag(DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef"))) 
+                        {
+
+                            return true; 
+                        
+                        }
+
+                        return false;
+                    }
+
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+
+
+                /*   [HarmonyPatch(typeof(Weapon), "GetShootTargets")]
+                   public static class TFTV_Weapon_GetShootTargets_Patch
+                   {
+                       public static IEnumerable<TacticalAbilityTarget> Postfix(
+                           IEnumerable<TacticalAbilityTarget> results, Weapon __instance, TacticalAbilityTarget target, TacticalTargetData ____originData,
+                           Vector3? shooterPosition, TacticalTargetData targetData)
+                       {
+
+                           if (CheckIfTargetingAcheron(target))
+                           {
+                               MethodInfo methodInfoCheckShootTarget = typeof(Weapon).GetMethod("CheckShootTarget", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                               if (targetData == null)
+                               {
+                                   targetData = ____originData;
+                               }
+
+                               Vector3 shooterPos = shooterPosition ?? __instance.TacticalActorBase.Pos;
+                               Vector3 enemyPos = target.GetActorOrWorkingPosition();
+                               var enemyDir = enemyPos - shooterPos;
+
+                               float range = targetData.Range;
+                               float dist = enemyDir.magnitude;
+
+                               if (dist < targetData.MinRange)
+                               {
+                                   yield break;
+                               }
+
+                               if (target.GetTargetActor() != null)
+                               {
+                                   range = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(range, target.GetTargetActor());
+                               }
+
+                               bool inRange = dist <= range;
+                               if (!inRange && targetData.HorizontalRangeOnly)
+                               {
+                                   inRange = Vector3.Distance(shooterPos.SetY(enemyPos.y), enemyPos) <= range;
+                               }
+
+                               if (!inRange)
+                               {
+                                   yield break;
+                               }
+
+                               TacticalAbilityTarget testedTarget = new TacticalAbilityTarget(target);
+                               testedTarget.DamageReceiver = target.Actor;
+                               if (!Utl.IsZero(enemyDir.x) || !Utl.IsZero(enemyDir.z))
+                               {
+                                   testedTarget.CoverDirection = __instance.TacticalActor.TacticalPerception.GetCoverDirection(shooterPos, enemyDir);
+                               }
+
+                               // Activate all actor dummy colliders, to check if some are in the way.
+                               using (new MultiForceDummyTargetableLock(__instance.TacticalActor.Map.GetActors<TacticalActor>()))
+                               {
+                                   DamageDeliveryType deliveryType = __instance.GetDamagePayload().DamageDeliveryType;
+                                   bool shouldTestBodyparts =
+                                       deliveryType != DamageDeliveryType.Parabola &&
+                                       deliveryType != DamageDeliveryType.Sphere
+                                       ;
+
+                                   if (testedTarget.Actor == null
+                                       || testedTarget.TacticalItem != null
+                                       || testedTarget.Equipment != null
+                                       || !shouldTestBodyparts)
+                                   {
+                                       bool canShoot = (bool)methodInfoCheckShootTarget.Invoke(__instance, new object[] { testedTarget, shooterPos, targetData.HorizontalRangeOnly }); //__instance.CheckShootTarget(testedTarget, shooterPos, targetData.HorizontalRangeOnly);
+                                       if (canShoot)
+                                           yield return testedTarget;
+
+                                       yield break;
+                                   }
+
+                                   // Get default aim point body part
+                                   TacticalPerception targetPerception = testedTarget.Actor.GetComponent<TacticalPerception>();
+                                   BodyPartAspect defaultTargetPart = null;
+                                   if (targetPerception != null)
+                                   {
+                                       var defaultSlot = (ItemSlot)testedTarget.Actor.AddonsManager.RootAddon
+                                           .FindAddonSlot(targetPerception.TacticalPerceptionDef.DefaultAimSlot);
+                                       var defaultItem = defaultSlot.GetAllDirectItems().FirstOrDefault();
+                                       if (defaultItem != null && defaultItem.BodyPartAspect != null)
+                                       {
+                                           defaultTargetPart = defaultItem.BodyPartAspect;
+                                           testedTarget.TacticalItem = defaultItem;
+                                           testedTarget.DamageReceiver = defaultItem;
+                                           bool canShoot = (bool)methodInfoCheckShootTarget.Invoke(__instance, new object[] { testedTarget, shooterPos, targetData.HorizontalRangeOnly });//CheckShootTarget(testedTarget, shooterPos, targetData.HorizontalRangeOnly);
+                                           if (canShoot)
+                                               yield return new TacticalAbilityTarget(testedTarget);
+                                       }
+                                   }
+
+                                   var targetBodyParts = __instance.GetTargetBodyParts(testedTarget.Actor);
+                                   foreach (BodyPartAspect part in targetBodyParts)
+                                   {
+                                       if (part == defaultTargetPart)
+                                       {
+                                           // We already returned it above
+                                           continue;
+                                       }
+
+                                       testedTarget.TacticalItem = part.OwnerItem;
+                                       testedTarget.DamageReceiver = part.OwnerItem;
+                                       bool canShoot = (bool)methodInfoCheckShootTarget.Invoke(__instance, new object[] { testedTarget, shooterPos, targetData.HorizontalRangeOnly });//CheckShootTarget(testedTarget, shooterPos, targetData.HorizontalRangeOnly);
+                                       if (canShoot)
+                                           yield return new TacticalAbilityTarget(testedTarget);
+                                   }
+                               }
+                           }
+
+                       }
+                   }*/
+
+                /// <summary>
+                /// Codemite's solution to Acheron targetting issues. All hail Codemite!
+                /// </summary>
+                [HarmonyPatch(typeof(Weapon), "GetShootTargets")]
+                public static class TFTV_Weapon_GetShootTargets2_Patch
+                {
+                    public static IEnumerable<TacticalAbilityTarget> Postfix(IEnumerable<TacticalAbilityTarget> results, Weapon __instance, TacticalTargetData ____originData,
+                        Vector3? shooterPosition, TacticalTargetData targetData, TacticalAbilityTarget target)
                     {
                         //  TFTVLogger.Always($"Weapon.GetShootTargets {__instance.WeaponDef.name}");
 
-                        foreach (TacticalAbilityTarget target in results)
-                        {
-                            //    TFTVLogger.Always($"target {target?.Actor?.name}");
 
-                            if (IsValidTarget(__instance.TacticalActor, target, __instance)) // <- create a method to check the target
+                        if (CheckIfTargetingAcheron(target))
+                        {
+                          //  TFTVLogger.Always($"got here");
+
+                            MethodInfo methodInfoCheckShootTarget = typeof(Weapon).GetMethod("CheckShootTarget", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                            if (targetData == null)
                             {
-                                yield return target;
+                                targetData = ____originData;
+                            }
+
+                            Vector3 shooterPos = shooterPosition ?? __instance.TacticalActorBase.Pos;
+                            Vector3 enemyPos = target.GetActorOrWorkingPosition();
+                            var enemyDir = enemyPos - shooterPos;
+
+                            float range = targetData.Range;
+                            float dist = enemyDir.magnitude;
+
+                            if (dist < targetData.MinRange)
+                            {
+                                yield break;
+                            }
+
+                            if (target.GetTargetActor() != null)
+                            {
+                                range = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(range, target.GetTargetActor());
+                            }
+
+                            bool inRange = dist <= range;
+                            if (!inRange && targetData.HorizontalRangeOnly)
+                            {
+                                inRange = Vector3.Distance(shooterPos.SetY(enemyPos.y), enemyPos) <= range;
+                            }
+
+                            if (!inRange)
+                            {
+                                yield break;
+                            }
+
+                            TacticalAbilityTarget testedTarget = new TacticalAbilityTarget(target);
+                            testedTarget.DamageReceiver = target.Actor;
+                            if (!Utl.IsZero(enemyDir.x) || !Utl.IsZero(enemyDir.z))
+                            {
+                                testedTarget.CoverDirection = __instance.TacticalActor.TacticalPerception.GetCoverDirection(shooterPos, enemyDir);
+                            }
+
+                            // Activate all actor dummy colliders, to check if some are in the way.
+                            using (new MultiForceDummyTargetableLock(__instance.TacticalActor.Map.GetActors<TacticalActor>()))
+                            {
+                                DamageDeliveryType deliveryType = __instance.GetDamagePayload().DamageDeliveryType;
+                                bool shouldTestBodyparts =
+                                    deliveryType != DamageDeliveryType.Parabola &&
+                                    deliveryType != DamageDeliveryType.Sphere
+                                    ;
+
+                                if (testedTarget.Actor == null
+                                    || testedTarget.TacticalItem != null
+                                    || testedTarget.Equipment != null
+                                    || !shouldTestBodyparts)
+                                {
+                                    bool canShoot = (bool)methodInfoCheckShootTarget.Invoke(__instance, new object[] { testedTarget, shooterPos, targetData.HorizontalRangeOnly }); //__instance.CheckShootTarget(testedTarget, shooterPos, targetData.HorizontalRangeOnly);
+                                    if (canShoot)
+                                        yield return testedTarget;
+
+                                    yield break;
+                                }
+
+                                // Get default aim point body part
+                                TacticalPerception targetPerception = testedTarget.Actor.GetComponent<TacticalPerception>();
+                                BodyPartAspect defaultTargetPart = null;
+                                if (targetPerception != null)
+                                {
+                                    var defaultSlot = (ItemSlot)testedTarget.Actor.AddonsManager.RootAddon
+                                        .FindAddonSlot(targetPerception.TacticalPerceptionDef.DefaultAimSlot);
+                                    var defaultItem = defaultSlot.GetAllDirectItems().FirstOrDefault();
+                                    if (defaultItem != null && defaultItem.BodyPartAspect != null)
+                                    {
+                                        defaultTargetPart = defaultItem.BodyPartAspect;
+                                        testedTarget.TacticalItem = defaultItem;
+                                        testedTarget.DamageReceiver = defaultItem;
+                                        bool canShoot = (bool)methodInfoCheckShootTarget.Invoke(__instance, new object[] { testedTarget, shooterPos, targetData.HorizontalRangeOnly });//CheckShootTarget(testedTarget, shooterPos, targetData.HorizontalRangeOnly);
+                                        if (canShoot)
+                                            yield return new TacticalAbilityTarget(testedTarget);
+                                    }
+                                }
+
+                                var targetBodyParts = __instance.GetTargetBodyParts(testedTarget.Actor);
+                                foreach (BodyPartAspect part in targetBodyParts)
+                                {
+                                    if (part == defaultTargetPart)
+                                    {
+                                        // We already returned it above
+                                        continue;
+                                    }
+
+                                    testedTarget.TacticalItem = part.OwnerItem;
+                                    testedTarget.DamageReceiver = part.OwnerItem;
+                                    bool canShoot = (bool)methodInfoCheckShootTarget.Invoke(__instance, new object[] { testedTarget, shooterPos, targetData.HorizontalRangeOnly });//CheckShootTarget(testedTarget, shooterPos, targetData.HorizontalRangeOnly);
+                                    if (canShoot)
+                                        yield return new TacticalAbilityTarget(testedTarget);
+                                }
+                            }
+                        }
+
+
+
+                        foreach (TacticalAbilityTarget targetInResults in results)
+                        {      
+                            if (IsValidTarget(__instance.TacticalActor, targetInResults, __instance)) // <- create a method to check the target
+                            {                             
+                                yield return targetInResults;
                             }
 
                         }

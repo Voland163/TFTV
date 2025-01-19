@@ -3,7 +3,6 @@ using Base.Core;
 using Base.Defs;
 using Base.Levels;
 using HarmonyLib;
-using Microsoft.CSharp;
 using Newtonsoft.Json;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Game;
@@ -59,14 +58,14 @@ namespace TFTV
 
         internal static string TFTVversion;
 
-        // internal static bool injectionComplete = false;
+        internal static bool injectionComplete = false;
 
         /// This property indicates if mod can be Safely Disabled from the game.
         /// Safely sisabled mods can be reenabled again. Unsafely disabled mods will need game restart ot take effect.
         /// Unsafely disabled mods usually cannot revert thier changes in OnModDisabled
         public override bool CanSafelyDisable => false;
 
-       
+
 
         /// <summary>
         /// Callback for when mod is enabled. Called even on game starup.
@@ -75,6 +74,11 @@ namespace TFTV
         {
             try
             {
+                if(injectionComplete)
+                {
+                    return;
+                }
+
                 Main = this;
                 /// All mod dependencies are accessible and always loaded.
                 int c = Dependencies.Count();
@@ -89,7 +93,7 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                string version = $"TFTV 1.0, Hotfix 2 for Patch 13 20250119 release #1 v{MetaData.Version}";
+                string version = $"TFTV 1.0, Patch 14 20250214 release #1 v{MetaData.Version}";
 
                 TFTVversion = version;
 
@@ -146,7 +150,7 @@ namespace TFTV
                 //  Config.RetrieveConfigOptions();
                 harmony.PatchAll();
                 TFTVVanillaFixes.UI.FixSurveillanceAbilityGroundMarker(harmony);
-                
+
 
                 if (GameUtl.CurrentLevel() != null && GameUtl.CurrentLevel().GetComponent<HomeScreenView>() != null)
                 {
@@ -170,37 +174,35 @@ namespace TFTV
                 }
 
 
-              
-
-                    /*     Type renderingEnvironmentType = typeof(RenderingEnvironment);
-
-                         // Get all public constructors
-                         ConstructorInfo[] constructors = renderingEnvironmentType.GetConstructors();
-
-                         // Print the names of constructors
-                         foreach (ConstructorInfo constructor in constructors)
-                         {
-                             TFTVLogger.Always("Constructor Name: " + constructor.FullDescription());
-                         }*/
 
 
+                /*     Type renderingEnvironmentType = typeof(RenderingEnvironment);
 
-                    /*  if(GetLevel()!=null && GetLevel().name.Contains("HomeScreenLevel")) 
-                      {
-                          TFTVLogger.Always($"TFTV is enabled!");
-                          string warning = $"Terror from the Void is now enabled! PLEASE QUIT TO DESKTOP BEFORE STARTING OR LOADING A GAME";
+                     // Get all public constructors
+                     ConstructorInfo[] constructors = renderingEnvironmentType.GetConstructors();
 
-                          GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
-
-
-                      }*/
-                    // if (!injectionComplete)
-                    // {
+                     // Print the names of constructors
+                     foreach (ConstructorInfo constructor in constructors)
+                     {
+                         TFTVLogger.Always("Constructor Name: " + constructor.FullDescription());
+                     }*/
 
 
-                    //       injectionComplete = true;
-                    //  }
+
+                /*  if(GetLevel()!=null && GetLevel().name.Contains("HomeScreenLevel")) 
+                  {
+                      TFTVLogger.Always($"TFTV is enabled!");
+                      string warning = $"Terror from the Void is now enabled! PLEASE QUIT TO DESKTOP BEFORE STARTING OR LOADING A GAME";
+
+                      GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+
+
+                  }*/
+                if (!injectionComplete)
+                {
+                    injectionComplete = true;
                 }
+            }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
@@ -330,7 +332,7 @@ namespace TFTV
         {
 
 
-          //  TFTVLogger.Always($"level {level.name} loading from {prevState} to {state}");
+            //  TFTVLogger.Always($"level {level.name} loading from {prevState} to {state}");
 
 
             // Logger.LogInfo($"{MethodBase.GetCurrentMethod().Name} called for level '{level}' with old state '{prevState}' and new state '{state}'");

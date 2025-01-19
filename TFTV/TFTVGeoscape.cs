@@ -3,7 +3,6 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Modding;
 using System;
 using System.Collections.Generic;
@@ -65,7 +64,7 @@ namespace TFTV
         public Dictionary<int, bool> BaseDefensePandoranBreach;
         public int RevenantPoints;
         public Dictionary<int, string> CharacterPortraits;
-        public List <int> PlayerVehicles;
+        public List<int> PlayerVehicles;
     }
 
 
@@ -121,13 +120,13 @@ namespace TFTV
             TFTVODIandVoidOmenRoll.Calculate_ODI_Level(Controller);
             TFTVBetaSaveGamesFixes.CheckResearches(Controller);
             TFTVPassengerModules.ImplementFarMConfig(Controller);
-          //  TFTVBetaSaveGamesFixes.RemoveBadSlug(Controller);
+            //  TFTVBetaSaveGamesFixes.RemoveBadSlug(Controller);
             TFTVCustomPortraits.CharacterPortrait.PopulatePortraitFileList();
             TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
             TFTVUIGeoMap.UnpoweredFacilitiesInfo.CheckUnpoweredBasesOnGeoscapeStart();
-         //   TFTVBetaSaveGamesFixes.SpecialFixInfestedHaven(Controller);
-           // TFTVDragandDropFunctionality.VehicleRoster.RestoreVehicleOrder(Controller);
-           
+            //   TFTVBetaSaveGamesFixes.SpecialFixInfestedHaven(Controller);
+            // TFTVDragandDropFunctionality.VehicleRoster.RestoreVehicleOrder(Controller);
+
             // TFTVBetaSaveGamesFixes.SpecialFixBeesGuy();
             /* GeoSite geoSite = Controller.Map.AllSites.FirstOrDefault(s=>s.GetComponent<GeoPhoenixBase>()!=null && s.ActiveMission!=null);
 
@@ -165,7 +164,7 @@ namespace TFTV
             TFTVDiplomacyPenalties.VoidOmensImplemented = false;
             TFTVAncientsGeo.AncientsResearch.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(gsController);
             TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
-            
+
         }
 
         /// <summary>
@@ -275,9 +274,9 @@ namespace TFTV
                 TFTVAmbushes.AN_FallenOnes_Hotspots = data.FO_Hotspots;
                 TFTVAmbushes.NJ_Purists_Hotspots = data.PU_Hotspots;
 
-                if (data.PlayerVehicles != null) 
-                { 
-                TFTVDragandDropFunctionality.VehicleRoster.PlayerVehicles = data.PlayerVehicles;
+                if (data.PlayerVehicles != null)
+                {
+                    TFTVDragandDropFunctionality.VehicleRoster.PlayerVehicles = data.PlayerVehicles;
                 }
 
                 if (data.PandoransContainmentBaseAttack != null)
@@ -409,6 +408,8 @@ namespace TFTV
         /// </summary>
         /// <param name="setup">Main geoscape setup object.</param>
         /// <param name="worldSites">Sites to spawn and start simulating.</param>
+        /// 
+
         public override void OnGeoscapeNewWorldInit(GeoInitialWorldSetup setup, IList<GeoSiteSceneDef.SiteInfo> worldSites)
         {
             TFTVMain main = (TFTVMain)Main;
@@ -460,6 +461,11 @@ namespace TFTV
                 188  // "West Africa (Ghana)
             };
 
+            List<int> vanillaList = new List<int>()
+            {
+                165, 166, 167,  168, 169,  170, 171, 172
+            };
+
             /*
             (-0.4f, 3.7f, 5.2f),  North Africa (Algeria) 165 
             (-1.9f, 4.8f, 3.8f), Eastern Europe (Ukraine) 166
@@ -483,8 +489,34 @@ namespace TFTV
 
             try
             {
+                //First restore Vanilla list
+
+                foreach (GeoSiteSceneDef.SiteInfo siteInfo in worldSites.Where(ws => phoenixBases.Any(id => id.Equals(ws.SiteId))))
+                {
+
+                    if (vanillaList.Contains(siteInfo.SiteId))
+                    {
+                        if (!siteInfo.SiteTags.Contains("StartingPhoenixBase"))
+                        {
+                            siteInfo.SiteTags.Add("StartingPhoenixBase");
+                        }
+                    }
+                    else 
+                    {
+                        if (siteInfo.SiteTags.Contains("StartingPhoenixBase"))
+                        {
+                            siteInfo.SiteTags.Remove("StartingPhoenixBase");
+                        }
+                    }       
+                }
+
+
+
+
+
                 if (TFTVNewGameOptions.startingBaseLocation == TFTVNewGameOptions.StartingBaseLocation.Vanilla && TFTVSpecialDifficulties.CheckGeoscapeSpecialDifficultySettings(gsController) == 0)
                 {
+
 
                 }
                 else
@@ -496,6 +528,7 @@ namespace TFTV
 
                         if (TFTVNewGameOptions.startingBaseLocation == TFTVNewGameOptions.StartingBaseLocation.Vanilla)
                         {
+
                             if (TFTVSpecialDifficulties.CheckGeoscapeSpecialDifficultySettings(gsController) == 1)
                             {
                                 List<int> forbiddenBases = new List<int> { 167, 168, 584, 193, 191, 186, 185, 192, 187 };

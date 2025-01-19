@@ -298,6 +298,21 @@ namespace TFTV
 
         internal class Manufacturing
         {
+          /*  public static void ClearInternalData()
+            {
+                try 
+                { 
+                
+                
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+            }*/
+
             private static readonly string _amountInInventoryTextObject = "AmountInInventory";
             private static readonly string _techCostTextObject = "TextContainerTechCost";
             private static readonly string _matsCostTextObject = "TextContainerMatsCost";
@@ -306,6 +321,41 @@ namespace TFTV
 
             private static readonly ViewElementDef _matsViewDef = DefCache.GetDef<ViewElementDef>("Materials_ResourceDef");
             private static readonly ViewElementDef _techViewDef = DefCache.GetDef<ViewElementDef>("Tech_ResourceDef");
+
+           // private static bool CheckedManufacturingForNewItems = false;
+            
+            [HarmonyPatch(typeof(GeoPhoenixFaction), "OnNewManufacturableItemsAdded")]
+            public static class GeoPhoenixFaction_OnNewManufacturableItemsAdded_Patch
+            {
+                public static bool Prefix(GeoPhoenixFaction __instance, ManufacturableItem item)
+                {
+                    try
+                    {
+                        if (item.Tags.Contains(DefCache.GetDef<GameTagDef>("AmmoItem_TagDef"))) 
+                        {
+                         //   TFTVLogger.Always($"New manufacturable Ammo item: {item.Name.Localize()}");
+                            return false;
+                        }
+
+                       // CheckedManufacturingForNewItems = false;
+
+                       // TFTVLogger.Always($"New manufacturable item: {item.Name.Localize()}");
+                        return true;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+           
+
+           
+
+
+
 
             private static GameObject AddManufactureAmmoButton(GeoManufactureItem geoManufactureItem,
                 GeoFaction faction, ItemDef ammoItemDef)
@@ -415,6 +465,7 @@ namespace TFTV
                     actionIcon.SetNativeSize();
                     actionIcon.sprite = ammoItemDef.ViewElementDef.InventoryIcon; // Set to a different sprite
 
+                
                     return manufactureAmmoButton;
 
                 }
@@ -464,6 +515,8 @@ namespace TFTV
 
                     Text amountInventory = manufactureAmmoButton.transform.Find(_amountInInventoryTextObject).GetComponent<Text>();
                     amountInventory.text = ammoItemDef.GetQuantity(faction, true).ToString();
+
+                  //  geoManufactureItem.NewElementMarker.GetComponent<RectTransform>().anchoredPosition = new Vector2(-100, 0);
                 }
                 catch (Exception e)
                 {
@@ -473,11 +526,23 @@ namespace TFTV
                 }
             }
 
+
+            private static Vector2 _ogPositionNewItemElement = new Vector2(0, 0);
+            private static Vector2 _newPositionNewItemElement = new Vector2(_ogPositionNewItemElement.x-275, -5);
+
+
             private static void AddorUpdateAmmoButton(GeoManufactureItem geoManufactureItem, GeoFaction faction)
             {
                 try
                 {
                     //   TFTVLogger.Always($"looking at item {__instance.ItemName.text}");
+
+                    if(_ogPositionNewItemElement == Vector2.zero) 
+                    {
+
+                        _ogPositionNewItemElement = geoManufactureItem.NewElementMarker.GetComponent<RectTransform>().anchoredPosition;
+                        TFTVLogger.Always($"_ogPositionNewItemElement: {_ogPositionNewItemElement}");
+                    }
 
                     Transform transform = geoManufactureItem.CurrentlyOwnedQuantityText.transform;
                     GameObject manufactureAmmoButton = transform.Find("ManufactureAmmoButton")?.gameObject;
@@ -486,7 +551,12 @@ namespace TFTV
                         || geoManufactureItem.ItemDef.CompatibleAmmunition.Count() == 0 
                         || geoManufactureItem.ItemDef.CompatibleAmmunition.Count()>0 && geoManufactureItem.ItemDef.CompatibleAmmunition[0] == DefCache.GetDef<ItemDef>("SharedFreeReload_AmmoClip_ItemDef"))
                     {
-                        manufactureAmmoButton?.SetActive(false);
+                        if (manufactureAmmoButton != null)
+                        {
+                            manufactureAmmoButton?.SetActive(false);
+                            
+                            geoManufactureItem.NewElementMarker.GetComponent<RectTransform>().anchoredPosition = _ogPositionNewItemElement;
+                        }
                         return;
                     }
 
@@ -509,6 +579,9 @@ namespace TFTV
                         UpdateManufactureButton(manufactureAmmoButton, faction, ammoItemDef);
                     }
                     // Add click event
+
+                    geoManufactureItem.NewElementMarker.GetComponent<RectTransform>().anchoredPosition = _newPositionNewItemElement;
+
                     Button clonedButtonComponent = manufactureAmmoButton.GetComponent<Button>();
 
                     clonedButtonComponent.onClick.RemoveAllListeners();

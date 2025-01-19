@@ -62,7 +62,7 @@ namespace TFTV
 
                     TFTVCapturePandoransGeoscape.LimitedHarvestingHourlyActions(__instance.GeoLevel);
                     TFTVBaseDefenseGeoscape.InitAttack.ContainmentBreach.HourlyCheckContainmentBreachDuringBaseDefense(__instance.GeoLevel);
-
+                    TFTVChangesToDLC4Events.SoldierReachesFiveDelirium(__instance.GeoLevel);
 
                 }
                 catch (Exception e)

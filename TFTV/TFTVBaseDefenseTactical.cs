@@ -337,8 +337,6 @@ namespace TFTV
                 TFTVLogger.Always($"generatorHP: {generatorHP}, consoles: {consoles}");
 
 
-
-
                 TFTVUITactical.BaseDefenseUI.ActivateOrAdjustBaseDefenseWidget
                            (title, description, generatorHP, consoles, chaseTarget);
 
@@ -1561,6 +1559,8 @@ namespace TFTV
                         TFTVLogger.Error(e);
                     }
                 }
+
+               
 
                 private static void SetPlayerSpawnAccessLift(TacticalLevelController controller)
                 {
@@ -3542,8 +3542,6 @@ namespace TFTV
                 {
                     TFTVLogger.Always("Umbra strat deploying");
 
-
-
                     TacCharacterDef crabUmbra = DefCache.GetDef<TacCharacterDef>("Oilcrab_TacCharacterDef");
                     TacCharacterDef fishUmbra = DefCache.GetDef<TacCharacterDef>("Oilfish_TacCharacterDef");
 
@@ -3612,8 +3610,6 @@ namespace TFTV
                         ActorDeployData actorDeployData = chosenEnemy.GenerateActorDeployData();
                         actorDeployData.InitializeInstanceData();
 
-
-
                         List<Vector3> orderedSpawnPositions = zone.GetOrderedSpawnPositions();
 
                         List<Vector3> mistCoveredSpawnPositions = new List<Vector3>();
@@ -3628,7 +3624,7 @@ namespace TFTV
 
                         IReadOnlyCollection<Vector3> validSpawnPosition = zone.GetValidSpawnPosition(actorDeployData.ComponentSetDef, actorDeployData.DeploymentTags, mistCoveredSpawnPositions);
 
-                        if (validSpawnPosition.Count == 0)
+                        if (validSpawnPosition == null || validSpawnPosition.Count == 0)
                         {
                             TFTVLogger.Always($"No valid positions to spawn Umbra near {pXOperative.DisplayName}!");
                             continue;
@@ -3888,54 +3884,25 @@ namespace TFTV
                     {
                         for (int i = 0; i < secondaryForce[tacCharacterDef]; i++)
                         {
+                            TFTVLogger.Always($"going to generate actorDeployedData from {tacCharacterDef.name}");
+                            ActorDeployData actorDeployData = tacCharacterDef.GenerateActorDeployData();
 
-                            if (tacCharacterDef != Defs.ChironDigger)
+                            actorDeployData.InitializeInstanceData();
+
+                            TacticalActorBase tacticalActorBase = deployZone.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, deployZone);
+                            tacticalActorBase.Source = tacticalActorBase;
+
+                            controller.SituationCache.Invalidate();
+
+                            TFTVLogger.Always($"tacticalActorBase is null? {tacticalActorBase == null}");
+
+                            if (tacticalActorBase != null)
                             {
+                                TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
 
-                                TFTVLogger.Always($"going to generate actorDeployedData from {tacCharacterDef.name}");
-                                ActorDeployData actorDeployData = tacCharacterDef.GenerateActorDeployData();
-
-                                actorDeployData.InitializeInstanceData();
-
-                                TacticalActorBase tacticalActorBase = deployZone.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, deployZone);
-                                tacticalActorBase.Source = tacticalActorBase;
-
-                                controller.SituationCache.Invalidate();
-
-                                TFTVLogger.Always($"tacticalActorBase is null? {tacticalActorBase == null}");
-
-                                if (tacticalActorBase != null)
-                                {
-                                    TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
-
-                                    ApplyReinforcementStatus(tacticalActor, tacCharacterDef);
-                                }
+                                ApplyReinforcementStatus(tacticalActor, tacCharacterDef);
                             }
-                            else
-                            {
-                                void onLoadingCompleted()
-                                {
-                                    TFTVLogger.Always($"going to generate actorDeployedData from {tacCharacterDef.name}");
-                                    ActorDeployData actorDeployData = tacCharacterDef.GenerateActorDeployData();
 
-                                    actorDeployData.InitializeInstanceData();
-
-                                    TacticalActorBase tacticalActorBase = deployZone.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, deployZone);
-                                    tacticalActorBase.Source = tacticalActorBase;
-
-                                    controller.SituationCache.Invalidate();
-
-                                    TFTVLogger.Always($"tacticalActorBase is null? {tacticalActorBase == null}");
-
-                                    if (tacticalActorBase != null)
-                                    {
-                                        TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
-
-                                        ApplyReinforcementStatus(tacticalActor, tacCharacterDef);
-                                    }
-                                }
-                                controller.AssetsLoader.StartLoadingRoots(Defs.SecurityGuard.AsEnumerable(), null, onLoadingCompleted);
-                            }
                             TFTVLogger.Always($"{tacCharacterDef.name} spawned");
                         }
                     }

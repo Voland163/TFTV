@@ -2,6 +2,7 @@
 using Base.Entities.Abilities;
 using Base.UI;
 using HarmonyLib;
+using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -48,6 +49,7 @@ namespace TFTV
 
         public static List<string> AlertedHoplites = new List<string>();
 
+        public static ContextHelpHintDef AncientAutomataInfoHint = null;
 
 
         [HarmonyPatch(typeof(AncientSiteBriefDataBind), "ModalShowHandler")]
@@ -584,6 +586,30 @@ namespace TFTV
                     hopliteActorDef.Abilities = hopliteAbilities.ToArray();
                     cyclopsActorDef.Abilities = cyclopsAbilites.ToArray();
                     TFTVLogger.Always($"Tactical: Automata researched is {AutomataResearched}");
+
+                  //  TFTVAncients.AutomataResearched = AutomataResearched;
+
+                    if (controller == null)
+                    {
+                        TFTVAncients.UpdateAncientsWidget();
+                    }
+
+                    ContextHelpHintDbDef contextHelpHintDbDef = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
+
+                    if (AutomataResearched)
+                    {     
+                        if (!contextHelpHintDbDef.Hints.Contains(AncientAutomataInfoHint))
+                        {
+                            contextHelpHintDbDef.Hints.Add(AncientAutomataInfoHint);
+                        }
+                    }
+                    else
+                    {
+                        if (contextHelpHintDbDef.Hints.Contains(AncientAutomataInfoHint))
+                        {
+                            contextHelpHintDbDef.Hints.Remove(AncientAutomataInfoHint);
+                        }
+                    }
 
                 }
                 catch (Exception e)

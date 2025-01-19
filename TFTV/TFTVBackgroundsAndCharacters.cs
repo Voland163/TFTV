@@ -260,6 +260,8 @@ namespace TFTV
                     {
                         __instance.TriggerGeoscapeEvent("Olena_Oneiromancy", context);
                     }
+                 
+                    
                 }
 
                 catch (Exception e)
@@ -621,6 +623,11 @@ namespace TFTV
                         __result.EventLeader = GetRightPXCharacterPic(controller, "Alistair");
 
                         __result.EventBackground = Helper.CreateSpriteFromImageFile("food_processing.jpg");//AlistairOffice;
+                    }
+                    else if(geoEvent.EventID == TFTVChangesToDLC4Events.FiveDeliriumReachedGeoEvent.EventID) 
+                    {
+                        __result.EventLeader = GetRightPXCharacterPic(controller, "Olena");
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("insidebase.jpg");
                     }
                     
 

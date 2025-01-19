@@ -1,6 +1,13 @@
 ﻿using Base.UI;
+using HarmonyLib;
+using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Geoscape.Core;
+using PhoenixPoint.Geoscape.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TFTV
 {
@@ -17,24 +24,337 @@ namespace TFTV
             "Bugs", "Jokers", "Razors", "Rascals", "Raiders", "Alligators", "Gators", "Raptors", "Monks", "Barbarians", "Seals", "Crabs",
             "Fighters", "Revenants", "Beriths", "Charuns", "Abbadons", "Lords", "Hawks", "Dealers" };
 
-        public static Dictionary<string, List<string>> names = new Dictionary<string, List<string>>();
+
+        public static List<string> pu_Adjectives = new List<string>
+{
+    "Synthetic", "Cyber", "Augmented", "Machine", "Cold", "Merciless", "Efficient", "Calculated", "Robotic", "Silent",
+    "Unfeeling", "Relentless", "Optimized", "Neural", "Void", "Quantum", "Steel", "Iron", "Mech", "Precision",
+    "Titanium", "Surge", "Rewired", "Exo", "Nano", "Inhuman", "Assimilated", "Voidborn", "Echo", "Sterile",
+    "Augur", "Dread", "Data", "Neon", "Glitching", "Severed", "Perfection", "Cybernetic", "Protocol", "Void-Hardened"
+};
+
+        public static List<string> pu_Nouns = new List<string>
+{
+    "Machines", "Exiles", "Automata", "Overlords", "Cyborgs", "Constructs", "Sentinels", "Executors", "Observers", "Symbiotes",
+    "Neuralites", "Drones", "Collectors", "Remnants", "Androids", "Purifiers", "Synthetics", "Golems", "Processors", "Reclaimers",
+    "Ascendants", "Preservers", "Harbingers", "Assimilators", "Replicants", "Eradicators", "Visionaries", "Echoes", "Silencers", "Patrons",
+    "Analyzers", "Observers", "Modifiers", "Calculators", "Upgraded", "Conduits", "Defragmenters", "Streamliners", "Singularities", "Architects"
+};
+
+
+
+        public static List<string> fo_Adjectives = new List<string>
+{
+    "Twisted", "Warped", "Aberrant", "Bloodstained", "Cursed", "Mutated", "Unholy", "Dark", "Shadowed", "Blighted",
+    "Desecrated", "Malformed", "Ravaged", "Unbound", "Vile", "Rotting", "Unclean", "Decayed", "Blackened", "Pestilent",
+    "Accursed", "Horrid", "Depraved", "Malevolent", "Twisted-Hearted", "Forsaken", "Void-Touched", "Doomed", "Haunted", "Eldritch",
+    "Infernal", "Corrupt", "Profane", "Fleshwarped", "Barbaric", "Unforgiven", "Maddened", "Abominable", "Demonic", "Sinister"
+};
+
+        public static List<string> fo_Nouns = new List<string>
+{
+    "Wretches", "Scourge", "Horrors", "Nightmares", "Dwellers", "Outcasts", "Devourers", "Revenants", "Banshees", "Shades",
+    "Aberrations", "Crawlers", "Vermin", "Mutants", "Ghouls", "Lurkers", "Desecrators", "Unseen", "Eclipsed", "Blasphemers",
+    "Exiles", "Desecrated", "Betrayed", "Dreadborn", "Fleshshapers", "Warpborn", "Howlers", "Deathcallers", "Harbingers", "Abyssals",
+    "Hollowborn", "Nameless", "Specters", "Duskborn", "Nocturnals", "Withered", "Lamenters", "Bonecarvers", "Shunned", "Damned"
+};
+
+
+        public static List<string> anu_Adjectives = new List<string>
+{
+    "Sacred", "Blessed", "Divine", "Exalted", "Holy", "Mystic", "Enlightened", "Transcendent", "Hallowed", "Ethereal",
+    "Serene", "Prophetic", "Sanctified", "Glorified", "Celestial", "Radiant", "Purified", "Ascendant", "Anointed", "Revered",
+    "Devout", "Unshaken", "Worshipful", "Fervent", "Zealous", "Pious", "Eclipsed", "Echoing", "Reborn", "Transformed",
+    "Resonant", "Hymnal", "Resplendent", "Venerated", "Symbiotic", "Unified", "Harmonious", "Divinized", "Penitent", "Merciful"
+};
+
+        public static List<string> anu_Nouns = new List<string>
+{
+    "Prophets", "Pilgrims", "Redeemers", "Chosen", "Visionaries", "Scribes", "Choristers", "Oracles", "Saviors", "Wanderers",
+    "Sentinels", "Heralds", "Preachers", "Mystics", "Martyrs", "Evangelists", "Witnesses", "Adherents", "Seers", "Keepers",
+    "Gnostics", "Revelators", "Seraphs", "Archons", "Supplicants", "Apostles", "Confessors", "Augurs", "Intercessors", "Devotees",
+    "Synergists", "Cultists", "Transformers", "Adorers", "Cantors", "Rejoicers", "Almsgivers", "Hymnists", "Votaries", "Celestials"
+};
+
+
+        public static List<string> syn_Adjectives = new List<string>
+{
+    "Free", "Equal", "Just", "Rational", "Reasoned", "Unified", "Collective", "Independent", "Visionary", "Optimistic",
+    "Libertarian", "Radical", "Harmonic", "Idealistic", "Altruistic", "Utopian", "Progressive", "Egalitarian", "Peaceful", "Unchained",
+    "Determined", "Hopeful", "Philosophical", "Pragmatic", "Democratic", "Federalist", "Transparent", "Cooperative", "Pluralist", "Self-Governing",
+    "Daring", "Innovative", "Resilient", "Revolutionary", "Empowered", "Scientific", "Adaptive", "Humanitarian", "Sophisticated", "Ethical"
+};
+
+        public static List<string> syn_Nouns = new List<string>
+{
+    "Pioneers", "Reformers", "Scholars", "Philosophers", "Inventors", "Creators", "Seekers", "Explorers", "Dreamers", "Idealists",
+    "Engineers", "Scientists", "Builders", "Negotiators", "Peacemakers", "Activists", "Moderators", "Mediators", "Innovators", "Freethinkers",
+    "Guardians", "Delegates", "Advocates", "Liberators", "Moderates", "Educators", "Optimists", "Diplomats", "Technologists", "Visionaries",
+    "Progressives", "Enlightened", "Negotiators", "Renaissance", "Alchemists", "Wanderers", "Seekers", "Thinkers", "Harmonizers", "Unifiers"
+};
+
+        public static List<string> nj_Adjectives = new List<string>
+{
+    "Iron", "Steel", "Titan", "Unbreakable", "Relentless", "Fierce", "Loyal", "Resolute", "Fearless", "Brutal",
+    "Indomitable", "Savage", "Warborn", "Battle-Hardened", "Merciless", "Gritty", "Disciplined", "Tactical", "Elite", "Vigilant",
+    "Unyielding", "Crimson", "Thunder", "Blazing", "Storm", "Armored", "Fortified", "Dominant", "Imperial", "Warlike",
+    "Devastating", "Bloodied", "Rampaging", "Unforgiving", "Ferocious", "Unrelenting", "Colossal", "Unstoppable", "Menacing", "Dauntless",
+    "Commanding", "Invincible", "Raging", "Impenetrable", "Savage-Hearted", "Dreadnought", "Bulwark", "Conquering", "Hammer", "Steelborn"
+};
+
+        public static List<string> nj_Nouns = new List<string>
+{
+    "Legion", "Sentinels", "Warriors", "Crusaders", "Vanguard", "Battalion", "Stormtroopers", "Shocktroopers", "Commandos", "Guardians",
+    "Ironclads", "Watchmen", "Pathfinders", "Rangers", "Gunners", "Dragoons", "Avengers", "Defenders", "Punishers", "Hellhounds",
+    "Destroyers", "Reapers", "Bulldogs", "Juggernauts", "Outriders", "Enforcers", "Goliaths", "Wardens", "Paladins", "Strykers",
+    "Stormbreakers", "Warlords", "Titanborn", "Blackguards", "Firebrands", "Conquerors", "Berserkers", "Ironfangs", "Howlers", "Dreadwolves",
+    "Warhounds", "Bloodhawks", "Steelhearts", "Lancers", "Vultures", "Grenadiers", "Invictus", "Doombringers", "Tridents", "Thunderbolts"
+};
+
+
+
+
+        public static Dictionary<string, Dictionary<int, List<string>>> names = new Dictionary<string, Dictionary<int, List<string>>>();
         public static Dictionary<string, List<string>> ranks = new Dictionary<string, List<string>>();
+
+        private static readonly SharedData Shared = TFTVMain.Shared;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
+
+        public static string GetSquadName(string faction) 
+        {
+            try 
+            {
+                switch (faction) 
+                {
+                    case "Purists": return $"{pu_Adjectives[UnityEngine.Random.Range(0, pu_Adjectives.Count)]} {pu_Nouns[UnityEngine.Random.Range(0, pu_Nouns.Count)]}";
+                    case "FallenOnes": return $"{fo_Adjectives[UnityEngine.Random.Range(0, fo_Adjectives.Count)]} {fo_Nouns[UnityEngine.Random.Range(0, fo_Nouns.Count)]}";
+                    case "anu": return $"{anu_Adjectives[UnityEngine.Random.Range(0, anu_Adjectives.Count)]} {anu_Nouns[UnityEngine.Random.Range(0, anu_Nouns.Count)]}";
+                    case "syn": return $"{syn_Adjectives[UnityEngine.Random.Range(0, syn_Adjectives.Count)]} {syn_Nouns[UnityEngine.Random.Range(0, syn_Nouns.Count)]}";
+                    case "nj": return $"{nj_Adjectives[UnityEngine.Random.Range(0, nj_Adjectives.Count)]} {nj_Nouns[UnityEngine.Random.Range(0, nj_Nouns.Count)]}";
+                    case "ban": return $"{adjectives[UnityEngine.Random.Range(0, adjectives.Length)]} {nouns[UnityEngine.Random.Range(0, nouns.Length)]}";
+                }
+
+                return null;
+            
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+
+        [HarmonyPatch(typeof(GeoHaven), "SpawnNewRecruit")]
+        public static class TFTV_GeoHaven_SpawnNewRecruit_patch
+        {
+            public static void Postfix(GeoHaven __instance, CharacterGenerationContext context)
+            {
+                try
+                {
+
+                    if (__instance.AvailableRecruit.GetGameTags().Contains(Shared.SharedGameTags.VehicleTag)
+                         || __instance.AvailableRecruit.ClassTags.Contains(Shared.SharedGameTags.VehicleClassTag))
+                    {
+                        return;
+                    }
+
+                    GenderTagDef genderTagDef = Shared.SharedGameTags.Genders.MaleTag;
+                    GameTagDef rankTag = null;
+
+                    GeoUnitDescriptor.IdentityDescriptor identityDescriptor = __instance.AvailableRecruit.Identity;
+
+                    if (context.Faction.PPFactionDef.ShortName == "nj")
+                    {
+                        if (__instance.AvailableRecruit.Level >= 4)
+                        {
+                            rankTag = TFTVHumanEnemies.HumanEnemyTier2GameTag;
+
+                        }
+                    }
+
+
+                    if (identityDescriptor.Sex == GeoCharacterSex.Female)
+                    {
+                        genderTagDef = Shared.SharedGameTags.Genders.FemaleTag;
+
+                    }
+                    else if (identityDescriptor.Sex == GeoCharacterSex.None)
+                    {
+                        genderTagDef = null;
+                    }
+
+                    __instance.AvailableRecruit.Identity = new GeoUnitDescriptor.IdentityDescriptor(GetName(context.Faction.PPFactionDef.ShortName, rankTag, genderTagDef), identityDescriptor.Sex);
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
 
         public static void CreateNamesDictionary()
         {
             try
             {
-                names.Add("ban", new List<string>(ban_Names));
-                names.Add("nj", new List<string>(nj_Names));
-                names.Add("anu", new List<string>(anu_Names));
-                names.Add("syn", new List<string>(syn_Names));
-                names.Add("Purists", new List<string>(pu_Names));
-                names.Add("FallenOnes", new List<string>(fo_Names));
+                names.Add("ban", new Dictionary<int, List<string>>()
+                {
 
+                    { 0, new List<string>(ban_MaleNames) },
+                    { 1, new List<string>(ban_FemaleNames) },
+                    {2, new List<string> (ban_Names) }
+
+                });
+
+                names.Add("nj", new Dictionary<int, List<string>>()
+
+                {
+                    {0, new List<string>(nj_MaleNames) },
+                    { 1, new List<string>(nj_FemaleNames) },
+                    { 2, new List<string>(nj_NeutralNames) },
+                    { 3, new List<string>(nj_Surnames) },
+                    { 4, new List<string>(nj_Nicknames) }
+
+                });
+
+
+                names.Add("anu", new Dictionary<int, List<string>>()
+
+                {
+                    {0, new List<string>(anu_MaleNames) },
+                    {1, new List<string>(anu_FemaleNames) },
+                });
+
+                names.Add("syn", new Dictionary<int, List<string>>()
+                {
+                    {0, new List<string>(syn_MaleNames) },
+                    { 1, new List<string>(syn_FemaleNames) },
+                    { 2, new List<string>(syn_NeutralNames) },
+                });
+
+                names.Add("Purists", new Dictionary<int, List<string>>()
+                {
+                    {0, new List<string>(pu_Names) },
+
+                });
+                names.Add("FallenOnes", new Dictionary<int, List<string>>()
+                {
+                    {0, new List<string>(fo_Names) },
+
+                });
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
+            }
+
+        }
+
+        private static string GetNJName(string faction, GameTagDef rankTag = null, GenderTagDef genderTagDef = null)
+        {
+            try
+            {
+                string name = "";
+
+                if (genderTagDef != null)
+                {
+
+                    if (genderTagDef == Shared.SharedGameTags.Genders.MaleTag)
+                    {
+                        name = names[faction][0][UnityEngine.Random.Range(0, names[faction][0].Count)];
+                        names[faction][0].Remove(name);
+                    }
+                    else
+                    {
+                        name = names[faction][1][UnityEngine.Random.Range(0, names[faction][1].Count)];
+                        names[faction][1].Remove(name);
+                    }
+                }
+                else
+                {
+
+                    name = names[faction][2][UnityEngine.Random.Range(0, names[faction][2].Count)];
+                    names[faction][2].Remove(name);
+
+                }
+
+                if (rankTag != null && (rankTag == TFTVHumanEnemies.HumanEnemyTier1GameTag || rankTag == TFTVHumanEnemies.HumanEnemyTier2GameTag))
+                {
+                    string nickName = names[faction][4][UnityEngine.Random.Range(0, names[faction][4].Count)];
+                    name += $" '{nickName}'";
+                    names[faction][4].Remove(nickName);
+                }
+
+                string surname = names[faction][3][UnityEngine.Random.Range(0, names[faction][3].Count)];
+                name += $" {surname}";
+                names[faction][3].Remove(surname);
+
+                return name;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+        }
+
+        public static string GetName(string faction, GameTagDef rankTag = null, GenderTagDef genderTagDef = null)
+        {
+            try
+            {
+                string name = "";
+
+                if (faction == "Purists" || faction == "FallenOnes")
+                {
+                    name = names[faction][0][UnityEngine.Random.Range(0, names[faction][0].Count)];
+                    names[faction][0].Remove(name);
+
+                }
+                else
+                {
+                    if (faction == "nj")
+                    {
+                        name = GetNJName(faction, rankTag, genderTagDef);
+                    }
+                    else
+                    {
+                        if (genderTagDef != null)
+                        {
+                            if (genderTagDef == Shared.SharedGameTags.Genders.MaleTag)
+                            {
+                                name = names[faction][0][UnityEngine.Random.Range(0, names[faction][0].Count)];
+                                names[faction][0].Remove(name);
+                            }
+                            else
+                            {
+                                name = names[faction][1][UnityEngine.Random.Range(0, names[faction][1].Count)];
+                                names[faction][1].Remove(name);
+                            }
+                        }
+                        else
+                        {
+                            name = names[faction][2][UnityEngine.Random.Range(0, names[faction][2].Count)];
+                            names[faction][2].Remove(name);
+                        }
+                    }
+
+
+                }
+
+                return name;
+
+            }
+            catch (Exception e)
+            {
+
+                TFTVLogger.Error(e);
+                throw;
             }
 
         }
@@ -52,8 +372,6 @@ namespace TFTV
                 }
 
                 return strings;
-
-
             }
             catch (Exception e)
             {
@@ -83,7 +401,7 @@ namespace TFTV
 
 
 
-        public static List<string> pu_Adjectives = new List<string> { "Metal", "Junk", "Titanium", "Oil", "Servo", "Mech", "Wire", "Mesh", "Robo", "Quantum", "Cyber", "Death", "Wire", "Bit", "Gear" };
+
 
         public static List<string> ban_Names = new List<string> {"Nuka-Cola","Kessar","Viper","Rictus","Nux","Dag","Ace","Barry","Mohawk","Bearclaw","Clunk",
             "Deepdog","Fuk-Ushima","Fifi Macaffe","Sol","Gutgash","Ironbar","Morsov","Mudguts","Papagallo","Sarse","Sav","Roop","Blackfinger","Scrooloose",
@@ -91,34 +409,268 @@ namespace TFTV
             "Gearhead","Yo-yo","Madskunky","Showalter","Grimsrud", "Cobra", "Cyrus", "Cochise", "Rembrandt", "Luther", "Vermin", "D.J.","Orphan",
              "Buzzsaw", "Dynamo", "Fireball", "Subzero", "Lucus the Destroyer"};
 
-        public static List<string> nj_Names = new List<string> {"Rockatansky","Bryant","Richter", "Ripley","Amos" ,"Draper","Caleb" ,"Hunter","Tempest","Kruger",
-            "Sinclair","Morgan","Musk","Jackson","Hicks","Vasquez","Hudson","Ferro","Spunkmeyer", "Dietrich","Frost","Drake","Wierzbowski","Payne","Ventura","Dutch",
-            "Dillon","Hawkins","Mac","Poncho","Walker","Charlie","Wez","Ziggy", "Alex","Max","Miller","Kenzo","Karal","Katoa","Okoye","Fagan","Avery","Parker",
-            "Joyce","Kai","Angel","Jesse","Riley","Ash", "Finley","Shaw","Vickers","Marno","Jikkola","Kris","Strid","Showalter","Grimsrud","Cox","J. Matrix","Blaine",
-            "Quaid","Cohaagen","Rasczak","Diz Flores","Duderino","Justo","Zander", "Ace Levy", "Shujimi","Sugar Watkins","Deladier","Lumbreiser","Kitten Smith","Ibanez","Zim"};
+        public static List<string> ban_MaleNames = new List<string> {
+    "Grime", "Rust", "Knuckle", "Brawler", "Snap", "Bullet", "Rancid", "Deuce", "Fangtooth", "Brakk",
+    "Muzzle", "Rancor", "Slash", "Scab", "Havik", "Outlaw", "Houndstooth", "Chopper", "Blight", "Sledge",
+    "Kain", "Roach", "Vandal", "Throttle", "Crater", "Snarl", "Junkrat", "Thorne", "Mangle", "Grizzle",
+    "Rivet", "Cage", "Crowbar", "Wrecker", "Shiv", "Crasher", "Brimstone", "Mugshot", "Wrath", "Sludge",
+    "Ripjaw", "Grit", "Spike", "Strain", "Gore", "Hex", "Fury", "Blister", "Scorch"
+};
 
-        public static List<string> anu_Names = new List<string> {"Walker","Charlie","Wez","Ziggy","Alex","Max","Miller","Kenzo","Karal","Katoa",
-            "Okoye","Fagan","Avery","Parker","Joyce","Kai","Angel","Jesse","Riley","Ash","Finley","Shaw","Vickers","Marno","Jikkola",
-            "Kris","Strid","Showalter","Grimsrud", "Aigazy", "Bassar", "Erasyl", "Gani", "Itymbai", "Kibrik","Murat", "Rakhat","Sadvaqas", "Tjatigul", "Zhandos", "Valar",
-        "Kelar", "Thandor", "Ary", "Zerik", "Ravyn","Kaelin","Sylar", "Marik", "Joran", "Aerin", "Lirael","Elys","Nyxar","Varin","Seraph","Vaelis","Kaelor","Drystan", "Soren"};
+        public static List<string> ban_FemaleNames = new List<string> {
+    "Fizz", "Scrap", "Twitch", "Sprocket", "Raze", "Jinx", "Blitz", "Nova", "Havena", "Sly",
+    "Shade", "Sable", "Vexx", "Glimmer", "Raz", "Kobra", "Siren", "Tempest", "Recka",
+    "Cinder", "Havara", "Claw", "Rook", "Wraith", "Spite", "Riot", "Hexa", "Venom",
+    "Ember", "Nyx", "Hiss", "Echo", "Shard", "Ravyn", "Jett", "Strife",
+    "Vortex", "Ravenna", "Hallow", "Dagger", "Sliver", "Howl", "Drift", "Smash", "Razor", "Pyre"
+};
 
-        public static List<string> syn_Names = new List<string> {"Nagata","Inaros","Avasarala","Liberty","Fraternity","Equality","Lenin","Tenet",
-            "Campion","Meseeks","Squanchy","Nimbus","Mojo","Nostromo","Odyssey","Bono","Eli","Naru","Taabe","Sanchez","Walker","Charlie",
-            "Wez","Ziggy","Alex","Max","Miller","Kenzo","Karal","Katoa","Okoye","Fagan","Avery","Parker","Joyce","Kai","Angel","Jesse",
-            "Riley","Ash","Finley","Shaw","Vickers","Marno","Jikkola","Kris","Strid","Showalter","Grimsrud","Scruggs","L. Gopnik","S. Ableman","R. Marshak",
-            "Ulysses","La Boeuf","Reuben","Cogburn", "Constanza", "Grant", "Lebowksi", "Sobchak", "Louis"};
- 
-        public static List<string> pu_Names = new List<string> {"Walker","Charlie","Wez","Ziggy","Alex","Max","Miller","Kenzo","Karal","Katoa",
-            "Okoye","Fagan","Avery","Parker","Joyce","Kai","Angel","Jesse","Riley","Ash","Finley","Shaw","Vickers", "Showalter","Grimsrud", "AirKris",
-            "AndyP","Brunks","Dante","Geda","GeoDao","Hokken","Gollop","Kal","Millioneigher","NoobCaptain","Origami","Ravenoid","Bobby","Stridtul",
-            "Tyraenon","Ikobot","Valygar","E.E.","BFIG","Sheepy","Conductiv","mad2342","Pantolomin", "Etermes"};
+        public static List<string> nj_MaleNames = new List<string> {
+    "Rockatansky", "Bryant", "Richter", "Amos", "Caleb", "Hunter", "Kruger", "Sinclair", "Morgan", "Hicks",
+    "Hudson", "Drake", "Frost", "Walker", "Charlie", "Max", "Miller", "Kenzo", "Karal", "Katoa", "Fagan",
+    "Jesse", "Ash", "Finley", "Shaw", "Blaine", "Quaid", "Zander", "Ace", "Shujimi", "Zim", "Bishop",
 
-        public static List<string> fo_Names = new List<string> {"Thriceborn","Shai-Hulud","Shorr Kan","Yurtle","Lorax","Seer","Belial","Torinus",
-            "Voland","Yar-Shalak","Ghul","Gheist","Melachot","Xelot","Nacht-Zur'acht","Bane","Oshazahul","Slithering","Azelot",
-            "Ursuk","Hottaku","Weirdling","Outsider","Tleilaxu","Tuek","Whisperblade","Bladehands", "Yokes", "Thoth", "Amon", "Belit", "Numedides", "Taramis",
-        "Azarax","Valyndor","Ebonshade","Zephyrial","Drakarn","Shadowweaver","Nyxaris","Thalorin","Voxariel","Malachai","Caelinor","Zylthar","Serpentia","Vaelus","Myrkaal", "Xylerith",
-            "Vortigan", "Morvain","Sylveran","Ashryn"
-        };
+    "Travis", "Warden", "Doyle", "Rex", "Rogan", "Duncan", "Baxter", "Riley", "Logan", "Grant",
+    "Knox", "Beckett", "Garrett", "Cooper", "Brock", "Harlan", "Reed", "Warren", "Clay", "Dane",
+    "Vance", "Gage", "Holt", "Sterling", "Colt", "Jett", "Tucker", "Ryker", "Blaise", "Griffin",
+
+    "Hawke", "Jagger", "Weston", "Cyrus", "Nash", "Talon", "Troy", "Axel", "Ronan", "Cade",
+    "Hunter", "Brody", "Knox", "Garret", "Thorne", "Tanner", "Chase", "Brock", "Kane", "Rhett",
+    "Jensen", "Cole", "Grady", "Declan", "Wade", "Boone", "Easton", "Preston", "Slade", "Maddox",
+
+    "Archer", "Ryder", "Ranger", "Zane", "Tatum", "Gunnar", "Dash", "Sawyer", "Hendrix", "Jaxon",
+    "Winston", "Dalton", "West", "Jace", "Storm", "Diesel", "Remy", "Phoenix", "Luca", "Beau"
+};
+
+        public static List<string> nj_FemaleNames = new List<string> {
+    "Ripley", "Vasquez", "Ferro", "Dietrich", "Angel", "Riley", "Marno", "Vickers", "Ibanez", "Deladier",
+    "Avery", "Kai", "Luna", "Sasha", "Rae", "Mira", "Lyra", "Sienna", "Juno", "Aria", "Nova", "Tess",
+
+    "Serena", "Freya", "Sable", "Dahlia", "Skylar", "Cassidy", "Blair", "Taryn", "Nadia", "Zara",
+    "Vera", "Thalia", "Selene", "Jade", "Ember", "Valeria", "Nyssa", "Talia", "Lilia", "Noa",
+
+    "Brynn", "Tamsin", "Harlow", "Callista", "Astrid", "Raven", "Solene", "Echo", "Phoenix", "Vesper",
+    "Indira", "Rowan", "Xanthe", "Liora", "Celeste", "Isolde", "Sabine", "Zayda", "Miranda", "Piper",
+
+    "Harper", "Kendall", "Quinn", "Aislinn", "Roxanne", "Saffron", "Yara", "Maia", "Rhea", "Ophelia",
+    "Scarlett", "Zenya", "Drea", "Tatiana", "Vivian", "Eris", "Marisol", "Kiera", "Noelle", "Yasmine"
+};
+
+        public static List<string> nj_NeutralNames = new List<string> {
+    "Tempest", "Joyce", "Kai", "Parker", "Jesse", "Angel", "Riley", "Ash", "Finley", "Quinn",
+    "Lennon", "Sky", "Noa", "Reese", "Sage", "Morgan", "Harlow", "Marlow", "Rowan", "Avery",
+
+    "Blake", "Dakota", "Elliot", "Jordan", "Toby", "Sutton", "Ellis", "Jamie", "River", "Indigo",
+    "Skyler", "Milan", "Phoenix", "Oakley", "Shiloh", "Tatum", "Kiran", "Valen", "Darcy", "Zephyr",
+
+    "Adrian", "Devin", "Jaden", "Micah", "Taylor", "Hayden", "Aspen", "Cameron", "Shawn", "Easton",
+    "Sloan", "Rory", "Auden", "Lior", "Tenzin", "Winter", "Dylan", "Brook", "Gray", "Emery",
+
+    "Sydney", "Ariel", "Casey", "Eden", "Kairos", "Marley", "Robin", "Sasha", "Vega", "Onyx"
+};
+
+        public static List<string> nj_Surnames = new List<string> {
+    // Original names
+    "Sinclair", "Morgan", "Hicks", "Hudson", "Drake", "Frost", "Walker", "Miller", "Kenzo", "Fagan",
+    "Parker", "Showalter", "Cox", "Strid", "Rasczak", "Ventura", "Dutch", "Dillon", "Hawkins", "Mac",
+
+    // New additions - Tough, practical, military-style surnames
+    "Shepherd", "Hollister", "Maguire", "Sutherland", "Bannon", "Donovan", "Hargreaves", "Stanton",
+    "Locke", "Garrison", "Treadwell", "Rutherford", "Kessler", "Hawthorne", "Strickland", "Carrington",
+    "Holloway", "Winslow", "Buchanan", "Carrigan", "Delacroix", "Davenport", "Fairchild", "Henshaw",
+
+    // More rugged, military-oriented names
+    "Calhoun", "Blackwood", "Kirkland", "Langston", "Lancaster", "Redfield", "Wyndham", "Fitzgerald",
+    "Whitaker", "Sterling", "Hampton", "Remington", "Thornton", "Montgomery", "Rockwell", "Everest",
+    "Wakefield", "Kingsley", "Harrington", "Halifax", "Ashford", "Pembroke", "Huxley", "Kingsland",
+    
+    // Classic and sci-fi military-sounding surnames
+    "Armitage", "Caldwell", "Killian", "Gideon", "Ramsey", "Tiberius", "Matheson", "Falkner",
+    "Harlan", "Wyatt", "Calloway", "Delaney", "Hastings", "Norwood", "Warrick", "Colson",
+    "Dunham", "Mercer", "Radcliffe", "Kendrick", "Eastwood", "Tolliver", "Monroe", "Whitmore",
+
+    // Futuristic and war-hardened names
+    "Voss", "Tarkin", "Ryker", "Hux", "Galen", "Morrigan", "Sloane", "Banner",
+    "Cormac", "Salter", "Dorn", "Malone", "Taggart", "Quinton", "Sutherland", "Baxter",
+    "Doyle", "Warden", "Garrison", "Sterling", "Bannon", "Knox", "Hawthorne", "Reeves",
+
+    // More warlord-style last names
+    "Dredd", "Jagger", "Hannigan", "Saxon", "Wolfram", "Tanner", "Maddox", "Thorne",
+    "Garrison", "Stroud", "Hendrix", "Callahan", "Tolliver", "Huxley", "Vanderbilt", "Falco",
+    "Stryker", "Braddock", "Blaylock", "Marlowe", "Fitzroy", "Slade", "Durand", "Coltrane",
+
+    // A few legendary ones
+    "Patton", "MacArthur", "Eisenhower", "Pershing", "Montgomery", "Bradley", "Sheridan", "Grant",
+    "Rommel", "Nelson", "Hood", "Sherman", "Napier", "Drummond", "Cornelius", "Augustus"
+};
+
+
+        public static List<string> nj_Nicknames = new List<string> {
+    "Matrix", "Blaine", "Quaid", "Cohaagen", "Duderino", "Justo", "Ace", "Sugar",
+    "Gunner", "Tank", "Maverick", "Rogue", "Bullet", "Hawk", "Blitz", "Razor", "Viper", "Ghost",
+
+    "Reaper", "Wraith", "Shadow", "Torque", "Crusher", "Blaze", "Stryker", "Falcon", "Grit", "Ranger",
+    "Striker", "Juggernaut", "Brimstone", "Onyx", "Scorch", "Outlaw", "Fury", "Venom", "Warlock", "Riptide",
+
+    "Sentinel", "Drifter", "Vandal", "Titan", "Warhound", "Storm", "Phantom", "Nomad", "Exile", "Inferno",
+    "Grim", "Bloodhound", "Steel", "Tundra", "Pyro", "Thunder", "Diesel", "Slayer", "Rampage", "Frostbite",
+
+    "Ironclad", "Havoc", "Torque", "Dagger", "Serpent", "Glitch", "Warden", "Bulletstorm", "Coyote", "Blizzard"
+};
+
+
+        public static List<string> anu_MaleNames = new List<string> {
+    "Aigazy", "Bassar", "Erasyl", "Gani", "Itymbai", "Kibrik", "Murat", "Rakhat", "Sadvaqas", "Tjatigul",
+    "Zhandos", "Valar", "Kelar", "Thandor", "Ary", "Zerik", "Ravyn", "Kaelin", "Sylar", "Marik", "Joran",
+    "Aerin", "Varin", "Vaelis", "Kaelor", "Drystan", "Soren", "Seraph", "Nyxar", "Vaelus", "Azarion",
+
+    "Ezrah", "Zalvador", "Malrik", "Thalos", "Iskandor", "Xanthis", "Raizel", "Zypheron", "Orin", "Tauron",
+    "Veyron", "Zarik", "Lucan", "Tiburon", "Kaelos", "Dorian", "Zephriel", "Caedmon", "Itharion", "Thyron",
+    "Vhalos", "Eldric", "Kieran", "Omadon", "Erythian", "Morthis", "Vaedrin", "Zael", "Nemorin", "Xandor",
+    "Typhion", "Morvain", "Saelis", "Rhyzan", "Altharion", "Ishmael", "Torik", "Zyphir", "Arikan", "Kalzar",
+    "Dravan", "Sethis", "Oberion", "Iskarios", "Zyrek", "Nestor", "Vaelos", "Telmar", "Marius", "Zareth",
+    "Lucivar", "Xyros", "Zephyrus", "Tavros", "Solrik", "Eliron", "Azrik", "Syrion", "Malakar", "Vaelen",
+
+    "Tormak", "Xenvar", "Kaleth", "Zorikan", "Vaelrik", "Orikan", "Sardak", "Ithron", "Drazel", "Veyron",
+    "Ostavar", "Mordain", "Kaelros", "Thyros", "Seraphiel", "Nytherion", "Zephirion", "Solkar", "Veythar",
+    "Darian", "Zyphorin", "Thaloran", "Xariath", "Torvain", "Rizor", "Mykaris", "Omniel", "Tarsin", "Eldorath"
+};
+
+        public static List<string> anu_FemaleNames = new List<string> {
+    "Lirael", "Elys", "Nyxar", "Seraph", "Vaelis", "Aerin", "Liora", "Zalira", "Syphira", "Thalora",
+    "Selara", "Mariska", "Kaelith", "Saphira", "Elira", "Averis", "Celith", "Ilythia", "Mirelle", "Zaelis",
+    "Araceli", "Vespera", "Solith", "Naeris", "Thyssa", "Azaria", "Xanthe", "Valis", "Nytheria", "Orlith",
+    "Calyptha", "Elion", "Cyllene", "Ophira", "Zaphira", "Selina", "Kaelara", "Vhalira", "Zephara", "Lyanna",
+    "Althea", "Solara", "Thyra", "Zorya", "Isolde", "Nyxaria", "Vaelora", "Eiren", "Soryelle", "Zyphara",
+    "Aurelia", "Miris", "Cassara", "Ithriel", "Zephyra", "Sylvaine", "Illyria", "Azura", "Seraphel", "Velith",
+
+    "Lunaris", "Eryndel", "Vaelith", "Orithia", "Zyphina", "Thalessa", "Celistra", "Mythra", "Zeriana", "Selara",
+    "Ephyria", "Xyphora", "Asteris", "Orelia", "Serissa", "Nymira", "Vaethira", "Evanis", "Thaloria", "Solitha",
+    "Aeliana", "Zinara", "Velmira", "Luthien", "Miraval", "Talyssa", "Azmira", "Seraphia", "Zephiel", "Noctara",
+    "Selmara", "Kaelitha", "Vaeris", "Orynthia", "Serephina", "Elveth", "Zilara", "Nyrielle", "Aezora", "Sylisara",
+    "Therielle", "Valmira", "Zoryelle", "Lysithea", "Talyth", "Ilthera", "Xynara", "Sariah", "Zephanya", "Mireth"
+};
+
+
+
+
+        public static List<string> syn_NeutralNames = new List<string> {
+    "Nagata", "Walker", "Charlie", "Wez", "Ziggy", "Alex", "Max", "Miller", "Kenzo",
+    "Karal", "Katoa", "Okoye", "Fagan", "Avery", "Parker", "Joyce", "Kai", "Angel",
+    "Jesse", "Riley", "Ash", "Finley", "Shaw", "Marno", "Jikkola", "Kris", "Strid",
+    "Showalter", "Grimsrud", "Echo", "Sol", "Aether", "Nova", "Lior", "Zephyr", "Orion",
+    "Eris", "Noa", "Sable", "Astra", "Hale", "Zen", "Rune", "Vale", "Lyric", "Quill", "Soren"
+};
+
+        public static List<string> syn_MaleNames = new List<string> {
+    "Nagata", "Inaros", "Lenin", "Tenet", "Campion", "Eli", "Taabe", "Sanchez", "Walker",
+    "Kenzo", "Karal", "Katoa", "Parker", "Joyce", "Kai", "Ash", "Finley", "Strid", "Showalter",
+    "Grimsrud", "Scruggs", "L. Gopnik", "S. Ableman", "R. Marshak", "Ulysses", "La Boeuf", "Reuben",
+    "Cogburn", "Grant", "Lebowski", "Sobchak", "Louis",
+
+    "Cassian", "Lior", "Orin", "Eamon", "Dorian", "Nikolai", "Soren", "Lucian", "Silas", "Jovian",
+    "Aeron", "Caelum", "Oberon", "Leontius", "Ezekiel", "Marius", "Valen", "Theron", "Zenon",
+    "Rael", "Matthias", "Elian", "Tiber", "Caius", "Remiel", "Noam", "Zev", "Seraph", "Dastan",
+    "Torin", "Elric", "Corin", "Arvid", "Lyric", "Cyrus", "Viggo", "Orion", "Laziel", "Zorion",
+    "Solan", "Jareth", "Malik", "Zephyrus", "Ephraim", "Jovan", "Cillian", "Alaric", "Faelan", "Miro",
+    "Tavian", "Nasir", "Leif", "Bastien", "Evren", "Cassiel",
+
+    // Newest additions
+    "Iskander", "Aurelian", "Eryx", "Oryn", "Thane", "Veyron", "Altair", "Corvus", "Sylas", "Zarek",
+    "Myron", "Vesper", "Kael", "Tarek", "Selim", "Eryon", "Nero", "Rafael", "Callan", "Zoriel",
+    "Oberyn", "Ephialtes", "Jorik", "Mavrik", "Zypher", "Noctis", "Daedalus", "Triton", "Lucius",
+    "Verus", "Severin", "Cyprian", "Hadrian", "Cairos", "Zephyrion", "Lorien", "Valric", "Eron",
+    "Auron", "Kieran", "Solinus", "Icarion", "Lyros", "Kaelius", "Tarsis", "Nestor", "Erython",
+    "Xenon", "Quirin", "Calder", "Isidor", "Tyrian", "Elros", "Vaelin"
+};
+
+        public static List<string> syn_FemaleNames = new List<string> {
+    "Avasarala", "Liberty", "Fraternity", "Equality", "Meseeks", "Squanchy", "Nimbus", "Mojo",
+    "Nostromo", "Odyssey", "Bono", "Naru", "Max", "Okoye", "Avery", "Angel", "Riley", "Shaw",
+    "Vickers", "Marno", "Kris", "Constanza",
+
+    "Saphira", "Lyra", "Elara", "Nova", "Talia", "Selene", "Auryn", "Freya", "Nerissa", "Ophelia",
+    "Isolde", "Amaris", "Seren", "Elysia", "Zaria", "Anwen", "Nyssa", "Thalassa", "Ione", "Callista",
+    "Vespera", "Solene", "Liora", "Cassiopeia", "Xanthe", "Aeliana", "Verena", "Althea", "Ysolde",
+    "Zemira", "Maelis", "Soraya", "Eleutheria", "Mariel", "Cythia", "Valeria", "Lorien", "Tirzah",
+    "Zafira", "Araceli", "Evadne", "Orla", "Zephyra", "Iskra", "Vayla", "Elowen", "Celestia", "Meira",
+    "Rhea", "Selis", "Eirene", "Kalista", "Nyx", "Sylva", "Evania",
+
+    // Newest additions
+    "Seraphina", "Lunara", "Azura", "Kaelia", "Solara", "Lyanna", "Evania", "Artemis", "Theia", "Sienna",
+    "Illyria", "Celestine", "Althaea", "Vaelora", "Xyra", "Nocturne", "Elira", "Damaris", "Selinia", "Ravena",
+    "Ephyra", "Zyra", "Thessia", "Aeris", "Liora", "Zerina", "Calista", "Ilythia", "Mirabel", "Naeris",
+    "Isilme", "Velora", "Tindra", "Astoria", "Cytherea", "Zanthe", "Aelith", "Quintessa", "Yliana", "Sybella",
+    "Virelia", "Xanthea", "Tyrelia", "Caelith", "Nivara", "Zyphira", "Avaris", "Nymara", "Soliana", "Veralya",
+    "Meliora", "Ithara", "Orlith", "Faelira", "Nytheria", "Zelara"
+};
+
+
+
+
+        public static List<string> pu_Names = new List<string> {
+     "AirKris", "AndyP", "Brunks",
+    "Dante", "Geda", "GeoDao", "Hokken", "Gollop", "Kal", "Millioneigher", "NoobCaptain",
+    "Origami", "Ravenoid", "Bobby", "Stridtul", "Tyraenon", "Ikobot", "Valygar", "E.E.",
+    "BFIG", "Sheepy", "Conductiv", "mad2342", "Pantolomin", "Etermes", "Mokushi",
+    
+    // Previous Additions
+    "Axiom", "Cipher", "Zenith", "Mechatron", "Omicron", "Hyperion", "Dynamo", "Spectra",
+    "Tesseract", "Mach", "Sigma", "Altron", "Nexus", "Vector", "Glitch", "Augur", "Xypher",
+    "Cyberius", "Neuron", "Byte", "Exo", "Xeno", "Chronos", "Hex", "Modulo", "Quantum",
+    "Parsec", "Synapse", "Metron", "Stratos", "Echelon", "Kyber", "Nano", "Oblivion",
+    "Scion", "Lucid", "Technos", "V1per", "Drone", "Havok", "Magnetar", "Polaris",
+    "Omen", "Zed", "Eidolon", "Infinity", "Rift", "Zero", "Circuit", "Pulse", "Cyberis",
+    "Void", "Aegis", "Xypheron", "Nyx", "Override", "Horizon", "Relay", "Arc", "Phantom",
+    "Cognis", "Silicor", "Echo", "Neutrino", "Titan", "Omega", "Xylon", "Synthetis", "Omnis",
+    "Anomaly", "Perseus", "Vortex", "Solon", "Helix", "Ziron", "Aetherion", "Mechanoid",
+
+    // New Additions
+    "Nebulus", "Astrolith", "Xyber", "Aeternis", "Voidwalker", "Chronovore", "Cyberion",
+    "Excaliber", "Kryo", "Opticon", "Zyron", "Icarus", "Override", "Subroutine",
+    "OmniMind", "Vortexus", "Neon", "Sudo", "Kilon", "Gladius", "Plexus", "Infinitron",
+    "Aetheris", "Mechanox", "Vega", "Quasix", "Voltaic", "Electra", "Neural", "Node",
+    "Mechamancer", "Irongeist", "Synergy", "Kryon", "Quantumis", "Singularis", "Astrafire",
+    "Zircon", "Datashade", "Technovore", "Netrix", "Parallax", "Xyberus", "Eon", "Omni",
+    "EchoPrime", "Oraculum", "Lexar", "Vex", "Gigas", "Titanis", "Zykon", "Zenthesis",
+    "Drift", "Paragon", "Voidcore", "Seraphon", "Mechavore", "OmegaX", "Helion", "Corteks",
+    "Synexis", "Cyberforge", "Xerion", "Datalis", "Neurocore", "Cyberneticus", "GlitchX",
+    "Corex", "Luminous", "Astralis", "Valkyris", "NexusX", "MechaPrime", "Orion", "Zenox",
+    "Neuromancer", "Aetheron", "Pyrex", "Zypher", "Bitstream", "Overclock", "Metaflux"
+};
+
+
+        public static List<string> fo_Names = new List<string> {
+    "Thriceborn", "Shai-Hulud", "Shorr Kan", "Yurtle", "Lorax", "Seer", "Belial", "Torinus",
+    "Voland", "Yar-Shalak", "Ghul", "Gheist", "Melachot", "Xelot", "Nacht-Zur'acht", "Bane",
+    "Oshazahul", "Slithering", "Azelot", "Ursuk", "Hottaku", "Weirdling", "Outsider", "Tleilaxu",
+    "Tuek", "Whisperblade", "Bladehands", "Yokes", "Thoth", "Amon", "Belit", "Numedides", "Taramis",
+    "Azarax", "Valyndor", "Ebonshade", "Zephyrial", "Drakarn", "Shadowweaver", "Nyxaris", "Thalorin",
+    "Voxariel", "Malachai", "Caelinor", "Zylthar", "Serpentia", "Vaelus", "Myrkaal", "Xylerith",
+    "Vortigan", "Morvain", "Sylveran", "Ashryn",
+
+    // New Additions
+    "Duskveil", "Omen", "Morghul", "Varzith", "Xirion", "Zha'kar", "Vorzhul", "Dreloth",
+    "Khalzarak", "Nazareth", "Sablefang", "Vesper", "Erebus", "Duskwraith", "Hollowborn",
+    "Azoth", "Nyxshade", "Zar'khan", "Sabbath", "Noc'tara", "Lurker", "Oblivion", "Wraithborn",
+    "Karnyx", "Sableborn", "Malakar", "Voidfang", "Zherathis", "Xothul", "Dreadweaver",
+    "Morgrim", "Vel'kar", "Shar'zul", "Xandor", "Azarik", "Eldrik", "Vaesh", "Thanis", "Krythos",
+    "Zhovan", "Tzalik", "Shadovarn", "Veyzorith", "Skorn", "Ozrakar", "Tenebros", "Gloomfang",
+    "Zha'thor", "Mal'azar", "Voidstalker", "Xy'zan", "Zhakaroth", "Velkaris", "Umbrazar", "Vaelkor",
+    "Nychthemeron", "Ghavor", "Zyrrak", "Tharn", "Sorothis", "Velizar", "Duskborn", "Hollowfang",
+    "Mournblade", "Vorakos", "Shadowfang", "Noctis", "Xerathis", "Vorkash", "Malzan", "Zyrix",
+    "Necros", "Doomveil", "Varkon", "Kaelthas", "Ravynor", "Zal'vash", "Tharizdun", "Shadryn",
+    "Morvael", "Nightpiercer", "Velmoran", "Exarion", "Kylaris", "Zaedryn", "Vorgrimm", "Necrotis",
+    "Xalthor", "Grimwraith", "Vel'zaroth", "Zharthus", "Xolthar", "Voidreaper", "Sableveil",
+    "Zharok", "Thanathel", "Ebonfang", "Nyxthar", "Xel'zor", "Gorathis", "Shadowthorn",
+    "Velkael", "Zylaroth", "Varothis", "Kaldarax", "Vorithis", "Umbrax", "Omenborn",
+    "Xaedros", "Vezarith", "Mournshade", "Zyphos", "Velthar", "Duskveil", "Xaeloth", "Varkros",
+    "Zyphar", "Gloomveil", "Necrothar", "Tenebral", "Noctalis", "Kaelgrim", "Xaedrith", "Zal'zor",
+    "Veyloris", "Oblivionborn", "Voidheart", "Xalthir", "Kyvoris", "Than'kor", "Sablethorn",
+    "Mournthar", "Velzar", "Nycthos", "Zhakar", "Kaelzor", "Umbraith", "Zyvoris", "Vaelkoris",
+    "Thal'zor", "Zyvalis", "Xaerthos", "Vorith", "Xorath", "Velmoris", "Shadowveil"
+};
+
 
         public static List<string> ban_NameRanks = new List<string> {
  "HUMAN_ENEMIES_KEY_BOSS",
@@ -157,7 +709,7 @@ namespace TFTV
         public static string tier3description = "HUMAN_ENEMIES_KEY_TIER_3";//"Allies lose 2 WP if character dies.";
         public static string tier4description = "HUMAN_ENEMIES_KEY_TIER_4";//"Allies do not lose WP if character dies. Nobody expects them to live long anyway.";
 
-        public static List<string> tierDescriptions = new List<string> ();
+        public static List<string> tierDescriptions = new List<string>();
 
         public static void CreateTierDescriptions()
         {

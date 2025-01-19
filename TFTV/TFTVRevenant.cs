@@ -2601,7 +2601,6 @@ namespace TFTV
                 {
                     string defName = "PX_Project_Osiris_Research";
 
-
                     string title = "PX_PROJECT_OSIRIS_TITLE";
                     string reveal = "";
                     string complete = "PX_PROJECT_OSIRIS_COMPLETE";
@@ -2702,16 +2701,21 @@ namespace TFTV
             {
                 try
                 {
+                   // TFTVLogger.Always($"CheckRevenantCapturedOrKilled");
+
                     if (controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
                     {
+                       // TFTVLogger.Always($"alien faction present; revenantID {revenantID} controller.GetFactionByCommandName(PX).State == TacFactionState.Won {controller.GetFactionByCommandName("PX").State == TacFactionState.Won}");
 
                         if (TFTVRevenant.revenantID != 0 && controller.GetFactionByCommandName("PX").State == TacFactionState.Won)
                         {
-                            foreach (TacticalActorBase pandoranActorBase in controller.GetFactionByCommandName("ALN").Actors)
+                            foreach (TacticalActor pandoranActor in controller.GetFactionByCommandName("ALN").TacticalActors)
                             {
-                                TacticalActor pandoranActor = pandoranActorBase as TacticalActor;
-
-                                if (pandoranActorBase.HasGameTag(AnyRevenantGameTag) && pandoranActor.Status.GetStatus<ParalysedStatus>(DefCache.GetDef<ParalysedStatusDef>("Paralysed_StatusDef")) != null)
+                              /*  TFTVLogger.Always($"got here, looking at {pandoranActor?.DisplayName} " +
+                                    $"pandoranActor.HasGameTag(AnyRevenantGameTag): {pandoranActor.HasGameTag(AnyRevenantGameTag)}" +
+                                    $"pandoranActor.Status.GetStatus<ParalysedStatus>(DefCache.GetDef<ParalysedStatusDef>(Paralysed_StatusDef) {pandoranActor.Status.GetStatus<ParalysedStatus>(DefCache.GetDef<ParalysedStatusDef>("Paralysed_StatusDef"))}");
+                              */
+                                if (pandoranActor.HasGameTag(AnyRevenantGameTag) && pandoranActor.Status.GetStatus<ParalysedStatus>(DefCache.GetDef<ParalysedStatusDef>("Paralysed_StatusDef")) != null)
                                 {
                                     revenantSpawned = true;
                                     TFTVLogger.Always("Revenant was captured, so revenantSpawned is now " + revenantSpawned);

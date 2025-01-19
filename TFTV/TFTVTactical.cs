@@ -5,7 +5,9 @@ using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using static TFTV.TFTVNJQuestline.IntroMission;
 
 namespace TFTV
 {
@@ -90,7 +92,7 @@ namespace TFTV
                 TFTVPalaceMission.CheckPalaceMission();
                 TFTVAncients.CyclopsAbilities.CyclopsResistance.ResetCyclopsDefense();
                 TFTVAncientsGeo.AncientsResearch.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(null);
-               
+              //  TFTVAncients.AncientDeployment.ImplementSpecialMission(controller);
             }
             catch (Exception e)
             {
@@ -200,7 +202,7 @@ namespace TFTV
                  }*/
 
 
-            // TFTVTacticalUtils.RevealAllSpawns(tacController);
+           // TFTVTacticalUtils.RevealAllSpawns(tacController);
 
             TFTVLogger.Always("The count of Human tactics in play is " + TFTVHumanEnemies.HumanEnemiesAndTactics.Count);
             TFTVLogger.Always("VO3 Active " + TFTVVoidOmens.VoidOmensCheck[3]);
@@ -224,7 +226,8 @@ namespace TFTV
             TFTVLogger.Always($"Etermes vulnerability/resistance: {TFTVNewGameOptions.EtermesResistanceAndVulnerability}");
             TFTVLogger.Always("Tactical start completed");
 
-
+            TFTVNJQuestline.IntroMission.RunOnTacticalStart(Controller);
+           // TFTVExperimental.AdjustMusicLevelAncientMaps(Controller);
         }
 
         /// <summary>
@@ -291,7 +294,7 @@ namespace TFTV
                 //TFTVCapturePandorans.ModifyCapturePandoransTacticalObjectives(Controller.TacMission.MissionData.MissionType);
                 TFTVBaseDefenseTactical.Objectives.ModifyBaseDefenseTacticalObjectives(Controller.TacMission.MissionData.MissionType);          
                 TFTVVoidOmens.ImplementHavenDefendersAlwaysHostile(Controller);
-                TFTVAncients.AutomataResearched = data.AutomataResearched;
+                TFTVAncientsGeo.AutomataResearched = data.AutomataResearched;
                 TFTVAncients.AlertedHoplites = data.HopliteKillList;
                 TFTVCapturePandorans.ContainmentSpaceAvailable = data.AvailableContainment;
                 TFTVNewGameOptions.Update35Check = data.Update35TacticalCheck;
@@ -392,7 +395,7 @@ namespace TFTV
                 BaseDefenseStratToBeAnnounced = TFTVBaseDefenseTactical.StratToBeAnnounced,
                 StratsAlreadyImplementedAtBD = TFTVBaseDefenseTactical.UsedStrats,
                 ConsolePositionsInBaseDefense = TFTVBaseDefenseTactical.ConsolePositions,
-                AutomataResearched = TFTVAncients.AutomataResearched,
+                AutomataResearched = TFTVAncientsGeo.AutomataResearched,
                 CyclopsMolecularTargeting = TFTVAncients.CyclopsMolecularDamageBuff,
                 HopliteKillList = TFTVAncients.AlertedHoplites,
                 DeployedAircraftCaptureCapacity = TFTVCapturePandorans.AircraftCaptureCapacity,
@@ -445,13 +448,13 @@ namespace TFTV
 
                     if (turnNumber == 0 && TFTVHumanEnemies.HumanEnemiesAndTactics.Count == 0)
                     {
-                        TFTVHumanEnemies.CheckMissionType(Controller);
+                        TFTVHumanEnemies.ImplementHumanEnemies(Controller);
                     }
 
                     if (turnNumber == 0 && !TurnZeroMethodsExecuted)
                     {
                         TFTVLogger.Always("Turn 0 check");
-                        if (TFTVAncients.CheckIfAncientsPresent(Controller))
+                        if (TFTVAncients.CheckIfAncientMap(Controller))
                         {
                             TFTVAncients.AncientDeployment.AdjustAncientsOnDeployment(Controller);
                         }
@@ -462,11 +465,13 @@ namespace TFTV
                         TFTVRevenant.Resistance.ImplementVO19(Controller);
                         TFTVVoidOmens.VO5TurnHostileCivviesFriendly(Controller);
                         TFTVBaseDefenseTactical.Map.FirstTurnBaseDefenseDeployment(Controller);
-
+                        TFTVNJQuestline.IntroMission.MissionStartChanges.TurnNeutralGruntsOverToNJAndApplyMCStatus(Controller);
                         //  TFTVBaseDefenseTactical.ModifyObjectives(Controller.TacMission.MissionData.MissionType);
                         TurnZeroMethodsExecuted = true;
+                        
                     }
 
+                    
 
                     TFTVTacticalUtils.RevealExfilPoint(Controller, turnNumber);
 
@@ -475,7 +480,8 @@ namespace TFTV
                     TFTVTouchedByTheVoid.Umbra.UmbraTactical.RollTouchByTheVoid(Controller);
                     TFTVHumanEnemies.ChampRecoverWPAura(Controller);
                     TFTVHumanEnemies.ApplyTacticStartOfPlayerTurn(Controller); 
-                    TFTVSpecialDifficulties.CounterSpawned = 0;                
+                    TFTVSpecialDifficulties.CounterSpawned = 0;
+                   // MissionQuips.PropagandaQuips();
                 }
                 else
                 {

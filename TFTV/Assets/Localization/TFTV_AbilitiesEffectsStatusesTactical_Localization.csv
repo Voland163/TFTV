@@ -27,7 +27,7 @@ CYCLOPS_DEFENSE_DESCRIPTION,Text,,"Before any Hoplites are destroyed, the Cyclop
 HOPLITES_SELF_REPAIR_NAME,Text,,HOPLITES SELF-REPAIR,,,,,,АВТОМАТИЧЕСКИЙ РЕМОНТ ГОПЛИТОВ,,
 HOPLITES_SELF_REPAIR_DESCRIPTION,Text,,"Any Automata destroyed within 7 tiles of another one will allow it to recover a missing body part or 50 HP, and 5 WP",,,,,,"Любой Робот, уничтоженный в радиусе 7 клеток от другого Робота, позволит тому восстановить выбитую часть тела, или 50 хитов, или 5 Очков Воли.",,
 POWERED_UP_NAME,Text,,ALL POWERED UP,,,,,,ИНИЦИАЛИЗАЦИЯ,,
-POWERED_UP_DESCRIPTION,Text,,"From the moment it is alerted, an Automata gains 5 WP per turn. Its speed is determined by its current WP. Once it reaches maximum WP, it gains the this status, receving +50% damage to all attacks and 25% damage resistance",,,,,,"С момента включения (при сработке датчика движения) Робот получает 5 Очков Воли каждый ход. Его скорость определяется текущими Очками Воли. Как только он достигает максимального значения Очков Воли, он перейдет в боевой режим: +50% урона при атаке и +25% стойкости к получаемому урону.",,
+POWERED_UP_DESCRIPTION,Text,,"From the moment it is alerted, an Automata gains 5 WP per turn. Its speed is determined by its current WP. Once it reaches maximum WP, it gains this status, receiving +50% damage to all attacks and 25% damage resistance",,,,,,"С момента включения (при сработке датчика движения) Робот получает 5 Очков Воли каждый ход. Его скорость определяется текущими Очками Воли. Как только он достигает максимального значения Очков Воли, он перейдет в боевой режим: +50% урона при атаке и +25% стойкости к получаемому урону.",,
 UNKNOWN_STATUS_NAME,Text,,?,,,,,,?,,
 UNKNOWN_STATUS_DESCRIPTION,Text,,Research the entity to learn what it is capable of,,,,,,"Исследуйте эту сущность, чтобы понять, на что она способна",,
 KEY_EMP_RESISTANCE_NAME,Text,,IMMUNE TO EMP,,,,,,ИММУНИТЕТ К ЭМИ-ОРУЖИЮ,,
@@ -297,3 +297,24 @@ TFTV_MOONPROJECT_SHORT_INFO,Text,,MOONBASE ANALYSIS,,,,,,АНАЛИЗ ЛУННО
 TFTV_HUMAN_ENEMIES_STATUS_ALIVE,Text,,ALIVE,,,,,,В ЖИВЫХ,,
 TFTV_HUMAN_ENEMIES_STATUS_DEAD,Text,,K.I.A.,,,,,,Погиб в бою,,
 TFTV_HUMAN_ENEMIES_STATUS_FLED,Text,,M.I.A.,,,,,,Пропавший без вести,,
+TFTV_KEY_ANCIENTS_CYCLOPS_RESISTANCE,Text,,CYCLOPS DAMAGE RESISTANCE AT {0}%,,,,,,,,
+TFTV_KEY_ANCIENTS_RULESET,Text,,"POWERING UP
+From the moment it is alerted, an Automata gains 5 WP per turn. Its speed equals its current WP. Once it reaches maximum WP, it gains ALL POWERED UP status, receiving +50% damage to all attacks and 25% damage resistance.
+
+CYCLOPS DEFENSE
+Before any Hoplites are destroyed, the Cyclops has a 50% resistance to all damage. Destroying Hoplites reduces this resistance.
+
+CYCLOPS TARGETING
+When the Cyclops uses the beam weapon, all the Hoplites able to do so attack the same target using their beam weapons. 
+
+CYCLOPS SELF-REPAIR
+The Cyclops restores any disabled body part with 50% HP at turn start. Loses 5 WP per restored body part. 
+
+HOPLITES SELF-REPAIR
+Any Automata destroyed within 7 tiles of another one will allow it to recover a missing body part or 50 HP, and 5 WP.
+
+MOLECULAR TARGETING
+If a Hoplite’s beam damages a mutated body part or electronics, for the rest of the turn ALL beam attacks (also from the Cyclops) deal special damage vs mutated body parts or electronics, as applicable.
+
+FAILSAFE PROTOCOL
+If the Cyclops is destroyed and there are no more than 3 active hoplites remaining, they self-destruct.  ",,,,,,,,

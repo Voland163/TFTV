@@ -1,27 +1,25 @@
-﻿using Base.Core;
+﻿using Base;
+using Base.Core;
 using Base.Defs;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
-using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewModules;
-using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using static PhoenixPoint.Tactical.View.ViewControllers.SquadMemberScrollerController;
 using UnityEngine;
-using Base;
+using static PhoenixPoint.Tactical.View.ViewControllers.SquadMemberScrollerController;
 
 namespace TFTV
 {
@@ -67,7 +65,10 @@ namespace TFTV
                         UIModuleActorCycle uIModuleActorCycle = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ActorCycleModule;
                         GeoCharacter geoCharacter = uIModuleActorCycle.CurrentCharacter;
 
-                        if (geoCharacter != null && CheckCharacterHumanHead(geoCharacter))
+
+
+
+                        if (geoCharacter != null) //&& CheckCharacterHumanHead(geoCharacter))
                         {
                             if (characterPics.ContainsKey(geoCharacter.Id))
                             {
@@ -79,7 +80,10 @@ namespace TFTV
                                 characterPics.Remove(geoCharacter.Id);
                             }
 
-                            FindPictureForCharacter(geoCharacter);
+                            if (CheckCharacterHumanHead(geoCharacter))
+                            {
+                                FindPictureForCharacter(geoCharacter);
+                            }
                         }
 
                     }
@@ -95,12 +99,12 @@ namespace TFTV
             {
                 try
                 {
-                    if (geoCharacter.Identity.FaceTag == DefCache.GetDef<FaceTagDef>("Sophia_FaceTagDef"))
+                    if (geoCharacter.Identity.FaceTag == DefCache.GetDef<FaceTagDef>("Sophia_FaceTagDef") && CheckCharacterHumanHead(geoCharacter))
                     {
                         characterPics.Add(geoCharacter.Id, "Sophia_Brown.png");
                         return;
                     }
-                    else if (geoCharacter.Identity.FaceTag == DefCache.GetDef<FaceTagDef>("Jacob_FaceTagDef"))
+                    else if (geoCharacter.Identity.FaceTag == DefCache.GetDef<FaceTagDef>("Jacob_FaceTagDef") && CheckCharacterHumanHead(geoCharacter))
                     {
                         characterPics.Add(geoCharacter.Id, "Jacob_Eber.png");
                         return;
@@ -287,7 +291,7 @@ namespace TFTV
                         return false;
                     }
 
-                    //TFTVLogger.Always($"{geoCharacter.DisplayName} can get portrait");
+                    TFTVLogger.Always($"{geoCharacter.DisplayName} can get portrait");
 
                     return true;
 
@@ -488,7 +492,7 @@ namespace TFTV
                     if (CharacterPortrait.characterPics.ContainsKey(actor.GeoUnitId))
                     {
 
-                        TFTVLogger.Always($"ForceSpecialCharacterPortraitInSetupProperPortrait actor is {actor.name}");
+                        // TFTVLogger.Always($"ForceSpecialCharacterPortraitInSetupProperPortrait actor is {actor.name}");
 
 
                         //  Sprite sprite = Helper.CreatePortraitFromImageFile($"{folderPath}/test.png");

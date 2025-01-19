@@ -263,9 +263,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
 
             }
-
-
-
         }
 
 

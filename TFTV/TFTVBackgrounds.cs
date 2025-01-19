@@ -319,7 +319,7 @@ namespace TFTV
                             return;
                         }
 
-                        TFTVLogger.Always($"rectTransform.sizeDelta.x {rectTransform.sizeDelta.x}");
+                       // TFTVLogger.Always($"rectTransform.sizeDelta.x {rectTransform.sizeDelta.x}");
                         if (rectTransform.sizeDelta.x == 1250)
                         {
                             float sizeToCut = rectTransform.sizeDelta.x * 1 / 3;

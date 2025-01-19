@@ -23,6 +23,7 @@ using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
@@ -63,6 +64,25 @@ namespace TFTV
         internal static Color dark = new Color(52, 52, 61, 1.0f);
 
         public static bool HelmetsOff;
+
+        private static void FixCarsWithDelirium(GeoCharacter character)
+        {
+            try
+            {
+                if (character.CharacterStats.Corruption > 0f && character.Fatigue == null)
+                {
+                    TFTVLogger.Always($"{character.DisplayName} had Delirium, but has no Stamina! Setting Delirium to 0");
+                    character.CharacterStats.Corruption.Set(0f);
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
 
         [HarmonyPatch(typeof(SoldierResultElement), "SetStatus", new Type[] { typeof(SoldierStatus), typeof(object[]) })]
         public static class SoldierResultElement_SetStatus_patch
@@ -143,6 +163,8 @@ namespace TFTV
 
         internal class EditScreen
         {
+           
+
             internal class Stats
             {
                 //This changes display of Delirium bar in personnel edit screen to show current Delirium value vs max delirium value the character can have
@@ -151,14 +173,14 @@ namespace TFTV
                 internal static class BG_UIModuleCharacterProgression_SetStatusesPanel_patch
                 {
 
-                    private static void Postfix(UIModuleCharacterProgression __instance, GeoCharacter ____character)
+                    public static void Postfix(UIModuleCharacterProgression __instance, GeoCharacter ____character)
                     {
                         try
                         {
-                            //hookToCharacter = ____character;
+                           
+                            FixCarsWithDelirium(____character);
 
                             if (____character.CharacterStats.Corruption > 0f)
-
                             {
                                 //____character.CharacterStats.Corruption.Set(Mathf.RoundToInt(____character.CharacterStats.Corruption));
 
@@ -3095,6 +3117,7 @@ namespace TFTV
 
             }
 
+         
 
             [HarmonyPatch(typeof(UIModuleActorCycle), "DisplaySoldier", new Type[] { typeof(GeoCharacter), typeof(bool), typeof(bool), typeof(bool) })]
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
@@ -3110,6 +3133,8 @@ namespace TFTV
                 {
                     try
                     {
+                        FixCarsWithDelirium(character);
+
                         if (character.TemplateDef.IsMutog || character.TemplateDef.IsMutoid || character.TemplateDef.IsVehicle)
                         {
                             return true;

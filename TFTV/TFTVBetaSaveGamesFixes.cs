@@ -358,8 +358,13 @@ namespace TFTV
 
                 if (geoMarketplace.AllMissionsCompleted && controller.Timing.Now.DateTime > cutoffDay && controller.EventSystem.GetVariable("MarketPlaceRotations") == 0)
                 {
+                    TFTVLogger.Always($"Adjusting old save to new Marketplace!");
+
                     // Calculate the number of days from the cutoff day to the current date and divide by 4
                     TimeSpan timeDifference = controller.Timing.Now.DateTime - cutoffDay;
+
+                    TFTVLogger.Always($"got here");
+
                     int variable = (int)(timeDifference.TotalDays / 4);
 
                     // Set the "MarketPlaceRotations" variable
@@ -542,12 +547,12 @@ namespace TFTV
             try
             {
                 //  CheckNewLOTA(controller);
-                FixScyllaCounter(controller);
+              //  FixScyllaCounter(controller);
                 //  FixInfestedBase(controller);
                 CheckSaveGameEventChoices(controller);
                 CheckUmbraResearchVariable(controller);
                 AddInteranlDifficultyCheckSaveData(controller);
-                SetMarketPlaceRotations(controller);
+               // SetMarketPlaceRotations(controller);
                 //  FixReactivateCyclopsMission(controller);
                 //  SetStrongerPandoransOn();
             }

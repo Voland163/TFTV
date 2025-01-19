@@ -135,8 +135,10 @@
     <Compile Include="TFTVEvacAll.cs" />
     <Compile Include="TFTVExperienceDistribution.cs" />
     <Compile Include="TFTVDragandDropFunctionality.cs" />
+    <Compile Include="TFTVNJQuestline.cs" />
     <Compile Include="TFTVPersonnelRoster.cs" />
     <Compile Include="TFTVTauntsAndQuips.cs" />
+    <Compile Include="TFTVTimeScaling.cs" />
     <Compile Include="TFTVVehicleFixes.cs" />
     <Compile Include="TFTVBehemothAndRaids.cs" />
     <Compile Include="TFTVAmbushes.cs" />

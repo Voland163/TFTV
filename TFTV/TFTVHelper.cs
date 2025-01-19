@@ -31,9 +31,10 @@ namespace TFTV
         public static readonly string OptionsLocalizationFileName = "TFTV_Options_Localization.csv";
         public static readonly string ResearchLocalizationFileName = "TFTV_Research_Localization.csv";
         public static readonly string VoidOmensAndODIyLocalizationFileName = "TFTV_VoidOmensAndODI_Localization.csv";
-        
-        
-        
+        public static readonly string NJStoryLocalizationFileName = "TFTV_NJStoryMissions_Localization.csv";
+
+
+
 
         public static void Initialize()
         {
@@ -87,6 +88,11 @@ namespace TFTV
                 {
                     AddLocalizationFromCSV(MissionObjectivesLocalizationFileName, null);
                 }
+             /*   if (File.Exists(Path.Combine(LocalizationDirectory, NJStoryLocalizationFileName))) 
+                { 
+                    AddLocalizationFromCSV(NJStoryLocalizationFileName, null);
+                
+                }*/
 
 
             }

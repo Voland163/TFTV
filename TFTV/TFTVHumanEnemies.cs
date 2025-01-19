@@ -1,15 +1,20 @@
-﻿using Base.Core;
+﻿using AK.Wwise;
+using Base.Core;
 using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Statuses;
 using Base.UI;
+using Base.Utils;
 using com.ootii.Collections;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Tactical.Entities;
@@ -20,30 +25,36 @@ using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.View;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewModules;
+using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
+using System.Reflection;
 using UnityEngine;
 using static PhoenixPoint.Tactical.View.ViewModules.UIModuleCharacterStatus;
 using static PhoenixPoint.Tactical.View.ViewModules.UIModuleCharacterStatus.CharacterData;
+using static UnityStandardAssets.Utility.TimedObjectActivator;
 
 namespace TFTV
 {
     internal class TFTVHumanEnemies
     {
+
+
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
-        private static readonly MultiEffectDef opticalShieldMultiStatusDef = DefCache.GetDef<MultiEffectDef>("E_MultiEffect [OpticalShield]");
+        private static MultiEffectDef _opticalShieldMultiStatusDef = null;
 
-        public static readonly GameTagDef HumanEnemyTier1GameTag = DefCache.GetDef<GameTagDef>("HumanEnemyTier_1_GameTagDef");
-        public static readonly GameTagDef HumanEnemyTier2GameTag = DefCache.GetDef<GameTagDef>("HumanEnemyTier_2_GameTagDef");
-        public static readonly GameTagDef HumanEnemyTier3GameTag = DefCache.GetDef<GameTagDef>("HumanEnemyTier_3_GameTagDef");
-        public static readonly GameTagDef HumanEnemyTier4GameTag = DefCache.GetDef<GameTagDef>("HumanEnemyTier_4_GameTagDef");
-        public static readonly GameTagDef humanEnemyTagDef = DefCache.GetDef<GameTagDef>("HumanEnemy_GameTagDef");
+        public static GameTagDef HumanEnemyTier1GameTag = null;
+        public static GameTagDef HumanEnemyTier2GameTag = null;
+        public static GameTagDef HumanEnemyTier3GameTag = null;
+        public static GameTagDef HumanEnemyTier4GameTag = null;
+        public static GameTagDef humanEnemyTagDef = null;
+        public static GameTagDef Subject24GameTag = null;
+
 
         private static readonly ApplyStatusAbilityDef regeneration = DefCache.GetDef<ApplyStatusAbilityDef>("Regeneration_Torso_Passive_AbilityDef");
         private static readonly HealthChangeStatusDef regenerationStatus = DefCache.GetDef<HealthChangeStatusDef>("Regeneration_Torso_Constant_StatusDef");
@@ -110,6 +121,230 @@ namespace TFTV
         public static int RollCount = 0;
         public static List<ContextHelpHintDef> TacticsHint = new List<ContextHelpHintDef>();
 
+        internal class Defs 
+        {
+            public static void CreateHumanEnemiesDefs()
+            {
+                try
+                {
+                    CreateAmbushAbility();
+                    CreateHumanEnemiesTags();
+                    CreateSubject24();
+                    CreateOpticalShieldStatus();
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void CreateOpticalShieldStatus()
+            {
+                try
+                {
+                    string name = "OpticalShield";
+
+                    MultiEffectDef sourceMultiEffect = (MultiEffectDef)Repo.GetDef("cb989636-ca35-2fb2-c568-604714f19d95");//("E_MultiEffect [PainChameleon_AbilityDef]");
+                    MultiEffectDef newMultiEffect = Helper.CreateDefFromClone(sourceMultiEffect, "{250ACA8F-F137-47F5-9B4F-DCD4741DBA4A}", name);
+                    TacStatusEffectDef newStatusEffectHoldingVanishEffect = Helper.CreateDefFromClone((TacStatusEffectDef)sourceMultiEffect.EffectDefs[0], "{8890A518-B196-4CF2-97E0-310D8B074108}", name);// ("E_ApplyVanishStatusEffect [PainChameleon_AbilityDef]");
+
+                    StanceStatusDef vanishedStatusSource = (StanceStatusDef)Repo.GetDef("8dbf3262-686d-2fb2-91cc-47014c539d95");
+
+                    StanceStatusDef newVanishedStatus = Helper.CreateDefFromClone(vanishedStatusSource, "{AF8D634C-3712-4F17-B256-7B8FB051A43F}", name); // ("E_VanishedStatus [PainChameleon_AbilityDef]");
+
+                    newVanishedStatus.Visuals = Helper.CreateDefFromClone(vanishedStatusSource.Visuals, "{3FC367B1-A4FF-43D6-A18D-922DF3EA528D}", name);
+
+                    newStatusEffectHoldingVanishEffect.StatusDef = newVanishedStatus;
+                    newVanishedStatus.Visuals.DisplayName1.LocalizationKey = "KEY_ACTIVE_CAMO_DISPLAY_NAME";
+                    newVanishedStatus.Visuals.Description.LocalizationKey = "KEY_ACTIVE_CAMO_DESCRIPTION";
+                    _opticalShieldMultiStatusDef = newMultiEffect;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void CreateHumanEnemiesTags()
+            {
+                try
+                {
+                    string tagName = "HumanEnemy";
+                    string anu = "anu";
+                    string bandit = "ban";
+                    string newJericho = "nj";
+                    string synedrion = "syn";
+                    string forsaken = "FallenOnes";
+                    string pure = "Purists";
+
+                    GameTagDef source = DefCache.GetDef<GameTagDef>("Takeshi_Tutorial3_GameTagDef");
+                    HumanEnemyTier1GameTag = Helper.CreateDefFromClone(
+                        source,
+                        "11F227E3-A45A-44EE-8B93-94E59D8C7B53",
+                        tagName + "Tier_1_" + "GameTagDef");
+                    HumanEnemyTier2GameTag = Helper.CreateDefFromClone(
+                        source,
+                        "CE88CFDB-B010-40A7-A86A-C842DF5F35CF",
+                        tagName + "Tier_2_" + "GameTagDef");
+                    HumanEnemyTier3GameTag = Helper.CreateDefFromClone(
+                        source,
+                        "D4E764C5-3978-40C3-8CED-AFAF81B40BF8",
+                        tagName + "Tier_3_" + "GameTagDef");
+                    HumanEnemyTier4GameTag = Helper.CreateDefFromClone(
+                        source,
+                        "21D065AC-432F-4D29-92AF-5355EF972E38",
+                        tagName + "Tier_4_" + "GameTagDef");
+                    GameTagDef anuGameTag = Helper.CreateDefFromClone(
+                        source,
+                        "1C8EC6EF-CE51-4AC5-B799-128FDE6ABF14",
+                        tagName + "Faction_" + anu + "_GameTagDef");
+                    GameTagDef banditGameTag = Helper.CreateDefFromClone(
+                        source,
+                        "78993F15-9233-4C49-B8C3-13144156E438",
+                        tagName + "Faction_" + bandit + "_GameTagDef");
+                    GameTagDef newJerichoGameTag = Helper.CreateDefFromClone(
+                        source,
+                        "62980A28-8E7A-4F0D-A01C-B58C4D085677",
+                        tagName + "Faction_" + newJericho + "_GameTagDef");
+                    GameTagDef SynedrionGameTag = Helper.CreateDefFromClone(
+                        source,
+                        "B29CEA3A-6C24-4872-9773-02E2FC21F645",
+                        tagName + "Faction_" + synedrion + "_GameTagDef");
+                    GameTagDef forsakenGameTag = Helper.CreateDefFromClone(
+                        source,
+                        "133FA2A8-C93D-43A9-BEFB-E5FAAAC43AFF",
+                        tagName + "Faction_" + forsaken + "_GameTagDef");
+                    GameTagDef pureGameTag = Helper.CreateDefFromClone(
+                        source,
+                        "DDDAB7AC-1317-4B37-AB18-1E57F8D30147",
+                        tagName + "Faction_" + pure + "_GameTagDef");
+                    humanEnemyTagDef = Helper.CreateDefFromClone(
+                        source,
+                        "BF6F6546-AE38-47E0-B581-FDB8F8F5171D",
+                        tagName + "_GameTagDef");
+
+
+                    //    TFTVLogger.Always("Human Enemy Tags created");
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+            private static void CreateAmbushAbility()
+            {
+                try
+                {
+
+                    string skillName = "HumanEnemiesTacticsAmbush_AbilityDef";
+                    PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
+                    PassiveModifierAbilityDef ambushAbility = Helper.CreateDefFromClone(
+                        source,
+                        "31785839-0687-4065-ACFB-255C1A1CE63D",
+                        skillName);
+                    ambushAbility.CharacterProgressionData = Helper.CreateDefFromClone(
+                        source.CharacterProgressionData,
+                        "136290BA-D672-4EEF-822E-F3B8FF27496C",
+                        skillName);
+                    ambushAbility.ViewElementDef = Helper.CreateDefFromClone(
+                        source.ViewElementDef,
+                        "6D47E347-35DE-4E8E-B6FF-9B9DF0598175",
+                        skillName);
+                    ambushAbility.StatModifications = new ItemStatModification[]
+                    { new ItemStatModification {TargetStat = StatModificationTarget.BonusAttackDamage, Modification = StatModificationType.Multiply, Value = 1.10f},
+                    };
+                    ambushAbility.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
+                    ambushAbility.ViewElementDef.DisplayName1.LocalizationKey = "HUMAN_ENEMIES_KEY_AMBUSH";
+                    ambushAbility.ViewElementDef.Description.LocalizationKey = "HUMAN_ENEMIES_KEY_AMBUSH_DESCRIPTION";
+
+                    Sprite icon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_PersonalTrack_TacticalAnalyst.png");
+                    ambushAbility.ViewElementDef.LargeIcon = icon;
+                    ambushAbility.ViewElementDef.SmallIcon = icon;
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void CreateSubject24()
+            {
+                try
+                {
+                    string nameDef = "Subject24_TacCharacerDef";
+
+                    TacCharacterDef subject24 = Helper.CreateDefFromClone(DefCache.GetDef<TacCharacterDef>("NJ_Jugg_TacCharacterDef"), "A4F0335E-BF41-4175-8C28-7B0DE5352224", nameDef);
+                    subject24.Data.Name = "Subject 24";
+
+
+                    TacticalItemDef juggBionicLeft = DefCache.GetDef<TacticalItemDef>("SY_Shinobi_BIO_LeftArm_BodyPartDef");
+                    TacticalItemDef juggBionicRight = DefCache.GetDef<TacticalItemDef>("SY_Shinobi_BIO_RightArm_BodyPartDef");
+                    TacticalItemDef sourceJacket = DefCache.GetDef<TacticalItemDef>("NEU_Assault_Torso_BodyPartDef");
+
+                    TacticalItemDef juggTorso = DefCache.GetDef<TacticalItemDef>("NJ_Jugg_BIO_Torso_BodyPartDef");
+
+                    TacticalItemDef subject24jacket = Helper.CreateDefFromClone(sourceJacket, "{1E1723AD-09B0-49FD-8FCF-C338AD22EE4D}", "Subject24_jacket");
+                    subject24jacket.ViewElementDef = Helper.CreateDefFromClone(sourceJacket.ViewElementDef, "{18A8F78D-D16A-4B98-A22B-B9C7DAC11A90}", "Subject24_jacket");
+                    subject24jacket.ViewElementDef.DisplayName1 = juggTorso.ViewElementDef.DisplayName1;
+                    subject24jacket.ViewElementDef.DisplayName2 = juggTorso.ViewElementDef.DisplayName2;
+                    subject24jacket.ViewElementDef.Description = juggTorso.ViewElementDef.Description;
+                    subject24jacket.ViewElementDef.Category = juggTorso.ViewElementDef.Category;
+                    subject24jacket.ViewElementDef.LargeIcon = juggTorso.ViewElementDef.LargeIcon;
+                    subject24jacket.ViewElementDef.InventoryIcon = juggTorso.ViewElementDef.InventoryIcon;
+                    subject24jacket.ViewElementDef.RosterIcon = juggTorso.ViewElementDef.RosterIcon;
+                    subject24jacket.Armor = juggTorso.Armor;
+                    subject24jacket.IsPermanentAugment = true;
+
+                    subject24jacket.SubAddons[0] = new AddonDef.SubaddonBind() { SubAddon = juggBionicLeft };
+                    subject24jacket.SubAddons[1] = new AddonDef.SubaddonBind() { SubAddon = juggBionicRight };
+
+                    subject24.Data.BodypartItems = new ItemDef[] { subject24jacket,
+                       DefCache.GetDef<TacticalItemDef>("NJ_Jugg_BIO_Helmet_BodyPartDef"), DefCache.GetDef<TacticalItemDef>("NJ_Exo_BIO_Legs_ItemDef")
+                   };
+
+
+                    // CustomizationColorTagDef_10 green
+                    // CustomizationColorTagDef_14 pink
+                    // CustomizationColorTagDef_0 grey
+                    // CustomizationColorTagDef_7 red
+
+                    CustomizationPrimaryColorTagDef blackColor = DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_9");
+                    GameTagDef subject24Tag = TFTVCommonMethods.CreateNewTag("Subject24Tag", "{DFFCBF3B-AECE-4543-A8DC-D41CC67B9FFB}");
+
+                    TFTVHumanEnemies.Subject24GameTag = subject24Tag;
+
+                    List<GameTagDef> gameTags = subject24.Data.GameTags.ToList();
+                    gameTags.Add(blackColor);
+                    gameTags.Add(TFTVDefsInjectedOnlyOnce.AlwaysDeployTag);
+                    gameTags.Add(subject24Tag);
+                    subject24.SpawnCommandId = "Subject24TFTV";
+                    subject24.Data.GameTags = gameTags.ToArray();
+
+                    List<TacMissionTypeParticipantData.UniqueChatarcterBind> tacCharacterDefs = DefCache.GetDef<CustomMissionTypeDef>("StoryPU14_CustomMissionTypeDef").ParticipantsData[1].UniqueUnits.ToList();
+                    TacMissionTypeParticipantData.UniqueChatarcterBind uniqueChatarcterBind = new TacMissionTypeParticipantData.UniqueChatarcterBind
+                    {
+                        Character = subject24,
+                        Amount = new RangeDataInt { Max = 1, Min = 1 },
+                    };
+                    tacCharacterDefs.Add(uniqueChatarcterBind);
+                    DefCache.GetDef<CustomMissionTypeDef>("StoryPU14_CustomMissionTypeDef").ParticipantsData[1].UniqueUnits = tacCharacterDefs.ToArray();
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
+        }
+
         public static void RollTactic(string nameOfFaction)
         {
             try
@@ -134,15 +369,13 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-        public static string GenerateGangName()
+        public static string GenerateGangName(TacticalFaction faction)
         {
             try
             {
-                UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                int adjectivesNumber = UnityEngine.Random.Range(0, TFTVHumanEnemiesNames.adjectives.Count());
-                UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                int nounsNumber = UnityEngine.Random.Range(0, TFTVHumanEnemiesNames.nouns.Count());
-                string name = TFTVHumanEnemiesNames.adjectives[adjectivesNumber] + " " + TFTVHumanEnemiesNames.nouns[nounsNumber];
+                string nameOfFaction = faction.Faction.FactionDef.ShortName;
+                UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());            
+                string name = TFTVHumanEnemiesNames.GetSquadName(nameOfFaction);
                 TFTVLogger.Always("The gang names is" + name);
                 return name;
             }
@@ -157,8 +390,8 @@ namespace TFTV
 
         public static string[] GetTacticNameAndDescription(int roll, TacticalFaction enemyHumanFaction)
         {
-            try 
-            {               
+            try
+            {
                 string description = "";
                 string tactic = "";
 
@@ -220,7 +453,7 @@ namespace TFTV
                     tactic = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_TARGETING_TITLE");
                 }
 
-                return new string[] {tactic, description};
+                return new string[] { tactic, description };
 
 
             }
@@ -231,9 +464,9 @@ namespace TFTV
             }
         }
 
-        public static string [] GetTypeOfEnemyUnit(TacticalFaction enemyHumanFaction)
+        public static string[] GetTypeOfEnemyUnit(TacticalFaction enemyHumanFaction)
         {
-            try 
+            try
             {
                 string unitType = "";
                 string fileNameSquadPic = "";
@@ -286,7 +519,7 @@ namespace TFTV
                     }
                 }
 
-                return new string[] {unitType, fileNameSquadPic};
+                return new string[] { unitType, fileNameSquadPic };
             }
             catch (Exception e)
             {
@@ -301,8 +534,6 @@ namespace TFTV
         {
             try
             {
-
-
                 string nameOfGang = "";
 
                 string[] unitTypeData = GetTypeOfEnemyUnit(enemyHumanFaction);
@@ -312,17 +543,17 @@ namespace TFTV
 
                 if (nameOfLeader != "Subject 24")
                 {
-                    nameOfGang = GenerateGangName();
+                    nameOfGang = GenerateGangName(enemyHumanFaction);
                 }
                 else
                 {
                     nameOfGang = "Subject 24";
                     fileNameSquadPic = "subject24_squad.jpg";
                 }
-               
+
 
                 string[] tacticAndDescription = GetTacticNameAndDescription(roll, enemyHumanFaction);
-                
+
 
                 string nameOfTactic = tacticAndDescription[0];
                 string descriptionOfTactic = tacticAndDescription[1];
@@ -350,356 +581,177 @@ namespace TFTV
                 HumanEnemiesGangNames.Add(nameOfGang);
 
                 TacticsHint.Add(humanEnemySightedHint);
-               
+
 
             }
             catch (Exception e)
             {
-                
+
                 TFTVLogger.Error(e);
             }
         }
 
-        public static void CheckMissionType(TacticalLevelController controller)
+        public static void ImplementHumanEnemies(TacticalLevelController controller)
         {
             try
             {
-                if (controller.TacMission.MissionData.MissionType.Equals(DefCache.GetDef<CustomMissionTypeDef>("StoryPU14_CustomMissionTypeDef")))
+                foreach (TacticalFaction faction in GetHumanEnemyFactions(controller))
                 {
-                    RunBionicFortressProtocol(controller);
-                }
-                else
-                {
-                    AssignHumanEnemiesTags(controller);
-                }
+                    AssignHumanEnemiesTags(faction, controller);
 
+                }
+            }
+            catch (Exception e)
+            {
 
+                TFTVLogger.Error(e);
             }
 
+        }
+
+        private static void GetGangerReady(GameTagDef rankTag, string factionName, TacticalActor tacticalActor, GameTagDef factionTag = null)
+        {
+            try
+            {           
+                tacticalActor.GameTags.Add(rankTag, GameTagAddMode.ReplaceExistingExclusive);
+
+                tacticalActor.GameTags.Add(humanEnemyTagDef);
+                if (factionTag != null)
+                {
+                    tacticalActor.GameTags.Add(factionTag);
+                }
+
+                GenderTagDef genderTagDef = tacticalActor.GameTags.FirstOrDefault(x => x is GenderTagDef) as GenderTagDef;
+
+                tacticalActor.name = TFTVHumanEnemiesNames.GetName(factionName, rankTag, genderTagDef);
+                AdjustStatsAndSkills(tacticalActor);
+
+                ActorClassIconElement actorClassIconElement = tacticalActor.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
+                TFTVUITactical.Enemies.ChangeHealthBarIcon(actorClassIconElement, tacticalActor);
+            }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+
         }
 
-        public static void RunBionicFortressProtocol(TacticalLevelController controller)
+
+        public static void AssignHumanEnemiesTags(TacticalFaction faction, TacticalLevelController controller, bool isCombatUnit = true)
         {
             try
-
             {
                 TacticalFaction phoenix = controller.GetFactionByCommandName("PX");
                 int difficultyLevel = TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order);
 
-                foreach (TacticalFaction faction in GetHumanEnemyFactions(controller))
+                TacticalActor leader = null;
+
+                List<TacticalActor> listOfHumansEnemies = faction.TacticalActors.Where(tacticalActor => tacticalActor.BaseDef.name == "Soldier_ActorDef" && tacticalActor.InPlay).ToList();
+
+                if (listOfHumansEnemies.Count == 0)
                 {
-                    List<TacticalActor> listOfHumansEnemies = new List<TacticalActor>();
-
-                    TacticalActor leader = new TacticalActor();
-
-                    foreach (TacticalActorBase tacticalActorBase in faction.Actors)
-                    {
-                        if (tacticalActorBase.BaseDef.name == "Soldier_ActorDef" && tacticalActorBase.InPlay)
-                        {
-                            TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
-                            if (tacticalActor.HasGameTag(DefCache.GetDef<CustomizationPrimaryColorTagDef>("CustomizationColorTagDef_9")))
-                            {
-                                leader = tacticalActor;
-                                TFTVLogger.Always("Found Subject24");
-                                leader.name = TFTVCommonMethods.ConvertKeyToString("KEY_LORE_TITLE_SUBJECT24");
-                            }
-                            else
-                            {
-                                listOfHumansEnemies.Add(tacticalActor);
-                            }
-                        }
-
-                    }
-
-                    TFTVLogger.Always("There are " + listOfHumansEnemies.Count() + " human enemies");
-                    List<TacticalActor> orderedListOfHumanEnemies = listOfHumansEnemies.OrderByDescending(e => e.LevelProgression.Level).ToList();
-                    for (int i = 0; i < listOfHumansEnemies.Count; i++)
-                    {
-                        TFTVLogger.Always("TacticalActor is " + orderedListOfHumanEnemies[i].DisplayName + " and its level is " + listOfHumansEnemies[i].LevelProgression.Level);
-                    }
-
-                    if (listOfHumansEnemies[0].LevelProgression.Level == listOfHumansEnemies[listOfHumansEnemies.Count - 1].LevelProgression.Level)
-                    {
-                        TFTVLogger.Always("All enemies are of the same level");
-                        orderedListOfHumanEnemies = listOfHumansEnemies.OrderByDescending(e => e.CharacterStats.Willpower.IntValue).ToList();
-                    }
-
-                    for (int i = 0; i < orderedListOfHumanEnemies.Count; i++)
-                    {
-                        TFTVLogger.Always("The character is " + orderedListOfHumanEnemies[i].name + " and their WP are " + orderedListOfHumanEnemies[i].CharacterStats.Willpower.IntValue);
-                    }
-
-                    int champs = Mathf.FloorToInt(orderedListOfHumanEnemies.Count / (5 - (difficultyLevel / 2)));
-                    TFTVLogger.Always("There is space for " + champs + " champs");
-                    int gangers = Mathf.FloorToInt((orderedListOfHumanEnemies.Count - champs) / (4 - (difficultyLevel / 2)));
-                    TFTVLogger.Always("There is space for " + gangers + " gangers");
-                    int juves = orderedListOfHumanEnemies.Count - champs - gangers;
-                    TFTVLogger.Always("There is space for " + juves + " juves");
-
-                    TacticalActorBase leaderBase = leader;
-                    leader.LevelProgression.SetLevel(7);
-                    string nameOfFaction = faction.Faction.FactionDef.ShortName;
-
-                    GameTagDef gameTagDef = DefCache.GetDef<GameTagDef>("HumanEnemyFaction_" + nameOfFaction + "_GameTagDef");
-                    // TFTVLogger.Always("gameTagDef found");
-                    List<string> factionNames = TFTVHumanEnemiesNames.names.GetValueSafe(nameOfFaction);
-
-                    if (!leaderBase.GameTags.Contains(HumanEnemyTier1GameTag))
-                    {
-                        leaderBase.GameTags.Add(HumanEnemyTier1GameTag);
-                        TFTVLogger.Always("Tier1GameTag assigned");
-                        leaderBase.GameTags.Add(gameTagDef);
-                        TFTVLogger.Always("GameTagDef assigned");
-                        leaderBase.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
-                        TFTVLogger.Always("humanEnemyTagDef assigned");
-
-                        TFTVLogger.Always("Leader now has GameTag and their name is " + leader.name);
-                        AdjustStatsAndSkills(leader);
-
-                        ActorClassIconElement actorClassIconElement = leader.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
-                        TFTVUITactical.Enemies.ChangeHealthBarIcon(actorClassIconElement, leader);
-                    }
-
-                    RollTactic(nameOfFaction);
-                    GenerateHumanEnemyUnit(leader, faction, leader.name, HumanEnemiesAndTactics[nameOfFaction]);
-
-                    for (int i = 0; i < champs; i++)
-                    {
-                        TacticalActorBase champ = orderedListOfHumanEnemies[i];
-                        if (!champ.GameTags.Contains(gameTagDef))
-                        {
-
-                            champ.GameTags.Add(HumanEnemyTier2GameTag);
-                            champ.GameTags.Add(gameTagDef);
-                            champ.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
-                            UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                            champ.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
-                            TacticalActor tacticalActor = champ as TacticalActor;
-                            AdjustStatsAndSkills(tacticalActor);
-                            factionNames.Remove(champ.name);
-
-                            ActorClassIconElement actorClassIconElement = champ.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
-                            TFTVUITactical.Enemies.ChangeHealthBarIcon(actorClassIconElement, champ);
-                        }
-                        TFTVLogger.Always("This " + champ.name + " is now a champ");
-                    }
-
-                    for (int i = champs; i < champs + gangers; i++)
-                    {
-                        TacticalActorBase ganger = orderedListOfHumanEnemies[i];
-                        if (!ganger.GameTags.Contains(gameTagDef))
-                        {
-
-                            ganger.GameTags.Add(HumanEnemyTier3GameTag);
-                            ganger.GameTags.Add(gameTagDef);
-                            ganger.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
-                            UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                            ganger.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
-                            TacticalActor tacticalActor = ganger as TacticalActor;
-                            AdjustStatsAndSkills(tacticalActor);
-                            factionNames.Remove(ganger.name);
-
-                            ActorClassIconElement actorClassIconElement = ganger.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
-                            TFTVUITactical.Enemies.ChangeHealthBarIcon(actorClassIconElement, ganger);
-                        }
-                        TFTVLogger.Always("This " + ganger.name + " is now a ganger");
-
-                    }
-
-                    for (int i = champs + gangers; i < champs + gangers + juves; i++)
-                    {
-                        TacticalActorBase juve = orderedListOfHumanEnemies[i];
-                        if (!juve.GameTags.Contains(gameTagDef))
-                        {
-                            juve.GameTags.Add(HumanEnemyTier4GameTag);
-                            juve.GameTags.Add(gameTagDef);
-                            juve.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
-                            UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                            juve.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
-                            TacticalActor tacticalActor = juve as TacticalActor;
-                            AdjustStatsAndSkills(tacticalActor);
-                            factionNames.Remove(juve.name);
-
-                            ActorClassIconElement actorClassIconElement = juve.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
-                            TFTVUITactical.Enemies.ChangeHealthBarIcon(actorClassIconElement, juve);
-                        }
-                        TFTVLogger.Always("This " + juve.name + " is now a juve");
-
-
-                    }
-
+                    return;
                 }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
 
-        }
-
-        public static void AssignHumanEnemiesTags(TacticalLevelController controller)
-        {
-            try
-            {
-                
-
-                TacticalFaction phoenix = controller.GetFactionByCommandName("PX");
-                int difficultyLevel = TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order);
-
-                foreach (TacticalFaction faction in GetHumanEnemyFactions(controller))
+                if (listOfHumansEnemies.Any(t => t.HasGameTag(Subject24GameTag)))
                 {
-                    List<TacticalActor> listOfHumansEnemies = new List<TacticalActor>();
+                    leader = listOfHumansEnemies.FirstOrDefault(tacticalActor => tacticalActor.HasGameTag(Subject24GameTag));
+                    leader.name = TFTVCommonMethods.ConvertKeyToString("KEY_LORE_TITLE_SUBJECT24");
+                    listOfHumansEnemies.Remove(leader);
+                }
 
-                    foreach (TacticalActorBase tacticalActorBase in faction.Actors)
-                    {
-                        if (tacticalActorBase.BaseDef.name == "Soldier_ActorDef" && tacticalActorBase.InPlay)
-                        {
-                            TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
-                            listOfHumansEnemies.Add(tacticalActor);
-                        }
-                    }
+                TFTVLogger.Always($"There are {listOfHumansEnemies.Count()} human enemies in {faction.Faction?.FactionDef?.GetName()}");
+                List<TacticalActor> orderedListOfHumanEnemies = listOfHumansEnemies.OrderByDescending(e => e.LevelProgression.Level).ToList();
 
-                    if (listOfHumansEnemies.Count == 0)
-                    {
-                        return;
-                    }
+                if (listOfHumansEnemies[0].LevelProgression.Level == listOfHumansEnemies[listOfHumansEnemies.Count - 1].LevelProgression.Level)
+                {
+                    // TFTVLogger.Always("All enemies are of the same level");
+                    orderedListOfHumanEnemies = listOfHumansEnemies.OrderByDescending(e => e.CharacterStats.Willpower.IntValue).ToList();
+                }
 
-                    TFTVLogger.Always("There are " + listOfHumansEnemies.Count() + " human enemies");
-                    List<TacticalActor> orderedListOfHumanEnemies = listOfHumansEnemies.OrderByDescending(e => e.LevelProgression.Level).ToList();
-                    for (int i = 0; i < listOfHumansEnemies.Count; i++)
-                    {
-                        TFTVLogger.Always("TacticalActor is " + orderedListOfHumanEnemies[i].DisplayName + " and its level is " + listOfHumansEnemies[i].LevelProgression.Level);
-                    }
-
-                    if (listOfHumansEnemies[0].LevelProgression.Level == listOfHumansEnemies[listOfHumansEnemies.Count - 1].LevelProgression.Level)
-                    {
-                        TFTVLogger.Always("All enemies are of the same level");
-                        orderedListOfHumanEnemies = listOfHumansEnemies.OrderByDescending(e => e.CharacterStats.Willpower.IntValue).ToList();
-                    }
-
-                    for (int i = 0; i < orderedListOfHumanEnemies.Count; i++)
-                    {
-                        TFTVLogger.Always("The character is " + orderedListOfHumanEnemies[i].name + " and their WP are " + orderedListOfHumanEnemies[i].CharacterStats.Willpower.IntValue);
-                    }
-
-                    TacticalActor leader = orderedListOfHumanEnemies[0];
-
-
+                if (leader == null && isCombatUnit)
+                {
+                    leader = orderedListOfHumanEnemies[0];
                     orderedListOfHumanEnemies.Remove(leader);
+                }
 
-                    int champs = Mathf.FloorToInt(orderedListOfHumanEnemies.Count / (5 - (difficultyLevel / 2)));
-                    TFTVLogger.Always("There is space for " + champs + " champs");
-                    int gangers = Mathf.FloorToInt((orderedListOfHumanEnemies.Count - champs) / (4 - (difficultyLevel / 2)));
-                    TFTVLogger.Always("There is space for " + gangers + " gangers");
-                    int juves = orderedListOfHumanEnemies.Count - champs - gangers;
-                    TFTVLogger.Always("There is space for " + juves + " juves");
+                int champs = Mathf.FloorToInt(orderedListOfHumanEnemies.Count / (5 - (difficultyLevel / 2)));
+                // TFTVLogger.Always("There is space for " + champs + " champs");
+                int gangers = Mathf.FloorToInt((orderedListOfHumanEnemies.Count - champs) / (4 - (difficultyLevel / 2)));
+                //  TFTVLogger.Always("There is space for " + gangers + " gangers");
+                int juves = orderedListOfHumanEnemies.Count - champs - gangers;
+                //  TFTVLogger.Always("There is space for " + juves + " juves");
 
-                    TacticalActorBase leaderBase = leader;
-                    string nameOfFaction = faction.Faction.FactionDef.ShortName;
+                //  TacticalActorBase leaderBase = leader;
+                string nameOfFaction = faction.Faction.FactionDef.ShortName;
 
-                    TFTVLogger.Always("The short name of the faction is " + nameOfFaction);
-                    GameTagDef gameTagDef = DefCache.GetDef<GameTagDef>("HumanEnemyFaction_" + nameOfFaction + "_GameTagDef");
-                    // TFTVLogger.Always("gameTagDef found");
-                    List<string> factionNames = TFTVHumanEnemiesNames.names.GetValueSafe(nameOfFaction);
+                //  TFTVLogger.Always("The short name of the faction is " + nameOfFaction);
 
-                    if (!leaderBase.GameTags.Contains(HumanEnemyTier1GameTag))
-                    {
-                        leaderBase.GameTags.Add(HumanEnemyTier1GameTag);
-                        TFTVLogger.Always("Tier1GameTag assigned");
-                        leaderBase.GameTags.Add(gameTagDef);
-                        TFTVLogger.Always("GameTagDef assigned");
-                        leaderBase.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
-                        TFTVLogger.Always("humanEnemyTagDef assigned");
+                GameTagDef humanEnemyFactionTag = null;
 
-                        UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                        leader.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
-                        factionNames.Remove(leader.name);
-                        TFTVLogger.Always("Leader now has GameTag and their name is " + leader.name);
-                        AdjustStatsAndSkills(leader);
+                // if (isCombatUnit)
+                //  {
+                humanEnemyFactionTag = DefCache.GetDef<GameTagDef>("HumanEnemyFaction_" + nameOfFaction + "_GameTagDef");
+                //  }
 
-                        ActorClassIconElement actorClassIconElement = leader.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
-                        TFTVUITactical.Enemies.ChangeHealthBarIcon(actorClassIconElement, leader);
-                    }
 
+
+                // TFTVLogger.Always("gameTagDef found");
+                //List<string> factionNames = TFTVHumanEnemiesNames.names.GetValueSafe(nameOfFaction);
+
+                if (leader != null && !leader.GameTags.Contains(HumanEnemyTier1GameTag))
+                {
+                    GetGangerReady(HumanEnemyTier1GameTag, nameOfFaction, leader, humanEnemyFactionTag);
+                }
+
+                if (isCombatUnit)
+                {
                     RollTactic(nameOfFaction);
                     GenerateHumanEnemyUnit(leader, faction, leader.name, HumanEnemiesAndTactics[nameOfFaction]);
+                }
 
-                    
+                for (int i = 0; i < champs; i++)
+                {
+                    TacticalActor champ = orderedListOfHumanEnemies[i];
 
-                    for (int i = 0; i < champs; i++)
+                    if (champ.HasGameTag(humanEnemyTagDef))
                     {
-                        TacticalActorBase champ = orderedListOfHumanEnemies[i];
-                        if (!champ.GameTags.Contains(gameTagDef))
-                        {
-
-                            champ.GameTags.Add(HumanEnemyTier2GameTag);
-                            champ.GameTags.Add(gameTagDef);
-                            champ.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
-                            UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                            champ.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
-                            TacticalActor tacticalActor = champ as TacticalActor;
-                            AdjustStatsAndSkills(tacticalActor);
-                            factionNames.Remove(champ.name);
-
-                            ActorClassIconElement actorClassIconElement = champ.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
-                            TFTVUITactical.Enemies.ChangeHealthBarIcon(actorClassIconElement, champ);
-                        }
-                        TFTVLogger.Always("This " + champ.name + " is now a champ");
+                        continue;
                     }
 
-                    for (int i = champs; i < champs + gangers; i++)
+                    GetGangerReady(HumanEnemyTier2GameTag, nameOfFaction, champ, humanEnemyFactionTag);
+
+                    TFTVLogger.Always("This " + champ.name + " is now a champ");
+                }
+
+                for (int i = champs; i < champs + gangers; i++)
+                {
+                    TacticalActor ganger = orderedListOfHumanEnemies[i];
+
+                    if (ganger.HasGameTag(humanEnemyTagDef))
                     {
-                        TacticalActorBase ganger = orderedListOfHumanEnemies[i];
-                        if (!ganger.GameTags.Contains(gameTagDef))
-                        {
-
-                            ganger.GameTags.Add(HumanEnemyTier3GameTag);
-                            ganger.GameTags.Add(gameTagDef);
-                            ganger.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
-                            UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                            ganger.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
-                            TacticalActor tacticalActor = ganger as TacticalActor;
-                            AdjustStatsAndSkills(tacticalActor);
-                            factionNames.Remove(ganger.name);
-
-                            ActorClassIconElement actorClassIconElement = ganger.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
-                            TFTVUITactical.Enemies.ChangeHealthBarIcon(actorClassIconElement, ganger);
-
-
-                        }
-                        TFTVLogger.Always("This " + ganger.name + " is now a ganger");
-
+                        continue;
                     }
 
-                    for (int i = champs + gangers; i < champs + gangers + juves; i++)
+                    GetGangerReady(HumanEnemyTier3GameTag, nameOfFaction, ganger, humanEnemyFactionTag);
+
+                    TFTVLogger.Always("This " + ganger.name + " is now a ganger");
+
+                }
+
+                for (int i = champs + gangers; i < champs + gangers + juves; i++)
+                {
+                    TacticalActor juve = orderedListOfHumanEnemies[i];
+
+                    if (juve.HasGameTag(humanEnemyTagDef))
                     {
-                        TacticalActorBase juve = orderedListOfHumanEnemies[i];
-                        if (!juve.GameTags.Contains(gameTagDef))
-                        {
-                            juve.GameTags.Add(HumanEnemyTier4GameTag);
-                            juve.GameTags.Add(gameTagDef);
-                            juve.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
-                            UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                            juve.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
-                            TacticalActor tacticalActor = juve as TacticalActor;
-                            AdjustStatsAndSkills(tacticalActor);
-                            factionNames.Remove(juve.name);
-
-                            ActorClassIconElement actorClassIconElement = juve.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
-                            TFTVUITactical.Enemies.ChangeHealthBarIcon(actorClassIconElement, juve);
-
-
-                        }
-                        TFTVLogger.Always("This " + juve.name + " is now a juve");
-
-
+                        continue;
                     }
 
-                  
+                    GetGangerReady(HumanEnemyTier4GameTag, nameOfFaction, juve, humanEnemyFactionTag);
+
+                    TFTVLogger.Always("This " + juve.name + " is now a juve");
+
 
                 }
             }
@@ -719,7 +771,7 @@ namespace TFTV
 
                 foreach (TacticalFaction faction in controller.Factions)
                 {
-                    if (faction.GetRelationTo(phoenix) == PhoenixPoint.Common.Core.FactionRelation.Enemy)
+                    if (faction.GetRelationTo(phoenix) == FactionRelation.Enemy)
                     {
                         if (faction.Faction.FactionDef.ShortName.Equals("ban")
                                 || faction.Faction.FactionDef.ShortName.Equals("nj") || faction.Faction.FactionDef.ShortName.Equals("anu")
@@ -830,7 +882,7 @@ namespace TFTV
         }
 
         private static Color _regularIconColor = new Color(0, 0, 0, 0);
-        
+
         [HarmonyPatch(typeof(UIModuleCharacterStatus), "SetData")]
         public static class UIModuleCharacterStatus_SetData_AdjustLevel_Patch
         {
@@ -838,31 +890,70 @@ namespace TFTV
             {
                 try
                 {
-                    if(_regularIconColor==new Color(0, 0, 0, 0)) 
+
+                    TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
+                    if (controller == null) 
+                    {
+                        return;
+                    }
+
+                    UIStateCharacterStatus uIStateCharacterStatus = (UIStateCharacterStatus)controller.View.CurrentState;
+
+                   // TFTVLogger.Always($"uIStateCharacterStatus null? {uIStateCharacterStatus==null}");
+                        
+
+                    TacticalActor tacticalActor = typeof(UIStateCharacterStatus).GetField("_character", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(uIStateCharacterStatus) as TacticalActor;
+
+                    bool enemy = TFTVUITactical.Enemies.IsReallyEnemy(tacticalActor);
+
+                    // TFTVLogger.Always($"SetData: tacticalActor null? {tacticalActor==null}");
+
+                    if (_regularIconColor == new Color(0, 0, 0, 0))
                     {
                         _regularIconColor = __instance.ClassIcon.MainClassIcon.color;
                     }
 
                     ActorClassIconElement actorClassIconElement = __instance.ClassIcon;
-                    __instance.ClassIcon.MainClassIcon.color = _regularIconColor;
+
+                    if(enemy)
+                    {
+                        if (tacticalActor.HasGameTag(TFTVRevenant.AnyRevenantGameTag))
+                        {
+                            actorClassIconElement.MainClassIcon.color = TFTVUITactical.LeaderColor;
+                        }
+                        else
+                        {
+                            actorClassIconElement.MainClassIcon.color = TFTVUITactical.NegativeColor;
+                        }
+                    }
+                    else
+                    {
+                        actorClassIconElement.MainClassIcon.color = _regularIconColor;
+                    }
+
+                  //  __instance.ClassIcon.MainClassIcon.color = _regularIconColor;
 
                     GameTagDef[] factionAndTier = GetFactionTierAndClassTags(data.Tags.ToList());
                     TFTVUITactical.Enemies.RemoveRankFromInfoPanel(actorClassIconElement);
 
                     if (factionAndTier[0] != null)
                     {
-                       
+                        string factionName = factionAndTier[0].name.Split('_')[1];
+
+                        bool friendly = controller.GetFactionByCommandName(factionName).GetRelationTo(controller.GetFactionByCommandName("PX")) != FactionRelation.Enemy;
+
                         ____abilitiesList.AddRow<CharacterStatusAbilityRowController>
                                 (__instance.AbilitiesListAbilityPrototype).SetData(ApplyTextChanges(factionAndTier[0], factionAndTier[1]));
-                     
+
+                        TFTVUITactical.Enemies.AdjustIconInfoPanel(actorClassIconElement, factionAndTier[1], friendly);
+
                         if (factionAndTier[1] == HumanEnemyTier1GameTag)
                         {
                             if (data.Level < 6)
                             {
                                 __instance.CharacterLevel.text = "6";
                             }
-
-                            string factionName = factionAndTier[0].name.Split('_')[1];
 
                             if (HumanEnemiesAndTactics.Count > 0)
                             {
@@ -871,9 +962,6 @@ namespace TFTV
                                 ____abilitiesList.AddRow<CharacterStatusAbilityRowController>
                                    (__instance.AbilitiesListAbilityPrototype).SetData(AddTacticsDescription(roll));
                             }
-
-                            TFTVUITactical.Enemies.AdjustIconInfoPanel(actorClassIconElement, 4);
-
                         }
                         else if (factionAndTier[1] == HumanEnemyTier2GameTag)
                         {
@@ -886,9 +974,6 @@ namespace TFTV
                                 __instance.CharacterLevel.text = "6";
 
                             }
-
-                            TFTVUITactical.Enemies.AdjustIconInfoPanel(actorClassIconElement, 3);
-
                         }
                         else if (factionAndTier[1] == HumanEnemyTier3GameTag)
                         {
@@ -901,9 +986,6 @@ namespace TFTV
                                 __instance.CharacterLevel.text = "4";
 
                             }
-
-                            TFTVUITactical.Enemies.AdjustIconInfoPanel(actorClassIconElement, 2);
-
                         }
                         else if (factionAndTier[1] == HumanEnemyTier4GameTag)
                         {
@@ -911,8 +993,6 @@ namespace TFTV
                             {
                                 __instance.CharacterLevel.text = "2";
                             }
-
-                            TFTVUITactical.Enemies.AdjustIconInfoPanel(actorClassIconElement, 1);
                         }
                     }
                 }
@@ -1172,6 +1252,8 @@ namespace TFTV
 
                 int level = tacticalActor.LevelProgression.Level;
 
+                //  TFTVLogger.Always($"ta: {tacticalActor?.DisplayName} level: {level} ");
+
                 float[] equipmentBuff = new float[3];
 
                 foreach (TacticalItem tacticalItem in tacticalActor.BodyState.GetArmourItems())
@@ -1269,7 +1351,7 @@ namespace TFTV
                     if (ignorePain != null)
                     {
                         TFTVLogger.Always($"{tacticalActor.name} has {ignorePain.Def.EffectName} status; removing it");
-                        tacticalActor.Status.Statuses.Remove(ignorePain);                   
+                        tacticalActor.Status.Statuses.Remove(ignorePain);
                     }
 
                     foreach (AbilityDef ability in allAbilities)
@@ -1299,14 +1381,6 @@ namespace TFTV
 
                 if (classTagDef.name.Contains("Assault"))
                 {
-                    /*   if (level >= 2)
-                       {
-
-                         //  tacticalActor.AddAbility(quickAim, tacticalActor);
-
-                       }
-                       else
-                       {*/
                     if (tacticalActor.GetAbilityWithDef<Ability>(quickAim) != null)
                     {
                         tacticalActor.RemoveAbility(quickAim);
@@ -1314,6 +1388,8 @@ namespace TFTV
                     }
                     // }
                 }
+
+
                 if (classTagDef.name.Contains("Berserker"))
                 {
                     if (level >= 6)
@@ -1495,37 +1571,36 @@ namespace TFTV
                         {
                             string nameOfFaction = faction.Faction.FactionDef.ShortName;
                             GameTagDef gameTagDef = DefCache.GetDef<GameTagDef>("HumanEnemyFaction_" + nameOfFaction + "_GameTagDef");
-                            List<string> factionNames = TFTVHumanEnemiesNames.names[nameOfFaction];
+                           
 
                             if (faction.Actors.Contains(actor))
                             {
                                 UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                                 int rankNumber = UnityEngine.Random.Range(1, 7);
+                                GameTagDef rank = HumanEnemyTier4GameTag;
+                                GenderTagDef genderTagDef = actor.GameTags.FirstOrDefault(x => x is GenderTagDef) as GenderTagDef;
+                            
                                 if (rankNumber == 6)
                                 {
-                                    actor.GameTags.Add(HumanEnemyTier2GameTag);                                   
+                                    rank = HumanEnemyTier2GameTag;
                                     TFTVLogger.Always(actor.name + " is now a champ");
                                 }
                                 else if (rankNumber >= 4 && rankNumber < 6)
                                 {
-                                    actor.GameTags.Add(HumanEnemyTier3GameTag); 
+                                    rank = HumanEnemyTier3GameTag;
                                     TFTVLogger.Always(actor.name + " is now a ganger");
 
                                 }
-                                else
-                                {
-                                    actor.GameTags.Add(HumanEnemyTier4GameTag);                                   
-                                    TFTVLogger.Always(actor.name + " is now a juve");
-                                }
-
+                               
+                                actor.GameTags.Add(rank);
                                 actor.GameTags.Add(humanEnemyTagDef, GameTagAddMode.ReplaceExistingExclusive);
                                 actor.GameTags.Add(gameTagDef);
                                 UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                                actor.name = factionNames[UnityEngine.Random.Range(0, factionNames.Count)];
+                                actor.name = TFTVHumanEnemiesNames.GetName(nameOfFaction, rank, genderTagDef);
                                 TFTVLogger.Always("Name of new enemy is " + actor.name);
                                 TacticalActor tacticalActor = actor as TacticalActor;
                                 AdjustStatsAndSkills(tacticalActor);
-                                factionNames.Remove(actor.name);
+       
                                 ActorClassIconElement actorClassIconElement = actor.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
                                 TFTVUITactical.Enemies.ChangeHealthBarIcon(actorClassIconElement, actor);
 
@@ -1971,7 +2046,7 @@ namespace TFTV
                              tacticalActor.GetAbilityWithDef<RepositionAbility>(painC).Activate();
                              tacticalActor.RemoveAbility(painC);*/
                             TFTVLogger.Always($"{tacticalActor.name} in range of {leader.name} acquiring optical shield");
-                            tacticalActor.ApplyDamage(new DamageResult { ActorEffects = new List<EffectDef>() { opticalShieldMultiStatusDef } });
+                            tacticalActor.ApplyDamage(new DamageResult { ActorEffects = new List<EffectDef>() { _opticalShieldMultiStatusDef } });
 
                             //  tacticalActor.Status.ApplyStatus((StanceStatusDef)Repo.GetDef("8dbf3262-686d-2fb2-91cc-47014c539d95"));
                             //  TacticalFactionVision.ForgetForAll(tacticalActor, true);
@@ -2178,7 +2253,7 @@ namespace TFTV
 
                     if (deathReport.Actor.HasGameTag(HumanEnemyTier1GameTag))
                     {
-                        TacStatusEffectDef statusEffectDef = (TacStatusEffectDef)opticalShieldMultiStatusDef.EffectDefs[0];
+                        TacStatusEffectDef statusEffectDef = (TacStatusEffectDef)_opticalShieldMultiStatusDef.EffectDefs[0];
                         StanceStatusDef opticalShieldStealth = (StanceStatusDef)statusEffectDef.StatusDef;
                         StanceStatusDef stealthStatus = DefCache.GetDef<StanceStatusDef>("Stealth_StatusDef");
 

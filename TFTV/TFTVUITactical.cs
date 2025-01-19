@@ -51,10 +51,10 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
         public static Font PuristaSemiboldFontCache = null;
-        private static Color _leaderColor = new Color(1f, 0.72f, 0f);
+        public static Color LeaderColor = new Color(1f, 0.72f, 0f);
         public static Color NegativeColor = new Color(1.0f, 0.145f, 0.286f);
         private static Color _regularNoLOSColor = Color.gray;
-        private static Color _whiteColor = new Color(0.820f, 0.859f, 0.914f);
+        public static Color WhiteColor = new Color(0.820f, 0.859f, 0.914f);
         public static Color VoidColor = new Color(0.525f, 0.243f, 0.937f);
 
         public static void CachePuristaSemiboldFont(UIModuleObjectives uIModuleObjectives)
@@ -86,6 +86,7 @@ namespace TFTV
                 CaptureTacticalWidget.ClearData();
                 SecondaryObjectivesTactical.ClearDataOnGameLoadAndStateChange();
                 Enemies.ClearData();
+                Ancients.ClearData();
             }
             catch (Exception e)
             {
@@ -98,14 +99,339 @@ namespace TFTV
         {
             try
             {
+                ODITactical.ClearDataOnMissionRestart();
                 CaptureTacticalWidget.ClearData();
                 Enemies.ClearData();
+                Ancients.ClearData();
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
                 throw;
             }
+        }
+
+        internal class Ancients
+        {
+            private static GameObject _ancientWidget = null;
+
+            internal static void ClearData()
+            {
+                try
+                {
+                    _ancientWidget = null;
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+
+            public class AncientsWidget : MonoBehaviour
+            {
+                private GameObject ancientsWidgetPrefab;
+                private Transform widgetContainer;
+                private Text _cyclopsResistance;
+                private Image _iconImage;
+                private Image _bgImage;
+                private Text tooltipText;
+
+                private void AddClickChaseTarget(TacticalActor tacticalActor, GameObject gameObject)
+                {
+                    try
+                    {
+                        if (!gameObject.GetComponent<EventTrigger>())
+                        {
+                            gameObject.AddComponent<EventTrigger>();
+                        }
+
+                        EventTrigger eventTrigger = gameObject.GetComponent<EventTrigger>();
+                        eventTrigger.triggers.Clear();
+
+                        if (tacticalActor != null)
+                        {
+
+                            EventTrigger.Entry click = new EventTrigger.Entry
+                            {
+                                eventID = EventTriggerType.PointerClick
+                            };
+
+                            click.callback.AddListener((eventData) =>
+                            {
+                                if (tacticalActor.IsRevealedToViewer)
+                                {
+                                    tacticalActor.TacticalActorView.DoCameraChase(tacticalActor);
+                                }
+
+                            });
+
+                            eventTrigger.triggers.Add(click);
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+
+                public void InitializeAncientsWidget(int cyclopsDamageResistance, TacticalActor chaseTarget)
+                {
+                    try
+                    {
+                        TFTVLogger.Always($"InitializeAncientsWidget running");
+
+                        Color color = NegativeColor;
+                        string widgetObjectName = "AncientsWidget";
+
+                        Resolution resolution = Screen.currentResolution;
+                        float resolutionFactorWidth = (float)resolution.width / 1920f;
+                        float resolutionFactorHeight = (float)resolution.height / 1080f;
+
+                        // Access UIModuleNavigation and set widgetContainer as its transform
+                        TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+                        UIModuleNavigation uIModuleNavigation = controller.View.TacticalModules.NavigationModule;
+                        widgetContainer = uIModuleNavigation.transform;
+
+                        // Dynamically create the leaderWidgetPrefab structure
+                        ancientsWidgetPrefab = new GameObject(widgetObjectName);
+                        RectTransform rectTransform = ancientsWidgetPrefab.AddComponent<RectTransform>();
+
+                        rectTransform.sizeDelta = new Vector2(410, 180);
+                        rectTransform.position = new Vector2(245 * resolutionFactorWidth, 600 * resolutionFactorHeight);
+
+                        GameObject backgroundImage = new GameObject("Background", typeof(RectTransform), typeof(Image));
+
+                        backgroundImage.transform.SetParent(ancientsWidgetPrefab.transform); // Attach to the existing GameObject
+                                                                                             // backgroundImage.AddComponent<UITooltipText>().TipText = TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_ANCIENTS_RULESET");
+
+                        RectTransform bgRect = backgroundImage.GetComponent<RectTransform>();
+                        bgRect.sizeDelta = new Vector2(rectTransform.sizeDelta.x, rectTransform.sizeDelta.y / 3);
+                        bgRect.anchoredPosition = Vector2.zero + new Vector2(0, 37.5f);
+
+                        Image bgImage = backgroundImage.GetComponent<Image>();
+                        bgImage.color = new Color(0, 0, 0, 0.5f); // Black with 50% opacity
+                        _bgImage = bgImage;
+
+                        // Set up the icon
+                        GameObject iconObj = new GameObject("Icon");
+                        iconObj.transform.SetParent(ancientsWidgetPrefab.transform);
+                        Image iconImage = iconObj.AddComponent<Image>();
+                        iconImage.sprite = TFTVAncients.CyclopsDefenseStatus.Visuals.SmallIcon;
+                        iconImage.color = color;
+                        iconImage.preserveAspect = true;
+                        RectTransform iconImageRect = iconImage.GetComponent<RectTransform>();
+                        iconImageRect.sizeDelta = new Vector2(30, 30);
+                        iconImageRect.anchoredPosition = Vector2.zero + new Vector2(-180, 38);//Vector2.zero + new Vector2(-150, 38);
+                        _iconImage = iconImage;
+
+                        // Set up the name text
+                        GameObject generatorHealthTextObj = new GameObject("CyclopsResistanceText");
+                        generatorHealthTextObj.transform.SetParent(ancientsWidgetPrefab.transform);
+                        Text cyclopsResistanceText = generatorHealthTextObj.AddComponent<Text>();
+                        cyclopsResistanceText.text = TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_ANCIENTS_CYCLOPS_RESISTANCE").Replace("{0}", cyclopsDamageResistance.ToString()); // CYCLOPS DAMAGE RESISTANCE AT {0}%;
+                        cyclopsResistanceText.alignment = TextAnchor.MiddleLeft;
+                        cyclopsResistanceText.fontSize = 35;
+                        cyclopsResistanceText.color = Color.white;
+                        cyclopsResistanceText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                        RectTransform rectGeneratorsHealthText = cyclopsResistanceText.GetComponent<RectTransform>();
+                        rectGeneratorsHealthText.sizeDelta = new Vector2(800, 60);
+                        rectGeneratorsHealthText.localScale = new Vector2(0.5f, 0.5f);
+                        rectGeneratorsHealthText.anchoredPosition = Vector2.zero + new Vector2(40, 37.5f); //Vector2.zero + new Vector2(20, 40);
+                        _cyclopsResistance = cyclopsResistanceText;
+
+                        AddClickChaseTarget(chaseTarget, iconObj.gameObject);
+
+
+                        ancientsWidgetPrefab.transform.SetParent(widgetContainer);
+                        ancientsWidgetPrefab.SetActive(true);
+
+
+                        GameObject tooltipBgObj = new GameObject("TooltipBackground", typeof(RectTransform));
+                        tooltipBgObj.transform.SetParent(ancientsWidgetPrefab.transform);
+                        Image tooltipBgImage = tooltipBgObj.AddComponent<Image>();
+                        tooltipBgImage.color = new Color(0, 0, 0, 0.75f); // Semi-transparent black
+
+                        RectTransform tooltipBgRect = tooltipBgObj.GetComponent<RectTransform>();
+                        tooltipBgRect.sizeDelta = new Vector2(1500, 1500); // Slightly larger than text for padding
+                        tooltipBgRect.anchoredPosition = new Vector2(600, 40);
+                        tooltipBgRect.localScale = new Vector2(0.5f, 0.5f);
+
+                        // Ensure it appears behind the text
+                        //  tooltipText.transform.SetParent(tooltipBgObj.transform);
+                        //   tooltipText.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+
+                        // Hide both initially
+                        tooltipBgObj.SetActive(false);
+
+                        // Modify EventTriggers to show/hide both the text and background
+
+
+                        // Create the tooltip text element
+                        GameObject tooltipObj = new GameObject("TooltipText");
+                        tooltipObj.transform.SetParent(ancientsWidgetPrefab.transform);
+                        tooltipText = tooltipObj.AddComponent<Text>();
+                        tooltipText.text = TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_ANCIENTS_RULESET");
+                        tooltipText.alignment = TextAnchor.UpperLeft;
+                        tooltipText.fontSize = 40; // Adjust as needed
+                        tooltipText.color = Color.white; // Adjust text color as needed
+                        tooltipText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                        tooltipText.verticalOverflow = VerticalWrapMode.Overflow;
+                        tooltipText.horizontalOverflow = HorizontalWrapMode.Wrap;
+
+                        RectTransform tooltipRect = tooltipText.GetComponent<RectTransform>();
+                        tooltipRect.sizeDelta = new Vector2(1400, 100); // Adjust size as needed
+                        tooltipRect.anchoredPosition = new Vector2(600, 350); // Adjust position relative to widget element
+                        tooltipRect.localScale = new Vector2(0.5f, 0.5f);
+
+                        // Add EventTrigger to handle tooltip visibility
+                        EventTrigger eventTrigger = ancientsWidgetPrefab.AddComponent<EventTrigger>();
+
+                        // Pointer Enter event to show tooltip
+                        EventTrigger.Entry pointerEnter = new EventTrigger.Entry
+                        {
+                            eventID = EventTriggerType.PointerEnter
+                        };
+                        pointerEnter.callback.AddListener((eventData) =>
+                        {
+                            tooltipText.gameObject.SetActive(true);
+                        });
+                        eventTrigger.triggers.Add(pointerEnter);
+
+                        // Pointer Exit event to hide tooltip
+                        EventTrigger.Entry pointerExit = new EventTrigger.Entry
+                        {
+                            eventID = EventTriggerType.PointerExit
+                        };
+                        pointerExit.callback.AddListener((eventData) =>
+                        {
+                            tooltipText.gameObject.SetActive(false);
+                        });
+                        eventTrigger.triggers.Add(pointerExit);
+
+                        pointerEnter.callback.AddListener((eventData) =>
+                        {
+                            tooltipBgObj.SetActive(true);
+                        });
+
+                        pointerExit.callback.AddListener((eventData) =>
+                        {
+                            tooltipBgObj.SetActive(false);
+                        });
+
+                        tooltipObj.SetActive(false);
+
+                        // Create the tooltip background
+
+
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+                private Color GetColor(TacticalActor tacticalActor)
+                {
+                    try
+                    {
+                        if (tacticalActor.CharacterStats.WillPoints >= 30)
+                        {
+                            return LeaderColor;
+                        }
+
+                        return NegativeColor;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+                public void ModifyWidget(float cyclopsDamageResistance, TacticalActor chaseTarget)
+                {
+                    try
+                    {
+                        Color color = GetColor(chaseTarget);
+
+                        _cyclopsResistance.text = TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_ANCIENTS_CYCLOPS_RESISTANCE").Replace("{0}", cyclopsDamageResistance.ToString());
+                        _iconImage.color = color;
+
+                        AddClickChaseTarget(chaseTarget, _bgImage.gameObject);
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+
+
+
+
+            private static void CreateAncientsWidget(int cyclopsDamageResistance, TacticalActor chaseTarget)
+            {
+                try
+                {
+
+                    TFTVLogger.Always($"CreateAncientsWidget running");
+
+                    _ancientWidget = new GameObject("AncientsWidgetObject");
+                    AncientsWidget defenseWidget = _ancientWidget.AddComponent<AncientsWidget>();
+
+                    TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+                    UIModuleNavigation uIModuleNavigation = controller.View.TacticalModules.NavigationModule;
+                    _ancientWidget.transform.SetParent(uIModuleNavigation.transform, false);
+
+                    defenseWidget.InitializeAncientsWidget(cyclopsDamageResistance, chaseTarget);
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            public static void ActivateOrAdjustAncientsWidget(int cyclopsDamageResistance, TacticalActor chaseTarget)
+            {
+                try
+                {
+                    TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
+                    if (_ancientWidget == null)
+                    {
+                        CreateAncientsWidget(cyclopsDamageResistance, chaseTarget);
+                    }
+                    else
+                    {
+                        AncientsWidget ancientsWidget = _ancientWidget.GetComponent<AncientsWidget>();
+
+                        ancientsWidget.ModifyWidget(cyclopsDamageResistance, chaseTarget);
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+
+
         }
 
         internal class BaseDefenseUI
@@ -263,7 +589,7 @@ namespace TFTV
                         Text reinforcementTitleText = reinforcementTitleTextObj.AddComponent<Text>();
                         reinforcementTitleText.text = reinforcementsTitle; //need to complete
                         reinforcementTitleText.fontSize = 40;
-                        reinforcementTitleText.color = Color.white;
+                        reinforcementTitleText.color = WhiteColor;
                         reinforcementTitleText.alignment = TextAnchor.MiddleLeft;
                         reinforcementTitleText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                         RectTransform rectReinforcementTitleText = reinforcementTitleText.GetComponent<RectTransform>();
@@ -476,7 +802,7 @@ namespace TFTV
                         }
                         else if (__instance.Description.color == Color.green && objective.State != FactionObjectiveState.Achieved)
                         {
-                            __instance.Description.color = Color.white;
+                            __instance.Description.color = WhiteColor;
                         }
 
                         SecondaryObjectivesTactical.AdjustSecondaryObjective(objective, __instance);
@@ -567,6 +893,7 @@ namespace TFTV
             private static ActorHasStatusFactionObjectiveDef _captureSiren;
             private static ActorHasStatusFactionObjectiveDef _captureGooAlien;
             private static ActorHasStatusFactionObjectiveDef _captureViralAlien;
+            private static ActorHasStatusFactionObjectiveDef _captureMistAlien;
             private static ActorHasStatusFactionObjectiveDef _capturePsychicAlien;
 
             private static KillActorFactionObjectiveDef _killRevenantMimic;
@@ -580,6 +907,22 @@ namespace TFTV
 
             private static Dictionary<FactionObjective, List<TacticalActor>> _objectivesTargetsDictionary = new Dictionary<FactionObjective, List<TacticalActor>>();
             private static NewObjectiveUI _newObjectiveWidget = null;
+
+            public static void AddAdditionalSecondaryObjective(FactionObjectiveDef objectiveDef)
+            {
+                try
+                {
+                    _secondaryObjectiveDefsInPlay.Add(objectiveDef);
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+            }
+
 
             public class NewObjectiveUI : MonoBehaviour
             {
@@ -715,7 +1058,7 @@ namespace TFTV
                         descriptionText.verticalOverflow = VerticalWrapMode.Overflow;
                         descriptionText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                         descriptionText.fontSize = 120; // Doubled font size
-                        descriptionText.color = Color.white;
+                        descriptionText.color = WhiteColor;
                         descriptionText.alignment = TextAnchor.MiddleCenter;
                         RectTransform descRect = descriptionTextObj.GetComponent<RectTransform>();
                         descRect.sizeDelta = new Vector2(3000, 240);
@@ -735,7 +1078,7 @@ namespace TFTV
 
                         if (isRevenant)
                         {
-                            targetIconImage.color = _leaderColor;
+                            targetIconImage.color = LeaderColor;
                         }
 
                         RectTransform targetIconRect = targetIcon.GetComponent<RectTransform>();
@@ -873,10 +1216,10 @@ namespace TFTV
 
                     TacticalLevelController controller = objective.Level;
 
-                    if (!controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
-                    {
-                        return null;
-                    }
+                    /*  if (!controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
+                      {
+                          return null;
+                      }*/
 
                     if (objective is KillActorFactionObjective killObjective)
                     {
@@ -890,12 +1233,20 @@ namespace TFTV
                         relevantTag = (GameTagDef)fieldInfo.GetValue(captureObjective);
                     }
 
-                    TacticalFaction aliens = controller.GetFactionByCommandName("aln");
+                    //   TacticalFaction aliens = controller.GetFactionByCommandName("aln");
                     TacticalFaction phoenix = controller.GetFactionByCommandName("px");
 
-                    List<TacticalActor> relevantActors = aliens.TacticalActors.
+                    List<TacticalActor> enemyActors = controller.Factions
+                                         .Where(f => f.GetRelationTo(phoenix) == FactionRelation.Enemy)
+                                         .SelectMany(f => f.TacticalActors)
+                                         .ToList();
+
+
+
+
+                    List<TacticalActor> relevantActors = enemyActors.
                         Where(ta =>
-                        (ta.HasGameTag(relevantTag) || ta.Equipments.GetWeapons().Any(w => w.GameTags.Contains(relevantTag)))).ToList().
+                        (ta.HasGameTag(relevantTag) || ta.BodyState.GetAllBodyparts().Any(b => b.OwnerItem.TacticalItemDef.Tags.Contains(relevantTag)) || ta.Equipments.GetWeapons().Any(w => w.GameTags.Contains(relevantTag)))).ToList().
                         Concat(phoenix.TacticalActors.Where(ta =>
                         (ta.HasGameTag(relevantTag) || ta.Equipments.GetWeapons().Any(w => w.GameTags.Contains(relevantTag))) && ta.Status != null && ta.Status.HasStatus<MindControlStatus>())).ToList();
 
@@ -1346,6 +1697,16 @@ namespace TFTV
                         }
                     }
 
+                    if (phoenixFaction.Research.GetResearchById(TFTVChangesToDLC4Events.MistResearch.Id).IsRevealed)
+                    {
+                        if (!AvailableSecondaryObjectivesTactical.Contains(_captureMistAlien.Guid) && CheckCapacityForCaptureObjective(phoenixFaction, 2))
+                        {
+                            AvailableSecondaryObjectivesTactical.Add(_captureMistAlien.Guid);
+                            TFTVLogger.Always($"_captureMistAlien available, Aircraft capture capacity is {AircraftCaptureCapacity}");
+                        }
+                    }
+
+
                     if (phoenixFaction.Research.GetResearchById("PX_PyschicAttack_ResearchDef").IsRevealed && CheckCapacityForCaptureObjective(phoenixFaction, 3))
                     {
                         if (!AvailableSecondaryObjectivesTactical.Contains(_capturePsychicAlien.Guid))
@@ -1449,6 +1810,7 @@ namespace TFTV
                         CreateCaptureSirenObjective();
                         CreateCapturePsychicAlienObjective();
                         CreateCaptureViralAlienObjective();
+                        CreateCaptureMistPandoranObjective();
 
                         CreateKillScyllaObjective();
                         CreateKillOrCaptureMimic();
@@ -1460,6 +1822,28 @@ namespace TFTV
                         TFTVLogger.Error(e);
                         throw;
                     }
+                }
+
+                private static void CreateCaptureMistPandoranObjective()
+                {
+                    try
+                    {
+                        string name = "CaptureMistAlien";
+                        string guid = "{E90CF725-1C02-4D48-B2A0-766266FDC132}";
+                        GameTagDef tag = TFTVChangesToDLC4Events.MistTag;
+                        string descLocKey = "TFTV_KEY_CAPTURE_MIST_OBJECTIVE";
+                        int expReward = 300;
+
+                        _captureMistAlien = CreateSecondaryObjectiveCapture(name, guid, tag, descLocKey, expReward);
+
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+
                 }
 
                 private static void CreateKillScyllaObjective()
@@ -1693,7 +2077,7 @@ namespace TFTV
                     }
                 }
 
-                private static KillActorFactionObjectiveDef CreateSecondaryObjectiveKill(string name, string guid, GameTagDef targetTag, string descLocKey, int expReward, bool paralyzedCounts, string summaryKey = null)
+                public static KillActorFactionObjectiveDef CreateSecondaryObjectiveKill(string name, string guid, GameTagDef targetTag, string descLocKey, int expReward, bool paralyzedCounts, string summaryKey = null)
                 {
                     try
                     {
@@ -1799,6 +2183,8 @@ namespace TFTV
 
                     if (objective is KillActorFactionObjective killObjective)
                     {
+                        TacticalFaction pxFaction = controller.GetFactionByCommandName("px");
+
                         FieldInfo fieldInfo = typeof(KillActorFactionObjective).GetField("_killTargetsGameTag", BindingFlags.Instance | BindingFlags.NonPublic);
 
                         if (fieldInfo != null)
@@ -1806,10 +2192,12 @@ namespace TFTV
                             relevantTag = (GameTagDef)fieldInfo.GetValue(killObjective);
                         }
 
-                        if (relevantTag != null && !controller.GetFactionByCommandName("aln").TacticalActors.Any(ta => ta.HasGameTag(relevantTag))
-                            && !controller.GetFactionByCommandName("px").TacticalActors.Any(ta => ta.HasGameTag(relevantTag) && ta.Status != null && ta.Status.HasStatus<MindControlStatus>()))
-                        {
+                        //    if (relevantTag != null && !controller.GetFactionByCommandName("aln").TacticalActors.Any(ta => ta.HasGameTag(relevantTag))
+                        //        && !controller.GetFactionByCommandName("px").TacticalActors.Any(ta => ta.HasGameTag(relevantTag) && ta.Status != null && ta.Status.HasStatus<MindControlStatus>()))
 
+                        if (relevantTag != null && !controller.Factions.Any(f => f.GetRelationTo(pxFaction) == FactionRelation.Enemy && f.TacticalActors.Any(ta => ta.HasGameTag(relevantTag))
+                           && !pxFaction.TacticalActors.Any(ta => ta.HasGameTag(relevantTag) && ta.Status != null && ta.Status.HasStatus<MindControlStatus>())))
+                        {
                             TFTVLogger.Always($"Not adding {objective.Description.Localize()} because it's never relevant");
                             objective.IsUiSummaryHidden = true;
 
@@ -1881,7 +2269,7 @@ namespace TFTV
                     {
                         string descriptionToAdd = "";
 
-                        if(factionObjective.Description.LocalizationKey== _captureAnyRevenant.MissionObjectiveData.Description.LocalizationKey) 
+                        if (factionObjective.Description.LocalizationKey == _captureAnyRevenant.MissionObjectiveData.Description.LocalizationKey)
                         {
                             isRevenant = true;
                         }
@@ -1903,9 +2291,13 @@ namespace TFTV
 
                     _pendingObjectivesTargets.Clear();
 
-                    // TFTVLogger.Always($"target.ViewElementDef.name: {target.ViewElementDef.name}", false);
+                    Sprite icon = target.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement.MainClassIcon.sprite;
 
-                    CreateSecondaryObjectiveAnnouncement(description, target.ViewElementDef.SmallIcon, isRevenant);
+
+
+                    //  TFTVLogger.Always($"target.ViewElementDef.name: {target.ViewElementDef.name}", false);
+                    //target.ViewElementDef.SmallIcon
+                    CreateSecondaryObjectiveAnnouncement(description, icon, isRevenant);
                 }
             }
 
@@ -1951,36 +2343,43 @@ namespace TFTV
                         relevantTag = (GameTagDef)fieldInfo.GetValue(captureObjective);
                     }
 
-                    TacticalFaction aliens = controller.GetFactionByCommandName("aln");
+                    //  TacticalFaction aliens = controller.GetFactionByCommandName("aln");
                     TacticalFaction phoenix = controller.GetFactionByCommandName("px");
 
-                    /*   TFTVLogger.Always($"relevantTag: {relevantTag.name}");
+                    /* if (relevantTag != null)
+                     {
+                         TFTVLogger.Always($"relevantTag: {relevantTag.name}");
 
-                       foreach(TacticalActor actor in aliens.TacticalActors)
-                       {
-                           TFTVLogger.Always($"Alien: {actor.name}");
+                         foreach (TacticalActor actor in controller.GetFactionByCommandName("aln").TacticalActors)
+                         {
+                             TFTVLogger.Always($"Alien: {actor.name}");
 
-                           foreach(Weapon weapon in actor.Equipments.GetWeapons())
-                           {
-                               TFTVLogger.Always($"Weapon: {weapon.WeaponDef.name}");
+                             foreach (BodyPartAspect bpa in actor.BodyState.GetAllBodyparts())
+                             {
+                                 TFTVLogger.Always($"bpa: {bpa?.OwnerItem?.TacticalItemDef?.name}");
 
-                               foreach(GameTagDef gameTagDef in weapon.WeaponDef.Tags)
-                               {
-                                   TFTVLogger.Always($"Tag: {gameTagDef.name}");
-                               }
-                           }
-                       }*/
+                                 foreach (GameTagDef gameTagDef in bpa.OwnerItem.TacticalItemDef.Tags)
+                                 {
+                                     TFTVLogger.Always($"Tag: {gameTagDef.name}");
+                                 }
+                             }
+                         }
+                     }*/
+                    List<TacticalActor> enemyActors = controller.Factions
+                                        .Where(f => f.GetRelationTo(phoenix) == FactionRelation.Enemy)
+                                        .SelectMany(f => f.TacticalActors)
+                                        .ToList();
 
 
-                    List<TacticalActor> relevantActors = aliens.TacticalActors.
+                    List<TacticalActor> relevantActors = enemyActors.
                         Where(ta =>
                         ta.IsAlive && phoenix.Vision.IsRevealed(ta)
-                        && (ta.HasGameTag(relevantTag) || ta.Equipments.GetWeapons().Any(w => w.WeaponDef.Tags.Contains(relevantTag)))
+                        && TacticalActorHasTagAnywhere(ta, relevantTag)
                         && CheckTargetIsNotToCaptureUncapturableScylla(ta, objective)
                         ).ToList().
                         Concat(phoenix.TacticalActors.Where(ta =>
                         ta.IsAlive
-                        && (ta.HasGameTag(relevantTag) || ta.Equipments.GetWeapons().Any(w => w.WeaponDef.Tags.Contains(relevantTag)))
+                        && TacticalActorHasTagAnywhere(ta, relevantTag)
                         && CheckTargetIsNotToCaptureUncapturableScylla(ta, objective)
                         && ta.Status != null && ta.Status.HasStatus<MindControlStatus>())).ToList();
 
@@ -2065,7 +2464,7 @@ namespace TFTV
                             foreach (TacticalActor tacticalActor in __instance.Level.GetFactionByCommandName("aln").TacticalActors.Where(ta => ta.IsAlive && ta.Status != null).Concat
                                 (__instance.Level.GetFactionByCommandName("px").TacticalActors.Where(ta => ta.IsAlive && ta.Status != null && ta.Status.HasStatus<MindControlStatus>())))
                             {
-                                if (tacticalActor.Equipments.GetWeapons().Any(w => w.GameTags.Contains(____targetsGameTag)))
+                                if (TacticalActorHasTagAnywhere(tacticalActor, ____targetsGameTag))
                                 {
                                     allValidTargets.Add(tacticalActor);
                                 }
@@ -2102,21 +2501,14 @@ namespace TFTV
 
                     GameTagDef targetTag = fieldInfo.GetValue(objective) as GameTagDef;
 
-                    if (targetTag is ItemTypeTagDef)
+
+                    foreach (TacticalActor tacticalActor in objective.Level.GetFactionByCommandName("aln").TacticalActors.Where(ta => ta.IsAlive && ta.Status != null).
+                        Concat(objective.Level.GetFactionByCommandName("px").TacticalActors.Where(ta => ta.IsAlive && ta.Status != null && ta.Status.HasStatus<MindControlStatus>())))
                     {
-                        foreach (TacticalActor tacticalActor in objective.Level.GetFactionByCommandName("aln").TacticalActors.Where(ta => ta.IsAlive && ta.Status != null).
-                            Concat(objective.Level.GetFactionByCommandName("px").TacticalActors.Where(ta => ta.IsAlive && ta.Status != null && ta.Status.HasStatus<MindControlStatus>())))
+                        if (TacticalActorHasTagAnywhere(tacticalActor, targetTag))
                         {
-                            if (tacticalActor.Equipments.GetWeapons().Any(w => w.GameTags.Contains(targetTag)))
-                            {
-                                targets.Add(tacticalActor);
-                            }
+                            targets.Add(tacticalActor);
                         }
-                    }
-                    else
-                    {
-                        targets = objective.Level.GetFactionByCommandName("aln").TacticalActors.Where(ta => ta.IsAlive).
-                            Concat(objective.Level.GetFactionByCommandName("px").TacticalActors.Where(ta => ta.IsAlive && ta.Status != null && ta.Status.HasStatus<MindControlStatus>())).ToList();
                     }
 
                     if (!targets.Any())
@@ -2125,7 +2517,7 @@ namespace TFTV
                         return FactionObjectiveState.Failed;
                     }
 
-                    if (targets.Any((TacticalActorBase x) => x.Status.HasStatus<ParalysedStatus>() && (CaptureTacticalWidget.CaptureUI==null || CaptureTacticalWidget.CaptureUI.capturedAliens.Contains(x))))
+                    if (targets.Any((TacticalActorBase x) => x.Status.HasStatus<ParalysedStatus>() && (CaptureTacticalWidget.CaptureUI == null || CaptureTacticalWidget.CaptureUI.capturedAliens.Contains(x))))
                     {
                         TFTVLogger.Always($"returning achieved state for {objective.Description.Localize()}");
                         return FactionObjectiveState.Achieved;
@@ -2200,6 +2592,31 @@ namespace TFTV
                 }
             }
 
+            private static bool TacticalActorHasTagAnywhere(TacticalActor ta, GameTagDef relevantTag)
+            {
+                try
+                {
+                    if (!ta.GameTags.Contains(DefCache.GetDef<GameTagDef>("SentinelTerror_ClassTagDef")) && (ta.HasGameTag(relevantTag)
+                            || ta.Equipments.GetWeapons().Any(w => w.WeaponDef.Tags.Contains(relevantTag))
+                            || ta.BodyState.GetAllBodyparts().Any(b => b.OwnerItem.TacticalItemDef.Tags.Contains(relevantTag))))
+                    {
+
+                        return true;
+                    }
+
+                    return false;
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+            }
+
+
             private static bool CheckCaptureObjectiveCompleted(ActorHasStatusFactionObjective captureObjective)
             {
                 try
@@ -2210,14 +2627,17 @@ namespace TFTV
 
                     GameTagDef captureTag = (GameTagDef)captureTargetsGameTagField.GetValue(captureObjective);
 
-                    if (!alienFaction.TacticalActors.Any(ta => ta.HasGameTag(captureTag)
+
+
+
+                    if (!alienFaction.TacticalActors.Any(ta => TacticalActorHasTagAnywhere(ta, captureTag)
                     && !ta.IsEvacuated && ta.Status != null
                     && ta.Status.HasStatus<ParalysedStatus>()))
                     {
                         return false;
                     }
 
-                    List<TacticalActor> eligibleAliens = alienFaction.TacticalActors.Where(ta => ta.HasGameTag(captureTag)
+                    List<TacticalActor> eligibleAliens = alienFaction.TacticalActors.Where(ta => TacticalActorHasTagAnywhere(ta, captureTag)
                     && !ta.IsEvacuated && ta.Status != null
                     && ta.Status.HasStatus<ParalysedStatus>()).ToList();
 
@@ -2410,18 +2830,18 @@ namespace TFTV
                 }
             }
 
-
-
-
-
-
             private static bool CheckIfActorDeadNotEvaced(TacticalLevelController controller, GameTagDef killTag)
             {
                 try
                 {
-                    TacticalFaction alienFaction = controller.GetFactionByCommandName("aln");
+                    //TacticalFaction alienFaction = controller.GetFactionByCommandName("aln");
 
-                    return alienFaction.TacticalActors.Any(ta => ta.HasGameTag(killTag) && !ta.IsEvacuated && (ta.IsDead || ta.Status != null && ta.Status.HasStatus<ParalysedStatus>()));
+                    List<TacticalActor> enemyActors = controller.Factions
+                                        .Where(f => f.GetRelationTo(controller.GetFactionByCommandName("px")) == FactionRelation.Enemy)
+                                        .SelectMany(f => f.TacticalActors)
+                                        .ToList();
+
+                    return enemyActors.Any(ta => ta.HasGameTag(killTag) && !ta.IsEvacuated && (ta.IsDead || ta.Status != null && ta.Status.HasStatus<ParalysedStatus>()));
 
                 }
                 catch (Exception e)
@@ -2610,7 +3030,6 @@ namespace TFTV
         internal class Enemies
         {
 
-
             private static Sprite _umbraArthronIcon = null;
             private static Sprite _umbraTritonIcon = null;
 
@@ -2678,23 +3097,46 @@ namespace TFTV
                 }
             }
 
-            public static void AdjustIconInfoPanel(ActorClassIconElement actorClassIconElement, int rank)
+            /// <summary>
+            /// This is used to add rank triangles in the info panel and color leaders gold
+            /// </summary>
+            /// <param name="actorClassIconElement"></param>
+            /// <param name="rankTag"></param>
+            /// <param name="friendly"></param>
+            public static void AdjustIconInfoPanel(ActorClassIconElement actorClassIconElement, GameTagDef rankTag, bool friendly)
             {
 
                 try
                 {
-                    RankIconCreator rankIconCreator = new RankIconCreator();
-                    rankIconCreator.SetIconWithRank(actorClassIconElement.MainClassIcon.gameObject, actorClassIconElement.MainClassIcon.sprite, rank, true);
 
-                    if (rank == 4)
+                    //the ranks are a mess... because I made tags that go from 4 to 1 from rookie to boss, but for the rank triangles 4 actually means boss and 1 means rookie.
+                    //I'm an idiot, what can say? but fixing it too much work...
+
+                    RankIconCreator rankIconCreator = new RankIconCreator();
+
+                    int rank = 1;
+
+
+                    if (rankTag == TFTVHumanEnemies.HumanEnemyTier1GameTag)
                     {
-                        actorClassIconElement.MainClassIcon.color = _leaderColor;
+                        rank = 4;
+                        actorClassIconElement.MainClassIcon.color = LeaderColor;
                     }
                     else
                     {
-                        actorClassIconElement.MainClassIcon.color = NegativeColor;
+                        // actorClassIconElement.MainClassIcon.color = NegativeColor;
+
+                        if (rankTag == TFTVHumanEnemies.HumanEnemyTier2GameTag)
+                        {
+                            rank = 3;
+                        }
+                        else if (rankTag == TFTVHumanEnemies.HumanEnemyTier3GameTag)
+                        {
+                            rank = 2;
+                        }
                     }
 
+                    rankIconCreator.SetIconWithRank(actorClassIconElement.MainClassIcon.gameObject, actorClassIconElement.MainClassIcon.sprite, rank, true, false, false, friendly);
 
                 }
                 catch (Exception e)
@@ -2704,6 +3146,10 @@ namespace TFTV
                 }
             }
 
+            /// <summary>
+            /// This is used to remove rank triangles from the info panel, necessary for cleanup
+            /// </summary>
+            /// <param name="actorClassIconElement"></param>
             public static void RemoveRankFromInfoPanel(ActorClassIconElement actorClassIconElement)
             {
 
@@ -2730,7 +3176,7 @@ namespace TFTV
                 public Sprite bottomLeftTriangleSprite = Helper.CreateSpriteFromImageFile("rank_4.png");     // Triangle for the bottom-left corner
                 public Sprite bottomRightTriangleSprite = Helper.CreateSpriteFromImageFile("rank_3.png");    // Triangle for the bottom-right corner
 
-                public void AddRankTriangles(GameObject iconObject, int rank, bool bigCorners = false, bool noLOSColor = false, bool shootState = false)
+                public void AddRankTriangles(GameObject iconObject, int rank, bool bigCorners = false, bool noLOSColor = false, bool shootState = false, bool friendly = false)
                 {
                     try
                     {
@@ -2738,13 +3184,19 @@ namespace TFTV
 
                         if (rank == 4)
                         {
-                            color = _leaderColor;
+                            color = LeaderColor;
                         }
 
                         if (noLOSColor)
                         {
                             color = Color.gray;
                         }
+
+                        if (friendly)
+                        {
+                            color = WhiteColor;
+                        }
+
 
                         Sprite[] cornerSprites = {
             topLeftTriangleSprite,    // Rank 1: Top-left corner
@@ -2867,7 +3319,7 @@ namespace TFTV
                     }
                 }
 
-                public void SetIconWithRank(GameObject iconObject, Sprite iconSprite, int rank, bool biggerCorner = false, bool noLOSColor = false, bool shootState = false)
+                public void SetIconWithRank(GameObject iconObject, Sprite iconSprite, int rank, bool biggerCorner = false, bool noLOSColor = false, bool shootState = false, bool friendly = false)
                 {
                     try
                     {
@@ -2878,7 +3330,7 @@ namespace TFTV
                         }
                         iconImage.sprite = iconSprite;
 
-                        AddRankTriangles(iconObject, rank, biggerCorner, noLOSColor, shootState);
+                        AddRankTriangles(iconObject, rank, biggerCorner, noLOSColor, shootState, friendly);
 
                     }
                     catch (Exception e)
@@ -2915,6 +3367,195 @@ namespace TFTV
             /// </summary>
             /// <param name="actorClassIconElement"></param>
             /// <param name="tacticalActorBase"></param>
+            /// 
+
+            public static bool IsReallyEnemy(TacticalActorBase tacticalActorBase)
+            {
+                try
+                {
+
+
+                    MindControlStatus mindControlStatus = tacticalActorBase.Status?.GetStatus<MindControlStatus>();
+
+                    if (mindControlStatus != null)
+                    {
+                        TacticalFaction originalFaction = tacticalActorBase.TacticalLevel.GetFactionByCommandName(mindControlStatus.OriginalFaction.FactionDef.ShortName);
+
+                        if (originalFaction.GetRelationTo(tacticalActorBase.TacticalLevel.GetFactionByCommandName("px")) == FactionRelation.Enemy)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        if (tacticalActorBase.TacticalFaction.GetRelationTo(tacticalActorBase.TacticalLevel.GetFactionByCommandName("px")) == FactionRelation.Enemy)
+                        {
+                            return true;
+                        }
+                    }
+
+                    return false;
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+
+            private static int GetAncientsChargeLevelFromWP(TacticalActor tacticalActor)
+            {
+                try
+                {
+                    ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
+                    ClassTagDef hopliteTag = DefCache.GetDef<ClassTagDef>("HumanoidGuardian_ClassTagDef");
+
+                    int rank = 0;
+
+                    if (tacticalActor.HasGameTag(hopliteTag))
+                    {
+
+                        if (tacticalActor.CharacterStats.WillPoints == 30)
+                        {
+                            rank = 4;
+                        }
+                        else if (tacticalActor.CharacterStats.WillPoints >= 25)
+                        {
+                            rank = 3;
+                        }
+                        else if (tacticalActor.CharacterStats.WillPoints >= 20)
+                        {
+                            rank = 2;
+                        }
+                        else if (tacticalActor.CharacterStats.WillPoints >= 15)
+                        {
+                            rank = 1;
+                        }
+                    }
+
+                    if (tacticalActor.HasGameTag(cyclopsTag))
+                    {
+
+                        if (tacticalActor.CharacterStats.WillPoints == 40)
+                        {
+                            rank = 4;
+                        }
+                        else if (tacticalActor.CharacterStats.WillPoints >= 30)
+                        {
+                            rank = 3;
+                        }
+                        else if (tacticalActor.CharacterStats.WillPoints >= 20)
+                        {
+                            rank = 2;
+                        }
+                        else if (tacticalActor.CharacterStats.WillPoints >= 15)
+                        {
+                            rank = 1;
+                        }
+
+                    }
+
+                    return rank;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            public static void ImplementAncientsChargeLevel(ActorClassIconElement actorClassIconElement, TacticalActorBase tacticalActorBase, bool hasNoLos = false)
+            {
+                try
+                {
+                    ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
+                    ClassTagDef hopliteTag = DefCache.GetDef<ClassTagDef>("HumanoidGuardian_ClassTagDef");
+
+                    TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
+
+                    if (tacticalActor == null || (!tacticalActor.HasGameTag(cyclopsTag) && !tacticalActor.HasGameTag(hopliteTag)))
+                    {
+                        return;
+                    }
+
+                    bool shootState = actorClassIconElement.MainClassIcon.rectTransform.sizeDelta.x > 100;
+
+
+                    RankIconCreator rankIconCreator = new RankIconCreator();
+                    rankIconCreator.RemoveRankTriangles(actorClassIconElement.MainClassIcon.gameObject);
+
+                    int rank = GetAncientsChargeLevelFromWP(tacticalActor);
+
+
+                    if (rank > 0)
+                    {
+                        rankIconCreator.SetIconWithRank(actorClassIconElement.MainClassIcon.gameObject,
+                               actorClassIconElement.MainClassIcon.sprite, rank, true, hasNoLos, shootState);
+                    }
+
+                    if (rank == 4)
+                    {
+                        actorClassIconElement.MainClassIcon.color = LeaderColor;
+                    }
+                    else
+                    {
+                        actorClassIconElement.MainClassIcon.color = NegativeColor;
+
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+
+
+            private static int GetRankFromHumanEnemyTag(TacticalActorBase tacticalActorBase)
+            {
+                try
+                {
+                    int rank = 4;
+
+                    if (tacticalActorBase.HasGameTag(TFTVHumanEnemies.HumanEnemyTier2GameTag))
+                    {
+                        rank = 3;
+                    }
+                    else if (tacticalActorBase.HasGameTag(TFTVHumanEnemies.HumanEnemyTier3GameTag))
+                    {
+                        rank = 2;
+                    }
+                    else if (tacticalActorBase.HasGameTag(TFTVHumanEnemies.HumanEnemyTier4GameTag))
+                    {
+                        rank = 1;
+                    }
+
+                    return rank;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+
+            }
+
+            /// <summary>
+            /// This method is for adjusting the actor's icon NOT in the targets panel
+            /// </summary>
+            /// <param name="actorClassIconElement"></param>
+            /// <param name="tacticalActorBase"></param>
             public static void ChangeHealthBarIcon(ActorClassIconElement actorClassIconElement, TacticalActorBase tacticalActorBase)
             {
                 try
@@ -2924,58 +3565,45 @@ namespace TFTV
 
                     if (tacticalActorBase.HasGameTag(TFTVHumanEnemies.humanEnemyTagDef))
                     {
-                        int rank = 4;
-
-                        if (tacticalActorBase.HasGameTag(TFTVHumanEnemies.HumanEnemyTier2GameTag))
-                        {
-                            rank = 3;
-                        }
-                        else if (tacticalActorBase.HasGameTag(TFTVHumanEnemies.HumanEnemyTier3GameTag))
-                        {
-                            rank = 2;
-                        }
-                        else if (tacticalActorBase.HasGameTag(TFTVHumanEnemies.HumanEnemyTier4GameTag))
-                        {
-                            rank = 1;
-                        }
+                        int rank = GetRankFromHumanEnemyTag(tacticalActorBase);
 
                         bool shootState = actorClassIconElement.MainClassIcon.rectTransform.sizeDelta.x > 100;
-
-                        rankIconCreator.SetIconWithRank(actorClassIconElement.MainClassIcon.gameObject,
-                            actorClassIconElement.MainClassIcon.sprite, rank, true, false, shootState);
+                        bool isFriendly = false;
 
                         Color color = NegativeColor;
 
                         if (rank == 4)
                         {
-                            color = _leaderColor;
+                            color = LeaderColor;
                         }
 
-                        actorClassIconElement.MainClassIcon.color = color;
+                        if (IsReallyEnemy(tacticalActorBase))
+                        {
+                            actorClassIconElement.MainClassIcon.color = color;
+                        }
+                        else
+                        {
+                            actorClassIconElement.MainClassIcon.color = WhiteColor;
+                            isFriendly = true;
+                        }
+
+                        rankIconCreator.SetIconWithRank(actorClassIconElement.MainClassIcon.gameObject,
+                         actorClassIconElement.MainClassIcon.sprite, rank, true, false, shootState, isFriendly);
+
+                        // actorClassIconElement.MainClassIcon.color = color;
 
                     }
                     else if (tacticalActorBase.GameTags.Contains(TFTVRevenant.AnyRevenantGameTag))
                     {
-                        actorClassIconElement.MainClassIcon.color = _leaderColor;
-                        actorClassIconElement.SecondaryClassIcon.color = _leaderColor;
+                        actorClassIconElement.MainClassIcon.color = LeaderColor;
+                        actorClassIconElement.SecondaryClassIcon.color = LeaderColor;
                     }
                     else
                     {
-                        if (tacticalActorBase.TacticalFaction.GetRelationTo(tacticalActorBase.TacticalLevel.GetFactionByCommandName("px")) == FactionRelation.Enemy
-                            && tacticalActorBase.GetAbilityWithDef<ApplyStatusAbility>(DefCache.GetDef<ApplyStatusAbilityDef>("InfestedWithMindfragger_StatusAbilityDef")) == null)
+                        if (IsReallyEnemy(tacticalActorBase))
                         {
                             if (tacticalActorBase.ActorDef.name.Equals("Oilcrab_ActorDef") || tacticalActorBase.ActorDef.name.Equals("Oilfish_ActorDef"))
                             {
-                                /*  if (tacticalActorBase.ActorDef.name.Equals("Oilcrab_ActorDef")) 
-                                  {
-                                      actorClassIconElement.MainClassIcon.sprite = _umbraArthronIcon;
-                                  }
-                                  else if (tacticalActorBase.ActorDef.name.Equals("Oilfish_ActorDef")) 
-                                  {
-
-                                      actorClassIconElement.MainClassIcon.sprite = _umbraTritonIcon;
-                                  }*/
-
                                 actorClassIconElement.MainClassIcon.color = VoidColor;
                             }
                             else
@@ -2983,16 +3611,13 @@ namespace TFTV
                                 actorClassIconElement.MainClassIcon.color = NegativeColor;
                             }
                         }
-                        else if (tacticalActorBase.Status != null &&
-                            (!tacticalActorBase.Status.HasStatus<MindControlStatus>() || tacticalActorBase.Status.HasStatus(DefCache.GetDef<MindControlStatusDef>("UnderPhoenixControl_StatusDef")))
-                            || tacticalActorBase.GetAbilityWithDef<ApplyStatusAbility>(DefCache.GetDef<ApplyStatusAbilityDef>("InfestedWithMindfragger_StatusAbilityDef")) != null
-                            )
+                        else
                         {
-                            actorClassIconElement.MainClassIcon.color = Color.white;
+                            actorClassIconElement.MainClassIcon.color = WhiteColor;
                         }
-
                     }
 
+                    ImplementAncientsChargeLevel(actorClassIconElement, tacticalActorBase);
 
 
                     AddOutlineToIcon addOutlineToIcon = actorClassIconElement.MainClassIcon.GetComponent<AddOutlineToIcon>() ?? actorClassIconElement.MainClassIcon.gameObject.AddComponent<AddOutlineToIcon>();
@@ -3006,6 +3631,128 @@ namespace TFTV
                 }
 
             }
+
+
+            public static void ManageRankIconToSpottedEnemies(SpottedTargetsElement spottedTargetsElement, GameObject obj, TacticalActorBase target)
+            {
+                try
+                {
+                    ActorClassIconElement actorClassIconElement = obj.GetComponentInChildren<ActorClassIconElement>();
+                    RankIconCreator rankIconCreator = new RankIconCreator();
+                    rankIconCreator.RemoveRankTriangles(actorClassIconElement.MainClassIcon.gameObject);
+
+                    bool hasNoLOS = false;
+
+                    if (spottedTargetsElement.UiSpottedEnemyNoLosButton.isActiveAndEnabled)
+                    {
+                        hasNoLOS = true;
+                    }
+
+                    if (target.HasGameTag(TFTVHumanEnemies.humanEnemyTagDef))
+                    {
+                        int rank = GetRankFromHumanEnemyTag(target);
+
+                        Color color = actorClassIconElement.MainClassIcon.color;
+
+                        bool friendly = false;
+
+                        if (hasNoLOS)
+                        {
+                            color = _regularNoLOSColor;
+                        }
+                        else
+                        {
+                            if (rank == 4)
+                            {
+                                color = LeaderColor;
+                            }
+                            else
+                            {
+                                if (IsReallyEnemy(target))
+                                {
+                                    color = NegativeColor;
+                                }
+                                else
+                                {
+                                    color = WhiteColor;
+                                    friendly = true;
+                                }
+
+                                // color = NegativeColor;
+                            }
+
+                        }
+
+                        rankIconCreator.SetIconWithRank(actorClassIconElement.MainClassIcon.gameObject,
+                          actorClassIconElement.MainClassIcon.sprite, rank, true, hasNoLOS, false, friendly);
+
+                        actorClassIconElement.MainClassIcon.color = color;
+                    }
+                    else if (target.GameTags.Contains(TFTVRevenant.AnyRevenantGameTag))
+                    {
+                        Color color = actorClassIconElement.MainClassIcon.color;
+
+                        if (hasNoLOS)
+                        {
+                            color = _regularNoLOSColor;
+                        }
+                        else
+                        {
+
+                            color = LeaderColor;
+                        }
+
+                        actorClassIconElement.MainClassIcon.color = color;
+
+                    }
+                    else if (IsReallyEnemy(target))
+                    {
+
+                        Color color = actorClassIconElement.MainClassIcon.color;
+
+                        if (hasNoLOS)
+                        {
+                            color = _regularNoLOSColor;
+                        }
+                        else
+                        {
+                            if (target.ActorDef.name.Equals("Oilcrab_ActorDef") || target.ActorDef.name.Equals("Oilfish_ActorDef"))
+                            {
+
+                                color = VoidColor;
+                            }
+                            else
+                            {
+                                color = NegativeColor;
+                            }
+                        }
+
+                        actorClassIconElement.MainClassIcon.color = color;
+
+                    }
+                    else
+                    {
+                        actorClassIconElement.MainClassIcon.color = WhiteColor;
+
+                    }
+
+                    ImplementAncientsChargeLevel(actorClassIconElement, target);
+
+                    AddOutlineToIcon addOutlineToIcon = actorClassIconElement.MainClassIcon.GetComponent<AddOutlineToIcon>() ?? actorClassIconElement.MainClassIcon.gameObject.AddComponent<AddOutlineToIcon>();
+                    addOutlineToIcon.icon = actorClassIconElement.MainClassIcon.gameObject;
+                    addOutlineToIcon.InitOrUpdate();
+
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+            }
+
 
 
             [HarmonyPatch(typeof(HealthbarUIActorElement), "InitHealthbar")]
@@ -3156,7 +3903,7 @@ namespace TFTV
                             }
                             else
                             {
-                                statusText.color = Color.white;
+                                statusText.color = WhiteColor;
                             }
 
                             statusText.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -3184,7 +3931,7 @@ namespace TFTV
                             squadNameText.text = $"{TFTVCommonMethods.ConvertKeyToString("HUMAN_ENEMIES_KEY_LEADER")}{TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_GRAMMAR_OF")}{squadName.ToUpper()}";
                             squadNameText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                             squadNameText.fontSize = 30; //70                          
-                            squadNameText.color = Color.white;
+                            squadNameText.color = WhiteColor;
                             squadNameText.horizontalOverflow = HorizontalWrapMode.Wrap;
                             squadNameText.verticalOverflow = VerticalWrapMode.Overflow;
                             squadNameText.alignment = TextAnchor.MiddleLeft;
@@ -3201,7 +3948,7 @@ namespace TFTV
                             factionNameText.text = factionName;
                             factionNameText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                             factionNameText.fontSize = 30; //70
-                            factionNameText.color = Color.white;
+                            factionNameText.color = WhiteColor;
                             factionNameText.horizontalOverflow = HorizontalWrapMode.Wrap;
                             factionNameText.verticalOverflow = VerticalWrapMode.Overflow;
                             factionNameText.alignment = TextAnchor.MiddleLeft;
@@ -3222,7 +3969,7 @@ namespace TFTV
                             tacticDescriptionText.text = tacticDescription;
                             tacticDescriptionText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                             tacticDescriptionText.fontSize = 40; //70
-                            tacticDescriptionText.color = Color.white;
+                            tacticDescriptionText.color = WhiteColor;
                             tacticDescriptionText.horizontalOverflow = HorizontalWrapMode.Wrap;
                             tacticDescriptionText.verticalOverflow = VerticalWrapMode.Overflow;
                             tacticDescriptionText.alignment = TextAnchor.UpperLeft;
@@ -3342,7 +4089,7 @@ namespace TFTV
                         iconObj.transform.SetParent(headerObject.transform);
                         Image iconImage = iconObj.AddComponent<Image>();
                         iconImage.sprite = classIcon;
-                        iconImage.color = _leaderColor;
+                        iconImage.color = LeaderColor;
                         iconImage.preserveAspect = true;
                         RectTransform iconImageRect = iconImage.GetComponent<RectTransform>();
                         iconImageRect.sizeDelta = new Vector2(30, 30);
@@ -3361,7 +4108,7 @@ namespace TFTV
                         nameText.horizontalOverflow = HorizontalWrapMode.Overflow;
                         nameText.alignment = TextAnchor.MiddleLeft;
                         nameText.fontSize = 40;
-                        nameText.color = _leaderColor;
+                        nameText.color = LeaderColor;
                         nameText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                         RectTransform rectNameText = nameText.GetComponent<RectTransform>();
                         rectNameText.sizeDelta = new Vector2(600, 60);
@@ -3394,7 +4141,7 @@ namespace TFTV
                         tacticNameText.text = tacticName.ToUpper();
                         tacticNameText.horizontalOverflow = HorizontalWrapMode.Overflow;
                         tacticNameText.fontSize = 40;
-                        tacticNameText.color = Color.white;
+                        tacticNameText.color = WhiteColor;
                         tacticNameText.alignment = TextAnchor.MiddleLeft;
                         tacticNameText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                         RectTransform recttacticNameText = tacticNameText.GetComponent<RectTransform>();
@@ -3451,8 +4198,8 @@ namespace TFTV
                         {
                             AddStrikethrough(_nameOfLeader, Vector2.one, 0, true);
                             _factionIcon.color = NegativeColor;
-                            _leaderClassIcon.color = _leaderColor;
-                            _nameOfLeader.color = _leaderColor;
+                            _leaderClassIcon.color = LeaderColor;
+                            _nameOfLeader.color = LeaderColor;
 
                             RankIconCreator rankIconCreator = new RankIconCreator();
                             rankIconCreator.RemoveRankTriangles(_leaderClassIcon.gameObject);
@@ -3469,7 +4216,7 @@ namespace TFTV
                         else
                         {
                             AddStrikethrough(_titleOfTactic, Vector2.one, 0, true);
-                            _titleOfTactic.color = Color.white;
+                            _titleOfTactic.color = WhiteColor;
 
                         }
 
@@ -3765,171 +4512,6 @@ namespace TFTV
                 }
             }
 
-
-
-            [HarmonyPatch(typeof(UIModuleSpottedEnemies), "SetAllEnemies")]
-            public static class UIModuleSpottedEnemies_SetAllEnemies_patch
-            {
-                public static void Prefix(UIModuleSpottedEnemies __instance, ref IList<TacticalAbilityTarget> allSortedKnownTargets)
-                {
-                    try
-                    {
-
-                        List<TacticalAbilityTarget> targetsToRemove = new List<TacticalAbilityTarget>();
-
-                        foreach (TacticalAbilityTarget target in allSortedKnownTargets)
-                        {
-
-                            if (target.Actor != null)
-                            {
-                                TacticalActorBase tacticalActorBase = target.Actor;
-
-                                if (tacticalActorBase.ViewElementDef == null || tacticalActorBase.ViewElementDef.SmallIcon == null)
-                                {
-                                    targetsToRemove.Add(target);
-                                    //TFTVLogger.Always($"{tacticalActorBase.name} has no viewelement");
-                                }
-                            }
-
-                        }
-
-                        allSortedKnownTargets.RemoveRange(targetsToRemove);
-
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
-                }
-            }
-
-
-
-
-            public static void ManageRankIconToSpottedEnemies(SpottedTargetsElement spottedTargetsElement, GameObject obj, TacticalActorBase target)
-            {
-                try
-                {
-                    ActorClassIconElement actorClassIconElement = obj.GetComponentInChildren<ActorClassIconElement>();
-                    RankIconCreator rankIconCreator = new RankIconCreator();
-                    rankIconCreator.RemoveRankTriangles(actorClassIconElement.MainClassIcon.gameObject);
-
-                    bool hasNoLOS = false;
-
-                    if (spottedTargetsElement.UiSpottedEnemyNoLosButton.isActiveAndEnabled)
-                    {
-                        hasNoLOS = true;
-                    }
-
-                    if (target.HasGameTag(TFTVHumanEnemies.humanEnemyTagDef))
-                    {
-                        int rank = 4;
-
-                        if (target.HasGameTag(TFTVHumanEnemies.HumanEnemyTier2GameTag))
-                        {
-                            rank = 3;
-                        }
-                        else if (target.HasGameTag(TFTVHumanEnemies.HumanEnemyTier3GameTag))
-                        {
-                            rank = 2;
-                        }
-                        else if (target.HasGameTag(TFTVHumanEnemies.HumanEnemyTier4GameTag))
-                        {
-                            rank = 1;
-                        }
-
-                        rankIconCreator.SetIconWithRank(actorClassIconElement.MainClassIcon.gameObject,
-                            actorClassIconElement.MainClassIcon.sprite, rank, true, hasNoLOS);
-
-                        Color color = actorClassIconElement.MainClassIcon.color;
-
-                        if (hasNoLOS)
-                        {
-                            color = _regularNoLOSColor;
-                        }
-                        else
-                        {
-                            if (rank == 4)
-                            {
-                                color = _leaderColor;
-                            }
-                            else
-                            {
-                                color = NegativeColor;
-                            }
-
-                        }
-
-                        actorClassIconElement.MainClassIcon.color = color;
-                    }
-                    else if (target.GameTags.Contains(TFTVRevenant.AnyRevenantGameTag))
-                    {
-                        Color color = actorClassIconElement.MainClassIcon.color;
-
-                        if (hasNoLOS)
-                        {
-                            color = _regularNoLOSColor;
-                        }
-                        else
-                        {
-
-                            color = _leaderColor;
-                        }
-
-                        actorClassIconElement.MainClassIcon.color = color;
-
-                    }
-                    else if (target.TacticalFaction.GetRelationTo(target.TacticalLevel.GetFactionByCommandName("px")) == FactionRelation.Enemy &&
-                       target.Status != null && !target.Status.HasStatus<MindControlStatus>())
-                    {
-
-                        Color color = actorClassIconElement.MainClassIcon.color;
-
-                        if (hasNoLOS)
-                        {
-                            color = _regularNoLOSColor;
-                        }
-                        else
-                        {
-                            if (target.ActorDef.name.Equals("Oilcrab_ActorDef") || target.ActorDef.name.Equals("Oilfish_ActorDef"))
-                            {
-
-                                color = VoidColor;
-                            }
-                            else
-                            {
-                                color = NegativeColor;
-                            }
-                        }
-
-                        actorClassIconElement.MainClassIcon.color = color;
-
-                    }
-                    else
-                    {
-                        actorClassIconElement.MainClassIcon.color = _whiteColor;
-
-                    }
-
-
-                    AddOutlineToIcon addOutlineToIcon = actorClassIconElement.MainClassIcon.GetComponent<AddOutlineToIcon>() ?? actorClassIconElement.MainClassIcon.gameObject.AddComponent<AddOutlineToIcon>();
-                    addOutlineToIcon.icon = actorClassIconElement.MainClassIcon.gameObject;
-                    addOutlineToIcon.InitOrUpdate();
-
-
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-
-            }
-
-
-
         }
 
         internal class ODITactical
@@ -4166,7 +4748,7 @@ namespace TFTV
                         textComponent.text = text;
                         textComponent.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                         textComponent.fontSize = 40; //70
-                        textComponent.color = Color.white;
+                        textComponent.color = WhiteColor;
                         textComponent.horizontalOverflow = HorizontalWrapMode.Wrap;
                         textComponent.verticalOverflow = VerticalWrapMode.Overflow;
 
@@ -4364,7 +4946,7 @@ namespace TFTV
                             bool separator = false;
 
                             //Adds separator if general description or last TBTVEffect
-                            if (type == ODIDetailType.ODIDescription || type == ODIDetailType.VoidOmen && details.Count()>=x+2 && details.ElementAt(x + 1).Item3 != ODIDetailType.VoidOmen
+                            if (type == ODIDetailType.ODIDescription || type == ODIDetailType.VoidOmen && details.Count() >= x + 2 && details.ElementAt(x + 1).Item3 != ODIDetailType.VoidOmen
                                 || type == ODIDetailType.TBTVEffect && details.ElementAt(x).Item3 != ODIDetailType.TBTVEffect)
                             {
                                 separator = true;
@@ -4401,6 +4983,22 @@ namespace TFTV
                         throw;
                     }
                 }
+            }
+
+            public static void ClearDataOnMissionRestart()
+            {
+                try
+                {
+                    _voidIcon = null;
+                    _oDIWidget = null;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
             }
 
             public static void ClearDataOnLoadAndStateChange()
@@ -4795,9 +5393,9 @@ namespace TFTV
 
             public static void HideODITooltipFailSafe()
             {
-                try 
+                try
                 {
-                  //  TFTVLogger.Always($"running hideODITooltipFailSafe");
+                    //  TFTVLogger.Always($"running hideODITooltipFailSafe");
                     _oDIWidget?.GetComponent<ODIWidgetTooltip>()?.HideTooltip();
                 }
                 catch (Exception e)
@@ -4951,7 +5549,7 @@ namespace TFTV
                         nameText.text = aircraftName;
                         nameText.font = PuristaSemiboldFontCache;
                         nameText.fontSize = 35;
-                        nameText.color = Color.white;
+                        nameText.color = WhiteColor;
                         nameText.alignment = TextAnchor.MiddleLeft;
                         RectTransform nameTextRect = nameText.GetComponent<RectTransform>();
                         nameTextRect.sizeDelta = new Vector2(290, 100);
@@ -4980,7 +5578,7 @@ namespace TFTV
                         Text freeSpaceText = freeSpaceTextObject.AddComponent<Text>();
                         freeSpaceText.font = PuristaSemiboldFontCache; //Resources.GetBuiltinResource<Font>("Arial.ttf");
                         freeSpaceText.fontSize = 30;
-                        freeSpaceText.color = Color.white;
+                        freeSpaceText.color = WhiteColor;
                         RectTransform freeSpaceTextRect = freeSpaceText.GetComponent<RectTransform>();
                         freeSpaceTextRect.sizeDelta = new Vector2(350, 50);  // Increased width for text
                         freeSpaceTextRect.anchoredPosition = new Vector2(70, -130);  // Moved further down and to the right
@@ -5441,7 +6039,6 @@ namespace TFTV
             }
         }
 
-
         internal class DamagePrediction
         {
 
@@ -5489,6 +6086,109 @@ namespace TFTV
             }
         }
 
+
+
+
+
+        /*  private static void AddClickChaseTarget(TacticalActorBase tacticalActorBase, GameObject gameObject)
+          {
+              try
+              {
+                  if (!gameObject.GetComponent<EventTrigger>())
+                  {
+                      gameObject.AddComponent<EventTrigger>();
+                  }
+
+                  RectTransform rectTransform = gameObject.GetComponent<RectTransform>();
+
+                  if(rectTransform == null)
+                  {
+                      rectTransform = gameObject.AddComponent<RectTransform>();
+                  }
+
+                  rectTransform.sizeDelta = new Vector2(100, 100);
+
+
+                  EventTrigger eventTrigger = gameObject.GetComponent<EventTrigger>();
+                  eventTrigger.triggers.Clear();
+
+                  if (tacticalActorBase != null)
+                  {
+                      TFTVLogger.Always($"tacticalActorBase {tacticalActorBase}");
+
+                      EventTrigger.Entry click = new EventTrigger.Entry
+                      {
+                          eventID = EventTriggerType.PointerClick
+                      };
+
+                      click.callback.AddListener((eventData) =>
+                      {
+                          TFTVLogger.Always($"clicked on {tacticalActorBase}");
+                          tacticalActorBase.TacticalActorViewBase.DoCameraChase();
+
+                      });
+
+                      eventTrigger.triggers.Add(click);
+                  }
+
+              }
+              catch (Exception e)
+              {
+                  TFTVLogger.Error(e);
+                  throw;
+              }
+          }*/
+
+
+
+
+
+
+
+
+        /* [HarmonyPatch(typeof(HealthbarStatusElement), "SetStatus")]
+         public static class HealthbarStatusElement_SetStatus_MindControl_patch
+         {
+             public static void Postfix(HealthbarStatusElement __instance, ViewElementDef viewDef)
+             {
+                 try
+                 {
+                     TFTVLogger.Always($"viewDef {viewDef.name}");
+
+                     if (viewDef.name == "E_Visuals [MindControl_StatusDef]")
+                     {
+                         HealthbarUIActorElement healthbarUIActorElement = __instance.GetComponentInParent<HealthbarUIActorElement>();
+
+                         if (healthbarUIActorElement != null)
+                         {
+                             TacticalActorBase tacticalActorBase = typeof(HealthbarUIActorElement).GetField("_tacActorBase", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(healthbarUIActorElement) as TacticalActorBase;
+                             TFTVLogger.Always($"found {tacticalActorBase}");
+
+                             MindControlStatus mindControlStatus = tacticalActorBase.Status.GetStatus<MindControlStatus>();
+                             if (mindControlStatus != null)
+                             {
+                                 TFTVLogger.Always($"got here");
+
+                                 TacticalActor controllerActor = mindControlStatus.ControllerActor;
+
+                                 if (controllerActor != null)
+                                 {
+                                     TFTVLogger.Always($"got here too");
+
+                                     AddClickChaseTarget(controllerActor, __instance.gameObject);
+
+                                 }
+                             }
+                         }
+                     }
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
+         }*/
 
 
         /*[HarmonyPatch(typeof(InputController), "RefreshActions")]

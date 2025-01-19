@@ -1201,7 +1201,7 @@ namespace TFTV
                 DefCache.GetDef<GameTagDef>("Nikolai_TacCharacterDef_GameTagDef"),
                 DefCache.GetDef<GameTagDef>("Richter_TacCharacterDef_GameTagDef"),
                 DefCache.GetDef<GameTagDef>("Harlson_TacCharacterDef_GameTagDef"),
-                DefCache.GetDef<GameTagDef>("Sofia_TacCharacterDef_GameTagDef"),
+               // DefCache.GetDef<GameTagDef>("Sofia_TacCharacterDef_GameTagDef"),
                 DefCache.GetDef<GameTagDef>("Exalted_ClassTagDef")
 
                 };
@@ -1214,7 +1214,7 @@ namespace TFTV
 
                         {
                             PortraitSprites portraitSprites = _soldierPortraits[actor];
-                            TFTVLogger.Always($"ForceSpecialCharacterPortraitInSetupProperPortrait actor is {actor.name}");
+                           // TFTVLogger.Always($"ForceSpecialCharacterPortraitInSetupProperPortrait actor is {actor.name}");
 
                             Sprite sprite = (Sprite)tryFindFakePortraitMethod.Invoke(squadMemberScrollerController, new object[] { actor }); // squadMemberScrollerController.TryFindFakePortrait(actor);
                             if (sprite == null)
@@ -2053,7 +2053,7 @@ namespace TFTV
 
                             foreach (TacCharacterDef tacCharacterDef in GenerateFixedAcheronReinforcements(controller))
                             {
-
+                                
                                 void onLoadingCompleted()
                                 {
                                     ActorDeployData actorDeployData = tacCharacterDef.GenerateActorDeployData();
