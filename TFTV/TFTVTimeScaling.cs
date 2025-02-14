@@ -21,7 +21,9 @@ namespace TFTV
                 TacticalActor tacticalActor = ability.TacticalActor;
                 OptionsManager optionsManager = GameUtl.GameComponent<OptionsManager>();
 
-                if (tacticalActor != null && optionsManager.CurrentGameplayOptions.AnimationSpeedLevel != 1)
+               // TFTVLogger.Always($"optionsManager.CurrentGameplayOptions.AnimationSpeedLevel: {optionsManager.CurrentGameplayOptions.AnimationSpeedLevel}");
+
+                if (tacticalActor != null && optionsManager.CurrentGameplayOptions.AnimationSpeedLevel != 0)
                 {
                     //  TFTVLogger.Always($"ending IdleAbility for {tacticalActor.DisplayName}");
                     tacticalActor.TimingScale.Timing.Scale = optionsManager.CurrentGameplayOptions.AnimationSpeedLevel; //1.1f;
@@ -84,7 +86,7 @@ namespace TFTV
 
                     OptionsManager optionsManager = GameUtl.GameComponent<OptionsManager>();
 
-                    if (tacActor.IdleAbility.IsExecuting && optionsManager.CurrentGameplayOptions.AnimationSpeedLevel != 1) //&& !tacActor.HasGameTag(DefCache.GetDef<ClassTagDef>("HumanoidGuardian_ClassTagDef")))//tacActor.TimingScale.Timing.Scale == 1f)
+                    if (tacActor.IdleAbility.IsExecuting) //&& !tacActor.HasGameTag(DefCache.GetDef<ClassTagDef>("HumanoidGuardian_ClassTagDef")))//tacActor.TimingScale.Timing.Scale == 1f)
                     {
                         return false;
                     }

@@ -1886,7 +1886,7 @@ namespace TFTV
                             else
                             {
                                 StatusStat willPoints = __instance.ControllerActor.CharacterStats.WillPoints;
-                                float num = Mathf.Min(willPoints, Mathf.Max(____minUpkeepCost, __instance.TacticalActor.TacticalActorDef.WillPointWorth));
+                                float num = Mathf.Max(____minUpkeepCost, __instance.TacticalActor.TacticalActorDef.WillPointWorth);
                                 bool flag = (willPoints - num) < 0;
                                 if (flag)
                                 {

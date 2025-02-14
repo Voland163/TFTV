@@ -541,7 +541,7 @@ namespace TFTV
                     {
 
                         _ogPositionNewItemElement = geoManufactureItem.NewElementMarker.GetComponent<RectTransform>().anchoredPosition;
-                        TFTVLogger.Always($"_ogPositionNewItemElement: {_ogPositionNewItemElement}");
+                       // TFTVLogger.Always($"_ogPositionNewItemElement: {_ogPositionNewItemElement}");
                     }
 
                     Transform transform = geoManufactureItem.CurrentlyOwnedQuantityText.transform;

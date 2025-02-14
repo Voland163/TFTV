@@ -807,48 +807,9 @@ namespace TFTV
             }
         }
 
-        private static void CreateReturnFireCloneForHumanTactics()
-        {
-            try
-            {
-                string name = "FireDisciplineAbility";
-                ReturnFireAbilityDef returnFireAbilityDefSource = DefCache.GetDef<ReturnFireAbilityDef>("ReturnFire_AbilityDef");
-                ReturnFireAbilityDef newRF = Helper.CreateDefFromClone(returnFireAbilityDefSource, "{AD13E6CD-9D7E-4A5A-8CC0-6AF71DB83B42}", name);
-                newRF.CharacterProgressionData = Helper.CreateDefFromClone(returnFireAbilityDefSource.CharacterProgressionData, "{AF54FD23-931E-43BC-82AD-4471D1881A8C}", name);
-                newRF.ViewElementDef = Helper.CreateDefFromClone(returnFireAbilityDefSource.ViewElementDef, "{AD23518F-1E14-47E3-BF47-C421F7C95D33}", name);
-            }
+      
 
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
-        private static void CreateStartingVolleyStatus()
-        {
-            try
-            {
-                string name = "StartingVolley";
-
-                AddAttackBoostStatusDef sourceQA = DefCache.GetDef<AddAttackBoostStatusDef>("E_Status [BC_QuickAim_AbilityDef]");
-                AddAttackBoostStatusDef startingVolley = Helper.CreateDefFromClone(sourceQA, "{E1B4C902-5C37-432A-BA4C-E95EDDDAAFC9}", name);
-
-                startingVolley.Visuals = Helper.CreateDefFromClone(sourceQA.Visuals, "{A7049D39-6709-4941-9298-ED50699C836A}", name);
-                //startingVolley.Visuals.DisplayName1.LocalizationKey = "KEY_STARTING_VOLLEY_STATUS_NAME";
-                //startingVolley.Visuals.Description.LocalizationKey = "KEY_STARTING_VOLLEY_STATUS_DESCRIPTION";
-
-                startingVolley.AdditionalStatusesToApply[0] = Helper.CreateDefFromClone(sourceQA.AdditionalStatusesToApply[0], "{98C2606E-AEF4-4A32-9C0A-31600E6F942E}", name);
-                startingVolley.AdditionalStatusesToApply[1] = Helper.CreateDefFromClone(sourceQA.AdditionalStatusesToApply[1], "{2643FFB2-7433-4532-8F01-AF180429B864}", name);
-
-                ChangeAbilitiesCostStatusDef changeAbilitiesCostStatusDef = (ChangeAbilitiesCostStatusDef)startingVolley.AdditionalStatusesToApply[0];
-                changeAbilitiesCostStatusDef.AbilityCostModification.ActionPointMod = -0.5f;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
+      
 
 
         
@@ -961,8 +922,6 @@ namespace TFTV
                 AdjustAlienAmbushChance();
                 IncreaseBionicLabCost();
                 ReduceEffectOfMistOnPerception();
-                CreateReturnFireCloneForHumanTactics();
-                CreateStartingVolleyStatus();
                 ChangeBehemothStomp();
                 TFTVBaseDefenseTactical.Defs.CreateDefsForBaseDefenseTactical();
                 RemoveTerrorSentinelCitadel();

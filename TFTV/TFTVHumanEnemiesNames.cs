@@ -155,6 +155,11 @@ namespace TFTV
                 try
                 {
 
+                    if (__instance.AvailableRecruit == null) 
+                    {
+                        return;
+                    }
+
                     if (__instance.AvailableRecruit.GetGameTags().Contains(Shared.SharedGameTags.VehicleTag)
                          || __instance.AvailableRecruit.ClassTags.Contains(Shared.SharedGameTags.VehicleClassTag))
                     {
