@@ -233,7 +233,7 @@ namespace TFTV
 
                 ChangeRenderedPortraitsParam();
 
-              //  Experimental();
+               // Experimental();
 
               //  Print();
 
@@ -2157,6 +2157,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 TFTVLogger.Error(e);
             }
         }
+
         private static void ModifyRescueCiviliansMissions()
         {
             try
@@ -2212,6 +2213,16 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 rescueFelipeMisson.CustomObjectives[1] = CreateNewActivateConsoleObjective("ConvinceCivilianObjectiveFelipe", "{12780334-2607-48DF-8F93-16B1665078F0}", "{D19D79E5-EA2F-44C7-B05F-F19D9B58A462}", "KEY_OBJECTIVE_CONVINCE_FELIPE");
                 rescueCalendarMisson.CustomObjectives[1] = CreateNewActivateConsoleObjective("ConvinceCivilianObjectiveCalendar", "{84DFB63C-A79A-49DA-94DE-5C401FE2B7FD}", "{A663C9EF-2A06-457F-999D-B80657863503}", "KEY_OBJECTIVE_CONVINCE_CALENDAR");
                 rescueHelenaMisson.CustomObjectives[1] = CreateNewActivateConsoleObjective("ConvinceCivilianObjectiveHelena", "{AC2A9633-6D6F-4261-8315-06899D4A47BF}", "{6E492142-7500-4C71-B6E2-0B16BF2C4AE6}", "KEY_OBJECTIVE_CONVINCE_HELENA");
+
+                rescueFelipeMisson.ParticipantsRelations = rescueFelipeMisson.ParticipantsRelations.AddToArray(new MutualParticipantsRelations()
+                { FirstParticipant = TacMissionParticipant.Player, SecondParticipant = TacMissionParticipant.Environment, MutualRelation = FactionRelation.Friend });
+
+                rescueSparkMisson.ParticipantsRelations = rescueSparkMisson.ParticipantsRelations.AddToArray(new MutualParticipantsRelations()
+                { FirstParticipant = TacMissionParticipant.Player, SecondParticipant = TacMissionParticipant.Environment, MutualRelation = FactionRelation.Friend });
+
+                rescueCalendarMisson.ParticipantsRelations = rescueCalendarMisson.ParticipantsRelations.AddToArray(new MutualParticipantsRelations()
+                { FirstParticipant = TacMissionParticipant.Player, SecondParticipant = TacMissionParticipant.Environment, MutualRelation = FactionRelation.Friend });
+
 
                 //Add inifinite reinforcements to Helena
                 rescueHelenaMisson.ParticipantsData[1].InfiniteReinforcements = true;

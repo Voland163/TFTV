@@ -88,7 +88,7 @@ namespace TFTV
                 {
                     AddLocalizationFromCSV(MissionObjectivesLocalizationFileName, null);
                 }
-             /*   if (File.Exists(Path.Combine(LocalizationDirectory, NJStoryLocalizationFileName))) 
+                /*if (File.Exists(Path.Combine(LocalizationDirectory, NJStoryLocalizationFileName))) 
                 { 
                     AddLocalizationFromCSV(NJStoryLocalizationFileName, null);
                 

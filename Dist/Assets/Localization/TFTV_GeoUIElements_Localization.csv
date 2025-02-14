@@ -234,5 +234,5 @@ KEY_TFTV_UNPOWERED_MARKER_TOOLTIP,Text,,There is at least one unpowered {0}. Cli
 KEY_TFTV_UNPOWERED_UNDER_ATTACK_TOOLTIP,Text,,"The base is being attacked, and the assailants have penetrated the defenses. The facility is not operational.",,,,,,"На базу совершено нападение, и напавшие прорвали оборону. Объект отключен.",,
 KEY_TFTV_LAST_AIRCRAFT,Text,,This is Phoenix Project's last aircraft available and it can't be scrapped.,,,,,,"Это единственный самолет Феникс-Пойнт, от него нельзя избавиться.",,
 KEY_TFTV_IN_TRANSIT_AIRCRAFT,Text,,This aircraft is in transit and it can't be scrapped.,,,,,,"Этот самолет сейчас куда-то летит, его нельзя сдать на металлолом.",,
-KEY_TFTV_GRAMMAR_OF,Text,, of ,,,,,,,,
+KEY_TFTV_GRAMMAR_OF,Text,, of ,,,,,,  ,,
 KEY_GRAMMAR_PRONOUNS_HIS,Text,,his,,,,,,,,

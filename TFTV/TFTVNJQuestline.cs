@@ -38,7 +38,7 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
-        public static bool NewNJIntroMission = true;
+        public static bool NewNJIntroMission = false;
 
         internal class IntroMission
         {
@@ -84,8 +84,6 @@ namespace TFTV
                     {
                         return;
                     }
-
-
 
                     MissionStartChanges.CreateObjectiveToTurnOffPropaganda(controller);
                     MissionQuips.Propaganda.PropagandaQuips(controller);
@@ -431,7 +429,7 @@ namespace TFTV
                 {
                     try
                     {
-                        if (!IsIntroMission(controller))
+                        if (!NewNJIntroMission || !IsIntroMission(controller))
                         {
                             return;
                         }

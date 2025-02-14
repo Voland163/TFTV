@@ -1,16 +1,11 @@
 ﻿using Base.Core;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Levels;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Reflection;
-using PhoenixPoint.Common.Entities.GameTagsTypes;
 
 namespace TFTV
 {
@@ -24,11 +19,10 @@ namespace TFTV
             {
 
                 TacticalActor tacticalActor = ability.TacticalActor;
+                OptionsManager optionsManager = GameUtl.GameComponent<OptionsManager>();
 
-                if (tacticalActor != null)
+                if (tacticalActor != null && optionsManager.CurrentGameplayOptions.AnimationSpeedLevel != 1)
                 {
-                    OptionsManager optionsManager = GameUtl.GameComponent<OptionsManager>();
-
                     //  TFTVLogger.Always($"ending IdleAbility for {tacticalActor.DisplayName}");
                     tacticalActor.TimingScale.Timing.Scale = optionsManager.CurrentGameplayOptions.AnimationSpeedLevel; //1.1f;
                     TacTimeScaleRegulator tacTimeScaleRegulator = tacticalActor.TacticalLevel.GetComponent<TacTimeScaleRegulator>();
@@ -38,7 +32,7 @@ namespace TFTV
                     methodInfoApplyScaleToActor.Invoke(tacTimeScaleRegulator, new object[] { tacticalActor });
                 }
 
-                
+
             }
             catch (Exception e)
             {
@@ -82,12 +76,15 @@ namespace TFTV
             {
                 try
                 {
-                    if (!tacActor.IsAlive)
-                    {
-                        return false;
-                    }
+                    //this causes softlock if AnimationSpeedLevel==1 and actor dies from bleeding;
+                    /* if (!tacActor.IsAlive)
+                      {
+                          return false;
+                      }*/
 
-                    if (tacActor.IdleAbility.IsExecuting) //&& !tacActor.HasGameTag(DefCache.GetDef<ClassTagDef>("HumanoidGuardian_ClassTagDef")))//tacActor.TimingScale.Timing.Scale == 1f)
+                    OptionsManager optionsManager = GameUtl.GameComponent<OptionsManager>();
+
+                    if (tacActor.IdleAbility.IsExecuting && optionsManager.CurrentGameplayOptions.AnimationSpeedLevel != 1) //&& !tacActor.HasGameTag(DefCache.GetDef<ClassTagDef>("HumanoidGuardian_ClassTagDef")))//tacActor.TimingScale.Timing.Scale == 1f)
                     {
                         return false;
                     }
