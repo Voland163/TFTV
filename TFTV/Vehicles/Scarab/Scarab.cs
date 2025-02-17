@@ -121,7 +121,7 @@ namespace TFTVVehicleRework.Scarab
             {
                 new DamageKeywordPair{DamageKeywordDef = keywords.DamageKeyword, Value = 200},
                 new DamageKeywordPair{DamageKeywordDef = keywords.ShreddingKeyword, Value = 20},
-                new DamageKeywordPair{DamageKeywordDef = keywords.ShockKeyword, Value = 280},
+                new DamageKeywordPair{DamageKeywordDef = keywords.ShockKeyword, Value = 450}, //Voland change to conform to new shock damage functionality
             };
 
             Taurus.Abilities = new Base.Entities.Abilities.AbilityDef[]

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static TFTV.TFTVNJQuestline.IntroMission;
+using static TFTV.TFTVNJQuestline.IntroMission.MissionQuips;
 
 namespace TFTV
 {
@@ -466,6 +467,7 @@ namespace TFTV
                         TFTVVoidOmens.VO5TurnHostileCivviesFriendly(Controller);
                         TFTVBaseDefenseTactical.Map.FirstTurnBaseDefenseDeployment(Controller);
                         TFTVNJQuestline.IntroMission.MissionStartChanges.TurnNeutralGruntsOverToNJAndApplyMCStatus(Controller);
+                        TFTVAircraftRework.Modules.Tactical.FirstTurn.ImplementModuleEffectsOnFirstTurn(Controller);
                         //  TFTVBaseDefenseTactical.ModifyObjectives(Controller.TacMission.MissionData.MissionType);
                         TurnZeroMethodsExecuted = true;
                         

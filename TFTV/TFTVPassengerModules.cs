@@ -3,18 +3,16 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
-using PhoenixPoint.Geoscape.Entities.Research;
-using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using static PhoenixPoint.Geoscape.InterceptionPrototype.ModableValue;
 
 namespace TFTV
 {
@@ -104,6 +102,11 @@ namespace TFTV
             {
                 try
                 {
+                    if (TFTVAircraftRework.AircraftReworkOn)
+                    {
+                        return;
+                    }
+
                     GeoVehicleEquipment hybernationPods = __instance.Modules?.FirstOrDefault(gve => gve != null && gve.ModuleDef != null && gve.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation);
 
                     if (hybernationPods != null && type == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation)
@@ -159,7 +162,11 @@ namespace TFTV
 
 
                     GeoVehicle geoVehicle = __instance.Vehicles.First();
-                    geoVehicle.AddEquipment(hibernationModule);
+
+                    if (!TFTVAircraftRework.AircraftReworkOn)
+                    {
+                        geoVehicle.AddEquipment(hibernationModule);
+                    }
 
                     TFTVConfig config = TFTVMain.Main.Config;
 
@@ -261,188 +268,138 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(GeoVehicle), "ReplaceEquipments")]
-        internal static class BG_GeoVehicle_ReplaceEquipments_RemoveExcessPassengers_patch
-        {
-            private static void Postfix(GeoVehicle __instance)
-            {
-                try
-                {
-                    if (__instance.CurrentSite != null && __instance.CurrentSite.Type == GeoSiteType.PhoenixBase)
-                    {
-                        if (!__instance.HasModuleBonusTo(GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation)
-                            || !__instance.HasModuleBonusTo(GeoVehicleModuleDef.GeoVehicleModuleBonusType.Speed)
-                            || !__instance.HasModuleBonusTo(GeoVehicleModuleDef.GeoVehicleModuleBonusType.Range))
-                        {
-                            if (__instance.UsedCharacterSpace > __instance.MaxCharacterSpace)
-                            {
-                                List<GeoCharacter> list = new List<GeoCharacter>(from u in __instance.Units orderby u.OccupingSpace descending select u);
-                                foreach (GeoCharacter character in list)
-                                {
-                                    if (__instance.FreeCharacterSpace >= 0)
-                                    {
-                                        break;
-                                    }
-                                    __instance.RemoveCharacter(character);
-                                    __instance.CurrentSite.AddCharacter(character);
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
+      
+
+        
 
        
-        [HarmonyPatch(typeof(GeoVehicle), "UpdateVehicleBonusCache")]
-        internal static class BG_GeoVehicle_UpdateVehicleBonusCache_PassengerModulesIncreaseSpaceForUnits_patch
-        {
-            private static void Postfix(GeoVehicle __instance)//, Dictionary<GeoVehicleModuleDef.GeoVehicleModuleBonusType, float> ____vehicleModuleBonusCache)
-            {
-                try
-                {
-                 
-
-                    bool passengerModulePresent = __instance.Modules != null && __instance.Modules.Count() > 0 && __instance.Modules.Any(m =>
-                       m != null && m.ModuleDef != null && (
-                            m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Speed ||
-                            m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.SurvivalOdds ||
-                            m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Range ||
-                            m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation
-                        )
-                    );
-
-                    string geoVehicle = __instance.VehicleDef.ViewElement.Name;
-
-                //    FieldInfo propertyInfo = typeof(GeoVehicle).GetField("MaxCharacterSpace", BindingFlags.Instance|BindingFlags.Public);
-
-                  //  TFTVLogger.Always($"propertyInfo null? ");
-
-                    switch (geoVehicle)
-                    {
-                        case "Geoscape Manticore":
-                            {
-                                if (passengerModulePresent)
-                                {
-
-                                 __instance.BaseDef = manticore6slots;
-
-                                }
-                                else
-                                {
-                                    __instance.BaseDef = manticore;
-
-                                }
-
-                                break;
-                            }
-
-                        case "Geoscape Helios":
-                            {
-                                if (passengerModulePresent)
-                                {
-                                    __instance.BaseDef = helios5slots;
-                                }
-                                else
-                                {
-                                    __instance.BaseDef = helios;
-
-                                }
-
-                                break;
 
 
-                            }
 
-                        case "Geoscape Thunderbird":
-                            {
-                                if (passengerModulePresent)
-                                {
-                                    __instance.BaseDef = thunderbird7slots;
-                                }
-                                else
-                                {
-                                    __instance.BaseDef = thunderbird;
-
-                                }
-
-                                break;
+        /* [HarmonyPatch(typeof(GeoVehicle), "UpdateVehicleBonusCache")]
+         internal static class BG_GeoVehicle_UpdateVehicleBonusCache_PassengerModulesIncreaseSpaceForUnits_patch
+         {
+             private static void Postfix(GeoVehicle __instance)//, Dictionary<GeoVehicleModuleDef.GeoVehicleModuleBonusType, float> ____vehicleModuleBonusCache)
+             {
+                 try
+                 {
+                     if (TFTVAircraftRework.AircraftReworkOn)
+                     {
+                         return;
+                     }
 
 
-                            }
-                        case "Geoscape Blimp":
-                            {
-                                if (passengerModulePresent)
-                                {
-                                    __instance.BaseDef = blimp12slots;
-                                }
-                                else
-                                {
-                                    __instance.BaseDef = blimp8slots;
 
-                                }
+                     bool passengerModulePresent = __instance.Modules != null && __instance.Modules.Count() > 0 && __instance.Modules.Any(m =>
+                        m != null && m.ModuleDef != null && (
+                             m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Speed ||
+                             m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.SurvivalOdds ||
+                             m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Range ||
+                             m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation
+                         )
+                     );
 
-                                break;
+                     string geoVehicle = __instance.VehicleDef.ViewElement.Name;
 
-                            }
+                     //    FieldInfo propertyInfo = typeof(GeoVehicle).GetField("MaxCharacterSpace", BindingFlags.Instance|BindingFlags.Public);
 
-                        case "Geoscape Masked Manticore":
-                            {
-                                if (passengerModulePresent)
-                                {
-                                    __instance.BaseDef = maskedManticore8slots;
-                                }
-                                else
-                                {
-                                    __instance.BaseDef = maskedManticore;
+                     //  TFTVLogger.Always($"propertyInfo null? ");
 
-                                }
+                     switch (geoVehicle)
+                     {
+                         case "Geoscape Manticore":
+                             {
+                                 if (passengerModulePresent)
+                                 {
+                                     __instance.Stats.SpaceForUnits = 6;
 
-                                break;
+                                     // __instance.BaseDef = manticore6slots;
 
-                            }
-                    }
+                                 }
+                                 else
+                                 {
+                                     __instance.Stats.SpaceForUnits = 2;
 
-                    
+                                     // __instance.BaseDef = manticore;
 
-                   /* if (__instance.GeoLevel!=null && __instance.GeoLevel.PhoenixFaction!=null && __instance.GeoLevel.PhoenixFaction.Research!=null && __instance.GeoLevel.PhoenixFaction.Research.HasCompleted("SYN_MoonMission_ResearchDef"))
-                    {
+                                 }
 
-                        GeoPhoenixFaction phoenixFaction = __instance.GeoLevel.PhoenixFaction;
+                                 break;
+                             }
 
-                        List<GeoVehicleStatModifier> AircraftModifiers = phoenixFaction.FactionStatModifiers.AircraftModifiers;
+                         case "Geoscape Helios":
+                             {
+                                 if (passengerModulePresent)
+                                 {
+                                     __instance.BaseDef = helios5slots;
+                                 }
+                                 else
+                                 {
+                                     __instance.BaseDef = helios;
 
-                        GeoVehicleStatModifier geoVehicleStatModifier = AircraftModifiers.FirstOrDefault((GeoVehicleStatModifier t) => t.IsGlobal);
-                        GeoVehicleStatModifier geoVehicleStatModifier2 = new GeoVehicleStatModifier();
-                        if (geoVehicleStatModifier != null)
-                        {
-                            TFTVLogger.Always($"geoVehicleStatModifier not null");
-                            geoVehicleStatModifier2 += geoVehicleStatModifier;
-                        }
+                                 }
 
-                        foreach (GeoVehicleStatModifier item in AircraftModifiers.Where((GeoVehicleStatModifier t) => t.VehicleDef == __instance.VehicleDef))
-                        {
-                            geoVehicleStatModifier2 += item;
-                        }
-
-                        geoVehicleStatModifier2.UpdateBaseVehicleStats(__instance);
+                                 break;
 
 
-                      
+                             }
 
-                    }*/
+                         case "Geoscape Thunderbird":
+                             {
+                                 if (passengerModulePresent)
+                                 {
+                                     __instance.BaseDef = thunderbird7slots;
+                                 }
+                                 else
+                                 {
+                                     __instance.BaseDef = thunderbird;
 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
+                                 }
+
+                                 break;
+
+
+                             }
+                         case "Geoscape Blimp":
+                             {
+                                 if (passengerModulePresent)
+                                 {
+                                     __instance.BaseDef = blimp12slots;
+                                 }
+                                 else
+                                 {
+                                     __instance.BaseDef = blimp8slots;
+
+                                 }
+
+                                 break;
+
+                             }
+
+                         case "Geoscape Masked Manticore":
+                             {
+                                 if (passengerModulePresent)
+                                 {
+                                     __instance.BaseDef = maskedManticore8slots;
+                                 }
+                                 else
+                                 {
+                                     __instance.BaseDef = maskedManticore;
+
+                                 }
+
+                                 break;
+
+                             }
+                     }
+
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                 }
+             }
+         }*/
 
         [HarmonyPatch(typeof(GeoLevelController), "RunInterceptionTutorial")]
         public static class GeoLevelController_DontDestroyAircraft_Gift
@@ -461,7 +418,7 @@ namespace TFTV
                     ____theGiftAircraft = __instance.PhoenixFaction.CreateVehicle(geoVehicle.CurrentSite, __instance.PhoenixFaction.FactionDef.StartingVehicle);
                     ____theGiftAircraft.RenameVehicle(__instance.FesteringSkiesSettings.ManticoreName.Localize());
                     ____theGiftAircraft.UseLoadout(__instance.FesteringSkiesSettings.GiftLoadout);
-                                
+
                     if (!config.SkipFSTutorial)
                     {
                         FesteringSkiesSettingsDef festeringSkiesSettings = __instance.FesteringSkiesSettings;

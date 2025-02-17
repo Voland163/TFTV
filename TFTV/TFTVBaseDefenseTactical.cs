@@ -1423,30 +1423,15 @@ namespace TFTV
                                 Position = position
                             }, null);
 
-                            //   TacticalLevelController controllerTactical = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
-
-
-
-                            //  PlanarScrollCamera camera = controllerTactical.View.CameraDirector.Manager.CurrentBehavior as PlanarScrollCamera;
-
-                            /*  CameraChaseParams cameraChaseParams = new CameraChaseParams
-                              {
-                                  ChaseVector = position
-                              };*/
-
-                            //  camera.DoTemporaryChase(cameraChaseParams, cameraChaseParams);
-                            //  CameraDirectorParams cameraParams = new CameraDirectorParams() {OriginPosition = camera.CenterWorldPos, TargetPosition=position }; 
-
-
-                            //  controllerTactical.View.CameraDirector.Hint(CameraDirectorHint.EnterPlay, cameraParams);
-
-
                         }
                         catch (Exception e)
                         {
                             TFTVLogger.Error(e);
                         }
                     }
+
+
+
                     internal static void GenerateRandomExplosions()
                     {
                         try

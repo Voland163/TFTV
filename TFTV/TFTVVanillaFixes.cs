@@ -32,7 +32,6 @@ using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.DataObjects;
-using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers.HavenDetails;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewControllers.SiteEncounters;
@@ -391,6 +390,9 @@ namespace TFTV
                         MethodInfo prepareShortActorInfoMethod = internalType.GetMethod("PrepareShortActorInfo", BindingFlags.NonPublic | BindingFlags.Instance);
                         MethodInfo selectCharacterInfoMethod = internalType.GetMethod("SelectCharacter", BindingFlags.NonPublic | BindingFlags.Instance);
                         _drawAllEnemyVisionMarkersMethodInfo = internalType.GetMethod("DrawAllEnemyVisionMarkers", BindingFlags.NonPublic | BindingFlags.Instance);
+                        
+                       MethodInfo activateAttackAbilityState = internalType.GetMethod("ActivateAttackAbilityState", BindingFlags.NonPublic | BindingFlags.Instance);
+
                         //   MethodInfo updateStateInfoMethod = internalType.GetMethod("UpdateState", BindingFlags.NonPublic | BindingFlags.Instance);
                         MethodInfo onInputEvenMethodInfo = internalType.GetMethod("OnInputEvent", BindingFlags.NonPublic | BindingFlags.Instance);
 
@@ -409,6 +411,12 @@ namespace TFTV
                             //  TFTVLogger.Always($"updateStateInfoMethod patch should be running");
                             harmony.Patch(selectCharacterInfoMethod, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes.UI), nameof(PatchShowEnemyVisionMarkers)));
                         }
+
+                        if(activateAttackAbilityState != null)
+                        {
+                            harmony.Patch(activateAttackAbilityState, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes.UI), nameof(ActivateAttackAbilityState)));
+                        }
+
                         //  if(EnemyVisionMarkerCreatorMethodInfo != null) 
                         //  {
                         //  harmony.Patch(EnemyVisionMarkerCreatorMethodInfo, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes.UI), nameof(PatchEnemyVisionMarkerCreator)));
@@ -438,6 +446,54 @@ namespace TFTV
 
             }
 
+            private static TacticalActorBase _enemyActorTargeted = null;
+
+            [HarmonyPatch(typeof(TacticalActorViewBase), "DoCameraChase")]
+            public static class TFTV_TacticalActorViewBase_DoCameraChase
+            {
+                public static bool Prefix(TacticalActorViewBase __instance, bool chaseTransform, bool lockInput, bool instant, bool chaseOnlyOutsideFrame)
+                {
+                    try
+                    {
+                        if (_enemyActorTargeted != null) 
+                        {
+                            //TFTVLogger.Always($"Chasing {__instance?.name} param: {chaseTransform} {lockInput} {instant} {chaseOnlyOutsideFrame}");
+                            _enemyActorTargeted = null;
+                            return false;
+                        }
+
+                        return true;                   
+                    }
+
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+            private static void ActivateAttackAbilityState(object __instance, bool fps, TacticalActorBase targetActor = null)
+            {
+                try 
+                {
+                   // TFTVLogger.Always($"fps {fps} actor? {targetActor?.name}");
+
+                    if(targetActor != null)
+                    {
+                        _enemyActorTargeted = targetActor;
+                    }
+                    else
+                    {
+                        _enemyActorTargeted = null;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
 
             private static void PatchShowEnemyVisionMarkers(object __instance, MethodBase __originalMethod, TacticalActor character)
             {
@@ -1209,14 +1265,16 @@ namespace TFTV
                                 {
                                     //if (eventData.Event.Name == "TacticalMusicEnemyTurn" || eventData.Event.Name == "TacticalMusicPlayerTurn")
                                     //  {
+                                    if (__instance.MasterVolumeRTPC.GetGlobalValue() > 0.25f)
+                                    {
+                                        __instance.SetAudioLevel(MixerKey.Music, __instance.MasterVolumeRTPC.GetGlobalValue() * 0.25f);
+                                        _musicVolumeAncientMapAdjusted = true;
 
-                                    __instance.SetAudioLevel(MixerKey.Music, __instance.MasterVolumeRTPC.GetGlobalValue() * 0.25f);
-                                    _musicVolumeAncientMapAdjusted = true;
+                                        //  AKRESULT result = AkSoundEngine.SetRTPCValue(eventData.Event.Id, 0.01f, __instance.MusicVolumeRTPC.Id);
+                                        // AKRESULT aKRESULT = AkSoundEngine.SetRTPCValue("", eventData.Event.Id, 0.01f);
 
-                                    //  AKRESULT result = AkSoundEngine.SetRTPCValue(eventData.Event.Id, 0.01f, __instance.MusicVolumeRTPC.Id);
-                                    // AKRESULT aKRESULT = AkSoundEngine.SetRTPCValue("", eventData.Event.Id, 0.01f);
-
-                                    TFTVLogger.Always($"Ancients map: music reduced to {__instance.MasterVolumeRTPC.GetGlobalValue()}"); //AKRESULT: {result}");
+                                        TFTVLogger.Always($"Ancients map: music reduced to {__instance.MasterVolumeRTPC.GetGlobalValue()}");
+                                    }//AKRESULT: {result}");
                                 }
                                 else if (!TFTVAncients.CheckIfAncientMap(controller) && _musicVolumeAncientMapAdjusted)
                                 {
@@ -1320,138 +1378,135 @@ namespace TFTV
             internal class AI
             {
 
+
                 [HarmonyPatch(typeof(AIAttackPositionConsideration), "EvaluateWithAbility")]
                 public static class AIAttackPositionConsideration_EvaluateWithAbilityPatch
                 {
-                    public static bool Prefix(AIAttackPositionConsideration __instance, IAIActor actor, IAITarget target, ref float __result)
+                    public static bool Prefix(AIAttackPositionConsideration __instance, IAIActor actor, IAITarget target, TacticalAbilityDef abilityDef, ref float __result)
                     {
                         try
                         {
 
-                            MethodInfo getDamagePayloadMethodInfo = typeof(AIAttackPositionConsideration).GetMethod("GetDamagePayload", BindingFlags.NonPublic | BindingFlags.Instance);
+                            MethodInfo getDamagePayloadMethodInfo = typeof(AIAttackPositionConsideration).GetMethod("GetPayloadMaxDamage", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                            //TFTVLogger.Always($"getDamagePayloadMethodInfo null {getDamagePayloadMethodInfo==null}");
 
                             TacticalActor tacActor = (TacticalActor)actor;
                             TacAITarget tacAITarget = (TacAITarget)target;
-                            Weapon weapon = (Weapon)tacAITarget.Equipment;
-                            ShootAbility shootAbility = weapon?.DefaultShootAbility;
-                            if (weapon == null || shootAbility == null)
-                            {
-                                Debug.LogError($"{__instance.Def.name} has invalid target weapon {weapon} for {tacActor}", tacActor);
-                                __result = 0f;
-                                return false;
-                            }
-
-                            IgnoredAbilityDisabledStatesFilter ignoreNoValidTargetsEquipmentNotSelectedAndNotEnoughActionPoints = IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsEquipmentNotSelectedAndNotEnoughActionPoints;
-                            if (!shootAbility.IsEnabled(ignoreNoValidTargetsEquipmentNotSelectedAndNotEnoughActionPoints))
+                            float eps = 0.01f;
+                            if (abilityDef == null)
                             {
                                 __result = 0f;
                                 return false;
                             }
 
-                            if (__instance.Def.IsOverwatch)
+                            TacticalAbility abilityWithDef = tacActor.GetAbilityWithDef<TacticalAbility>(abilityDef);
+                            if (abilityWithDef == null)
                             {
-                                OverwatchAbility ability = tacActor.GetAbility<OverwatchAbility>(weapon);
-                                if (ability == null || !ability.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreEquipmentNotSelected))
+                                __result = 0f;
+                                return false;
+                            }
+
+                            if (!abilityWithDef.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsAndEquipmentNotSelected))
+                            {
+                                __result = 0f;
+                                return false;
+                            }
+
+                            float maxMoveAndActRange = tacActor.GetMaxMoveAndActRange(abilityWithDef, tacAITarget.MoveAbility);
+                            if (Utl.GreaterThan(tacAITarget.PathLength, maxMoveAndActRange, eps))
+                            {
+                                __result = 0f;
+                                return false;
+                            }
+
+                            DamagePayload damagePayload = (abilityWithDef as IDamageDealer)?.GetDamagePayload();
+                            if (damagePayload == null)
+                            {
+                                __result = 0f;
+                                return false;
+                            }
+
+                            IEnumerable<TacticalActorBase> enemies = from a in tacActor.TacticalFaction.AIBlackboard.GetEnemies(tacActor.AIActor.GetEnemyMask(__instance.Def.EnemyMask), checkKnowledge: false)
+                                                                     where tacActor.TacticalFaction.Vision.IsRevealed(a)
+                                                                     select a;
+                            IEnumerable<TacticalAbilityTarget> enumerable = abilityWithDef.GetTargetsAt(tacAITarget.Pos);
+                            if (!__instance.Def.InclideAlliesAsTargets)
+                            {
+                                enumerable = enumerable.Where((TacticalAbilityTarget x) => enemies.Contains(x.Actor));
+                            }
+
+                            List<TacticalActorBase> list = new List<TacticalActorBase>(10);
+                            float num = 0f;
+                            foreach (TacticalAbilityTarget item in enumerable)
+                            {
+                                float num2 = 1f;
+                                list.Clear();
+                                if (abilityWithDef.OriginTargetData.TargetSelf)
                                 {
-                                    __result = 0f;
-                                    return false;
+                                    list.AddRange(AIUtil.GetAffectedTargetsByDamageAbility(tacActor, tacAITarget.Pos, abilityWithDef as IDamageDealer));
                                 }
-
-                                tacAITarget.AngleInRadians = __instance.Def.OverwatchFOV / 2f * ((float)Math.PI / 180f);
-                            }
-
-                            TacticalAbilityTarget tacticalAbilityTarget = new TacticalAbilityTarget();
-                            List<TacticalActorBase> list = new List<TacticalActorBase>(5);
-                            float num = 1f;
-                            if (tacAITarget.Actor == null)
-                            {
-                                __result = 0f;
-                                return false;
-                            }
-
-                            tacticalAbilityTarget.Actor = tacAITarget.Actor;
-                            tacticalAbilityTarget.ActorGridPosition = tacAITarget.Actor.Pos;
-                            int num2 = 1;
-                            if (tacAITarget.Actor is TacticalActor)
-                            {
-                                num2 = ((TacticalActor)tacAITarget.Actor).BodyState.GetHealthSlots().Count();
-                            }
-
-                            list.Clear();
-                            List<KeyValuePair<TacticalAbilityTarget, float>> shootTargetsWithScores = tacActor.TacticalFaction.AIBlackboard.GetShootTargetsWithScores(weapon, tacticalAbilityTarget, tacAITarget.Pos);
-                            TacticalAbilityTarget key = shootTargetsWithScores.FirstOrDefault().Key;
-                            if (key != null)
-                            {
-                                list.AddRange(AIUtil.GetAffectedTargetsByShooting(key.ShootFromPos, tacActor, weapon, key));
-                                if (list.Count == 0)
+                                else
                                 {
-                                    __result = 0f;
-                                    return false;
+                                    list.AddRange(AIUtil.GetAffectedTargetsByDamageAbility(tacActor, item.Actor.Pos, abilityWithDef as IDamageDealer));
                                 }
 
                                 int num3 = 0;
-                                foreach (TacticalActorBase item in list)
+                                foreach (TacticalActorBase item2 in list)
                                 {
-                                    if (tacActor.RelationTo(item) == FactionRelation.Friend)
+                                    if (tacActor.RelationTo(item2) == FactionRelation.Friend)
                                     {
-                                        num *= __instance.Def.FriendlyHitScoreMultiplier;
+                                        if ((__instance.Def.IgnoreDamageOnSelf && item2 as TacticalActor != tacActor) || !__instance.Def.IgnoreDamageOnSelf)
+                                        {
+                                            num2 *= __instance.Def.FriendlyHitScoreMultiplier;
+                                        }
                                     }
-                                    else if (tacActor.RelationTo(item) == FactionRelation.Neutral)
+                                    else if (tacActor.RelationTo(item2) == FactionRelation.Neutral)
                                     {
-                                        num *= __instance.Def.NeutralHitScoreMultiplier;
+                                        num2 *= __instance.Def.NeutralHitScoreMultiplier;
                                     }
-                                    else if (tacActor.RelationTo(item) == FactionRelation.Enemy)
-                                    {
 
-                                        if (item.Status.HasStatus<MindControlStatus>() && item.Status.GetStatus<MindControlStatus>().OriginalFaction == tacActor.TacticalFaction.TacticalFactionDef)
+                                    if (tacActor.RelationTo(item2) == FactionRelation.Enemy)
+                                    {
+                                        if (item2.Status!=null && item2.Status.HasStatus<MindControlStatus>() && item2.Status.GetStatus<MindControlStatus>().OriginalFaction == tacActor.TacticalFaction.TacticalFactionDef)
                                         {
                                         }
                                         else
                                         {
                                             num3++;
                                         }
+
+
                                     }
                                 }
 
-                                if (num < Mathf.Epsilon || num3 == 0)
+                                if (num2 < Mathf.Epsilon || num3 == 0)
                                 {
-                                    __result = 0f;
-                                    return false;
+                                    continue;
                                 }
 
+                                object[] parameters = new object[] { tacAITarget.Pos, damagePayload, list.Where((TacticalActorBase ac) => tacActor.RelationTo(ac) == FactionRelation.Enemy), null };
 
-
-                                object[] parameters = new object[] { tacAITarget.Pos, weapon.GetDamagePayload(), list.Where((TacticalActorBase ac) => tacActor.RelationTo(ac) == FactionRelation.Enemy), weapon };
-
-                                float damagePayLoadResult = (float)getDamagePayloadMethodInfo.Invoke(__instance, parameters);
-
-                                float num4 = damagePayLoadResult.ClampHigh(__instance.Def.MaxDamage);
-
-                                num *= num4 / __instance.Def.MaxDamage;
-                                if (num < Mathf.Epsilon)
+                                float payloadMaxDamage = (float)getDamagePayloadMethodInfo.Invoke(__instance, parameters);
+                                if (!(payloadMaxDamage < 10f))
                                 {
-                                    __result = 0f;
-                                    return false;
-                                }
-
-                                DamageDeliveryType damageDeliveryType = weapon.GetDamagePayload().DamageDeliveryType;
-                                if (damageDeliveryType != DamageDeliveryType.Parabola && damageDeliveryType != DamageDeliveryType.Sphere && AIUtil.CheckActorType(tacAITarget.Actor, ActorType.Civilian | ActorType.Combatant))
-                                {
-                                    Vector3 vector = key.ShootFromPos - tacAITarget.Actor.Pos;
-                                    if ((!vector.x.IsZero() || !vector.z.IsZero()) && !__instance.Def.IsOverwatch)
+                                    float num4 = payloadMaxDamage.ClampHigh(__instance.Def.MaxDamage);
+                                    num2 *= num4 / __instance.Def.MaxDamage;
+                                    num2 *= AIUtil.GetEnemyWeight(tacActor.TacticalFaction.AIBlackboard, item.Actor);
+                                    num2 = Mathf.Clamp(num2, 0f, 1f);
+                                    if (num < num2)
                                     {
-                                        num *= Mathf.Clamp((float)shootTargetsWithScores.Count / (float)num2, 0f, 1f);
+                                        tacAITarget.Actor = item.Actor;
+                                        num = num2;
                                     }
                                 }
-
-                                num *= AIUtil.GetEnemyWeight(tacActor.TacticalFaction.AIBlackboard, tacAITarget.Actor);
-                                __result = Mathf.Clamp(num, 0f, 1f);
-                                return false;
-
                             }
 
-                            __result = 0f;
+                            __result= num;
                             return false;
+
+
+
                         }
                         catch (Exception e)
                         {
@@ -2117,7 +2172,7 @@ namespace TFTV
                 }
 
 
-               [HarmonyPatch(typeof(SoldierPortraitUtil), "RenderSoldierNoCopy")]
+                [HarmonyPatch(typeof(SoldierPortraitUtil), "RenderSoldierNoCopy")]
                 public static class SoldierPortraitUtil_RenderSoldierNoCopy_patch
                 {
 
@@ -2126,17 +2181,17 @@ namespace TFTV
                         try
                         {
 
-                            List<Light> lights = new List<Light>()
+                           /* List<Light> lights = new List<Light>()
                             {
                                 soldierToRender.transform.GetComponentsInChildren<Light>().FirstOrDefault(l=>l.name.Contains("DirLighjt2")),
                                 soldierToRender.transform.GetComponentsInChildren<Light>().FirstOrDefault(l=>l.name.Contains("DirLighjt3")),
                                 soldierToRender.transform.GetComponentsInChildren<Light>().FirstOrDefault(l=>l.name.Contains("DirLighjt1")),
                                 soldierToRender.transform.GetComponentsInChildren<Light>().FirstOrDefault(l=>l.name.Contains("AmbienceLight")),
-                            };
+                            };*/
 
-                         // AdjustPortraitLights(lights[0], lights[1], lights[2], lights[3]);
-                         //   AdjustPortraitLightsCold(lights[0], lights[1], lights[2], lights[3]);
-                          //  AdjustLovecraftianPortraitLights(lights[0], lights[1], lights[2], lights[3]);
+                            // AdjustPortraitLights(lights[0], lights[1], lights[2], lights[3]);
+                            //   AdjustPortraitLightsCold(lights[0], lights[1], lights[2], lights[3]);
+                            //  AdjustLovecraftianPortraitLights(lights[0], lights[1], lights[2], lights[3]);
 
                             Texture2D texture2D = new Texture2D(renderParams.RenderedPortraitsResolution.x, renderParams.RenderedPortraitsResolution.y, TextureFormat.RGBA32, mipChain: true);
                             texture2D.filterMode = FilterMode.Trilinear;
@@ -2149,9 +2204,9 @@ namespace TFTV
                                 renderingEnvironment = new RenderingEnvironment(renderParams.RenderedPortraitsResolution, RenderingEnvironmentOption.NoBackground, Color.black, usedCamera);
                             }
 
-                          //  TFTVLogger.Always($"QualitySettings.antiAliasing: {QualitySettings.antiAliasing}");
+                            //  TFTVLogger.Always($"QualitySettings.antiAliasing: {QualitySettings.antiAliasing}");
 
-                          //  renderingEnvironment.RenderTexture.antiAliasing = (QualitySettings.antiAliasing > 0) ? QualitySettings.antiAliasing : 4;
+                            //  renderingEnvironment.RenderTexture.antiAliasing = (QualitySettings.antiAliasing > 0) ? QualitySettings.antiAliasing : 4;
 
                             float cameraDistance = renderParams.CameraDistance;
 
@@ -2164,7 +2219,8 @@ namespace TFTV
                                 if (transform == null)
                                 {
                                     transform = soldierToRender.transform;
-                                };
+                                }
+                                ;
                             }
 
                             Transform transform2 = soldierToRender.transform;
@@ -3346,6 +3402,12 @@ namespace TFTV
 
 
         }
+       
+
+
+
+    
+
         //Prevents items with 0HP from manifesting themselves in tactical
         //And causes AI to lockup.
 

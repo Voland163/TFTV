@@ -1,12 +1,9 @@
-﻿using Base.Audio;
-using Base.Core;
-using Base.Eventus;
-using HarmonyLib;
-using PhoenixPoint.Common.Entities.GameTagsTypes;
-using PhoenixPoint.Common.Game;
+﻿using HarmonyLib;
+using PhoenixPoint.Common.Core;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Tactical.Entities;
-using PhoenixPoint.Tactical.Levels;
 using System;
+using System.Linq;
 using UnityEngine;
 
 
@@ -20,37 +17,58 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
 
-       /* public static void AdjustMusicLevelAncientMaps(TacticalLevelController controller)
+       /* [HarmonyPatch(typeof(GeoVehicle), "get_Speed")]
+        public static class GeoVehicle_get_Speed_patch
         {
-            try
+            public static void Postfix(GeoVehicle __instance, EarthUnits __result)
             {
-
-                MissionTypeTagDef ancientsMission = DefCache.GetDef<MissionTypeTagDef>("MissionTypeAncientSite_MissionTagDef");
-
-                AudioManager audioManager = GameUtl.GameComponent<PhoenixGame>().GetComponent<AudioManager>();
-
-                TFTVLogger.Always($"current music setting is: {audioManager.GetAudioLevel(MixerKey.Music)}");
-
-                if (TFTVAncients.CheckIfAncientsPresent(controller))
+                try
                 {
-                    TFTVLogger.Always($"Ancients Map. Adjusting music");
+                    TFTVLogger.Always($"GeoVehicle.get_Speed: {__instance.name}, {__result} {__instance.GlobePosition} {__instance.GeoLevel.Map.}");
 
-                    audioManager.SetAudioLevel(MixerKey.Music, Mathf.Min(0.25f, _playerSetMusicVolume));
+
+
                 }
-
-
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
             }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-
-
-
         }*/
 
-       
+
+        /* public static void AdjustMusicLevelAncientMaps(TacticalLevelController controller)
+         {
+             try
+             {
+
+                 MissionTypeTagDef ancientsMission = DefCache.GetDef<MissionTypeTagDef>("MissionTypeAncientSite_MissionTagDef");
+
+                 AudioManager audioManager = GameUtl.GameComponent<PhoenixGame>().GetComponent<AudioManager>();
+
+                 TFTVLogger.Always($"current music setting is: {audioManager.GetAudioLevel(MixerKey.Music)}");
+
+                 if (TFTVAncients.CheckIfAncientsPresent(controller))
+                 {
+                     TFTVLogger.Always($"Ancients Map. Adjusting music");
+
+                     audioManager.SetAudioLevel(MixerKey.Music, Mathf.Min(0.25f, _playerSetMusicVolume));
+                 }
+
+
+             }
+             catch (Exception e)
+             {
+                 TFTVLogger.Error(e);
+                 throw;
+             }
+
+
+
+         }*/
+
+
 
 
 

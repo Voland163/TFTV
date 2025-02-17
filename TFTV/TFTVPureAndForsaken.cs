@@ -108,11 +108,46 @@ namespace TFTV
                         ChangeGuidedByWhispers();
                         AddOptionsUndefendable();
                         AddOptionsSubject24Intro();
+                        DestroyingPureRemovesGuidedByWhispersAndFlavorEvent();
                     }
                     catch (Exception e)
                     {
                         TFTVLogger.Error(e);
                     }
+                }
+
+                private static void DestroyingPureRemovesGuidedByWhispersAndFlavorEvent()
+                {
+                    try
+                    {
+                        GeoscapeEventDef bionicFortressWin = DefCache.GetDef<GeoscapeEventDef>("PROG_PU14_WIN_GeoscapeEventDef");
+                        bionicFortressWin.GeoscapeEventData.Choices[0].Outcome.VariablesChange = new List<OutcomeVariableChange>()
+                        {
+                        new OutcomeVariableChange()
+                        {
+                        Value = new Base.Utils.RangeDataInt(){Min = 0, Max = 0},
+                        VariableName = "PU10",
+                        IsSetOperation = true
+
+                        }
+
+                        };
+
+                        GeoscapeEventDef flavorEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_PU121_GeoscapeEventDef");
+
+                        GeoLevelConditionDef conditionSource = DefCache.GetDef<GeoLevelConditionDef>("[PROG_PU10] Condition 1");
+                        GeoLevelConditionDef newCondition = Helper.CreateDefFromClone(conditionSource, "{C57B2E05-D662-471D-9F59-DB3CF237A5EB}", "PROG_PU121Condition");
+                        newCondition.VariableCompareOperator = GeoEventVariationConditionDef.ComparisonOperator.GreaterOrEqual;
+                        newCondition.VariableCompareToNumber = 4;
+
+                        flavorEvent.GeoscapeEventData.Conditions.Add(newCondition);
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+
+
                 }
 
                 private static void AddOptionsSubject24Intro()
@@ -572,11 +607,11 @@ namespace TFTV
 
                         StatusImmunityAbilityDef deliriumImmunity = (StatusImmunityAbilityDef)Repo.GetDef("8c2bb045-0c0a-e6d4-5998-3df8b7e1309f"); //CorruptionStatusImmunity_AbilityDef
 
-                        foreach (TacCharacterDef tacCharacterDef in Repo.GetAllDefs<TacCharacterDef>().Where(tcd => tcd.Data.BodypartItems.Count()>0 && tcd.Data.BodypartItems.All(bp => bp.Tags.Contains(Shared.SharedGameTags.BionicalTag)) 
-                        && !tcd.Data.GameTags.Contains(TFTVChangesToDLC5.MercenaryTag))) 
+                        foreach (TacCharacterDef tacCharacterDef in Repo.GetAllDefs<TacCharacterDef>().Where(tcd => tcd.Data.BodypartItems.Count() > 0 && tcd.Data.BodypartItems.All(bp => bp.Tags.Contains(Shared.SharedGameTags.BionicalTag))
+                        && !tcd.Data.GameTags.Contains(TFTVChangesToDLC5.MercenaryTag)))
                         {
                             tacCharacterDef.Data.Abilites = tacCharacterDef.Data.Abilites.AddToArray(deliriumImmunity);
-                           // TFTVLogger.Always($"{tacCharacterDef.name} getting deliriumImmunity");
+                            // TFTVLogger.Always($"{tacCharacterDef.name} getting deliriumImmunity");
                         }
 
                         // NJ_Jugg_BIO_Helmet_BodyPartDef
@@ -626,7 +661,7 @@ namespace TFTV
                                 }
                             }
                         }
-                    
+
 
                         List<ResearchRewardDef> fireRewards = new List<ResearchRewardDef>(fireTech.Unlocks);
 
@@ -657,7 +692,7 @@ namespace TFTV
                                 }
                             }
                         }
-                      
+
                         //remove from adv tech
                         List<ResearchRewardDef> advTechRewards = new List<ResearchRewardDef>(advTechnicianWeapons.Unlocks);
                         advTechRewards.RemoveRange(piercingUnitRewards);
@@ -666,7 +701,7 @@ namespace TFTV
                         //add to pierce
                         List<ResearchRewardDef> pierceRewards = new List<ResearchRewardDef>(piercingTech.Unlocks);
                         pierceRewards.AddRange(piercingUnitRewards);
-                        piercingTech.Unlocks = pierceRewards.ToArray();                 
+                        piercingTech.Unlocks = pierceRewards.ToArray();
 
 
                     }
@@ -752,30 +787,30 @@ namespace TFTV
                             CreateUnitResearchReward(acidTech, guids[x], fkMutogs[x]);
 
                         }
-                     /*   ClassTagDef berserkerTag = DefCache.GetDef<ClassTagDef>("Berserker_ClassTagDef");
-                        ItemClassificationTagDef gunWeaponTag = DefCache.GetDef<ItemClassificationTagDef>("GunWeapon_TagDef");
-                        ItemTypeTagDef ammoTag= DefCache.GetDef<ItemTypeTagDef>("AmmoItem_TagDef");
+                        /*   ClassTagDef berserkerTag = DefCache.GetDef<ClassTagDef>("Berserker_ClassTagDef");
+                           ItemClassificationTagDef gunWeaponTag = DefCache.GetDef<ItemClassificationTagDef>("GunWeapon_TagDef");
+                           ItemTypeTagDef ammoTag= DefCache.GetDef<ItemTypeTagDef>("AmmoItem_TagDef");
 
-                        foreach(TacCharacterDef tacCharacterDef in Repo.GetAllDefs<TacCharacterDef>().Where(tc => tc.ClassTag == berserkerTag)) 
-                        {
-                            TFTVLogger.Always($"looking at {tacCharacterDef.name}");
+                           foreach(TacCharacterDef tacCharacterDef in Repo.GetAllDefs<TacCharacterDef>().Where(tc => tc.ClassTag == berserkerTag)) 
+                           {
+                               TFTVLogger.Always($"looking at {tacCharacterDef.name}");
 
-                            List<ItemDef> equipmentList = new List<ItemDef>(tacCharacterDef.Data.EquipmentItems);
-                            List<ItemDef> equipmentToRemove = new List<ItemDef>();
+                               List<ItemDef> equipmentList = new List<ItemDef>(tacCharacterDef.Data.EquipmentItems);
+                               List<ItemDef> equipmentToRemove = new List<ItemDef>();
 
-                            foreach(ItemDef itemDef in equipmentList) 
-                            {
-                                if (itemDef.Tags.Contains(gunWeaponTag)|| itemDef.Tags.Contains(ammoTag)) 
-                                {
-                                    TFTVLogger.Always($"{itemDef.name} will be removed from {tacCharacterDef.name} equipment list");
-                                    equipmentToRemove.Add(itemDef);                               
-                                } 
-                            }
+                               foreach(ItemDef itemDef in equipmentList) 
+                               {
+                                   if (itemDef.Tags.Contains(gunWeaponTag)|| itemDef.Tags.Contains(ammoTag)) 
+                                   {
+                                       TFTVLogger.Always($"{itemDef.name} will be removed from {tacCharacterDef.name} equipment list");
+                                       equipmentToRemove.Add(itemDef);                               
+                                   } 
+                               }
 
-                            equipmentList.RemoveRange(equipmentToRemove);
-                            tacCharacterDef.Data.EquipmentItems = equipmentList.ToArray();
-                        
-                        }*/
+                               equipmentList.RemoveRange(equipmentToRemove);
+                               tacCharacterDef.Data.EquipmentItems = equipmentList.ToArray();
+
+                           }*/
 
                     }
                     catch (Exception e)
@@ -818,7 +853,7 @@ namespace TFTV
 
                         TFTVLogger.Always($"Completed mission vs the Pure, adding + 1 to {_puAmbushVariable} so it's now {eventSystem.GetVariable(_puAmbushVariable)}");
 
-                        if (eventSystem.GetVariable(_puAmbushVariable) > 1 && (eventSystem.GetEventRecord(_OlenaOnPureEvent.EventID)== null || eventSystem.GetEventRecord(_OlenaOnPureEvent.EventID) != null && eventSystem.GetEventRecord(_OlenaOnPureEvent.EventID).TriggerCount == 0))
+                        if (eventSystem.GetVariable(_puAmbushVariable) > 1 && (eventSystem.GetEventRecord(_OlenaOnPureEvent.EventID) == null || eventSystem.GetEventRecord(_OlenaOnPureEvent.EventID) != null && eventSystem.GetEventRecord(_OlenaOnPureEvent.EventID).TriggerCount == 0))
                         {
                             GeoPhoenixFaction phoenix = geoMission.Site.GeoLevel.PhoenixFaction;
                             eventSystem.TriggerGeoscapeEvent(_OlenaOnPureEvent.EventID, new GeoscapeEventContext(geoMission.Site, phoenix));

@@ -342,10 +342,16 @@ namespace TFTV
                                 names[faction][1].Remove(name);
                             }
                         }
-                        else
+                        else if(names[faction].Count>=3)
                         {
                             name = names[faction][2][UnityEngine.Random.Range(0, names[faction][2].Count)];
                             names[faction][2].Remove(name);
+                        }
+                        else 
+                        {
+                            name = names[faction][0][UnityEngine.Random.Range(0, names[faction][0].Count)];
+                            names[faction][0].Remove(name);
+
                         }
                     }
 

@@ -3928,7 +3928,17 @@ namespace TFTV
                             squadNameRect.localScale = new Vector3(0.5f, 0.5f, 0.5f);
                             //   textObj.GetComponent<RectTransform>().pivot = new Vector2(5, -5);
                             Text squadNameText = _squadName.GetComponent<Text>();
-                            squadNameText.text = $"{TFTVCommonMethods.ConvertKeyToString("HUMAN_ENEMIES_KEY_LEADER")}{TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_GRAMMAR_OF")}{squadName.ToUpper()}";
+
+                            if (leaderName.GetComponent<Text>().text == TFTVCommonMethods.ConvertKeyToString("KEY_LORE_TITLE_SUBJECT24"))
+                            {
+                                squadNameText.text = $"{TFTVCommonMethods.ConvertKeyToString("HUMAN_ENEMIES_KEY_LEADER")}{TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_GRAMMAR_OF")}{factionName.ToUpper()}";
+                            }
+                            else 
+                            {
+                                squadNameText.text = $"{TFTVCommonMethods.ConvertKeyToString("HUMAN_ENEMIES_KEY_LEADER")}{TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_GRAMMAR_OF")}{squadName.ToUpper()}";
+                            }
+
+
                             squadNameText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                             squadNameText.fontSize = 30; //70                          
                             squadNameText.color = WhiteColor;
@@ -4023,6 +4033,8 @@ namespace TFTV
                 private Text _titleOfTactic;
                 private OpposingLeaderWidgetTooltip _widgetTooltip;
 
+              
+
 
                 public void InitializeLeaderWidget(Sprite factionIcon, Sprite classIcon, TacticalActor leader, string tacticName,
                     string tacticDescription, string factionName, string squadName, string status, bool leaderDead, bool leaderFled, bool tacticActive)
@@ -4104,7 +4116,7 @@ namespace TFTV
                         GameObject nameTextObj = new GameObject("NameText");
                         nameTextObj.transform.SetParent(headerObject.transform);
                         Text nameText = nameTextObj.AddComponent<Text>();
-                        nameText.text = leader?.name?.ToUpper();
+                        nameText.text = TFTVTacticalUtils.ShortenName(leader?.name, 11);
                         nameText.horizontalOverflow = HorizontalWrapMode.Overflow;
                         nameText.alignment = TextAnchor.MiddleLeft;
                         nameText.fontSize = 40;

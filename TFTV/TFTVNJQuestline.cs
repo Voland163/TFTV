@@ -1,15 +1,19 @@
 ﻿using Base;
 using Base.Cameras;
+using Base.Core;
 using Base.Defs;
 using Base.Entities;
 using Base.Entities.Statuses;
 using HarmonyLib;
 using I2.Loc;
+using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.ContextHelp;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -20,14 +24,18 @@ using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.ActorDeployment;
 using PhoenixPoint.Tactical.Levels.Destruction;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
+using PhoenixPoint.Tactical.Levels.TacticalLevelLights;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewModules;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using static PhoenixPoint.Tactical.View.ViewControllers.SquadMemberScrollerController;
+using static TFTV.TFTVNJQuestline.IntroMission.MissionQuips;
+using static TFTV.TFTVTacticalUtils;
 using static TFTV.TFTVTauntsAndQuips;
 
 namespace TFTV
@@ -40,19 +48,72 @@ namespace TFTV
 
         public static bool NewNJIntroMission = false;
 
+
+
+        public static class DelayedInvoker
+        {
+            private class DelayedRunner : MonoBehaviour { }
+
+            private static DelayedRunner _runner;
+            private static DelayedRunner Runner
+            {
+                get
+                {
+                    if (_runner == null)
+                    {
+                        // Create a new GameObject to run our coroutines.
+                        GameObject go = new GameObject("DelayedInvoker");
+                        UnityEngine.Object.DontDestroyOnLoad(go);
+                        _runner = go.AddComponent<DelayedRunner>();
+                    }
+                    return _runner;
+                }
+            }
+
+            public static void Run(float delay, Action action)
+            {
+                Runner.StartCoroutine(RunCoroutine(delay, action));
+            }
+
+            private static IEnumerator RunCoroutine(float delay, Action action)
+            {
+                yield return new WaitForSeconds(delay);
+                action?.Invoke();
+            }
+        }
+
+
+
         internal class IntroMission
         {
             private static readonly CustomMissionTypeDef _introMission = DefCache.GetDef<CustomMissionTypeDef>("StoryNJ0_CustomMissionTypeDef");
+            private static MissionTagDef _newNJIntroMissionTag = null;
             private static StructuralTarget _commsConsole = null;
             private static KillActorFactionObjectiveDef _killInfiltratorObjective = null;
             private static ActorDeploymentTagDef _priestDeploymentTag = null;
             private static ActorDeploymentTagDef _infiltratorDeploymentTag = null;
+            public static ContextHelpHintDef NewNJIntroMissionHint = null;
+            private static readonly string _hintDescKey = "TFTV_KEY_NJ_INTRO_MISS_HINT_MISSION_START_DESC";
+            private static string _havenName = "";
+            public static List<string> UsedQuips = new List<string>();
 
-            public static bool IsIntroMission(TacticalLevelController controller)
+            public static bool IsIntroMission(TacticalLevelController controller = null, GeoMission mission = null)
             {
                 try
                 {
-                    return controller.TacMission.MissionData.MissionType == _introMission;
+                    if (!NewNJIntroMission)
+                    {
+                        return false;
+                    }
+
+                    if (controller != null)
+                    {
+                        return controller.TacMission.MissionData.MissionType.Tags.Contains(_newNJIntroMissionTag);
+                    }
+                    else
+                    {
+                        return mission.MissionDef.Tags.Contains(_newNJIntroMissionTag);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -61,11 +122,12 @@ namespace TFTV
                 }
             }
 
-            public static void ClearDataOnMissionLoadAndStateChange()
+            public static void ClearDataOnMissionRestartLoadAndStateChange()
             {
                 try
                 {
                     _commsConsole = null;
+                    UsedQuips.Clear();
 
                 }
                 catch (Exception e)
@@ -74,19 +136,23 @@ namespace TFTV
                     throw;
                 }
             }
+
+
+
 
             public static void RunOnTacticalStart(TacticalLevelController controller)
             {
 
                 try
                 {
-                    if (!NewNJIntroMission)
+                    if (!IsIntroMission(controller))
                     {
                         return;
                     }
 
                     MissionStartChanges.CreateObjectiveToTurnOffPropaganda(controller);
                     MissionQuips.Propaganda.PropagandaQuips(controller);
+                    NJQuips.PopulateQuips();
                 }
                 catch (Exception e)
                 {
@@ -98,6 +164,8 @@ namespace TFTV
 
             internal class Defs
             {
+
+
                 public static void ModifyIntroMissionDefs()
                 {
                     try
@@ -107,12 +175,15 @@ namespace TFTV
                             return;
                         }
 
+                        CreateMissionTag();
+                        AddIntroHint();
                         AddNJFaction();
                         MakeAnuPriestAppearOnAllDifficulties();
 
                         AddSynedrionInfiltrator();
                         CreateKillInfiltratorObjective();
                         ModifyKillObjective();
+
                     }
 
                     catch (Exception e)
@@ -121,6 +192,51 @@ namespace TFTV
                         throw;
                     }
                 }
+
+
+
+                private static void CreateMissionTag()
+                {
+                    try
+                    {
+                        _newNJIntroMissionTag = Helper.CreateDefFromClone(
+                            DefCache.GetDef<MissionTagDef>("MissionTypeStoryMissionNJ_MissionTagDef"),
+                            "{F3187A2C-92B9-4E0B-822B-26BB18F01F58}", "NewNJIntroMissionTag");
+
+                        _introMission.Tags.Add(_newNJIntroMissionTag);
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+
+
+                }
+
+
+                private static void AddIntroHint()
+                {
+                    try
+
+                    {
+                        string hintTitle = "TFTV_KEY_NJ_INTRO_MISS_HINT_MISSION_START_TITLE";
+                        string hintDesc = _hintDescKey;
+
+                        NewNJIntroMissionHint = TFTVHints.HintDefs.CreateNewTacticalHint(
+                            hintDesc, HintTrigger.MissionStart, _newNJIntroMissionTag.name, hintTitle, hintDesc, 3, true, "{2408C9C0-90F0-4BA3-8A25-36520B63ECED}", "NJ_VICTORY_START1.jpg");
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+
+
+                }
+
 
                 private static void ModifyKillObjective()
                 {
@@ -295,6 +411,34 @@ namespace TFTV
 
             }
 
+            internal class Geoscape
+            {
+
+                public static void RecordHavenName(GeoMission mission)
+                {
+                    try
+                    {
+                        if (!IsIntroMission(null, mission))
+                        {
+                            return;
+                        }
+
+                        _havenName = mission.Site.LocalizedSiteName;
+                        NewNJIntroMissionHint.Text = new Base.UI.LocalizedTextBind(TFTVCommonMethods.ConvertKeyToString(_hintDescKey).Replace("[HavenName]", _havenName), true);
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+
+                }
+
+
+            }
+
+
             internal class MissionStartChanges
             {
 
@@ -393,7 +537,7 @@ namespace TFTV
                         newInfiltratorSpawn.FixedDeployment = fixedConditions;
                         newInfiltratorSpawn.MissionDeployment = missionConditionsInfiltrator;
 
-                        newInfiltratorSpawn.GetComponent<BoxCollider>().size = new Vector3(6f, 6f, 4f);
+                        newInfiltratorSpawn.GetComponent<BoxCollider>().size = new Vector3(8f, 8f, 8f);
 
                         soldierSpawn.SetPosition(_newSoldierSpawnPos[0]);
                         soldierSpawn.SetFaction(controller.GetFactionByCommandName("nj"), TacMissionParticipant.Residents);
@@ -429,7 +573,7 @@ namespace TFTV
                 {
                     try
                     {
-                        if (!NewNJIntroMission || !IsIntroMission(controller))
+                        if (!IsIntroMission(controller))
                         {
                             return;
                         }
@@ -532,10 +676,7 @@ namespace TFTV
                 {
                     try
                     {
-                        if (!NewNJIntroMission)
-                        {
-                            return;
-                        }
+
 
                         if (!IsIntroMission(controller))
                         {
@@ -573,6 +714,8 @@ namespace TFTV
 
             }
 
+
+
             internal class MissionQuips
             {
 
@@ -589,10 +732,117 @@ namespace TFTV
                     return sprite;
                 }
 
-                public static void RunPhoenixOverlayQuip(TacticalActor actor, string text)
+                private static void RunPhoenixConversation(TacticalActor startingQuipper, string startingQuip, string reactionQuip, string finalQuip, object context = null)
                 {
                     try
                     {
+
+
+                        TacticalActor seniorOperative = FindPXOperativeBySeniority(startingQuipper);
+
+                        TFTVLogger.Always($"starting Quipper is {startingQuipper.DisplayName}, he will say {startingQuip}" +
+                            $"\nseniorOperative is {seniorOperative.DisplayName}, he will say {reactionQuip}");
+
+                        string processedStartingQuip = QuipProcessor(startingQuip, null, context);
+                        string processedReactionQuip = QuipProcessor(reactionQuip, startingQuipper, context);
+
+                        RunPhoenixOverlayQuip(startingQuipper, processedStartingQuip);
+                        RunPhoenixOverlayQuip(seniorOperative, processedReactionQuip, 4);
+
+                        if (finalQuip != "")
+                        {
+                            string processedFinalQuip = QuipProcessor(finalQuip, startingQuipper, context);
+                            RunPhoenixOverlayQuip(startingQuipper, processedFinalQuip, 7);
+                        }
+
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+                private static string QuipProcessor(string quip, TacticalActor replyToActor = null, object context = null)
+                {
+                    try
+                    {
+                        quip = TFTVCommonMethods.ConvertKeyToString(quip);
+
+                        TFTVLogger.Always($"quip before replace: {quip}");
+
+                        if (replyToActor != null && quip.Contains("[OperativeName]"))
+                        {
+                            quip = quip.Replace("[OperativeName]", TFTVTacticalUtils.GetCharacterLastName(replyToActor.DisplayName));
+                        }
+
+                        TFTVLogger.Always($"quip after replace: {quip}");
+
+                        if (context != null && context is TacticalActor talkedAboutActor)
+                        {
+                            bool male = true;
+
+                            if (talkedAboutActor.GameTags.Any(gt => gt == Shared.SharedGameTags.Genders.FemaleTag))
+                            {
+                                male = false;
+                            }
+
+                            quip = TFTVTacticalUtils.AdjustTextForGender(quip, male);
+                            TFTVLogger.Always($"quip after gender adjustment: {quip}");
+                        }
+
+                        return quip.Replace("\"", "");
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+
+
+
+
+                private static TacticalActor FindPXOperativeBySeniority(TacticalActor excludeActor = null, bool senior = true)
+                {
+                    try
+                    {
+                        TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
+                        List<TacticalActor> tacticalActors = GetTacticalActorsPhoenix(controller);
+
+                        // tacticalActors.AddRange(GetEligibleForQuipsPhoenixActors());
+
+                        if (excludeActor != null && tacticalActors.Contains(excludeActor))
+                        {
+                            tacticalActors.Remove(excludeActor);
+                        }
+
+                        if (tacticalActors.Count == 0)
+                        {
+                            return null;
+                        }
+
+                        return tacticalActors[0];
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+
+                public static void RunPhoenixOverlayQuip(TacticalActor actor, string text, float delay = 2)
+                {
+                    try
+                    {
+
+
                         TFTVLogger.Always($"running Phoenix quip for {actor.DisplayName}");
 
                         UIModuleSquadManagement uIModuleSquadManagement = actor.TacticalLevel.View.TacticalModules.SquadManagementModule;
@@ -601,10 +851,14 @@ namespace TFTV
 
                         FieldInfo fieldInfo_soldierPortraits = typeof(SquadMemberScrollerController).GetField("_soldierPortraits", BindingFlags.Instance | BindingFlags.NonPublic);
 
-
-
                         Dictionary<TacticalActor, PortraitSprites> soldierPortraits = (Dictionary<TacticalActor, PortraitSprites>)fieldInfo_soldierPortraits.GetValue(squadMemberScrollerController);
                         Sprite sprite = null;
+
+                        if (!soldierPortraits.ContainsKey(actor))
+                        {
+                            return;
+                        }
+
 
                         if (soldierPortraits[actor].RenderedPortrait != null)
                         {
@@ -618,7 +872,12 @@ namespace TFTV
                         }
                         // Sprite portrait = Helper.CreatePortraitFromImageFile(CharacterPortrait.characterPics[actor.GeoUnitId]);
 
-                        OverlayQuip.Create(sprite, text);
+                        DelayedInvoker.Run(delay, () =>
+                        {
+                            OverlayQuip.Create(sprite, text);
+                        });
+
+                        // OverlayQuip.Create(sprite, TFTVCommonMethods.ConvertKeyToString(text));
 
                     }
                     catch (Exception e)
@@ -632,50 +891,72 @@ namespace TFTV
 
 
 
-               /* [HarmonyPatch(typeof(SquadMemberScrollerController), "UpdatePortraitForSoldier")]
-                public static class SquadMemberScrollerController_UpdatePortraitForSoldier_patch
+                /* [HarmonyPatch(typeof(SquadMemberScrollerController), "UpdatePortraitForSoldier")]
+                 public static class SquadMemberScrollerController_UpdatePortraitForSoldier_patch
+                 {
+
+                     public static void Postfix(SquadMemberScrollerController __instance, TacticalActor actor)
+                     {
+                         try
+                         {
+                             TFTVLogger.Always($"{actor?.name}");
+
+                             if (actor.TacticalFaction.ParticipantKind == TacMissionParticipant.Player)
+                             {
+                                 MissionQuips.RunPhoenixOverlayQuip(actor as TacticalActor);
+                             }
+
+                         }
+                         catch (Exception e)
+                         {
+                             TFTVLogger.Error(e);
+                             throw;
+                         }
+                     }
+                 }*/
+
+
+                public static bool QuipJustRun = false;
+
+                [HarmonyPatch(typeof(TacContextHelpManager), "EventTypeTriggered")]
+                public static class TacContextHelpManager_EventTypeTriggered_patch
                 {
 
-                    public static void Postfix(SquadMemberScrollerController __instance, TacticalActor actor)
+                    public static void Postfix(HintTrigger trigger, TacContextHelpManager __instance, object context, object conditionContext)
                     {
                         try
                         {
-                            TFTVLogger.Always($"{actor?.name}");
 
-                            if (actor.TacticalFaction.ParticipantKind == TacMissionParticipant.Player)
+
+                            if (GameUtl.CurrentLevel() == null) 
                             {
-                                MissionQuips.RunPhoenixOverlayQuip(actor as TacticalActor);
+                                return;
                             }
 
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            throw;
-                        }
-                    }
-                }*/
+                            TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
-
-                [HarmonyPatch(typeof(TacContextHelpManager), "OnActorSelected")]
-                public static class TacContextHelpManager_OnActorSelected_patch
-                {
-
-                    public static void Postfix(TacContextHelpManager __instance, TacticalActor actor)
-                    {
-                        try
-                        {
-
-                            if (actor != null)
+                            if (controller==null || !IsIntroMission(controller)) 
                             {
-                                if (NewNJIntroMission && IsIntroMission(actor.TacticalLevel))
+                                return;
+                            }
+
+                                if (controller.CurrentFaction != controller.GetFactionByCommandName("px") || QuipJustRun || context == null)
+                            {
+                                return;
+                            }
+
+
+                            if (trigger == HintTrigger.ActorMoved || trigger == HintTrigger.ActorSelected
+                                || trigger == HintTrigger.ActorTagStartTurn) //|| trigger == HintTrigger.AbilityExecuted)
+                            {
+
+                                TacticalActor listener = context as TacticalActor;
+
+                                //TFTVLogger.Always($"got here for listener {listener.DisplayName}");
+
+                                if (listener != null && IsIntroMission(listener.TacticalLevel))
                                 {
-
-                                    TFTVLogger.Always($"{actor.name} selected");
-                                    RunQuips(_pendingNJQuips, actor);
-
-
-
+                                    NJIntroBanter(listener);
                                 }
                             }
                         }
@@ -688,22 +969,112 @@ namespace TFTV
                 }
 
 
+               
+                private static void NJIntroPriestKilled(DeathReport deathReport)
+                {
+                    try
+                    {
+                        if (!deathReport.Actor.HasGameTag(_priestTag))
+                        {
+                            return;
+                        }
+                        
+                        TacticalActor phoenixQuipper = deathReport.Killer as TacticalActor ?? GetTacticalActorsPhoenix(deathReport.Actor.TacticalLevel).First();
+
+                        RunPhoenixOverlayQuip(phoenixQuipper, QuipProcessor(_priestKilledKey));
+
+                    }
+
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+                private static void NJIntroInfiltratorKilled(DeathReport deathReport)
+                {
+                    try
+                    {
+                        if (!deathReport.Actor.HasGameTag(_infiltratorTag))
+                        {
+                            return;
+                        }
+
+                        TacticalActor phoenixQuipper = deathReport.Killer as TacticalActor ?? GetTacticalActorsPhoenix(deathReport.Actor.TacticalLevel).First();
+
+                        RunPhoenixOverlayQuip(phoenixQuipper, QuipProcessor(_infiltratorKilledKey));
+
+                    }
+
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+
+                }
+
+
+
+                [HarmonyPatch(typeof(TacContextHelpManager), "OnActorDied")]
+                public static class TacContextHelpManager_OnActorDied_patch
+                {
+
+                    public static void Postfix(TacContextHelpManager __instance, DeathReport deathReport)
+                    {
+                        try
+                        {
+                            TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
+                            if (controller.CurrentFaction != controller.GetFactionByCommandName("px") || QuipJustRun || deathReport.Actor == null)
+                            {
+                                return;
+                            }
+
+                            if (IsIntroMission(deathReport.Actor.TacticalLevel))
+                            {
+                                NJIntroInfiltratorKilled(deathReport);
+                                NJIntroPriestKilled(deathReport);
+                            }
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+
+
+
+
+
                 private static readonly string _propogandaKeyBase = "TFTV_KEY_NJ_INTRO_MISS_BANTER_PROPAGANDA_";
                 private static readonly string _mcQuipsKeyBase = "TFTV_KEY_NJ_INTRO_MISS_BANTER_MC_";
                 private static readonly string _postMCQuipsKeyBase = "TFTV_KEY_NJ_INTRO_MISS_BANTER_AFTER_MC_";
 
+                private static readonly string _njBanterMCFirstKey = "TFTV_KEY_NJ_INTRO_MISS_BANTER_PHOENIX_MC_0";
+                private static readonly string _njBanterPostMCFirstKey = "TFTV_KEY_NJ_INTRO_MISS_BANTER_PHOENIX_MC_2";
+                private static readonly string _priestSeenFirstKey = "TFTV_KEY_NJ_INTRO_MISS_BANTER_PRIEST_0";
+                private static readonly string _infiltratorSeenFirstKey = "TFTV_KEY_NJ_INTRO_MISS_BANTER_PHOENIX_INF_0";
+                private static readonly string _priestKilledKey = "TFTV_KEY_NJ_INTRO_MISS_BANTER_PHOENIX_ENDING_0";
+                private static readonly string _infiltratorKilledKey = "TFTV_KEY_NJ_INTRO_MISS_BANTER_PHOENIX_ENDING_1";
 
                 private static List<string> _propagandaLines = new List<string>();
                 private static List<string> _mindControlledQuips = new List<string>();
                 private static List<string> _postMindControlledQuips = new List<string>();
 
-                private static Dictionary<TacticalActor, string> _pendingNJQuips = new Dictionary<TacticalActor, string>();
-
+                private static readonly ClassTagDef _priestTag = DefCache.GetDef<ClassTagDef>("Priest_ClassTagDef");
+                private static readonly ClassTagDef _infiltratorTag = DefCache.GetDef<ClassTagDef>("Infiltrator_ClassTagDef");
                 public static void PopulateQuipList(string keyBase, List<string> listToPopulate)
                 {
                     try
                     {
                         TFTVLogger.Always($"running PopulatePropagandaList for {keyBase}");
+
+                        listToPopulate.Clear();
 
                         bool keysRemain = true;
 
@@ -724,19 +1095,17 @@ namespace TFTV
 
                             if (key != "")
                             {
-                                listToPopulate.Add(TFTVCommonMethods.ConvertKeyToString(key));
 
+                                if (!UsedQuips.Contains(key))
+                                {
+                                    listToPopulate.Add(TFTVCommonMethods.ConvertKeyToString(key));
+                                }
                             }
                             else
                             {
                                 keysRemain = false;
                             }
                         }
-
-                        /*  foreach (string text in _propagandaLines)
-                          {
-                              TFTVLogger.Always($"{text}", false);
-                          }*/
 
                     }
                     catch (Exception e)
@@ -745,6 +1114,62 @@ namespace TFTV
                         throw;
                     }
                 }
+
+                public static void NJIntroBanter(TacticalActor listener)
+                {
+                    try
+                    {
+
+                        if (RunInfiltratorBanter(listener))
+                        {
+
+                        }
+                        else if (RunPriestBanter(listener))
+                        {
+
+                        }
+                        else if (RunNJBanter(listener))
+                        {
+
+                        }
+                        else
+                        {
+                            return;
+
+                        }
+
+
+                        QuipJustRun = true;
+
+                    }
+
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+
+                }
+
+                private static bool CheckListenerAwareness(TacticalActor listener, TacticalActor quipper)
+                {
+                    try
+                    {
+                        return CheckActorInFrame(quipper)
+                                      && quipper.TacticalFaction.Vision.IsRevealed(listener)
+                                      && listener.TacticalFaction.Vision.IsRevealed(quipper)
+                                      && TacticalFactionVision.CheckVisibleLineBetweenActors(quipper, quipper.Pos, listener, true);
+
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+
+                }
+
 
                 private static bool CheckActorInFrame(TacticalActor tacticalActor)
                 {
@@ -772,35 +1197,153 @@ namespace TFTV
                     }
                 }
 
-
-                private static void RunQuips(Dictionary<TacticalActor, string> quipList, TacticalActor listener)
+                private static bool RunPriestBanter(TacticalActor listener)
                 {
                     try
                     {
-                        if (_pendingNJQuips.Count == 0)
+
+                        if (UsedQuips.Contains(_priestSeenFirstKey))
                         {
-                            return;
+                            return false;
                         }
 
-                        bool quipShown = false;
+                        TacticalActor priest = GetEnemyActorWithClassTag(_priestTag);
 
-                        foreach (TacticalActor tacticalActor in quipList.Keys)
+                        TFTVLogger.Always($"found priest? {priest != null}");
+
+                        if (priest == null)
                         {
-                            if (CheckActorInFrame(tacticalActor)
-                                && tacticalActor.TacticalFaction.Vision.IsRevealed(listener)
-                                && TacticalFactionVision.CheckVisibleLineBetweenActors(tacticalActor, tacticalActor.Pos, listener, true))
+                            return false;
+                        }
+
+                        if (!CheckListenerAwareness(listener, priest))
+                        {
+                            return false;
+                        }
+
+                        string quip = TFTVCommonMethods.ConvertKeyToString(_priestSeenFirstKey);
+
+                        UsedQuips.Add(_priestSeenFirstKey);
+
+                        FloatingTextManager.ShowFloatingText(priest, quip, TFTVUITactical.WhiteColor);
+
+                        RunPhoenixConversation(listener, "TFTV_KEY_NJ_INTRO_MISS_BANTER_PHOENIX_PRIEST_0", "TFTV_KEY_NJ_INTRO_MISS_BANTER_PHOENIX_PRIEST_1", "");
+
+
+
+                        return true;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+                private static bool RunInfiltratorBanter(TacticalActor listener)
+                {
+                    try
+                    {
+                        if (UsedQuips.Contains(_infiltratorSeenFirstKey))
+                        {
+                            return false;
+                        }
+
+                        TacticalActor infiltrator = GetEnemyActorWithClassTag(_infiltratorTag);
+
+                        TFTVLogger.Always($"found infiltrator? {infiltrator != null}");
+
+                        if (infiltrator == null)
+                        {
+                            return false;
+                        }
+
+                        if (!CheckListenerAwareness(listener, infiltrator))
+                        {
+                            return false;
+                        }
+
+                        string quip = TFTVCommonMethods.ConvertKeyToString(_infiltratorSeenFirstKey);
+
+                        UsedQuips.Add(_infiltratorSeenFirstKey);
+
+                        // FloatingTextManager.ShowFloatingText(infiltrator, quip, TFTVUITactical.WhiteColor);
+
+                        RunPhoenixConversation(listener, "TFTV_KEY_NJ_INTRO_MISS_BANTER_PHOENIX_INF_0", "TFTV_KEY_NJ_INTRO_MISS_BANTER_PHOENIX_INF_1", "TFTV_KEY_NJ_INTRO_MISS_BANTER_PHOENIX_INF_2");
+
+                        return true;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+
+                private static bool RunNJBanter(TacticalActor listener)
+                {
+                    try
+                    {
+                        List<string> eligibleQuips = new List<string>();
+                        List<TacticalActor> eligibleQuippers = new List<TacticalActor>();
+
+                        List<TacticalActor> mCedNJ = GetRevealedMindControlledByPhoenixEnemy();
+                        List<TacticalActor> neutNJ = GetRevealedNeutralTacticalActors();
+
+                        if (mCedNJ.Count > 0 && !UsedQuips.Contains(_njBanterMCFirstKey))
+                        {
+                            eligibleQuippers = mCedNJ;
+                            eligibleQuips = _mindControlledQuips;
+                        }
+                        else if (neutNJ.Count > 0 && !UsedQuips.Contains(_njBanterPostMCFirstKey))
+                        {
+                            eligibleQuippers = neutNJ;
+                            eligibleQuips = _postMindControlledQuips;
+
+                        }
+                        else
+                        {
+                            return false;
+                        }
+
+                        if (eligibleQuips.Count == 0 || eligibleQuippers.Count == 0)
+                        {
+                            return false;
+                        }
+
+
+                        foreach (TacticalActor tacticalActor in eligibleQuippers)
+                        {
+                            if (CheckListenerAwareness(listener, tacticalActor))
                             {
-                                FloatingTextManager.ShowFloatingText(tacticalActor, quipList[tacticalActor], TFTVUITactical.WhiteColor);
-                                quipShown = true;
-                                break;
+                                string quip = eligibleQuips.GetRandomElement();
+
+                                FloatingTextManager.ShowFloatingText(tacticalActor, quip, TFTVUITactical.WhiteColor);
+                                // NJQuips.quipShown = true;
+
+                                if (_mindControlledQuips.Contains(quip))
+                                {
+                                    RunPhoenixConversation(listener, "TFTV_KEY_NJ_INTRO_MISS_BANTER_PHOENIX_MC_0", "TFTV_KEY_NJ_INTRO_MISS_BANTER_PHOENIX_MC_1", "", tacticalActor);
+                                    _mindControlledQuips.Remove(quip);
+                                    UsedQuips.Add("TFTV_KEY_NJ_INTRO_MISS_BANTER_PHOENIX_MC_0");
+                                }
+
+                                if (_postMindControlledQuips.Contains(quip))
+                                {
+                                    RunPhoenixConversation(listener, "TFTV_KEY_NJ_INTRO_MISS_BANTER_PHOENIX_MC_2", "TFTV_KEY_NJ_INTRO_MISS_BANTER_PHOENIX_MC_3", "");
+                                    _postMindControlledQuips.Remove(quip);
+                                    UsedQuips.Add("TFTV_KEY_NJ_INTRO_MISS_BANTER_PHOENIX_MC_2");
+                                }
+
+                                UsedQuips.Add(quip);
+
+                                return true;
                             }
                         }
 
-                        if (quipShown)
-                        {
-                            quipList.Clear();
-                        }
-
+                        return false;
                     }
                     catch (Exception e)
                     {
@@ -813,100 +1356,13 @@ namespace TFTV
                 internal class NJQuips
                 {
 
-                    private static void QuipsFromMCedNJ(TacticalLevelController controller)
+
+                    public static void PopulateQuips()
                     {
                         try
                         {
-                            TacticalFaction phoenixFaction = controller.GetFactionByCommandName("px");
-
-                            List<TacticalActor> mindcontrolledActors = controller.Map.GetTacActors<TacticalActor>(phoenixFaction, FactionRelation.Enemy).Where(ta => ta.IsAlive && ta.IsRevealedToViewer && ta.Status.Statuses.Any(s => s is MindControlStatus)).ToList();
-
-                            TFTVLogger.Always($"mindcontrolledActors.Count: {mindcontrolledActors.Count}");
-
-                            MethodInfo methodInfo = typeof(PlanarScrollCamera).GetMethod("IsInsideCinemachineFrame", BindingFlags.NonPublic | BindingFlags.Instance);
-                            PlanarScrollCamera planarScrollCamera = controller.View.CameraManager.CurrentBehavior as PlanarScrollCamera;
-
-                            if (mindcontrolledActors.Count != 0 && _mindControlledQuips.Count == 0)
-                            {
-                                PopulateQuipList(_mcQuipsKeyBase, _mindControlledQuips);
-                            }
-
-                            // int counter = 0;
-
-                            for (int x = 0; x < Mathf.Min(mindcontrolledActors.Count, 2); x++)
-                            {
-                                string quip = _mindControlledQuips[UnityEngine.Random.Range(0, _mindControlledQuips.Count)];
-                                TacticalActor tacticalActor = mindcontrolledActors[x];
-
-                                _pendingNJQuips.Add(tacticalActor, quip);
-                                _mindControlledQuips.Remove(quip);
-
-                            }
-
-                        }
-
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            throw;
-                        }
-
-                    }
-
-                    private static void QuipsFromPostMCedNJ(TacticalLevelController controller)
-                    {
-                        try
-                        {
-                            TacticalFaction phoenixFaction = controller.GetFactionByCommandName("px");
-
-                            List<TacticalActor> neutralNJactors = controller.Map.GetTacActors<TacticalActor>(phoenixFaction, FactionRelation.Neutral).Where(ta => ta.IsAlive && ta.IsRevealedToViewer).ToList();
-
-                            TFTVLogger.Always($"neutralNJactors.Count: {neutralNJactors.Count}");
-
-                            if (neutralNJactors.Count != 0 && _postMindControlledQuips.Count == 0)
-                            {
-                                PopulateQuipList(_postMCQuipsKeyBase, _postMindControlledQuips);
-                            }
-
-                            for (int x = 0; x < Mathf.Min(2, neutralNJactors.Count); x++)
-                            {
-                                string quip = _postMindControlledQuips[UnityEngine.Random.Range(0, _postMindControlledQuips.Count)];
-                                TacticalActor tacticalActor = neutralNJactors[x];
-                                _pendingNJQuips.Add(tacticalActor, quip);
-                                _postMindControlledQuips.Remove(quip);
-                            }
-                        }
-
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            throw;
-                        }
-
-                    }
-
-
-                    public static void OnNewTurn(TacticalFaction faction)
-                    {
-                        try
-                        {
-                            if (!NewNJIntroMission)
-                            {
-                                return;
-                            }
-
-                            TacticalLevelController controller = faction.TacticalLevel;
-
-                            if (!IsIntroMission(controller))
-                            {
-                                return;
-                            }
-
-                            if (faction == controller.GetFactionByCommandName("px"))
-                            {
-                                QuipsFromMCedNJ(controller);
-                                QuipsFromPostMCedNJ(controller);
-                            }
+                            PopulateQuipList(_mcQuipsKeyBase, _mindControlledQuips);
+                            PopulateQuipList(_postMCQuipsKeyBase, _postMindControlledQuips);
 
                         }
                         catch (Exception e)
@@ -924,10 +1380,6 @@ namespace TFTV
                     {
                         try
                         {
-                            if (!NewNJIntroMission)
-                            {
-                                return;
-                            }
 
 
                             if (!IsIntroMission(controller))

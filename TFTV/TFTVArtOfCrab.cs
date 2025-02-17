@@ -21,7 +21,6 @@ using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
-using PhoenixPoint.Tactical.Entities.StructuralTargets;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.Mist;
@@ -31,7 +30,6 @@ using System.Linq;
 using System.Reflection;
 using TFTV.Tactical.Entities.Statuses;
 using UnityEngine;
-using static PhoenixPoint.Tactical.Entities.DamageAccumulation;
 
 namespace TFTV
 {
@@ -250,9 +248,9 @@ namespace TFTV
             {
                 try
                 {
-                   // TacticalActor actor = (TacticalActor)aiTarget.Actor;
+                    // TacticalActor actor = (TacticalActor)aiTarget.Actor;
 
-                 //   TFTVLogger.Always($"AIActionMoveAndAttack for actor: {actor.DisplayName}, AP: {actor.CharacterStats.ActionPoints.Value}");
+                    //   TFTVLogger.Always($"AIActionMoveAndAttack for actor: {actor.DisplayName}, AP: {actor.CharacterStats.ActionPoints.Value}");
 
                     if (!ability.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsAndEquipmentNotSelected))
                     {
@@ -316,15 +314,15 @@ namespace TFTV
 
                     Weapon weapon = weapons.First();
 
-                  //  TFTVLogger.Always($"lowest AP ranged weapon is {weapon.DisplayName}, with {weapon.ApToUse}");
+                    //  TFTVLogger.Always($"lowest AP ranged weapon is {weapon.DisplayName}, with {weapon.ApToUse}");
 
                     if (actor.CharacterStats.ActionPoints <= weapon.ApToUse)
                     {
-                    //    TFTVLogger.Always($"{actor.name} has {actor.CharacterStats.ActionPoints} AP is at POS {actor.Pos}, current target POS {target.Pos}");
+                        //    TFTVLogger.Always($"{actor.name} has {actor.CharacterStats.ActionPoints} AP is at POS {actor.Pos}, current target POS {target.Pos}");
 
                         if (!Cover(actor, target))
                         {
-                      //      TFTVLogger.Always($"Position has no cover!");
+                            //      TFTVLogger.Always($"Position has no cover!");
                             target.Pos = actor.Pos;
                         }
                     }
@@ -469,7 +467,8 @@ namespace TFTV
                 {
                     TFTVLogger.Always($"Applying GetBestWeaponForOWRF {tacticalActor.name} was holding {tacticalActor.Equipments.SelectedWeapon.DisplayName}, switching to {bestWeapon.DisplayName}");
                     tacticalActor.Equipments.SetSelectedEquipment(bestWeapon);
-                };
+                }
+                ;
             }
             catch (Exception e)
             {
@@ -508,7 +507,8 @@ namespace TFTV
                 {
                     // TFTVLogger.Always($"Applying GetBestWeaponForQA {tacticalActor.name} was holding {tacticalActor.Equipments.SelectedWeapon?.DisplayName}, switching to {bestWeapon.DisplayName}");
                     tacticalActor.Equipments.SetSelectedEquipment(bestWeapon);
-                };
+                }
+                ;
             }
             catch (Exception e)
             {
@@ -1900,7 +1900,7 @@ namespace TFTV
                         {
                             if (__instance.AbilityDef == DefCache.GetDef<TacticalAbilityDef>("BehemothMassStomp_ApplyEffectAbilityDef"))
                             {
-                               // TFTVLogger.Always($"got here for {__instance.AbilityDef?.name}");
+                                // TFTVLogger.Always($"got here for {__instance.AbilityDef?.name}");
                                 yield return target;
                             }
                             else
@@ -2002,13 +2002,13 @@ namespace TFTV
 
                 public static bool CheckIfTargetingAcheron(TacticalAbilityTarget target)
                 {
-                    try 
+                    try
                     {
-                        if(target.Actor!=null && !target.Actor.IsDead && target.Actor is TacticalActor tacticalActor && tacticalActor.GameTags!=null && tacticalActor.HasGameTag(DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef"))) 
+                        if (target.Actor != null && !target.Actor.IsDead && target.Actor is TacticalActor tacticalActor && tacticalActor.GameTags != null && tacticalActor.HasGameTag(DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef")))
                         {
 
-                            return true; 
-                        
+                            return true;
+
                         }
 
                         return false;
@@ -2150,7 +2150,7 @@ namespace TFTV
 
                         if (CheckIfTargetingAcheron(target))
                         {
-                          //  TFTVLogger.Always($"got here");
+                            //  TFTVLogger.Always($"got here");
 
                             MethodInfo methodInfoCheckShootTarget = typeof(Weapon).GetMethod("CheckShootTarget", BindingFlags.Instance | BindingFlags.NonPublic);
 
@@ -2255,9 +2255,9 @@ namespace TFTV
 
 
                         foreach (TacticalAbilityTarget targetInResults in results)
-                        {      
+                        {
                             if (IsValidTarget(__instance.TacticalActor, targetInResults, __instance)) // <- create a method to check the target
-                            {                             
+                            {
                                 yield return targetInResults;
                             }
 

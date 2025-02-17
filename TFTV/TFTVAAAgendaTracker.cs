@@ -6,6 +6,7 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Geoscape;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
@@ -24,10 +25,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using static UnityEngine.UI.GridLayoutGroup;
 
 namespace TFTV
 {
@@ -37,7 +38,6 @@ namespace TFTV
         //https://github.com/Mad-Mods-Phoenix-Point/AssortedAdjustments/tree/main/Source/AssortedAdjustments
 
         //  public static bool KludgeCheck = false;
-
         internal static class ExtendedAgendaTracker
         {
             private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
@@ -106,26 +106,26 @@ namespace TFTV
             internal static UIModuleFactionAgendaTracker ___factionTracker = null;
 
 
-         /*   [HarmonyPatch(typeof(GeoVehicle), "StartTravel", new Type[] { typeof(List<GeoSite>)
-        })]
-            public static class GeoVehicle_StartTravel_Patch
-            {
+            /*   [HarmonyPatch(typeof(GeoVehicle), "StartTravel", new Type[] { typeof(List<GeoSite>)
+           })]
+               public static class GeoVehicle_StartTravel_Patch
+               {
 
-                public static void Prefix(GeoVehicle __instance)
-                {
-                    try
-                    {
-                        if (_updateCounterDictionary.ContainsKey(__instance.VehicleID))
-                        {
-                            _updateCounterDictionary.Remove(__instance.VehicleID);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                }
-            }*/
+                   public static void Prefix(GeoVehicle __instance)
+                   {
+                       try
+                       {
+                           if (_updateCounterDictionary.ContainsKey(__instance.VehicleID))
+                           {
+                               _updateCounterDictionary.Remove(__instance.VehicleID);
+                           }
+                       }
+                       catch (Exception e)
+                       {
+                           TFTVLogger.Error(e);
+                       }
+                   }
+               }*/
 
 
 
@@ -149,22 +149,22 @@ namespace TFTV
                     return false;
                 }
 
-             /*   if (_updateCounterDictionary.ContainsKey(vehicle.VehicleID) && _updateCounterDictionary[vehicle.VehicleID] < 10)
-                {
-                    _updateCounterDictionary[vehicle.VehicleID] += 1;
-                    return false;
-                }
-                else
-                {
-                    if (!_updateCounterDictionary.ContainsKey(vehicle.VehicleID))
-                    {
-                        _updateCounterDictionary.Add(vehicle.VehicleID, 10);
-                    }
-                    else
-                    {
-                        _updateCounterDictionary[vehicle.VehicleID] = 0;
-                    }
-                }*/
+                /*   if (_updateCounterDictionary.ContainsKey(vehicle.VehicleID) && _updateCounterDictionary[vehicle.VehicleID] < 10)
+                   {
+                       _updateCounterDictionary[vehicle.VehicleID] += 1;
+                       return false;
+                   }
+                   else
+                   {
+                       if (!_updateCounterDictionary.ContainsKey(vehicle.VehicleID))
+                       {
+                           _updateCounterDictionary.Add(vehicle.VehicleID, 10);
+                       }
+                       else
+                       {
+                           _updateCounterDictionary[vehicle.VehicleID] = 0;
+                       }
+                   }*/
 
                 var currentPosition = vehicle.CurrentSite?.WorldPosition ?? vehicle.WorldPosition;
                 var targetPosition = target == null ? vehicle.FinalDestination.WorldPosition : target.WorldPosition;
@@ -218,7 +218,7 @@ namespace TFTV
             {
                 string siteName = null;
 
-                if (String.IsNullOrEmpty(siteName))
+                if (String.IsNullOrEmpty(siteName) && site!=null)
                 {
                     if (site.GetInspected(faction))
                     {
@@ -368,12 +368,12 @@ namespace TFTV
 
                     if (archeologyLabSprite == null)
                     {
-                        archeologyLabSprite = DefCache.GetDef<ViewElementDef>("E_ViewElement [ArcheologyLab_PhoenixFacilityDef]").SmallIcon; 
+                        archeologyLabSprite = DefCache.GetDef<ViewElementDef>("E_ViewElement [ArcheologyLab_PhoenixFacilityDef]").SmallIcon;
                     }
 
                     if (phoenixFactionSprite == null)
                     {
-                        phoenixFactionSprite = DefCache.GetDef<GeoFactionViewDef>("E_Phoenix_GeoFactionView [Phoenix_GeoPhoenixFactionDef]").FactionIcon; 
+                        phoenixFactionSprite = DefCache.GetDef<GeoFactionViewDef>("E_Phoenix_GeoFactionView [Phoenix_GeoPhoenixFactionDef]").FactionIcon;
                     }
                 }
                 catch (Exception e)
@@ -386,8 +386,8 @@ namespace TFTV
             // Disable the last safeguard for starting a base defense mission.
             // Vanilla will cancel the assault if no alien base in range is active anymore (because it was detected after a haven defence and subsequently destroyed)
             // With this patch the assault WILL happen and there's no silent abort (because it feels like a bug)
-  
-            
+
+
             [HarmonyPatch(typeof(GeoAlienFaction), "StartPhoenixBaseAssault")]
             public static class GeoAlienFaction_StartPhoenixBaseAssault_Patch
             {
@@ -474,7 +474,7 @@ namespace TFTV
                     }
 
                     GeoLevelController geoLevel = site.GeoLevel;
-                
+
                     bool isScheduledForAttack = false;
                     foreach (GeoFaction geoFaction in geoLevel.Factions)
                     {
@@ -532,7 +532,7 @@ namespace TFTV
                 }
             }
 
-           
+
             // Displays expected durations of Move and Explore abilities to the context menu
             [HarmonyPatch(typeof(UIModuleSiteContextualMenu), "SetMenuItems")]
             public static class UIModuleSiteContextualMenu_SetMenuItems_Patch
@@ -984,7 +984,7 @@ namespace TFTV
              ** 
             */
 
-          //  private static Dictionary<int, int> _updateCounterDictionary = new Dictionary<int, int>();
+            //  private static Dictionary<int, int> _updateCounterDictionary = new Dictionary<int, int>();
 
             // Updates time left of the various tracker item types and adds mouse events.
             // NOTE that the tracker items get reused multiple times for different tracked objects and we NEED to reinitialize EVERYTHING ALWAYS
@@ -995,7 +995,9 @@ namespace TFTV
                 {
                     try
                     {
-                      
+
+
+
                         if (element.TrackedObject is ResearchElement)
                         {
                             // Add click event to the item that focuses camera on the tracked object
@@ -1042,6 +1044,10 @@ namespace TFTV
 
                         else if (element.TrackedObject is GeoVehicle vehicle)
                         {
+                          //  TFTVAircraftRework.TravellingThroughMist.IsAircraftInMist(vehicle);
+                            TFTVAircraftRework.TravellingThroughMist.ModifySpeedInMist(vehicle);
+                            //   TFTVLogger.Always($"updateData called for {vehicle.Name}, is in Mist? {IsActorInMist(vehicle)}");
+
 
                             // Add click event to the item that focuses camera on the tracked object
                             GameObject go = element.gameObject;
@@ -1058,10 +1064,10 @@ namespace TFTV
                             click.callback.AddListener((eventData) => { ____context.View.ChaseTarget(vehicle, false); });
                             eventTrigger.triggers.Add(click);
 
-                           
+
                             if (vehicle.Travelling && GetTravelTime(vehicle, out float travelTime))
                             {
-                               // TFTVLogger.Always($"updating time for {vehicle.Name}, at {vehicle.GeoLevel.Timing.FixedNow}");
+                                // TFTVLogger.Always($"updating time for {vehicle.Name}, at {vehicle.GeoLevel.Timing.FixedNow}");
 
                                 TimeUnit arrivalTime = TimeUnit.FromHours(travelTime);
                                 //TFTVLogger.Debug($"[UIModuleFactionAgendaTracker_UpdateData_PREFIX] element.TrackedObject: {element.TrackedObject}, arrivalTime: {arrivalTime}");
@@ -1170,7 +1176,7 @@ namespace TFTV
                             else if (geoSite.Type == GeoSiteType.PhoenixBase)
                             {
                                 if (TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Keys.Count > 0)
-                                {       
+                                {
                                     foreach (int phoenixBaseId in TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Keys)
                                     {
                                         if (geoSite.SiteId == phoenixBaseId)
@@ -1182,7 +1188,7 @@ namespace TFTV
                                                                                                         //TFTVLogger.Debug($"[UIModuleFactionAgendaTracker_UpdateData_PREFIX] element.TrackedObject: {element.TrackedObject}, attackTime: {attackTime}");
                                                                                                         // TFTVLogger.Always($"attack time is {attackTime}");
                                             element.UpdateData(attackTime, true, null);
-                                          
+
                                             geoSite.RefreshVisuals();
 
                                         }
@@ -1211,7 +1217,7 @@ namespace TFTV
                 // Store UIFactionDataTrackerElement prefab to be able to reset visuals of the items in UIFactionDataTrackerElement.Init()
                 public static void Prefix(UIModuleFactionAgendaTracker __instance)
                 {
-                   // TFTVLogger.Always($"InitialSetup Prefix running");
+                    // TFTVLogger.Always($"InitialSetup Prefix running");
 
                     trackerElementDefault = __instance.TrackerRowPrefab;
                 }
@@ -1222,7 +1228,7 @@ namespace TFTV
                     {
                         if (____faction is GeoPhoenixFaction geoPhoenixFaction)
                         {
-                           // TFTVLogger.Always($"InitialSetup Postfix running post if");
+                            // TFTVLogger.Always($"InitialSetup Postfix running post if");
                             //MethodInfo ___GetFreeElement = typeof(UIModuleFactionAgendaTracker).GetMethod("GetFreeElement", BindingFlags.NonPublic | BindingFlags.Instance);
                             //MethodInfo ___OnAddedElement = typeof(UIModuleFactionAgendaTracker).GetMethod("OnAddedElement", BindingFlags.NonPublic | BindingFlags.Instance);
 

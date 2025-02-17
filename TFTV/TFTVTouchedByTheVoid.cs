@@ -327,7 +327,12 @@ namespace TFTV
                 {
                     try
                     {
-                        if (actor.GameTags.Contains(voidTouchedTag))
+                        if (actor == null) 
+                        {
+                            return;
+                        }
+
+                        if (actor.GameTags!=null && actor.GameTags.Contains(voidTouchedTag))
                         {
                             TFTVLogger.Always($"{actor.name} getting TBTV on getting damaged");
                             RemoveTouchedByTheVoid(actor);
@@ -335,7 +340,7 @@ namespace TFTV
                             GiveTBTVAbility(actor, roll);
                         }
 
-                        if (actor.HasStatus(onAttackTBTVStatus) && damageDealer != null)
+                        if (actor.Status!=null && actor.HasStatus(onAttackTBTVStatus) && damageDealer != null)
                         {
                             TacticalActorBase attackerBase = damageDealer.GetTacticalActorBase();
                             TacticalActor attacker = attackerBase as TacticalActor;

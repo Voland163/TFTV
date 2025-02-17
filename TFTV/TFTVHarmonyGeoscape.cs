@@ -14,6 +14,7 @@ using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.Levels.Objectives;
+using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
@@ -28,6 +29,65 @@ namespace TFTV
 {
     internal class TFTVHarmonyGeoscape
     {
+
+
+        [HarmonyPatch(typeof(GeoVehicle), "get_MaxCharacterSpace")]
+        internal static class BG_GeoVehicle_get_MaxCharacterSpace_patch
+        {
+            public static void Postfix(GeoVehicle __instance, ref int __result)
+            {
+                try
+                {
+                    TFTVAircraftRework.Modules.Geoscape.PassengerModules.AdjustMaxCharacterSpacePassengerModules(__instance, ref __result);
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(GeoVehicle), "ReplaceEquipments")]
+        internal static class BG_GeoVehicle_ReplaceEquipments_RemoveExcessPassengers_patch
+        {
+            public static void Postfix(GeoVehicle __instance)
+            {
+                try
+                {
+                    TFTVAircraftRework.Modules.Geoscape.Scanning.CheckAircraftScannerAbility(__instance);
+                    TFTVAircraftRework.Modules.Geoscape.PassengerModules.CheckAircraftNewPassengerCapacity(__instance);
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+
+
+        [HarmonyPatch(typeof(GeoVehicle), "GetAircraftInfo")]
+        internal static class GeoVehicle_GetAircraftInfo_patch
+        {
+            private static void Postfix(GeoVehicle __instance, ref AircraftInfoData __result)
+            {
+                try
+                {
+                    TFTVAircraftRework.Modules.Geoscape.PassengerModules.AdjustAircraftInfoPassengerModules(__instance, ref __result);
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
 
         [HarmonyPatch(typeof(DiplomaticGeoFactionObjective), "GetRelatedActors")]
         internal static class TFTV_DiplomaticGeoFactionObjective_GetRelatedActors_ExperimentPatch
@@ -74,6 +134,24 @@ namespace TFTV
         }
 
 
+        [HarmonyPatch(typeof(GeoMission), "Launch")]
+        public static class GeoMission_Launch_InfestationStory_Patch
+        {
+            public static void Postfix(GeoMission __instance, GeoSquad squad)
+            {
+                try
+                {
+                    TFTVInfestation.StoryFirstInfestedHaven.InfestationStoryMission(__instance, squad);
+                    TFTVNJQuestline.IntroMission.Geoscape.RecordHavenName(__instance);
+                    TFTVAircraftRework.Modules.Tactical.CheckTacticallyRelevantModulesOnVehicle(__instance.GetLocalAircraft(squad));
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
 
 

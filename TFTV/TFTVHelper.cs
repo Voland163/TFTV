@@ -32,7 +32,7 @@ namespace TFTV
         public static readonly string ResearchLocalizationFileName = "TFTV_Research_Localization.csv";
         public static readonly string VoidOmensAndODIyLocalizationFileName = "TFTV_VoidOmensAndODI_Localization.csv";
         public static readonly string NJStoryLocalizationFileName = "TFTV_NJStoryMissions_Localization.csv";
-
+        public static readonly string AircraftReworkLocalizationFileName = "TFTV_AircraftRework_Localization.csv";
 
 
 
@@ -88,12 +88,14 @@ namespace TFTV
                 {
                     AddLocalizationFromCSV(MissionObjectivesLocalizationFileName, null);
                 }
-                /*if (File.Exists(Path.Combine(LocalizationDirectory, NJStoryLocalizationFileName))) 
+              /*  if (File.Exists(Path.Combine(LocalizationDirectory, NJStoryLocalizationFileName))) 
                 { 
-                    AddLocalizationFromCSV(NJStoryLocalizationFileName, null);
-                
+                    AddLocalizationFromCSV(NJStoryLocalizationFileName, null);       
                 }*/
-
+                if (TFTVAircraftRework.AircraftReworkOn && File.Exists(Path.Combine(LocalizationDirectory, AircraftReworkLocalizationFileName)))
+                {
+                    AddLocalizationFromCSV(AircraftReworkLocalizationFileName, null);
+                }
 
             }
             catch (Exception e)

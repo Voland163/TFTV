@@ -24,7 +24,6 @@ using PhoenixPoint.Common.Entities.RedeemableCodes;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Interception;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
@@ -32,7 +31,6 @@ using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Events.Eventus;
-using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.AI;
@@ -59,7 +57,6 @@ using System.Linq;
 using UnityEngine;
 using static PhoenixPoint.Common.Entities.Addons.AddonDef;
 using static PhoenixPoint.Tactical.Entities.Abilities.HealAbilityDef;
-using static PhoenixPoint.Tactical.Entities.SquadPortraitsDef;
 using static PhoenixPoint.Tactical.Entities.Statuses.ItemSlotStatsModifyStatusDef;
 using static TFTV.TFTVCapturePandorans;
 using ResourceType = PhoenixPoint.Common.Core.ResourceType;
@@ -77,23 +74,23 @@ namespace TFTV
         public static GameTagDef AlwaysDeployTag;
 
 
-        private static readonly ResearchTagDef CriticalResearchTag = DefCache.GetDef<ResearchTagDef>("CriticalPath_ResearchTagDef");
+      //  private static readonly ResearchTagDef CriticalResearchTag = DefCache.GetDef<ResearchTagDef>("CriticalPath_ResearchTagDef");
 
 
         // ResurrectAbilityRulesDef to mess with later
 
         internal static void Experimental()
         {
-            try 
+            try
             {
                 TFTVNJQuestline.NewNJIntroMission = true;
-               
+
                 // TFTVTauntsAndQuips.PopulateQuipList();
                 TFTVNJQuestline.IntroMission.Defs.ModifyIntroMissionDefs();
 
-              //  CharacterBuilderViewParametersDef defaultCharacters = DefCache.GetDef<CharacterBuilderViewParametersDef>("DefaultCharBuilderViewParametersDef");
+                //  CharacterBuilderViewParametersDef defaultCharacters = DefCache.GetDef<CharacterBuilderViewParametersDef>("DefaultCharBuilderViewParametersDef");
 
-              //  defaultCharacters.ObjectScale = new Vector3(1, 1, 1);
+                //  defaultCharacters.ObjectScale = new Vector3(1, 1, 1);
 
 
             }
@@ -110,11 +107,11 @@ namespace TFTV
         {
             try
             {
-               GameTagDef capturableGameTagDef = DefCache.GetDef<GameTagDef>("Capturable_GameTagDef");
+                GameTagDef capturableGameTagDef = DefCache.GetDef<GameTagDef>("Capturable_GameTagDef");
 
-               
 
-                foreach (TacCharacterDef itemDef in Repo.GetAllDefs<TacCharacterDef>().Where(i =>!i.Data.GameTags.Contains(capturableGameTagDef)))
+
+                foreach (TacCharacterDef itemDef in Repo.GetAllDefs<TacCharacterDef>().Where(i => !i.Data.GameTags.Contains(capturableGameTagDef)))
                 {
                     TFTVLogger.Always($"{itemDef.name} {itemDef.Guid}", false);
 
@@ -167,15 +164,11 @@ namespace TFTV
 
                 CreateRoboticSelfRestoreAbility();
 
-                LoadingScreensAndLore();
-
-                ModifyAirCombatDefs();
-
-                ModifyDefsForPassengerModules();
+                LoadingScreensAndLore();           
 
                 TFTVAncients.Defs.ChangesToLOTA();
 
-              //  CreateVoidOmenRemindersInTactical();
+                //  CreateVoidOmenRemindersInTactical();
 
                 CreateFireQuenchers();
 
@@ -233,9 +226,11 @@ namespace TFTV
 
                 ChangeRenderedPortraitsParam();
 
-               // Experimental();
+                TFTVAircraftRework.Defs.CreateAndModifyDefs();
 
-              //  Print();
+                // Experimental();
+
+                //  Print();
 
             }
             catch (Exception e)
@@ -244,20 +239,20 @@ namespace TFTV
             }
         }
 
-        private static void ChangeRenderedPortraitsParam() 
+        private static void ChangeRenderedPortraitsParam()
         {
-            try 
+            try
             {
 
                 SquadPortraitsDef squadPortraitsDef = DefCache.GetDef<SquadPortraitsDef>("SquadPortraitsDef");
 
-                for(int x=0; x< squadPortraitsDef.RenderParamsList.Count(); x++) 
+                for (int x = 0; x < squadPortraitsDef.RenderParamsList.Count(); x++)
                 {
                     squadPortraitsDef.RenderParamsList[x].CameraDistance = 0.5f;
                     squadPortraitsDef.RenderParamsList[x].CameraFoV = 35f;
                     squadPortraitsDef.RenderParamsList[x].RenderedPortraitsResolution = new Vector2Int(1024, 819);
 
-                    if (x == 0) 
+                    if (x == 0)
                     {
                         squadPortraitsDef.RenderParamsList[x].CameraHeight = 0f;
                         squadPortraitsDef.RenderParamsList[x].CameraSide = 0;
@@ -312,8 +307,8 @@ namespace TFTV
                     }
 
                 }
-               
-     
+
+
             }
             catch (Exception e)
             {
@@ -341,7 +336,7 @@ namespace TFTV
                 DefCache.GetDef<WeaponDef>("FS_Autocannon_WeaponDef"),
                 DefCache.GetDef<WeaponDef>("FS_SlamstrikeShotgun_WeaponDef"),
                 DefCache.GetDef<WeaponDef>("PX_HeavyCannon_WeaponDef"),
-                DefCache.GetDef<WeaponDef>("PX_Scarab_Taurus_GroundVehicleWeaponDef"),
+              //  DefCache.GetDef<WeaponDef>("PX_Scarab_Taurus_GroundVehicleWeaponDef"),
                 DefCache.GetDef<WeaponDef>("PX_HeavyCannon_Headhunter_WeaponDef"),
                 DefCache.GetDef<WeaponDef>("Mutog_HeadRamming_BodyPartDef"),
                 DefCache.GetDef<WeaponDef>("Mutog_Tail_Basher_WeaponDef")
@@ -807,12 +802,12 @@ namespace TFTV
             }
         }
 
-      
-
-      
 
 
-        
+
+
+
+
 
         private static void LoadingScreensAndLore()
         {
@@ -841,7 +836,7 @@ namespace TFTV
                 InjectOlenaKimLines();
                 TFTVChangesToDLC1andDLC2Events.ChangesToDLC1andDLC2Defs();
                 TFTVChangesToDLC3Events.ChangesToDLC3Defs();
-                
+
             }
             catch (Exception e)
             {
@@ -1108,7 +1103,7 @@ namespace TFTV
 
         private static void FixInstilFrenzySound()
         {
-            try 
+            try
             {
                 DefCache.GetDef<TacticalEventDef>("FrenzyStatus_TargetEffect_EventDef").AudioData.Mute = true;
 
@@ -1139,8 +1134,8 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
 
                 };
 
-               // DefCache.GetDef<TacticalItemDef>("AcheronAchlys_Torso_BodyPartDef").Armor = 20;
-              //  DefCache.GetDef<TacticalItemDef>("AcheronAchlys_Husk_BodyPartDef").Armor = 5;
+                // DefCache.GetDef<TacticalItemDef>("AcheronAchlys_Torso_BodyPartDef").Armor = 20;
+                //  DefCache.GetDef<TacticalItemDef>("AcheronAchlys_Husk_BodyPartDef").Armor = 5;
                 foreach (TacticalItemDef tacticalItemDef in tacticalItemDefs)
                 {
                     int armorRemoved = (int)tacticalItemDef.Armor;
@@ -1578,7 +1573,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 ChangeResourceRewardsForAutopsies();
                 AdjustPandoranVolumes();
                 ChangesToCapturingPandorans();
-                CreateCaptureModule();
+                
             }
             catch (Exception e)
             {
@@ -1586,48 +1581,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
             }
         }
 
-        private static void CreateCaptureModule()
-        {
-            try
-            {
-
-                ResearchDef scyllaCaptureModule = DefCache.GetDef<ResearchDef>("PX_Aircraft_EscapePods_ResearchDef");
-
-                scyllaCaptureModule.ViewElementDef.DisplayName1.LocalizationKey = "KEY_TFTV_CAPTURE_MODULE_RESEARCHDEF_NAME";
-                scyllaCaptureModule.ViewElementDef.RevealText.LocalizationKey = "KEY_TFTV_CAPTURE_MODULE_RESEARCHDEF_REVEAL";
-                scyllaCaptureModule.ViewElementDef.UnlockText.LocalizationKey = "KEY_TFTV_CAPTURE_MODULE_RESEARCHDEF_REVEAL";
-                scyllaCaptureModule.ViewElementDef.CompleteText.LocalizationKey = "KEY_TFTV_CAPTURE_MODULE_RESEARCHDEF_COMPLETE";
-
-                ExistingResearchRequirementDef existingResearchRequirementDef = DefCache.GetDef<ExistingResearchRequirementDef>("PX_Aircraft_EscapePods_ResearchDef_ExistingResearchRequirementDef_1");
-                existingResearchRequirementDef.ResearchID = "PX_Alien_Queen_ResearchDef";
-
-                scyllaCaptureModule.Tags = new ResearchTagDef[] { CriticalResearchTag };
-                scyllaCaptureModule.RevealRequirements.Container =
-                    new ReseachRequirementDefOpContainer[] { new ReseachRequirementDefOpContainer()
-                    { Operation = ResearchContainerOperation.ANY, Requirements = new ResearchRequirementDef[] { existingResearchRequirementDef } } };
-                scyllaCaptureModule.ResearchCost = 500;
-
-                GeoVehicleModuleDef captureModule = DefCache.GetDef<GeoVehicleModuleDef>("PX_EscapePods_GeoVehicleModuleDef");
-
-                captureModule.ViewElementDef.DisplayName1.LocalizationKey = "KEY_TFTV_CAPTURE_MODULE_NAME";
-                captureModule.ViewElementDef.DisplayName2.LocalizationKey = "KEY_TFTV_CAPTURE_MODULE_NAME";
-                captureModule.ViewElementDef.Description.LocalizationKey = "KEY_TFTV_CAPTURE_MODULE_DESCRIPTION";
-
-                captureModule.ManufactureMaterials = 600;
-                captureModule.ManufactureTech = 75;
-                captureModule.ManufacturePointsCost = 505;
-
-                //Needs to be removed because it's a config option
-                ResearchDbDef ppResearchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
-                ppResearchDB.Researches.Remove(scyllaCaptureModule);
-
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
+       
 
         private static void ChangesToCapturingPandorans()
         {
@@ -4858,7 +4812,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 MedAndBigMonstersSquishers();
                 ModifyGuardianAIandStomp();
                 CreateNewScreamForCyclops();
-
+                ChangeHeavyLegsScyllaAbdomen();
                 //  MakeUmbraNotObstacle();
             }
             catch (Exception e)
@@ -4868,7 +4822,19 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
 
         }
 
+        private static void ChangeHeavyLegsScyllaAbdomen()
+        {
+            try 
+            {
+                TacCharacterDef scylla6 = DefCache.GetDef<TacCharacterDef>("Scylla6_FrenzyArmorSmashHeavySpawn_AlienMutationVariationDef");
+                scylla6.Data.BodypartItems[5] = DefCache.GetDef<TacticalItemDef>("Queen_Abdomen_Belcher_BodyPartDef");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
 
+        }
 
         internal static void CreateNewScreamForCyclops()
         {
@@ -6361,8 +6327,8 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
         }
 
 
-      
-        
+
+
 
         public static void AllowMedkitsToTargetMutoidsAndChangesToMutoidSkillSet()
         {
@@ -6982,92 +6948,7 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
             }
 
         }
-        public static void ModifyDefsForPassengerModules()
-        {
-
-            try
-            {
-                //ID all the factions for later
-                GeoFactionDef PhoenixPoint = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
-                GeoFactionDef NewJericho = DefCache.GetDef<GeoFactionDef>("NewJericho_GeoFactionDef");
-                GeoFactionDef Anu = DefCache.GetDef<GeoFactionDef>("Anu_GeoFactionDef");
-                GeoFactionDef Synedrion = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
-
-                //ID all craft for later
-                GeoVehicleDef manticore = DefCache.GetDef<GeoVehicleDef>("PP_Manticore_Def");
-                GeoVehicleDef helios = DefCache.GetDef<GeoVehicleDef>("SYN_Helios_Def");
-                GeoVehicleDef thunderbird = DefCache.GetDef<GeoVehicleDef>("NJ_Thunderbird_Def");
-                GeoVehicleDef blimp = DefCache.GetDef<GeoVehicleDef>("ANU_Blimp_Def");
-                GeoVehicleDef manticoreMasked = DefCache.GetDef<GeoVehicleDef>("PP_MaskedManticore_Def");
-
-                //Reduce all craft seating (except blimp) by 4 and create clones with previous seating
-
-                GeoVehicleDef manticoreNew = Helper.CreateDefFromClone(manticore, "83A7FD03-DB85-4CEE-BAED-251F5415B82B", "PP_Manticore_Def_6_Slots");
-                manticore.BaseStats.SpaceForUnits = 2;
-                GeoVehicleDef heliosNew = Helper.CreateDefFromClone(helios, "4F9026CB-EF42-44B8-B9C3-21181EC4E2AB", "SYN_Helios_Def_5_Slots");
-                helios.BaseStats.SpaceForUnits = 1;
-                GeoVehicleDef thunderbirdNew = Helper.CreateDefFromClone(thunderbird, "FDE7F0C2-8BA7-4046-92EB-F3462F204B2B", "NJ_Thunderbird_Def_7_Slots");
-                thunderbird.BaseStats.SpaceForUnits = 3;
-                GeoVehicleDef blimpNew = Helper.CreateDefFromClone(blimp, "B857B76D-BDDB-4CA9-A1CA-895A540B17C8", "ANU_Blimp_Def_12_Slots");
-                blimpNew.BaseStats.SpaceForUnits = 12;
-                GeoVehicleDef manticoreMaskedNew = Helper.CreateDefFromClone(manticoreMasked, "19B82FD8-67EE-4277-B982-F352A53ADE72", "PP_ManticoreMasked_Def_8_Slots");
-                manticoreMasked.BaseStats.SpaceForUnits = 4;
-
-                //Change Hibernation module
-                GeoVehicleModuleDef hibernationmodule = DefCache.GetDef<GeoVehicleModuleDef>("SY_HibernationPods_GeoVehicleModuleDef");
-                //Increase cost to 50% of Vanilla Manti
-                hibernationmodule.ManufactureMaterials = 600;
-                hibernationmodule.ManufactureTech = 75;
-                hibernationmodule.ManufacturePointsCost = 505;
-                //Change Cruise Control module
-                GeoVehicleModuleDef cruisecontrolmodule = DefCache.GetDef<GeoVehicleModuleDef>("NJ_CruiseControl_GeoVehicleModuleDef");
-                //Increase cost to 50% of Vanilla Manti
-                cruisecontrolmodule.ManufactureMaterials = 600;
-                cruisecontrolmodule.ManufactureTech = 75;
-                cruisecontrolmodule.ManufacturePointsCost = 505;
-                //increasing bonus to speed 
-                cruisecontrolmodule.GeoVehicleModuleBonusValue = 250;
-                //Change Fuel Tank module
-                GeoVehicleModuleDef fueltankmodule = DefCache.GetDef<GeoVehicleModuleDef>("NJ_FuelTanks_GeoVehicleModuleDef");
-                //Increase cost to 50% of Vanilla Manti
-                fueltankmodule.ManufactureMaterials = 600;
-                fueltankmodule.ManufactureTech = 75;
-                fueltankmodule.ManufacturePointsCost = 505;
-                fueltankmodule.GeoVehicleModuleBonusValue = 2500;
-
-
-                //Make Hibernation module available for manufacture from start of game - doesn't work because HM is not an ItemDef
-                //GeoPhoenixFactionDef phoenixFactionDef = DefCache.GetDef<GeoPhoenixFactionDef>("Phoenix_GeoPhoenixFactionDef");
-                //EntitlementDef festeringSkiesEntitlementDef = DefCache.GetDef<EntitlementDef>("FesteringSkiesEntitlementDef");
-                // phoenixFactionDef.AdditionalDLCItems.Add(new GeoFactionDef.DLCStartItems { DLC = festeringSkiesEntitlementDef, StartingManufacturableItems = hibernationmodule };               
-                //Change cost of Manti to 50% of Vanilla
-                VehicleItemDef mantiVehicle = DefCache.GetDef<VehicleItemDef>("PP_Manticore_VehicleItemDef");
-                mantiVehicle.ManufactureMaterials = 600;
-                mantiVehicle.ManufactureTech = 75;
-                mantiVehicle.ManufacturePointsCost = 505;
-                //Change cost of Helios to Vanilla minus cost of passenger module
-                VehicleItemDef heliosVehicle = DefCache.GetDef<VehicleItemDef>("SYN_Helios_VehicleItemDef");
-                heliosVehicle.ManufactureMaterials = 555;
-                heliosVehicle.ManufactureTech = 173;
-                heliosVehicle.ManufacturePointsCost = 510;
-                //Change cost of Thunderbird to Vanilla minus cost of passenger module
-                VehicleItemDef thunderbirdVehicle = DefCache.GetDef<VehicleItemDef>("NJ_Thunderbird_VehicleItemDef");
-                thunderbirdVehicle.ManufactureMaterials = 900;
-                thunderbirdVehicle.ManufactureTech = 113;
-                thunderbirdVehicle.ManufacturePointsCost = 660;
-
-                //Make HM research for PX, available after completing Phoenix Archives
-                ResearchDef hibernationModuleResearch = DefCache.GetDef<ResearchDef>("SYN_Aircraft_HybernationPods_ResearchDef");
-                ResearchDef sourcePX_SDI_ResearchDef = DefCache.GetDef<ResearchDef>("PX_SDI_ResearchDef");
-                hibernationModuleResearch.Faction = PhoenixPoint;
-                hibernationModuleResearch.RevealRequirements = sourcePX_SDI_ResearchDef.RevealRequirements;
-                hibernationModuleResearch.ResearchCost = 100;
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
+        
         public static void ModifyPandoranProgress()
         {
             try
@@ -7395,420 +7276,7 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
             }
         }
 
-        public static void ModifyAirCombatDefs()
-        {
-            try
-            {
-                //implementing Belial's proposal: 
-
-                // ALN_VoidChamber_VehicleWeaponDef  Fire rate increased 20s-> 10s, Damage decreased 400-> 200
-                // ALN_Spikes_VehicleWeaponDef	Changed to Psychic Guidance (from Visual Guidance)
-                // ALN_Ram_VehicleWeaponDef Changed to Psychic Guidance(from Visual Guidance), HP 250-> 350
-
-                // PX_Afterburner_GeoVehicleModuleDef Charges 5-> 3
-                // PX_Flares_GeoVehicleModuleDef 5-> 3
-                //  AN_ECMJammer_GeoVehicleModuleDef Charges 5-> 3
-
-                //PX_ElectrolaserThunderboltHC9_VehicleWeaponDef Accuracy 95 % -> 85 %
-                // PX_BasicMissileNomadAAM_VehicleWeaponDef 80 % -> 70 %
-                // NJ_RailgunMaradeurAC4_VehicleWeaponDef 80 % -> 70 %
-                //SY_LaserGunArtemisMkI_VehicleWeaponDef Artemis Accuracy 95 % -> 85 %
-
-
-                GeoVehicleWeaponDef voidChamberWDef = DefCache.GetDef<GeoVehicleWeaponDef>("ALN_VoidChamber_VehicleWeaponDef");
-                GeoVehicleWeaponDef spikesWDef = DefCache.GetDef<GeoVehicleWeaponDef>("ALN_Spikes_VehicleWeaponDef");
-                GeoVehicleWeaponDef ramWDef = DefCache.GetDef<GeoVehicleWeaponDef>("ALN_Ram_VehicleWeaponDef");
-                GeoVehicleWeaponDef thunderboltWDef = DefCache.GetDef<GeoVehicleWeaponDef>("PX_ElectrolaserThunderboltHC9_VehicleWeaponDef");
-                GeoVehicleWeaponDef nomadWDef = DefCache.GetDef<GeoVehicleWeaponDef>("PX_BasicMissileNomadAAM_VehicleWeaponDef");
-                GeoVehicleWeaponDef railGunWDef = DefCache.GetDef<GeoVehicleWeaponDef>("NJ_RailgunMaradeurAC4_VehicleWeaponDef");
-                GeoVehicleWeaponDef laserGunWDef = DefCache.GetDef<GeoVehicleWeaponDef>("SY_LaserGunArtemisMkI_VehicleWeaponDef");
-
-                //Design decision
-                GeoVehicleModuleDef afterburnerMDef = DefCache.GetDef<GeoVehicleModuleDef>("PX_Afterburner_GeoVehicleModuleDef");
-                GeoVehicleModuleDef flaresMDef = DefCache.GetDef<GeoVehicleModuleDef>("PX_Flares_GeoVehicleModuleDef");
-                //   GeoVehicleModuleDef jammerMDef = DefCache.GetDef<GeoVehicleModuleDef>("AN_ECMJammer_GeoVehicleModuleDef");
-
-                voidChamberWDef.ChargeTime = 10.0f;
-                var voidDamagePayload = voidChamberWDef.DamagePayloads[0].Damage;
-                voidChamberWDef.DamagePayloads[0] = new GeoWeaponDamagePayload { Damage = voidDamagePayload, Amount = 200 };
-
-                spikesWDef.Guidence = GeoVehicleWeaponGuidence.Psychic;
-                // ramWDef.Guidence = GeoVehicleWeaponGuidence.Psychic;
-                ramWDef.HitPoints = 350;
-                thunderboltWDef.Accuracy = 85;
-                nomadWDef.Accuracy = 70;
-                railGunWDef.Accuracy = 70;
-                laserGunWDef.Accuracy = 85;
-
-                afterburnerMDef.HitPoints = 250;
-                flaresMDef.HitPoints = 250;
-                //flaresMDef.AmmoCount = 3;
-                //jammerMDef.AmmoCount = 3;
-
-                ResearchDbDef ppResearchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
-                ResearchDbDef anuResearchDB = DefCache.GetDef<ResearchDbDef>("anu_ResearchDB");
-                ResearchDbDef njResearchDB = DefCache.GetDef<ResearchDbDef>("nj_ResearchDB");
-                ResearchDbDef synResearchDB = DefCache.GetDef<ResearchDbDef>("syn_ResearchDB");
-
-                //removing unnecessary researches 
-                synResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("SYN_Aircraft_SecurityStation_ResearchDef"));
-                // ppResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("PX_Aircraft_EscapePods_ResearchDef"));
-                njResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("NJ_Aircraft_CruiseControl_ResearchDef"));
-                njResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("NJ_Aircraft_FuelTank_ResearchDef"));
-
-
-                //Belial's suggestions, unlocking flares via PX Aerial Warfare, etc.
-                AddItemToManufacturingReward("PX_Aircraft_Flares_ResearchDef_ManufactureResearchRewardDef_0",
-                    "PX_AerialWarfare_ResearchDef_ManufactureResearchRewardDef_0", "PX_Aircraft_Flares_ResearchDef");
-
-                ManufactureResearchRewardDef fenrirReward = DefCache.GetDef<ManufactureResearchRewardDef>("PX_Aircraft_VirophageGun_ResearchDef_ManufactureResearchRewardDef_0");
-                ManufactureResearchRewardDef virophageWeaponsReward = DefCache.GetDef<ManufactureResearchRewardDef>("PX_VirophageWeapons_ResearchDef_ManufactureResearchRewardDef_0");
-                List<ItemDef> rewardsVirophage = virophageWeaponsReward.Items.ToList();
-                rewardsVirophage.Add(fenrirReward.Items[0]);
-                virophageWeaponsReward.Items = rewardsVirophage.ToArray();
-                ResearchDef fenrirResearch = DefCache.GetDef<ResearchDef>("PX_Aircraft_VirophageGun_ResearchDef");
-                ppResearchDB.Researches.Remove(fenrirResearch);
-
-
-                ManufactureResearchRewardDef thunderboltReward = DefCache.GetDef<ManufactureResearchRewardDef>("PX_Aircraft_Electrolaser_ResearchDef_ManufactureResearchRewardDef_0");
-                ManufactureResearchRewardDef advancedLasersReward = DefCache.GetDef<ManufactureResearchRewardDef>("PX_AdvancedLaserTech_ResearchDef_ManufactureResearchRewardDef_0");
-                List<ItemDef> rewardsAdvancedLasers = advancedLasersReward.Items.ToList();
-                rewardsAdvancedLasers.Add(thunderboltReward.Items[0]);
-                advancedLasersReward.Items = rewardsAdvancedLasers.ToArray();
-                ResearchDef electroLaserResearch = DefCache.GetDef<ResearchDef>("PX_Aircraft_Electrolaser_ResearchDef");
-                ppResearchDB.Researches.Remove(electroLaserResearch);
-
-                ManufactureResearchRewardDef handOfTyrReward = DefCache.GetDef<ManufactureResearchRewardDef>("PX_Aircraft_HypersonicMissile_ResearchDef_ManufactureResearchRewardDef_0");
-                ManufactureResearchRewardDef advancedShreddingReward = DefCache.GetDef<ManufactureResearchRewardDef>("PX_AdvancedShreddingTech_ResearchDef_ManufactureResearchRewardDef_0");
-                List<ItemDef> rewardsAdvancedShredding = advancedShreddingReward.Items.ToList();
-                rewardsAdvancedShredding.Add(handOfTyrReward.Items[0]);
-                advancedShreddingReward.Items = rewardsAdvancedShredding.ToArray();
-                ResearchDef handOfTyrResearch = DefCache.GetDef<ResearchDef>("PX_Aircraft_HypersonicMissile_ResearchDef");
-                ppResearchDB.Researches.Remove(handOfTyrResearch);
-
-                AddItemToManufacturingReward("NJ_Aircraft_TacticalNuke_ResearchDef_ManufactureResearchRewardDef_0",
-                    "NJ_GuidanceTech_ResearchDef_ManufactureResearchRewardDef_0", "NJ_Aircraft_TacticalNuke_ResearchDef");
-                ResearchDef tacticalNukeResearch = DefCache.GetDef<ResearchDef>("NJ_Aircraft_TacticalNuke_ResearchDef");
-                ResearchDef njGuidanceResearch = DefCache.GetDef<ResearchDef>("NJ_GuidanceTech_ResearchDef");
-                List<ResearchRewardDef> guidanceUnlocks = njGuidanceResearch.Unlocks.ToList();
-                guidanceUnlocks.Add(tacticalNukeResearch.Unlocks[1]);
-                njGuidanceResearch.Unlocks = guidanceUnlocks.ToArray();
-
-
-                AddItemToManufacturingReward("NJ_Aircraft_FuelTank_ResearchDef_ManufactureResearchRewardDef_0",
-                    "NJ_VehicleTech_ResearchDef_ManufactureResearchRewardDef_0", "NJ_Aircraft_FuelTank_ResearchDef");
-
-                AddItemToManufacturingReward("NJ_Aircraft_CruiseControl_ResearchDef_ManufactureResearchRewardDef_0",
-                    "SYN_Rover_ResearchDef_ManufactureResearchRewardDef_0", "NJ_Aircraft_CruiseControl_ResearchDef");
-
-                ManufactureResearchRewardDef medusaAAM = DefCache.GetDef<ManufactureResearchRewardDef>("SYN_Aircraft_EMPMissile_ResearchDef_ManufactureResearchRewardDef_0");
-                ManufactureResearchRewardDef synAirCombat = DefCache.GetDef<ManufactureResearchRewardDef>("SYN_NanoTech_ResearchDef_ManufactureResearchRewardDef_0");
-                List<ItemDef> rewards = synAirCombat.Items.ToList();
-                rewards.Add(medusaAAM.Items[0]);
-                synAirCombat.Items = rewards.ToArray();
-
-                ResearchDef nanotechResearch = DefCache.GetDef<ResearchDef>("SYN_NanoTech_ResearchDef");
-                ResearchDef medusaAAMResearch = DefCache.GetDef<ResearchDef>("SYN_Aircraft_EMPMissile_ResearchDef");
-                synResearchDB.Researches.Remove(medusaAAMResearch);
-                if (ppResearchDB.Researches.Contains(medusaAAMResearch))
-                {
-                    ppResearchDB.Researches.Remove(medusaAAMResearch);
-                }
-                List<ResearchRewardDef> nanotechUnlocks = nanotechResearch.Unlocks.ToList();
-                nanotechUnlocks.Add(medusaAAMResearch.Unlocks[1]);
-                nanotechResearch.Unlocks = nanotechUnlocks.ToArray();
-
-                //This one is the source of the gamebreaking bug:
-                /* AddItemToManufacturingReward("SY_EMPMissileMedusaAAM_VehicleWeaponDef",
-                         "SYN_AerialWarfare_ResearchDef_ManufactureResearchRewardDef_0", "SYN_Aircraft_EMPMissile_ResearchDef");*/
-                AddItemToManufacturingReward("ANU_Aircraft_Oracle_ResearchDef_ManufactureResearchRewardDef_0",
-                    "ANU_AerialWarfare_ResearchDef_ManufactureResearchRewardDef_0", "ANU_Aircraft_Oracle_ResearchDef");
-
-                ResearchDef anuAWResearch = DefCache.GetDef<ResearchDef>("ANU_AerialWarfare_ResearchDef");
-                ResearchDef oracleResearch = DefCache.GetDef<ResearchDef>("ANU_Aircraft_Oracle_ResearchDef");
-
-                List<ResearchRewardDef> anuAWUnlocks = anuAWResearch.Unlocks.ToList();
-                anuAWUnlocks.Add(oracleResearch.Unlocks[1]);
-                anuAWResearch.Unlocks = anuAWUnlocks.ToArray();
-
-
-                CreateManufacturingReward("ANU_Aircraft_MutogCatapult_ResearchDef_ManufactureResearchRewardDef_0",
-                    "ANU_Aircraft_ECMJammer_ResearchDef_ManufactureResearchRewardDef_0", "ANU_Aircraft_ECMJammer_ResearchDef", "ANU_Aircraft_MutogCatapult_ResearchDef",
-                    "ANU_AdvancedBlimp_ResearchDef");
-
-                ResearchDef advancedBlimpResearch = DefCache.GetDef<ResearchDef>("ANU_AdvancedBlimp_ResearchDef");
-                ResearchDef ecmResearch = DefCache.GetDef<ResearchDef>("ANU_Aircraft_ECMJammer_ResearchDef");
-                ResearchDef mutogCatapultResearch = DefCache.GetDef<ResearchDef>("ANU_Aircraft_MutogCatapult_ResearchDef");
-
-                List<ResearchRewardDef> advancedBlimpUnlocks = advancedBlimpResearch.Unlocks.ToList();
-                advancedBlimpUnlocks.Add(ecmResearch.Unlocks[1]);
-                advancedBlimpUnlocks.Add(mutogCatapultResearch.Unlocks[1]);
-                advancedBlimpResearch.Unlocks = advancedBlimpUnlocks.ToArray();
-
-                CreateManufacturingReward("PX_Aircraft_Autocannon_ResearchDef_ManufactureResearchRewardDef_0", "SYN_Aircraft_SecurityStation_ResearchDef_ManufactureResearchRewardDef_0",
-                      "SYN_Aircraft_SecurityStation_ResearchDef", "PX_Aircraft_Autocannon_ResearchDef",
-                      "PX_Alien_Spawnery_ResearchDef");
-
-                EncounterVariableResearchRequirementDef charunEncounterVariableResearchRequirement = DefCache.GetDef<EncounterVariableResearchRequirementDef>("ALN_Small_Flyer_ResearchDef_EncounterVariableResearchRequirementDef_0");
-                charunEncounterVariableResearchRequirement.VariableName = "CharunAreComing";
-
-                //Changing ALN Berith research req so that they only appear after certain ODI event
-                EncounterVariableResearchRequirementDef berithEncounterVariable = DefCache.GetDef<EncounterVariableResearchRequirementDef>("ALN_Medium_Flyer_ResearchDef_EncounterVariableResearchRequirementDef_0");
-                berithEncounterVariable.VariableName = "BerithResearchVariable";
-
-                //Changing ALN Abbadon research so they appear only in Third Act, or After ODI reaches apex
-                EncounterVariableResearchRequirementDef sourceVarResReq =
-                   DefCache.GetDef<EncounterVariableResearchRequirementDef>("NJ_Bionics1_ResearchDef_EncounterVariableResearchRequirementDef_0");
-
-                //Creating new Research Requirements, each requiring a variable to be triggered  
-                EncounterVariableResearchRequirementDef variableResReqAbbadon = Helper.CreateDefFromClone(sourceVarResReq, "F8D9463A-69C5-47B1-B52A-061D898CEEF8", "AbbadonResReqDef");
-                variableResReqAbbadon.VariableName = "AbbadonResearchVariable";
-                //  EncounterVariableResearchRequirementDef variableResReqAbbadonAlt = Helper.CreateDefFromClone(sourceVarResReq, "F8D9463A-69C5-47B1-B52A-061D898CEEF8", "AbbadonResReqAltDef");
-                //  variableResReqAbbadonAlt.VariableName = "ODI_Complete";
-                //Altering researchDef, requiring Third Act to have started and adding an alternative way of revealing research if ODI is completed 
-                ResearchDef aLN_Large_Flyer_ResearchDef = DefCache.GetDef<ResearchDef>("ALN_Large_Flyer_ResearchDef");
-                //  aLN_Large_Flyer_ResearchDef.RevealRequirements.Operation = ResearchContainerOperation.ANY;
-
-                ReseachRequirementDefOpContainer[] reseachRequirementDefOpContainers = new ReseachRequirementDefOpContainer[1];
-                ResearchRequirementDef[] researchRequirementDefs = new ResearchRequirementDef[1];
-                researchRequirementDefs[0] = variableResReqAbbadon;
-
-                reseachRequirementDefOpContainers[0].Requirements = researchRequirementDefs;
-                aLN_Large_Flyer_ResearchDef.RevealRequirements.Container = reseachRequirementDefOpContainers;
-
-                //Changes to FesteringSkies settings
-                FesteringSkiesSettingsDef festeringSkiesSettingsDef = DefCache.GetDef<FesteringSkiesSettingsDef>("FesteringSkiesSettingsDef");
-                festeringSkiesSettingsDef.SpawnInfestedAircraftChance = 0;
-                festeringSkiesSettingsDef.InfestedAircraftChance = 0;
-                festeringSkiesSettingsDef.InfestedAircrafts.Clear();
-                festeringSkiesSettingsDef.InfestedAircraftRebuildHours = 100000;
-
-                InterceptionGameDataDef interceptionGameDataDef = DefCache.GetDef<InterceptionGameDataDef>("InterceptionGameDataDef");
-                interceptionGameDataDef.DisengageDuration = 3;
-
-                DefCache.GetDef<AlienRaidsSetupDef>("_AlienRaidsSetupDef").RaidPeriodHrs = 15;
-
-                RemoveHardFlyersTemplates();
-            }
-
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
-        public static void RemoveHardFlyersTemplates()
-        {
-            try
-            {
-                GeoVehicleWeaponDef acidSpit = DefCache.GetDef<GeoVehicleWeaponDef>("ALN_AcidSpit_VehicleWeaponDef");
-                GeoVehicleWeaponDef spikes = DefCache.GetDef<GeoVehicleWeaponDef>("ALN_Spikes_VehicleWeaponDef");
-                GeoVehicleWeaponDef napalmBreath = DefCache.GetDef<GeoVehicleWeaponDef>("ALN_NapalmBreath_VehicleWeaponDef");
-                GeoVehicleWeaponDef ram = DefCache.GetDef<GeoVehicleWeaponDef>("ALN_Ram_VehicleWeaponDef");
-                GeoVehicleWeaponDef tick = DefCache.GetDef<GeoVehicleWeaponDef>("ALN_Tick_VehicleWeaponDef");
-                GeoVehicleWeaponDef voidChamber = DefCache.GetDef<GeoVehicleWeaponDef>("ALN_VoidChamber_VehicleWeaponDef");
-
-                /* GeoVehicleWeaponDamageDef shredDamage = DefCache.GetDef<GeoVehicleWeaponDamageDef>("Shred_GeoVehicleWeaponDamageDef"); 
-                 GeoVehicleWeaponDamageDef regularDamage= DefCache.GetDef<GeoVehicleWeaponDamageDef>("Regular_GeoVehicleWeaponDamageDef");
-
-                 tick.DamagePayloads[0] = new GeoWeaponDamagePayload { Damage = shredDamage, Amount = 20 };
-                 tick.DamagePayloads.Add(new GeoWeaponDamagePayload { Damage = regularDamage, Amount = 60 });*/
-
-
-                GeoVehicleLoadoutDef charun2 = DefCache.GetDef<GeoVehicleLoadoutDef>("AL_Small2_VehicleLoadout");
-                GeoVehicleLoadoutDef charun4 = DefCache.GetDef<GeoVehicleLoadoutDef>("AL_Small4_VehicleLoadout");
-                GeoVehicleLoadoutDef berith1 = DefCache.GetDef<GeoVehicleLoadoutDef>("AL_Medium1_VehicleLoadout");
-                GeoVehicleLoadoutDef berith2 = DefCache.GetDef<GeoVehicleLoadoutDef>("AL_Medium2_VehicleLoadout");
-                GeoVehicleLoadoutDef berith3 = DefCache.GetDef<GeoVehicleLoadoutDef>("AL_Medium3_VehicleLoadout");
-                GeoVehicleLoadoutDef berith4 = DefCache.GetDef<GeoVehicleLoadoutDef>("AL_Medium4_VehicleLoadout");
-                GeoVehicleLoadoutDef abbadon1 = DefCache.GetDef<GeoVehicleLoadoutDef>("AL_Large1_VehicleLoadout");
-                GeoVehicleLoadoutDef abbadon2 = DefCache.GetDef<GeoVehicleLoadoutDef>("AL_Large2_VehicleLoadout");
-                GeoVehicleLoadoutDef abbadon3 = DefCache.GetDef<GeoVehicleLoadoutDef>("AL_Large3_VehicleLoadout");
-
-                charun2.EquippedItems[0] = napalmBreath;
-                charun2.EquippedItems[1] = ram;
-
-                charun4.EquippedItems[0] = voidChamber;
-                charun4.EquippedItems[1] = spikes;
-
-                berith1.EquippedItems[0] = acidSpit;
-                berith1.EquippedItems[1] = acidSpit;
-                berith1.EquippedItems[2] = spikes;
-                berith1.EquippedItems[3] = ram;
-
-                berith2.EquippedItems[0] = tick;
-                berith2.EquippedItems[1] = ram;
-                berith2.EquippedItems[2] = ram;
-                berith2.EquippedItems[3] = spikes;
-
-                berith3.EquippedItems[0] = napalmBreath;
-                berith3.EquippedItems[1] = spikes;
-                berith3.EquippedItems[2] = spikes;
-                berith3.EquippedItems[3] = ram;
-
-                berith4.EquippedItems[0] = voidChamber;
-                berith4.EquippedItems[1] = napalmBreath;
-                berith4.EquippedItems[2] = ram;
-                berith4.EquippedItems[3] = ram;
-
-                abbadon1.EquippedItems[0] = acidSpit;
-                abbadon1.EquippedItems[1] = acidSpit;
-                abbadon1.EquippedItems[2] = acidSpit;
-                abbadon1.EquippedItems[3] = spikes;
-                abbadon1.EquippedItems[4] = spikes;
-                abbadon1.EquippedItems[5] = spikes;
-
-                abbadon2.EquippedItems[0] = voidChamber;
-                abbadon2.EquippedItems[1] = napalmBreath;
-                abbadon2.EquippedItems[2] = ram;
-                abbadon2.EquippedItems[3] = ram;
-                abbadon2.EquippedItems[4] = ram;
-                abbadon2.EquippedItems[5] = ram;
-
-                abbadon3.EquippedItems[0] = voidChamber;
-                abbadon3.EquippedItems[1] = voidChamber;
-                abbadon3.EquippedItems[2] = ram;
-                abbadon3.EquippedItems[3] = ram;
-                abbadon3.EquippedItems[4] = spikes;
-                abbadon3.EquippedItems[5] = spikes;
-
-
-
-                /* Info about Vanilla loadouts:
-               AlienFlyerResearchRewardDef aLN_Small_FlyerLoadouts= DefCache.GetDef<AlienFlyerResearchRewardDef>("ALN_Small_Flyer_ResearchDef_FlyerLoadoutResearchRewardDef_0");
-                AL_Small1_VehicleLoadout: ALN_AcidSpit_VehicleWeaponDef, ALN_Spikes_VehicleWeaponDef
-                AL_Small2_VehicleLoadout: ALN_NapalmBreath_VehicleWeaponDef, ALN_AcidSpit_VehicleWeaponDef
-                AL_Small3_VehicleLoadout: ALN_Ram_VehicleWeaponDef, ALN_Spikes_VehicleWeaponDef
-
-                AlienFlyerResearchRewardDef aLN_Medium_FlyerLoadouts = DefCache.GetDef<AlienFlyerResearchRewardDef>("ALN_Medium_Flyer_ResearchDef_FlyerLoadoutResearchRewardDef_0");
-                AL_Medium1_VehicleLoadout: ALN_AcidSpit_VehicleWeaponDef, ALN_Spikes_VehicleWeaponDef, ALN_Spikes_VehicleWeaponDef, ALN_Tick_VehicleWeaponDef
-                AL_Medium2_VehicleLoadout: ALN_NapalmBreath_VehicleWeaponDef, ALN_NapalmBreath_VehicleWeaponDef, ALN_Ram_VehicleWeaponDef, ALN_Ram_VehicleWeaponDef
-                AL_Medium3_VehicleLoadout: ALN_AcidSpit_VehicleWeaponDef, ALN_Spikes_VehicleWeaponDef, ALN_Tick_VehicleWeaponDef, ALN_Ram_VehicleWeaponDef
-                AL_Small4_VehicleLoadout: ALN_NapalmBreath_VehicleWeaponDef, ALN_Tick_VehicleWeaponDef
-
-                AlienFlyerResearchRewardDef aLN_Large_FlyerLoadouts = DefCache.GetDef<AlienFlyerResearchRewardDef>("ALN_Large_Flyer_ResearchDef_FlyerLoadoutResearchRewardDef_0");
-                AL_Large1_VehicleLoadout: ALN_VoidChamber_VehicleWeaponDef, ALN_VoidChamber_VehicleWeaponDef, ALN_NapalmBreath_VehicleWeaponDef, ALN_NapalmBreath_VehicleWeaponDef, ALN_Tick_VehicleWeaponDef, ALN_Tick_VehicleWeaponDef
-                AL_Large2_VehicleLoadout: ALN_AcidSpit_VehicleWeaponDef, ALN_AcidSpit_VehicleWeaponDef, ALN_AcidSpit_VehicleWeaponDef, ALN_Spikes_VehicleWeaponDef, ALN_Spikes_VehicleWeaponDef, ALN_Spikes_VehicleWeaponDef
-                AL_Large3_VehicleLoadout: ALN_NapalmBreath_VehicleWeaponDef, ALN_Tick_VehicleWeaponDef, ALN_Ram_VehicleWeaponDef, ALN_VoidChamber_VehicleWeaponDef, ALN_AcidSpit_VehicleWeaponDef, ALN_Spikes_VehicleWeaponDef
-                AL_Small5_VehicleLoadout: ALN_Ram_VehicleWeaponDef, ALN_VoidChamber_VehicleWeaponDef
-                AL_Medium4_VehicleLoadout: ALN_AcidSpit_VehicleWeaponDef, ALN_Spikes_VehicleWeaponDef, ALN_VoidChamber_VehicleWeaponDef, ALN_Tick_VehicleWeaponDef
-
-                */
-
-
-            }
-
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
-
-        public static void AddItemToManufacturingReward(string researchReward, string reward, string research)
-        {
-
-            try
-            {
-
-                ResearchDbDef ppResearchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
-                ResearchDbDef anuResearchDB = DefCache.GetDef<ResearchDbDef>("anu_ResearchDB");
-                ResearchDbDef njResearchDB = DefCache.GetDef<ResearchDbDef>("nj_ResearchDB");
-                ResearchDbDef synResearchDB = DefCache.GetDef<ResearchDbDef>("syn_ResearchDB");
-
-                ManufactureResearchRewardDef researchRewardDef = DefCache.GetDef<ManufactureResearchRewardDef>(researchReward);
-                ManufactureResearchRewardDef rewardDef = DefCache.GetDef<ManufactureResearchRewardDef>(reward);
-
-                ResearchDef researchDef = DefCache.GetDef<ResearchDef>(research);
-                List<ItemDef> rewards = rewardDef.Items.ToList();
-                rewards.Add(researchRewardDef.Items[0]);
-                rewardDef.Items = rewards.ToArray();
-                if (ppResearchDB.Researches.Contains(researchDef))
-                {
-                    ppResearchDB.Researches.Remove(researchDef);
-                }
-                if (anuResearchDB.Researches.Contains(researchDef))
-                {
-                    anuResearchDB.Researches.Remove(researchDef);
-                }
-                if (njResearchDB.Researches.Contains(researchDef))
-                {
-                    njResearchDB.Researches.Remove(researchDef);
-                }
-                if (synResearchDB.Researches.Contains(researchDef))
-                {
-                    synResearchDB.Researches.Remove(researchDef);
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
-
-        public static void CreateManufacturingReward(string researchReward1, string researchReward2, string research, string research2, string newResearch)
-        {
-
-            try
-            {
-                ResearchDbDef ppResearchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
-                ResearchDbDef anuResearchDB = DefCache.GetDef<ResearchDbDef>("anu_ResearchDB");
-                ResearchDbDef njResearchDB = DefCache.GetDef<ResearchDbDef>("nj_ResearchDB");
-                ResearchDbDef synResearchDB = DefCache.GetDef<ResearchDbDef>("syn_ResearchDB");
-
-                ManufactureResearchRewardDef researchReward1Def = DefCache.GetDef<ManufactureResearchRewardDef>(researchReward1);
-                ManufactureResearchRewardDef researchReward2Def = DefCache.GetDef<ManufactureResearchRewardDef>(researchReward2);
-                ResearchDef researchDef = DefCache.GetDef<ResearchDef>(research);
-                ResearchDef research2Def = DefCache.GetDef<ResearchDef>(research2);
-                ResearchDef newResearchDef = DefCache.GetDef<ResearchDef>(newResearch);
-                List<ItemDef> rewards = researchReward2Def.Items.ToList();
-                rewards.Add(researchReward1Def.Items[0]);
-                researchReward2Def.Items = rewards.ToArray();
-                newResearchDef.Unlocks = researchDef.Unlocks;
-                newResearchDef.Unlocks[0] = researchReward2Def;
-
-                if (ppResearchDB.Researches.Contains(researchDef))
-                {
-                    ppResearchDB.Researches.Remove(researchDef);
-                }
-                if (anuResearchDB.Researches.Contains(researchDef))
-                {
-                    anuResearchDB.Researches.Remove(researchDef);
-                }
-                if (njResearchDB.Researches.Contains(researchDef))
-                {
-                    anuResearchDB.Researches.Remove(researchDef);
-                }
-                if (synResearchDB.Researches.Contains(researchDef))
-                {
-                    anuResearchDB.Researches.Remove(researchDef);
-                }
-                if (ppResearchDB.Researches.Contains(research2Def))
-                {
-                    ppResearchDB.Researches.Remove(research2Def);
-                }
-                if (anuResearchDB.Researches.Contains(research2Def))
-                {
-                    anuResearchDB.Researches.Remove(research2Def);
-                }
-                if (njResearchDB.Researches.Contains(research2Def))
-                {
-                    anuResearchDB.Researches.Remove(research2Def);
-                }
-                if (synResearchDB.Researches.Contains(research2Def))
-                {
-                    anuResearchDB.Researches.Remove(research2Def);
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
+       
 
         public static void RemoveCorruptionDamageBuff()
         {

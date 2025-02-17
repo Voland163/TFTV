@@ -234,12 +234,13 @@ namespace TFTV
             // Wait for the display duration.
             yield return new WaitForSeconds(displayDuration);
 
-            // Fade out.
-            yield return StartCoroutine(Fade(1f, 0f, fadeDuration));
+            // Start fading out and scaling down.
+            StartCoroutine(Fade(1f, 0f, fadeDuration));
+            yield return StartCoroutine(Scale(Vector3.one, Vector3.zero, fadeDuration));
 
             // Remove this quip from the active list and adjust positions of any remaining quips.
             activeQuips.Remove(this);
-            AdjustActiveQuipsPositions();
+          //  AdjustActiveQuipsPositions();
 
             // Destroy this GameObject.
             Destroy(gameObject);
@@ -261,6 +262,25 @@ namespace TFTV
             }
             if (canvasGroup != null)
                 canvasGroup.alpha = endAlpha;
+        }
+
+        /// <summary>
+        /// Scales the widget’s RectTransform from startScale to endScale over the given duration.
+        /// </summary>
+        private IEnumerator Scale(Vector3 startScale, Vector3 endScale, float duration)
+        {
+            float elapsed = 0f;
+            RectTransform rt = GetComponent<RectTransform>();
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                if (rt != null)
+                    rt.localScale = Vector3.Lerp(startScale, endScale, t);
+                yield return null;
+            }
+            if (rt != null)
+                rt.localScale = endScale;
         }
 
         /// <summary>
@@ -312,6 +332,9 @@ namespace TFTV
                 }
                 // Clear the static list.
                 activeQuips.Clear();
+                TFTVLogger.Always($"Clear all called! TFTVNJQuestline.IntroMission.MissionQuips.QuipJustRun: {TFTVNJQuestline.IntroMission.MissionQuips.QuipJustRun}");
+                TFTVNJQuestline.IntroMission.MissionQuips.QuipJustRun = false;
+                TFTVLogger.Always($"after: TFTVNJQuestline.IntroMission.MissionQuips.QuipJustRun: {TFTVNJQuestline.IntroMission.MissionQuips.QuipJustRun}");
             }
             catch (Exception e)
             {
@@ -320,6 +343,7 @@ namespace TFTV
             }
         }
     }
+
 
 
 

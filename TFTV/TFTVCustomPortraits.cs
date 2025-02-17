@@ -36,7 +36,7 @@ namespace TFTV
             {
                 try
                 {
-                    characterPics.Clear();
+                    characterPics?.Clear();
                     TFTVLogger.Always($"Portraits list cleared");
                 }
                 catch (Exception e)

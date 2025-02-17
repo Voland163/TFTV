@@ -1410,7 +1410,7 @@ namespace TFTV
                     weaponDef.CompatibleAmmunition = new TacticalItemDef[] { newAmmo };
 
                     weaponDef.Tags.Add(_kGTag);
-
+                    weaponDef.Tags.Add(Shared.SharedGameTags.ManufacturableTag);
                     GeoMarketplaceItemOptionDef newMarketplaceItem = Helper.CreateDefFromClone
                          (DefCache.GetDef<GeoMarketplaceItemOptionDef>("Obliterator_MarketplaceItemOptionDef"), gUID2, name);
 
@@ -1632,7 +1632,7 @@ namespace TFTV
                 }
             }
 
-            private static GeoEventChoice GenerateItemChoice(ItemDef itemDef, float price)
+            public static GeoEventChoice GenerateItemChoice(ItemDef itemDef, float price)
             {
                 try
                 {
@@ -1921,6 +1921,12 @@ namespace TFTV
                     GenerateVehicleChoices(currentlyPossibleOptions, Math.Min(numberOfOffers / 4, 10), geoMarketPlace, voPriceMultiplier);
                     GenerateMercenaryChoices(currentlyPossibleOptions, Math.Min(numberOfOffers / 4, 6), geoMarketPlace, voPriceMultiplier);
                     GenerateResearchChoices(currentlyPossibleOptions, Math.Min(numberOfOffers / 4, 8), geoMarketPlace, voPriceMultiplier);
+
+                    if (TFTVAircraftRework.AircraftReworkOn) 
+                    {
+                        TFTVAircraftRework.MarketPlace.GenerateMarketPlaceModules(geoMarketPlace);
+                    }
+
                 }
                 catch (Exception e)
                 {

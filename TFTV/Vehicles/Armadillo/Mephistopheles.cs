@@ -30,8 +30,8 @@ namespace TFTVVehicleRework.Armadillo
         private static void Rebalance()
         {           
             //"NJ_Flamethrower_WeaponDef"
-            // WeaponDef Flamethrower = (WeaponDef)Repo.GetDef("b62efc91-6997-3064-7848-14299c6ddbc0");
-            // Meph.MainSwitch = Flamethrower.MainSwitch;
+            WeaponDef Flamethrower = (WeaponDef)Repo.GetDef("b62efc91-6997-3064-7848-14299c6ddbc0");
+            Meph.MainSwitch = Flamethrower.MainSwitch;
             //"FlameThrower_ShootAbilityDef"
             ShootAbilityDef FlamethrowerShoot = (ShootAbilityDef)Repo.GetDef("9cb530ee-14ad-11d4-2a31-312a93f799e9");
             Meph.Abilities = new AbilityDef[]
@@ -42,6 +42,8 @@ namespace TFTVVehicleRework.Armadillo
             Meph.ChargesMax = 10;
             Meph.DamagePayload.ConeRadius = 3.5f;
             Meph.APToUsePerc = 25;
+          //  Meph.VisibilityType = PhoenixPoint.Tactical.Entities.Equipments.ModelVisibilityType.VisibleWhenActive;
+          //  Meph.HolsterSlotDef = null;
         }
 
         private static ApplyStatusAbilityDef AdaptiveWeapon()

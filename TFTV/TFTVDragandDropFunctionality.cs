@@ -586,6 +586,7 @@ namespace TFTV
 
                     clonedButtonComponent.onClick.RemoveAllListeners();
 
+
                     clonedButtonComponent.onClick.AddListener(() =>
                     {
                         try
@@ -705,7 +706,7 @@ namespace TFTV
                 }
             }
 
-
+            
 
             [HarmonyPatch(typeof(UIModuleManufacturing))]
             public static class UIModuleManufacturingPatch
@@ -1394,7 +1395,7 @@ namespace TFTV
                             PhoenixGeneralButton checkButton = UnityEngine.Object.Instantiate(editUnitButtonsController.DismissButton, uIModuleVehicleRoster.transform);
                             checkButton.gameObject.AddComponent<UITooltipText>().TipText = TFTVCommonMethods.ConvertKeyToString("KEY_SCRAP_AIRCRAFT");// "Toggles helmet visibility on/off.";
 
-                            checkButton.transform.position += new Vector3(300 * resolutionFactorWidth, 100 * resolutionFactorHeight);
+                            checkButton.transform.position += new Vector3(90 * resolutionFactorWidth, 130 * resolutionFactorHeight);
                             checkButton.PointerClicked += () => OnScrapAircraftClick();
                             _scrapButton = checkButton;
                         }

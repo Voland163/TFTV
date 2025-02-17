@@ -1349,11 +1349,13 @@ namespace TFTV
         [HarmonyPatch(typeof(TacticalVoxelMatrix), "SpawnAndPropagateMist")]
         public static class TacticalVoxelMatrix_SpawnAndPropagateMist_VoidOmenMoreMistOnTactical_Patch
         {
-            public static bool Prefix(TacticalVoxelMatrix __instance)
+            public static void Prefix(TacticalVoxelMatrix __instance)
             {
                 try
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
+
+                    float mistRepellerModuleModifier = TFTVAircraftRework.Modules.Tactical.CheckForMistRepellerModuleOnAircraft();
 
 
                     if (VoidOmensCheck[7] && config.MoreMistVO)
@@ -1390,27 +1392,28 @@ namespace TFTV
 
 
 
-                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min = 3 + difficultyLevel * (int)(6 * missionTypeModifer);
-                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = 8 + difficultyLevel * (int)(6 * missionTypeModifer);
+                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min = Mathf.FloorToInt(3 + difficultyLevel * (int)(6 * missionTypeModifer) * mistRepellerModuleModifier);
+                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = Mathf.FloorToInt(8 + difficultyLevel * (int)(6 * missionTypeModifer) * mistRepellerModuleModifier);
                         TFTVLogger.Always($"min blobs: {__instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min}, max blobs: {__instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max}");
-                        return true;
+                        
                     }
                     else
                     {
 
 
                         __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min = 1;
-                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = 3;
-                        return true;
+                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = Mathf.FloorToInt(3 * mistRepellerModuleModifier);
+                        
                     }
 
+                    
 
 
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
-                    return true;
+                    throw;
                 }
             }
         }

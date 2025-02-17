@@ -489,7 +489,7 @@ namespace TFTV
                     {
                         Amount = { Min = 3, Max = 3 },
                         Character = shielder,
-                        Difficulty = easy,
+                        Difficulty = null,
 
                     },
 
@@ -498,7 +498,7 @@ namespace TFTV
                         {
                             Amount = { Min = 3, Max = 3 },
                             Character = driller,
-                            Difficulty = easy,
+                            Difficulty = null,
 
                         }
 
@@ -2111,6 +2111,12 @@ namespace TFTV
 
                 try
                 {
+                    if (!CheckIfAncientMap(tacticalFaction.TacticalLevel))
+                    {
+                        return;
+                    }
+
+
                     if (!tacticalFaction.TacticalLevel.IsLoadingSavedGame)
                     {
                         TFTVLogger.Always($"starting turn {tacticalFaction.TurnNumber} for faction {tacticalFaction.Faction.FactionDef.name} in an Ancient Site map");

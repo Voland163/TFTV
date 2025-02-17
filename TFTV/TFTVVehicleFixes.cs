@@ -1,25 +1,26 @@
-﻿using Base.Entities.Statuses;
-using Base;
+﻿using Base;
+using Base.Defs;
+using Base.Entities.Statuses;
+using Code.PhoenixPoint.Tactical.Entities.Equipments;
 using HarmonyLib;
-using PhoenixPoint.Tactical.ContextHelp;
-using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.Statuses;
-using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.Addons;
+using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Tactical;
+using PhoenixPoint.Tactical.ContextHelp;
+using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Equipments;
+using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Base.Defs;
-using PhoenixPoint.Common.Core;
-using Code.PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Common.Entities.Addons;
-using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Common.Entities.GameTags;
 using System.Reflection;
 using UnityEngine;
+using Item = PhoenixPoint.Common.Entities.Items.Item;
 
 namespace TFTV
 {
@@ -99,6 +100,79 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
                 throw;
+            }
+        }
+
+        [HarmonyPatch(typeof(AdaptiveWeaponStatus), "OnApply")]
+        public static class TFTV_AdaptiveWeaponStatus_OnApply
+        {
+            public static void Postfix(AdaptiveWeaponStatus __instance, StatusComponent statusComponent)
+            {
+                try
+                {
+                    if (__instance.AdaptiveWeaponStatusDef.Guid.Equals("c63d61b2-4afd-4809-ba29-fbf85bd3f270"))
+                    {
+                        TFTVLogger.Always($"{__instance.AdaptiveWeaponStatusDef.name} OnApply to {__instance.TacticalActor?.DisplayName}");
+
+                        List<Equipment> obliterators = new List<Equipment>();
+
+                        obliterators.AddRange(__instance.TacticalActor.Equipments.Equipments.Where(e => e.TacticalItemDef == __instance.AdaptiveWeaponStatusDef.WeaponDef).ToList());
+
+                        if (obliterators.Count == 0)
+                        {
+                            __instance.TacticalActor.Equipments.AddItem(__instance.AdaptiveWeaponStatusDef.WeaponDef, __instance);
+                        }
+                        else
+                        {
+                            for (int x = 0; x < obliterators.Count; x++)
+                            {
+                                if (x == 0)
+                                {
+                                    continue;
+                                }
+
+                                Equipment equipment = obliterators[x];
+                                __instance.TacticalActor.Equipments.RemoveItem(equipment);
+                                TFTVLogger.Always($"{equipment?.DisplayName} {equipment?.TacticalItemDef?.name} removed");
+
+                            }
+
+                        }
+
+                        List<Equipment> flameThrowers = new List<Equipment>();
+
+                        WeaponDef armadilloFtDef = (WeaponDef)Repo.GetDef("49723d28-b373-3bc4-7918-21e87a72c585");
+
+                        flameThrowers.AddRange(__instance.TacticalActor.Equipments.Equipments.Where(e => e.TacticalItemDef == armadilloFtDef).ToList());
+
+                        if (flameThrowers.Count == 0)
+                        {
+                            __instance.TacticalActor.Equipments.AddItem(armadilloFtDef, __instance);
+                        }
+                        else
+                        {
+                            for (int x = 0; x < flameThrowers.Count; x++)
+                            {
+                                if (x == 0)
+                                {
+                                    continue;
+                                }
+
+                                Equipment equipment = flameThrowers[x];
+                                __instance.TacticalActor.Equipments.RemoveItem(equipment);
+                                TFTVLogger.Always($"{equipment?.DisplayName} {equipment?.TacticalItemDef?.name} removed");
+
+                            }
+
+                        }
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
             }
         }
 
@@ -276,5 +350,173 @@ namespace TFTV
                 }
             }
         }
+
+
+
+
+        [HarmonyPatch]
+        public static class TFTV_PostmissionReplenishManager_RemoveExtra
+        {
+            static MethodBase TargetMethod()
+            {
+                return typeof(PostmissionReplenishManager).GetMethod("RemoveExtra", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(List<GeoItem>).MakeByRefType(), typeof(List<GeoItem>).MakeByRefType(), typeof(List<GeoItem>).MakeByRefType(), typeof(GeoCharacter) }, null);
+            }
+
+            public static void Prefix(PostmissionReplenishManager __instance, ref List<GeoItem> preferredItemsList, ref List<GeoItem> currentItems, ref List<GeoItem> extraItems, GeoCharacter debugRemoveLater)
+            {
+                try
+                {
+                    if (currentItems.Any(ei => ei.ItemDef.name.Equals("NJ_Armadillo_Mephistopheles_GroundVehicleWeaponDef(Clone)")))
+                    {
+                        TFTVLogger.Always($"Remove Extra for {debugRemoveLater?.DisplayName} item is NJ_Armadillo_Mephistopheles_GroundVehicleWeaponDef(Clone)");
+                        currentItems.RemoveAll(ei => ei.ItemDef.name.Equals("NJ_Armadillo_Mephistopheles_GroundVehicleWeaponDef(Clone)"));
+                    }
+
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+
+
+        /* [HarmonyPatch(typeof(GeoMission), "ManageGear")]
+         public static class TFTV_GeoMission_ManageGear
+         {
+             public static bool Prefix(GeoMission __instance, TacMissionResult result, GeoSquad squad)
+             {
+                 try
+                 {
+                     MethodInfo methodInfoReloadItem = typeof(GeoMission).GetMethod("TryReloadItem", BindingFlags.NonPublic | BindingFlags.Instance);
+                     MethodInfo methodInfoGetDeployedTurretItems = typeof(GeoMission).GetMethod("GetDeployedTurretItems", BindingFlags.NonPublic | BindingFlags.Instance);
+                     MethodInfo methodInfoGetItemsOnTheGround = typeof(GeoMission).GetMethod("GetItemsOnTheGround", BindingFlags.NonPublic | BindingFlags.Instance);
+                     MethodInfo methodInfoGetDeadSquadMembersArmour = typeof(GeoMission).GetMethod("GetDeadSquadMembersArmour", BindingFlags.NonPublic | BindingFlags.Instance);
+                     MethodInfo methodInfoManageFreeReloads = typeof(GeoMission).GetMethod("ManageFreeReloads", BindingFlags.NonPublic | BindingFlags.Instance);
+                     MethodInfo methodInfoManageAutosellItems = typeof(GeoMission).GetMethod("ManageAutosellItems", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                     TFTVLogger.Always($"methodInfoReloadItem {methodInfoReloadItem == null}\nmethodInfoGetDeployedTurretItems {methodInfoGetDeployedTurretItems == null}\n" +
+                         $"methodInfoGetItemsOnTheGround {methodInfoGetItemsOnTheGround == null}\n methodInfoGetDeadSquadMembersArmour {methodInfoGetDeadSquadMembersArmour == null}\n" +
+                         $"methodInfoGetDeadSquadMembersArmour {methodInfoGetDeadSquadMembersArmour == null}\n methodInfoManageFreeReloads {methodInfoManageFreeReloads == null}" +
+                         $"methodInfoManageAutosellItems {methodInfoManageAutosellItems == null}");
+
+
+                     GeoFaction viewerFaction = __instance.Site.GeoLevel.ViewerFaction;
+                     FactionResult resultByFacionDef = result.GetResultByFacionDef(viewerFaction.Def.PPFactionDef);
+                     bool num = resultByFacionDef.State == TacFactionState.Won;
+                     IEnumerable<GeoCharacter> enumerable = squad.Units.Where((GeoCharacter s) => !s.IsAlive);
+                     if (num)
+                     {
+                         foreach (GeoItem deployedTurretItem in (IEnumerable<GeoItem>)methodInfoGetDeployedTurretItems.Invoke(__instance, new object[] { resultByFacionDef }))
+                         {
+                             TFTVLogger.Always($"adding turret {deployedTurretItem.ItemDef.name}");
+                             __instance.Reward.Items.AddItem(deployedTurretItem);
+                         }
+
+                         if (!__instance.MissionDef.DontRecoverItems)
+                         {
+                             foreach (GeoItem item in (IEnumerable<GeoItem>)methodInfoGetItemsOnTheGround.Invoke(__instance, new object[] { result }))
+                             {
+                                 TFTVLogger.Always($"adding item from the ground {item.ItemDef.name}");
+
+                                 __instance.Reward.Items.AddItem(item);
+                             }
+
+                             foreach (GeoItem item2 in (IEnumerable<GeoItem>)methodInfoGetDeadSquadMembersArmour.Invoke(__instance, new object[] { result, squad }))
+                             {
+                                 TFTVLogger.Always($"adding armor from dead soldier {item2.ItemDef.name}");
+                                 __instance.Reward.Items.AddItem(item2);
+                             }
+
+                             foreach (GeoCharacter item3 in enumerable)
+                             {
+                                 if (!item3.TemplateDef.IsVehicle)
+                                 {
+                                     foreach (GeoItem equipmentItem in item3.EquipmentItems)
+                                     {
+                                         TFTVLogger.Always($"adding equipmentItem from dead soldier {item3?.DisplayName} {equipmentItem.ItemDef.name}");
+                                         __instance.Reward.Items.AddItem(equipmentItem);
+                                     }
+                                 }
+
+                                 foreach (GeoItem inventoryItem in item3.InventoryItems)
+                                 {
+                                     TFTVLogger.Always($"adding inventoryItem from dead unit {item3?.DisplayName} {inventoryItem.ItemDef.name}");
+                                     __instance.Reward.Items.AddItem(inventoryItem);
+                                 }
+                             }
+                         }
+                     }
+
+                     if (viewerFaction is GeoPhoenixFaction geoPhoenixFaction)
+                     {
+                         geoPhoenixFaction.PostmissionReplenish(squad.Units, ref __instance.Reward.Items);
+                     }
+
+                     ItemStorage itemStorage = viewerFaction.GetItemStorage(__instance.Site);
+                     foreach (GeoCharacter unit in squad.Units)
+                     {
+                         if (!unit.IsAlive)
+                         {
+                             continue;
+                         }
+
+                         foreach (GeoItem equipmentItem2 in unit.EquipmentItems)
+                         {
+                             TFTVLogger.Always($"{unit.DisplayName} reloading {equipmentItem2.ItemDef.name}");
+
+                             if (!(bool)methodInfoReloadItem.Invoke(__instance, new object[] { equipmentItem2, __instance.Reward.Items, "mission items" }))
+                             {
+                                 methodInfoReloadItem.Invoke(__instance, new object[] { equipmentItem2, itemStorage, "faction storage" });
+                             }
+                         }
+
+                         foreach (GeoItem inventoryItem2 in unit.InventoryItems)
+                         {
+                             TFTVLogger.Always($"{unit.DisplayName} reloading {inventoryItem2.ItemDef.name}");
+
+                             if (!(bool)methodInfoReloadItem.Invoke(__instance, new object[] { inventoryItem2, __instance.Reward.Items, "mission items" }))
+                             {
+                                 methodInfoReloadItem.Invoke(__instance, new object[] { inventoryItem2, itemStorage, "faction storage" });
+                             }
+
+                         }
+
+                         foreach (GeoItem armourItem in unit.ArmourItems)
+                         {
+                             TFTVLogger.Always($"{unit.DisplayName} reloading {armourItem.ItemDef.name}");
+
+                             if (!(bool)methodInfoReloadItem.Invoke(__instance, new object[] { armourItem, __instance.Reward.Items, "mission items" }))
+                             {
+                                 methodInfoReloadItem.Invoke(__instance, new object[] { armourItem, itemStorage, "faction storage" });
+                             }
+
+                         }
+                     }
+
+                     methodInfoManageFreeReloads.Invoke(__instance, new object[] { result });
+                     methodInfoManageAutosellItems.Invoke(__instance, new object[] { });
+
+
+                     return false;
+
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
+         }*/
+
+
+
+
     }
 }

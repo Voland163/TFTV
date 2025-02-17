@@ -285,6 +285,7 @@ namespace PRMBetterClasses.SkillModifications
             changeAbilitiesCostStatus.ApplicationConditions = new EffectConditionDef[] { visibleActorsInRange };
             changeAbilitiesCostStatus.AbilityCostModification.SkillTagCullFilter = new SkillTagDef[0];
             changeAbilitiesCostStatus.AbilityCostModification.ActionPointMod = -0.5f;
+            changeAbilitiesCostStatus.AbilityCostModification.RequiresProficientEquipment = false;
 
             AddAttackBoostStatusDef addAttackBoostStatus = Helper.CreateDefFromClone(
                 DefCache.GetDef<AddAttackBoostStatusDef>("E_Status [QuickAim_AbilityDef]"),

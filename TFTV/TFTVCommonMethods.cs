@@ -183,6 +183,8 @@ namespace TFTV
                 TFTVDragandDropFunctionality.VehicleRoster.AircraftHotkeysBindingsApplied = false;
                 TFTVVanillaFixes.UI.ShowPerceptionCirclesBindingApplied = false;    
 
+                TFTVNJQuestline.IntroMission.ClearDataOnMissionRestartLoadAndStateChange();
+
                 TFTVLogger.Always($"Internal variables cleared on State change or Load");
             }
             catch (Exception e)
@@ -283,6 +285,8 @@ namespace TFTV
                 TFTVUITactical.ClearDataOnMissionRestart();
 
                 TFTVEvacAll.ClearData();
+
+                TFTVNJQuestline.IntroMission.ClearDataOnMissionRestartLoadAndStateChange();
 
                 TFTVLogger.Always($"Internal variables cleared on Mission Restart");
 
@@ -891,11 +895,11 @@ namespace TFTV
 
 
 
-        internal static int LocateSoldier(GeoCharacter geoCharacter)
+        internal static GeoVehicle LocateSoldier(GeoCharacter geoCharacter)
         {
             try
             {
-                int geoVehicleID = 0;
+                
                 GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
                 foreach (GeoVehicle aircraft in controller.PhoenixFaction.Vehicles)
@@ -903,14 +907,13 @@ namespace TFTV
                     if (aircraft.GetAllCharacters().Contains(geoCharacter))
                     {
 
-                        geoVehicleID = aircraft.VehicleID;
-                        break;
+                        return aircraft;
 
                     }
                 }
 
 
-                return geoVehicleID;
+                return null;
 
             }
             catch (Exception e)

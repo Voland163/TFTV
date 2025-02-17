@@ -2,6 +2,7 @@
 using Base.Core;
 using Base.UI;
 using Epic.OnlineServices;
+using Epic.OnlineServices.AntiCheatCommon;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
@@ -209,7 +210,7 @@ namespace TFTV
         internal class StoryFirstInfestedHaven
         {
 
-            private static readonly GameTagDef mutoidTag = DefCache.GetDef<GameTagDef>("Mutoid_TagDef");
+           
             private static readonly GameTagDef nodeTag = DefCache.GetDef<GameTagDef>("CorruptionNode_ClassTagDef");
 
             private static readonly MissionTypeTagDef infestationMissionTagDef = DefCache.GetDef<MissionTypeTagDef>("HavenInfestation_MissionTypeTagDef");
@@ -217,105 +218,83 @@ namespace TFTV
             // internal static string _nameOfTopCharacter = "";
             //   private static string _nameOfSecondCharacter = "";
 
-
-            [HarmonyPatch(typeof(GeoMission), "Launch")]
-            public static class GeoMission_Launch_InfestationStory_Patch
+            public static void InfestationStoryMission(GeoMission geoMission, GeoSquad squad)
             {
-                public static void Postfix(GeoMission __instance, GeoSquad squad)
+                try 
                 {
-                    try
+                    if (geoMission.MissionDef.Tags.Contains(infestationMissionTagDef))
                     {
-                        if (__instance.MissionDef.Tags.Contains(infestationMissionTagDef))
+
+                        GeoHaven geoHaven = geoMission.Site.GeoLevel.AlienFaction.Havens.FirstOrDefault(h => h.Site.SiteId == geoMission.Site.SiteId);
+                       
+                        TFTVLogger.Always("The haven is " + geoHaven.Site.LocalizedSiteName + " and its population is " + geoHaven.Population);
+
+                        HavenPopulation = geoHaven.Population;
+                        OriginalOwner = geoHaven.OriginalOwner.PPFactionDef.ShortName;
+
+                        List<GeoCharacter> operatives = new List<GeoCharacter>();
+
+                        foreach (GeoCharacter geoCharacter in squad.Soldiers)
                         {
-
-                            List<GeoHaven> geoHavens = __instance.Site.GeoLevel.AlienFaction.Havens.ToList();
-                            GeoHaven geoHaven = new GeoHaven();
-
-                            foreach (GeoHaven haven in geoHavens)
+                            if (!geoCharacter.IsMutoid)
                             {
-                                if (haven.Site.SiteId == __instance.Site.SiteId)
-                                {
-                                    geoHaven = haven;
-
-                                }
-                            }
-                            TFTVLogger.Always("The haven is " + geoHaven.Site.LocalizedSiteName + " and its population is " + geoHaven.Population);
-
-                            HavenPopulation = geoHaven.Population;
-                            OriginalOwner = geoHaven.OriginalOwner.PPFactionDef.ShortName;
-
-                            List<GeoCharacter> operatives = new List<GeoCharacter>();
-
-                            foreach (GeoCharacter geoCharacter in squad.Soldiers)
-                            {
-                                if (!geoCharacter.IsMutoid)
-                                {
-                                    operatives.Add(geoCharacter);
-                                }
-                            }
-
-                            if (operatives.Count < 2)
-                            {
-
-                            }
-                            else
-                            {
-
-                                TFTVLogger.Always("There are " + operatives.Count() + " phoenix operatives");
-                                List<GeoCharacter> orderedOperatives = operatives.OrderByDescending(e => e.LevelProgression.Experience).ToList();
-                                string characterName = "";
-
-                                for (int i = 0; i < operatives.Count; i++)
-                                {
-                                    TFTVLogger.Always("Phoenix operative is " + orderedOperatives[i].DisplayName + " with XP " + orderedOperatives[i].LevelProgression.Experience);
-                                    TFTVLogger.Always("The count is " + orderedOperatives[i].DisplayName.Split().Count());
-                                    if (orderedOperatives[i].DisplayName.Split().Count() > 1)
-                                    {
-                                        TFTVLogger.Always("The first name of the operative is " + orderedOperatives[i].DisplayName.Split()[1]);
-                                        characterName = orderedOperatives[i].DisplayName.Split()[1];
-                                    }
-                                    else
-                                    {
-                                        TFTVLogger.Always("The operative " + orderedOperatives[i].DisplayName + " doesn't have a first or last name");
-                                        characterName = orderedOperatives[i].DisplayName;
-                                    }
-                                }
-
-                                string name = "InfestationMissionIntro";
-                                string title = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY_INTRO_TITLE");//"Search and Rescue";
-                                string director = TFTVCommonMethods.ConvertKeyToString("KEY_TEXT_DIRECTOR");
-                                string infestationStory0 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY0");
-                                string infestationStory1 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY1");
-
-                                string text = $"{director}, {characterName} {infestationStory0} {__instance.Site.LocalizedSiteName}{infestationStory1}";
-
-                                // _nameOfTopCharacter = characterName;
-
-                                string infestationStory2 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY2");
-                                string infestationStory3 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY3");
-                                string reply = $"{characterName} {infestationStory2} {orderedOperatives[0].DisplayName} {infestationStory3}";
-
-                                ContextHelpHintDef infestationIntro2 = DefCache.GetDef<ContextHelpHintDef>(name + "2");
-                                ContextHelpHintDef infestationIntro = DefCache.GetDef<ContextHelpHintDef>(name);
-                                infestationIntro.Trigger = HintTrigger.MissionStart;
-                                infestationIntro.NextHint = infestationIntro2;
-
-
-                                infestationIntro.Text = new LocalizedTextBind(text, true);
-                                infestationIntro.Title = new LocalizedTextBind(title, true);
-                                infestationIntro2.Text = new LocalizedTextBind(reply, true);
-                                infestationIntro2.Title = new LocalizedTextBind(title, true);
+                                operatives.Add(geoCharacter);
                             }
                         }
+
+                        if (operatives.Count < 2)
+                        {
+
+                        }
+                        else
+                        {
+
+                            TFTVLogger.Always("There are " + operatives.Count() + " phoenix operatives");
+                            List<GeoCharacter> orderedOperatives = operatives.OrderByDescending(e => e.LevelProgression.Experience).ToList();
+                            string characterName = "";
+ 
+                            characterName = TFTVTacticalUtils.GetCharacterLastName(operatives.Last().DisplayName);
+                           
+                            string name = "InfestationMissionIntro";
+                            string title = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY_INTRO_TITLE");//"Search and Rescue";
+                            string director = TFTVCommonMethods.ConvertKeyToString("KEY_TEXT_DIRECTOR");
+                            string infestationStory0 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY0");
+                            string infestationStory1 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY1");
+
+                            string text = $"{director}, {characterName} {infestationStory0} {geoMission.Site.LocalizedSiteName}{infestationStory1}";
+
+                            // _nameOfTopCharacter = characterName;
+
+                            string infestationStory2 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY2");
+                            string infestationStory3 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY3");
+                            string reply = $"{characterName} {infestationStory2} {orderedOperatives[0].DisplayName} {infestationStory3}";
+
+                            ContextHelpHintDef infestationIntro2 = DefCache.GetDef<ContextHelpHintDef>(name + "2");
+                            ContextHelpHintDef infestationIntro = DefCache.GetDef<ContextHelpHintDef>(name);
+                            infestationIntro.Trigger = HintTrigger.MissionStart;
+                            infestationIntro.NextHint = infestationIntro2;
+
+
+                            infestationIntro.Text = new LocalizedTextBind(text, true);
+                            infestationIntro.Title = new LocalizedTextBind(title, true);
+                            infestationIntro2.Text = new LocalizedTextBind(reply, true);
+                            infestationIntro2.Title = new LocalizedTextBind(title, true);
+                        }
                     }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
+
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
                 }
 
 
             }
+
+
+          
 
             public static void CreateOutroInfestation(TacticalLevelController controller, DeathReport deathReport)
             {
@@ -324,9 +303,11 @@ namespace TFTV
                     if (deathReport.Actor.HasGameTag(nodeTag))
                     {
 
-                        if (GetTacticalActorsPhoenix(controller).Count >= 1)
+                        List<TacticalActor> tacticalActors = TFTVTacticalUtils.GetTacticalActorsPhoenix(controller);
+
+                        if (tacticalActors.Count >= 1)
                         {
-                            string nameOfOperative = GetTacticalActorsPhoenix(controller)[0].DisplayName;
+                            string nameOfOperative = tacticalActors[0].DisplayName;
                             string title = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY_OUTRO_TITLE"); //"Awakening";
 
                             // string infestationStory3 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY3");
@@ -349,68 +330,7 @@ namespace TFTV
                 }
             }
 
-            public static List<TacticalActor> GetTacticalActorsPhoenix(TacticalLevelController level)
-            {
-                try
-                {
-                    TacticalFaction phoenix = level.GetFactionByCommandName("PX");
-
-                    List<TacticalActor> operatives = new List<TacticalActor>();
-
-                    foreach (TacticalActorBase tacticalActorBase in phoenix.Actors)
-                    {
-                        TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
-
-                        if (tacticalActorBase.BaseDef.name == "Soldier_ActorDef" && tacticalActorBase.InPlay && !tacticalActorBase.HasGameTag(mutoidTag)
-                            && tacticalActorBase.IsAlive && level.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(tacticalActor.GeoUnitId))
-                        {
-
-                            operatives.Add(tacticalActor);
-                        }
-                    }
-
-                    if (operatives.Count == 0)
-                    {
-                        return null;
-                    }
-
-                    TFTVLogger.Always("There are " + operatives.Count() + " phoenix operatives");
-                    List<TacticalActor> orderedOperatives = operatives.OrderByDescending(e => GetNumberOfMissions(e)).ToList();
-                    for (int i = 0; i < operatives.Count; i++)
-                    {
-                        TFTVLogger.Always("TacticalActor is " + orderedOperatives[i].DisplayName + " and # of missions " + GetNumberOfMissions(orderedOperatives[i]));
-                    }
-                    return orderedOperatives;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-                throw new InvalidOperationException();
-
-            }
-
-            public static int GetNumberOfMissions(TacticalActor tacticalActor)
-            {
-                try
-                {
-                    TacticalLevelController level = tacticalActor.TacticalFaction.TacticalLevel;
-
-                    int numberOfMission = level.TacticalGameParams.Statistics.LivingSoldiers[tacticalActor.GeoUnitId].MissionsParticipated;
-
-                    return numberOfMission;
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-                throw new InvalidOperationException();
-
-            }
-
+            
         }
 
         internal class InfestingHaven

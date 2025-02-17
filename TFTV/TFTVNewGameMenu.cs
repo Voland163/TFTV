@@ -2,30 +2,25 @@
 using Base.Core;
 using Base.Defs;
 using Base.Platforms;
-using Base.Serialization.General;
 using Base.UI;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Saves;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers;
+using PhoenixPoint.Geoscape.View.ViewControllers.Interception;
 using PhoenixPoint.Home;
 using PhoenixPoint.Home.View;
 using PhoenixPoint.Home.View.ViewControllers;
 using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Home.View.ViewStates;
 using PhoenixPoint.Modding;
-using PhoenixPoint.Tactical.AI.Considerations;
-using RootMotion;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
-using static TFTV.TFTVDefsWithConfigDependency;
-using static UnityTools.UI.SnapshotText.Lib.LineGroup;
 
 namespace TFTV
 {
@@ -371,6 +366,10 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleGameSettings), "InitFullContent")]
         internal static class UIStateNewGeoscapeGameSettings_InitFullContent_patch
         {
+            private static float _resolutionFactor = 0f;
+            private static float _resolutionFactorWidth = 0f;
+            private static float _resolutionFactorHeight = 0f;
+
 
             private static GameOptionViewController _scavengingOptionsVisibilityController = null;
             //   private static GameOptionViewController _geoscapeOptionsVisibilityController = null;
@@ -653,16 +652,82 @@ namespace TFTV
             private static readonly string _descriptionEquipBeforeAmbush = "KEY_EquipBeforeAmbush_DESCRIPTION";
 
 
+            private static float GetResolutionFactor()
+            {
+                try 
+                {
+                    if (_resolutionFactor == 0) 
+                    {
+                        Resolution resolution = Screen.currentResolution;
+                        _resolutionFactor = (float)resolution.width / (float)resolution.height;
+                        TFTVLogger.Always($"_resolutionFactor: {_resolutionFactor}");
+                    }
+
+                    return _resolutionFactor;
+                
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+            }
+
+            private static float GetResolutionFactorWidth()
+            {
+                try
+                {
+                    if (_resolutionFactorWidth == 0)
+                    {
+                        Resolution resolution = Screen.currentResolution;
+                        _resolutionFactorWidth = (float)resolution.width / 1920f;
+                        TFTVLogger.Always($"_resolutionFactorHeight: {_resolutionFactorWidth}");
+                    }
+
+                    return _resolutionFactorWidth;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+            }
+
+            private static float GetResolutionFactorHeight()
+            {
+                try
+                {
+                    if (_resolutionFactorHeight == 0)
+                    {
+                        Resolution resolution = Screen.currentResolution;
+                        _resolutionFactorHeight = (float)resolution.height / 1080f;
+                        TFTVLogger.Always($"_resolutionFactorWidth: {_resolutionFactorHeight}");
+                    }
+
+                    return _resolutionFactorHeight;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+            }
+
+
             private static GameOptionViewController InstantiateGameOptionViewController(RectTransform rectTransform, UIModuleGameSettings uIModuleGameSettings, string titleKey, string descriptionKey, string onToggleMethod)
             {
                 try
                 {
 
                     Resolution resolution = Screen.currentResolution;
-                    float resolutionFactorWidth = (float)resolution.width / 1920f;
-                    float resolutionFactorHeight = (float)resolution.height / 1080f;
-
-                    bool ultrawideresolution = resolutionFactorWidth / resolutionFactorHeight > 2;
+                    float resolutionFactorWidth = GetResolutionFactorWidth();
+                    float resolutionFactorHeight = GetResolutionFactorHeight();
+                    bool ultrawideresolution = GetResolutionFactor() > 2;
 
                     GameOptionViewController gameOptionViewController = UnityEngine.Object.Instantiate(uIModuleGameSettings.SecondaryOptions.Container.GetComponentsInChildren<GameOptionViewController>().First(), rectTransform);
 
@@ -690,6 +755,15 @@ namespace TFTV
                     {
                         gameOptionViewController.SelectButton.transform.position -= new Vector3(250 * resolutionFactorWidth, 0, 0);
                     }
+                    else
+                    {
+                       // TFTVLogger.Always($"UW resolution detected!");
+                        int additionalFactor = 2;
+
+                        gameOptionViewController.SelectButton.transform.position -= new Vector3(370 * resolutionFactorWidth / additionalFactor, 0, 0);
+
+                   }
+
                     gameOptionViewController.transform.localScale *= 0.70f;
 
 
@@ -801,8 +875,8 @@ namespace TFTV
                     _noSecondChancesModSettings.gameObject.SetActive(show);
                     _etermesVulnerabilityResistance.gameObject.SetActive(show);
                     _etermesVulnerabilityResistanceModSettings.gameObject.SetActive(show);
-                   
-        }
+
+                }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
@@ -849,7 +923,7 @@ namespace TFTV
                     _equipBeforeAmbushModSettings.gameObject.SetActive(show);
                     _equipBeforeAmbush.gameObject.SetActive(show);
 
-        }
+                }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
@@ -869,10 +943,9 @@ namespace TFTV
 
 
                     Resolution resolution = Screen.currentResolution;
-                    float resolutionFactorWidth = (float)resolution.width / 1920f;
-                    float resolutionFactorHeight = (float)resolution.height / 1080f;
-
-                    bool ultrawideresolution = resolutionFactorWidth / resolutionFactorHeight > 2;
+                    float resolutionFactorWidth = GetResolutionFactorWidth();
+                    float resolutionFactorHeight = GetResolutionFactorHeight();
+                    bool ultrawideresolution = GetResolutionFactor() > 2;
 
                     LocalizedTextBind titleTextBindKey = new LocalizedTextBind() { LocalizationKey = titleKey };
                     LocalizedTextBind descriptionTextBindKey = new LocalizedTextBind() { LocalizationKey = descriptionKey };
@@ -901,6 +974,7 @@ namespace TFTV
 
                     if (!ultrawideresolution)
                     {
+                      
                         arrowPickerController.transform.position += new Vector3(270 * resolutionFactorWidth, 0, 0);
 
                         //   TFTVLogger.Always($"{resolutionFactorWidth} {lengthScale}");
@@ -915,7 +989,36 @@ namespace TFTV
 
                         modSettingController.Label.rectTransform.Translate(new Vector3(-270 * resolutionFactorWidth, 0, 0), arrowPickerController.transform);
                     }
-                    modSettingController.Label.alignment = TextAnchor.MiddleLeft;
+                    else 
+                    {
+                       // TFTVLogger.Always($"UW resolution detected!");
+                        int additionalFactor = 2;
+
+                        arrowPickerController.transform.position += new Vector3(370 * resolutionFactorWidth / additionalFactor, 0, 0);
+
+                        if (lengthScale == 1)
+                        {
+                            lengthScale = 0.75f;
+                        }
+
+                        //   TFTVLogger.Always($"{resolutionFactorWidth} {lengthScale}");
+
+                        if (lengthScale <= 0.5f)
+                        {
+                            arrowPickerController.transform.position += new Vector3(300 * resolutionFactorWidth / additionalFactor * lengthScale, 0, 0);
+                        }
+                        else
+                        {
+                            arrowPickerController.transform.position += new Vector3(130 * resolutionFactorWidth / additionalFactor * lengthScale, 0, 0);
+                        }
+                        //  TFTVLogger.Always($"{resolutionFactorWidth} {lengthScale} {arrowPickerController.transform.position}");
+
+                        modSettingController.Label.rectTransform.Translate(new Vector3(-370 * resolutionFactorWidth / additionalFactor, 0, 0), arrowPickerController.transform);
+
+
+                     }
+
+                        modSettingController.Label.alignment = TextAnchor.MiddleLeft;
                     UnityEngine.Object.Destroy(modSettingController.GetComponentInChildren<UITooltipText>());
 
                     UITooltipText uITooltipText = modSettingController.Label.gameObject.AddComponent<UITooltipText>();
@@ -1058,7 +1161,7 @@ namespace TFTV
                     _customPortraitsModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _handGrenadeScatterModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                     _equipBeforeAmbushModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                   
+
                     _startingFaction = _startingFactionModSettings.ListField;
                     _startingBase = _startingBaseModSettings.ListField;
                     _startingSquad = _startingSquadModSettings.ListField;
@@ -1898,14 +2001,14 @@ namespace TFTV
                             newController.name = "TFTVDifficulty_RadioButton" + x;
                             newController.SetParent(container, false);
 
-                          /*  UITooltipText uITooltipText = newController.gameObject.GetComponent<UITooltipText>();
+                            /*  UITooltipText uITooltipText = newController.gameObject.GetComponent<UITooltipText>();
 
-                            if (uITooltipText == null)
-                            {
-                                uITooltipText = newController.gameObject.AddComponent<UITooltipText>();
-                            }
+                              if (uITooltipText == null)
+                              {
+                                  uITooltipText = newController.gameObject.AddComponent<UITooltipText>();
+                              }
 
-                            uITooltipText.TipKey = new LocalizedTextBind($"Testing for {x+1} difficulty", true);*/
+                              uITooltipText.TipKey = new LocalizedTextBind($"Testing for {x+1} difficulty", true);*/
                         }
 
 
@@ -1979,7 +2082,7 @@ namespace TFTV
 
                         if (uITooltipText == null)
                         {
-                           uITooltipText = element.CheckedToggle.gameObject.AddComponent<UITooltipText>();
+                            uITooltipText = element.CheckedToggle.gameObject.AddComponent<UITooltipText>();
                         }
 
                         uITooltipText.TipKey = new LocalizedTextBind(TFTVCommonMethods.ConvertKeyToString("TFTV_PROMO_SKINS"), true);
@@ -2027,16 +2130,16 @@ namespace TFTV
                     List<EntitlementDef> entitlementsUserHas = new List<EntitlementDef>();
                     List<EntitlementDef> dlcsMissing = new List<EntitlementDef>();
 
-                    foreach(EntitlementDef entitlementDef in allEntitlmentDefs) 
+                    foreach (EntitlementDef entitlementDef in allEntitlmentDefs)
                     {
-                        if (platformEntitlements.IsUserEntitledFor(entitlementDef)) 
+                        if (platformEntitlements.IsUserEntitledFor(entitlementDef))
                         {
                             entitlementsUserHas.Add(entitlementDef);
                         }
-                        else 
+                        else
                         {
                             TFTVLogger.Always($"user not entitled to {entitlementDef.name}");
-                            if(entitlementDef!= DefCache.GetDef<EntitlementDef>("LivingWeaponsEntitlementDef")) 
+                            if (entitlementDef != DefCache.GetDef<EntitlementDef>("LivingWeaponsEntitlementDef"))
                             {
                                 dlcsMissing.Add(entitlementDef);
                             }
@@ -2052,15 +2155,15 @@ namespace TFTV
 
                         void OnDLCRequiredResult(MessageBoxCallbackResult res)
                         {
-                           /* if (res.DialogResult == MessageBoxResult.OK || res.DialogResult == MessageBoxResult.Yes)
-                            {
-                                platformEntitlements.OpenEntitlementInfo(dlcsMissing[0]);
-                            }*/
+                            /* if (res.DialogResult == MessageBoxResult.OK || res.DialogResult == MessageBoxResult.Yes)
+                             {
+                                 platformEntitlements.OpenEntitlementInfo(dlcsMissing[0]);
+                             }*/
                         }
 
                         return false;
                     }
-                    
+
                     __result = entitlementsUserHas;
 
                     TFTVCommonMethods.ClearInternalVariablesOnStateChangeAndLoad();

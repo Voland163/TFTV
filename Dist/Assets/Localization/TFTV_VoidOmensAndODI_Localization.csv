@@ -24,7 +24,7 @@ VOID_OMEN_TITLE_14,Text,,Human perception lowered to 20 from 30,,Perception huma
 VOID_OMEN_TITLE_15,Text,,"More Touched by the Void, but Umbra disappear after 1 turn",,Plus d'Ombres,,,,"Негатив: увеличилось количество Благословленных Пустотой 
 Позитив: Фиолетовые Твари дохнут сами в конце хода",,
 VOID_OMEN_TITLE_16,Text,,Touched by the Void can appear anywhere and Umbras can attack anyone,,Les Ombres peuvent apparaître n'importe où et attaquer n'importe qui,,,,"Негатив: Благословленные Пустотой могут появиться где угодно, а Фиолетовые Твари могут напасть на кого угодно",,
-VOID_OMEN_TITLE_17,Text,,Destroyed havens in Mist always become infested,,Les refuges détruits dans la brume deviennent toujours infestés,,,,Негатив: разрушенные в Тумане убежища всегда становятся зараженными,,
+VOID_OMEN_TITLE_17,Text,,Havens in Mist destroyed by Pandorans always become infested,,Les refuges détruits dans la brume deviennent toujours infestés,,,,Негатив: разрушенные в Тумане убежища всегда становятся зараженными,,
 VOID_OMEN_TITLE_18,Text,,"Havens defense rating higher, rewards from haven defense missions lower",,"Le taux de défense des refuges est plus élevé, mais les récompenses des missions de défense sont plus faibles.",,,,"Негатив: награды за выполнение миссий по защите убежищ уменьшены.
 Позитив: оборонительные возможности убежищ увеличены",,
 VOID_OMEN_TITLE_19,Text,,"Pandorans gain adaptive resistance, Bazaar prices reduced ",,"Les Pandorans acquièrent une résistance évolutive réactive, le coût de la technologie du Bazar est réduit",,,,"Негатив: Пандораны приобрели адаптивную стойкость.

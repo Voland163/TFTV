@@ -303,6 +303,12 @@ namespace PRMBetterClasses.SkillModifications
             applyStatusEffect.StatusDef = addAttackBoostStatus;
             rapidClearance.ViewElementDef.Description.LocalizationKey = "PR_BC_RAPID_CLEARANCE_DESC"; // new LocalizedTextBind("Until end of turn, after killing an enemy next attack cost -2AP", TFTVMain.Main.Settings.DoNotLocalizeChangedTexts);
             (rapidClearance.StatusDef as OnActorDeathEffectStatusDef).EffectDef = applyStatusEffect;
+
+            // workaround for Quick Aim bug, it does not stack with RC
+            // if AP reduction is active then QA is disabled
+            ApplyStatusAbilityDef quickAim = defCache.GetDef<ApplyStatusAbilityDef>("BC_QuickAim_AbilityDef");
+            StatusDef[] qaStatusDef = quickAim.DisablingStatuses.AddItem(apReductionStatusEffect).ToArray();
+            quickAim.DisablingStatuses = qaStatusDef;
         }
 
         public static void Create_AimedBurst(DefCache defCache)

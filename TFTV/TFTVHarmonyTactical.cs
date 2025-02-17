@@ -273,7 +273,8 @@ namespace TFTV
                     TFTVHumanEnemies.ImplementStartingVolleyHumanEnemiesTactic(__instance.Faction);
                     TFTVRevenant.Resistance.ApplySpecialRevenantResistanceArmorStack(__instance.Faction.TacticalLevel, __instance.Faction);
                     PRMBetterClasses.SkillModifications.FactionPerks.DieHardOnFactionStartTurn(__instance.Faction);
-                    TFTVNJQuestline.IntroMission.MissionQuips.NJQuips.OnNewTurn(__instance.Faction);
+                    TFTVAircraftRework.Modules.Tactical.EveryPhoenixTurn.ImplementModuleEffectsOnEveryPhoenixTurn(__instance.Faction);
+                   // TFTVNJQuestline.IntroMission.MissionQuips.NJQuips.PopulateQuips(__instance.Faction);
 
                 }
                 catch (Exception e)
