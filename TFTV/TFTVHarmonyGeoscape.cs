@@ -73,7 +73,7 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoVehicle), "GetAircraftInfo")]
         internal static class GeoVehicle_GetAircraftInfo_patch
         {
-            private static void Postfix(GeoVehicle __instance, ref AircraftInfoData __result)
+            public static void Postfix(GeoVehicle __instance, ref AircraftInfoData __result)
             {
                 try
                 {
@@ -123,7 +123,7 @@ namespace TFTV
                     TFTVCapturePandoransGeoscape.LimitedHarvestingHourlyActions(__instance.GeoLevel);
                     TFTVBaseDefenseGeoscape.InitAttack.ContainmentBreach.HourlyCheckContainmentBreachDuringBaseDefense(__instance.GeoLevel);
                     TFTVChangesToDLC4Events.SoldierReachesFiveDelirium(__instance.GeoLevel);
-
+                    TFTVAircraftRework.AircraftMaintenance.MaintenanceToll(__instance.GeoLevel);
                 }
                 catch (Exception e)
                 {
@@ -143,7 +143,7 @@ namespace TFTV
                 {
                     TFTVInfestation.StoryFirstInfestedHaven.InfestationStoryMission(__instance, squad);
                     TFTVNJQuestline.IntroMission.Geoscape.RecordHavenName(__instance);
-                    TFTVAircraftRework.Modules.Tactical.CheckTacticallyRelevantModulesOnVehicle(__instance.GetLocalAircraft(squad));
+                    TFTVAircraftRework.Modules.Tactical.CheckTacticallyRelevantModulesOnVehicle(__instance.GetLocalAircraft(squad), __instance);
 
                 }
                 catch (Exception e)
@@ -229,12 +229,9 @@ namespace TFTV
             public static void Prefix(GeoscapeEventData @event, GeoscapeEventSystem __instance)// @event)
             {
                 try
-                {
-                   
-                    TFTVDiplomacyPenalties.ImplementDiplomaticPenalties(@event, null);
-                   
+                {                   
+                    TFTVDiplomacyPenalties.ImplementDiplomaticPenalties(@event, null);   
                 }
-
 
                 catch (Exception e)
                 {

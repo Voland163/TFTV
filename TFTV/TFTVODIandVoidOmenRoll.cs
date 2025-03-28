@@ -274,7 +274,7 @@ namespace TFTV
                 int odiPerc = currentODIlevel * 5;
 
 
-                if (config.MoreMistVO && !TFTVAircraftRework.AircraftReworkOn)
+                if (config.MoreMistVO)
                 {
                     voidOmensList.Add(7);
                 }

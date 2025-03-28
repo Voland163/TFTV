@@ -3494,16 +3494,19 @@ namespace TFTV
             {
                 try
                 {
-
                     if ((tacticalDeployZone.Pos - tacticalActor.Pos).magnitude > 20)
                     {
                         return false;
                     }
 
                     TacticalVoxelMatrix tacticalVoxelMatrix = tacticalActor.TacticalLevel.VoxelMatrix;
+                    BoxCollider collider = tacticalDeployZone.GetComponent<BoxCollider>();
+                    if (collider == null)
+                    {
+                        return false;
+                    }
 
-
-                    foreach (TacticalVoxel voxel in tacticalVoxelMatrix.GetVoxels(tacticalDeployZone.GetComponent<BoxCollider>().bounds))
+                    foreach (TacticalVoxel voxel in tacticalVoxelMatrix.GetVoxels(collider.bounds))
                     {
                         if (voxel.GetVoxelType() == TacticalVoxelType.Mist)
                         {
@@ -3520,6 +3523,7 @@ namespace TFTV
                     throw;
                 }
             }
+
 
             internal static void UmbraStrat(TacticalLevelController controller)
             {
@@ -3636,7 +3640,7 @@ namespace TFTV
                             // SpawnBlob_Internal(TacticalVoxelType type, Vector3 pos, int horizontalRadius, int height, bool circular, bool updateMatrix = true)*/
 
                         zone.SetFaction(controller.GetFactionByCommandName("aln"), TacMissionParticipant.Intruder);
-                        //  TFTVLogger.Always($"Found deployzone and deploying " + chosenEnemy.name + $"; Position is y={zone.Pos.y} x={zone.Pos.x} z={zone.Pos.z}");
+                        TFTVLogger.Always($"Found deployzone and deploying " + chosenEnemy.name + $"; Position is y={zone.Pos.y} x={zone.Pos.x} z={zone.Pos.z}");
 
                         TacticalActorBase tacticalActorBase = TacticalDeployZone.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, controller.GetFactionByCommandName("aln").TacticalFactionDef, TacMissionParticipant.Intruder, validSpawnPosition.First(), zone.transform.rotation, zone);
 

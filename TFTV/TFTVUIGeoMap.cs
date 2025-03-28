@@ -58,7 +58,7 @@ namespace TFTV
                 {
                     try
                     {
-                       TFTVLogger.Always($"GeoscapeLogEntryController_SetEntry_patch {__instance?.Text?.text}");
+                      // TFTVLogger.Always($"GeoscapeLogEntryController_SetEntry_patch {__instance?.Text?.text}");
 
                         if (__instance.Text.text != null)
                         {
@@ -70,14 +70,29 @@ namespace TFTV
 
                             GeoSite geoSite = allSites.FirstOrDefault(s => __instance.Text.text.Contains(s.LocalizedSiteName));
 
+                            if (geoSite != null)
+                            {
+                                if(geoSite.LocalizedSiteName == TFTVCommonMethods.ConvertKeyToString("KEY_HAVEN_NAME_NEW_JERICHO1")) 
+                                {
+                                    for (int x = 1; x <= 50; x++)
+                                    {
+                                        string havenName = TFTVCommonMethods.ConvertKeyToString($"KEY_HAVEN_NAME_NEW_JERICHO{x}");
+                                        if (__instance.Text.text.Contains(havenName)) 
+                                        {
+                                            geoSite = allSites.FirstOrDefault(s => s.LocalizedSiteName == havenName);
+                                          //  TFTVLogger.Always($"found haven {geoSite.LocalizedSiteName} referenced by {__instance.Text.text}");
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
+
                             if (geoSite != null && geoSite.GetVisible(controller.PhoenixFaction) && geoSite.GetInspected(controller.PhoenixFaction))
                             {
-
                                 targetActor = geoSite;
 
                                 TFTVLogger.Always($"found geosite {geoSite.LocalizedSiteName} referenced by {__instance.Text.text}");
-
-
                             }
                             else
                             {
@@ -602,7 +617,7 @@ namespace TFTV
 
                             if (site.Owner == site.GeoLevel.PhoenixFaction && !TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.ContainsKey(site.SiteId))
                             {
-                                TFTVLogger.Always($"adding {geoPhoenixFacility.Def.name} at {site.LocalizedSiteName}");
+                               // TFTVLogger.Always($"adding {geoPhoenixFacility.Def.name} at {site.LocalizedSiteName}");
                                 DisplayWarningInfoBar(site.GeoLevel, geoPhoenixFacility);
                             }
 
@@ -661,6 +676,9 @@ namespace TFTV
             {
                 try
                 {
+                  //  TFTVLogger.Always($"base: {facilityController?.Facility?.PxBase?.Site?.LocalizedSiteName} DisplayRepairCost running for {facilityController?.Facility?.Def?.name}, repair cost display null? " +
+                  //      $"{facilityController.transform.Find("RepairCostDisplay")==null}");
+
                     facilityController.transform.Find("RepairCostDisplay")?.gameObject?.SetActive(false);
 
                     if (facilityController.Facility != null && facilityController.Facility.IsAvailableForRepair
@@ -912,6 +930,37 @@ namespace TFTV
 
             }
 
+
+            [HarmonyPatch(typeof(UIModuleBaseLayout), "SetupBaseLayout")]
+            public static class UIModuleBaseLayout_SetupBaseLayoutpatch
+            {
+                public static void Postfix(UIModuleBaseLayout __instance, PhoenixFacilityController[] ____slots)
+                {
+                    try
+                    {
+                        TFTVLogger.Always($"UIModuleBaseLayout setupbaselayout running for {__instance?.PxBase?.Site?.LocalizedSiteName}");
+
+                        foreach(PhoenixFacilityController facilityController in ____slots)
+                        {
+                            if (facilityController != null && (facilityController.Facility == null || facilityController.Facility.PxBase != __instance.PxBase))
+                            {
+                             /*   TFTVLogger.Always($"{__instance?.PxBase?.Site?.LocalizedSiteName}, facility controller base: " +
+                                    $"{facilityController?.Facility?.PxBase?.Site?.LocalizedSiteName} " +
+                                    $"DisplayRepairCost running for {facilityController?.Facility?.Def?.name}, repair cost display null? " +
+                       $"{facilityController.transform.Find("RepairCostDisplay") == null}");*/
+
+                                facilityController.transform.Find("RepairCostDisplay")?.gameObject?.SetActive(false);
+                            }
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
 
 
             [HarmonyPatch(typeof(PhoenixFacilityController), "InitEmptyBlock")]

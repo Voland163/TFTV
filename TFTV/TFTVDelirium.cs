@@ -135,8 +135,9 @@ namespace TFTV
 
             try
             {
-                float bonusWillpower = 0;
+                TFTVConfig config = TFTVMain.Main.Config;
 
+                float bonusWillpower = 0;
 
                 if (character.Progression != null)
                 {
@@ -242,10 +243,13 @@ namespace TFTV
                     {
                         maxCorruption -= maxCorruption * 0.66f;
                     }
-
-
-
                 }
+
+                if (config.DeliriumCappedAt4)
+                {
+                    maxCorruption = Mathf.Min(maxCorruption, 4);
+                }
+
                 if (maxCorruption < character.CharacterStats.Corruption)
                 {
                     character.CharacterStats.Corruption.Set(maxCorruption);
@@ -334,6 +338,8 @@ namespace TFTV
                 // 'try ... catch' to make the code more stable, errors will most likely not result in game crashes or freezes but log an error message in the mods log file
                 try
                 {
+                    TFTVConfig config = TFTVMain.Main.Config;
+
                     // With Harmony patches we cannot directly access base.TacticalActor, Harmony's AccessTools uses Reflection to get it through the backdoor
                     TacticalActor tacticalActor = __instance.TacticalActor; //(TacticalActor)AccessTools.Property(typeof(TacStatus), "TacticalActor").GetValue(__instance, null);
 
@@ -433,6 +439,11 @@ namespace TFTV
                         maxCorruption = 0;
                     }
 
+                    if (config.DeliriumCappedAt4)
+                    {
+                        maxCorruption = Mathf.Min(maxCorruption, 4);
+
+                    }
 
 
                     // Like the original calculation, but adapted with 'maxCorruption'
@@ -450,6 +461,12 @@ namespace TFTV
                         __result = Mathf.Min(__instance.CorruptionStatusDef.ValueIncrement, maxCorruption - tacticalActor.CharacterStats.Corruption.IntValue);
                         // TFTVLogger.Always($"Applying Delirium to {base_TacticalActor.DisplayName}, {__result}");
                     }
+
+                    if (maxCorruption == 0)
+                    {
+                        __result = 0;
+                    }
+
                     // TFTVLogger.Always($"{base_TacticalActor.DisplayName} bionics: {numberOfBionics} odi {odiPerc} willpower max: {base_TacticalActor.CharacterStats.Willpower.IntMax}, max delirium {maxCorruption} " +
                     //  $"Delirium {base_TacticalActor.CharacterStats.Corruption.IntValue}, result: {__result} ");
 
@@ -746,7 +763,7 @@ namespace TFTV
             try
             {
                 // GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-                int difficultyLevel = Math.Max(controller.CurrentDifficultyLevel.Order-1,1);
+                int difficultyLevel = Math.Max(controller.CurrentDifficultyLevel.Order - 1, 1);
 
                 if (CharactersDeliriumPerksAndMissions != null) //add difficulty/config option check
                 {
@@ -779,7 +796,7 @@ namespace TFTV
                                     List<TacticalAbilityDef> abilities = Traverse.Create(geoCharacter.Progression).Field("_abilities").GetValue<List<TacticalAbilityDef>>();
                                     TFTVLogger.Always($"removing {tacticalAbilityDef.name} from {geoCharacter.DisplayName}");
 
-                                    abilities.Remove(tacticalAbilityDef); 
+                                    abilities.Remove(tacticalAbilityDef);
 
                                     if (tacticalAbilityDef == wolverineDef)
                                     {
@@ -789,7 +806,7 @@ namespace TFTV
                                 }
 
                                 CharactersDeliriumPerksAndMissions[geoCharacter.Id] = -1;
-                            }                           
+                            }
                         }
                     }
                 }

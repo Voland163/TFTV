@@ -995,9 +995,6 @@ namespace TFTV
                 {
                     try
                     {
-
-
-
                         if (element.TrackedObject is ResearchElement)
                         {
                             // Add click event to the item that focuses camera on the tracked object
@@ -1045,7 +1042,7 @@ namespace TFTV
                         else if (element.TrackedObject is GeoVehicle vehicle)
                         {
                           //  TFTVAircraftRework.TravellingThroughMist.IsAircraftInMist(vehicle);
-                            TFTVAircraftRework.TravellingThroughMist.ModifySpeedInMist(vehicle);
+                            TFTVAircraftRework.AircraftSpeed.AdjustAircraftSpeed(vehicle);
                             //   TFTVLogger.Always($"updateData called for {vehicle.Name}, is in Mist? {IsActorInMist(vehicle)}");
 
 

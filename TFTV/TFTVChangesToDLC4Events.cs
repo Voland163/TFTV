@@ -55,13 +55,21 @@ namespace TFTV
             {
                 GeoPhoenixFaction phoenixFaction = controller.PhoenixFaction;
 
-                if (!phoenixFaction.Soldiers.Any(s => s.CharacterStats.Corruption != null && s.CharacterStats.Corruption >= 5))
+                int requiredDelirium = 5;
+
+                TFTVConfig config = TFTVMain.Main.Config;
+
+                if (config.DeliriumCappedAt4) 
                 {
-                    return;//Do something
+                    requiredDelirium = 4;
                 }
 
+                if (!phoenixFaction.Soldiers.Any(s => s.CharacterStats.Corruption != null && s.CharacterStats.Corruption >= requiredDelirium))
+                {
+                    return;
+                }
 
-                GeoCharacter geoCharacter = controller.PhoenixFaction.Soldiers.FirstOrDefault(c => c.CharacterStats.Corruption != null && c.CharacterStats.Corruption >= 5);
+                GeoCharacter geoCharacter = controller.PhoenixFaction.Soldiers.FirstOrDefault(c => c.CharacterStats.Corruption != null && c.CharacterStats.Corruption >= requiredDelirium);
 
                 if (geoCharacter == null)
                 {
@@ -91,8 +99,6 @@ namespace TFTV
                 string text = TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_FIVE_DELIRIUM_REACHED_DESC").Replace("{Name}", name).Replace("{her/his}", pronoun);
 
                 FiveDeliriumReachedGeoEvent.GeoscapeEventData.Description[0].General = new Base.UI.LocalizedTextBind(text, true);
-
-                
 
                     GeoscapeEventContext context = new GeoscapeEventContext(phoenixFaction, phoenixFaction);
 

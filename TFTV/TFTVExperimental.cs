@@ -1,9 +1,20 @@
-﻿using HarmonyLib;
+﻿using Base;
+using Base.Core;
+using Base.Entities.Statuses;
+using Base.Levels;
+using Epic.OnlineServices;
+using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Contexts;
 using UnityEngine;
 
 
@@ -15,27 +26,125 @@ namespace TFTV
     internal class TFTVExperimental
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        private static readonly SharedData Shared = TFTVMain.Shared;
+        //increase level of recruits
+        //level 2: +4 +4 +1 
+        //level 3: +6 +6 +2
+        //level 4: +8 +8 +3
+        //level 5: +10 +10 +4
+        //level 6: +12 +12 +5
+        //plan would be to modify  public static GeoEventChoice GenerateItemChoice(ItemDef itemDef, float price) to change name to show LVL of merc
 
-
-       /* [HarmonyPatch(typeof(GeoVehicle), "get_Speed")]
-        public static class GeoVehicle_get_Speed_patch
+        public static int MaxHavenRecruitLevel()
         {
-            public static void Postfix(GeoVehicle __instance, EarthUnits __result)
+            try
             {
-                try
+                GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                int templateMaxXP = controller.AnuFaction.UnlockedUnitTemplates.OrderByDescending(
+                    tem => tem.Data.LevelProgression.Experience).FirstOrDefault().Data.LevelProgression.Experience;
+
+                int maxLevel = 1;
+                int[] stats = new int[] { 0, 0, 0 };
+
+                if (templateMaxXP > 2000)
                 {
-                    TFTVLogger.Always($"GeoVehicle.get_Speed: {__instance.name}, {__result} {__instance.GlobePosition} {__instance.GeoLevel.Map.}");
-
-
-
+                    maxLevel = 7;
+                    stats = new int[] { 14, 14, 6 };
                 }
-                catch (Exception e)
+                else if (templateMaxXP > 1500)
                 {
-                    TFTVLogger.Error(e);
-                    throw;
+                    maxLevel = 6;
+                    stats = new int[] { 12, 12, 5 };
                 }
+                else if (templateMaxXP > 900)
+                {
+                    maxLevel = 5;
+                    stats = new int[] { 10, 10, 4 };
+                }
+                else if (templateMaxXP > 500)
+                {
+                    maxLevel = 4;
+                    stats = new int[] { 8, 8, 3 };
+                }
+                else if (templateMaxXP > 250)
+                {
+                    maxLevel = 3;
+                    stats = new int[] { 6, 6, 2 };
+                }
+                else if (templateMaxXP > 100)
+                {
+                    maxLevel = 2;
+                    stats = new int[] { 4, 4, 1 };
+                }
+
+                return maxLevel;
             }
-        }*/
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+        public static void PrintInfoHavenRecruits(GeoLevelController controller)
+        {
+            try 
+            { 
+            
+                foreach(GeoSite geoSite in controller.Map.AllSites.Where(s=>s.Type==GeoSiteType.Haven && s.GetComponent<GeoHaven>().AvailableRecruit !=null))
+                {
+                    TFTVLogger.Always($"{geoSite.GetComponent<GeoHaven>().AvailableRecruit.GetName()} at {geoSite.LocalizedSiteName}");
+                }
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+
+
+        }
+       
+        /*  
+
+               public GeoUnitDescriptor GenerateRandomUnit(CharacterGenerationContext context)
+          {
+             
+          }*/
+
+        //need to add: 
+        /* if (geoUnitDescriptor.Progression != null)
+         {
+             geoUnitDescriptor.Progression.LearnPrimaryAbilities = true;
+         }*/
+
+
+
+        /* [HarmonyPatch(typeof(GeoVehicle), "get_Speed")]
+         public static class GeoVehicle_get_Speed_patch
+         {
+             public static void Postfix(GeoVehicle __instance, EarthUnits __result)
+             {
+                 try
+                 {
+                     TFTVLogger.Always($"GeoVehicle.get_Speed: {__instance.name}, {__result} {__instance.GlobePosition} {__instance.GeoLevel.Map.}");
+
+
+
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                     throw;
+                 }
+             }
+         }*/
 
 
         /* public static void AdjustMusicLevelAncientMaps(TacticalLevelController controller)

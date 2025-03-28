@@ -67,9 +67,12 @@ namespace TFTV
             {
                 try
                 {
-                   
-                    ____characters.RemoveAll(e => e.TemplateDef != null && e.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag));
-                    
+                    TFTVConfig config = TFTVMain.Main.Config;
+
+                    if (!config.MercsCanBeAugmented)
+                    {
+                        ____characters.RemoveAll(e => e.TemplateDef != null && e.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag));
+                    }
                 }
                 catch (Exception e)
                 {
@@ -85,8 +88,12 @@ namespace TFTV
             {
                 try
                 {
-                    ____characters.RemoveAll(e => e.TemplateDef != null && e.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag));
+                    TFTVConfig config = TFTVMain.Main.Config;
 
+                    if (!config.MercsCanBeAugmented)
+                    {
+                        ____characters.RemoveAll(e => e.TemplateDef != null && e.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag));
+                    }
                 }
                 catch (Exception e)
                 {
@@ -361,8 +368,9 @@ namespace TFTV
                         foreach (GeoItem bionic in geoCharacter.ArmourItems)
                         {
                             if (bionic.ItemDef.Tags.Contains(bionicalTag) && !bionic.ItemDef.Tags.Contains(TFTVChangesToDLC5.MercenaryTag))
-
+                            {
                                 bionics += 1;
+                            }
                         }
                     }
                     if (bionics > 6 && geoLevelController.EventSystem.GetVariable("BG_Anu_Pissed_Over_Bionics") == 0

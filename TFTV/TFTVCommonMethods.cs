@@ -8,8 +8,10 @@ using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Game;
 using PhoenixPoint.Common.Saves;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
@@ -23,6 +25,7 @@ using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
 using System.Collections.Generic;
@@ -184,6 +187,7 @@ namespace TFTV
                 TFTVVanillaFixes.UI.ShowPerceptionCirclesBindingApplied = false;    
 
                 TFTVNJQuestline.IntroMission.ClearDataOnMissionRestartLoadAndStateChange();
+              
 
                 TFTVLogger.Always($"Internal variables cleared on State change or Load");
             }
@@ -250,7 +254,8 @@ namespace TFTV
                 TFTVNewGameOptions.EtermesResistanceAndVulnerability = 0;
 
                 TFTVBaseDefenseTactical.InternalData.BaseDefenseDataToClearOnLoadOnly();
-                
+
+                TFTVAircraftRework.InternalData.ClearDataOnLoad();
 
                 TFTVLogger.Always($"Variables cleared on load");
 
@@ -298,6 +303,31 @@ namespace TFTV
 
         }
 
+
+        [HarmonyPatch(typeof(UIModulePauseScreen), "ShowModule")]
+        public static class TFTV_UIModulePauseScreen_ShowModule_patch
+        {
+            public static void Postfix(UIModulePauseScreen __instance)
+            {
+                try
+                {
+                    TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
+                    
+                    if (controller!=null && controller.TacMission.MissionData.MissionType.name.Contains("Tutorial")) 
+                    {
+                        TFTVLogger.Always($"disabling save button in Tutorial");
+                        __instance.SaveButton.GetComponent<PhoenixGeneralButton>().SetInteractable(false);
+                    }
+
+                   
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
 
 

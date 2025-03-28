@@ -113,7 +113,7 @@ namespace TFTV
                     {
                         TFTVConfig config = TFTVMain.Main.Config;
 
-                        if (config.ActivateStaminaRecuperatonModule)
+                        if (config.StaminaRecuperation)
                         {
                             // TFTVLogger.Always($"geovehicle is {__instance.name}");
                             __result = 0.35f;

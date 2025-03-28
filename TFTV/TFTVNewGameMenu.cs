@@ -8,19 +8,20 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers;
-using PhoenixPoint.Geoscape.View.ViewControllers.Interception;
 using PhoenixPoint.Home;
 using PhoenixPoint.Home.View;
 using PhoenixPoint.Home.View.ViewControllers;
 using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Home.View.ViewStates;
 using PhoenixPoint.Modding;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
+using static TFTV.TFTVNewGameMenu.Options;
 
 namespace TFTV
 {
@@ -34,6 +35,19 @@ namespace TFTV
         public static bool ShowedTacticalSavesWarning = false;
 
         private static int SelectedDifficulty = 0;
+
+        private static ArrowPickerController _diploPenalties = null;
+        private static ArrowPickerController _staminaDrain = null;
+        private static ArrowPickerController _harderAmbush = null;
+        private static ArrowPickerController _strongerPandorans = null;
+        private static ArrowPickerController _imposssibleWeapons = null;
+        private static ArrowPickerController _limitedHarvesting = null;
+        private static ArrowPickerController _limitedCapturing = null;
+        private static ArrowPickerController _noSecondChances = null;
+        private static ArrowPickerController _etermesVulnerability = null;
+        private static ArrowPickerController _exoticResources = null;
+        private static ArrowPickerController _eventResources = null;
+
 
         internal class TitleScreen
         {
@@ -155,435 +169,252 @@ namespace TFTV
             }
         }
 
-
-        private static int ConvertDifficultyToIndexExoticResources()
+        internal class DefaultDifficulties
         {
-            try
-            {
-                int difficultyOrder = SelectedDifficulty;
-
-                switch (difficultyOrder)
-                {
-                    case 1: return 8;
-
-                    case 2: return 8;
-
-                    case 3: return 7;
-
-                    case 4: return 5;
-
-                    case 5: return 3;
-
-                    case 6: return 1;
 
 
-                        // { 0: "25%", 1: "50%", 2: "75%", 3: "100%", 4: "125%", 5: "150%", 6: "175%", 7: "200", 8: "250%", 9: "300%", 10 "400%"}
-
-                        //      By default, this is set by the difficulty level: 250% on Rookie, 200% on Veteran, 150% on Hero, 100% on Legend, 50% on ETERMES
-                }
-
-                return 7;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
-
-        private static int ConvertDifficultyToIndexEventsResources()
-        {
-            try
-            {
-                int difficultyOrder = SelectedDifficulty;
-
-                switch (difficultyOrder)
-                {
-                    case 1: return 7;
-
-                    case 2: return 5;
-
-                    case 3: return 4;
-
-                    case 4: return 3;
-
-                    case 5: return 3;
-
-                    case 6: return 2;
-
-
-                        // { 0: "25%", 1: "50%", 2: "75%", 3: "100%", 4: "125%", 5: "150%", 6: "175%", 7: "200", 8: "250%", 9: "300%", 10 "400%"}
-
-
-                }
-
-                return 7;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-
-
-
-
-        }
-
-        private static void UpdateOptionsOnSelectingDifficutly()
-        {
-            try
-            {
-                int diploPenalty = 1;
-                int staminaDrain = 1;
-                int harderAmnbush = 1;
-                int strongerPandorans = 1;
-                int impossibleWeapons = 1;
-                int limitedHarvesting = 1;
-                int limitedCapture = 1;
-                int noSecondChances = 1;
-                int etermesVulnerability = 1;
-
-                if (SelectedDifficulty > 5)
-                {
-                    noSecondChances = 0;
-                    etermesVulnerability = 0;
-                }
-
-                if (SelectedDifficulty > 4)
-                {
-                    diploPenalty = 0;
-                    staminaDrain = 0;
-                    harderAmnbush = 0;
-                    strongerPandorans = 0;
-                    impossibleWeapons = 0;
-                    limitedCapture = 0;
-                    limitedHarvesting = 0;
-
-                }
-                else if (SelectedDifficulty > 2)
-                {
-                    diploPenalty = 0;
-                    staminaDrain = 0;
-                    harderAmnbush = 0;
-                    impossibleWeapons = 0;
-                    limitedCapture = 0;
-                    limitedHarvesting = 0;
-                }
-                UIModuleGameSettings gameSettings = GameUtl.CurrentLevel().GetComponent<HomeScreenView>().HomeScreenModules.GameSettings;
-
-                MethodInfo diploPenaltiesChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnDiploPenaltiesValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
-
-                diploPenaltiesChangedCallback.Invoke(gameSettings, new object[] { diploPenalty });
-
-                MethodInfo staminaDrainValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnStaminaDrainValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
-                MethodInfo harderAmbushValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnHarderAmbushValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
-                MethodInfo strongerPandoransValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnStrongerPandoransValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
-                MethodInfo impossibleWeaponsValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnImpossibleWeaponsValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
-                MethodInfo limitedHarvestingValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnLimitedHarvestingValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
-                MethodInfo limitedCaptureValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnLimitedCaptureValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
-                MethodInfo noSecondChancesValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnNoSecondChancesValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
-                MethodInfo etermesVulnerabilityResistanceValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnEtermesVulnerabilityResistanceValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
-
-                staminaDrainValueChangedCallback.Invoke(gameSettings, new object[] { staminaDrain });
-                harderAmbushValueChangedCallback.Invoke(gameSettings, new object[] { harderAmnbush });
-                strongerPandoransValueChangedCallback.Invoke(gameSettings, new object[] { strongerPandorans });
-                impossibleWeaponsValueChangedCallback.Invoke(gameSettings, new object[] { impossibleWeapons });
-                limitedHarvestingValueChangedCallback.Invoke(gameSettings, new object[] { limitedHarvesting });
-                limitedCaptureValueChangedCallback.Invoke(gameSettings, new object[] { limitedCapture });
-                noSecondChancesValueChangedCallback.Invoke(gameSettings, new object[] { noSecondChances });
-                etermesVulnerabilityResistanceValueChangedCallback.Invoke(gameSettings, new object[] { etermesVulnerability });
-
-                MethodInfo exoticResourcesChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnExoticResourcesValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
-                exoticResourcesChangedCallback.Invoke(gameSettings, new object[] { ConvertDifficultyToIndexExoticResources() });
-
-                MethodInfo eventResourcesChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnResourcesEventsValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
-                eventResourcesChangedCallback.Invoke(gameSettings, new object[] { ConvertDifficultyToIndexEventsResources() });
-
-            }
-
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
-
-        [HarmonyPatch(typeof(GameOptionViewController), "OnClicked")]
-        public static class OptionListViewController_Element_PointerExit_Patch
-        {
-            private static void Postfix(GameOptionViewController __instance)
+            public static int ConvertDifficultyToIndexExoticResources()
             {
                 try
                 {
-                    //  TFTVLogger.Always($"Element is: {__instance.Description.Localize()}");
+                    int difficultyOrder = SelectedDifficulty;
 
-
-                    if (__instance.name.Contains("TFTVDifficulty_RadioButton"))
+                    switch (difficultyOrder)
                     {
+                        case 1: return 8;
 
-                        UIModuleGameSettings gameSettings = GameUtl.CurrentLevel().GetComponent<HomeScreenView>().HomeScreenModules.GameSettings;
+                        case 2: return 8;
 
-                        SelectedDifficulty = int.Parse(__instance.name.Last().ToString()) + 1;
-                        TFTVMain.Main.Config.Difficulty = SelectedDifficulty - 1;
-                        TFTVLogger.Always($"Element is: {__instance.name} and the selected difficulty is now {SelectedDifficulty}");
+                        case 3: return 7;
 
-                        UpdateOptionsOnSelectingDifficutly();
+                        case 4: return 5;
 
-                        GameOptionViewController[] componentsInChildren = gameSettings.MainOptions.Container.GetComponentsInChildren<GameOptionViewController>();
+                        case 5: return 3;
 
-                        MethodInfo method = typeof(PhoenixGeneralButton).GetMethod("SetNormalState", BindingFlags.NonPublic | BindingFlags.Instance);
-                        MethodInfo methodAnim = typeof(PhoenixGeneralButton).GetMethod("SetAnimationState", BindingFlags.NonPublic | BindingFlags.Instance);
+                        case 6: return 1;
 
-                        foreach (GameOptionViewController gameOptionViewController in componentsInChildren)
-                        {
 
-                            if (gameOptionViewController != __instance)
-                            {
-                                gameOptionViewController.SelectButton.IsSelected = false;
-                                method.Invoke(gameOptionViewController.SelectButton, null);
-                                methodAnim.Invoke(gameOptionViewController.SelectButton, new object[] { "HighlightedStateParameter", false });
-                                gameOptionViewController.SelectButton.ResetButtonAnimations();
+                            // { 0: "25%", 1: "50%", 2: "75%", 3: "100%", 4: "125%", 5: "150%", 6: "175%", 7: "200", 8: "250%", 9: "300%", 10 "400%"}
 
-                            }
-                        }
-
-                        __instance.SelectButton.IsSelected = true;
-
+                            //      By default, this is set by the difficulty level: 250% on Rookie, 200% on Veteran, 150% on Hero, 100% on Legend, 50% on ETERMES
                     }
+
+                    return 7;
 
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
+                    throw;
                 }
             }
+
+            public static int ConvertDifficultyToIndexEventsResources()
+            {
+                try
+                {
+                    int difficultyOrder = SelectedDifficulty;
+
+                    switch (difficultyOrder)
+                    {
+                        case 1: return 7;
+
+                        case 2: return 5;
+
+                        case 3: return 4;
+
+                        case 4: return 3;
+
+                        case 5: return 3;
+
+                        case 6: return 2;
+
+
+                            // { 0: "25%", 1: "50%", 2: "75%", 3: "100%", 4: "125%", 5: "150%", 6: "175%", 7: "200", 8: "250%", 9: "300%", 10 "400%"}
+
+
+                    }
+
+                    return 7;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+
+
+
+            }
+
+            public static void UpdateOptionsOnSelectingDifficutly()
+            {
+                try
+                {
+                    int diploPenalty = 1;
+                    int staminaDrain = 1;
+                    int harderAmnbush = 1;
+                    int strongerPandorans = 1;
+                    int impossibleWeapons = 1;
+                    int limitedHarvesting = 1;
+                    int limitedCapture = 1;
+                    int noSecondChances = 1;
+                    int etermesVulnerability = 1;
+
+                    if (SelectedDifficulty > 5)
+                    {
+                        noSecondChances = 0;
+                        etermesVulnerability = 0;
+                    }
+
+                    if (SelectedDifficulty > 4)
+                    {
+                        diploPenalty = 0;
+                        staminaDrain = 0;
+                        harderAmnbush = 0;
+                        strongerPandorans = 0;
+                        impossibleWeapons = 0;
+                        limitedCapture = 0;
+                        limitedHarvesting = 0;
+
+                    }
+                    else if (SelectedDifficulty > 2)
+                    {
+                        diploPenalty = 0;
+                        staminaDrain = 0;
+                        harderAmnbush = 0;
+                        impossibleWeapons = 0;
+                        limitedCapture = 0;
+                        limitedHarvesting = 0;
+                    }
+                    UIModuleGameSettings gameSettings = GameUtl.CurrentLevel().GetComponent<HomeScreenView>().HomeScreenModules.GameSettings;
+
+                    MethodInfo diploPenaltiesChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnDiploPenaltiesValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
+
+                    diploPenaltiesChangedCallback.Invoke(gameSettings, new object[] { diploPenalty, _diploPenalties });
+
+                    MethodInfo staminaDrainValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnStaminaDrainValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
+                    MethodInfo harderAmbushValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnHarderAmbushValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
+                    MethodInfo strongerPandoransValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnStrongerPandoransValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
+                    MethodInfo impossibleWeaponsValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnImpossibleWeaponsValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
+                    MethodInfo limitedHarvestingValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnLimitedHarvestingValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
+                    MethodInfo limitedCaptureValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnLimitedCaptureValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
+                    MethodInfo noSecondChancesValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnNoSecondChancesValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
+                    MethodInfo etermesVulnerabilityResistanceValueChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnEtermesVulnerabilityResistanceValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
+
+                    staminaDrainValueChangedCallback.Invoke(gameSettings, new object[] { staminaDrain, _staminaDrain });
+                    harderAmbushValueChangedCallback.Invoke(gameSettings, new object[] { harderAmnbush, _harderAmbush });
+                    strongerPandoransValueChangedCallback.Invoke(gameSettings, new object[] { strongerPandorans, _strongerPandorans });
+                    impossibleWeaponsValueChangedCallback.Invoke(gameSettings, new object[] { impossibleWeapons, _imposssibleWeapons });
+                    limitedHarvestingValueChangedCallback.Invoke(gameSettings, new object[] { limitedHarvesting, _limitedHarvesting });
+                    limitedCaptureValueChangedCallback.Invoke(gameSettings, new object[] { limitedCapture, _limitedCapturing });
+                    noSecondChancesValueChangedCallback.Invoke(gameSettings, new object[] { noSecondChances, _noSecondChances });
+                    etermesVulnerabilityResistanceValueChangedCallback.Invoke(gameSettings, new object[] { etermesVulnerability, _etermesVulnerability });
+
+                    MethodInfo exoticResourcesChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnExoticResourcesValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
+                    exoticResourcesChangedCallback.Invoke(gameSettings, new object[] { ConvertDifficultyToIndexExoticResources(), _exoticResources });
+
+                    MethodInfo eventResourcesChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnResourcesEventsValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
+                    eventResourcesChangedCallback.Invoke(gameSettings, new object[] { ConvertDifficultyToIndexEventsResources(), _eventResources });
+
+                }
+
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            [HarmonyPatch(typeof(GameOptionViewController), "OnClicked")]
+            public static class OptionListViewController_Element_PointerExit_Patch
+            {
+                private static void Postfix(GameOptionViewController __instance)
+                {
+                    try
+                    {
+                        //  TFTVLogger.Always($"Element is: {__instance.Description.Localize()}");
+
+
+                        if (__instance.name.Contains("TFTVDifficulty_RadioButton"))
+                        {
+
+                            UIModuleGameSettings gameSettings = GameUtl.CurrentLevel().GetComponent<HomeScreenView>().HomeScreenModules.GameSettings;
+
+                            SelectedDifficulty = int.Parse(__instance.name.Last().ToString()) + 1;
+                            TFTVMain.Main.Config.Difficulty = SelectedDifficulty - 1;
+                            TFTVLogger.Always($"Element is: {__instance.name} and the selected difficulty is now {SelectedDifficulty}");
+
+                            UpdateOptionsOnSelectingDifficutly();
+
+                            GameOptionViewController[] componentsInChildren = gameSettings.MainOptions.Container.GetComponentsInChildren<GameOptionViewController>();
+
+                            MethodInfo method = typeof(PhoenixGeneralButton).GetMethod("SetNormalState", BindingFlags.NonPublic | BindingFlags.Instance);
+                            MethodInfo methodAnim = typeof(PhoenixGeneralButton).GetMethod("SetAnimationState", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                            foreach (GameOptionViewController gameOptionViewController in componentsInChildren)
+                            {
+
+                                if (gameOptionViewController != __instance)
+                                {
+                                    gameOptionViewController.SelectButton.IsSelected = false;
+                                    method.Invoke(gameOptionViewController.SelectButton, null);
+                                    methodAnim.Invoke(gameOptionViewController.SelectButton, new object[] { "HighlightedStateParameter", false });
+                                    gameOptionViewController.SelectButton.ResetButtonAnimations();
+
+                                }
+                            }
+
+                            __instance.SelectButton.IsSelected = true;
+
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+
         }
 
-        [HarmonyPatch(typeof(UIModuleGameSettings), "InitFullContent")]
-        internal static class UIStateNewGeoscapeGameSettings_InitFullContent_patch
+        internal class Options
         {
+
             private static float _resolutionFactor = 0f;
             private static float _resolutionFactorWidth = 0f;
             private static float _resolutionFactorHeight = 0f;
 
-
-            private static GameOptionViewController _scavengingOptionsVisibilityController = null;
-            //   private static GameOptionViewController _geoscapeOptionsVisibilityController = null;
-            //   private static GameOptionViewController _tacticalOptionsVisibilityController = null;
-            //   private static GameOptionViewController _otherOptionsVisibilityController = null;
-
-            private static GameOptionViewController _additionalStartOptionsVisibilityController = null;
-
-            private static readonly string _titleAdditionalStartOptions = "TFTV_ADDITIONAL_START_OPTIONS_TITLE";
-            private static readonly string _descriptionAdditionalStartOptions = "TFTV_ADDITIONAL_START_DESCRIPTION";
-
-            private static GameOptionViewController _anytimeOptionsVisibilityController = null;
+            private static List<GameOptionViewController> _gameOptionViewControllers = new List<GameOptionViewController>();
 
             private static readonly string _titleAnytimeOptions = "TFTV_ANYTIME_OPTIONS_TITLE";
             private static readonly string _descriptionAnytimeOptions = "TFTV_ANYTIME_OPTIONS_DESCRIPTION";
 
+            private static readonly string _titleAdditionalStartOptions = "TFTV_ADDITIONAL_START_OPTIONS_TITLE";
+            private static readonly string _descriptionAdditionalStartOptions = "TFTV_ADDITIONAL_START_DESCRIPTION";
 
-            private static ModSettingController _startingFactionModSettings = null;
-            private static ArrowPickerController _startingFaction = null;
-            private static ModSettingController _startingBaseModSettings = null;
-            private static ArrowPickerController _startingBase = null;
-            private static ModSettingController _startingSquadModSettings = null;
-            private static ArrowPickerController _startingSquad = null;
-            private static ModSettingController _startingScavSitesModSettings = null;
-            private static ArrowPickerController _startingScavSites = null;
-            private static ModSettingController _resCratePriorityModSettings = null;
-            private static ArrowPickerController _resCratePriority = null;
-            private static ModSettingController _recruitsPriorityModSettings = null;
-            private static ArrowPickerController _recruitsPriority = null;
-            private static ModSettingController _vehiclePriorityModSettings = null;
-            private static ArrowPickerController _vehiclePriority = null;
-
-            private static ModSettingController _limitedCaptureModSettings = null;
-            private static ArrowPickerController _limitedCapture = null;
-            private static ModSettingController _limitedHarvestingModSettings = null;
-            private static ArrowPickerController _limitedHarvesting = null;
-            private static ModSettingController _tacticalDifficultyModSettings = null;
-            private static ArrowPickerController _tacticalDifficulty = null;
-
-            private static ModSettingController _tradingModSettings = null;
-            private static ArrowPickerController _trading = null;
-
-            private static ModSettingController _etermesVulnerabilityResistanceModSettings = null;
-            private static ArrowPickerController _etermesVulnerabilityResistance = null;
-
-            private static ModSettingController _showAmbushExfilModSettings = null;
-            private static ArrowPickerController _showAmbushExfil = null;
-
-            private static readonly string _titleEtermesVulnerability = "KEY_EtermesResistanceAndVulnerability";
-            private static readonly string _descriptionEtermesVulnerabilityResistance = "KEY_EtermesResistanceAndVulnerability_DESCRIPTION";
-
-            private static readonly string _titleShowAmbushExfil = "KEY_ShowExfilAmbush";
-            private static readonly string _descriptionShowAmbushExfil = "KEY_ShowExfilAmbush_DESCRIPTION";
-
-            private static readonly string _titleTrading = "KEY_EqualizeTrade"; //"NO PROFIT FROM TRADING";
-            private static readonly string _descriptionTrading = "KEY_EqualizeTrade_DESCRIPTION"; //"Trade is always 1 tech for 5 food or 5 materials, so no profit can be made from trading.";
-
-            private static ModSettingController _limitedRaidingModSettings = null;
-            private static ArrowPickerController _limitedRaiding = null;
-
-            private static readonly string _titleLimitedRaiding = "KEY_LimitedRaiding";//"LIMITED RAIDING";
-            private static readonly string _descriptionLimitedRaiding = "KEY_LimitedRaiding_DESCRIPTION";//"After a raid, all faction havens are immediately set to highest alert and may not be raided in the next 7 days.";
-
-
-            private static ModSettingController _noDropReinforcementsModSettings = null;
-            private static ArrowPickerController _noDropReinforcements = null;
-
-            private static readonly string _titleNoDropReinforcements = "KEY_ReinforcementsNoDrops";//"NO ITEM DROPS FROM REINFORCEMENTS";
-            private static readonly string _descriptionNoDropReinforcements = "KEY_ReinforcementsNoDrops_DESCRIPTION";//"Enemy reinforcements do not drop items on death; disallows farming for weapons on missions with infinite reinforcements.";
-
-            private static ModSettingController _flinchingModSettings = null;
-            private static ArrowPickerController _flinching = null;
-
-            private static readonly string _titleFlinching = "KEY_AnimateWhileShooting";
-            private static readonly string _descriptionFlinching = "KEY_AnimateWhileShooting_DESCRIPTION";//"The characters will continue to animate during shooting sequences and targets that are hit may flinch, causing subsequent shots in a burst to miss when shooting in freeaim mode.";
-
-            private static ModSettingController _strongerPandoransModSettings = null;
-            private static ArrowPickerController _strongerPandorans = null;
-
-            private static readonly string _titleStrongerPandorans = "STRONGER_PANDORANS";//"STRONGER PANDORANS";
-            private static readonly string _descriptionStrongerPandorans = "STRONGER_PANDORANS_DESCRIPTION";//"Applies the changes from Dtony BetterEnemies that make Pandorans more of a challenge.";
-
-            private static ModSettingController _moreMistVOModSettings = null;
-            private static ArrowPickerController _moreMistVO = null;
-
-            private static readonly string _titleMoreMistVO = "KEY_MoreMistVO";//"PLAY WITH MORE MIST VOID OMEN";
-            private static readonly string _descriptionMoreMistVO = "KEY_MoreMistVO_DESCRIPTION";//"If you are playing on a Low-end system and experience lag with this Void Omen, you can turn it off here. This will prevent it from rolling.";
-
-
-            private static ModSettingController _limitedDeploymentVOModSettings = null;
-            private static ArrowPickerController _limitedDeploymentVO = null;
-
-            private static readonly string _titlelimitedDeploymentVO = "KEY_LimitedDeploymentVO";//"PLAY WITH MORE MIST VOID OMEN";
-            private static readonly string _descriptionlimitedDeploymentVO = "KEY_LimitedDeploymentVO_DESCRIPTION";
-
-            private static ModSettingController _skipMoviesModSettings = null;
-            private static ArrowPickerController _skipMovies = null;
-
-            private static readonly string _titleSkipMovies = "KEY_SkipMovies";//"SKIP MOVIES";
-            private static readonly string _descriptionSkipMovies = "KEY_SkipMovies_DESCRIPTION";//"Choose whether to skip Logos on game launch, Intro and Landing cinematics. Adapted from Mad's Assorted Adjustments.";
-
-            private static ModSettingController _exoticResourcesModSettings = null;
-            private static ArrowPickerController _exoticResources = null;
-
-            private static readonly string _titleExoticResources = "EXOTIC_RESOURCES_AMOUNT";//"AMOUNT OF EXOTIC RESOURCES";
-            private static readonly string _descriptionExoticResources = "EXOTIC_RESOURCES_AMOUNT_DESCRIPTION";//"Choose the amount of Exotic Resources you want to have in your game per playthrough. Each unit provides enough resources to manufacture one set of Impossible Weapons. So, if you want to have two full sets, set this number to 2, and so on. By default, this is set by the difficulty level: 2.5 on Rookie, 2 on Veteran, 1.5 on Hero, 1 on Legend.";
             private static readonly string[] _amountPercentageResources = { "25%", "50%", "75%", "100%", "125%", "150%", "175%", "200%", "250%", "300%", "400%" };
             private static readonly float[] _amountMultiplierResources = { 0.25f, 0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f, 2.5f, 3f, 4f };
 
-            //   private static float[] _amountMultiplier = {0.2f, 0.4f, 0.6f, 0.8f, 1f, 1.2f, 1.4f, 1.6f, 1.8f, 2f, 2.2f, 2.4f, 2.6f, 2.8f, 3f, 3.2f, 3.4f, 3.6f, 3.8f, 4f, 4.2f, 4.4f, 4.6f, 4.8f, 5, 5.2f, 5.4f, 5.6f, 5.8f, 6};
-            //   private static string[] _amountMultiplierString = { "20%", "40%", "60%", 0.8f, 1f, 1.2f, 1.4f, 1.6f, 1.8f, 2f, 2.2f, 2.4f, 2.6f, 2.8f, 3f, 3.2f, 3.4f, 3.6f, 3.8f, 4f, 4.2f, 4.4f, 4.6f, 4.8f, 5, 5.2f, 5.4f, 5.6f, 5.8f, 6 };
-            private static ModSettingController _resourcesEventsModSettings = null;
-            private static ArrowPickerController _resourcesEvents = null;
-
-            private static readonly string _titleResourcesEvents = "SCALE_RESOURCE_ACQUISITION";// "SCALE RESOURCE ACQUISITION";
-            private static readonly string _descriptionResourcesEvents = "SCALE_RESOURCE_ACQUISITION_DESCRIPTION";//"TFTV adjusts the amount of resources gained in Missions and Events by difficulty level. Please be aware that, for Events, TFTV 100% refers to Vanilla Pre-Azazoth patch levels (so it's actually 80% of current Vanilla amount).";
-
-            private static ModSettingController _impossibleWeaponsModSettings = null;
-            private static ArrowPickerController _impossibleWeapons = null;
-
-            private static readonly string _titleImpossibleWeapons = "ADJUST_IMPOSSIBLE_WEAPONS";//"ADJUST IMPOSSIBLE WEAPONS";
-            private static readonly string _descriptionImpossibleWeapons = "ADJUST_IMPOSSIBLE_WEAPONS_DESCRIPTION";//"In TFTV, Ancient Weapons are replaced by the Impossible Weapons (IW) " +
-                                                                                                                   //  "counterparts. They have different functionality (read: they are nerfed) " +
-                                                                                                                   //  "and some of them require additional faction research.  " +
-                                                                                                                   //  "Check this option off to keep Impossible Weapons with the same stats and functionality as Ancient Weapons in Vanilla and without requiring additional faction research. Set to false by default on Rookie.";
-
-            private static ModSettingController _diploPenaltiesModSettings = null;
-            private static ArrowPickerController _diploPenalties = null;
-
-            private static readonly string _titleDiploPenalties = "HIGHER_DIPLOMATIC_PENALTIES";// "HIGHER DIPLOMATIC PENALTIES";
-            private static readonly string _descriptionDiploPenalties = "HIGHER_DIPLOMATIC_PENALTIES_DESCRIPTION";//"Diplomatic penalties from choices in events are doubled and revealing diplomatic missions for one faction gives a diplomatic penalty with the other factions. Can be applied to a game in progress. Set to false on Rookie by default";
-
-            private static ModSettingController _staminaDrainModSettings = null;
-            private static ArrowPickerController _staminaDrain = null;
-
-            private static readonly string _titleStaminaDrain = "STAMINA_DRAIN";//"STAMINA DRAIN ON INJURY/AUGMENTATION";
-            private static readonly string _descriptionStaminaDrain = "STAMINA_DRAIN_DESCRIPTION";//"The stamina of any operative that sustains an injury in combat that results in a disabled body part will be set to zero after the mission. The stamina of any operative that undergoes a mutation or bionic augmentation will also be set to zero.";
-
-            private static ModSettingController _harderAmbushModSettings = null;
-            private static ArrowPickerController _harderAmbush = null;
-
-            private static readonly string _titleHarderAmbush = "HARDER_AMBUSHES";// "HARDER AMBUSHES";
-            private static readonly string _descriptionHarderAmbush = "HARDER_AMBUSHES_DESCRIPTION";//"Ambushes will happen more often and will be harder. Regardless of this setting, all ambushes will have crates in them. Set to false on Rookie by default";
-
-            private static ModSettingController _staminaRecuperationModSettings = null;
-            private static ArrowPickerController _staminaRecuperation = null;
-
-            private static readonly string _titleStaminaRecuperation = "KEY_ActivateStaminaRecuperatonModule";// STAMINA RECUPERATION FAR-M";
-            private static readonly string _descriptionStaminaRecuperation = "KEY_ActivateStaminaRecuperatonModule_DESCRIPTION";//"The starting type of passenger module, FAR-M, will slowly recuperate the stamina of the operatives on board. Switch off if you prefer to have to return to base more often.";
-
-            private static ModSettingController _disableTacSavesModSettings = null;
-            private static ArrowPickerController _disableTacSaves = null;
-
-            private static readonly string _titleDisableTacSaves = "KEY_disableSavingOnTactical";//"DISABLE SAVING ON TACTICAL";
-            private static readonly string _descriptionDisableTacSaves = "KEY_disableSavingOnTactical_DESCRIPTION";//"You can still restart the mission though.";
-
-
-            /*      private static ModSettingController _reverseEngineeringModSettings = null;
-                  private static ArrowPickerController _reverseEngineering = null;
-
-                  private static string _titleReverseEngineering = "ENHANCED REVERSE ENGINEERING";
-                  private static string _descriptionReverseEngineering = "Reversing engineering an item allows to research the faction technology that allows manufacturing the item.";*/
-
-            private static ModSettingController _havenSOSModSettings = null;
-            private static ArrowPickerController _havenSOS = null;
-
-            private static readonly string _titleHavenSOS = "KEY_HavenSOS";//"HAVENS SEND SOS";
-            private static readonly string _descriptionHavenSOS = "KEY_HavenSOS_DESCRIPTION";//"Havens under attack will send an SOS, revealing their location to the player.";
-
-
-            private static ModSettingController _learnFirstSkillModSettings = null;
-            private static ArrowPickerController _learnFirstSkill = null;
-
-            private static readonly string _titleLearnFirstSkill = "KEY_LearnFirstPersonalSkill";//"LEARN FIRST BACKGROUND PERK";
-            private static readonly string _descriptionLearnFirstSkill = "KEY_LearnFirstPersonalSkill_DESCRIPTION";//"If enabled, the first personal skill (level 1) is set right after a character is created (starting soldiers, new recruits in havens, rewards, etc).";
-
-
-            private static readonly string _titleTacticalDifficulty = "KEY_difficultyOnTactical";//"DIFFICULTY ON TACTICAL";
-            private static readonly string _descriotionTacticalDifficulty = "KEY_difficultyOnTactical_DESCRIPTION";//"You can choose a different difficulty setting for the tactical portion of the game at any time.";
             private static readonly string[] _optionsTacticalDifficulty = { "NO_CHANGE", "TFTV_DIFFICULTY_ROOKIE_TITLE", "KEY_DIFFICULTY_EASY", "KEY_DIFFICULTY_STANDARD", "KEY_DIFFICULTY_DIFFICULT", "KEY_DIFFICULTY_VERY_DIFFICULT", "TFTV_DIFFICULTY_ETERMES_TITLE" };
 
-
-            private static readonly string _titleResCratePriority = "RESOURCE_CRATE_PRIORITY";//"RESOURCE CRATE PRIORITY";
-            private static readonly string _titleRecruitsPriority = "RECRUITS_PRIORITY";//"RECRUITS PRIORITY";
-            private static readonly string _titleVehiclePriority = "VEHICLE_PRIORITY";// "VEHICLE PRIORITY";
-            private static readonly string _descriptionScavPriority = "SCAV_PRIORITY_DESCRIPTION";//In Vanilla and default TFTV, resource crate scavenging sites are much more likely to spawn than either vehicle or personnel rescues. " +
-                                                                                                  // "You can modify the relative chances of each type of scavenging site being generated. Choose none to have 0 scavenging sites of this type (for reference, high/medium/low ratio is 6/4/1)";
             private static readonly string[] _optionsResCratePriority = { "HIGH", "MEDIUM", "LOW", "NONE" };
             private static readonly string[] _optionsRecruitsPriority = { "HIGH", "MEDIUM", "LOW", "NONE" };
             private static readonly string[] _optionsVehiclePriority = { "HIGH", "MEDIUM", "LOW", "NONE" };
 
-            private static readonly string _titleScavSites = "SCAVENGING_SITES";//"SCAVENGING SITES #";
-            private static readonly string _titleLimitedCapture = "KEY_LimitedCapture";//"LIMITED CAPTURING";
-            private static readonly string _titleLimitedHarvesting = "KEY_LimitedHarvesting";//"LIMITED HARVESTING";
-
-            private static readonly string _descriptionLimitedCapture = "KEY_LimitedCapture_DESCRIPTION";//"Play with game mechanics that set a limit to how many Pandorans you can capture per mission.";
-            private static readonly string _descriptionLimitedHarvesting = "KEY_LimitedHarvesting_DESCRIPTION";//"Play with game mechanics that make obtaining food or mutagens from captured Pandorans harder.";
 
             private static readonly string[] _optionsBool = { "YES", "NO" };
 
-
-            private static readonly string _descriptionScavSites = "SCAVENGING_SITES_DESCRIPTION";//"Total number of scavenging sites generated on game start, not counting overgrown sites. (Vanilla: 16, TFTV default 8, because Ambushes generate additional resources).";
             private static readonly string[] _optionsScavSites = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32" };
 
 
-            private static readonly string _titleStartingFaction = "FACTION_BACKGROUND";//"FACTION BACKGROUND";
-            private static readonly string _descriptionStartingFaction = "FACTION_BACKGROUND_DESCRIPTION";// "You can choose a different faction background. " +
-                                                                                                          //   "If you do, one of your Assaults and your starting Heavy on Legend and Hero, " +
-                                                                                                          //   "Assault on Veteran, or Sniper on Rookie will be replaced by an operative of the elite class of the Faction of your choice. " +
-                                                                                                          //   "You will also get the corresponding faction technology once the faction researches it.";
             private static readonly string[] _optionsStartingFaction = { "KEY_FACTION_NAME_PHOENIX", "KEY_FACTION_NAME_ANU", "KEY_FACTION_NAME_NEW_JERICHO", "KEY_FACTION_NAME_SYNEDRION" };
 
-            private static readonly string _titleStartingBase = "STARTING_BASE";//"STARTING BASE LOCATION";
-            private static readonly string _descriptionStartingBase = "STARTING_BASE_DESCRIPTION";//"Select your starting base. You can choose a specific location to start from. Please note that some locations are harder to start from than others!";
+
             private static readonly string[] _optionsStartingBase = {
                 "Vanilla_Random",//"Vanilla Random",
                      "Random", //"Random (ALL bases included)",
@@ -607,1334 +438,1288 @@ namespace TFTV
                      "West_Africa"//"West Africa (Ghana)"
                };
 
-            private static readonly string _titleStartingSquad = "STARTING_SQUAD";//"STARTING SQUAD";
-            private static readonly string _descriptionStartingSquad = "STARTING_SQUAD_DESCRIPTION";//"You can choose to get a squad with random identities (as in Vanilla without doing the tutorial), " +
-            //  "the Vanilla tutorial starting squad (with higher stats), " +
-            //  "or a squad that will include Sophia Brown and Jacob with unbuffed stats (default on TFTV). " +
-            //  "Note that Jacob is a sniper, as in the title screen :)";
+
             private static readonly string[] _optionsStartingSquad = { "UNBUFFED", "BUFFED", "RANDOM" };
 
-            private static ModSettingController _noSecondChancesModSettings = null;
-            private static ArrowPickerController _noSecondChances = null;
+            private static List<ModSettingController> _newStartScavSettings = new List<ModSettingController>();
+            private static List<ModSettingController> _additionalStartOptionsSettings = new List<ModSettingController>();
+            private static List<ModSettingController> _anytimeOptionsSettings = new List<ModSettingController>();
+            private static List<ModSettingController> _cheatOptionsSettings = new List<ModSettingController>();
 
-
-            private static readonly string _titleNoSecondChances = "NO_SECOND_CHANCES";
-            private static readonly string _descriptionNoSecondChances = "NO_SECOND_CHANCES_DESCRIPTION";
-
-            private static ModSettingController _noBarksModSettings = null;
-            private static ArrowPickerController _noBarks = null;
-
-            private static readonly string _titleNoBarks = "KEY_NoBarks";
-            private static readonly string _descriptionNoBarks = "KEY_NoBarks_DESCRIPTION";
-
-            private static ModSettingController _skipFSTutorialModSettings = null;
-            private static ArrowPickerController _skipFSTutorial = null;
-
-            private static readonly string _titleSkipFSTutorial = "KEY_SkipFSTutorial";
-            private static readonly string _descriptionSkipFSTutorial = "KEY_SkipFSTutorial_DESCRIPTION";
-
-            private static ModSettingController _customPortraitsModSettings = null;
-            private static ArrowPickerController _customPortraits = null;
-
-            private static readonly string _titleCustomPortraits = "KEY_CustomPortraits";
-            private static readonly string _descriptionCustomPortraits = "KEY_CustomPortraits_DESCRIPTION";
-
-            private static ModSettingController _handGrenadeScatterModSettings = null;
-            private static ArrowPickerController _handGrenadeScatter = null;
-
-            private static readonly string _titleHandGrenadeScatter = "KEY_HandGrenadeScatter";
-            private static readonly string _descriptionHandGrenadeScatter = "KEY_HandGrenadeScatter_DESCRIPTION";
-
-            private static ModSettingController _equipBeforeAmbushModSettings = null;
-            private static ArrowPickerController _equipBeforeAmbush = null;
-
-            private static readonly string _titleEquipBeforeAmbush = "KEY_EquipBeforeAmbush";
-            private static readonly string _descriptionEquipBeforeAmbush = "KEY_EquipBeforeAmbush_DESCRIPTION";
-
-
-            private static float GetResolutionFactor()
+            internal class HelperMethods
             {
-                try 
+
+                private static float GetResolutionFactor()
                 {
-                    if (_resolutionFactor == 0) 
+                    try
                     {
-                        Resolution resolution = Screen.currentResolution;
-                        _resolutionFactor = (float)resolution.width / (float)resolution.height;
-                        TFTVLogger.Always($"_resolutionFactor: {_resolutionFactor}");
-                    }
-
-                    return _resolutionFactor;
-                
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-
-            }
-
-            private static float GetResolutionFactorWidth()
-            {
-                try
-                {
-                    if (_resolutionFactorWidth == 0)
-                    {
-                        Resolution resolution = Screen.currentResolution;
-                        _resolutionFactorWidth = (float)resolution.width / 1920f;
-                        TFTVLogger.Always($"_resolutionFactorHeight: {_resolutionFactorWidth}");
-                    }
-
-                    return _resolutionFactorWidth;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-
-            }
-
-            private static float GetResolutionFactorHeight()
-            {
-                try
-                {
-                    if (_resolutionFactorHeight == 0)
-                    {
-                        Resolution resolution = Screen.currentResolution;
-                        _resolutionFactorHeight = (float)resolution.height / 1080f;
-                        TFTVLogger.Always($"_resolutionFactorWidth: {_resolutionFactorHeight}");
-                    }
-
-                    return _resolutionFactorHeight;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-
-            }
-
-
-            private static GameOptionViewController InstantiateGameOptionViewController(RectTransform rectTransform, UIModuleGameSettings uIModuleGameSettings, string titleKey, string descriptionKey, string onToggleMethod)
-            {
-                try
-                {
-
-                    Resolution resolution = Screen.currentResolution;
-                    float resolutionFactorWidth = GetResolutionFactorWidth();
-                    float resolutionFactorHeight = GetResolutionFactorHeight();
-                    bool ultrawideresolution = GetResolutionFactor() > 2;
-
-                    GameOptionViewController gameOptionViewController = UnityEngine.Object.Instantiate(uIModuleGameSettings.SecondaryOptions.Container.GetComponentsInChildren<GameOptionViewController>().First(), rectTransform);
-
-                    LocalizedTextBind description = new LocalizedTextBind
-                    {
-                        LocalizationKey = descriptionKey
-                    };
-
-                    LocalizedTextBind text = new LocalizedTextBind
-                    {
-                        LocalizationKey = titleKey
-                    };
-
-                    gameOptionViewController.Set(text, null);
-
-                    MethodInfo method = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod(onToggleMethod, BindingFlags.NonPublic | BindingFlags.Static);
-                    Action<bool> setNewSettingsVisibility = (Action<bool>)Delegate.CreateDelegate(typeof(Action<bool>), method);
-                    gameOptionViewController.CheckedToggle.onValueChanged.AddListener((value) =>
-                    {
-                        setNewSettingsVisibility.Invoke(value);
-                    });
-
-                    // TFTVLogger.Always($"position {gameOptionViewController.transform.position} local pos {gameOptionViewController.transform.localPosition} button {gameOptionViewController.SelectButton.transform.position}");
-                    if (!ultrawideresolution)
-                    {
-                        gameOptionViewController.SelectButton.transform.position -= new Vector3(250 * resolutionFactorWidth, 0, 0);
-                    }
-                    else
-                    {
-                       // TFTVLogger.Always($"UW resolution detected!");
-                        int additionalFactor = 2;
-
-                        gameOptionViewController.SelectButton.transform.position -= new Vector3(370 * resolutionFactorWidth / additionalFactor, 0, 0);
-
-                   }
-
-                    gameOptionViewController.transform.localScale *= 0.70f;
-
-
-                    //  gameOptionViewController.SelectButton.transform.position += new Vector3(270 * resolutionFactorWidth, 0, 0);
-                    UITooltipText uITooltipText = gameOptionViewController.gameObject.AddComponent<UITooltipText>();
-
-                    uITooltipText.TipKey = description;
-
-                    return gameOptionViewController;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-
-            private static void SetNewStartVisibility(bool show)
-            {
-                try
-                {
-                    _startingFaction.gameObject.SetActive(show);
-                    _startingFactionModSettings.gameObject.SetActive(show);
-                    _startingBase.gameObject.SetActive(show);
-                    _startingBaseModSettings.gameObject.SetActive(show);
-                    _startingSquad.gameObject.SetActive(show);
-                    _startingSquadModSettings.gameObject.SetActive(show);
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-            private static void SetNewStartScavVisibility(bool show)
-            {
-                try
-                {
-
-                    _startingScavSites.gameObject.SetActive(show);
-                    _startingScavSitesModSettings.gameObject.SetActive(show);
-                    _resCratePriority.gameObject.SetActive(show);
-                    _resCratePriorityModSettings.gameObject.SetActive(show);
-                    _recruitsPriority.gameObject.SetActive(show);
-                    _recruitsPriorityModSettings.gameObject.SetActive(show);
-                    _vehiclePriority.gameObject.SetActive(show);
-                    _vehiclePriorityModSettings.gameObject.SetActive(show);
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-
-            private static void SetAllVisibility(bool show)
-            {
-                try
-                {
-                    _scavengingOptionsVisibilityController.IsSelected = show;
-                    _additionalStartOptionsVisibilityController.IsSelected = show;
-                    _anytimeOptionsVisibilityController.IsSelected = show;
-                    //   _tacticalOptionsVisibilityController.IsSelected = show;
-                    //   _geoscapeOptionsVisibilityController.IsSelected = show;
-                    //   _otherOptionsVisibilityController.IsSelected = show;
-
-                    SetNewStartScavVisibility(show);
-                    SetAdditionalStartOptionsVisibility(show);
-                    SetAnyTimeOptionsVisibility(show);
-                    //   SetMinorOptionsVisibility(show);
-                    //   SetTacticalOptionsVisibility(show);
-                    //   SetGeoscapeOptionsVisibility(show);            
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-
-            }
-
-
-            private static void SetAdditionalStartOptionsVisibility(bool show)
-            {
-                try
-                {
-                    _staminaDrainModSettings.gameObject.SetActive(show);
-                    _staminaDrain.gameObject.SetActive(show);
-                    _strongerPandoransModSettings.gameObject.SetActive(show);
-                    _strongerPandorans.gameObject.SetActive(show);
-                    _limitedCaptureModSettings.gameObject.SetActive(show);
-                    _limitedHarvestingModSettings.gameObject.SetActive(show);
-                    _limitedCapture.gameObject.SetActive(show);
-                    _limitedHarvesting.gameObject.SetActive(show);
-                    _diploPenalties.gameObject.SetActive(show);
-                    _exoticResources.gameObject.SetActive(show);
-                    _harderAmbush.gameObject.SetActive(show);
-                    _resourcesEvents.gameObject.SetActive(show);
-                    _diploPenaltiesModSettings.gameObject.SetActive(show);
-                    _exoticResourcesModSettings.gameObject.SetActive(show);
-                    _harderAmbushModSettings.gameObject.SetActive(show);
-                    _impossibleWeaponsModSettings.gameObject.SetActive(show);
-                    _resourcesEventsModSettings.gameObject.SetActive(show);
-                    _impossibleWeapons.gameObject.SetActive(show);
-                    _noSecondChances.gameObject.SetActive(show);
-                    _noSecondChancesModSettings.gameObject.SetActive(show);
-                    _etermesVulnerabilityResistance.gameObject.SetActive(show);
-                    _etermesVulnerabilityResistanceModSettings.gameObject.SetActive(show);
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-
-            }
-
-            private static void SetAnyTimeOptionsVisibility(bool show)
-            {
-                try
-                {
-                    _skipMoviesModSettings.gameObject.SetActive(show);
-                    _noBarksModSettings.gameObject.SetActive(show);
-                    _havenSOSModSettings.gameObject.SetActive(show);
-                    _staminaRecuperationModSettings.gameObject.SetActive(show);
-                    _learnFirstSkillModSettings.gameObject.SetActive(show);
-                    _moreMistVOModSettings.gameObject.SetActive(show);
-                    _limitedDeploymentVOModSettings.gameObject.SetActive(show);
-                    //    _staminaDrainModSettings.gameObject.SetActive(show);
-
-                    _skipMovies.gameObject.SetActive(show);
-                    _noBarks.gameObject.SetActive(show);
-
-                    _havenSOS.gameObject.SetActive(show);
-
-                    _learnFirstSkill.gameObject.SetActive(show);
-                    _moreMistVO.gameObject.SetActive(show);
-                    _limitedDeploymentVO.gameObject.SetActive(show);
-                    _noDropReinforcements.gameObject.SetActive(show);
-                    _noDropReinforcementsModSettings.gameObject.SetActive(show);
-                    _flinching.gameObject.SetActive(show);
-                    _flinchingModSettings.gameObject.SetActive(show);
-                    _tradingModSettings.gameObject.SetActive(show);
-                    _limitedRaidingModSettings.gameObject.SetActive(show);
-                    _showAmbushExfil.gameObject.SetActive(show);
-                    _showAmbushExfilModSettings.gameObject.SetActive(show);
-                    _skipFSTutorial.gameObject.SetActive(show);
-                    _skipFSTutorialModSettings.gameObject.SetActive(show);
-                    _customPortraits.gameObject.SetActive(show);
-                    _customPortraitsModSettings.gameObject.SetActive(show);
-                    _handGrenadeScatter.gameObject.SetActive(show);
-                    _handGrenadeScatterModSettings.gameObject.SetActive(show);
-                    _equipBeforeAmbushModSettings.gameObject.SetActive(show);
-                    _equipBeforeAmbush.gameObject.SetActive(show);
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-
-            }
-
-
-
-
-            private static void InstantiateArrowPickerController(ModSettingController modSettingController,
-                ArrowPickerController arrowPickerController, string titleKey, string descriptionKey, string[] optionsKeys, int currentValue, Action<int> onValueChanged, float lengthScale)
-            {
-                try
-                {
-
-
-                    Resolution resolution = Screen.currentResolution;
-                    float resolutionFactorWidth = GetResolutionFactorWidth();
-                    float resolutionFactorHeight = GetResolutionFactorHeight();
-                    bool ultrawideresolution = GetResolutionFactor() > 2;
-
-                    LocalizedTextBind titleTextBindKey = new LocalizedTextBind() { LocalizationKey = titleKey };
-                    LocalizedTextBind descriptionTextBindKey = new LocalizedTextBind() { LocalizationKey = descriptionKey };
-
-                    string title = titleTextBindKey.Localize();
-                    string description = descriptionTextBindKey.Localize();
-
-
-                    string[] options = new string[optionsKeys.Length];
-                    if (optionsKeys[0] != "0" || optionsKeys[0] != "25%")
-                    {
-                        for (int i = 0; i < optionsKeys.Length; i++)
+                        if (_resolutionFactor == 0)
                         {
-                            LocalizedTextBind optionTextBindKey = new LocalizedTextBind() { LocalizationKey = optionsKeys[i] };
-                            options[i] = optionTextBindKey.Localize();
+                            Resolution resolution = Screen.currentResolution;
+                            _resolutionFactor = (float)resolution.width / (float)resolution.height;
+                            TFTVLogger.Always($"_resolutionFactor: {_resolutionFactor}");
                         }
 
+                        return _resolutionFactor;
+
                     }
-                    else
+                    catch (Exception e)
                     {
-                        options = optionsKeys;
+                        TFTVLogger.Error(e);
+                        throw;
                     }
 
-                    modSettingController.Label.text = title;
-                    modSettingController.transform.localScale *= 0.75f;
+                }
 
-                    if (!ultrawideresolution)
+                private static float GetResolutionFactorWidth()
+                {
+                    try
                     {
-                      
-                        arrowPickerController.transform.position += new Vector3(270 * resolutionFactorWidth, 0, 0);
-
-                        //   TFTVLogger.Always($"{resolutionFactorWidth} {lengthScale}");
-
-                        if (lengthScale != 1)
+                        if (_resolutionFactorWidth == 0)
                         {
-
-                            arrowPickerController.transform.position += new Vector3(150 * resolutionFactorWidth * lengthScale, 0, 0);
-
-                        }
-                        //  TFTVLogger.Always($"{resolutionFactorWidth} {lengthScale} {arrowPickerController.transform.position}");
-
-                        modSettingController.Label.rectTransform.Translate(new Vector3(-270 * resolutionFactorWidth, 0, 0), arrowPickerController.transform);
-                    }
-                    else 
-                    {
-                       // TFTVLogger.Always($"UW resolution detected!");
-                        int additionalFactor = 2;
-
-                        arrowPickerController.transform.position += new Vector3(370 * resolutionFactorWidth / additionalFactor, 0, 0);
-
-                        if (lengthScale == 1)
-                        {
-                            lengthScale = 0.75f;
+                            Resolution resolution = Screen.currentResolution;
+                            _resolutionFactorWidth = (float)resolution.width / 1920f;
+                            TFTVLogger.Always($"_resolutionFactorHeight: {_resolutionFactorWidth}");
                         }
 
-                        //   TFTVLogger.Always($"{resolutionFactorWidth} {lengthScale}");
+                        return _resolutionFactorWidth;
 
-                        if (lengthScale <= 0.5f)
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+
+                }
+
+                private static float GetResolutionFactorHeight()
+                {
+                    try
+                    {
+                        if (_resolutionFactorHeight == 0)
                         {
-                            arrowPickerController.transform.position += new Vector3(300 * resolutionFactorWidth / additionalFactor * lengthScale, 0, 0);
+                            Resolution resolution = Screen.currentResolution;
+                            _resolutionFactorHeight = (float)resolution.height / 1080f;
+                            TFTVLogger.Always($"_resolutionFactorWidth: {_resolutionFactorHeight}");
+                        }
+
+                        return _resolutionFactorHeight;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+
+                }
+
+
+                internal static void InstantiateGameOptionViewController(string titleKey, string descriptionKey, string onToggleMethod)
+                {
+                    try
+                    {
+
+                        Resolution resolution = Screen.currentResolution;
+                        float resolutionFactorWidth = GetResolutionFactorWidth();
+                        float resolutionFactorHeight = GetResolutionFactorHeight();
+                        bool ultrawideresolution = GetResolutionFactor() > 2;
+
+                        UIModuleGameSettings uIModuleGameSettings = GameUtl.CurrentLevel().GetComponent<HomeScreenView>().HomeScreenModules.GameSettings;
+                        RectTransform rectTransform = uIModuleGameSettings.GameAddiotionalContentGroup.GetComponentInChildren<RectTransform>();
+                        GameOptionViewController gameOptionViewController = UnityEngine.Object.Instantiate(uIModuleGameSettings.SecondaryOptions.Container.GetComponentsInChildren<GameOptionViewController>().First(), rectTransform);
+
+                        LocalizedTextBind description = new LocalizedTextBind
+                        {
+                            LocalizationKey = descriptionKey
+                        };
+
+                        LocalizedTextBind text = new LocalizedTextBind
+                        {
+                            LocalizationKey = titleKey
+                        };
+
+                        gameOptionViewController.Set(text, null);
+
+                        MethodInfo method = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod(onToggleMethod, BindingFlags.NonPublic | BindingFlags.Static);
+                        Action<bool> setNewSettingsVisibility = (Action<bool>)Delegate.CreateDelegate(typeof(Action<bool>), method);
+                        gameOptionViewController.CheckedToggle.onValueChanged.AddListener((value) =>
+                        {
+                            setNewSettingsVisibility.Invoke(value);
+                        });
+
+                        // TFTVLogger.Always($"position {gameOptionViewController.transform.position} local pos {gameOptionViewController.transform.localPosition} button {gameOptionViewController.SelectButton.transform.position}");
+                        if (!ultrawideresolution)
+                        {
+                            gameOptionViewController.SelectButton.transform.position -= new Vector3(250 * resolutionFactorWidth, 0, 0);
                         }
                         else
                         {
-                            arrowPickerController.transform.position += new Vector3(130 * resolutionFactorWidth / additionalFactor * lengthScale, 0, 0);
+                            // TFTVLogger.Always($"UW resolution detected!");
+                            int additionalFactor = 2;
+
+                            gameOptionViewController.SelectButton.transform.position -= new Vector3(370 * resolutionFactorWidth / additionalFactor, 0, 0);
+
                         }
-                        //  TFTVLogger.Always($"{resolutionFactorWidth} {lengthScale} {arrowPickerController.transform.position}");
 
-                        modSettingController.Label.rectTransform.Translate(new Vector3(-370 * resolutionFactorWidth / additionalFactor, 0, 0), arrowPickerController.transform);
+                        gameOptionViewController.transform.localScale *= 0.70f;
 
 
-                     }
+                        //  gameOptionViewController.SelectButton.transform.position += new Vector3(270 * resolutionFactorWidth, 0, 0);
+                        UITooltipText uITooltipText = gameOptionViewController.gameObject.AddComponent<UITooltipText>();
+
+                        uITooltipText.TipKey = description;
+
+                        _gameOptionViewControllers.Add(gameOptionViewController);
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+                internal static void InstantiateArrowPickerController(string baseKey,
+           string[] optionsKeys,
+           int currentValue,
+           Action<int, ArrowPickerController> onValueChangedWithController,
+           float lengthScale, List <ModSettingController> optionsType = null)
+                {
+                    try
+                    {
+                        ModSettingController ModSettingControllerHook = GameUtl.CurrentLevel().GetComponent<HomeScreenView>().HomeScreenModules.ModManagerModule.SettingsModSettingPrefab;
+                        RectTransform rectTransform = GameUtl.CurrentLevel().GetComponent<HomeScreenView>().HomeScreenModules.GameSettings.GameAddiotionalContentGroup.GetComponentInChildren<RectTransform>();
+
+                        ModSettingController modSettingController = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
+                        ArrowPickerController arrowPickerController = modSettingController.ListField;
+
+                        // Extract title and description keys from the modSettingController's name                   
+                        string titleKey = $"KEY_{baseKey}";
+                        string descriptionKey = $"KEY_{baseKey}_DESCRIPTION";
+
+                        // TFTVLogger.Always($"baseKey: {baseKey} titleKey {titleKey} descriptionKey: {descriptionKey} ");
+
+                        //_startingFactionModSettings
+
+                        string title = TFTVCommonMethods.ConvertKeyToString(titleKey);
+                        string description = TFTVCommonMethods.ConvertKeyToString(descriptionKey);
+
+                        // Localize options
+                        string[] options = new string[] { };
+
+                        options = optionsKeys.Select(key => new LocalizedTextBind { LocalizationKey = key }.Localize()).ToArray();
+
+                        // Configure the modSettingController
+                        modSettingController.Label.text = title;
+                        modSettingController.transform.localScale *= 0.75f;
+
+                        // Adjust arrowPickerController position and scale
+                        AdjustArrowPickerPositionAndScale(arrowPickerController, modSettingController, lengthScale);
+
+                        // Add tooltip for description
+                        AddTooltip(modSettingController, description);
+
+                        // Initialize the arrow picker
+                        arrowPickerController.Init(options.Length, currentValue, newValue =>
+                        {
+                            onValueChangedWithController?.Invoke(newValue, arrowPickerController);
+                        });
+                        arrowPickerController.CurrentItemText.text = options[currentValue];
+
+                        arrowPickerController.GetComponent<RectTransform>().sizeDelta = new Vector2(
+                            arrowPickerController.GetComponent<RectTransform>().sizeDelta.x * lengthScale,
+                            arrowPickerController.GetComponent<RectTransform>().sizeDelta.y
+                        );
+
+                        // Populate options
+                        PopulateOptions(arrowPickerController, options);
+
+                        optionsType?.Add(modSettingController);
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+                private static void AdjustArrowPickerPositionAndScale(
+        ArrowPickerController arrowPickerController,
+        ModSettingController modSettingController,
+        float lengthScale)
+                {
+                    try
+                    {
+                        Resolution resolution = Screen.currentResolution;
+                        float resolutionFactorWidth = (float)resolution.width / 1920f;
+                        bool ultrawideResolution = (float)resolution.width / resolution.height > 2;
+
+                        if (!ultrawideResolution)
+                        {
+                            arrowPickerController.transform.position += new Vector3(270 * resolutionFactorWidth, 0, 0);
+                            if (lengthScale != 1)
+                            {
+                                arrowPickerController.transform.position += new Vector3(150 * resolutionFactorWidth * lengthScale, 0, 0);
+                            }
+                            modSettingController.Label.rectTransform.Translate(new Vector3(-270 * resolutionFactorWidth, 0, 0), arrowPickerController.transform);
+                        }
+                        else
+                        {
+                            int additionalFactor = 2;
+                            arrowPickerController.transform.position += new Vector3(370 * resolutionFactorWidth / additionalFactor, 0, 0);
+                            if (lengthScale <= 0.5f)
+                            {
+                                arrowPickerController.transform.position += new Vector3(300 * resolutionFactorWidth / additionalFactor * lengthScale, 0, 0);
+                            }
+                            else
+                            {
+                                arrowPickerController.transform.position += new Vector3(130 * resolutionFactorWidth / additionalFactor * lengthScale, 0, 0);
+                            }
+                            modSettingController.Label.rectTransform.Translate(new Vector3(-370 * resolutionFactorWidth / additionalFactor, 0, 0), arrowPickerController.transform);
+                        }
 
                         modSettingController.Label.alignment = TextAnchor.MiddleLeft;
-                    UnityEngine.Object.Destroy(modSettingController.GetComponentInChildren<UITooltipText>());
-
-                    UITooltipText uITooltipText = modSettingController.Label.gameObject.AddComponent<UITooltipText>();
-
-                    uITooltipText.TipText = description;
-
-                    arrowPickerController.Init(options.Length, currentValue, onValueChanged);
-
-
-                    arrowPickerController.CurrentItemText.text = options[currentValue];
-                    //  if (lengthScale != 1)
-                    //  {
-                    arrowPickerController.GetComponent<RectTransform>().sizeDelta = new Vector2(arrowPickerController.GetComponent<RectTransform>().sizeDelta.x * lengthScale, arrowPickerController.GetComponent<RectTransform>().sizeDelta.y);
-                    //  }
-                    // TFTVLogger.Always($"{arrowPickerController.GetComponent<RectTransform>().sizeDelta}");
-                    PopulateOptions(arrowPickerController, options);
-                    //TFTVLogger.Always($"instantiating {title}, got to the end");
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-
-            /*   private static void InstantiateArrowPickerControllerForAmount(ModSettingController modSettingController,
-                  ArrowPickerController arrowPickerController, string title, string description, float currentValue, Action<int> onValueChanged)
-               {
-                   try
-                   {
-                       Resolution resolution = Screen.currentResolution;
-                       float resolutionFactorWidth = (float)resolution.width / 1920f;
-                       float resolutionFactorHeight = (float)resolution.height / 1080f;
-
-                       modSettingController.Label.text = title;
-                       modSettingController.transform.localScale *= 0.75f;
-                       arrowPickerController.transform.position += new Vector3(270 * resolutionFactorWidth, 0, 0);
-
-                       modSettingController.Label.rectTransform.Translate(new Vector3(-270 * resolutionFactorWidth, 0, 0), arrowPickerController.transform);
-                       modSettingController.Label.alignment = TextAnchor.MiddleLeft;
-                       UnityEngine.Object.Destroy(modSettingController.GetComponentInChildren<UITooltipText>());
-
-                       UITooltipText uITooltipText = modSettingController.Label.gameObject.AddComponent<UITooltipText>();
-
-                       uITooltipText.TipText = description;
-
-                       arrowPickerController.Init(1, 0, onValueChanged);
-
-                       arrowPickerController.SetEnabled(true);
-
-                       arrowPickerController.CurrentItemText.text = currentValue.ToString();
-
-                       string[] options = { currentValue.ToString() };
-
-                       PopulateOptions(arrowPickerController, options);
-
-                   }
-
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                       throw;
-                   }
-               }*/
-
-            private static void Postfix(UIModuleGameSettings __instance)
-            {
-                try
-                {
-                    ModSettingController ModSettingControllerHook = GameUtl.CurrentLevel().GetComponent<HomeScreenView>().HomeScreenModules.ModManagerModule.SettingsModSettingPrefab;
-                    RectTransform rectTransform = __instance.GameAddiotionalContentGroup.GetComponentInChildren<RectTransform>();
-
-
-
-                    rectTransform.DestroyChildren();
-
-
-                    //  InstantiateGameOptionViewController(rectTransform, __instance, "testing_title", "testing_description", "SetNewStartVisibility");
-
-                    _startingFactionModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _startingBaseModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _startingSquadModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _tacticalDifficultyModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _disableTacSavesModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-
-                    InstantiateGameOptionViewController(rectTransform, __instance, "TFTV_ALL_OPTIONS_TITLE", "TFTV_ALL_OPTIONS_DESCRIPTION", "SetAllVisibility");
-
-                    _scavengingOptionsVisibilityController = InstantiateGameOptionViewController(rectTransform, __instance, "TFTV_SCAVENGING_OPTIONS_TITLE", "TFTV_SCAVENGING_OPTIONS_DESCRIPTION", "SetNewStartScavVisibility");
-
-                    _startingScavSitesModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _resCratePriorityModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _recruitsPriorityModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _vehiclePriorityModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-
-                    _additionalStartOptionsVisibilityController = InstantiateGameOptionViewController(rectTransform, __instance, _titleAdditionalStartOptions, _descriptionAdditionalStartOptions, "SetAdditionalStartOptionsVisibility");
-                    //  _geoscapeOptionsVisibilityController = InstantiateGameOptionViewController(rectTransform, __instance, "TFTV_GEOSCAPE_OPTIONS_TITLE", "TFTV_GEOSCAPE_OPTIONS_DESCRIPTION", "SetGeoscapeOptionsVisibility");
-
-                    _strongerPandoransModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _staminaDrainModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-
-                    //Geoscape
-                    _limitedCaptureModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _limitedHarvestingModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-
-
-                    _diploPenaltiesModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _exoticResourcesModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _harderAmbushModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _impossibleWeaponsModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _noSecondChancesModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _etermesVulnerabilityResistanceModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    //    _reverseEngineeringModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _resourcesEventsModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-
-                    _anytimeOptionsVisibilityController = InstantiateGameOptionViewController(rectTransform, __instance, _titleAnytimeOptions, _descriptionAnytimeOptions, "SetAnyTimeOptionsVisibility");
-
-                    //_tacticalOptionsVisibilityController = InstantiateGameOptionViewController(rectTransform, __instance, "TFTV_TACTICAL_OPTIONS_TITLE", "TFTV_TACTICAL_OPTIONS_DESCRIPTION", "SetTacticalOptionsVisibility");
-
-                    //Tactical
-
-                    _noDropReinforcementsModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _flinchingModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-
-
-                    //  _otherOptionsVisibilityController = InstantiateGameOptionViewController(rectTransform, __instance, "TFTV_MISC_OPTIONS_TITLE", "TFTV_MISC_OPTIONS_DESCRIPTION", "SetMinorOptionsVisibility");
-
-                    //Minor settings
-                    _skipMoviesModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _havenSOSModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _staminaRecuperationModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _learnFirstSkillModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _moreMistVOModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _showAmbushExfilModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _tradingModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _limitedDeploymentVOModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _limitedRaidingModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _noBarksModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _skipFSTutorialModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _customPortraitsModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _handGrenadeScatterModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-                    _equipBeforeAmbushModSettings = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
-
-                    _startingFaction = _startingFactionModSettings.ListField;
-                    _startingBase = _startingBaseModSettings.ListField;
-                    _startingSquad = _startingSquadModSettings.ListField;
-                    _startingScavSites = _startingScavSitesModSettings.ListField;
-                    _resCratePriority = _resCratePriorityModSettings.ListField;
-                    _recruitsPriority = _recruitsPriorityModSettings.ListField;
-                    _vehiclePriority = _vehiclePriorityModSettings.ListField;
-                    _limitedCapture = _limitedCaptureModSettings.ListField;
-                    _limitedHarvesting = _limitedHarvestingModSettings.ListField;
-                    _tacticalDifficulty = _tacticalDifficultyModSettings.ListField;
-                    _trading = _tradingModSettings.ListField;
-                    _limitedRaiding = _limitedRaidingModSettings.ListField;
-                    _noDropReinforcements = _noDropReinforcementsModSettings.ListField;
-                    _diploPenalties = _diploPenaltiesModSettings.ListField;
-                    _exoticResources = _exoticResourcesModSettings.ListField;
-                    _flinching = _flinchingModSettings.ListField;
-                    _harderAmbush = _harderAmbushModSettings.ListField;
-                    _havenSOS = _havenSOSModSettings.ListField;
-                    _impossibleWeapons = _impossibleWeaponsModSettings.ListField;
-                    _noSecondChances = _noSecondChancesModSettings.ListField;
-                    _learnFirstSkill = _learnFirstSkillModSettings.ListField;
-                    _moreMistVO = _moreMistVOModSettings.ListField;
-                    _limitedDeploymentVO = _limitedDeploymentVOModSettings.ListField;
-                    _showAmbushExfil = _showAmbushExfilModSettings.ListField;
-                    _skipFSTutorial = _skipFSTutorialModSettings.ListField;
-                    _customPortraits = _customPortraitsModSettings.ListField;
-                    _handGrenadeScatter = _handGrenadeScatterModSettings.ListField;
-                    _equipBeforeAmbush = _equipBeforeAmbushModSettings.ListField;
-                    //   _reverseEngineering = _reverseEngineeringModSettings.ListField;
-                    _skipMovies = _skipMoviesModSettings.ListField;
-                    _resourcesEvents = _resourcesEventsModSettings.ListField;
-                    // _reverseEngineering = _reverseEngineeringModSettings.ListField;
-                    _disableTacSaves = _disableTacSavesModSettings.ListField;
-                    _staminaDrain = _staminaDrainModSettings.ListField;
-                    _staminaRecuperation = _staminaRecuperationModSettings.ListField;
-                    _strongerPandorans = _strongerPandoransModSettings.ListField;
-                    _noBarks = _noBarksModSettings.ListField;
-                    _etermesVulnerabilityResistance = _etermesVulnerabilityResistanceModSettings.ListField;
-
-                    InstantiateArrowPickerController(_startingFactionModSettings, _startingFaction, _titleStartingFaction, _descriptionStartingFaction, _optionsStartingFaction, (int)(TFTVNewGameOptions.startingSquad), OnStartingFactionValueChangedCallback, 1f);
-                    InstantiateArrowPickerController(_startingBaseModSettings, _startingBase, _titleStartingBase, _descriptionStartingBase, _optionsStartingBase, (int)(TFTVNewGameOptions.startingBaseLocation), OnStartingBaseValueChangedCallback, 1f);
-                    InstantiateArrowPickerController(_startingSquadModSettings, _startingSquad, _titleStartingSquad, _descriptionStartingSquad, _optionsStartingSquad, (int)(TFTVNewGameOptions.startingSquadCharacters), OnStartingSquadValueChangedCallback, 1f);
-                    InstantiateArrowPickerController(_startingScavSitesModSettings, _startingScavSites, _titleScavSites, _descriptionScavSites, _optionsScavSites, TFTVNewGameOptions.initialScavSites, OnStartingScavSitesValueChangedCallback, 1f);
-                    InstantiateArrowPickerController(_resCratePriorityModSettings, _resCratePriority, _titleResCratePriority, _descriptionScavPriority, _optionsResCratePriority, (int)(TFTVNewGameOptions.chancesScavCrates), OnResScavPriorityValueChangedCallback, 1f);
-                    InstantiateArrowPickerController(_recruitsPriorityModSettings, _recruitsPriority, _titleRecruitsPriority, _descriptionScavPriority, _optionsRecruitsPriority, (int)(TFTVNewGameOptions.chancesScavSoldiers), OnRecruitsPriorityValueChangedCallback, 1f);
-                    InstantiateArrowPickerController(_vehiclePriorityModSettings, _vehiclePriority, _titleVehiclePriority, _descriptionScavPriority, _optionsVehiclePriority, (int)(TFTVNewGameOptions.chancesScavGroundVehicleRescue), OnVehiclePriorityValueChangedCallback, 1f);
-                    InstantiateArrowPickerController(_tacticalDifficultyModSettings, _tacticalDifficulty, _titleTacticalDifficulty, _descriotionTacticalDifficulty, _optionsTacticalDifficulty, (int)config.difficultyOnTactical, OnTacticalDifficultyValueChangedCallback, 1f);
-                    InstantiateArrowPickerController(_limitedCaptureModSettings, _limitedCapture, _titleLimitedCapture, _descriptionLimitedCapture, _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.LimitedCaptureSetting), OnLimitedCaptureValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_limitedHarvestingModSettings, _limitedHarvesting, _titleLimitedHarvesting, _descriptionLimitedHarvesting, _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.LimitedHarvestingSetting), OnLimitedHarvestingValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_tradingModSettings, _trading, _titleTrading, _descriptionTrading, _optionsBool, ConvertBoolToInt(config.EqualizeTrade), OnTradingValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_limitedRaidingModSettings, _limitedRaiding, _titleLimitedRaiding, _descriptionLimitedRaiding, _optionsBool, ConvertBoolToInt(config.LimitedRaiding), OnLimitedRaidingValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_noDropReinforcementsModSettings, _noDropReinforcements, _titleNoDropReinforcements, _descriptionNoDropReinforcements, _optionsBool, ConvertBoolToInt(config.ReinforcementsNoDrops), OnNoDropValueChangedCallback, 0.5f);
-
-                    InstantiateArrowPickerController(_strongerPandoransModSettings, _strongerPandorans, _titleStrongerPandorans, _descriptionStrongerPandorans, _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.StrongerPandoransSetting), OnStrongerPandoransValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_etermesVulnerabilityResistanceModSettings, _etermesVulnerabilityResistance, _titleEtermesVulnerability, _descriptionEtermesVulnerabilityResistance, _optionsBool, Math.Max(TFTVNewGameOptions.EtermesResistanceAndVulnerability - 1, 0), OnEtermesVulnerabilityResistanceValueChangedCallback, 0.5f);
-
-                    InstantiateArrowPickerController(_staminaRecuperationModSettings, _staminaRecuperation, _titleStaminaRecuperation, _descriptionStaminaRecuperation, _optionsBool, ConvertBoolToInt(config.ActivateStaminaRecuperatonModule), OnStaminaRecuperationValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_staminaDrainModSettings, _staminaDrain, _titleStaminaDrain, _descriptionStaminaDrain, _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.StaminaPenaltyFromInjurySetting), OnStaminaDrainValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_diploPenaltiesModSettings, _diploPenalties, _titleDiploPenalties, _descriptionDiploPenalties, _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.DiplomaticPenaltiesSetting), OnDiploPenaltiesValueChangedCallback, 0.5f);
-
-                    InstantiateArrowPickerController(_flinchingModSettings, _flinching, _titleFlinching, _descriptionFlinching, _optionsBool, ConvertBoolToInt(config.AnimateWhileShooting), OnFlinchingValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_harderAmbushModSettings, _harderAmbush, _titleHarderAmbush, _descriptionHarderAmbush, _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.MoreAmbushesSetting), OnHarderAmbushValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_havenSOSModSettings, _havenSOS, _titleHavenSOS, _descriptionHavenSOS, _optionsBool, ConvertBoolToInt(config.HavenSOS), OnHavenSOSValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_impossibleWeaponsModSettings, _impossibleWeapons, _titleImpossibleWeapons, _descriptionImpossibleWeapons, _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting), OnImpossibleWeaponsValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_noSecondChancesModSettings, _noSecondChances, _titleNoSecondChances, _descriptionNoSecondChances, _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.NoSecondChances), OnNoSecondChancesValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_learnFirstSkillModSettings, _learnFirstSkill, _titleLearnFirstSkill, _descriptionLearnFirstSkill, _optionsBool, ConvertBoolToInt(config.LearnFirstPersonalSkill), OnLearnFirstSchoolValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_moreMistVOModSettings, _moreMistVO, _titleMoreMistVO, _descriptionMoreMistVO, _optionsBool, ConvertBoolToInt(config.MoreMistVO), OnMoreMistValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_limitedDeploymentVOModSettings, _limitedDeploymentVO, _titlelimitedDeploymentVO, _descriptionlimitedDeploymentVO, _optionsBool, ConvertBoolToInt(config.LimitedDeploymentVO), OnLimitedDeploymentValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_showAmbushExfilModSettings, _showAmbushExfil, _titleShowAmbushExfil, _descriptionShowAmbushExfil, _optionsBool, ConvertBoolToInt(config.ShowExfilAmbush), OnShowAmbushExfilValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_skipFSTutorialModSettings, _skipFSTutorial, _titleSkipFSTutorial, _descriptionSkipFSTutorial, _optionsBool, ConvertBoolToInt(config.SkipFSTutorial), OnSkipFSTutorialValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_customPortraitsModSettings, _customPortraits, _titleCustomPortraits, _descriptionCustomPortraits, _optionsBool, ConvertBoolToInt(config.CustomPortraits), OnCustomPortraitsValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_handGrenadeScatterModSettings, _handGrenadeScatter, _titleHandGrenadeScatter, _descriptionHandGrenadeScatter, _optionsBool, ConvertBoolToInt(config.HandGrenadeScatter), OnHandGrenadeScatterValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_equipBeforeAmbushModSettings, _equipBeforeAmbush, _titleEquipBeforeAmbush, _descriptionEquipBeforeAmbush, _optionsBool, ConvertBoolToInt(config.EquipBeforeAmbush), OnEquipBeforeAmbushValueChangedCallback, 0.5f);
-
-                    InstantiateArrowPickerController(_disableTacSavesModSettings, _disableTacSaves, _titleDisableTacSaves, _descriptionDisableTacSaves, _optionsBool, ConvertBoolToInt(config.disableSavingOnTactical), OnDisableTacSavesValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_skipMoviesModSettings, _skipMovies, _titleSkipMovies, _descriptionSkipMovies, _optionsBool, ConvertBoolToInt(config.SkipMovies), OnSkipMoviesValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_noBarksModSettings, _noBarks, _titleNoBarks, _descriptionNoBarks, _optionsBool, ConvertBoolToInt(config.NoBarks), OnNoBarksValueChangedCallback, 0.5f);
-
-                    InstantiateArrowPickerController(_exoticResourcesModSettings, _exoticResources, _titleExoticResources, _descriptionExoticResources, _amountPercentageResources, ConvertDifficultyToIndexExoticResources(), OnExoticResourcesValueChangedCallback, 0.5f);
-                    InstantiateArrowPickerController(_resourcesEventsModSettings, _resourcesEvents, _titleResourcesEvents, _descriptionResourcesEvents, _amountPercentageResources, ConvertDifficultyToIndexEventsResources(), OnResourcesEventsValueChangedCallback, 0.5f);
-
-
-                    SetAllVisibility(false);
-                    UpdateOptionsOnSelectingDifficutly();
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static int ConvertBoolToInt(bool value)
-            {
-                try
-                {
-
-                    if (value == true)
-                    {
-
-                        return 0;
                     }
-                    return 1;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-
-
-            private static void OnExoticResourcesValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    _exoticResources.CurrentItemText.text = _amountPercentageResources[newValue];
-                    TFTVNewGameOptions.AmountOfExoticResourcesSetting = _amountMultiplierResources[newValue];
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnResourcesEventsValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    _resourcesEvents.CurrentItemText.text = _amountPercentageResources[newValue];
-                    TFTVNewGameOptions.ResourceMultiplierSetting = _amountMultiplierResources[newValue];
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnDisableTacSavesValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    if (newValue == 1 && !ShowedTacticalSavesWarning)
+                    catch (Exception e)
                     {
-                        TFTVLogger.Always($"disable tactical saving warning called now");
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
 
-                        string warning = TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_TACTICAL_SAVING_WARNING");// $"Saving and loading on Tactical can result in odd behavior and bugs (Vanilla issues). It is recommended to save only on Geoscape (and use several saves, in case one of them gets corrupted). And, you know what... losing soldiers in TFTV is fun :)";
+                private static void AddTooltip(ModSettingController modSettingController, string description)
+                {
+                    try
+                    {
+                        UnityEngine.Object.Destroy(modSettingController.GetComponentInChildren<UITooltipText>());
 
-                        GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                        UITooltipText uITooltipText = modSettingController.Label.gameObject.AddComponent<UITooltipText>();
 
-                        ShowedTacticalSavesWarning = true;
+                        uITooltipText.TipText = description;
+
+                       
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+                private static void PopulateOptions(ArrowPickerController arrowPickerController, string[] options)
+                {
+                    try
+                    {
+
+                        for (int i = 0; i < options.Length; i++)
+                        {
+                            arrowPickerController.CurrentItemText.text = options[i];
+                            MethodInfo onNewValue = arrowPickerController.GetType().GetMethod("OnNewValue", BindingFlags.NonPublic | BindingFlags.Instance);
+                            onNewValue.Invoke(arrowPickerController, null);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+            [HarmonyPatch(typeof(UIModuleGameSettings), "InitFullContent")]
+            internal static class UIStateNewGeoscapeGameSettings_InitFullContent_patch
+            {
+               
+                private static void SetNewStartScavVisibility(bool show)
+                {
+                    try
+                    {
+                        foreach (ModSettingController modSettingController in _newStartScavSettings)
+                        {
+
+                            if (modSettingController != null)
+                            {
+                                modSettingController.gameObject.SetActive(show);
+                                modSettingController.ListField.gameObject.SetActive(show);
+                            }
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+                private static void SetCheatOptionsVisibility(bool show)
+                {
+                    try
+                    {
+                        foreach (ModSettingController modSettingController in _cheatOptionsSettings)
+                        {
+
+                            if (modSettingController != null)
+                            {
+                                modSettingController.gameObject.SetActive(show);
+                                modSettingController.ListField.gameObject.SetActive(show);
+                            }
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+
+
+                private static void SetAllVisibility(bool show)
+                {
+                    try
+                    {
+                        foreach(GameOptionViewController gameOptionViewController in _gameOptionViewControllers)
+                        {
+                            if (gameOptionViewController != null)
+                            {
+                                gameOptionViewController.IsSelected = show;
+                            }
+                        }
+
+                        SetNewStartScavVisibility(show);
+                        SetAdditionalStartOptionsVisibility(show);
+                        SetAnyTimeOptionsVisibility(show);
+                        SetCheatOptionsVisibility(show);
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
                     }
 
-                    bool option = newValue == 0;
-
-
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _disableTacSaves.CurrentItemText.text = options[newValue];
-                    config.disableSavingOnTactical = option;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnDiploPenaltiesValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _diploPenalties.CurrentItemText.text = options[newValue];
-                    TFTVNewGameOptions.DiplomaticPenaltiesSetting = option;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnStaminaDrainValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _staminaDrain.CurrentItemText.text = options[newValue];
-                    TFTVNewGameOptions.StaminaPenaltyFromInjurySetting = option;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnHarderAmbushValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _harderAmbush.CurrentItemText.text = options[newValue];
-                    TFTVNewGameOptions.MoreAmbushesSetting = option;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnStaminaRecuperationValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _staminaRecuperation.CurrentItemText.text = options[newValue];
-                    config.ActivateStaminaRecuperatonModule = option;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnHavenSOSValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _havenSOS.CurrentItemText.text = options[newValue];
-                    config.HavenSOS = option;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnLearnFirstSchoolValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _learnFirstSkill.CurrentItemText.text = options[newValue];
-                    config.LearnFirstPersonalSkill = option;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnStrongerPandoransValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    /*  if (TFTVDefsWithConfigDependency.StrongerPandorans.StrongerPandoransImplemented && newValue == 1 && NewGameOptionsSetUp)
-                      {
-                          string warning = $"{TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING0")} {_titleStrongerPandorans} {TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING1")}";
-                          GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
-                      }*/
-
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _strongerPandorans.CurrentItemText.text = options[newValue];
-                    TFTVNewGameOptions.StrongerPandoransSetting = option;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnEtermesVulnerabilityResistanceValueChangedCallback(int newValue)
-            {
-                try
-                {
-
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _etermesVulnerabilityResistance.CurrentItemText.text = options[newValue];
-                    TFTVNewGameOptions.EtermesResistanceAndVulnerability = newValue + 1;
-                    TFTVLogger.Always($"TFTVNewGameOptions.EtermesResistanceAndVulnerability: {TFTVNewGameOptions.EtermesResistanceAndVulnerability}");
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-
-
-
-            private static void OnImpossibleWeaponsValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _impossibleWeapons.CurrentItemText.text = options[newValue];
-                    TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = option;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-
-            private static void OnNoSecondChancesValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _noSecondChances.CurrentItemText.text = options[newValue];
-                    TFTVNewGameOptions.NoSecondChances = option;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-
-            private static void OnSkipMoviesValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _skipMovies.CurrentItemText.text = options[newValue];
-                    config.SkipMovies = option;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnNoBarksValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _noBarks.CurrentItemText.text = options[newValue];
-                    config.NoBarks = option;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-
-
-            private static void OnFlinchingValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _flinching.CurrentItemText.text = options[newValue];
-                    config.AnimateWhileShooting = option;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnMoreMistValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _moreMistVO.CurrentItemText.text = options[newValue];
-                    config.MoreMistVO = option;
-
                 }
 
-                catch (Exception e)
+
+                private static void SetAdditionalStartOptionsVisibility(bool show)
                 {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnLimitedDeploymentValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _limitedDeploymentVO.CurrentItemText.text = options[newValue];
-                    config.LimitedDeploymentVO = option;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnShowAmbushExfilValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _showAmbushExfil.CurrentItemText.text = options[newValue];
-                    config.ShowExfilAmbush = option;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnSkipFSTutorialValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _skipFSTutorial.CurrentItemText.text = options[newValue];
-                    config.SkipFSTutorial = option;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnCustomPortraitsValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _customPortraits.CurrentItemText.text = options[newValue];
-                    config.CustomPortraits = option;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnHandGrenadeScatterValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _handGrenadeScatter.CurrentItemText.text = options[newValue];
-                    config.HandGrenadeScatter = option;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnEquipBeforeAmbushValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _equipBeforeAmbush.CurrentItemText.text = options[newValue];
-                    config.EquipBeforeAmbush = option;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-
-
-            private static void OnTradingValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _trading.CurrentItemText.text = options[newValue];
-                    config.EqualizeTrade = option;
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnLimitedRaidingValueChangedCallback(int newValue)
-            {
-
-                try
-                {
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _limitedRaiding.CurrentItemText.text = options[newValue];
-                    config.LimitedRaiding = option;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnNoDropValueChangedCallback(int newValue)
-            {
-
-                try
-                {
-                    bool option = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _noDropReinforcements.CurrentItemText.text = options[newValue];
-                    config.ReinforcementsNoDrops = option;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnTacticalDifficultyValueChangedCallback(int newValue)
-            {
-                try
-                {
-
-                    string[] options = new string[_optionsTacticalDifficulty.Length];
-
-                    for (int i = 0; i < _optionsTacticalDifficulty.Length; i++)
+                    try
                     {
-                        LocalizedTextBind optionTextBindKey = new LocalizedTextBind() { LocalizationKey = _optionsTacticalDifficulty[i] };
-                        options[i] = optionTextBindKey.Localize();
+                        foreach (ModSettingController modSettingController in _additionalStartOptionsSettings)
+                        {
+                            if (modSettingController != null)
+                            {
+                                modSettingController.gameObject.SetActive(show);
+                                modSettingController.ListField.gameObject.SetActive(show);
+                            }
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+
+                }
+
+                private static void SetAnyTimeOptionsVisibility(bool show)
+                {
+                    try
+                    {
+                        foreach (ModSettingController modSettingController in _anytimeOptionsSettings)
+                        {
+                            if (modSettingController != null)
+                            {
+                                modSettingController.gameObject.SetActive(show);
+                                modSettingController.ListField.gameObject.SetActive(show);
+                            }
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+
+                }
+
+
+
+
+
+               
+
+
+                public static void Postfix(UIModuleGameSettings __instance)
+                {
+                    try
+                    {
+                        ModSettingController ModSettingControllerHook = GameUtl.CurrentLevel().GetComponent<HomeScreenView>().HomeScreenModules.ModManagerModule.SettingsModSettingPrefab;
+                        RectTransform rectTransform = GameUtl.CurrentLevel().GetComponent<HomeScreenView>().HomeScreenModules.GameSettings.GameAddiotionalContentGroup.GetComponentInChildren<RectTransform>();
+
+                        rectTransform.DestroyChildren();
+
+
+                        
+
+                        HelperMethods.InstantiateArrowPickerController("StartingFaction", _optionsStartingFaction, (int)(TFTVNewGameOptions.startingSquad), OnStartingFactionValueChangedCallback, 1f);
+                        HelperMethods.InstantiateArrowPickerController("StartingBase", _optionsStartingBase, (int)(TFTVNewGameOptions.startingBaseLocation), OnStartingBaseValueChangedCallback, 1f);
+                        HelperMethods.InstantiateArrowPickerController("StartingSquad", _optionsStartingSquad, (int)(TFTVNewGameOptions.startingSquadCharacters), OnStartingSquadValueChangedCallback, 1f);
+                        HelperMethods.InstantiateArrowPickerController("TacticalDifficulty", _optionsTacticalDifficulty, (int)config.TacticalDifficulty, OnTacticalDifficultyValueChangedCallback, 1f);
+                        HelperMethods.InstantiateArrowPickerController("DisableTacSaves", _optionsBool, ConvertBoolToInt(config.DisableTacSaves), OnDisableTacSavesValueChangedCallback, 0.5f);
+                        HelperMethods.InstantiateGameOptionViewController("TFTV_ALL_OPTIONS_TITLE", "TFTV_ALL_OPTIONS_DESCRIPTION", "SetAllVisibility");
+                        HelperMethods.InstantiateGameOptionViewController("TFTV_SCAVENGING_OPTIONS_TITLE", "TFTV_SCAVENGING_OPTIONS_DESCRIPTION", "SetNewStartScavVisibility");
+                        HelperMethods.InstantiateArrowPickerController("ScavSites", _optionsScavSites, TFTVNewGameOptions.initialScavSites, OnStartingScavSitesValueChangedCallback, 1f, _newStartScavSettings);
+                        HelperMethods.InstantiateArrowPickerController("ResCratePriority", _optionsResCratePriority, (int)(TFTVNewGameOptions.chancesScavCrates), OnResScavPriorityValueChangedCallback, 1f, _newStartScavSettings);
+                        HelperMethods.InstantiateArrowPickerController("RecruitsPriority", _optionsRecruitsPriority, (int)(TFTVNewGameOptions.chancesScavSoldiers), OnRecruitsPriorityValueChangedCallback, 1f, _newStartScavSettings);
+                        HelperMethods.InstantiateArrowPickerController("VehiclePriority", _optionsVehiclePriority, (int)(TFTVNewGameOptions.chancesScavGroundVehicleRescue), OnVehiclePriorityValueChangedCallback, 1f, _newStartScavSettings);
+
+
+                        HelperMethods.InstantiateGameOptionViewController(_titleAdditionalStartOptions, _descriptionAdditionalStartOptions, "SetAdditionalStartOptionsVisibility");
+                        HelperMethods.InstantiateArrowPickerController("StrongerPandorans", _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.StrongerPandoransSetting), OnStrongerPandoransValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("StaminaDrain", _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.StaminaPenaltyFromInjurySetting), OnStaminaDrainValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("LimitedCapture", _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.LimitedCaptureSetting), OnLimitedCaptureValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("LimitedHarvesting", _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.LimitedHarvestingSetting), OnLimitedHarvestingValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("DiploPenalties", _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.DiplomaticPenaltiesSetting), OnDiploPenaltiesValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("ExoticResources", _amountPercentageResources, DefaultDifficulties.ConvertDifficultyToIndexExoticResources(), OnExoticResourcesValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("HarderAmbush", _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.MoreAmbushesSetting), OnHarderAmbushValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("ImpossibleWeapons", _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting), OnImpossibleWeaponsValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("NoSecondChances", _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.NoSecondChances), OnNoSecondChancesValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("EtermesVulnerabilityResistance", _optionsBool, Math.Max(TFTVNewGameOptions.EtermesResistanceAndVulnerability - 1, 0), OnEtermesVulnerabilityResistanceValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("ResourcesEvents", _amountPercentageResources, DefaultDifficulties.ConvertDifficultyToIndexEventsResources(), OnResourcesEventsValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+
+                        HelperMethods.InstantiateGameOptionViewController(_titleAnytimeOptions, _descriptionAnytimeOptions, "SetAnyTimeOptionsVisibility");
+                        HelperMethods.InstantiateArrowPickerController("NoDropReinforcements", _optionsBool, ConvertBoolToInt(config.NoDropReinforcements), OnNoDropValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("Flinching", _optionsBool, ConvertBoolToInt(config.Flinching), OnFlinchingValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("SkipMovies", _optionsBool, ConvertBoolToInt(config.SkipMovies), OnSkipMoviesValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("HavenSOS", _optionsBool, ConvertBoolToInt(config.HavenSOS), OnHavenSOSValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("StaminaRecuperation", _optionsBool, ConvertBoolToInt(config.StaminaRecuperation), OnStaminaRecuperationValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("LearnFirstSkill", _optionsBool, ConvertBoolToInt(config.LearnFirstSkill), OnLearnFirstSchoolValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("Trading", _optionsBool, ConvertBoolToInt(config.Trading), OnTradingValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("MoreMistVO", _optionsBool, ConvertBoolToInt(config.MoreMistVO), OnMoreMistValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("LimitedDeploymentVO", _optionsBool, ConvertBoolToInt(config.LimitedDeploymentVO), OnLimitedDeploymentValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("LimitedRaiding", _optionsBool, ConvertBoolToInt(config.LimitedRaiding), OnLimitedRaidingValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("NoBarks", _optionsBool, ConvertBoolToInt(config.NoBarks), OnNoBarksValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("ShowAmbushExfil", _optionsBool, ConvertBoolToInt(config.ShowAmbushExfil), OnShowAmbushExfilValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("SkipFSTutorial", _optionsBool, ConvertBoolToInt(config.SkipFSTutorial), OnSkipFSTutorialValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("CustomPortraits", _optionsBool, ConvertBoolToInt(config.CustomPortraits), OnCustomPortraitsValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("HandGrenadeScatter", _optionsBool, ConvertBoolToInt(config.HandGrenadeScatter), OnHandGrenadeScatterValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("EquipBeforeAmbush", _optionsBool, ConvertBoolToInt(config.EquipBeforeAmbush), OnEquipBeforeAmbushValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        
+                        HelperMethods.InstantiateGameOptionViewController("TFTV_CHEAT_OPTIONS_TITLE", "TFTV_CHEAT_OPTIONS_DESCRIPTION", "SetCheatOptionsVisibility");
+
+                        HelperMethods.InstantiateArrowPickerController("DeadDropAllLoot", _optionsBool, ConvertBoolToInt(config.DeadDropAllLoot), OnDeadDropAllLootValueChangedCallback, 0.5f, _cheatOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("UnLimitedDeployment", _optionsBool, ConvertBoolToInt(config.UnLimitedDeployment), OnUnLimitedDeploymentValueChangedCallback, 0.5f, _cheatOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("DeliriumCappedAt4", _optionsBool, ConvertBoolToInt(config.DeliriumCappedAt4), OnDeliriumCappedAt4ValueChangedCallback, 0.5f, _cheatOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("AllowFullAugmentations", _optionsBool, ConvertBoolToInt(config.AllowFullAugmentations), OnAllowFullAugmentationsValueChangedCallback, 0.5f, _cheatOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("MercsCanBeAugmented", _optionsBool, ConvertBoolToInt(config.MercsCanBeAugmented), OnMercsCanBeAugmentedValueChangedCallback, 0.5f, _cheatOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("VehicleAndMutogSize1", _optionsBool, ConvertBoolToInt(config.VehicleAndMutogSize1), OnVehicleAndMutogSize1ValueChangedCallback, 0.5f, _cheatOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("MultipleVehiclesInAircraftAllowed", _optionsBool, ConvertBoolToInt(config.MultipleVehiclesInAircraftAllowed), OnMultipleVehiclesInAircraftAllowedValueChangedCallback, 0.5f, _cheatOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("EasyAirCombat", _optionsBool, ConvertBoolToInt(config.EasyAirCombat), OnEasyAirCombatValueChangedCallback, 0.5f, _cheatOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("BehemothSubmergesForever", _optionsBool, ConvertBoolToInt(config.BehemothSubmergesForever), OnBehemothSubmergesForeverValueChangedCallback, 0.5f, _cheatOptionsSettings);
+                        
+                        SetAllVisibility(false);
+                        DefaultDifficulties.UpdateOptionsOnSelectingDifficutly();
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static int ConvertBoolToInt(bool value)
+                {
+                    try
+                    {
+
+                        if (value == true)
+                        {
+
+                            return 0;
+                        }
+                        return 1;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+                private static void OnDeadDropAllLootValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.DeadDropAllLoot = option;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnUnLimitedDeploymentValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.UnLimitedDeployment = option;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnDeliriumCappedAt4ValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                       config.DeliriumCappedAt4 = option;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnAllowFullAugmentationsValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.AllowFullAugmentations = option;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+
+                private static void OnVehicleAndMutogSize1ValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.VehicleAndMutogSize1 = option;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+
+                private static void OnMercsCanBeAugmentedValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.MercsCanBeAugmented = option;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnMultipleVehiclesInAircraftAllowedValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                       config.MultipleVehiclesInAircraftAllowed = option;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnEasyAirCombatValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.EasyAirCombat = option;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnBehemothSubmergesForeverValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.BehemothSubmergesForever = option;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnExoticResourcesValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        arrowPickerController.CurrentItemText.text = _amountPercentageResources[newValue];
+                        TFTVNewGameOptions.AmountOfExoticResourcesSetting = _amountMultiplierResources[newValue];
+                        _exoticResources = arrowPickerController;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnResourcesEventsValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        arrowPickerController.CurrentItemText.text = _amountPercentageResources[newValue];
+                        TFTVNewGameOptions.ResourceMultiplierSetting = _amountMultiplierResources[newValue];
+                        _eventResources = arrowPickerController;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnDisableTacSavesValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        if (newValue == 1 && !ShowedTacticalSavesWarning)
+                        {
+                           
+
+                            string warning = TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_TACTICAL_SAVING_WARNING");// $"Saving and loading on Tactical can result in odd behavior and bugs (Vanilla issues). It is recommended to save only on Geoscape (and use several saves, in case one of them gets corrupted). And, you know what... losing soldiers in TFTV is fun :)";
+
+                            GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+
+                            ShowedTacticalSavesWarning = true;
+                        }
+
+                        bool option = newValue == 0;
+
+
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.DisableTacSaves = option;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnDiploPenaltiesValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        TFTVNewGameOptions.DiplomaticPenaltiesSetting = option;
+                        _diploPenalties = arrowPickerController;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnStaminaDrainValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        TFTVNewGameOptions.StaminaPenaltyFromInjurySetting = option;
+                        _staminaDrain = arrowPickerController;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnHarderAmbushValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        TFTVNewGameOptions.MoreAmbushesSetting = option;
+                        _harderAmbush = arrowPickerController;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnStaminaRecuperationValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.StaminaRecuperation = option;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnHavenSOSValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.HavenSOS = option;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnLearnFirstSchoolValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.LearnFirstSkill = option;
+
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnStrongerPandoransValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                       
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        TFTVNewGameOptions.StrongerPandoransSetting = option;
+                        _strongerPandorans = arrowPickerController;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnEtermesVulnerabilityResistanceValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        TFTVNewGameOptions.EtermesResistanceAndVulnerability = newValue + 1;
+                        _etermesVulnerability = arrowPickerController;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnImpossibleWeaponsValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = option;
+                        _imposssibleWeapons = arrowPickerController;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+
+                private static void OnNoSecondChancesValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        TFTVNewGameOptions.NoSecondChances = option;
+                        _noSecondChances = arrowPickerController;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+
+                private static void OnSkipMoviesValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.SkipMovies = option;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnNoBarksValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.NoBarks = option;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+
+
+                private static void OnFlinchingValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.Flinching = option;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnMoreMistValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.MoreMistVO = option;
 
                     }
 
-                    _tacticalDifficulty.CurrentItemText.text = options[newValue];
-                    config.difficultyOnTactical = (TFTVConfig.DifficultyOnTactical)newValue;
-                    //TFTVLogger.Always($"new difficulty on tactical showing in config: {config.difficultyOnTactical}");
-
-                    TFTVConfig.DifficultyOnTactical difficulty = (TFTVConfig.DifficultyOnTactical)newValue;
-
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
-
-            }
-
-            private static void OnStartingFactionValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    string[] options = new string[_optionsStartingFaction.Length];
-
-                    for (int i = 0; i < _optionsStartingFaction.Length; i++)
+                    catch (Exception e)
                     {
-                        LocalizedTextBind optionTextBindKey = new LocalizedTextBind() { LocalizationKey = _optionsStartingFaction[i] };
-                        options[i] = optionTextBindKey.Localize();
+                        TFTVLogger.Error(e);
+                    }
+                }
 
+                private static void OnLimitedDeploymentValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.LimitedDeploymentVO = option;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnShowAmbushExfilValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.ShowAmbushExfil = option;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnSkipFSTutorialValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.SkipFSTutorial = option;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnCustomPortraitsValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.CustomPortraits = option;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnHandGrenadeScatterValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.HandGrenadeScatter = option;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnEquipBeforeAmbushValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.EquipBeforeAmbush = option;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+
+
+                private static void OnTradingValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.Trading = option;
+
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnLimitedRaidingValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.LimitedRaiding = option;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnNoDropValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.NoDropReinforcements = option;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnTacticalDifficultyValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+
+                        string[] options = new string[_optionsTacticalDifficulty.Length];
+
+                        for (int i = 0; i < _optionsTacticalDifficulty.Length; i++)
+                        {
+                            LocalizedTextBind optionTextBindKey = new LocalizedTextBind() { LocalizationKey = _optionsTacticalDifficulty[i] };
+                            options[i] = optionTextBindKey.Localize();
+
+                        }
+
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.TacticalDifficulty = (TFTVConfig.DifficultyOnTactical)newValue;
+                        //TFTVLogger.Always($"new difficulty on tactical showing in config: {config.difficultyOnTactical}");
+
+                        TFTVConfig.DifficultyOnTactical difficulty = (TFTVConfig.DifficultyOnTactical)newValue;
+
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
                     }
 
 
-                    _startingFaction.CurrentItemText.text = options[newValue];
-                    TFTVNewGameOptions.startingSquad = (TFTVNewGameOptions.StartingSquadFaction)newValue;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
                 }
 
-
-            }
-
-            private static void OnStartingSquadValueChangedCallback(int newValue)
-            {
-                try
+                private static void OnStartingFactionValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
                 {
-                    string[] options = new string[_optionsStartingSquad.Length];
-
-                    for (int i = 0; i < _optionsStartingSquad.Length; i++)
+                    try
                     {
-                        LocalizedTextBind optionTextBindKey = new LocalizedTextBind() { LocalizationKey = _optionsStartingSquad[i] };
-                        options[i] = optionTextBindKey.Localize();
+                        string[] options = new string[_optionsStartingFaction.Length];
 
+                        for (int i = 0; i < _optionsStartingFaction.Length; i++)
+                        {
+                            LocalizedTextBind optionTextBindKey = new LocalizedTextBind() { LocalizationKey = _optionsStartingFaction[i] };
+                            options[i] = optionTextBindKey.Localize();
+
+                        }
+
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        TFTVNewGameOptions.startingSquad = (TFTVNewGameOptions.StartingSquadFaction)newValue;
                     }
-
-                    _startingSquad.CurrentItemText.text = options[newValue];
-                    TFTVNewGameOptions.startingSquadCharacters = (TFTVNewGameOptions.StartingSquadCharacters)newValue;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnStartingBaseValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    string[] options = new string[_optionsStartingBase.Length];
-
-                    for (int i = 0; i < _optionsStartingBase.Length; i++)
+                    catch (Exception e)
                     {
-                        LocalizedTextBind optionTextBindKey = new LocalizedTextBind() { LocalizationKey = _optionsStartingBase[i] };
-                        options[i] = optionTextBindKey.Localize();
-
+                        TFTVLogger.Error(e);
                     }
 
 
-                    _startingBase.CurrentItemText.text = options[newValue];
-                    TFTVNewGameOptions.startingBaseLocation = (TFTVNewGameOptions.StartingBaseLocation)newValue;
                 }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
 
-            private static void OnStartingScavSitesValueChangedCallback(int newValue)
-            {
-                try
+                private static void OnStartingSquadValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
                 {
-                    _startingScavSites.CurrentItemText.text = _optionsScavSites[newValue];
-                    TFTVNewGameOptions.initialScavSites = newValue;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
+                    try
+                    {
+                        string[] options = new string[_optionsStartingSquad.Length];
 
-            private static void OnResScavPriorityValueChangedCallback(int newValue)
-            {
-                try
-                {
+                        for (int i = 0; i < _optionsStartingSquad.Length; i++)
+                        {
+                            LocalizedTextBind optionTextBindKey = new LocalizedTextBind() { LocalizationKey = _optionsStartingSquad[i] };
+                            options[i] = optionTextBindKey.Localize();
 
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "HIGH" }.Localize(), new LocalizedTextBind() { LocalizationKey = "MEDIUM" }.Localize(),
+                        }
+
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        TFTVNewGameOptions.startingSquadCharacters = (TFTVNewGameOptions.StartingSquadCharacters)newValue;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnStartingBaseValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        string[] options = new string[_optionsStartingBase.Length];
+
+                        for (int i = 0; i < _optionsStartingBase.Length; i++)
+                        {
+                            LocalizedTextBind optionTextBindKey = new LocalizedTextBind() { LocalizationKey = _optionsStartingBase[i] };
+                            options[i] = optionTextBindKey.Localize();
+
+                        }
+
+
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        TFTVNewGameOptions.startingBaseLocation = (TFTVNewGameOptions.StartingBaseLocation)newValue;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnStartingScavSitesValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        arrowPickerController.CurrentItemText.text = _optionsScavSites[newValue];
+                        TFTVNewGameOptions.initialScavSites = newValue;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnResScavPriorityValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "HIGH" }.Localize(), new LocalizedTextBind() { LocalizationKey = "MEDIUM" }.Localize(),
                     new LocalizedTextBind() { LocalizationKey = "LOW" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NONE" }.Localize() };
-                    //  string[] options = { "HIGH", "MEDIUM", "LOW", "NONE" };
-                    _resCratePriority.CurrentItemText.text = options[newValue];
-                    TFTVNewGameOptions.chancesScavCrates = (TFTVNewGameOptions.ScavengingWeight)newValue;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnRecruitsPriorityValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "HIGH" }.Localize(), new LocalizedTextBind() { LocalizationKey = "MEDIUM" }.Localize(),
-                    new LocalizedTextBind() { LocalizationKey = "LOW" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NONE" }.Localize() };
-                    _recruitsPriority.CurrentItemText.text = options[newValue];
-                    TFTVNewGameOptions.chancesScavSoldiers = (TFTVNewGameOptions.ScavengingWeight)newValue;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnVehiclePriorityValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "HIGH" }.Localize(), new LocalizedTextBind() { LocalizationKey = "MEDIUM" }.Localize(), new LocalizedTextBind() { LocalizationKey = "LOW" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NONE" }.Localize() };
-                    _vehiclePriority.CurrentItemText.text = options[newValue];
-                    TFTVNewGameOptions.chancesScavGroundVehicleRescue = (TFTVNewGameOptions.ScavengingWeight)newValue;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnLimitedCaptureValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    /* if (TFTVDefsWithConfigDependency.ChangesToCapturingPandoransImplemented && newValue == 1 && NewGameOptionsSetUp)
-                     {
-                         string warning = $"{TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING0")} {_titleLimitedCapture} {TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING1")}";
-
-                         GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
-
-                     }*/
-
-                    bool limitedCapture = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _limitedCapture.CurrentItemText.text = options[newValue];
-                    TFTVNewGameOptions.LimitedCaptureSetting = limitedCapture;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void OnLimitedHarvestingValueChangedCallback(int newValue)
-            {
-                try
-                {
-                    /* if (TFTVDefsWithConfigDependency.ChangesToFoodAndMutagenGenerationImplemented && newValue == 1 && NewGameOptionsSetUp)
-                     {
-                         string warning = $"{TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING0")} {_titleLimitedHarvesting} {TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING1")}";
-
-                         GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
-
-                     }*/
-
-
-                    bool limitedHarvesting = newValue == 0;
-                    string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
-                    _limitedHarvesting.CurrentItemText.text = options[newValue];
-                    TFTVNewGameOptions.LimitedHarvestingSetting = limitedHarvesting;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void PopulateOptions(ArrowPickerController arrowPickerController, string[] options)
-            {
-                try
-                {
-                    for (int i = 0; i < options.Length; i++)
+                        //  string[] options = { "HIGH", "MEDIUM", "LOW", "NONE" };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        TFTVNewGameOptions.chancesScavCrates = (TFTVNewGameOptions.ScavengingWeight)newValue;
+                    }
+                    catch (Exception e)
                     {
-
-                        arrowPickerController.CurrentItemText.text = options[i];
-
-                        MethodInfo OnNewValue = arrowPickerController.GetType().GetMethod("OnNewValue", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                        OnNewValue.Invoke(arrowPickerController, null);
+                        TFTVLogger.Error(e);
                     }
                 }
-                catch (Exception e)
+
+                private static void OnRecruitsPriorityValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
                 {
-                    TFTVLogger.Error(e);
+                    try
+                    {
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "HIGH" }.Localize(), new LocalizedTextBind() { LocalizationKey = "MEDIUM" }.Localize(),
+                    new LocalizedTextBind() { LocalizationKey = "LOW" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NONE" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        TFTVNewGameOptions.chancesScavSoldiers = (TFTVNewGameOptions.ScavengingWeight)newValue;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
                 }
+
+                private static void OnVehiclePriorityValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "HIGH" }.Localize(), new LocalizedTextBind() { LocalizationKey = "MEDIUM" }.Localize(), new LocalizedTextBind() { LocalizationKey = "LOW" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NONE" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        TFTVNewGameOptions.chancesScavGroundVehicleRescue = (TFTVNewGameOptions.ScavengingWeight)newValue;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnLimitedCaptureValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                       
+                        bool limitedCapture = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        TFTVNewGameOptions.LimitedCaptureSetting = limitedCapture;
+                        _limitedCapturing = arrowPickerController;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnLimitedHarvestingValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                      
+                        bool limitedHarvesting = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        TFTVNewGameOptions.LimitedHarvestingSetting = limitedHarvesting;
+                        _limitedHarvesting = arrowPickerController;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
 
             }
         }

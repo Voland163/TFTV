@@ -1,195 +1,196 @@
 Key,Type,English,Desc,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
-PR_BC_MOUNTED_ITEMS_PROF,Text,MOUNTED ITEM PROFICIENCY,,,,,,,НЕЙРО-ИНТЕРФЕЙС,,
-PR_BC_MOUNTED_ITEMS_PROF_DESC,Text,Proficiency with Robotic Arms and Mounted Weapons.,,,,,,,Умение пользоваться роботизированными манипуляторами и встроенным в бронекостюм оружием,,
-PR_BC_STIMPACK_ITEM_DESC,Text,A potent stimulant that regenerates body parts and instils Frenzy.,,,,,,,"Мощный стимулятор, который регенерирует части тела и вызывает ""Иссупление""",,
-PR_BC_STIMPACK_ABILITY_DESC,Text,"Re-enables and restores 20 Hit Points on Body Parts, also instills Frenzy on target, increasing movement by 33% for 2 turns, with panic immunity.",,,,,,,"Лечит 20 хитов частям тела и восстанавливает их. Вызывает ""Иссупление"" (увеличение Скорости на 33% и невосприимчивость к панике) на 2 хода",,
-PR_BC_PSYCHIC_WARD_DESC,Text,Allies within 10 tiles are immune to panic and psychic scream damage.,,,,,,,Союзники в радиусе 10 клеток не восприимчивы к панике и психическому воплю,,
-PR_BC_POISON_STATUS_DESC,Text,"At start of turn poison is subtracted from Hit Points and Willpoints reduced by 3, then poison value is reduced by 10. Poison causes trembling (-50% Accuracy).",,,,,,,"В начале хода сила яда вычитается из хитов, Очки Воли уменьшаются на 3, затем сила яда снижается на 10. Отравление ядом вызывает ""Тремор"" (-50% точности)",,
-PR_BC_RECOVER_DESC,Text,Recover Will Points equal to half Willpower. Divide any Viral damage by 2 and become immune to Panic for 1 turn. End the actor's current turn.,,,,,,,"Восстанавить Очки Воли в количестве равном половине Силы Воли. Сократить урон вируса наполовину. Невосприимчивость к панике на 1 ход.
+PR_BC_MOUNTED_ITEMS_PROF,Text,MOUNTED ITEM PROFICIENCY,,掛載物品 熟練專精,,,,,НЕЙРО-ИНТЕРФЕЙС,,
+PR_BC_MOUNTED_ITEMS_PROF_DESC,Text,Proficiency with Robotic Arms and Mounted Weapons.,,機械手臂和掛載武器 熟練專精,,,,,Умение пользоваться роботизированными манипуляторами и встроенным в бронекостюм оружием,,
+PR_BC_STIMPACK_ITEM_DESC,Text,A potent stimulant that regenerates body parts and instils Frenzy.,,強效興奮劑，可以使身體部位再生並注入瘋狂。,,,,,"Мощный стимулятор, который регенерирует части тела и вызывает ""Иссупление""",,
+PR_BC_STIMPACK_ABILITY_DESC,Text,"Re-enables and restores 20 Hit Points on Body Parts, also instills Frenzy on target, increasing movement by 33% for 2 turns, with panic immunity.",,重新啟用並恢復身體部位 20 點生命值，同時對目標注入狂亂，增加移動力 33%，持續 2 回合，並免疫恐慌。,,,,,"Лечит 20 хитов частям тела и восстанавливает их. Вызывает ""Иссупление"" (увеличение Скорости на 33% и невосприимчивость к панике) на 2 хода",,
+PR_BC_PSYCHIC_WARD_DESC,Text,Allies within 10 tiles are immune to panic and psychic scream damage.,,10 格內的盟友免疫恐慌與心靈尖叫傷害。,,,,,Союзники в радиусе 10 клеток не восприимчивы к панике и психическому воплю,,
+PR_BC_POISON_STATUS_DESC,Text,"At start of turn poison is subtracted from Hit Points and Willpoints reduced by 3, then poison value is reduced by 10. Poison causes trembling (-50% Accuracy).",,"回合開始時，生命值減去中毒值，意志點數減少 3，然後中毒值減少 10。中毒會導致 -50% 精確度
+",,,,,"В начале хода сила яда вычитается из хитов, Очки Воли уменьшаются на 3, затем сила яда снижается на 10. Отравление ядом вызывает ""Тремор"" (-50% точности)",,
+PR_BC_RECOVER_DESC,Text,Recover Will Points equal to half Willpower. Divide any Viral damage by 2 and become immune to Panic for 1 turn. End the actor's current turn.,,恢復等於一半意志力的意志點數。將任何病毒傷害除以 2，並在 1 個回合內免疫恐慌。結束行動者目前的回合。,,,,,"Восстанавить Очки Воли в количестве равном половине Силы Воли. Сократить урон вируса наполовину. Невосприимчивость к панике на 1 ход.
 Завершить ход",,
-PR_BC_HIDDEN,Text,UNREVEALED,,,,,,,СКРЫТ,,
-PR_BC_HIDDEN_DESC,Text,Indicates when the character is unrevealed and not spotted.,,,,,,,"Показывает, что боец замаскировался и не обнаруживается врагами",,
-PR_BC_INFILTRATOR_HIDDEN,Text,HIDDEN: +25% stealth and completely undetected.,,,,,,,"СКРЫТ: +25% скрытности, враги даже не подозревают о вас",,
-PR_BC_INFILTRATOR_LOCATED,Text,"LOCATED: +25% stealth and still invisible, but enemies know the characters position and can target him.",,,,,,,"УСЛЫШАН: +25% скрытности и все еще скрыт, но враги вас услышали и могут попытаться найти вас",,
-PR_BC_INFILTRATOR_REVEALED,Text,REVEALED: No Stealth bonus!,,,,,,,ОБНАРУЖЕН: Бонуса скрытности больше нет!,,
-PR_BC_BATTLE_FOCUS,Text,BATTLE FOCUS,,,,,,,БОЕВОЙ НАСТРОЙ,,
-PR_BC_BATTLE_FOCUS_DESC,Text,If there are enemies within 10 tiles your attacks gain +20% damage,,,,,,,"Если в 10 клетках от вас есть враги, ваши атаки наносят +20% урона",,
-PR_BC_QUICK_AIM,Text,QUICK AIM,,,,,,,ВЫСТРЕЛ НАВСКИДКУ,,
-PR_BC_QUICK_AIM_DESC,Text,The action point cost of the next shot with proficient weapon is reduced by 1 with -30% accuracy. Limited to 2 uses per turn.,,,,,,,"Следующий выстрел из профильного оружия стоит на 1 Очко Действий меньше, но имеет штраф к точности -30%.
+PR_BC_HIDDEN,Text,UNREVEALED,,未揭露,,,,,СКРЫТ,,
+PR_BC_HIDDEN_DESC,Text,Indicates when the character is unrevealed and not spotted.,,表示角色未被揭露且未被發現的時間。,,,,,"Показывает, что боец замаскировался и не обнаруживается врагами",,
+PR_BC_INFILTRATOR_HIDDEN,Text,HIDDEN: +25% stealth and completely undetected.,,隱藏：+25% 隱密且完全不被發現。,,,,,"СКРЫТ: +25% скрытности, враги даже не подозревают о вас",,
+PR_BC_INFILTRATOR_LOCATED,Text,"LOCATED: +25% stealth and still invisible, but enemies know the characters position and can target him.",,已定位：+25% 隱身且仍隱形，但敵人知道角色位置並且可以瞄準他。,,,,,"УСЛЫШАН: +25% скрытности и все еще скрыт, но враги вас услышали и могут попытаться найти вас",,
+PR_BC_INFILTRATOR_REVEALED,Text,REVEALED: No Stealth bonus!,,揭曉： 沒有隱匿加成!,,,,,ОБНАРУЖЕН: Бонуса скрытности больше нет!,,
+PR_BC_BATTLE_FOCUS,Text,BATTLE FOCUS,,戰鬥焦點,,,,,БОЕВОЙ НАСТРОЙ,,
+PR_BC_BATTLE_FOCUS_DESC,Text,If there are enemies within 10 tiles your attacks gain +20% damage,,如果 10 格內有敵人，你的攻擊獲得 +20% 傷害,,,,,"Если в 10 клетках от вас есть враги, ваши атаки наносят +20% урона",,
+PR_BC_QUICK_AIM,Text,QUICK AIM,,快速瞄準,,,,,ВЫСТРЕЛ НАВСКИДКУ,,
+PR_BC_QUICK_AIM_DESC,Text,The action point cost of the next shot with proficient weapon is reduced by 1 with -30% accuracy. Limited to 2 uses per turn.,,使用熟練武器進行下一次射擊的行動點消耗減少 1，準確度為 -30%。每回合僅限使用 2 次。,,,,,"Следующий выстрел из профильного оружия стоит на 1 Очко Действий меньше, но имеет штраф к точности -30%.
 2 раза за ход",,
-PR_BC_KILL_N_RUN,Text,KILL'N'RUN,,,,,,,МАНЕВР СКОРОСТЬЮ,,
-PR_BC_KILL_N_RUN_DESC,Text,"Once per turn, take a free move after killing an enemy",,,,,,,"Если вы убили противника, то переместитесь бесплатно на 7 клеток.
+PR_BC_KILL_N_RUN,Text,KILL'N'RUN,,殺戮與奔跑,,,,,МАНЕВР СКОРОСТЬЮ,,
+PR_BC_KILL_N_RUN_DESC,Text,"Once per turn, take a free move after killing an enemy",,每回合一次，殺死敵人後自由移動,,,,,"Если вы убили противника, то переместитесь бесплатно на 7 клеток.
 1 раз за ход",,
-PR_BC_RAPID_CLEARANCE,Text,RAPID CLEARANCE,,,,,,,МАНЕВР ОГНЕМ,,
-PR_BC_RAPID_CLEARANCE_DESC,Text,"Until end of turn, after killing an enemy next attack cost -2 AP",,,,,,,"После убийства врага следующая атака стоит на 2 Очка Действий меньше.
+PR_BC_RAPID_CLEARANCE,Text,RAPID CLEARANCE,,快速清除,,,,,МАНЕВР ОГНЕМ,,
+PR_BC_RAPID_CLEARANCE_DESC,Text,"Until end of turn, after killing an enemy next attack cost -2 AP",,直到回合結束，殺死敵人後下一次攻擊消耗-2 AP,,,,,"После убийства врага следующая атака стоит на 2 Очка Действий меньше.
 Эффект до конца хода",,
-PR_BC_AIMED_BURST,Text,AIMED BURST,,,,,,,ОГОНЬ НА ПОРАЖЕНИЕ,,
-PR_BC_AIMED_BURST_DESC,Text,Next shot with Assault Rifle uses double burst and gains +30% accuracy,,,,,,,Следующий выстрел из автомата будет двойным (две очереди) с точностью +30%,,
-PR_BC_EXTREME_FOCUS,Text,EXTREME FOCUS,,,,,,,ПРЕДЕЛЬНОЕ ВНИМАНИЕ,,
-PR_BC_EXTREME_FOCUS_DESC,Text,Overwatch cost is set to 1 Action Point for all weapons,,,,,,,Режим наблюдения стоит 1 Очко Действий для любого оружия,,
-PR_BC_ARMOR_BREAK,Text,ARMOR BREAK,,,,,,,БРОНЕБОЙНЫЕ ПАТРОНЫ,,
-PR_BC_ARMOR_BREAK_DESC,Text,"Gain +15 shred for the next attack with direct-fire projectile weapon, divided and rounded down by the amount of projectiles for burst weapons and shotguns.",,,,,,,"При следующей атаке получить +15 урона разрыва (shred damage) для профильного огнестрельного оружия, разделенное на количество путь (дробин) для автоматического оружия и дробовиков.",,
-PR_BC_GUNSLINGER,Text,GUNSLINGER,,,,,,,ГАНФАЙТЕР,,
-PR_BC_GUNSLINGER_DESC,Text,Shoot handgun 3 times at -50% accuracy. Uses AP cost of the weapon.,,,,,,,Совершить 3 выстрела из пистолета со штрафом точности -50% за обычные Очки Действий оружия,,
-PR_BC_KILL_ZONE,Text,KILL ZONE,,,,,,,СТРЕЛЬБА ДУПЛЕТОМ,,
-PR_BC_KILL_ZONE_DESC,Text,When you take an Overwatch shot you fire twice at the target,,,,,,,В режиме наблюдения cделать два выстрела по перехваченной цели,,
-PR_BC_HUNKER_DOWN,Text,HUNKER DOWN,,,,,,,СИЛОВОЙ ЩИТ,,
-PR_BC_HUNKER_DOWN_DESC,Text,Gain 10 armor until your next turn. Ends turn. Your next attack cost -1 AP.,,,,,,,"Получить +10 брони до конца вашего следующего хода. Следующая атака стоит на 1 Очко Действий меньше.
+PR_BC_AIMED_BURST,Text,AIMED BURST,,瞄準爆發,,,,,ОГОНЬ НА ПОРАЖЕНИЕ,,
+PR_BC_AIMED_BURST_DESC,Text,Next shot with Assault Rifle uses double burst and gains +30% accuracy,,使用突擊步槍進行下一次射擊時使用雙連射並獲得 +30% 準確度,,,,,Следующий выстрел из автомата будет двойным (две очереди) с точностью +30%,,
+PR_BC_EXTREME_FOCUS,Text,EXTREME FOCUS,,極度專注,,,,,ПРЕДЕЛЬНОЕ ВНИМАНИЕ,,
+PR_BC_EXTREME_FOCUS_DESC,Text,Overwatch cost is set to 1 Action Point for all weapons,,所有武器的 監視射擊 費用調整為 1 AP,,,,,Режим наблюдения стоит 1 Очко Действий для любого оружия,,
+PR_BC_ARMOR_BREAK,Text,ARMOR BREAK,,裝甲破壞,,,,,БРОНЕБОЙНЫЕ ПАТРОНЫ,,
+PR_BC_ARMOR_BREAK_DESC,Text,"Gain +15 shred for the next attack with direct-fire projectile weapon, divided and rounded down by the amount of projectiles for burst weapons and shotguns.",,使用直射彈武器的下一次攻擊可獲得 +15 破甲，連發武器和霰彈槍的下一次攻擊可獲得 +15 破甲，除以彈藥數量並向下調整。,,,,,"При следующей атаке получить +15 урона разрыва (shred damage) для профильного огнестрельного оружия, разделенное на количество путь (дробин) для автоматического оружия и дробовиков.",,
+PR_BC_GUNSLINGER,Text,GUNSLINGER,,槍手,,,,,ГАНФАЙТЕР,,
+PR_BC_GUNSLINGER_DESC,Text,Shoot handgun 3 times at -50% accuracy. Uses AP cost of the weapon.,,以 -50% 的準確度用手槍射擊 3 次。使用武器的 AP 成本。,,,,,Совершить 3 выстрела из пистолета со штрафом точности -50% за обычные Очки Действий оружия,,
+PR_BC_KILL_ZONE,Text,KILL ZONE,,殺戮地帶,,,,,СТРЕЛЬБА ДУПЛЕТОМ,,
+PR_BC_KILL_ZONE_DESC,Text,When you take an Overwatch shot you fire twice at the target,,當進行 監視射擊時，會向目標開火兩次,,,,,В режиме наблюдения cделать два выстрела по перехваченной цели,,
+PR_BC_HUNKER_DOWN,Text,HUNKER DOWN,,蹲下,,,,,СИЛОВОЙ ЩИТ,,
+PR_BC_HUNKER_DOWN_DESC,Text,Gain 10 armor until your next turn. Ends turn. Your next attack cost -1 AP.,,獲得 10 點護甲直到你的下一個回合。回合結束。你的下一次攻擊花費 -1 AP。,,,,,"Получить +10 брони до конца вашего следующего хода. Следующая атака стоит на 1 Очко Действий меньше.
 Завершить ход",,
-PR_BC_HUNKER_DOWN_ARMOR_STATUS,Text,HUNKER DOWN ARMOUR BUFF,,,,,,,БОНУС БРОНИ (РАБОТАЕТ СИЛОВОЙ ЩИТ),,
-PR_BC_HUNKER_DOWN_ARMOR_STATUS_DESC,Text,Added 10 Armour to each body part.,,,,,,,Получить +10 брони для каждой части тела,,
-PR_BC_HUNKER_DOWN_AP_STATUS,Text,HUNKER DOWN ATTACK BOOST,,,,,,,БОНУС АТАКИ (РАБОТАЕТ СИЛОВОЙ ЩИТ),,
-PR_BC_HUNKER_DOWN_AP_STATUS_DESC,Text,Next attack with proficient weapon cost -1 AP.,,,,,,,Следующая атака из профильного оружия стоит на 1 Очко Действий меньше,,
-PR_BC_SKIRMISHER,Text,SKIRMISHER,,,,,,,ЧЕРНЫЙ РЫЦАРЬ,,
-PR_BC_SKIRMISHER_DESC,Text,If you take damage during enemy turn your attacks deal 25% more damage until end of turn,,,,,,,"При получении урона во время вражеского хода, увеличьте свой урон на +25%.
+PR_BC_HUNKER_DOWN_ARMOR_STATUS,Text,HUNKER DOWN ARMOUR BUFF,,蹲下提升護甲,,,,,БОНУС БРОНИ (РАБОТАЕТ СИЛОВОЙ ЩИТ),,
+PR_BC_HUNKER_DOWN_ARMOR_STATUS_DESC,Text,Added 10 Armour to each body part.,,為每個身體部位添加 10 點護甲。,,,,,Получить +10 брони для каждой части тела,,
+PR_BC_HUNKER_DOWN_AP_STATUS,Text,HUNKER DOWN ATTACK BOOST,,蹲下提升攻擊,,,,,БОНУС АТАКИ (РАБОТАЕТ СИЛОВОЙ ЩИТ),,
+PR_BC_HUNKER_DOWN_AP_STATUS_DESC,Text,Next attack with proficient weapon cost -1 AP.,,使用熟練武器的下一次攻擊消耗 -1 AP。,,,,,Следующая атака из профильного оружия стоит на 1 Очко Действий меньше,,
+PR_BC_SKIRMISHER,Text,SKIRMISHER,,前衛戰鬥員,,,,,ЧЕРНЫЙ РЫЦАРЬ,,
+PR_BC_SKIRMISHER_DESC,Text,If you take damage during enemy turn your attacks deal 25% more damage until end of turn,,如果在敵方回合中受到傷害，你造成的傷害將額外增加25%傷害，直到回合結束,,,,,"При получении урона во время вражеского хода, увеличьте свой урон на +25%.
 Эффект до конца хода",,
-PR_BC_SHRED_RESISTANCE,Text,SHRED RESISTANCE,,,,,,,УСИЛЕННАЯ БРОНЯ,,
-PR_BC_SHRED_RESISTANCE_DESC,Text,Shred Damage is reduced by half,,,,,,,Урон разрыва по вашей брони (shred damage) снижен вдвое,,
-PR_BC_RAGE_BURST,Text,RAGE BURST,,,,,,,ОГОНЬ НА ПОДАВЛЕНИЕ,,
-PR_BC_RAGE_BURST_DESC,Text,Shoot 5 times across a wide arc with increased accuracy. Uses AP cost of the weapon.,,,,,,,Совершить 5 выстрелов по вееру с повышенной точностью за обычные Очки Действий оружия,,
-PR_BC_JETPACK_CONTROL,Text,JETPACK CONTROL,,,,,,,МАНЕВР ПРЫЖКОМ,,
-PR_BC_JETPACK_CONTROL_DESC,Text,Jump to a location within 14 tiles. Limited to one use per turn,,,,,,,"Совершить прыжок на 14 клеток (требуется реактивный ранец).
+PR_BC_SHRED_RESISTANCE,Text,SHRED RESISTANCE,,抗破甲性,,,,,УСИЛЕННАЯ БРОНЯ,,
+PR_BC_SHRED_RESISTANCE_DESC,Text,Shred Damage is reduced by half,,破甲傷害減少一半,,,,,Урон разрыва по вашей брони (shred damage) снижен вдвое,,
+PR_BC_RAGE_BURST,Text,RAGE BURST,,憤怒爆發,,,,,ОГОНЬ НА ПОДАВЛЕНИЕ,,
+PR_BC_RAGE_BURST_DESC,Text,Shoot 5 times across a wide arc with increased accuracy. Uses AP cost of the weapon.,,在大範圍弧線上射擊 5 次，準確度提高。使用武器的 AP 成本,,,,,Совершить 5 выстрелов по вееру с повышенной точностью за обычные Очки Действий оружия,,
+PR_BC_JETPACK_CONTROL,Text,JETPACK CONTROL,,噴射背包控制,,,,,МАНЕВР ПРЫЖКОМ,,
+PR_BC_JETPACK_CONTROL_DESC,Text,Jump to a location within 14 tiles. Limited to one use per turn,,跳到 14 格以內的位置。每回合僅限使用一次,,,,,"Совершить прыжок на 14 клеток (требуется реактивный ранец).
 1 раз за ход",,
-PR_BC_BOOM_BLAST,Text,BOOM BLAST,,,,,,,"ГРЕНАДЕРЫ, К БОЮ!",,
-PR_BC_BOOM_BLAST_DESC,Text,Until end of turn your Explosives gain +50% range. The AP cost of handheld Rocket and Grenade Launchers are reduced by 1.,,,,,,,"Дальность ваших атак взрывным оружием повышена на +50%. Выстрел из ракетной установки и гранатомета стоит на 1 Очко Действий меньше.
+PR_BC_BOOM_BLAST,Text,BOOM BLAST,,爆破轟炸,,,,,"ГРЕНАДЕРЫ, К БОЮ!",,
+PR_BC_BOOM_BLAST_DESC,Text,Until end of turn your Explosives gain +50% range. The AP cost of handheld Rocket and Grenade Launchers are reduced by 1.,,直到回合結束，你的炸藥射程增加+50%。手持火箭和榴彈發射器的 AP 成本減少 1。,,,,,"Дальность ваших атак взрывным оружием повышена на +50%. Выстрел из ракетной установки и гранатомета стоит на 1 Очко Действий меньше.
 Эффект до конца хода",,
-PR_BC_ADRENALINE,Text,ADRENALINE,,,,,,,УКОЛ АДРЕНАЛИНА,,
-PR_BC_ADRENALINE_DESC,Text,"Until end of turn one-handed weapons and all non-weapon skills cost 1AP, except Recover",,,,,,,"Выстрел из одноручного оружия и не оружейные навыки стоят 1 Очко Действий (кроме ""Восстановления"").
+PR_BC_ADRENALINE,Text,ADRENALINE,,腎上腺素,,,,,УКОЛ АДРЕНАЛИНА,,
+PR_BC_ADRENALINE_DESC,Text,"Until end of turn one-handed weapons and all non-weapon skills cost 1AP, except Recover",,直到回合結束，單手武器和所有非武器技能都會花費 1AP，恢復除外,,,,,"Выстрел из одноручного оружия и не оружейные навыки стоят 1 Очко Действий (кроме ""Восстановления"").
 Эффект до конца хода",,
-PR_BC_BLOODLUST_DESC,Text,Gain up to 25% Speed and Damage based on lost Health.,,,,,,,"Получить бонус до 25% для скорости и урона, в зависимости от потерянных хитов",,
-PR_BC_GUN_KATA,Text,GUN KATA,,,,,,,КЛИРИК ГРАММАТОНА,,
-PR_BC_GUN_KATA_DESC,Text,Shoot with your handgun for free. Limited to 2 uses per turn.,,,,,,,"Выстрелить из пистолета бесплатно.
+PR_BC_BLOODLUST_DESC,Text,Gain up to 25% Speed and Damage based on lost Health.,,根據損失的生命值，獲得高達 25% 的速度和傷害。,,,,,"Получить бонус до 25% для скорости и урона, в зависимости от потерянных хитов",,
+PR_BC_GUN_KATA,Text,GUN KATA,,字槍,,,,,КЛИРИК ГРАММАТОНА,,
+PR_BC_GUN_KATA_DESC,Text,Shoot with your handgun for free. Limited to 2 uses per turn.,,免費使用手槍射擊。每回合僅限使用 2 次。,,,,,"Выстрелить из пистолета бесплатно.
 2 раза за ход",,
-PR_BC_EXERTION,Text,EXERTION,,,,,,,МЕДИТАЦИЯ,,
-PR_BC_EXERTION_DESC,Text,Recover 2AP. Limited to 1 use per turn.,,,,,,,"Восстановить 2 Очка Действий.
+PR_BC_EXERTION,Text,EXERTION,,用力,,,,,МЕДИТАЦИЯ,,
+PR_BC_EXERTION_DESC,Text,Recover 2AP. Limited to 1 use per turn.,,恢復2AP。每回合僅限使用 1 次。,,,,,"Восстановить 2 Очка Действий.
 1 раз за ход",,
-PR_BC_KILLER_INSTINCT,Text,KILLER INSTINCT,,,,,,,ИНСТИНКТ УБИЙЦЫ,,
-PR_BC_KILLER_INSTINCT_DESC,Text,"At the beginning of your turn, if there is an enemy within 5 tiles your next attack costs -2AP",,,,,,,"Если в начале хода в пределах 5 клеток от вас есть враг, ваша следующая атака стоит на 2 Очка Действий меньше",,
-PR_BC_KILLER_INSTINCT_STATUS,Text,KILLER INSTINCT TRIGGERED,,,,,,,СРАБОТАЛ ИНСТИНКТ УБИЙЦЫ,,
-PR_BC_KILLER_INSTINCT_STATUS_DESC,Text,"There is an enemy within 5 tiles, your next attack costs -2AP.",,,,,,,"В пределах 5 клеток от вас есть враг, поэтому ваша следующая атака стоит на 2 Очка Действий меньше",,
-PR_BC_SNEAK_ATTACK,Text,SNEAK ATTACK,,,,,,,СКРЫТАЯ АТАКА,,
-PR_BC_SNEAK_ATTACK_DESC,Text,Attacks while hidden deal +50% and while located +25% damage,,,,,,,"Если вы скрыты, ваши атаки наносят +50% урона. Если вас услышали, но не обнаружили, то лишь +25% урона",,
-PR_BC_SA_HIDDEN_DESC,Text,HIDDEN: Deal +50% damage,,,,,,,СКРЫТ: Урон увеличен на 50%,,
-PR_BC_SA_LOCATED_DESC,Text,LOCATED: Deal +25% damage,,,,,,,УСЛЫШАН: Урон увеличен на 25%,,
-PR_BC_HOMING_DRONE,Text,HOMING DRONE,,,,,,,ДРОН-МИНА,,
-PR_BC_HOMING_DRONE_DESC,Text,Shoot your Spider Drone at the target. Next time the target takes damage the drone will explode causing blast damage in the area,,,,,,,"Выстрелить дроном-пауком в мишень. Если мишень получит урон, дрон взорвется",,
-PR_BC_CAUTIOUS,Text,CAUTIOUS,,,,,,,ОСТОРОЖНЫЙ,,
-PR_BC_CAUTIOUS_DESC,Text,Gain +20% accuracy and +10% stealth,,,,,,,Получить +20% точности и +10% скрытности,,
-PR_BC_NEURAL_FEEDBACK,Text,NEURAL FEEDBACK,,,,,,,НЕЙРОННАЯ СВЯЗЬ,,
-PR_BC_NEURAL_FEEDBACK_DESC,Text,Gain 2AP the first time you daze an enemy during the turn,,,,,,,"Если вы оглушили врага, получите 2 Очка Действий.
+PR_BC_KILLER_INSTINCT,Text,KILLER INSTINCT,,殺手本能,,,,,ИНСТИНКТ УБИЙЦЫ,,
+PR_BC_KILLER_INSTINCT_DESC,Text,"At the beginning of your turn, if there is an enemy within 5 tiles your next attack costs -2AP",,在你的回合開始時，如果 5 格內有敵人，你的下一次攻擊費用 -2AP,,,,,"Если в начале хода в пределах 5 клеток от вас есть враг, ваша следующая атака стоит на 2 Очка Действий меньше",,
+PR_BC_KILLER_INSTINCT_STATUS,Text,KILLER INSTINCT TRIGGERED,,殺手本能被觸發,,,,,СРАБОТАЛ ИНСТИНКТ УБИЙЦЫ,,
+PR_BC_KILLER_INSTINCT_STATUS_DESC,Text,"There is an enemy within 5 tiles, your next attack costs -2AP.",,5 格內有敵人，你的下一次攻擊消耗 -2AP。,,,,,"В пределах 5 клеток от вас есть враг, поэтому ваша следующая атака стоит на 2 Очка Действий меньше",,
+PR_BC_SNEAK_ATTACK,Text,SNEAK ATTACK,,偷襲,,,,,СКРЫТАЯ АТАКА,,
+PR_BC_SNEAK_ATTACK_DESC,Text,Attacks while hidden deal +50% and while located +25% damage,,隱藏時攻擊造成 +50% 傷害，被發現時攻擊造成 +25% 傷害,,,,,"Если вы скрыты, ваши атаки наносят +50% урона. Если вас услышали, но не обнаружили, то лишь +25% урона",,
+PR_BC_SA_HIDDEN_DESC,Text,HIDDEN: Deal +50% damage,,隱藏：造成 +50% 傷害,,,,,СКРЫТ: Урон увеличен на 50%,,
+PR_BC_SA_LOCATED_DESC,Text,LOCATED: Deal +25% damage,,已定位：造成 +25% 傷害,,,,,УСЛЫШАН: Урон увеличен на 25%,,
+PR_BC_HOMING_DRONE,Text,HOMING DRONE,,遙控無人機,,,,,ДРОН-МИНА,,
+PR_BC_HOMING_DRONE_DESC,Text,Shoot your Spider Drone at the target. Next time the target takes damage the drone will explode causing blast damage in the area,,向目標射擊你的蜘蛛無人機。下次目標受到傷害時，無人機將爆炸，在該區域造成爆炸傷害,,,,,"Выстрелить дроном-пауком в мишень. Если мишень получит урон, дрон взорвется",,
+PR_BC_CAUTIOUS,Text,CAUTIOUS,,謹慎,,,,,ОСТОРОЖНЫЙ,,
+PR_BC_CAUTIOUS_DESC,Text,Gain +20% accuracy and +10% stealth,,獲得 +20% 準確度和 +10% 隱密性,,,,,Получить +20% точности и +10% скрытности,,
+PR_BC_NEURAL_FEEDBACK,Text,NEURAL FEEDBACK,,神經回饋,,,,,НЕЙРОННАЯ СВЯЗЬ,,
+PR_BC_NEURAL_FEEDBACK_DESC,Text,Gain 2AP the first time you daze an enemy during the turn,,回合中第一次眩暈敵人時獲得 2AP,,,,,"Если вы оглушили врага, получите 2 Очка Действий.
 1 раз за ход",,
-PR_BC_JAMMING_FIELD,Text,JAMMING FIELD,,,,,,,ГЛУШИЛКА,,
-PR_BC_JAMMING_FIELD_DESC,Text,Enemies within 10 tiles have 50% fumble chance with firearms,,,,,,,Враги в пределах 10 клеток получают 50% шанс отказа оружия,,
-PR_BC_PARAPSYCHOSIS,Text,PARAPSYCHOSIS,,,,,,,ГИПНОЗ,,
-PR_BC_PARAPSYCHOSIS_DESC,Text,Target human-sized enemy within 12 tiles becomes Wild,,,,,,,Врага человеческого размера в пределах 12 клеток охватывает Ярость (атакует всех вокруг без разбора),,
-PR_BC_ELECTRIC_REINFORCEMENT,Text,ELECTRIC REINFORCEMENT,,,,,,,СИЛОВОЕ ПОЛЕ,,
-PR_BC_ELECTRIC_REINFORCEMENT_DESC,Text,Give yourself and allies within 10 tiles a bonus of 10 armor for 1 turn. This effect does not stack,,,,,,,Вы и союзники в радиусе 10 клеток получают +10 брони до начала следующего хода. Повторное применение не удваивает эффект,,
-PR_BC_STABILITY,Text,STABILITY,,,,,,,МЕТКИЙ СТРЕЛОК,,
-PR_BC_STABILITY_DESC,Text,Gain 10% extra accuracy per remaining AP up to 40%,,,,,,,Каждое не использованное Очко Действий добавляет 10% Точности (до 40% при 4х неиспользованных Очках Действий),,
-PR_BC_AMPLIFY_PAIN,Text,AMPLIFY,,,,,,,МЕДИЦИНСКИЙ ДРОН,,
-PR_BC_AMPLIFY_PAIN_DESC,Text,"Until End of Turn gain +100% to healing and +50% to special damage (Acid, Paralysis, Viral, Poison)",,,,,,,"До конца хода все лечение на 100% более эффективно. Атаки кислотой, вирусом, ядом и параличом эффективнее на 50%",,
-PR_BC_BIOCHEMIST,Text,BIOCHEMIST,,,,,,,БИОХИМИК,,
-PR_BC_BIOCHEMIST_DESC,Text,"Viral, Paralysis, Poison and Acid damage increased by 25% for direct damage and 5% for grenades on each hit body part",,,,,,,"Атака кислотой, вирусом, ядом и параличом эффективнее на 25% при прямом уроне и на 5% при взрыве гранаты для каждой части тела",,
-PR_BC_LAY_WASTE,Text,LAY WASTE,,,,,,,МЕНТАЛЬНАЯ АТАКА,,
-PR_BC_LAY_WASTE_DESC,Text,If your current Willpower score is higher than target's deal 20 damage for each point of WP difference to a maximum of 200 damage,,,,,,,"Нанести 20 урона цели за каждое очко разницы между вашими Очками Воли (если ваши Очки Воли больше, чем у врага). Максимум 200 урона",,
-PR_BC_ENDURANCE,Text,ENDURANCE,,,,,,,ФЛЯГА С ПИВОМ,,
-PR_BC_ENDURANCE_DESC,Text,"Recover restores additional 25% Willpower and removes Acid, Poison and Bleeding effects.",,,,,,,"""Восстановление"" дает на 25% больше Очков Воли, а также снимает эффекты кислоты, отравления и кровотечения",,
-PR_BC_SABOTEUR,Text,SABOTEUR,,,,,,,ОПЫТНЫЙ РАЗВЕДЧИК,,
-PR_BC_SABOTEUR_DESC,Text,When you are hidden AP cost of non-weapon skills and spider drone skills decreased by 1 AP,,,,,,,"Пока вы скрыты, стоимость не оружейных навыков и применения дронов-пауков уменьшена на 1 Очко Действий",,
-PR_BC_DIE_HARD,Text,DIE HARD,,,,,,,КРЕПКИЙ ОРЕШЕК,,
-PR_BC_DIE_HARD_DESC,Text,When you take lethal damage there is a chance to survive with 1HP and have all negative effects cleared. Can only trigger once per mission.,,,,,,,"В момент смерти получить шанс выжить в 1 хите (все негативные эффекты снимутся).
+PR_BC_JAMMING_FIELD,Text,JAMMING FIELD,,干擾磁場,,,,,ГЛУШИЛКА,,
+PR_BC_JAMMING_FIELD_DESC,Text,Enemies within 10 tiles have 50% fumble chance with firearms,,10 格內的敵人有 50% 的槍械失手率,,,,,Враги в пределах 10 клеток получают 50% шанс отказа оружия,,
+PR_BC_PARAPSYCHOSIS,Text,PARAPSYCHOSIS,,精神錯亂,,,,,ГИПНОЗ,,
+PR_BC_PARAPSYCHOSIS_DESC,Text,Target human-sized enemy within 12 tiles becomes Wild,,目標 12 格內的人類大小的敵人變為狂野,,,,,Врага человеческого размера в пределах 12 клеток охватывает Ярость (атакует всех вокруг без разбора),,
+PR_BC_ELECTRIC_REINFORCEMENT,Text,ELECTRIC REINFORCEMENT,,電動加固,,,,,СИЛОВОЕ ПОЛЕ,,
+PR_BC_ELECTRIC_REINFORCEMENT_DESC,Text,Give yourself and allies within 10 tiles a bonus of 10 armor for 1 turn. This effect does not stack,,為自己和 10 格內的盟友提供 10 點護甲加值，持續 1 回合。此效果不疊加,,,,,Вы и союзники в радиусе 10 клеток получают +10 брони до начала следующего хода. Повторное применение не удваивает эффект,,
+PR_BC_STABILITY,Text,STABILITY,,穩定,,,,,МЕТКИЙ СТРЕЛОК,,
+PR_BC_STABILITY_DESC,Text,Gain 10% extra accuracy per remaining AP up to 40%,,每剩餘 AP 獲得 10% 額外準確度，最高可達 40%,,,,,Каждое не использованное Очко Действий добавляет 10% Точности (до 40% при 4х неиспользованных Очках Действий),,
+PR_BC_AMPLIFY_PAIN,Text,AMPLIFY,,放大,,,,,МЕДИЦИНСКИЙ ДРОН,,
+PR_BC_AMPLIFY_PAIN_DESC,Text,"Until End of Turn gain +100% to healing and +50% to special damage (Acid, Paralysis, Viral, Poison)",,直到回合結束，治療效果+100%，特殊傷害+50%（酸液、麻痺、病毒、毒藥）,,,,,"До конца хода все лечение на 100% более эффективно. Атаки кислотой, вирусом, ядом и параличом эффективнее на 50%",,
+PR_BC_BIOCHEMIST,Text,BIOCHEMIST,,生物化學家,,,,,БИОХИМИК,,
+PR_BC_BIOCHEMIST_DESC,Text,"Viral, Paralysis, Poison and Acid damage increased by 25% for direct damage and 5% for grenades on each hit body part",,每個擊中身體部位的直接傷害的病毒、麻痺、毒藥和酸傷害提高 25%，手榴彈傷害提高 5%,,,,,"Атака кислотой, вирусом, ядом и параличом эффективнее на 25% при прямом уроне и на 5% при взрыве гранаты для каждой части тела",,
+PR_BC_LAY_WASTE,Text,LAY WASTE,,精神衝擊,,,,,МЕНТАЛЬНАЯ АТАКА,,
+PR_BC_LAY_WASTE_DESC,Text,If your current Willpower score is higher than target's deal 20 damage for each point of WP difference to a maximum of 200 damage,,如果你目前的意志力點數高於目標，每差一點意志力分數就會造成 20 點傷害，最多可造成 200 點傷害。,,,,,"Нанести 20 урона цели за каждое очко разницы между вашими Очками Воли (если ваши Очки Воли больше, чем у врага). Максимум 200 урона",,
+PR_BC_ENDURANCE,Text,ENDURANCE,,耐力,,,,,ФЛЯГА С ПИВОМ,,
+PR_BC_ENDURANCE_DESC,Text,"Recover restores additional 25% Willpower and removes Acid, Poison and Bleeding effects.",,恢復可額外恢復 25% 意志力並消除酸、毒和流血效果。,,,,,"""Восстановление"" дает на 25% больше Очков Воли, а также снимает эффекты кислоты, отравления и кровотечения",,
+PR_BC_SABOTEUR,Text,SABOTEUR,,破壞者,,,,,ОПЫТНЫЙ РАЗВЕДЧИК,,
+PR_BC_SABOTEUR_DESC,Text,When you are hidden AP cost of non-weapon skills and spider drone skills decreased by 1 AP,,隱藏時非武器技能和蜘蛛無人機技能的AP消耗減少1AP,,,,,"Пока вы скрыты, стоимость не оружейных навыков и применения дронов-пауков уменьшена на 1 Очко Действий",,
+PR_BC_DIE_HARD,Text,DIE HARD,,虎膽龍威,,,,,КРЕПКИЙ ОРЕШЕК,,
+PR_BC_DIE_HARD_DESC,Text,When you take lethal damage there is a chance to survive with 1HP and have all negative effects cleared. Can only trigger once per mission.,,當你受到致命傷害時，有機會以 1HP 存活並清除所有負面影響。每個任務只能觸發一次。,,,,,"В момент смерти получить шанс выжить в 1 хите (все негативные эффекты снимутся).
 1 раз за миссию",,
-PR_BC_DIE_HARD_TRIGGERED,Text,DIE HARD,,,,,,,КРЕПКИЙ ОРЕШЕК: ПРОНЕСЛО!,,
-PR_BC_DIE_HARD_TRIGGERED_DESC,Text,"Die Hard has saved your life once already, so there is no more chance for this mission!",,,,,,,Вас уже пронесло один раз в этой миссии. Второй раз чуда не ждите...,,
-PR_BC_DIE_HARD_KEEPALIVE,Text,DIE HARDER,,,,,,,КРЕПКИЙ ОРЕШЕК: ЧУДО!,,
-PR_BC_DIE_HARD_KEEPALIVE_DESC,Text,You took lethal damage this turn and Die Hard saved your life. You are invulnerable until the end of this turn.,,,,,,,"Вы не погибли только чудом! До конца хода вы - полностью неуязвимый Крепчайший из Орешков, муахахахаха!",,
-PR_BC_BATTLEHARDENED,Text,BATTLE HARDENED,,,,,,,ВЕТЕРАН,,
-PR_BC_BATTLEHARDENED_DESC,Text,"Gain +2 to all primary stats, +10% to accuracy and +4 to perception",,,,,,,"Бонус +2 к основным характеристикам, а также +10% Точности и +4 Восприятия",,
-PR_BC_TAKEDOWN,Text,TAKEDOWN,,,,,,,ПРИМЕНИТЬ КУНГ-ФУ,,
-PR_BC_TAKEDOWN_DESC,Text,Deal 80 damage and 160 shock damage to an adjacent target. Replaces Bash.,,,,,,,"Рукопашная атака, наносящая 80 урона и 160 оглушения. Заменяет обычный ""Удар""",,
-PR_BC_PUNISHER,Text,PUNISHER,,,,,,,МОНСТР,,
-PR_BC_PUNISHER_DESC,Text,"When you kill an enemy, his allies lose 2 additional Will Points",,,,,,,"<b>Когда вы убиваете врага, остальные враги теряют 2 Очка Воли.</b>
+PR_BC_DIE_HARD_TRIGGERED,Text,DIE HARD,,虎膽龍威,,,,,КРЕПКИЙ ОРЕШЕК: ПРОНЕСЛО!,,
+PR_BC_DIE_HARD_TRIGGERED_DESC,Text,"Die Hard has saved your life once already, so there is no more chance for this mission!",,《虎膽龍威》已經救過你一次命了，所以這次任務沒有機會了！,,,,,Вас уже пронесло один раз в этой миссии. Второй раз чуда не ждите...,,
+PR_BC_DIE_HARD_KEEPALIVE,Text,DIE HARDER,,老虎發威,,,,,КРЕПКИЙ ОРЕШЕК: ЧУДО!,,
+PR_BC_DIE_HARD_KEEPALIVE_DESC,Text,You took lethal damage this turn and Die Hard saved your life. You are invulnerable until the end of this turn.,,這回合你受到了致命傷害，《虎膽龍威》救了你的命。在本回合結束前你都處於無敵狀態。,,,,,"Вы не погибли только чудом! До конца хода вы - полностью неуязвимый Крепчайший из Орешков, муахахахаха!",,
+PR_BC_BATTLEHARDENED,Text,BATTLE HARDENED,,戰鬥強化,,,,,ВЕТЕРАН,,
+PR_BC_BATTLEHARDENED_DESC,Text,"Gain +2 to all primary stats, +10% to accuracy and +4 to perception",,所有主要屬性獲得 +2，精確度 +10%，感知獲得 +4,,,,,"Бонус +2 к основным характеристикам, а также +10% Точности и +4 Восприятия",,
+PR_BC_TAKEDOWN,Text,TAKEDOWN,,猛擊,,,,,ПРИМЕНИТЬ КУНГ-ФУ,,
+PR_BC_TAKEDOWN_DESC,Text,Deal 80 damage and 210 shock damage to an adjacent target. Replaces Bash.,,對相鄰目標造成 80 點傷害和 210 點衝擊傷害。取代Bash擊打。,,,,,"Рукопашная атака, наносящая 80 урона и 210 оглушения. Заменяет обычный ""Удар""",,
+PR_BC_PUNISHER,Text,PUNISHER,,懲罰者,,,,,МОНСТР,,
+PR_BC_PUNISHER_DESC,Text,"When you kill an enemy, his allies lose 2 additional Will Points",,當你殺死敵人時，他的盟友會額外失去 2 點意志點,,,,,"<b>Когда вы убиваете врага, остальные враги теряют 2 Очка Воли.</b>
 <i>Кем надо быть, чтобы при виде вас монстры начинали плакать и проситься к маме на ручки?</i>",,
-PR_BC_PEPPER_CLOUD,Text,PEPPER CLOUD,,,,,,,ГАЗОВАЯ АТАКА,,
-PR_BC_PEPPER_CLOUD_DESC,Text,Enemies in 8 tile radius suffer -50% accuracy,,,,,,,Враги в пределах 8 клеток получают -50% точности,,
-PR_BC_AR_TARGETTING,Text,AR TARGETING,,,,,,,КОРРЕКТИРОВКА ОГНЯ,,
-PR_BC_AR_TARGETTING_DESC,Text,Target ally within 10 tiles gains +30% accuracy,,,,,,,Выбранный союзник в радиусе 10 клеток получает +30% точности,,
-PR_BC_PHANTOM_PROTOCOL,Text,PHANTOM PROTOCOL,,,,,,,"ПРОТОКОЛ ""ФАНТОМ""",,
-PR_BC_PHANTOM_PROTOCOL_DESC,Text,"Gain +15% stealth and accuracy, provides immunity to Sentinels surveillance ability",,,,,,,"Получить +15% к точности и скрытности. Стражи вас не замечают, вообще",,
-PR_BC_SOWER_OF_CHANGE,Text,SOWER OF CHANGE,,,,,,,ВИРУСОЛОГ,,
-PR_BC_SOWER_OF_CHANGE_DESC,Text,Returns 25% of damage as Viral to the attacker,,,,,,,Возвращает атакующему 25% урона в виде направленной вирусной инфекции,,
-PR_BC_SURVIVOR,Text,SURVIVOR,,,,,,,ПОКАЛЕЧЕННЫЙ,,
-PR_BC_SURVIVOR_DESC,Text,"<b>WP +4, but -2 STR</b> <i>You have had it tougher than most, and that's saying a lot. Your body took a toll, but your mind grew stronger</i>",,,,,,,"<b>Воля +4, Сила -2</b>
+PR_BC_PEPPER_CLOUD,Text,PEPPER CLOUD,,胡椒雲,,,,,ГАЗОВАЯ АТАКА,,
+PR_BC_PEPPER_CLOUD_DESC,Text,Enemies in 8 tile radius suffer -50% accuracy,,8 格半徑內的敵人的準確度為 -50%,,,,,Враги в пределах 8 клеток получают -50% точности,,
+PR_BC_AR_TARGETTING,Text,AR TARGETING,,AR定位,,,,,КОРРЕКТИРОВКА ОГНЯ,,
+PR_BC_AR_TARGETTING_DESC,Text,Target ally within 10 tiles gains +30% accuracy,,10 格內的目標盟友獲得 +30% 準確度,,,,,Выбранный союзник в радиусе 10 клеток получает +30% точности,,
+PR_BC_PHANTOM_PROTOCOL,Text,PHANTOM PROTOCOL,,幻影協議,,,,,"ПРОТОКОЛ ""ФАНТОМ""",,
+PR_BC_PHANTOM_PROTOCOL_DESC,Text,"Gain +15% stealth and accuracy, provides immunity to Sentinels surveillance ability",,獲得 +15% 的隱密性和準確性，提供對哨兵監視能力的免疫力,,,,,"Получить +15% к точности и скрытности. Стражи вас не замечают, вообще",,
+PR_BC_SOWER_OF_CHANGE,Text,SOWER OF CHANGE,,變革的播種者,,,,,ВИРУСОЛОГ,,
+PR_BC_SOWER_OF_CHANGE_DESC,Text,Returns 25% of damage as Viral to the attacker,,將 25% 遭受的傷害以病毒形式回傳給攻擊者,,,,,Возвращает атакующему 25% урона в виде направленной вирусной инфекции,,
+PR_BC_SURVIVOR,Text,SURVIVOR,,倖存者,,,,,ПОКАЛЕЧЕННЫЙ,,
+PR_BC_SURVIVOR_DESC,Text,"<b>WP +4, but -2 STR</b> <i>You have had it tougher than most, and that's saying a lot. Your body took a toll, but your mind grew stronger</i>",,WP +4，但 STR -2,,,,,"<b>Воля +4, Сила -2</b>
 <i>Вам досталось больше других и это о многом говорит. Но все, что не убивает нас, делает сильнее... или калекой.</i>",,
-PR_BC_NURSE,Text,NURSE,,,,,,,САНИТАР,,
-PR_BC_NURSE_DESC,Text,"<b>WP +2. Healing +30%</b> <i>Yes, there is a gentler side to you. But people have to get hurt to experience it</i>",,,,,,,"<b>Воля +2, Лечение +30%</b>
+PR_BC_NURSE,Text,NURSE,,小護士,,,,,САНИТАР,,
+PR_BC_NURSE_DESC,Text,"<b>WP +2. Healing +30%</b> <i>Yes, there is a gentler side to you. But people have to get hurt to experience it</i>",,WP+2，治療+30%,,,,,"<b>Воля +2, Лечение +30%</b>
 <i>Да, в вас есть и мягкая сторона. Но увидит это только тот, кто также познал боль.</i>",,
-PR_BC_SCAV,Text,SCAV,,,,,,,СЛЕДОПЫТ,,
-PR_BC_SCAV_DESC,Text,"<b>WP +2, Perception +4</b> <i>The Old World left behind all sorts of interesting things. It takes patience and a keen eye to find them</i>",,,,,,,"<b>Воля +2, Восприятие +4</b>
+PR_BC_SCAV,Text,SCAV,,探索者,,,,,СЛЕДОПЫТ,,
+PR_BC_SCAV_DESC,Text,"<b>WP +2, Perception +4</b> <i>The Old World left behind all sorts of interesting things. It takes patience and a keen eye to find them</i>",,WP+2，感知+4,,,,,"<b>Воля +2, Восприятие +4</b>
 <i>Старый Мир оставил после себя множество интересных вещей, чтобы разыскать их нужно терпение и зоркий глаз.</i>",,
-PR_BC_CORPSE_DISPOSER,Text,CORPSE DISPOSER,,,,,,,БЫВШИЙ ПОЖАРНЫЙ,,
-PR_BC_CORPSE_DISPOSER_DESC,Text,"<b>Fire Resistance</b> <i>There were too many to bury, so you had to burn them. Day after day, week after week. It's not the fire that scares you</i>",,,,,,,"<b>Защита от огня.</b>
+PR_BC_CORPSE_DISPOSER,Text,CORPSE DISPOSER,,耐火者,,,,,БЫВШИЙ ПОЖАРНЫЙ,,
+PR_BC_CORPSE_DISPOSER_DESC,Text,"<b>Fire Resistance</b> <i>There were too many to bury, so you had to burn them. Day after day, week after week. It's not the fire that scares you</i>",,耐火性,,,,,"<b>Защита от огня.</b>
 <i>Тел было слишком много для обычных похорон, так что пришлось их сжечь. День за днем, неделя за неделей... Вовсе не огонь страшит вас.</i>",,
-PR_BC_HARD_LABOR,Text,HARD LABOR,,,,,,,БЫВШИЙ ШАХТЕР,,
-PR_BC_HARD_LABOR_DESC,Text,"<b>STR +4, Perception -4</b> <i>The New World didn't just build itself. There was lot of digging, lifting and carrying, and dust and noise everywhere</i>",,,,,,,"<b>Сила +4, Восприятие -4</b>
+PR_BC_HARD_LABOR,Text,HARD LABOR,,艱苦勞動者,,,,,БЫВШИЙ ШАХТЕР,,
+PR_BC_HARD_LABOR_DESC,Text,"<b>STR +4, Perception -4</b> <i>The New World didn't just build itself. There was lot of digging, lifting and carrying, and dust and noise everywhere</i>",,STR +4，感知 -4,,,,,"<b>Сила +4, Восприятие -4</b>
 <i>Новый Мир не возник сам по себе. Пришлось много копать, поднимать и таскать, с шумом и пылью.</i>",,
-PR_BC_SQUATTER,Text,SQUATTER,,,,,,,СИЛАЧ,,
-PR_BC_SQUATTER_DESC,Text,"<b>STR +2, Carry Weight +25%</b> <i>In the camps you carried everything on your person at all times. And sometimes you had to take things from other people</i>",,,,,,,"<b>Сила +2, Грузоподъемность +25%</b>
+PR_BC_SQUATTER,Text,SQUATTER,,角力士,,,,,СИЛАЧ,,
+PR_BC_SQUATTER_DESC,Text,"<b>STR +2, Carry Weight +25%</b> <i>In the camps you carried everything on your person at all times. And sometimes you had to take things from other people</i>",,STR+2 ， 攜重量+25%,,,,,"<b>Сила +2, Грузоподъемность +25%</b>
 <i>В лагерях весь свой скарб приходилось держать при себе. И иногда отбирать вещи у других.</i>",,
-PR_BC_VOLUNTEERED,Text,VOLUNTEERED,,,,,,,ПОДОПЫТНЫЙ,,
-PR_BC_VOLUNTEERED_DESC,Text,"<b>Nightvision, +2 SPD, -2WP</b> <i>They gave you cat eyes and reflex enhancers, and nothing for the headaches that came after</i>",,,,,,,"<b>Ночное зрение. Скор. +2, Воля -2</b>
+PR_BC_VOLUNTEERED,Text,VOLUNTEERED,,夜視突襲者,,,,,ПОДОПЫТНЫЙ,,
+PR_BC_VOLUNTEERED_DESC,Text,"<b>Nightvision, +2 SPD, -2WP</b> <i>They gave you cat eyes and reflex enhancers, and nothing for the headaches that came after</i>",,夜視，+2 SPD，-2 WP,,,,,"<b>Ночное зрение. Скор. +2, Воля -2</b>
 <i>Они дали тебе глаза и рефлексы кошки, и совершенно бесплатно - непроходящие головные боли.</i>",,
-PR_BC_CONDO_RAIDER,Text,CONDO RAIDER,,,,,,,АКРОБАТ,,
-PR_BC_CONDO_RAIDER_DESC,Text,"<b>Jump up or down one building level</b> <i>The world is full of broken elevators and collapsed staircases, and the pros in this business don't use ladders</i>",,,,,,,"<b>Может прыгать на 1 уровень вверх\вниз не используя лестницы.</b>
+PR_BC_CONDO_RAIDER,Text,CONDO RAIDER,,公寓襲擊者,,,,,АКРОБАТ,,
+PR_BC_CONDO_RAIDER_DESC,Text,"<b>Jump up or down one building level</b> <i>The world is full of broken elevators and collapsed staircases, and the pros in this business don't use ladders</i>",,跳上或跳下一層樓,,,,,"<b>Может прыгать на 1 уровень вверх\вниз не используя лестницы.</b>
 <i>Мир полон сломанных лифтов и обвалившихся пролетов. Но профи в нашем деле не пользуются лестницами.</i>",,
-PR_BC_TUNNEL_RAT,Text,TUNNEL RAT,,,,,,,ТУННЕЛЬНАЯ КРЫСА,,
-PR_BC_TUNNEL_RAT_DESC,Text,"<b>Stealth +15%, SPD +1</b> <i>You spent a good spell in the sewers. You had to be quiet, real quiet... And then run like hell!</i>",,,,,,,"<b>Скрытность +15%, Скорость +1</b>
+PR_BC_TUNNEL_RAT,Text,TUNNEL RAT,,隧道鼠,,,,,ТУННЕЛЬНАЯ КРЫСА,,
+PR_BC_TUNNEL_RAT_DESC,Text,"<b>Stealth +15%, SPD +1</b> <i>You spent a good spell in the sewers. You had to be quiet, real quiet... And then run like hell!</i>",,潛行 +15%，SPD +1,,,,,"<b>Скрытность +15%, Скорость +1</b>
 <i>Вы много времени провели в канализации. Приходилось быть тихим, очень тихим... а затем бежать сломя голову.</i>",,
-PR_BC_HUNTER,Text,HUNTER,,,,,,,ОХОТНИК,,
-PR_BC_HUNTER_DESC,Text,<b>Accuracy +10%</b> <i>There used to be game and hunger around these parts</i>,,,,,,,"<b>Точность +10%</b>
+PR_BC_HUNTER,Text,HUNTER,,精準獵人,,,,,ОХОТНИК,,
+PR_BC_HUNTER_DESC,Text,<b>Accuracy +10%</b> <i>There used to be game and hunger around these parts</i>,,準確度 +10%,,,,,"<b>Точность +10%</b>
 <i>Когда-то в этих краях не люди были добычей.</i>",,
-PR_BC_TROUBLEMAKER,Text,TROUBLEMAKER,,,,,,,ГРЕНАДЕР,,
-PR_BC_TROUBLEMAKER_DESC,Text,<b>Hand grenades deal +10% damage</b> <i>You have a knack for irritating the authorities. Maybe that's why you are here? Think about it</i>,,,,,,,"<b>Ручные гранаты наносят +10% урона.</b>
+PR_BC_TROUBLEMAKER,Text,TROUBLEMAKER,,手雷愛好者,,,,,ГРЕНАДЕР,,
+PR_BC_TROUBLEMAKER_DESC,Text,<b>Hand grenades deal +10% damage</b> <i>You have a knack for irritating the authorities. Maybe that's why you are here? Think about it</i>,,手榴彈造成+10%傷害,,,,,"<b>Ручные гранаты наносят +10% урона.</b>
 <i>У вас талант раздражать власти. Может поэтому вы оказались здесь? Подумайте об этом.</i>",,
-PR_BC_PARANOID,Text,PARANOID,,,,,,,ПОДОЗРИТЕЛЬНЫЙ,,
-PR_BC_PARANOID_DESC,Text,"<b>Perception +4, Hearing Range +10</b> <i>But you are not, because the monsters are real!</i>",,,,,,,"<b>Восприятие +4, слух +10</b>
+PR_BC_PARANOID,Text,PARANOID,,精神敏感者,,,,,ПОДОЗРИТЕЛЬНЫЙ,,
+PR_BC_PARANOID_DESC,Text,"<b>Perception +4, Hearing Range +10</b> <i>But you are not, because the monsters are real!</i>",,感知+4，聽力範圍+10,,,,,"<b>Восприятие +4, слух +10</b>
 <i>Опять показалось... Но это не значит, что монстров не существует</i>",,
-PR_BC_TRUE_GRIT,Text,TRUE GRIT,,,,,,,ЗАКАЛЕННЫЙ В БОЯХ,,
-PR_BC_TRUE_GRIT_DESC,Text,"<b>-10% damage from adjacent enemies</b> <i>The end of civilization wasn't kind to you, but when things get up close and personal, you just suck it up</i>",,,,,,,"<b>-10% урона в рукопашной от окруживших врагов.</b>
+PR_BC_TRUE_GRIT,Text,TRUE GRIT,,堅毅,,,,,ЗАКАЛЕННЫЙ В БОЯХ,,
+PR_BC_TRUE_GRIT_DESC,Text,"<b>-10% damage from adjacent enemies</b> <i>The end of civilization wasn't kind to you, but when things get up close and personal, you just suck it up</i>",,-10%來自鄰近敵人的傷害,,,,,"<b>-10% урона в рукопашной от окруживших врагов.</b>
 <i>Крах цивилизаций всегда не к добру, но когда дела приобретают скверный оборот, вы к этому готовы.</i>",,
-PR_BC_HISTORY_OF_VIOLENCE,Text,HISTORY OF VIOLENCE,,,,,,,ТЕМНОЕ ПРОШЛОЕ,,
-PR_BC_HISTORY_OF_VIOLENCE_DESC,Text,"<b>Damage +10%, Willpower -2</b> <i>In the past, you hurt some people. They probably deserved it</i>",,,,,,,"<b>Урон +10%, Воля -2</b>
+PR_BC_HISTORY_OF_VIOLENCE,Text,HISTORY OF VIOLENCE,,暴力狂,,,,,ТЕМНОЕ ПРОШЛОЕ,,
+PR_BC_HISTORY_OF_VIOLENCE_DESC,Text,"<b>Damage +10%, Willpower -2</b> <i>In the past, you hurt some people. They probably deserved it</i>",,傷害+10%，意志力-2,,,,,"<b>Урон +10%, Воля -2</b>
 <i>В прошлой жизни вам приходилось много убивать. Они это заслужили, наверное...</i>",,
-PR_BC_DAREDEVIL,Text,DAREDEVIL,,,,,,,ТЯЖЕЛОЕ ДЕТСТВО,,
-PR_BC_DAREDEVIL_DESC,Text,"<b>Damage +10%, Accuracy -10%</b> <i>In the world you were born to, you have to live dangerously if at all. Strike first, strike hard, aim not</i>",,,,,,,"<b>Урон +10%, точность -10%</b>
+PR_BC_DAREDEVIL,Text,DAREDEVIL,,夜魔俠,,,,,ТЯЖЕЛОЕ ДЕТСТВО,,
+PR_BC_DAREDEVIL_DESC,Text,"<b>Damage +10%, Accuracy -10%</b> <i>In the world you were born to, you have to live dangerously if at all. Strike first, strike hard, aim not</i>",,傷害+10%，準確度-10%,,,,,"<b>Урон +10%, точность -10%</b>
 <i>В мире, где вы родились, приходилось всегда ходить по краю. Бей первым, бей сильно, не думай!</i>",,
-PR_BC_DAMAGED_AMYGDALA,Text,DAMAGED AMYGDALA,,,,,,,БЕССТРАШНЫЙ,,
-PR_BC_DAMAGED_AMYGDALA_DESC,Text,"<b>Gain 'Psychic Scream Immunity'</b> <i>All brains are different, and yours couldn't take seeing your family return as sea monsters</i>",,,,,,,"<b>Иммунитет к психическому воплю.</b>
+PR_BC_DAMAGED_AMYGDALA,Text,DAMAGED AMYGDALA,,杏仁核受損,,,,,БЕССТРАШНЫЙ,,
+PR_BC_DAMAGED_AMYGDALA_DESC,Text,"<b>Gain 'Psychic Scream Immunity'</b> <i>All brains are different, and yours couldn't take seeing your family return as sea monsters</i>",,獲得「心靈尖叫免疫」,,,,,"<b>Иммунитет к психическому воплю.</b>
 <i>Все мозги устроены по разному, и ваши эмоции просто исчезли при виде родных, вернувшихся с того света в виде морских монстров.</i>",,
-PR_BC_SANITATION_EXPERT,Text,SANITATION EXPERT,,,,,,,ЧИСТИЛЬЩИК,,
-PR_BC_SANITATION_EXPERT_DESC,Text,"<b>Immune to goo</b> <i>Robots can't do everything. Grime, dirt, slime, ooze, yuck, sludge: you have been through it all and come out on the other sideг</i>",,,,,,,"<b>Иммунитет к слизи.</b>
+PR_BC_SANITATION_EXPERT,Text,SANITATION EXPERT,,環衛專家,,,,,ЧИСТИЛЬЩИК,,
+PR_BC_SANITATION_EXPERT_DESC,Text,"<b>Immune to goo</b> <i>Robots can't do everything. Grime, dirt, slime, ooze, yuck, sludge: you have been through it all and come out on the other sideг</i>",,免疫黏性,,,,,"<b>Иммунитет к слизи.</b>
 <i>Роботы не могут делать всю работу. Грязь, слизь, плесень, подозрительные пятна: вы на этом собаку съели и не одну!</i>",,
-PR_BC_LAB_ASSISTANT,Text,LAB ASSISTANT,,,,,,,УЧЕНЫЙ,,
-PR_BC_LAB_ASSISTANT_DESC,Text,<b>Acid Resistance</b> <i>All those little accidents throughout the years have taught you a lot about safely dealing with acid spills</i>,,,,,,,"<b>Защита от кислоты.</b>
+PR_BC_LAB_ASSISTANT,Text,LAB ASSISTANT,,實驗室助理,,,,,УЧЕНЫЙ,,
+PR_BC_LAB_ASSISTANT_DESC,Text,<b>Acid Resistance</b> <i>All those little accidents throughout the years have taught you a lot about safely dealing with acid spills</i>,,耐酸性,,,,,"<b>Защита от кислоты.</b>
 <i>Годы в лаборатории многому научили вас о мерах предосторожности при работе с кислотой.</i>",,
-PR_BC_ROCKETEER,Text,ROCKETEER,,,,,,,ЛЮБИТЕЛЬ АВИАЦИИ,,
-PR_BC_ROCKETEER_DESC,Text,<b>Jetpack Proficiency</b> <i>Since you were a child you dreamt of flying rockets. Perhaps now you can!</i>,,,,,,,"<b>Знание реактивного ранца.</b>
+PR_BC_ROCKETEER,Text,ROCKETEER,,火箭人,,,,,ЛЮБИТЕЛЬ АВИАЦИИ,,
+PR_BC_ROCKETEER_DESC,Text,<b>Jetpack Proficiency</b> <i>Since you were a child you dreamt of flying rockets. Perhaps now you can!</i>,,噴射背包熟練度,,,,,"<b>Знание реактивного ранца.</b>
 <i>С самого детства вы мечтали летать. И вот, мечты сбываются!</i>",,
-PR_BC_PRIVILEGED,Text,PRIVILEGED,,,,,,,БЫВШИЙ МИЛЛИОНЕР,,
-PR_BC_PRIVILEGED_DESC,Text,"<b>Speed +2, Perception +4, Carry Weight -25%</b> <i>You were riding out the Apocalypse in First Class and letting others carry your load for you. It didn't last, and the run for your life that followed gave you a new awareness.</i>",,,,,,,"<b>Скорость +2, Восприятие +4, Грузоподъемность -25%</b>
+PR_BC_PRIVILEGED,Text,PRIVILEGED,,偵查兵,,,,,БЫВШИЙ МИЛЛИОНЕР,,
+PR_BC_PRIVILEGED_DESC,Text,"<b>Speed +2, Perception +4, Carry Weight -25%</b> <i>You were riding out the Apocalypse in First Class and letting others carry your load for you. It didn't last, and the run for your life that followed gave you a new awareness.</i>",,速度+2，感知+4，承載重量-25%,,,,,"<b>Скорость +2, Восприятие +4, Грузоподъемность -25%</b>
 <i>Вы улетали от Апокалипсиса в первом классе, а прислуга несла ваш багаж. Но борьба за выживание привела к переосмыслению жизненных ценностей.</i>",,
-PR_BC_FRENZY,Text,FRENZY,,,,,,,ИССУПЛЕНИЕ,,
-PR_BC_FRENZY_DESC,Text,"Instils Frenzy in friendly characters within 20 tiles for two turns, increasing their Speed by 33% and making them immune to panic",,,,,,,Союзники в радиусе 20 клеток впадают в Иссупление на 2 хода (невосприимчивость к панике и увеличение скорости на 33%),,
-PR_BC_FRENZY_STATUS_DESC,Text,Speed increased by 33% and immune to panic,,,,,,,"Скорость увеличена на 33%, невосприимчивость к панике",,
-KEY_RETURNFIRE_DESCRIPTION,Text,"Shoot back at an enemy when it attacks, provided the soldier is using a direct-fire projectile weapon with proficiency, and the enemy is within half perception range. Once per turn.",,,,,,,"Стреляйте в ответ по врагу, когда он атакует, если у бойца активно профильное огнестрельное оружие, а враг находится в пределах половины диапазона Восприятия. 1 раз за ход.",,
-KEY_TECHNICIAN_REMOTE_DEPLOYMENT_DESCRIPTION,Text,Turrets can be thrown for 1 Action Point and 2 Will Points,,,,,,,Турели можно бросать вдаль за 1 Очко Действий и 2 Очка Воли,,
-KEY_ASSAULT_RIFLES_TALENT_DESCRIPTION,Text,Proficiency with Assault Rifles,,,,,,,Обучен применению автоматов в бою,,
-KEY_GRENADES_TALENT_DESCRIPTION,Text,Proficiency with Grenades,,,,,,,Обучен применению гранат в бою,,
-KEY_HANDGUNS_TALENT_DESCRIPTION,Text,Proficiency with Handguns,,,,,,,Обучен применению пистолетов в бою,,
-KEY_HEAVY_WEAPONS_TALENT_DESCRIPTION,Text,Proficiency with Heavy Weapons,,,,,,,Обучен применению тяжелого вооружения в бою,,
-KEY_MELEE_WEAPONS_TALENT_DESCRIPTION,Text,Proficiency with Melee Weapons,,,,,,,Обучен применению оружия ближнего боя,,
-KEY_MOUNTED_WEAPONS_TALENT_DESCRIPTION,Text,Proficiency with Mounted Weapons,,,,,,,Обучен применению встроенного в бронекостюм оружия в бою,,
-KEY_PDWS_TALENT_DESCRIPTION,Text,Proficiency with PDWs,,,,,,,Обучен применению пистолетов-пулеметов в бою,,
-KEY_SHOTGUNS_TALENT_DESCRIPTION,Text,Proficiency with Shotguns,,,,,,,Обучен применению дробовиков в бою,,
-KEY_SILENCED_WEAPONS_TALENT_DESCRIPTION,Text,Proficiency with Silenced Weapons,,,,,,,Обучен применению оружия с глушителем в бою,,
-KEY_SNIPERS_RIFLES_TALENT_DESCRIPTION,Text,Proficiency with Sniper Rifles,,,,,,,Обучен применению снайперских винтовок в бою,,
+PR_BC_FRENZY,Text,FRENZY,,瘋狂,,,,,ИССУПЛЕНИЕ,,
+PR_BC_FRENZY_DESC,Text,"Instils Frenzy in friendly characters within 20 tiles for two turns, increasing their Speed by 33% and making them immune to panic",,讓 20 格內的友方角色陷入瘋狂狀態，持續兩回合，將他們的速度提高 33%，並使他們免疫恐慌,,,,,Союзники в радиусе 20 клеток впадают в Иссупление на 2 хода (невосприимчивость к панике и увеличение скорости на 33%),,
+PR_BC_FRENZY_STATUS_DESC,Text,Speed increased by 33% and immune to panic,,速度提高 33% 且免疫恐慌,,,,,"Скорость увеличена на 33%, невосприимчивость к панике",,
+KEY_RETURNFIRE_DESCRIPTION,Text,"Shoot back at an enemy when it attacks, provided the soldier is using a direct-fire projectile weapon with proficiency, and the enemy is within half perception range. Once per turn.",,對攻擊者進行還擊，需熟練使用直射武器，且敵人處於半感知範圍內，每回合一次。,,,,,"Стреляйте в ответ по врагу, когда он атакует, если у бойца активно профильное огнестрельное оружие, а враг находится в пределах половины диапазона Восприятия. 1 раз за ход.",,
+KEY_TECHNICIAN_REMOTE_DEPLOYMENT_DESCRIPTION,Text,Turrets can be thrown for 1 Action Point and 2 Will Points,,砲塔可以投擲，消耗 1 AP 和 2 WP,,,,,Турели можно бросать вдаль за 1 Очко Действий и 2 Очка Воли,,
+KEY_ASSAULT_RIFLES_TALENT_DESCRIPTION,Text,Proficiency with Assault Rifles,,突擊步槍 熟練專精,,,,,Обучен применению автоматов в бою,,
+KEY_GRENADES_TALENT_DESCRIPTION,Text,Proficiency with Grenades,,手榴彈 熟練專精,,,,,Обучен применению гранат в бою,,
+KEY_HANDGUNS_TALENT_DESCRIPTION,Text,Proficiency with Handguns,,手槍 熟練專精,,,,,Обучен применению пистолетов в бою,,
+KEY_HEAVY_WEAPONS_TALENT_DESCRIPTION,Text,Proficiency with Heavy Weapons,,重型武器 熟練專精,,,,,Обучен применению тяжелого вооружения в бою,,
+KEY_MELEE_WEAPONS_TALENT_DESCRIPTION,Text,Proficiency with Melee Weapons,,近戰武器 熟練專精,,,,,Обучен применению оружия ближнего боя,,
+KEY_MOUNTED_WEAPONS_TALENT_DESCRIPTION,Text,Proficiency with Mounted Weapons,,掛載武器 熟練專精,,,,,Обучен применению встроенного в бронекостюм оружия в бою,,
+KEY_PDWS_TALENT_DESCRIPTION,Text,Proficiency with PDWs,,PDW 熟練專精,,,,,Обучен применению пистолетов-пулеметов в бою,,
+KEY_SHOTGUNS_TALENT_DESCRIPTION,Text,Proficiency with Shotguns,,霰彈槍 熟練專精,,,,,Обучен применению дробовиков в бою,,
+KEY_SILENCED_WEAPONS_TALENT_DESCRIPTION,Text,Proficiency with Silenced Weapons,,消音武器 熟練專精,,,,,Обучен применению оружия с глушителем в бою,,
+KEY_SNIPERS_RIFLES_TALENT_DESCRIPTION,Text,Proficiency with Sniper Rifles,,狙擊槍 熟練專精,,,,,Обучен применению снайперских винтовок в бою,,

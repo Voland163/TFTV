@@ -31,7 +31,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Remoting.Messaging;
 using UnityEngine;
 using static PhoenixPoint.Tactical.View.ViewControllers.SquadMemberScrollerController;
 
@@ -116,7 +115,6 @@ namespace TFTV
 
                     if (wallsUp)
                     {
-
                         if (Gates.MostOperativesNorthOfGatesAndGatesClosed())
                         {
                             Gates.RemoveAlertPandoransSouthOfTheGates(controller);
@@ -439,7 +437,7 @@ namespace TFTV
 
                         int southSideOperativesCount = tacticalActors.Where(ta => ta.HasGameTag(Shared.SharedGameTags.HumanTag)).Count();
 
-                        if (tacticalActors.Count>0 && southSideOperativesCount < 3)
+                        if (tacticalActors.Count > 0 && southSideOperativesCount < 3)
                         {
                             TFTVLogger.Always($"There are {southSideOperativesCount} operatives on the South Side");
 
@@ -1214,7 +1212,7 @@ namespace TFTV
 
                         {
                             PortraitSprites portraitSprites = _soldierPortraits[actor];
-                           // TFTVLogger.Always($"ForceSpecialCharacterPortraitInSetupProperPortrait actor is {actor.name}");
+                            // TFTVLogger.Always($"ForceSpecialCharacterPortraitInSetupProperPortrait actor is {actor.name}");
 
                             Sprite sprite = (Sprite)tryFindFakePortraitMethod.Invoke(squadMemberScrollerController, new object[] { actor }); // squadMemberScrollerController.TryFindFakePortrait(actor);
                             if (sprite == null)
@@ -1227,7 +1225,7 @@ namespace TFTV
 
                             return false;
                             //   actor.TacticalActorView.TacticalActorViewDef.PortraitSource = TacticalActorViewDef.PortraitMode.ManualPortrait;
-                        }                 
+                        }
                     }
 
                     return true;
@@ -1713,7 +1711,27 @@ namespace TFTV
                             {
                                 TacticalDeployZone tacticalDeployZone = TFTVTacticalUtils.FindTDZ(LeftBottomSpawn);
 
-                                TacCharacterDef crabToSpawn = controller.TacMission.MissionData.UnlockedAlienTacCharacterDefs.Where(tc => tc.ClassTag == crabTag && tc.Data.BodypartItems.Contains(DefCache.GetDef<ItemDef>("Crabman_Legs_EliteAgile_ItemDef"))).ToList().GetRandomElement();
+
+                                TacCharacterDef crabToSpawn = controller.TacMission.MissionData.UnlockedAlienTacCharacterDefs
+    .Where(tc => tc.ClassTag == crabTag && tc.Data.BodypartItems.Contains(DefCache.GetDef<ItemDef>("Crabman_Legs_EliteAgile_ItemDef")))
+    .ToList()
+    .FirstOrDefault();
+
+                                if (crabToSpawn == null)
+                                {
+                                    TFTVLogger.Always("No jumping crabs with elite legs found to spawn.");
+
+                                    crabToSpawn = controller.TacMission.MissionData.UnlockedAlienTacCharacterDefs
+    .Where(tc => tc.ClassTag == crabTag && tc.Data.BodypartItems.Contains(DefCache.GetDef<ItemDef>("Crabman_Legs_Agile_ItemDef")))
+    .ToList()
+    .FirstOrDefault();
+                                    if (crabToSpawn == null)
+                                    {
+                                        TFTVLogger.Always("No jumping crabs with normal legs found to spawn either!");
+                                        return; // Exit the method if no valid crab is found
+                                    }
+                                }
+
                                 TFTVLogger.Always($"jumping crab to spawn: {crabToSpawn.name}");
 
                                 ActorDeployData actorDeployData = crabToSpawn.GenerateActorDeployData();
@@ -2053,7 +2071,7 @@ namespace TFTV
 
                             foreach (TacCharacterDef tacCharacterDef in GenerateFixedAcheronReinforcements(controller))
                             {
-                                
+
                                 void onLoadingCompleted()
                                 {
                                     ActorDeployData actorDeployData = tacCharacterDef.GenerateActorDeployData();
@@ -2602,7 +2620,7 @@ namespace TFTV
                                     TFTVRevenant.StatsAndClasses.SetRevenantClassAbility(theChosen, controller, tacticalActor);
 
                                     ActorClassIconElement actorClassIconElement = tacticalActorBase.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
-                                    
+
                                     //  SpreadResistance(__instance);
                                     tacticalActorBase.UpdateStats();
                                     PermaKillRevenant(theChosen);
@@ -2739,7 +2757,7 @@ namespace TFTV
                                     if (roll <= chance)
                                     {
                                         ReleaseFromMindControl(controller.GetFactionByCommandName("px"), revenant);
-                                        revenant.SetFaction(controller.GetFactionByCommandName("px"), TacMissionParticipant.Player);          
+                                        revenant.SetFaction(controller.GetFactionByCommandName("px"), TacMissionParticipant.Player);
                                         revenant.CharacterStats.WillPoints.SetToMax();
                                         revenant.UpdateStats();
                                         TFTVLogger.Always($"{revenant.name} has {revenant.CharacterStats.WillPoints} willpoints, should be max");
@@ -2760,18 +2778,18 @@ namespace TFTV
 
             private static void ReleaseFromMindControl(TacticalFaction tacticalFaction, TacticalActor mindController)
             {
-                try 
-                { 
-                    foreach(TacticalActor tacticalActor in tacticalFaction.TacticalActors) 
-                    { 
-                    if(tacticalActor.Status.HasStatus<MindControlStatus>() && tacticalActor.Status.GetStatus<MindControlStatus>().ControllerActor == mindController) 
+                try
+                {
+                    foreach (TacticalActor tacticalActor in tacticalFaction.TacticalActors)
+                    {
+                        if (tacticalActor.Status.HasStatus<MindControlStatus>() && tacticalActor.Status.GetStatus<MindControlStatus>().ControllerActor == mindController)
                         {
                             tacticalActor.Status.UnapplyStatus(tacticalActor.Status.GetStatus<MindControlStatus>());
-                        
+
                         }
-                           
+
                     }
-                
+
                 }
                 catch (Exception e)
                 {

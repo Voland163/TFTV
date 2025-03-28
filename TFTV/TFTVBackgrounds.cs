@@ -17,6 +17,7 @@ using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
+using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels.FactionEffects;
 using System;
@@ -225,6 +226,11 @@ namespace TFTV
                         {
                             description = alnResearch.ResearchDef.ViewElementDef.CompleteText.Localize();
                         }
+                    }
+
+                    if(description=="" && current.UnitType.TemplateDef== DefCache.GetDef<TacCharacterDef>("AcidwormTest_AlienMutationVariationDef")) 
+                    {
+                        description = TFTVCommonMethods.ConvertKeyToString("ALN_ACIDWORM_RESEARCHDEF_COMPLETE");
                     }
 
                     foreach (TacticalFactionEffectDef buff in phoenixFaction.ActorModifierEffects)

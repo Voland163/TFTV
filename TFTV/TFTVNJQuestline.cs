@@ -126,6 +126,11 @@ namespace TFTV
             {
                 try
                 {
+                    if (!NewNJIntroMission) 
+                    {
+                        return;
+                    }
+
                     _commsConsole = null;
                     UsedQuips.Clear();
 

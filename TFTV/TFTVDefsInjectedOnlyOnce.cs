@@ -23,9 +23,6 @@ using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Entities.RedeemableCodes;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
-using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.Interception;
-using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
@@ -74,7 +71,7 @@ namespace TFTV
         public static GameTagDef AlwaysDeployTag;
 
 
-      //  private static readonly ResearchTagDef CriticalResearchTag = DefCache.GetDef<ResearchTagDef>("CriticalPath_ResearchTagDef");
+        //  private static readonly ResearchTagDef CriticalResearchTag = DefCache.GetDef<ResearchTagDef>("CriticalPath_ResearchTagDef");
 
 
         // ResurrectAbilityRulesDef to mess with later
@@ -107,15 +104,17 @@ namespace TFTV
         {
             try
             {
-                GameTagDef capturableGameTagDef = DefCache.GetDef<GameTagDef>("Capturable_GameTagDef");
 
-
-
-                foreach (TacCharacterDef itemDef in Repo.GetAllDefs<TacCharacterDef>().Where(i => !i.Data.GameTags.Contains(capturableGameTagDef)))
+                for (int x = 0; x < 50; x++)
                 {
-                    TFTVLogger.Always($"{itemDef.name} {itemDef.Guid}", false);
+
+                    string havenName = TFTVCommonMethods.ConvertKeyToString($"KEY_HAVEN_NAME_NEW_JERICHO{x}");
+
+                    TFTVLogger.Always($"KEY_HAVEN_NAME_NEW_JERICHO{x}: {havenName}", false);                    
 
                 }
+              
+
 
             }
             catch (Exception e)
@@ -164,7 +163,7 @@ namespace TFTV
 
                 CreateRoboticSelfRestoreAbility();
 
-                LoadingScreensAndLore();           
+                LoadingScreensAndLore();
 
                 TFTVAncients.Defs.ChangesToLOTA();
 
@@ -230,7 +229,7 @@ namespace TFTV
 
                 // Experimental();
 
-                //  Print();
+             //   Print();
 
             }
             catch (Exception e)
@@ -925,6 +924,7 @@ namespace TFTV
                 Create_StarvedAbility();
                 TFTVUITactical.SecondaryObjectivesTactical.Defs.CreateDefs();
                 AdjustColorDefs();
+               
 
                 //  ChangeBuilderViewParams();
             }
@@ -1093,12 +1093,70 @@ namespace TFTV
                 FixMindWard();
                 FixAcheronAiming();
                 FixInstilFrenzySound();
+                FixMutoidDazeImmunity();
+                FixMutagenCostBadAcidWorm();
                 // FixUmbraFire(); doesn't work because status removed before check - implemented differently elsewhere
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        private static void FixMutagenCostBadAcidWorm()
+        {
+            try 
+            { 
+                TacCharacterDef badAcidWorm = DefCache.GetDef<TacCharacterDef>("AcidwormTest_AlienMutationVariationDef");
+                TacCharacterDef regularAcidWorm = DefCache.GetDef<TacCharacterDef>("Acidworm_AlienMutationVariationDef");
+                badAcidWorm.DeploymentCost = regularAcidWorm.DeploymentCost;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        private static void FixMutoidDazeImmunity()
+        {
+            try
+            {
+                ApplyStatusAbilityDef applyStatusAbilityDef = DefCache.GetDef<ApplyStatusAbilityDef>("MutoidDazeImmunity_AbilityDef");
+
+                AbilityTrackDef scyllaAbilityTrack = DefCache.GetDef<AbilityTrackDef>("E_AbilityTrack [ScyllaSpecializationDef]");
+
+
+
+                string name = "MutoidStunImmunity_AbilityDef";
+
+                StatusImmunityAbilityDef statusImmunityAbilityDef = DefCache.GetDef<StatusImmunityAbilityDef>("StunStatusImmunity_AbilityDef");
+
+
+
+                StatusImmunityAbilityDef newStatusImmunityAbility = Helper.CreateDefFromClone(
+                        statusImmunityAbilityDef,
+                        "{30D6D912-BAFB-4B9C-B611-453B96DCB302}",
+                        name);
+
+                newStatusImmunityAbility.ViewElementDef = Helper.CreateDefFromClone(
+                    applyStatusAbilityDef.ViewElementDef,
+                    "{58E9DD2E-EF55-476E-8D30-9D7330F22E22}",
+                    name);
+
+                newStatusImmunityAbility.CharacterProgressionData = Helper.CreateDefFromClone(
+                    applyStatusAbilityDef.CharacterProgressionData,
+                    "{3E0E7423-877A-4281-BDB5-5CD01084E342}",
+                    name);
+
+
+                scyllaAbilityTrack.AbilitiesByLevel[2].Ability = newStatusImmunityAbility;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
         }
 
         private static void FixInstilFrenzySound()
@@ -1573,7 +1631,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 ChangeResourceRewardsForAutopsies();
                 AdjustPandoranVolumes();
                 ChangesToCapturingPandorans();
-                
+
             }
             catch (Exception e)
             {
@@ -1581,7 +1639,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
             }
         }
 
-       
+
 
         private static void ChangesToCapturingPandorans()
         {
@@ -4824,7 +4882,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
 
         private static void ChangeHeavyLegsScyllaAbdomen()
         {
-            try 
+            try
             {
                 TacCharacterDef scylla6 = DefCache.GetDef<TacCharacterDef>("Scylla6_FrenzyArmorSmashHeavySpawn_AlienMutationVariationDef");
                 scylla6.Data.BodypartItems[5] = DefCache.GetDef<TacticalItemDef>("Queen_Abdomen_Belcher_BodyPartDef");
@@ -6948,7 +7006,7 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
             }
 
         }
-        
+
         public static void ModifyPandoranProgress()
         {
             try
@@ -7276,7 +7334,7 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
             }
         }
 
-       
+
 
         public static void RemoveCorruptionDamageBuff()
         {

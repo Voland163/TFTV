@@ -177,7 +177,7 @@ namespace PRMBetterClasses
                 try
                 {
                     TFTVConfig Config = TFTVMain.Main.Config;
-                    if (Config.LearnFirstPersonalSkill && __instance.UnitType.IsHuman && !__instance.UnitType.IsMutoid && !__instance.UnitType.TemplateDef.IsAlien)
+                    if (Config.LearnFirstSkill && __instance.UnitType.IsHuman && !__instance.UnitType.IsMutoid && !__instance.UnitType.TemplateDef.IsAlien)
                     {
                         // Personal ability 0 = first skill in the row
                         TacticalAbilityDef persAbility0 = __result.PersonalAbilityTrack.AbilitiesByLevel[0].Ability;

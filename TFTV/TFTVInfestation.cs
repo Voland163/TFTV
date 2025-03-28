@@ -1,8 +1,6 @@
 ﻿using Base;
 using Base.Core;
 using Base.UI;
-using Epic.OnlineServices;
-using Epic.OnlineServices.AntiCheatCommon;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
@@ -51,24 +49,24 @@ namespace TFTV
         public static int HavenPopulation = 0;
         public static string OriginalOwner = "";
 
-        
+
         private static GeoscapeEventDef _lW1MissWin;
         private static GeoscapeEventDef _lW2MissWin;
         private static GeoscapeEventDef _lW3MissWin;
         private static GeoscapeEventDef _lwExtra0;
-      
 
-        internal class Defs 
-        { 
-           
+
+        internal class Defs
+        {
+
 
             public static void ImplementInfestationDefs()
             {
-                try 
+                try
                 {
                     Events();
                     Missions();
-                
+
                 }
                 catch (Exception e)
                 {
@@ -101,7 +99,7 @@ namespace TFTV
                     _lwExtra0.GeoscapeEventData.Title.LocalizationKey = "KEY_INFESTATION_REPEAT_LW_TITLE";
                     _lwExtra0.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "KEY_INFESTATION_REPEAT_OUTCOME";
 
-                    
+
 
 
                     //Muting Living Weapons
@@ -109,7 +107,7 @@ namespace TFTV
                     lwstartingEvent.GeoscapeEventData.Mute = true;
                     DefCache.GetDef<KillActorFactionObjectiveDef>("KillCorruptionNode_CustomMissionObjective").MissionObjectiveData.ExperienceReward = 1000;
 
-                    
+
                 }
                 catch (Exception e)
                 {
@@ -157,18 +155,17 @@ namespace TFTV
 
         }
 
-
-       public static void ImplementLocateInfestedHavenOnObjectiveClick(DiplomaticGeoFactionObjective objective, ref IEnumerable<GeoActor> __result, ref List<GeoSite> ____assignedSites)
+        public static void ImplementLocateInfestedHavenOnObjectiveClick(DiplomaticGeoFactionObjective objective, ref IEnumerable<GeoActor> __result, ref List<GeoSite> ____assignedSites)
         {
-            try 
+            try
             {
                 GeoLevelController geoLevelController = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
-                if (objective.GetTitle().Contains(TFTVCommonMethods.ConvertKeyToString(_investigateInfestedHavenObjective))) 
+                if (objective.GetTitle().Contains(TFTVCommonMethods.ConvertKeyToString(_investigateInfestedHavenObjective)))
                 {
-                   GeoSite geoSite = geoLevelController.Map.AllSites.FirstOrDefault(gs => gs.Type == GeoSiteType.Haven && gs.Owner == geoLevelController.AlienFaction);
+                    GeoSite geoSite = geoLevelController.Map.AllSites.FirstOrDefault(gs => gs.Type == GeoSiteType.Haven && gs.Owner == geoLevelController.AlienFaction);
 
-                    if (geoSite != null) 
+                    if (geoSite != null)
                     {
                         ____assignedSites.Add(geoSite);
 
@@ -183,7 +180,6 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-
 
         private static void AddInvestigateInfestedHavenObjective(GeoLevelController controller)
         {
@@ -210,7 +206,7 @@ namespace TFTV
         internal class StoryFirstInfestedHaven
         {
 
-           
+
             private static readonly GameTagDef nodeTag = DefCache.GetDef<GameTagDef>("CorruptionNode_ClassTagDef");
 
             private static readonly MissionTypeTagDef infestationMissionTagDef = DefCache.GetDef<MissionTypeTagDef>("HavenInfestation_MissionTypeTagDef");
@@ -220,13 +216,13 @@ namespace TFTV
 
             public static void InfestationStoryMission(GeoMission geoMission, GeoSquad squad)
             {
-                try 
+                try
                 {
                     if (geoMission.MissionDef.Tags.Contains(infestationMissionTagDef))
                     {
 
                         GeoHaven geoHaven = geoMission.Site.GeoLevel.AlienFaction.Havens.FirstOrDefault(h => h.Site.SiteId == geoMission.Site.SiteId);
-                       
+
                         TFTVLogger.Always("The haven is " + geoHaven.Site.LocalizedSiteName + " and its population is " + geoHaven.Population);
 
                         HavenPopulation = geoHaven.Population;
@@ -252,9 +248,9 @@ namespace TFTV
                             TFTVLogger.Always("There are " + operatives.Count() + " phoenix operatives");
                             List<GeoCharacter> orderedOperatives = operatives.OrderByDescending(e => e.LevelProgression.Experience).ToList();
                             string characterName = "";
- 
+
                             characterName = TFTVTacticalUtils.GetCharacterLastName(operatives.Last().DisplayName);
-                           
+
                             string name = "InfestationMissionIntro";
                             string title = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY_INTRO_TITLE");//"Search and Rescue";
                             string director = TFTVCommonMethods.ConvertKeyToString("KEY_TEXT_DIRECTOR");
@@ -294,7 +290,7 @@ namespace TFTV
             }
 
 
-          
+
 
             public static void CreateOutroInfestation(TacticalLevelController controller, DeathReport deathReport)
             {
@@ -330,7 +326,7 @@ namespace TFTV
                 }
             }
 
-            
+
         }
 
         internal class InfestingHaven
@@ -540,14 +536,14 @@ namespace TFTV
                         if (encounterID == "PROG_FS3_MISS")
                         {
                             GeoSite targetHaven = __result;
-                            
-                            if (!targetHaven.IsInMist || targetHaven.ActiveMission != null)
+
+                            if (!targetHaven.IsInMist || targetHaven.Type != GeoSiteType.Haven || targetHaven.ActiveMission != null)
                             {
                                 TFTVLogger.Always($"triggered Science of Madness, but initial haven is not suitable");
 
                                 List<GeoSite> list = level.Map.AllSites.Where(
                                     gs => gs.Type == GeoSiteType.Haven && gs.State == GeoSiteState.Functioning && gs.IsInMist && gs.ActiveMission == null && gs.IsFreeForEncounter).ToList();
-                             
+
                                 if (list.Count > 0)
                                 {
                                     targetHaven = list.GetRandomElement();
@@ -744,7 +740,7 @@ namespace TFTV
                                 }
 
 
-                               
+
 
                                 string firstHavenDescription0 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_FIRST_HAVEN0");
                                 string firstHavenDescription1 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_FIRST_HAVEN1");
@@ -798,11 +794,11 @@ namespace TFTV
                                     site.GeoLevel.EventSystem.TriggerGeoscapeEvent(_lW3MissWin.EventID, context);
                                     site.GeoLevel.EventSystem.SetVariable(LivingWeaponsAcquired, 3);
                                 }
-                                else if(site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) == 3) 
+                                else if (site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) == 3)
                                 {
                                     int linvingWeaponsRoll = UnityEngine.Random.Range(0, 4);
 
-                                    if(linvingWeaponsRoll == 0) 
+                                    if (linvingWeaponsRoll == 0)
                                     {
                                         _lwExtra0.GeoscapeEventData.Choices[0].Outcome.Items = _lW1MissWin.GeoscapeEventData.Choices[0].Outcome.Items;
                                     }
@@ -817,9 +813,9 @@ namespace TFTV
                                     GeoscapeEventContext context = new GeoscapeEventContext(site, site.GeoLevel.PhoenixFaction);
 
                                     TFTVLogger.Always($"{_lwExtra0.GeoscapeEventData.Description[0].General.LocalizationKey}");
-                                    
+
                                     site.GeoLevel.EventSystem.TriggerGeoscapeEvent(_lwExtra0.EventID, context);
-                                   
+
                                 }
                             }
 

@@ -1,16 +1,26 @@
 ﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
+using Base;
+using Base.Cameras;
 using Base.Core;
 using Base.Defs;
+using Base.Entities.Effects;
+using Base.Entities.Statuses;
 using Base.Levels;
+using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.UI;
+using PhoenixPoint.Common.Utils;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Interception;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
@@ -27,9 +37,14 @@ using PhoenixPoint.Geoscape.View.ViewControllers.VehicleRoster;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Effects;
+using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
+using PhoenixPoint.Tactical.Levels.Mist;
+using PhoenixPoint.Tactical.Levels.PathProcessors;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,6 +59,7 @@ namespace TFTV
         public static bool AircraftReworkOn = false;
         public static float MistSpeedMalus = 0.2f;
         public static float MistSpeedBuff = 2f;
+        public static float MistSpeedModuleBuff = 600;
 
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
@@ -57,7 +73,8 @@ namespace TFTV
 
         private static readonly GeoVehicleDef maskedManticore = DefCache.GetDef<GeoVehicleDef>("PP_MaskedManticore_Def");
 
-        private static GeoScanComponentDef _geoScanVehicleScannerComponent = null;
+        private static GeoScanComponentDef _basicScannerComponent = null;
+        private static GeoScanComponentDef _thunderbirdScannerComponent = null;
         private static ScanAbilityDef _scanAbilityDef = DefCache.GetDef<ScanAbilityDef>("ScanAbilityDef");
         private static ScanAbilityDef _thunderbirdScanAbilityDef = null;
 
@@ -89,70 +106,33 @@ namespace TFTV
 
         private static StanceStatusDef _heliosStealthModuleStatus = null;
 
-        private static GeoMarketplaceItemOptionDef _rangeModuleMarketPlaceItemOptionDef = null;
-        private static GeoMarketplaceItemOptionDef _speedModuleMarketPlaceItemOptionDef = null;
+
 
         private static List<GeoMarketplaceItemOptionDef> _listOfModulesSoldInMarketplace = new List<GeoMarketplaceItemOptionDef>();
+        private static JetJumpAbilityDef _groundAttackAbility = null;
+        private static List<DelayedEffectDef> _groundAttackWeaponExplosions = new List<DelayedEffectDef>();
 
-        internal class MarketPlace
+        internal class InternalData
         {
 
-            public static void GenerateMarketPlaceModules(GeoMarketplace geoMarketplace)
+            public static void ClearDataOnLoad()
             {
                 try
                 {
-                    foreach (GeoMarketplaceItemOptionDef geoMarketplaceItemOptionDef in _listOfModulesSoldInMarketplace)
+                    if (!AircraftReworkOn)
                     {
-
-                        int price = (int)(UnityEngine.Random.Range(geoMarketplaceItemOptionDef.MinPrice, geoMarketplaceItemOptionDef.MaxPrice));
-
-                        GeoEventChoice item = TFTVChangesToDLC5.TFTVMarketPlaceGenerateOffers.GenerateItemChoice(geoMarketplaceItemOptionDef.ItemDef, price);
-
-                        geoMarketplace.MarketplaceChoices.Add(item);
+                        return;
                     }
+
+                    Modules.Tactical.ClearTacticalDataOnLoad();
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
-
             }
 
-
-
-
-            [HarmonyPatch(typeof(GeoEventChoiceOutcome), "GenerateFactionReward")]
-            public static class GeoEventChoiceOutcome_GenerateFactionReward_Patch
-            {
-                static void Postfix(GeoEventChoiceOutcome __instance, GeoscapeEventContext context, string eventID, GeoFaction faction)
-                {
-                    try
-                    {
-                        if (!AircraftReworkOn)
-                        {
-                            return;
-                        }
-
-                        // TFTVLogger.Always($"{eventID} __instance.Items.Count(): {__instance.Items?.Count()}");
-
-                        foreach (ItemUnit item in __instance?.Items)
-                        {
-                            // TFTVLogger.Always($"{eventID} item.ItemDef: {item.ItemDef?.name} item.ItemDef is GeoVehicleEquipmentDef: {item.ItemDef is GeoVehicleEquipmentDef}");
-
-                            if (item.ItemDef != null && item.ItemDef is GeoVehicleEquipmentDef)
-                            {
-                                GeoVehicleEquipment geoVehicleEquipment = new GeoVehicleEquipment(item.ItemDef as GeoVehicleEquipmentDef);
-                                faction.AircraftItemStorage.AddItem(geoVehicleEquipment);
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
-                }
-            }
+            public static bool[] ModulesInTactical = new bool[8];
         }
 
         internal class Defs
@@ -162,6 +142,7 @@ namespace TFTV
                 try
                 {
                     CreateCaptureModule();
+                    RemoveInfestedAircraft();
 
                     if (!AircraftReworkOn)
                     {
@@ -174,11 +155,180 @@ namespace TFTV
                     CreateModules();
                     RemoveAircombat();
                     CreateHeliosStealthModuleStatus();
+                    CreateGroundAttackAbility();
+                    CreateGroundAttackWeaponExplosion();
+                    MakeMyrmidonsAvailableWithoutFlyers();
+                    ModifyVehicleBayHealing();
+
+                    /*  foreach(CustomMissionTypeDef customMissionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>()) 
+                      {
+                          TFTVLogger.Always($"Mission: {customMissionTypeDef.name}", false);
+                          {
+                              foreach (var tag in customMissionTypeDef.MissionTags)
+                              {
+                                  TFTVLogger.Always($"{tag.name}", false);
+                              }
+                          }
+
+                      }*/
+
+
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
+            }
+
+            private static void RemoveInfestedAircraft()
+            {
+                try
+                {
+                    //Changes to FesteringSkies settings
+                    FesteringSkiesSettingsDef festeringSkiesSettingsDef = DefCache.GetDef<FesteringSkiesSettingsDef>("FesteringSkiesSettingsDef");
+                    festeringSkiesSettingsDef.SpawnInfestedAircraftChance = 0;
+                    festeringSkiesSettingsDef.InfestedAircraftChance = 0;
+                    festeringSkiesSettingsDef.InfestedAircrafts.Clear();
+                    festeringSkiesSettingsDef.InfestedAircraftRebuildHours = 100000;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+
+
+            }
+
+            private static void ModifyVehicleBayHealing()
+            {
+                try
+                {
+                    DefCache.GetDef<VehicleSlotFacilityComponentDef>("E_Element0 [VehicleBay_PhoenixFacilityDef]").AircraftHealAmount = 25;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void MakeMyrmidonsAvailableWithoutFlyers()
+            {
+                try
+                {
+                    DefCache.GetDef<ExistingResearchRequirementDef>("ALN_BasicSwarmer_ResearchDef_ExistingResearchRequirementDef_0").ResearchID = "ALN_Lair_ResearchDef";
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
+            private static void CreateGroundAttackWeaponExplosion()
+            {
+                try
+                {
+
+                    string name = "GroundAttackWeaponExplosion_ExplosionEffectDef";
+                    string gUIDDelayedEffect0 = "{0A457309-A00E-448C-846A-63E598431240}";
+                    string gUIDDelayedEffect1 = "{FF7B0D09-6BA2-4E96-8423-A4690704184E}";
+                    string gUIDDelayedEffect2 = "{271D4DFA-7396-430D-890D-DCF2A6A4CE8B}";
+                    DelayedEffectDef sourceDelayedEffect = DefCache.GetDef<DelayedEffectDef>("ExplodingBarrel_ExplosionEffectDef");
+                    DelayedEffectDef newDelayedEffect0 = Helper.CreateDefFromClone(sourceDelayedEffect, gUIDDelayedEffect0, name);
+
+
+                    string gUIDExplosionEffect = "{53B8B5BE-8256-490B-9928-2447EF24F18D}";
+                    ExplosionEffectDef sourceExplosionEffect = DefCache.GetDef<ExplosionEffectDef>("E_ShrapnelExplosion [ExplodingBarrel_ExplosionEffectDef]");
+                    ExplosionEffectDef newExplosionEffect = Helper.CreateDefFromClone(sourceExplosionEffect, gUIDExplosionEffect, name);
+
+
+                    //  SpawnVoxelDamageTypeEffectDef mistDamage = DefCache.GetDef<SpawnVoxelDamageTypeEffectDef>("Goo_SpawnVoxelDamageTypeEffectDef");
+
+                    string gUIDDamageEffect = "{1EDC7AEA-FC22-4860-AAF9-298784658B1E}";
+                    DamageEffectDef sourceDamageEffect = DefCache.GetDef<DamageEffectDef>("E_DamageEffect [ExplodingBarrel_ExplosionEffectDef]");
+                    DamageEffectDef newDamageEffect = Helper.CreateDefFromClone(sourceDamageEffect, gUIDDamageEffect, name);
+                    newDamageEffect.MinimumDamage = 80;
+                    newDamageEffect.MaximumDamage = 80;
+                    newDamageEffect.ObjectMultiplier = 10;
+                    newDamageEffect.ArmourShred = 10;
+                    newDamageEffect.ArmourShredProbabilityPerc = 100;
+                    //  newDamageEffect.DamageTypeDef = mistDamage;
+                    newExplosionEffect.DamageEffect = newDamageEffect;
+                    newDelayedEffect0.EffectDef = newExplosionEffect;
+                    newDelayedEffect0.SecondsDelay = 0.0f;
+
+                    DelayedEffectDef newDelayedEffect1 = Helper.CreateDefFromClone(newDelayedEffect0, gUIDDelayedEffect1, name);
+                    DelayedEffectDef newDelayedEffect2 = Helper.CreateDefFromClone(newDelayedEffect0, gUIDDelayedEffect2, name);
+
+                    newDelayedEffect1.SecondsDelay = 0.5f;
+                    newDelayedEffect2.SecondsDelay = 1f;
+
+                    _groundAttackWeaponExplosions.Add(newDelayedEffect0);
+                    _groundAttackWeaponExplosions.Add(newDelayedEffect1);
+                    _groundAttackWeaponExplosions.Add(newDelayedEffect2);
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+
+            private static void CreateGroundAttackAbility()
+            {
+                try
+                {
+                    JetJumpAbilityDef jetJumpAbilityDef = DefCache.GetDef<JetJumpAbilityDef>("JetJump_AbilityDef");
+
+                    ShootAbilitySceneViewDef shootAbilitySceneViewDef = DefCache.GetDef<ShootAbilitySceneViewDef>("_Sphere_ShootAbilitySceneViewElementDef");
+
+                    string name = "TFTV_GroundAttackAbility";
+                    string guid1 = "{2EAE36F5-CE9B-466E-9FDE-1DC868110A85}";
+                    string guid2 = "{BD352977-59CB-41B1-A839-15CD817B84D3}";
+                    string guid3 = "{8330134B-A2D2-4EF7-BAD9-C601B070463C}";
+                    string guid4 = "{067F3041-EF22-41C8-A1DB-09E4EE6E5A3B}";
+
+                    JetJumpAbilityDef newAbility = Helper.CreateDefFromClone(jetJumpAbilityDef, guid1, name);
+                    newAbility.ViewElementDef = Helper.CreateDefFromClone(jetJumpAbilityDef.ViewElementDef, guid2, name);
+                    newAbility.TargetingDataDef = Helper.CreateDefFromClone(jetJumpAbilityDef.TargetingDataDef, guid3, name);
+                    newAbility.SceneViewElementDef = Helper.CreateDefFromClone(jetJumpAbilityDef.SceneViewElementDef, guid4, name);
+
+
+
+
+                    newAbility.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_THUNDERBIRD_GAW_ABILITY_NAME";
+                    newAbility.ViewElementDef.Description.LocalizationKey = "TFTV_THUNDERBIRD_GAW_ABILITY_DESCRIPTION";
+
+                    Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_Thunderbird_GroundAttack_Small.png");
+
+                    newAbility.ViewElementDef.SmallIcon = icon;
+                    newAbility.ViewElementDef.LargeIcon = icon;
+
+                    newAbility.TargetingDataDef.Origin.Range = 100;
+                    //  newAbility.TargetingDataDef.Target.Range = 5;
+                    newAbility.SceneViewElementDef.HoverMarker = PhoenixPoint.Tactical.View.GroundMarkerType.AttackGround;
+                    //   newAbility.SceneViewElementDef.LineToCursor = PhoenixPoint.Tactical.View.GroundMarkerType.;
+
+                    newAbility.SceneViewElementDef.DrawCoverAtHoverMarker = false;
+
+
+
+                    //  newAbility.SceneViewElementDef.MovementPositionMarker = PhoenixPoint.Tactical.View.GroundMarkerType.AttackGround;
+                    //  newAbility.SceneViewElementDef.TargetPositionMarker = PhoenixPoint.Tactical.View.GroundMarkerType.Invalid;
+
+                    newAbility.ActionPointCost = 0;
+                    newAbility.WillPointCost = 0;
+
+                    _groundAttackAbility = newAbility;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
             }
 
             private static void CreateHeliosStealthModuleStatus()
@@ -235,6 +385,9 @@ namespace TFTV
                     }
 
                 }
+
+
+
 
                 private static void ModifyAirCombatDefs()
                 {
@@ -417,12 +570,7 @@ namespace TFTV
                         reseachRequirementDefOpContainers[0].Requirements = researchRequirementDefs;
                         aLN_Large_Flyer_ResearchDef.RevealRequirements.Container = reseachRequirementDefOpContainers;
 
-                        //Changes to FesteringSkies settings
-                        FesteringSkiesSettingsDef festeringSkiesSettingsDef = DefCache.GetDef<FesteringSkiesSettingsDef>("FesteringSkiesSettingsDef");
-                        festeringSkiesSettingsDef.SpawnInfestedAircraftChance = 0;
-                        festeringSkiesSettingsDef.InfestedAircraftChance = 0;
-                        festeringSkiesSettingsDef.InfestedAircrafts.Clear();
-                        festeringSkiesSettingsDef.InfestedAircraftRebuildHours = 100000;
+
 
                         InterceptionGameDataDef interceptionGameDataDef = DefCache.GetDef<InterceptionGameDataDef>("InterceptionGameDataDef");
                         interceptionGameDataDef.DisengageDuration = 3;
@@ -804,6 +952,9 @@ namespace TFTV
                     DefCache.GetDef<GeoscapeEventDef>("PROG_FS9_GeoscapeEventDef").GeoscapeEventData.Mute = true;
                     DefCache.GetDef<GeoscapeEventDef>("PROG_FS10_GeoscapeEventDef").GeoscapeEventData.Mute = true;
 
+                    DefCache.GetDef<ResearchDbDef>("pp_ResearchDB").Researches.Remove(DefCache.GetDef<ResearchDef>("PX_Aircraft_Electrolaser_ResearchDef"));
+                    DefCache.GetDef<ResearchDbDef>("pp_ResearchDB").Researches.Remove(DefCache.GetDef<ResearchDef>("PX_Aircraft_HypersonicMissile_ResearchDef"));
+                    DefCache.GetDef<ResearchDbDef>("pp_ResearchDB").Researches.Remove(DefCache.GetDef<ResearchDef>("PX_Aircraft_MaskedManticore_ResearchDef"));
                 }
                 catch (Exception e)
                 {
@@ -816,38 +967,20 @@ namespace TFTV
             {
                 try
                 {
-                    /* foreach (GeoRangeComponentDef geoRangeComponentDef1 in Repo.GetAllDefs<GeoRangeComponentDef>())
-                      {
-                          TFTVLogger.Always($"GeoRangeComponentDef: {geoRangeComponentDef1.name}", false);
-                      }
-
-                      foreach(GeoScanComponentDef geoScanComponentDef in Repo.GetAllDefs<GeoScanComponentDef>()) 
-                      {
-                          TFTVLogger.Always($"GeoScanComponentDef: {geoScanComponentDef.name}", false);
-
-                      }
-
-                      foreach(GeoScannerDef geoScannerDef in Repo.GetAllDefs<GeoScannerDef>())
-                      {
-                          TFTVLogger.Always($"GeoScannerDef: {geoScannerDef.name}", false);
-                      }
-
-                      foreach(ComponentSetDef componentSetDef in Repo.GetAllDefs<ComponentSetDef>().Where(c=>c.Components.Any(c2=>c2 is GeoScanComponentDef)))
-                      {
-                          TFTVLogger.Always($"ComponentSetDef: {componentSetDef.name}", false);
-                      }
-
-                      foreach (ComponentSetDef componentSetDef in Repo.GetAllDefs<ComponentSetDef>().Where(c => c.Components.Any(c2 => c2 is GeoRangeComponentDef)))
-                      {
-                          TFTVLogger.Always($"ComponentSetDef: {componentSetDef.name}", false);
-                      }*/
-
-
 
                     helios.BaseStats.Speed = new EarthUnits(625);
                     thunderbird.BaseStats.Speed = new EarthUnits(405);
                     blimp.BaseStats.Speed = new EarthUnits(325);
 
+                    manticore.BaseStats.HitPoints = 100;
+                    thunderbird.BaseStats.HitPoints = 100;
+                    blimp.BaseStats.HitPoints = 100;
+                    helios.BaseStats.HitPoints = 100;
+
+                    manticore.BaseStats.MaxHitPoints = 100;
+                    thunderbird.BaseStats.MaxHitPoints = 100;
+                    blimp.BaseStats.MaxHitPoints = 100;
+                    helios.BaseStats.MaxHitPoints = 100;
 
                 }
                 catch (Exception e)
@@ -1016,8 +1149,11 @@ namespace TFTV
                     GeoScanComponentDef newScanComponent = Helper.CreateDefFromClone(geoScanComponentSource, "{C4296C4C-C890-446F-9423-DF9EF5774296}", id);
                     newScanComponent.SitesToFind.Add(GeoSiteType.AlienBase);
 
+                    _thunderbirdScannerComponent = newScanComponent;
+
                     GeoScannerDef scannerDef = Helper.CreateDefFromClone(scannerSource, "{72331364-A129-4232-A79F-F352DC1972F6}", id);
-                    scannerDef.MaximumRange.Value = 4000;
+                    scannerDef.MaximumRange.Value = 3000;
+                    scannerDef.ExpansionTimeHours = 8;
                     //  newGeoScanComponent.SitesToFind = new List<GeoSiteType>() { GeoSiteType.Haven };
                     //  newGeoScanComponent.RevealSites = true;
 
@@ -1109,6 +1245,8 @@ namespace TFTV
                     _heliosStatisChamberModule.GeoVehicleModuleBonusValue = 40;
                     _heliosModules.Add(_heliosStatisChamberModule);
 
+
+
                     ResearchDef unlockResearch = DefCache.GetDef<ResearchDef>("SYN_NanoTech_ResearchDef");
                     string guid3 = "{E42A5F5B-4E0B-40C4-8A8B-D01CB3F5F5B0}";
                     AddToResearchUnlock(unlockResearch, _heliosStatisChamberModule, guid3);
@@ -1187,7 +1325,7 @@ namespace TFTV
                     Sprite smallIcon = Helper.CreateSpriteFromImageFile($"TFTV_{id}_Small.png");
                     Sprite largeIcon = smallIcon; //Helper.CreateSpriteFromImageFile("TFTVCaptureDronesModuleLargeIcon.png");
 
-                    GeoVehicleModuleDef module = CreateModule(name, guid1, guid2, nameKey, descriptionKey, smallIcon, largeIcon, GeoVehicleModuleDef.GeoVehicleModuleBonusType.Speed, 500);
+                    GeoVehicleModuleDef module = CreateModule(name, guid1, guid2, nameKey, descriptionKey, smallIcon, largeIcon, GeoVehicleModuleDef.GeoVehicleModuleBonusType.Speed, 400);
                     ResearchDef unlockResearch = DefCache.GetDef<ResearchDef>("SYN_MoonMission_ResearchDef");
                     string guid3 = "{FFFC41F1-1289-4778-98E8-244868E3CA1C}";
                     AddToResearchUnlock(unlockResearch, module, guid3);
@@ -1312,33 +1450,6 @@ namespace TFTV
                 }
             }
 
-
-
-
-            [HarmonyPatch(typeof(ManufactureResearchReward), "GiveReward")]
-            public static class ManufactureResearchReward_DetectSite_Patch
-            {
-                static void Postfix(ManufactureResearchReward __instance, GeoFaction faction)
-                {
-                    try
-                    {
-                        if (!AircraftReworkOn)
-                        {
-                            return;
-                        }
-
-                        TFTVLogger.Always($"ManufactureResearchReward: {__instance.Def.name}");
-
-
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
-                }
-            }
-
             private static void AddToResearchUnlock(ResearchDef research, GeoVehicleModuleDef module, string guid)
             {
                 try
@@ -1374,7 +1485,7 @@ namespace TFTV
                     GeoVehicleModuleDef speedModule = DefCache.GetDef<GeoVehicleModuleDef>("NJ_CruiseControl_GeoVehicleModuleDef");
                     speedModule.GeoVehicleModuleBonusValue = 250;
                     speedModule.Tags.RemoveAt(1);
-                    _speedModuleMarketPlaceItemOptionDef = CreateMarketplaceItem(speedModule.name, "{EA57516D-AACF-41FA-BBDD-02248B4F45BD}", 400, 1, speedModule);
+                    CreateMarketplaceItem(speedModule.name, "{EA57516D-AACF-41FA-BBDD-02248B4F45BD}", 400, 1, speedModule);
                     _basicSpeedModule = speedModule;
                     _basicModules.Add(speedModule);
                 }
@@ -1393,7 +1504,7 @@ namespace TFTV
                     GeoVehicleModuleDef rangeModule = DefCache.GetDef<GeoVehicleModuleDef>("NJ_FuelTanks_GeoVehicleModuleDef");
                     rangeModule.GeoVehicleModuleBonusValue = 1000;
                     rangeModule.Tags.RemoveAt(1);
-                    _rangeModuleMarketPlaceItemOptionDef = CreateMarketplaceItem(rangeModule.name, "{C0E985A9-E180-4C9C-A98B-B8E8E38FD9B1}", 400, 1, rangeModule);
+                    CreateMarketplaceItem(rangeModule.name, "{C0E985A9-E180-4C9C-A98B-B8E8E38FD9B1}", 400, 1, rangeModule);
                     _basicRangeModule = rangeModule;
                     _basicModules.Add(rangeModule);
 
@@ -1503,7 +1614,6 @@ namespace TFTV
 
                     ScanAbilityDef scanAbility = DefCache.GetDef<ScanAbilityDef>("ScanAbilityDef");
 
-
                     // ScanAbilityDef newAbility = Helper.CreateDefFromClone(source, "{F13000CF-3F7F-45CB-A435-8F85B909D294}", "TFTVScanVehicleAbility");
 
                     scanAbility.ViewElementDef.ShowCharges = false;
@@ -1513,25 +1623,29 @@ namespace TFTV
                     GeoRangeComponentDef sourceGeoScan = DefCache.GetDef<GeoRangeComponentDef>("E_SiteScannerRange [PhoenixBase_GeoSite]");
 
 
-                    GeoRangeComponentDef newRangeComponent = Helper.CreateDefFromClone(sourceGeoScan, "{0F449AF2-3754-4923-9143-31E2A1A02660}", "TFTVGeoScan");
+                    GeoRangeComponentDef newRangeComponent = Helper.CreateDefFromClone(sourceGeoScan, "{0F449AF2-3754-4923-9143-31E2A1A02660}", "TFTVGeoScanRangeComponent");
                     newRangeComponent.RangeTransformPath = "GlobeOffset";
 
+                    GeoScannerDef geoScannerDefSource = DefCache.GetDef<GeoScannerDef>("E_PP_Scanner_Actor_ [PP_Scanner]");
+                    GeoScannerDef newScannerComponent = Helper.CreateDefFromClone(geoScannerDefSource, "{39036AB1-C8A5-480E-B647-596A9EC12FFC}", "TFTVGeoScanScannerComponent");
 
+                    newScannerComponent.ExpansionTimeHours = 12;
 
                     GeoScanComponentDef geoScanComponentSource = DefCache.GetDef<GeoScanComponentDef>("E_Scan [PP_Scanner]");
 
-                    GeoScanComponentDef newScanComponent = Helper.CreateDefFromClone(geoScanComponentSource, "{7853D47E-C0BD-4F0A-888D-C4AEF2B0983F}", "TFTVGeoScanComponent");
+                    GeoScanComponentDef newScanComponent = Helper.CreateDefFromClone(geoScanComponentSource, "{7853D47E-C0BD-4F0A-888D-C4AEF2B0983F}", "TFTVGeoScanScanComponent");
                     //  newGeoScanComponent.SitesToFind = new List<GeoSiteType>() { GeoSiteType.Haven };
                     //  newGeoScanComponent.RevealSites = true;
 
                     // newGeoScan.RangeEffectPrefab = null;
 
                     ComponentSetDef scannerComp = DefCache.GetDef<ComponentSetDef>("PP_Scanner");
-                  //  scannerComp.Prefab = ancientProbeComp.Prefab;
+                    //  scannerComp.Prefab = ancientProbeComp.Prefab;
                     scannerComp.Components[0] = newRangeComponent;
                     scannerComp.Components[1] = newScanComponent;
+                    scannerComp.Components[2] = newScannerComponent;
 
-                    _geoScanVehicleScannerComponent = newScanComponent;
+                    _basicScannerComponent = newScanComponent;
 
                     ResearchDef unlockResearch = DefCache.GetDef<ResearchDef>("PX_Alien_Colony_ResearchDef");
                     string guid = "{9EBC92B5-80C2-453B-8757-7320972F5512}";
@@ -1636,92 +1750,273 @@ namespace TFTV
 
         }
 
+        internal class MarketPlace
+        {
+            /// <summary>
+            /// Will be called on 4th market rotation, so mid January.
+            /// </summary>
+            /// <param name="geoMarketplace"></param>
+            public static void GenerateMarketPlaceModules(GeoMarketplace geoMarketplace)
+            {
+                try
+                {
+                    foreach (GeoMarketplaceItemOptionDef geoMarketplaceItemOptionDef in _listOfModulesSoldInMarketplace)
+                    {
+                        int price = (int)(UnityEngine.Random.Range(geoMarketplaceItemOptionDef.MinPrice, geoMarketplaceItemOptionDef.MaxPrice));
+
+                        GeoEventChoice item = TFTVChangesToDLC5.TFTVMarketPlaceGenerateOffers.GenerateItemChoice(geoMarketplaceItemOptionDef.ItemDef, price);
+
+                        geoMarketplace.MarketplaceChoices.Add(item);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
+
+
+
+            [HarmonyPatch(typeof(GeoEventChoiceOutcome), "GenerateFactionReward")]
+            public static class GeoEventChoiceOutcome_GenerateFactionReward_Patch
+            {
+                public static void Postfix(GeoEventChoiceOutcome __instance, GeoscapeEventContext context, string eventID, GeoFaction faction)
+                {
+                    try
+                    {
+                        if (!AircraftReworkOn)
+                        {
+                            return;
+                        }
+
+                        // TFTVLogger.Always($"{eventID} __instance.Items.Count(): {__instance.Items?.Count()}");
+
+                        foreach (ItemUnit item in __instance?.Items)
+                        {
+                            // TFTVLogger.Always($"{eventID} item.ItemDef: {item.ItemDef?.name} item.ItemDef is GeoVehicleEquipmentDef: {item.ItemDef is GeoVehicleEquipmentDef}");
+
+                            if (item.ItemDef != null && item.ItemDef is GeoVehicleEquipmentDef)
+                            {
+                                GeoVehicleEquipment geoVehicleEquipment = new GeoVehicleEquipment(item.ItemDef as GeoVehicleEquipmentDef);
+                                faction.AircraftItemStorage.AddItem(geoVehicleEquipment);
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+        }
 
         internal class Modules
         {
             internal class Tactical
             {
-                public static bool ScannerModulePresent = false;
-                public static bool CaptureDronesModulePresent = false;
-                public static bool MistRepllerModulePresent = false;
-                public static bool HeliosStealthModulePresent = false;
-                public static bool BlimpWPModulePresent = false;
-                public static bool HeliosPresent = false;
-                public static bool HeliosStatisChamberPresent = false;
+                private static bool _scannerModulePresent = false;
+                private static bool _captureDronesModulePresent = false;
+                private static bool _mistRepellerModulePresent = false;
+                private static bool _heliosStealthModulePresent = false;
+                private static bool _blimpWPModulePresent = false;
+                private static bool _heliosPresent = false;
+                private static bool _heliosStatisChamberPresent = false;
+                private static bool _thunderbirdGroundAttackWeapon = false;
 
-                [HarmonyPatch(typeof(DamageOverTimeResistanceStatus), "ApplyResistance")]
-                public static class DamageOverTimeResistanceStatus_ApplyResistance_Patch
-                {
-                    static void Postfix(DamageOverTimeResistanceStatus __instance)
-                    {
-                        try
-                        {
-                            if (!AircraftReworkOn || !HeliosStatisChamberPresent)
-                            {
-                                return;
-                            }
-
-                            if (__instance.DamageOverTimeResistanceStatusDef == DefCache.GetDef<DamageOverTimeResistanceStatusDef>("NanoTech_StatusDef"))
-                            {
-                                TacticalActor tacticalActor = __instance.TacticalActor;
-
-                                if (tacticalActor != null && tacticalActor.Status != null)
-                                {
-                                    tacticalActor.Status.UnapplyStatus(__instance);
-                                }
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            throw;
-                        }
-                    }
-                }
-
-                public static void CheckTacticallyRelevantModulesOnVehicle(GeoVehicle geoVehicle)
+                internal static string ReportModulesPresent()
                 {
                     try
                     {
+                        string report = "";
+
+                        if (_scannerModulePresent)
+                        {
+                            report += "Scanner Module Present\n";
+                        }
+
+                        if (_captureDronesModulePresent)
+                        {
+                            report += "Capture Drones Module Present\n";
+                        }
+
+                        if (_mistRepellerModulePresent)
+                        {
+                            report += "Mist Repeller Module Present\n";
+                        }
+
+                        if (_heliosStealthModulePresent)
+                        {
+                            report += "Helios Stealth Module Present\n";
+                        }
+
+                        if (_blimpWPModulePresent)
+                        {
+                            report += "Blimp WP Module Present\n";
+                        }
+
+                        if (_heliosPresent)
+                        {
+                            report += "Helios Present\n";
+                        }
+
+                        if (_heliosStatisChamberPresent)
+                        {
+                            report += "Helios Statis Chamber Present\n";
+                        }
+
+                        if (_thunderbirdGroundAttackWeapon)
+                        {
+                            report += "Thunderbird Ground Attack Weapon Present\n";
+                        }
+
+                        return report;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+
+                }
+
+                internal static void LoadInternalDataForTactical()
+                {
+                    try
+                    {
+                        _scannerModulePresent = InternalData.ModulesInTactical[0];
+                        _captureDronesModulePresent = InternalData.ModulesInTactical[1];
+                        _mistRepellerModulePresent = InternalData.ModulesInTactical[2];
+                        _heliosStealthModulePresent = InternalData.ModulesInTactical[3];
+                        _blimpWPModulePresent = InternalData.ModulesInTactical[4];
+                        _heliosPresent = InternalData.ModulesInTactical[5];
+                        _heliosStatisChamberPresent = InternalData.ModulesInTactical[6];
+                        _thunderbirdGroundAttackWeapon = InternalData.ModulesInTactical[7];
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+                internal static void SaveInternalDataForTactical()
+                {
+                    try
+                    {
+                        InternalData.ModulesInTactical[0] = _scannerModulePresent;
+                        InternalData.ModulesInTactical[1] = _captureDronesModulePresent;
+                        InternalData.ModulesInTactical[2] = _mistRepellerModulePresent;
+                        InternalData.ModulesInTactical[3] = _heliosStealthModulePresent;
+                        InternalData.ModulesInTactical[4] = _blimpWPModulePresent;
+                        InternalData.ModulesInTactical[5] = _heliosPresent;
+                        InternalData.ModulesInTactical[6] = _heliosStatisChamberPresent;
+                        InternalData.ModulesInTactical[7] = _thunderbirdGroundAttackWeapon;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+                internal static void ClearTacticalDataOnLoad()
+                {
+                    try
+                    {
+                        _scannerModulePresent = false;
+                        _captureDronesModulePresent = false;
+                        _mistRepellerModulePresent = false;
+                        _heliosStealthModulePresent = false;
+                        _blimpWPModulePresent = false;
+                        _heliosPresent = false;
+                        _heliosStatisChamberPresent = false;
+                        _thunderbirdGroundAttackWeapon = false;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+                public static void CheckTacticallyRelevantModulesOnVehicle(GeoVehicle geoVehicle, GeoMission geoMission = null)
+                {
+                    try
+                    {
+
+                        _scannerModulePresent = false;
+                        _blimpWPModulePresent = false;
+                        _captureDronesModulePresent = false;
+                        _mistRepellerModulePresent = false;
+                        _heliosStealthModulePresent = false;
+                        _heliosPresent = false;
+                        _heliosStatisChamberPresent = false;
+                        _thunderbirdGroundAttackWeapon = false;
+
                         if (!AircraftReworkOn || geoVehicle == null)
                         {
                             return;
                         }
 
-
                         if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _basicScannerModule))
                         {
-                            ScannerModulePresent = true;
+                            _scannerModulePresent = true;
                         }
 
                         if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _captureDronesModule))
                         {
-                            CaptureDronesModulePresent = true;
+                            _captureDronesModulePresent = true;
                         }
 
                         if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _heliosMistRepellerModule))
                         {
-                            MistRepllerModulePresent = true;
+                            _mistRepellerModulePresent = true;
                         }
 
                         if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _heliosStealthModule))
                         {
-                            HeliosStealthModulePresent = true;
+                            _heliosStealthModulePresent = true;
                         }
 
                         if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _blimpWPModule))
                         {
-                            BlimpWPModulePresent = true;
+                            _blimpWPModulePresent = true;
                         }
 
                         if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _heliosStatisChamberModule))
                         {
-                            HeliosStatisChamberPresent = true;
+                            _heliosStatisChamberPresent = true;
                         }
 
                         if (geoVehicle.VehicleDef == helios)
                         {
-                            HeliosPresent = true;
+                            _heliosPresent = true;
+                        }
+
+                        if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _thunderbirdGroundAttackModule))
+                        {
+                            //must exclude, Palace, Alien Colony, Base Defense, 
+
+                            TFTVLogger.Always($"Checking Thunderbird Ground Attack module for mission {geoMission.MissionDef?.name}");
+
+                            if (geoMission.MissionDef.MissionTags.Contains(Shared.SharedGameTags.BaseDefenseMissionTag) ||
+                                geoMission.MissionDef.MissionTags.Contains(Shared.SharedGameTags.BaseInfestationMissionTag) ||
+                                geoMission.MissionDef.MissionTags.Contains(DefCache.GetDef<MissionTypeTagDef>("MissionTypeAlienCitadelAssault_MissionTagDef")) ||
+                                geoMission.MissionDef.MissionTags.Contains(DefCache.GetDef<MissionTypeTagDef>("MissionTypeAlienLairAssault_MissionTagDef")) ||
+                                geoMission.MissionDef.MissionTags.Contains(DefCache.GetDef<MissionTypeTagDef>("MissionTypeAlienNestAssault_MissionTagDef")) ||
+                                (geoMission.MissionDef.MapPlotDef != null && geoMission.MissionDef.MapPlotDef.name.Contains("ALN_PLT")))
+
+                            {
+                            }
+                            else
+                            {
+                                TFTVLogger.Always($"Setting _thunderbirdGroundAttackWeapon to true");
+                                _thunderbirdGroundAttackWeapon = true;
+                            }
+
                         }
 
                     }
@@ -1732,8 +2027,6 @@ namespace TFTV
                     }
 
                 }
-
-
                 internal class FirstTurn
                 {
 
@@ -1748,8 +2041,9 @@ namespace TFTV
 
 
                             ImplementHeliosStealthModule(controller);
-                            ImplementBlimpWPModule(controller);
-                            ImplementStasisChamberTactical(controller);
+                            //  ImplementBlimpWPModule(controller);
+                            HeliosStatisChamber.ImplementStasisChamberTactical(controller);
+                            ImplementGroundAttackWeaponModule(controller);
                         }
                         catch (Exception e)
                         {
@@ -1758,12 +2052,39 @@ namespace TFTV
 
                     }
 
+
+                    private static void ImplementGroundAttackWeaponModule(TacticalLevelController controller)
+                    {
+                        try
+                        {
+                            if (!_thunderbirdGroundAttackWeapon)
+                            {
+                                return;
+                            }
+
+                            foreach (TacticalActor tacticalActor in controller.GetFactionByCommandName("px").TacticalActors)
+                            {
+                                if (tacticalActor.GetAbilityWithDef<JetJumpAbility>(_groundAttackAbility) == null)
+                                {
+                                    tacticalActor.AddAbility(_groundAttackAbility, tacticalActor);
+                                }
+
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+
+
                     //Stealth module
                     private static void ImplementHeliosStealthModule(TacticalLevelController controller)
                     {
                         try
                         {
-                            if (!HeliosStealthModulePresent)
+                            if (!_heliosStealthModulePresent)
                             {
                                 return;
                             }
@@ -1788,44 +2109,19 @@ namespace TFTV
                     {
                         try
                         {
-                            if (!BlimpWPModulePresent)
+                            if (!_blimpWPModulePresent)
                             {
                                 return;
                             }
 
                             foreach (TacticalActor tacticalActor in controller.GetFactionByCommandName("px").TacticalActors)
                             {
-                                if (tacticalActor.CharacterStats.Willpower != null)
+                                if (tacticalActor.CharacterStats.Willpower != null && !tacticalActor.GameTags.Contains(Shared.SharedGameTags.VehicleTag))
                                 {
-                                    tacticalActor.CharacterStats.WillPoints.Add(3);
-                                }
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            throw;
-                        }
-                    }
-
-                    //Helios Statis Chamber
-
-                    private static void ImplementStasisChamberTactical(TacticalLevelController controller)
-                    {
-                        try
-                        {
-                            if (!HeliosStatisChamberPresent)
-                            {
-                                return;
-                            }
-
-                            DamageOverTimeResistanceStatusDef damageOverTimeResistanceStatusDef = DefCache.GetDef<DamageOverTimeResistanceStatusDef>("NanoTech_StatusDef");
-
-                            foreach (TacticalActor tacticalActor in controller.GetFactionByCommandName("px").TacticalActors)
-                            {
-                                if (tacticalActor.Status != null && !tacticalActor.HasStatus(damageOverTimeResistanceStatusDef))
-                                {
-                                    tacticalActor.Status.ApplyStatus(damageOverTimeResistanceStatusDef);
+                                    TFTVLogger.Always($"{tacticalActor.DisplayName} has {tacticalActor.CharacterStats.WillPoints} WPs");
+                                    tacticalActor.CharacterStats.Willpower.SetOverchargeCapacity(3);
+                                    tacticalActor.CharacterStats.Willpower.Add(3);
+                                    TFTVLogger.Always($"after module is applied, has {tacticalActor.CharacterStats.WillPoints} WPs");
                                 }
                             }
                         }
@@ -1866,7 +2162,7 @@ namespace TFTV
                     {
                         try
                         {
-                            if (!ScannerModulePresent)
+                            if (!_scannerModulePresent)
                             {
                                 return;
                             }
@@ -1881,6 +2177,7 @@ namespace TFTV
                             {
                                 foreach (TacticalActor a in list)
                                 {
+                                    TFTVLogger.Always($"actor spotted by scanner: {a.DisplayName} {a.TacticalPerception.TacticalPerceptionBaseDef.SizeSpottingMultiplier}");
                                     controller.CurrentFaction.Vision.IncrementKnownCounter(a, KnownState.Located, 1, true);
                                 }
                             }
@@ -1892,36 +2189,432 @@ namespace TFTV
                         }
                     }
                 }
-
-
-                //Capture drones
-                // Always recover items
-
-                [HarmonyPatch(typeof(UIStateRosterDeployment), "EnterState")]
-                public static class UIStateRosterDeployment_EnterState_Patch
+                internal class GroundAttackWeapon
                 {
-                    public static void Prefix(UIStateRosterDeployment __instance)
+
+                    [HarmonyPatch(typeof(TacticalAbility), "GetTargetPositions", new Type[] { typeof(TacticalTargetData), typeof(TacticalActorBase), typeof(Vector3) })]
+                    public static class MissileRainGetTargetPositionsPatch
                     {
-                        try
+                        static void Prefix(TacticalAbility __instance, TacticalTargetData targetData, TacticalActorBase sourceActor, ref Vector3 sourcePosition, ref IEnumerable<TacticalAbilityTarget> __result)
                         {
-                            if (!AircraftReworkOn)
+                            try
                             {
-                                return;
+                                // Check if the ability is our missile rain ability.
+                                // (Assumes that your missile rain is implemented via a JetJumpAbility with your custom JetJumpAbilityDef.)
+                                if (__instance is JetJumpAbility jumpAbility &&
+                                    jumpAbility.JetJumpAbilityDef != null &&
+                                    jumpAbility.JetJumpAbilityDef == _groundAttackAbility)  // adjust as needed
+                                {
+
+
+                                    // Replace the sourcePosition with our offmap start.
+                                    sourcePosition = GetMissileRainStartPosition(jumpAbility);
+
+                                    // Now, call the original method with the modified sourcePosition.
+                                    // One way is to let the original method run (by returning true)
+                                    // OR (if necessary) you could manually invoke the method.
+                                    // In many cases, simply modifying the ref sourcePosition before the original runs is enough.
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+
+                        // You can reuse your offmap start calculation from your missile rain patch:
+                        private static Vector3 GetMissileRainStartPosition(JetJumpAbility ability)
+                        {
+                            try
+                            {
+                                var map = ability.TacticalActor.Map;
+                                Vector3 center = (map.Bounds.min + map.Bounds.max) / 2f;
+                                float highY = map.Bounds.max.y + 5; // 10 units above the highest point.
+                                return new Vector3(center.x, highY, center.z);
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+                    }
+
+
+
+                    // This patch applies to missile rain instances (customized JetJumpAbilityDef)
+                    [HarmonyPatch(typeof(JetJumpAbility))]
+                    public static class MissileRainCanJumpPatch
+                    {
+                        // Prefix patch to override CanJumpTo
+                        [HarmonyPatch("CanJumpTo")]
+                        [HarmonyPrefix]
+                        public static bool CanJumpTo_Prefix(JetJumpAbility __instance, Vector3 target, ref bool __result)
+                        {
+                            try
+                            {
+
+                                if (AircraftReworkOn && __instance.JetJumpAbilityDef != null && __instance.JetJumpAbilityDef == _groundAttackAbility)
+                                {
+                                    // Instead of starting from the actor's position, use an offmap start point.
+                                    Vector3 offMapStart = GetMissileRainStartPosition(__instance);
+                                    __result = CanMissileRainTo(__instance, offMapStart, target);
+                                    return false; // Skip original method.
+                                }
+                                return true; // Proceed with original logic otherwise.
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+
+                        // Calculate an offmap starting position: the center of the mission map with a high Y coordinate.
+                        private static Vector3 GetMissileRainStartPosition(JetJumpAbility ability)
+                        {
+                            try
+                            {
+                                var map = ability.TacticalActor.Map;
+                                Vector3 center = (map.Bounds.min + map.Bounds.max) / 2f;
+                                // TFTVLogger.Always($"center is {center}");
+                                float highY = map.Bounds.max.y + 5; // 10 units above the highest point.
+                                return new Vector3(center.x, highY, center.z);
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
                             }
 
-                            GeoMission mission = __instance.Mission;
-                            GeoSite geoSite = mission.Site;
-                            GeoVehicle geoVehicle = geoSite.GetPlayerVehiclesOnSite()?.FirstOrDefault();
+                        }
 
-                            if (geoVehicle != null)
+                        // Prefix patch to override InitTrajectory
+                        [HarmonyPatch("InitTrajectory")]
+                        [HarmonyPrefix]
+                        public static bool InitTrajectory_Prefix(JetJumpAbility __instance, Vector3 target, ref ParabolicTrajectory ____trajectory)
+                        {
+                            try
                             {
-                                if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _captureDronesModule) && mission.MissionDef.DontRecoverItems)
+
+                                if (AircraftReworkOn && __instance.JetJumpAbilityDef != null && __instance.JetJumpAbilityDef == _groundAttackAbility)
                                 {
-                                    CaptureDronesModulePresent = true;
-                                    mission.MissionDef.DontRecoverItems = false;
+
+                                    ____trajectory.Set(GetMissileRainStartPosition(__instance), target, __instance.JetJumpAbilityDef.HeightToWidth, 1f);
+
+                                    return false; // Skip original method.
+                                }
+                                return true; // Proceed with original logic otherwise.
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+
+                        [HarmonyPatch("GetNavSettings")]
+                        [HarmonyPrefix]
+                        public static bool GetNavSettings_Prefix(JetJumpAbility __instance, Vector3 target, ref NavigationSettings __result, ClipSequence ____jumpClips)
+                        {
+                            try
+                            {
+
+                                if (AircraftReworkOn && __instance.JetJumpAbilityDef != null && __instance.JetJumpAbilityDef == _groundAttackAbility)
+                                {
+
+                                    NavigationSettings navigationSettings = new NavigationSettings();
+                                    navigationSettings.CostsAPToActor = false;
+                                    navigationSettings.UpdateNavigationPerceptionRange = false;
+                                    navigationSettings.SkipUncarveOnStart = false;
+                                    navigationSettings.UpdateNavigationPerceptionRange = true;
+                                    navigationSettings.OverrideNavigationPerceptionRange = __instance.JetJumpAbilityDef.PerceptionRange;
+                                    navigationSettings.TriggerOverwatch = true;
+                                    navigationSettings.SpeedOverTimeCurve = __instance.JetJumpAbilityDef.SpeedOverTimeCurve;
+                                    if (__instance.JetJumpAbilityDef.UseLeapAnimation)
+                                    {
+                                        navigationSettings.SetPathProcessors(new LeapJumpPathProcessor(__instance, ____jumpClips));
+                                    }
+                                    else
+                                    {
+                                        navigationSettings.SetPathProcessors(new JetJumpPathProcessor(__instance, ____jumpClips));
+                                    }
+
+                                    navigationSettings.OverridePath = new List<Vector3>
+        {
+            GetMissileRainStartPosition(__instance),
+            target
+        };
+                                    __result = navigationSettings;
+
+                                    return false; // Skip original method.
+                                }
+                                return true; // Proceed with original logic otherwise.
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+
+
+
+
+
+                        // Duplicate logic from the original CanJumpTo, but starting at the offmap position.
+                        private static bool CanMissileRainTo(JetJumpAbility ability, Vector3 start, Vector3 target)
+                        {
+                            try
+                            {
+                                MethodInfo initTrajectoryMethodInfo = typeof(JetJumpAbility)
+                                    .GetMethod("InitTrajectory", BindingFlags.NonPublic | BindingFlags.Instance);
+                                MethodInfo getNavSettingsMethodInfo = typeof(JetJumpAbility)
+                                    .GetMethod("GetNavSettings", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                                // Initialize trajectory using the target.
+                                initTrajectoryMethodInfo.Invoke(ability, new object[] { target });
+
+                                // ____trajectory.Set(start, target, ability.JetJumpAbilityDef.HeightToWidth, 1f);
+
+                                // Create a path request.
+                                TacticalPathRequest pathRequest = ability.TacticalActor.TacticalNav.CreatePathRequest() as TacticalPathRequest;
+
+                                // Get the NavigationSettings, then override the path.
+                                NavigationSettings navSettings = (NavigationSettings)getNavSettingsMethodInfo
+                                    .Invoke(ability, new object[] { target });
+
+                                // Set the override path to use our offmap start and the target.
+                                navSettings.OverridePath = new List<Vector3> { start, target };
+
+                                pathRequest.NavigationSettings = navSettings;
+                                pathRequest.Calculate();
+
+                                // Use the TacticalActor's capsule to simulate the missile path.
+                                Capsule capsuleLocal = ability.TacticalActor.TacticalPerception.GetCapsuleLocal();
+                                Vector3 currentPoint = start;
+                                PhysicsCast jumpCast = GetJumpCastForAbility(ability);
+                                jumpCast.Capsule = capsuleLocal;
+
+                                //   TFTVLogger.Always($"start position: {start}, pathRequest.PointInfos.First().Position: {pathRequest.PointInfos.First().Position}");
+
+
+                                // Iterate through path points and check for obstructions.
+                                foreach (PathPointInfo pointInfo in pathRequest.PointInfos)
+                                {
+
+                                    Vector3 nextPoint = pointInfo.Position;
+
+                                    if (!Utl.Equals(currentPoint, nextPoint))
+                                    {
+                                        jumpCast.SetLine(currentPoint, nextPoint);
+                                        if (jumpCast.Cast())
+                                            return false;
+                                        currentPoint = nextPoint;
+                                    }
+                                }
+
+                                return true;
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+
+
+                        // Create a PhysicsCast similar to the one used in JetJumpAbility.
+                        private static PhysicsCast GetJumpCastForAbility(JetJumpAbility ability)
+                        {
+                            try
+                            {
+                                PhysicsCast jumpCast = new PhysicsCast
+                                {
+                                    LayerMask = (UnityLayers.CameraCollider | UnityLayers.BlockingAll),
+                                    SingleResult = true,
+                                    FilterPredicate = IgnoreActors(ability.TacticalActor)
+                                };
+                                return jumpCast;
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+
+                        }
+
+
+                        private static Func<CastResult, bool> IgnoreActors(TacticalActor actor)
+                        {
+                            return delegate (CastResult r)
+                            {
+                                TacticalActor componentInParent = r.Collider.GetComponentInParent<TacticalActor>();
+                                return componentInParent == null;
+                            };
+                        }
+
+
+
+                        [HarmonyPatch(typeof(JetJumpAbility), "Activate")]
+                        public static class ActorComponentActivateAbilityPatch
+                        {
+                            // Prefix patch – before the original Activate runs.
+                            static bool Prefix(TacticalAbility __instance, object parameter)
+                            {
+                                try
+                                {
+                                    if (AircraftReworkOn && __instance.TacticalAbilityDef != null && __instance.TacticalAbilityDef == _groundAttackAbility)
+                                    {
+                                        // Check if the activation parameter contains target info.
+                                        if (parameter is TacticalAbilityTarget targetData)
+                                        {
+                                            Vector3 targetPos = targetData.PositionToApply;
+                                            // Instead of a single explosion, trigger multiple explosions nearby.
+                                            GenerateMultipleExplosions(targetPos);
+
+                                            _explosionsInProgress = true;
+
+                                            __instance.TacticalActor.CameraDirector.Hint(CameraHint.ChaseTarget, new CameraChaseParams
+                                            {
+                                                ChaseVector = targetPos,
+                                                ChaseTransform = null,
+                                                ChaseCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f),
+                                                LockCameraMovement = false,
+                                                Instant = true,
+                                                ChaseOnlyOutsideFrame = false,
+                                                SnapToFloorHeight = true
+
+                                            });
+                                        }
+                                        return false;
+                                    }
+                                    else
+                                    {
+                                        return true;
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    TFTVLogger.Error(e);
+                                    throw;
                                 }
                             }
 
+                            /// <summary>
+                            /// Finds several nearby suitable tiles (within a radius) and generates explosions on them.
+                            /// </summary>
+                            private static void GenerateMultipleExplosions(Vector3 center)
+                            {
+                                // Define a radius within which to search (e.g., 4 units).
+                                float radius = 4f;
+                                // Define candidate offsets – here we use a simple pattern: the center and the four cardinal directions.
+                                List<Vector3> candidateOffsets = new List<Vector3>
+        {
+            Vector3.zero,
+            new Vector3(1, 0, 0),
+            new Vector3(-1, 0, 0),
+            new Vector3(0, 0, 1),
+            new Vector3(0, 0, -1)
+        };
+
+                                // Optionally, you could expand this list (for example, add diagonals or more refined grid samples)
+                                // and/or randomize the offsets for more variety.
+
+                                List<Vector3> tilesToExplode = new List<Vector3>();
+
+                                foreach (Vector3 offset in candidateOffsets)
+                                {
+                                    Vector3 candidatePos = center + offset;
+                                    // Check if candidate is within the desired radius.
+                                    if (Vector3.Distance(candidatePos, center) <= radius)
+                                    {
+                                        // Validate that this candidate is suitable.
+                                        if (IsValidExplosionTile(candidatePos))
+                                        {
+                                            tilesToExplode.Add(candidatePos);
+                                            if (tilesToExplode.Count == 3)
+                                            {
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                for (int x = 0; x < tilesToExplode.Count(); x++)
+                                {
+                                    Vector3 pos = tilesToExplode[x];
+                                    DelayedEffectDef explostion = _groundAttackWeaponExplosions[x];
+                                    {
+                                        GenerateExplosion(pos, explostion);
+                                    }
+                                }
+                            }
+
+                            /// <summary>
+                            /// Performs a simple check to see if candidatePos is a valid explosion location.
+                            /// This can be as simple as a downward raycast to check for ground.
+                            /// </summary>
+                            private static bool IsValidExplosionTile(Vector3 candidatePos)
+                            {
+                                // Offset a little above the candidate position.
+                                Vector3 rayStart = candidatePos + Vector3.up * 5f;
+                                Ray ray = new Ray(rayStart, Vector3.down);
+                                // We'll use a max distance that covers the expected map height.
+                                float maxDistance = 10f;
+                                if (Physics.Raycast(ray, out RaycastHit hit, maxDistance, UnityLayers.FloorAllMask))
+                                {
+                                    // Optionally check the hit normal, tag, or other properties to determine
+                                    // if this is a “suitable” tile (e.g. not under a roof, etc.).
+                                    return true;
+                                }
+                                return false;
+                            }
+
+                            internal static void GenerateExplosion(Vector3 position, DelayedEffectDef explosion)
+                            {
+                                try
+                                {
+
+                                    Effect.Apply(Repo, explosion, new EffectTarget
+                                    {
+                                        Position = position
+                                    }, null);
+
+
+                                }
+                                catch (Exception e)
+                                {
+                                    TFTVLogger.Error(e);
+                                }
+                            }
+
+
+                        }
+
+
+
+                    }
+
+                    private static bool _explosionsInProgress = false;
+
+                    public static bool CheckForGroundAttackWeaponExplosions(TacticalLevelController controller)
+                    {
+                        try
+                        {
+                            if (_explosionsInProgress)
+                            {
+                                _explosionsInProgress = false;
+
+                                RemoveGroundAttackWeaponModuleAbility(controller);
+
+                                return false;
+                            }
+
+                            return true;
+
                         }
                         catch (Exception e)
                         {
@@ -1929,53 +2622,76 @@ namespace TFTV
                             throw;
                         }
                     }
-                    public static void Postfix(UIStateRosterDeployment __instance)
+
+                    private static void RemoveGroundAttackWeaponModuleAbility(TacticalLevelController controller)
                     {
                         try
                         {
-                            if (!AircraftReworkOn)
+                            if (!_thunderbirdGroundAttackWeapon)
                             {
                                 return;
                             }
 
-                            GeoMission mission = __instance.Mission;
-
-                            if (CaptureDronesModulePresent)
+                            foreach (TacticalActor tacticalActor in controller.GetFactionByCommandName("px").TacticalActors)
                             {
-                                mission.MissionDef.DontRecoverItems = true;
-                                CaptureDronesModulePresent = false;
+                                if (tacticalActor.GetAbilityWithDef<JetJumpAbility>(_groundAttackAbility) != null)
+                                {
+                                    tacticalActor.RemoveAbility(_groundAttackAbility);
+                                }
                             }
+
+                            controller.View.ResetCharacterSelectedState();
                         }
                         catch (Exception e)
                         {
                             TFTVLogger.Error(e);
                             throw;
                         }
+
+
                     }
+
                 }
 
-                [HarmonyPatch(typeof(GeoMission), "ManageGear")]
-                public static class GeoMission_ManageGear_Patch
+                internal class AnuMistModule
                 {
-                    public static void Prefix(GeoMission __instance, out bool __state)
+
+                    [HarmonyPatch(typeof(TacticalPerceptionBase), "get_MistBlobPerceptionRangeCost")]
+                    public static class TacticalPerceptionBase_get_MistBlobPerceptionRangeCost_Patch
+                    {
+                        public static void Postfix(TacticalPerceptionBase __instance, ref float __result)
+                        {
+                            try
+                            {
+                                TFTVConfig config = TFTVMain.Main.Config;
+
+                                if (TFTVVoidOmens.VoidOmensCheck[7] && config.MoreMistVO && AircraftReworkOn)
+                                {
+                                    __result /= 3;
+                                }
+
+                                TacticalActor tacticalActor = __instance.TacActorBase as TacticalActor;
+
+                                if (tacticalActor != null && CheckForAnuBlimpMistModule(tacticalActor.TacticalFaction)
+                                    && tacticalActor.BodyState.GetArmourItems().Any(a => a.GameTags.Contains(Shared.SharedGameTags.AnuMutationTag)))
+                                {
+                                    __result = 0;
+                                }
+
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                            }
+                        }
+                    }
+
+
+                    private static bool CheckForAnuBlimpMistModule(TacticalFaction tacticalFaction)
                     {
                         try
                         {
-                            __state = false;
-
-                            if (!AircraftReworkOn)
-                            {
-                                return;
-                            }
-
-
-
-                            if (CaptureDronesModulePresent && __instance.MissionDef.DontRecoverItems)
-                            {
-                                __instance.MissionDef.DontRecoverItems = false;
-                                __state = true;
-                            }
-
+                            return AircraftReworkOn && _blimpWPModulePresent && tacticalFaction.IsControlledByPlayer;
                         }
                         catch (Exception e)
                         {
@@ -1983,56 +2699,438 @@ namespace TFTV
                             throw;
                         }
                     }
-                    public static void Postfix(GeoMission __instance, in bool __state)
-                    {
-                        try
-                        {
-                            if (!AircraftReworkOn || !__state)
-                            {
-                                return;
-                            }
 
-                            if (CaptureDronesModulePresent)
+
+
+                    [HarmonyPatch(typeof(TacticalActor), "ApplyMistEffects")]
+                    public static class TacticalActor_ApplyMistEffects_Patch
+                    {
+                        public static bool Prefix(TacticalActor __instance)
+                        {
+                            try
                             {
-                                __instance.MissionDef.DontRecoverItems = true;
+                                if (!CheckForAnuBlimpMistModule(__instance.TacticalFaction) &&
+                                    !__instance.BodyState.GetArmourItems().Any(a => a.GameTags.Contains(Shared.SharedGameTags.AnuMutationTag)))
+                                {
+                                    return true;
+                                }
+
+                                if (!__instance.TacticalPerception.IsTouchingVoxel(TacticalVoxelType.Mist))
+                                {
+                                    return false;
+                                }
+
+                                TacticalVoxelMatrixDataDef voxelMatrixData = __instance.TacticalLevel.VoxelMatrix.VoxelMatrixData;
+
+                                __instance.CharacterStats.WillPoints.Add(voxelMatrixData.MistRecoverWillPointsValue);
+
+                                return false;
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
                             }
                         }
-                        catch (Exception e)
+                    }
+
+
+
+                    [HarmonyPatch(typeof(TacticalFactionVision))]
+                    public static class TacticalFactionVision_PrefixPatch
+                    {
+                        //────────────────────────────────────────────────────────────
+                        // 1. Replacement for GatherKnowableActors
+                        //────────────────────────────────────────────────────────────
+                        [HarmonyPrefix]
+                        [HarmonyPatch("GatherKnowableActors")]
+                        public static bool GatherKnowableActorsPrefix(TacticalFactionVision __instance,
+                            TacticalActorBase fromActor,
+                            Vector3 fromActorPos,
+                            float basePerceptionRange,
+                            ICollection<TacticalActorBase> visible,
+                            ICollection<TacticalActorBase> located)
                         {
-                            TFTVLogger.Error(e);
-                            throw;
+                            try
+                            {
+                                // If our mod flag is false, we let the original code run.
+                                if (!CheckForAnuBlimpMistModule(fromActor.TacticalFaction))
+                                {
+                                    return true;
+                                }
+                                // Custom implementation. (This is a near-copy of the original logic,
+                                // with one key change: the condition no longer requires the faction's
+                                // definition to equal the mist owner.)
+                                foreach (TacticalActorBase actor in fromActor.Map.GetActors<TacticalActorBase>())
+                                {
+                                    if (actor == fromActor ||
+                                        actor.TacticalFaction == fromActor.TacticalFaction ||
+                                        actor.TacticalPerceptionBase == null ||
+                                        (actor.Status != null && actor.Status.HasStatus<EvacuatedStatus>()))
+                                    {
+                                        continue;
+                                    }
+
+
+
+                                    /*     // --- Modified branch ---
+                                         // Original code checked:
+                                         //   if (fromActor.TacticalFaction.TacticalFactionDef == fromActor.TacticalLevel.VoxelMatrix.VoxelMatrixData.MistOwnerFactionDef && actor.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Mist))
+                                         // Our version simply checks the voxel condition.
+                                         MethodInfo CheckVisibleLineBetweenActorsMethodInfo = AccessTools.Method(
+          typeof(TacticalFactionVision), // Use the type directly since it's a static method
+          "CheckVisibleLineBetweenActors",
+          new Type[] {
+             typeof(TacticalActorBase),
+             typeof(Vector3),
+             typeof(TacticalActorBase),
+             typeof(bool),
+             typeof(Vector3?), // Correctly specify nullable Vector3
+             typeof(float),
+             typeof(PhysicsCast)
+          });*/
+
+
+                                    //  TFTVLogger.Always($"CheckVisibleLineBetweenActorsMethodInfo null? {CheckVisibleLineBetweenActorsMethodInfo==null}");
+
+                                    if (actor.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Mist))
+                                    {
+                                        visible.Add(actor);
+                                    }
+                                    else if ((bool)TacticalFactionVision.CheckVisibleLineBetweenActors(
+                                                 fromActor, fromActorPos, actor,
+                                                 true, null,
+                                                 basePerceptionRange, null))
+                                    {
+
+
+                                        visible.Add(actor);
+                                    }
+                                    else if (actor is TacticalActor && actor.IsAlive && !actor.IsCloaked)
+                                    {
+                                        TacticalLevelController tacticalLevel = fromActor.TacticalLevel;
+                                        if ((fromActorPos - actor.Pos).magnitude <= tacticalLevel.TacticalLevelControllerDef.DetectionRange)
+                                        {
+                                            located.Add(actor);
+                                        }
+                                    }
+                                }
+                                // Returning false skips the original method.
+                                return false;
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
                         }
+
+                        //────────────────────────────────────────────────────────────
+                        // 2. Replacement for OnActorMoved(TacticalActorBase)
+                        //────────────────────────────────────────────────────────────
+                        [HarmonyPrefix]
+                        [HarmonyPatch("OnActorMoved", new[] { typeof(TacticalActorBase) })]
+                        public static bool OnActorMovedPrefix(TacticalFactionVision __instance, TacticalActorBase movedActor)
+                        {
+                            try
+                            {
+                                if (!AircraftReworkOn || !_blimpWPModulePresent || !movedActor.TacticalFaction.IsControlledByPlayer)
+                                {
+                                    return true;
+                                }
+
+                                TacticalActor tacticalActor = movedActor as TacticalActor;
+
+                                if (tacticalActor == null || !tacticalActor.BodyState.GetArmourItems().Any(a => a.GameTags.Contains(Shared.SharedGameTags.AnuMutationTag)))
+                                {
+                                    return true;
+                                }
+
+                                // Obtain the tactical level via property (if not public, you may need reflection)
+                                TacticalLevelController tacticalLevel = __instance.Faction.TacticalLevel; // adjust if needed
+
+                                // Early out if we are not in turn or the actor should not be processed.
+                                if (!tacticalLevel.TurnIsPlaying ||
+                                    !movedActor.InPlay ||
+                                    (movedActor.Status != null && movedActor.Status.HasStatus<EvacuatedStatus>()))
+                                {
+                                    return false;
+                                }
+
+                                if (movedActor.TacticalFaction == __instance.Faction)
+                                {
+                                    MethodInfo methodInfo = AccessTools.Method(
+                                        __instance.GetType(),
+                                        "UpdateVisibilityForImpl",
+                                        new Type[] { typeof(TacticalActorBase), typeof(float) });
+
+                                    // Instead of calling the original internal method, we invoke our helper.
+                                    // (If UpdateVisibilityForImpl is not public, you might need to invoke it via reflection.)
+                                    bool changed = (bool)methodInfo.Invoke(__instance, new object[] { movedActor, tacticalLevel.TacticalLevelControllerDef.DetectionRange });
+                                    if (changed)
+                                        tacticalLevel.FactionKnowledgeChanged(__instance.Faction);
+                                    return false;
+                                }
+
+                                bool flag = false;
+                                bool flag2 = false;
+                                bool flag3 = false;
+
+                                // --- Modified branch ---
+                                // Instead of checking the full condition, we check only for the voxel condition.
+                                if (movedActor.TacticalPerceptionBase != null &&
+                                    movedActor.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Mist) &&
+                                    __instance.Faction.TacticalFactionDef != tacticalLevel.VoxelMatrix.VoxelMatrixData.MistOwnerFactionDef)
+                                {
+                                    // Use reflection if necessary to call ResetKnownCounterImpl.
+                                    MethodInfo mReset = AccessTools.Method(__instance.GetType(), "ResetKnownCounterImpl");
+                                    flag2 = (bool)mReset.Invoke(__instance, new object[] { movedActor, KnownState.Revealed, false });
+                                }
+
+                                // Process each actor in the faction.
+                                foreach (TacticalActorBase actor in __instance.Faction.Actors)
+                                {
+                                    if (actor.TacticalPerceptionBase != null &&
+                                       (tacticalLevel.CurrentFaction == __instance.Faction ||
+                                        actor.TacticalPerceptionBase.TacticalPerceptionBaseDef.UpdateOnOthersTurn))
+                                    {
+                                        // Call ReUpdateVisibilityTowardsActorImpl and ReUpdateHearingImpl via reflection if needed.
+                                        MethodInfo mReUpdateVis = AccessTools.Method(__instance.GetType(), "ReUpdateVisibilityTowardsActorImpl");
+                                        bool res1 = (bool)mReUpdateVis.Invoke(__instance, new object[] { actor, movedActor, tacticalLevel.TacticalLevelControllerDef.DetectionRange, !flag2 });
+                                        flag |= res1;
+
+                                        MethodInfo mReUpdateHear = AccessTools.Method(__instance.GetType(), "ReUpdateHearingImpl");
+                                        bool res2 = (bool)mReUpdateHear.Invoke(__instance, new object[] { actor, movedActor, true });
+                                        flag3 |= res2;
+                                    }
+                                }
+                                if ((flag ^ flag2) || flag3)
+                                {
+                                    tacticalLevel.FactionKnowledgeChanged(__instance.Faction);
+                                }
+                                return false;
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+
+                        //────────────────────────────────────────────────────────────
+                        // 3. Replacement for ReUpdateVisibilityTowardsActorImpl
+                        //────────────────────────────────────────────────────────────
+                        [HarmonyPrefix]
+                        [HarmonyPatch("ReUpdateVisibilityTowardsActorImpl")]
+                        public static bool ReUpdateVisibilityTowardsActorImplPrefix(
+                            TacticalFactionVision __instance,
+                            TacticalActorBase fromActor,
+                            TacticalActorBase targetActor,
+                            float basePerceptionRange,
+                            bool notifyChange,
+                            ref bool __result)
+                        {
+                            try
+                            {
+                                if (fromActor is TacticalActor tacticalActor && tacticalActor.IsEvacuated)
+                                {
+                                    __result = false;
+                                    return false;
+                                }
+
+                                if (!CheckForAnuBlimpMistModule(__instance.Faction))
+                                {
+                                    return true;
+                                }
+
+                                if (fromActor.IsDead)
+                                {
+                                    __result = false;
+                                    return false;
+                                }
+
+
+
+                                // --- Modified branch ---
+                                // Original code checked for mist ownership before calling CheckVisibleLineBetweenActors.
+                                // Now we ignore that part and simply combine a voxel check with the visible line check.
+
+                                /* MethodInfo CheckVisibleLineBetweenActorsMethodInfo = AccessTools.Method(
+                                         __instance.GetType(),
+                                         "CheckVisibleLineBetweenActors",
+                                         new Type[] { typeof(TacticalActorBase), typeof(Vector3), typeof(TacticalActorBase), typeof(bool), typeof(float), typeof(object), typeof(float), typeof(object) });
+                                */
+                                bool condition = false;
+                                if (targetActor.TacticalPerceptionBase != null && targetActor.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Mist))
+                                {
+                                    condition = true;
+                                }
+                                else if ((bool)TacticalFactionVision.CheckVisibleLineBetweenActors(
+                                                 fromActor, fromActor.Pos, targetActor,
+                                                 true, null,
+                                                 basePerceptionRange, null))
+                                {
+                                    condition = true;
+                                }
+
+                                if (condition)
+                                {
+                                    // Call IncrementKnownCounterImpl on targetActor.
+                                    MethodInfo mIncrement = AccessTools.Method(__instance.GetType(), "IncrementKnownCounterImpl");
+                                    __result = (bool)mIncrement.Invoke(__instance, new object[] { targetActor, KnownState.Revealed, 1, notifyChange });
+                                }
+                                else
+                                {
+                                    __result = false;
+                                }
+                                return false;
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+
+
+
                     }
                 }
 
+                internal class CaptureDrones
+                {
+
+                    [HarmonyPatch(typeof(UIStateRosterDeployment), "EnterState")]
+                    public static class UIStateRosterDeployment_EnterState_Patch
+                    {
+                        public static void Prefix(UIStateRosterDeployment __instance)
+                        {
+                            try
+                            {
+                                if (!AircraftReworkOn)
+                                {
+                                    return;
+                                }
+
+                                GeoMission mission = __instance.Mission;
+                                GeoSite geoSite = mission.Site;
+                                GeoVehicle geoVehicle = geoSite.GetPlayerVehiclesOnSite()?.FirstOrDefault();
+
+                                if (geoVehicle != null)
+                                {
+                                    if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _captureDronesModule) && mission.MissionDef.DontRecoverItems)
+                                    {
+                                        _captureDronesModulePresent = true;
+                                        mission.MissionDef.DontRecoverItems = false;
+                                    }
+                                }
+
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+                        public static void Postfix(UIStateRosterDeployment __instance)
+                        {
+                            try
+                            {
+                                if (!AircraftReworkOn)
+                                {
+                                    return;
+                                }
+
+                                GeoMission mission = __instance.Mission;
+
+                                if (_captureDronesModulePresent)
+                                {
+                                    mission.MissionDef.DontRecoverItems = true;
+                                    // CaptureDronesModulePresent = false;
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+                    }
+
+                    [HarmonyPatch(typeof(GeoMission), "ManageGear")]
+                    public static class GeoMission_ManageGear_Patch
+                    {
+                        public static void Prefix(GeoMission __instance, out bool __state)
+                        {
+                            try
+                            {
+                                __state = false;
+
+                                if (!AircraftReworkOn)
+                                {
+                                    return;
+                                }
+
+
+
+                                if (_captureDronesModulePresent && __instance.MissionDef.DontRecoverItems)
+                                {
+                                    TFTVLogger.Always($"got here; drones");
+
+                                    __instance.MissionDef.DontRecoverItems = false;
+                                    __state = true;
+                                }
+
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+                        public static void Postfix(GeoMission __instance, in bool __state)
+                        {
+                            try
+                            {
+                                if (!AircraftReworkOn || !__state)
+                                {
+                                    return;
+                                }
+
+                                if (_captureDronesModulePresent)
+                                {
+                                    __instance.MissionDef.DontRecoverItems = true;
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+                    }
+                }
                 //Helios:
 
-                //Mist repeller effects
-
-                [HarmonyPatch(typeof(TacticalLevelController), "OnLevelStateChanged")]
-                public static class OnLevelStateChangedPatch
+                internal class HeliosStatisChamber
                 {
-                    // The __state parameter lets you pass data from prefix to postfix.
-                    public static void Prefix(TacticalLevelController __instance, Level level, Level.State prevState, Level.State state, out bool? __state)
+
+                    internal static void ImplementStasisChamberTactical(TacticalLevelController controller)
                     {
-                        __state = null;
                         try
                         {
-                            if (!AircraftReworkOn)
+                            if (!_heliosStatisChamberPresent)
                             {
                                 return;
                             }
 
-                            // We only care about the Playing state, since that's when OnLevelStart is scheduled.
-                            if (state == Level.State.Playing)
-                            {
-                                // Save the original value.
-                                __state = __instance.TacticalGameParams.IsCorruptionActive;
+                            DamageOverTimeResistanceStatusDef damageOverTimeResistanceStatusDef = DefCache.GetDef<DamageOverTimeResistanceStatusDef>("NanoTech_StatusDef");
 
-                                // If our custom condition applies, disable corruption.
-                                if (MistRepllerModulePresent)
+                            foreach (TacticalActor tacticalActor in controller.GetFactionByCommandName("px").TacticalActors)
+                            {
+                                if (tacticalActor.Status != null && !tacticalActor.HasStatus(damageOverTimeResistanceStatusDef))
                                 {
-                                    __instance.TacticalGameParams.IsCorruptionActive = false;
+                                    tacticalActor.Status.ApplyStatus(damageOverTimeResistanceStatusDef);
                                 }
                             }
                         }
@@ -2043,15 +3141,170 @@ namespace TFTV
                         }
                     }
 
-                    public static void Postfix(TacticalLevelController __instance, Level level, Level.State prevState, Level.State state, bool? __state)
+
+                    [HarmonyPatch(typeof(DamageOverTimeStatus), "OnApply")]
+                    public static class DamageOverTimeStatus_OnApply_Patch
+                    {
+                        public static void Postfix(DamageOverTimeStatus __instance, StatusComponent statusComponent)
+                        {
+                            try
+                            {
+                                if (!AircraftReworkOn || !_heliosStatisChamberPresent)
+                                {
+                                    return;
+                                }
+
+                                TacticalActor tacticalActor = __instance.TacticalActor;
+
+                                DamageOverTimeResistanceStatusDef nanotechStatus = DefCache.GetDef<DamageOverTimeResistanceStatusDef>("NanoTech_StatusDef");
+
+                                if (nanotechStatus.StatusDefs.Contains(__instance.DamageOverTimeStatusDef))
+                                {
+                                    if (tacticalActor != null)
+                                    {
+                                        if (tacticalActor.HasStatus(nanotechStatus))
+                                        {
+                                            DamageOverTimeResistanceStatus status = (DamageOverTimeResistanceStatus)tacticalActor.Status.GetStatusByName(nanotechStatus.EffectName);
+                                            tacticalActor.Status.UnapplyStatus(status);
+                                        }
+                                    }
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+                    }
+
+                    [HarmonyPatch(typeof(FireStatus), "CalculateFireDamage")]
+                    public static class FireStatus_CalculateFireDamage_Patch
+                    {
+                        public static void Postfix(FireStatus __instance)
+                        {
+                            try
+                            {
+                                if (!AircraftReworkOn || !_heliosStatisChamberPresent)
+                                {
+                                    return;
+                                }
+
+                                TacticalActor tacticalActor = __instance.TacticalActor;
+                                DamageOverTimeResistanceStatusDef nanotechStatus = DefCache.GetDef<DamageOverTimeResistanceStatusDef>("NanoTech_StatusDef");
+
+
+                                if (tacticalActor != null)
+                                {
+                                    if (tacticalActor.HasStatus(nanotechStatus))
+                                    {
+                                        DamageOverTimeResistanceStatus status = (DamageOverTimeResistanceStatus)tacticalActor.Status.GetStatusByName(nanotechStatus.EffectName);
+                                        tacticalActor.Status.UnapplyStatus(status);
+                                    }
+
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+                    }
+
+                    /*  [HarmonyPatch(typeof(DamageOverTimeResistanceStatus), "ApplyResistance")]
+                      public static class DamageOverTimeResistanceStatus_ApplyResistance_Patch
+                      {
+                          static void Postfix(DamageOverTimeResistanceStatus __instance)
+                          {
+                              try
+                              {
+                                  if (!AircraftReworkOn || !HeliosStatisChamberPresent)
+                                  {
+                                      return;
+                                  }
+
+                                  if (__instance.DamageOverTimeResistanceStatusDef == DefCache.GetDef<DamageOverTimeResistanceStatusDef>("NanoTech_StatusDef"))
+                                  {
+                                      TacticalActor tacticalActor = __instance.TacticalActor;
+
+                                      if (tacticalActor != null && tacticalActor.Status != null)
+                                      {
+                                          tacticalActor.Status.UnapplyStatus(__instance);
+                                      }
+                                  }
+                              }
+                              catch (Exception e)
+                              {
+                                  TFTVLogger.Error(e);
+                                  throw;
+                              }
+                          }
+                      }*/
+                }
+                //Mist repeller effects
+
+                internal class MistRepeller
+                {
+
+                    [HarmonyPatch(typeof(TacticalLevelController), "OnLevelStart")]//OnLevelStateChanged")]
+                    public static class OnLevelStart_Patch
+                    {
+                        public static void Postfix(TacticalLevelController __instance) //Level.State prevState, Level.State state, )
+                        {
+                            try
+                            {
+                                if (!AircraftReworkOn)
+                                {
+                                    return;
+                                }
+
+                                if (_mistRepellerModulePresent)
+                                {
+                                    TFTVLogger.Always("Mist repeller module present");
+
+                                    __instance.TacticalGameParams.IsCorruptionActive = false;
+                                }
+
+
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+                    }
+
+                    public static void ImplementMistRepellerTurnStart(TacticalVoxelMatrix tacticalVoxelMatrix, TacticalVoxel[] _voxels)
                     {
                         try
                         {
-                            // Only restore if we modified it.
-                            if (state == Level.State.Playing && __state.HasValue)
+                            if (!AircraftReworkOn || !_mistRepellerModulePresent)
                             {
-                                __instance.TacticalGameParams.IsCorruptionActive = __state.Value;
+                                return;
                             }
+
+
+                            var mistVoxels = _voxels.Where(v => v != null && v.GetVoxelType() == TacticalVoxelType.Mist).ToList();
+
+                            // Calculate the number of voxels to remove
+                            int voxelsToRemove = mistVoxels.Count / 2;
+
+                            TFTVLogger.Always($"Activating Mist Repeller! Current mist voxels: {mistVoxels.Count}. Mist voxels to remove {voxelsToRemove}");
+
+                            // Shuffle the list to randomize which voxels are removed
+                            mistVoxels = mistVoxels.OrderBy(v => UnityEngine.Random.value).ToList();
+
+                            // Remove mist from half of the voxels
+                            for (int i = 0; i < voxelsToRemove; i++)
+                            {
+                                mistVoxels[i].SetVoxelType(TacticalVoxelType.Empty);
+                            }
+
+                            // Update the voxel matrix to reflect the changes
+                            tacticalVoxelMatrix.UpdateVoxelMatrix();
+
                         }
                         catch (Exception e)
                         {
@@ -2059,29 +3312,9 @@ namespace TFTV
                             throw;
                         }
                     }
+
+
                 }
-
-
-                public static float CheckForMistRepellerModuleOnAircraft()
-                {
-                    try
-                    {
-                        if (AircraftReworkOn && MistRepllerModulePresent)
-                        {
-                            return 0.5f;
-                        }
-                        else
-                        {
-                            return 1;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
-                }
-
                 //Helios advantage
                 [HarmonyPatch(typeof(SurviveTurnsFactionObjectiveDef), "GenerateObjective")]
                 public static class SurviveTurnsFactionObjectiveDef_GenerateObjective_Patch
@@ -2092,9 +3325,11 @@ namespace TFTV
                         {
                             __state = __instance.SurviveTurns;
 
-                            if (AircraftReworkOn && MistRepllerModulePresent)
+                            if (AircraftReworkOn && _heliosPresent)
                             {
-                                __instance.SurviveTurns = -1;
+                                //   TFTVLogger.Always($"got here, {__instance.SurviveTurns}");
+
+                                __instance.SurviveTurns -= 1;
                             }
 
                         }
@@ -2109,7 +3344,7 @@ namespace TFTV
                     {
                         try
                         {
-                            if (AircraftReworkOn && MistRepllerModulePresent)
+                            if (AircraftReworkOn && _heliosPresent)
                             {
                                 __instance.SurviveTurns = __state.Value;
                             }
@@ -2121,18 +3356,98 @@ namespace TFTV
                         }
                     }
                 }
+            }
+            internal class MissionDeployment
+            {
+                [HarmonyPatch(typeof(UIStateRosterDeployment), "CheckForDeployment")]
+                public static class UIStateRosterDeployment_CheckForDeployment_Patch
+                {
+                    public static bool Prefix(UIStateRosterDeployment __instance, IEnumerable<GeoCharacter> squad, GeoMission ____mission)
+                    {
+                        try
+                        {
+                            TFTVConfig config = TFTVMain.Main.Config;
+                            UIModuleDeploymentMissionBriefing missionBriefingModule = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.DeploymentMissionBriefingModule;
 
+                            if (!AircraftReworkOn)
+                            {
 
+                                missionBriefingModule.DeployButton.SetInteractable(squad.Any());
+                                missionBriefingModule.DeployButton.ResetButtonAnimations();
 
+                                missionBriefingModule.SquadSlotsUsedText.text = "";
+                                return false;
+                            }
 
-                //Stasis chamber nano protection effect
+                            if (config.MultipleVehiclesInAircraftAllowed)
+                            {
+                                int maxUnits = ____mission.MissionDef.MaxPlayerUnits;
 
-                //Thunderbird
-                //Ground Attack Module
+                                if (config.UnLimitedDeployment)
+                                {
+                                    maxUnits = 99;
+                                }
+                                bool flag = squad.Any();
+                                int num = squad.Sum((GeoCharacter s) => s.OccupingSpace);
+                                // int num2 = squad.Count((GeoCharacter c) => c.TemplateDef.IsVehicle || c.TemplateDef.IsMutog);
+                                missionBriefingModule.SetCurrentDeployment(num, maxUnits);
+                                bool flag2 = num <= maxUnits;
+                                //  bool flag3 = num2 < 2;
+                                missionBriefingModule.DeployButton.SetInteractable(flag && flag2);
+                                missionBriefingModule.DeployButton.ResetButtonAnimations();
+                                return false;
+                            }
+
+                            return true;
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+
+                [HarmonyPatch(typeof(GeoMission), "GetDeploymentSources")]
+                public static class GeoMission_GetDeploymentSource_Patch
+                {
+                    public static void Postfix(GeoMission __instance, GeoFaction faction, IGeoCharacterContainer priorityContainer, ref List<IGeoCharacterContainer> __result)
+                    {
+                        try
+                        {
+                            if (!AircraftReworkOn)
+                            {
+                                return;
+                            }
+
+                            if (__instance.MissionDef.Tags.Contains(DefCache.GetDef<MissionTypeTagDef>("MissionTypeAncientSiteDefense_MissionTagDef"))
+                                || __instance.MissionDef.Tags.Contains(DefCache.GetDef<MissionTypeTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef")))
+                            {
+                                return;
+                            }
+
+                            if (priorityContainer == null)
+                            {
+                                // Debug.LogError($"no vehicle was passed from sources!");
+                                // __result = new List<IGeoCharacterContainer>();
+
+                                priorityContainer = __instance.Site.Vehicles.FirstOrDefault((GeoVehicle v) => v.Owner == faction);
+
+                            }
+
+                            __result = new List<IGeoCharacterContainer> { priorityContainer };
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
 
 
             }
-
             internal class Geoscape
             {
 
@@ -2252,15 +3567,26 @@ namespace TFTV
                                  {*/
                                 if (geoVehicle.UsedCharacterSpace > geoVehicle.MaxCharacterSpace)
                                 {
-                                    List<GeoCharacter> list = new List<GeoCharacter>(from u in geoVehicle.Units orderby u.OccupingSpace descending select u);
-                                    foreach (GeoCharacter character in list)
+                                    if (AircraftReworkOn)
                                     {
-                                        if (geoVehicle.FreeCharacterSpace >= 0)
+                                        RemoveExtraVehicleOrMutog(geoVehicle);
+                                        AdjustPassengerManifestAircraftRework(geoVehicle);
+                                    }
+                                    else
+                                    {
+
+                                        //  TFTVLogger.Always($"{geoVehicle.Name} used capacity {geoVehicle.UsedCharacterSpace} max cap {geoVehicle.MaxCharacterSpace}");
+
+                                        List<GeoCharacter> list = new List<GeoCharacter>(from u in geoVehicle.Units orderby u.OccupingSpace descending select u);
+                                        foreach (GeoCharacter character in list)
                                         {
-                                            break;
+                                            if (geoVehicle.FreeCharacterSpace >= 0)
+                                            {
+                                                break;
+                                            }
+                                            geoVehicle.RemoveCharacter(character);
+                                            geoVehicle.CurrentSite.AddCharacter(character);
                                         }
-                                        geoVehicle.RemoveCharacter(character);
-                                        geoVehicle.CurrentSite.AddCharacter(character);
                                     }
                                 }
                                 // }
@@ -2274,6 +3600,138 @@ namespace TFTV
 
                     }
 
+                    private static void RemoveExtraVehicleOrMutog(GeoVehicle geoVehicle)
+                    {
+                        try
+
+                        {
+                            int countVehicles = geoVehicle.Units.Where(c => c.GameTags.Any(t => t == Shared.SharedGameTags.VehicleTag)).Count();
+                            int countMutogs = geoVehicle.Units.Where(c => c.GameTags.Any(t => t == Shared.SharedGameTags.MutogTag)).Count();
+
+                            bool hasHarness = geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _vehicleHarnessModule);
+                            bool hasMutogPen = geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _blimpMutogPenModule);
+                            bool isThunderbird = geoVehicle.VehicleDef == thunderbird;
+
+                            // TFTVLogger.Always($"{geoVehicle.Name} has {countVehicles} vehicles, {geoCharacter.DisplayName}, has harness: {hasHarness} is thunderbird {thunderbird}");
+
+                            if (countVehicles > 1)
+                            {
+                                if (isThunderbird && hasHarness && countVehicles < 3)
+                                {
+
+                                }
+                                else
+                                {
+                                    GeoCharacter geoCharacter = geoVehicle.Units.FirstOrDefault(c => c.GameTags.Any(t => t == Shared.SharedGameTags.VehicleTag));
+                                    geoVehicle.RemoveCharacter(geoCharacter);
+                                    geoVehicle.CurrentSite.AddCharacter(geoCharacter);
+
+                                }
+                            }
+
+                            if (countMutogs > 1)
+                            {
+                                if (hasMutogPen && countMutogs < 2)
+                                {
+
+                                }
+                                else
+                                {
+
+                                    GeoCharacter geoCharacter = geoVehicle.Units.FirstOrDefault(c => c.GameTags.Any(t => t == Shared.SharedGameTags.MutogTag));
+                                    geoVehicle.RemoveCharacter(geoCharacter);
+                                    geoVehicle.CurrentSite.AddCharacter(geoCharacter);
+
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+
+
+
+
+                    }
+
+
+                    private static void AdjustPassengerManifestAircraftRework(GeoVehicle geoVehicle)
+                    {
+                        try
+                        {
+                            bool hasHarness = geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _vehicleHarnessModule);
+                            bool hasMutogPen = geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _blimpMutogPenModule);
+                            bool isThunderbird = geoVehicle.VehicleDef == thunderbird;
+
+                            List<GeoCharacter> geoCharacters = geoVehicle.Units.ToList();
+
+                            int occupiedSpace = 0;
+
+                            foreach (GeoCharacter geoCharacter in geoCharacters)
+                            {
+                                if (geoCharacter.TemplateDef.Volume == 3 && hasHarness)
+                                {
+                                    occupiedSpace += 1;
+                                }
+                                else if (geoCharacter.TemplateDef.Volume == 2 && hasMutogPen)
+                                {
+                                    occupiedSpace += 1;
+                                }
+                                else if (geoCharacter.TemplateDef.Volume == 3 && isThunderbird)
+                                {
+                                    occupiedSpace += 2;
+                                }
+                                else
+                                {
+                                    occupiedSpace += geoCharacter.TemplateDef.Volume;
+                                }
+
+                            }
+
+                            if (occupiedSpace >= geoVehicle.MaxCharacterSpace)
+                            {
+                                List<GeoCharacter> list = new List<GeoCharacter>(from u in geoVehicle.Units orderby u.OccupingSpace descending select u);
+                                foreach (GeoCharacter character in list)
+                                {
+                                    if (occupiedSpace <= geoVehicle.MaxCharacterSpace)
+                                    {
+                                        break;
+                                    }
+                                    geoVehicle.RemoveCharacter(character);
+                                    geoVehicle.CurrentSite.AddCharacter(character);
+
+                                    if (character.TemplateDef.Volume == 3 && hasHarness)
+                                    {
+                                        occupiedSpace -= 1;
+                                    }
+                                    else if (character.TemplateDef.Volume == 2 && hasMutogPen)
+                                    {
+                                        occupiedSpace -= 1;
+                                    }
+                                    else if (character.TemplateDef.Volume == 3 && isThunderbird)
+                                    {
+                                        occupiedSpace -= 2;
+                                    }
+                                    else
+                                    {
+                                        occupiedSpace -= character.TemplateDef.Volume;
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+
+                    }
                 }
                 internal class Scanning
                 {
@@ -2365,6 +3823,66 @@ namespace TFTV
                     }
 
 
+
+
+
+                    [HarmonyPatch(typeof(ScanAbility), "ActivateInternal")]
+                    public static class ScanAbility_ActivateInternal_Patch
+                    {
+                        static void Postfix(ScanAbility __instance)
+                        {
+                            try
+                            {
+                                if (!AircraftReworkOn)
+                                {
+                                    return;
+                                }
+
+                                GeoVehicle geoVehicle = __instance.Actor as GeoVehicle;
+
+                                geoVehicle.CanRedirect = false;
+
+
+
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+                    }
+
+
+                    [HarmonyPatch(typeof(GeoScanner), "CompleteScan")]
+                    public static class GeoScanner_CompleteScan_Patch
+                    {
+                        static void Prefix(GeoScanner __instance)
+                        {
+                            try
+                            {
+                                if (!AircraftReworkOn)
+                                {
+                                    return;
+                                }
+
+                                GeoVehicle geoVehicle = __instance.Location.Vehicles.FirstOrDefault(v => v.IsOwnedByViewer &&
+                                 (v.Modules.Any(m => m != null && m.ModuleDef == _thunderbirdScannerModule) || v.Modules.Any(m => m != null && m.ModuleDef == _basicScannerModule)) && !v.CanRedirect);
+
+                                geoVehicle.CanRedirect = true;
+
+                                TFTVLogger.Always($"{geoVehicle.Name} finished scan!");
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+                    }
+
+
+
                     [HarmonyPatch(typeof(GeoScanComponent), "DetectSite")]
                     public static class GeoScanComponent_DetectSite_Patch
                     {
@@ -2377,7 +3895,12 @@ namespace TFTV
                                     return;
                                 }
 
-                                if (__instance.ScanDef == _geoScanVehicleScannerComponent && site.Type == GeoSiteType.Haven && !site.GetInspected(__instance.Owner))
+                                if ((__instance.ScanDef == _basicScannerComponent || __instance.ScanDef == _thunderbirdScannerComponent) && site.Type == GeoSiteType.Haven && !site.GetInspected(__instance.Owner))
+                                {
+                                    site.SetInspected(owner, inspected: true);
+                                }
+
+                                if (__instance.ScanDef == _thunderbirdScannerComponent && site.Type == GeoSiteType.AlienBase && !site.GetInspected(__instance.Owner))
                                 {
                                     site.SetInspected(owner, inspected: true);
                                 }
@@ -2433,8 +3956,10 @@ namespace TFTV
                                             if (geoCharacter.ArmourItems.Any(a => a.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag))
                                                 || geoCharacter.GameTags.Contains(Shared.SharedGameTags.VehicleTag))
                                             {
+                                                // TFTVLogger.Always($"{geoCharacter.DisplayName} in {geoVehicle.Name} has {geoCharacter.Health} HP, {geoCharacter.Fatigue?.Stamina} Stamina");
                                                 geoCharacter.Heal(30);
                                                 geoCharacter.Fatigue?.Stamina.AddRestrictedToMax(10);
+
                                             }
                                         }
                                     }
@@ -2559,6 +4084,13 @@ namespace TFTV
                         {
                             try
                             {
+                                TFTVConfig config = TFTVMain.Main.Config;
+
+                                if (config.VehicleAndMutogSize1)
+                                {
+                                    __result = 1;
+                                }
+
                                 if (!AircraftReworkOn)
                                 {
                                     return;
@@ -2611,11 +4143,13 @@ namespace TFTV
                     [HarmonyPatch(typeof(TransferActionMenuElement), "Init")]
                     public static class TransferActionMenuElement_Init_Patch
                     {
-                        static bool Prefix(TransferActionMenuElement __instance, IGeoCharacterContainer targetContainer, GeoRosterItem targetItem)
+                        public static bool Prefix(TransferActionMenuElement __instance, IGeoCharacterContainer targetContainer, GeoRosterItem targetItem)
                         {
                             try
                             {
-                                if (!AircraftReworkOn)
+                                TFTVConfig config = TFTVMain.Main.Config;
+
+                                if (!AircraftReworkOn && !config.MultipleVehiclesInAircraftAllowed)
                                 {
                                     return true;
                                 }
@@ -2630,7 +4164,7 @@ namespace TFTV
                                 }
 
 
-                                if (targetItem.Character == null || targetItem.Character.TemplateDef.Volume < 2)
+                                if (targetItem.Character == null || targetItem.Character.TemplateDef.Volume < 2 && !config.VehicleAndMutogSize1)
                                 {
                                     return true;
                                 }
@@ -2638,28 +4172,7 @@ namespace TFTV
                                 GeoVehicle geoVehicle = targetContainer as GeoVehicle;
                                 GeoCharacter geoCharacter = targetItem.Character;
 
-                                bool hasHarness = false;//geoVehicle.Modules.Any(m =>m!=null && m.ModuleDef == _vehicleHarnessModule);
-                                bool hasMutogPen = false;//geoVehicle.Modules.Any(m =>m!=null && m.ModuleDef == _blimpMutogPenModule);
-                                bool isThunderbird = geoVehicle.VehicleDef == thunderbird;
-
-                                int occupyingSpace = 1;
-
-                                if (geoCharacter.TemplateDef.Volume == 3 && hasHarness)
-                                {
-                                    occupyingSpace = 1;
-                                }
-                                else if (geoCharacter.TemplateDef.Volume == 2 && hasMutogPen)
-                                {
-                                    occupyingSpace = 1;
-                                }
-                                else if (geoCharacter.TemplateDef.Volume == 3 && isThunderbird)
-                                {
-                                    occupyingSpace = 2;
-                                }
-                                else
-                                {
-                                    occupyingSpace = geoCharacter.TemplateDef.Volume;
-                                }
+                                int occupyingSpace = geoCharacter.TemplateDef.Volume;
 
                                 PropertyInfo propertyInfo = typeof(TransferActionMenuElement).GetProperty("TargetContainer", BindingFlags.Public | BindingFlags.Instance);
 
@@ -2668,17 +4181,44 @@ namespace TFTV
                                 __instance.ContainerTextLabel.text = targetContainer.Name;
                                 bool interactable = true;
 
+                                bool hasHarness = false;
+                                bool hasMutogPen = false;
+                                bool isThunderbird = false;
+
+                                if (AircraftReworkOn)
+                                {
+                                    hasHarness = geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _vehicleHarnessModule);
+                                    hasMutogPen = geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _blimpMutogPenModule);
+                                    isThunderbird = geoVehicle.VehicleDef == thunderbird;
+
+                                    if (geoCharacter.TemplateDef.Volume == 3 && hasHarness)
+                                    {
+                                        occupyingSpace = 1;
+                                    }
+                                    else if (geoCharacter.TemplateDef.Volume == 2 && hasMutogPen)
+                                    {
+                                        occupyingSpace = 1;
+                                    }
+                                    else if (geoCharacter.TemplateDef.Volume == 3 && isThunderbird)
+                                    {
+                                        occupyingSpace = 2;
+                                    }
+                                }
+
+
                                 __instance.ContainerTextLabel.text += $" [{targetContainer.CurrentOccupiedSpace}/{targetContainer.MaxCharacterSpace}]";
                                 interactable = ((targetContainer.MaxCharacterSpace - targetContainer.CurrentOccupiedSpace >= occupyingSpace));
 
-
                                 __instance.ErrorTooltip.gameObject.SetActive(value: false);
 
-                                if (!CheckVehicleMutogVehicleCapacity(geoVehicle, geoCharacter, thunderbird, hasMutogPen))
+                                if (AircraftReworkOn && !config.MultipleVehiclesInAircraftAllowed)
                                 {
-                                    __instance.ErrorTooltip.TipKey = __instance.VehicleErrorTextBind;
-                                    __instance.ErrorTooltip.gameObject.SetActive(value: true);
-                                    interactable = false;
+                                    if (!CheckVehicleMutogVehicleCapacity(geoVehicle, geoCharacter, isThunderbird, hasHarness, hasMutogPen))
+                                    {
+                                        __instance.ErrorTooltip.TipKey = __instance.VehicleErrorTextBind;
+                                        __instance.ErrorTooltip.gameObject.SetActive(value: true);
+                                        interactable = false;
+                                    }
                                 }
 
                                 __instance.Button.interactable = interactable;
@@ -2693,25 +4233,28 @@ namespace TFTV
                         }
                     }
 
-                    private static bool CheckVehicleMutogVehicleCapacity(GeoVehicle geoVehicle, GeoCharacter geoCharacter, bool thunderBird = false, bool mutogPen = false)
+                    private static bool CheckVehicleMutogVehicleCapacity(GeoVehicle geoVehicle, GeoCharacter geoCharacter, bool thunderBird, bool hasHarness, bool mutogPen)
                     {
                         try
                         {
-                            bool alreadyHasVehicle = geoVehicle.Units.Any(c => c.GameTags.Any(t => t == Shared.SharedGameTags.VehicleTag));
-                            bool alreadyHasMutog = geoVehicle.Units.Any(c => c.GameTags.Any(t => t == Shared.SharedGameTags.MutogTag));
+                            int countVehicles = geoVehicle.Units.Where(c => c.GameTags.Any(t => t == Shared.SharedGameTags.VehicleTag)).Count();
+                            int countMutogs = geoVehicle.Units.Where(c => c.GameTags.Any(t => t == Shared.SharedGameTags.MutogTag)).Count();
 
-                            if (geoCharacter.GameTags.Any(t => t == Shared.SharedGameTags.VehicleTag) && alreadyHasVehicle)
+                            // TFTVLogger.Always($"{geoVehicle.Name} has {countVehicles} vehicles, {geoCharacter.DisplayName}, has harness: {hasHarness} is thunderbird {thunderbird}");
+
+                            if (geoCharacter.GameTags.Any(t => t == Shared.SharedGameTags.VehicleTag) && countVehicles > 0)
                             {
-                                if (thunderBird)
+                                if (thunderBird && hasHarness && countVehicles < 2)
                                 {
+                                    //       TFTVLogger.Always($"{geoCharacter.DisplayName} should return true");
                                     return true;
                                 }
                                 return false;
                             }
 
-                            if (geoCharacter.GameTags.Any(t => t == Shared.SharedGameTags.MutogTag) && alreadyHasMutog)
+                            if (geoCharacter.GameTags.Any(t => t == Shared.SharedGameTags.MutogTag) && countMutogs > 0)
                             {
-                                if (mutogPen)
+                                if (mutogPen && countMutogs < 2)
                                 {
                                     return true;
                                 }
@@ -2726,75 +4269,82 @@ namespace TFTV
                             TFTVLogger.Error(e);
                             throw;
                         }
-
-
                     }
-
-
-
-                    [HarmonyPatch(typeof(UIStateRosterDeployment), "CheckForDeployment")]
-                    public static class UIStateRosterDeployment_CheckForDeployment_Patch
-                    {
-                        public static bool Prefix(UIStateRosterDeployment __instance, IEnumerable<GeoCharacter> squad)//, int ____squadMaxDeployment)
-                        {
-                            try
-                            {
-                                if (!AircraftReworkOn)
-                                {
-                                    return true;
-                                }
-                                UIModuleDeploymentMissionBriefing missionBriefingModule = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.DeploymentMissionBriefingModule;
-                                missionBriefingModule.DeployButton.SetInteractable(squad.Any());
-                                missionBriefingModule.DeployButton.ResetButtonAnimations();
-
-                                return false;
-
-                            }
-                            catch (Exception e)
-                            {
-                                TFTVLogger.Error(e);
-                                throw;
-                            }
-                        }
-                    }
-
-                    [HarmonyPatch(typeof(GeoMission), "GetDeploymentSources")]
-                    public static class GeoMission_GetDeploymentSource_Patch
-                    {
-                        public static void Postfix(GeoMission __instance, GeoFaction faction, IGeoCharacterContainer priorityContainer, ref List<IGeoCharacterContainer> __result)
-                        {
-                            try
-                            {
-                                if (!AircraftReworkOn)
-                                {
-                                    return;
-                                }
-
-                                if (priorityContainer == null)
-                                {
-                                    // Debug.LogError($"no vehicle was passed from sources!");
-                                    // __result = new List<IGeoCharacterContainer>();
-
-                                    priorityContainer = __instance.Site.Vehicles.FirstOrDefault((GeoVehicle v) => v.Owner == faction);
-
-                                }
-
-                                __result = new List<IGeoCharacterContainer> { priorityContainer };
-
-                            }
-                            catch (Exception e)
-                            {
-                                TFTVLogger.Error(e);
-                                throw;
-                            }
-                        }
-                    }
-
-
                 }
             }
             internal class UI
             {
+
+                [HarmonyPatch(typeof(UIModuleSoldierEquip), "DoFilter")]
+                public static class UIModuleSoldierEquip_DoFilter_Patch
+                {
+                    static void Prefix(UIModuleSoldierEquip __instance)
+                    {
+                        try
+                        {
+                            if (!AircraftReworkOn)
+                            {
+                                return;
+                            }
+
+
+                            // Get the private method 'TypeFilter' using Harmony's AccessTools.
+                            MethodInfo typeFilterMethod = AccessTools.Method(typeof(UIModuleSoldierEquip), "TypeFilter");
+                            if (typeFilterMethod == null)
+                            {
+                                // TFTVLogger.Always("Could not locate the private method 'TypeFilter' in UIModuleSoldierEquip.");
+                                return;
+                            }
+
+                            // Use the public StorageList property.
+                            var storageList = __instance.StorageList;
+                            if (storageList == null)
+                            {
+                                // TFTVLogger.Always("StorageList is null in UIModuleSoldierEquip.");
+                                return;
+                            }
+
+                            if (storageList.UnfilteredItems == null)
+                            {
+                                // TFTVLogger.Always("UnfilteredItems is null in StorageList.");
+                                return;
+                            }
+
+                            // Iterate over each unfiltered item.
+                            foreach (var item in storageList.UnfilteredItems)
+                            {
+
+                                // Attempt to cast the item’s ItemDef to TacticalItemDef.
+                                var tacticalItemDef = item.ItemDef as TacticalItemDef;
+                                if (tacticalItemDef == null)
+                                {
+                                    TFTVLogger.Always($"ItemDef is null or not a TacticalItemDef. Item: {item} {item.GetType()}");
+
+                                    continue;
+                                }
+
+                                // Invoke the private TypeFilter method on the instance.
+                                bool passesTypeFilter = (bool)typeFilterMethod.Invoke(__instance, new object[] { tacticalItemDef });
+                                // Optionally log the result:
+                                // TFTVLogger.Info($"Item: {item}, passesTypeFilter: {passesTypeFilter}");
+
+                            }
+
+                            int removedCount = storageList.UnfilteredItems.RemoveAll(item => !(item.ItemDef is TacticalItemDef));
+                            if (removedCount > 0)
+                            {
+                                TFTVLogger.Info($"Removed {removedCount} items that are not TacticalItemDef from UnfilteredItems.");
+                            }
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+
 
 
                 [HarmonyPatch(typeof(UIModuleSelectionInfoBox), "SetExtendedGeoVehicleInfo")]
@@ -2873,7 +4423,7 @@ namespace TFTV
                     {
                         try
                         {
-                            if (!AircraftReworkOn) 
+                            if (!AircraftReworkOn)
                             {
                                 return true;
                             }
@@ -2969,12 +4519,12 @@ namespace TFTV
                             // Add three module slots
                             if (modules != null)
                             {
-                               // TFTVLogger.Always($"Modules count: {modules.Count}");
+                                // TFTVLogger.Always($"Modules count: {modules.Count}");
 
-                                foreach (GeoVehicleEquipmentUIData module in modules)
-                                {
-                                    TFTVLogger.Always($"Module: {module?.AircraftEquipmentDef.name}");
-                                }
+                                /*  foreach (GeoVehicleEquipmentUIData module in modules)
+                                  {
+                                      TFTVLogger.Always($"Module: {module?.AircraftEquipmentDef.name}");
+                                  }*/
 
 
                                 if (modules.Count >= 1)
@@ -3379,16 +4929,433 @@ namespace TFTV
                     }
                 }
             }
+        }
+
+        internal class AircraftMaintenance
+        {
+
+            private static bool CheckSpeedAdjustedForMaintenance(GeoVehicle geoVehicle)
+            {
+                try
+                {
+                    float baseSpeed = geoVehicle.VehicleDef.BaseStats.Speed.Value;
+                    float totalSpeed = baseSpeed;
+
+                    if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _basicSpeedModule))
+                    {
+                        totalSpeed += _basicSpeedModule.GeoVehicleModuleBonusValue;
+                    }
+
+                    if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _heliosSpeedModule))
+                    {
+                        totalSpeed += _heliosSpeedModule.GeoVehicleModuleBonusValue;
+                    }
+
+                    if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _basicPassengerModule))
+                    {
+                        totalSpeed += _basicPassengerModule.GeoVehicleModuleBonusValue;
+                    }
+
+                    if (geoVehicle.Stats.HitPoints <= 50)
+                    {
+                        totalSpeed /= 2;
+                    }
+
+                    return geoVehicle.Speed.Value == totalSpeed;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+
+            internal class Repairing
+            {
+                [HarmonyPatch(typeof(GeoVehicle), "RepairAircraftHp")]
+                public static class GeoVehicle_RepairAircraftHp_Patch
+                {
+                    public static void Prefix(GeoVehicle __instance, ref int points)
+                    {
+                        try
+                        {
+                            if (!AircraftReworkOn)
+                            {
+                                return;
+                            }
+
+                            if (!ResearchCompleted(__instance))
+                            {
+                                points /= 10;
+                            }
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+
+                    public static void Postfix(GeoVehicle __instance)
+                    {
+                        try
+                        {
+                            if (!AircraftReworkOn)
+                            {
+                                return;
+                            }
+
+                            AircraftSpeed.AdjustAircraftSpeed(__instance);
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+
+
+            }
+
+            public static void MaintenanceToll(GeoLevelController controller)
+            {
+                try
+                {
+                    if (!AircraftReworkOn) 
+                    {
+                        return;          
+                    }
+
+                    foreach (GeoVehicle geoVehicle in controller.PhoenixFaction.Vehicles)
+                    {
+                        if (geoVehicle.Travelling)
+                        {
+                            geoVehicle.SetHitpoints(geoVehicle.Stats.HitPoints - 1);
+                        }
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+
+
+
+            private static bool ResearchCompleted(GeoVehicle geoVehicle)
+            {
+                try
+                {
+                    GeoPhoenixFaction phoenixFaction = geoVehicle.GeoLevel.PhoenixFaction;
+
+                    if (geoVehicle.VehicleDef == manticore)
+                    {
+                        return true;
+                    }
+                    else if (geoVehicle.VehicleDef == helios)
+                    {
+                        if (phoenixFaction.Research.HasCompleted("SYN_Aircraft_ResearchDef"))
+                        {
+                            return true;
+                        }
+                    }
+                    else if (geoVehicle.VehicleDef == blimp)
+                    {
+                        if (phoenixFaction.Research.HasCompleted("ANU_Blimp_ResearchDef"))
+                        {
+                            return true;
+                        }
+                    }
+                    else if (geoVehicle.VehicleDef == thunderbird)
+                    {
+                        if (phoenixFaction.Research.HasCompleted("NJ_Aircraft_ResearchDef"))
+                        {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+
+
+
+
+            [HarmonyPatch(typeof(GeoVehicle), "SetHitpoints")]
+            public static class GeoVehicle_SetHitpoints_Patch
+            {
+                public static void Postfix(GeoVehicle __instance)
+                {
+                    try
+                    {
+                        if (!AircraftReworkOn)
+                        {
+                            return;
+                        }
+
+                        AircraftSpeed.AdjustAircraftSpeed(__instance);
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+            [HarmonyPatch(typeof(GeoMission), "ApplyMissionResults")]
+            public static class GeoMission_ApplyMissionResults_Patch
+            {
+                public static void Postfix(GeoMission __instance, TacMissionResult result, GeoSquad squad)
+                {
+                    try
+                    {
+                        if (!AircraftReworkOn)
+                        {
+                            return;
+                        }
+
+                        bool ambushMission = __instance.MissionDef.Tags.Contains(Shared.SharedGameTags.AmbushMissionTag);
+                        bool phoenixLostMission = result.FactionResults.Any(fr => fr.FactionDef == __instance.Level.PhoenixFaction.FactionDef.PPFactionDef
+                            && fr.State == TacFactionState.Defeated);
+
+                        TFTVLogger.Always($"Mission results: {__instance.MissionDef.name} ambush? {ambushMission} lost? {phoenixLostMission}");
+
+                        if (ambushMission && phoenixLostMission)
+                        {
+                            __instance.GetLocalAircraft(squad).SetHitpoints(0);
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+
+            [HarmonyPatch(typeof(GeoVehicle), "OnAircraftBreakingDown")]
+            public static class GeoVehicle_OnAircraftBreakingDown_Patch
+            {
+                public static bool Prefix(GeoVehicle __instance)
+                {
+                    try
+                    {
+                        if (!AircraftReworkOn)
+                        {
+                            return true;
+                        }
+
+                        if (!__instance.IsOwnedByViewer)
+                        {
+                            return true;
+                        }
+
+                        /* GeoSite closestBase = __instance.GeoLevel.Map.ActiveSites.FirstOrDefault(
+                             (GeoSite site) => site.Type == GeoSiteType.PhoenixBase &&
+                             site.State == GeoSiteState.Functioning &&
+                             site.Owner == __instance.GeoLevel.PhoenixFaction);*/
+
+                        GeoSite closestBase = __instance.GeoLevel.Map.ActiveSites
+    .Where(site => site.Type == GeoSiteType.PhoenixBase &&
+                   site.State == GeoSiteState.Functioning &&
+                   site.Owner == __instance.GeoLevel.PhoenixFaction)
+    .OrderBy(site => GeoMap.Distance(__instance, site))
+    .FirstOrDefault();
+
+
+
+                        Vector3 src = ((__instance.CurrentSite != null) ? __instance.CurrentSite.WorldPosition : __instance.WorldPosition);
+                        bool foundPath = false;
+                        IList<SitePathNode> source = __instance.Navigation.FindPath(src, closestBase.WorldPosition, out foundPath);
+
+
+                        List<GeoSite> geoSites = new List<GeoSite>();
+
+                        geoSites.AddRange(from pn in source
+                                          where pn.Site != null && pn.Site != __instance.CurrentSite
+                                          select pn.Site);
+                        __instance.StartTravel(geoSites);
+
+                        __instance.CanRedirect = false;
+
+                        return false;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+
+            [HarmonyPatch(typeof(GeoscapeLog), "OnFactionVehicleMaintenaceChanged")]
+            public static class GeoscapeLog_OnFactionVehicleMaintenaceChanged
+            {
+                public static bool Prefix(GeoscapeLog __instance, GeoFaction faction, GeoVehicle vehicle, int oldValue, int newValue)
+                {
+                    try
+                    {
+                        if (!AircraftReworkOn)
+                        {
+                            return true;
+                        }
+
+                        if (newValue < oldValue)
+                        {
+                            /* if (newValue > 50)
+                             {
+                                 return false;
+                             }
+
+                             MethodInfo methodInfo = typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                             LocalizedTextBind localizedTextBindReducedSpeed = new LocalizedTextBind($"Maintenance is at 50%! Speed halved", true);
+                             LocalizedTextBind localizedTextBindNeedUrgentRepairs = new LocalizedTextBind($"In need of urgent repairs! Returning to nearest base", true);
+
+
+
+                             GeoscapeLogEntry entry = new GeoscapeLogEntry
+                             {
+                                 Text = localizedTextBindReducedSpeed,
+                                 Parameters = new LocalizedTextBind[1] { new LocalizedTextBind(vehicle.Name, doNotLocalize: true) }
+                             };
+
+                             if (newValue == 0)
+                             {
+                                 entry.Text = localizedTextBindNeedUrgentRepairs;     
+                             }
+
+                             methodInfo.Invoke(__instance, new object[] { entry, vehicle });
+                            */
+                            return false;
+                        }
+
+                        return true;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+            private static void AircraftRecoverSpeed(GeoVehicle geoVehicle)
+            {
+                try
+                {
+                    if (geoVehicle.Stats.HitPoints > 50)
+                    {
+                        if (AircraftSpeed.IsAircraftInMist(geoVehicle) || CheckSpeedAdjustedForMaintenance(geoVehicle))
+                        {
+                            return;
+                        }
+
+                        TFTVLogger.Always($"Adjusting speed of {geoVehicle.Name} from {geoVehicle.Stats.Speed}; recovery");
+
+                        geoVehicle.Stats.Speed *= 2;
+
+                        List<GeoSite> _destinationSites = typeof(GeoVehicle).GetField("_destinationSites", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(geoVehicle) as List<GeoSite>;
+
+                        if (geoVehicle.Travelling && _destinationSites.Any())
+                        {
+                            List<Vector3> path = _destinationSites.Select((GeoSite d) => d.WorldPosition).ToList();
+                            geoVehicle.Navigation.Navigate(path);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void AircraftReduceSpeed(GeoVehicle geoVehicle)
+            {
+                try
+                {
+                    if (geoVehicle.Stats.HitPoints <= 50)
+                    {
+                        if (AircraftSpeed.IsAircraftInMist(geoVehicle) || !CheckSpeedAdjustedForMaintenance(geoVehicle))
+                        {
+                            return;
+                        }
+
+                        TFTVLogger.Always($"Adjusting speed of {geoVehicle.Name} from {geoVehicle.Stats.Speed}; reduction");
+
+                        geoVehicle.Stats.Speed /= 2;
+
+                        List<GeoSite> _destinationSites = typeof(GeoVehicle).GetField("_destinationSites", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(geoVehicle) as List<GeoSite>;
+
+                        if (geoVehicle.Travelling && _destinationSites.Any())
+                        {
+                            List<Vector3> path = _destinationSites.Select((GeoSite d) => d.WorldPosition).ToList();
+                            geoVehicle.Navigation.Navigate(path);
+                        }
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
 
 
         }
 
-
-        internal class TravellingThroughMist
+        internal class AircraftSpeed
         {
             private static DateTime lastCallTime = DateTime.MinValue;
 
-            public static void ModifySpeedInMist(GeoVehicle geoVehicle)
+            internal static void Init(GeoLevelController controller)
+            {
+                try
+                {
+                    if (!AircraftReworkOn)
+                    {
+                        return;
+                    }
+
+                    lastCallTime = DateTime.MinValue;
+
+                    foreach (GeoVehicle geoVehicle in controller.PhoenixFaction.Vehicles)
+                    {
+                        AdjustAircraftSpeed(geoVehicle);
+                    }
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+
+
+
+            public static void AdjustAircraftSpeed(GeoVehicle geoVehicle)
             {
                 try
                 {
@@ -3398,19 +5365,25 @@ namespace TFTV
                     }
 
                     // Get the current in-game time
-                    DateTime currentTime = geoVehicle.GeoLevel.Timing.Now.DateTime;
+
 
                     // Check if 10 minutes have passed since the last call
-                    if ((currentTime - lastCallTime).TotalMinutes < 10)
-                    {
-                        return;
-                    }
+
 
                     // Update the last call time
-                    lastCallTime = currentTime;
+
 
                     if (IsAircraftInMist(geoVehicle) && !CheckSpeedAdjustedForMist(geoVehicle))
                     {
+                        DateTime currentTime = geoVehicle.GeoLevel.Timing.Now.DateTime;
+
+                        if ((currentTime - lastCallTime).TotalMinutes < 10)
+                        {
+                            return;
+                        }
+
+                        lastCallTime = currentTime;
+
                         List<GeoSite> _destinationSites = typeof(GeoVehicle).GetField("_destinationSites", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(geoVehicle) as List<GeoSite>;
 
                         if (geoVehicle.VehicleDef != blimp)
@@ -3419,14 +5392,18 @@ namespace TFTV
                         }
                         else
                         {
-                            geoVehicle.Stats.Speed = new EarthUnits(geoVehicle.Speed.Value * MistSpeedBuff);
+                            geoVehicle.Stats.Speed = new EarthUnits(geoVehicle.VehicleDef.BaseStats.Speed.Value * MistSpeedBuff);
                         }
 
                         if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _blimpSpeedModule))
                         {
-                            geoVehicle.Stats.Speed *= MistSpeedBuff;
+                            geoVehicle.Stats.Speed += MistSpeedModuleBuff;
                         }
 
+                        if (geoVehicle.Stats.HitPoints <= 50)
+                        {
+                            geoVehicle.Stats.Speed /= 2;
+                        }
 
                         if (geoVehicle.Travelling && _destinationSites.Any())
                         {
@@ -3445,29 +5422,34 @@ namespace TFTV
                 }
             }
 
-            private static bool CheckSpeedAdjustedForMist(GeoVehicle geoVehicle)
+            public static bool CheckSpeedAdjustedForMist(GeoVehicle geoVehicle)
             {
                 try
                 {
                     float baseSpeed = geoVehicle.VehicleDef.BaseStats.Speed.Value;
-                    float speedWithModules = baseSpeed;
+                    float totalSpeed = baseSpeed;
 
                     if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _basicSpeedModule))
                     {
-                        speedWithModules += _basicSpeedModule.GeoVehicleModuleBonusValue;
+                        totalSpeed += _basicSpeedModule.GeoVehicleModuleBonusValue;
                     }
 
                     if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _heliosSpeedModule))
                     {
-                        speedWithModules += _heliosSpeedModule.GeoVehicleModuleBonusValue;
+                        totalSpeed += _heliosSpeedModule.GeoVehicleModuleBonusValue;
                     }
 
                     if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _basicPassengerModule))
                     {
-                        speedWithModules += _basicPassengerModule.GeoVehicleModuleBonusValue;
+                        totalSpeed += _basicPassengerModule.GeoVehicleModuleBonusValue;
                     }
 
-                    return geoVehicle.Speed.Value != speedWithModules;
+                    if (geoVehicle.Stats.HitPoints <= 50)
+                    {
+                        totalSpeed /= 2;
+                    }
+
+                    return geoVehicle.Speed.Value != totalSpeed;
                 }
                 catch (Exception e)
                 {
@@ -3483,24 +5465,29 @@ namespace TFTV
                     List<GeoSite> _destinationSites = typeof(GeoVehicle).GetField("_destinationSites", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(geoVehicle) as List<GeoSite>;
 
                     float baseSpeed = geoVehicle.VehicleDef.BaseStats.Speed.Value;
-                    float speedWithModules = baseSpeed;
+                    float totalSpeed = baseSpeed;
 
                     if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _basicSpeedModule))
                     {
-                        speedWithModules += _basicSpeedModule.GeoVehicleModuleBonusValue;
+                        totalSpeed += _basicSpeedModule.GeoVehicleModuleBonusValue;
                     }
 
                     if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _heliosSpeedModule))
                     {
-                        speedWithModules += _heliosSpeedModule.GeoVehicleModuleBonusValue;
+                        totalSpeed += _heliosSpeedModule.GeoVehicleModuleBonusValue;
                     }
 
                     if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _basicPassengerModule))
                     {
-                        speedWithModules += _basicPassengerModule.GeoVehicleModuleBonusValue;
+                        totalSpeed += _basicPassengerModule.GeoVehicleModuleBonusValue;
                     }
 
-                    geoVehicle.Stats.Speed = new EarthUnits(speedWithModules);
+                    if (geoVehicle.Stats.HitPoints <= 50)
+                    {
+                        totalSpeed /= 2;
+                    }
+
+                    geoVehicle.Stats.Speed = new EarthUnits(totalSpeed);
 
                     if (geoVehicle.Travelling && _destinationSites.Any())
                     {

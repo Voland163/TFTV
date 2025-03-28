@@ -93,9 +93,11 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                string version = $"TFTV 1.0, Patch 15 20250328 release #1 v{MetaData.Version}";
+                string version = $"TFTV 1.0, Patch 16 20250426 release #1  v{MetaData.Version}";
 
-                //EXPERIMENTAL AIRCRAFT REWORK
+                //Patch 15 20250328 release #1
+
+                //EXPERIMENTAL AIRCRAFT REWORK 20250409 release #1
 
                 TFTVversion = version;
 

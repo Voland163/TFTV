@@ -13,7 +13,6 @@ using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Common.View.ViewModules;
-using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Research;
@@ -90,19 +89,19 @@ namespace TFTV
                 {
                     TFTVLogger.Always($"{recruit.DisplayName} {toContainer?.Name} toContainer geosite? {toContainer is GeoSite} toContainer is PhoenixBase? {toContainer is GeoPhoenixBase}.");
 
-                   /* foreach(GameTagDef gameTagDef in recruit.TemplateDef.GetGameTags()) 
-                    {
-                        TFTVLogger.Always($"{gameTagDef.name}");
-                    }*/
+                    /* foreach(GameTagDef gameTagDef in recruit.TemplateDef.GetGameTags()) 
+                     {
+                         TFTVLogger.Always($"{gameTagDef.name}");
+                     }*/
 
                     if ((recruit.TemplateDef != null && recruit.TemplateDef.GetGameTags().Contains(MercenaryTag)
                         || recruit.GameTags.Contains(DefCache.GetDef<GameTagDef>("KaosBuggy_ClassTagDef"))
-                        || recruit.GameTags.Contains(TFTVProjectOsiris.OCPProductTag)) 
+                        || recruit.GameTags.Contains(TFTVProjectOsiris.OCPProductTag))
                         && toContainer != null && toContainer is GeoSite)
                     {
-                        if (recruit.GameTags.Contains(TFTVProjectOsiris.OCPProductTag)) 
-                        { 
-                        recruit.LevelProgression.SetLevel(__instance.GeoLevel.DeadSoldiers[TFTVProjectOsiris.IdProjectOsirisCandidate].Level);
+                        if (recruit.GameTags.Contains(TFTVProjectOsiris.OCPProductTag))
+                        {
+                            recruit.LevelProgression.SetLevel(__instance.GeoLevel.DeadSoldiers[TFTVProjectOsiris.IdProjectOsirisCandidate].Level);
                         }
 
                         __instance.GeoLevel.View.PrepareDeployAsset(__instance, recruit, null, null, manufactured: false, spaceFull: false);
@@ -198,13 +197,14 @@ namespace TFTV
                         {
                             foreach (SpecializationDef item in geoCharacter.Progression.GetSpecializations())
                             {
-                                if (!list.Contains(item) && item != TFTVChangesToDLC5.TFTVMercenaries.SlugSpecialization)
+                                if (!list.Contains(item) && item != TFTVMercenaries.SlugSpecialization)
                                 {
                                     list.Add(item);
                                 }
                             }
                         }
                     }
+
                     soldierEquipModule.SetupClassFilters(availableCharacterSpecializations, list, ____initCharacter);
 
                     return false;
@@ -301,9 +301,9 @@ namespace TFTV
             internal static RemoveFacehuggerAbilityDef SlugRemoveFaceHugger;
             internal static BashAbilityDef SlugTechnicianZap;
 
-            internal static List <TacticalAbilityDef> SlugTacticalAbilities = new List<TacticalAbilityDef>() 
-            { 
-            SlugTechnicianRepair, SlugTechnicianHeal, SlugTechnicianRestore, SlugFieldMedic, SlugRemoveFaceHugger         
+            internal static List<TacticalAbilityDef> SlugTacticalAbilities = new List<TacticalAbilityDef>()
+            {
+            SlugTechnicianRepair, SlugTechnicianHeal, SlugTechnicianRestore, SlugFieldMedic, SlugRemoveFaceHugger
             };
 
 
@@ -409,11 +409,11 @@ namespace TFTV
                         doomTorso.Armor = 24;
                         DefCache.GetDef<TacticalItemDef>("PX_Heavy_LeftArm_Headhunter_BodyPartDef").Armor = 24;
                         DefCache.GetDef<TacticalItemDef>("PX_Heavy_RightArm_Headhunter_BodyPartDef").Armor = 24;
-                    
+
 
                         doomLegs.Armor = 22;
-                        DefCache.GetDef<TacticalItemDef>("PX_Heavy_LeftLeg_Headhunter_BodyPartDef").Armor=22;
-                        DefCache.GetDef<TacticalItemDef>("PX_Heavy_RightLeg_Headhunter_BodyPartDef").Armor=22;
+                        DefCache.GetDef<TacticalItemDef>("PX_Heavy_LeftLeg_Headhunter_BodyPartDef").Armor = 22;
+                        DefCache.GetDef<TacticalItemDef>("PX_Heavy_RightLeg_Headhunter_BodyPartDef").Armor = 22;
 
                         doomHelmet.BodyPartAspectDef.Accuracy = -0.06f;
                         doomHelmet.BodyPartAspectDef.Perception = 0.0f;
@@ -917,8 +917,6 @@ namespace TFTV
             internal class GeoRecruitment
             {
 
-
-
                 [HarmonyPatch(typeof(GeoUnitDescriptor), "FinishInitCharacter")]
                 public static class GeoUnitDescriptor_FinishInitCharacter_patch
                 {
@@ -972,7 +970,7 @@ namespace TFTV
                         {
                             if (geoUnitDescriptor.ClassTag == priestTag)
                             {
-                               // TFTVLogger.Always($"mercenary priest check");
+                                // TFTVLogger.Always($"mercenary priest check");
 
                                 if (geoUnitDescriptor.Progression.PersonalAbilities[3] == sniperProf)
                                 {
@@ -984,7 +982,7 @@ namespace TFTV
                                 geoUnitDescriptor.Progression.PersonalAbilities[5] = DefCache.GetDef<ApplyStatusAbilityDef>("BC_ARTargeting_AbilityDef");
                                 geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<PassiveModifierAbilityDef>("Endurance_AbilityDef");
 
-                                
+
                             }
                             else if (geoUnitDescriptor.ClassTag == technicianTag)
                             {
@@ -1004,7 +1002,7 @@ namespace TFTV
 
                                 mainSpecDefField.SetValue(geoUnitDescriptor.Progression, SlugSpecialization);
 
-                      
+
                             }
                             else if (geoUnitDescriptor.ClassTag == infiltratorTag)
                             {
@@ -1012,27 +1010,27 @@ namespace TFTV
                                 geoUnitDescriptor.Progression.PersonalAbilities[2] = DefCache.GetDef<ApplyStatusAbilityDef>("BC_Biochemist_AbilityDef");
                                 geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<ApplyStatusAbilityDef>("Saboteur_AbilityDef");
 
-                         
+
                             }
                             else if (geoUnitDescriptor.ClassTag == berserkerTag)
                             {
                                 geoUnitDescriptor.Progression.PersonalAbilities[1] = DefCache.GetDef<PassiveModifierAbilityDef>("DieHard_AbilityDef");
                                 geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<PassiveModifierAbilityDef>("Punisher_AbilityDef");
 
-                      
+
                             }
                             else if (geoUnitDescriptor.ClassTag == heavyTag)
                             {
                                 geoUnitDescriptor.Progression.PersonalAbilities[1] = DefCache.GetDef<ApplyStatusAbilityDef>("BC_Takedown_AbilityDef");
                                 geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<PassiveModifierAbilityDef>("BattleHardened_AbilityDef");
 
-                            
+
                             }
                             else if (geoUnitDescriptor.ClassTag == assaultTag)
                             {
                                 geoUnitDescriptor.Progression.PersonalAbilities[1] = DefCache.GetDef<PassiveModifierAbilityDef>("DieHard_AbilityDef");
                                 geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<PassiveModifierAbilityDef>("Endurance_AbilityDef");
-                               
+
                             }
                             TFTVLogger.Always($"Mercenary: {geoUnitDescriptor.ClassTag}");
                         }
@@ -1056,6 +1054,8 @@ namespace TFTV
                             {
                                 GiveAmmoToMercenaryOnCreation(character);
                             }
+
+                            AdjustNameOnHire(character);
                         }
                     }
                     catch (Exception e)
@@ -1064,6 +1064,97 @@ namespace TFTV
                         throw;
                     }
                 }
+
+                private static void AdjustNameOnHire(GeoCharacter character)
+                {
+                    try
+                    {
+                        // Retrieve the female tag from the shared game tags
+                        GenderTagDef femaleTag = Shared.SharedGameTags.Genders.FemaleTag;
+                        string name = "";
+
+                        // Ghosts (Priest tag)
+                        if (character.GameTags.Contains(priestTag))
+                        {
+                            if (character.Identity.SexTag == femaleTag)
+                            {
+                                name = TFTVHumanEnemiesNames.syn_FemaleNames.GetRandomElement();
+                            }
+                            else
+                            {
+                                name = TFTVHumanEnemiesNames.syn_MaleNames.GetRandomElement();
+                            }
+                            name += $" \"{TFTVHumanEnemiesNames.ghostMonikers.GetRandomElement()}\"";
+                        }
+                        // Slugs (Technician tag)
+                        else if (character.GameTags.Contains(technicianTag))
+                        {
+                            name = TFTVHumanEnemiesNames.slug_Adjectives.GetRandomElement();
+                            name += $" {TFTVHumanEnemiesNames.slug_FirstNames.GetRandomElement()}";
+                        }
+                        // Spy Masters (Infiltrator tag)
+                        else if (character.GameTags.Contains(infiltratorTag))
+                        {
+                            if (character.Identity.SexTag == femaleTag)
+                            {
+                                name = TFTVHumanEnemiesNames.spymasterFemaleNames.GetRandomElement();
+                            }
+                            else
+                            {
+                                name = TFTVHumanEnemiesNames.spymasterMaleNames.GetRandomElement();
+                            }
+                            name += $" \"{TFTVHumanEnemiesNames.spymasterMonikers.GetRandomElement()}\"";
+                        }
+                        // Old Hounds (Heavy tag)
+                        else if (character.GameTags.Contains(heavyTag))
+                        {
+                            if (character.Identity.SexTag == femaleTag)
+                            {
+                                name = TFTVHumanEnemiesNames.nj_FemaleNames.GetRandomElement();
+                            }
+                            else
+                            {
+                                name = TFTVHumanEnemiesNames.nj_MaleNames.GetRandomElement();
+                            }
+                            name += $" \"{TFTVHumanEnemiesNames.oldHoundMonikers.GetRandomElement()}\"";
+                        }
+                        // Exiles (Assault tag)
+                        else if (character.GameTags.Contains(assaultTag))
+                        {
+                            if (character.Identity.SexTag == femaleTag)
+                            {
+                                name = TFTVHumanEnemiesNames.syn_FemaleNames.GetRandomElement();
+                            }
+                            else
+                            {
+                                name = TFTVHumanEnemiesNames.syn_MaleNames.GetRandomElement();
+                            }
+                            name += $" \"{TFTVHumanEnemiesNames.exileMonikers.GetRandomElement()}\"";
+                        }
+                        // Sectarians (Berserker tag)
+                        else if (character.GameTags.Contains(berserkerTag))
+                        {
+                            if (character.Identity.SexTag == femaleTag)
+                            {
+                                name = TFTVHumanEnemiesNames.sectarianFemaleNames.GetRandomElement();
+                            }
+                            else
+                            {
+                                name = TFTVHumanEnemiesNames.sectarianMaleNames.GetRandomElement();
+                            }
+                            name += $" \"{TFTVHumanEnemiesNames.sectarian_Monikers.GetRandomElement()}\"";
+                        }
+
+                        character.Identity.Name = name;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+
 
                 private static void AdjustMercenaryProficiencyPerks(GeoCharacter character)
                 {
@@ -1174,7 +1265,7 @@ namespace TFTV
                             tacticalActor.CharacterStats.Endurance.Subtract(enduranceToSubtract);
                             tacticalActor.UpdateStats();
 
-                           
+
 
                             TFTVLogger.Always($"reducing endurance of {tacticalActor.DisplayName} by {enduranceToSubtract} from use of {tacticalAbility.TacticalAbilityDef.name}");
                         }
@@ -1636,7 +1727,7 @@ namespace TFTV
             {
                 try
                 {
-                    // TFTVLogger.Always($"item def is {itemDef.name}");
+                   // TFTVLogger.Always($"item def is {itemDef.name}, display: {itemDef.GetDisplayName().Localize()}");
 
                     GeoEventChoice geoEventChoice = GenerateChoice(price);
                     if (itemDef is GroundVehicleItemDef groundVehicleItemDef)
@@ -1922,7 +2013,7 @@ namespace TFTV
                     GenerateMercenaryChoices(currentlyPossibleOptions, Math.Min(numberOfOffers / 4, 6), geoMarketPlace, voPriceMultiplier);
                     GenerateResearchChoices(currentlyPossibleOptions, Math.Min(numberOfOffers / 4, 8), geoMarketPlace, voPriceMultiplier);
 
-                    if (TFTVAircraftRework.AircraftReworkOn) 
+                    if (TFTVAircraftRework.AircraftReworkOn && controller.EventSystem.GetVariable(_marketPlaceStockRotated) > 3)
                     {
                         TFTVAircraftRework.MarketPlace.GenerateMarketPlaceModules(geoMarketPlace);
                     }
@@ -2234,7 +2325,7 @@ namespace TFTV
             {
                 try
                 {
-                   // TFTVLogger.Always($"controller.Timing.Now {controller.Timing.Now}");
+                    // TFTVLogger.Always($"controller.Timing.Now {controller.Timing.Now}");
 
                     string textToDisplay = $"{TFTVCommonMethods.ConvertKeyToString("KEY_MARKETPLACE_NEW_STOCK")} {TFTVCommonMethods.ConvertKeyToString(_currentMarketPlaceSpecial)} ";
 

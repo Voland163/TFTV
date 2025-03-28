@@ -1,6 +1,7 @@
 ﻿using Base;
 using Base.Core;
 using Base.UI;
+using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
@@ -159,12 +160,14 @@ namespace TFTV
             {
                 try
                 {
+                    TFTVConfig config = TFTVMain.Main.Config;
+
                     int difficulty = controller.CurrentDifficultyLevel.Order;
                     int numberOfRoamings = controller.EventSystem.GetVariable(BehemothRoamings);
 
                     AlienRaidBand alienRaidBand = new AlienRaidBand() { RaidType = AlienRaidType.BombHaven, AircraftTypesAllowed = AircraftType.Small, RollResultMax = 9999 };
 
-                    if (numberOfRoamings > 1)
+                    if (numberOfRoamings > 1 && !config.EasyAirCombat)
                     {
                         UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
 
@@ -224,6 +227,14 @@ namespace TFTV
                     {
                         //  TFTVLogger.Always($"AlienRaidManager.RollForRaid running");
                         // 
+
+                        TFTVConfig config = TFTVMain.Main.Config;
+
+                        if (config.BehemothSubmergesForever)
+                        {
+                            return false;
+                        }
+
                         if (__instance.AlienFaction.Behemoth == null || __instance.AlienFaction.Behemoth.CurrentBehemothStatus == BehemothStatus.Dormant || __instance.AlienFaction.Behemoth.IsSubmerging)//__instance.AlienFaction!=null && __instance.AlienFaction.Behemoth!=null && )
                         {
                             // TFTVLogger.Always($"AlienRaidManager.RollForRaid running, Behemoth not dormant");
@@ -838,6 +849,9 @@ namespace TFTV
 
                         GeoLevelController controller = __instance.GeoLevel;
 
+                     
+                       
+
                         if (__instance.CurrentBehemothStatus == BehemothStatus.Dormant)//first check
                         {
                             //   TFTVLogger.Always("Behemoth's target lists are cleared because he is sleeping");
@@ -845,6 +859,15 @@ namespace TFTV
                             //  targetsVisitedByBehemoth.Clear();
                             behemothScenicRoute.Clear();
                             behemothTarget = 0;
+
+                            TFTVConfig config = TFTVMain.Main.Config;
+
+                            if (config.BehemothSubmergesForever)
+                            {
+                                __instance.GeoLevel.AlienFaction.RemoveBehemoth();
+                            }
+
+
                             return true;
                         }
 
@@ -871,6 +894,7 @@ namespace TFTV
                             TFTVLogger.Always($"Somehow Behemoth scenic route were at more than 1k, setting them to 0");
                             behemothScenicRoute.Clear();
                         }
+                       
 
                         /*  if (__instance.GeoLevel.EventSystem.GetVariable("ThirdActStarted") == 1)
                           {
@@ -1079,13 +1103,22 @@ namespace TFTV
                               $"Total: {num}");*/
 
                         int[] voidOmensInEffect = TFTVVoidOmens.CheckFordVoidOmensInPlay(__instance.GeoLevel);
-                        if (voidOmensInEffect.Contains(11))
+                        if (voidOmensInEffect.Contains(11) && !__instance.IsSubmerging)
                         {
                             num += 3 * Math.Max(currentDifficultyLevel.Order-1,1);
                             //TFTVLogger.Always($"And with VO# 11 in effect, total is now {num}");
                         }
 
                         __result = num;
+
+
+                        TFTVConfig config = TFTVMain.Main.Config;
+
+                        if (config.BehemothSubmergesForever)
+                        {
+                            __result = 0;
+                        }
+
                         //  TFTVLogger.Always($"calculate disruption Threshhold result it {__result}");
                     }
 

@@ -6,9 +6,6 @@ using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
-using static TFTV.TFTVNJQuestline.IntroMission;
-using static TFTV.TFTVNJQuestline.IntroMission.MissionQuips;
 
 namespace TFTV
 {
@@ -75,6 +72,7 @@ namespace TFTV
         public int AccumulatedRevenantPoints;
         public List<string> HumanEnemiesGangNames;
         public string RevenantResistanceDamageTypeGuid;
+        public bool[] AircraftModulesInTactical;
     }
 
     /// <summary>
@@ -93,7 +91,7 @@ namespace TFTV
                 TFTVPalaceMission.CheckPalaceMission();
                 TFTVAncients.CyclopsAbilities.CyclopsResistance.ResetCyclopsDefense();
                 TFTVAncientsGeo.AncientsResearch.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(null);
-              //  TFTVAncients.AncientDeployment.ImplementSpecialMission(controller);
+                //  TFTVAncients.AncientDeployment.ImplementSpecialMission(controller);
             }
             catch (Exception e)
             {
@@ -109,7 +107,7 @@ namespace TFTV
             {
                 TFTVConfig config = TFTVMain.Main.Config;
 
-                if (config.AnimateWhileShooting)
+                if (config.Flinching)
                 {
                     TFTVLogger.Always($"Flinching should be on");
 
@@ -124,7 +122,7 @@ namespace TFTV
                 }
 
 
-                if (config.disableSavingOnTactical)
+                if (config.DisableTacSaves)
                 {
                     GameUtl.CurrentLevel().GetComponent<TacticalLevelController>().GameController.SaveManager.IsSaveEnabled = false;
                 }
@@ -203,7 +201,7 @@ namespace TFTV
                  }*/
 
 
-           // TFTVTacticalUtils.RevealAllSpawns(tacController);
+            // TFTVTacticalUtils.RevealAllSpawns(tacController);
 
             TFTVLogger.Always("The count of Human tactics in play is " + TFTVHumanEnemies.HumanEnemiesAndTactics.Count);
             TFTVLogger.Always("VO3 Active " + TFTVVoidOmens.VoidOmensCheck[3]);
@@ -225,10 +223,17 @@ namespace TFTV
             TFTVLogger.Always($"Current ODI level: {TFTVODIandVoidOmenRoll.CurrentODI_Level}");
             TFTVLogger.Always($"Difficulty level is {tacController.Difficulty.name} and treated as {TFTVSpecialDifficulties.DifficultyOrderConverter(tacController.Difficulty.Order)} after TFTV conversion.");
             TFTVLogger.Always($"Etermes vulnerability/resistance: {TFTVNewGameOptions.EtermesResistanceAndVulnerability}");
+
+            if (TFTVAircraftRework.AircraftReworkOn)
+            {
+                TFTVLogger.Always($"# Aircraft modules in tactical: {TFTVAircraftRework.InternalData.ModulesInTactical.Where(b => b == true).Count()}\n" +
+                    $"{TFTVAircraftRework.Modules.Tactical.ReportModulesPresent()}");
+            }
+
             TFTVLogger.Always("Tactical start completed");
 
             TFTVNJQuestline.IntroMission.RunOnTacticalStart(Controller);
-           // TFTVExperimental.AdjustMusicLevelAncientMaps(Controller);
+            // TFTVExperimental.AdjustMusicLevelAncientMaps(Controller);
         }
 
         /// <summary>
@@ -242,7 +247,7 @@ namespace TFTV
             TFTVRevenant.TFTVRevenantResearch.CheckRevenantCapturedOrKilled(Controller);
 
             base.OnTacticalEnd();
-
+            
         }
 
         /// <summary>
@@ -257,7 +262,7 @@ namespace TFTV
                 TFTVLogger.Always("Tactical save is being processed");
 
                 TFTVCommonMethods.ClearInternalVariablesOnStateChangeAndLoad();
-                
+
                 TFTVTacInstanceData data = (TFTVTacInstanceData)instanceData;
                 TFTVStamina.charactersWithDisabledBodyParts = data.charactersWithBrokenLimbs;
                 TFTVVoidOmens.VoidOmensCheck = data.VoidOmensCheck;
@@ -291,9 +296,9 @@ namespace TFTV
                 TFTVCapturePandorans.AircraftViewElement = data.AircraftViewElement;
                 TFTVODIandVoidOmenRoll.CurrentODI_Level = data.ODILevel;
 
-              //  TFTVVoidOmens.ModifyVoidOmenTacticalObjectives(Controller.TacMission.MissionData.MissionType);
+                //  TFTVVoidOmens.ModifyVoidOmenTacticalObjectives(Controller.TacMission.MissionData.MissionType);
                 //TFTVCapturePandorans.ModifyCapturePandoransTacticalObjectives(Controller.TacMission.MissionData.MissionType);
-                TFTVBaseDefenseTactical.Objectives.ModifyBaseDefenseTacticalObjectives(Controller.TacMission.MissionData.MissionType);          
+                TFTVBaseDefenseTactical.Objectives.ModifyBaseDefenseTacticalObjectives(Controller.TacMission.MissionData.MissionType);
                 TFTVVoidOmens.ImplementHavenDefendersAlwaysHostile(Controller);
                 TFTVAncientsGeo.AutomataResearched = data.AutomataResearched;
                 TFTVAncients.AlertedHoplites = data.HopliteKillList;
@@ -306,7 +311,7 @@ namespace TFTV
                 TFTVRevenant.TFTVRevenantResearch.RevenantPoints = data.RevenantPoints;
                 TFTVUITactical.SecondaryObjectivesTactical.AvailableSecondaryObjectivesTactical = data.AvailableSecondaryObjectives;
 
-              //  TFTVLogger.Always($"TFTVUITactical.SecondaryObjectivesTactical.AvailableSecondaryObjectivesTactical.Count: {TFTVUITactical.SecondaryObjectivesTactical.AvailableSecondaryObjectivesTactical.Count}");
+                //  TFTVLogger.Always($"TFTVUITactical.SecondaryObjectivesTactical.AvailableSecondaryObjectivesTactical.Count: {TFTVUITactical.SecondaryObjectivesTactical.AvailableSecondaryObjectivesTactical.Count}");
 
                 TFTVUITactical.SecondaryObjectivesTactical.AddAllAvailableSecondaryObjectivesToMission(Controller.TacMission.MissionData.MissionType);
 
@@ -357,6 +362,12 @@ namespace TFTV
                 }
                 //    TFTVDefsWithConfigDependency.ImplementConfigChoices();
 
+                if (TFTVAircraftRework.AircraftReworkOn)
+                {
+                    TFTVAircraftRework.InternalData.ModulesInTactical = data.AircraftModulesInTactical;
+                    TFTVAircraftRework.Modules.Tactical.LoadInternalDataForTactical();
+                }
+
                 TurnZeroMethodsExecuted = data.TurnZeroMethodsExecuted;
 
             }
@@ -372,6 +383,13 @@ namespace TFTV
         /// <returns>Object to serialize or null if not used.</returns>
         public override object RecordTacticalInstanceData()
         {
+
+            if (TFTVAircraftRework.AircraftReworkOn)
+            {
+                TFTVAircraftRework.Modules.Tactical.SaveInternalDataForTactical();
+            }
+
+
             TFTVLogger.Always("Tactical data will be saved");
             return new TFTVTacInstanceData()
             {
@@ -420,6 +438,7 @@ namespace TFTV
                 OperativesPortraits = TFTVCustomPortraits.CharacterPortrait.characterPics,
                 AvailableSecondaryObjectives = TFTVUITactical.SecondaryObjectivesTactical.AvailableSecondaryObjectivesTactical,
                 AccumulatedRevenantPoints = TFTVRevenant.TFTVRevenantResearch.PreviousRevenantPoints,
+                AircraftModulesInTactical = TFTVAircraftRework.InternalData.ModulesInTactical,
 
                 internalDifficultyCheck = Controller.Difficulty.Order,
 
@@ -470,10 +489,10 @@ namespace TFTV
                         TFTVAircraftRework.Modules.Tactical.FirstTurn.ImplementModuleEffectsOnFirstTurn(Controller);
                         //  TFTVBaseDefenseTactical.ModifyObjectives(Controller.TacMission.MissionData.MissionType);
                         TurnZeroMethodsExecuted = true;
-                        
+
                     }
 
-                    
+
 
                     TFTVTacticalUtils.RevealExfilPoint(Controller, turnNumber);
 
@@ -481,17 +500,20 @@ namespace TFTV
                     // TFTVRevenant.revenantSpecialResistance.Clear();
                     TFTVTouchedByTheVoid.Umbra.UmbraTactical.RollTouchByTheVoid(Controller);
                     TFTVHumanEnemies.ChampRecoverWPAura(Controller);
-                    TFTVHumanEnemies.ApplyTacticStartOfPlayerTurn(Controller); 
+                    TFTVHumanEnemies.ApplyTacticStartOfPlayerTurn(Controller);
                     TFTVSpecialDifficulties.CounterSpawned = 0;
-                   // MissionQuips.PropagandaQuips();
+                    // MissionQuips.PropagandaQuips();
                 }
                 else
                 {
-                    TFTVLogger.Always($"Playing tutorial mission");
+                    TFTVLogger.Always($"Playing tutorial mission; disabling saves");
+                    GameUtl.CurrentLevel().GetComponent<TacticalLevelController>().GameController.SaveManager.IsSaveEnabled =false;
+
                 }
 
-                
-              //  TFTVVanillaFixes.ClearDataActorsParalysisDamage();
+               
+
+                //  TFTVVanillaFixes.ClearDataActorsParalysisDamage();
 
             }
             catch (Exception e)

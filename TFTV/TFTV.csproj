@@ -131,11 +131,14 @@
     <Compile Include="TFTVAAAgendaTracker.cs" />
     <Compile Include="TFTVAcid.cs" />
     <Compile Include="TFTVAircraftRework.cs" />
+    <Compile Include="TFTVAnniversaryCheats.cs" />
     <Compile Include="TFTVBackgrounds.cs" />
+    <Compile Include="TFTVCrisis.cs" />
     <Compile Include="TFTVCustomPortraits.cs" />
     <Compile Include="TFTVEvacAll.cs" />
     <Compile Include="TFTVExperienceDistribution.cs" />
     <Compile Include="TFTVDragandDropFunctionality.cs" />
+    <Compile Include="TFTVHavenRecruitsScreen.cs" />
     <Compile Include="TFTVNJQuestline.cs" />
     <Compile Include="TFTVPersonnelRoster.cs" />
     <Compile Include="TFTVTauntsAndQuips.cs" />

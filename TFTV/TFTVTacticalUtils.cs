@@ -322,7 +322,7 @@ namespace TFTV
             {
                 TFTVConfig config = TFTVMain.Main.Config;
 
-                if (!config.ShowExfilAmbush)
+                if (!config.ShowAmbushExfil)
                 {
                     return;
                 }

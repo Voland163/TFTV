@@ -55,6 +55,7 @@ using PhoenixPoint.Tactical.UI.SoldierPortraits;
 using PhoenixPoint.Tactical.View;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewModules;
+using PhoenixPoint.Tactical.View.ViewStates;
 using SETUtil.Common.Extend;
 using System;
 using System.Collections.Generic;
@@ -73,6 +74,8 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefRepository Repo = TFTVMain.Repo;
+
+        
 
         internal class Stealth
         {
@@ -249,34 +252,38 @@ namespace TFTV
 
 
             //Prevents evacuated characters from spotting enemies
-
-            [HarmonyPatch(typeof(TacticalFactionVision), "ReUpdateVisibilityTowardsActorImpl")]
-            public static class TFTV_TacticalFactionVision_ReUpdateVisibilityTowardsActorImpl_patch
-            {
-                private static bool Prefix(TacticalActorBase fromActor, TacticalActorBase targetActor, float basePerceptionRange, ref bool __result)
+            //Put in Aircraft rework, Anu Mist Module
+            /*    [HarmonyPatch(typeof(TacticalFactionVision), "ReUpdateVisibilityTowardsActorImpl")]
+                public static class TFTV_TacticalFactionVision_ReUpdateVisibilityTowardsActorImpl_patch
                 {
-                    try
+                    private static bool Prefix(TacticalActorBase fromActor, TacticalActorBase targetActor, float basePerceptionRange, ref bool __result)
                     {
-                        if (fromActor is TacticalActor tacticalActor && tacticalActor.IsEvacuated)
+                        try
                         {
-                            __result = false;
-                            return false;
-                        }
+                            if (fromActor is TacticalActor tacticalActor && tacticalActor.IsEvacuated)
+                            {
+                                __result = false;
+                                return false;
+                            }
 
-                        return true;
+                            return true;
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
                     }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
-                }
-            }
+                }*/
 
         }
 
         internal class UI
         {
+
+
+
+
             //Code provided by Codemite
             [HarmonyPatch(typeof(UIInventorySlot), "UpdateItem")]
             public static class UIInventorySlot_UpdateItem_patch
@@ -390,8 +397,8 @@ namespace TFTV
                         MethodInfo prepareShortActorInfoMethod = internalType.GetMethod("PrepareShortActorInfo", BindingFlags.NonPublic | BindingFlags.Instance);
                         MethodInfo selectCharacterInfoMethod = internalType.GetMethod("SelectCharacter", BindingFlags.NonPublic | BindingFlags.Instance);
                         _drawAllEnemyVisionMarkersMethodInfo = internalType.GetMethod("DrawAllEnemyVisionMarkers", BindingFlags.NonPublic | BindingFlags.Instance);
-                        
-                       MethodInfo activateAttackAbilityState = internalType.GetMethod("ActivateAttackAbilityState", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                        MethodInfo activateAttackAbilityState = internalType.GetMethod("ActivateAttackAbilityState", BindingFlags.NonPublic | BindingFlags.Instance);
 
                         //   MethodInfo updateStateInfoMethod = internalType.GetMethod("UpdateState", BindingFlags.NonPublic | BindingFlags.Instance);
                         MethodInfo onInputEvenMethodInfo = internalType.GetMethod("OnInputEvent", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -412,7 +419,7 @@ namespace TFTV
                             harmony.Patch(selectCharacterInfoMethod, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes.UI), nameof(PatchShowEnemyVisionMarkers)));
                         }
 
-                        if(activateAttackAbilityState != null)
+                        if (activateAttackAbilityState != null)
                         {
                             harmony.Patch(activateAttackAbilityState, postfix: new HarmonyMethod(typeof(TFTVVanillaFixes.UI), nameof(ActivateAttackAbilityState)));
                         }
@@ -448,38 +455,36 @@ namespace TFTV
 
             private static TacticalActorBase _enemyActorTargeted = null;
 
-            [HarmonyPatch(typeof(TacticalActorViewBase), "DoCameraChase")]
-            public static class TFTV_TacticalActorViewBase_DoCameraChase
+
+            public static bool CheckIfEnemyActorTargeted()
             {
-                public static bool Prefix(TacticalActorViewBase __instance, bool chaseTransform, bool lockInput, bool instant, bool chaseOnlyOutsideFrame)
+                try
                 {
-                    try
+                    if (_enemyActorTargeted != null)
                     {
-                        if (_enemyActorTargeted != null) 
-                        {
-                            //TFTVLogger.Always($"Chasing {__instance?.name} param: {chaseTransform} {lockInput} {instant} {chaseOnlyOutsideFrame}");
-                            _enemyActorTargeted = null;
-                            return false;
-                        }
-
-                        return true;                   
+                        //TFTVLogger.Always($"Chasing {__instance?.name} param: {chaseTransform} {lockInput} {instant} {chaseOnlyOutsideFrame}");
+                        _enemyActorTargeted = null;
+                        return false;
                     }
 
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
+                    return true;
                 }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+
             }
 
             private static void ActivateAttackAbilityState(object __instance, bool fps, TacticalActorBase targetActor = null)
             {
-                try 
+                try
                 {
-                   // TFTVLogger.Always($"fps {fps} actor? {targetActor?.name}");
+                    // TFTVLogger.Always($"fps {fps} actor? {targetActor?.name}");
 
-                    if(targetActor != null)
+                    if (targetActor != null)
                     {
                         _enemyActorTargeted = targetActor;
                     }
@@ -853,11 +858,51 @@ namespace TFTV
             private static Sprite _vivisectionIcon = null;
             private static Sprite _moonIcon = null;
 
-            private static int GetAdjustedSpeedValueForParalyisDamage(TacticalActor actor, int value)
+
+
+            [HarmonyPatch(typeof(UIStateCharacterStatus), "GetActionPoints")]
+            public static class UIStateCharacterStatus_GetActionPoints_patch
+            {
+
+                public static bool Prefix(ref UIModuleCharacterStatus.CharacterData.ValueBarData __result, TacticalActor character)
+                {
+                    try
+                    {
+
+                        int maxActionPoints = GetAdjustedSpeedValueForParalyisDamage(character);
+
+                        __result = new UIModuleCharacterStatus.CharacterData.ValueBarData
+                        {
+                            Max = maxActionPoints,
+                            Limit = maxActionPoints,
+                            Current = Mathf.Min(character.CharacterStats.ActionPoints.IntValue, maxActionPoints),
+                            Overcharge = 0f
+                        };
+
+                        if (character.TacticalLevel.CurrentFaction != character.TacticalFaction)
+                        {
+                            __result.Current = maxActionPoints;
+                        }
+
+                        return false;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+
+            private static int GetAdjustedSpeedValueForParalyisDamage(TacticalActor actor)
             {
                 try
                 {
                     ParalysisDamageOverTimeStatus status = actor.Status.GetStatus<ParalysisDamageOverTimeStatus>();
+
+                    int value = (int)actor.MaxActionPoints;
 
                     if (status == null)
                     {
@@ -927,9 +972,9 @@ namespace TFTV
                         ValueContent = string.Format("{0}/{1}", actor.CharacterStats.WillPoints.IntValue, actor.CharacterStats.WillPoints.IntMax)
                     });
 
-                    int maxActionPoints = GetAdjustedSpeedValueForParalyisDamage(actor, actor.CharacterStats.ActionPoints.IntMax);
+                    int maxActionPoints = GetAdjustedSpeedValueForParalyisDamage(actor); //actor.CharacterStats.ActionPoints.IntMax);
 
-                    string value = string.Format("{0}/{1}", maxActionPoints, maxActionPoints);
+                    string value = $"{maxActionPoints}";//string.Format("{0}/{1}", maxActionPoints, maxActionPoints);
                     if (actor.TacticalLevel.CurrentFaction == actor.TacticalFaction)
                     {
                         value = string.Format("{0}/{1}", Mathf.Min(actor.CharacterStats.ActionPoints.IntValue, maxActionPoints), maxActionPoints);
@@ -1265,7 +1310,7 @@ namespace TFTV
                                 {
                                     //if (eventData.Event.Name == "TacticalMusicEnemyTurn" || eventData.Event.Name == "TacticalMusicPlayerTurn")
                                     //  {
-                                    if (__instance.MasterVolumeRTPC.GetGlobalValue() > 0.25f)
+                                    if (__instance.MasterVolumeRTPC.GetGlobalValue() > 0.25f && __instance.MusicVolumeRTPC.GetGlobalValue()>0.25f)
                                     {
                                         __instance.SetAudioLevel(MixerKey.Music, __instance.MasterVolumeRTPC.GetGlobalValue() * 0.25f);
                                         _musicVolumeAncientMapAdjusted = true;
@@ -1451,6 +1496,8 @@ namespace TFTV
                                     list.AddRange(AIUtil.GetAffectedTargetsByDamageAbility(tacActor, item.Actor.Pos, abilityWithDef as IDamageDealer));
                                 }
 
+                                list.RemoveWhere(t=>tacActor.RelationTo(t) == FactionRelation.Enemy && !tacActor.TacticalFaction.Vision.IsLocated(t) && !tacActor.TacticalFaction.Vision.IsRevealed(t));
+
                                 int num3 = 0;
                                 foreach (TacticalActorBase item2 in list)
                                 {
@@ -1468,7 +1515,7 @@ namespace TFTV
 
                                     if (tacActor.RelationTo(item2) == FactionRelation.Enemy)
                                     {
-                                        if (item2.Status!=null && item2.Status.HasStatus<MindControlStatus>() && item2.Status.GetStatus<MindControlStatus>().OriginalFaction == tacActor.TacticalFaction.TacticalFactionDef)
+                                        if (item2.Status != null && item2.Status.HasStatus<MindControlStatus>() && item2.Status.GetStatus<MindControlStatus>().OriginalFaction == tacActor.TacticalFaction.TacticalFactionDef)
                                         {
                                         }
                                         else
@@ -1502,7 +1549,7 @@ namespace TFTV
                                 }
                             }
 
-                            __result= num;
+                            __result = num;
                             return false;
 
 
@@ -2181,13 +2228,13 @@ namespace TFTV
                         try
                         {
 
-                           /* List<Light> lights = new List<Light>()
-                            {
-                                soldierToRender.transform.GetComponentsInChildren<Light>().FirstOrDefault(l=>l.name.Contains("DirLighjt2")),
-                                soldierToRender.transform.GetComponentsInChildren<Light>().FirstOrDefault(l=>l.name.Contains("DirLighjt3")),
-                                soldierToRender.transform.GetComponentsInChildren<Light>().FirstOrDefault(l=>l.name.Contains("DirLighjt1")),
-                                soldierToRender.transform.GetComponentsInChildren<Light>().FirstOrDefault(l=>l.name.Contains("AmbienceLight")),
-                            };*/
+                            /* List<Light> lights = new List<Light>()
+                             {
+                                 soldierToRender.transform.GetComponentsInChildren<Light>().FirstOrDefault(l=>l.name.Contains("DirLighjt2")),
+                                 soldierToRender.transform.GetComponentsInChildren<Light>().FirstOrDefault(l=>l.name.Contains("DirLighjt3")),
+                                 soldierToRender.transform.GetComponentsInChildren<Light>().FirstOrDefault(l=>l.name.Contains("DirLighjt1")),
+                                 soldierToRender.transform.GetComponentsInChildren<Light>().FirstOrDefault(l=>l.name.Contains("AmbienceLight")),
+                             };*/
 
                             // AdjustPortraitLights(lights[0], lights[1], lights[2], lights[3]);
                             //   AdjustPortraitLightsCold(lights[0], lights[1], lights[2], lights[3]);
@@ -3402,11 +3449,11 @@ namespace TFTV
 
 
         }
-       
 
 
 
-    
+
+
 
         //Prevents items with 0HP from manifesting themselves in tactical
         //And causes AI to lockup.

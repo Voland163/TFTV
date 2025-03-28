@@ -8,7 +8,6 @@ using Base.UI.MessageBox;
 using Base.UI.VideoPlayback;
 using Code.PhoenixPoint.Tactical.Entities.Equipments;
 using HarmonyLib;
-using Mono.Cecil.Cil;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Characters;
@@ -23,7 +22,6 @@ using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
-using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
@@ -46,7 +44,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Remoting.Contexts;
 using UnityEngine;
 using UnityEngine.UI;
 using static PhoenixPoint.Tactical.View.ViewControllers.SoldierResultElement;
@@ -163,7 +160,7 @@ namespace TFTV
 
         internal class EditScreen
         {
-           
+
 
             internal class Stats
             {
@@ -177,7 +174,7 @@ namespace TFTV
                     {
                         try
                         {
-                           
+
                             FixCarsWithDelirium(____character);
 
                             if (____character.CharacterStats.Corruption > 0f)
@@ -622,14 +619,14 @@ namespace TFTV
                 private static readonly string equipmentItemsString = "EquipmentItems";
                 private static readonly string inventoryItemsString = "InventoryItems";
 
-              //  private static bool _mutationBionicsShaded = false;
+                //  private static bool _mutationBionicsShaded = false;
 
                 private static void ShadeMutationBionics(UIModuleActorCycle uIModuleActorCycle)
                 {
                     try
                     {
                         GeoCharacter geoCharacter = uIModuleActorCycle.CurrentCharacter;
-                     
+
                         if (geoCharacter == null) //|| geoCharacter.TemplateDef == null || !geoCharacter.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag) && !_mutationBionicsShaded)
                         {
                             return;
@@ -690,11 +687,11 @@ namespace TFTV
 
                         }
 
-                        
+                        TFTVConfig config = TFTVMain.Main.Config;
 
-                        if (geoCharacter.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag))
+                        if (geoCharacter.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag) && !config.MercsCanBeAugmented)
                         {
-                           // _mutationBionicsShaded = true;
+                            // _mutationBionicsShaded = true;
 
                             if (mutateText != null)
                             {
@@ -729,7 +726,7 @@ namespace TFTV
                                 bionicsText.color = Color.gray;
                             }
                         }
-                        
+
                     }
                     catch (Exception e)
                     {
@@ -956,48 +953,48 @@ namespace TFTV
 
 
 
-             /*   [HarmonyPatch(typeof(UIInventoryList), "CanAcceptItem", new Type[] { typeof(ItemDef) })]
-                internal static class TFTV_UIInventoryList_CanAcceptItem_patch
-                {
+                /*   [HarmonyPatch(typeof(UIInventoryList), "CanAcceptItem", new Type[] { typeof(ItemDef) })]
+                   internal static class TFTV_UIInventoryList_CanAcceptItem_patch
+                   {
 
-                    public static bool Prefix(UIInventoryList __instance, ItemDef item, ref bool __result, bool ____isFiltering)
-                    {
-                        try
-                        {
-                            if (____isFiltering)
-                            {
-                                TFTVLogger.Always($"{item.name} is filtering, returning true");
-                                __result = true;
-                                return false;
-                            }
+                       public static bool Prefix(UIInventoryList __instance, ItemDef item, ref bool __result, bool ____isFiltering)
+                       {
+                           try
+                           {
+                               if (____isFiltering)
+                               {
+                                   TFTVLogger.Always($"{item.name} is filtering, returning true");
+                                   __result = true;
+                                   return false;
+                               }
 
-                            MethodInfo methodInfoCreateFilterData = typeof(UIInventoryList).GetMethod("CreateFilterData", BindingFlags.Instance | BindingFlags.NonPublic);
+                               MethodInfo methodInfoCreateFilterData = typeof(UIInventoryList).GetMethod("CreateFilterData", BindingFlags.Instance | BindingFlags.NonPublic);
 
-                            FilterData filterData = (FilterData)methodInfoCreateFilterData.Invoke(__instance, new object[] { item, null }); // __instance.CreateFilterData(item);
+                               FilterData filterData = (FilterData)methodInfoCreateFilterData.Invoke(__instance, new object[] { item, null }); // __instance.CreateFilterData(item);
 
-                            TFTVLogger.Always($"filterData.AddedItem: {filterData?.AddedItem}, " +
-                                $"filterData:RemovedItem: {filterData?.RemovedItem}, " +
-                                $"filterData.CurrentStorageUsed: {filterData?.CurrentStorageUsed}" +
-                                $"filterData?.CurrentItems?.Count(): {filterData?.CurrentItems?.Count()}");
+                               TFTVLogger.Always($"filterData.AddedItem: {filterData?.AddedItem}, " +
+                                   $"filterData:RemovedItem: {filterData?.RemovedItem}, " +
+                                   $"filterData.CurrentStorageUsed: {filterData?.CurrentStorageUsed}" +
+                                   $"filterData?.CurrentItems?.Count(): {filterData?.CurrentItems?.Count()}");
 
-                            if (!(__instance.InventoryListFilter == null) && !__instance.InventoryListFilter.CanAddItem(filterData, __instance.currentInventorySlotsBonus))
-                            {
-                                __result = __instance.InventoryListFilter.CanSwapItems(filterData, __instance.currentInventorySlotsBonus);
-                                TFTVLogger.Always($"{item.name} {__result}");
-                                return false;
-                            }
-                            __result = true;
-                            return false;
+                               if (!(__instance.InventoryListFilter == null) && !__instance.InventoryListFilter.CanAddItem(filterData, __instance.currentInventorySlotsBonus))
+                               {
+                                   __result = __instance.InventoryListFilter.CanSwapItems(filterData, __instance.currentInventorySlotsBonus);
+                                   TFTVLogger.Always($"{item.name} {__result}");
+                                   return false;
+                               }
+                               __result = true;
+                               return false;
 
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            throw;
-                        }
-                    }
+                           }
+                           catch (Exception e)
+                           {
+                               TFTVLogger.Error(e);
+                               throw;
+                           }
+                       }
 
-                }*/
+                   }*/
 
 
 
@@ -1179,13 +1176,13 @@ namespace TFTV
 
                                 if (item != null && _allMissingEquipment.Contains(item.ItemDef.Guid))
                                 {
-                                   // TFTVLogger.Always($"{item} should be removed");
+                                    // TFTVLogger.Always($"{item} should be removed");
                                     inventoryLists[x].RemoveItem(item, slot);
-                                   // TFTVLogger.Always($"{item} got here 0 ");
+                                    // TFTVLogger.Always($"{item} got here 0 ");
                                     _allMissingEquipment.Remove(item.ItemDef.Guid);
-                                  //  TFTVLogger.Always($"{item} got here 1");
+                                    //  TFTVLogger.Always($"{item} got here 1");
                                     uIModuleSoldierEquip.StorageList.AddItem(item);
-                                  //  TFTVLogger.Always($"{item} got here 2");
+                                    //  TFTVLogger.Always($"{item} got here 2");
                                 }
                             }
                         }
@@ -1435,7 +1432,7 @@ namespace TFTV
                     }
                 }
 
-                private static bool CheckItemEligibleForManufacture(ItemDef itemDef) 
+                private static bool CheckItemEligibleForManufacture(ItemDef itemDef)
                 {
                     try
                     {
@@ -1650,7 +1647,7 @@ namespace TFTV
                 {
                     try
                     {
-                       // TFTVLogger.Always($"Checking WeaponCost of {item} with charges max {item?.ItemDef?.ChargesMax} and current charges {item?.CommonItemData?.CurrentCharges}");
+                        // TFTVLogger.Always($"Checking WeaponCost of {item} with charges max {item?.ItemDef?.ChargesMax} and current charges {item?.CommonItemData?.CurrentCharges}");
 
                         if (item != null && item.ItemDef.ChargesMax > 0 && item.CommonItemData.CurrentCharges < item.ItemDef.ChargesMax)
                         {
@@ -1861,21 +1858,21 @@ namespace TFTV
 
                                 if (list == inventoryItemsString)
                                 {
-                                  //  TFTVLogger.Always($"removing from character {item.ItemDef.name}, 0");
+                                    //  TFTVLogger.Always($"removing from character {item.ItemDef.name}, 0");
                                     uIModuleSoldierEquip.InventoryList.RemoveItem(item, null);
                                 }
                                 else if (list == equipmentItemsString)
                                 {
-                                  //  TFTVLogger.Always($"removing from character {item.ItemDef.name}, 1");
+                                    //  TFTVLogger.Always($"removing from character {item.ItemDef.name}, 1");
                                     uIModuleSoldierEquip.ReadyList.RemoveItem(item, null);
                                 }
                                 else
                                 {
-                                  //  TFTVLogger.Always($"removing from character {item.ItemDef.name}, 2");
+                                    //  TFTVLogger.Always($"removing from character {item.ItemDef.name}, 2");
                                     uIModuleSoldierEquip.ArmorList.RemoveItem(item, null);
                                 }
 
-                               // TFTVLogger.Always($"transferring {item.ItemDef.name}");
+                                // TFTVLogger.Always($"transferring {item.ItemDef.name}");
                                 uIModuleSoldierEquip.StorageList.AddItem(item);
                             }
 
@@ -2270,12 +2267,12 @@ namespace TFTV
 
                     EditUnitButtonsController editUnitButtonsController = controller.View.GeoscapeModules.ActorCycleModule.EditUnitButtonsController;
 
+                    uIModuleDeploymentMissionBriefing.SquadSlotsUsedText.gameObject.SetActive(true);
+
                     PhoenixGeneralButton useBestEquipmentButton = UnityEngine.Object.Instantiate(uIModuleDeploymentMissionBriefing.DeployButton, uIModuleDeploymentMissionBriefing.SquadSlotsUsedText.transform);
 
                     uIModuleDeploymentMissionBriefing.SquadSlotsUsedText.transform.position += new Vector3(105 * resolutionFactorWidth, 5 * resolutionFactorHeight, 0);
                     uIModuleDeploymentMissionBriefing.SquadSlotsUsedText.fontSize -= 10;
-
-                    useBestEquipmentButton.gameObject.SetActive(true);
 
                     useBestEquipmentButton.name = "EquipAllButton";
 
@@ -2285,10 +2282,11 @@ namespace TFTV
                     text.text = TFTVCommonMethods.ConvertKeyToString("KEY_UI_LOADUP_TEXT").ToUpper();
 
                     Image image = useBestEquipmentButton.GetComponentsInChildren<Image>().FirstOrDefault(i => i.name == "Hotkey");
-                   
+
 
                     if (image == null)
-                    { TFTVLogger.Always($"image==null: {image == null}");
+                    {
+                        TFTVLogger.Always($"image==null: {image == null}");
                         /*  GameObject iconObject = new GameObject("IconObject", typeof(Image), typeof(RectTransform));
                           iconObject.GetComponent<RectTransform>().SetParent(useBestEquipmentButton.transform);
                           image = iconObject.GetComponent<Image>();
@@ -2304,6 +2302,7 @@ namespace TFTV
 
                     useBestEquipmentButton.PointerClicked += () => EditScreen.LoadoutsAndHelmetToggle.EquipBestCurrentTeam(geoSite, uIModuleGeoRoster);
                     useBestEquipmentButton.transform.position += new Vector3(-373 * resolutionFactorWidth, 264 * resolutionFactorHeight, 0);
+
                 }
                 catch (Exception e)
                 {
@@ -2333,7 +2332,7 @@ namespace TFTV
                         {
                             foreach (GeoVehicle geoVehicle in controller.PhoenixFaction.Vehicles)
                             {
-                                if (geoCharacter.GameTags.Contains(Shared.SharedGameTags.VehicleClassTag) && geoVehicle.GroundVehicles.Contains(geoCharacter) || 
+                                if (geoCharacter.GameTags.Contains(Shared.SharedGameTags.VehicleClassTag) && geoVehicle.GroundVehicles.Contains(geoCharacter) ||
                                     geoCharacter.GameTags.Contains(Shared.SharedGameTags.MutogTag)
                                     || geoVehicle.Soldiers.Contains(uIModuleActorCycle.CurrentCharacter))
                                 {
@@ -3117,7 +3116,7 @@ namespace TFTV
 
             }
 
-         
+
 
             [HarmonyPatch(typeof(UIModuleActorCycle), "DisplaySoldier", new Type[] { typeof(GeoCharacter), typeof(bool), typeof(bool), typeof(bool) })]
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]

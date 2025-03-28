@@ -86,19 +86,13 @@ namespace TFTV
                     }
                     else if (newValue == 74)
                     {
-                        if (eventSystem.GetVariable("Polyphonic") > eventSystem.GetVariable("Terraformers"))
+                        if (eventSystem.GetEventRecord("PROG_SY4_P")?.SelectedChoice == 1)
                         {
-                            if (eventSystem.GetEventRecord("PROG_SY4_P")?.SelectedChoice == 1)
-                            {
-                                eventSystem.TriggerGeoscapeEvent("PROG_SY4_P", geoscapeEventContext);
-                            }
+                            eventSystem.TriggerGeoscapeEvent("PROG_SY4_P", geoscapeEventContext);
                         }
-                        else
+                        else if(eventSystem.GetEventRecord("PROG_SY4_T")?.SelectedChoice == 1)
                         {
-                            if (eventSystem.GetEventRecord("PROG_SY4_T")?.SelectedChoice == 1)
-                            {
-                                eventSystem.TriggerGeoscapeEvent("PROG_SY4_T", geoscapeEventContext);
-                            }
+                            eventSystem.TriggerGeoscapeEvent("PROG_SY4_T", geoscapeEventContext);
                         }
                     }
                 }

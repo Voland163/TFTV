@@ -3422,7 +3422,7 @@ namespace TFTV
                     if (tacticalActor.HasGameTag(hopliteTag))
                     {
 
-                        if (tacticalActor.CharacterStats.WillPoints == 30)
+                        if (tacticalActor.CharacterStats.WillPoints >= 30)
                         {
                             rank = 4;
                         }
@@ -3443,7 +3443,7 @@ namespace TFTV
                     if (tacticalActor.HasGameTag(cyclopsTag))
                     {
 
-                        if (tacticalActor.CharacterStats.WillPoints == 40)
+                        if (tacticalActor.CharacterStats.WillPoints >= 40)
                         {
                             rank = 4;
                         }
@@ -3494,20 +3494,28 @@ namespace TFTV
                     int rank = GetAncientsChargeLevelFromWP(tacticalActor);
 
 
-                    if (rank > 0)
-                    {
+                   if (rank > 0)
+                   {
                         rankIconCreator.SetIconWithRank(actorClassIconElement.MainClassIcon.gameObject,
                                actorClassIconElement.MainClassIcon.sprite, rank, true, hasNoLos, shootState);
-                    }
+                   }
 
-                    if (rank == 4)
+                    if (hasNoLos)
                     {
-                        actorClassIconElement.MainClassIcon.color = LeaderColor;
+                        actorClassIconElement.MainClassIcon.color = _regularNoLOSColor;
                     }
                     else
                     {
-                        actorClassIconElement.MainClassIcon.color = NegativeColor;
 
+                        if (rank == 4)
+                        {
+                            actorClassIconElement.MainClassIcon.color = LeaderColor;
+                        }
+                        else
+                        {
+                            actorClassIconElement.MainClassIcon.color = NegativeColor;
+
+                        }
                     }
 
                 }
@@ -3736,7 +3744,7 @@ namespace TFTV
 
                     }
 
-                    ImplementAncientsChargeLevel(actorClassIconElement, target);
+                    ImplementAncientsChargeLevel(actorClassIconElement, target, hasNoLOS);
 
                     AddOutlineToIcon addOutlineToIcon = actorClassIconElement.MainClassIcon.GetComponent<AddOutlineToIcon>() ?? actorClassIconElement.MainClassIcon.gameObject.AddComponent<AddOutlineToIcon>();
                     addOutlineToIcon.icon = actorClassIconElement.MainClassIcon.gameObject;
@@ -5540,6 +5548,7 @@ namespace TFTV
                         else
                         {
                             backgroundImage.color = new Color(0, 0, 0, 0);
+                            panelRect.sizeDelta = new Vector2(600, 300);
                         }
 
                         GameObject backgroundContainer = new GameObject("BackgroundContainer");

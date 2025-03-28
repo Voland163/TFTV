@@ -1,8 +1,10 @@
 using Base.Core;
 using Base.Platforms;
 using Base.UI.MessageBox;
+using Epic.OnlineServices;
 using HarmonyLib;
 using Newtonsoft.Json;
+using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Home.View.ViewControllers;
 using PhoenixPoint.Modding;
 using System;
@@ -10,6 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Permissions;
 
 namespace TFTV
 {
@@ -25,33 +28,47 @@ namespace TFTV
 
 
         public bool SkipMovies = true;
-        public bool EqualizeTrade = true;
+        public bool Trading = false;
         public bool LimitedRaiding = true;
-        public bool disableSavingOnTactical = true;
+        public bool DisableTacSaves = true;
         public enum DifficultyOnTactical
         {
             GEOSCAPE, STORY, ROOKIE, VETERAN, HERO, LEGEND, ETERMES
         }
-        public DifficultyOnTactical difficultyOnTactical = DifficultyOnTactical.GEOSCAPE;
+        public DifficultyOnTactical TacticalDifficulty = DifficultyOnTactical.GEOSCAPE;
 
-        public bool AnimateWhileShooting = false;
-        public bool ReinforcementsNoDrops = true;
+        public bool Flinching = false;
+        public bool NoDropReinforcements = true;
         public bool MoreMistVO = true;
         public bool LimitedDeploymentVO = true;
-        public bool ActivateStaminaRecuperatonModule = true;
-        public bool HavenSOS = true;
-        public bool LearnFirstPersonalSkill = true;
+        public bool StaminaRecuperation = true;
+        public bool HavenSOS = true;    
+        public bool LearnFirstSkill = true;
         public bool DeactivateTacticalAutoStandby = false;
         public bool Debug = true;
         public bool NoBarks = false;
-        public bool ShowExfilAmbush = false;
+        public bool ShowAmbushExfil = false;
         public bool SkipFSTutorial = false;
-        public bool CustomPortraits = true;
+        public bool CustomPortraits = false;
         public bool HandGrenadeScatter = false;
         public bool EquipBeforeAmbush = true;
 
+        //Cheat options:
+        public bool AllowFullAugmentations = false;
+        public bool MercsCanBeAugmented = false;
+        public bool DeadDropAllLoot = false;
+        public bool UnLimitedDeployment = false;
+        public bool DeliriumCappedAt4 = false;
+        public bool VehicleAndMutogSize1 = false;
+        public bool MultipleVehiclesInAircraftAllowed = false;
+        public bool EasyAirCombat = false;
+        public bool BehemothSubmergesForever = false;
+        
+
+
         public int Difficulty = 2;
         
+
 
         internal List<ModConfigField> modConfigFields = new List<ModConfigField>();
         public void PopulateConfigFields()
@@ -115,21 +132,47 @@ namespace TFTV
                 try
                 {
 
-                /*    if ((TFTVDefsWithConfigDependency.ChangesToCapturingPandoransImplemented && __instance.Label.text == "CAPTURING PANDORANS IS LIMITED")
-                        || (TFTVDefsWithConfigDependency.StrongerPandorans.StrongerPandoransImplemented && __instance.Label.text == "MAKE PANDORANS STRONGER") ||
-                       (TFTVDefsWithConfigDependency.ChangesToFoodAndMutagenGenerationImplemented && __instance.Label.text == "LIMITS ON RENDERING PANDORANS FOR FOOD OR MUTAGENS"))
-                    {
-                        string warning = $"{TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING0")} {__instance.Label.text} {TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING0")}";
+                    /*    if ((TFTVDefsWithConfigDependency.ChangesToCapturingPandoransImplemented && __instance.Label.text == "CAPTURING PANDORANS IS LIMITED")
+                            || (TFTVDefsWithConfigDependency.StrongerPandorans.StrongerPandoransImplemented && __instance.Label.text == "MAKE PANDORANS STRONGER") ||
+                           (TFTVDefsWithConfigDependency.ChangesToFoodAndMutagenGenerationImplemented && __instance.Label.text == "LIMITS ON RENDERING PANDORANS FOR FOOD OR MUTAGENS"))
+                        {
+                            string warning = $"{TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING0")} {__instance.Label.text} {TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_CHANGED_SETTING_WARNING0")}";
 
-                        GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
-                    }*/
+                            GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                        }*/
+                    TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (__instance.Label.text == "DISABLE SAVING ON TACTICAL")
+                    List<ModConfigField> modConfigFields = config.GetConfigFields();
+
+                    ModConfigField fieldToChange = modConfigFields.FirstOrDefault(x => x.GetText() == __instance.Label.text);
+
+                    if(fieldToChange!=null && fieldToChange.ID == "DisableTacSaves" && !__instance.ToggleField.isOn) 
                     {
                         string warning = TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_TACTICAL_SAVING_WARNING");
 
                         GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
                     }
+
+                    if (fieldToChange != null &&
+    (
+        fieldToChange.ID == "AllowFullAugmentations" ||
+        fieldToChange.ID == "MercsCanBeAugmented" ||
+        fieldToChange.ID == "DeadDropAllLoot" ||
+        fieldToChange.ID == "UnLimitedDeployment" ||
+        fieldToChange.ID == "DeliriumCappedAt4" ||
+        fieldToChange.ID == "VehicleAndMutogSize1" ||
+        fieldToChange.ID == "MultipleVehiclesInAircraftAllowed" ||
+        fieldToChange.ID == "EasyAirCombat" ||
+        fieldToChange.ID == "BehemothSubmergesForever"
+    ) &&
+    __instance.ToggleField.isOn)
+                    {
+                        string warning = TFTVCommonMethods.ConvertKeyToString("TFTV_CHEAT_OPTIONS_WARNING");
+
+                        GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                    }
+
+
                 }
                 catch (Exception e)
                 {

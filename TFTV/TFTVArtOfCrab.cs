@@ -4,6 +4,7 @@ using Base.Core;
 using Base.Defs;
 using Base.Entities.Effects;
 using Base.Entities.Statuses;
+using Base.Levels.Nav.Tiled;
 using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -38,6 +39,25 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
+
+
+       
+
+
+
+
+
+
+
+
+       
+
+
+
+
+
+
+
 
         private static bool Cover(TacticalActor tacticalActor, TacAITarget tacAITarget)
         {
@@ -244,31 +264,108 @@ namespace TFTV
         [HarmonyPatch(typeof(AIActionMoveAndAttack), "GetAttackTarget")]
         public static class AIActionMoveAndAttack_GetAttackTarget_patch
         {
-            public static void Prefix(AIActionMoveAndAttack __instance, TacticalAbility ability, TacAITarget aiTarget)
+            public static bool Prefix(AIActionMoveAndAttack __instance, TacticalAbility ability, TacAITarget aiTarget, ref TacticalAbilityTarget __result)
             {
                 try
                 {
-                    // TacticalActor actor = (TacticalActor)aiTarget.Actor;
-
-                    //   TFTVLogger.Always($"AIActionMoveAndAttack for actor: {actor.DisplayName}, AP: {actor.CharacterStats.ActionPoints.Value}");
-
+                    // Check if ability is enabled.
                     if (!ability.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsAndEquipmentNotSelected))
                     {
-                        return;
+                        __result = null;
+                        return false;
                     }
 
+                    // If the ability is a ShootAbility, perform the necessary null checks and adjustments.
                     if (ability is ShootAbility shootAbility)
                     {
-                        if (aiTarget.TacticalAbilityTarget != null
-                            || shootAbility.TacticalActor == null
-                            || shootAbility.TacticalActor.TacticalFaction == null
-                            || shootAbility.Weapon == null)
+                        // If the tactical ability target is already set, just return that.
+                        if (aiTarget.TacticalAbilityTarget != null)
                         {
-                            return;
+                            __result = aiTarget.TacticalAbilityTarget;
+                            return false;
                         }
 
+                        // Perform null checks and log errors as in the original method.
+                        if (shootAbility.TacticalActor == null)
+                        {
+                            Debug.LogError("ShootAbility " + shootAbility.ShootAbilityDef.name + " is missing TacticalActor");
+                            __result = null;
+                            return false;
+                        }
+
+                        if (shootAbility.TacticalActor.TacticalFaction == null)
+                        {
+                            Debug.LogError("TacticalActor " + shootAbility.TacticalActor.name + " is missing TacticalFaction");
+                            __result = null;
+                            return false;
+                        }
+
+                        if (shootAbility.Weapon == null)
+                        {
+                            Debug.LogError("ShootAbility " + shootAbility.ShootAbilityDef.name + " is missing Weapon");
+                            __result = null;
+                            return false;
+                        }
+
+                        // Additional null check for the Vision component.
+                        if (shootAbility.TacticalActor.TacticalFaction.Vision == null)
+                        {
+                            Debug.LogError("TacticalFaction Vision is null for " + shootAbility.TacticalActor.TacticalFaction.TacticalFactionDef.name);
+                            __result = null;
+                            return false;
+                        }
+
+                        bool visionRevealsTarget = false;
+
+                        if (aiTarget.Actor != null && shootAbility.TacticalActor.TacticalFaction.Vision.IsRevealed(aiTarget.Actor))
+                        {
+                            visionRevealsTarget = true;
+                        }
+
+                        bool isDirectLineDamage = shootAbility.Weapon.GetDamagePayload().DamageDeliveryType == DamageDeliveryType.DirectLine;
+
+                        // Generate a shoot target.
+                        TacticalAbilityTarget shootTarget = AIUtil.GetShootTarget(shootAbility.Weapon, new TacticalAbilityTarget(aiTarget.Actor));
+
+                        // If no actor, or if vision reveals the target, or if weapon is not direct line,
+                        // perform our adjustments (if applicable) and return the generated shoot target.
+                        if (aiTarget.Actor == null || visionRevealsTarget || !isDirectLineDamage)
+                        {
+                            if (aiTarget.Actor != null)
+                            {
+                                CheckAndAdjustForMultipleSingleAPAttack(shootAbility.TacticalActor, aiTarget.Actor, shootAbility.Weapon);
+                            }
+                            __result = shootTarget;
+                            return false;
+                        }
+
+                        // Otherwise, adjust the target’s position.
+                        Vector3 offset = 1.25f * Vector3.up;
+                        shootTarget.PositionToApply = aiTarget.Actor.Pos + offset;
+                        // Also adjust weapon properties as needed.
                         CheckAndAdjustForMultipleSingleAPAttack(shootAbility.TacticalActor, aiTarget.Actor, shootAbility.Weapon);
+                        __result = shootTarget;
+                        return false;
                     }
+
+                    // If the ability is a BashAbility, return the first matching target.
+                    if (ability is BashAbility bashAbility)
+                    {
+                        if (aiTarget.Actor != null)
+                        {
+                            __result = bashAbility.GetTargets().FirstOrDefault(x => x.Actor == aiTarget.Actor);
+                        }
+                        else
+                        {
+                            __result = null;
+                        }
+
+                        return false;
+                    }
+
+                    // For any other ability type, return null.
+                    __result = null;
+                    return false;
                 }
                 catch (Exception e)
                 {
@@ -277,7 +374,48 @@ namespace TFTV
                 }
             }
 
+
         }
+
+
+
+        /* [HarmonyPatch(typeof(AIActionMoveAndAttack), "GetAttackTarget")]
+             public static class AIActionMoveAndAttack_GetAttackTarget_patch
+             {
+                 public static void Prefix(AIActionMoveAndAttack __instance, TacticalAbility ability, TacAITarget aiTarget)
+                 {
+                     try
+                     {
+                         // TacticalActor actor = (TacticalActor)aiTarget.Actor;
+
+                         //   TFTVLogger.Always($"AIActionMoveAndAttack for actor: {actor.DisplayName}, AP: {actor.CharacterStats.ActionPoints.Value}");
+
+                         if (!ability.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsAndEquipmentNotSelected))
+                         {
+                             return;
+                         }
+
+                         if (ability is ShootAbility shootAbility)
+                         {
+                             if (aiTarget.TacticalAbilityTarget != null
+                                 || shootAbility.TacticalActor == null
+                                 || shootAbility.TacticalActor.TacticalFaction == null
+                                 || shootAbility.Weapon == null)
+                             {
+                                 return;
+                             }
+
+                             CheckAndAdjustForMultipleSingleAPAttack(shootAbility.TacticalActor, aiTarget.Actor, shootAbility.Weapon);
+                         }
+                     }
+                     catch (Exception e)
+                     {
+                         TFTVLogger.Error(e);
+                         throw;
+                     }
+                 }
+
+             }*/
 
 
 
@@ -385,7 +523,7 @@ namespace TFTV
         [HarmonyPatch(typeof(AIHasEnemiesInRangeConsideration), "Evaluate")]
         public static class AIHasEnemiesInRangeConsideration_Evaluate_patch
         {
-            private static void Postfix(AIHasEnemiesInRangeConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
+            public static void Postfix(AIHasEnemiesInRangeConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
             {
                 try
                 {
@@ -1264,6 +1402,36 @@ namespace TFTV
         }
         internal class TargetCulling
         {
+
+            [HarmonyPatch(typeof(AIClosestEnemyConsideration), "Evaluate")]
+            public static class AIClosestEnemyConsideration_Evaluate_patch
+            {
+
+                public static bool Prefix(AIClosestEnemyConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
+                {
+                    try
+                    {
+
+                        if (Umbra.UmbraAIClosestEnemyConsideration(__instance, actor, target, context, ref __result))
+                        {
+                            if (BadTargets.CullSmallCrittersForBigAndMedMonsters(__instance.BaseDef as AIClosestEnemyConsiderationDef, actor, target, context, ref __result))
+                            {
+                                return false;
+                            }
+
+                        }
+
+                        return true;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+
             internal class Umbra
             {
                 //Need to patch to check if enemy has Delirium, is in Mist or VO in effect
@@ -1271,6 +1439,70 @@ namespace TFTV
 
                 //Need to patch to check if enemy has Delirium, is in Mist or VO in effect, so it mirrors anyFactionVisibleEnemyConsideration
                 //   AIVisibleEnemiesConsiderationDef NOaIVisibleEnemiesConsiderationDef = DefCache.GetDef<AIVisibleEnemiesConsiderationDef>("NoFactionVisibleEnemy_AIConsiderationDef");
+
+                public static bool UmbraAIClosestEnemyConsideration(AIClosestEnemyConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
+                {
+                    try
+                    {
+                        AIClosestEnemyConsiderationDef aIClosestEnemyConsiderationDef = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Umbra_ClosestPathToEnemy_AIConsiderationDef");
+
+                        if (__instance.BaseDef != aIClosestEnemyConsiderationDef)
+                        {
+                            return true;
+                        }
+
+                        TacticalActor tacticalActor = (TacticalActor)actor;
+
+                        if (!CheckIfUmbra(tacticalActor))
+                        {
+                            return true;
+                        }
+
+                        TacAITarget tacAITarget = (TacAITarget)target;
+                        float num = 0f;
+                        TacticalActorBase tacticalActorBase = null;
+                        foreach (TacticalActorBase enemy in tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(tacticalActor.AIActor.GetEnemyMask(aIClosestEnemyConsiderationDef.EnemyMask)))
+                        {
+                            if (enemy is TacticalActor targetActor && CheckValidTarget(targetActor))
+                            {
+                                float num2 = 0f;
+                                float num3 = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(0f, tacticalActor);
+                                float num4 = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(0f, enemy);
+                                float destinationRadius = num3 + num4 + aIClosestEnemyConsiderationDef.DestinationRadius;
+                                num2 = AIUtil.GetPathLength(tacticalActor, tacAITarget.Pos, enemy.Pos, useAStar: true, destinationRadius);
+
+                                float num5 = num2.Clamp(aIClosestEnemyConsiderationDef.MinDistance, aIClosestEnemyConsiderationDef.MaxDistance);
+                                float num6 = 1f - (num5 - aIClosestEnemyConsiderationDef.MinDistance) / (aIClosestEnemyConsiderationDef.MaxDistance - aIClosestEnemyConsiderationDef.MinDistance);
+
+                                if (num6 > num)
+                                {
+                                    num = num6;
+                                    tacticalActorBase = enemy;
+                                }
+                            }
+                        }
+
+                        if (tacticalActorBase == null)
+                        {
+                            __result = 0f;
+                            return false;
+                        }
+
+                        num = Mathf.Clamp(num, 0f, 1f);
+                        if (Utl.Equals(num, 0f, 0.01f))
+                        {
+                            num = 0.1f;
+                        }
+
+                        __result = num;
+                        return false;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
 
                 private static bool CheckIfUmbra(TacticalActor actor)
                 {
@@ -1374,73 +1606,6 @@ namespace TFTV
                     }
                 }
 
-                [HarmonyPatch(typeof(AIClosestEnemyConsideration), "Evaluate")]
-                public static class AIClosestEnemyConsideration_Evaluate_patch
-                {
-                    public static bool Prefix(AIClosestEnemyConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
-                    {
-                        try
-                        {
-                            AIClosestEnemyConsiderationDef aIClosestEnemyConsiderationDef = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Umbra_ClosestPathToEnemy_AIConsiderationDef");
-
-                            if (__instance.BaseDef != aIClosestEnemyConsiderationDef)
-                            {
-                                return true;
-                            }
-
-                            TacticalActor tacticalActor = (TacticalActor)actor;
-
-                            if (!CheckIfUmbra(tacticalActor))
-                            {
-                                return true;
-                            }
-
-                            TacAITarget tacAITarget = (TacAITarget)target;
-                            float num = 0f;
-                            TacticalActorBase tacticalActorBase = null;
-                            foreach (TacticalActorBase enemy in tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(tacticalActor.AIActor.GetEnemyMask(aIClosestEnemyConsiderationDef.EnemyMask)))
-                            {
-                                if (enemy is TacticalActor targetActor && CheckValidTarget(targetActor))
-                                {
-                                    float num2 = 0f;
-                                    float num3 = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(0f, tacticalActor);
-                                    float num4 = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(0f, enemy);
-                                    float destinationRadius = num3 + num4 + aIClosestEnemyConsiderationDef.DestinationRadius;
-                                    num2 = AIUtil.GetPathLength(tacticalActor, tacAITarget.Pos, enemy.Pos, useAStar: true, destinationRadius);
-
-                                    float num5 = num2.Clamp(aIClosestEnemyConsiderationDef.MinDistance, aIClosestEnemyConsiderationDef.MaxDistance);
-                                    float num6 = 1f - (num5 - aIClosestEnemyConsiderationDef.MinDistance) / (aIClosestEnemyConsiderationDef.MaxDistance - aIClosestEnemyConsiderationDef.MinDistance);
-
-                                    if (num6 > num)
-                                    {
-                                        num = num6;
-                                        tacticalActorBase = enemy;
-                                    }
-                                }
-                            }
-
-                            if (tacticalActorBase == null)
-                            {
-                                __result = 0f;
-                                return false;
-                            }
-
-                            num = Mathf.Clamp(num, 0f, 1f);
-                            if (Utl.Equals(num, 0f, 0.01f))
-                            {
-                                num = 0.1f;
-                            }
-
-                            __result = num;
-                            return false;
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            throw;
-                        }
-                    }
-                }
             }
             internal class Healing
             {
@@ -1685,8 +1850,7 @@ namespace TFTV
             {
 
                 //This removes small critters from move related considerations of the Big and Med monsters.
-
-                private static bool CullSmallCrittersForBigAndMedMonsters(AIClosestEnemyConsiderationDef closestEnemyConsiderationDef, IAIActor actor, IAITarget target, object context, ref float score)
+                public static bool CullSmallCrittersForBigAndMedMonsters(AIClosestEnemyConsiderationDef closestEnemyConsiderationDef, IAIActor actor, IAITarget target, object context, ref float score)
                 {
                     try
                     {
@@ -1721,6 +1885,7 @@ namespace TFTV
                                     float num3 = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(0f, tacticalActor);
                                     float num4 = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(0f, enemy);
                                     float destinationRadius = num3 + num4 + closestEnemyConsiderationDef.DestinationRadius;
+                                                                   
                                     num2 = AIUtil.GetPathLength(tacticalActor, tacAITarget.Pos, enemy.Pos, useAStar: true, destinationRadius);
                                 }
 
@@ -1776,28 +1941,7 @@ namespace TFTV
 
 
 
-                [HarmonyPatch(typeof(AIClosestEnemyConsideration), "Evaluate")]
-                public static class AIClosestEnemyConsideration_Evaluate_patch
-                {
 
-                    public static bool Prefix(AIClosestEnemyConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
-                    {
-                        try
-                        {
-                            if (CullSmallCrittersForBigAndMedMonsters(__instance.BaseDef as AIClosestEnemyConsiderationDef, actor, target, context, ref __result))
-                            {
-                                return false;
-                            }
-
-                            return true;
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            throw;
-                        }
-                    }
-                }
                 /* [HarmonyPatch(typeof(AIClosestEnemyConsideration), "Evaluate")]
                  public static class AIClosestEnemyConsideration_Evaluate_patch
                  {

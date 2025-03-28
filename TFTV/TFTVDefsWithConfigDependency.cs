@@ -270,7 +270,7 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
                     GeoFactionDef syn = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
 
 
-                    if (config.EqualizeTrade)
+                    if (config.Trading)
                     {
                         List<TradingRatio> tradingRatios = new List<TradingRatio>
                     {

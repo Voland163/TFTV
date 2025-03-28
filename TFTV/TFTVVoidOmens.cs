@@ -4,6 +4,7 @@ using Base.Entities.Effects;
 using Base.Levels;
 using Base.UI;
 using com.ootii.Helpers;
+using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
@@ -1355,9 +1356,6 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    float mistRepellerModuleModifier = TFTVAircraftRework.Modules.Tactical.CheckForMistRepellerModuleOnAircraft();
-
-
                     if (VoidOmensCheck[7] && config.MoreMistVO)
                     {
                         int difficultyLevel = TFTVSpecialDifficulties.DifficultyOrderConverter(__instance.TacticalLevel.Difficulty.Order);
@@ -1392,23 +1390,18 @@ namespace TFTV
 
 
 
-                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min = Mathf.FloorToInt(3 + difficultyLevel * (int)(6 * missionTypeModifer) * mistRepellerModuleModifier);
-                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = Mathf.FloorToInt(8 + difficultyLevel * (int)(6 * missionTypeModifer) * mistRepellerModuleModifier);
+                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min = Mathf.FloorToInt(3 + difficultyLevel * (int)(6 * missionTypeModifer));
+                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = Mathf.FloorToInt(8 + difficultyLevel * (int)(6 * missionTypeModifer));
                         TFTVLogger.Always($"min blobs: {__instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min}, max blobs: {__instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max}");
                         
                     }
                     else
                     {
 
-
                         __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min = 1;
-                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = Mathf.FloorToInt(3 * mistRepellerModuleModifier);
+                        __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = Mathf.FloorToInt(3);
                         
                     }
-
-                    
-
-
                 }
                 catch (Exception e)
                 {
@@ -1417,6 +1410,10 @@ namespace TFTV
                 }
             }
         }
+
+       
+
+
 
 
         [HarmonyPatch(typeof(UIStateRosterDeployment), "get__squadMaxDeployment")]
@@ -1428,7 +1425,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (VoidOmensCheck[7] && config.MoreMistVO)
+                    if (VoidOmensCheck[7] && config.MoreMistVO && !TFTVAircraftRework.AircraftReworkOn)
                     {
                         __result += 1;
                     }
@@ -1444,6 +1441,11 @@ namespace TFTV
                     {
                         TFTVLogger.Always($"Base defense mission: setting max deployment to 9");
                         __result = 9;
+                    }
+
+                    if (config.UnLimitedDeployment) 
+                    {
+                        __result = 99;
                     }
                 }
 

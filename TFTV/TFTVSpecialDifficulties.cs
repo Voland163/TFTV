@@ -49,7 +49,7 @@ namespace TFTV
                     GeoLevelController controller = __instance.Level;
                     __state = controller.CurrentDifficultyLevel;
 
-                    if (config.difficultyOnTactical != TFTVConfig.DifficultyOnTactical.GEOSCAPE)
+                    if (config.TacticalDifficulty != TFTVConfig.DifficultyOnTactical.GEOSCAPE)
                     {
                         TFTVLogger.Always($"Geoscape difficulty: {controller.CurrentDifficultyLevel.Name.Localize()}, Tactical Difficulty: {GetTacticalDifficultyIfDifferentFromGeoscapeDifficulty().Name.Localize()}");
                         controller.CurrentDifficultyLevel = GetTacticalDifficultyIfDifferentFromGeoscapeDifficulty();
@@ -102,7 +102,7 @@ namespace TFTV
                     GeoLevelController controller = __instance.Level;
                     __state = controller.CurrentDifficultyLevel;
 
-                    if (config.difficultyOnTactical != TFTVConfig.DifficultyOnTactical.GEOSCAPE)
+                    if (config.TacticalDifficulty != TFTVConfig.DifficultyOnTactical.GEOSCAPE)
                     {
                         TFTVLogger.Always($"Geoscape difficulty: {controller.CurrentDifficultyLevel.Name.Localize()}, Tactical Difficulty: {GetTacticalDifficultyIfDifferentFromGeoscapeDifficulty().Name.Localize()}");
                         controller.CurrentDifficultyLevel = GetTacticalDifficultyIfDifferentFromGeoscapeDifficulty();
@@ -188,11 +188,11 @@ namespace TFTV
             {
                 TFTVConfig config = TFTVMain.Main.Config;
 
-                if (config.difficultyOnTactical != TFTVConfig.DifficultyOnTactical.GEOSCAPE)
+                if (config.TacticalDifficulty != TFTVConfig.DifficultyOnTactical.GEOSCAPE)
                 {
                     //  TFTVLogger.Always($"Difficulty level on Tactical is {config.difficultyOnTactical}");
 
-                    switch (config.difficultyOnTactical)
+                    switch (config.TacticalDifficulty)
                     {
                         case TFTVConfig.DifficultyOnTactical.STORY:
                             return DefCache.GetDef<GameDifficultyLevelDef>("StoryMode_DifficultyLevelDef");
@@ -243,9 +243,9 @@ namespace TFTV
                 //Changed because for Tactical Combat purposes was using deployment for Geoscape.
             //    TacticalLevelController tacticalLevelController = GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>();
 
-                if (config.difficultyOnTactical != TFTVConfig.DifficultyOnTactical.GEOSCAPE)
+                if (config.TacticalDifficulty != TFTVConfig.DifficultyOnTactical.GEOSCAPE)
                 {
-                    switch (config.difficultyOnTactical)
+                    switch (config.TacticalDifficulty)
                     {
                         case TFTVConfig.DifficultyOnTactical.STORY:
                             return 1;
