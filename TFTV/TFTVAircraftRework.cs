@@ -3369,7 +3369,7 @@ namespace TFTV
                             TFTVConfig config = TFTVMain.Main.Config;
                             UIModuleDeploymentMissionBriefing missionBriefingModule = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.DeploymentMissionBriefingModule;
 
-                            if (!AircraftReworkOn)
+                            if (AircraftReworkOn)
                             {
 
                                 missionBriefingModule.DeployButton.SetInteractable(squad.Any());
