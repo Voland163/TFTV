@@ -62,7 +62,7 @@ namespace TFTV
                     behemothScenicRoute = new List<int>();
                     behemothTarget = 0;
                     behemothWaitHours = 12;
-
+                    Behemoth.BehemothMission.DeploymentButtonList.Clear();
 
                 }
                 catch (Exception e)
@@ -161,6 +161,17 @@ namespace TFTV
                 try
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
+
+                    if(config.EasyAirCombat)
+                    {
+                        GeoLoadoutManager geoLoadoutManager = controller.AlienFaction.GeoLoadoutManager;
+                        FieldInfo fieldInfo = typeof(GeoLoadoutManager).GetField("_geoVehicleLoadouts", BindingFlags.NonPublic | BindingFlags.Instance);
+                        List<GeoVehicleLoadoutDef> geoVehicleLoadouts = (List<GeoVehicleLoadoutDef>)fieldInfo.GetValue(geoLoadoutManager);
+                        geoVehicleLoadouts.RemoveAll(x => x.name == "AL_Small4_VehicleLoadout" || x.name == "AL_Small5_VehicleLoadout");
+                        fieldInfo.SetValue(geoLoadoutManager, geoVehicleLoadouts);
+                    }
+
+
 
                     int difficulty = controller.CurrentDifficultyLevel.Order;
                     int numberOfRoamings = controller.EventSystem.GetVariable(BehemothRoamings);
@@ -412,7 +423,7 @@ namespace TFTV
                 internal static List<int> listTeamA = new List<int>();
                 internal static List<int> listTeamB = new List<int>();
 
-                private static List <PhoenixGeneralButton> _buttonList = new List<PhoenixGeneralButton>();
+                internal static List <PhoenixGeneralButton> DeploymentButtonList = new List<PhoenixGeneralButton>();
 
                 [HarmonyPatch(typeof(LaunchBehemothMissionAbility), "ActivateInternal")]
                 public static class TFTV_LaunchBehemothMissionAbility_ActivateInternal_patch
@@ -534,7 +545,7 @@ namespace TFTV
                             checkButton.GetComponent<UIButtonIconController>().Icon.sprite = iconTeamA;
                         }
 
-                        _buttonList.Add(checkButton);
+                        DeploymentButtonList.Add(checkButton);
 
                         //   checkButton.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("TFTV_helmet_off_icon.png");
                         // TFTVLogger.Always($"original icon position {newPhoenixGeneralButton.transform.position}, edit button position {__instance.EditButton.transform.position}");
@@ -639,9 +650,9 @@ namespace TFTV
                             return;
                         }
 
-                        foreach(PhoenixGeneralButton button in _buttonList) 
+                        foreach(PhoenixGeneralButton button in DeploymentButtonList) 
                         {
-                            button.gameObject.SetActive(false);
+                            button?.gameObject?.SetActive(false);
                         
                         }
 

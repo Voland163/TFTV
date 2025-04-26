@@ -125,13 +125,8 @@ namespace TFTV
                
                 TFTVRevenant.InternalData.RevenantDataToClearOnStateChangeAndLoad();
 
-
-                TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack = new Dictionary<int, Dictionary<string, double>>();
-                TFTVBaseDefenseGeoscape.PhoenixBasesInfested.Clear();
-                TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttackSchedule.Clear();
-                TFTVBaseDefenseGeoscape.ContainmentBreachSchedule.Clear();
-                TFTVBaseDefenseGeoscape.PandoransThatCanEscape.Clear();
-
+                TFTVBaseDefenseGeoscape.ClearInternalDataOnStateLoadAndChange();
+               
                 TFTVTouchedByTheVoid.TBTVVariable = 0;
                 TFTVTouchedByTheVoid.UmbraResearched = false;
 

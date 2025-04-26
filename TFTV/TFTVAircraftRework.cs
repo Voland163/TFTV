@@ -6,6 +6,7 @@ using Base.Defs;
 using Base.Entities.Effects;
 using Base.Entities.Statuses;
 using Base.Levels;
+using Base.UI.MessageBox;
 using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -3359,6 +3360,108 @@ namespace TFTV
             }
             internal class MissionDeployment
             {
+
+                [HarmonyPatch(typeof(UIStateRosterDeployment), "OnEnrollmentChanged")]
+                public static class UIStateRosterDeployment_OnEnrollmentChanged_Patch
+                {
+
+                    private static void NoVehicleMutogWarning(UIStateRosterDeployment __instance, GeoRosterDeploymentItem item, MessageBox ____confirmationBox, List<GeoCharacter> ____selectedDeployment, List<GeoRosterDeploymentItem> ____deploymentItems)
+                    {
+                        try
+                        {
+                            UIModuleDeploymentMissionBriefing missionBriefingModule = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.DeploymentMissionBriefingModule;
+                            MethodInfo methodInfoCheckForDeployment = AccessTools.Method(typeof(UIStateRosterDeployment), "CheckForDeployment", new Type[] { typeof(IEnumerable<GeoCharacter>) });
+
+                            item.EnrollForDeployment = !item.EnrollForDeployment;
+                            item.RefreshCheckVisuals();
+
+                            ____selectedDeployment.Clear();
+                            ____selectedDeployment.AddRange(from s in ____deploymentItems
+                                                            where s.EnrollForDeployment
+                                                            select s.Character);
+
+                            methodInfoCheckForDeployment.Invoke(__instance, new object[] { ____selectedDeployment });
+                        }
+
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+
+                    }
+
+                    public static bool Prefix(UIStateRosterDeployment __instance, GeoRosterDeploymentItem item, MessageBox ____confirmationBox, List<GeoCharacter> ____selectedDeployment, List<GeoRosterDeploymentItem> ____deploymentItems)
+                    {
+                        try
+                        {
+                            TFTVConfig config = TFTVMain.Main.Config;
+
+                            if (!item.Character.TemplateDef.IsVehicle && !item.Character.TemplateDef.IsMutog)
+                            {
+                                return true;
+                            }
+
+                            if (config.MultipleVehiclesInAircraftAllowed)
+                            {
+                                NoVehicleMutogWarning(__instance, item, ____confirmationBox, ____selectedDeployment, ____deploymentItems);
+                                return false;
+                            }
+                            else
+                            {
+                                if (!AircraftReworkOn)
+                                {
+                                    return true;
+                                }
+                            }
+
+
+                            if (__instance.Mission.MissionDef.Tags.Contains(DefCache.GetDef<MissionTypeTagDef>("MissionTypeAncientSiteDefense_MissionTagDef"))
+                               || __instance.Mission.MissionDef.Tags.Contains(DefCache.GetDef<MissionTypeTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef")))
+                            {
+                                return true;
+                            }
+
+
+                            GeoVehicle geoVehicle = __instance.Mission.Site.GetPlayerVehiclesOnSite()?.FirstOrDefault(v => v.Units.Contains(item.Character));
+
+                            if (geoVehicle == null)
+                            {
+                                return true;
+                            }
+
+                            bool hasHarness = geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _vehicleHarnessModule);
+                            bool hasMutogPen = geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _blimpMutogPenModule);
+                            bool isThunderbird = geoVehicle.VehicleDef == thunderbird;
+
+                            if ((hasHarness && isThunderbird && item.Character.TemplateDef.IsVehicle) || (hasMutogPen && item.Character.TemplateDef.IsMutog))
+                            {
+
+                            }
+                            else
+                            {
+                                return true;
+                            }
+
+                            NoVehicleMutogWarning(__instance, item, ____confirmationBox, ____selectedDeployment, ____deploymentItems);
+
+                            return false;
+
+                        }
+
+
+
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+
+
+
+
                 [HarmonyPatch(typeof(UIStateRosterDeployment), "CheckForDeployment")]
                 public static class UIStateRosterDeployment_CheckForDeployment_Patch
                 {
@@ -4059,6 +4162,23 @@ namespace TFTV
                         {
                             try
                             {
+                                TFTVConfig config = TFTVMain.Main.Config;
+
+                                if (config.VehicleAndMutogSize1)
+                                {
+                                    List<GeoCharacter> geoCharacters = __instance.Units.ToList();
+
+                                    int occupiedSpace = 0;
+
+                                    foreach (GeoCharacter geoCharacter in geoCharacters)
+                                    {
+                                        occupiedSpace += geoCharacter.OccupingSpace;
+                                    }
+                                    __result = occupiedSpace;
+                                }
+
+
+
                                 if (!AircraftReworkOn)
                                 {
                                     return;
@@ -4080,7 +4200,7 @@ namespace TFTV
                     [HarmonyPatch(typeof(GeoCharacter), "get_OccupingSpace")]
                     public static class GeoCharacter_get_OccupingSpace_Patch
                     {
-                        static void Postfix(GeoCharacter __instance, ref int __result)
+                        public static void Postfix(GeoCharacter __instance, ref int __result)
                         {
                             try
                             {
@@ -4149,7 +4269,7 @@ namespace TFTV
                             {
                                 TFTVConfig config = TFTVMain.Main.Config;
 
-                                if (!AircraftReworkOn && !config.MultipleVehiclesInAircraftAllowed)
+                                if (!AircraftReworkOn && !config.MultipleVehiclesInAircraftAllowed && !config.VehicleAndMutogSize1)
                                 {
                                     return true;
                                 }
@@ -4173,6 +4293,14 @@ namespace TFTV
                                 GeoCharacter geoCharacter = targetItem.Character;
 
                                 int occupyingSpace = geoCharacter.TemplateDef.Volume;
+
+                                if (config.VehicleAndMutogSize1)
+                                {
+                                    occupyingSpace = 1;
+                                }
+
+
+                                //  TFTVLogger.Always($"{geoCharacter.DisplayName} occupying space {occupyingSpace}");
 
                                 PropertyInfo propertyInfo = typeof(TransferActionMenuElement).GetProperty("TargetContainer", BindingFlags.Public | BindingFlags.Instance);
 
@@ -4211,7 +4339,7 @@ namespace TFTV
 
                                 __instance.ErrorTooltip.gameObject.SetActive(value: false);
 
-                                if (AircraftReworkOn && !config.MultipleVehiclesInAircraftAllowed)
+                                if (AircraftReworkOn)
                                 {
                                     if (!CheckVehicleMutogVehicleCapacity(geoVehicle, geoCharacter, isThunderbird, hasHarness, hasMutogPen))
                                     {
@@ -4220,6 +4348,19 @@ namespace TFTV
                                         interactable = false;
                                     }
                                 }
+                                else if (targetItem.Character.TemplateDef.Volume == 3)
+                                {
+                                    foreach (GeoCharacter allCharacter in targetContainer.GetAllCharacters())
+                                    {
+                                        if (allCharacter.TemplateDef.Volume == targetItem.Character.TemplateDef.Volume)
+                                        {
+                                            __instance.ErrorTooltip.TipKey = __instance.VehicleErrorTextBind;
+                                            __instance.ErrorTooltip.gameObject.SetActive(value: true);
+                                            interactable = false;
+                                        }
+                                    }
+                                }
+
 
                                 __instance.Button.interactable = interactable;
 
@@ -5025,9 +5166,9 @@ namespace TFTV
             {
                 try
                 {
-                    if (!AircraftReworkOn) 
+                    if (!AircraftReworkOn)
                     {
-                        return;          
+                        return;
                     }
 
                     foreach (GeoVehicle geoVehicle in controller.PhoenixFaction.Vehicles)

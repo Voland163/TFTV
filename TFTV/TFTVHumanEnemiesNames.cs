@@ -208,8 +208,7 @@ namespace TFTV
                         return;
                     }
 
-                    if (__instance.AvailableRecruit.GetGameTags().Contains(Shared.SharedGameTags.VehicleTag)
-                         || __instance.AvailableRecruit.ClassTags.Contains(Shared.SharedGameTags.VehicleClassTag))
+                    if (__instance.AvailableRecruit.UnitType.TemplateDef.IsVehicle || __instance.AvailableRecruit.UnitType.TemplateDef.IsMutog)
                     {
                         return;
                     }
@@ -224,7 +223,6 @@ namespace TFTV
                         if (__instance.AvailableRecruit.Level >= 4)
                         {
                             rankTag = TFTVHumanEnemies.HumanEnemyTier2GameTag;
-
                         }
                     }
 

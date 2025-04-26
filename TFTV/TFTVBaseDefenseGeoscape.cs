@@ -86,6 +86,25 @@ namespace TFTV
         internal static GameTagDef KillInfestationTag;
         internal static GameTagDef ScatterEnemiesTag;
 
+        public static void ClearInternalDataOnStateLoadAndChange()
+        {
+            try 
+            {
+                PhoenixBasesUnderAttack = new Dictionary<int, Dictionary<string, double>>();
+                PhoenixBasesInfested.Clear();
+                PhoenixBasesUnderAttackSchedule.Clear();
+                ContainmentBreachSchedule.Clear();
+                PandoransThatCanEscape.Clear();
+                Deployment.UI.DeploymentItemButtonMap.Clear();
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
         public static float GetAttackProgress(GeoSite site)
         {
             try
@@ -1684,7 +1703,7 @@ namespace TFTV
 
             internal class UI
             {
-                private static Dictionary<GeoRosterDeploymentItem, PhoenixGeneralButton> keyValuePairs = new Dictionary<GeoRosterDeploymentItem, PhoenixGeneralButton>();
+                internal static Dictionary<GeoRosterDeploymentItem, PhoenixGeneralButton> DeploymentItemButtonMap = new Dictionary<GeoRosterDeploymentItem, PhoenixGeneralButton>();
 
                 internal static void CreateCheckButton(GeoRosterDeploymentItem geoRosterDeploymentItem)
                 {
@@ -1721,7 +1740,7 @@ namespace TFTV
                         checkButton.transform.position += new Vector3(-100 * resolutionFactorWidth, 0);
                         checkButton.PointerClicked += () => ToggleButtonClicked(checkButton, geoRosterDeploymentItem);
                         AssignTeam(checkButton, geoRosterDeploymentItem);
-                        keyValuePairs.Add(geoRosterDeploymentItem, checkButton);
+                        DeploymentItemButtonMap.Add(geoRosterDeploymentItem, checkButton);
                     }
                     catch (Exception e)
                     {
@@ -1886,12 +1905,12 @@ namespace TFTV
                             return;
                         }
 
-                        foreach (GeoRosterDeploymentItem geoRosterDeploymentItem in keyValuePairs.Keys)
+                        foreach (GeoRosterDeploymentItem geoRosterDeploymentItem in DeploymentItemButtonMap.Keys)
                         {
-                            AssignTeam(keyValuePairs[geoRosterDeploymentItem], geoRosterDeploymentItem);
+                            AssignTeam(DeploymentItemButtonMap[geoRosterDeploymentItem], geoRosterDeploymentItem);
                         }
 
-                        keyValuePairs.Clear();
+                        DeploymentItemButtonMap.Clear();
                     }
                     catch (Exception e)
                     {
@@ -1903,20 +1922,18 @@ namespace TFTV
                 {
                     try
                     {
-                        if (keyValuePairs.Count > 0)
+                        if (DeploymentItemButtonMap.Count > 0)
                         {
-                            foreach (PhoenixGeneralButton button in keyValuePairs.Values)
+                            foreach (PhoenixGeneralButton button in DeploymentItemButtonMap.Values)
                             {
-                                button.gameObject.SetActive(false);
+                                button?.gameObject?.SetActive(false);
                             }
-                            keyValuePairs.Clear();
+                            DeploymentItemButtonMap.Clear();
                         }
 
                         if (!PhoenixBasesUnderAttack.ContainsKey(uIStateRosterDeployment.Mission.Site.SiteId) && !PhoenixBasesInfested.Contains(uIStateRosterDeployment.Mission.Site.SiteId))
                         {
-
                             return;
-
                         }
 
                         SetBaseDefenseSitrep(uIStateRosterDeployment.Mission);
