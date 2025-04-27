@@ -2013,7 +2013,7 @@ namespace TFTV
                     GenerateMercenaryChoices(currentlyPossibleOptions, Math.Min(numberOfOffers / 4, 6), geoMarketPlace, voPriceMultiplier);
                     GenerateResearchChoices(currentlyPossibleOptions, Math.Min(numberOfOffers / 4, 8), geoMarketPlace, voPriceMultiplier);
 
-                    if (TFTVAircraftRework.AircraftReworkOn && controller.EventSystem.GetVariable(_marketPlaceStockRotated) > 3)
+                    if (TFTVAircraftRework.AircraftReworkOn) //&& controller.EventSystem.GetVariable(_marketPlaceStockRotated) > 3)
                     {
                         TFTVAircraftRework.MarketPlace.GenerateMarketPlaceModules(geoMarketPlace);
                     }

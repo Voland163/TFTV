@@ -3551,7 +3551,7 @@ namespace TFTV
 
                     if (infectedPhoenixOperatives.Count == 0)
                     {
-                        TFTVLogger.Always("No infected operatives! Can't delploy Umbra strat!");
+                        TFTVLogger.Always("No infected operatives! Can't deploy Umbra strat!");
                         return;
                     }
 
@@ -3577,10 +3577,8 @@ namespace TFTV
                     }
 
                     int maxUmbra = Math.Max(TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order), 3);
-
-
-                    Level level = controller.Level;
-                    TacticalVoxelMatrix tacticalVoxelMatrix = level?.GetComponent<TacticalVoxelMatrix>();
+   
+                    TacticalVoxelMatrix tacticalVoxelMatrix = controller.VoxelMatrix; 
 
                     for (int x = 0; x < targetablePhoenixOperatives.Keys.Count(); x++)
                     {
@@ -3592,10 +3590,16 @@ namespace TFTV
 
                         TacticalActor pXOperative = targetablePhoenixOperatives.Keys.ElementAt(x);
 
+                        TFTVLogger.Always($"going to deploy Umbra for {pXOperative.DisplayName}");
+
                         TacticalDeployZone zone = targetablePhoenixOperatives[pXOperative]; //get the zone to spawn
+
+                        TFTVLogger.Always($"at zone at {zone.Pos}");
 
                         //Choose type of Umbra and generate necessary data
                         TacCharacterDef chosenEnemy = enemies.GetRandomElement(new System.Random((int)Stopwatch.GetTimestamp()));
+                        TFTVLogger.Always($"umbraType {chosenEnemy.name}");
+
                         ActorDeployData actorDeployData = chosenEnemy.GenerateActorDeployData();
                         actorDeployData.InitializeInstanceData();
 
@@ -3611,7 +3615,11 @@ namespace TFTV
                             }
                         }
 
+                        TFTVLogger.Always($"mistCoveredSpawnPositions count: {mistCoveredSpawnPositions.Count}");
+
                         IReadOnlyCollection<Vector3> validSpawnPosition = zone.GetValidSpawnPosition(actorDeployData.ComponentSetDef, actorDeployData.DeploymentTags, mistCoveredSpawnPositions);
+
+                        TFTVLogger.Always($"validSpawnPositions count: {validSpawnPosition.Count}");
 
                         if (validSpawnPosition == null || validSpawnPosition.Count == 0)
                         {

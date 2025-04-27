@@ -11,6 +11,7 @@ using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
+using PRMBetterClasses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,15 +28,41 @@ namespace TFTV
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
-        //increase level of recruits
-        //level 2: +4 +4 +1 
-        //level 3: +6 +6 +2
-        //level 4: +8 +8 +3
-        //level 5: +10 +10 +4
-        //level 6: +12 +12 +5
-        //plan would be to modify  public static GeoEventChoice GenerateItemChoice(ItemDef itemDef, float price) to change name to show LVL of merc
 
-        public static int MaxHavenRecruitLevel()
+        [HarmonyPatch(typeof(FactionCharacterGenerator), "GenerateUnit", new Type[] { typeof(GeoFaction), typeof(TacActorUnitResult) })]
+        internal static class Debug_GenerateUnit_Patches
+        {
+            // Called before 'GenerateUnit' -> PREFIX.
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+            private static void Prefix(TacActorUnitResult fromResult)
+            {
+                try
+                {
+                    TFTVLogger.Always($"GenerateUnit {fromResult?.SourceTemplate?.name} {fromResult?.TacticalActorBaseDef?.name}");
+                }
+                catch (Exception e)
+                {
+                    PRMLogger.Error(e);
+
+                }
+            }
+        }
+
+
+
+
+
+
+
+            //increase level of recruits
+            //level 2: +4 +4 +1 
+            //level 3: +6 +6 +2
+            //level 4: +8 +8 +3
+            //level 5: +10 +10 +4
+            //level 6: +12 +12 +5
+            //plan would be to modify  public static GeoEventChoice GenerateItemChoice(ItemDef itemDef, float price) to change name to show LVL of merc
+
+            public static int MaxHavenRecruitLevel()
         {
             try
             {

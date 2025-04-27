@@ -71,6 +71,8 @@ namespace TFTV
         public static GameTagDef AlwaysDeployTag;
 
 
+        
+
         //  private static readonly ResearchTagDef CriticalResearchTag = DefCache.GetDef<ResearchTagDef>("CriticalPath_ResearchTagDef");
 
 
@@ -105,15 +107,13 @@ namespace TFTV
             try
             {
 
-                for (int x = 0; x < 50; x++)
+               foreach(StatsModifyStatusDef statsModifyStatusDef in Repo.GetAllDefs<StatsModifyStatusDef>())
                 {
-
-                    string havenName = TFTVCommonMethods.ConvertKeyToString($"KEY_HAVEN_NAME_NEW_JERICHO{x}");
-
-                    TFTVLogger.Always($"KEY_HAVEN_NAME_NEW_JERICHO{x}: {havenName}", false);                    
-
+                        TFTVLogger.Always($"{statsModifyStatusDef.name}");
+                    
                 }
-              
+                //  TFTVLogger.Always($"{statsModifyStatusDef.name} {statsModifyStatusDef.ApplicationConditions[0].ConditionDef} {statsModifyStatusDef.ApplicationConditions[0].ConditionValue}");
+
 
 
             }
@@ -229,7 +229,7 @@ namespace TFTV
 
                 // Experimental();
 
-             //   Print();
+              //  Print();
 
             }
             catch (Exception e)
@@ -4181,6 +4181,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
             };
 
             nanoVestAbility.StatusDef = nanoVestBuffStatus;
+            TFTVAircraftRework.NanoVestStatusDef = nanoVestBuffStatus;
         }
 
         internal static void ModifyBlastAndFireResVests()
@@ -4194,8 +4195,10 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 blastVest.Abilities = new AbilityDef[] { fireVest.Abilities[0], blastVest.Abilities[0] };
                 blastVest.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("modules_blastresvest.png");
                 blastVest.ViewElementDef.InventoryIcon = blastVest.ViewElementDef.LargeIcon;
-
-
+               // TFTVAircraftRework.BlastVestResistance = (DamageMultiplierAbilityDef)blastVest.Abilities[0];
+               // TFTVAircraftRework.FireVestResistance = (DamageMultiplierAbilityDef)fireVest.Abilities[0];
+                TFTVAircraftRework.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)blastVest.Abilities[0]);
+                TFTVAircraftRework.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)fireVest.Abilities[0]);
 
             }
             catch (Exception e)
@@ -4262,6 +4265,8 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 fireVest.Abilities = new AbilityDef[] { DefCache.GetDef<DamageMultiplierAbilityDef>("AcidResistant_DamageMultiplierAbilityDef") };
                 fireVest.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("modules_fireresvest.png");
                 fireVest.ViewElementDef.InventoryIcon = fireVest.ViewElementDef.LargeIcon;
+                TFTVAircraftRework.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)fireVest.Abilities[0]);
+               
             }
 
             catch (Exception e)
@@ -4406,7 +4411,8 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 ParalysisNotShcokResistance.ViewElementDef.Description.LocalizationKey = "RESISTANCE_TO_PARALYSIS_DESCRIPTION";
                 ParalysisNotShcokResistance.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("ParalysisImmunity.png");
                 ParalysisNotShcokResistance.ViewElementDef.SmallIcon = Helper.CreateSpriteFromImageFile("ParalysisImmunity.png");
-
+               // TFTVAircraftRework.ParalysysVestResistance = ParalysisNotShcokResistance;
+                TFTVAircraftRework.VestResistanceMultiplierAbilities.Add(ParalysisNotShcokResistance);
             }
             catch (Exception e)
             {
@@ -4426,19 +4432,14 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 //DamageMultiplierAbilityDef ExtraHealing = DefCache.GetDef<DamageMultiplierAbilityDef>("ExtraHealing_DamageMultiplierAbilityDef");
 
                 poisonVest.Abilities = new AbilityDef[] { poisonVest.Abilities[0], ParalysisNotShcokResistance };
-
-
-
-
+               // TFTVAircraftRework.PoisonVestResistance = (DamageMultiplierAbilityDef)poisonVest.Abilities[0];
+                TFTVAircraftRework.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)poisonVest.Abilities[0]);
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
                 throw;
             }
-
-
-
         }
 
         internal static void RemoveAcidAsVulnerability()
@@ -4485,13 +4486,11 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 if (pxResearch.Researches.Contains(reverseEngineeringMotionDetector))
                 {
                     pxResearch.Researches.Remove(reverseEngineeringMotionDetector);
-
                 }
 
                 if (pxResearch.Researches.Contains(reverseEngineeringAcidVest))
                 {
                     pxResearch.Researches.Remove(reverseEngineeringAcidVest);
-
                 }
 
                 //Moving Motion Detection Module to Terror Sentinel Autopsy               

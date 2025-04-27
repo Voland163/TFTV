@@ -139,6 +139,7 @@
     <Compile Include="TFTVExperienceDistribution.cs" />
     <Compile Include="TFTVDragandDropFunctionality.cs" />
     <Compile Include="TFTVHavenRecruitsScreen.cs" />
+    <Compile Include="TFTVNerdPerks.cs" />
     <Compile Include="TFTVNJQuestline.cs" />
     <Compile Include="TFTVPersonnelRoster.cs" />
     <Compile Include="TFTVTauntsAndQuips.cs" />

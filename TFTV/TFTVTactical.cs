@@ -72,7 +72,7 @@ namespace TFTV
         public int AccumulatedRevenantPoints;
         public List<string> HumanEnemiesGangNames;
         public string RevenantResistanceDamageTypeGuid;
-        public bool[] AircraftModulesInTactical;
+        public int[] AircraftModulesInTactical;
     }
 
     /// <summary>
@@ -226,9 +226,11 @@ namespace TFTV
 
             if (TFTVAircraftRework.AircraftReworkOn)
             {
-                TFTVLogger.Always($"# Aircraft modules in tactical: {TFTVAircraftRework.InternalData.ModulesInTactical.Where(b => b == true).Count()}\n" +
+                TFTVLogger.Always($"# Aircraft modules in tactical: {TFTVAircraftRework.InternalData.ModulesInTactical.Where(b => b > 0).Count()}\n" +
                     $"{TFTVAircraftRework.Modules.Tactical.ReportModulesPresent()}");
             }
+
+            TFTVAircraftRework.Modules.Tactical.HeliosStatisChamber.ImplementVestBuff();
 
             TFTVLogger.Always("Tactical start completed");
 

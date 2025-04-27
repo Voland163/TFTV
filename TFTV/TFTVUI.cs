@@ -2265,6 +2265,11 @@ namespace TFTV
                     float resolutionFactorWidth = (float)resolution.width / 1920f;
                     float resolutionFactorHeight = (float)resolution.height / 1080f;
 
+                    if(resolution.width == 1920 && resolutionFactorHeight == 1200) 
+                    {
+                        resolutionFactorHeight = 1;
+                    }
+
                     EditUnitButtonsController editUnitButtonsController = controller.View.GeoscapeModules.ActorCycleModule.EditUnitButtonsController;
 
                     uIModuleDeploymentMissionBriefing.SquadSlotsUsedText.gameObject.SetActive(true);
@@ -2302,6 +2307,9 @@ namespace TFTV
 
                     useBestEquipmentButton.PointerClicked += () => EditScreen.LoadoutsAndHelmetToggle.EquipBestCurrentTeam(geoSite, uIModuleGeoRoster);
                     useBestEquipmentButton.transform.position += new Vector3(-373 * resolutionFactorWidth, 264 * resolutionFactorHeight, 0);
+
+                    useBestEquipmentButton.SetInteractable(true);
+
 
                 }
                 catch (Exception e)
@@ -2406,6 +2414,25 @@ namespace TFTV
 
         internal class RepairingBionics
         {
+            private static float GetRepairCostMultiplier(GeoCharacter geoCharacter)
+            {
+                try
+                {
+                    if (!TFTVAircraftRework.AircraftReworkOn)
+                    {
+                        return 0.5f;
+                    }
+
+                    return 0.5f * TFTVAircraftRework.Modules.Geoscape.Healing.GetRepairBionicsCostFactor(geoCharacter);
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
             /// <summary>
             /// Patches to fix repairing bionics
             /// </summary>
@@ -2420,7 +2447,7 @@ namespace TFTV
                         if (__instance.RepairButton.isActiveAndEnabled)
                         {
                             float equippedItemHealth = ____parentModule.CurrentCharacter.GetEquippedItemHealth(__instance.MutationUsed);
-                            ResourcePack resourcePack = __instance.MutationUsed.ManufacturePrice * (1f - equippedItemHealth) * 0.5f;
+                            ResourcePack resourcePack = __instance.MutationUsed.ManufacturePrice * (1f - equippedItemHealth) * GetRepairCostMultiplier(____parentModule.CurrentCharacter);
 
                             bool interactable = ____parentModule.Context.ViewerFaction.Wallet.HasResources(resourcePack);
                             __instance.RepairButtonCost.Init(resourcePack);
@@ -2493,7 +2520,7 @@ namespace TFTV
                         Delegate singleItemRepairDelegate = Delegate.CreateDelegate(typeof(Action<GeoManufactureItem>), __instance, singleItemRepairMethodInfo);
 
                         float equippedItemHealth = character.GetEquippedItemHealth(itemDef);
-                        ResourcePack resourcePack = itemDef.ManufacturePrice * (1f - equippedItemHealth) * 0.5f;
+                        ResourcePack resourcePack = itemDef.ManufacturePrice * (1f - equippedItemHealth) * GetRepairCostMultiplier(character);
                         materialsCost += resourcePack.ByResourceType(ResourceType.Materials).RoundedValue;
                         techCost += resourcePack.ByResourceType(ResourceType.Tech).RoundedValue;
                         GeoManufactureItem geoManufactureItem = UnityEngine.Object.Instantiate(__instance.ItemListPrefab, __instance.ItemListContainer);
@@ -2540,7 +2567,7 @@ namespace TFTV
                             return false;
                         }
 
-                        ResourcePack pack = item.ItemDef.ManufacturePrice * (1f - equippedItemHealth) * 0.5f;
+                        ResourcePack pack = item.ItemDef.ManufacturePrice * (1f - equippedItemHealth) * GetRepairCostMultiplier(__instance);
                         if (!__instance.Faction.Wallet.HasResources(pack) && payCost)
                         {
                             __result = false;

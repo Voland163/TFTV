@@ -293,45 +293,6 @@ namespace TFTV
         
        
 
-        // Harmony patch to change the reveal of alien bases when in scanner range, so increases the reveal chance instead of revealing it right away
-        [HarmonyPatch(typeof(GeoAlienFaction), "TryRevealAlienBase")]
-        internal static class BC_GeoAlienFaction_TryRevealAlienBase_patch
-        {
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
-            private static bool Prefix(ref bool __result, GeoSite site, GeoFaction revealToFaction, GeoLevelController ____level)
-            {
-                try
-                {
-
-                    if (!site.GetVisible(revealToFaction))
-                    {
-                        GeoAlienBase component = site.GetComponent<GeoAlienBase>();
-                        if (revealToFaction is GeoPhoenixFaction && ((GeoPhoenixFaction)revealToFaction).IsSiteInBaseScannerRange(site, true))
-                        {
-                            component.IncrementBaseAttacksRevealCounter();
-                            // original code:
-                            //site.RevealSite(____level.PhoenixFaction);
-                            //__result = true;
-                            //return false;
-                        }
-                        if (component.CheckForBaseReveal())
-                        {
-                            site.RevealSite(____level.PhoenixFaction);
-                            __result = true;
-                            return false;
-                        }
-                        component.IncrementBaseAttacksRevealCounter();
-                    }
-                    __result = false;
-                    return false; // Return without calling the original method
-                }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-                throw new InvalidOperationException();
-            }
-        }
+       
     }
 }

@@ -2,7 +2,6 @@
 using Base.Entities.Statuses;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Levels.ActorDeployment;
@@ -10,6 +9,7 @@ using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Entities.StructuralTargets;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.ActorDeployment;
@@ -34,6 +34,40 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         //   private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
+
+
+        // Patch the method that reacts when any actor enters play
+       /* [HarmonyPatch(typeof(TacticalFactionVision), "OnActorEnteredPlay")]
+
+        public static class TacticalFactionVision_OnActorEnteredPlay_Patch
+        {
+            public static bool Prefix(TacticalActorBase tacticalActorBase)
+            {
+                // If it's one of our spawned StructuralTargets, bail out.
+                if (tacticalActorBase is StructuralTarget)
+                {
+                    TFTVLogger.Always($"TacticalFactionVision.OnActorEnteredPlay for {tacticalActorBase.name} - skipping vision update");
+                    return false;  // skip the original OnActorEnteredPlay altogether
+                }
+                return true;       // otherwise let the vanilla vision code run
+            }
+        }
+
+        // And also when an actor moves (just in case movement triggers the same NRE later)
+        [HarmonyPatch(typeof(TacticalFactionVision), "OnActorMoved", typeof(TacticalActorBase))]
+        public static class TacticalFactionVision_OnActorMoved_Patch
+        {
+            public static bool Prefix(TacticalActorBase movedActor)
+            {
+                if (movedActor is StructuralTarget)
+                {
+                    TFTVLogger.Always($"TacticalFactionVision.OnActorMoved for {movedActor.name} - skipping vision update");
+                    return false;
+                }
+                return true;
+            }
+        }*/
+
 
 
 
@@ -68,14 +102,20 @@ namespace TFTV
                 {
                     ApplyStatusAbilityDef killerInstinctAbilityDef = DefCache.GetDef<ApplyStatusAbilityDef>("KillerInstinct_AbiltyDef");
 
-                  //  TFTVLogger.Always($"got here for {__instance.AddAttackBoostStatusDef.name}, tactical ability: {ability.TacticalAbilityDef.name}");
+                    //  TFTVLogger.Always($"got here for {__instance.AddAttackBoostStatusDef.name}, tactical ability: {ability.TacticalAbilityDef.name}");
 
-                    if (__instance.AddAttackBoostStatusDef!= killerInstinctAbilityDef.StatusDef)
+                    if (__instance.AddAttackBoostStatusDef != killerInstinctAbilityDef.StatusDef)
                     {
                         return true;
                     }
 
-                    
+                    SkillTagDef attackAbilityTag = DefCache.GetDef<SkillTagDef>("AttackAbility_SkillTagDef");
+                    if (!(ability is IAttackAbility) &&
+                        !(ability is IDamageDealer) &&
+                        !(ability.TacticalAbilityDef.SkillTags.Contains(attackAbilityTag)))
+                    {
+                        return false;
+                    }
 
                     SkillTagDef[] skillTagCullFilter = __instance.AddAttackBoostStatusDef.SkillTagCullFilter;
                     foreach (SkillTagDef value in skillTagCullFilter)
@@ -129,7 +169,7 @@ namespace TFTV
                 {
 
 
-                    if (TFTVVanillaFixes.UI.CheckIfEnemyActorTargeted() 
+                    if (TFTVVanillaFixes.UI.CheckIfEnemyActorTargeted()
                         && TFTVAircraftRework.Modules.Tactical.GroundAttackWeapon.CheckForGroundAttackWeaponExplosions(__instance.ActorBase.TacticalLevel))
                     {
                         return true;
@@ -417,7 +457,7 @@ namespace TFTV
                     TFTVHumanEnemies.ImplementStartingVolleyHumanEnemiesTactic(__instance.Faction);
                     TFTVRevenant.Resistance.ApplySpecialRevenantResistanceArmorStack(__instance.Faction.TacticalLevel, __instance.Faction);
                     PRMBetterClasses.SkillModifications.FactionPerks.DieHardOnFactionStartTurn(__instance.Faction);
-                    TFTVAircraftRework.Modules.Tactical.EveryPhoenixTurn.ImplementModuleEffectsOnEveryPhoenixTurn(__instance.Faction);
+                    TFTVAircraftRework.Modules.Tactical.EveryTurn.ImplementModuleEffectsOnEveryPhoenixTurn(__instance.Faction);
                     // TFTVNJQuestline.IntroMission.MissionQuips.NJQuips.PopulateQuips(__instance.Faction);
 
                 }
@@ -556,15 +596,15 @@ namespace TFTV
                 //Postfix checks for relevant GameTags then saves and zeroes the WPWorth of the dying actor before main method is executed.
 
                 GameTagsList<GameTagDef> RelevantTags = new GameTagsList<GameTagDef> { cyclopsTag, hopliteTag, HumanEnemyTier4GameTag, HumanEnemyTier2GameTag, HumanEnemyTier1GameTag };
-             
+
                 if ((__instance.HasGameTag(hopliteTag) || __instance.HasGameTag(cyclopsTag))
-                    || (__instance.TacticalFaction == death.Actor.TacticalFaction 
-                    && (death.Actor.HasGameTags(RelevantTags, false) 
+                    || (__instance.TacticalFaction == death.Actor.TacticalFaction
+                    && (death.Actor.HasGameTags(RelevantTags, false)
                     || death.Actor.Status != null && death.Actor.Status.HasStatus<MindControlStatus>())))
                 {
                     __state = death.Actor.TacticalActorBaseDef.WillPointWorth;
                     death.Actor.TacticalActorBaseDef.WillPointWorth = 0;
-                }             
+                }
             }
 
             public static void Postfix(TacticalActor __instance, DeathReport death, int __state)
@@ -577,16 +617,16 @@ namespace TFTV
                     {
                         //Allies lose 3WP
                         __instance.CharacterStats.WillPoints.Subtract((__state + 1));
-                       
+
                     }
                     else if (death.Actor.HasGameTag(HumanEnemyTier1GameTag))
                     {
                         //Allies lose 6WP
-                        __instance.CharacterStats.WillPoints.Subtract((__state * 3));                      
+                        __instance.CharacterStats.WillPoints.Subtract((__state * 3));
                     }
                 }
 
-                if(__state != 0)
+                if (__state != 0)
                 {
                     death.Actor.TacticalActorBaseDef.WillPointWorth = __state;
                 }

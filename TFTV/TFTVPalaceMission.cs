@@ -771,7 +771,6 @@ namespace TFTV
                             if (existingObjective != null && existingObjective.Pos != new Vector3(0, 0, 0))
                             {
                                 TFTVLogger.Always($"{existingObjective.name} already exists");
-
                             }
                             else
                             {

@@ -775,7 +775,8 @@ namespace TFTV
                         }
 
                         UnityEngine.Object.Instantiate(rectTransformToCopy, __instance.ObjectivesResultContainer.transform);
-
+                        UnityEngine.Object.Instantiate(rectTransformToCopy, __instance.ObjectivesResultContainer.transform);
+                        UnityEngine.Object.Instantiate(rectTransformToCopy, __instance.ObjectivesResultContainer.transform);
                     }
                     catch (Exception e)
                     {
@@ -2596,7 +2597,10 @@ namespace TFTV
             {
                 try
                 {
-                    if (!ta.GameTags.Contains(DefCache.GetDef<GameTagDef>("SentinelTerror_ClassTagDef")) && (ta.HasGameTag(relevantTag)
+                    List<GameTagDef> excludTags = new List<GameTagDef>() { DefCache.GetDef<GameTagDef>("SentinelTerror_ClassTagDef"), DefCache.GetDef<GameTagDef>("SentinelMist_ClassTagDef") };
+
+
+                    if (!ta.GameTags.Any(t=>excludTags.Contains(t)) && (ta.HasGameTag(relevantTag)
                             || ta.Equipments.GetWeapons().Any(w => w.WeaponDef.Tags.Contains(relevantTag))
                             || ta.BodyState.GetAllBodyparts().Any(b => b.OwnerItem.TacticalItemDef.Tags.Contains(relevantTag))))
                     {

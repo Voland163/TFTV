@@ -584,7 +584,7 @@ namespace TFTV
                     ResourcesResearchRequirementDef requirementDef = Helper.CreateDefFromClone(sourceRequirement, "C61983EE-F219-467A-B478-3451273ECB84", "LivingCrystalResearchRequirementDef");
                     requirementDef.Resources = new ResourcePack(new ResourceUnit { Type = ResourceType.LivingCrystals, Value = 1 });
 
-                    ExistingResearchRequirementDef requiremen2tDef = TFTVCommonMethods.CreateNewExistingResearchResearchRequirementDef(id + "ResearchReq", "F0D428A7-9D51-4746-9C60-1EFADD5457B8", "ExoticMaterialsResearch");
+                    ExistingResearchRequirementDef requiremen2tDef = TFTVCommonMethods.CreateNewExistingResearchResearchRequirementDef("F0D428A7-9D51-4746-9C60-1EFADD5457B8", "ExoticMaterialsResearch");
 
                     ResearchViewElementDef imageSource = DefCache.GetDef<ResearchViewElementDef>("PX_AntediluvianArchaeology_ViewElementDef");
 
@@ -637,7 +637,7 @@ namespace TFTV
                     ResourcesResearchRequirementDef sourceRequirement = DefCache.GetDef<ResourcesResearchRequirementDef>("ALN_CrabmanUmbra_ResearchDef_ResourcesResearchRequirementDef_0");
                     ResourcesResearchRequirementDef requirementDef = Helper.CreateDefFromClone(sourceRequirement, "FA66ED06-A5F7-4A6F-B18F-F84BA4B97AB5", "ProteanMutaneResearchRequirementDef");
 
-                    ExistingResearchRequirementDef requiremen2tDef = TFTVCommonMethods.CreateNewExistingResearchResearchRequirementDef(id + "ResearchReq", "041C8F9B-0F7F-467F-9DD6-183C3B901B56", "ExoticMaterialsResearch");
+                    ExistingResearchRequirementDef requiremen2tDef = TFTVCommonMethods.CreateNewExistingResearchResearchRequirementDef("041C8F9B-0F7F-467F-9DD6-183C3B901B56", "ExoticMaterialsResearch");
 
 
                     ResearchViewElementDef imageSource = DefCache.GetDef<ResearchViewElementDef>("PX_AntediluvianArchaeology_ViewElementDef");
@@ -917,7 +917,7 @@ namespace TFTV
 
                     ResearchDef research = TFTVCommonMethods.CreateNewPXResearch(defName, cost, gUID, gUID2, keyName, keyReveal, keyUnlock, keyComplete, keyBenefits, imageSource);
 
-                    ExistingResearchRequirementDef requirementDef = TFTVCommonMethods.CreateNewExistingResearchResearchRequirementDef(defName + "ResearchReq", "47BA0BD6-F622-4EC7-A49B-B93C0A955D3C", "AncientAutomataResearch");
+                    ExistingResearchRequirementDef requirementDef = TFTVCommonMethods.CreateNewExistingResearchResearchRequirementDef("47BA0BD6-F622-4EC7-A49B-B93C0A955D3C", "AncientAutomataResearch");
 
                     ReseachRequirementDefOpContainer[] revealRequirementContainer = new ReseachRequirementDefOpContainer[1];
                     ResearchRequirementDef[] revealResearchRequirementDefs = new ResearchRequirementDef[1];

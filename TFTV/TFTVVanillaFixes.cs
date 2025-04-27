@@ -15,8 +15,10 @@ using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.Equipments;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsSharedData;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Game;
@@ -25,6 +27,7 @@ using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
@@ -75,7 +78,7 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
-        
+
 
         internal class Stealth
         {
@@ -1310,7 +1313,7 @@ namespace TFTV
                                 {
                                     //if (eventData.Event.Name == "TacticalMusicEnemyTurn" || eventData.Event.Name == "TacticalMusicPlayerTurn")
                                     //  {
-                                    if (__instance.MasterVolumeRTPC.GetGlobalValue() > 0.25f && __instance.MusicVolumeRTPC.GetGlobalValue()>0.25f)
+                                    if (__instance.MasterVolumeRTPC.GetGlobalValue() > 0.25f && __instance.MusicVolumeRTPC.GetGlobalValue() > 0.25f)
                                     {
                                         __instance.SetAudioLevel(MixerKey.Music, __instance.MasterVolumeRTPC.GetGlobalValue() * 0.25f);
                                         _musicVolumeAncientMapAdjusted = true;
@@ -1496,7 +1499,7 @@ namespace TFTV
                                     list.AddRange(AIUtil.GetAffectedTargetsByDamageAbility(tacActor, item.Actor.Pos, abilityWithDef as IDamageDealer));
                                 }
 
-                                list.RemoveWhere(t=>tacActor.RelationTo(t) == FactionRelation.Enemy && !tacActor.TacticalFaction.Vision.IsLocated(t) && !tacActor.TacticalFaction.Vision.IsRevealed(t));
+                                list.RemoveWhere(t => tacActor.RelationTo(t) == FactionRelation.Enemy && !tacActor.TacticalFaction.Vision.IsLocated(t) && !tacActor.TacticalFaction.Vision.IsRevealed(t));
 
                                 int num3 = 0;
                                 foreach (TacticalActorBase item2 in list)
@@ -2770,6 +2773,70 @@ namespace TFTV
 
         internal class Geoscape
         {
+
+            /// <summary>
+            /// Fixes softlock if game picks a turret deployed by a haven defender as a recruit
+            /// </summary>
+            [HarmonyPatch(typeof(HavenMissionUtil), "GenerateHavenMissionRecruitmentReward")]
+            public static class GenerateHavenMissionRecruitmentRewardPatch
+            {
+                static bool Prefix(GeoMission mission, ref GeoFactionReward __result)
+                {
+                    try
+                    {
+                        GeoFactionReward geoFactionReward = new GeoFactionReward();
+                        GeoSite site = mission.Site;
+                        GeoFaction uninfestedOwner = site.GetComponent<GeoHaven>().UninfestedOwner;
+                        if (mission.GetMissionOutcomeState() == TacFactionState.Won)
+                        {
+                            int diplomacy = site.Owner.Diplomacy.GetDiplomacy(site.GeoLevel.ViewerFaction);
+                            int diplomacy2 = site.GetComponent<GeoHaven>().Leader.Diplomacy.GetDiplomacy(site.GeoLevel.ViewerFaction);
+                            if (HavenMissionUtil.FactionSoldierAlwaysJoin || (diplomacy > 0 && diplomacy2 > 0))
+                            {
+                                SharedGameTagsDataDef tags = site.GeoLevel.SharedData.SharedGameTags;
+                                List<TacActorUnitResult> list = (from u in (from s in (from u in HavenMissionUtil.GetHavenUnitsFromMission(mission)
+                                                                                       where u.MissionHistoryResult.HasItemType(UnitHistoryItemType.ControlledByPlayer)
+                                                                                       select u).ToList()
+                                                                            select s.Data).OfType<TacActorUnitResult>()
+                                                                 where u.IsAlive && !u.HasTag(tags.CivilianTag) && u.SourceTemplate!=null
+                                                                 select u).ToList();
+
+                              /*  foreach(TacActorUnitResult tacActorUnitResult in list) 
+                                {
+                                    TFTVLogger.Always($"{tacActorUnitResult?.TacticalActorBaseDef?.name} {tacActorUnitResult?.SourceTemplate?.name}");
+                                
+                                }*/
+
+                                if (site.GeoLevel.PhoenixFaction.LivingQuarterFreeSpace > 0 && list.Any())
+                                {
+                                    TacActorUnitResult randomElement = list.GetRandomElement();
+                                    int num = UnityEngine.Random.Range(0, 100);
+                                    if (HavenMissionUtil.FactionSoldierAlwaysJoin || num < site.GeoLevel.CurrentDifficultyLevel.HavenRescueSoldierJoinChance)
+                                    {
+                                        randomElement.Statuses.RemoveAll((StatusResult s) => s.Def is MindControlStatusDef);
+                                        GeoCharacter geoCharacter = site.GeoLevel.CharacterGenerator.GenerateUnit(uninfestedOwner, randomElement).SpawnAsCharacter();
+                                        geoCharacter.ApllyTacticalResult(randomElement);
+                                        geoFactionReward.Units.Add(geoCharacter);
+                                    }
+                                }
+                            }
+                        }
+                        __result = geoFactionReward;
+
+                        return false;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+
+
+
+
             //Ensure facilities are working after repairing Power Generator
             [HarmonyPatch(typeof(GeoPhoenixFacility), "SetFacilityFunctioning")]
             public static class GeoPhoenixFacility_SetFacilityFunctioning_AfterGenRepairedVanillaBugFix_Patch

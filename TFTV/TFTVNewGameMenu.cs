@@ -525,8 +525,9 @@ namespace TFTV
                         float resolutionFactorWidth = GetResolutionFactorWidth();
                         float resolutionFactorHeight = GetResolutionFactorHeight();
                         bool ultrawideresolution = GetResolutionFactor() > 2;
-
+                        
                         UIModuleGameSettings uIModuleGameSettings = GameUtl.CurrentLevel().GetComponent<HomeScreenView>().HomeScreenModules.GameSettings;
+                        
                         RectTransform rectTransform = uIModuleGameSettings.GameAddiotionalContentGroup.GetComponentInChildren<RectTransform>();
                         GameOptionViewController gameOptionViewController = UnityEngine.Object.Instantiate(uIModuleGameSettings.SecondaryOptions.Container.GetComponentsInChildren<GameOptionViewController>().First(), rectTransform);
 

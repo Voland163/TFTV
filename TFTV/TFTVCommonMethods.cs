@@ -6,6 +6,7 @@ using Base.UI;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Game;
@@ -16,6 +17,7 @@ using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
+using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
@@ -192,8 +194,6 @@ namespace TFTV
             }
         }
 
-
-
         public static void ClearHints()
         {
             try
@@ -285,7 +285,7 @@ namespace TFTV
                 TFTVUITactical.ClearDataOnMissionRestart();
 
                 TFTVEvacAll.ClearData();
-
+                TFTVTacticalDeploymentEnemies.UndesirablesSpawned.Clear();
                 TFTVNJQuestline.IntroMission.ClearDataOnMissionRestartLoadAndStateChange();
 
                 TFTVLogger.Always($"Internal variables cleared on Mission Restart");
@@ -436,10 +436,6 @@ namespace TFTV
                 }
             }
         }
-
-
-
-
 
         public static void SetStaminaToZero(GeoCharacter __instance)
         {
@@ -657,6 +653,85 @@ namespace TFTV
             }
             throw new InvalidOperationException();
         }
+
+
+        public static ResearchDef CreateResearch(string id, int cost, string key, List<string> guids, ResearchRequirementDef[] revealRequirements,
+                ResearchRequirementDef[] unlockRequirements, ResearchRewardDef[] rewards, ResearchViewElementDef imageSource, ResearchContainerOperation containerOperationReveal = ResearchContainerOperation.ALL,
+                ResearchContainerOperation containerOperationUnlock = ResearchContainerOperation.ALL, ResearchTagDef[] tags = null)
+
+        {
+            try
+            {
+                string keyName = key + "_NAME";
+                string keyReveal = key + "_REVEAL";
+                string keyUnlock = key + "_UNLOCK";
+                string keyComplete = key + "_COMPLETE";
+                string keyBenefits = key + "_BENEFITS";
+
+                ResearchDef research = CreateNewPXResearch(id, cost, guids[0], guids[1], keyName, keyReveal, keyUnlock, keyComplete, keyBenefits, imageSource);
+
+
+                if (revealRequirements != null)
+                {
+
+                    ReseachRequirementDefOpContainer[] revealRequirementContainer = new ReseachRequirementDefOpContainer[1];
+                    ResearchRequirementDef[] revealResearchRequirementDefs = revealRequirements;
+                    revealRequirementContainer[0].Requirements = revealResearchRequirementDefs;
+                    research.RevealRequirements.Container = revealRequirementContainer;
+                    research.RevealRequirements.Operation = containerOperationReveal;
+                }
+
+                if (unlockRequirements != null)
+                {
+                    ReseachRequirementDefOpContainer[] unlockRequirementContainer = new ReseachRequirementDefOpContainer[1];
+                    ResearchRequirementDef[] unlockResearchRequirementDefs = unlockRequirements;
+                    unlockRequirementContainer[0].Requirements = unlockResearchRequirementDefs;
+                    research.UnlockRequirements.Container = unlockRequirementContainer;
+                    research.UnlockRequirements.Operation = containerOperationUnlock;
+                }
+
+                if (rewards != null)
+                {
+                    research.Unlocks = rewards;
+                }
+
+                if (tags != null)
+                {
+                    research.Tags = tags;
+                }
+
+                return research;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        public static ExistingResearchRequirementDef[] CreateExistingResearchRequirementDefs(List <ResearchDef> requiredResearches, List <string> guids)
+        {
+            try 
+            {
+                ExistingResearchRequirementDef[] existingResearchRequirementDefs = new ExistingResearchRequirementDef[requiredResearches.Count];
+
+
+                for (int i = 0; i < requiredResearches.Count; i++)
+                {
+                    existingResearchRequirementDefs[i] = CreateNewExistingResearchResearchRequirementDef(guids[i], requiredResearches[i].Id);
+                }
+
+                return existingResearchRequirementDefs;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+
+        }
+
         public static ResearchDef CreateNewPXResearch(string id, int cost, string gUID, string gUID2, string name, string reveal, string unlock, string complete, string benefits, ResearchViewElementDef imageSource)
 
         {
@@ -797,14 +872,16 @@ namespace TFTV
 
         }
 
-        public static ExistingResearchRequirementDef CreateNewExistingResearchResearchRequirementDef(string nameDef, string gUID, string researchID)
+        public static ExistingResearchRequirementDef CreateNewExistingResearchResearchRequirementDef(string gUID, string researchID)
         {
             try
             {
                 ExistingResearchRequirementDef sourceExisitingResReq =
                       DefCache.GetDef<ExistingResearchRequirementDef>("PX_PhoenixProject_ResearchDef_ExistingResearchRequirementDef_0");
 
-                ExistingResearchRequirementDef newResReq = Helper.CreateDefFromClone(sourceExisitingResReq, gUID, nameDef);
+
+
+                ExistingResearchRequirementDef newResReq = Helper.CreateDefFromClone(sourceExisitingResReq, gUID, $"TFTV_ExistingResearchRequirement_{researchID}");
                 newResReq.ResearchID = researchID;
 
                 return newResReq;
