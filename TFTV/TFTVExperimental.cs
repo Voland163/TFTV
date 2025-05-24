@@ -1,21 +1,13 @@
-﻿using Base;
-using Base.Core;
-using Base.Entities.Statuses;
-using Base.Levels;
-using Epic.OnlineServices;
+﻿using Base.Core;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities.GameTags;
-using PhoenixPoint.Common.Entities.GameTagsTypes;
-using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
 using PRMBetterClasses;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Contexts;
 using UnityEngine;
 
 
@@ -29,40 +21,110 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
-        [HarmonyPatch(typeof(FactionCharacterGenerator), "GenerateUnit", new Type[] { typeof(GeoFaction), typeof(TacActorUnitResult) })]
-        internal static class Debug_GenerateUnit_Patches
+        /*  [HarmonyPatch(typeof(FactionCharacterGenerator), "GenerateUnit", new Type[] { typeof(GeoFaction), typeof(TacActorUnitResult) })]
+          internal static class Debug_GenerateUnit_Patches
+          {
+              // Called before 'GenerateUnit' -> PREFIX.
+              [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+              private static void Prefix(TacActorUnitResult fromResult)
+              {
+                  try
+                  {
+                      TFTVLogger.Always($"GenerateUnit {fromResult?.SourceTemplate?.name} {fromResult?.TacticalActorBaseDef?.name}");
+                  }
+                  catch (Exception e)
+                  {
+                      PRMLogger.Error(e);
+
+                  }
+              }
+          }*/
+
+        
+/*
+        [HarmonyPatch(typeof(UnitTemplateResearchReward), "GiveReward")]
+        internal static class UnitTemplateResearchReward_GiveReward_Patch
         {
-            // Called before 'GenerateUnit' -> PREFIX.
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
-            private static void Prefix(TacActorUnitResult fromResult)
+            private static void Prefix(UnitTemplateResearchReward __instance, GeoFaction faction)
             {
                 try
                 {
-                    TFTVLogger.Always($"GenerateUnit {fromResult?.SourceTemplate?.name} {fromResult?.TacticalActorBaseDef?.name}");
+                    if (faction == faction.GeoLevel.NewJerichoFaction && __instance.RewardDef.Template.Data.LevelProgression.Level == 1) 
+                    {
+                        TFTVLogger.Always($"PREFIX {__instance.RewardDef.name} : {__instance.RewardDef.Template.name} add: {__instance.RewardDef.Add} already unlocked: {faction.UnlockedUnitTemplates.Contains(__instance.RewardDef.Template)}"); 
+                    }                   
                 }
                 catch (Exception e)
                 {
-                    PRMLogger.Error(e);
+                    TFTVLogger.Error(e);
+
+                }
+            }
+
+            private static void Postfix(UnitTemplateResearchReward __instance, GeoFaction faction)
+            {
+                try
+                {
+                    if (faction == faction.GeoLevel.NewJerichoFaction && __instance.RewardDef.Template.Data.LevelProgression.Level == 1)
+                    {
+                        TFTVLogger.Always($"POSTFIX {__instance.RewardDef.name} : {__instance.RewardDef.Template.name} add: {__instance.RewardDef.Add} already unlocked: {faction.UnlockedUnitTemplates.Contains(__instance.RewardDef.Template)}");
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
 
                 }
             }
         }
 
+        [HarmonyPatch(typeof(UnitTemplateResearchReward), "RemoveReward")]
+        internal static class UnitTemplateResearchReward_RemoveReward_Patch
+        {
+            private static void Prefix(UnitTemplateResearchReward __instance, GeoFaction faction)
+            {
+                try
+                {
+                    if (faction == faction.GeoLevel.NewJerichoFaction && __instance.RewardDef.Template.Data.LevelProgression.Level == 1)
+                    {
+                        TFTVLogger.Always($"PREFIX {__instance.RewardDef.name} : {__instance.RewardDef.Template.name} add: {__instance.RewardDef.Add} already unlocked {faction.UnlockedUnitTemplates.Contains(__instance.RewardDef.Template)}");
+                    }
 
 
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
 
+                }
+            }
 
+            private static void Postfix(UnitTemplateResearchReward __instance, GeoFaction faction)
+            {
+                try
+                {
+                    if (faction == faction.GeoLevel.NewJerichoFaction && __instance.RewardDef.Template.Data.LevelProgression.Level == 1)
+                    {
+                        TFTVLogger.Always($"POSTFIX {__instance.RewardDef.name} : {__instance.RewardDef.Template.name} add: {__instance.RewardDef.Add} already unlocked: {faction.UnlockedUnitTemplates.Contains(__instance.RewardDef.Template)}");
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
 
+                }
+            }
+        }*/
 
-            //increase level of recruits
-            //level 2: +4 +4 +1 
-            //level 3: +6 +6 +2
-            //level 4: +8 +8 +3
-            //level 5: +10 +10 +4
-            //level 6: +12 +12 +5
-            //plan would be to modify  public static GeoEventChoice GenerateItemChoice(ItemDef itemDef, float price) to change name to show LVL of merc
+        //increase level of recruits
+        //level 2: +4 +4 +1 
+        //level 3: +6 +6 +2
+        //level 4: +8 +8 +3
+        //level 5: +10 +10 +4
+        //level 6: +12 +12 +5
+        //plan would be to modify  public static GeoEventChoice GenerateItemChoice(ItemDef itemDef, float price) to change name to show LVL of merc
 
-            public static int MaxHavenRecruitLevel()
+        public static int MaxHavenRecruitLevel()
         {
             try
             {
@@ -118,12 +180,34 @@ namespace TFTV
 
         public static void PrintInfoHavenRecruits(GeoLevelController controller)
         {
-            try 
-            { 
-            
-                foreach(GeoSite geoSite in controller.Map.AllSites.Where(s=>s.Type==GeoSiteType.Haven && s.GetComponent<GeoHaven>().AvailableRecruit !=null))
+            try
+            {
+
+                foreach (GeoSite geoSite in controller.Map.AllSites.Where(s => s.Type == GeoSiteType.Haven && s.GetComponent<GeoHaven>().AvailableRecruit != null))
                 {
                     TFTVLogger.Always($"{geoSite.GetComponent<GeoHaven>().AvailableRecruit.GetName()} at {geoSite.LocalizedSiteName}");
+                }
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+        public static void PrintAvailableTemplates(GeoLevelController controller)
+        {
+            try
+            {
+
+
+
+               foreach (TacCharacterDef tacCharacterDef in controller.NewJerichoFaction.UnlockedUnitTemplates)
+                {
+                    TFTVLogger.Always($"Template: {tacCharacterDef.name}, Level: {tacCharacterDef.Data.LevelProgression.Level}, ClassTag: {tacCharacterDef.ClassTag}");
                 }
 
 
@@ -137,7 +221,9 @@ namespace TFTV
 
 
         }
-       
+
+
+
         /*  
 
                public GeoUnitDescriptor GenerateRandomUnit(CharacterGenerationContext context)

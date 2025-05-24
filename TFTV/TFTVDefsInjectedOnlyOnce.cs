@@ -47,6 +47,7 @@ using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Eventus;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
+using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -106,15 +107,27 @@ namespace TFTV
         {
             try
             {
+                foreach(UnitTemplateResearchRewardDef unitTemplateResearchRewardDef in Repo.GetAllDefs<UnitTemplateResearchRewardDef>().
+                    Where(t=>t.Add==true && t.Template.Data.LevelProgression.Level==1 && !t.name.Contains("ALN")))
+                { 
+                    TacCharacterDef tacCharacterDef = unitTemplateResearchRewardDef.Template;
 
-               foreach(StatsModifyStatusDef statsModifyStatusDef in Repo.GetAllDefs<StatsModifyStatusDef>())
-                {
-                        TFTVLogger.Always($"{statsModifyStatusDef.name}");
-                    
+                    TFTVLogger.Always($"{tacCharacterDef.name} added in {unitTemplateResearchRewardDef.name}");
+
+                    if (Repo.GetAllDefs<UnitTemplateResearchRewardDef>().Any(t => t.Template == tacCharacterDef && t.Add == false)) 
+                    {
+                       TFTVLogger.Always($"{tacCharacterDef.name} removed in {Repo.GetAllDefs<UnitTemplateResearchRewardDef>().FirstOrDefault(t => t.Template == tacCharacterDef && t.Add == false).name}", false);
+                    }
+                    else
+                    {
+                        TFTVLogger.Always($"{tacCharacterDef.name} never removed", false);
+                    }
                 }
-                //  TFTVLogger.Always($"{statsModifyStatusDef.name} {statsModifyStatusDef.ApplicationConditions[0].ConditionDef} {statsModifyStatusDef.ApplicationConditions[0].ConditionValue}");
 
-
+                DefCache.GetDef<UnitTemplateResearchRewardDef>("PX_NewJericho_ResearchDef_UnitTemplateResearchRewardDef_0").name = "NJ_NewJericho_ResearchDef_UnitTemplateResearchRewardDef_0";
+             
+                ResearchDef gaussResearch =  DefCache.GetDef<ResearchDef>("NJ_GaussTech_ResearchDef");
+                gaussResearch.Unlocks = gaussResearch.Unlocks.AddToArray(DefCache.GetDef<UnitTemplateResearchRewardDef>("PX_NewJericho_ResearchDef_UnitTemplateResearchRewardDef_1"));
 
             }
             catch (Exception e)
@@ -229,7 +242,7 @@ namespace TFTV
 
                 // Experimental();
 
-              //  Print();
+               //  Print();
 
             }
             catch (Exception e)
@@ -237,6 +250,54 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+        private static void AddAIActorStatsConditionsConsideration()
+        {
+            try 
+            {
+                //DemolitionManMinimalWillPoints_AIConsiderationsDef
+
+                AIActorStatsConditionsConsiderationDef demolitionStateMinimalWPAIConsideration = DefCache.GetDef<AIActorStatsConditionsConsiderationDef>("DemolitionManMinimalWillPoints_AIConsiderationsDef");
+
+                string silenceWPConsiderationName = "TFTV_SilenceMinimalWillPoints_AIConsiderationsDef";
+                string electricReinforcementWPConsiderationName = "TFTV_ElectricReinforcementMinimalWillPoints_AIConsiderationsDef";
+
+                //need to create an AIActorStatsConditionsConsiderationDef and add it to desired AIActionDefs.
+                //desired ActionDefs: electric reinforcement, MoveAndDoSilence_AIActionDef, DemolitionMan_AIActionDef
+
+                AIActorStatsConditionsConsiderationDef newSilenceConsideration = 
+                    Helper.CreateDefFromClone(demolitionStateMinimalWPAIConsideration, "{B0F1A2D6-3C8B-4E5A-9F7C-1D3F5B6E7A8B}", silenceWPConsiderationName);
+
+                AIActorStatsConditionsConsiderationDef newElectricReinforcementConsideration =
+                    Helper.CreateDefFromClone(demolitionStateMinimalWPAIConsideration, "{C1D2E3F4-5A6B-7C8D-9E0F-1A2B3C4D5E6F}", electricReinforcementWPConsiderationName);
+
+                newElectricReinforcementConsideration.Conditions[0].Quantity = 0.5f;
+                newSilenceConsideration.Conditions[0].Quantity = 0.5f;
+
+                AIActionDef moveAndDoSilence = DefCache.GetDef<AIActionDef>("MoveAndDoSilence_AIActionDef");
+                AIActionExecuteAbilityDef electricReinforcement = TFTVBetterEnemies.electricReinforcement;
+                
+                AIAdjustedConsideration newElectricReinforcementAdjustedConsideration = new AIAdjustedConsideration
+                {
+                    Consideration = newElectricReinforcementConsideration,
+                    ScoreCurve = electricReinforcement.EarlyExitConsiderations[0].ScoreCurve
+                };
+
+                electricReinforcement.EarlyExitConsiderations = electricReinforcement.EarlyExitConsiderations.AddToArray(newElectricReinforcementAdjustedConsideration);
+                
+                moveAndDoSilence.EarlyExitConsiderations = moveAndDoSilence.EarlyExitConsiderations.AddToArray(new AIAdjustedConsideration
+                {
+                    Consideration = newSilenceConsideration,
+                    ScoreCurve = moveAndDoSilence.EarlyExitConsiderations[0].ScoreCurve
+                });
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
 
         private static void ChangeRenderedPortraitsParam()
         {
@@ -395,7 +456,7 @@ namespace TFTV
                     = Helper.CreateDefFromClone(projectileStandardDamageTypeEffectDef, "{47979269-E470-4176-AC1E-DBD23076E90D}", $"TFTV_Viro_{projectileStandardDamageTypeEffectDef.name}");
                 newViroStandardDamageTypeEffectDef.FormulaEffect = newViroDamageEffectDef;
                 virophageDamageKeyWordDataDef.DamageTypeDef = newViroStandardDamageTypeEffectDef;
-
+                virophageDamageKeyWordDataDef.RequiredGameTagDefs = virophageDamageKeyWordDataDef.RequiredGameTagDefs.AddToArray(Shared.SharedGameTags.AnuMutationTag);
             }
             catch (Exception e)
             {
@@ -1095,12 +1156,81 @@ namespace TFTV
                 FixInstilFrenzySound();
                 FixMutoidDazeImmunity();
                 FixMutagenCostBadAcidWorm();
+                FixNotCapturableFaceHuggers();
+                FixFactionLevel1Templates();
                 // FixUmbraFire(); doesn't work because status removed before check - implemented differently elsewhere
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        private static void FixFactionLevel1Templates()
+        {
+            try 
+            {
+        
+               /* foreach (UnitTemplateResearchRewardDef unitTemplateResearchRewardDef in Repo.GetAllDefs<UnitTemplateResearchRewardDef>().
+                    Where(t => t.Add == true && t.Template.Data.LevelProgression.Level == 1 && !t.name.Contains("ALN")))
+                {
+                    TacCharacterDef tacCharacterDef = unitTemplateResearchRewardDef.Template;
+
+                    TFTVLogger.Always($"{tacCharacterDef.name} added in {unitTemplateResearchRewardDef.name}");
+
+                    if (Repo.GetAllDefs<UnitTemplateResearchRewardDef>().Any(t => t.Template == tacCharacterDef && t.Add == false))
+                    {
+                        TFTVLogger.Always($"{tacCharacterDef.name} removed in {Repo.GetAllDefs<UnitTemplateResearchRewardDef>().FirstOrDefault(t => t.Template == tacCharacterDef && t.Add == false).name}", false);
+                    }
+                    else
+                    {
+                        TFTVLogger.Always($"{tacCharacterDef.name} never removed", false);
+                    }
+                }*/
+
+                ResearchDef gaussResearch = DefCache.GetDef<ResearchDef>("NJ_GaussTech_ResearchDef");
+                ResearchDef newJerichoResearch = DefCache.GetDef<ResearchDef>("PX_NewJericho_ResearchDef");
+                gaussResearch.Unlocks = gaussResearch.Unlocks.AddRangeToArray(newJerichoResearch.Unlocks);
+                newJerichoResearch.Unlocks = new ResearchRewardDef[]{};
+
+                ResearchDef laserResearch = DefCache.GetDef<ResearchDef>("SYN_LaserWeapons_ResearchDef");
+                ResearchDef synedrionResearch = DefCache.GetDef<ResearchDef>("PX_Synedrion_ResearchDef");
+                laserResearch.Unlocks = laserResearch.Unlocks.AddRangeToArray(synedrionResearch.Unlocks);
+                synedrionResearch.Unlocks = new ResearchRewardDef[] { };
+
+                ResearchDef anuWarfareResearch = DefCache.GetDef<ResearchDef>("ANU_AnuWarfare_ResearchDef");
+                ResearchDef anuResearch = DefCache.GetDef<ResearchDef>("PX_DisciplesOfAnu_ResearchDef");
+                anuWarfareResearch.Unlocks = anuWarfareResearch.Unlocks.AddRangeToArray(anuResearch.Unlocks);
+                anuResearch.Unlocks = new ResearchRewardDef[] { };
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+    
+        
+        
+        
+
+        private static void FixNotCapturableFaceHuggers()
+        {
+            try 
+            { 
+                TacCharacterDef faceHuggerNormal = DefCache.GetDef<TacCharacterDef>("Facehugger_AlienMutationVariationDef");
+                TacCharacterDef faceHuggerOther = DefCache.GetDef<TacCharacterDef>("Facehugger_TacCharacterDef");
+
+                faceHuggerOther.Data.GameTags = faceHuggerNormal.Data.GameTags;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
         }
 
         private static void FixMutagenCostBadAcidWorm()
@@ -1314,6 +1444,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 ModifyChironWormAndAoETargeting();
                 GiveNewActorAIToUmbra();
                 AdjustDashAI();
+                AddAIActorStatsConditionsConsideration();
             }
             catch (Exception e)
             {
@@ -3983,6 +4114,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 CreateParalysisDamageResistance();
                 ModifyPoisonResVest();
                 ModifyBlastAndFireResVests();
+                ChangeVestsNJTemplates();
                 CreateAcidResistantVest();
                 CreateNanotechVest();
                 AdjustResearches();
@@ -4200,6 +4332,48 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 TFTVAircraftRework.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)blastVest.Abilities[0]);
                 TFTVAircraftRework.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)fireVest.Abilities[0]);
 
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        private static void ChangeVestsNJTemplates()
+        {
+            try 
+            {
+
+                TacticalItemDef blastVest = DefCache.GetDef<TacticalItemDef>("PX_BlastResistanceVest_Attachment_ItemDef");
+                TacticalItemDef fireVest = DefCache.GetDef<TacticalItemDef>("NJ_FireResistanceVest_Attachment_ItemDef");
+
+
+                List<TacCharacterDef> tacCharacterDefs = new List<TacCharacterDef>()
+                {
+                    DefCache.GetDef<TacCharacterDef>("NJ_Assault6_CharacterTemplateDef"),
+                    DefCache.GetDef<TacCharacterDef>("NJ_Assault7_CharacterTemplateDef"),
+                    DefCache.GetDef<TacCharacterDef>("NJ_Assault7_recruitable_CharacterTemplateDef"),
+                    DefCache.GetDef<TacCharacterDef>("NJ_Sniper6_CharacterTemplateDef"),
+                    DefCache.GetDef<TacCharacterDef>("NJ_Sniper7_CharacterTemplateDef"),
+
+
+
+                };
+
+
+                foreach (TacCharacterDef tacCharacterDef in tacCharacterDefs)
+                {
+                   // TFTVLogger.Always($"{tacCharacterDef.name} has fireVest");
+
+                    List<ItemDef> bodypartItems = tacCharacterDef.Data.BodypartItems.ToList();
+                    bodypartItems.Remove(fireVest);
+                    bodypartItems.Add(blastVest);
+                }
+
+                  
             }
             catch (Exception e)
             {
@@ -4207,9 +4381,8 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 throw;
             }
 
-
-
         }
+
 
         internal static void CreateNanotechVest()
         {

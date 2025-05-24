@@ -6,6 +6,7 @@ using Base.Defs;
 using Base.Entities.Effects;
 using Base.Entities.Statuses;
 using Base.Levels;
+using Base.UI;
 using Base.UI.MessageBox;
 using Base.Utils.Maths;
 using HarmonyLib;
@@ -29,9 +30,12 @@ using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers.AircraftEquipment;
+using PhoenixPoint.Geoscape.View.ViewControllers.Inventory;
+using PhoenixPoint.Geoscape.View.ViewControllers.PhoenixBase;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewControllers.VehicleEquipmentInventory;
 using PhoenixPoint.Geoscape.View.ViewControllers.VehicleRoster;
@@ -42,7 +46,6 @@ using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
-using PhoenixPoint.Tactical.Entities.StructuralTargets;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Levels.Mist;
@@ -54,7 +57,7 @@ using System.Linq;
 using System.Reflection;
 using Unity.Collections;
 using UnityEngine;
-using static UnityStandardAssets.Utility.TimedObjectActivator;
+using UnityEngine.UI;
 using Research = PhoenixPoint.Geoscape.Entities.Research.Research;
 
 namespace TFTV
@@ -63,7 +66,7 @@ namespace TFTV
     {
         public static bool AircraftReworkOn = false;
         private static readonly float _mistSpeedMalus = 0.2f;
-      //  private static readonly float _mistSpeedBuff = 0.5f;
+        //  private static readonly float _mistSpeedBuff = 0.5f;
         private static readonly float _mistSpeedModuleBuff = 150;
         private static readonly float _maintenanceSpeedThreshold = 200;
 
@@ -101,7 +104,7 @@ namespace TFTV
         private static GeoVehicleModuleDef _heliosPanaceaModule = null; //implemented v2 
         private static GeoVehicleModuleDef _heliosStealthModule = null; //implemented v2 
         private static GeoVehicleModuleDef _thunderbirdRangeModule = null; //implemented v2
-        private static GeoVehicleModuleDef _thunderbirdWorkshopModule = null;  //implemented v2 (pending special tactical effects, acid + selfrepair)
+        private static GeoVehicleModuleDef _thunderbirdWorkshopModule = null;  //implemented v2 (pending special tactical effect selfrepair)
         private static GeoVehicleModuleDef _thunderbirdGroundAttackModule = null; //implemented v2 (pending special damages)
         private static GeoVehicleModuleDef _thunderbirdScannerModule = null; //implemented v2 
         private static GeoVehicleModuleDef _scyllaCaptureModule = null; //implemented (unmodified from base TFTV)
@@ -182,7 +185,7 @@ namespace TFTV
                 }
             }
 
-            public static int[] ModulesInTactical = new int[9];
+            public static int[] ModulesInTactical = new int[15];
         }
 
         internal class Defs
@@ -211,7 +214,7 @@ namespace TFTV
                     CreateGroundAttackWeaponExplosion();
                     MakeMyrmidonsAvailableWithoutFlyers();
                     ModifyVehicleBayHealing();
-
+                    //  AdjustLocKeysFesteringSkies();
                     /*  foreach(CustomMissionTypeDef customMissionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>()) 
                       {
                           TFTVLogger.Always($"Mission: {customMissionTypeDef.name}", false);
@@ -230,6 +233,25 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
+
+            private static void AdjustLocKeysFesteringSkies()
+            {
+                try
+                {
+                    FesteringSkiesSettingsDef festeringSkiesSettingsDef = DefCache.GetDef<FesteringSkiesSettingsDef>("FesteringSkiesSettingsDef");
+                    festeringSkiesSettingsDef.UISettings.HitPoints.LocalizationKey = "DLC 3 - Behemoth/KEY_DLC3_HULL_POINTS";
+
+                    // festeringSkiesSettingsDef.UISettings.
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+
+            }
+
             private static void RemoveInfestedAircraft()
             {
                 try
@@ -407,6 +429,11 @@ namespace TFTV
                     newStatus.Visuals.DisplayName1.LocalizationKey = "TFTV_HELIOS_STEALTH_MODULE_STATUS_NAME";
                     newStatus.Visuals.Description.LocalizationKey = "TFTV_HELIOS_STEALTH_MODULE_STATUS_DESCRIPTION";
 
+                    newStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnBodyPartStatusList;
+                    newStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.Hidden;
+                    newStatus.VisibleOnPassiveBar = false;
+
+
                     newStatus.DurationTurns = 2;
                     newStatus.StatModifications = new ItemStatModification[] {new ItemStatModification()
                     {
@@ -429,8 +456,9 @@ namespace TFTV
                 {
                     TFTVLogger.Error(e);
                 }
-
             }
+
+
 
             private static void CreateArgusEyesStatus()
             {
@@ -649,6 +677,8 @@ namespace TFTV
                         advancedBlimpUnlocks.Add(ecmResearch.Unlocks[1]);
                         advancedBlimpUnlocks.Add(mutogCatapultResearch.Unlocks[1]);
                         advancedBlimpResearch.Unlocks = advancedBlimpUnlocks.ToArray();
+
+
 
                         CreateManufacturingReward("PX_Aircraft_Autocannon_ResearchDef_ManufactureResearchRewardDef_0", "SYN_Aircraft_SecurityStation_ResearchDef_ManufactureResearchRewardDef_0",
                               "SYN_Aircraft_SecurityStation_ResearchDef", "PX_Aircraft_Autocannon_ResearchDef",
@@ -1287,12 +1317,15 @@ namespace TFTV
 
                     ComponentSetDef scannerCompSource = DefCache.GetDef<ComponentSetDef>("PP_Scanner");
                     ComponentSetDef scannerComp = Helper.CreateDefFromClone(scannerCompSource, "{B09B8F9F-99C7-4BCA-8ED2-9461628EF059}", id);
-                    scannerComp.Prefab = ancientProbeComp.Prefab;
+                    // scannerComp.Prefab = ancientProbeComp.Prefab;
                     scannerComp.Components[0] = newRangeComponent;
                     scannerComp.Components[1] = newScanComponent;
                     scannerComp.Components[2] = scannerDef;
 
                     newAbility.ScanActorDef = scannerComp;
+
+                    newAbility.ViewElementDef = Helper.CreateDefFromClone(scanAbilitySource.ViewElementDef, "{3AF75FE6-4483-484A-862B-5C34214EEF02}", id);
+                    newAbility.ViewElementDef.ShowCharges = false;
 
                     _thunderbirdScanAbilityDef = newAbility;
 
@@ -1330,7 +1363,8 @@ namespace TFTV
                     Sprite smallIcon = Helper.CreateSpriteFromImageFile($"TFTV_{id}_Small.png");
                     Sprite largeIcon = smallIcon; //Helper.CreateSpriteFromImageFile("TFTVCaptureDronesModuleLargeIcon.png");
 
-                    GeoVehicleModuleDef module = CreateModule(name, guid1, guid2, nameKey, descriptionKey, smallIcon, largeIcon, GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation, _healingStaminaBase);
+                    GeoVehicleModuleDef module = CreateModule(name, guid1, guid2, nameKey, descriptionKey, smallIcon, largeIcon,
+                        GeoVehicleModuleDef.GeoVehicleModuleBonusType.None, _healingStaminaBase);
                     ResearchDef unlockResearch = DefCache.GetDef<ResearchDef>("NJ_Technician_ResearchDef");
                     string guid3 = "{7CFC62CB-008C-4545-9636-5DD3C738E565}";
                     AddToResearchUnlock(unlockResearch, module, guid3);
@@ -1406,7 +1440,8 @@ namespace TFTV
                     Sprite smallIcon = Helper.CreateSpriteFromImageFile($"TFTV_{id}_Small.png");
                     Sprite largeIcon = smallIcon; //Helper.CreateSpriteFromImageFile("TFTVCaptureDronesModuleLargeIcon.png");
 
-                    GeoVehicleModuleDef module = CreateModule(name, guid1, guid2, nameKey, descriptionKey, smallIcon, largeIcon, GeoVehicleModuleDef.GeoVehicleModuleBonusType.Recuperation, _healingStaminaBase);
+                    GeoVehicleModuleDef module = CreateModule(name, guid1, guid2, nameKey, descriptionKey, smallIcon, largeIcon,
+                        GeoVehicleModuleDef.GeoVehicleModuleBonusType.None, _healingStaminaBase);
                     ResearchDef unlockResearch = DefCache.GetDef<ResearchDef>("SYN_Rover_ResearchDef");
                     string guid3 = "{89428921-FDC6-4D84-A657-85C899A4DC55}";
                     AddToResearchUnlock(unlockResearch, module, guid3);
@@ -1414,12 +1449,10 @@ namespace TFTV
                     _heliosPanaceaModule = module;
                     _heliosModules.Add(_heliosPanaceaModule);
 
-
-
                     _heliosStatisChamberBuffResearchDefs = new List<ResearchDef>()
                     {
-                      //  DefCache.GetDef<ResearchDef>("SYN_NanoTech_ResearchDef"), //Advanced Nanotechnology
-                      //  DefCache.GetDef<ResearchDef>("SYN_NanoHealing_ResearchDef"), //Medical Nanites
+                        DefCache.GetDef<ResearchDef>("SYN_NanoTech_ResearchDef"), //Advanced Nanotechnology
+                        DefCache.GetDef<ResearchDef>("SYN_NanoHealing_ResearchDef"), //Medical Nanites
                         DefCache.GetDef<ResearchDef>("SYN_PoisonResistance_ResearchDef"),
                     };
                 }
@@ -2049,6 +2082,157 @@ namespace TFTV
         }
         internal class Modules
         {
+            internal class Tiers
+            {
+                internal static int GetBlimpSpeedTier()
+                {
+                    try
+                    {
+                        Research phoenixResearch = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction.Research;
+                        int speedBuff = 1;
+
+                        foreach (ResearchDef researchDef in _blimpSpeedModuleBuffResearches)
+                        {
+                            if (phoenixResearch.HasCompleted(researchDef.Id))
+                            {
+
+                                speedBuff += 1;
+                                //TFTVLogger.Always($"{researchDef.Id} completed, so adding {_mistSpeedModuleBuff} to speed. Current speedbuff for Bioflux is {speedBuff}", false);
+                            }
+                        }
+
+                        return speedBuff;
+
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+
+                }
+
+                internal static int GetBuffLevelFromResearchDefs(List<ResearchDef> researchDefs)
+                {
+                    try
+                    {
+                        int buffLevel = 1;
+                        Research phoenixResearch = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction.Research;
+
+
+                        foreach (ResearchDef researchDef in researchDefs)
+                        {
+                            if (phoenixResearch.HasCompleted(researchDef.Id))
+                            {
+                                buffLevel++;
+                            }
+                        }
+
+                        return buffLevel;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+                internal static int GetMistModuleBuffLevel()
+                {
+                    try
+                    {
+                        int buffLevel = 1;
+                        Research phoenixResearch = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction.Research;
+
+                        if (phoenixResearch.HasCompleted("ANU_MutationTech3_ResearchDef"))
+                        {
+                            buffLevel = 3;
+                        }
+                        else if (phoenixResearch.HasCompleted("ANU_MutationTech2_ResearchDef"))
+                        {
+                            buffLevel = 2;
+                        }
+
+                        return buffLevel;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+                internal static int GetStealthTierForUI()
+                {
+                    try
+                    {
+                        int buffLevel = 1;
+                        Research phoenixResearch = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction.Research;
+
+                        if (phoenixResearch.HasCompleted("SYN_SafeZoneProject_ResearchDef"))
+                        {
+                            buffLevel += 1;
+                        }
+
+                        if (phoenixResearch.HasCompleted("SYN_InfiltratorTech_ResearchDef"))
+                        {
+                            buffLevel += 1;
+                        }
+
+                        if (phoenixResearch.HasCompleted("SYN_NightVision_ResearchDef"))
+                        {
+                            buffLevel += 1;
+                        }
+
+                     
+
+                        return buffLevel;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+
+
+                }
+
+
+
+
+
+                internal static int GetGWABuffLevel()
+                {
+                    try
+                    {
+                        int buffLevel = 1;
+                        Research phoenixResearch = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction.Research;
+
+
+                        if (phoenixResearch.HasCompleted("NJ_GuidanceTech_ResearchDef")) // Advanced Missile Technology
+                        {
+                            buffLevel += 1;
+                        }
+
+                        if (phoenixResearch.HasCompleted("NJ_ExplosiveTech_ResearchDef"))//Advanced Rocket Technology
+
+                        {
+                            buffLevel += 1;
+                        }
+
+                        return buffLevel;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+
+            }
+
             internal class Tactical
             {
                 private static int _thunderBirdScannerPresent = 0;
@@ -2288,7 +2472,7 @@ namespace TFTV
                             _heliosStealthPresent = 1;
                             _heliosStealthModulePerceptionBuff = 1;
 
-                            if (phoenixResearch.HasCompleted("SYN_SAFEZONEPROJECT_RESEARCHDEF"))
+                            if (phoenixResearch.HasCompleted("SYN_SafeZoneProject_ResearchDef"))
                             {
                                 _heliosStealthPresent += 1;
                             }
@@ -2298,7 +2482,7 @@ namespace TFTV
                                 _heliosStealthPresent += 1;
                             }
 
-                            if (phoenixResearch.HasCompleted("SYN_NIGHTVISION_RESEARCHDEF"))
+                            if (phoenixResearch.HasCompleted("SYN_NightVision_ResearchDef"))
                             {
                                 _heliosStealthModulePerceptionBuff += 1;
                             }
@@ -2307,16 +2491,7 @@ namespace TFTV
 
                         if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _blimpMistModule))
                         {
-                            _blimpMistPresent = 1;
-
-                            if (phoenixResearch.HasCompleted("ANU_MutationTech3_ResearchDef"))
-                            {
-                                _blimpMistPresent = 3;
-                            }
-                            else if (phoenixResearch.HasCompleted("ANU_MutationTech2_ResearchDef"))
-                            {
-                                _blimpMistPresent = 2;
-                            }
+                            _blimpMistPresent = Tiers.GetMistModuleBuffLevel();
                         }
 
                         if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _heliosPanaceaModule))
@@ -2325,7 +2500,8 @@ namespace TFTV
                             {
                                 _heliosNanotechPresent = 1;
                             }
-                            else if (phoenixResearch.HasCompleted("SYN_NanoHealing_ResearchDef"))
+
+                            if (phoenixResearch.HasCompleted("SYN_NanoHealing_ResearchDef"))
                             {
                                 _heliosVestBuff = 1;
                             }
@@ -2355,19 +2531,7 @@ namespace TFTV
                             {
                                 TFTVLogger.Always($"Setting _thunderbirdGroundAttackWeapon to true");
 
-                                _thunderbirdGroundAttackWeaponPresent = 1;
-
-                                if (phoenixResearch.HasCompleted("NJ_GuidanceTech_ResearchDef")) // Advanced Missile Technology
-                                {
-                                    _thunderbirdGroundAttackWeaponPresent += 1;
-                                }
-
-                                if (phoenixResearch.HasCompleted("NJ_ExplosiveTech_ResearchDef"))//Advanced Rocket Technology
-
-                                {
-                                    _thunderbirdGroundAttackWeaponPresent += 1;
-                                }
-
+                                _thunderbirdGroundAttackWeaponPresent = Tiers.GetGWABuffLevel();
                             }
 
                         }
@@ -2385,6 +2549,13 @@ namespace TFTV
                         {
                             //pending acid res implementation, + self-repair implementation
                             _thunderbirdWorkshopPresent = 1;
+
+                            if (phoenixResearch.HasCompleted("PX_BlastResistanceVest_ResearchDef"))
+                            {
+
+                                _thunderbirdWorkshopPresent = 2;
+                            }
+                            // TFTVLogger.Always($"_thunderbirdWorkshopPresent: {_thunderbirdWorkshopPresent} ");
                         }
 
                         HeliosStatisChamber.ImplementVestBuff();
@@ -2397,6 +2568,129 @@ namespace TFTV
                     }
 
                 }
+
+                internal class WorkshopModule
+                {
+
+                    [HarmonyPatch(typeof(DamageOverTimeStatus), "ApplyEffect")]
+                    public static class DamageOverTimeStatus_ApplyEffect_Patch
+                    {
+                        public static void Postfix(DamageOverTimeStatus __instance)
+                        {
+                            try
+                            {
+                                TacticalActor tacticalActor = __instance.TacticalActor;
+                                //   TFTVLogger.Always($"running ApplyEffect. ta null? {tacticalActor == null} {__instance.DamageOverTimeStatusDef.name}");
+
+                                if (!AircraftReworkOn || _thunderbirdWorkshopPresent < 2 || !tacticalActor.IsControlledByPlayer)
+                                {
+                                    return;
+                                }
+
+                                ItemSlot itemSlot1 = __instance.Target as ItemSlot;
+
+                                /*  TFTVLogger.Always($"{tacticalActor.DisplayName} {} {tacticalActor.TacticalFaction==tacticalActor.TacticalLevel.GetFactionByCommandName("px")}");
+
+                                  foreach(TacticalItem tacticalItem in itemSlot1?.GetAllDirectItems(false))
+                                  {
+                                      TFTVLogger.Always($"tacticalItem: {tacticalItem.DisplayName} {tacticalItem.GetTopMainAddon()?.GameTags.Contains(Shared.SharedGameTags.BionicalTag)}" +
+                                          $";{tacticalItem.GetTopMainAddon()?.AddonDef?.name}"); //.
+                                  }*/
+
+                                if (__instance.Target is ItemSlot itemSlot && (itemSlot.GetAllDirectItems(false).
+                                    Any(ti => ti.GameTags.Contains(Shared.SharedGameTags.BionicalTag) ||
+                                    ti.GetTopMainAddon() != null && ti.GetTopMainAddon().GameTags.Contains(Shared.SharedGameTags.BionicalTag))
+                                    || tacticalActor.HasGameTag(Shared.SharedGameTags.VehicleTag)))
+                                {
+                                    TFTVLogger.Always($"Lowering acid status for {__instance.TacticalActor.DisplayName}.");
+
+                                    __instance.LowerDamageOverTimeLevel(__instance.DamageOverTimeStatusDef.LowerLevelPerTurn);
+                                }
+
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                            }
+                        }
+                    }
+
+
+                    /* [HarmonyPatch(typeof(DamageOverTimeStatus), "LowerDamageOverTimeLevelProportional")]
+                     public static class DamageOverTimeStatus_LowerDamageOverTimeLevelProportional_Patch
+                     {
+                         public static void Prefix(DamageOverTimeStatus __instance, ref float multiplier)
+                         {
+                             try
+                             {
+
+                                 TacticalActor tacticalActor = __instance.TacticalActor;
+                                 TFTVLogger.Always($"running LowerDamageOverTimeLevelProportional. ta null? {tacticalActor == null} multiplier: {multiplier}");
+
+                                 if (!AircraftReworkOn || _thunderbirdWorkshopPresent < 2)
+                                 {
+                                     return;
+                                 }
+
+                                 TFTVLogger.Always($"affected bodypart?  {__instance.Target?.GetType()}; {__instance.Target?.ToString()}; {__instance.GetTargetSlotsNames()?.FirstOrDefault()}; {__instance.GetTargetSlotsNames()?.Count()}");
+
+
+                                 if (tacticalActor != null && tacticalActor.BodyState.GetArmourItems().Any(a => a.GameTags.Contains(Shared.SharedGameTags.BionicalTag)))
+                                 {
+                                     TFTVLogger.Always($"Lowering acid status for {__instance.TacticalActor.DisplayName}.");
+
+                                     multiplier = 2;
+                                 }
+
+                             }
+                             catch (Exception e)
+                             {
+                                 TFTVLogger.Error(e);
+                             }
+                         }
+                     }
+
+
+
+                     [HarmonyPatch(typeof(DamageOverTimeStatus), "LowerDamageOverTimeLevel")]
+                     public static class DamageOverTimeStatus_LowerDamageOverTimeLevel_Patch
+                     {
+                         public static void Prefix(DamageOverTimeStatus __instance, ref float amount)
+                         {
+                             try
+                             {
+
+                                 TacticalActor tacticalActor = __instance.TacticalActor;
+                                 TFTVLogger.Always($"running LowerDamageOverTimeLevel. ta null? {tacticalActor == null}");
+
+                                 if (!AircraftReworkOn || _thunderbirdWorkshopPresent < 2)
+                                 {
+                                     return;
+                                 }
+
+
+
+
+                                 TFTVLogger.Always($"affected bodypart?  {__instance.Target?.GetType()}; {__instance.Target?.ToString()}; {__instance.GetTargetSlotsNames()?.FirstOrDefault()}; {__instance.GetTargetSlotsNames()?.Count()}");
+
+
+                                 if (tacticalActor != null && tacticalActor.BodyState.GetArmourItems().Any(a => a.GameTags.Contains(Shared.SharedGameTags.BionicalTag)))
+                                 {
+                                     TFTVLogger.Always($"Lowering acid status for {__instance.TacticalActor.DisplayName}.");
+
+                                     amount = 20;
+                                 }
+
+                             }
+                             catch (Exception e)
+                             {
+                                 TFTVLogger.Error(e);
+                             }
+                         }
+                     }*/
+
+                }
+
                 internal class FirstTurn
                 {
 
@@ -3284,7 +3578,7 @@ namespace TFTV
 
                                 //also checks for AircraftRework
 
-                             
+
                                 int mistSymbiosisLevel = CheckForAnuBlimpMistModule(fromActor.TacticalFaction);
 
 
@@ -3307,7 +3601,7 @@ namespace TFTV
                                 {
 
                                     // Skip if the actor is the same as fromActor or if they are on the same faction, if the actor has null PerceptionBase, or actor is evaced
-                                    if (actor == fromActor ||                                         
+                                    if (actor == fromActor ||
                                         actor.TacticalFaction == fromActorTacticalFaction ||
                                         actor.TacticalPerceptionBase == null ||
                                         (actor.Status != null && actor.Status.HasStatus<EvacuatedStatus>()))
@@ -3315,7 +3609,7 @@ namespace TFTV
                                         continue;
                                     }
 
-                                    
+
                                     //if fromActor faction is Phoenix, the actor is in mist, the actor is not Pandoran, should be revealed to Player if _blimpPriestResearch!=0
                                     //note that will be revealed to Pandoran fromActor too because og method will run
                                     if (fromActorTacticalFaction.IsControlledByPlayer && actor.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Mist) &&
@@ -3324,7 +3618,7 @@ namespace TFTV
                                         visible.Add(actor);
                                         // TFTVLogger.Always($"{actor.DisplayName} touching Mist, so revealing to {fromActor.DisplayName}");
                                     }
-                                 
+
                                     else if ((bool)TacticalFactionVision.CheckVisibleLineBetweenActors(
                                                  fromActor, fromActorPos, actor,
                                                  true, null,
@@ -3374,7 +3668,7 @@ namespace TFTV
                                     return false;
                                 }
 
-                            
+
 
                                 int mistSymbiosisLevel = CheckForAnuBlimpMistModule(fromActor.TacticalFaction);
 
@@ -3407,12 +3701,12 @@ namespace TFTV
                                     && targetActor.TacticalLevel.VoxelMatrix.VoxelMatrixData.MistOwnerFactionDef != targetActor.TacticalFaction.TacticalFactionDef)
                                 {
 
-                                   // TFTVLogger.Always($"{targetActor.DisplayName} in Mist revealed to {fromActor.DisplayName}");
+                                    // TFTVLogger.Always($"{targetActor.DisplayName} in Mist revealed to {fromActor.DisplayName}");
                                     condition = true;
                                 }
                                 else if (TacticalFactionVision.CheckVisibleLineBetweenActors(fromActor, fromActor.Pos, targetActor, true, null, 1, null))
                                 {
-                                   // TFTVLogger.Always($"{targetActor.DisplayName} revealed to {fromActor.DisplayName} because LOS");
+                                    // TFTVLogger.Always($"{targetActor.DisplayName} revealed to {fromActor.DisplayName} because LOS");
                                     condition = true;
                                 }
 
@@ -3720,8 +4014,10 @@ namespace TFTV
                             NanoVestStatusDef.StatsModifications[1].Value = 15;
                             foreach (DamageMultiplierAbilityDef damageMultiplierAbilityDef in VestResistanceMultiplierAbilities)
                             {
-                                damageMultiplierAbilityDef.Multiplier = 0.75f;
+                                damageMultiplierAbilityDef.Multiplier = 0.25f;
+                                TFTVLogger.Always($"Setting {damageMultiplierAbilityDef.name} multiplier to {damageMultiplierAbilityDef.Multiplier} for Helios vest buff");
                             }
+                            TFTVLogger.Always($"NanoVest buffs: {NanoVestStatusDef.StatsModifications[0].Value}, {NanoVestStatusDef.StatsModifications[1].Value}");
                         }
                         catch (Exception e)
                         {
@@ -4163,7 +4459,6 @@ namespace TFTV
             }
             internal class Geoscape
             {
-
                 public static void AddAbilityToGeoVehicle(GeoVehicle geoVehicle, GeoAbilityDef geoAbility)
                 {
                     try
@@ -4448,6 +4743,179 @@ namespace TFTV
                 internal class Scanning
                 {
 
+                    [HarmonyPatch(typeof(GeoAbility), "GetAbilityFaction")]
+                    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+                    public static class GeoAbility_GetTargetDisabledState_Patch
+                    {
+                        static void Postfix(GeoAbility __instance, ref GeoFaction __result)
+                        {
+                            try
+                            {
+                                if (!AircraftReworkOn || __instance.GeoscapeAbilityDef != _scanAbilityDef && __instance.GeoscapeAbilityDef != _thunderbirdScanAbilityDef)
+                                {
+                                    return;
+                                }
+
+                                GeoVehicle geoVehicle = __instance.Actor as GeoVehicle;
+
+                                __result = geoVehicle.Owner;
+
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+                    }
+
+
+                    [HarmonyPatch(typeof(GeoAbilityView), "CanActivate")]
+                    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+                    public static class GeoAbilityView_CanActivate_Patch
+                    {
+                        static void Postfix(GeoAbilityView __instance, GeoAbilityTarget target, ref bool __result)
+                        {
+                            try
+                            {
+                                if (!AircraftReworkOn || __instance.GeoAbility.GeoscapeAbilityDef != _scanAbilityDef && __instance.GeoAbility.GeoscapeAbilityDef != _thunderbirdScanAbilityDef)
+                                {
+                                    return;
+                                }
+
+                                GeoVehicle geoVehicle = __instance.GeoAbility.Actor as GeoVehicle;
+
+                                if (target.Actor is GeoSite geoSite && geoVehicle.CurrentSite == geoSite && geoVehicle.CanRedirect && __result)
+                                {
+
+                                }
+                                else
+                                {
+                                    __result = false;
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+                    }
+
+                    
+
+                    [HarmonyPatch(typeof(UIModuleActionsBar), "UpdateAbilityInformation")]
+                    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+                    public static class UIModuleActionsBar_UpdateAbilityInformation_Patch
+                    {
+                        static void Postfix(UIModuleActionsBar __instance, GeoAbility geoAbility, bool showAbilityState)
+                        {
+                            try
+                            {
+                                if (!AircraftReworkOn)
+                                {
+                                    return;
+                                }
+
+                                if (geoAbility.GeoscapeAbilityDef != _scanAbilityDef && geoAbility.GeoscapeAbilityDef != _thunderbirdScanAbilityDef)
+                                {
+                                    return;
+                                }
+
+                                __instance.MainDescriptionController.ActionHeaderChargesText.gameObject.SetActive(value: false);
+                                __instance.MainDescriptionController.CallToActionButton.gameObject.SetActive(value: false);
+                                //__instance.MainDescriptionController.SuppliesText.gameObject.SetActive(false);
+
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+                    }
+
+
+                    [HarmonyPatch(typeof(ScanAbility), "GetCharges")]
+                    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+                    public static class ScanAbility_GetCharges_Patch
+                    {
+                        static void Postfix(ScanAbility __instance, ref int __result)
+                        {
+                            try
+                            {
+                                if (!AircraftReworkOn)
+                                {
+                                    return;
+                                }
+
+                                __result = 1;
+
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+                    }
+
+
+                    [HarmonyPatch(typeof(ScanAbility), "GetDisabledStateInternal")]
+                    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+                    public static class ScanAbility_GetDisabledStateInternal_Patch
+                    {
+                        static void Postfix(ScanAbility __instance, ref GeoAbilityDisabledState __result)
+                        {
+                            try
+                            {
+                                if (!AircraftReworkOn)
+                                {
+                                    return;
+                                }
+
+                                GeoVehicle geoVehicle = __instance.Actor as GeoVehicle;
+
+                                if (!geoVehicle.CanRedirect)
+                                {
+                                    __result = GeoAbilityDisabledState.NoScanChargesLeft;
+                                }
+
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+                    }
+
+                    /* [HarmonyPatch(typeof(ScanAbility), "GetTargetDisabledStateInternal")]
+                     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+                     public static class ScanAbility_GetTargetDisabledStateInternal_Patch
+                     {
+                         static void Postfix(ScanAbility __instance, GeoAbilityTarget target, GeoAbilityTargetDisabledState __result)
+                         {
+                             try
+                             {
+                                 if (!AircraftReworkOn)
+                                 {
+                                     return;
+                                 }
+
+                                 GeoVehicle geoVehicle = __instance.Actor as GeoVehicle;
+
+                                 TFTVLogger.Always($"{geoVehicle.Name} target: {target.Actor?.name} {__result} ");
+
+                             }
+                             catch (Exception e)
+                             {
+                                 TFTVLogger.Error(e);
+                                 throw;
+                             }
+                         }
+                     }*/
+
                     /*  [HarmonyPatch(typeof(PhoenixPoint.Geoscape.Levels.GeoscapeRegionDrawer))]
                       [HarmonyPatch("Init")]
                       public static class GeoscapeRegionDrawer_Init_Patch
@@ -4584,7 +5052,6 @@ namespace TFTV
                     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
                     public static class ScanAbility_ActivateInternal_Patch
                     {
-
                         static void Prefix(ScanAbility __instance)
                         {
                             try
@@ -4829,32 +5296,7 @@ namespace TFTV
                 {
 
 
-                    private static int GetBuffLevel(List<ResearchDef> researchDefs)
-                    {
-                        try
-                        {
-                            int buffLevel = 1;
-                            Research phoenixResearch = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction.Research;
 
-
-                            foreach (ResearchDef researchDef in researchDefs)
-                            {
-                                if (phoenixResearch.HasCompleted(researchDef.Id))
-                                {
-                                    buffLevel++;
-                                }
-
-                            }
-
-                            return buffLevel;
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            throw;
-                        }
-
-                    }
 
                     public static float GetRepairBionicsCostFactor(GeoCharacter geoCharacter)
                     {
@@ -4863,7 +5305,7 @@ namespace TFTV
                             if (geoCharacter.Faction.Vehicles.Any(v => v.Modules.Any(m => m != null && m.ModuleDef == _thunderbirdWorkshopModule)
                             && v.Units.Contains(geoCharacter)))
                             {
-                                int buffLevel = GetBuffLevel(_thunderbirdWorkshopBuffResearchDefs) - 1;
+                                int buffLevel = Tiers.GetBuffLevelFromResearchDefs(_thunderbirdWorkshopBuffResearchDefs) - 1;
                                 float repairCostFactor = _workshopBuffBionicRepairCostReduction * buffLevel;
                                 if (buffLevel > 0)
                                 {
@@ -4895,32 +5337,32 @@ namespace TFTV
                                     return;
                                 }
 
-                                float healingFactor = _healingHPBase * _healingBuffPerLevel;
+                                float healingFactor = _healingHPBase; //10
+                                                                      //  float buffPerlevel = _healingBuffPerLevel; //2
 
                                 foreach (GeoVehicle geoVehicle in __instance.Vehicles)
                                 {
                                     if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _heliosPanaceaModule))
                                     {
-
-                                        int buffLevel = GetBuffLevel(_heliosStatisChamberBuffResearchDefs);
-                                        float healAmount = healingFactor * buffLevel;
-                                        float extraStamina = buffLevel > 1 ? _heliosPanaceaModule.GeoVehicleModuleBonusValue * _healingBuffPerLevel * buffLevel : 0;
+                                        int buffLevel = Tiers.GetBuffLevelFromResearchDefs(_heliosStatisChamberBuffResearchDefs) == 4 ? 1 : 0;
+                                        float healAmount = healingFactor + healingFactor * buffLevel; //10+10*(0 OR 1)*2, so 10 or 20
+                                        float staminaAmount = _heliosPanaceaModule.GeoVehicleModuleBonusValue +
+                                            _heliosPanaceaModule.GeoVehicleModuleBonusValue * buffLevel; //0.35f + 0.35f * 2 * 1, so 0.35 or 0.7
 
                                         foreach (GeoCharacter geoCharacter in geoVehicle.Soldiers)
                                         {
                                             geoCharacter.Heal(healAmount);
-                                            geoCharacter.Fatigue.Stamina.AddRestrictedToMax(extraStamina);
+                                            geoCharacter.Fatigue.Stamina.AddRestrictedToMax(staminaAmount);
                                         }
                                     }
 
 
                                     if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _thunderbirdWorkshopModule))
                                     {
-
-                                        int buffLevel = GetBuffLevel(_thunderbirdWorkshopBuffResearchDefs);
-                                        float healAmount = healingFactor * buffLevel;
-                                        float extraStamina = buffLevel > 1 ? _thunderbirdWorkshopModule.GeoVehicleModuleBonusValue * _healingBuffPerLevel * buffLevel : 0;
-
+                                        int buffLevel = Tiers.GetBuffLevelFromResearchDefs(_thunderbirdWorkshopBuffResearchDefs) - 1; //0-2
+                                        float healAmount = healingFactor + healingFactor * buffLevel; //10+10*(0-3), so 10, 20 or 30
+                                        float staminaAmount = _thunderbirdWorkshopModule.GeoVehicleModuleBonusValue
+                                            + _thunderbirdWorkshopModule.GeoVehicleModuleBonusValue * buffLevel; // 0.35f + 0.35f * (0-2), so 0, 0.7, or 1.4
 
                                         foreach (GeoCharacter geoCharacter in geoVehicle.Units)
                                         {
@@ -4929,17 +5371,17 @@ namespace TFTV
                                             {
                                                 // TFTVLogger.Always($"{geoCharacter.DisplayName} in {geoVehicle.Name} has {geoCharacter.Health} HP, {geoCharacter.Fatigue?.Stamina} Stamina");
                                                 geoCharacter.Heal(healAmount);
-                                                geoCharacter.Fatigue?.Stamina?.AddRestrictedToMax(extraStamina);
-
+                                                geoCharacter.Fatigue?.Stamina?.AddRestrictedToMax(staminaAmount);
                                             }
                                         }
                                     }
 
                                     if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _blimpMutationLabModule))
                                     {
-                                        int buffLevel = GetBuffLevel(_blimpMutationLabModuleBuffResearches);
-                                        float healAmount = healingFactor * buffLevel;
-                                        float extraStamina = buffLevel > 1 ? _blimpMutationLabModule.GeoVehicleModuleBonusValue * _healingBuffPerLevel * buffLevel : 0;
+                                        int buffLevel = Tiers.GetBuffLevelFromResearchDefs(_blimpMutationLabModuleBuffResearches) - 1;
+                                        float healAmount = healingFactor + healingFactor * buffLevel; //10 + 10 * (0-2), so 10, 20 or 30
+                                        float staminaAmount = _blimpMutationLabModule.GeoVehicleModuleBonusValue +
+                                            _blimpMutationLabModule.GeoVehicleModuleBonusValue * buffLevel;
 
                                         foreach (GeoCharacter geoCharacter in geoVehicle.Units)
                                         {
@@ -4960,8 +5402,8 @@ namespace TFTV
                                                 {
                                                     geoCharacter.Health.AddRestrictedToMax(healAmount);
                                                 }
-                                                geoCharacter.Fatigue?.Stamina?.AddRestrictedToMax(extraStamina);
-                                                //  TFTVLogger.Always($"{geoCharacter.DisplayName} getting some healing");
+                                                geoCharacter.Fatigue?.Stamina?.AddRestrictedToMax(staminaAmount);
+                                                // TFTVLogger.Always($"{geoCharacter.DisplayName} getting {healAmount} healing, {extraStamina} stamina");
                                             }
                                         }
                                     }
@@ -5345,11 +5787,524 @@ namespace TFTV
             }
             internal class UI
             {
+                public static int GetTier(ItemDef moduleDef)
+                {
+                    try
+                    {
+                        int tier = 0;
+
+                        if (moduleDef == _blimpSpeedModule)
+                        {
+                            tier = Tiers.GetBlimpSpeedTier();
+                        }
+                        else if (moduleDef == _blimpMutationLabModule)
+                        {
+                            tier = Tiers.GetBuffLevelFromResearchDefs(_blimpMutationLabModuleBuffResearches);
+                        }
+                        else if (moduleDef == _blimpMistModule)
+                        {
+                            tier = Tiers.GetMistModuleBuffLevel();
+                        }
+                        else if (moduleDef == _thunderbirdGroundAttackModule)
+                        {
+                            tier = Tiers.GetGWABuffLevel();
+                        }
+                        else if (moduleDef == _heliosStealthModule)
+                        {
+                            tier = Tiers.GetStealthTierForUI();
+                        }
+                        else if (moduleDef == _heliosPanaceaModule)
+                        {
+                            tier = Tiers.GetBuffLevelFromResearchDefs(_heliosStatisChamberBuffResearchDefs);
+                        }
+                        else if (moduleDef == _thunderbirdWorkshopModule)
+                        {
+                            tier = Tiers.GetBuffLevelFromResearchDefs(_thunderbirdWorkshopBuffResearchDefs);
+                        }
+                        else if (moduleDef == _thunderbirdScannerModule)
+                        {
+                            tier = Tiers.GetBuffLevelFromResearchDefs(_thunderbirdScannerBuffResearchDefs);
+                        }
+                        else if (moduleDef == _thunderbirdRangeModule)
+                        {
+                            tier = Tiers.GetBuffLevelFromResearchDefs(_thunderbirdRangeBuffResearchDefs);
+                        }
+
+
+                        return tier;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+
+                public static Sprite GetTierSprite(ItemDef moduleDef)
+                {
+                    try
+                    {
+                        Sprite sprite = moduleDef.ViewElementDef.SmallIcon;
+
+                        if (moduleDef == _blimpSpeedModule)
+                        {
+                            int tier = Tiers.GetBlimpSpeedTier();
+
+                            if (tier > 1)
+                            {
+                                //TFTVLogger.Always($"adjusting BlimpSpeed module picture in GetSmallIcon");
+                                sprite = Helper.CreateSpriteFromImageFile($"TFTV_Blimp_Speed_Small{tier}.png");
+                            }
+                        }
+                        else if (moduleDef == _blimpMutationLabModule)
+                        {
+                            int tier = Tiers.GetBuffLevelFromResearchDefs(_blimpMutationLabModuleBuffResearches);
+
+                            if (tier > 1)
+                            {
+                                sprite = Helper.CreateSpriteFromImageFile($"TFTV_Blimp_MutationLab_Small{tier}.png");
+                            }
+                        }
+                        else if (moduleDef == _blimpMistModule)
+                        {
+                            int tier = Tiers.GetMistModuleBuffLevel();
+
+                            if (tier > 1)
+                            {
+                                sprite = Helper.CreateSpriteFromImageFile($"TFTV_Blimp_WP_Small{tier}.png");
+                            }
+
+                        }
+                        else if (moduleDef == _thunderbirdGroundAttackModule)
+                        {
+                            int tier = Tiers.GetGWABuffLevel();
+
+                            if (tier > 1)
+                            {
+                                sprite = Helper.CreateSpriteFromImageFile($"TFTV_Thunderbird_GroundAttack_Small{tier}.png");
+                            }
+
+                        }
+
+                        return sprite;
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+
+
+                [HarmonyPatch(typeof(ItemDef), "GetDetailedImage")]
+                public static class ItemDef_GetDetailedImage_Patch
+                {
+                    public static void Postfix(ItemDef __instance, ref Sprite __result)
+                    {
+                        try
+                        {
+                            // Your master toggle for this feature
+                            if (!AircraftReworkOn)
+                            {
+                                return;
+                            }
+
+                            if (__instance is GeoVehicleEquipmentDef)
+                            {
+                                __result = GetTierSprite(__instance);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                        }
+                    }
+                }
+
+
+                [HarmonyPatch(typeof(ItemDef), "GetSmallIcon")]
+                public static class ItemDef_GetSmallIcon_Patch
+                {
+                    public static void Postfix(ItemDef __instance, ref Sprite __result)
+                    {
+                        try
+                        {
+                            // Your master toggle for this feature
+                            if (!AircraftReworkOn)
+                            {
+                                return;
+                            }
+
+                            if (__instance is GeoVehicleEquipmentDef)
+                            {
+                                __result = GetTierSprite(__instance);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                        }
+                    }
+                }
+
+
+                [HarmonyPatch(typeof(GeoLevelController), "get_HasFesteringSkies")]
+                public static class GeoLevelController_get_HasFesteringSkies_Patch
+                {
+                    public static void Postfix(GeoLevelController __instance, ref bool __result)
+                    {
+                        try
+                        {
+
+                            if (!AircraftReworkOn)
+                            {
+                                return;
+                            }
+
+                            __result = false;
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                        }
+                    }
+                }
+
+
+
+                [HarmonyPatch(typeof(GeoscapeTutorial), "UnlockUIForStep")]
+                public static class GeoscapeTutorial_UnlockUIForStep_Patch
+                {
+                    public static void Postfix(GeoscapeTutorial __instance, GeoscapeTutorialStepType step)
+                    {
+                        try
+                        {
+
+                            if (!AircraftReworkOn)
+                            {
+                                return;
+                            }
+
+                            if (step == GeoscapeTutorialStepType.TutorialCompleted)
+                            {
+                                GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                                controller.View.GeoscapeModules.GeoSectionBarModule.VehicleRosterButton.SetState(true);
+                                controller.View.GeoscapeModules.ActionsBarModule.AircraftEquipmentDisplayEnabled = true;
+                            }
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                        }
+                    }
+                }
+
+
+
+
+
+
+                [HarmonyPatch(typeof(UIModuleGeoSectionBar), "Show")]
+                public static class UIModuleGeoSectionBar_Show_Patch
+                {
+                    public static bool Prefix(UIModuleGeoSectionBar __instance, bool showSections)
+                    {
+                        try
+                        {
+
+                            if (!AircraftReworkOn)
+                            {
+                                return true;
+                            }
+
+                            __instance.VehicleRosterButton.gameObject.SetActive(true);
+                            __instance.SectionsRoot.SetActive(showSections);
+
+                            return false;
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+
+                [HarmonyPatch(typeof(UIModuleGeoSectionBar), "ActivateVehicleRosterContent")]
+                public static class UIModuleGeoSectionBar_ActivateVehicleRosterContent_Patch
+                {
+                    public static bool Prefix(UIModuleGeoSectionBar __instance, GeoscapeViewContext ____context, UIGeoSection ____section)
+                    {
+                        try
+                        {
+
+                            if (!AircraftReworkOn)
+                            {
+                                return true;
+                            }
+
+
+                            if (____section == UIGeoSection.VehicleRoster)
+                            {
+                                __instance.ActivateGeoscapeContent();
+                                return false;
+                            }
+                            ____context.View.SetGamePauseState(true);
+                            ____context.View.ToVehicleRosterState(StateStackAction.ClearStackAndPush, null);
+
+                            return false;
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+
+
+                [HarmonyPatch(typeof(GeoscapeView), "InitView")]
+                public static class GeoscapeView_InitView_Patch
+                {
+                    public static void Postfix(GeoscapeView __instance)
+                    {
+                        try
+                        {
+
+                            if (!AircraftReworkOn)
+                            {
+                                return;
+                            }
+
+
+                            __instance.GeoscapeModules.ActionsBarModule.AircraftEquipmentDisplayEnabled = true;
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                        }
+                    }
+                }
+
+
+
+                [HarmonyPatch(typeof(ShortEquipmentInfoButton), "SetEquipment")]
+                public static class ShortEquipmentInfoButton_SetEquipment_Patch
+                {
+                    public static void Postfix(ShortEquipmentInfoButton __instance, GeoVehicleEquipment equipment)
+                    {
+                        try
+                        {
+
+                            if (!AircraftReworkOn)
+                            {
+                                return;
+                            }
+
+                            if (equipment != null && equipment.EquipmentDef != null)
+                            {
+                                __instance.WeaponIcon.sprite = GetTierSprite(equipment.EquipmentDef);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                        }
+                    }
+                }
+
+
+                [HarmonyPatch(typeof(AircraftEquipmentViewController), "SetEquipmentUIData")]
+                public static class AircraftEquipmentViewController_SetEquipmentUIData_Patch
+                {
+                    public static void Postfix(AircraftEquipmentViewController __instance, GeoVehicleEquipmentUIData data)
+                    {
+
+                        try
+                        {
+                            if (!AircraftReworkOn)
+                            {
+                                return;
+                            }
+
+                            TFTVLogger.Always($"SetEquipmentUIData {data == null} {data?.AircraftEquipmentDef?.name}");
+
+                            if (data == null)
+                            {
+                                return;
+                            }
+
+
+                            ItemDef itemDef = data.AircraftEquipmentDef;
+
+                            int tier = GetTier(itemDef);
+                            __instance.Health.text = "";
+
+                            TFTVLogger.Always($"for {__instance.name}, tier {tier}, itemDef {itemDef?.name}");
+
+                            if (tier > 0)
+                            {
+                                __instance.Health.text = $"{TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_TIER")} {tier}";
+                            }
+
+                            __instance.HealthBar.HealthBar.gameObject.SetActive(false);
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+
+                    }
+                }
+
+                [HarmonyPatch(typeof(UIAircraftEquipmentTooltip), "DisplayAllStats")]
+                public static class Patch_UIAircraftEquipmentTooltip_DisplayAllStats
+                {
+                    public static bool Prefix(UIAircraftEquipmentTooltip __instance)
+                    {
+                        try
+                        {
+                            // Access private fields via reflection
+                            var type = typeof(UIAircraftEquipmentTooltip);
+
+                            // Icon
+                            var Icon = (Image)type.GetField("Icon").GetValue(__instance);
+                            // UISettings
+
+                            // DisplayedData
+                            var DisplayedData = type.GetField("DisplayedData").GetValue(__instance);
+
+                            // ItemNameLocComp, ItemDescriptionLocComp
+                            var ItemNameLocComp = (I2.Loc.Localize)type.GetField("ItemNameLocComp").GetValue(__instance);
+                            var ItemDescriptionLocComp = (I2.Loc.Localize)type.GetField("ItemDescriptionLocComp").GetValue(__instance);
+
+                            // ExpansionSettings
+                            // var ExpansionSettings = type.GetField("ExpansionSettings").GetValue(__instance);
+
+                            // Call: _ = Icon != null;
+                            _ = Icon != null;
+
+                            if (__instance.UISettings.ShowNameDescription)
+                            {
+                                type.GetMethod("DisplayNameDescription", BindingFlags.NonPublic | BindingFlags.Instance)
+                                     .Invoke(__instance, null);
+                            }
+                            else
+                            {
+                                ItemNameLocComp.gameObject.SetActive(value: false);
+                                ItemDescriptionLocComp.gameObject.SetActive(value: false);
+                            }
+
+                            // GeoVehicleWeaponDef geoVehicleWeaponDef = DisplayedData.AircraftEquipmentDef as GeoVehicleWeaponDef;
+                            var AircraftEquipmentDef = DisplayedData.GetType().GetField("AircraftEquipmentDef").GetValue(DisplayedData);
+
+                            var geoVehicleModuleDef = AircraftEquipmentDef as GeoVehicleModuleDef;
+                            if (geoVehicleModuleDef != null)
+                            {
+
+                                type.GetMethod("DisplayGeoscapeBonus", BindingFlags.NonPublic | BindingFlags.Instance)
+                                .Invoke(__instance, new object[] { geoVehicleModuleDef });
+
+                                int tier = GetTier(geoVehicleModuleDef);
+
+                                if (tier > 0)
+                                {
+                                    LocalizedTextBind localizedTextBindTest2 = new LocalizedTextBind("TFTV_KEY_TIER", true);
+
+                                    MethodInfo methodInfo = type.GetMethod("AddStatObject", BindingFlags.NonPublic | BindingFlags.Instance);
+                                    methodInfo.Invoke(__instance, new object[] { localizedTextBindTest2, null, tier.ToString() });
+                                }
+                                //  
+                                //   type.GetMethod("DisplayCountermeasureType", BindingFlags.NonPublic | BindingFlags.Instance)
+                                //      .Invoke(__instance, new object[] { geoVehicleModuleDef });
+                                //   type.GetMethod("AddSeparator", BindingFlags.NonPublic | BindingFlags.Instance)
+                                //      .Invoke(__instance, null);
+                                //  type.GetMethod("DisplayCharges", BindingFlags.NonPublic | BindingFlags.Instance)
+                                //      .Invoke(__instance, new object[] { geoVehicleModuleDef });
+                                //  type.GetMethod("DisplayDuration", BindingFlags.NonPublic | BindingFlags.Instance)
+                                //  .Invoke(__instance, new object[] { geoVehicleModuleDef });
+                                //  type.GetMethod("DisplayPreparation", BindingFlags.NonPublic | BindingFlags.Instance)
+                                //    .Invoke(__instance, new object[] { geoVehicleModuleDef });
+                                //  type.GetMethod("AddSeparator", BindingFlags.NonPublic | BindingFlags.Instance)
+                                //  .Invoke(__instance, null);
+                                //  type.GetMethod("DisplayHitPoints", BindingFlags.NonPublic | BindingFlags.Instance)
+                                //    .Invoke(__instance, null);
+                            }
+
+
+                            Text text = ItemDescriptionLocComp.transform.GetComponent<Text>();
+
+                            if (text != null)
+                            {
+                                // TFTVLogger.Always($"found text {text.text}");
+                                text.verticalOverflow = VerticalWrapMode.Overflow;
+                            }
+
+
+                            /* foreach (Component component in __instance.transform.GetComponentsInChildren<Component>()) 
+                             {
+                                 TFTVLogger.Always($"{component.name} {component.GetType()}");                            
+                             }*/
+
+
+                            return false;
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+
+
+
+                [HarmonyPatch(typeof(GeoVehicleRosterEquipmentSlot), "SetItem")]
+                public static class GeoVehicleRosterEquipmentSlot_SetItem_Patch
+                {
+                    public static void Postfix(GeoVehicleRosterEquipmentSlot __instance, GeoVehicleEquipmentUIData item)
+                    {
+
+                        try
+                        {
+                            if (!AircraftReworkOn)
+                            {
+                                return;
+                            }
+
+
+                            if (item != null && item.AircraftEquipmentDef != null)
+                            {
+                                __instance.ItemImage.overrideSprite = GetTierSprite(item.AircraftEquipmentDef);
+                            }
+
+
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                        }
+
+                    }
+                }
+
+
 
                 [HarmonyPatch(typeof(UIModuleSoldierEquip), "DoFilter")]
                 public static class UIModuleSoldierEquip_DoFilter_Patch
                 {
-                    static void Prefix(UIModuleSoldierEquip __instance)
+                    public static void Prefix(UIModuleSoldierEquip __instance)
                     {
                         try
                         {
@@ -5416,6 +6371,96 @@ namespace TFTV
                     }
                 }
 
+                //Commenting out removes info about HP, crew and modules on mouseover from all aircraft, also faction aircraft
+                [HarmonyPatch(typeof(UIModuleSelectionInfoBox), "SetActorInfo")]
+                public static class UIModuleSelectionInfoBox_SetActorInfo_Patch
+                {
+                    public static bool Prefix(UIModuleSelectionInfoBox __instance,
+                        GeoscapeViewContext context, GeoActor actor, Vector3 tooltipPosition, float fov,
+                        ref GeoscapeViewContext ____context, ref RectTransform ____moduleRect, ref RectTransform ____panelRect, ref bool ____showTooltip)
+                    {
+                        try
+                        {
+
+                            if (!AircraftReworkOn)
+                            {
+                                return true;
+                            }
+
+
+                            MethodInfo methodInfoSetExtendedGeoVehicleInfo = typeof(UIModuleSelectionInfoBox).GetMethod("SetExtendedGeoVehicleInfo", BindingFlags.Instance | BindingFlags.NonPublic);
+                            MethodInfo methodInfoSetGeoVehicleInfo = typeof(UIModuleSelectionInfoBox).GetMethod("SetGeoVehicleInfo", BindingFlags.Instance | BindingFlags.NonPublic);
+                            MethodInfo methodInfoSetGeoSiteInfo = typeof(UIModuleSelectionInfoBox).GetMethod("SetGeoSiteInfo", BindingFlags.Instance | BindingFlags.NonPublic);
+
+
+                            ____context = context;
+                            __instance.ClearSelectionInfo();
+                            __instance.PanelAlpha.alpha = 0f;
+
+
+                            if (____moduleRect == null)
+                            {
+                                ____moduleRect = __instance.gameObject.GetComponent<RectTransform>();
+                            }
+
+                            ____moduleRect.position = new Vector3(tooltipPosition.x, tooltipPosition.y, 0f);
+                            if (____panelRect == null)
+                            {
+                                ____panelRect = __instance.PanelAlpha.gameObject.GetComponent<RectTransform>();
+                            }
+
+                            ____panelRect.anchoredPosition = new Vector3(0f, 0f, 0f);
+
+                            if (actor is GeoSite)
+                            {
+                                ____panelRect.anchoredPosition = new Vector3(____panelRect.anchoredPosition.x + __instance.CenterXOffset.Evaluate(fov), ____panelRect.anchoredPosition.y + __instance.CenterYOffset.Evaluate(fov), 0f);
+                                GeoSite geoSite = (GeoSite)actor;
+                                __instance.BaseInformation.SetActive(value: true);
+                                __instance.VehicleTooltipInfoRoot.SetActive(value: false);
+                                if (geoSite.GetVisible(____context.ViewerFaction))
+                                {
+                                    methodInfoSetGeoSiteInfo.Invoke(__instance, new object[] { geoSite });
+
+                                }
+
+                                ____showTooltip = true;
+                            }
+                            else if (actor is GeoVehicle)
+                            {
+                                ____panelRect.anchoredPosition = new Vector3(____panelRect.anchoredPosition.x + __instance.AircraftCenterXOffset.Evaluate(fov), ____panelRect.anchoredPosition.y + __instance.AircraftCenterYOffset.Evaluate(fov), 0f);
+                                GeoVehicle geoVehicle = (GeoVehicle)actor;
+                                if (geoVehicle.IsVisible && geoVehicle.IsOwnedByViewer)
+                                {
+                                    __instance.BaseInformation.SetActive(value: false);
+                                    __instance.VehicleTooltipInfoRoot.SetActive(value: true);
+                                    methodInfoSetExtendedGeoVehicleInfo.Invoke(__instance, new object[] { geoVehicle });
+                                    // __instance.SetExtendedGeoVehicleInfo(geoVehicle);
+                                }
+                                else if (geoVehicle.IsVisible)
+                                {
+                                    __instance.BaseInformation.SetActive(value: true);
+                                    __instance.VehicleTooltipInfoRoot.SetActive(value: false);
+                                    methodInfoSetGeoVehicleInfo.Invoke(__instance, new object[] { geoVehicle });
+                                }
+
+                                ____showTooltip = true;
+                            }
+                            else
+                            {
+                                ____showTooltip = false;
+                            }
+
+
+
+                            return false;
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
 
 
                 [HarmonyPatch(typeof(UIModuleSelectionInfoBox), "SetExtendedGeoVehicleInfo")]
@@ -5432,18 +6477,68 @@ namespace TFTV
 
                             AircraftInfoData aircraftInfo = vehicle.GetAircraftInfo();
                             __instance.VehicleCrewText.gameObject.SetActive(aircraftInfo.IsOwnedByViewer);
-                            __instance.RootSeparator.gameObject.SetActive(aircraftInfo.IsOwnedByViewer);
+                            __instance.RootSeparator.gameObject.SetActive(true);//aircraftInfo.IsOwnedByViewer);
                             __instance.PersonalCrewContainer.SetActive(vehicle.IsOwnedByViewer);
 
                             // This sets up common visuals (unchanged)
                             AircraftEquipmentViewController.AircraftCommonEquipmentVisualData aircraftCommonEquipmentVisualData
                                 = new AircraftEquipmentViewController.AircraftCommonEquipmentVisualData(vehicle);
+
+                            float maintenanceLevel = (float)aircraftInfo.CurrentHitPoints / (float)aircraftInfo.MaxHitPoints;
+
+                            //   TFTVLogger.Always($"{aircraftInfoData.DisplayName}: {maintenanceLevel}");
+
+                            int maintenancePercentage = (int)(maintenanceLevel * 100);
+                            aircraftCommonEquipmentVisualData.Health = maintenancePercentage;
+                            aircraftCommonEquipmentVisualData.MaxHealth = 100;
+
                             aircraftCommonEquipmentVisualData.IsFriendlyModule = vehicle.IsOwnedByViewer;
                             __instance.AircraftInfo.SetEquipmentData(aircraftCommonEquipmentVisualData);
 
                             __instance.DisengageText.gameObject.SetActive(!vehicle.CanRedirect);
                             __instance.VehicleCrewText.text = $"{aircraftInfo.CurrentCrew}/{aircraftInfo.MaxCrew}";
-                            __instance.VehicleArmorText.text = aircraftInfo.CurrentArmor.ToString();
+                            //  __instance.VehicleArmorText.text = aircraftInfo.CurrentArmor.ToString();
+
+                            List<GeoVehicleModuleDef> modules = vehicle.Modules.Select(m => m?.ModuleDef).ToList();
+
+
+
+                            float maintenanceFactor = AircraftMaintenance.GetMaintenanceFactor(modules);
+                            float currentHitPoints = aircraftInfo.CurrentHitPoints;
+
+                            if (maintenanceFactor > 0)
+                            {
+
+                                int flightHours = (int)Mathf.Max((currentHitPoints - 200) / maintenanceFactor, 0);
+                                int flightHoursTotal = (int)Mathf.Max(currentHitPoints / maintenanceFactor, 0);
+
+                                __instance.VehicleArmorText.text = $"{flightHours}({flightHoursTotal})";
+
+                            }
+                            else
+                            {
+                                __instance.VehicleArmorText.text = $"UNLIMITED";
+
+                            }
+
+                            __instance.VehicleArmorText.gameObject.SetActive(true);
+
+
+
+                            Transform parent = __instance.VehicleArmorText.transform.parent;
+
+                            //  TFTVLogger.Always($"parent is {parent.name}");
+
+                            foreach (Component component in parent.GetComponentsInChildren<Component>())
+                            {
+                                if (component is Image image)
+                                {
+                                    // TFTVLogger.Always($"image: {component.name} {component.GetType()}");
+                                    component.gameObject.SetActive(false);
+                                }
+                            }
+
+
 
                             // --- Filter out weapons, show only modules, limit to 3 if desired ---
                             List<GeoVehicleEquipment> list = vehicle.Equipments
@@ -5528,6 +6623,47 @@ namespace TFTV
 
 
 
+                [HarmonyPatch(typeof(UIModuleVehicleSelection), "RefreshVehicleBars")]
+                public static class UIModuleVehicleSelection_RefreshVehicleBars_Patch
+                {
+                    public static void Postfix(UIModuleVehicleSelection __instance)
+                    {
+                        try
+                        {
+                            if (!AircraftReworkOn)
+                            {
+                                return;
+                            }
+
+                            Slider slider = __instance.VehicleHPBar;
+
+                            // Try to get the fill image
+                            var fill = slider.fillRect?.GetComponent<Image>();
+                            if (fill == null) return;
+
+                            // TFTVLogger.Always($"got here");
+
+                            // Choose color based on value
+                            Color color;
+                            if (slider.value > 0.5f)
+                                color = Color.green;
+                            else if (slider.value > 0.25f)
+                                color = Color.yellow;
+                            else
+                                color = Color.red;
+
+                            fill.color = color;
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+
+
+
 
                 [HarmonyPatch(typeof(AircraftInfoController))]
                 public static class AircraftInfoControllerPatch
@@ -5561,18 +6697,85 @@ namespace TFTV
                                 __instance.AircraftDescription.text = description;
                             }
 
-                            if (aircraftInfoData.MaxHitPoints != aircraftInfoData.CurrentHitPoints)
+
+                            float maintenanceLevel = (float)aircraftInfoData.CurrentHitPoints / (float)aircraftInfoData.MaxHitPoints;
+
+                            //   TFTVLogger.Always($"{aircraftInfoData.DisplayName}: {maintenanceLevel}");
+
+                            int maintenancePercentage = (int)(maintenanceLevel * 100);
+
+                            __instance.AircraftHitPoints.text = $"{maintenancePercentage}%";
+
+                            /*  if (aircraftInfoData.MaxHitPoints != aircraftInfoData.CurrentHitPoints)
+                              {
+                                  __instance.AircraftHitPoints.text = $"{aircraftInfoData.CurrentHitPoints}/{aircraftInfoData.MaxHitPoints}";
+                              }
+                              else
+                              {
+                                  __instance.AircraftHitPoints.text = aircraftInfoData.MaxHitPoints.ToString();
+                              }*/
+
+
+
+                            Transform parent = __instance.AircraftArmor.transform.parent;
+
+                            //  TFTVLogger.Always($"parent is {parent.name}");
+
+                            foreach (Component component in parent.GetComponentsInChildren<Component>())
                             {
-                                __instance.AircraftHitPoints.text = $"{aircraftInfoData.CurrentHitPoints}/{aircraftInfoData.MaxHitPoints}";
+
+                                if (component is Image image)
+                                {
+                                    // TFTVLogger.Always($"image: {component.name} {component.GetType()}");
+                                    component.gameObject.SetActive(false);
+                                }
+
+                            }
+
+                            Transform grandParent = parent.parent;
+
+                            foreach (Component component in grandParent.GetComponentsInChildren<Component>())
+                            {
+                                if (component is Text text && text.name == "UITextGeneric_Small_StatName")
+                                {
+                                    text.text = TFTVCommonMethods.ConvertKeyToString("Geoscape/KEY_AIRCRAFT_STATS_DURABILITY");
+                                    break;
+                                }
+                            }
+
+                            List<GeoVehicleModuleDef> aircraftEquipmentDefs = new List<GeoVehicleModuleDef>();
+
+                            if (modules != null)
+                            {
+                                foreach (GeoVehicleEquipmentUIData module in modules)
+                                {
+                                    if (module != null && module.AircraftEquipmentDef is GeoVehicleModuleDef moduleDef)
+                                    {
+                                        aircraftEquipmentDefs.Add(moduleDef);
+                                    }
+                                }
+                            }
+
+
+                            float maintenanceFactor = AircraftMaintenance.GetMaintenanceFactor(aircraftEquipmentDefs);
+                            float currentHitPoints = aircraftInfoData.CurrentHitPoints;
+
+                            if (maintenanceFactor > 0)
+                            {
+
+                                int flightHours = (int)Mathf.Max((currentHitPoints - 200) / maintenanceFactor, 0);
+                                int flightHoursTotal = (int)Mathf.Max(currentHitPoints / maintenanceFactor, 0);
+
+                                __instance.AircraftArmor.text = $"{flightHours}({flightHoursTotal})";
+                                __instance.AircraftArmor.gameObject.SetActive(true);
+
+
                             }
                             else
                             {
-                                __instance.AircraftHitPoints.text = aircraftInfoData.MaxHitPoints.ToString();
+                                __instance.AircraftArmor.text = $"UNLIMITED";
+                                __instance.AircraftArmor.gameObject.SetActive(true);
                             }
-
-
-                            __instance.AircraftArmor.gameObject.SetActive(false);
-
 
                             __instance.AircraftCapacity.text = aircraftInfoData.MaxCrew.ToString();
                             __instance.AircraftSpeed.text = aircraftInfoData.Speed.ToString();
@@ -5655,8 +6858,52 @@ namespace TFTV
                             if (__instance.Vehicle != null)
                             {
                                 GeoVehicle baseObject = __instance.Vehicle.GetBaseObject<GeoVehicle>();
-                                __instance.VehicleHealthBar.SetValuePercent((float)baseObject.Stats.HitPoints / (float)baseObject.Stats.MaxHitPoints);
-                                __instance.VehicleHealthText.text = baseObject.Stats.HitPoints.ToString() + "/" + baseObject.Stats.MaxHitPoints;
+
+                                UIStatBar uIStatBar = __instance.VehicleHealthBar;
+
+                                float maintenanceLevel = (float)baseObject.Stats.HitPoints / (float)baseObject.Stats.MaxHitPoints;
+
+                                uIStatBar.SetValuePercent(maintenanceLevel);
+
+                                if (uIStatBar != null && uIStatBar.CurrentValueBar != null)
+                                {
+                                    if (maintenanceLevel > 0.5f)
+                                    {
+                                        uIStatBar.CurrentValueBar.color = Color.green;
+                                    }
+                                    else if (maintenanceLevel > 0.25f)
+                                    {
+                                        uIStatBar.CurrentValueBar.color = Color.yellow;
+                                    }
+                                    else
+                                    {
+                                        uIStatBar.CurrentValueBar.color = Color.red;
+                                    }
+                                }
+
+                                Transform statBarParentTransform = uIStatBar.transform.parent;
+
+
+                                Text healthText = null;
+                                foreach (Text text in statBarParentTransform.GetComponentsInChildren<Text>(true))
+                                {
+                                    if (text.name == "Health_Text")
+                                    {
+                                        healthText = text;
+                                        break;
+                                    }
+                                }
+                                if (healthText != null)
+                                {
+                                    healthText.text = TFTVCommonMethods.ConvertKeyToString("DLC 3 - Behemoth/KEY_DLC3_HULL_POINTS");
+                                }
+
+
+                                int maintenancePercentage = (int)(maintenanceLevel * 100);
+
+                                __instance.VehicleHealthText.text = $"{maintenancePercentage}%";
+
+                                //   __instance.VehicleHealthText.text = baseObject.Stats.HitPoints.ToString() + "/" + baseObject.Stats.MaxHitPoints;
                                 List<GeoVehicleEquipmentUIData> list = baseObject.Modules.Select((GeoVehicleEquipment m) => m?.CreateUIData()).ToList();
                                 // List<GeoVehicleEquipmentUIData> list2 = baseObject.Modules.Select((GeoVehicleEquipment m) => m?.CreateUIData()).ToList();
                                 if (list.Count >= 1)
@@ -5701,8 +6948,9 @@ namespace TFTV
 
 
 
+
                 [HarmonyPatch(typeof(UIVehicleEquipmentInventoryList), "Init")]
-                public static class ModuleList_Init_Patch
+                public static class UIVehicleEquipmentInventoryList_Init_Patch
                 {
                     static void Prefix(UIVehicleEquipmentInventoryList __instance, ref IEnumerable<GeoVehicleEquipmentUIData> equipments)
                     {
@@ -6085,15 +7333,17 @@ namespace TFTV
                 }
             }
 
-            private static int GetMaintenanceFactor(GeoVehicle geoVehicle)
+            internal static int GetMaintenanceFactor(List<GeoVehicleModuleDef> modules)
             {
                 try
                 {
                     int factor = 4;
 
-                    Research phoenixResearch = geoVehicle.GeoLevel.PhoenixFaction.Research;
+                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
-                    if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _thunderbirdRangeModule))
+                    Research phoenixResearch = controller.PhoenixFaction.Research;
+
+                    if (modules != null && modules.Any(m => m != null && m == _thunderbirdRangeModule))
                     {
                         factor -= 1;
 
@@ -6106,7 +7356,7 @@ namespace TFTV
                         }
                     }
 
-                    if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _blimpSpeedModule))
+                    if (modules != null && modules.Any(m => m != null && m == _blimpSpeedModule))
                     {
                         factor -= 1;
 
@@ -6148,7 +7398,9 @@ namespace TFTV
                     {
                         if (geoVehicle.Travelling)
                         {
-                            geoVehicle.SetHitpoints(geoVehicle.Stats.HitPoints - GetMaintenanceFactor(geoVehicle));
+                            List<GeoVehicleModuleDef> modules = geoVehicle.Modules.Select(m => m?.ModuleDef).ToList();
+
+                            geoVehicle.SetHitpoints(geoVehicle.Stats.HitPoints - GetMaintenanceFactor(modules));
                         }
                     }
 
@@ -6454,7 +7706,6 @@ namespace TFTV
                         AdjustAircraftSpeed(geoVehicle);
                     }
 
-
                 }
                 catch (Exception e)
                 {
@@ -6468,20 +7719,7 @@ namespace TFTV
                 try
                 {
                     Research phoenixResearch = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction.Research;
-                    float speedBuff = _mistSpeedModuleBuff;
-
-                    foreach (ResearchDef researchDef in _blimpSpeedModuleBuffResearches)
-                    {
-                        if (phoenixResearch.HasCompleted(researchDef.Id))
-                        {
-
-                            speedBuff += _mistSpeedModuleBuff;
-                            //TFTVLogger.Always($"{researchDef.Id} completed, so adding {_mistSpeedModuleBuff} to speed. Current speedbuff for Bioflux is {speedBuff}", false);
-                        }
-                    }
-
-                    return speedBuff;
-
+                    return Modules.Tiers.GetBlimpSpeedTier() * _mistSpeedModuleBuff;
 
                 }
                 catch (Exception e)

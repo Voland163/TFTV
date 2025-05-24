@@ -19,6 +19,7 @@ using PhoenixPoint.Tactical.UI;
 using PhoenixPoint.Tactical.View;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewModules;
+using PRMBetterClasses.SkillModifications;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,38 +38,77 @@ namespace TFTV
 
 
         // Patch the method that reacts when any actor enters play
-       /* [HarmonyPatch(typeof(TacticalFactionVision), "OnActorEnteredPlay")]
+        /* [HarmonyPatch(typeof(TacticalFactionVision), "OnActorEnteredPlay")]
 
-        public static class TacticalFactionVision_OnActorEnteredPlay_Patch
+         public static class TacticalFactionVision_OnActorEnteredPlay_Patch
+         {
+             public static bool Prefix(TacticalActorBase tacticalActorBase)
+             {
+                 // If it's one of our spawned StructuralTargets, bail out.
+                 if (tacticalActorBase is StructuralTarget)
+                 {
+                     TFTVLogger.Always($"TacticalFactionVision.OnActorEnteredPlay for {tacticalActorBase.name} - skipping vision update");
+                     return false;  // skip the original OnActorEnteredPlay altogether
+                 }
+                 return true;       // otherwise let the vanilla vision code run
+             }
+         }
+
+         // And also when an actor moves (just in case movement triggers the same NRE later)
+         [HarmonyPatch(typeof(TacticalFactionVision), "OnActorMoved", typeof(TacticalActorBase))]
+         public static class TacticalFactionVision_OnActorMoved_Patch
+         {
+             public static bool Prefix(TacticalActorBase movedActor)
+             {
+                 if (movedActor is StructuralTarget)
+                 {
+                     TFTVLogger.Always($"TacticalFactionVision.OnActorMoved for {movedActor.name} - skipping vision update");
+                     return false;
+                 }
+                 return true;
+             }
+         }*/
+
+        [HarmonyPatch(typeof(EvacuateMountedActorsAbility), "Activate")]
+        public static class EvacuateMountedActorsAbility_Activate_patch
         {
-            public static bool Prefix(TacticalActorBase tacticalActorBase)
+            public static void Prefix(EvacuateMountedActorsAbility __instance)
             {
-                // If it's one of our spawned StructuralTargets, bail out.
-                if (tacticalActorBase is StructuralTarget)
+                try
                 {
-                    TFTVLogger.Always($"TacticalFactionVision.OnActorEnteredPlay for {tacticalActorBase.name} - skipping vision update");
-                    return false;  // skip the original OnActorEnteredPlay altogether
+                    // TFTVLogger.Always($"running activate exit mission ability for {__instance.TacticalActor.DisplayName}, {__instance.TacticalActor.TacticalFaction.Faction.FactionDef.name} {__instance.TacticalActor.Status?.HasStatus<MindControlStatus>()}");
+
+                    TFTVVanillaFixes.Tactical.XP.FixRescueMissionEvac(__instance.TacticalActor);
+                   
+
                 }
-                return true;       // otherwise let the vanilla vision code run
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
             }
         }
 
-        // And also when an actor moves (just in case movement triggers the same NRE later)
-        [HarmonyPatch(typeof(TacticalFactionVision), "OnActorMoved", typeof(TacticalActorBase))]
-        public static class TacticalFactionVision_OnActorMoved_Patch
+        [HarmonyPatch(typeof(ExitMissionAbility), "Activate")]
+        public static class ExitMissionAbility_Activate_patch
         {
-            public static bool Prefix(TacticalActorBase movedActor)
+            public static void Prefix(ExitMissionAbility __instance)
             {
-                if (movedActor is StructuralTarget)
+                try
                 {
-                    TFTVLogger.Always($"TacticalFactionVision.OnActorMoved for {movedActor.name} - skipping vision update");
-                    return false;
+                    //  TFTVLogger.Always($"running activate exit mission ability for {__instance.TacticalActor.DisplayName}, {__instance.TacticalActor.TacticalFaction.Faction.FactionDef.name} {__instance.TacticalActor.Status?.HasStatus<MindControlStatus>()}");
+
+                    TFTVVanillaFixes.Tactical.XP.FixRescueMissionEvac(__instance.TacticalActor);
+
                 }
-                return true;
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
             }
-        }*/
-
-
+        }
 
 
 

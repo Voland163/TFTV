@@ -28,6 +28,7 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
+        public static AIActionExecuteAbilityDef electricReinforcement = null;
        
 
         //Adapted from BetterEnemies by Dtony
@@ -233,6 +234,9 @@ namespace TFTV
                 EarlyExitConsideration1.Ability = ElectricReinforcement;
                 AIAbilityNumberOfTargetsConsiderationDef Consideration1 = (AIAbilityNumberOfTargetsConsiderationDef)ElectricReinforcementAI.Evaluations[0].Considerations[0].Consideration;
                 Consideration1.Ability = ElectricReinforcement;
+
+                electricReinforcement = ElectricReinforcementAI;
+
             }
 
             catch (Exception e)

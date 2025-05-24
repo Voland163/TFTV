@@ -809,6 +809,12 @@ namespace TFTV
                         int[] oldStats = new int[3] { 2, 2, -2 };
                         int[] eliteGhostStats = new int[3] { 0, 4, 0 };
 
+                        // New: Veteran stats (+4 to each value in the regular ones)
+                        int[] basicStatsVet = new int[3] { basicStats[0] + 4, basicStats[1] + 4, basicStats[2] + 4 };
+                        int[] oldStatsVet = new int[3] { oldStats[0] + 4, oldStats[1] + 4, oldStats[2] + 4 };
+                        int[] eliteGhostStatsVet = new int[3] { eliteGhostStats[0] + 4, eliteGhostStats[1] + 4, eliteGhostStats[2] + 4 };
+
+                        // Regular archetypes
                         TacCharacterDef ghost = CreateTacCharaterDef(priestTag, "Mercenary_Ghost", "{05C7ED24-1300-4336-94FB-82AE09CC45AF}",
                             ghostSniperRifle, ghostArmor, new List<GameTagDef>() { mercenaryTag }, 1, eliteGhostStats);
 
@@ -823,8 +829,8 @@ namespace TFTV
 
                         CreateMarketPlaceRecruit(doom.name, "{4FC1981D-C5B5-40E2-83D7-238486503215}", "{546E79A5-FFBE-45A2-852E-9D83E41FFA61}",
                             "{93FA4108-B4B3-45BA-9764-6069D1705228}", "{1ED716FA-EE9C-43C3-B68E-C851DB31BADF}",
-                             "KEY_EXPENDABLE_ARCHETYPE_DOOM_NAME", "KEY_EXPENDABLE_ARCHETYPE_DOOM_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_DOOM_QUOTE",
-                             doom, 500, Helper.CreateSpriteFromImageFile("MERCENARY_DOOM.png"), 0);
+                            "KEY_EXPENDABLE_ARCHETYPE_DOOM_NAME", "KEY_EXPENDABLE_ARCHETYPE_DOOM_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_DOOM_QUOTE",
+                            doom, 500, Helper.CreateSpriteFromImageFile("MERCENARY_DOOM.png"), 0);
 
                         TacCharacterDef slug =
                             CreateTacCharaterDef(technicianTag, "Mercenary_Slug", "{BFB4540F-CE02-4934-ACDC-FF2CC5B02DA9}",
@@ -841,8 +847,8 @@ namespace TFTV
 
                         CreateMarketPlaceRecruit(spyMaster.name, "{BD808894-2F9C-4490-ABF3-7EC8B3815589}", "{7316428E-394A-424D-92B9-1DF621B4AAC9}",
                             "{2FAD7A35-3444-4606-8951-6DB8A4BEA26E}", "{C145BEC5-CBCE-49C5-8BEA-ADDED4936E40}",
-                           "KEY_EXPENDABLE_ARCHETYPE_SPYMASTER_NAME", "KEY_EXPENDABLE_ARCHETYPE_SPYMASTER_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_SPYMASTER_QUOTE",
-                           spyMaster, 500, Helper.CreateSpriteFromImageFile("MERCENARY_SPYMASTER.png"), 3);
+                            "KEY_EXPENDABLE_ARCHETYPE_SPYMASTER_NAME", "KEY_EXPENDABLE_ARCHETYPE_SPYMASTER_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_SPYMASTER_QUOTE",
+                            spyMaster, 500, Helper.CreateSpriteFromImageFile("MERCENARY_SPYMASTER.png"), 3);
 
                         TacCharacterDef sectarian =
                             CreateTacCharaterDef(berserkerTag, "Mercenary_Sectarian", "{52C42AFC-F1A8-43FB-B1E1-DF1D68D71A7A}",
@@ -850,8 +856,8 @@ namespace TFTV
 
                         CreateMarketPlaceRecruit(sectarian.name, "{BE81203F-F0C7-4C42-A556-09DDE55ED15F}", "{CDA90EDA-9FA7-4C68-A593-DBD7140D6820}",
                             "{76EACAB3-3F2E-4A9C-AB3B-A6AEFDAB817D}", "{141EBDFD-7712-4357-8AEF-176F1C7DBD23}",
-                           "KEY_EXPENDABLE_ARCHETYPE_SECTARIAN_NAME", "KEY_EXPENDABLE_ARCHETYPE_SECTARIAN_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_SECTARIAN_QUOTE",
-                           sectarian, 500, Helper.CreateSpriteFromImageFile("MERCENARY_SECTARIAN.png"), 0);
+                            "KEY_EXPENDABLE_ARCHETYPE_SECTARIAN_NAME", "KEY_EXPENDABLE_ARCHETYPE_SECTARIAN_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_SECTARIAN_QUOTE",
+                            sectarian, 500, Helper.CreateSpriteFromImageFile("MERCENARY_SECTARIAN.png"), 0);
 
                         TacCharacterDef exile =
                            CreateTacCharaterDef(assaultTag, "Mercenary_Exile", "{3FBC2BB0-0235-41C7-BB28-6848A74858AB}",
@@ -859,11 +865,62 @@ namespace TFTV
 
                         CreateMarketPlaceRecruit(exile.name, "{46D893B9-9DC7-4068-8348-6F66FBFF0AF7}", "{E93DFF70-669E-4699-B005-6A7F4FD42706}",
                             "{00F16431-56A8-418E-9E28-C1F55B3A7AF7}", "{241F3A70-43B2-4771-87A8-06F735F8C8F5}",
-                           "KEY_EXPENDABLE_ARCHETYPE_EXILE_NAME", "KEY_EXPENDABLE_ARCHETYPE_EXILE_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_EXILE_QUOTE",
-                           exile, 500, Helper.CreateSpriteFromImageFile("MERCENARY_EXILE.png"), 0);
+                            "KEY_EXPENDABLE_ARCHETYPE_EXILE_NAME", "KEY_EXPENDABLE_ARCHETYPE_EXILE_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_EXILE_QUOTE",
+                            exile, 500, Helper.CreateSpriteFromImageFile("MERCENARY_EXILE.png"), 0);
 
+                        // Veteran archetypes
+                        TacCharacterDef ghostVet = CreateTacCharaterDef(priestTag, "Mercenary_Ghost_Vet", "{A1C7ED24-1300-4336-94FB-82AE09CC45AF}",
+                            ghostSniperRifle, ghostArmor, new List<GameTagDef>() { mercenaryTag }, 5, eliteGhostStatsVet);
 
+                        CreateMarketPlaceRecruit(ghostVet.name,
+                            "{FA72C430-158D-4F44-99B4-08AF9BF2493E}", "{F2BBE15C-54D1-44D0-9299-D10E56E7314E}",
+                            "{D01434F1-4A5E-4354-8272-58CF2CC1C41E}", "{65ACF823-241A-4EF5-890E-51F88FF0F6CE}",
+                            "KEY_EXPENDABLE_ARCHETYPE_VETERAN_GHOST_NAME", "KEY_EXPENDABLE_ARCHETYPE_VETERAN_GHOST_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_VETERAN_GHOST_QUOTE",
+                            ghostVet, 900, Helper.CreateSpriteFromImageFile("MERCENARY_GHOST_VET.png"), 8);
 
+                        TacCharacterDef doomVet = CreateTacCharaterDef(heavyTag, "Mercenary_Heavy_Vet", "{B6628AFA-B8EF-4350-B451-72B24593993B}",
+                            doomAC, doomArmor, new List<GameTagDef> { mercenaryTag }, 5, oldStatsVet);
+
+                        CreateMarketPlaceRecruit(doomVet.name, "{4FC1981D-C5B5-40E2-83D7-238486503216}", "{546E79A5-FFBE-45A2-852E-9D83E41FFA62}",
+                            "{93FA4108-B4B3-45BA-9764-6069D1705229}", "{1ED716FA-EE9C-43C3-B68E-C851DB31BAD0}",
+                            "KEY_EXPENDABLE_ARCHETYPE_VETERAN_DOOM_NAME", "KEY_EXPENDABLE_ARCHETYPE_VETERAN_DOOM_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_VETERAN_DOOM_QUOTE",
+                            doomVet, 900, Helper.CreateSpriteFromImageFile("MERCENARY_DOOM_VET.png"), 8);
+
+                        TacCharacterDef slugVet =
+                            CreateTacCharaterDef(technicianTag, "Mercenary_Slug_Vet", "{CFB4540F-CE02-4934-ACDC-FF2CC5B02DA9}",
+                            slugPistol, slugArmor, new List<GameTagDef>() { mercenaryTag }, 5, basicStatsVet);
+
+                        CreateMarketPlaceRecruit(slugVet.name, "{A8CBE9E4-7EA4-4AA9-93C0-09165C121F2F}", "{FC92AA97-F85A-46BD-9168-985578BF44B3}",
+                            "{66D149CB-8ADA-46B5-BEAA-102C18B1F83E}", "{21084D35-84CE-4AD1-AA5A-70EF27C1A248}",
+                            "KEY_EXPENDABLE_ARCHETYPE_VETERAN_SLUG_NAME", "KEY_EXPENDABLE_ARCHETYPE_VETERAN_SLUG_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_VETERAN_SLUG_QUOTE",
+                            slugVet, 900, Helper.CreateSpriteFromImageFile("MERCENARY_SLUG_VET.png"), 8);
+
+                        TacCharacterDef spyMasterVet =
+                             CreateTacCharaterDef(infiltratorTag, "Mercenary_Spymaster_Vet", "{CFB2B1E0-FA98-450E-83C0-F16EA953E7EB}",
+                             spyMasterXbow, spyMasterArmor, new List<GameTagDef>() { mercenaryTag }, 5, basicStatsVet);
+
+                        CreateMarketPlaceRecruit(spyMasterVet.name, "{BD808894-2F9C-4490-ABF3-7EC8B381558A}", "{7316428E-394A-424D-92B9-1DF621B4AAC8}",
+                            "{2FAD7A35-3444-4606-8951-6DB8A4BEA26F}", "{C145BEC5-CBCE-49C5-8BEA-ADDED4936E41}",
+                            "KEY_EXPENDABLE_ARCHETYPE_VETERAN_SPYMASTER_NAME", "KEY_EXPENDABLE_ARCHETYPE_VETERAN_SPYMASTER_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_VETERAN_SPYMASTER_QUOTE",
+                            spyMasterVet, 900, Helper.CreateSpriteFromImageFile("MERCENARY_SPYMASTER_VET.png"), 8);
+
+                        TacCharacterDef sectarianVet =
+                            CreateTacCharaterDef(berserkerTag, "Mercenary_Sectarian_Vet", "{62C42AFC-F1A8-43FB-B1E1-DF1D68D71A7A}",
+                            sectarianAxe, sectarianArmor, new List<GameTagDef>() { mercenaryTag }, 5, basicStatsVet);
+
+                        CreateMarketPlaceRecruit(sectarianVet.name, "{BE81203F-F0C7-4C42-A556-09DDE55ED15E}", "{CDA90EDA-9FA7-4C68-A593-DBD7140D6821}",
+                            "{76EACAB3-3F2E-4A9C-AB3B-A6AEFDAB817E}", "{141EBDFD-7712-4357-8AEF-176F1C7DBD24}",
+                            "KEY_EXPENDABLE_ARCHETYPE_VETERAN_SECTARIAN_NAME", "KEY_EXPENDABLE_ARCHETYPE_VETERAN_SECTARIAN_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_VETERAN_SECTARIAN_QUOTE",
+                            sectarianVet, 900, Helper.CreateSpriteFromImageFile("MERCENARY_SECTARIAN_VET.png"), 8);
+
+                        TacCharacterDef exileVet =
+                           CreateTacCharaterDef(assaultTag, "Mercenary_Exile_Vet", "{4FBC2BB0-0235-41C7-BB28-6848A74858AB}",
+                           exileAssaultRifle, exileArmor, new List<GameTagDef>() { mercenaryTag }, 5, basicStatsVet);
+
+                        CreateMarketPlaceRecruit(exileVet.name, "{46D893B9-9DC7-4068-8348-6F66FBFF0AF8}", "{E93DFF70-669E-4699-B005-6A7F4FD42707}",
+                            "{00F16431-56A8-418E-9E28-C1F55B3A7AF8}", "{241F3A70-43B2-4771-87A8-06F735F8C8F6}",
+                            "KEY_EXPENDABLE_ARCHETYPE_VETERAN_EXILE_NAME", "KEY_EXPENDABLE_ARCHETYPE_VETERAN_EXILE_DESCRIPTION", "KEY_EXPENDABLE_ARCHETYPE_VETERAN_EXILE_QUOTE",
+                            exileVet, 900, Helper.CreateSpriteFromImageFile("MERCENARY_EXILE_VET.png"), 8);
                     }
                     catch (Exception e)
                     {

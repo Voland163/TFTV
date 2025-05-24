@@ -213,7 +213,6 @@ namespace TFTV
 
                 if (num2 > 0 && itemSlot != null && itemSlot.HasDirectGameTag(electronicTag, false))
                 {
-
                     TacticalActor tacticalActor = recv.GetActor() as TacticalActor;
 
                     tacticalActor.ApplyDamage(new DamageResult

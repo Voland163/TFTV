@@ -941,7 +941,6 @@ namespace TFTV
 
                         if (value == true)
                         {
-
                             return 0;
                         }
                         return 1;

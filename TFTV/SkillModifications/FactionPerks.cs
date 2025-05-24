@@ -139,6 +139,22 @@ namespace PRMBetterClasses.SkillModifications
             TacticalActor_ApplyDamageInternal_Patch.DieHardTriggeredStatus = dieHardTriggeredStatus;
             TacticalActor_ApplyDamageInternal_Patch.DieHardKeepAliveStatus = dieHardKeepAliveStatus;
         }
+
+        public static void EnsureDieHardActorHasAtLeast1HP(TacticalActor tacticalActor)
+        {
+            try 
+            {
+                if (tacticalActor.Health!=null && tacticalActor.Health.Value.EndValue <= 1) 
+                {
+                    tacticalActor.Health.Set(1);
+                }  
+            }
+            catch (Exception e)
+            {
+                PRMLogger.Error(e);
+            }
+        }
+
         [HarmonyPatch(typeof(TacticalActor), "ApplyDamageInternal")]
         public static class TacticalActor_ApplyDamageInternal_Patch
         {

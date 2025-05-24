@@ -2692,7 +2692,8 @@ namespace TFTV
                         TacticalFaction aliens = controller.GetFactionByCommandName("aln");
 
                         IEnumerable<TacticalActor> strayMinions = from x in controller.Map.GetActors<TacticalActor>()
-                                                                  where x.TacticalFaction == wild || x.TacticalFaction == phoenix && x.HasGameTag(Shared.SharedGameTags.AlienTag) && !x.HasGameTag(anyRevenantGameTag)
+                                                                  where x.TacticalFaction == wild 
+                                                                  || x.TacticalFaction == phoenix && x.HasGameTag(Shared.SharedGameTags.AlienTag) && !x.HasGameTag(anyRevenantGameTag) && !x.HasGameTag(Shared.SharedGameTags.MutogTag)
                                                                   where x.IsAlive
                                                                   select x;
                         if (strayMinions.Count() > 0)

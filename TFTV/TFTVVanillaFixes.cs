@@ -59,6 +59,7 @@ using PhoenixPoint.Tactical.View;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewModules;
 using PhoenixPoint.Tactical.View.ViewStates;
+using PRMBetterClasses.SkillModifications;
 using SETUtil.Common.Extend;
 using System;
 using System.Collections.Generic;
@@ -1583,7 +1584,9 @@ namespace TFTV
                         {
                             if (tacticalActor.TacticalLevel.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(tacticalActor.GeoUnitId))
                             {
+                                FactionPerks.EnsureDieHardActorHasAtLeast1HP(tacticalActor);
                                 TFTVLogger.Always($"{tacticalActor?.DisplayName} with geoUnitId {tacticalActor?.GeoUnitId} found in the Phoenix Records! Should receive XP");
+
                                 return true;
                             }
                         }
@@ -1729,7 +1732,7 @@ namespace TFTV
                 /// </summary>
                 /// <param name="actor"></param>
 
-                private static void FixRescueMissionEvac(TacticalActor actor)
+                public static void FixRescueMissionEvac(TacticalActor actor)
                 {
                     try
                     {
@@ -1779,50 +1782,6 @@ namespace TFTV
                         throw;
                     }
                 }
-
-
-                [HarmonyPatch(typeof(EvacuateMountedActorsAbility), "Activate")]
-                public static class EvacuateMountedActorsAbility_Activate_patch
-                {
-                    public static void Prefix(EvacuateMountedActorsAbility __instance)
-                    {
-                        try
-                        {
-                            // TFTVLogger.Always($"running activate exit mission ability for {__instance.TacticalActor.DisplayName}, {__instance.TacticalActor.TacticalFaction.Faction.FactionDef.name} {__instance.TacticalActor.Status?.HasStatus<MindControlStatus>()}");
-
-                            FixRescueMissionEvac(__instance.TacticalActor);
-
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            throw;
-                        }
-                    }
-                }
-
-                [HarmonyPatch(typeof(ExitMissionAbility), "Activate")]
-                public static class ExitMissionAbility_Activate_patch
-                {
-                    public static void Prefix(ExitMissionAbility __instance)
-                    {
-                        try
-                        {
-                            //  TFTVLogger.Always($"running activate exit mission ability for {__instance.TacticalActor.DisplayName}, {__instance.TacticalActor.TacticalFaction.Faction.FactionDef.name} {__instance.TacticalActor.Status?.HasStatus<MindControlStatus>()}");
-
-                            FixRescueMissionEvac(__instance.TacticalActor);
-
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            throw;
-                        }
-                    }
-                }
-
-
-
             }
 
             internal class ParalysisDamage

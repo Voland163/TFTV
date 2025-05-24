@@ -46,10 +46,6 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         internal static class SmartEvacuation
         {
-
-            
-
-
             [HarmonyPatch(typeof(TacticalView), "OnAbilityExecuted")]
             public static class TacticalView_OnAbilityExecuted_Patch
             {
