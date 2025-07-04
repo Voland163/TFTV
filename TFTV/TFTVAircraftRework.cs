@@ -1066,6 +1066,12 @@ namespace TFTV
                     captureModule.ViewElementDef.DisplayName1.LocalizationKey = "KEY_TFTV_CAPTURE_MODULE_NAME";
                     captureModule.ViewElementDef.DisplayName2.LocalizationKey = "KEY_TFTV_CAPTURE_MODULE_NAME";
                     captureModule.ViewElementDef.Description.LocalizationKey = "KEY_TFTV_CAPTURE_MODULE_DESCRIPTION";
+                    captureModule.ViewElementDef.SmallIcon = Helper.CreateSpriteFromImageFile("TFTVScyllaCaptureSmallIcon.png");
+                    captureModule.ViewElementDef.LargeIcon = captureModule.ViewElementDef.SmallIcon;
+                    captureModule.ViewElementDef.RosterIcon = captureModule.ViewElementDef.SmallIcon;
+                    captureModule.ViewElementDef.InventoryIcon = captureModule.ViewElementDef.SmallIcon;
+                    captureModule.ViewElementDef.DeselectIcon = captureModule.ViewElementDef.SmallIcon;
+
 
                     captureModule.ManufactureMaterials = 600;
                     captureModule.ManufactureTech = 75;

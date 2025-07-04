@@ -81,35 +81,38 @@ namespace TFTV
 
                  //   TFTVLogger.Always($"{__instance.DisplayName} ShouldChangeAspectStats called!");
 
+
+
                     TacticalItem tacticalItem = aspect.OwnerItem;
+                    TacticalActor tacticalActor = __instance;
+                    
                     //  FreezeAspectStatsStatus
                     if (TFTVNewGameOptions.StaminaPenaltyFromInjurySetting)
                     {                      
-                        int unitId = __instance.GeoUnitId;
+                        int unitId = tacticalActor.GeoUnitId;
 
                         ItemSlotDef itemSlotDef = tacticalItem.ItemDef.RequiredSlotBinds[0].RequiredSlot as ItemSlotDef;
 
                         string bodyPart = itemSlotDef.SlotName;
 
-                        if (__instance.IsAlive && !__instance.HasGameTag(Shared.SharedGameTags.VehicleTag))
+                        if (tacticalActor.IsAlive && !tacticalActor.HasGameTag(Shared.SharedGameTags.VehicleTag))
                         {
                             if (!charactersWithDisabledBodyParts.ContainsKey(unitId))
                             {
                                 charactersWithDisabledBodyParts.Add(unitId, new List<string> { bodyPart });
-                                TFTVLogger.Always($"{__instance.DisplayName} has a disabled {bodyPart}");
+                                TFTVLogger.Always($"{tacticalActor.DisplayName} has a disabled {bodyPart}");
                             }
                             else if (charactersWithDisabledBodyParts.ContainsKey(unitId) && !charactersWithDisabledBodyParts[unitId].Contains(bodyPart) && bodyPart != null)
                             {
                                 charactersWithDisabledBodyParts[unitId].Add(bodyPart);
-                                TFTVLogger.Always($"{__instance.DisplayName} has a disabled {bodyPart}");
+                                TFTVLogger.Always($"{tacticalActor.DisplayName} has a disabled {bodyPart}");
                             }
                         }
                     }     
 
                     if (tacticalItem.BodyPartAspect.BodyPartAspectDef.name.Equals("E_BodyPartAspect [AN_Berserker_Shooter_LeftArm_WeaponDef]"))
                     {
-                        TacticalItem base_OwnerItem = (TacticalItem)AccessTools.Property(typeof(TacticalItemAspectBase), "OwnerItem").GetValue(__instance, null);
-                        TacticalActor tacticalActor = base_OwnerItem.TacticalActor;
+                       
 
                         if (tacticalActor.HasStatus(DefCache.GetDef<FreezeAspectStatsStatusDef>("IgnorePain_StatusDef")))
                         {
