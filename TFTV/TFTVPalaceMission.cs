@@ -562,7 +562,7 @@ namespace TFTV
                         tacticalActor.ApplyDamage(new DamageResult() { HealthDamage = 10000 });
                     }
                     List<TacticalActor> playerToys = controller.GetFactionByCommandName("px").TacticalActors.Where(ta => ta.IsAlive && ta.Pos.z > 42
-                    && ta.HasGameTag(Shared.SharedGameTags.DamageByCaterpillarTracks) || ta.HasGameTag(Shared.SharedGameTags.AlienTag)).ToList();
+                    && (ta.HasGameTag(Shared.SharedGameTags.DamageByCaterpillarTracks) || ta.HasGameTag(Shared.SharedGameTags.AlienTag))).ToList();
 
                     TFTVLogger.Always($"Player toys count: {playerToys.Count}");
 
@@ -573,7 +573,7 @@ namespace TFTV
                         TacticalFactionVision.ForgetForAll(tacticalActor, true);
                         tacticalActor.SetFaction(controller.GetFactionByCommandName("env"), TacMissionParticipant.Environment);
                         TFTVLogger.Always($"destroying {tacticalActor.name}");
-                        tacticalActor.ApplyDamage(new DamageResult() { HealthDamage = 1000 });
+                        tacticalActor.ApplyDamage(new DamageResult() { HealthDamage = 10000 });
                     }
                 }
                 catch (Exception e)
@@ -1198,7 +1198,7 @@ namespace TFTV
                 DefCache.GetDef<GameTagDef>("Nikolai_TacCharacterDef_GameTagDef"),
                 DefCache.GetDef<GameTagDef>("Richter_TacCharacterDef_GameTagDef"),
                 DefCache.GetDef<GameTagDef>("Harlson_TacCharacterDef_GameTagDef"),
-               // DefCache.GetDef<GameTagDef>("Sofia_TacCharacterDef_GameTagDef"),
+                DefCache.GetDef<GameTagDef>("Sofia_TacCharacterDef_GameTagDef"),
                 DefCache.GetDef<GameTagDef>("Exalted_ClassTagDef")
 
                 };

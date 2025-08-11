@@ -2189,14 +2189,17 @@ namespace TFTV
 
                 ReturnFireAbilityDef returnFireFireDiscipline = _fireDisciplineTactic;
 
-                foreach (TacticalActor tacticalActor in controller.Factions.FirstOrDefault(f => f.Faction.FactionDef.ShortNames.Contains(factionName)).TacticalActors)
+                foreach (TacticalFaction tacticalFaction in controller.Factions)
                 {
-                    if (tacticalActor.BaseDef.name == "Soldier_ActorDef" && tacticalActor.InPlay)
+                    foreach (TacticalActor tacticalActor in tacticalFaction.TacticalActors)
                     {
-                        if (tacticalActor.GetAbilityWithDef<Ability>(returnFireFireDiscipline) != null)
+                        if (tacticalActor.BaseDef.name == "Soldier_ActorDef" && tacticalActor.InPlay)
                         {
-                            tacticalActor.RemoveAbility(returnFireFireDiscipline);
-                            TFTVLogger.Always($"Removing Fire Discipline RF from {tacticalActor.name}");
+                            if (tacticalActor.GetAbilityWithDef<Ability>(returnFireFireDiscipline) != null)
+                            {
+                                tacticalActor.RemoveAbility(returnFireFireDiscipline);
+                                TFTVLogger.Always($"Removing Fire Discipline RF from {tacticalActor.name}");
+                            }
                         }
                     }
                 }

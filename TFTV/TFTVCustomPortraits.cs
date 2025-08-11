@@ -480,14 +480,14 @@ namespace TFTV
         {
             try
             {
+                MethodInfo tryFindFakePortraitMethod = typeof(SquadMemberScrollerController).GetMethod("TryFindFakePortrait", BindingFlags.NonPublic | BindingFlags.Instance);
+                MethodInfo updatePortraitForSoldierMethod = typeof(SquadMemberScrollerController).GetMethod("UpdatePortraitForSoldier", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                PortraitSprites portraitSprites = _soldierPortraits[actor];
 
                 if (config.CustomPortraits)
                 {
-                    MethodInfo tryFindFakePortraitMethod = typeof(SquadMemberScrollerController).GetMethod("TryFindFakePortrait", BindingFlags.NonPublic | BindingFlags.Instance);
-                    MethodInfo updatePortraitForSoldierMethod = typeof(SquadMemberScrollerController).GetMethod("UpdatePortraitForSoldier", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                    PortraitSprites portraitSprites = _soldierPortraits[actor];
-
+                 
 
                     if (CharacterPortrait.characterPics.ContainsKey(actor.GeoUnitId))
                     {
@@ -506,15 +506,18 @@ namespace TFTV
 
                     }
 
-                    if (actor.CameFromSourceTemplate(DefCache.GetDef<TacCharacterDef>("S_Helena_TacCharacterDef")))
-                    {
-                        Sprite sprite = Helper.CreatePortraitFromImageFile("helena.png");
-
-                        portraitSprites.Portrait = sprite;
-                        updatePortraitForSoldierMethod.Invoke(squadMemberScrollerController, new object[] { actor });
-                        return false;
-                    }
+                   
                 }
+
+                if (actor.CameFromSourceTemplate(DefCache.GetDef<TacCharacterDef>("S_Helena_TacCharacterDef")))
+                {
+                    Sprite sprite = Helper.CreatePortraitFromImageFile("helena.png");
+
+                    portraitSprites.Portrait = sprite;
+                    updatePortraitForSoldierMethod.Invoke(squadMemberScrollerController, new object[] { actor });
+                    return false;
+                }
+
                 return TFTVPalaceMission.MissionObjectives.ForceSpecialCharacterPortraitInSetupProperPortrait(actor, _soldierPortraits, squadMemberScrollerController);
             }
             catch (Exception e)
