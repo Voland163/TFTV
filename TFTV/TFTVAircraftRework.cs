@@ -185,6 +185,23 @@ namespace TFTV
                 }
             }
 
+            public static void ClearDataOnStateChange()
+            {
+                try
+                {
+                    if (!AircraftReworkOn)
+                    {
+                        return;
+                    }
+
+                    AircraftSpeed.ClearInternalData();
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
             public static int[] ModulesInTactical = new int[15];
         }
 
@@ -3674,6 +3691,10 @@ namespace TFTV
                                     return false;
                                 }
 
+                                if (targetActor == null || !targetActor.InPlay)
+                                {
+                                    return true; // let OG handle; it's safer during enter-play
+                                }
 
 
                                 int mistSymbiosisLevel = CheckForAnuBlimpMistModule(fromActor.TacticalFaction);
@@ -4346,7 +4367,7 @@ namespace TFTV
                             bool hasMutogPen = geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _blimpMutogPenModule);
                             bool isThunderbird = geoVehicle.VehicleDef == thunderbird;
 
-                            if ((hasHarness && isThunderbird && item.Character.TemplateDef.IsVehicle) || (hasMutogPen && item.Character.TemplateDef.IsMutog))
+                            if ((hasHarness && item.Character.TemplateDef.IsVehicle) || (hasMutogPen && item.Character.TemplateDef.IsMutog))
                             {
 
                             }
@@ -5847,7 +5868,6 @@ namespace TFTV
                     }
                 }
 
-
                 public static Sprite GetTierSprite(ItemDef moduleDef)
                 {
                     try
@@ -5903,7 +5923,6 @@ namespace TFTV
                         throw;
                     }
                 }
-
 
 
                 [HarmonyPatch(typeof(ItemDef), "GetDetailedImage")]
@@ -6180,6 +6199,11 @@ namespace TFTV
                     {
                         try
                         {
+                            if (!AircraftReworkOn)
+                            {
+                                return true;
+                            }
+
                             // Access private fields via reflection
                             var type = typeof(UIAircraftEquipmentTooltip);
 
@@ -6417,7 +6441,7 @@ namespace TFTV
 
                             ____panelRect.anchoredPosition = new Vector3(0f, 0f, 0f);
 
-                            if (actor is GeoSite)
+                            if (actor is GeoSite && (actor.GetComponent<GeoAlienBase>()==null||!actor.GetComponent<GeoAlienBase>().IsPalace))
                             {
                                 ____panelRect.anchoredPosition = new Vector3(____panelRect.anchoredPosition.x + __instance.CenterXOffset.Evaluate(fov), ____panelRect.anchoredPosition.y + __instance.CenterYOffset.Evaluate(fov), 0f);
                                 GeoSite geoSite = (GeoSite)actor;
@@ -7327,7 +7351,7 @@ namespace TFTV
                                 return;
                             }
 
-                            AircraftSpeed.AdjustAircraftSpeed(__instance);
+                            AircraftSpeed.AdjustAircraftSpeed(__instance, true);
 
                         }
                         catch (Exception e)
@@ -7477,7 +7501,7 @@ namespace TFTV
                             return;
                         }
 
-                        AircraftSpeed.AdjustAircraftSpeed(__instance);
+                        AircraftSpeed.AdjustAircraftSpeed(__instance, true);
 
                     }
                     catch (Exception e)
@@ -7698,6 +7722,19 @@ namespace TFTV
         {
             private static Dictionary<GeoVehicle, DateTime> _lastCallTime = new Dictionary<GeoVehicle, DateTime>();
 
+            public static void ClearInternalData()
+            {
+                try
+                {
+                    _lastCallTime.Clear();
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
             internal static void Init(GeoLevelController controller)
             {
                 try
@@ -7709,7 +7746,7 @@ namespace TFTV
 
                     foreach (GeoVehicle geoVehicle in controller.PhoenixFaction.Vehicles)
                     {
-                        AdjustAircraftSpeed(geoVehicle);
+                        AdjustAircraftSpeed(geoVehicle, true);
                     }
 
                 }
@@ -7789,7 +7826,7 @@ namespace TFTV
             }
 
 
-            public static void AdjustAircraftSpeed(GeoVehicle geoVehicle)
+            public static void AdjustAircraftSpeed(GeoVehicle geoVehicle, bool forceTimer = false)
             {
                 try
                 {
@@ -7798,22 +7835,14 @@ namespace TFTV
                         return;
                     }
 
-                    if (IsAircraftInMist(geoVehicle))
+
+                    if (!forceTimer)
                     {
                         DateTime currentTime = geoVehicle.GeoLevel.Timing.Now.DateTime;
 
                         if (_lastCallTime.ContainsKey(geoVehicle) && (currentTime - _lastCallTime[geoVehicle]).TotalMinutes < 10)
                         {
                             return;
-                        }
-
-                        if (CheckRightSpeedForMist(geoVehicle))
-                        {
-                            return;
-                        }
-                        else
-                        {
-                            ResetSpeed(geoVehicle, true);
                         }
 
                         if (_lastCallTime.ContainsKey(geoVehicle))
@@ -7824,6 +7853,22 @@ namespace TFTV
                         {
                             _lastCallTime.Add(geoVehicle, currentTime);
                         }
+                    }
+
+                    if (IsAircraftInMist(geoVehicle))
+                    {
+                       
+
+                        if (CheckRightSpeedForMist(geoVehicle))
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            ResetSpeed(geoVehicle, true);
+                        }
+
+                       
                     }
                     else if (!CheckRightSpeedForOutsideMist(geoVehicle))
                     {

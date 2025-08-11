@@ -184,7 +184,7 @@ namespace TFTV
                 TFTVVanillaFixes.UI.ShowPerceptionCirclesBindingApplied = false;    
 
                 TFTVNJQuestline.IntroMission.ClearDataOnMissionRestartLoadAndStateChange();
-              
+              TFTVAircraftRework.InternalData.ClearDataOnStateChange();
 
                 TFTVLogger.Always($"Internal variables cleared on State change or Load");
             }
