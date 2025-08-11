@@ -79,11 +79,12 @@ namespace TFTV
                 try
                 {
 
-                 //   TFTVLogger.Always($"{__instance.DisplayName} ShouldChangeAspectStats called!");
+                    //   TFTVLogger.Always($"{__instance.DisplayName} ShouldChangeAspectStats called!");
 
-
+ 
 
                     TacticalItem tacticalItem = aspect.OwnerItem;
+
                     TacticalActor tacticalActor = __instance;
                     
                     //  FreezeAspectStatsStatus
@@ -108,12 +109,11 @@ namespace TFTV
                                 TFTVLogger.Always($"{tacticalActor.DisplayName} has a disabled {bodyPart}");
                             }
                         }
-                    }     
+                    }
 
-                    if (tacticalItem.BodyPartAspect.BodyPartAspectDef.name.Equals("E_BodyPartAspect [AN_Berserker_Shooter_LeftArm_WeaponDef]"))
+
+                    if (tacticalItem.BodyPartAspect!=null && tacticalItem.BodyPartAspect.BodyPartAspectDef.name.Equals("E_BodyPartAspect [AN_Berserker_Shooter_LeftArm_WeaponDef]"))
                     {
-                       
-
                         if (tacticalActor.HasStatus(DefCache.GetDef<FreezeAspectStatsStatusDef>("IgnorePain_StatusDef")))
                         {
                             return;

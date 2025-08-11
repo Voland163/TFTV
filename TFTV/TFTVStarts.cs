@@ -28,9 +28,17 @@ namespace TFTV
                 string a = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_INDEFINITEARTICLE");
                 string factionStartIntroText2 = TFTVCommonMethods.ConvertKeyToString("KEY_FACTION_START_INTROTEXT2");
 
+                string factionName = geoFaction.Name.Localize();
+                string factionNameWithArticle = $"{a} {factionName}";
+
+                if (a == "") 
+                { 
+                    factionNameWithArticle=factionName;
+                }
+
                 intro.GeoscapeEventData.Description[0].General = new LocalizedTextBind($"{factionStartIntroText0} " +
-                    $"{FindNearestHaven(geoFaction, site)},{a}{geoFaction.Name.Localize()} {factionStartIntroText1}" +
-                    $"{geoFaction.GeoLevel.PhoenixFaction.Vehicles.First().Soldiers.Last().DisplayName}{a}{geoFaction.Name.Localize()} " +
+                    $"{FindNearestHaven(geoFaction, site)}, {factionNameWithArticle} {factionStartIntroText1}" +
+                    $"{geoFaction.GeoLevel.PhoenixFaction.Vehicles.First().Soldiers.Last().DisplayName}, {factionNameWithArticle} " +
                     $"{geoFaction.GeoLevel.PhoenixFaction.Vehicles.First().Soldiers.Last().ClassTag.className}." +
                     $"\n\n{factionStartIntroText2}", true);
 

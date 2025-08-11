@@ -65,6 +65,7 @@ namespace TFTV
         public int RevenantPoints;
         public Dictionary<int, string> CharacterPortraits;
         public List<int> PlayerVehicles;
+        public Dictionary<int, List<int>> AircraftScanningSites;
     }
 
 
@@ -233,7 +234,8 @@ namespace TFTV
                 BaseDefensePandoranBreach = TFTVBaseDefenseGeoscape.ContainmentBreachSchedule,
                 RevenantPoints = TFTVRevenant.TFTVRevenantResearch.RevenantPoints,
                 CharacterPortraits = TFTVCustomPortraits.CharacterPortrait.characterPics,
-                PlayerVehicles = TFTVDragandDropFunctionality.VehicleRoster.PlayerVehicles
+                PlayerVehicles = TFTVDragandDropFunctionality.VehicleRoster.PlayerVehicles,
+                AircraftScanningSites = TFTVAircraftRework.Modules.Geoscape.Scanning.AircraftScanningSites,
                 //   Update35GeoscapeCheck = TFTVNewGameOptions.Update35Check,
 
             };
@@ -345,6 +347,7 @@ namespace TFTV
 
                 TFTVDefsWithConfigDependency.ImplementConfigChoices();
                 TFTVDragandDropFunctionality.VehicleRoster.RestoreVehicleOrder(Controller);
+                TFTVAircraftRework.Modules.Geoscape.Scanning.AircraftScanningSites = data.AircraftScanningSites;
                 //   TFTVBetaSaveGamesFixes.Fix(Controller);
 
                 // TFTVNewGameOptions.Update35Check = data.Update35GeoscapeCheck;

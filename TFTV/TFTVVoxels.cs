@@ -277,37 +277,37 @@ namespace TFTV
             /// Code to change goo navigation behaviour, implementation idea from Codemite (all hail Codemite!)
             /// </summary>
             /// 
-
+            
             // public static bool DontUseGooNavigationPatch = false;
 
-            [HarmonyPatch(typeof(TacticalNavCostFactorFuncs), "CostFactorFunc")]
-            public static class TacticalNavCostFactorFuncs_CostFactorFunc_patch
-            {
+            /*  [HarmonyPatch(typeof(TacticalNavCostFactorFuncs), "CostFactorFunc")]
+              public static class TacticalNavCostFactorFuncs_CostFactorFunc_patch
+              {
 
-                public static void Postfix(Vector3 srcPos, Vector3 dstPos, NavAreas areas, ref float __result, TacticalActor ____actor)
-                {
-                    try
-                    {
-                        TacStatsModifyStatusDef slowedStatus = DefCache.GetDef<TacStatsModifyStatusDef>("Slowed_StatusDef");
+                  public static void Postfix(Vector3 srcPos, Vector3 dstPos, NavAreas areas, ref float __result, TacticalActor ____actor)
+                  {
+                      try
+                      {
+                          TacStatsModifyStatusDef slowedStatus = DefCache.GetDef<TacStatsModifyStatusDef>("Slowed_StatusDef");
 
-                        TacticalVoxel voxel = ____actor.TacticalLevel.VoxelMatrix.GetVoxel(dstPos);
+                          TacticalVoxel voxel = ____actor.TacticalLevel.VoxelMatrix.GetVoxel(dstPos);
 
-                        float actorRadius = ____actor.NavigationComponent.AgentNavSettings.AgentRadius;
+                          float actorRadius = ____actor.NavigationComponent.AgentNavSettings.AgentRadius;
 
-                        if (voxel != null && voxel.GetVoxelType() == TacticalVoxelType.Goo &&
-                            !____actor.HasStatus(slowedStatus) &&
-                            ____actor.GetAbility<GooDamageMultiplierAbility>() == null)
-                        {
-                            __result = 20f;//2f;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
-                }
-            }
+                          if (voxel != null && voxel.GetVoxelType() == TacticalVoxelType.Goo &&
+                              !____actor.HasStatus(slowedStatus) &&
+                              ____actor.GetAbility<GooDamageMultiplierAbility>() == null)
+                          {
+                              __result = 20f;//2f;
+                          }
+                      }
+                      catch (Exception e)
+                      {
+                          TFTVLogger.Error(e);
+                          throw;
+                      }
+                  }
+              }*/
 
 
 
@@ -373,11 +373,12 @@ namespace TFTV
                         return;
 
                     }
+         
                     TacStatsModifyStatusDef slowedStatus = DefCache.GetDef<TacStatsModifyStatusDef>("Slowed_StatusDef");
                     TacStatsModifyStatus status = actor.Status.GetStatus<TacStatsModifyStatus>(slowedStatus);
                     // GooDamageMultiplierAbilityDef gooImmunity = DefCache.GetDef<GooDamageMultiplierAbilityDef>("GooImmunity_AbilityDef");
 
-                    if (actor.GetAbility<GooDamageMultiplierAbility>() == null && actor.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Goo, pos))
+                    if (actor.GetAbility<GooDamageMultiplierAbility>() == null && actor.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Goo, pos) && !actor.IsMounted)
                     {
                         if (status == null)
                         {
@@ -422,7 +423,8 @@ namespace TFTV
                     if (tacticalActor == null
                         || controller.CurrentFaction != tacticalActor.TacticalFaction
                         || tacticalActor.GetAbility<GooDamageMultiplierAbility>() != null
-                        || tacticalActor.Status.HasStatus(slowedStatus))
+                        || tacticalActor.Status.HasStatus(slowedStatus)
+                        || tacticalActor.IsMounted)
                     {
                         return;
                     }
@@ -431,7 +433,6 @@ namespace TFTV
 
                     if (!_actorGooPositions.ContainsKey(tacticalActor) || !_actorGooPositions[tacticalActor].Any(v=>(tacticalActor.Pos-v).magnitude<1))
                     {
-
                         foreach (TacticalVoxel voxel in tacticalActorBase.TacticalLevel.VoxelMatrix.GetVoxels(tacticalPerceptionBase.GetBounds()))
                         {
                             if (voxel.GetVoxelType() == TacticalVoxelType.Goo)

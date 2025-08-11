@@ -1047,7 +1047,6 @@ namespace TFTV
             try
             {
                 DefCache.GetDef<TacStatsModifyStatusDef>("Slowed_StatusDef").ApplicationConditions = new EffectConditionDef[] { };
-
             }
             catch (Exception e)
             {
@@ -2481,6 +2480,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 ChangePalaceMissionDefs();
                 CreateCharactersForPalaceMission();
                 CreateReinforcementStatuses();
+                ChangeIconForMarkOfTheVoid();
             }
 
             catch (Exception e)
@@ -2489,7 +2489,20 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
             }
         }
 
-
+        private static void ChangeIconForMarkOfTheVoid() 
+        {   
+            try
+            {
+                TacticalAbilityViewElementDef markOfTheVoidViewElement = DefCache.GetDef<TacticalAbilityViewElementDef>("E_ViewElement [Yuggothian_StatusAttack_AbilityDef]");
+                Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_MoV.png");
+                markOfTheVoidViewElement.LargeIcon = icon;
+                markOfTheVoidViewElement.SmallIcon = icon;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
 
         private static void CreateNewStatusOnDisablingYugothianEyes()

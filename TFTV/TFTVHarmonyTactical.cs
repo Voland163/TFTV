@@ -489,7 +489,7 @@ namespace TFTV
                         $"{__instance?.Faction?.Faction?.FactionDef?.GetName()}, turn: {__instance?.Faction?.TacticalLevel?.TurnNumber}");
 
                     TFTVVanillaFixes.Tactical.ParalysisDamage.ClearDataActorsParalysisDamage();
-                    TFTVArtOfCrab.ClearData();
+                    TFTVArtOfCrab.SingleAPWeaponsMultipleShots.ClearData();
                     TFTVAncients.AncientsNewTurn.AncientsNewTurnCheck(__instance.Faction);
                     TFTVPalaceMission.PalaceTacticalNewTurn(__instance.Faction);
                     TFTVBaseDefenseTactical.PlayerTurn.PhoenixBaseDefenseVSAliensTurnStart(__instance.Faction.TacticalLevel, __instance.Faction);
@@ -729,7 +729,9 @@ namespace TFTV
                     TFTVChangesToDLC5.TFTVMercenaries.Tactical.SlugHealTraumaEffect(ability, __instance);
                     TFTVArtOfCrab.GetBestWeaponForOWRF(__instance);
                     TFTVVehicleFixes.CheckSquashing(ability, __instance);
-                    TFTVVoxels.TFTVGoo.ClearActorGooPositions();
+                   
+                    //Not used once goo doesn't take additional movement
+                    //TFTVVoxels.TFTVGoo.ClearActorGooPositions();
 
                     //  TFTVTauntsAndQuips.SelectAndShowQuip(__instance);
 
@@ -753,7 +755,10 @@ namespace TFTV
                 try
                 {
                     TFTVVoxels.TFTVFire.CheckFireQuencherTouchingFire(__instance);
-                    TFTVVoxels.TFTVGoo.CheckActorTouchingGoo(__instance);
+
+
+                    // removing penalty for crossing goo
+                  //  TFTVVoxels.TFTVGoo.CheckActorTouchingGoo(__instance); 
                 }
 
                 catch (Exception e)

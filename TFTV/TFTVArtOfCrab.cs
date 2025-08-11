@@ -40,539 +40,6 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
-
-       
-
-
-
-
-
-
-
-
-       
-
-
-
-
-
-
-
-
-        private static bool Cover(TacticalActor tacticalActor, TacAITarget tacAITarget)
-        {
-            try
-            {
-                float adjustedPerception = tacticalActor.GetAdjustedPerceptionValue();
-                float perceptionRange = adjustedPerception * adjustedPerception;
-
-                Dictionary<TacticalActorBase, Vector3> relevantEnemies = new Dictionary<TacticalActorBase, Vector3>();
-
-                foreach (TacticalActorBase enemy in tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(tacticalActor.AIActor.GetEnemyMask(ActorType.Combatant)))
-                {
-
-                    if (!((tacAITarget.Pos - enemy.Pos).sqrMagnitude < adjustedPerception
-                        || !TacticalFactionVision.CheckVisibleLineBetweenActors(enemy, enemy.Pos, tacticalActor, checkAllPoints: true, tacAITarget.Pos)))
-                    {
-                        continue;
-                    }
-
-                    Vector3 vector = enemy.Pos - tacAITarget.Pos;
-                    if (Utl.Equals(vector.x, 0f) && Utl.Equals(vector.z, 0f))
-                    {
-
-                        continue;
-                    }
-
-                    relevantEnemies.Add(enemy, vector);
-                }
-
-                if (relevantEnemies.Count == 0)
-                {
-
-                    return false;
-                }
-
-                relevantEnemies.OrderBy(kvp => kvp.Value);
-
-                TacticalActorBase closestRelevantEnemy = relevantEnemies.Keys.FirstOrDefault();
-
-                Vector3 coverDirection = tacticalActor.TacticalPerception.GetCoverDirection(tacAITarget.Pos, relevantEnemies[closestRelevantEnemy]);
-
-                CoverInfo coverInfoInDirection = tacticalActor.Map.GetCoverInfoInDirection(tacAITarget.Pos, coverDirection, tacticalActor.TacticalPerception.Height);
-
-                if (coverInfoInDirection.CoverType >= CoverType.Low)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
-
-        private static Weapon _weaponChanged = null;
-        private static int _autoFireShotCountInitial;
-
-
-        [HarmonyPatch(typeof(TacAIActor), "EndTurn")]
-        public static class TacAIActor_EndTurn_patch
-        {
-            public static void Postfix(TacAIActor __instance)
-            {
-                try
-                {
-                    RevertAdjustForMultipleSingleAPAttack();
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-        }
-
-        private static Dictionary<WeaponDef, int> _kludgedWeapons = new Dictionary<WeaponDef, int>();
-
-        private static void AddWeaponToKludgeWeaponsList(WeaponDef weapon, int ogShots)
-        {
-            try
-            {
-                if (!_kludgedWeapons.ContainsKey(weapon))
-                {
-                    _kludgedWeapons.Add(weapon, ogShots);
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
-
-        public static void ClearData()
-        {
-            try
-            {
-                if (_kludgedWeapons != null && _kludgedWeapons.Count > 0)
-                {
-                    foreach (WeaponDef weapon in _kludgedWeapons.Keys)
-                    {
-                        TFTVLogger.Always($"reverted {weapon.name} on new turn start");
-                        weapon.APToUsePerc = 25;
-                        weapon.DamagePayload.AutoFireShotCount = _kludgedWeapons[weapon];
-                    }
-
-                    _kludgedWeapons.Clear();
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-
-
-        }
-
-
-        private static void CheckAndAdjustForMultipleSingleAPAttack(TacticalActor shooter, TacticalActorBase target, Weapon weapon)
-        {
-            try
-            {
-                TFTVLogger.Always($"{shooter.DisplayName} has {shooter.CharacterStats.ActionPoints.Ratio}");
-
-                if (weapon.WeaponDef.APToUsePerc == 25 && !weapon.WeaponDef.Traits.Contains("rocket_launcher"))
-                {
-                    TFTVLogger.Always($"target.Health: {target.Health} weapon.GetDamage(): {weapon.GetDamage()}");
-
-                    if (target.Health > weapon.GetDamage() * 3 && shooter.CharacterStats.ActionPoints.Ratio >= 1f && weapon.CommonItemData.CurrentCharges >= 4)
-                    {
-
-                        _autoFireShotCountInitial = weapon.WeaponDef.DamagePayload.AutoFireShotCount;
-                        AddWeaponToKludgeWeaponsList(weapon.WeaponDef, _autoFireShotCountInitial);
-                        weapon.WeaponDef.APToUsePerc = 100;
-                        weapon.WeaponDef.DamagePayload.AutoFireShotCount *= 4;
-                        _weaponChanged = weapon;
-
-
-                    }
-                    else if (target.Health > weapon.GetDamage() * 2 && shooter.CharacterStats.ActionPoints.Ratio >= 0.75f && weapon.CommonItemData.CurrentCharges >= 3)
-                    {
-                        _autoFireShotCountInitial = weapon.WeaponDef.DamagePayload.AutoFireShotCount;
-                        AddWeaponToKludgeWeaponsList(weapon.WeaponDef, _autoFireShotCountInitial);
-                        weapon.WeaponDef.APToUsePerc = 75;
-                        weapon.WeaponDef.DamagePayload.AutoFireShotCount *= 3;
-                        _weaponChanged = weapon;
-
-
-                    }
-                    else if (target.Health > weapon.GetDamage() && shooter.CharacterStats.ActionPoints.Ratio >= 0.5f && weapon.CommonItemData.CurrentCharges >= 2)
-                    {
-                        _autoFireShotCountInitial = weapon.WeaponDef.DamagePayload.AutoFireShotCount;
-                        AddWeaponToKludgeWeaponsList(weapon.WeaponDef, _autoFireShotCountInitial);
-                        weapon.WeaponDef.APToUsePerc = 50;
-                        weapon.WeaponDef.DamagePayload.AutoFireShotCount *= 2;
-                        _weaponChanged = weapon;
-
-                    }
-                }
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
-
-        public static void RevertAdjustForMultipleSingleAPAttack()
-        {
-            try
-            {
-                if (_weaponChanged != null && _weaponChanged.WeaponDef != null)
-                {
-                    _weaponChanged.WeaponDef.APToUsePerc = 25;
-                    _weaponChanged.WeaponDef.DamagePayload.AutoFireShotCount = _autoFireShotCountInitial;
-                    if (_kludgedWeapons.ContainsKey(_weaponChanged.WeaponDef))
-                    {
-                        _kludgedWeapons.Remove(_weaponChanged.WeaponDef);
-                    }
-                    TFTVLogger.Always($"reverted {_weaponChanged.DisplayName} normally");
-                    _weaponChanged = null;
-
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
-
-
-
-
-        [HarmonyPatch(typeof(AIActionMoveAndAttack), "GetAttackTarget")]
-        public static class AIActionMoveAndAttack_GetAttackTarget_patch
-        {
-            public static bool Prefix(AIActionMoveAndAttack __instance, TacticalAbility ability, TacAITarget aiTarget, ref TacticalAbilityTarget __result)
-            {
-                try
-                {
-                    // Check if ability is enabled.
-                    if (!ability.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsAndEquipmentNotSelected))
-                    {
-                        __result = null;
-                        return false;
-                    }
-
-                    // If the ability is a ShootAbility, perform the necessary null checks and adjustments.
-                    if (ability is ShootAbility shootAbility)
-                    {
-                        // If the tactical ability target is already set, just return that.
-                        if (aiTarget.TacticalAbilityTarget != null)
-                        {
-                            __result = aiTarget.TacticalAbilityTarget;
-                            return false;
-                        }
-
-                        // Perform null checks and log errors as in the original method.
-                        if (shootAbility.TacticalActor == null)
-                        {
-                            Debug.LogError("ShootAbility " + shootAbility.ShootAbilityDef.name + " is missing TacticalActor");
-                            __result = null;
-                            return false;
-                        }
-
-                        if (shootAbility.TacticalActor.TacticalFaction == null)
-                        {
-                            Debug.LogError("TacticalActor " + shootAbility.TacticalActor.name + " is missing TacticalFaction");
-                            __result = null;
-                            return false;
-                        }
-
-                        if (shootAbility.Weapon == null)
-                        {
-                            Debug.LogError("ShootAbility " + shootAbility.ShootAbilityDef.name + " is missing Weapon");
-                            __result = null;
-                            return false;
-                        }
-
-                        // Additional null check for the Vision component.
-                        if (shootAbility.TacticalActor.TacticalFaction.Vision == null)
-                        {
-                            Debug.LogError("TacticalFaction Vision is null for " + shootAbility.TacticalActor.TacticalFaction.TacticalFactionDef.name);
-                            __result = null;
-                            return false;
-                        }
-
-                        bool visionRevealsTarget = false;
-
-                        if (aiTarget.Actor != null && shootAbility.TacticalActor.TacticalFaction.Vision.IsRevealed(aiTarget.Actor))
-                        {
-                            visionRevealsTarget = true;
-                        }
-
-                        bool isDirectLineDamage = shootAbility.Weapon.GetDamagePayload().DamageDeliveryType == DamageDeliveryType.DirectLine;
-
-                        // Generate a shoot target.
-                        TacticalAbilityTarget shootTarget = AIUtil.GetShootTarget(shootAbility.Weapon, new TacticalAbilityTarget(aiTarget.Actor));
-
-                        // If no actor, or if vision reveals the target, or if weapon is not direct line,
-                        // perform our adjustments (if applicable) and return the generated shoot target.
-                        if (aiTarget.Actor == null || visionRevealsTarget || !isDirectLineDamage)
-                        {
-                            if (aiTarget.Actor != null)
-                            {
-                                CheckAndAdjustForMultipleSingleAPAttack(shootAbility.TacticalActor, aiTarget.Actor, shootAbility.Weapon);
-                            }
-                            __result = shootTarget;
-                            return false;
-                        }
-
-                        // Otherwise, adjust the target’s position.
-                        Vector3 offset = 1.25f * Vector3.up;
-                        shootTarget.PositionToApply = aiTarget.Actor.Pos + offset;
-                        // Also adjust weapon properties as needed.
-                        CheckAndAdjustForMultipleSingleAPAttack(shootAbility.TacticalActor, aiTarget.Actor, shootAbility.Weapon);
-                        __result = shootTarget;
-                        return false;
-                    }
-
-                    // If the ability is a BashAbility, return the first matching target.
-                    if (ability is BashAbility bashAbility)
-                    {
-                        if (aiTarget.Actor != null)
-                        {
-                            __result = bashAbility.GetTargets().FirstOrDefault(x => x.Actor == aiTarget.Actor);
-                        }
-                        else
-                        {
-                            __result = null;
-                        }
-
-                        return false;
-                    }
-
-                    // For any other ability type, return null.
-                    __result = null;
-                    return false;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-
-
-        }
-
-
-
-        /* [HarmonyPatch(typeof(AIActionMoveAndAttack), "GetAttackTarget")]
-             public static class AIActionMoveAndAttack_GetAttackTarget_patch
-             {
-                 public static void Prefix(AIActionMoveAndAttack __instance, TacticalAbility ability, TacAITarget aiTarget)
-                 {
-                     try
-                     {
-                         // TacticalActor actor = (TacticalActor)aiTarget.Actor;
-
-                         //   TFTVLogger.Always($"AIActionMoveAndAttack for actor: {actor.DisplayName}, AP: {actor.CharacterStats.ActionPoints.Value}");
-
-                         if (!ability.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsAndEquipmentNotSelected))
-                         {
-                             return;
-                         }
-
-                         if (ability is ShootAbility shootAbility)
-                         {
-                             if (aiTarget.TacticalAbilityTarget != null
-                                 || shootAbility.TacticalActor == null
-                                 || shootAbility.TacticalActor.TacticalFaction == null
-                                 || shootAbility.Weapon == null)
-                             {
-                                 return;
-                             }
-
-                             CheckAndAdjustForMultipleSingleAPAttack(shootAbility.TacticalActor, aiTarget.Actor, shootAbility.Weapon);
-                         }
-                     }
-                     catch (Exception e)
-                     {
-                         TFTVLogger.Error(e);
-                         throw;
-                     }
-                 }
-
-             }*/
-
-
-
-
-        [HarmonyPatch(typeof(AIActionMoveToPosition), "Execute")]
-        public static class AIActionMoveToPosition_Execute_patch
-        {
-            private static void Prefix(AIActionMoveToPosition __instance, ref AIScoredTarget aiTarget)
-            {
-                try
-                {
-                    TacticalActor actor = (TacticalActor)aiTarget.Actor;
-                    TacAITarget target = (TacAITarget)aiTarget.Target;
-
-                    if (actor.NavigationComponent.AgentNavSettings.AgentRadius >= TacticalMap.HalfTileSize || actor.Status != null && actor.Status.HasStatus<PanicStatus>())
-                    {
-                        return;
-                    }
-
-                    List<Weapon> weapons = new List<Weapon>(actor.Equipments.GetWeapons().Where(
-                    w => w.IsUsable
-                    && w.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("GunWeapon_TagDef"))
-                    && !w.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("SpitterWeapon_TagDef"))
-                    ));
-
-                    if (weapons.Count == 0)
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        weapons = weapons.OrderBy(w => w.ApToUse).ToList();
-                    }
-
-                    Weapon weapon = weapons.First();
-
-                    //  TFTVLogger.Always($"lowest AP ranged weapon is {weapon.DisplayName}, with {weapon.ApToUse}");
-
-                    if (actor.CharacterStats.ActionPoints <= weapon.ApToUse)
-                    {
-                        //    TFTVLogger.Always($"{actor.name} has {actor.CharacterStats.ActionPoints} AP is at POS {actor.Pos}, current target POS {target.Pos}");
-
-                        if (!Cover(actor, target))
-                        {
-                            //      TFTVLogger.Always($"Position has no cover!");
-                            target.Pos = actor.Pos;
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-
-        }
-
-
-
-
-        // TacticalActorBase
-
-        // Def
-        //AIActorEquipmentTargetGeneratorDef
-
-        // AIStrategicPositionConsiderationDef
-        //AILineOfSightToEnemiesConsiderationDef
-
-        //AIEnemyTargetGeneratorDef
-
-        public static bool Has1APWeapon(TacCharacterDef tacCharacterDef)
-        {
-            try
-            {
-                DelayedEffectStatusDef reinforcementStatusUnder1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatusUnder1AP]");
-                DelayedEffectStatusDef reinforcementStatus1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatus1AP]");
-                DelayedEffectStatusDef reinforcementStatusUnder2AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatusUnder2AP]");
-
-
-                foreach (ItemDef itemDef in tacCharacterDef.Data.BodypartItems)
-                {
-                    // TFTVLogger.Always($"{itemDef.name}");
-
-                    if (itemDef.name.Contains("Pincer") || itemDef.name.Contains("Pistol"))
-                    {
-                        TFTVLogger.Always($"reinforcement {tacCharacterDef.name} has {itemDef.name}, so should get {reinforcementStatus1AP.EffectName}");
-                        return true;
-                    }
-                }
-
-                TFTVLogger.Always($"reinforcement {tacCharacterDef.name} has no 1AP weapon, so applying {reinforcementStatusUnder2AP.EffectName}");
-                return false;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
-
-        //Culls dash evaluation so that it is only considered when character has at least 3 AP
-
-        [HarmonyPatch(typeof(AIHasEnemiesInRangeConsideration), "Evaluate")]
-        public static class AIHasEnemiesInRangeConsideration_Evaluate_patch
-        {
-            public static void Postfix(AIHasEnemiesInRangeConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
-            {
-                try
-                {
-                    if (__instance.Def.name.Equals("Dash_RangeClearanceConsiderationDef"))
-                    {
-                        TacticalActor tacticalActor = (TacticalActor)actor;
-
-                        //  TFTVLogger.Always($"{tacticalActor.name} so far has {__result} in Dash_RangeClearanceConsiderationDef");
-
-                        if (tacticalActor.CharacterStats.ActionPoints < tacticalActor.CharacterStats.ActionPoints.Max * 0.75f)
-                        {
-                            //  TFTVLogger.Always($"{tacticalActor.name} has {tacticalActor.CharacterStats.ActionPoints} AP, less than max {tacticalActor.CharacterStats.ActionPoints.Max * 0.75f}, so failing eval for dash");
-                            __result = 1;
-                        }
-
-
-
-                        /*  float actorRange = tacticalActor.CharacterStats.Speed * 1.5f;
-
-                          TFTVLogger.Always($"{tacticalActor.name} speed: {tacticalActor.CharacterStats.Speed} ap: {tacticalActor.CharacterStats.ActionPoints}" +
-                              $"actorRange: {actorRange}");
-
-                          foreach (TacticalActorBase enemy in tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(tacticalActor.AIActor.GetEnemyMask(__instance.Def.EnemyMask)))
-                          {
-                              if ((enemy.Pos - tacticalActor.Pos).magnitude <= actorRange)
-                              {
-                                  __result = 1;
-                               //   TFTVLogger.Always($"found enemy {enemy.DisplayName} within range, but returning 0 to see what happens");
-                                  return false;
-                              }
-                          }
-
-                          __result = 0;
-                          return false;*/
-
-
-                    }
-
-                    // return true;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-            }
-
-        }
-
         public static void GetBestWeaponForOWRF(TacticalActor tacticalActor)
         {
             try
@@ -655,25 +122,195 @@ namespace TFTV
 
         }
 
-        [HarmonyPatch(typeof(AIAttackPositionConsideration), "EvaluateWithShootAbility")]
-        internal static class AIAttackPositionConsideration_EvaluateWithShootAbility_patch
+        public static bool Has1APWeapon(TacCharacterDef tacCharacterDef)
+        {
+            try
+            {
+                DelayedEffectStatusDef reinforcementStatusUnder1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatusUnder1AP]");
+                DelayedEffectStatusDef reinforcementStatus1AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatus1AP]");
+                DelayedEffectStatusDef reinforcementStatusUnder2AP = DefCache.GetDef<DelayedEffectStatusDef>("E_Status [ReinforcementStatusUnder2AP]");
+
+
+                foreach (ItemDef itemDef in tacCharacterDef.Data.BodypartItems)
+                {
+                    // TFTVLogger.Always($"{itemDef.name}");
+
+                    if (itemDef.name.Contains("Pincer") || itemDef.name.Contains("Pistol"))
+                    {
+                        TFTVLogger.Always($"reinforcement {tacCharacterDef.name} has {itemDef.name}, so should get {reinforcementStatus1AP.EffectName}");
+                        return true;
+                    }
+                }
+
+                TFTVLogger.Always($"reinforcement {tacCharacterDef.name} has no 1AP weapon, so applying {reinforcementStatusUnder2AP.EffectName}");
+                return false;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+
+
+
+        //makes AI avoid moving to positions without cover if it has ranged weapon and not panicked
+        internal class StepOutOfCoverFix
         {
 
-            public static void Postfix(AIAttackPositionConsideration __instance, IAIActor actor, IAITarget target, ref float __result)
+            [HarmonyPatch(typeof(AIActionMoveToPosition), "Execute")]
+            public static class AIActionMoveToPosition_Execute_patch
+            {
+                private static void Prefix(AIActionMoveToPosition __instance, ref AIScoredTarget aiTarget)
+                {
+                    try
+                    {
+                        TacticalActor actor = (TacticalActor)aiTarget.Actor;
+                        TacAITarget target = (TacAITarget)aiTarget.Target;
+
+                        if (actor.NavigationComponent.AgentNavSettings.AgentRadius >= TacticalMap.HalfTileSize || actor.Status != null && actor.Status.HasStatus<PanicStatus>())
+                        {
+                            return;
+                        }
+
+                        List<Weapon> weapons = new List<Weapon>(actor.Equipments.GetWeapons().Where(
+                        w => w.IsUsable
+                        && w.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("GunWeapon_TagDef"))
+                        && !w.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("SpitterWeapon_TagDef"))
+                        ));
+
+                        if (weapons.Count == 0)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            weapons = weapons.OrderBy(w => w.ApToUse).ToList();
+                        }
+
+                        Weapon weapon = weapons.First();
+
+                        //  TFTVLogger.Always($"lowest AP ranged weapon is {weapon.DisplayName}, with {weapon.ApToUse}");
+
+                        if (actor.CharacterStats.ActionPoints <= weapon.ApToUse)
+                        {
+                            //    TFTVLogger.Always($"{actor.name} has {actor.CharacterStats.ActionPoints} AP is at POS {actor.Pos}, current target POS {target.Pos}");
+
+                            if (!Cover(actor, target))
+                            {
+                                //      TFTVLogger.Always($"Position has no cover!");
+                                target.Pos = actor.Pos;
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+            }
+
+            private static bool Cover(TacticalActor tacticalActor, TacAITarget tacAITarget)
             {
                 try
                 {
-                    FumbleChanceStatusDef jammingField = DefCache.GetDef<FumbleChanceStatusDef>("E_FumbleChanceStatus [JammingFiled_AbilityDef]");
+                    float adjustedPerception = tacticalActor.GetAdjustedPerceptionValue();
+                    float perceptionRange = adjustedPerception * adjustedPerception;
 
-                    if (__result > 0)
+                    Dictionary<TacticalActorBase, Vector3> relevantEnemies = new Dictionary<TacticalActorBase, Vector3>();
+
+                    foreach (TacticalActorBase enemy in tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(tacticalActor.AIActor.GetEnemyMask(ActorType.Combatant)))
                     {
-                        TacticalActor tacActor = (TacticalActor)actor;
-                        if (tacActor != null && tacActor.Status.HasStatus(jammingField))
+
+                        if (!((tacAITarget.Pos - enemy.Pos).sqrMagnitude < adjustedPerception
+                            || !TacticalFactionVision.CheckVisibleLineBetweenActors(enemy, enemy.Pos, tacticalActor, checkAllPoints: true, tacAITarget.Pos)))
+                        {
+                            continue;
+                        }
+
+                        Vector3 vector = enemy.Pos - tacAITarget.Pos;
+                        if (Utl.Equals(vector.x, 0f) && Utl.Equals(vector.z, 0f))
                         {
 
-                            __result *= 0.1f;
-                            //  TFTVLogger.Always($"{tacActor.name} result {__result} because jinxed");
+                            continue;
                         }
+
+                        relevantEnemies.Add(enemy, vector);
+                    }
+
+                    if (relevantEnemies.Count == 0)
+                    {
+
+                        return false;
+                    }
+
+                    relevantEnemies.OrderBy(kvp => kvp.Value);
+
+                    TacticalActorBase closestRelevantEnemy = relevantEnemies.Keys.FirstOrDefault();
+
+                    Vector3 coverDirection = tacticalActor.TacticalPerception.GetCoverDirection(tacAITarget.Pos, relevantEnemies[closestRelevantEnemy]);
+
+                    CoverInfo coverInfoInDirection = tacticalActor.Map.GetCoverInfoInDirection(tacAITarget.Pos, coverDirection, tacticalActor.TacticalPerception.Height);
+
+                    if (coverInfoInDirection.CoverType >= CoverType.Low)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+        }
+        //temporarily increases burst of 1AP weapons to avoid multiple shots when more than 1 AP is available, reverts at end of turn or if weapon changed
+        internal class SingleAPWeaponsMultipleShots 
+        
+        {
+
+            private static Weapon _weaponChanged = null;
+            private static int _autoFireShotCountInitial;
+
+
+            [HarmonyPatch(typeof(TacAIActor), "EndTurn")]
+            public static class TacAIActor_EndTurn_patch
+            {
+                public static void Postfix(TacAIActor __instance)
+                {
+                    try
+                    {
+                        RevertAdjustForMultipleSingleAPAttack();
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+            private static Dictionary<WeaponDef, int> _kludgedWeapons = new Dictionary<WeaponDef, int>();
+
+            private static void AddWeaponToKludgeWeaponsList(WeaponDef weapon, int ogShots)
+            {
+                try
+                {
+                    if (!_kludgedWeapons.ContainsKey(weapon))
+                    {
+                        _kludgedWeapons.Add(weapon, ogShots);
                     }
                 }
                 catch (Exception e)
@@ -682,8 +319,319 @@ namespace TFTV
                     throw;
                 }
             }
-        }
 
+            public static void ClearData()
+            {
+                try
+                {
+                    if (_kludgedWeapons != null && _kludgedWeapons.Count > 0)
+                    {
+                        foreach (WeaponDef weapon in _kludgedWeapons.Keys)
+                        {
+                            TFTVLogger.Always($"reverted {weapon.name} on new turn start");
+                            weapon.APToUsePerc = 25;
+                            weapon.DamagePayload.AutoFireShotCount = _kludgedWeapons[weapon];
+                        }
+
+                        _kludgedWeapons.Clear();
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+
+
+            }
+
+            private static void CheckAndAdjustForMultipleSingleAPAttack(TacticalActor shooter, TacticalActorBase target, Weapon weapon)
+            {
+                try
+                {
+                    //    TFTVLogger.Always($"{shooter.DisplayName} has {shooter.CharacterStats.ActionPoints.Ratio}");
+
+                    if (weapon.WeaponDef.APToUsePerc == 25 && !weapon.WeaponDef.Traits.Contains("rocket_launcher"))
+                    {
+                        //      TFTVLogger.Always($"target.Health: {target.Health} weapon.GetDamage(): {weapon.GetDamage()}");
+
+                        if (target.Health > weapon.GetDamage() * 3 && shooter.CharacterStats.ActionPoints.Ratio >= 1f && weapon.CommonItemData.CurrentCharges >= 4)
+                        {
+
+                            _autoFireShotCountInitial = weapon.WeaponDef.DamagePayload.AutoFireShotCount;
+                            AddWeaponToKludgeWeaponsList(weapon.WeaponDef, _autoFireShotCountInitial);
+                            weapon.WeaponDef.APToUsePerc = 100;
+                            weapon.WeaponDef.DamagePayload.AutoFireShotCount *= 4;
+                            _weaponChanged = weapon;
+
+
+                        }
+                        else if (target.Health > weapon.GetDamage() * 2 && shooter.CharacterStats.ActionPoints.Ratio >= 0.75f && weapon.CommonItemData.CurrentCharges >= 3)
+                        {
+                            _autoFireShotCountInitial = weapon.WeaponDef.DamagePayload.AutoFireShotCount;
+                            AddWeaponToKludgeWeaponsList(weapon.WeaponDef, _autoFireShotCountInitial);
+                            weapon.WeaponDef.APToUsePerc = 75;
+                            weapon.WeaponDef.DamagePayload.AutoFireShotCount *= 3;
+                            _weaponChanged = weapon;
+
+
+                        }
+                        else if (target.Health > weapon.GetDamage() && shooter.CharacterStats.ActionPoints.Ratio >= 0.5f && weapon.CommonItemData.CurrentCharges >= 2)
+                        {
+                            _autoFireShotCountInitial = weapon.WeaponDef.DamagePayload.AutoFireShotCount;
+                            AddWeaponToKludgeWeaponsList(weapon.WeaponDef, _autoFireShotCountInitial);
+                            weapon.WeaponDef.APToUsePerc = 50;
+                            weapon.WeaponDef.DamagePayload.AutoFireShotCount *= 2;
+                            _weaponChanged = weapon;
+
+                        }
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            public static void RevertAdjustForMultipleSingleAPAttack()
+            {
+                try
+                {
+                    if (_weaponChanged != null && _weaponChanged.WeaponDef != null)
+                    {
+                        _weaponChanged.WeaponDef.APToUsePerc = 25;
+                        _weaponChanged.WeaponDef.DamagePayload.AutoFireShotCount = _autoFireShotCountInitial;
+                        if (_kludgedWeapons.ContainsKey(_weaponChanged.WeaponDef))
+                        {
+                            _kludgedWeapons.Remove(_weaponChanged.WeaponDef);
+                        }
+                        //   TFTVLogger.Always($"reverted {_weaponChanged.DisplayName} normally");
+                        _weaponChanged = null;
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+
+
+
+            [HarmonyPatch(typeof(AIActionMoveAndAttack), "GetAttackTarget")]
+            public static class AIActionMoveAndAttack_GetAttackTarget_patch
+            {
+                public static bool Prefix(AIActionMoveAndAttack __instance, TacticalAbility ability, TacAITarget aiTarget, ref TacticalAbilityTarget __result)
+                {
+                    try
+                    {
+                        // Check if ability is enabled.
+                        if (!ability.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsAndEquipmentNotSelected))
+                        {
+                            __result = null;
+                            return false;
+                        }
+
+                        // If the ability is a ShootAbility, perform the necessary null checks and adjustments.
+                        if (ability is ShootAbility shootAbility)
+                        {
+                            // If the tactical ability target is already set, just return that.
+                            if (aiTarget.TacticalAbilityTarget != null)
+                            {
+                                __result = aiTarget.TacticalAbilityTarget;
+                                return false;
+                            }
+
+                            // Perform null checks and log errors as in the original method.
+                            if (shootAbility.TacticalActor == null)
+                            {
+                                Debug.LogError("ShootAbility " + shootAbility.ShootAbilityDef.name + " is missing TacticalActor");
+                                __result = null;
+                                return false;
+                            }
+
+                            if (shootAbility.TacticalActor.TacticalFaction == null)
+                            {
+                                Debug.LogError("TacticalActor " + shootAbility.TacticalActor.name + " is missing TacticalFaction");
+                                __result = null;
+                                return false;
+                            }
+
+                            if (shootAbility.Weapon == null)
+                            {
+                                Debug.LogError("ShootAbility " + shootAbility.ShootAbilityDef.name + " is missing Weapon");
+                                __result = null;
+                                return false;
+                            }
+
+                            // Additional null check for the Vision component.
+                            if (shootAbility.TacticalActor.TacticalFaction.Vision == null)
+                            {
+                                Debug.LogError("TacticalFaction Vision is null for " + shootAbility.TacticalActor.TacticalFaction.TacticalFactionDef.name);
+                                __result = null;
+                                return false;
+                            }
+
+                            bool visionRevealsTarget = false;
+
+                            if (aiTarget.Actor != null && shootAbility.TacticalActor.TacticalFaction.Vision.IsRevealed(aiTarget.Actor))
+                            {
+                                visionRevealsTarget = true;
+                            }
+
+                            bool isDirectLineDamage = shootAbility.Weapon.GetDamagePayload().DamageDeliveryType == DamageDeliveryType.DirectLine;
+
+                            // Generate a shoot target.
+                            TacticalAbilityTarget shootTarget = AIUtil.GetShootTarget(shootAbility.Weapon, new TacticalAbilityTarget(aiTarget.Actor));
+
+                            // If no actor, or if vision reveals the target, or if weapon is not direct line,
+                            // perform our adjustments (if applicable) and return the generated shoot target.
+                            if (aiTarget.Actor == null || visionRevealsTarget || !isDirectLineDamage)
+                            {
+                                if (aiTarget.Actor != null)
+                                {
+                                    CheckAndAdjustForMultipleSingleAPAttack(shootAbility.TacticalActor, aiTarget.Actor, shootAbility.Weapon);
+                                }
+                                __result = shootTarget;
+                                return false;
+                            }
+
+                            // Otherwise, adjust the target’s position.
+                            Vector3 offset = 1.25f * Vector3.up;
+                            shootTarget.PositionToApply = aiTarget.Actor.Pos + offset;
+                            // Also adjust weapon properties as needed.
+                            CheckAndAdjustForMultipleSingleAPAttack(shootAbility.TacticalActor, aiTarget.Actor, shootAbility.Weapon);
+                            __result = shootTarget;
+                            return false;
+                        }
+
+                        // If the ability is a BashAbility, return the first matching target.
+                        if (ability is BashAbility bashAbility)
+                        {
+                            if (aiTarget.Actor != null)
+                            {
+                                __result = bashAbility.GetTargets().FirstOrDefault(x => x.Actor == aiTarget.Actor);
+                            }
+                            else
+                            {
+                                __result = null;
+                            }
+
+                            return false;
+                        }
+
+                        // For any other ability type, return null.
+                        __result = null;
+                        return false;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+
+            }
+
+
+
+
+        }  
+        //Culls dash evaluation so that it is only considered when character has at least 3 AP
+        internal class DashFix
+        {
+            [HarmonyPatch(typeof(AIHasEnemiesInRangeConsideration), "Evaluate")]
+            public static class AIHasEnemiesInRangeConsideration_Evaluate_patch
+            {
+                public static void Postfix(AIHasEnemiesInRangeConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
+                {
+                    try
+                    {
+                        if (__instance.Def.name.Equals("Dash_RangeClearanceConsiderationDef"))
+                        {
+                            TacticalActor tacticalActor = (TacticalActor)actor;
+
+                            //  TFTVLogger.Always($"{tacticalActor.name} so far has {__result} in Dash_RangeClearanceConsiderationDef");
+
+                            if (tacticalActor.CharacterStats.ActionPoints < tacticalActor.CharacterStats.ActionPoints.Max * 0.75f)
+                            {
+                                //  TFTVLogger.Always($"{tacticalActor.name} has {tacticalActor.CharacterStats.ActionPoints} AP, less than max {tacticalActor.CharacterStats.ActionPoints.Max * 0.75f}, so failing eval for dash");
+                                __result = 1;
+                            }
+
+
+
+                            /*  float actorRange = tacticalActor.CharacterStats.Speed * 1.5f;
+
+                              TFTVLogger.Always($"{tacticalActor.name} speed: {tacticalActor.CharacterStats.Speed} ap: {tacticalActor.CharacterStats.ActionPoints}" +
+                                  $"actorRange: {actorRange}");
+
+                              foreach (TacticalActorBase enemy in tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(tacticalActor.AIActor.GetEnemyMask(__instance.Def.EnemyMask)))
+                              {
+                                  if ((enemy.Pos - tacticalActor.Pos).magnitude <= actorRange)
+                                  {
+                                      __result = 1;
+                                   //   TFTVLogger.Always($"found enemy {enemy.DisplayName} within range, but returning 0 to see what happens");
+                                      return false;
+                                  }
+                              }
+
+                              __result = 0;
+                              return false;*/
+
+
+                        }
+
+                        // return true;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+            }
+        }
+        //reduces shoot eval score to almost zero if jamming field is active on the shooter
+        internal class JammingFieldReduceShootScore
+        {
+
+            [HarmonyPatch(typeof(AIAttackPositionConsideration), "EvaluateWithShootAbility")]
+            internal static class AIAttackPositionConsideration_EvaluateWithShootAbility_patch
+            {
+
+                public static void Postfix(AIAttackPositionConsideration __instance, IAIActor actor, IAITarget target, ref float __result)
+                {
+                    try
+                    {
+                        FumbleChanceStatusDef jammingField = DefCache.GetDef<FumbleChanceStatusDef>("E_FumbleChanceStatus [JammingFiled_AbilityDef]");
+
+                        if (__result > 0)
+                        {
+                            TacticalActor tacActor = (TacticalActor)actor;
+                            if (tacActor != null && tacActor.Status.HasStatus(jammingField))
+                            {
+
+                                __result *= 0.1f;
+                                //  TFTVLogger.Always($"{tacActor.name} result {__result} because jinxed");
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+        }
+        //sets turn order priority for AI actors based on various criteria
         internal class TurnOrder
         {
 
@@ -1068,6 +1016,7 @@ namespace TFTV
 
 
         }
+        //forces Scylla to use cannons after using head attack
         internal class ScyllaBlasterAttack
         {
 
@@ -1195,6 +1144,7 @@ namespace TFTV
                 }
             }
         }
+        //allows Scylla, Cyclops and Chiron to move more freely by adding navAreas from other large critters
         internal class SquashCrittersForScylllaCyclopsChiron
         {
             [HarmonyPatch(typeof(CaterpillarMoveAbility), "AbilityAdded")]
@@ -1326,6 +1276,7 @@ namespace TFTV
             }
 
         }
+        //prevents facehugger explosion from killing the host and prevents Scylla caterpillar explosion from damaging Scylla
         internal class PreventDamageFromSomeExplosions
         {
             [HarmonyPatch(typeof(DieAbility), "SpawnDeathEffect")]
@@ -1400,9 +1351,10 @@ namespace TFTV
                 }
             }
         }
+     
         internal class TargetCulling
         {
-
+            
             [HarmonyPatch(typeof(AIClosestEnemyConsideration), "Evaluate")]
             public static class AIClosestEnemyConsideration_Evaluate_patch
             {
@@ -1770,7 +1722,7 @@ namespace TFTV
                                 __result = 0f;
                                 return false;
                             }
-
+                         
                             IEnumerable<TacticalAbilityTarget> abilityTargets = null;
                             if (tacAITarget.IsPosValid)
                             {
@@ -1781,7 +1733,7 @@ namespace TFTV
                                 abilityTargets = mindControlAbility.GetTargets();
                             }
 
-                            abilityTargets = abilityTargets.Where((TacticalAbilityTarget t) => t.Actor != null && !t.Actor.IsDisabled || !t.Actor.IsDeadNextTurn()); //added checks IsDisabled and IsDeadNextTurn
+                            abilityTargets = abilityTargets.Where((TacticalAbilityTarget t) => t.Actor != null && !t.Actor.IsDisabled && !t.Actor.IsDeadNextTurn()); //added checks IsDisabled and IsDeadNextTurn
                             IEnumerable<TacticalActorBase> enumerable = from a in tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(tacticalActor.AIActor.GetEnemyMask(__instance.Def.EnemyMask))
                                                                         where abilityTargets.Any((TacticalAbilityTarget t) => t.Actor == a)
                                                                         select a;

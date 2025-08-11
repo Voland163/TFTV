@@ -247,7 +247,7 @@ namespace TFTV
                     TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
 
                     if (tacticalActorBase.BaseDef.name == "Soldier_ActorDef" && tacticalActorBase.InPlay && !tacticalActorBase.HasGameTag(mutoidTag)
-                        && tacticalActorBase.IsAlive && level.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(tacticalActor.GeoUnitId))
+                        && tacticalActorBase.IsAlive && tacticalActor.GeoUnitId!=null && tacticalActor.GeoUnitId != 0 && level.TacticalGameParams.Statistics.LivingSoldiers.ContainsKey(tacticalActor.GeoUnitId))
                     {
                         operatives.Add(tacticalActor);
                     }
