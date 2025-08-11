@@ -1158,12 +1158,28 @@ namespace TFTV
                 FixMutagenCostBadAcidWorm();
                 FixNotCapturableFaceHuggers();
                 FixFactionLevel1Templates();
+                FixByzantiumAutoRecover();
+
                 // FixUmbraFire(); doesn't work because status removed before check - implemented differently elsewhere
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        private static void FixByzantiumAutoRecover()
+        {
+            try 
+            {
+                DefCache.GetDef<CustomMissionTypeDef>("StoryNJ_Chain1_CustomMissionTypeDef").DontRecoverItems = true;
+               
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
         }
 
         private static void FixFactionLevel1Templates()
