@@ -58,7 +58,6 @@ namespace TFTV
                     TFTVAircraftRework.Modules.Geoscape.Scanning.CheckAircraftScannerAbility(__instance);
                     TFTVAircraftRework.Modules.Geoscape.PassengerModules.CheckAircraftNewPassengerCapacity(__instance);
 
-
                 }
                 catch (Exception e)
                 {

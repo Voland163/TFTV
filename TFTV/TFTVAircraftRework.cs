@@ -432,7 +432,7 @@ namespace TFTV
                     newAbility.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_THUNDERBIRD_GAW_ABILITY_NAME";
                     newAbility.ViewElementDef.Description.LocalizationKey = "TFTV_THUNDERBIRD_GAW_ABILITY_DESCRIPTION";
 
-                    Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_Thunderbird_GroundAttack_Small.png");
+                    Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_Thunderbird_GroundAttack_Ability1.png");
 
                     newAbility.ViewElementDef.SmallIcon = icon;
                     newAbility.ViewElementDef.LargeIcon = icon;
@@ -2778,7 +2778,7 @@ namespace TFTV
 
 
                             foreach (TacticalActor tacticalActor in controller.GetFactionByCommandName("px").TacticalActors.
-                                Where(ta => ta.BodyState.GetArmourItems().Any(a => a.GameTags.Contains(Shared.SharedGameTags.AnuMutationTag) 
+                                Where(ta => ta.BodyState.GetArmourItems().Any(a => a.GameTags.Contains(Shared.SharedGameTags.AnuMutationTag)
                                 || a.GameTags.Contains(DefCache.GetDef<ItemMaterialTagDef>("MutatedTissue_ItemMaterialTagDef")))))
                             {
 
@@ -2804,6 +2804,12 @@ namespace TFTV
                             {
                                 return;
                             }
+
+                            Sprite icon = Helper.CreateSpriteFromImageFile($"TFTV_Thunderbird_GroundAttack_Ability{_thunderbirdGroundAttackWeaponPresent}.png");
+
+
+                            _groundAttackAbility.ViewElementDef.SmallIcon = icon;
+                            _groundAttackAbility.ViewElementDef.LargeIcon = icon;
 
                             foreach (TacticalActor tacticalActor in controller.GetFactionByCommandName("px").TacticalActors)
                             {
@@ -3299,7 +3305,7 @@ namespace TFTV
                         public static class ActorComponentActivateAbilityPatch
                         {
                             // Prefix patch – before the original Activate runs.
-                            static bool Prefix(TacticalAbility __instance, object parameter)
+                            public static bool Prefix(TacticalAbility __instance, object parameter)
                             {
                                 try
                                 {
@@ -3337,6 +3343,21 @@ namespace TFTV
                                 {
                                     TFTVLogger.Error(e);
                                     throw;
+                                }
+                            }
+                            public static void Postfix(TacticalAbility __instance, object parameter)
+                            {
+                                try
+                                {
+                                    if (AircraftReworkOn && __instance.TacticalAbilityDef != null && __instance.TacticalAbilityDef == _groundAttackAbility)
+                                    {
+                                        RemoveGroundAttackWeaponModuleAbility(__instance.TacticalActor.TacticalLevel);
+                                        //   TFTVLogger.Always($"ability should be removed");
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    TFTVLogger.Error(e);
                                 }
                             }
 
@@ -3433,6 +3454,8 @@ namespace TFTV
 
 
 
+
+
                     }
 
                     private static bool _explosionsInProgress = false;
@@ -3444,8 +3467,6 @@ namespace TFTV
                             if (_explosionsInProgress)
                             {
                                 _explosionsInProgress = false;
-
-                                RemoveGroundAttackWeaponModuleAbility(controller);
 
                                 return false;
                             }
@@ -3477,7 +3498,9 @@ namespace TFTV
                                 }
                             }
 
-                            controller.View.ResetCharacterSelectedState();
+                            //  _thunderbirdGroundAttackWeaponPresent = 0;
+                            //  controller.View.ResetCharacterSelectedState();
+
                         }
                         catch (Exception e)
                         {
@@ -4555,7 +4578,10 @@ namespace TFTV
                 {
                     try
                     {
+                      
                         geoVehicle.AddAbility(geoAbility, geoVehicle);
+                        TFTVLogger.Always($"Added {geoAbility.name} to {geoVehicle.Name}");
+
                     }
                     catch (Exception e)
                     {
@@ -4835,6 +4861,35 @@ namespace TFTV
                 internal class Scanning
                 {
 
+
+
+
+
+
+                    [HarmonyPatch(typeof(GeoPhoenixFaction), "OnVehicleAdded")]
+                    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+                    public static class GeoPhoenixFaction_OnVehicleAdded_Patch
+                    {
+                        static void Postfix(GeoPhoenixFaction __instance, GeoVehicle vehicle)
+                        {
+                            try
+                            {
+                                if (!AircraftReworkOn)
+                                {
+                                    return;
+                                }
+
+                                CheckAircraftScannerAbility(vehicle);
+                                TFTVLogger.Always($"scanner ability added to {vehicle.Name}");
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+                            }
+                        }
+                    }
+
                     [HarmonyPatch(typeof(GeoAbility), "GetAbilityFaction")]
                     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
                     public static class GeoAbility_GetTargetDisabledState_Patch
@@ -5056,15 +5111,13 @@ namespace TFTV
                       }*/
 
 
+                  
+
+
                     public static void CheckAircraftScannerAbility(GeoVehicle geoVehicle)
                     {
                         try
                         {
-                            if (!AircraftReworkOn)
-                            {
-                                return;
-                            }
-
 
                             if (geoVehicle.Modules != null && geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _basicScannerModule) && geoVehicle.GetAbility<ScanAbility>() == null)
                             {
@@ -5083,6 +5136,8 @@ namespace TFTV
                             {
                                 RemoveAbilityFromVehicle(geoVehicle, _thunderbirdScanAbilityDef);
                             }
+
+
 
                         }
                         catch (Exception e)

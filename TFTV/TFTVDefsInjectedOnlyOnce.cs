@@ -980,7 +980,7 @@ namespace TFTV
                 ChangeBehemothStomp();
                 TFTVBaseDefenseTactical.Defs.CreateDefsForBaseDefenseTactical();
                 RemoveTerrorSentinelCitadel();
-                RemoveOrganicConditionForSlowedStatus();
+                RemoveOrganicConditionForSlowedStatusAndMakeSingleApplication();
                 AdjustMistSentinelDetection();
                 Create_StarvedAbility();
                 TFTVUITactical.SecondaryObjectivesTactical.Defs.CreateDefs();
@@ -1042,11 +1042,22 @@ namespace TFTV
 
 
         }
-        private static void RemoveOrganicConditionForSlowedStatus()
+        private static void RemoveOrganicConditionForSlowedStatusAndMakeSingleApplication()
         {
             try
             {
-                DefCache.GetDef<TacStatsModifyStatusDef>("Slowed_StatusDef").ApplicationConditions = new EffectConditionDef[] { };
+                TacStatsModifyStatusDef slowedStatusDef = DefCache.GetDef<TacStatsModifyStatusDef>("Slowed_StatusDef");
+
+                slowedStatusDef.ApplicationConditions = new EffectConditionDef[] { };
+                slowedStatusDef.SingleInstance = true;
+
+                TacStatusEffectDef confusionCloudEffect = DefCache.GetDef<TacStatusEffectDef>("E_ApplySlowedStatus [Acheron_ParalyticCloud_AbilityDef]");
+
+                confusionCloudEffect.ApplicationConditions = new EffectConditionDef[] 
+                { 
+                DefCache.GetDef<ActorHasTagEffectConditionDef>("E_HasOrganicTag [Corruption_StatusDef]")
+                };
+
             }
             catch (Exception e)
             {

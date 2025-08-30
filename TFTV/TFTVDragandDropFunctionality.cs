@@ -1256,6 +1256,12 @@ namespace TFTV
                             geoVehicle.VehicleID = x;
                             vehicles.Add(geoVehicle);
                             TFTVLogger.Always($"Restoring {geoVehicle.Name} {geoVehicle.VehicleID}");
+
+                            if (TFTVAircraftRework.AircraftReworkOn)
+                            {
+                                TFTVAircraftRework.Modules.Geoscape.Scanning.CheckAircraftScannerAbility(geoVehicle);
+                               // TFTVLogger.Always($"scanner ability added to {geoVehicle.Name}");
+                            }
                         }
 
                         factionActorCache.Cache[phoenixFaction] = vehicles;
