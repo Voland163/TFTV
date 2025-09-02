@@ -185,6 +185,7 @@ namespace TFTV
 
                 TFTVNJQuestline.IntroMission.ClearDataOnMissionRestartLoadAndStateChange();
               TFTVAircraftRework.InternalData.ClearDataOnStateChange();
+                TFTVHavenRecruitsScreen.ClearInternalData();
 
                 TFTVLogger.Always($"Internal variables cleared on State change or Load");
             }

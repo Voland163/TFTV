@@ -10,6 +10,7 @@ using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects;
+using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PRMBetterClasses.SkillModifications;
@@ -27,6 +28,50 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
 
+
+
+        
+        [HarmonyPatch(typeof(TacticalActorBase), "ApplyDamageInternal")]
+        public static class TacticalActorBase_ApplyDamageInternal_Patch
+        {
+            public static void Prefix(TacticalActorBase __instance, ref DamageResult damageResult)
+            {
+                try
+                {
+                   // TFTVLogger.Always($"Applying damage to {__instance.name}, HP amount: {damageResult.HealthDamage}.DamageTypeDef? {damageResult.DamageTypeDef?.name}");
+
+                    if (damageResult.DamageTypeDef != null && damageResult.DamageTypeDef == DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Acid_DamageOverTimeDamageTypeEffectDef") 
+                        && damageResult.HealthDamage > 0)
+                    {
+                       
+                       
+                        float resistanceToAcid = 1; //as this is a multiplier, this means a resistance of 0%
+                        foreach (var damageMultiplier in __instance.GetDamageMultipliers(DamageMultiplierType.Incoming, damageResult.DamageTypeDef))
+                        {
+                            resistanceToAcid *= damageMultiplier.GetMultiplier(__instance, __instance);
+                        }
+
+                        TFTVLogger.Always($"Acid damage being applied to {__instance.name}, HP amount: {damageResult.HealthDamage}, resistance to acid: {resistanceToAcid}");
+
+                        if (resistanceToAcid == 1) 
+                        {
+                            return;
+                        }
+
+                        float adjustedHealthDamage = damageResult.HealthDamage / resistanceToAcid;
+                        TFTVLogger.Always($"reverting damage from acid to {adjustedHealthDamage}");
+                        damageResult.HealthDamage = adjustedHealthDamage;
+                    }
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
         //Patch to prevent BionicResistances from being removed when Acid applies Disabled Status
         [HarmonyPatch(typeof(ActorComponent), "RemoveAbility", new Type[] { typeof(Ability) })]
@@ -63,7 +108,7 @@ namespace TFTV
                         || __instance.DamageKeywordDef == SkillModsMain.sharedSoloDamageKeywords.SoloAcidKeyword)
                         && __result != 0)
                     {
-                        // TFTVLogger.Always($"Applyin acid; setting result to value (current value {value} and result {__result})");
+                        //  TFTVLogger.Always($"Applyin acid; setting result to value (current value {value} and result {__result})");
                         __result = value;
                     }
 
@@ -77,17 +122,24 @@ namespace TFTV
         }
 
 
-        private static bool ApplyTFTVAcidDamage(AcidDamageEffect __instance, EffectTarget target, DamageAccumulation accum, IDamageReceiver recv, Vector3 damageOrigin, Vector3 impactForce, CastHit impactHit)
+        private static bool ApplyTFTVAcidDamage(AcidDamageEffect __instance, EffectTarget target, ref DamageAccumulation accum, IDamageReceiver recv, Vector3 damageOrigin, Vector3 impactForce, CastHit impactHit)
         {
             try
             {
 
+
+                float resistanceToAcid = 1; //as this is a multiplier, this means a resistance of 0%
+
                 if (recv != null)
                 {
-                    float resistanceToAcid = 1; //as this is a multiplier, this means a resistance of 0%
+
 
                     TacticalActor hitActor = recv?.GetActor() as TacticalActor;
+
                     ItemSlot itemSlot = recv as ItemSlot;
+
+
+
                     ItemSlot additionalSlot = null; //in case Leg                   
 
                     if (hitActor != null)
@@ -112,19 +164,46 @@ namespace TFTV
                         }
                     }
 
+
                     bool num = (float)recv.GetArmor().Value > 1E-05f;
                     float armorDamage = num ? accum.Amount : 0f;
                     float num2 = num ? 0f : (accum.Amount * resistanceToAcid);
+
+                    TFTVLogger.Always($"Acid damage being applied: initial {accum.Amount}, after armor/resistance {num2}, resistance to acid {resistanceToAcid}");
 
                     DamageAccumulation.TargetData data = GetDamageData(num2, recv, __instance, armorDamage, damageOrigin, impactForce, impactHit);
 
                     DisableElectronics(num2, itemSlot, additionalSlot, recv, __instance);
 
                     accum.AddGeneratedTarget(data);
-
-                    return false;
                 }
-                return true;
+                else
+                {
+                    bool num = (float)recv.GetArmor().Value > 1E-05f;
+                    float armorDamage = num ? accum.Amount : 0f;
+                    float num2 = (num ? 0f : (accum.Amount * accum.GetSourceDamageMultiplierForReceiver(recv)));
+
+                    TFTVLogger.Always($"Acid damage being applied when recv is null: initial {accum.Amount}, after armor/resistance {num2}, resistance to acid {resistanceToAcid}");
+
+                    DamageAccumulation.TargetData data = new DamageAccumulation.TargetData
+                    {
+                        Target = recv,
+                        AmountApplied = num2,
+                        DamageResult = new DamageResult
+                        {
+                            Source = __instance.Source,
+                            ArmorDamage = armorDamage,
+                            HealthDamage = num2,
+                            ImpactForce = impactForce,
+                            ImpactHit = impactHit,
+                            DamageOrigin = damageOrigin,
+                            DamageTypeDef = __instance.AcidDamageEffectDef.DamageTypeDef
+                        }
+                    };
+                    accum.AddGeneratedTarget(data);
+                }
+
+                return false;
             }
 
             catch (Exception e)
@@ -138,23 +217,23 @@ namespace TFTV
         private static DamageAccumulation.TargetData GetDamageData
             (float num2, IDamageReceiver recv, AcidDamageEffect acidDamageEffect, float armorDamage, Vector3 damageOrigin, Vector3 impactForce, CastHit impactHit)
         {
-            try 
-            { 
-            return new DamageAccumulation.TargetData
+            try
             {
-                Target = recv,
-                AmountApplied = num2,
-                DamageResult = new DamageResult
+                return new DamageAccumulation.TargetData
                 {
-                    Source = acidDamageEffect.Source,
-                    ArmorDamage = armorDamage,
-                    HealthDamage = num2,
-                    ImpactForce = impactForce,
-                    ImpactHit = impactHit,
-                    DamageOrigin = damageOrigin,
-                    DamageTypeDef = acidDamageEffect.AcidDamageEffectDef.DamageTypeDef
-                }
-            };
+                    Target = recv,
+                    AmountApplied = num2,
+                    DamageResult = new DamageResult
+                    {
+                        Source = acidDamageEffect.Source,
+                        ArmorDamage = armorDamage,
+                        HealthDamage = num2,
+                        ImpactForce = impactForce,
+                        ImpactHit = impactHit,
+                        DamageOrigin = damageOrigin,
+                        DamageTypeDef = acidDamageEffect.AcidDamageEffectDef.DamageTypeDef
+                    }
+                };
 
 
             }
@@ -253,7 +332,7 @@ namespace TFTV
             {
                 try
                 {
-                    return ApplyTFTVAcidDamage(__instance, target, accum, recv, damageOrigin, impactForce, impactHit);
+                    return ApplyTFTVAcidDamage(__instance, target, ref accum, recv, damageOrigin, impactForce, impactHit);
                 }
                 catch (Exception e)
                 {

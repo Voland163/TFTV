@@ -3,6 +3,7 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Modding;
 using System;
 using System.Collections.Generic;
@@ -126,6 +127,12 @@ namespace TFTV
             TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
             TFTVUIGeoMap.UnpoweredFacilitiesInfo.CheckUnpoweredBasesOnGeoscapeStart();
             TFTVAircraftRework.AircraftSpeed.Init(Controller);
+
+          /* foreach(GeoFactionObjective geoFactionObjective in Controller.PhoenixFaction.Objectives) 
+            {
+                TFTVLogger.Always($"{geoFactionObjective.Title?.Localize()} {geoFactionObjective.Description?.Localize()} ");
+            }*/
+
            // TFTVAircraftRework.Modules.Geoscape.Scanning.CheckAllVehiclesForScannerAbility(Controller);
             //  TFTVExperimental.PrintAvailableTemplates(Controller);
             // TFTVExperimental.PrintInfoHavenRecruits(Controller);

@@ -1651,9 +1651,10 @@ namespace TFTV
                             GameTagDef vehicleTag = CommonHelpers.GetSharedGameTags().VehicleTag;
                             List<TacticalActor> list = (from p in __instance.GetOwnedActors<TacticalActor>()
                                                         where p.LevelProgression != null && p.IsAlive
-                                                        && !p.GameTags.Contains(vehicleTag) && CheckActorIsInPhoenixRecords(p)
+                                                        && !p.GameTags.Contains(vehicleTag) && CheckActorIsInPhoenixRecords(p) && !DrillsAbilities.Tactical.MentorProtocol.CheckForMentorProtocolAbility(p)
                                                         orderby p.Contribution.Contribution descending
                                                         select p).ToList();
+
                             if (__instance.State == TacFactionState.Won && difficulty != null)
                             {
                                 foreach (TacticalActor item in list)
@@ -1951,6 +1952,13 @@ namespace TFTV
                             {
                                 StatusStat willPoints = __instance.ControllerActor.CharacterStats.WillPoints;
                                 float num = Mathf.Max(____minUpkeepCost, __instance.TacticalActor.TacticalActorDef.WillPointWorth);
+
+                                if(DrillsAbilities.Tactical.VirulentGrip.CheckForVirulentGripAbility(__instance.ControllerActor, __instance.TacticalActor))
+                                {
+                                    num /=2;
+                                    TFTVLogger.Always($"halving cost of MCing {__instance.TacticalActor.name} because infected and {__instance.ControllerActor.DisplayName} has VirulentGrip ability");
+                                }
+
                                 bool flag = (willPoints - num) < 0;
                                 if (flag)
                                 {

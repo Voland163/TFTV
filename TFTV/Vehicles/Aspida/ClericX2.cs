@@ -189,7 +189,7 @@ namespace TFTVVehicleRework.Aspida
             {
                 Condition = Repo.CreateDef<ActorHasStatusEffectConditionDef>("75d3765c-ed8c-46f5-b583-2ecff4ea8459");
                 Condition.name = "HasDazedStatus_ApplicationCondition";
-                Condition.StatusDef = (TacStatusDef)Repo.GetDef("bc7c3977-a34f-0594-2aa0-6fc76c4351d4"); //"ActorStunned_StatusDef"
+                Condition.StatusDef = (TacStatusDef)Repo.GetDef("bc7c3977-a34f-0594-2aa0-6fc76c4351d4"); //"ActorStunned_StatusDef" //need to replace with new status
                 Condition.HasStatus = true;
             }
             return Condition;

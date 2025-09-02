@@ -68,12 +68,12 @@ namespace TFTV
 
                 Weapon bestWeapon = weapons.OrderByDescending(w => w.WeaponDef.EffectiveRange).ToList().First();
 
-                if (tacticalActor.Equipments.SelectedWeapon != bestWeapon)
+                if (tacticalActor.Equipments.SelectedWeapon == null || tacticalActor.Equipments.SelectedWeapon != bestWeapon)
                 {
-                    TFTVLogger.Always($"Applying GetBestWeaponForOWRF {tacticalActor.name} was holding {tacticalActor.Equipments.SelectedWeapon.DisplayName}, switching to {bestWeapon.DisplayName}");
+                    TFTVLogger.Always($"Applying GetBestWeaponForOWRF {tacticalActor.name} was holding {tacticalActor?.Equipments?.SelectedWeapon?.DisplayName}, switching to {bestWeapon.DisplayName}");
                     tacticalActor.Equipments.SetSelectedEquipment(bestWeapon);
                 }
-                ;
+                
             }
             catch (Exception e)
             {
@@ -110,7 +110,7 @@ namespace TFTV
 
                 if (tacticalActor.Equipments.SelectedWeapon == null || tacticalActor.Equipments.SelectedWeapon != bestWeapon)
                 {
-                    // TFTVLogger.Always($"Applying GetBestWeaponForQA {tacticalActor.name} was holding {tacticalActor.Equipments.SelectedWeapon?.DisplayName}, switching to {bestWeapon.DisplayName}");
+                    TFTVLogger.Always($"Applying GetBestWeaponForQA {tacticalActor.name} was holding {tacticalActor?.Equipments?.SelectedWeapon?.DisplayName}, switching to {bestWeapon?.DisplayName}");
                     tacticalActor.Equipments.SetSelectedEquipment(bestWeapon);
                 }
                 ;
@@ -618,7 +618,7 @@ namespace TFTV
                             if (tacActor != null && tacActor.Status.HasStatus(jammingField))
                             {
 
-                                __result *= 0.1f;
+                                __result *= 0.5f;
                                 //  TFTVLogger.Always($"{tacActor.name} result {__result} because jinxed");
                             }
                         }

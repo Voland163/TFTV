@@ -3,6 +3,7 @@ using Base.Core;
 using Base.Defs;
 using Base.Levels;
 using HarmonyLib;
+using MadSkunkyTweaks.Tools;
 using Newtonsoft.Json;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Game;
@@ -93,7 +94,7 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                string version = $"TFTV 1.0, Patch 20 20250902 release #1  v{MetaData.Version}";
+                string version = $"TFTV 1.0, Patch 20 20250902 AIRCRAFT REWORK BETA release #2  v{MetaData.Version}";
 
                 //Patch 15 20250328 release #1
 
@@ -178,6 +179,7 @@ namespace TFTV
                 }
 
 
+                ConsoleCommands.InjectConsoleCommands();
 
 
                 /*     Type renderingEnvironmentType = typeof(RenderingEnvironment);

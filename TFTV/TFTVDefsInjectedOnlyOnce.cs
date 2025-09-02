@@ -107,28 +107,17 @@ namespace TFTV
         {
             try
             {
-                foreach(UnitTemplateResearchRewardDef unitTemplateResearchRewardDef in Repo.GetAllDefs<UnitTemplateResearchRewardDef>().
-                    Where(t=>t.Add==true && t.Template.Data.LevelProgression.Level==1 && !t.name.Contains("ALN")))
-                { 
-                    TacCharacterDef tacCharacterDef = unitTemplateResearchRewardDef.Template;
 
-                    TFTVLogger.Always($"{tacCharacterDef.name} added in {unitTemplateResearchRewardDef.name}");
+                List<TacticalItemDef> armourItems = Repo.GetAllDefs<TacticalItemDef>().Where(i => i.Tags.Contains(Shared.SharedGameTags.ArmorTag)
+                   && i.Tags.Contains(DefCache.GetDef<GameTagDef>("Sniper_ClassTagDef"))).ToList();
 
-                    if (Repo.GetAllDefs<UnitTemplateResearchRewardDef>().Any(t => t.Template == tacCharacterDef && t.Add == false)) 
-                    {
-                       TFTVLogger.Always($"{tacCharacterDef.name} removed in {Repo.GetAllDefs<UnitTemplateResearchRewardDef>().FirstOrDefault(t => t.Template == tacCharacterDef && t.Add == false).name}", false);
-                    }
-                    else
-                    {
-                        TFTVLogger.Always($"{tacCharacterDef.name} never removed", false);
-                    }
+                foreach (TacticalItemDef item in armourItems)
+                {
+
+
+                    TFTVLogger.Always($"{item.name}");
                 }
-
-                DefCache.GetDef<UnitTemplateResearchRewardDef>("PX_NewJericho_ResearchDef_UnitTemplateResearchRewardDef_0").name = "NJ_NewJericho_ResearchDef_UnitTemplateResearchRewardDef_0";
-             
-                ResearchDef gaussResearch =  DefCache.GetDef<ResearchDef>("NJ_GaussTech_ResearchDef");
-                gaussResearch.Unlocks = gaussResearch.Unlocks.AddToArray(DefCache.GetDef<UnitTemplateResearchRewardDef>("PX_NewJericho_ResearchDef_UnitTemplateResearchRewardDef_1"));
-
+            
             }
             catch (Exception e)
             {
@@ -240,9 +229,11 @@ namespace TFTV
 
                 TFTVAircraftRework.Defs.CreateAndModifyDefs();
 
+               DrillsAbilities.Defs.CreateDefs();
+
                 // Experimental();
 
-               //  Print();
+                Print();
 
             }
             catch (Exception e)
@@ -2032,6 +2023,8 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
         {
             try
             {
+             
+
                 Sprite talkSprite = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_PersonalTrack_Warcry.png");
                 Sprite cancelTalkSprite = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_PersonalTrack_Warcry_Cancel.png");
 
@@ -3954,6 +3947,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 damageTypeBaseEffectDefs.Add(fireDamage);
                 damageTypeBaseEffectDefs.Add(standardDamageTypeEffectDef);
                 damageTypeBaseEffectDefs.Add(acidDamage);
+                damageTypeBaseEffectDefs.Add(DrillsAbilities.MeleeStandardDamageType);
 
                 //     TFTVLogger.Always($"damageTypeBaseEffectDefs {damageTypeBaseEffectDefs.Count()}");
 
@@ -4549,7 +4543,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
 
                 newEffectCondtions.OrConditions = new EffectConditionDef[]
                 {
-                TFTVCommonMethods.CreateNewStatusEffectCondition("{0D32B04B-8EAA-4C76-9F24-F92F0FE8CD74}", DefCache.GetDef<StatusDef>("ActorStunned_StatusDef")),
+                TFTVCommonMethods.CreateNewStatusEffectCondition("{0D32B04B-8EAA-4C76-9F24-F92F0FE8CD74}", DefCache.GetDef<StatusDef>("ActorStunned_StatusDef")),//need to replace with new status
                 TFTVCommonMethods.CreateNewStatusEffectCondition("{BF5726D7-5E9C-4145-85E8-79545CBB3261}", DefCache.GetDef<StatusDef>("Acid_StatusDef")),
                TFTVCommonMethods.CreateNewStatusEffectCondition("{177E042A-B8F8-4302-9520-CC0610C045B0}", DefCache.GetDef<StatusDef>("Blinded_StatusDef")),
                 TFTVCommonMethods.CreateNewStatusEffectCondition("{A054A669-8C7B-4005-8749-BA6CD71163CA}", DefCache.GetDef<StatusDef>("Slowed_StatusDef")),
@@ -5888,6 +5882,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 damageTypeBaseEffectDefs.Add(fireDamage);
                 damageTypeBaseEffectDefs.Add(standardDamageTypeEffectDef);
                 damageTypeBaseEffectDefs.Add(acidDamage);
+                damageTypeBaseEffectDefs.Add(DrillsAbilities.MeleeStandardDamageType);
 
                 newStatus.DamageTypeDefs = damageTypeBaseEffectDefs.ToArray();
 
@@ -5944,6 +5939,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 damageTypeBaseEffectDefs.Add(fireDamage);
                 damageTypeBaseEffectDefs.Add(standardDamageTypeEffectDef);
                 damageTypeBaseEffectDefs.Add(acidDamage);
+                damageTypeBaseEffectDefs.Add(DrillsAbilities.MeleeStandardDamageType);
 
 
                 newStatus.DamageTypeDefs = damageTypeBaseEffectDefs.ToArray();
@@ -6001,6 +5997,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 damageTypeBaseEffectDefs.Add(fireDamage);
                 damageTypeBaseEffectDefs.Add(standardDamageTypeEffectDef);
                 damageTypeBaseEffectDefs.Add(acidDamage);
+                damageTypeBaseEffectDefs.Add(DrillsAbilities.MeleeStandardDamageType);
 
                 newStatus.DamageTypeDefs = damageTypeBaseEffectDefs.ToArray();
 

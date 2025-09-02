@@ -10,6 +10,7 @@ using Base.UI;
 using Base.UI.MessageBox;
 using Base.Utils.Maths;
 using HarmonyLib;
+using I2.Loc;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -65,7 +66,7 @@ namespace TFTV
 {
     class TFTVAircraftRework
     {
-        public static bool AircraftReworkOn = false;
+        public static bool AircraftReworkOn = true;
         private static readonly float _mistSpeedMalus = 0.2f;
         //  private static readonly float _mistSpeedBuff = 0.5f;
         private static readonly float _mistSpeedModuleBuff = 150;
@@ -294,7 +295,6 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
-
             private static void RemoveInfestedAircraft()
             {
                 try
@@ -1192,6 +1192,40 @@ namespace TFTV
                     FesteringSkiesSettingsDef festeringSkiesSettingsDef = DefCache.GetDef<FesteringSkiesSettingsDef>("FesteringSkiesSettingsDef");
                     festeringSkiesSettingsDef.UISettings.GeoscapeModuleBonusStaminaString.LocalizationKey = "TFTV_CLINIC_BONUS";
 
+                    // Example of initializing the dictionary with the provided values
+                    Dictionary<string, string> keyReplacements = new Dictionary<string, string>
+                    {
+                        { "VOID_OMEN_TITLE_7", "VOID_OMEN_TITLE_7_ALT" },
+                       { "VOID_OMEN_DESCRIPTION_TEXT_7", "VOID_OMEN_DESCRIPTION_TEXT_7_ALT"},
+                        {"VOID_OMEN_REMOVAL_TEXT_7", "VOID_OMEN_REMOVAL_TEXT_7_ALT" }
+                    };
+
+
+
+                    // Get the TermData for the key
+
+                    foreach (string key in keyReplacements.Keys)
+                    {
+                        TermData termData = LocalizationManager.GetTermData(key);
+                        if (termData != null)
+                        {
+                            // Get the current language index
+                            int languageIndex = -1;
+                            foreach (var source in LocalizationManager.Sources)
+                            {
+                                languageIndex = source.GetLanguageIndex(LocalizationManager.CurrentLanguage);
+                                if (languageIndex >= 0)
+                                {
+                                    // Set the new translation
+                                    termData.SetTranslation(languageIndex, keyReplacements[key]);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    
+
                 }
 
                 catch (Exception e)
@@ -1751,7 +1785,7 @@ namespace TFTV
                     {
                         researchRewardDef = (ManufactureResearchRewardDef)research.Unlocks.FirstOrDefault(u => u is ManufactureResearchRewardDef);
                         researchRewardDef.Items = researchRewardDef.Items.AddToArray(module);
-                        TFTVLogger.Always($"{research.Id} should grant {module.name} via {researchRewardDef.name}");
+                      //  TFTVLogger.Always($"{research.Id} should grant {module.name} via {researchRewardDef.name}");
                     }
                     else
                     {
@@ -1759,7 +1793,7 @@ namespace TFTV
                         researchRewardDef = Helper.CreateDefFromClone(researchRewardDefSource, guid, $"{module.name}");
                         researchRewardDef.Items = new ItemDef[] { module };
                         research.Unlocks = research.Unlocks.AddToArray(researchRewardDef);
-                        TFTVLogger.Always($"{research.Id} should grant {module.name} via {researchRewardDef.name}");
+                       // TFTVLogger.Always($"{research.Id} should grant {module.name} via {researchRewardDef.name}");
 
                     }
                 }
@@ -3979,10 +4013,47 @@ namespace TFTV
                         }
                     }
 
+                  /*  [HarmonyPatch(typeof(GeoMission), "GetItemsOnTheGround")]
+                    public static class GeoMission_GetItemsOnTheGround2_Patch
+                    {
+                        public static void Postfix(GeoMission __instance, TacMissionResult result, ref IEnumerable<GeoItem> __result)
+                        {
+                            try
+                            {
+
+
+                                if (!AircraftReworkOn)
+                                {
+                                    return;
+                                }
+
+                                TFTVLogger.Always($"__result==null? {__result==null}");
+
+                                foreach(GeoItem geoItem in __result)
+                                {
+                                    TFTVLogger.Always($"item on the ground: {geoItem?.ItemDef?.name}");
+                                }
+
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                                throw;
+
+                            }
+                        }
+
+                    }*/
+
+
+
+
+
+
                     [HarmonyPatch(typeof(GeoMission), "ManageGear")]
                     public static class GeoMission_ManageGear_Patch
                     {
-                        public static void Prefix(GeoMission __instance, out bool __state)
+                        public static void Prefix(GeoMission __instance, TacMissionResult result, GeoSquad squad, out bool __state)
                         {
                             try
                             {
@@ -3994,14 +4065,15 @@ namespace TFTV
                                 }
 
 
-
                                 if (_captureDronesPresent > 0 && __instance.MissionDef.DontRecoverItems)
                                 {
-                                    TFTVLogger.Always($"got here; drones");
+                                    TFTVLogger.Always($"got here; salvage drone module changing missionDef {__instance.MissionDef.name} to recover items");
 
                                     __instance.MissionDef.DontRecoverItems = false;
                                     __state = true;
                                 }
+
+
 
                             }
                             catch (Exception e)
@@ -4019,10 +4091,15 @@ namespace TFTV
                                     return;
                                 }
 
+                             
+
                                 if (_captureDronesPresent > 0)
                                 {
+                                    TFTVLogger.Always($"changing missionDef {__instance.MissionDef.name} back to not recover items");
                                     __instance.MissionDef.DontRecoverItems = true;
                                 }
+
+                               
                             }
                             catch (Exception e)
                             {
@@ -4033,37 +4110,104 @@ namespace TFTV
                     }
 
 
-
                     [HarmonyPatch(typeof(GeoMission), "GetItemsOnTheGround")]
-                    public static class GeoMission_GetItemsOnTheGround_Patch
+                    internal static class GeoMission_GetItemsOnTheGround_Prefix
                     {
-                        public static bool Prefix(GeoMission __instance, TacMissionResult result)
+                        // Prefix fully replaces original; __result is set and we return false.
+                        static bool Prefix(GeoMission __instance, TacMissionResult result, ref IEnumerable<GeoItem> __result)
                         {
                             try
                             {
+                                var site = __instance.Site;
+                                var level = site.GeoLevel;
 
+                                // Re-derive the private ManufactureTag the original uses
+                                var manufactureTag = __instance.GameController
+                                    .GetComponent<SharedData>()
+                                    .SharedGameTags
+                                    .ManufacturableTag;
 
-                                if (!AircraftReworkOn)
+                                // Alien "items" tag used to exclude alien-only gear
+                                var alienItemsRaceTag = level.AlienFaction.FactionDef.RaceTagDef;
+
+                                // This is how the original gets the Environment faction's results
+                                var envResult = result.GetResultByFacionDef(level.EnvironmentFactionDef.PPFactionDef);
+
+                                // Defensive guard
+                                if (envResult == null)
                                 {
-                                    return true;
+                                    TFTVLogger.Always("[TFTV] GetItemsOnTheGround: No environment faction result found.");
+                                    __result = Enumerable.Empty<GeoItem>();
+                                    return false;
                                 }
 
-                                if (_captureDronesPresent == 0)
+                                // Pull every ItemContainerResult the mission produced for the environment faction
+                                var containers = envResult.UnitResults
+                                    .Select(u => u.Data)
+                                    .OfType<ItemContainerResult>()
+                                    .ToList();
+
+                                // ---- Custom logging per ItemContainerResult (requested) ----
+                                // We don't know extra metadata on ItemContainerResult beyond InventoryItems,
+                                // so we log index + counts + a few item names for quick inspection.
+                                for (int i = 0; i < containers.Count; i++)
                                 {
-                                    return true;
+                                    var c = containers[i];
+                                    int count = c?.InventoryItems?.Count() ?? 0;
+                                    var sampleNames = (c?.InventoryItems ?? Enumerable.Empty<ItemData>())
+                                        .Take(5)
+                                        .Select(it => it?.ItemDef?.name ?? "<null>")
+                                        .ToArray();
+
+                                    TFTVLogger.Always($"[TFTV] ItemContainerResult[{i}] -> items: {count}, sample: {string.Join(", ", sampleNames)}");
+                                }
+                                // ------------------------------------------------------------
+
+                                var picked = new List<GeoItem>();
+
+                                foreach (var container in containers)
+                                {
+                                    TFTVLogger.Always($"container count: {container.InventoryItems.Count}");
+
+                                    if (container.InventoryItems == null)
+                                        continue;
+
+                                    foreach (var invItem in container.InventoryItems)
+                                    {
+                                        // Mirror original filters:
+                                        // 1) Must be manufacturable (has manufactureTag)
+                                        // 2) Must NOT be alien-only (own-tags include alienItemsRaceTag)
+                                        // 3) Exclude permanent augments (permanent TacticalItemDef augments)
+                                        bool isManufacturable = (invItem.ItemDef.Tags?.Contains(manufactureTag) ?? false);
+                                        bool isAlienOnly = (invItem.OwnTags?.Contains(alienItemsRaceTag) ?? false);
+
+                                        bool isPermanentAugment =
+                                            invItem.ItemDef is TacticalItemDef tItem &&
+                                            tItem.IsPermanentAugment;
+
+                                        if (isManufacturable && !isAlienOnly && !isPermanentAugment)
+                                        {
+                                            picked.Add(new GeoItem(invItem));
+                                        }
+                                        else
+                                        {
+                                            // Detailed log on excluded items to help validate filters
+                                            TFTVLogger.Always($"[TFTV] Excluded ground item '{invItem?.ItemDef?.name}': " +
+                                                      $"Manufacturable={isManufacturable}, AlienOnly={isAlienOnly}, PermanentAugment={isPermanentAugment}");
+                                        }
+                                    }
                                 }
 
-
-                                return false;
-
+                                __result = picked;
+                                return false; // skip original
                             }
                             catch (Exception e)
                             {
-                                TFTVLogger.Error(e);
-                                throw;
+                                TFTVLogger.Always($"[TFTV] GetItemsOnTheGround Prefix failed: {e}");
+                                // On error, let original run to avoid breaking gameplay
+                                return true;
                             }
                         }
-
                     }
 
 
@@ -4578,7 +4722,7 @@ namespace TFTV
                 {
                     try
                     {
-                      
+
                         geoVehicle.AddAbility(geoAbility, geoVehicle);
                         TFTVLogger.Always($"Added {geoAbility.name} to {geoVehicle.Name}");
 
@@ -5023,7 +5167,7 @@ namespace TFTV
 
                                 GeoVehicle geoVehicle = __instance.Actor as GeoVehicle;
 
-                                if (!geoVehicle.CanRedirect)
+                                if (geoVehicle!=null && !geoVehicle.CanRedirect)
                                 {
                                     __result = GeoAbilityDisabledState.NoScanChargesLeft;
                                 }
@@ -5111,7 +5255,7 @@ namespace TFTV
                       }*/
 
 
-                  
+
 
 
                     public static void CheckAircraftScannerAbility(GeoVehicle geoVehicle)
@@ -6341,7 +6485,7 @@ namespace TFTV
                                 return;
                             }
 
-                            TFTVLogger.Always($"SetEquipmentUIData {data == null} {data?.AircraftEquipmentDef?.name}");
+                           // TFTVLogger.Always($"SetEquipmentUIData {data == null} {data?.AircraftEquipmentDef?.name}");
 
                             if (data == null)
                             {
@@ -6354,7 +6498,7 @@ namespace TFTV
                             int tier = GetTier(itemDef);
                             __instance.Health.text = "";
 
-                            TFTVLogger.Always($"for {__instance.name}, tier {tier}, itemDef {itemDef?.name}");
+                          //  TFTVLogger.Always($"for {__instance.name}, tier {tier}, itemDef {itemDef?.name}");
 
                             if (tier > 0)
                             {

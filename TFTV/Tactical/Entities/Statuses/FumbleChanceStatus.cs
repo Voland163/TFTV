@@ -48,6 +48,28 @@ namespace TFTV.Tactical.Entities.Statuses
 
             if (ShouldFumble(ability))
             {
+                FumbleChanceStatus fumbleChanceStatus = ability.TacticalActor.Status.GetStatus<FumbleChanceStatus>(FumbleChanceStatusDef);
+
+                TacticalActor statusSourceActor = fumbleChanceStatus.Source as TacticalActor;
+
+                TFTVLogger.Always($"");
+
+                //Voland's messy drills thing
+                PassiveModifierAbilityDef causticJammingDef = (PassiveModifierAbilityDef)Repo.GetDef("8d4e5f60-9192-122b-d4e5-f60718293a4b");
+                DamageOverTimeStatusDef poisonStatusDef = (DamageOverTimeStatusDef)Repo.GetDef("ea972820-342d-76a4-c9a3-1018e06666b9");
+
+                TFTVLogger.Always($"FumbleChanceStatus.Source: {statusSourceActor?.DisplayName} jammed actor is poisoned? {TacticalActor.Status.HasStatus(poisonStatusDef)}");
+
+
+                if (causticJammingDef != null && statusSourceActor!=null 
+                    && statusSourceActor.GetAbilityWithDef<PassiveModifierAbility>(causticJammingDef) != null && TacticalActor.Status.HasStatus(poisonStatusDef))
+                {
+                    AccessTools.Property(typeof(TacticalAbility), "FumbledAction").SetValue(ability, true);
+                    TFTVLogger.Always($"Caustic Jamming + Poison combo detected, forcing fumble for {ability} used by {TacticalActor}");
+                    return;
+
+                }
+
                 int triggerRoll = UnityEngine.Random.Range(0, 100);
                 TFTVLogger.Always($"{FumbleChanceStatusDef.name} for actor {TacticalActor} using {ability}: random roll (0-99) to trigger a fumble is {triggerRoll}, preset FumbleChancePerc is {FumbleChanceStatusDef.FumbleChancePerc}");
                 if (triggerRoll < FumbleChanceStatusDef.FumbleChancePerc)

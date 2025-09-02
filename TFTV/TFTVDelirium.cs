@@ -56,7 +56,9 @@ namespace TFTV
 
         public static Dictionary<int, int> CharactersDeliriumPerksAndMissions = new Dictionary<int, int>();
 
-        [HarmonyPatch(typeof(CorruptionStatus), "GetMultiplier")]
+
+
+         [HarmonyPatch(typeof(CorruptionStatus), "GetMultiplier")]
         internal static class TFTV_CorruptionStatus_GetMultiplier_Mutations_patch
         {
 
@@ -81,6 +83,8 @@ namespace TFTV
                     {
                         __result = 1f + (numberOfMutations * 2) / 100 * (float)base_TacticalActor.CharacterStats.Corruption;
                     }
+
+                   
 
                 }
 

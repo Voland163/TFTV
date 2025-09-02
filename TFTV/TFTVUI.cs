@@ -2598,61 +2598,6 @@ namespace TFTV
 
         }
 
-        internal class DamagePrediction
-        {
-            //Patch to show correct damage prediction with mutations and Delirium 
-            [HarmonyPatch(typeof(PhoenixPoint.Tactical.UI.Utils), "GetDamageKeywordValue")]
-            public static class TFTV_Utils_GetDamageKeywordValue_DamagePredictionMutations_Patch
-            {
-                public static void Postfix(DamagePayload payload, DamageKeywordDef damageKeyword, TacticalActor tacticalActor, ref float __result)
-                {
-                    try
-                    {
-                        SharedData shared = GameUtl.GameComponent<SharedData>();
-                        SharedDamageKeywordsDataDef damageKeywords = shared.SharedDamageKeywords;
-                        StandardDamageTypeEffectDef projectileDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Projectile_StandardDamageTypeEffectDef");
-                        StandardDamageTypeEffectDef blastDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Blast_StandardDamageTypeEffectDef");
-
-                        if (tacticalActor != null && (damageKeyword.DamageTypeDef == projectileDamage || damageKeyword.DamageTypeDef == blastDamage) && damageKeyword != damageKeywords.SyphonKeyword) //&& damageKeyword is PiercingDamageKeywordDataDef == false) 
-                        {
-
-                            float numberOfMutations = 0;
-
-                            //   TFTVLogger.Always("GetDamageKeywordValue check passed");
-
-                            foreach (TacticalItem armourItem in tacticalActor.BodyState.GetArmourItems())
-                            {
-                                if (armourItem.GameTags.Contains(Shared.SharedGameTags.AnuMutationTag))
-                                {
-                                    numberOfMutations++;
-                                }
-                            }
-
-                            if (numberOfMutations > 0)
-                            {
-                                // TFTVLogger.Always("damage value is " + payload.GenerateDamageValue(tacticalActor.CharacterStats.BonusAttackDamage));
-
-                                __result = payload.GenerateDamageValue(tacticalActor.CharacterStats.BonusAttackDamage) * (1f + (numberOfMutations * 2) / 100 * (float)tacticalActor.CharacterStats.Corruption);
-                                // TFTVLogger.Always($"GetDamageKeywordValue invoked for {tacticalActor.DisplayName} and result is {__result}");
-                                //  TFTVLogger.Always("result is " + __result +", damage increase is " + (1f + (((numberOfMutations * 2) / 100) * (float)tacticalActor.CharacterStats.Corruption)));
-                            }
-
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                }
-            }
-
-
-
-
-
-
-
-        }
 
         internal class Mutoids
         {

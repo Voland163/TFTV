@@ -18,6 +18,9 @@ using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.DamageKeywords;
+using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
+using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
@@ -34,6 +37,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static TFTV.TFTVCapturePandorans;
+using static TFTV.TFTVDrills.DrillsPublicClasses;
 using static TFTV.TFTVUITactical.TFTVTacticalObjectives;
 using static UITooltip;
 using Component = UnityEngine.Component;
@@ -2600,7 +2604,7 @@ namespace TFTV
                     List<GameTagDef> excludTags = new List<GameTagDef>() { DefCache.GetDef<GameTagDef>("SentinelTerror_ClassTagDef"), DefCache.GetDef<GameTagDef>("SentinelMist_ClassTagDef") };
 
 
-                    if (!ta.GameTags.Any(t=>excludTags.Contains(t)) && (ta.HasGameTag(relevantTag)
+                    if (!ta.GameTags.Any(t => excludTags.Contains(t)) && (ta.HasGameTag(relevantTag)
                             || ta.Equipments.GetWeapons().Any(w => w.WeaponDef.Tags.Contains(relevantTag))
                             || ta.BodyState.GetAllBodyparts().Any(b => b.OwnerItem.TacticalItemDef.Tags.Contains(relevantTag))))
                     {
@@ -2704,6 +2708,8 @@ namespace TFTV
                         // Capture the initial state before Evaluate runs
                         __state = __instance.State;
 
+                        // TFTVLogger.Always($"Objective {__instance.Description.Localize()} state {__instance.State}");
+
                         if (__instance.Faction != null && __instance.Faction.State == TacFactionState.Won)
                         {
                             TFTVLogger.Always($"Objective {__instance.Description.Localize()} state {__instance.State}");
@@ -2712,7 +2718,6 @@ namespace TFTV
                                     _secondaryObjectiveDefsInPlay.Any(o => o.MissionObjectiveData.Description.LocalizationKey == __instance.Description.LocalizationKey))
                             {
                                 TFTVLogger.Always($"Got here and examining {__instance.Description.Localize()}");
-
 
                                 if (!CheckCaptureObjectiveCompleted(captureObjective))
                                 {
@@ -2735,6 +2740,8 @@ namespace TFTV
                                     return false;
                                 }
                             }
+
+
                         }
 
                         return true;
@@ -2751,6 +2758,36 @@ namespace TFTV
                 {
                     try
                     {
+                        if (__instance is EvacuateFactionObjective && __instance.State == FactionObjectiveState.Achieved)
+                        {
+                            TFTVLogger.Always($"EvacuateFactionObjective: Objective {__instance.Description.Localize()} state {__instance.State}");
+
+                            foreach (FactionObjective factionObjective in __instance.Faction.Objectives)
+                            {
+                                //  TFTVLogger.Always($"examining in Postfix  {factionObjective?.Description?.Localize()}");
+
+                                if (factionObjective is KillActorFactionObjective killObjective2 &&
+                                    _secondaryObjectiveDefsInPlay.Any(o => o.MissionObjectiveData.Description.LocalizationKey == killObjective2.Description.LocalizationKey))
+                                {
+                                    // TFTVLogger.Always($"Evac! Got here and examining {factionObjective.Description.Localize()}");
+
+                                    var killTargetsGameTagField = AccessTools.Field(typeof(KillActorFactionObjective), "_killTargetsGameTag");
+
+                                    GameTagDef killTag = (GameTagDef)killTargetsGameTagField.GetValue(killObjective2);
+
+                                    if (CheckIfActorDeadNotEvaced(__instance.Faction.TacticalLevel, killTag))
+                                    {
+                                        var property = typeof(FactionObjective).GetProperty("State", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                                        property.SetValue(killObjective2, FactionObjectiveState.Achieved);
+
+                                        TFTVLogger.Always($"Objective {killObjective2.Description.Localize()} should succeed, state is {killObjective2.State}");
+
+                                    }
+                                }
+                            }
+                        }
+
+
                         ModifySecondaryObjectivesEvaluateBehavior(__instance, ref __result, __state);
                         // TFTVVanillaFixes.ModifyVehicleRescueEvaluateBehavior(__instance, ref __result);
                     }
@@ -2844,6 +2881,9 @@ namespace TFTV
                                         .Where(f => f.GetRelationTo(controller.GetFactionByCommandName("px")) == FactionRelation.Enemy)
                                         .SelectMany(f => f.TacticalActors)
                                         .ToList();
+
+                    TFTVLogger.Always($"paralyzed enemy actor with killTag? " +
+                        $"{enemyActors.Any(ta => ta.HasGameTag(killTag) && !ta.IsEvacuated && (ta.IsDead || ta.Status != null && ta.Status.HasStatus<ParalysedStatus>()))}");
 
                     return enemyActors.Any(ta => ta.HasGameTag(killTag) && !ta.IsEvacuated && (ta.IsDead || ta.Status != null && ta.Status.HasStatus<ParalysedStatus>()));
 
@@ -3498,11 +3538,11 @@ namespace TFTV
                     int rank = GetAncientsChargeLevelFromWP(tacticalActor);
 
 
-                   if (rank > 0)
-                   {
+                    if (rank > 0)
+                    {
                         rankIconCreator.SetIconWithRank(actorClassIconElement.MainClassIcon.gameObject,
                                actorClassIconElement.MainClassIcon.sprite, rank, true, hasNoLos, shootState);
-                   }
+                    }
 
                     if (hasNoLos)
                     {
@@ -3945,7 +3985,7 @@ namespace TFTV
                             {
                                 squadNameText.text = $"{TFTVCommonMethods.ConvertKeyToString("HUMAN_ENEMIES_KEY_LEADER")}{TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_GRAMMAR_OF")}{factionName.ToUpper()}";
                             }
-                            else 
+                            else
                             {
                                 squadNameText.text = $"{TFTVCommonMethods.ConvertKeyToString("HUMAN_ENEMIES_KEY_LEADER")}{TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_GRAMMAR_OF")}{squadName.ToUpper()}";
                             }
@@ -4045,7 +4085,7 @@ namespace TFTV
                 private Text _titleOfTactic;
                 private OpposingLeaderWidgetTooltip _widgetTooltip;
 
-              
+
 
 
                 public void InitializeLeaderWidget(Sprite factionIcon, Sprite classIcon, TacticalActor leader, string tacticName,
@@ -4652,7 +4692,8 @@ namespace TFTV
                             if (uITooltipText != null)
                             {
                                 uITooltipText.enabled = false;
-                            };
+                            }
+                            ;
                         }
                     }
 
@@ -6066,6 +6107,67 @@ namespace TFTV
 
         internal class DamagePrediction
         {
+
+            //Patch to show correct damage prediction with mutations and Delirium 
+            [HarmonyPatch(typeof(PhoenixPoint.Tactical.UI.Utils), "GetDamageKeywordValue")]
+            public static class TFTV_Utils_GetDamageKeywordValue_DamagePredictionMutations_Patch
+            {
+                public static void Postfix(DamagePayload payload, DamageKeywordDef damageKeyword, TacticalActor tacticalActor, ref float __result)
+                {
+                    try
+                    {
+                        SharedData shared = GameUtl.GameComponent<SharedData>();
+                        SharedDamageKeywordsDataDef damageKeywords = shared.SharedDamageKeywords;
+                        StandardDamageTypeEffectDef meleeDamageStandardDamageTypeEffectDef = DrillsAbilities.MeleeStandardDamageType;
+                       
+
+                        if (tacticalActor != null && damageKeyword.DamageTypeDef == meleeDamageStandardDamageTypeEffectDef && damageKeyword != damageKeywords.SyphonKeyword) //&& damageKeyword is PiercingDamageKeywordDataDef == false) 
+                        {
+
+                            float numberOfMutations = 0;
+
+                            //   TFTVLogger.Always("GetDamageKeywordValue check passed");
+
+                            foreach (TacticalItem armourItem in tacticalActor.BodyState.GetArmourItems())
+                            {
+                                if (armourItem.GameTags.Contains(Shared.SharedGameTags.AnuMutationTag))
+                                {
+                                    numberOfMutations++;
+                                }
+                            }
+
+                            if (numberOfMutations > 0)
+                            {
+                                // TFTVLogger.Always("damage value is " + payload.GenerateDamageValue(tacticalActor.CharacterStats.BonusAttackDamage));
+
+                                __result = payload.GenerateDamageValue(tacticalActor.CharacterStats.BonusAttackDamage) * (1f + (numberOfMutations * 2) / 100 * (float)tacticalActor.CharacterStats.Corruption);
+                                // TFTVLogger.Always($"GetDamageKeywordValue invoked for {tacticalActor.DisplayName} and result is {__result}");
+                                //  TFTVLogger.Always("result is " + __result +", damage increase is " + (1f + (((numberOfMutations * 2) / 100) * (float)tacticalActor.CharacterStats.Corruption)));
+                            }
+
+                            if(tacticalActor.Status!=null && tacticalActor.Status.HasStatus<TacStrengthDamageMultiplierStatus>()) 
+                            {
+
+                                float endurance = tacticalActor.CharacterStats.Endurance.Value.EndValue;
+                                __result += payload.GenerateDamageValue(tacticalActor.CharacterStats.BonusAttackDamage) * endurance / 200f;
+
+                            }
+
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+
+
+
+
+
+
+
 
             /// <summary>
             /// This method is run on Tactical Start and it removes the damage prediction bar when aiming, because it's inaccurate

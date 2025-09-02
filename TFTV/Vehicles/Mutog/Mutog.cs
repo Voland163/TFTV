@@ -8,6 +8,7 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using System.Collections.Generic;
+using TFTV;
 
 namespace TFTVVehicleRework.Mutog
 {
@@ -15,6 +16,8 @@ namespace TFTVVehicleRework.Mutog
     {
         private static readonly DefRepository Repo = VehiclesMain.Repo;
         internal static SharedDamageKeywordsDataDef keywords = VehiclesMain.keywords;
+        internal static DamageKeywordDef TFTVMeleeDamageKeyword = DrillsAbilities.MeleeDamageKeywordDef;
+
         public static void Change()
         {
             PawStrike();
@@ -39,7 +42,7 @@ namespace TFTVVehicleRework.Mutog
             {
                 new DamageKeywordPair
                 {
-                    DamageKeywordDef = keywords.DamageKeyword,
+                    DamageKeywordDef = TFTVMeleeDamageKeyword,
                     Value = 100f,
                 }
             };
@@ -55,7 +58,7 @@ namespace TFTVVehicleRework.Mutog
             {
                 new DamageKeywordPair
                 {
-                    DamageKeywordDef = keywords.DamageKeyword,
+                    DamageKeywordDef = TFTVMeleeDamageKeyword,
                     Value = 90f,
                 },
                 new DamageKeywordPair
@@ -76,7 +79,7 @@ namespace TFTVVehicleRework.Mutog
         {
             //"Mutog_Tail_Basher_WeaponDef"
             WeaponDef BasherTail = (WeaponDef)Repo.GetDef("5eb2c4ea-e15e-68e4-2b1f-960fab4d069c");
-            BasherTail.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == keywords.DamageKeyword).Value = 80f;
+            BasherTail.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == TFTVMeleeDamageKeyword).Value = 80f;
             BasherTail.ViewElementDef.DisplayName1 = new Base.UI.LocalizedTextBind("AN_MUTOG_BASHER_NAME");
             BasherTail.ViewElementDef.Description = new Base.UI.LocalizedTextBind("AN_MUTOG_BASHER_DESC");
         }
@@ -85,7 +88,7 @@ namespace TFTVVehicleRework.Mutog
         {
             //"Mutog_HeadRamming_BodyPartDef"
             WeaponDef RammingHead = (WeaponDef)Repo.GetDef("c29d4fc0-cb86-0e54-383c-513f8926e6c1");
-            RammingHead.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == keywords.DamageKeyword).Value = 170f;
+            RammingHead.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == TFTVMeleeDamageKeyword).Value = 170f;
         }
 
         private static void VenomHead()
@@ -96,7 +99,7 @@ namespace TFTVVehicleRework.Mutog
             {
                 new DamageKeywordPair
                 {
-                    DamageKeywordDef = keywords.DamageKeyword,
+                    DamageKeywordDef = TFTVMeleeDamageKeyword,
                     Value = 80f,
                 },
                 new DamageKeywordPair
