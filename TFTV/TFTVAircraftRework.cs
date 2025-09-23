@@ -66,7 +66,7 @@ namespace TFTV
 {
     class TFTVAircraftRework
     {
-        public static bool AircraftReworkOn = true;
+        public static bool AircraftReworkOn = false;
         private static readonly float _mistSpeedMalus = 0.2f;
         //  private static readonly float _mistSpeedBuff = 0.5f;
         private static readonly float _mistSpeedModuleBuff = 150;
@@ -4107,10 +4107,46 @@ namespace TFTV
                                 throw;
                             }
                         }
+                    
                     }
 
 
-                    [HarmonyPatch(typeof(GeoMission), "GetItemsOnTheGround")]
+                    [HarmonyPatch(typeof(TacticalLevelController), "GetMissionResult")]
+                    internal static class TacticalLevelController_GetMissionResult_Prefix
+                    {
+                        // Prefix fully replaces original; __result is set and we return false.
+                        static void Prefix(TacticalLevelController __instance)
+                        {
+                            try
+                            {
+                              //  TFTVLogger.Always($"Running GetMissionResult");
+
+                                foreach (TacticalActorBase actor in __instance.Map.GetActors<TacticalActorBase>().
+                                    Where(tab=>tab is CrateItemContainer crateItemContainer && crateItemContainer.GetComponent<CrateComponent>() != null
+                                    && !crateItemContainer.GetComponent<CrateComponent>().IsOpen()))
+                                {
+                                   // TFTVLogger.Always($"Unopened crate: {actor?.name}");
+
+                                    CrateItemContainer crate = actor as CrateItemContainer;
+
+                                    TFTVLogger.Always($"container not open, contains {actor?.Inventory?.Items?.Count} items");
+                                    actor.Inventory.Items.Clear();
+                                    TFTVLogger.Always($"emptied! new count: {actor?.Inventory?.Items?.Count} items");
+
+                                }
+
+                            
+                            }
+                            catch (Exception e)
+                            {
+                                TFTVLogger.Error(e);
+                               
+                            }
+                        }
+
+                    }
+
+                  /*      [HarmonyPatch(typeof(GeoMission), "GetItemsOnTheGround")]
                     internal static class GeoMission_GetItemsOnTheGround_Prefix
                     {
                         // Prefix fully replaces original; __result is set and we return false.
@@ -4152,12 +4188,18 @@ namespace TFTV
                                 // so we log index + counts + a few item names for quick inspection.
                                 for (int i = 0; i < containers.Count; i++)
                                 {
+
+
                                     var c = containers[i];
+
+
                                     int count = c?.InventoryItems?.Count() ?? 0;
                                     var sampleNames = (c?.InventoryItems ?? Enumerable.Empty<ItemData>())
                                         .Take(5)
                                         .Select(it => it?.ItemDef?.name ?? "<null>")
                                         .ToArray();
+
+                                  
 
                                     TFTVLogger.Always($"[TFTV] ItemContainerResult[{i}] -> items: {count}, sample: {string.Join(", ", sampleNames)}");
                                 }
@@ -4208,11 +4250,7 @@ namespace TFTV
                                 return true;
                             }
                         }
-                    }
-
-
-
-
+                    }*/
 
                 }
                 //Helios:

@@ -234,63 +234,119 @@ namespace TFTV
             {
                 try
                 {
-                    foreach (Transform transform in _resourcePowerWarnings.Keys)
+                    foreach (Transform transform in _resourcePowerWarnings.Keys.ToList())
                     {
-
-                        if (_resourcePowerWarnings[transform].Contains(facility))
+                        if (transform == null)
                         {
-                            _resourcePowerWarnings[transform].Remove(facility);
-
-                            // TFTVLogger.Always($"found previosuly unpowered facility! {geoPhoenixFacility.Def.name} at {site.LocalizedSiteName}. Facilities count now: {_resourcePowerWarnings[transform][transformResource].Count}");
-
-                            if (_resourcePowerWarnings[transform].Count == 0)
+                            if (_resourcePowerWarnings.Remove(transform))
                             {
-                                // TFTVLogger.Always($"colors should reset");
-                                UIColorController uIColorController = transform.GetComponentInChildren<UIColorController>();
+                                TFTVLogger.Always("RemoveFacilityFromList: Removed stale resource warning entry with destroyed transform.");
+                            }
 
-                                if (uIColorController != null)
+                            if (_savedTooltips.TryGetValue(transform, out UITooltipText staleTooltip) && staleTooltip != null)
+                            {
+                                staleTooltip.enabled = false;
+                            }
+                            _savedTooltips.Remove(transform);
+
+                            continue;
+                        }
+
+                        if (!_resourcePowerWarnings.TryGetValue(transform, out List<GeoPhoenixFacility> facilitiesForTransform) || !facilitiesForTransform.Contains(facility))
+                        {
+                            continue;
+                        }
+
+                        facilitiesForTransform.Remove(facility);
+
+                        if (facilitiesForTransform.Count == 0)
+                        {
+                            UIColorController uIColorController = transform.GetComponentInChildren<UIColorController>();
+
+                            if (uIColorController != null)
+                            {
+                                Text textComponent = uIColorController.gameObject.GetComponent<Text>();
+                                if (textComponent != null)
                                 {
-                                    uIColorController.gameObject.GetComponent<Text>().color = Color.white;
+                                    textComponent.color = Color.white;
                                 }
-                                else
+                            }
+                            else
+                            {
+                                if (facility.Def == DefCache.GetDef<PhoenixFacilityDef>("VehicleBay_PhoenixFacilityDef"))
                                 {
-                                    if (facility.Def == DefCache.GetDef<PhoenixFacilityDef>("VehicleBay_PhoenixFacilityDef"))
+                                    GeoLevelController geoLevelController = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                                    UIModuleInfoBar resourcesModule = geoLevelController?.View?.GeoscapeModules?.ResourcesModule;
+
+                                    if (resourcesModule != null)
                                     {
-                                        UIModuleInfoBar uIModuleInfoBar = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ResourcesModule;
+                                        ResourceIconContainer resourceIconContainer1 = resourcesModule.AirVehiclesLabel?.transform?.parent?.GetComponent<ResourceIconContainer>();
+                                        if (resourceIconContainer1 != null)
+                                        {
+                                            resourceIconContainer1.Value.color = Color.white;
+                                        }
+                                        else
+                                        {
+                                            TFTVLogger.Always("RemoveFacilityFromList: Missing air vehicle ResourceIconContainer while resetting colors.");
+                                        }
 
-                                        ResourceIconContainer resourceIconContainer1 = uIModuleInfoBar.AirVehiclesLabel.transform.parent.GetComponent<ResourceIconContainer>();
-                                        Transform transformIconContainer1 = resourceIconContainer1.transform;
-                                        resourceIconContainer1.Value.color = Color.white;
-
-                                        ResourceIconContainer resourceIconContainer2 = uIModuleInfoBar.GroundVehiclesLabel.transform.parent.GetComponent<ResourceIconContainer>();
-                                        Transform transformIconContainerGroundVehicles = resourceIconContainer2.transform;
-                                        resourceIconContainer2.Value.color = Color.white;
-
-
+                                        ResourceIconContainer resourceIconContainer2 = resourcesModule.GroundVehiclesLabel?.transform?.parent?.GetComponent<ResourceIconContainer>();
+                                        if (resourceIconContainer2 != null)
+                                        {
+                                            resourceIconContainer2.Value.color = Color.white;
+                                        }
+                                        else
+                                        {
+                                            TFTVLogger.Always("RemoveFacilityFromList: Missing ground vehicle ResourceIconContainer while resetting colors.");
+                                        }
                                     }
                                     else
                                     {
-
-                                        ResourceIconContainer resourceIconContainer = transform.GetComponent<ResourceIconContainer>() ?? transform.GetComponentInParent<ResourceIconContainer>();
-                                        resourceIconContainer.Value.color = resourceIconContainer.DefaultColor;
-
+                                        TFTVLogger.Always("RemoveFacilityFromList: ResourcesModule unavailable when resetting vehicle bay colors.");
                                     }
                                 }
-
-                                if (_savedTooltips.ContainsKey(transform))
+                                else
                                 {
-                                    if (_savedTooltips[transform] != null)
-                                    {
-                                        _savedTooltips[transform].enabled = false;
-                                    }
-                                    _savedTooltips.Remove(transform);
-                                }
+                                    ResourceIconContainer resourceIconContainer = transform.GetComponent<ResourceIconContainer>() ?? transform.GetComponentInParent<ResourceIconContainer>();
 
+                                    if (resourceIconContainer == null)
+                                    {
+                                        GeoLevelController geoLevelController = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                                        UIModuleInfoBar resourcesModule = geoLevelController?.View?.GeoscapeModules?.ResourcesModule;
+
+                                        if (resourcesModule != null)
+                                        {
+                                            resourceIconContainer = resourcesModule.GetComponentsInChildren<ResourceIconContainer>(true)
+                                                .FirstOrDefault(container => container.transform == transform || container.transform == transform.parent);
+                                        }
+                                        else
+                                        {
+                                            TFTVLogger.Always("RemoveFacilityFromList: ResourcesModule unavailable while searching for ResourceIconContainer.");
+                                        }
+                                    }
+
+                                    if (resourceIconContainer != null)
+                                    {
+                                        resourceIconContainer.Value.color = resourceIconContainer.DefaultColor;
+                                    }
+                                    else
+                                    {
+                                        string transformName = transform != null ? transform.name : "<missing transform>";
+                                        TFTVLogger.Always($"RemoveFacilityFromList: ResourceIconContainer missing for {transformName}, skipping color reset.");
+                                    }
+                                }
                             }
 
-                            break;
+                            if (_savedTooltips.TryGetValue(transform, out UITooltipText tooltip) && tooltip != null)
+                            {
+                                tooltip.enabled = false;
+                            }
+                            _savedTooltips.Remove(transform);
+
+                            _resourcePowerWarnings.Remove(transform);
                         }
 
+                        break;
                     }
                 }
                 catch (Exception e)
@@ -299,6 +355,7 @@ namespace TFTV
                     throw;
                 }
             }
+
 
             public static void CheckTopBarTooltip(UITooltip tooltip, GameObject parent)
             {

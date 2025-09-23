@@ -17,9 +17,9 @@ namespace PRMBetterClasses
         internal static string ModDirectory;
         internal static string ManagedDirectory;
         internal static string TexturesDirectory;
-        internal static string LocalizationDirectory;
+ 
 
-        public static readonly string SkillLocalizationFileName = "PR_BC_Localization.csv";
+        
         //public static readonly string FsStoryLocalizationFileName = "PR_FS_Story_Localization.csv";
 
         // SP cost for main specialisation skills per level
@@ -33,6 +33,7 @@ namespace PRMBetterClasses
         public static readonly string TextMapFileName = "NotLocalizedTextMap.json";
         public static Dictionary<string, Dictionary<string, string>> NotLocalizedTextMap;
 
+
         public static void Initialize()
         {
             try
@@ -40,24 +41,18 @@ namespace PRMBetterClasses
                 ModDirectory = TFTVMain.Main.Instance.Entry.Directory; ;
                 ManagedDirectory = Path.Combine(ModDirectory, "Assets", "Presets");
                 TexturesDirectory = Path.Combine(ModDirectory, "Assets", "Textures");
-                LocalizationDirectory = Path.Combine(ModDirectory, "Assets", "Localization");
-                if (File.Exists(Path.Combine(LocalizationDirectory, SkillLocalizationFileName)))
-                {
-             
-                    AddLocalizationFromCSV(SkillLocalizationFileName, null);
-                }
-                //if (File.Exists(Path.Combine(LocalizationDirectory, FsStoryLocalizationFileName)) && TFTVMain.Main.Settings.ActivateStoryRework)
-                //{
-                //    AddLocalizationFromCSV(FsStoryLocalizationFileName, null);
-                //}
+              
                 AbilityNameToDefMap = ReadJson<Dictionary<string, string>>(AbilitiesJsonFileName);
                 NotLocalizedTextMap = ReadJson<Dictionary<string, Dictionary<string, string>>>(TextMapFileName);
+               
             }
             catch (Exception e)
             {
                 PRMLogger.Error(e);
             }
         }
+
+      
 
         /// <summary>
         /// Copy fields of two objects of the same or derived classes by using reflection
@@ -104,52 +99,7 @@ namespace PRMBetterClasses
             return (gauss1, gauss2);
         }
 
-        // Read localization from CSV file
-        public static void AddLocalizationFromCSV(string LocalizationFileName, string Category = null)
-        {
-            try
-            {
-                string CSVstring = File.ReadAllText(Path.Combine(LocalizationDirectory, LocalizationFileName));
-
-                TFTVLogger.Always($"{LocalizationFileName}");
-
-                if (!CSVstring.EndsWith("\n"))
-                {
-                    CSVstring += "\n";
-                }
-                LanguageSourceData SourceToChange = Category == null ? // if category is not given
-                    LocalizationManager.Sources[0] :                   // use fist language source
-                    LocalizationManager.Sources.First(source => source.GetCategories().Contains(Category));
-                if (SourceToChange != null)
-                {
-                    int numBefore = SourceToChange.mTerms.Count;
-                    _ = SourceToChange.Import_CSV(string.Empty, CSVstring, eSpreadsheetUpdateMode.AddNewTerms, ',');
-                    LocalizationManager.LocalizeAll(true);    // Force localing all enabled labels/sprites with the new data
-                    int numAfter = SourceToChange.mTerms.Count;
-                    PRMLogger.Always("----------------------------------------------------------------------------------------------------", false);
-                    PRMLogger.Always($"Added {numAfter - numBefore} terms from {LocalizationFileName} in localization source {SourceToChange}, category: {Category}");
-                    PRMLogger.Always("----------------------------------------------------------------------------------------------------", false);
-                }
-                else
-                {
-                    PRMLogger.Always("----------------------------------------------------------------------------------------------------", false);
-                    PRMLogger.Always($"No language source with category {Category} found!");
-                    PRMLogger.Always("----------------------------------------------------------------------------------------------------", false);
-                }
-                PRMLogger.Debug("----------------------------------------------------------------------------------------------------", false);
-                PRMLogger.Debug("CSV Data:" + Environment.NewLine + CSVstring);
-                foreach (LanguageSourceData source in LocalizationManager.Sources)
-                {
-                    PRMLogger.Debug($"Source owner {source.owner}{Environment.NewLine}Categories:{Environment.NewLine}{source.GetCategories().Join()}{Environment.NewLine}", false);
-                }
-                PRMLogger.Debug("----------------------------------------------------------------------------------------------------", false);
-            }
-            catch (Exception e)
-            {
-                PRMLogger.Error(e);
-            }
-        }
-        // Creating new runtime def by cloning from existing def
+        
         public static T CreateDefFromClone<T>(T source, string guid, string name) where T : BaseDef
         {
             try
@@ -200,7 +150,7 @@ namespace PRMBetterClasses
     guid,
     source,
     type);
-                
+
                 result.name = resultName;
                 TFTVMain.Main.DefCache.AddDef(result.name, result.Guid);
                 PRMLogger.Debug($"CreateDefFromClone, <{result.name}> of type <{result.GetType().Name}> sucessful created.");

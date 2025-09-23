@@ -142,7 +142,7 @@ namespace TFTV
                 TFTVAAAgendaTracker.ExtendedAgendaTracker.LocalizeExtendedAgendaUI();
 
                 Logger.LogInfo("Loading Vehicle Rework");
-                TFTVVehicleRework.VehiclesMain.ReworkVehicles(this);
+                TFTVVehicleRework.VehiclesMain.ReworkVehicles();
                 Logger.LogInfo("Vehicle Rework Loaded");
 
 

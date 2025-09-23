@@ -1,20 +1,12 @@
 ﻿using Base.Core;
 using Base.Utils.GameConsole;
-using Epic.OnlineServices;
 using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Entities;
-using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using TFTV;
-using UnityEngine.Profiling.Memory.Experimental;
 
 namespace MadSkunkyTweaks.Tools
 {
@@ -25,7 +17,6 @@ namespace MadSkunkyTweaks.Tools
         [ConsoleCommand(Command = "checkcrates", Description = "tell me what's inside the crates")]
         public static void SayHello(IConsole console)
         {
-           
 
             TacticalLevelController tacticalLevelController = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
@@ -33,13 +24,13 @@ namespace MadSkunkyTweaks.Tools
             {
                 TFTVLogger.Always($"{actor?.name}");
 
-                if(actor is CrateItemContainer crate) 
-                { 
-                foreach(Item item in crate.Inventory.Items) 
+                if (actor is CrateItemContainer crate)
+                {
+                    foreach (Item item in crate.Inventory.Items)
                     {
                         TFTVLogger.Always($"item in crate is {item.ItemDef.name}");
                     }
-                
+
                 }
             }
         }
