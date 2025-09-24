@@ -222,7 +222,6 @@ namespace TFTV
                                 else if (gv.VehicleDef.Equals(thunderbird) || gv.VehicleDef.Equals(thunderbird7slots))
                                 {
                                     AircraftCaptureCapacity += 7;
-
                                 }
                                 else if (gv.VehicleDef.Equals(manticore6slots) || gv.VehicleDef.Equals(manticore))
                                 {

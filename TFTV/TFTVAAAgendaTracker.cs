@@ -34,12 +34,16 @@ namespace TFTV
 {
     internal class TFTVAAAgendaTracker
     {
+
+
         //This has been copy pasted from the great Mad's Assorted Adjustments (all hail Mad!) with minimal adjustments
         //https://github.com/Mad-Mods-Phoenix-Point/AssortedAdjustments/tree/main/Source/AssortedAdjustments
 
         //  public static bool KludgeCheck = false;
         internal static class ExtendedAgendaTracker
         {
+
+
             private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
             internal static bool fetchedSiteNames = false;
@@ -102,6 +106,15 @@ namespace TFTV
             internal static MethodInfo ___UpdateData = typeof(UIModuleFactionAgendaTracker).GetMethod("UpdateData", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { }, null);
             internal static MethodInfo ___Dispose = typeof(UIModuleFactionAgendaTracker).GetMethod("Dispose", BindingFlags.NonPublic | BindingFlags.Instance);
 
+            private static readonly FieldInfo _explorationUpdateableField =
+    typeof(GeoVehicle).GetField("_explorationUpdateable", BindingFlags.NonPublic | BindingFlags.Instance);
+
+            private static readonly PropertyInfo _explorationUpdateableNextUpdateProperty =
+                _explorationUpdateableField?.FieldType?.GetProperty(
+                    "NextUpdate",
+                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+
             // Cache tracker
             internal static UIModuleFactionAgendaTracker ___factionTracker = null;
 
@@ -135,43 +148,125 @@ namespace TFTV
              *** Utility methods
              ** 
             */
+            private sealed class TravelTimeCacheEntry
+            {
+                public GeoSite Destination;
+                public Vector3 DestinationPosition;
+                public float CachedHours;
+                public float Speed;
+                public bool HasCalculationTime;
+                public TimeUnit CalculatedAt;
+
+                public bool Matches(GeoSite destination, Vector3 destinationPosition, float speed)
+                {
+                    if (Destination != destination)
+                    {
+                        return false;
+                    }
+
+                    if ((DestinationPosition - destinationPosition).sqrMagnitude > 0.01f)
+                    {
+                        return false;
+                    }
+
+                    if (Mathf.Abs(Speed - speed) > 0.01f)
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }
+            }
+
+            private static readonly Dictionary<int, TravelTimeCacheEntry> _vehicleTravelTimeCache =
+                new Dictionary<int, TravelTimeCacheEntry>();
+
             private static bool GetTravelTime(GeoVehicle vehicle, out float travelTime, GeoSite target = null)
             {
                 travelTime = 0f;
 
-                if (target == null && vehicle.FinalDestination == null)
+                if (vehicle == null || vehicle.Navigation == null)
                 {
-                    /*if (_updateCounterDictionary.ContainsKey(vehicle.VehicleID)) 
+                    return false;
+                }
+
+                GeoSite destinationSite = target ?? vehicle.FinalDestination;
+
+                if (destinationSite == null)
+                {
+                    if (target == null)
                     {
-                        _updateCounterDictionary.Remove(vehicle.VehicleID);
-                    }*/
+                        _vehicleTravelTimeCache.Remove(vehicle.VehicleID);
+                    }
+                    return false;
+                }
+
+                float speed = vehicle?.Stats?.Speed.Value ?? 0f;
+
+                if (speed <= 0f)
+                {
+                    if (target == null)
+                    {
+                        _vehicleTravelTimeCache.Remove(vehicle.VehicleID);
+                    }
 
                     return false;
                 }
 
-                /*   if (_updateCounterDictionary.ContainsKey(vehicle.VehicleID) && _updateCounterDictionary[vehicle.VehicleID] < 10)
-                   {
-                       _updateCounterDictionary[vehicle.VehicleID] += 1;
-                       return false;
-                   }
-                   else
-                   {
-                       if (!_updateCounterDictionary.ContainsKey(vehicle.VehicleID))
-                       {
-                           _updateCounterDictionary.Add(vehicle.VehicleID, 10);
-                       }
-                       else
-                       {
-                           _updateCounterDictionary[vehicle.VehicleID] = 0;
-                       }
-                   }*/
+                Vector3 targetPosition = destinationSite.WorldPosition;
 
-                var currentPosition = vehicle.CurrentSite?.WorldPosition ?? vehicle.WorldPosition;
-                var targetPosition = target == null ? vehicle.FinalDestination.WorldPosition : target.WorldPosition;
+                if (target == null)
+                {
+                    if (!vehicle.Travelling)
+                    {
+                        _vehicleTravelTimeCache.Remove(vehicle.VehicleID);
+                    }
+                    else if (_vehicleTravelTimeCache.TryGetValue(vehicle.VehicleID, out TravelTimeCacheEntry cacheEntry)
+                             && cacheEntry.Matches(destinationSite, targetPosition, speed))
+                    {
+                        GeoLevelController geoLevel = vehicle.GeoLevel;
+                        var timing = geoLevel != null ? geoLevel.Timing : null;
+
+                        if (cacheEntry.HasCalculationTime && timing != null)
+                        {
+                            TimeUnit now = timing.Now;
+                            float elapsedHours = (float)(now - cacheEntry.CalculatedAt).TimeSpan.TotalHours;
+                            float remaining = Mathf.Max(0f, cacheEntry.CachedHours - elapsedHours);
+
+                            if (remaining > 0f)
+                            {
+                                cacheEntry.CachedHours = remaining;
+                                cacheEntry.CalculatedAt = now;
+                                travelTime = remaining;
+                                return true;
+                            }
+
+                            _vehicleTravelTimeCache.Remove(vehicle.VehicleID);
+                        }
+                        else
+                        {
+                            if (timing != null)
+                            {
+                                cacheEntry.HasCalculationTime = true;
+                                cacheEntry.CalculatedAt = timing.Now;
+                            }
+
+                            travelTime = cacheEntry.CachedHours;
+                            return true;
+                        }
+                    }
+                }
+
+                Vector3 currentPosition = vehicle.CurrentSite?.WorldPosition ?? vehicle.WorldPosition;
                 var travelPath = vehicle.Navigation.FindPath(currentPosition, targetPosition, out bool hasTravelPath);
 
                 if (!hasTravelPath || travelPath.Count < 2)
                 {
+                    if (target == null)
+                    {
+                        _vehicleTravelTimeCache.Remove(vehicle.VehicleID);
+                    }
+
                     return false;
                 }
 
@@ -182,11 +277,28 @@ namespace TFTV
                     distance += GeoMap.Distance(travelPath[i].Pos.WorldPosition, travelPath[++i].Pos.WorldPosition).Value;
                 }
 
-                travelTime = distance / vehicle.Stats.Speed.Value;
-                //TFTVLogger.Debug($"[ExtendedAgendaTracker_GetTravelTime] travelTime: {travelTime}");
+                travelTime = distance / speed;
+
+                if (target == null && vehicle.Travelling)
+                {
+                    GeoLevelController geoLevel = vehicle.GeoLevel;
+                    var timing = geoLevel != null ? geoLevel.Timing : null;
+
+                    _vehicleTravelTimeCache[vehicle.VehicleID] = new TravelTimeCacheEntry
+                    {
+                        Destination = destinationSite,
+                        DestinationPosition = targetPosition,
+                        CachedHours = travelTime,
+                        Speed = speed,
+                        HasCalculationTime = timing != null,
+                        CalculatedAt = timing != null ? timing.Now : TimeUnit.Zero
+                    };
+                }
 
                 return true;
             }
+
+
 
             private static float GetExplorationTime(GeoVehicle vehicle, float hours)
             {
@@ -197,14 +309,14 @@ namespace TFTV
                         return hours;
                     }
 
-                    object updateable = typeof(GeoVehicle).GetField("_explorationUpdateable", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(vehicle);
+                    object updateable = _explorationUpdateableField?.GetValue(vehicle);
 
-                    if (updateable == null)
+                    if (updateable == null || _explorationUpdateableNextUpdateProperty == null)
                     {
                         return hours;
                     }
 
-                    NextUpdate endTime = (NextUpdate)updateable.GetType().GetProperty("NextUpdate").GetValue(updateable);
+                    NextUpdate endTime = (NextUpdate)_explorationUpdateableNextUpdateProperty.GetValue(updateable);
                     return (float)-(vehicle.Timing.Now - endTime.NextTime).TimeSpan.TotalHours;
                 }
                 catch (Exception e)
@@ -213,6 +325,7 @@ namespace TFTV
                     return hours;
                 }
             }
+
 
             private static string GetSiteName(GeoSite site, GeoFaction faction)
             {
