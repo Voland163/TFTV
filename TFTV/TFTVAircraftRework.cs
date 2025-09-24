@@ -8006,6 +8006,12 @@ namespace TFTV
                             return false;
                         }
 
+                        if (vehicle?.Travelling == true)
+                        {
+                            return false;
+                        }
+
+
                         return true;
 
                     }

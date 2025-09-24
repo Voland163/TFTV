@@ -72,7 +72,6 @@ namespace TFTV
         public static GameTagDef AlwaysDeployTag;
 
 
-        
 
         //  private static readonly ResearchTagDef CriticalResearchTag = DefCache.GetDef<ResearchTagDef>("CriticalPath_ResearchTagDef");
 
@@ -157,6 +156,8 @@ namespace TFTV
         {
             try
             {
+                
+
                 CreateAlwaysDeployTag();
 
                 VanillaFixes();
@@ -229,7 +230,9 @@ namespace TFTV
 
                 TFTVAircraftRework.Defs.CreateAndModifyDefs();
 
-               DrillsAbilities.Defs.CreateDefs();
+                TFTVMeleeDamage.AddMeleeDamageType();
+
+                TFTVDrills.DrillsDefs.CreateDefs();
 
                 // Experimental();
 
@@ -241,6 +244,9 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+       
+
 
         private static void AddAIActorStatsConditionsConsideration()
         {
@@ -3947,7 +3953,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 damageTypeBaseEffectDefs.Add(fireDamage);
                 damageTypeBaseEffectDefs.Add(standardDamageTypeEffectDef);
                 damageTypeBaseEffectDefs.Add(acidDamage);
-                damageTypeBaseEffectDefs.Add(DrillsAbilities.MeleeStandardDamageType);
+                damageTypeBaseEffectDefs.Add(TFTVMeleeDamage.MeleeStandardDamageType);
 
                 //     TFTVLogger.Always($"damageTypeBaseEffectDefs {damageTypeBaseEffectDefs.Count()}");
 
@@ -5882,7 +5888,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 damageTypeBaseEffectDefs.Add(fireDamage);
                 damageTypeBaseEffectDefs.Add(standardDamageTypeEffectDef);
                 damageTypeBaseEffectDefs.Add(acidDamage);
-                damageTypeBaseEffectDefs.Add(DrillsAbilities.MeleeStandardDamageType);
+                damageTypeBaseEffectDefs.Add(TFTVMeleeDamage.MeleeStandardDamageType);
 
                 newStatus.DamageTypeDefs = damageTypeBaseEffectDefs.ToArray();
 
@@ -5939,7 +5945,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 damageTypeBaseEffectDefs.Add(fireDamage);
                 damageTypeBaseEffectDefs.Add(standardDamageTypeEffectDef);
                 damageTypeBaseEffectDefs.Add(acidDamage);
-                damageTypeBaseEffectDefs.Add(DrillsAbilities.MeleeStandardDamageType);
+                damageTypeBaseEffectDefs.Add(TFTVMeleeDamage.MeleeStandardDamageType);
 
 
                 newStatus.DamageTypeDefs = damageTypeBaseEffectDefs.ToArray();
@@ -5997,7 +6003,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 damageTypeBaseEffectDefs.Add(fireDamage);
                 damageTypeBaseEffectDefs.Add(standardDamageTypeEffectDef);
                 damageTypeBaseEffectDefs.Add(acidDamage);
-                damageTypeBaseEffectDefs.Add(DrillsAbilities.MeleeStandardDamageType);
+                damageTypeBaseEffectDefs.Add(TFTVMeleeDamage.MeleeStandardDamageType);
 
                 newStatus.DamageTypeDefs = damageTypeBaseEffectDefs.ToArray();
 

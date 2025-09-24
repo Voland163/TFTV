@@ -21,6 +21,9 @@ namespace TFTV.TFTVDrills
 {
     internal class DrillsPublicClasses
     {
+
+
+
         [SerializeType(InheritCustomCreateFrom = typeof(TacStatusDef))]
         [CreateAssetMenu(fileName = "StaticArmorTacStatsStatusDef", menuName = "Defs/Statuses/StaticArmorTacStatsStatus")]
         public class StaticArmorTacStatsStatusDef : TacStatusDef
@@ -318,150 +321,7 @@ namespace TFTV.TFTVDrills
             public new void ReduceActionPoints() => base.ReduceActionPoints();
         }
 
-        [Serializable]
-        [SerializeType(InheritCustomCreateFrom = typeof(TacStatusDef))]
-        [CreateAssetMenu(fileName = "DesperateUseStatusDef", menuName = "Defs/Statuses/DesperateUseStatus")]
-        public class DesperateUseStatusDef : TacStatusDef
-        {
-            [Header("Desperate Use")]
-            public TacticalAbilityDef[] AllowedAbilities;            // explicit allow-list (optional but recommended)
-            public GameTagDef[] AllowedTags;                 // OR allow by tag
-            public TacStatusDef[] RequiredStatusesAll;               // optional: must have ALL
-            public bool RequiresAnyActionPoint = true;           // true = must have AP > 0  
-
-            [Header("Penalty")]
-            public TacStatusDef AccuracyPenaltyStatus;
-
-        }
-
-        [Serializable]
-        [SerializeType(InheritCustomCreateFrom = typeof(TacStatus))]
-        public class DesperateUseStatus : TacStatus
-        {
-            public DesperateUseStatusDef DefDesperate => this.Def<DesperateUseStatusDef>();
-
-            // Set by our Activate() prefix right before a desperate activation starts
-            internal bool DesperateActivationInProgress { get; set; }
-
-            public override void OnApply(StatusComponent statusComponent)
-            {
-                base.OnApply(statusComponent);
-
-                if (TacticalActor == null)
-                {
-                    RequestUnapply(statusComponent);
-                    return;
-                }
-
-                // Apply the accuracy penalty immediately upon gaining this status
-                ApplyPenalty();
-
-                // Listen for ability execution so we can finalize (spend leftover AP and clear penalty)
-                TacticalActor.AbilityExecutedEvent += OnAbilityExecuted;
-            }
-
-            public override void OnUnapply()
-            {
-                if (TacticalActor != null)
-                {
-                    TacticalActor.AbilityExecutedEvent -= OnAbilityExecuted;
-                }
-
-                // Always remove the penalty if it’s still around
-                RemovePenalty();
-
-                base.OnUnapply();
-            }
-
-            public override void EndTurn()
-            {
-                // If player ends turn without using the desperate shot:
-                RemovePenalty();
-                RequestUnapply(StatusComponent);    // expire the enabling status
-                base.EndTurn();
-            }
-
-            private void OnAbilityExecuted(TacticalAbility ability)
-            {
-                if (TacticalActor == null) return;
-
-                // Only finalize if this execution actually used the bypass
-                if (!DesperateActivationInProgress) return;
-
-                // Spend whatever AP was left: clamp to 0
-                TacticalActor.CharacterStats.ActionPoints.Set(0f);
-
-                // Clear the transient penalty
-                RemovePenalty();
-
-                // Consume the enabling status
-                RequestUnapply(TacticalActor.Status);
-
-                DesperateActivationInProgress = false;
-            }
-
-            private void ApplyPenalty()
-            {
-                if (DefDesperate.AccuracyPenaltyStatus == null || TacticalActor == null) return;
-
-                // Avoid duping the penalty if status is somehow re-applied
-                var existing = TacticalActor.Status.GetStatus<TacStatus>(DefDesperate.AccuracyPenaltyStatus);
-                if (existing == null)
-                {
-                    TacticalActor.Status.ApplyStatus(DefDesperate.AccuracyPenaltyStatus, DefDesperate);
-                }
-            }
-
-            private void RemovePenalty()
-            {
-                if (DefDesperate.AccuracyPenaltyStatus == null || TacticalActor == null) return;
-
-                var penalty = TacticalActor.Status.GetStatus<TacStatus>(DefDesperate.AccuracyPenaltyStatus);
-                // Ensure we only remove the one that came from this status (if you reuse the same penalty elsewhere)
-                if (penalty != null)
-                {
-                    penalty.RequestUnapply(TacticalActor.Status);
-                }
-            }
-
-            // === Helpers used by patches ===
-
-            internal bool Matches(TacticalAbility ability)
-            {
-                var d = DefDesperate;
-                var adef = ability?.TacticalAbilityDef;
-                if (adef == null) return false;
-
-                bool inList = d.AllowedAbilities == null || d.AllowedAbilities.Length == 0 || d.AllowedAbilities.Contains(adef);
-
-                // If it’s a ShootAbility and you configured weapon tags, enforce them
-                bool tagMatch = true;
-                if (ability is ShootAbility shootAbility)
-                {
-                    tagMatch = (d.AllowedTags == null || d.AllowedTags.Length == 0)
-                               || d.AllowedTags.Any(tag => shootAbility.Weapon?.WeaponDef?.Tags?.Contains(tag) == true);
-                }
-
-                return inList && tagMatch;
-            }
-
-            internal bool RequirementsMet()
-            {
-                var d = DefDesperate;
-                if (d.RequiresAnyActionPoint && (TacticalActor?.CharacterStats.ActionPoints.Value ?? 0f) <= 0f)
-                    return false;
-
-                if (d.RequiredStatusesAll != null && d.RequiredStatusesAll.Length > 0)
-                {
-                    foreach (var req in d.RequiredStatusesAll)
-                    {
-                        if (TacticalActor.Status.GetStatus<TacStatus>(req) == null)
-                            return false;
-                    }
-                }
-                return true;
-            }
-        }
+      
 
 
     }

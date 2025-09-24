@@ -56,7 +56,7 @@ namespace TFTV.TFTVDrills
                     var (_, slot) = FindTrackSlotForAbility(character, ability);
 
                     // Build/ensure your pool (_drills) if needed
-                    if (DrillsAbilities.Drills == null || DrillsAbilities.Drills.Count == 0)
+                    if (DrillsDefs.Drills == null || DrillsDefs.Drills.Count == 0)
                     {
                         // no-op if you populate elsewhere; or build by tag here
                         // _drills = SharedData.GetSharedDataFromGame().DefRepository.GetAllDefs<TacticalAbilityDef>()...
@@ -66,7 +66,7 @@ namespace TFTV.TFTVDrills
                     AbilityTrackSource dummySource = AbilityTrackSource.Personal;
 
                     // Reuse your existing popup
-                    ShowReplacementPopup(ui, slot, ability, dummySource, DrillsAbilities.Drills);
+                    ShowReplacementPopup(ui, slot, ability, dummySource, DrillsDefs.Drills);
 
                     // Swallow vanilla click
                     return false;

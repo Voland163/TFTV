@@ -6118,7 +6118,7 @@ namespace TFTV
                     {
                         SharedData shared = GameUtl.GameComponent<SharedData>();
                         SharedDamageKeywordsDataDef damageKeywords = shared.SharedDamageKeywords;
-                        StandardDamageTypeEffectDef meleeDamageStandardDamageTypeEffectDef = DrillsAbilities.MeleeStandardDamageType;
+                        StandardDamageTypeEffectDef meleeDamageStandardDamageTypeEffectDef = TFTVMeleeDamage.MeleeStandardDamageType;
                        
 
                         if (tacticalActor != null && damageKeyword.DamageTypeDef == meleeDamageStandardDamageTypeEffectDef && damageKeyword != damageKeywords.SyphonKeyword) //&& damageKeyword is PiercingDamageKeywordDataDef == false) 

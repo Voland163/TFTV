@@ -136,13 +136,15 @@
     <Compile Include="TFTVBackgrounds.cs" />
     <Compile Include="TFTVCrisis.cs" />
     <Compile Include="TFTVCustomPortraits.cs" />
+    <Compile Include="TFTVDrills\DrillsDefs.cs" />
     <Compile Include="TFTVDrills\DrillsPublicClasses.cs" />
-    <Compile Include="TFTVDrills\DrillsAbilities.cs" />
+    <Compile Include="TFTVDrills\DrillsHarmony.cs" />
     <Compile Include="TFTVDrills\DrillsUI.cs" />
     <Compile Include="TFTVEvacAll.cs" />
     <Compile Include="TFTVExperienceDistribution.cs" />
     <Compile Include="TFTVDragandDropFunctionality.cs" />
     <Compile Include="TFTVHavenRecruitsScreen.cs" />
+    <Compile Include="TFTVMeleeDamage.cs" />
     <Compile Include="TFTVNerdPerks.cs" />
     <Compile Include="TFTVNJQuestline.cs" />
     <Compile Include="TFTVPersonnelRoster.cs" />

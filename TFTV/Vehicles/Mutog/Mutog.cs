@@ -16,7 +16,7 @@ namespace TFTVVehicleRework.Mutog
     {
         private static readonly DefRepository Repo = VehiclesMain.Repo;
         internal static SharedDamageKeywordsDataDef keywords = VehiclesMain.keywords;
-        internal static DamageKeywordDef TFTVMeleeDamageKeyword = DrillsAbilities.MeleeDamageKeywordDef;
+        internal static DamageKeywordDef TFTVMeleeDamageKeyword = TFTVMeleeDamage.MeleeDamageKeywordDef;
 
         public static void Change()
         {
