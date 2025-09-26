@@ -1,5 +1,6 @@
 ﻿using Base.Core;
 using Base.Defs;
+using Base.Entities.Abilities;
 using Base.Entities.Statuses;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -32,6 +33,144 @@ namespace TFTV.TFTVDrills
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
+        internal class OneHandedGrip 
+        {
+            /// <summary>
+            /// Provides shared helpers for attaching and detaching the one-handed accuracy penalty ability.
+            /// The mod that defines the actual ability can set <see cref="OneHandedGrip"/> at runtime before
+            /// the patches execute (for example during mod initialization).
+            /// </summary>
+            public static class OneHandedPenaltyAbilityManager
+            {
+                /// <summary>
+                /// Gets or sets the tactical ability definition that should be granted while a pawn has exactly one disabled hand.
+                /// This should be assigned by the mod bootstrap code once the ability definition is available.
+                /// </summary>
+                public static PassiveModifierAbilityDef OneHandedGrip { get; set; }
+                public static StanceStatusDef OneHandedGripAccPenalty { get; set; }
+                /// <summary>
+                /// Internal token used as the source when adding the accuracy penalty ability.
+                /// </summary>
+                private static readonly object AbilitySource = new object();
+
+                /// <summary>
+                /// Adds the configured ability to the actor if needed.
+                /// </summary>
+                /// <param name="status">The status that triggered the check.</param>
+                public static void TryAddStatus(TacticalActor tacticalActor)
+                {
+                    
+
+                    TFTVLogger.Always($"running TryAddAbility for {tacticalActor.DisplayName}");
+
+                    if (tacticalActor.HasStatus(OneHandedGripAccPenalty)) 
+                    {
+                        return;
+                    } 
+
+                    tacticalActor.Status.ApplyStatus(OneHandedGripAccPenalty);
+                    TFTVLogger.Always($"{tacticalActor.DisplayName} has accpenalty status (should)? " +
+                        $"{tacticalActor.HasStatus(OneHandedGripAccPenalty)}");
+                }
+
+                /// <summary>
+                /// Removes the configured ability from the actor when no remaining statuses require it.
+                /// </summary>
+                /// <param name="status">The status that triggered the check.</param>
+                public static void TryRemoveStatus(TacticalActor tacticalActor)
+                {
+                    try
+                    {
+
+                        TFTVLogger.Always($"running TryRemoveStatus for {tacticalActor.DisplayName}");
+
+
+                        Status accPenaltyStatus = tacticalActor.Status.GetStatusesByName(OneHandedGripAccPenalty.EffectName).FirstOrDefault();
+
+                        tacticalActor.Status.UnapplyStatus(accPenaltyStatus);
+                        TFTVLogger.Always($"{tacticalActor.DisplayName} has accpenalty status (should not)? " +
+                            $"{tacticalActor.HasStatus(OneHandedGripAccPenalty)}");
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+
+                }
+            }
+
+
+            [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.RecalculateUsableHands))]
+            public static class TacticalActor_RecalculateUsableHands_Patch
+            {
+                public static bool Prefix(TacticalActor __instance, ref int ____usableHands)
+                {
+                    try 
+                    { 
+                        if(__instance.GetAbilityWithDef<PassiveModifierAbility>(OneHandedPenaltyAbilityManager.OneHandedGrip) == null)
+                        {                          
+                            return true;
+                        }
+
+                        int num = 0;
+                       
+                        foreach (UnusableHandStatus status in __instance.Status.GetStatuses<UnusableHandStatus>())
+                        {
+                            num += status.HandsDisabled;
+                        }
+
+                        int num2 = 0;
+                        bool providesHandsIfDisabled = __instance.Status.HasStatus<FreezeAspectStatsStatus>();
+                        
+                        foreach (ItemSlot slot in __instance.BodyState.GetSlots())
+                        {                            
+                            num2 += slot.GetHandsProvided(providesHandsIfDisabled);
+                        }
+
+                        if(num2==1)
+                        {
+                            TFTVLogger.Always($"{__instance.DisplayName} has 1 hand enabled and the OneHandedGrip ability, so number of usable hands should increase to 2");
+                            num2++;
+                            OneHandedPenaltyAbilityManager.TryAddStatus(__instance);
+
+                        }
+                        else if (num2 == 2 && __instance.HasStatus(OneHandedPenaltyAbilityManager.OneHandedGripAccPenalty))
+                        {
+                            TFTVLogger.Always($"{__instance.DisplayName} has 2 hand enabled and still has the acc penalty, so going to remove it");
+                            OneHandedPenaltyAbilityManager.TryRemoveStatus(__instance);
+
+                        }
+
+
+                        int usableHands = ____usableHands; 
+                        ____usableHands = num2 - num;
+
+                        if (____usableHands < 0)
+                        {
+                            ____usableHands = 0;
+                        }
+
+                        if (____usableHands < usableHands)
+                        {
+                            __instance.TacticalLevel.ActorUsableHandsDecreased(__instance);
+                        }
+
+                        return false;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+
+
+                }
+            }
+
+          
+
+        }
 
         internal class BulletHell
         {

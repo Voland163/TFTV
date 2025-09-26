@@ -18,6 +18,8 @@ using System.Reflection;
 
 namespace TFTV
 {
+
+
     internal class TFTVStamina
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;

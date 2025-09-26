@@ -1,4 +1,5 @@
-﻿using Base.Defs;
+﻿using Base.Core;
+using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
@@ -16,13 +17,12 @@ using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
-using PhoenixPoint.Tactical.Entities.StructuralTargets;
-using PhoenixPoint.Tactical.Entities.Weapons;
 using PRMBetterClasses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static TFTV.TFTVDrills.DrillsHarmony;
 using static TFTV.TFTVDrills.DrillsPublicClasses;
 
 namespace TFTV.TFTVDrills
@@ -63,7 +63,7 @@ namespace TFTV.TFTVDrills
 
         public static List<TacticalAbilityDef> Drills = new List<TacticalAbilityDef>();
 
-      
+
 
 
         public static void CreateDefs()
@@ -71,7 +71,7 @@ namespace TFTV.TFTVDrills
             try
             {
 
-                CreateDrills();               
+                CreateDrills();
                 ReplaceStunStatusWithNewConditionalStatusDef();
 
             }
@@ -81,8 +81,8 @@ namespace TFTV.TFTVDrills
             }
         }
 
-       
-        
+
+
         private static void CreateDrills()
         {
             try
@@ -95,7 +95,10 @@ namespace TFTV.TFTVDrills
                 _mentorProtocol = CreateDrillNominalAbility("mentorprotocol", "a2b1f9c3-0c32-4d9f-9a7b-0c2d18ce6ab0", "9d2a3f7b-1a53-4a8c-a1ab-4b6d3e2f9a22", "7b1f8e9c-3d4a-4e8c-9b8a-2c5f7a9e0b31");
                 PassiveModifierAbilityDef pinpointToss = CreateDrillNominalAbility("pinpointtoss", "b59a3b5a-0b6e-4abf-9c7f-1db713e0b7a0", "c0e37c4a-4b1f-4f3e-8c2a-5f4e6d7c8a91", "e7f1a0b2-6d38-4d1e-9c3b-7a1d9e0f2b64");
                 CreateDrillNominalAbility("shockdrop", "c1f7c2e4-9a2d-4b8c-ae3e-2c4b5d6e7f81", "f0a1b2c3-4d5e-6f70-8a91-b2c3d4e5f607", "0a1b2c3d-4e5f-6071-8293-a4b5c6d7e8f9");
-                CreateDrillNominalAbility("onehandedgrip", "16e7f809-2a3b-4c5d-d6e7-8f091a2b3c4d", "901a0b1c-2d3e-4f50-6172-839a4b5c6d7e", "0a0b1c2d-3e4f-5061-7283-9a4b5c6d7e8f");
+                OneHandedGrip.OneHandedPenaltyAbilityManager.OneHandedGrip = CreateDrillNominalAbility("onehandedgrip", "16e7f809-2a3b-4c5d-d6e7-8f091a2b3c4d", "901a0b1c-2d3e-4f50-6172-839a4b5c6d7e", "0a0b1c2d-3e4f-5061-7283-9a4b5c6d7e8f");
+                OneHandedGrip.OneHandedPenaltyAbilityManager.OneHandedGripAccPenalty = CreateOneHandedGripPenaltyStatus();
+
+
                 _shockDiscipline = CreateDrillNominalAbility("shockdiscipline", "27f8091a-3b4c-5d6e-e7f8-091a2b3c4d5e", "1a0b1c2d-3e4f-5061-7283-9a4b5c6d7e8f", "2b1c2d3e-4f50-6172-839a-4b5c6d7e8f90");
 
                 _snapBrace = CreateDrillNominalAbility("snapbrace", "38091a2b-4c5d-6e7f-f809-1a2b3c4d5e6f", "2c3d4e5f-6172-839a-4b5c-6d7e8f9010ab", "3d4e5f61-7283-9a4b-5c6d-7e8f9010ab1c");
@@ -138,7 +141,7 @@ namespace TFTV.TFTVDrills
                             EquipmentStatModification = new ItemStatModification
                             {
                                 Modification = StatModificationType.Add,
-                                TargetStat = PhoenixPoint.Common.Entities.StatModificationTarget.Accuracy,
+                                TargetStat = StatModificationTarget.Accuracy,
                                 Value = 0.5f
                             }
                         }
@@ -161,6 +164,85 @@ namespace TFTV.TFTVDrills
                 TFTVLogger.Error(e);
             }
         }
+
+        private static StanceStatusDef CreateOneHandedGripPenaltyStatus()
+        {
+            try
+            {
+
+                //need to replace with StanceStatusDef, from Chiron_StabilityStance_StatusDef, for example
+                string statusName = "TFTV_OneHandedGripPenalty_StatusDef";
+
+                Sprite icon = Helper.CreateSpriteFromImageFile($"Drill_onehandedgrip.png");
+
+                StanceStatusDef sourceStatus = DefCache.GetDef<StanceStatusDef>("Chiron_StabilityStance_StatusDef");
+
+                
+
+                StanceStatusDef newStatus = Helper.CreateDefFromClone(
+                    sourceStatus,
+                    "a4d84ce7-9c9f-4a6e-9190-5cde2b5cfef5",
+                    statusName);
+
+                newStatus.ShowNotification = false;
+                newStatus.StanceAnimations = null;
+
+
+                newStatus.Visuals = Helper.CreateDefFromClone(
+                    sourceStatus.Visuals,
+                    "f7e65c8b-0b82-46ad-83f8-33f4f55b73f4",
+                    statusName);
+
+                newStatus.Visuals.DisplayName1.LocalizationKey = "TFTV_DRILL_onehandedgrip_NAME";
+                newStatus.Visuals.Description.LocalizationKey = "TFTV_DRILL_onehandedgrip_DESC";
+                newStatus.Visuals.SmallIcon = icon;
+                newStatus.Visuals.LargeIcon = icon;
+
+                newStatus.StatModifications = new ItemStatModification[0];
+                
+
+                List<GameTagDef> affectedWeaponTags = new List<GameTagDef>
+                    {
+                    DefCache.GetDef<GameTagDef>("AssaultRifleItem_TagDef"),
+                        DefCache.GetDef<GameTagDef>("HeavyItem_TagDef"),
+                        DefCache.GetDef<GameTagDef>("PDWItem_TagDef"),
+                        DefCache.GetDef<GameTagDef>("SniperRifleItem_TagDef"),
+                        DefCache.GetDef<GameTagDef>("ShotgunItem_TagDef"),
+                         DefCache.GetDef<GameTagDef>("ViralItem_TagDef"),
+                          DefCache.GetDef<GameTagDef>("CrossbowItem_TagDef")
+
+                    };
+
+                List<EquipmentItemTagStatModification> tagModifications = new List<EquipmentItemTagStatModification>();
+
+                foreach (GameTagDef gameTag in affectedWeaponTags)
+                {
+
+                    tagModifications.Add(new EquipmentItemTagStatModification
+                    {
+                        ItemTag = gameTag,
+                        EquipmentStatModification = new ItemStatModification
+                        {
+                            Modification = StatModificationType.Add,
+                            TargetStat = StatModificationTarget.Accuracy,
+                            Value = -0.25f
+                        }
+                    });
+
+                }
+
+                newStatus.EquipmentsStatModifications = tagModifications.ToArray();
+
+                return newStatus;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
 
         private static void CreateBulletHellDrill()
         {
@@ -260,12 +342,12 @@ namespace TFTV.TFTVDrills
                     if (animActionDef.AbilityDefs != null && animActionDef.AbilityDefs.Contains(animSource) && !animActionDef.AbilityDefs.Contains(newAbility))
                     {
                         animActionDef.AbilityDefs = animActionDef.AbilityDefs.Append(newAbility).ToArray();
-                       /* TFTVLogger.Always("Anim Action '" + animActionDef.name + "' set for abilities:");
-                        foreach (AbilityDef ad in animActionDef.AbilityDefs)
-                        {
-                            TFTVLogger.Always("  " + ad.name);
-                        }
-                        TFTVLogger.Always("----------------------------------------------------", false);*/
+                        /* TFTVLogger.Always("Anim Action '" + animActionDef.name + "' set for abilities:");
+                         foreach (AbilityDef ad in animActionDef.AbilityDefs)
+                         {
+                             TFTVLogger.Always("  " + ad.name);
+                         }
+                         TFTVLogger.Always("----------------------------------------------------", false);*/
                     }
                 }
 

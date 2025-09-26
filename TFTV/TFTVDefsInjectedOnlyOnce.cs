@@ -107,16 +107,63 @@ namespace TFTV
             try
             {
 
-                List<TacticalItemDef> armourItems = Repo.GetAllDefs<TacticalItemDef>().Where(i => i.Tags.Contains(Shared.SharedGameTags.ArmorTag)
-                   && i.Tags.Contains(DefCache.GetDef<GameTagDef>("Sniper_ClassTagDef"))).ToList();
+                DefCache.GetDef<GameTagDef>("AssaultRifleItem_TagDef");
+                DefCache.GetDef<GameTagDef>("HeavyItem_TagDef");
+                DefCache.GetDef<GameTagDef>("PDWItem_TagDef");
+                DefCache.GetDef<GameTagDef>("SniperRifleItem_TagDef");
 
-                foreach (TacticalItemDef item in armourItems)
+                List<WeaponDef> weapons = Repo.GetAllDefs<WeaponDef>().Where(w=>w.HandsToUse>1).ToList();
+
+            TFTVLogger.Always($"There are {weapons.Count} weapons that require 2 hands:");
+
+                foreach (TacticalItemDef item in weapons)
                 {
-
-
-                    TFTVLogger.Always($"{item.name}");
+                    TFTVLogger.Always($"{item.name} requires 2 hands"); 
+                    
+                    if(item.Tags.Contains(DefCache.GetDef<GameTagDef>("AssaultRifleItem_TagDef"))||
+                        item.Tags.Contains(DefCache.GetDef<GameTagDef>("HeavyItem_TagDef"))||
+                        item.Tags.Contains(DefCache.GetDef<GameTagDef>("PDWItem_TagDef"))||
+                        item.Tags.Contains(DefCache.GetDef<GameTagDef>("SniperRifleItem_TagDef"))||
+                        item.Tags.Contains(DefCache.GetDef<GameTagDef>("ShotgunItem_TagDef")) ||
+                         item.Tags.Contains(DefCache.GetDef<GameTagDef>("ViralItem_TagDef"))||
+                            item.Tags.Contains(DefCache.GetDef<GameTagDef>("CrossbowItem_TagDef"))
+                        )
+                    {
+                        TFTVLogger.Always($" and has a correct tag");
+                    }
+                    else
+                    {
+                        TFTVLogger.Always($" and DOES NOT HAVE A CORRECT TAG");
+                    } 
                 }
-            
+
+                List<WeaponDef> weapons2 = Repo.GetAllDefs<WeaponDef>().Where(w => w.HandsToUse < 2).ToList();
+
+                TFTVLogger.Always($"There are {weapons.Count} weapons that require 1 hand:");
+
+                foreach (TacticalItemDef item in weapons2)
+                {
+                    TFTVLogger.Always($"{item.name} requires 1 hand");
+
+                    if (item.Tags.Contains(DefCache.GetDef<GameTagDef>("AssaultRifleItem_TagDef")) ||
+                        item.Tags.Contains(DefCache.GetDef<GameTagDef>("HeavyItem_TagDef")) ||
+                        item.Tags.Contains(DefCache.GetDef<GameTagDef>("PDWItem_TagDef")) ||
+                        item.Tags.Contains(DefCache.GetDef<GameTagDef>("SniperRifleItem_TagDef")) ||
+                        item.Tags.Contains(DefCache.GetDef<GameTagDef>("ShotgunItem_TagDef")) ||
+                         item.Tags.Contains(DefCache.GetDef<GameTagDef>("ViralItem_TagDef")) ||
+                            item.Tags.Contains(DefCache.GetDef<GameTagDef>("CrossbowItem_TagDef"))
+                        )
+                    {
+                        TFTVLogger.Always($" and DOES NOT HAVE A CORRECT TAG");
+                    }
+                    else
+                    {
+                        TFTVLogger.Always($" and has a correct tag");
+                    }
+
+                }
+
+
             }
             catch (Exception e)
             {
@@ -236,7 +283,7 @@ namespace TFTV
 
                 // Experimental();
 
-                Print();
+              //  Print();
 
             }
             catch (Exception e)

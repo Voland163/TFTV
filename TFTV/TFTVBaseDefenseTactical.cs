@@ -3534,7 +3534,7 @@ namespace TFTV
                     TacCharacterDef crabUmbra = DefCache.GetDef<TacCharacterDef>("Oilcrab_TacCharacterDef");
                     TacCharacterDef fishUmbra = DefCache.GetDef<TacCharacterDef>("Oilfish_TacCharacterDef");
 
-                    List<TacCharacterDef> enemies = new List<TacCharacterDef>() { crabUmbra, fishUmbra };
+                    List<TacCharacterDef> enemies = new List<TacCharacterDef> { crabUmbra, fishUmbra };
                     List<TacticalDeployZone> allDeployZones = new List<TacticalDeployZone>(controller.Map.GetActors<TacticalDeployZone>());
                     List<TacticalActor> infectedPhoenixOperatives = new List<TacticalActor>();
                     Dictionary<TacticalActor, TacticalDeployZone> targetablePhoenixOperatives = new Dictionary<TacticalActor, TacticalDeployZone>();
@@ -3545,7 +3545,6 @@ namespace TFTV
                                 || tacticalActor.TacticalPerceptionBase.IsTouchingVoxel(TacticalVoxelType.Mist))
                         {
                             infectedPhoenixOperatives.Add(tacticalActor);
-                            // TFTVLogger.Always($"tactical actor added to list is {tacticalActor.DisplayName}");
                         }
                     }
 
@@ -3559,44 +3558,41 @@ namespace TFTV
                     {
                         foreach (TacticalDeployZone tacticalDeployZone in allDeployZones)
                         {
-                            if (CheckAttackVectorForUmbra(tacticalActor, tacticalDeployZone))
+                            if (!CheckAttackVectorForUmbra(tacticalActor, tacticalDeployZone))
                             {
-                                if (!targetablePhoenixOperatives.ContainsKey(tacticalActor))
-                                {
-                                    targetablePhoenixOperatives.Add(tacticalActor, tacticalDeployZone);
-                                }
-                                else
-                                {
-                                    if ((tacticalActor.Pos - targetablePhoenixOperatives[tacticalActor].Pos).magnitude > (tacticalActor.Pos - tacticalDeployZone.Pos).magnitude)
-                                    {
-                                        targetablePhoenixOperatives[tacticalActor] = tacticalDeployZone;
-                                    }
-                                }
+                                continue;
+                            }
+
+                            if (!targetablePhoenixOperatives.ContainsKey(tacticalActor))
+                            {
+                                targetablePhoenixOperatives.Add(tacticalActor, tacticalDeployZone);
+                                continue;
+                            }
+
+                            if ((tacticalActor.Pos - targetablePhoenixOperatives[tacticalActor].Pos).magnitude > (tacticalActor.Pos - tacticalDeployZone.Pos).magnitude)
+                            {
+                                targetablePhoenixOperatives[tacticalActor] = tacticalDeployZone;
                             }
                         }
                     }
 
                     int maxUmbra = Math.Max(TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order), 3);
-   
-                    TacticalVoxelMatrix tacticalVoxelMatrix = controller.VoxelMatrix; 
+                    TacticalVoxelMatrix tacticalVoxelMatrix = controller.VoxelMatrix;
+                    int deployments = 0;
 
-                    for (int x = 0; x < targetablePhoenixOperatives.Keys.Count(); x++)
+                    foreach (KeyValuePair<TacticalActor, TacticalDeployZone> operativeTarget in targetablePhoenixOperatives)
                     {
-
-                        if (x == maxUmbra)
+                        if (deployments == maxUmbra)
                         {
                             break;
                         }
 
-                        TacticalActor pXOperative = targetablePhoenixOperatives.Keys.ElementAt(x);
+                        TacticalActor phoenixOperative = operativeTarget.Key;
+                        TacticalDeployZone zone = operativeTarget.Value;
 
-                        TFTVLogger.Always($"going to deploy Umbra for {pXOperative.DisplayName}");
-
-                        TacticalDeployZone zone = targetablePhoenixOperatives[pXOperative]; //get the zone to spawn
-
+                        TFTVLogger.Always($"going to deploy Umbra for {phoenixOperative.DisplayName}");
                         TFTVLogger.Always($"at zone at {zone.Pos}");
 
-                        //Choose type of Umbra and generate necessary data
                         TacCharacterDef chosenEnemy = enemies.GetRandomElement(new System.Random((int)Stopwatch.GetTimestamp()));
                         TFTVLogger.Always($"umbraType {chosenEnemy.name}");
 
@@ -3604,58 +3600,48 @@ namespace TFTV
                         actorDeployData.InitializeInstanceData();
 
                         List<Vector3> orderedSpawnPositions = zone.GetOrderedSpawnPositions();
+                        if (orderedSpawnPositions == null || orderedSpawnPositions.Count == 0)
+                        {
+                            TFTVLogger.Always($"Warning: No ordered spawn positions available for Umbra deployment near {phoenixOperative.DisplayName}; skipping this deployment.");
+                            continue;
+                        }
 
                         List<Vector3> mistCoveredSpawnPositions = new List<Vector3>();
-
-                        foreach (Vector3 vector3 in orderedSpawnPositions)
+                        foreach (Vector3 candidate in orderedSpawnPositions)
                         {
-                            if (tacticalVoxelMatrix.GetVoxel(vector3).GetVoxelType() == TacticalVoxelType.Mist)
+                            if (tacticalVoxelMatrix.GetVoxel(candidate).GetVoxelType() == TacticalVoxelType.Mist)
                             {
-                                mistCoveredSpawnPositions.Add(vector3);
+                                mistCoveredSpawnPositions.Add(candidate);
                             }
                         }
 
                         TFTVLogger.Always($"mistCoveredSpawnPositions count: {mistCoveredSpawnPositions.Count}");
 
                         IReadOnlyCollection<Vector3> validSpawnPosition = zone.GetValidSpawnPosition(actorDeployData.ComponentSetDef, actorDeployData.DeploymentTags, mistCoveredSpawnPositions);
-
-                        TFTVLogger.Always($"validSpawnPositions count: {validSpawnPosition.Count}");
-
                         if (validSpawnPosition == null || validSpawnPosition.Count == 0)
                         {
-                            TFTVLogger.Always($"No valid positions to spawn Umbra near {pXOperative.DisplayName}!");
+                            TFTVLogger.Always($"Warning: No valid positions to spawn Umbra near {phoenixOperative.DisplayName}! Skipping this deployment.");
                             continue;
                         }
 
-                        /*    Vector3 position = zone.Pos;
-                            //  TFTVLogger.Always($"position before adjustmment is {position}");
-                            if (position.y <= 2 && position.y != 1.0)
-                            {
-                                //  TFTVLogger.Always($"position should be adjusted to 1.2");
-                                position.y = 1.0f;
-                            }
-                            else if (position.y > 4 && position.y != 4.8)
-                            {
-                                //    TFTVLogger.Always($"position should be adjusted to 4.8");
-                                position.SetY(4.8f);
-                            }
-
-                            MethodInfo spawnBlob = AccessTools.Method(typeof(TacticalVoxelMatrix), "SpawnBlob_Internal");
-                            //spawnBlob.Invoke(tacticalVoxelMatrix, new object[] { TacticalVoxelType.Empty, zone.Pos + Vector3.up * -1.5f, 3, 1, false, true });
-                            // TFTVLogger.Always($"pXOperative to be ghosted {pXOperative.DisplayName} at pos {position}");
-                            spawnBlob.Invoke(tacticalVoxelMatrix, new object[] { TacticalVoxelType.Mist, position, 3, 1, false, true });
-
-                            // SpawnBlob_Internal(TacticalVoxelType type, Vector3 pos, int horizontalRadius, int height, bool circular, bool updateMatrix = true)*/
+                        TFTVLogger.Always($"validSpawnPositions count: {validSpawnPosition.Count}");
 
                         zone.SetFaction(controller.GetFactionByCommandName("aln"), TacMissionParticipant.Intruder);
                         TFTVLogger.Always($"Found deployzone and deploying " + chosenEnemy.name + $"; Position is y={zone.Pos.y} x={zone.Pos.x} z={zone.Pos.z}");
 
-                        TacticalActorBase tacticalActorBase = TacticalDeployZone.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, controller.GetFactionByCommandName("aln").TacticalFactionDef, TacMissionParticipant.Intruder, validSpawnPosition.First(), zone.transform.rotation, zone);
+                        TacticalActorBase tacticalActorBase = TacticalDeployZone.SpawnActor(
+                            actorDeployData.ComponentSetDef,
+                            actorDeployData.InstanceData,
+                            controller.GetFactionByCommandName("aln").TacticalFactionDef,
+                            TacMissionParticipant.Intruder,
+                            validSpawnPosition.First(),
+                            zone.transform.rotation,
+                            zone);
 
-                        TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
+                        TacticalActor spawnedActor = tacticalActorBase as TacticalActor;
+                        spawnedActor?.TacticalActorView.DoCameraChase();
 
-                        tacticalActor?.TacticalActorView.DoCameraChase();
-
+                        deployments++;
                     }
                 }
                 catch (Exception e)
@@ -3663,6 +3649,7 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
+
 
             internal static void MyrmidonAssaultStrat(TacticalLevelController controller)
             {
