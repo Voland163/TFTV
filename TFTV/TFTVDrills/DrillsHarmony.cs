@@ -11,6 +11,7 @@ using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
@@ -32,6 +33,8 @@ namespace TFTV.TFTVDrills
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
+
+
 
         internal class OneHandedGrip 
         {
@@ -693,7 +696,7 @@ namespace TFTV.TFTVDrills
         }
         internal class PounceProtocol
         {
-
+           
 
         }
 

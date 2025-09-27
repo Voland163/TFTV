@@ -24,6 +24,8 @@ namespace TFTV.TFTVDrills
 
 
 
+
+
         [SerializeType(InheritCustomCreateFrom = typeof(TacStatusDef))]
         [CreateAssetMenu(fileName = "StaticArmorTacStatsStatusDef", menuName = "Defs/Statuses/StaticArmorTacStatsStatus")]
         public class StaticArmorTacStatsStatusDef : TacStatusDef

@@ -1,11 +1,15 @@
-﻿using Base.Core;
+﻿using Base.Cameras;
+using Base.Core;
+using Base.Levels;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers;
+using PhoenixPoint.Geoscape.Cameras;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers.PhoenixBase;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using System;
@@ -13,6 +17,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -20,6 +25,190 @@ using Object = UnityEngine.Object;
 
 namespace TFTV
 {
+
+    /// <summary>
+    /// Provides helpers for adding a lateral screen space offset to the geoscape camera.
+    /// </summary>
+    public static class GeoscapeCameraPanExtensions
+    {
+        private const float DefaultNormalizedOffset = 0.35f;
+
+        private static readonly ConditionalWeakTable<GeoscapeCamera, PanState> PanStates = new ConditionalWeakTable<GeoscapeCamera, PanState>();
+        private static readonly AccessTools.FieldRef<GeoscapeCamera, float> DistanceFieldRef = AccessTools.FieldRefAccess<GeoscapeCamera, float>("_distance");
+
+        /// <summary>
+        /// Enables a left pan on the provided camera using a normalized offset relative to the current orbit distance.
+        /// </summary>
+        /// <param name="camera">Target geoscape camera instance.</param>
+        /// <param name="normalizedOffset">Normalized offset to apply (1 = full orbit radius). Defaults to 0.35.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="camera"/> is null.</exception>
+        public static void ShiftLeft(this GeoscapeCamera camera, float normalizedOffset = DefaultNormalizedOffset)
+        {
+            if (camera == null)
+            {
+                throw new ArgumentNullException(nameof(camera));
+            }
+
+            PanState state = PanStates.GetOrCreateValue(camera);
+            state.Enabled = true;
+            state.NormalizedOffset = Mathf.Max(0f, normalizedOffset);
+        }
+
+        /// <summary>
+        /// Disables any active pan on the camera, returning the view to the stock orbit behaviour.
+        /// </summary>
+        /// <param name="camera">Target geoscape camera instance.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="camera"/> is null.</exception>
+        public static void ResetPan(this GeoscapeCamera camera)
+        {
+            if (camera == null)
+            {
+                throw new ArgumentNullException(nameof(camera));
+            }
+
+            if (PanStates.TryGetValue(camera, out PanState state))
+            {
+                state.Enabled = false;
+            }
+        }
+
+        /// <summary>
+        /// Toggles the left pan on or off.
+        /// </summary>
+        /// <param name="camera">Target geoscape camera instance.</param>
+        /// <param name="normalizedOffset">Optional override for the normalized offset when enabling the pan.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="camera"/> is null.</exception>
+        public static void ToggleLeftPan(this GeoscapeCamera camera, float normalizedOffset = DefaultNormalizedOffset)
+        {
+            if (camera == null)
+            {
+                throw new ArgumentNullException(nameof(camera));
+            }
+
+            PanState state = PanStates.GetOrCreateValue(camera);
+            if (state.Enabled)
+            {
+                state.Enabled = false;
+                return;
+            }
+
+            state.Enabled = true;
+            state.NormalizedOffset = Mathf.Max(0f, normalizedOffset);
+        }
+
+        /// <summary>
+        /// Attempts to fetch the active <see cref="GeoscapeCamera"/> from the current level.
+        /// </summary>
+        /// <param name="camera">When this method returns, contains the active camera if one was found.</param>
+        /// <returns><c>true</c> when an active geoscape camera is available; otherwise <c>false</c>.</returns>
+        public static bool TryGetActiveCamera(out GeoscapeCamera camera)
+        {
+            camera = null;
+
+            Level currentLevel = GameUtl.CurrentLevel();
+            if (currentLevel == null)
+            {
+                return false;
+            }
+
+            GeoLevelController geoLevel = currentLevel.GetComponent<GeoLevelController>();
+            GeoscapeView view = geoLevel != null ? geoLevel.View : null;
+            CameraDirector director = view != null ? view.CameraDirector : null;
+            CameraManager manager = director != null ? director.Manager : null;
+
+            camera = manager != null ? manager.GetCameraOfType<GeoscapeCamera>() : null;
+            return camera != null;
+        }
+
+        /// <summary>
+        /// Attempts to enable a left pan on the active geoscape camera.
+        /// </summary>
+        /// <param name="normalizedOffset">Normalized offset to apply (1 = full orbit radius).</param>
+        /// <returns><c>true</c> when a camera was found and the pan was applied; otherwise <c>false</c>.</returns>
+        public static bool TryShiftLeftOnActiveCamera(float normalizedOffset = DefaultNormalizedOffset)
+        {
+            if (TryGetActiveCamera(out GeoscapeCamera camera))
+            {
+                camera.ShiftLeft(normalizedOffset);
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Attempts to reset any pan applied to the active geoscape camera.
+        /// </summary>
+        /// <returns><c>true</c> when a camera was found and the pan state was cleared; otherwise <c>false</c>.</returns>
+        public static bool TryResetPanOnActiveCamera()
+        {
+            if (TryGetActiveCamera(out GeoscapeCamera camera))
+            {
+                camera.ResetPan();
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Enables or disables the left pan on the active geoscape camera based on the provided visibility flag.
+        /// </summary>
+        /// <param name="overlayVisible">If <c>true</c>, the camera is shifted left; otherwise the pan is reset.</param>
+        /// <param name="normalizedOffset">Normalized offset to apply when enabling the pan.</param>
+        /// <returns><c>true</c> when a camera was found and the request was processed; otherwise <c>false</c>.</returns>
+        public static bool TryApplyOverlayPan(bool overlayVisible, float normalizedOffset = DefaultNormalizedOffset)
+        {
+            if (!TryGetActiveCamera(out GeoscapeCamera camera))
+            {
+                return false;
+            }
+
+            if (overlayVisible)
+            {
+                camera.ShiftLeft(normalizedOffset);
+            }
+            else
+            {
+                camera.ResetPan();
+            }
+
+            return true;
+        }
+
+        internal static bool TryGetWorldOffset(GeoscapeCamera camera, out float worldOffset)
+        {
+            if (camera != null && PanStates.TryGetValue(camera, out PanState state) && state.Enabled && state.NormalizedOffset > 0f)
+            {
+                float distance = DistanceFieldRef(camera);
+                worldOffset = Mathf.Max(0f, distance) * state.NormalizedOffset;
+                return worldOffset > 0f;
+            }
+
+            worldOffset = 0f;
+            return false;
+        }
+
+        private sealed class PanState
+        {
+            public bool Enabled;
+            public float NormalizedOffset;
+        }
+    }
+
+    [HarmonyPatch(typeof(GeoscapeCamera), "DefaultCameraAnimation")]
+    internal static class GeoscapeCamera_DefaultCameraAnimation_Patch
+    {
+        private static void Postfix(GeoscapeCamera __instance, ref CameraParams __result)
+        {
+            if (GeoscapeCameraPanExtensions.TryGetWorldOffset(__instance, out float offset) && offset > 0f)
+            {
+                Vector3 right = __result.Rotation * Vector3.right;
+                __result.Position += right * offset;
+            }
+        }
+    }
+
     class TFTVHavenRecruitsScreen
     {
 
@@ -264,6 +453,11 @@ namespace TFTV
                         CreateOverlay();
                         isInitialized = true;
                     }
+
+                    if (overlayPanel.activeSelf) { GeoscapeCameraPanExtensions.TryResetPanOnActiveCamera(); 
+                    }
+                    else { GeoscapeCameraPanExtensions.TryShiftLeftOnActiveCamera(); }
+
                     overlayPanel.SetActive(!overlayPanel.activeSelf);
                     if (overlayPanel.activeSelf)
                         RefreshColumns(); // repopulate each time it opens
@@ -1342,6 +1536,9 @@ namespace TFTV
 
         private static string Safe(string s) => string.IsNullOrEmpty(s) ? "Unknown" : s;
     }
+
+
+
 }
 }
 
