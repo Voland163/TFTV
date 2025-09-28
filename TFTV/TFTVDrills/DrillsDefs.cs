@@ -789,22 +789,13 @@ namespace TFTV.TFTVDrills
                 newAbility.TargetApplicationConditions = new EffectConditionDef[] { source.TargetApplicationConditions[0] };
                 newAbility.TargetingDataDef.Origin.TargetEnemies = true;
                 newAbility.TargetingDataDef.Origin.TargetFriendlies = false;
-                newAbility.AnimType = -1;
+                newAbility.AnimType = 1;
 
-                // Adding new ability to proper animations
-                foreach (TacActorAimingAbilityAnimActionDef animActionDef in Repo.GetAllDefs<TacActorAimingAbilityAnimActionDef>().Where(aad => aad.name.Contains("Soldier_Utka_AnimActionsDef")))
-                {
-                    if (animActionDef.AbilityDefs != null && animActionDef.AbilityDefs.Contains(source) && !animActionDef.AbilityDefs.Contains(newAbility))
-                    {
-                        animActionDef.AbilityDefs = animActionDef.AbilityDefs.Append(newAbility).ToArray();
-                        PRMLogger.Debug("Anim Action '" + animActionDef.name + "' set for abilities:");
-                        foreach (AbilityDef ad in animActionDef.AbilityDefs)
-                        {
-                            PRMLogger.Debug("  " + ad.name);
-                        }
-                        PRMLogger.Debug("----------------------------------------------------", false);
-                    }
-                }
+
+                TacActorSimpleAbilityAnimActionDef animActions = DefCache.GetDef<TacActorSimpleAbilityAnimActionDef>("E_ManualControl [Soldier_Utka_AnimActionsDef]");
+                animActions.AbilityDefs = animActions.AbilityDefs.AddToArray(newAbility);
+
+
 
                 newAbility.StatusDef = Helper.CreateDefFromClone(
                     source.StatusDef,

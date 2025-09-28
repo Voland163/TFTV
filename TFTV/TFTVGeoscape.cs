@@ -55,7 +55,7 @@ namespace TFTV
         public bool ImpossibleWeaponsAdjustmentsSettingInstance;
         public bool NoSecondChances;
         public int EtermesVulnerabilityProtection = TFTVNewGameOptions.EtermesResistanceAndVulnerability;
-
+        public bool NewTrainingFacilities;
         // public bool Update35GeoscapeCheck;
 
         public List<int> PU_Hotspots;
@@ -244,6 +244,7 @@ namespace TFTV
                 CharacterPortraits = TFTVCustomPortraits.CharacterPortrait.characterPics,
                 PlayerVehicles = TFTVDragandDropFunctionality.VehicleRoster.PlayerVehicles,
                 AircraftScanningSites = TFTVAircraftRework.Modules.Geoscape.Scanning.AircraftScanningSites,
+                NewTrainingFacilities = TFTVNewGameOptions.NewTrainingFacilities,
                 //   Update35GeoscapeCheck = TFTVNewGameOptions.Update35Check,
 
             };
@@ -287,6 +288,7 @@ namespace TFTV
                 TFTVNewGameOptions.ConfigImplemented = data.NewConfigUsedInstance;
                 TFTVAmbushes.AN_FallenOnes_Hotspots = data.FO_Hotspots;
                 TFTVAmbushes.NJ_Purists_Hotspots = data.PU_Hotspots;
+                TFTVNewGameOptions.NewTrainingFacilities = data.NewTrainingFacilities;
 
                 if (data.PlayerVehicles != null)
                 {
@@ -351,7 +353,8 @@ namespace TFTV
                     $"\nDiplomaticPenaltiesSetting: {TFTVNewGameOptions.DiplomaticPenaltiesSetting}\nStaminaPenaltyFromInjurySetting: {TFTVNewGameOptions.StaminaPenaltyFromInjurySetting}" +
                     $"\nMoreAmbushesSetting: {TFTVNewGameOptions.MoreAmbushesSetting}\nLimitedCaptureSetting: {TFTVNewGameOptions.LimitedCaptureSetting}\nLimitedHarvestingSetting: {TFTVNewGameOptions.LimitedHarvestingSetting}" +
                     $"\nStrongerPandoransSetting {TFTVNewGameOptions.StrongerPandoransSetting}\nImpossibleWeaponsAdjustmentsSetting: {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}" +
-                    $"\nNoSecondChances: {TFTVNewGameOptions.NoSecondChances}");
+                    $"\nNoSecondChances: {TFTVNewGameOptions.NoSecondChances}" +
+                    $"\nNewTrainingFacilities: {TFTVNewGameOptions.NewTrainingFacilities}");
 
                 TFTVDefsWithConfigDependency.ImplementConfigChoices();
                 TFTVDragandDropFunctionality.VehicleRoster.RestoreVehicleOrder(Controller);

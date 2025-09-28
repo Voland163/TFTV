@@ -1953,6 +1953,7 @@ namespace TFTV
 
                     TFTVCommonMethods.ClearInternalVariablesOnStateChangeAndLoad();
                     TFTVNewGameOptions.ConfigImplemented = true;
+                    TFTVNewGameOptions.NewTrainingFacilities = true;
                     ShowedTacticalSavesWarning = false;
 
                     return false;

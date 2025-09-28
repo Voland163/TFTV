@@ -28,6 +28,7 @@ using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 
 namespace TFTV
 {
@@ -44,7 +45,7 @@ namespace TFTV
         private static bool _noSecondChancesImplemented = false;
         private static bool _handGrenadeScatterImplemented = false;
         private static bool _equipBeforeAmbushImplemented = false;
-
+        private static bool _newTrainingFacilitiesImplemented = false;
 
         public static void ImplementConfigChoices()
         {
@@ -57,7 +58,7 @@ namespace TFTV
                 NoSecondChances.ImplementNoSecondChances();
                 HandGrenadeScatter.ImplementHandGrenadeScatterConfig();
                 EquipBeforeAmbush.ImplementEquipBeforeAmbush();
-
+                NewTrainingFacilities.ImplementNewTrainingFacilities();
             }
             catch (Exception e)
             {
@@ -83,17 +84,47 @@ namespace TFTV
 
         internal class NewTrainingFacilities 
         {
+
             public static void ImplementNewTrainingFacilities()
+            {
+                try 
+                { 
+                    ModifyDefs(TFTVNewGameOptions.NewTrainingFacilities, _newTrainingFacilitiesImplemented);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+
+            }
+
+            private static void ModifyDefs(bool newTrainingFacilitiesOn, bool newTrainingFacilitiesImplemented)
             {
                 try
                 {
+                    bool revert = !newTrainingFacilitiesOn && newTrainingFacilitiesImplemented;
 
-                    ExperienceFacilityComponentDef experienceFacilityComponentDef = DefCache.GetDef<ExperienceFacilityComponentDef>("E_Experience [TrainingFacility_PhoenixFacilityDef]");
-                    experienceFacilityComponentDef.ExperiencePerUser = 0;
-                    experienceFacilityComponentDef.SkillPointsPerDay = 4;
+                    if (newTrainingFacilitiesOn && !newTrainingFacilitiesImplemented)
+                    {
 
-                    DefCache.GetDef<CorruptedHorizonsSettingsDef>("CorruptedHorizonsSettingsDef").MutoidMutagenCost = 500;
-                    DefCache.GetDef<TacCharacterDef>("Mutoid_CharacterTemplateDef").Data.LevelProgression.Experience = 400;
+                        ExperienceFacilityComponentDef experienceFacilityComponentDef = DefCache.GetDef<ExperienceFacilityComponentDef>("E_Experience [TrainingFacility_PhoenixFacilityDef]");
+                        experienceFacilityComponentDef.ExperiencePerUser = 0;
+                        experienceFacilityComponentDef.SkillPointsPerDay = 4;
+
+                        DefCache.GetDef<CorruptedHorizonsSettingsDef>("CorruptedHorizonsSettingsDef").MutoidMutagenCost = 500;
+                        DefCache.GetDef<TacCharacterDef>("Mutoid_CharacterTemplateDef").Data.LevelProgression.Experience = 900;
+                        _newTrainingFacilitiesImplemented = true;
+                    }
+                    else if (revert) 
+                    {
+                        ExperienceFacilityComponentDef experienceFacilityComponentDef = DefCache.GetDef<ExperienceFacilityComponentDef>("E_Experience [TrainingFacility_PhoenixFacilityDef]");
+                        experienceFacilityComponentDef.ExperiencePerUser = 2;
+                        experienceFacilityComponentDef.SkillPointsPerDay = 1;
+                        DefCache.GetDef<CorruptedHorizonsSettingsDef>("CorruptedHorizonsSettingsDef").MutoidMutagenCost = 50;
+                        DefCache.GetDef<TacCharacterDef>("Mutoid_CharacterTemplateDef").Data.LevelProgression.Experience = 0;
+                        _newTrainingFacilitiesImplemented = false;
+                    }
                         //400
                 }
                 catch (Exception e)
@@ -101,7 +132,6 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
-        
         }
 
         internal class EquipBeforeAmbush

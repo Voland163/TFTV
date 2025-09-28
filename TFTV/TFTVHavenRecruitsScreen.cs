@@ -31,11 +31,10 @@ namespace TFTV
     /// </summary>
     public static class GeoscapeCameraPanExtensions
     {
-        private const float DefaultNormalizedOffset = 0.35f;
+        private const float DefaultNormalizedOffset = 0.25f;
 
         private static readonly ConditionalWeakTable<GeoscapeCamera, PanState> PanStates = new ConditionalWeakTable<GeoscapeCamera, PanState>();
-        internal static readonly AccessTools.FieldRef<GeoscapeCamera, float> DistanceFieldRef = AccessTools.FieldRefAccess<GeoscapeCamera, float>("_distance");
-        internal static readonly AccessTools.FieldRef<GeoscapeCamera, Vector3> CamTargetFieldRef = AccessTools.FieldRefAccess<GeoscapeCamera, Vector3>("_camTarget");
+        private static readonly AccessTools.FieldRef<GeoscapeCamera, float> DistanceFieldRef = AccessTools.FieldRefAccess<GeoscapeCamera, float>("_distance");
 
         /// <summary>
         /// Enables a left pan on the provided camera using a normalized offset relative to the current orbit distance.
@@ -131,6 +130,7 @@ namespace TFTV
             if (TryGetActiveCamera(out GeoscapeCamera camera))
             {
                 camera.ShiftLeft(normalizedOffset);
+               // ToggleLeftPan(camera);
                 return true;
             }
 
@@ -210,51 +210,8 @@ namespace TFTV
         }
     }
 
-    [HarmonyPatch(typeof(GeoscapeView), nameof(GeoscapeView.ChaseTarget))]
-    internal static class GeoscapeView_ChaseTarget_Patch
-    {
-        private static bool Prefix(GeoscapeView __instance, GeoActor target, bool instant)
-        {
-            if (__instance == null || target == null)
-            {
-                return true;
-            }
 
-            CameraDirector director = __instance.CameraDirector;
-            CameraManager manager = director?.Manager;
-            GeoscapeCamera camera = manager?.GetCameraOfType<GeoscapeCamera>();
-            if (camera == null)
-            {
-                return true;
-            }
 
-            if (!GeoscapeCameraPanExtensions.TryGetWorldOffset(camera, out float offset) || offset <= 0f)
-            {
-                return true;
-            }
-
-            Vector3 right = camera.transform.right;
-            if (right.sqrMagnitude <= 1e-6f)
-            {
-                return true;
-            }
-
-            TFTVLogger.Always($"the target position is: {target.GlobePosition.WorldPosition}");
-
-            Vector3 adjustedTarget = target.GlobePosition.WorldPosition - right.normalized * offset;
-
-            TFTVLogger.Always($"the adjusted target position is: {adjustedTarget}");
-
-            director.Hint(CameraDirectorHint.GeoscapeFocus, new GeoCamDirectorParams
-            {
-                TargetPosition = adjustedTarget,
-                Unmanaged = true,
-                InstantChase = instant
-            });
-
-            return false;
-        }
-    }
 
 
     class TFTVHavenRecruitsScreen
@@ -502,11 +459,7 @@ namespace TFTV
                         isInitialized = true;
                     }
 
-                    if (overlayPanel.activeSelf)
-                    {
-                        GeoscapeCameraPanExtensions.TryResetPanOnActiveCamera();
-                    }
-                    else { GeoscapeCameraPanExtensions.TryShiftLeftOnActiveCamera(); }
+                    GeoscapeCameraPanExtensions.TryApplyOverlayPan(!overlayPanel.activeSelf);
 
                     overlayPanel.SetActive(!overlayPanel.activeSelf);
                     if (overlayPanel.activeSelf)

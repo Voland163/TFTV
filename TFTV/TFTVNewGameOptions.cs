@@ -67,6 +67,8 @@ namespace TFTV
         public static bool NoSecondChances;
         public static int EtermesResistanceAndVulnerability;
 
+        public static bool NewTrainingFacilities = false;
+
         public static int initialScavSites = 8; // 16 on Vanilla
 
         public enum ScavengingWeight
