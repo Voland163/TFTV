@@ -100,11 +100,19 @@ namespace TFTV
 
             private static Font _cachedFont = null;
 
+            private const float _verticalOffset = -60;
+
             private static void InitializeInfoPanel()
             {
                 try
                 {
                     if (infoPanel != null) return;
+
+                    float offset = 0;
+                    if (!TFTVNewGameOptions.LimitedHarvestingSetting) 
+                    { 
+                    offset = _verticalOffset;
+                    }
 
                     infoPanel = new GameObject("InfoPanel");
                     Canvas canvas = infoPanel.AddComponent<Canvas>();
@@ -120,7 +128,7 @@ namespace TFTV
                     backgroundImage.color = new Color(0, 0, 0, 0.7f);
                     RectTransform backgroundRect = backgroundObject.GetComponent<RectTransform>();
                     backgroundRect.sizeDelta = new Vector2(230, 200);
-                    backgroundRect.anchoredPosition = new Vector2(280, -30);
+                    backgroundRect.anchoredPosition = new Vector2(280, -30+offset);
 
                     GameObject descriptionObject = new GameObject("DescriptionText");
                     descriptionObject.transform.SetParent(backgroundObject.transform);

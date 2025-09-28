@@ -55,18 +55,16 @@ namespace TFTV.TFTVDrills
                     // Build a slot if we can (nice-to-have, not strictly required)
                     var (_, slot) = FindTrackSlotForAbility(character, ability);
 
-                    // Build/ensure your pool (_drills) if needed
-                    if (DrillsDefs.Drills == null || DrillsDefs.Drills.Count == 0)
-                    {
-                        // no-op if you populate elsewhere; or build by tag here
-                        // _drills = SharedData.GetSharedDataFromGame().DefRepository.GetAllDefs<TacticalAbilityDef>()...
-                    }
+                   
 
                     // We don't care about source here; your ShowReplacementPopup ignores it.
                     AbilityTrackSource dummySource = AbilityTrackSource.Personal;
 
+                    GeoPhoenixFaction phoenixFaction = character?.Faction?.GeoLevel?.PhoenixFaction;
+                    List<TacticalAbilityDef> availableChoices = DrillsDefs.GetAvailableDrills(phoenixFaction, character);
+
                     // Reuse your existing popup
-                    ShowReplacementPopup(ui, slot, ability, dummySource, DrillsDefs.Drills);
+                    ShowReplacementPopup(ui, slot, ability, dummySource, availableChoices);
 
                     // Swallow vanilla click
                     return false;
@@ -354,10 +352,15 @@ List<TacticalAbilityDef> choices)
                 try
                 {
                     var character = GetPrivate<GeoCharacter>(ui, "_character");
-                    var phoenixFaction = GetPrivate<GeoPhoenixFaction>(ui, "_phoenixFaction");
-
+                    var phoenixFaction = GetPrivate<GeoPhoenixFaction>(ui, "_phoenixFaction") ?? (character?.Faction?.GeoLevel?.PhoenixFaction);
                     if (character == null || character.Progression == null)
                         return;
+
+                    if (!DrillsDefs.IsDrillUnlocked(phoenixFaction, character, replacement))
+                    {
+                        TFTVLogger.Always($"[TFTV Drills] Attempted to swap to locked drill {replacement?.name}; aborting swap.");
+                        return;
+                    }
 
                     // (Optional) cost handling
                     if (SwapSpCost > 0)

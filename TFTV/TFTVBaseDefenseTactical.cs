@@ -360,6 +360,7 @@ namespace TFTV
             internal static TacCharacterDef ChironDigger;
             internal static GameTagDef EscapedPandoran;
             internal static ClassTagDef MFSecurityGuardClassTag;
+            internal static TacCharacterDef SecurityGuardLevel2;
 
             private static void CreateSecurityGuardTag()
             {
@@ -527,6 +528,39 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
+
+            private static void CreateSecurityGuardLevel2()
+            {
+                try
+                {
+                    string name = "Phoenix_Guard_Level2";
+                    string gUID = "{B8F8AD7C-40F2-4CE9-9E3A-2147A20F9A91}";
+
+                    TacCharacterDef characterSource = SecurityGuard;
+                    TacCharacterDef newCharacter = Helper.CreateDefFromClone(characterSource, gUID, name);
+
+                    newCharacter.SpawnCommandId = name;
+                    newCharacter.Data.Name = SecurityGuard.Data.Name;
+
+                    newCharacter.Data.LevelProgression.SetLevel(2);
+                    newCharacter.Data.Strength += 2;
+                    newCharacter.Data.Will += 2;
+                    newCharacter.Data.Speed += 1;
+
+                    ApplyStatusAbilityDef quickAim = DefCache.GetDef<ApplyStatusAbilityDef>("BC_QuickAim_AbilityDef");
+
+                    if (!newCharacter.Data.Abilites.Contains(quickAim))
+                    {
+                        newCharacter.Data.Abilites = newCharacter.Data.Abilites.AddToArray(quickAim);
+                    }
+
+                    SecurityGuardLevel2 = newCharacter;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
             private static void CreateMindfraggedSecurityGuard()
             {
                 try
@@ -581,6 +615,7 @@ namespace TFTV
                     ReinstateSecurityStation();
                     CreateMeleeChiron();
                     CreateEscapedPandoranTag();
+                    CreateSecurityGuardLevel2();
 
                 }
                 catch (Exception e)
@@ -2019,9 +2054,16 @@ namespace TFTV
 
                         spawnPositions = _securityStationSpawnPositions;
 
+                        TacCharacterDef securityGuardTemplate = UseLevel2SecurityGuards && Defs.SecurityGuardLevel2 != null
+                            ? Defs.SecurityGuardLevel2
+                            : Defs.SecurityGuard;
+
+                        TFTVLogger.Always($"Using level {(UseLevel2SecurityGuards ? 2 : 1)} security guards template: {securityGuardTemplate?.name}");
+
                         void onLoadingCompletedForRegularSecurityGuard()
                         {
-                            ActorDeployData actorDeployData = Defs.SecurityGuard.GenerateActorDeployData();
+                           
+                            ActorDeployData actorDeployData = securityGuardTemplate.GenerateActorDeployData();
 
                             actorDeployData.InitializeInstanceData();
 
@@ -2056,6 +2098,7 @@ namespace TFTV
             private static int _numGuardsUnderPXControl = 0;
             private static List<Vector3> _securityStationSpawnPositions = new List<Vector3>();
             public static int SecurityStationsUnderConstruction = 0;
+            internal static bool UseLevel2SecurityGuards = false;
 
             internal static void GoldShiftSetup()
             {

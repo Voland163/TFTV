@@ -2619,6 +2619,33 @@ namespace TFTV
                         {
 
                             __state = SetFacilitiesUnderConstructionToCompleted(__instance);
+
+                            MissionTagDef baseDefenseMissionTag = DefCache.GetDef<MissionTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef");
+
+                            if (mission != null && mission.MissionDef.MissionTypeTag != null && mission.MissionDef.MissionTypeTag == baseDefenseMissionTag)
+                            {
+                                PhoenixFacilityDef trainingFacilityDef = DefCache.GetDef<PhoenixFacilityDef>("TrainingFacility_PhoenixFacilityDef");
+                                PhoenixFacilityDef securityStationDef = DefCache.GetDef<PhoenixFacilityDef>("SecurityStation_PhoenixFacilityDef");
+
+                                bool hasActiveTrainingFacility = __instance.Facilities.Any(facility =>
+                                    facility.Def == trainingFacilityDef &&
+                                    facility.State == GeoPhoenixFacility.FacilityState.Functioning &&
+                                    facility.IsPowered);
+
+                                bool hasActiveSecurityStation = __instance.Facilities.Any(facility =>
+                                    facility.Def == securityStationDef &&
+                                    facility.State == GeoPhoenixFacility.FacilityState.Functioning &&
+                                    facility.IsPowered);
+
+                                TFTVBaseDefenseTactical.StartingDeployment.UseLevel2SecurityGuards =
+                                    TFTVNewGameOptions.NewTrainingFacilities && hasActiveTrainingFacility && hasActiveSecurityStation;
+
+                                TFTVLogger.Always($"Level 2 security guards enabled? {TFTVBaseDefenseTactical.StartingDeployment.UseLevel2SecurityGuards}. New training facilities: {TFTVNewGameOptions.NewTrainingFacilities}, training facility present: {hasActiveTrainingFacility}, security station present: {hasActiveSecurityStation}");
+                            }
+                            else
+                            {
+                                TFTVBaseDefenseTactical.StartingDeployment.UseLevel2SecurityGuards = false;
+                            }
                         }
                         catch (Exception e)
                         {
@@ -2631,7 +2658,7 @@ namespace TFTV
                         try
                         {
                             RestoreFacilityState(__state);
-                          
+
                         }
                         catch (Exception e)
                         {

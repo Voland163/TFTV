@@ -1,5 +1,4 @@
-﻿using Base.Core;
-using Base.Defs;
+﻿using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
@@ -9,6 +8,8 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
@@ -17,7 +18,6 @@ using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
-using PRMBetterClasses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +27,27 @@ using static TFTV.TFTVDrills.DrillsPublicClasses;
 
 namespace TFTV.TFTVDrills
 {
+    internal sealed class DrillClassLevelRequirement
+    {
+        public ClassTagDef ClassTag;
+        public int MinimumLevel = 1;
+        public bool RequireSelectedOperative; // TODO: confirm whether this should only check the viewing operative.
+    }
+
+    internal sealed class DrillUnlockCondition
+    {
+        public bool AlwaysAvailable;
+        public List<string> RequiredResearchIds { get; } = new List<string>();
+        public List<DrillClassLevelRequirement> ClassLevelRequirements { get; } = new List<DrillClassLevelRequirement>();
+        public bool RequireAnyPhoenixOperative; // TODO: clarify how mixed class requirements should behave.
+
+        public static DrillUnlockCondition AlwaysUnlocked()
+        {
+            return new DrillUnlockCondition { AlwaysAvailable = true };
+        }
+    }
+
+
     internal class DrillsDefs
     {
 
@@ -34,11 +55,13 @@ namespace TFTV.TFTVDrills
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
+        private static readonly Dictionary<TacticalAbilityDef, DrillUnlockCondition> DrillUnlockConditions = new Dictionary<TacticalAbilityDef, DrillUnlockCondition>();
 
         internal static DamageMultiplierStatusDef _drawfireStatus;
         internal static DamageMultiplierStatusDef _markedwatchStatus;
         internal static GameTagDef OrdnanceResupplyTag;
 
+        internal static PassiveModifierAbilityDef _causticJamming;
         internal static PassiveModifierAbilityDef _mentorProtocol;
         internal static PassiveModifierAbilityDef _virulentGrip;
         internal static PassiveModifierAbilityDef _viralPuppeteer;
@@ -51,6 +74,7 @@ namespace TFTV.TFTVDrills
         internal static PassiveModifierAbilityDef _snapBrace;
         internal static ShootAbilityDef _partingShot;
         internal static ReloadAbilityDef _ordnanceResupply;
+        internal static PassiveModifierAbilityDef _pinpointToss;
 
 
         internal static ApplyStatusAbilityDef _bulletHell;
@@ -63,6 +87,256 @@ namespace TFTV.TFTVDrills
 
         public static List<TacticalAbilityDef> Drills = new List<TacticalAbilityDef>();
 
+        public static List<TacticalAbilityDef> GetAvailableDrills(GeoPhoenixFaction faction, GeoCharacter viewer)
+        {
+            var results = new List<TacticalAbilityDef>();
+            if (Drills == null || Drills.Count == 0)
+            {
+                return results;
+            }
+
+            foreach (var ability in Drills)
+            {
+                if (ability == null)
+                {
+                    continue;
+                }
+
+                if (IsDrillUnlocked(faction, viewer, ability))
+                {
+                    results.Add(ability);
+                }
+            }
+
+            return results;
+        }
+
+        public static bool IsDrillUnlocked(GeoPhoenixFaction faction, GeoCharacter viewer, TacticalAbilityDef ability)
+        {
+            if (ability == null)
+            {
+                return false;
+            }
+
+            if (!DrillUnlockConditions.TryGetValue(ability, out var condition) || condition == null)
+            {
+                return true;
+            }
+
+            if (condition.AlwaysAvailable)
+            {
+                return true;
+            }
+
+            if (!MeetsResearchRequirements(faction, condition))
+            {
+                return false;
+            }
+
+            if (!MeetsClassLevelRequirements(faction, viewer, condition))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public static void SetUnlockCondition(TacticalAbilityDef ability, DrillUnlockCondition condition)
+        {
+            if (ability == null)
+            {
+                return;
+            }
+
+            DrillUnlockConditions[ability] = condition ?? DrillUnlockCondition.AlwaysUnlocked();
+        }
+
+        private static bool MeetsResearchRequirements(GeoPhoenixFaction faction, DrillUnlockCondition condition)
+        {
+            if (condition?.RequiredResearchIds == null || condition.RequiredResearchIds.Count == 0)
+            {
+                return true;
+            }
+
+            if (faction?.Research == null)
+            {
+                return false;
+            }
+
+            foreach (var researchId in condition.RequiredResearchIds)
+            {
+                if (string.IsNullOrEmpty(researchId))
+                {
+                    // TODO: populate missing research identifiers.
+                    continue;
+                }
+
+                if (!faction.Research.HasCompleted(researchId))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool MeetsClassLevelRequirements(GeoPhoenixFaction faction, GeoCharacter viewer, DrillUnlockCondition condition)
+        {
+            if (condition?.ClassLevelRequirements == null || condition.ClassLevelRequirements.Count == 0)
+            {
+                return true;
+            }
+
+            foreach (var requirement in condition.ClassLevelRequirements)
+            {
+                if (requirement == null)
+                {
+                    continue;
+                }
+
+                bool satisfied = false;
+
+                if (viewer != null && MeetsSingleClassRequirement(viewer, requirement))
+                {
+                    satisfied = true;
+                }
+
+                if (!satisfied)
+                {
+                    if (faction?.Soldiers != null)
+                    {
+                        satisfied = faction.Soldiers.Any(soldier => MeetsSingleClassRequirement(soldier, requirement));
+                    }
+                }
+
+                if (!satisfied)
+                {
+                    // TODO: decide whether we should surface unmet requirements to the UI.
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool MeetsSingleClassRequirement(GeoCharacter soldier, DrillClassLevelRequirement requirement)
+        {
+            if (soldier == null || requirement == null)
+            {
+                return false;
+            }
+
+            if (requirement.ClassTag != null && (soldier.ClassTags == null || !soldier.ClassTags.Contains(requirement.ClassTag)))
+            {
+                return false;
+            }
+
+            if (soldier.LevelProgression == null)
+            {
+                return false;
+            }
+
+            return soldier.LevelProgression.Level >= requirement.MinimumLevel;
+        }
+
+        private static void EnsureDefaultUnlockConditions()
+        {
+            if (Drills == null)
+            {
+                return;
+            }
+
+            foreach (var ability in Drills)
+            {
+                if (ability == null)
+                {
+                    continue;
+                }
+
+                if (!DrillUnlockConditions.ContainsKey(ability))
+                {
+                    DrillUnlockConditions[ability] = DrillUnlockCondition.AlwaysUnlocked();
+                }
+            }
+        }
+
+        private static void ConfigureUnlockConditions()
+        {
+
+            var ordnanceResupply = new DrillUnlockCondition();
+            ordnanceResupply.ClassLevelRequirements.Add(new DrillClassLevelRequirement
+            {
+                ClassTag = DefCache.GetDef<ClassTagDef>("Technician_ClassTagDef"),
+                MinimumLevel = 5,
+                RequireSelectedOperative = true
+            });
+            SetUnlockCondition(_ordnanceResupply, ordnanceResupply);
+
+
+            var toxicLink = new DrillUnlockCondition();
+            toxicLink.ClassLevelRequirements.Add(new DrillClassLevelRequirement
+            {
+                ClassTag = DefCache.GetDef<ClassTagDef>("Infiltrator_ClassTagDef"),
+                MinimumLevel = 7,
+                RequireSelectedOperative = true
+            });
+            toxicLink.RequiredResearchIds.Add("SYN_PoisonWeapons_ResearchDef");
+            SetUnlockCondition(_toxicLink, toxicLink);
+
+
+            var causticJamming = new DrillUnlockCondition();
+            causticJamming.ClassLevelRequirements.Add(new DrillClassLevelRequirement
+            {
+                ClassTag = DefCache.GetDef<ClassTagDef>("Infiltrator_ClassTagDef"),
+                MinimumLevel = 5,
+                RequireSelectedOperative = true
+            });
+            causticJamming.RequiredResearchIds.Add("SYN_PoisonWeapons_ResearchDef");
+            SetUnlockCondition(_causticJamming, causticJamming);
+
+            var mentorUnlock = new DrillUnlockCondition();
+            mentorUnlock.ClassLevelRequirements.Add(new DrillClassLevelRequirement
+            {
+                ClassTag = null,
+                MinimumLevel = 7,
+                RequireSelectedOperative = true
+            });
+            SetUnlockCondition(_mentorProtocol, mentorUnlock);
+
+            var pintpointToss = new DrillUnlockCondition();
+            pintpointToss.ClassLevelRequirements.Add(new DrillClassLevelRequirement
+            {
+                ClassTag = null,
+                MinimumLevel = 3,
+                RequireSelectedOperative = true
+            });
+            SetUnlockCondition(_pinpointToss, pintpointToss);
+
+            var oneHandedGrip = new DrillUnlockCondition();
+            oneHandedGrip.ClassLevelRequirements.Add(new DrillClassLevelRequirement
+            {
+                ClassTag = null,
+                MinimumLevel = 5,
+                RequireSelectedOperative = true
+            });
+            SetUnlockCondition(OneHandedGrip.OneHandedPenaltyAbilityManager.OneHandedGrip, oneHandedGrip);
+
+            var snapBrace = new DrillUnlockCondition();
+            snapBrace.RequiredResearchIds.Add("PX_RiotShield_ResearchDef");
+            SetUnlockCondition(_snapBrace, snapBrace);
+
+
+            var shieldedRiposte = new DrillUnlockCondition();
+            shieldedRiposte.RequiredResearchIds.Add("PX_RiotShield_ResearchDef");
+            shieldedRiposte.ClassLevelRequirements.Add(new DrillClassLevelRequirement
+            {
+                ClassTag = DefCache.GetDef<ClassTagDef>("Heavy_ClassTagDef"),
+                MinimumLevel = 2,
+                RequireSelectedOperative = true
+            });
+            SetUnlockCondition(_shieldedRiposte, shieldedRiposte);
+
+        }
 
 
 
@@ -87,34 +361,46 @@ namespace TFTV.TFTVDrills
         {
             try
             {
-                CreateShockDisciplineStatus();
 
-                CreateDrillNominalAbility("causticjamming", "8d4e5f60-9192-122b-d4e5-f60718293a4b", "b5c6d7e8-9010-ab1c-2d3e-4f506172839a", "c5d6e7f8-0910-a1b2-c3d4-e5f60718293a");
 
-                CreateDrillNominalAbility("fieldpromotion", "6a2e2b2d-5c8f-4a09-bb27-d4df9e34a6a1", "5b4d8b47-8e7e-4a5f-8c4b-5e2f5e9f7a31", "df3b3e32-1b04-4f75-8fd9-0f3c3d8a9f63");
-                _mentorProtocol = CreateDrillNominalAbility("mentorprotocol", "a2b1f9c3-0c32-4d9f-9a7b-0c2d18ce6ab0", "9d2a3f7b-1a53-4a8c-a1ab-4b6d3e2f9a22", "7b1f8e9c-3d4a-4e8c-9b8a-2c5f7a9e0b31");
-                PassiveModifierAbilityDef pinpointToss = CreateDrillNominalAbility("pinpointtoss", "b59a3b5a-0b6e-4abf-9c7f-1db713e0b7a0", "c0e37c4a-4b1f-4f3e-8c2a-5f4e6d7c8a91", "e7f1a0b2-6d38-4d1e-9c3b-7a1d9e0f2b64");
-                CreateDrillNominalAbility("shockdrop", "c1f7c2e4-9a2d-4b8c-ae3e-2c4b5d6e7f81", "f0a1b2c3-4d5e-6f70-8a91-b2c3d4e5f607", "0a1b2c3d-4e5f-6071-8293-a4b5c6d7e8f9");
-                OneHandedGrip.OneHandedPenaltyAbilityManager.OneHandedGrip = CreateDrillNominalAbility("onehandedgrip", "16e7f809-2a3b-4c5d-d6e7-8f091a2b3c4d", "901a0b1c-2d3e-4f50-6172-839a4b5c6d7e", "0a0b1c2d-3e4f-5061-7283-9a4b5c6d7e8f");
+                _causticJamming = CreateDrillNominalAbility("causticjamming", "8d4e5f60-9192-122b-d4e5-f60718293a4b", "b5c6d7e8-9010-ab1c-2d3e-4f506172839a", "c5d6e7f8-0910-a1b2-c3d4-e5f60718293a"); //done
+                _mentorProtocol = CreateDrillNominalAbility("mentorprotocol", "a2b1f9c3-0c32-4d9f-9a7b-0c2d18ce6ab0", "9d2a3f7b-1a53-4a8c-a1ab-4b6d3e2f9a22", "7b1f8e9c-3d4a-4e8c-9b8a-2c5f7a9e0b31"); //done
+                _pinpointToss = CreateDrillNominalAbility("pinpointtoss", "b59a3b5a-0b6e-4abf-9c7f-1db713e0b7a0", "c0e37c4a-4b1f-4f3e-8c2a-5f4e6d7c8a91", "e7f1a0b2-6d38-4d1e-9c3b-7a1d9e0f2b64"); //done
+
+                GameTagDef grenadeTag = (GameTagDef)Repo.GetDef("318dd3ff-28f0-1bb4-98bc-39164b7292b6"); // GrenadeItem_TagDef
+
+                _pinpointToss.ItemTagStatModifications = new EquipmentItemTagStatModification[]
+                {
+                        new EquipmentItemTagStatModification
+                        {
+                            ItemTag = grenadeTag,
+                            EquipmentStatModification = new ItemStatModification
+                            {
+                                Modification = StatModificationType.Add,
+                                TargetStat = StatModificationTarget.Accuracy,
+                                Value = 0.5f
+                            }
+                        }
+                };
+
+
+                CreateDrillNominalAbility("shockdrop", "c1f7c2e4-9a2d-4b8c-ae3e-2c4b5d6e7f81", "f0a1b2c3-4d5e-6f70-8a91-b2c3d4e5f607", "0a1b2c3d-4e5f-6071-8293-a4b5c6d7e8f9"); //pending
+
+
+
+                OneHandedGrip.OneHandedPenaltyAbilityManager.OneHandedGrip = CreateDrillNominalAbility("onehandedgrip", "16e7f809-2a3b-4c5d-d6e7-8f091a2b3c4d", "901a0b1c-2d3e-4f50-6172-839a4b5c6d7e", "0a0b1c2d-3e4f-5061-7283-9a4b5c6d7e8f"); //done
                 OneHandedGrip.OneHandedPenaltyAbilityManager.OneHandedGripAccPenalty = CreateOneHandedGripPenaltyStatus();
 
+                CreateShockDisciplineStatus();
+                _shockDiscipline = CreateDrillNominalAbility("shockdiscipline", "27f8091a-3b4c-5d6e-e7f8-091a2b3c4d5e", "1a0b1c2d-3e4f-5061-7283-9a4b5c6d7e8f", "2b1c2d3e-4f50-6172-839a-4b5c6d7e8f90"); //done
 
-                _shockDiscipline = CreateDrillNominalAbility("shockdiscipline", "27f8091a-3b4c-5d6e-e7f8-091a2b3c4d5e", "1a0b1c2d-3e4f-5061-7283-9a4b5c6d7e8f", "2b1c2d3e-4f50-6172-839a-4b5c6d7e8f90");
+                _snapBrace = CreateDrillNominalAbility("snapbrace", "38091a2b-4c5d-6e7f-f809-1a2b3c4d5e6f", "2c3d4e5f-6172-839a-4b5c-6d7e8f9010ab", "3d4e5f61-7283-9a4b-5c6d-7e8f9010ab1c"); //done
+                _shieldedRiposte = CreateDrillNominalAbility("shieldedriposte", "7c3d4e5f-8091-011a-c3d4-e5f60718293a", "9a4b5c6d-7e8f-9010-ab1c-2d3e4f506172", "a94b5c6d-7e8f-9010-ab1c-2d3e4f506173"); //pending fixing animation when deploying shield in different direction                
 
-                _snapBrace = CreateDrillNominalAbility("snapbrace", "38091a2b-4c5d-6e7f-f809-1a2b3c4d5e6f", "2c3d4e5f-6172-839a-4b5c-6d7e8f9010ab", "3d4e5f61-7283-9a4b-5c6d-7e8f9010ab1c");
+                _toxicLink = CreateDrillNominalAbility("toxiclink", "9e5f6071-a2a3-233c-e5f6-0718293a4b5c", "c6d7e8f9-1011-b2c3-d4e5-f60718293a4b", "d6e7f809-1112-c3d4-e5f6-0718293a4b5c"); //done
+                CreateDrillNominalAbility("pounceprotocol", "af607182-b3b4-344d-f607-18293a4b5c6d", "d7e8f901-1213-c4d5-e6f7-08192a3b4c5d", "e7f80912-1314-d5e6-f7f8-192a3b4c5d6e"); //pending
 
-
-                CreateDrillNominalAbility("partingshotpdw", "5a1b2c3d-6e7f-8090-a1b2-c3d4e5f60718", "50617283-9a4b-5c6d-7e8f-9010ab1c2d3e", "6172839a-4b5c-6d7e-8f90-10ab1c2d3e4f");
-                CreateDrillNominalAbility("quickaimfinisher", "6b2c3d4e-7f80-9010-b2c3-d4e5f6071829", "72839a4b-5c6d-7e8f-9010-ab1c2d3e4f50", "839a4b5c-6d7e-8f90-10ab-1c2d3e4f5061");
-                _shieldedRiposte = CreateDrillNominalAbility("shieldedriposte", "7c3d4e5f-8091-011a-c3d4-e5f60718293a", "9a4b5c6d-7e8f-9010-ab1c-2d3e4f506172", "a94b5c6d-7e8f-9010-ab1c-2d3e4f506173");
-
-                _toxicLink = CreateDrillNominalAbility("toxiclink", "9e5f6071-a2a3-233c-e5f6-0718293a4b5c", "c6d7e8f9-1011-b2c3-d4e5-f60718293a4b", "d6e7f809-1112-c3d4-e5f6-0718293a4b5c");
-                CreateDrillNominalAbility("pounceprotocol", "af607182-b3b4-344d-f607-18293a4b5c6d", "d7e8f901-1213-c4d5-e6f7-08192a3b4c5d", "e7f80912-1314-d5e6-f7f8-192a3b4c5d6e");
-
-                CreateDrillNominalAbility("lightenedharness", "c172839a-d5d6-566f-0809-1a2b3c4d5e6f", "f9012334-1617-e8f9-f001-4c5d6e7f8091", "09012334-1718-f9f0-0102-5d6e7f8091a2");
-
-
-                _ordnanceResupply = CreateOrdnanceResupplyAbility();
+                _ordnanceResupply = CreateOrdnanceResupplyAbility(); //done
                 _viralPuppeteer = CreateDrillNominalAbility("viralpuppeteer", "e39a4b5c-f7f8-7881-0a11-2c3d4e5f6071", "23344556-2021-10f3-0405-8091a2b3c4d5", "33445566-2122-11f4-0506-91a2b3c4d5e6");
                 _virulentGrip = CreateDrillNominalAbility("virulentgrip", "f4a5b6c7-0809-8992-1b22-3d4e5f607182", "34455667-2223-12f5-0607-a2b3c4d5e6f7", "45566778-2324-13f6-0708-b3c4d5e6f708");
                 _packLoyalty = CreateDrillNominalAbility("packloyalty", "05b6c7d8-191a-9aa3-2c33-4e5f60718293", "45566789-2425-14f7-0809-c4d5e6f70819", "56677889-2526-15f8-0910-d5e6f708192a");
@@ -131,21 +417,7 @@ namespace TFTV.TFTVDrills
                 Drills.Add(
                     CreateApplyStatusAbilityDef("drawfire", "8f7c0a6a-6b63-4b01-9d69-6f7e3d4a4b9a", "f2a5a2d1-0c1f-4c28-8a3a-2f4a0cc2fd3c", "3a0f4d0b-0a8f-4b8f-a8cc-1f4f4f3c3f9d", 2, 0, _drawfireStatus));
 
-                GameTagDef grenadeTag = (GameTagDef)Repo.GetDef("318dd3ff-28f0-1bb4-98bc-39164b7292b6"); // GrenadeItem_TagDef
 
-                pinpointToss.ItemTagStatModifications = new EquipmentItemTagStatModification[]
-                {
-                        new EquipmentItemTagStatModification
-                        {
-                            ItemTag = grenadeTag,
-                            EquipmentStatModification = new ItemStatModification
-                            {
-                                Modification = StatModificationType.Add,
-                                TargetStat = StatModificationTarget.Accuracy,
-                                Value = 0.5f
-                            }
-                        }
-                };
 
 
 
@@ -158,6 +430,8 @@ namespace TFTV.TFTVDrills
                 CreatePartingShootAbility();
                 CreateBulletHellDrill();
 
+                EnsureDefaultUnlockConditions();
+                ConfigureUnlockConditions();
             }
             catch (Exception e)
             {
@@ -177,7 +451,7 @@ namespace TFTV.TFTVDrills
 
                 StanceStatusDef sourceStatus = DefCache.GetDef<StanceStatusDef>("Chiron_StabilityStance_StatusDef");
 
-                
+
 
                 StanceStatusDef newStatus = Helper.CreateDefFromClone(
                     sourceStatus,
@@ -199,7 +473,7 @@ namespace TFTV.TFTVDrills
                 newStatus.Visuals.LargeIcon = icon;
 
                 newStatus.StatModifications = new ItemStatModification[0];
-                
+
 
                 List<GameTagDef> affectedWeaponTags = new List<GameTagDef>
                     {
@@ -667,10 +941,6 @@ namespace TFTV.TFTVDrills
 
 
                 _shockDisciplineStatus = light;
-
-
-
-
 
             }
             catch (Exception e)

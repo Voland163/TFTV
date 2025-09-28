@@ -31,7 +31,8 @@ namespace TFTV
     /// </summary>
     public static class GeoscapeCameraPanExtensions
     {
-        private const float DefaultNormalizedOffset = 0.25f;
+        private const float DefaultNormalizedOffset = 0.20f;
+        private const float DefaultOverlayZoomScale = 1.20f;
 
         private static readonly ConditionalWeakTable<GeoscapeCamera, PanState> PanStates = new ConditionalWeakTable<GeoscapeCamera, PanState>();
         private static readonly AccessTools.FieldRef<GeoscapeCamera, float> DistanceFieldRef = AccessTools.FieldRefAccess<GeoscapeCamera, float>("_distance");
@@ -69,6 +70,7 @@ namespace TFTV
             if (PanStates.TryGetValue(camera, out PanState state))
             {
                 state.Enabled = false;
+                ResetOverlayZoom(camera, state);
             }
         }
 
@@ -89,6 +91,7 @@ namespace TFTV
             if (state.Enabled)
             {
                 state.Enabled = false;
+                ResetOverlayZoom(camera, state);
                 return;
             }
 
@@ -158,7 +161,7 @@ namespace TFTV
         /// <param name="overlayVisible">If <c>true</c>, the camera is shifted left; otherwise the pan is reset.</param>
         /// <param name="normalizedOffset">Normalized offset to apply when enabling the pan.</param>
         /// <returns><c>true</c> when a camera was found and the request was processed; otherwise <c>false</c>.</returns>
-        public static bool TryApplyOverlayPan(bool overlayVisible, float normalizedOffset = DefaultNormalizedOffset)
+        public static bool TryApplyOverlayPan(bool overlayVisible, float normalizedOffset = DefaultNormalizedOffset, float zoomScale = DefaultOverlayZoomScale)
         {
             if (!TryGetActiveCamera(out GeoscapeCamera camera))
             {
@@ -168,6 +171,7 @@ namespace TFTV
             if (overlayVisible)
             {
                 camera.ShiftLeft(normalizedOffset);
+                ApplyOverlayZoom(camera, zoomScale);
             }
             else
             {
@@ -194,6 +198,34 @@ namespace TFTV
         {
             public bool Enabled;
             public float NormalizedOffset;
+            public bool ZoomApplied;
+            public float OriginalDistance;
+        }
+
+        private static void ApplyOverlayZoom(GeoscapeCamera camera, float zoomScale)
+        {
+            PanState state = PanStates.GetOrCreateValue(camera);
+            zoomScale = Mathf.Max(0.01f, zoomScale);
+
+            float currentDistance = DistanceFieldRef(camera);
+            if (!state.ZoomApplied)
+            {
+                state.OriginalDistance = currentDistance;
+            }
+
+            state.ZoomApplied = true;
+            DistanceFieldRef(camera) = state.OriginalDistance * zoomScale;
+        }
+
+        private static void ResetOverlayZoom(GeoscapeCamera camera, PanState state)
+        {
+            if (!state.ZoomApplied)
+            {
+                return;
+            }
+
+            DistanceFieldRef(camera) = state.OriginalDistance;
+            state.ZoomApplied = false;
         }
     }
 
@@ -210,11 +242,120 @@ namespace TFTV
         }
     }
 
+    /// <summary>
+    /// Helper methods for controlling the objectives module visibility when the recruits overlay is displayed.
+    /// </summary>
+    public static class RecruitsOverlayObjectives
+    {
+        private sealed class ObjectivesVisibilityState
+        {
+            public bool HeaderActive { get; }
+
+            public bool ContainerActive { get; }
+
+            public bool PrimaryContainerActive { get; }
+
+            public bool SecondaryContainerActive { get; }
+
+            public bool SeparatorActive { get; }
+
+            public bool DiplomacyIconActive { get; }
+
+            public ObjectivesVisibilityState(UIModuleGeoObjectives module)
+            {
+                HeaderActive = GetActive(module.ObjectivesHeader);
+                ContainerActive = GetActive(module.ObjectivesContainer);
+                PrimaryContainerActive = GetActive(module.PrimaryObjectivesContainer);
+                SecondaryContainerActive = GetActive(module.SecondaryObjectivesContainer);
+                SeparatorActive = GetActive(module.Separator);
+                DiplomacyIconActive = GetActive(module.DiplomacyMissionsIconContainer);
+            }
+        }
+
+        private static readonly ConditionalWeakTable<UIModuleGeoObjectives, ObjectivesVisibilityState> _visibilityStates = new ConditionalWeakTable<UIModuleGeoObjectives, ObjectivesVisibilityState>();
+
+        /// <summary>
+        /// Sets the visibility of the objectives module when the recruits overlay is toggled.
+        /// </summary>
+        /// <param name="view">The geoscape view owning the objectives module.</param>
+        /// <param name="hidden">Whether the objectives UI should be hidden.</param>
+        public static void SetObjectivesHiddenForRecruitsOverlay(GeoscapeView view, bool hidden)
+        {
+            if (view == null)
+            {
+                return;
+            }
+
+            SetObjectivesHiddenForRecruitsOverlay(view.GeoscapeModules?.ObjectivesModule, hidden);
+        }
+
+        /// <summary>
+        /// Sets the visibility of the objectives module when the recruits overlay is toggled.
+        /// </summary>
+        /// <param name="objectivesModule">The objectives module to toggle.</param>
+        /// <param name="hidden">Whether the objectives UI should be hidden.</param>
+        public static void SetObjectivesHiddenForRecruitsOverlay(UIModuleGeoObjectives objectivesModule, bool hidden)
+        {
+            if (objectivesModule == null)
+            {
+                return;
+            }
+
+            if (hidden)
+            {
+                _ = _visibilityStates.GetValue(objectivesModule, m => new ObjectivesVisibilityState(m));
+
+                SetActive(objectivesModule.ObjectivesHeader, false);
+                SetActive(objectivesModule.ObjectivesContainer, false);
+                SetActive(objectivesModule.PrimaryObjectivesContainer, false);
+                SetActive(objectivesModule.SecondaryObjectivesContainer, false);
+                SetActive(objectivesModule.Separator, false);
+                SetActive(objectivesModule.DiplomacyMissionsIconContainer, false);
+            }
+            else
+            {
+                if (_visibilityStates.TryGetValue(objectivesModule, out ObjectivesVisibilityState state))
+                {
+                    SetActive(objectivesModule.ObjectivesHeader, state.HeaderActive);
+                    SetActive(objectivesModule.ObjectivesContainer, state.ContainerActive);
+                    SetActive(objectivesModule.PrimaryObjectivesContainer, state.PrimaryContainerActive);
+                    SetActive(objectivesModule.SecondaryObjectivesContainer, state.SecondaryContainerActive);
+                    SetActive(objectivesModule.Separator, state.SeparatorActive);
+                    SetActive(objectivesModule.DiplomacyMissionsIconContainer, state.DiplomacyIconActive);
+                    _visibilityStates.Remove(objectivesModule);
+                }
+                else
+                {
+                    SetActive(objectivesModule.ObjectivesHeader, true);
+                    SetActive(objectivesModule.ObjectivesContainer, true);
+                    SetActive(objectivesModule.PrimaryObjectivesContainer, true);
+                    SetActive(objectivesModule.SecondaryObjectivesContainer, true);
+                    SetActive(objectivesModule.Separator, true);
+                    SetActive(objectivesModule.DiplomacyMissionsIconContainer, true);
+                }
+            }
+
+            objectivesModule.NavHolder?.RefreshInteractableList();
+        }
+
+        private static bool GetActive(GameObject go)
+        {
+            return go != null && go.activeSelf;
+        }
+
+        private static void SetActive(GameObject go, bool active)
+        {
+            if (go != null)
+            {
+                go.SetActive(active);
+            }
+        }
+    }
 
 
 
 
-    class TFTVHavenRecruitsScreen
+class TFTVHavenRecruitsScreen
     {
 
         public static void ClearInternalData()
@@ -460,7 +601,7 @@ namespace TFTV
                     }
 
                     GeoscapeCameraPanExtensions.TryApplyOverlayPan(!overlayPanel.activeSelf);
-
+                    RecruitsOverlayObjectives.SetObjectivesHiddenForRecruitsOverlay(GameUtl.CurrentLevel().GetComponent<GeoLevelController>()?.View, !overlayPanel.activeSelf);
                     overlayPanel.SetActive(!overlayPanel.activeSelf);
                     if (overlayPanel.activeSelf)
                         RefreshColumns(); // repopulate each time it opens

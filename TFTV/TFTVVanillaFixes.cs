@@ -1639,21 +1639,22 @@ namespace TFTV
                                 num += num3;
                             }
 
-
-
-
-                            MethodInfo skillpointsMethodInfo = typeof(TacticalFaction).GetMethod("set_Skillpoints", BindingFlags.Instance | BindingFlags.NonPublic);
-
-                            //  TFTVLogger.Always($"skillpointsMethod null? {skillpointsMethodInfo== null}");
-
-                            skillpointsMethodInfo.Invoke(__instance, new object[] { __instance.Skillpoints + num });
-
                             GameTagDef vehicleTag = CommonHelpers.GetSharedGameTags().VehicleTag;
                             List<TacticalActor> list = (from p in __instance.GetOwnedActors<TacticalActor>()
                                                         where p.LevelProgression != null && p.IsAlive
-                                                        && !p.GameTags.Contains(vehicleTag) && CheckActorIsInPhoenixRecords(p) && !TFTVDrills.DrillsHarmony.MentorProtocol.CheckForMentorProtocolAbility(p)
+                                                        && !p.GameTags.Contains(vehicleTag) && CheckActorIsInPhoenixRecords(p)
                                                         orderby p.Contribution.Contribution descending
                                                         select p).ToList();
+
+                            int mentorCount = list.Count(p => TFTVDrills.DrillsHarmony.MentorProtocol.CheckForMentorProtocolAbility(p));
+                            if (mentorCount > 0)
+                            {
+                                num += mentorCount * 2;
+                            }
+
+                            MethodInfo skillpointsMethodInfo = typeof(TacticalFaction).GetMethod("set_Skillpoints", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                            skillpointsMethodInfo.Invoke(__instance, new object[] { __instance.Skillpoints + num });
 
                             if (__instance.State == TacFactionState.Won && difficulty != null)
                             {
@@ -1671,51 +1672,39 @@ namespace TFTV
                                 return false;
                             }
 
-                            int num4 = list.Sum((TacticalActor p) => p.Contribution.Contribution);
-                            int num5 = num2;
-                            float num6 = ((difficulty != null) ? difficulty.ExpEqualDistributionPart : 0f);
-                            int num7 = Mathf.RoundToInt((float)num2 * num6) / list.Count();
-                            foreach (TacticalActor item2 in list)
+                            Dictionary<TacticalActor, int> xpAwards = list.ToDictionary(actor => actor, actor => 0);
+                            DistributeExperience(num2, list, difficulty, xpAwards);
+
+                            int mentorPool = 0;
+                            foreach (TacticalActor actor in list)
                             {
-                                num5 -= num7;
-                                if (num7 > 0)
+                                if (TFTVDrills.DrillsHarmony.MentorProtocol.CheckForMentorProtocolAbility(actor))
                                 {
-                                    item2.LevelProgression.AddExperience(num7);
+                                    mentorPool += xpAwards[actor];
+                                    xpAwards[actor] = 0;
                                 }
                             }
 
-                            num2 = num5;
-                            if (num4 > 0)
+                            List<TacticalActor> mentorRecipients = list.Where(a => !TFTVDrills.DrillsHarmony.MentorProtocol.CheckForMentorProtocolAbility(a) && a.LevelProgression.Level < 7).ToList();
+                            if (mentorPool > 0 && mentorRecipients.Any())
                             {
-                                foreach (TacticalActor item3 in list)
-                                {
-                                    float num8 = (float)item3.Contribution.Contribution / (float)num4;
-                                    int num9 = Mathf.FloorToInt((float)num2 * num8);
-                                    num5 -= num9;
-                                    if (num9 > 0)
-                                    {
-                                        item3.LevelProgression.AddExperience(num9);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                int num10 = num2 / list.Count();
-                                if (num10 > 0)
-                                {
-                                    foreach (TacticalActor item4 in list)
-                                    {
-                                        num5 -= num10;
-                                        item4.LevelProgression.AddExperience(num10);
-                                    }
-                                }
+                                DistributeExperience(mentorPool, mentorRecipients, difficulty, xpAwards);
                             }
 
-                            for (int i = 0; i < num5; i++)
+                            foreach (KeyValuePair<TacticalActor, int> award in xpAwards)
                             {
-                                list.ElementAt(i).LevelProgression.AddExperience(1);
-                            }
+                                if (award.Value <= 0)
+                                {
+                                    continue;
+                                }
 
+                                if (award.Key.LevelProgression.Level >= 7)
+                                {
+                                    continue;
+                                }
+
+                                award.Key.LevelProgression.AddExperience(award.Value);
+                            }
 
 
                             return false;
@@ -1724,6 +1713,61 @@ namespace TFTV
                         {
                             TFTVLogger.Error(e);
                             throw;
+                        }
+                    }
+                }
+
+                private static void DistributeExperience(int experiencePool, List<TacticalActor> recipients, GameDifficultyLevelDef difficulty, Dictionary<TacticalActor, int> xpAwards)
+                {
+                    if (experiencePool <= 0 || recipients == null || recipients.Count == 0)
+                    {
+                        return;
+                    }
+
+                    int remainingExperience = experiencePool;
+                    float equalDistributionPart = (difficulty != null) ? difficulty.ExpEqualDistributionPart : 0f;
+                    int equalShare = Mathf.RoundToInt((float)experiencePool * equalDistributionPart) / recipients.Count;
+                    if (equalShare > 0)
+                    {
+                        foreach (TacticalActor tacticalActor in recipients)
+                        {
+                            remainingExperience -= equalShare;
+                            xpAwards[tacticalActor] += equalShare;
+                        }
+                    }
+
+                    if (remainingExperience > 0)
+                    {
+                        int totalContribution = recipients.Sum(actor => actor.Contribution.Contribution);
+                        if (totalContribution > 0)
+                        {
+                            int contributionBase = remainingExperience;
+                            foreach (TacticalActor tacticalActor2 in recipients)
+                            {
+                                float ratio = (float)tacticalActor2.Contribution.Contribution / (float)totalContribution;
+                                int share = Mathf.FloorToInt((float)contributionBase * ratio);
+                                if (share > 0)
+                                {
+                                    remainingExperience -= share;
+                                    xpAwards[tacticalActor2] += share;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            int equalContributionShare = remainingExperience / recipients.Count;
+                            if (equalContributionShare > 0)
+                            {
+                                foreach (TacticalActor tacticalActor3 in recipients)
+                                {
+                                    remainingExperience -= equalContributionShare;
+                                    xpAwards[tacticalActor3] += equalContributionShare;
+                                }
+                            }
+                        }
+                        for (int i = 0; i < remainingExperience && i < recipients.Count; i++)
+                        {
+                            xpAwards[recipients[i]] += 1;
                         }
                     }
                 }
@@ -1953,9 +1997,9 @@ namespace TFTV
                                 StatusStat willPoints = __instance.ControllerActor.CharacterStats.WillPoints;
                                 float num = Mathf.Max(____minUpkeepCost, __instance.TacticalActor.TacticalActorDef.WillPointWorth);
 
-                                if(TFTVDrills.DrillsHarmony.VirulentGrip.CheckForVirulentGripAbility(__instance.ControllerActor, __instance.TacticalActor))
+                                if (TFTVDrills.DrillsHarmony.VirulentGrip.CheckForVirulentGripAbility(__instance.ControllerActor, __instance.TacticalActor))
                                 {
-                                    num /=2;
+                                    num /= 2;
                                     TFTVLogger.Always($"halving cost of MCing {__instance.TacticalActor.name} because infected and {__instance.ControllerActor.DisplayName} has VirulentGrip ability");
                                 }
 
@@ -2765,14 +2809,14 @@ namespace TFTV
                                                                                        where u.MissionHistoryResult.HasItemType(UnitHistoryItemType.ControlledByPlayer)
                                                                                        select u).ToList()
                                                                             select s.Data).OfType<TacActorUnitResult>()
-                                                                 where u.IsAlive && !u.HasTag(tags.CivilianTag) && u.SourceTemplate!=null
+                                                                 where u.IsAlive && !u.HasTag(tags.CivilianTag) && u.SourceTemplate != null
                                                                  select u).ToList();
 
-                              /*  foreach(TacActorUnitResult tacActorUnitResult in list) 
-                                {
-                                    TFTVLogger.Always($"{tacActorUnitResult?.TacticalActorBaseDef?.name} {tacActorUnitResult?.SourceTemplate?.name}");
-                                
-                                }*/
+                                /*  foreach(TacActorUnitResult tacActorUnitResult in list) 
+                                  {
+                                      TFTVLogger.Always($"{tacActorUnitResult?.TacticalActorBaseDef?.name} {tacActorUnitResult?.SourceTemplate?.name}");
+
+                                  }*/
 
                                 if (site.GeoLevel.PhoenixFaction.LivingQuarterFreeSpace > 0 && list.Any())
                                 {
