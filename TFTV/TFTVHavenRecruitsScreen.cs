@@ -34,7 +34,8 @@ namespace TFTV
         private const float DefaultNormalizedOffset = 0.35f;
 
         private static readonly ConditionalWeakTable<GeoscapeCamera, PanState> PanStates = new ConditionalWeakTable<GeoscapeCamera, PanState>();
-        private static readonly AccessTools.FieldRef<GeoscapeCamera, float> DistanceFieldRef = AccessTools.FieldRefAccess<GeoscapeCamera, float>("_distance");
+        internal static readonly AccessTools.FieldRef<GeoscapeCamera, float> DistanceFieldRef = AccessTools.FieldRefAccess<GeoscapeCamera, float>("_distance");
+        internal static readonly AccessTools.FieldRef<GeoscapeCamera, Vector3> CamTargetFieldRef = AccessTools.FieldRefAccess<GeoscapeCamera, Vector3>("_camTarget");
 
         /// <summary>
         /// Enables a left pan on the provided camera using a normalized offset relative to the current orbit distance.
@@ -209,13 +210,60 @@ namespace TFTV
         }
     }
 
+    [HarmonyPatch(typeof(GeoscapeView), nameof(GeoscapeView.ChaseTarget))]
+    internal static class GeoscapeView_ChaseTarget_Patch
+    {
+        private static bool Prefix(GeoscapeView __instance, GeoActor target, bool instant)
+        {
+            if (__instance == null || target == null)
+            {
+                return true;
+            }
+
+            CameraDirector director = __instance.CameraDirector;
+            CameraManager manager = director?.Manager;
+            GeoscapeCamera camera = manager?.GetCameraOfType<GeoscapeCamera>();
+            if (camera == null)
+            {
+                return true;
+            }
+
+            if (!GeoscapeCameraPanExtensions.TryGetWorldOffset(camera, out float offset) || offset <= 0f)
+            {
+                return true;
+            }
+
+            Vector3 right = camera.transform.right;
+            if (right.sqrMagnitude <= 1e-6f)
+            {
+                return true;
+            }
+
+            TFTVLogger.Always($"the target position is: {target.GlobePosition.WorldPosition}");
+
+            Vector3 adjustedTarget = target.GlobePosition.WorldPosition - right.normalized * offset;
+
+            TFTVLogger.Always($"the adjusted target position is: {adjustedTarget}");
+
+            director.Hint(CameraDirectorHint.GeoscapeFocus, new GeoCamDirectorParams
+            {
+                TargetPosition = adjustedTarget,
+                Unmanaged = true,
+                InstantChase = instant
+            });
+
+            return false;
+        }
+    }
+
+
     class TFTVHavenRecruitsScreen
     {
 
         public static void ClearInternalData()
         {
-            try 
-            { 
+            try
+            {
                 _sortGroup = null;
                 _sortToggles.Clear();
                 RecruitOverlayManager.isInitialized = false;
@@ -247,7 +295,7 @@ namespace TFTV
 
         private static Font _puristaSemibold = null;
 
-        private enum SortMode { Level, Class, Distance, Alphabetical}
+        private enum SortMode { Level, Class, Distance, Alphabetical }
         private static SortMode _sortMode = SortMode.Level;
 
         private static ToggleGroup _sortGroup;
@@ -255,7 +303,7 @@ namespace TFTV
 
 
         private static readonly Dictionary<GeoFaction, Text> _countLabelByFaction = new Dictionary<GeoFaction, Text>();
-       // private static readonly Dictionary<GeoFaction, Image> _iconByFaction = new Dictionary<GeoFaction, Image>();
+        // private static readonly Dictionary<GeoFaction, Image> _iconByFaction = new Dictionary<GeoFaction, Image>();
 
         private sealed class RecruitCardHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         {
@@ -385,7 +433,7 @@ namespace TFTV
                         {
                             iconImg.sprite = newSprite;
                             iconImg.preserveAspect = true;
-                           // iconImg.rectTransform.sizeDelta = new Vector2(0.2f, 0.2f); // tweak as needed                     
+                            // iconImg.rectTransform.sizeDelta = new Vector2(0.2f, 0.2f); // tweak as needed                     
                             iconImg.color = Color.white;       // ensure fully visible
 
                             // optional: if your PNG looks squashed, uncomment:
@@ -454,7 +502,9 @@ namespace TFTV
                         isInitialized = true;
                     }
 
-                    if (overlayPanel.activeSelf) { GeoscapeCameraPanExtensions.TryResetPanOnActiveCamera(); 
+                    if (overlayPanel.activeSelf)
+                    {
+                        GeoscapeCameraPanExtensions.TryResetPanOnActiveCamera();
                     }
                     else { GeoscapeCameraPanExtensions.TryShiftLeftOnActiveCamera(); }
 
@@ -777,7 +827,7 @@ namespace TFTV
 
                 // Create the four checkboxes 
                 AddSortToggle(bar.transform, "Level", SortMode.Level, isOn: true);
-                AddSortToggle(bar.transform, "Class", SortMode.Class); 
+                AddSortToggle(bar.transform, "Class", SortMode.Class);
                 AddSortToggle(bar.transform, "Closest to Phoenix Aircraft", SortMode.Distance);
                 AddSortToggle(bar.transform, "Alphabetical", SortMode.Alphabetical);
             }
@@ -945,424 +995,424 @@ namespace TFTV
             // ---------- DATA GATHERING ----------
 
             private sealed class RecruitAtSite
-    {
-        public GeoUnitDescriptor Recruit;
-        public GeoSite Site;
-        public GeoHaven Haven;
-        public GeoFaction HavenOwner;
+            {
+                public GeoUnitDescriptor Recruit;
+                public GeoSite Site;
+                public GeoHaven Haven;
+                public GeoFaction HavenOwner;
             }
 
             private static List<RecruitAtSite> GetRecruitsForFaction(GeoFaction faction)
-        {
-            var list = new List<RecruitAtSite>();
-            try
             {
-
-                GeoPhoenixFaction geoPhoenixFaction = faction.GeoLevel.PhoenixFaction; // player faction wrapper
-                                                                                       // All sites with havens, owned by factionDef, revealed to player
-                List<GeoHaven> havens = faction.Havens.Where(s => s != null && s.AvailableRecruit != null && s.Site.GetVisible(geoPhoenixFaction)).ToList();
-
-                foreach (var haven in havens)
+                var list = new List<RecruitAtSite>();
+                try
                 {
 
-                    list.Add(new RecruitAtSite
+                    GeoPhoenixFaction geoPhoenixFaction = faction.GeoLevel.PhoenixFaction; // player faction wrapper
+                                                                                           // All sites with havens, owned by factionDef, revealed to player
+                    List<GeoHaven> havens = faction.Havens.Where(s => s != null && s.AvailableRecruit != null && s.Site.GetVisible(geoPhoenixFaction)).ToList();
+
+                    foreach (var haven in havens)
                     {
-                        Recruit = haven.AvailableRecruit,
-                        Site = haven.Site,
-                        Haven = haven,
-                        HavenOwner = haven.Site.Owner
-                    });
-                }
-            }
-            catch (Exception ex) { TFTVLogger.Error(ex); }
-            return list.OrderBy(r => r.Recruit?.GetName()).ToList();
-        }
 
-        // ---------- UI ITEM BUILD ----------
-
-
-
-
-
-        private static (GameObject go, RectTransform rt) NewUI(string name, Transform parent = null)
-        {
-            var go = new GameObject(name, typeof(RectTransform));
-            if (parent != null) go.transform.SetParent(parent, false);
-            return (go, (RectTransform)go.transform);
-        }
-
-        private static void CreateHeaderRow(Transform parent, GeoUnitDescriptor recruit)
-        {
-            var (row, _) = NewUI("Row_Header", parent);
-
-            var h = row.AddComponent<HorizontalLayoutGroup>();
-            h.childAlignment = TextAnchor.MiddleLeft;
-            h.spacing = 6;
-            h.childControlHeight = true;
-            h.childControlWidth = false;
-            h.childForceExpandWidth = false;
-            h.childForceExpandHeight = false;
-
-
-            // Class icon
-            var classIcon = GetClassIcon(recruit);
-            if (classIcon != null)
-            {
-                // Use the same size as abilities so it feels consistent
-                MakeFixedIcon(row.transform, classIcon, AbilityIconSize);
-            }
-
-            // Level
-            var (lvlGO, _) = NewUI("Lvl", row.transform);
-            var lvl = lvlGO.AddComponent<Text>();
-            lvl.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
-            lvl.fontSize = TextFontSize;
-            lvl.alignment = TextAnchor.MiddleLeft;
-            lvl.color = Color.white;
-            lvl.text = $"{recruit?.Level} {recruit?.GetName()}";
-            lvl.horizontalOverflow = HorizontalWrapMode.Overflow;
-            lvl.verticalOverflow = VerticalWrapMode.Truncate;
-        }
-
-        private static Sprite GetClassIcon(GeoUnitDescriptor recruit)
-        {
-            try
-            {
-                // Preferred: class def view icon
-                var ve = recruit?.GetClassViewElementDefs()?.FirstOrDefault();
-                if (ve != null)
-                {
-                    if (ve.SmallIcon != null) return ve.SmallIcon;
-
-                }
-            }
-            catch { }
-
-            // Fallback: sometimes the ClassTag has a ViewElementDef; try reflection
-            try
-            {
-                var tag = recruit?.ClassTag;
-                if (tag != null)
-                {
-                    var vedProp = tag.GetType().GetProperty("ViewElementDef", BindingFlags.Public | BindingFlags.Instance);
-                    var ved = vedProp?.GetValue(tag) as ViewElementDef;
-                    if (ved != null)
-                    {
-                        if (ved.SmallIcon != null) return ved.SmallIcon;
-                        if (ved.InventoryIcon != null) return ved.InventoryIcon;
+                        list.Add(new RecruitAtSite
+                        {
+                            Recruit = haven.AvailableRecruit,
+                            Site = haven.Site,
+                            Haven = haven,
+                            HavenOwner = haven.Site.Owner
+                        });
                     }
                 }
-            }
-            catch { }
-
-            return null; // no icon available; header will just show Level + Name
-        }
-
-
-        private static Image MakeFixedIcon(Transform parent, Sprite sp, int px)
-        {
-            // Frame with RectTransform + LayoutElement fixes size for layout
-            var (frame, frt) = NewUI("IconFrame", parent);
-            var le = frame.AddComponent<LayoutElement>();
-            le.preferredWidth = px; le.minWidth = px;
-            le.preferredHeight = px; le.minHeight = px;
-            frt.sizeDelta = new Vector2(px, px);
-
-            // Child image stretched to frame + aspect fit
-            var (imgGO, imgRT) = NewUI("Img", frame.transform);
-            var img = imgGO.AddComponent<Image>();
-            img.sprite = sp;
-            img.raycastTarget = false;
-
-            imgRT.anchorMin = Vector2.zero; imgRT.anchorMax = Vector2.one;
-            imgRT.offsetMin = Vector2.zero; imgRT.offsetMax = Vector2.zero;
-
-            var arf = imgGO.AddComponent<AspectRatioFitter>();
-            arf.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
-            if (sp && sp.rect.height > 0f)
-                arf.aspectRatio = sp.rect.width / sp.rect.height;
-
-            return img;
-        }
-
-
-        private static void CreateTextRow(Transform parent, string text, FontStyle style, Color color)
-        {
-            var go = new GameObject("Row_Text");
-            go.transform.SetParent(parent, false);
-            var t = go.AddComponent<Text>();
-            t.text = text ?? "";
-            t.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
-            t.fontSize = TextFontSize;
-            t.fontStyle = style;
-            t.color = color;
-            t.alignment = TextAnchor.MiddleLeft;
-        }
-
-        private static GameObject CreateIconRow(Transform parent, string name, IEnumerable<Sprite> sprites, int iconSize)
-        {
-            var (row, _) = NewUI($"Row_{name}", parent);
-            var h = row.AddComponent<HorizontalLayoutGroup>();
-            h.childAlignment = TextAnchor.MiddleLeft; h.spacing = 3;
-            h.childControlWidth = true; h.childControlHeight = true;
-            h.childForceExpandWidth = false; h.childForceExpandHeight = false;
-
-            foreach (var sp in sprites ?? Enumerable.Empty<Sprite>())
-            {
-                if (sp == null) continue;
-                MakeFixedIcon(row.transform, sp, iconSize);
-            }
-            return row.gameObject;
-        }
-
-
-
-
-        private static void CreateRecruitItem(Transform parent, RecruitAtSite data, bool collapse)
-
-        {
-
-            var card = new GameObject($"Recruit_{Safe(data.Recruit?.GetName())}");
-            card.transform.SetParent(parent, false);
-
-            // background
-            var bg = card.AddComponent<Image>();
-            bg.color = new Color(1, 1, 1, 0.06f);
-
-
-            // button (keep it for hover/tint states, but don't use onClick directly)
-            var btn = card.AddComponent<Button>();
-            btn.transition = Selectable.Transition.ColorTint;
-
-            // click handler: single = focus; double = your hook
-            var click = card.AddComponent<CardClickHandler>();
-            click.OnSingle = () => FocusOnSite(data.Site);
-            click.OnDouble = () =>
-            {
-                // your custom behavior here (or attach via the public hook)
-                OnCardDoubleClick?.Invoke(data.Recruit, data.Site);
-            };
-
-            // vertical stack (one row per thing)
-            var v = card.AddComponent<VerticalLayoutGroup>();
-            v.childAlignment = TextAnchor.UpperLeft;
-            v.childForceExpandWidth = true;
-            v.childForceExpandHeight = false;
-            v.spacing = RowSpacing;
-            v.padding = new RectOffset(6, 6, 6, 6);
-
-            // Let height fit content (no fixed height anymore)
-            var fit = card.AddComponent<ContentSizeFitter>();
-            fit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-            // --- Row: Abilities ---
-            // header + haven + cost as before...
-            CreateHeaderRow(card.transform, data.Recruit);
-            CreateTextRow(card.transform, data.Site?.Name ?? "Unknown Haven", FontStyle.Italic, new Color(.8f, .8f, .95f));
-            CreateCostRow(card.transform, data.Haven, data.Haven.Site.GeoLevel.PhoenixFaction);
-
-            // rows we might collapse
-            var abilitiesRow = CreateIconRow(card.transform, "Abilities", GetAbilityIcons(data.Recruit), AbilityIconSize);
-            var equipmentRow = CreateIconRow(card.transform, "Equipment", GetEquipmentIcons(data.Recruit), EquipIconSize);
-            var armorRow = CreateIconRow(card.transform, "Armor", GetArmorIcons(data.Recruit), ArmorIconSize);
-
-            // hover behaviour
-            var hover = card.AddComponent<RecruitCardHover>();
-            hover.Collapsible = collapse;
-            hover.Rows.Add(abilitiesRow);
-            hover.Rows.Add(equipmentRow);
-            hover.Rows.Add(armorRow);
-
-            // initial state
-            if (collapse)
-            {
-                abilitiesRow.SetActive(false);
-                equipmentRow.SetActive(false);
-                armorRow.SetActive(false);
+                catch (Exception ex) { TFTVLogger.Error(ex); }
+                return list.OrderBy(r => r.Recruit?.GetName()).ToList();
             }
 
+            // ---------- UI ITEM BUILD ----------
 
 
 
-        }
 
-        private static void CreateEmptyLabel(Transform parent, string msg)
-        {
-            var go = new GameObject("Empty");
-            go.transform.SetParent(parent, false);
-            var t = go.AddComponent<Text>();
-            t.text = msg;
-            t.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
-            t.fontSize = TextFontSize;
-            t.alignment = TextAnchor.MiddleCenter;
-            t.color = new Color(0.85f, 0.85f, 0.9f, 0.9f);
-            var rt = go.GetComponent<RectTransform>();
-            rt.sizeDelta = new Vector2(0, 48);
-        }
 
-        // ---------- ABILITIES / EQUIPMENT ----------
-
-        private static IEnumerable<Sprite> GetAbilityIcons(GeoUnitDescriptor recruit)
-        {
-            if (recruit == null) yield break;
-
-            var track = recruit.GetPersonalAbilityTrack();
-            var views = track?.AbilitiesByLevel?
-                .Select(a => a?.Ability?.ViewElementDef)
-                .Where(v => v != null);
-
-            foreach (var v in views ?? Enumerable.Empty<ViewElementDef>())
+            private static (GameObject go, RectTransform rt) NewUI(string name, Transform parent = null)
             {
-                if (v.SmallIcon != null) yield return v.SmallIcon;
+                var go = new GameObject(name, typeof(RectTransform));
+                if (parent != null) go.transform.SetParent(parent, false);
+                return (go, (RectTransform)go.transform);
             }
 
-        }
-
-        private static IEnumerable<Sprite> GetEquipmentIcons(GeoUnitDescriptor recruit)
-        {
-            if (recruit?.Equipment == null) yield break;
-
-            foreach (var def in recruit.Equipment.Where(i => i != null))
+            private static void CreateHeaderRow(Transform parent, GeoUnitDescriptor recruit)
             {
-                var ve = def.ViewElementDef;
-                if (ve?.InventoryIcon != null) yield return ve.InventoryIcon;
-            }
-        }
+                var (row, _) = NewUI("Row_Header", parent);
 
-        private static IEnumerable<Sprite> GetArmorIcons(GeoUnitDescriptor recruit)
-        {
-            if (recruit?.ArmorItems == null) yield break;
-
-            foreach (var def in recruit.ArmorItems.Where(i => i != null))
-            {
-                var ve = def.ViewElementDef;
-                if (ve?.InventoryIcon != null) yield return ve.InventoryIcon;
-            }
-        }
+                var h = row.AddComponent<HorizontalLayoutGroup>();
+                h.childAlignment = TextAnchor.MiddleLeft;
+                h.spacing = 6;
+                h.childControlHeight = true;
+                h.childControlWidth = false;
+                h.childForceExpandWidth = false;
+                h.childForceExpandHeight = false;
 
 
-        private static string GetClassName(GeoUnitDescriptor recruit)
-        {
-            if (recruit == null) return "Unknown Class";
-            try
-            {
-                // Fallback: from tags
-                var tagName = recruit.ClassTag;
-                return tagName.className;
-            }
-            catch (Exception ex) { TFTVLogger.Error(ex); }
-            return "Unknown Class";
-        }
-
-        private static Dictionary<Sprite, Color> _resourceIconsColors = new Dictionary<Sprite, Color>();
-
-        private static Sprite _sprMat, _sprTech, _sprFood;
-        private static Color _colMat, _colTech, _colFood;
-
-        private static void PopulateResourceIconColorsDictionary()
-        {
-            if (_sprMat) return;
-
-            var mod = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ResourcesModule;
-            var mat = mod.MaterialsController.transform.parent.GetComponent<ResourceIconContainer>();
-            var tec = mod.TechController.transform.parent.GetComponent<ResourceIconContainer>();
-            var sup = mod.FoodController.transform.parent.GetComponent<ResourceIconContainer>();
-
-            _sprMat = mat.Icon.sprite; _colMat = mat.Icon.color;
-            _sprTech = tec.Icon.sprite; _colTech = tec.Icon.color;
-            _sprFood = sup.Icon.sprite; _colFood = sup.Icon.color;
-
-            _resourceIconsColors[_sprMat] = _colMat;
-            _resourceIconsColors[_sprTech] = _colTech;
-            _resourceIconsColors[_sprFood] = _colFood;
-        }
-
-
-        private static void CreateCostRow(Transform parent, GeoHaven haven, GeoPhoenixFaction phoenix)
-        {
-
-            PopulateResourceIconColorsDictionary();
-
-            // read cost
-            (int materials, int tech, int food) = GetRecruitCost(haven, phoenix);
-
-            var row = new GameObject("Row_Cost");
-            row.transform.SetParent(parent, false);
-
-            var h = row.AddComponent<HorizontalLayoutGroup>();
-            h.childAlignment = TextAnchor.MiddleLeft;
-            h.spacing = 8;
-            h.childForceExpandWidth = false;
-            h.childForceExpandHeight = false;
-
-
-
-            // Chip: Materials
-            if (materials > 0) CreateResourceChip(row.transform, _sprMat, materials);
-            if (tech > 0) CreateResourceChip(row.transform, _sprTech, tech);
-            if (food > 0) CreateResourceChip(row.transform, _sprFood, food);
-
-        }
-
-
-
-
-
-        private static void CreateResourceChip(Transform parent, Sprite sprite, int amount)
-        {
-            var (chip, _) = NewUI("Res", parent);
-
-            var h = chip.AddComponent<HorizontalLayoutGroup>();
-            h.childAlignment = TextAnchor.MiddleCenter;
-            h.spacing = 3;
-            h.childControlWidth = true;
-            h.childControlHeight = true;
-            h.childForceExpandWidth = false;
-            h.childForceExpandHeight = false;
-
-            // icon (pick size you like, e.g. 12 or 14)
-            var img = MakeFixedIcon(chip.transform, sprite, 22);
-            if (_resourceIconsColors.TryGetValue(sprite, out var col))
-                img.color = col;
-
-            // amount
-            var (txtGO, _) = NewUI("Amt", chip.transform);
-            var t = txtGO.AddComponent<Text>();
-            t.text = amount.ToString();
-            t.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
-            t.fontSize = TextFontSize;
-            t.alignment = TextAnchor.MiddleLeft;
-        }
-
-
-
-        private static (int materials, int tech, int food) GetRecruitCost(GeoHaven haven, GeoPhoenixFaction phoenix)
-        {
-            try
-            {
-
-
-                ResourcePack cost = haven.GetRecruitCost(phoenix);
-
-                int m = 0, t = 0, f = 0;
-
-                foreach (var r in cost)
+                // Class icon
+                var classIcon = GetClassIcon(recruit);
+                if (classIcon != null)
                 {
-                    if (r.Type == ResourceType.Materials)
-                        m = (int)r.Value;
-                    else if (r.Type == ResourceType.Tech)
-                        t = (int)r.Value;
-                    else if (r.Type == ResourceType.Supplies)
-                        f = (int)r.Value;
-
+                    // Use the same size as abilities so it feels consistent
+                    MakeFixedIcon(row.transform, classIcon, AbilityIconSize);
                 }
 
-                return (m, t, f);
+                // Level
+                var (lvlGO, _) = NewUI("Lvl", row.transform);
+                var lvl = lvlGO.AddComponent<Text>();
+                lvl.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
+                lvl.fontSize = TextFontSize;
+                lvl.alignment = TextAnchor.MiddleLeft;
+                lvl.color = Color.white;
+                lvl.text = $"{recruit?.Level} {recruit?.GetName()}";
+                lvl.horizontalOverflow = HorizontalWrapMode.Overflow;
+                lvl.verticalOverflow = VerticalWrapMode.Truncate;
+            }
+
+            private static Sprite GetClassIcon(GeoUnitDescriptor recruit)
+            {
+                try
+                {
+                    // Preferred: class def view icon
+                    var ve = recruit?.GetClassViewElementDefs()?.FirstOrDefault();
+                    if (ve != null)
+                    {
+                        if (ve.SmallIcon != null) return ve.SmallIcon;
+
+                    }
+                }
+                catch { }
+
+                // Fallback: sometimes the ClassTag has a ViewElementDef; try reflection
+                try
+                {
+                    var tag = recruit?.ClassTag;
+                    if (tag != null)
+                    {
+                        var vedProp = tag.GetType().GetProperty("ViewElementDef", BindingFlags.Public | BindingFlags.Instance);
+                        var ved = vedProp?.GetValue(tag) as ViewElementDef;
+                        if (ved != null)
+                        {
+                            if (ved.SmallIcon != null) return ved.SmallIcon;
+                            if (ved.InventoryIcon != null) return ved.InventoryIcon;
+                        }
+                    }
+                }
+                catch { }
+
+                return null; // no icon available; header will just show Level + Name
+            }
+
+
+            private static Image MakeFixedIcon(Transform parent, Sprite sp, int px)
+            {
+                // Frame with RectTransform + LayoutElement fixes size for layout
+                var (frame, frt) = NewUI("IconFrame", parent);
+                var le = frame.AddComponent<LayoutElement>();
+                le.preferredWidth = px; le.minWidth = px;
+                le.preferredHeight = px; le.minHeight = px;
+                frt.sizeDelta = new Vector2(px, px);
+
+                // Child image stretched to frame + aspect fit
+                var (imgGO, imgRT) = NewUI("Img", frame.transform);
+                var img = imgGO.AddComponent<Image>();
+                img.sprite = sp;
+                img.raycastTarget = false;
+
+                imgRT.anchorMin = Vector2.zero; imgRT.anchorMax = Vector2.one;
+                imgRT.offsetMin = Vector2.zero; imgRT.offsetMax = Vector2.zero;
+
+                var arf = imgGO.AddComponent<AspectRatioFitter>();
+                arf.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+                if (sp && sp.rect.height > 0f)
+                    arf.aspectRatio = sp.rect.width / sp.rect.height;
+
+                return img;
+            }
+
+
+            private static void CreateTextRow(Transform parent, string text, FontStyle style, Color color)
+            {
+                var go = new GameObject("Row_Text");
+                go.transform.SetParent(parent, false);
+                var t = go.AddComponent<Text>();
+                t.text = text ?? "";
+                t.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
+                t.fontSize = TextFontSize;
+                t.fontStyle = style;
+                t.color = color;
+                t.alignment = TextAnchor.MiddleLeft;
+            }
+
+            private static GameObject CreateIconRow(Transform parent, string name, IEnumerable<Sprite> sprites, int iconSize)
+            {
+                var (row, _) = NewUI($"Row_{name}", parent);
+                var h = row.AddComponent<HorizontalLayoutGroup>();
+                h.childAlignment = TextAnchor.MiddleLeft; h.spacing = 3;
+                h.childControlWidth = true; h.childControlHeight = true;
+                h.childForceExpandWidth = false; h.childForceExpandHeight = false;
+
+                foreach (var sp in sprites ?? Enumerable.Empty<Sprite>())
+                {
+                    if (sp == null) continue;
+                    MakeFixedIcon(row.transform, sp, iconSize);
+                }
+                return row.gameObject;
+            }
+
+
+
+
+            private static void CreateRecruitItem(Transform parent, RecruitAtSite data, bool collapse)
+
+            {
+
+                var card = new GameObject($"Recruit_{Safe(data.Recruit?.GetName())}");
+                card.transform.SetParent(parent, false);
+
+                // background
+                var bg = card.AddComponent<Image>();
+                bg.color = new Color(1, 1, 1, 0.06f);
+
+
+                // button (keep it for hover/tint states, but don't use onClick directly)
+                var btn = card.AddComponent<Button>();
+                btn.transition = Selectable.Transition.ColorTint;
+
+                // click handler: single = focus; double = your hook
+                var click = card.AddComponent<CardClickHandler>();
+                click.OnSingle = () => FocusOnSite(data.Site);
+                click.OnDouble = () =>
+                {
+                    // your custom behavior here (or attach via the public hook)
+                    OnCardDoubleClick?.Invoke(data.Recruit, data.Site);
+                };
+
+                // vertical stack (one row per thing)
+                var v = card.AddComponent<VerticalLayoutGroup>();
+                v.childAlignment = TextAnchor.UpperLeft;
+                v.childForceExpandWidth = true;
+                v.childForceExpandHeight = false;
+                v.spacing = RowSpacing;
+                v.padding = new RectOffset(6, 6, 6, 6);
+
+                // Let height fit content (no fixed height anymore)
+                var fit = card.AddComponent<ContentSizeFitter>();
+                fit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+                // --- Row: Abilities ---
+                // header + haven + cost as before...
+                CreateHeaderRow(card.transform, data.Recruit);
+                CreateTextRow(card.transform, data.Site?.Name ?? "Unknown Haven", FontStyle.Italic, new Color(.8f, .8f, .95f));
+                CreateCostRow(card.transform, data.Haven, data.Haven.Site.GeoLevel.PhoenixFaction);
+
+                // rows we might collapse
+                var abilitiesRow = CreateIconRow(card.transform, "Abilities", GetAbilityIcons(data.Recruit), AbilityIconSize);
+                var equipmentRow = CreateIconRow(card.transform, "Equipment", GetEquipmentIcons(data.Recruit), EquipIconSize);
+                var armorRow = CreateIconRow(card.transform, "Armor", GetArmorIcons(data.Recruit), ArmorIconSize);
+
+                // hover behaviour
+                var hover = card.AddComponent<RecruitCardHover>();
+                hover.Collapsible = collapse;
+                hover.Rows.Add(abilitiesRow);
+                hover.Rows.Add(equipmentRow);
+                hover.Rows.Add(armorRow);
+
+                // initial state
+                if (collapse)
+                {
+                    abilitiesRow.SetActive(false);
+                    equipmentRow.SetActive(false);
+                    armorRow.SetActive(false);
+                }
+
+
+
 
             }
-            catch (Exception ex) { TFTVLogger.Error(ex); throw; }
 
-        }
+            private static void CreateEmptyLabel(Transform parent, string msg)
+            {
+                var go = new GameObject("Empty");
+                go.transform.SetParent(parent, false);
+                var t = go.AddComponent<Text>();
+                t.text = msg;
+                t.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
+                t.fontSize = TextFontSize;
+                t.alignment = TextAnchor.MiddleCenter;
+                t.color = new Color(0.85f, 0.85f, 0.9f, 0.9f);
+                var rt = go.GetComponent<RectTransform>();
+                rt.sizeDelta = new Vector2(0, 48);
+            }
+
+            // ---------- ABILITIES / EQUIPMENT ----------
+
+            private static IEnumerable<Sprite> GetAbilityIcons(GeoUnitDescriptor recruit)
+            {
+                if (recruit == null) yield break;
+
+                var track = recruit.GetPersonalAbilityTrack();
+                var views = track?.AbilitiesByLevel?
+                    .Select(a => a?.Ability?.ViewElementDef)
+                    .Where(v => v != null);
+
+                foreach (var v in views ?? Enumerable.Empty<ViewElementDef>())
+                {
+                    if (v.SmallIcon != null) yield return v.SmallIcon;
+                }
+
+            }
+
+            private static IEnumerable<Sprite> GetEquipmentIcons(GeoUnitDescriptor recruit)
+            {
+                if (recruit?.Equipment == null) yield break;
+
+                foreach (var def in recruit.Equipment.Where(i => i != null))
+                {
+                    var ve = def.ViewElementDef;
+                    if (ve?.InventoryIcon != null) yield return ve.InventoryIcon;
+                }
+            }
+
+            private static IEnumerable<Sprite> GetArmorIcons(GeoUnitDescriptor recruit)
+            {
+                if (recruit?.ArmorItems == null) yield break;
+
+                foreach (var def in recruit.ArmorItems.Where(i => i != null))
+                {
+                    var ve = def.ViewElementDef;
+                    if (ve?.InventoryIcon != null) yield return ve.InventoryIcon;
+                }
+            }
+
+
+            private static string GetClassName(GeoUnitDescriptor recruit)
+            {
+                if (recruit == null) return "Unknown Class";
+                try
+                {
+                    // Fallback: from tags
+                    var tagName = recruit.ClassTag;
+                    return tagName.className;
+                }
+                catch (Exception ex) { TFTVLogger.Error(ex); }
+                return "Unknown Class";
+            }
+
+            private static Dictionary<Sprite, Color> _resourceIconsColors = new Dictionary<Sprite, Color>();
+
+            private static Sprite _sprMat, _sprTech, _sprFood;
+            private static Color _colMat, _colTech, _colFood;
+
+            private static void PopulateResourceIconColorsDictionary()
+            {
+                if (_sprMat) return;
+
+                var mod = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ResourcesModule;
+                var mat = mod.MaterialsController.transform.parent.GetComponent<ResourceIconContainer>();
+                var tec = mod.TechController.transform.parent.GetComponent<ResourceIconContainer>();
+                var sup = mod.FoodController.transform.parent.GetComponent<ResourceIconContainer>();
+
+                _sprMat = mat.Icon.sprite; _colMat = mat.Icon.color;
+                _sprTech = tec.Icon.sprite; _colTech = tec.Icon.color;
+                _sprFood = sup.Icon.sprite; _colFood = sup.Icon.color;
+
+                _resourceIconsColors[_sprMat] = _colMat;
+                _resourceIconsColors[_sprTech] = _colTech;
+                _resourceIconsColors[_sprFood] = _colFood;
+            }
+
+
+            private static void CreateCostRow(Transform parent, GeoHaven haven, GeoPhoenixFaction phoenix)
+            {
+
+                PopulateResourceIconColorsDictionary();
+
+                // read cost
+                (int materials, int tech, int food) = GetRecruitCost(haven, phoenix);
+
+                var row = new GameObject("Row_Cost");
+                row.transform.SetParent(parent, false);
+
+                var h = row.AddComponent<HorizontalLayoutGroup>();
+                h.childAlignment = TextAnchor.MiddleLeft;
+                h.spacing = 8;
+                h.childForceExpandWidth = false;
+                h.childForceExpandHeight = false;
+
+
+
+                // Chip: Materials
+                if (materials > 0) CreateResourceChip(row.transform, _sprMat, materials);
+                if (tech > 0) CreateResourceChip(row.transform, _sprTech, tech);
+                if (food > 0) CreateResourceChip(row.transform, _sprFood, food);
+
+            }
+
+
+
+
+
+            private static void CreateResourceChip(Transform parent, Sprite sprite, int amount)
+            {
+                var (chip, _) = NewUI("Res", parent);
+
+                var h = chip.AddComponent<HorizontalLayoutGroup>();
+                h.childAlignment = TextAnchor.MiddleCenter;
+                h.spacing = 3;
+                h.childControlWidth = true;
+                h.childControlHeight = true;
+                h.childForceExpandWidth = false;
+                h.childForceExpandHeight = false;
+
+                // icon (pick size you like, e.g. 12 or 14)
+                var img = MakeFixedIcon(chip.transform, sprite, 22);
+                if (_resourceIconsColors.TryGetValue(sprite, out var col))
+                    img.color = col;
+
+                // amount
+                var (txtGO, _) = NewUI("Amt", chip.transform);
+                var t = txtGO.AddComponent<Text>();
+                t.text = amount.ToString();
+                t.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
+                t.fontSize = TextFontSize;
+                t.alignment = TextAnchor.MiddleLeft;
+            }
+
+
+
+            private static (int materials, int tech, int food) GetRecruitCost(GeoHaven haven, GeoPhoenixFaction phoenix)
+            {
+                try
+                {
+
+
+                    ResourcePack cost = haven.GetRecruitCost(phoenix);
+
+                    int m = 0, t = 0, f = 0;
+
+                    foreach (var r in cost)
+                    {
+                        if (r.Type == ResourceType.Materials)
+                            m = (int)r.Value;
+                        else if (r.Type == ResourceType.Tech)
+                            t = (int)r.Value;
+                        else if (r.Type == ResourceType.Supplies)
+                            f = (int)r.Value;
+
+                    }
+
+                    return (m, t, f);
+
+                }
+                catch (Exception ex) { TFTVLogger.Error(ex); throw; }
+
+            }
 
             // ====== DOUBLE-CLICK: SEND CLOSEST AIRCRAFT ======
 
@@ -1448,7 +1498,7 @@ namespace TFTV
                                       select pn.Site);
                     vehicle.StartTravel(geoSites);
 
-               
+
                     return true;
                 }
                 catch (Exception ex)
@@ -1491,54 +1541,54 @@ namespace TFTV
             // ---------- NAVIGATION ----------
 
             private static void FocusOnSite(GeoSite site)
-        {
-            try
             {
-                if (site == null) return;
-                site.GeoLevel.View.ChaseTarget(site, false);
+                try
+                {
+                    if (site == null) return;
+                    site.GeoLevel.View.ChaseTarget(site, false);
+                }
+                catch (Exception ex) { TFTVLogger.Error(ex); }
             }
-            catch (Exception ex) { TFTVLogger.Error(ex); }
+
+            // ---------- CLOSE BUTTON ----------
+
+            private static void AddCloseButton(GameObject parentPanel)
+            {
+                try
+                {
+                    var close = new GameObject("Close");
+                    close.transform.SetParent(parentPanel.transform, false);
+                    var img = close.AddComponent<Image>();
+                    img.color = new Color(0.6f, 0.2f, 0.2f, 0.95f);
+                    var btn = close.AddComponent<Button>();
+
+                    var rt = close.GetComponent<RectTransform>();
+                    rt.anchorMin = new Vector2(1, 1);
+                    rt.anchorMax = new Vector2(1, 1);
+                    rt.pivot = new Vector2(1, 1);
+                    rt.sizeDelta = new Vector2(80, 32);
+                    rt.anchoredPosition = new Vector2(-20, -20);
+
+                    var txt = new GameObject("Text").AddComponent<Text>();
+                    txt.transform.SetParent(close.transform, false);
+                    txt.text = "Close";
+                    txt.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+                    txt.alignment = TextAnchor.MiddleCenter;
+                    txt.color = Color.white;
+                    var tr = txt.GetComponent<RectTransform>();
+                    tr.anchorMin = Vector2.zero; tr.anchorMax = Vector2.one;
+                    tr.offsetMin = Vector2.zero; tr.offsetMax = Vector2.zero;
+
+                    btn.onClick.AddListener(() => parentPanel.SetActive(false));
+                }
+                catch (Exception ex) { TFTVLogger.Error(ex); }
+            }
+
+            private static string Safe(string s) => string.IsNullOrEmpty(s) ? "Unknown" : s;
         }
 
-        // ---------- CLOSE BUTTON ----------
 
-        private static void AddCloseButton(GameObject parentPanel)
-        {
-            try
-            {
-                var close = new GameObject("Close");
-                close.transform.SetParent(parentPanel.transform, false);
-                var img = close.AddComponent<Image>();
-                img.color = new Color(0.6f, 0.2f, 0.2f, 0.95f);
-                var btn = close.AddComponent<Button>();
 
-                var rt = close.GetComponent<RectTransform>();
-                rt.anchorMin = new Vector2(1, 1);
-                rt.anchorMax = new Vector2(1, 1);
-                rt.pivot = new Vector2(1, 1);
-                rt.sizeDelta = new Vector2(80, 32);
-                rt.anchoredPosition = new Vector2(-20, -20);
-
-                var txt = new GameObject("Text").AddComponent<Text>();
-                txt.transform.SetParent(close.transform, false);
-                txt.text = "Close";
-                txt.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-                txt.alignment = TextAnchor.MiddleCenter;
-                txt.color = Color.white;
-                var tr = txt.GetComponent<RectTransform>();
-                tr.anchorMin = Vector2.zero; tr.anchorMax = Vector2.one;
-                tr.offsetMin = Vector2.zero; tr.offsetMax = Vector2.zero;
-
-                btn.onClick.AddListener(() => parentPanel.SetActive(false));
-            }
-            catch (Exception ex) { TFTVLogger.Error(ex); }
-        }
-
-        private static string Safe(string s) => string.IsNullOrEmpty(s) ? "Unknown" : s;
     }
-
-
-
-}
 }
 

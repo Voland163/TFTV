@@ -2,6 +2,7 @@
 using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Effects;
+using Base.Entities.Statuses;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -9,6 +10,7 @@ using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Entities.Sites;
@@ -22,6 +24,7 @@ using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
+using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -76,6 +79,29 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
 
+        }
+
+        internal class NewTrainingFacilities 
+        {
+            public static void ImplementNewTrainingFacilities()
+            {
+                try
+                {
+
+                    ExperienceFacilityComponentDef experienceFacilityComponentDef = DefCache.GetDef<ExperienceFacilityComponentDef>("E_Experience [TrainingFacility_PhoenixFacilityDef]");
+                    experienceFacilityComponentDef.ExperiencePerUser = 0;
+                    experienceFacilityComponentDef.SkillPointsPerDay = 4;
+
+                    DefCache.GetDef<CorruptedHorizonsSettingsDef>("CorruptedHorizonsSettingsDef").MutoidMutagenCost = 500;
+                    DefCache.GetDef<TacCharacterDef>("Mutoid_CharacterTemplateDef").Data.LevelProgression.Experience = 400;
+                        //400
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        
         }
 
         internal class EquipBeforeAmbush
