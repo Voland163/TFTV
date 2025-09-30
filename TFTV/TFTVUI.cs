@@ -1,6 +1,7 @@
 ﻿using Base;
 using Base.Core;
 using Base.Defs;
+using Base.Entities;
 using Base.Entities.Statuses;
 using Base.Levels;
 using Base.UI;
@@ -35,8 +36,6 @@ using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Home.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.DamageKeywords;
-using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewStates;
@@ -250,6 +249,163 @@ namespace TFTV
                 [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
                 internal static class TFTV_UIModuleCharacterProgression_RefreshStatPanel_patch
                 {
+                    private const string HeavyConditioningLocKey = "TFTV_DRILL_heavyconditioning_NAME";
+                    private const string AksuSprintDrillLocKey = "TFTV_DRILL_aksusprintdrill_NAME";
+
+                    private static readonly GameTagDef HeavyClassTag = DefCache.GetDef<GameTagDef>("Heavy_ClassTagDef");
+                    private static readonly GameTagDef BionicTag = DefCache.GetDef<GameTagDef>("Bionic_TagDef");
+
+                    private static readonly HashSet<TacticalItemDef> AksuArmorPieces = new HashSet<TacticalItemDef>
+    {
+        DefCache.GetDef<TacticalItemDef>("AN_Berserker_Helmet_BodyPartDef"),
+        DefCache.GetDef<TacticalItemDef>("AN_Berserker_Torso_BodyPartDef"),
+        DefCache.GetDef<TacticalItemDef>("AN_Berserker_Legs_ItemDef"),
+    };
+
+                    internal struct DrillBonuses
+                    {
+                        public float HeavyConditioningSpeedBonus;
+                        public float HeavyConditioningAccuracyBonus;
+                        public float HeavyConditioningPerceptionBonus;
+                        public float HeavyConditioningStealthBonus;
+                        public float AksuSprintSpeedBonus;
+
+                        public bool HasHeavyConditioningBonus =>
+                            !Mathf.Approximately(HeavyConditioningSpeedBonus, 0f) ||
+                            !Mathf.Approximately(HeavyConditioningAccuracyBonus, 0f) ||
+                            !Mathf.Approximately(HeavyConditioningPerceptionBonus, 0f) ||
+                            !Mathf.Approximately(HeavyConditioningStealthBonus, 0f);
+
+                        public bool HasAksuSprintBonus => !Mathf.Approximately(AksuSprintSpeedBonus, 0f);
+                    }
+
+                    internal static DrillBonuses CalculateDrillBonuses(GeoCharacter character)
+                    {
+                        DrillBonuses bonuses = default;
+
+                        if (character == null)
+                        {
+                            return bonuses;
+                        }
+
+                        bool hasHeavyConditioning = false;
+                        bool hasAksuSprint = false;
+
+                        if (character.Progression != null)
+                        {
+                            foreach (TacticalAbilityDef ability in character.Progression.Abilities)
+                            {
+                                string abilityLocKey = ability?.ViewElementDef?.DisplayName1?.LocalizationKey;
+                                if (abilityLocKey == HeavyConditioningLocKey)
+                                {
+                                    hasHeavyConditioning = true;
+                                }
+                                else if (abilityLocKey == AksuSprintDrillLocKey)
+                                {
+                                    hasAksuSprint = true;
+                                }
+                            }
+                        }
+
+                        if (!hasHeavyConditioning && !hasAksuSprint)
+                        {
+                            return bonuses;
+                        }
+
+                        int heavyArmorPiecesEquipped = 0;
+                        float heavyArmorSpeedPenalty = 0f;
+                        float heavyArmorAccuracyPenalty = 0f;
+                        float heavyArmorPerceptionPenalty = 0f;
+                        float heavyArmorStealthPenalty = 0f;
+
+                        int aksuArmorPiecesEquipped = 0;
+                        float aksuArmorSpeedBonus = 0f;
+
+                        foreach (ICommonItem armorItem in character.ArmourItems)
+                        {
+                            TacticalItemDef tacticalItemDef = armorItem.ItemDef as TacticalItemDef;
+                            if (tacticalItemDef == null)
+                            {
+                                continue;
+                            }
+
+                            BodyPartAspectDef bodyPartAspectDef = tacticalItemDef.BodyPartAspectDef;
+                            if (bodyPartAspectDef == null)
+                            {
+                                continue;
+                            }
+
+                            if (!tacticalItemDef.Tags.Contains(Shared.SharedGameTags.ArmorTag))
+                            {
+                                continue;
+                            }
+
+                            if (hasHeavyConditioning && tacticalItemDef.Tags.Contains(HeavyClassTag) && !tacticalItemDef.Tags.Contains(BionicTag))
+                            {
+                                heavyArmorPiecesEquipped++;
+
+                                if (bodyPartAspectDef.Speed < 0f)
+                                {
+                                    heavyArmorSpeedPenalty += bodyPartAspectDef.Speed;
+                                }
+
+                                if (bodyPartAspectDef.Accuracy < 0f)
+                                {
+                                    heavyArmorAccuracyPenalty += bodyPartAspectDef.Accuracy;
+                                }
+
+                                if (bodyPartAspectDef.Perception < 0f)
+                                {
+                                    heavyArmorPerceptionPenalty += bodyPartAspectDef.Perception;
+                                }
+
+                                if (bodyPartAspectDef.Stealth < 0f)
+                                {
+                                    heavyArmorStealthPenalty += bodyPartAspectDef.Stealth;
+                                }
+                            }
+
+                            if (hasAksuSprint && AksuArmorPieces.Contains(tacticalItemDef))
+                            {
+                                aksuArmorPiecesEquipped++;
+                                if (bodyPartAspectDef.Speed > 0f)
+                                {
+                                    aksuArmorSpeedBonus += bodyPartAspectDef.Speed;
+                                }
+                            }
+                        }
+
+                        if (hasHeavyConditioning && heavyArmorPiecesEquipped >= 3)
+                        {
+                            if (heavyArmorSpeedPenalty < 0f)
+                            {
+                                bonuses.HeavyConditioningSpeedBonus = -heavyArmorSpeedPenalty / 2f;
+                            }
+
+                            if (heavyArmorAccuracyPenalty < 0f)
+                            {
+                                bonuses.HeavyConditioningAccuracyBonus = -heavyArmorAccuracyPenalty / 2f;
+                            }
+
+                            if (heavyArmorPerceptionPenalty < 0f)
+                            {
+                                bonuses.HeavyConditioningPerceptionBonus = -heavyArmorPerceptionPenalty / 2f;
+                            }
+
+                            if (heavyArmorStealthPenalty < 0f)
+                            {
+                                bonuses.HeavyConditioningStealthBonus = -heavyArmorStealthPenalty / 2f;
+                            }
+                        }
+
+                        if (hasAksuSprint && aksuArmorPiecesEquipped >= 3 && aksuArmorSpeedBonus > 0f)
+                        {
+                            bonuses.AksuSprintSpeedBonus = aksuArmorSpeedBonus;
+                        }
+
+                        return bonuses;
+                    }
+
                     private static void Postfix(GeoCharacter ____character, ref string __result, CharacterBaseAttribute attribute, int currentAttributeValue, UIModuleCharacterProgression __instance)
                     {
                         try
@@ -283,7 +439,6 @@ namespace TFTV
                                             if (statModifier.TargetStat == StatModificationTarget.Endurance && statModifier.Modification == StatModificationType.AddMax)
                                             {
                                                 bonusStrength += statModifier.Value;
-                                                //  forStrengthToolTip += $"+{statModifier.Value} from {passiveModifierAbilityDef.ViewElementDef.DisplayName1.Localize()}";
                                             }
                                             else if (statModifier.TargetStat == StatModificationTarget.Willpower && statModifier.Modification == StatModificationType.AddMax)
                                             {
@@ -293,18 +448,14 @@ namespace TFTV
                                             {
                                                 bonusSpeed += statModifier.Value;
                                             }
-
                                         }
                                     }
-
 
                                     if (ability == derealization)
                                     {
                                         bonusStrength -= 5;
                                     }
-
                                 }
-
 
                                 foreach (PassiveModifierAbilityDef passiveModifier in ____character.PassiveModifiers)
                                 {
@@ -314,7 +465,6 @@ namespace TFTV
                                         if (statModifier2.TargetStat == StatModificationTarget.Endurance)
                                         {
                                             bonusStrength += statModifier2.Value;
-                                            //   forStrengthToolTip += $"+{statModifier2.Value} from {passiveModifier?.ViewElementDef?.DisplayName1?.Localize()}";
                                         }
                                         else if (statModifier2.TargetStat == StatModificationTarget.Willpower)
                                         {
@@ -324,45 +474,47 @@ namespace TFTV
                                         {
                                             bonusSpeed += statModifier2.Value;
                                         }
-
                                     }
                                 }
                             }
 
-                            //  StrengthToolTip.TipText += forStrengthToolTip;
+                            DrillBonuses drillBonuses = CalculateDrillBonuses(____character);
+
+                            if (drillBonuses.HasHeavyConditioningBonus)
+                            {
+                                bonusSpeed += drillBonuses.HeavyConditioningSpeedBonus;
+                            }
+
+                            if (drillBonuses.HasAksuSprintBonus)
+                            {
+                                bonusSpeed += drillBonuses.AksuSprintSpeedBonus;
+                            }
 
                             if (attribute.Equals(CharacterBaseAttribute.Strength))
                             {
                                 if (bonusStrength > 0)
                                 {
-                                    __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
-                                            $" (<color=#50c878>{currentAttributeValue + bonusStrength}</color>)";
+                                    __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)} (<color=#50c878>{currentAttributeValue + bonusStrength}</color>)";
                                 }
                                 else if (bonusStrength < 0)
                                 {
-                                    __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
-                                            $" (<color=#cc0000>{currentAttributeValue + bonusStrength}</color>)";
+                                    __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)} (<color=#cc0000>{currentAttributeValue + bonusStrength}</color>)";
                                 }
                                 else
                                 {
                                     __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}";
                                 }
-
                             }
-
 
                             if (attribute.Equals(CharacterBaseAttribute.Speed))
                             {
-
                                 if (bonusSpeed > 0)
                                 {
-                                    __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
-                                            $" (<color=#50c878>{currentAttributeValue + bonusSpeed}</color>)";
+                                    __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)} (<color=#50c878>{currentAttributeValue + bonusSpeed}</color>)";
                                 }
                                 else if (bonusSpeed < 0)
                                 {
-                                    __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
-                                            $" (<color=#cc0000>{currentAttributeValue + bonusSpeed}</color>)";
+                                    __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)} (<color=#cc0000>{currentAttributeValue + bonusSpeed}</color>)";
                                 }
                                 else
                                 {
@@ -374,28 +526,18 @@ namespace TFTV
                             {
                                 if (____character.CharacterStats.Corruption > TFTVDelirium.CalculateStaminaEffectOnDelirium(____character) && TFTVVoidOmens.VoidOmensCheck[3] == false)
                                 {
-                                    // TFTVLogger.Always($"current Delirium value is {____character.CharacterStats.Corruption.Value}; effect of Stamina is {TFTVDelirium.CalculateStaminaEffectOnDelirium(____character)}, " +
-                                    //     $"current attribute value is {currentAttributeValue}, bonusWillpower is {bonusWillpower}, max {____character.Progression.GetMaxBaseStat(CharacterBaseAttribute.Will)}");
-
                                     __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(CharacterBaseAttribute.Will)}" +
                                         $"<color=#da5be3> ({currentAttributeValue + bonusWillpower - ____character.CharacterStats.Corruption.Value + TFTVDelirium.CalculateStaminaEffectOnDelirium(____character)}</color>)";
                                 }
                                 else
                                 {
-                                    //  TFTVLogger.Always($"current Delirium value is {____character.CharacterStats.Corruption.Value}; effect of Stamina is {TFTVDelirium.CalculateStaminaEffectOnDelirium(____character)}, " +
-                                    //      $"current attribute value is {currentAttributeValue}, bonusWillpower is {bonusWillpower}, TFTVVoidOmens.VoidOmensCheck[3] {TFTVVoidOmens.VoidOmensCheck[3]}");
-
                                     if (bonusWillpower > 0)
                                     {
-
-                                        __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
-                                                    $" (<color=#50c878>{currentAttributeValue + bonusWillpower}</color>)";
-
+                                        __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)} (<color=#50c878>{currentAttributeValue + bonusWillpower}</color>)";
                                     }
                                     else if (bonusWillpower < 0)
                                     {
-                                        __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)}" +
-                                                $" (<color=#cc0000>{currentAttributeValue + bonusWillpower}</color>)";
+                                        __result = $"{currentAttributeValue} / {____character.Progression.GetMaxBaseStat(attribute)} (<color=#cc0000>{currentAttributeValue + bonusWillpower}</color>)";
                                     }
                                     else
                                     {
@@ -408,7 +550,251 @@ namespace TFTV
                         {
                             TFTVLogger.Error(e);
                         }
+                    }
+                }
 
+
+
+                [HarmonyPatch(typeof(UIModuleCharacterProgression), nameof(UIModuleCharacterProgression.RefreshStatusesPanel))]
+                private static class TFTV_UIModuleCharacterProgression_RefreshStatusesPanel_patch
+                {
+                    private static readonly GameTagDef ArmorTag = Shared.SharedGameTags.ArmorTag;
+                    private static readonly GameTagDef HeavyClassTag = DefCache.GetDef<GameTagDef>("Heavy_ClassTagDef");
+                    private static readonly GameTagDef BionicTag = DefCache.GetDef<GameTagDef>("Bionic_TagDef");
+
+                    private static bool Prefix(UIModuleCharacterProgression __instance, GeoCharacter ____character, List<ICommonItem> armorItems)
+                    {
+                        try
+                        {
+                            if (____character == null)
+                                return false;
+
+                            bool hasHeavyConditioning = ____character.Progression?.Abilities?
+                                .Any(a => a != null && a.name != null && a.name.IndexOf("heavyconditioning", StringComparison.OrdinalIgnoreCase) >= 0) ?? false;
+
+                            if (!hasHeavyConditioning)
+                                return true; // let original handle it
+
+                            if (!armorItems.All(i => i.ItemDef.Tags.Contains(ArmorTag) && i.ItemDef.Tags.Contains(HeavyClassTag) && !i.ItemDef.Tags.Contains(BionicTag)))
+                                return true; // let original handle it
+
+                            float fPerception = 0f;
+                            float fAccuracy = 0f;
+                            float fStealth = 0f;
+                            float fPerceptionMult = 1f;
+                            float fAccuracyMult = 1f;
+                            float fStealthMult = 1f;
+
+                            PerceptionComponentDef componentDef = ____character.TemplateDef.ComponentSetDef.GetComponentDef<PerceptionComponentDef>();
+                            if (componentDef != null)
+                            {
+                                fPerception += componentDef.PerceptionRange;
+                            }
+
+                            foreach (ICommonItem armorItem in armorItems)
+                            {
+                                TacticalItemDef tacticalItemDef = armorItem.ItemDef as TacticalItemDef;
+                                if (!(tacticalItemDef == null) && !(tacticalItemDef.BodyPartAspectDef == null))
+                                {
+                                    if (tacticalItemDef.BodyPartAspectDef.Perception > 0)
+                                    {
+                                        fPerception += tacticalItemDef.BodyPartAspectDef.Perception;
+                                    }
+                                    else
+                                    {
+                                        fPerception += tacticalItemDef.BodyPartAspectDef.Perception / 2;
+                                    }
+
+                                    if (tacticalItemDef.BodyPartAspectDef.Accuracy < 0)
+                                    {
+                                        fAccuracy += tacticalItemDef.BodyPartAspectDef.Accuracy / 2;
+                                    }
+                                    else
+                                    {
+                                        fAccuracy += tacticalItemDef.BodyPartAspectDef.Accuracy;
+                                    }
+                                    if (tacticalItemDef.BodyPartAspectDef.Stealth < 0)
+                                    {
+                                        fStealth += tacticalItemDef.BodyPartAspectDef.Stealth / 2;
+                                    }
+                                    else
+                                    {
+                                        fStealth += tacticalItemDef.BodyPartAspectDef.Stealth;
+                                    }
+                                }
+                            }
+
+                            MethodInfo methodInfo = typeof(UIModuleCharacterProgression).GetMethod("ApplyStatModification", BindingFlags.NonPublic | BindingFlags.Static);
+
+                            if (____character.Progression != null)
+                            {
+                                foreach (TacticalAbilityDef ability in ____character.Progression.Abilities)
+                                {
+                                    PassiveModifierAbilityDef passiveModifierAbilityDef = ability as PassiveModifierAbilityDef;
+                                    if (!(passiveModifierAbilityDef == null))
+                                    {
+                                        ItemStatModification[] statModifications = passiveModifierAbilityDef.StatModifications;
+                                        foreach (ItemStatModification statModifier in statModifications)
+                                        {
+                                            ApplyStatModification(statModifier, ref fPerception, ref fAccuracy, ref fStealth, ref fPerceptionMult, ref fAccuracyMult, ref fStealthMult);
+                                        }
+                                    }
+                                }
+                            }
+
+                            foreach (PassiveModifierAbilityDef passiveModifier in ____character.PassiveModifiers)
+                            {
+                                ItemStatModification[] statModifications = passiveModifier.StatModifications;
+                                foreach (ItemStatModification statModifier2 in statModifications)
+                                {
+                                    ApplyStatModification(statModifier2, ref fPerception, ref fAccuracy, ref fStealth, ref fPerceptionMult, ref fAccuracyMult, ref fStealthMult);
+                                }
+                            }
+
+                            int num = (int)(fPerception * fPerceptionMult);
+                            __instance.PerceptionStatText.text = $"+{num}";
+                            if (fAccuracy * fAccuracyMult == 0f)
+                            {
+                                __instance.AccuracyStatText.text = "---";
+                            }
+                            else
+                            {
+                                __instance.AccuracyStatText.text = UIUtil.PercentageStat(fAccuracy * fAccuracyMult, "{0}%");
+                            }
+
+                            if (fStealth * fStealthMult == 0f)
+                            {
+                                __instance.StealthStatText.text = "---";
+                            }
+                            else
+                            {
+                                __instance.StealthStatText.text = UIUtil.PercentageStat(fStealth * fStealthMult, "{0}%");
+                            }
+
+                            return false; // skip original since we've updated the UI
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            return true; // on error, fall back to original
+                        }
+                    }
+
+                    private static void ApplyStatModification(ItemStatModification statModifier, ref float fPerception, ref float fAccuracy, ref float fStealth, ref float fPerceptionMult, ref float fAccuracyMult, ref float fStealthMult)
+                    {
+                        switch (statModifier.TargetStat)
+                        {
+                            case StatModificationTarget.Perception:
+                                if (statModifier.Modification == StatModificationType.Add)
+                                {
+                                    fPerception += statModifier.Value;
+                                }
+                                else if (statModifier.Modification == StatModificationType.Multiply)
+                                {
+                                    fPerceptionMult += statModifier.Value;
+                                }
+
+                                break;
+                            case StatModificationTarget.Accuracy:
+                                if (statModifier.Modification == StatModificationType.Add)
+                                {
+                                    fAccuracy += statModifier.Value;
+                                }
+                                else if (statModifier.Modification == StatModificationType.Multiply)
+                                {
+                                    fAccuracyMult += statModifier.Value;
+                                }
+
+                                break;
+                            case StatModificationTarget.Stealth:
+                                if (statModifier.Modification == StatModificationType.Add)
+                                {
+                                    fStealth += statModifier.Value;
+                                }
+                                else if (statModifier.Modification == StatModificationType.Multiply)
+                                {
+                                    fStealthMult += statModifier.Value;
+                                }
+
+                                break;
+                        }
+                    }
+                }
+
+                [HarmonyPatch(typeof(GeoRosterStatisticsController))]
+                internal static class GeoRosterStatisticsControllerInitPatch
+                {
+                    private static readonly GameTagDef ArmorTag = Shared.SharedGameTags.ArmorTag;
+                    private static readonly GameTagDef HeavyClassTag = DefCache.GetDef<GameTagDef>("Heavy_ClassTagDef");
+                    private static readonly GameTagDef BionicTag = DefCache.GetDef<GameTagDef>("Bionic_TagDef");
+
+                    [HarmonyPostfix]
+                    [HarmonyPatch(nameof(GeoRosterStatisticsController.Init))]
+                    private static void Postfix(GeoRosterStatisticsController __instance, UnitStatisticsData data, bool hasServiceRecord)
+                    {
+                        if (data == null)
+                        {
+                            return;
+                        }
+
+                        GeoCharacter geoCharacter = GameUtl.CurrentLevel().GetComponent<GeoLevelController>()?.View.GeoscapeModules.ActorCycleModule.CurrentCharacter;
+
+                        TFTVLogger.Always($"{geoCharacter?.DisplayName} has hc? {geoCharacter?.Progression?.Abilities?.Contains(TFTVDrills.DrillsDefs._heavyConditioning)}");
+
+                        if (!data.Abilities.Any(ad => ad.Ability == TFTVDrills.DrillsDefs._heavyConditioning)) return;
+
+                        if (!geoCharacter.ArmourItems.All(i => i.ItemDef.Tags.Contains(ArmorTag) && i.ItemDef.Tags.Contains(HeavyClassTag) && !i.ItemDef.Tags.Contains(BionicTag)))
+                            return;
+
+                        float fPerception = 0f;
+                        float fAccuracy = 0f;
+                        float fStealth = 0f;
+
+                        foreach (GeoItem item in geoCharacter.ArmourItems)
+                        {
+                            if (item.ItemDef is TacticalItemDef tacticalItemDef && tacticalItemDef.BodyPartAspectDef != null)
+                            {
+                                if (tacticalItemDef.BodyPartAspectDef.Perception < 0)
+                                {
+                                    fPerception += tacticalItemDef.BodyPartAspectDef.Perception;
+                                }
+                                if (tacticalItemDef.BodyPartAspectDef.Accuracy < 0)
+                                {
+                                    fAccuracy += tacticalItemDef.BodyPartAspectDef.Accuracy;
+                                }
+                                if (tacticalItemDef.BodyPartAspectDef.Stealth < 0)
+                                {
+                                    fStealth += tacticalItemDef.BodyPartAspectDef.Stealth;
+                                }
+                            }
+                        }
+
+                        fPerception *= 100;
+                        fAccuracy *= 100;
+                        fStealth *= 100;
+
+
+                        //  PerceptionText.text = data.Perception.ToString();
+                        //  AccuracyText.text = $"{data.Accuracy}%";
+                        //  StealthText.text = $"{data.Stealth}%";
+
+                        // Highlight perception if the soldier exceeds a threshold.
+                        if (fPerception<0)
+                        {
+                            __instance.PerceptionText.text = $"{data.Perception-fPerception+fPerception/2}";
+                        }
+
+                        // Accentuate accuracy for elite marksmen.
+                        if (fAccuracy<0)
+                        {
+                            __instance.AccuracyText.text = $"{data.Accuracy-fAccuracy+fAccuracy/2}% ";
+                        }
+
+                        // Flag units that are exceptionally stealthy.
+                        if (fStealth<0)
+                        {
+                            __instance.StealthText.text = $"{data.Stealth-fStealth+fStealth/2}%";
+                        }
                     }
                 }
 
@@ -2265,7 +2651,7 @@ namespace TFTV
                     float resolutionFactorWidth = (float)resolution.width / 1920f;
                     float resolutionFactorHeight = (float)resolution.height / 1080f;
 
-                    if(resolution.width == 1920 && resolutionFactorHeight == 1200) 
+                    if (resolution.width == 1920 && resolutionFactorHeight == 1200)
                     {
                         resolutionFactorHeight = 1;
                     }

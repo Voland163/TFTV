@@ -2,10 +2,12 @@
 using Base.Defs;
 using Base.Entities.Statuses;
 using Base.Serialization.General;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
@@ -22,6 +24,200 @@ namespace TFTV.TFTVDrills
     internal class DrillsPublicClasses
     {
 
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly SharedData Shared = TFTVMain.Shared;
+
+        [SerializeType(InheritCustomCreateFrom = typeof(AddAttackBoostStatusDef))]
+        public class ShockDropStatusDef : AddAttackBoostStatusDef
+        {
+            public BashAbilityDef DefaultBashAbility;
+
+            public BashAbilityDef ReplacementBashAbility;
+        }
+
+        [SerializeType(InheritCustomCreateFrom = typeof(AddAttackBoostStatus))]
+        public class ShockDropStatus : AddAttackBoostStatus
+        {
+            private TacticalAbility _pendingAttack;
+
+            private bool _bashAbilityReplaced;
+
+            private bool _removedDefaultBash;
+
+            private ShockDropStatusDef ShockDropDef => BaseDef as ShockDropStatusDef;
+
+            public override void OnApply(StatusComponent statusComponent)
+            {
+                base.OnApply(statusComponent);
+
+                if (TacticalActor == null || TacticalLevel == null)
+                {
+                    return;
+                }
+
+                TacticalLevel.AbilityActivatingEvent += OnAbilityActivating;
+                TacticalLevel.AbilityExecutedEvent += OnAbilityExecuted;
+
+                ReplaceBashAbility();
+            }
+
+            public override void OnUnapply()
+            {
+                if (TacticalLevel != null)
+                {
+                    TacticalLevel.AbilityActivatingEvent -= OnAbilityActivating;
+                    TacticalLevel.AbilityExecutedEvent -= OnAbilityExecuted;
+                }
+
+                RestoreBashAbility();
+
+                _pendingAttack = null;
+
+                base.OnUnapply();
+            }
+
+            private void OnAbilityActivating(TacticalAbility ability, object parameter)
+            {
+                if (!Applied || ability == null || ability.TacticalActor != TacticalActor)
+                {
+                    return;
+                }
+
+                if (ability is JetJumpAbility || ability is IdleAbility)
+                {
+                    return;
+                }
+
+                if (ability is BashAbility || ability.TacticalAbilityDef.SkillTags.Contains(DefCache.GetDef<SkillTagDef>("MeleeAbility_SkillTagDef")))
+                {
+                    _pendingAttack = ability;
+                    return;
+                }
+
+                ForfeitBonus();
+            }
+
+            private void OnAbilityExecuted(TacticalAbility ability, object parameter)
+            {
+                if (!Applied || ability == null || ability.TacticalActor != TacticalActor)
+                {
+                    return;
+                }
+
+                if (ability is JetJumpAbility || ability is IdleAbility)
+                {
+                    return;
+                }
+
+                if (ability == _pendingAttack)
+                {
+                    _pendingAttack = null;
+                    RestoreBashAbility();
+                    return;
+                }
+
+                if (ability is BashAbility || ability.TacticalAbilityDef.SkillTags.Contains(DefCache.GetDef<SkillTagDef>("MeleeAbility_SkillTagDef")))
+                {
+                    return;
+                }
+
+                ForfeitBonus();
+            }
+
+            private void ForfeitBonus()
+            {
+                if (!Applied || TacticalActor == null)
+                {
+                    return;
+                }
+
+                RemoveBonusKeywords();
+                RestoreBashAbility();
+                _pendingAttack = null;
+
+                if (TacticalActor?.Status != null)
+                {
+                    RequestUnapply(TacticalActor.Status);
+                }
+            }
+
+            private void RemoveBonusKeywords()
+            {
+                if (TacticalActor == null)
+                {
+                    return;
+                }
+
+                DamageKeywordPair[] keywordPairs = ShockDropDef?.DamageKeywordPairs;
+                if (keywordPairs == null)
+                {
+                    return;
+                }
+
+                foreach (DamageKeywordPair keywordPair in keywordPairs)
+                {
+                    TacticalActor.RemoveDamageKeywordPair(keywordPair);
+                }
+            }
+
+            private void ReplaceBashAbility()
+            {
+                if (_bashAbilityReplaced || TacticalActor == null)
+                {
+                    return;
+                }
+
+                ShockDropStatusDef statusDef = ShockDropDef;
+                if (statusDef?.ReplacementBashAbility == null)
+                {
+                    return;
+                }
+
+                if (statusDef.DefaultBashAbility != null &&
+                    TacticalActor.GetAbilityWithDef<BashAbility>(statusDef.DefaultBashAbility) != null)
+                {
+                    TacticalActor.RemoveAbility(statusDef.DefaultBashAbility);
+                    _removedDefaultBash = true;
+                }
+
+                if (TacticalActor.GetAbilityWithDef<BashAbility>(statusDef.ReplacementBashAbility) == null)
+                {
+                    TacticalActor.AddAbility(statusDef.ReplacementBashAbility, TacticalActor);
+                }
+
+                _bashAbilityReplaced = true;
+            }
+
+            private void RestoreBashAbility()
+            {
+                if (!_bashAbilityReplaced || TacticalActor == null)
+                {
+                    return;
+                }
+
+                ShockDropStatusDef statusDef = ShockDropDef;
+                if (statusDef == null)
+                {
+                    return;
+                }
+
+                if (statusDef.ReplacementBashAbility != null &&
+                    TacticalActor.GetAbilityWithDef<BashAbility>(statusDef.ReplacementBashAbility) != null)
+                {
+                    TacticalActor.RemoveAbility(statusDef.ReplacementBashAbility);
+                }
+
+                if (_removedDefaultBash && statusDef.DefaultBashAbility != null &&
+                    TacticalActor.GetAbilityWithDef<BashAbility>(statusDef.DefaultBashAbility) == null)
+                {
+                    TacticalActor.AddAbility(statusDef.DefaultBashAbility, TacticalActor);
+                }
+
+                _removedDefaultBash = false;
+                _bashAbilityReplaced = false;
+            }
+        }
 
 
 

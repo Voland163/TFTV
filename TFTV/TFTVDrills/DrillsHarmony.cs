@@ -11,17 +11,21 @@ using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.DamageKeywords;
+using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.UI.Abilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using static TFTV.TFTVDrills.DrillsDefs;
+using static TFTV.TFTVDrills.DrillsPublicClasses;
 
 
 
@@ -34,7 +38,126 @@ namespace TFTV.TFTVDrills
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
+        internal static class ShockDrop
+        {
+            [HarmonyPatch(typeof(AbilitySummaryData), "ProcessDamageTypeFlowPayload")]
+            public static class AbilitySummaryData_ProcessDamageTypeFlowPayload_Patch
+            {
+                // Prefix replicates original implementation and prevents original from running.
+                [HarmonyPrefix]
+                public static bool Prefix(AbilitySummaryData __instance, TacticalActor tacticalActor, DamagePayload payload, int numActions)
+                {
+                    if (payload == null)
+                    {
+                        return false; // nothing to do, skip original
+                    }
 
+                    if(tacticalActor.GetAbilityWithDef<BashAbility>(_shockDropBash)==null)
+                    {
+                        return true; // not our special bash, let original run
+                    }
+
+                    DamageEffectDef damageEffectDef = payload.TryGetDamageEffectDef();
+                    if (damageEffectDef != null && damageEffectDef.DamageTypeDef != null)
+                    {
+                        KeywordData keywordData = new KeywordData
+                        {
+                            ViewElementDef = damageEffectDef.DamageTypeDef.Visuals,
+                            Value = damageEffectDef.MaximumDamage,
+                            NumActions = numActions
+                        };
+                        __instance.Keywords.Add(keywordData);
+
+                        if (damageEffectDef is MeleeBashDamageEffectDef meleeBashDamageEffectDef)
+                        {
+                            // Recalculate bash damage value using actor and equipment
+                            try
+                            {
+                                keywordData.Value = MeleeBashDamageEffect.GetDamageValue(
+                                    tacticalActor,
+                                    tacticalActor?.Equipments?.SelectedEquipment,
+                                    meleeBashDamageEffectDef.EnduranceToDamageCoefficient,
+                                    meleeBashDamageEffectDef.MeleeWeaponTagDef
+                                );
+                            }
+                            catch
+                            {
+                                // If anything goes wrong during calculation, keep the original MaximumDamage value.
+                            }
+
+                            KeywordData item = new KeywordData
+                            {
+                                ViewElementDef = meleeBashDamageEffectDef.SecondaryDamageTypeDef.Visuals,
+                                Value = keywordData.Value + _shockDropStatus.DamageKeywordPairs[0].Value,
+                                NumActions = numActions
+                            };
+                            __instance.Keywords.Add(item);
+                        }
+                    }
+
+                    // Return false to skip the original method (we have replicated it)
+                    return false;
+                }
+            }
+
+            [HarmonyPatch(typeof(BashAbility), nameof(BashAbility.GetDamage))]
+            internal static class BashAbilityShockPatch
+            {
+                private static readonly BashAbilityDef SpecialBashAbilityDef = _shockDropBash;
+
+                private static void Postfix(
+                    BashAbility __instance,
+                    ref float __result)
+                {
+                   
+                    if(__instance.BashAbilityDef==SpecialBashAbilityDef)
+                    {
+                        __result += _shockDropStatus.DamageKeywordPairs[0].Value;
+                    }                 
+                }
+
+            }
+
+
+            [HarmonyPatch(typeof(JetJumpAbility), nameof(JetJumpAbility.Activate))]
+            public static class JetJumpAbility_Activate_ShockDrop_Patch
+            {
+                public static void Postfix(JetJumpAbility __instance)
+                {
+                    try
+                    {
+                        if (_shockDrop == null || _shockDropStatus == null)
+                        {
+                            return;
+                        }
+
+                        TacticalActor actor = __instance?.TacticalActor;
+                        if (actor == null || actor.Status == null)
+                        {
+                            return;
+                        }
+
+                        if (actor.GetAbilityWithDef<PassiveModifierAbility>(_shockDrop) == null)
+                        {
+                            return;
+                        }
+
+                        ShockDropStatus existingStatus = actor.Status.GetStatus<ShockDropStatus>(_shockDropStatus);
+                        if (existingStatus != null)
+                        {
+                            actor.Status.UnapplyStatus(existingStatus);
+                        }
+
+                        actor.Status.ApplyStatus(_shockDropStatus);
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+        }
 
         internal class OneHandedGrip 
         {
@@ -696,6 +819,7 @@ namespace TFTV.TFTVDrills
         }
         internal class PounceProtocol
         {
+
            
 
         }

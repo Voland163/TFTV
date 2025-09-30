@@ -54,6 +54,8 @@ using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Levels.Missions;
+using PhoenixPoint.Tactical.Levels.PathProcessors;
+using PhoenixPoint.Tactical.UI;
 using PhoenixPoint.Tactical.UI.SoldierPortraits;
 using PhoenixPoint.Tactical.View;
 using PhoenixPoint.Tactical.View.ViewControllers;
@@ -1231,6 +1233,319 @@ namespace TFTV
 
         internal class Tactical
         {
+            internal class RFAnimationBug 
+            {
+                [HarmonyPatch(typeof(TacticalNavigationComponent), "WaitForAnimation")]
+                public static class TacticalNavigationComponent_WaitForAnimation_Patch
+                {
+                    private const int ForcedStepBackFrameThreshold = 4;
+                    private const int ForcedStepBackCooldownFrames = 12;
+                    private const float ForcedStepBackCrossFadeDuration = 0.05f;
+
+                    private static readonly MethodInfo GetCurrentAnimInfoMethod =
+                        AccessTools.Method(typeof(TacticalNavigationComponent), "GetCurrentAnimInfo", new[] { typeof(AnimInfo).MakeByRefType() });
+
+                    private static readonly MethodInfo SetAnimatorParamsForPointMethod =
+                        AccessTools.Method(typeof(TacticalNavigationComponent), "SetAnimatorParamsForPoint", new[] { typeof(PathPointInfo) });
+
+                    [HarmonyPrefix]
+                    public static bool Prefix(TacticalNavigationComponent __instance, AnimationClip animation, ref IEnumerator<NextUpdate> __result)
+                    {
+                        __result = Replacement(__instance, animation);
+                        return false;
+                    }
+
+                    private static IEnumerator<NextUpdate> Replacement(TacticalNavigationComponent instance, AnimationClip animation)
+                    {
+                        const float timeToWait = 5f;
+                        float timePassed = 0f;
+                        if (animation == null)
+                        {
+                            AnimInfo animatorAnim;
+                            bool isValidAnimPlaying = TryGetCurrentAnimInfo(instance, out animatorAnim);
+                            while (isValidAnimPlaying && !animatorAnim.IsLooping && Utils.GetCurrentAnimTime(instance.Animator) < 1f)
+                            {
+                                yield return NextUpdate.NextFrame;
+                                timePassed += instance.Timing.Delta;
+                                if (timePassed > timeToWait)
+                                {
+                                    Debug.LogError(string.Format("{0} is waiting for animation {1} to finish timed out. Is animation looped?", instance.name, Utils.GetCurrentAnim(instance.Animator)), instance);
+                                    instance.Animator.Play("High Idle");
+                                    yield break;
+                                }
+                                isValidAnimPlaying = TryGetCurrentAnimInfo(instance, out animatorAnim);
+                            }
+                        }
+                        else
+                        {
+                            int stuckFrames = 0;
+                            bool forcedStepBack = false;
+                            ShootSegmentType? currentSegmentShootType = GetCurrentSegmentShootType(instance);
+                            while (true)
+                            {
+                                AnimationClip currentAnim = Utils.GetCurrentAnim(instance.Animator);
+                                if (IsCurrentAnimation(animation, currentAnim))
+                                {
+                                    yield break;
+                                }
+                                if (!forcedStepBack && stuckFrames >= ForcedStepBackFrameThreshold)
+                                {
+                                    currentSegmentShootType = GetCurrentSegmentShootType(instance);
+                                    if (ShouldForceStepBack(instance, animation, currentAnim, currentSegmentShootType))
+                                    {
+                                        ForcedStepBack(instance, animation, currentAnim);
+                                        timePassed = 0f;
+                                        forcedStepBack = true;
+                                        stuckFrames = -ForcedStepBackCooldownFrames;
+                                        yield return NextUpdate.NextFrame;
+                                        continue;
+                                    }
+                                }
+                                yield return NextUpdate.NextFrame;
+                                stuckFrames++;
+                                timePassed += instance.Timing.Delta;
+                                if (timePassed > timeToWait)
+                                {
+                                    AnimationClip timedOutAnim = Utils.GetCurrentAnim(instance.Animator);
+                                    Debug.LogError(string.Format("{0} is waiting for animation {1} timed out. Current animation: {2}", instance.name, animation, timedOutAnim), instance);
+                                    if (instance.CurrentPath is TacticalPathRequest tacticalPathRequest)
+                                    {
+                                        tacticalPathRequest.PrintPath();
+                                    }
+                                    ForcedStepBack(instance, animation, timedOutAnim);
+                                    yield break;
+                                }
+                            }
+                        }
+                    }
+
+                    private static bool IsCurrentAnimation(AnimationClip expectedClip, AnimationClip currentClip)
+                    {
+                        if (expectedClip == null)
+                        {
+                            return false;
+                        }
+
+                        if (currentClip == expectedClip)
+                        {
+                            return true;
+                        }
+
+                        if (currentClip == null)
+                        {
+                            return false;
+                        }
+
+                        return string.Equals(currentClip.name, expectedClip.name, System.StringComparison.Ordinal);
+                    }
+
+                    private static bool TryGetCurrentAnimInfo(TacticalNavigationComponent instance, out AnimInfo animInfo)
+                    {
+                        if (GetCurrentAnimInfoMethod == null)
+                        {
+                            animInfo = default;
+                            return false;
+                        }
+                        object[] parameters = { default(AnimInfo) };
+                        bool result = (bool)GetCurrentAnimInfoMethod.Invoke(instance, parameters);
+                        animInfo = (AnimInfo)parameters[0];
+                        return result;
+                    }
+
+                    private static ShootSegmentType? GetCurrentSegmentShootType(TacticalNavigationComponent instance)
+                    {
+                        TacticalPathRequest currentTacPath = instance.CurrentTacPath;
+                        if (currentTacPath == null)
+                        {
+                            return null;
+                        }
+                        List<PathPointInfo> pointInfos = currentTacPath.PointInfos;
+                        int segmentIndex = instance.CurrentPointInfoSegment;
+                        if (pointInfos == null || segmentIndex < 0 || segmentIndex >= pointInfos.Count)
+                        {
+                            return null;
+                        }
+                        PathPointInfo pathPointInfo = pointInfos[segmentIndex];
+                        PathIntParam[] intParams = pathPointInfo.IntParams;
+                        if (intParams == null)
+                        {
+                            return null;
+                        }
+                        foreach (PathIntParam pathIntParam in intParams)
+                        {
+                            if (pathIntParam.Name == "ShootSegmentType")
+                            {
+                                return (ShootSegmentType)pathIntParam.Value;
+                            }
+                        }
+                        return null;
+                    }
+
+                    private static bool ShouldForceStepBack(TacticalNavigationComponent instance, AnimationClip expectedClip, AnimationClip currentClip, ShootSegmentType? currentSegmentShootType)
+                    {
+                        if (expectedClip == null || currentClip == null || currentSegmentShootType == null)
+                        {
+                            return false;
+                        }
+
+                        ShootSegmentType value = currentSegmentShootType.Value;
+                        if (!IsStepBackSegment(value))
+                        {
+                            return false;
+                        }
+
+                        if (!IsShootLoopClip(currentClip))
+                        {
+                            return false;
+                        }
+
+                        if (instance.Animator == null || instance.Animator.GetInteger("ShootSegmentType") != (int)value)
+                        {
+                            return false;
+                        }
+
+                        if (IsAnimationQueuedOrPlaying(instance.Animator, expectedClip))
+                        {
+                            return false;
+                        }
+
+                        return true;
+                    }
+
+                    private static void ForcedStepBack(TacticalNavigationComponent instance, AnimationClip expectedClip, AnimationClip lingeringClip)
+                    {
+                        Animator animator = instance.Animator;
+                        if (animator == null || expectedClip == null)
+                        {
+                            return;
+                        }
+
+                        ReapplyAnimatorParamsForCurrentPoint(instance);
+
+                        if (lingeringClip != null)
+                        {
+                            Debug.Log(string.Format("{0} forcing step back animation {1} after lingering on {2}", instance.name, expectedClip, lingeringClip));
+                        }
+                        else
+                        {
+                            Debug.Log(string.Format("{0} forcing step back animation {1}", instance.name, expectedClip));
+                        }
+
+                        bool crossFadeQueued = TryForceAnimation(animator, expectedClip, ForcedStepBackCrossFadeDuration, false);
+                        if (!crossFadeQueued)
+                        {
+                            Debug.LogWarning(string.Format("{0} forcing hard switch to step back animation {1} after cross-fade failed; current animation: {2}", instance.name, expectedClip, lingeringClip));
+                            TryForceAnimation(animator, expectedClip, 0f, true);
+                        }
+                    }
+
+                    private static void ReapplyAnimatorParamsForCurrentPoint(TacticalNavigationComponent instance)
+                    {
+                        if (SetAnimatorParamsForPointMethod == null)
+                        {
+                            return;
+                        }
+
+                        PathPointInfo currentPointInfo = GetCurrentPathPointInfo(instance);
+                        if (currentPointInfo == null)
+                        {
+                            return;
+                        }
+
+                        SetAnimatorParamsForPointMethod.Invoke(instance, new object[] { currentPointInfo });
+                        instance.Animator.Update(0f);
+                    }
+
+                    private static PathPointInfo GetCurrentPathPointInfo(TacticalNavigationComponent instance)
+                    {
+                        TacticalPathRequest currentTacPath = instance.CurrentTacPath;
+                        if (currentTacPath == null)
+                        {
+                            return null;
+                        }
+
+                        List<PathPointInfo> pointInfos = currentTacPath.PointInfos;
+                        int segmentIndex = instance.CurrentPointInfoSegment;
+                        if (pointInfos == null || segmentIndex < 0 || segmentIndex >= pointInfos.Count)
+                        {
+                            return null;
+                        }
+
+                        return pointInfos[segmentIndex];
+                    }
+
+                    private static bool TryForceAnimation(Animator animator, AnimationClip clip, float transitionDuration, bool hardSwitch)
+                    {
+                        if (animator == null || clip == null)
+                        {
+                            return false;
+                        }
+
+                        if (hardSwitch)
+                        {
+                            animator.Play(clip.name, 0, 0f);
+                        }
+                        else
+                        {
+                            animator.CrossFadeInFixedTime(clip.name, transitionDuration, 0, 0f);
+                        }
+
+                        animator.Update(0f);
+                        return IsAnimationQueuedOrPlaying(animator, clip);
+                    }
+
+                    private static bool IsAnimationQueuedOrPlaying(Animator animator, AnimationClip expectedClip)
+                    {
+                        if (animator == null || expectedClip == null)
+                        {
+                            return false;
+                        }
+
+                        AnimationClip currentAnim = Utils.GetCurrentAnim(animator);
+                        if (IsCurrentAnimation(expectedClip, currentAnim))
+                        {
+                            return true;
+                        }
+
+                        AnimatorClipInfo[] nextClips;
+                        try
+                        {
+                            nextClips = animator.GetNextAnimatorClipInfo(0);
+                        }
+                        catch
+                        {
+                            return false;
+                        }
+
+                        for (int i = 0; i < nextClips.Length; i++)
+                        {
+                            if (IsCurrentAnimation(expectedClip, nextClips[i].clip))
+                            {
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    }
+
+                    private static bool IsStepBackSegment(ShootSegmentType segmentType)
+                    {
+                        return segmentType == ShootSegmentType.StepBackLeft || segmentType == ShootSegmentType.StepBackRight;
+                    }
+
+                    private static bool IsShootLoopClip(AnimationClip clip)
+                    {
+                        if (clip == null)
+                        {
+                            return false;
+                        }
+
+                        return clip.name.IndexOf("ShotLoop", StringComparison.OrdinalIgnoreCase) >= 0;
+                    }
+                }
+
+            }
+
             internal class DecimalWillpoints
             {
 

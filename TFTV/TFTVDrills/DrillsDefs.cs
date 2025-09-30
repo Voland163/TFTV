@@ -9,6 +9,7 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -18,6 +19,7 @@ using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.UI.Abilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,7 +77,11 @@ namespace TFTV.TFTVDrills
         internal static ShootAbilityDef _partingShot;
         internal static ReloadAbilityDef _ordnanceResupply;
         internal static PassiveModifierAbilityDef _pinpointToss;
+        internal static ApplyStatusAbilityDef _heavyConditioning;
 
+        internal static PassiveModifierAbilityDef _shockDrop;
+        internal static ShockDropStatusDef _shockDropStatus;
+        internal static BashAbilityDef _shockDropBash;
 
         internal static ApplyStatusAbilityDef _bulletHell;
         internal static AddAttackBoostStatusDef _bulletHellAttackBoostStatus;
@@ -384,8 +390,8 @@ namespace TFTV.TFTVDrills
                 };
 
 
-                CreateDrillNominalAbility("shockdrop", "c1f7c2e4-9a2d-4b8c-ae3e-2c4b5d6e7f81", "f0a1b2c3-4d5e-6f70-8a91-b2c3d4e5f607", "0a1b2c3d-4e5f-6071-8293-a4b5c6d7e8f9"); //pending
-
+                _shockDrop = CreateDrillNominalAbility("shockdrop", "c1f7c2e4-9a2d-4b8c-ae3e-2c4b5d6e7f81", "f0a1b2c3-4d5e-6f70-8a91-b2c3d4e5f607", "0a1b2c3d-4e5f-6071-8293-a4b5c6d7e8f9"); //pending
+                _shockDropStatus = CreateShockDropStatus();
 
 
                 OneHandedGrip.OneHandedPenaltyAbilityManager.OneHandedGrip = CreateDrillNominalAbility("onehandedgrip", "16e7f809-2a3b-4c5d-d6e7-8f091a2b3c4d", "901a0b1c-2d3e-4f50-6172-839a4b5c6d7e", "0a0b1c2d-3e4f-5061-7283-9a4b5c6d7e8f"); //done
@@ -438,6 +444,128 @@ namespace TFTV.TFTVDrills
                 TFTVLogger.Error(e);
             }
         }
+
+        private static ShockDropStatusDef CreateShockDropStatus()
+        {
+            try
+            {
+                const string name = "shockdrop";
+                const string statusGuid = "f7bc0a24-302c-4c1f-936e-41c21ce6d4c9";
+                const string visualsGuid = "3a95d0e1-0543-4c9d-9d48-5df8071a1b4a";
+                string locKeyName = $"TFTV_DRILL_{name}_NAME";
+                string locKeyDesc = $"TFTV_DRILL_{name}_DESC";
+
+                Sprite icon = Helper.CreateSpriteFromImageFile($"Drill_{name}.png");
+
+                const float shockValue = 150f;
+
+                AddAttackBoostStatusDef referenceStatus = DefCache.GetDef<AddAttackBoostStatusDef>("E_Status [QuickAim_AbilityDef]");
+                BashAbilityDef defaultBashAbility = DefCache.GetDef<BashAbilityDef>("Bash_WithWhateverYouCan_AbilityDef");
+                BashAbilityDef shockDropBashAbility = Helper.CreateDefFromClone(
+                    defaultBashAbility,
+                    "6c810f3f-0e71-4f30-b63c-7b11345f06c4",
+                    "TFTV_ShockDrop_Bash_AbilityDef");
+
+                shockDropBashAbility.ViewElementDef = Helper.CreateDefFromClone(
+                    defaultBashAbility.ViewElementDef,
+                    "d3b4c5d6-e7f8-9010-ab1c-2d3e4f506172",
+                    "TFTV_ShockDrop_Bash_View");
+
+                
+
+              /*  List<DamageKeywordPair> damageKeywords = new List<DamageKeywordPair>();
+                if (shockDropBashAbility.DamagePayload?.DamageKeywords != null)
+                {
+                    damageKeywords.AddRange(shockDropBashAbility.DamagePayload.DamageKeywords);
+                }
+
+               int shockKeywordIndex = damageKeywords.FindIndex(pair => pair.DamageKeywordDef == Shared.SharedDamageKeywords.ShockKeyword);
+                if (shockKeywordIndex >= 0)
+                {
+                    DamageKeywordPair updatedPair = damageKeywords[shockKeywordIndex];
+                    updatedPair.Value += shockValue;
+                    damageKeywords[shockKeywordIndex] = updatedPair;
+                }
+                else
+                {
+                    damageKeywords.Add(new DamageKeywordPair
+                    {
+                        DamageKeywordDef = Shared.SharedDamageKeywords.ShockKeyword,
+                        Value = shockValue
+                    });
+                }
+
+                shockDropBashAbility.DamagePayload.DamageKeywords = damageKeywords;*/
+
+                _shockDropBash = shockDropBashAbility;
+
+                foreach (TacActorAimingAbilityAnimActionDef animActionDef in Repo.GetAllDefs<TacActorAimingAbilityAnimActionDef>().Where(aad => aad.name.Contains("Soldier_Utka_AnimActionsDef")))
+                {
+                    if (animActionDef.AbilityDefs != null && animActionDef.AbilityDefs.Contains(defaultBashAbility) && !animActionDef.AbilityDefs.Contains(shockDropBashAbility))
+                    {
+                        animActionDef.AbilityDefs = animActionDef.AbilityDefs.Append(shockDropBashAbility).ToArray();              
+                    }
+                }
+
+
+
+                ShockDropStatusDef statusDef = Helper.CreateDefFromClone<ShockDropStatusDef>(
+                    null,
+                    statusGuid,
+                    "TFTV_ShockDrop_StatusDef");
+
+                PRMBetterClasses.Helper.CopyFieldsByReflection(referenceStatus, statusDef);
+
+                statusDef.EffectName = name;
+                statusDef.name = "TFTV_ShockDrop_StatusDef";
+                statusDef.Visuals = Helper.CreateDefFromClone(referenceStatus.Visuals, visualsGuid, "TFTV_ShockDrop_Status_View");
+                statusDef.Visuals.DisplayName1.LocalizationKey = locKeyName;
+                statusDef.Visuals.Description.LocalizationKey = locKeyDesc;
+                statusDef.Visuals.LargeIcon = icon;
+                statusDef.Visuals.SmallIcon = icon;
+
+                statusDef.EffectName = "ShockDrop";
+                statusDef.ApplicationConditions = Array.Empty<EffectConditionDef>();
+                statusDef.DurationTurns = -1;
+                statusDef.DisablesActor = false;
+                statusDef.SingleInstance = true;
+                statusDef.ShowNotification = true;
+                statusDef.VisibleOnPassiveBar = false;
+                statusDef.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+                statusDef.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                statusDef.StackMultipleStatusesAsSingleIcon = false;
+                statusDef.WeaponTagFilter = DefCache.GetDef<GameTagDef>("MeleeWeapon_TagDef");
+                statusDef.SkillTagCullFilter = Array.Empty<SkillTagDef>();
+                statusDef.AdditionalStatusesToApply = Array.Empty<TacStatusDef>();
+                statusDef.NumberOfAttacks = 1;
+                statusDef.DamageKeywordPairs = new[]
+                {
+                    new DamageKeywordPair
+                    {
+                        DamageKeywordDef = Shared.SharedDamageKeywords.ShockKeyword,
+                        Value = shockValue
+                    },
+                 /*   new DamageKeywordPair
+                    {
+                        DamageKeywordDef = Shared.SharedDamageKeywords.DamageKeyword,
+                        Value = shockValue
+                    }*/
+                };
+
+               // TFTVLogger.Always($"{statusDef.DamageKeywordPairs[1].DamageKeywordDef.name}");
+
+                statusDef.DefaultBashAbility = defaultBashAbility;
+                statusDef.ReplacementBashAbility = shockDropBashAbility;
+
+                return statusDef;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
 
         private static StanceStatusDef CreateOneHandedGripPenaltyStatus()
         {
@@ -995,7 +1123,7 @@ namespace TFTV.TFTVDrills
                 newAbility.TargetApplicationConditions = new EffectConditionDef[] { };
 
                 Drills.Add(newAbility);
-
+                _heavyConditioning = newAbility;
 
             }
             catch (Exception e)
