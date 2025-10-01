@@ -9,7 +9,6 @@ using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers.PhoenixBase;
 using PhoenixPoint.Geoscape.View.ViewModules;
-using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -146,7 +145,7 @@ namespace TFTV
         }
     }
 
-    
+
 
     /// <summary>
     /// Helper methods for controlling the objectives module visibility when the recruits overlay is displayed.
@@ -261,7 +260,7 @@ namespace TFTV
 
     class TFTVHavenRecruitsScreen
     {
-        
+
         public static void ClearInternalData()
         {
             try
@@ -449,6 +448,7 @@ namespace TFTV
             private static Image _detailFactionLogoImage;
 
             private static Sprite _mutationBound;
+            private static Sprite _iconBackground;
 
             internal static void ResetState()
             {
@@ -502,9 +502,14 @@ namespace TFTV
                         isInitialized = true;
                     }
 
-                    if (_mutationBound == null) 
-                    { 
-                    _mutationBound = Helper.CreateSpriteFromImageFile("UI_Frame_Mutationbound.png");
+                    if (_mutationBound == null)
+                    {
+                        _mutationBound = Helper.CreateSpriteFromImageFile("UI_Frame_Mutationbound.png");
+                    }
+
+                    if(_iconBackground == null)
+                    {
+                        _iconBackground = Helper.CreateSpriteFromImageFile("UI_Frame_Feathered.png");
                     }
 
                     bool show = !_isOverlayVisible;
@@ -2208,7 +2213,7 @@ namespace TFTV
                     }
                 }
 
-               
+
 
                 var costRow = CreateCostRow(card.transform, data.Haven, data.Haven.Site.GeoLevel.PhoenixFaction);
                 if (costRow != null)
@@ -2329,7 +2334,7 @@ namespace TFTV
             private static readonly ResourceType[] _resourceDisplayOrder =
              {
                 ResourceType.Tech,
-                ResourceType.Materials, 
+                ResourceType.Materials,
                 ResourceType.Supplies
             };
 
@@ -2664,7 +2669,7 @@ namespace TFTV
                 catch (Exception ex) { TFTVLogger.Error(ex); }
             }
 
-          
+
 
             private static string Safe(string s) => string.IsNullOrEmpty(s) ? "Unknown" : s;
         }
