@@ -29,7 +29,7 @@ namespace TFTV
     /// <summary>
     /// Provides helpers for adding a lateral screen space offset to the geoscape camera.
     /// </summary>
-    public static class GeoscapeCameraPanExtensions
+  /*  public static class GeoscapeCameraPanExtensions
     {
         private const float DefaultNormalizedOffset = 0.20f;
         private const float DefaultOverlayZoomScale = 1.20f;
@@ -240,7 +240,7 @@ namespace TFTV
                 __result.Position += right * offset;
             }
         }
-    }
+    }**/
 
     /// <summary>
     /// Helper methods for controlling the objectives module visibility when the recruits overlay is displayed.
@@ -600,7 +600,7 @@ class TFTVHavenRecruitsScreen
                         isInitialized = true;
                     }
 
-                    GeoscapeCameraPanExtensions.TryApplyOverlayPan(!overlayPanel.activeSelf);
+                   // GeoscapeCameraPanExtensions.TryApplyOverlayPan(!overlayPanel.activeSelf);
                     RecruitsOverlayObjectives.SetObjectivesHiddenForRecruitsOverlay(GameUtl.CurrentLevel().GetComponent<GeoLevelController>()?.View, !overlayPanel.activeSelf);
                     overlayPanel.SetActive(!overlayPanel.activeSelf);
                     if (overlayPanel.activeSelf)
