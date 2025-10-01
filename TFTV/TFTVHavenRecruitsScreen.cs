@@ -9,6 +9,7 @@ using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers.PhoenixBase;
 using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -294,11 +295,12 @@ namespace TFTV
         private const float ItemSpacing = 6f;     // space between cards
         private const int RowSpacing = 2;      // space between rows inside a card
         private const int AbilityIconSize = 48;  // abilities
-        private const int ClassIconSize = 32;    // class badge on list entry
+        private const int ClassIconSize = 48;    // class badge on list entry
         private const int EquipIconSize = 48;  // equipment & armor (match abilities)
         private const int ArmorIconSize = 48;
         private const int ResourceIconSize = 24;
         private const int TextFontSize = 20;
+        private const float AbilityIconsCenterOffsetPx = 40f;
 
         private static readonly Color HeaderBackgroundColor = HexToColor("16222a");
         private static readonly Color HeaderBorderColor = HexToColor("222e40");
@@ -446,6 +448,8 @@ namespace TFTV
             private static Transform _detailCostRoot;
             private static Image _detailFactionLogoImage;
 
+            private static Sprite _mutationBound;
+
             internal static void ResetState()
             {
                 try
@@ -496,6 +500,11 @@ namespace TFTV
                     {
                         CreateOverlay();
                         isInitialized = true;
+                    }
+
+                    if (_mutationBound == null) 
+                    { 
+                    _mutationBound = Helper.CreateSpriteFromImageFile("UI_Frame_Mutationbound.png");
                     }
 
                     bool show = !_isOverlayVisible;
@@ -2159,9 +2168,21 @@ namespace TFTV
                 var abilityIcons = GetSelectedAbilityIcons(data.Recruit).ToList();
                 var mutationIcons = GetMutatedArmorIcons(data.Recruit).ToList();
 
+                Transform abilitiesTransform = null;
+
                 if (abilityIcons.Count > 0 || mutationIcons.Count > 0)
                 {
-                    var (abilitiesGO, _) = NewUI("Abilities", card.transform);
+                    var (abilitiesGO, abilitiesRT) = NewUI("Abilities", card.transform);
+                    abilitiesTransform = abilitiesGO.transform;
+
+                    var abilitiesLE = abilitiesGO.AddComponent<LayoutElement>();
+                    abilitiesLE.ignoreLayout = true;
+
+                    abilitiesRT.anchorMin = new Vector2(0.5f, 0.5f);
+                    abilitiesRT.anchorMax = new Vector2(0.5f, 0.5f);
+                    abilitiesRT.pivot = new Vector2(0.5f, 0.5f);
+                    abilitiesRT.anchoredPosition = new Vector2(AbilityIconsCenterOffsetPx, 0f);
+
                     var abilitiesLayout = abilitiesGO.AddComponent<HorizontalLayoutGroup>();
                     abilitiesLayout.childAlignment = TextAnchor.MiddleCenter;
                     abilitiesLayout.spacing = 4f;
@@ -2169,6 +2190,10 @@ namespace TFTV
                     abilitiesLayout.childControlHeight = true;
                     abilitiesLayout.childForceExpandWidth = false;
                     abilitiesLayout.childForceExpandHeight = false;
+
+                    var abilitiesFitter = abilitiesGO.AddComponent<ContentSizeFitter>();
+                    abilitiesFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+                    abilitiesFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
                     foreach (var icon in abilityIcons)
                     {
@@ -2194,7 +2219,10 @@ namespace TFTV
                     costLE.flexibleWidth = 1f;
                 }
 
-
+                if (abilitiesTransform != null)
+                {
+                    abilitiesTransform.SetAsLastSibling();
+                }
 
             }
 
