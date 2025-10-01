@@ -1,11 +1,8 @@
-﻿using Base.Cameras;
-using Base.Core;
-using Base.Levels;
+﻿using Base.Core;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers;
-using PhoenixPoint.Geoscape.Cameras;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
@@ -25,442 +22,8 @@ using Object = UnityEngine.Object;
 
 namespace TFTV
 {
-
-    /// <summary>
-    /// Provides helpers for adding a lateral screen space offset to the geoscape camera.
-    /// </summary>
-  /*  public static class GeoscapeCameraPanExtensions
+    internal class HavenRecruitButton
     {
-        private const float DefaultNormalizedOffset = 0.20f;
-        private const float DefaultOverlayZoomScale = 1.20f;
-
-        private static readonly ConditionalWeakTable<GeoscapeCamera, PanState> PanStates = new ConditionalWeakTable<GeoscapeCamera, PanState>();
-        private static readonly AccessTools.FieldRef<GeoscapeCamera, float> DistanceFieldRef = AccessTools.FieldRefAccess<GeoscapeCamera, float>("_distance");
-
-        /// <summary>
-        /// Enables a left pan on the provided camera using a normalized offset relative to the current orbit distance.
-        /// </summary>
-        /// <param name="camera">Target geoscape camera instance.</param>
-        /// <param name="normalizedOffset">Normalized offset to apply (1 = full orbit radius). Defaults to 0.35.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="camera"/> is null.</exception>
-        public static void ShiftLeft(this GeoscapeCamera camera, float normalizedOffset = DefaultNormalizedOffset)
-        {
-            if (camera == null)
-            {
-                throw new ArgumentNullException(nameof(camera));
-            }
-
-            PanState state = PanStates.GetOrCreateValue(camera);
-            state.Enabled = true;
-            state.NormalizedOffset = Mathf.Max(0f, normalizedOffset);
-        }
-
-        /// <summary>
-        /// Disables any active pan on the camera, returning the view to the stock orbit behaviour.
-        /// </summary>
-        /// <param name="camera">Target geoscape camera instance.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="camera"/> is null.</exception>
-        public static void ResetPan(this GeoscapeCamera camera)
-        {
-            if (camera == null)
-            {
-                throw new ArgumentNullException(nameof(camera));
-            }
-
-            if (PanStates.TryGetValue(camera, out PanState state))
-            {
-                state.Enabled = false;
-                ResetOverlayZoom(camera, state);
-            }
-        }
-
-        /// <summary>
-        /// Toggles the left pan on or off.
-        /// </summary>
-        /// <param name="camera">Target geoscape camera instance.</param>
-        /// <param name="normalizedOffset">Optional override for the normalized offset when enabling the pan.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="camera"/> is null.</exception>
-        public static void ToggleLeftPan(this GeoscapeCamera camera, float normalizedOffset = DefaultNormalizedOffset)
-        {
-            if (camera == null)
-            {
-                throw new ArgumentNullException(nameof(camera));
-            }
-
-            PanState state = PanStates.GetOrCreateValue(camera);
-            if (state.Enabled)
-            {
-                state.Enabled = false;
-                ResetOverlayZoom(camera, state);
-                return;
-            }
-
-            state.Enabled = true;
-            state.NormalizedOffset = Mathf.Max(0f, normalizedOffset);
-        }
-
-        /// <summary>
-        /// Attempts to fetch the active <see cref="GeoscapeCamera"/> from the current level.
-        /// </summary>
-        /// <param name="camera">When this method returns, contains the active camera if one was found.</param>
-        /// <returns><c>true</c> when an active geoscape camera is available; otherwise <c>false</c>.</returns>
-        public static bool TryGetActiveCamera(out GeoscapeCamera camera)
-        {
-            camera = null;
-
-            Level currentLevel = GameUtl.CurrentLevel();
-            if (currentLevel == null)
-            {
-                return false;
-            }
-
-            GeoLevelController geoLevel = currentLevel.GetComponent<GeoLevelController>();
-            GeoscapeView view = geoLevel != null ? geoLevel.View : null;
-            CameraDirector director = view != null ? view.CameraDirector : null;
-            CameraManager manager = director != null ? director.Manager : null;
-
-            camera = manager != null ? manager.GetCameraOfType<GeoscapeCamera>() : null;
-            return camera != null;
-        }
-
-        /// <summary>
-        /// Attempts to enable a left pan on the active geoscape camera.
-        /// </summary>
-        /// <param name="normalizedOffset">Normalized offset to apply (1 = full orbit radius).</param>
-        /// <returns><c>true</c> when a camera was found and the pan was applied; otherwise <c>false</c>.</returns>
-        public static bool TryShiftLeftOnActiveCamera(float normalizedOffset = DefaultNormalizedOffset)
-        {
-            if (TryGetActiveCamera(out GeoscapeCamera camera))
-            {
-                camera.ShiftLeft(normalizedOffset);
-               // ToggleLeftPan(camera);
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Attempts to reset any pan applied to the active geoscape camera.
-        /// </summary>
-        /// <returns><c>true</c> when a camera was found and the pan state was cleared; otherwise <c>false</c>.</returns>
-        public static bool TryResetPanOnActiveCamera()
-        {
-            if (TryGetActiveCamera(out GeoscapeCamera camera))
-            {
-                camera.ResetPan();
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Enables or disables the left pan on the active geoscape camera based on the provided visibility flag.
-        /// </summary>
-        /// <param name="overlayVisible">If <c>true</c>, the camera is shifted left; otherwise the pan is reset.</param>
-        /// <param name="normalizedOffset">Normalized offset to apply when enabling the pan.</param>
-        /// <returns><c>true</c> when a camera was found and the request was processed; otherwise <c>false</c>.</returns>
-        public static bool TryApplyOverlayPan(bool overlayVisible, float normalizedOffset = DefaultNormalizedOffset, float zoomScale = DefaultOverlayZoomScale)
-        {
-            if (!TryGetActiveCamera(out GeoscapeCamera camera))
-            {
-                return false;
-            }
-
-            if (overlayVisible)
-            {
-                camera.ShiftLeft(normalizedOffset);
-                ApplyOverlayZoom(camera, zoomScale);
-            }
-            else
-            {
-                camera.ResetPan();
-            }
-
-            return true;
-        }
-
-        internal static bool TryGetWorldOffset(GeoscapeCamera camera, out float worldOffset)
-        {
-            if (camera != null && PanStates.TryGetValue(camera, out PanState state) && state.Enabled && state.NormalizedOffset > 0f)
-            {
-                float distance = DistanceFieldRef(camera);
-                worldOffset = Mathf.Max(0f, distance) * state.NormalizedOffset;
-                return worldOffset > 0f;
-            }
-
-            worldOffset = 0f;
-            return false;
-        }
-
-        private sealed class PanState
-        {
-            public bool Enabled;
-            public float NormalizedOffset;
-            public bool ZoomApplied;
-            public float OriginalDistance;
-        }
-
-        private static void ApplyOverlayZoom(GeoscapeCamera camera, float zoomScale)
-        {
-            PanState state = PanStates.GetOrCreateValue(camera);
-            zoomScale = Mathf.Max(0.01f, zoomScale);
-
-            float currentDistance = DistanceFieldRef(camera);
-            if (!state.ZoomApplied)
-            {
-                state.OriginalDistance = currentDistance;
-            }
-
-            state.ZoomApplied = true;
-            DistanceFieldRef(camera) = state.OriginalDistance * zoomScale;
-        }
-
-        private static void ResetOverlayZoom(GeoscapeCamera camera, PanState state)
-        {
-            if (!state.ZoomApplied)
-            {
-                return;
-            }
-
-            DistanceFieldRef(camera) = state.OriginalDistance;
-            state.ZoomApplied = false;
-        }
-    }
-
-    [HarmonyPatch(typeof(GeoscapeCamera), "DefaultCameraAnimation")]
-    internal static class GeoscapeCamera_DefaultCameraAnimation_Patch
-    {
-        private static void Postfix(GeoscapeCamera __instance, ref CameraParams __result)
-        {
-            if (GeoscapeCameraPanExtensions.TryGetWorldOffset(__instance, out float offset) && offset > 0f)
-            {
-                Vector3 right = __result.Rotation * Vector3.right;
-                __result.Position += right * offset;
-            }
-        }
-    }**/
-
-    /// <summary>
-    /// Helper methods for controlling the objectives module visibility when the recruits overlay is displayed.
-    /// </summary>
-    public static class RecruitsOverlayObjectives
-    {
-        private sealed class ObjectivesVisibilityState
-        {
-            public bool HeaderActive { get; }
-
-            public bool ContainerActive { get; }
-
-            public bool PrimaryContainerActive { get; }
-
-            public bool SecondaryContainerActive { get; }
-
-            public bool SeparatorActive { get; }
-
-            public bool DiplomacyIconActive { get; }
-
-            public ObjectivesVisibilityState(UIModuleGeoObjectives module)
-            {
-                HeaderActive = GetActive(module.ObjectivesHeader);
-                ContainerActive = GetActive(module.ObjectivesContainer);
-                PrimaryContainerActive = GetActive(module.PrimaryObjectivesContainer);
-                SecondaryContainerActive = GetActive(module.SecondaryObjectivesContainer);
-                SeparatorActive = GetActive(module.Separator);
-                DiplomacyIconActive = GetActive(module.DiplomacyMissionsIconContainer);
-            }
-        }
-
-        private static readonly ConditionalWeakTable<UIModuleGeoObjectives, ObjectivesVisibilityState> _visibilityStates = new ConditionalWeakTable<UIModuleGeoObjectives, ObjectivesVisibilityState>();
-
-        /// <summary>
-        /// Sets the visibility of the objectives module when the recruits overlay is toggled.
-        /// </summary>
-        /// <param name="view">The geoscape view owning the objectives module.</param>
-        /// <param name="hidden">Whether the objectives UI should be hidden.</param>
-        public static void SetObjectivesHiddenForRecruitsOverlay(GeoscapeView view, bool hidden)
-        {
-            if (view == null)
-            {
-                return;
-            }
-
-            SetObjectivesHiddenForRecruitsOverlay(view.GeoscapeModules?.ObjectivesModule, hidden);
-        }
-
-        /// <summary>
-        /// Sets the visibility of the objectives module when the recruits overlay is toggled.
-        /// </summary>
-        /// <param name="objectivesModule">The objectives module to toggle.</param>
-        /// <param name="hidden">Whether the objectives UI should be hidden.</param>
-        public static void SetObjectivesHiddenForRecruitsOverlay(UIModuleGeoObjectives objectivesModule, bool hidden)
-        {
-            if (objectivesModule == null)
-            {
-                return;
-            }
-
-            if (hidden)
-            {
-                _ = _visibilityStates.GetValue(objectivesModule, m => new ObjectivesVisibilityState(m));
-
-                SetActive(objectivesModule.ObjectivesHeader, false);
-                SetActive(objectivesModule.ObjectivesContainer, false);
-                SetActive(objectivesModule.PrimaryObjectivesContainer, false);
-                SetActive(objectivesModule.SecondaryObjectivesContainer, false);
-                SetActive(objectivesModule.Separator, false);
-                SetActive(objectivesModule.DiplomacyMissionsIconContainer, false);
-            }
-            else
-            {
-                if (_visibilityStates.TryGetValue(objectivesModule, out ObjectivesVisibilityState state))
-                {
-                    SetActive(objectivesModule.ObjectivesHeader, state.HeaderActive);
-                    SetActive(objectivesModule.ObjectivesContainer, state.ContainerActive);
-                    SetActive(objectivesModule.PrimaryObjectivesContainer, state.PrimaryContainerActive);
-                    SetActive(objectivesModule.SecondaryObjectivesContainer, state.SecondaryContainerActive);
-                    SetActive(objectivesModule.Separator, state.SeparatorActive);
-                    SetActive(objectivesModule.DiplomacyMissionsIconContainer, state.DiplomacyIconActive);
-                    _visibilityStates.Remove(objectivesModule);
-                }
-                else
-                {
-                    SetActive(objectivesModule.ObjectivesHeader, true);
-                    SetActive(objectivesModule.ObjectivesContainer, true);
-                    SetActive(objectivesModule.PrimaryObjectivesContainer, true);
-                    SetActive(objectivesModule.SecondaryObjectivesContainer, true);
-                    SetActive(objectivesModule.Separator, true);
-                    SetActive(objectivesModule.DiplomacyMissionsIconContainer, true);
-                }
-            }
-
-            objectivesModule.NavHolder?.RefreshInteractableList();
-        }
-
-        private static bool GetActive(GameObject go)
-        {
-            return go != null && go.activeSelf;
-        }
-
-        private static void SetActive(GameObject go, bool active)
-        {
-            if (go != null)
-            {
-                go.SetActive(active);
-            }
-        }
-    }
-
-
-
-
-class TFTVHavenRecruitsScreen
-    {
-
-        public static void ClearInternalData()
-        {
-            try
-            {
-                _sortGroup = null;
-                _sortToggles.Clear();
-                RecruitOverlayManager.isInitialized = false;
-
-
-            }
-            catch (Exception ex) { TFTVLogger.Error(ex); }
-        }
-
-        private static readonly SharedData Shared = TFTVMain.Shared;
-
-        // Spacing / sizing
-
-        // width (as fraction of screen width) used by the 3-column area
-        private const float ColumnsWidthPercent = 0.40f;  // 0.60 = 60% of screen, centered
-
-
-        private const float ColumnPadding = 12f;
-        private const float ItemSpacing = 6f;     // space between cards
-        private const int RowSpacing = 2;      // space between rows inside a card
-        private const int AbilityIconSize = 36;  // abilities
-        private const int EquipIconSize = 48;  // equipment & armor (match abilities)
-        private const int ArmorIconSize = 48;
-        private const int ResourceIconSize = 24;
-        private const int TextFontSize = 20;
-
-
-
-
-        private static Font _puristaSemibold = null;
-
-        private enum SortMode { Level, Class, Distance, Alphabetical }
-        private static SortMode _sortMode = SortMode.Level;
-
-        private static ToggleGroup _sortGroup;
-        private static readonly Dictionary<SortMode, Toggle> _sortToggles = new Dictionary<SortMode, Toggle>();
-
-
-        private static readonly Dictionary<GeoFaction, Text> _countLabelByFaction = new Dictionary<GeoFaction, Text>();
-        // private static readonly Dictionary<GeoFaction, Image> _iconByFaction = new Dictionary<GeoFaction, Image>();
-
-        private sealed class RecruitCardHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
-        {
-            public bool Collapsible;
-            public readonly List<GameObject> Rows = new List<GameObject>();
-
-            public void OnPointerEnter(PointerEventData e)
-            {
-                if (!Collapsible) return;
-                foreach (var r in Rows) if (r) r.SetActive(true);
-                LayoutRebuilder.MarkLayoutForRebuild((RectTransform)transform);
-            }
-
-            public void OnPointerExit(PointerEventData e)
-            {
-                if (!Collapsible) return;
-                foreach (var r in Rows) if (r) r.SetActive(false);
-                LayoutRebuilder.MarkLayoutForRebuild((RectTransform)transform);
-            }
-        }
-
-        // Hook you can set from outside if you want:
-        public static Action<GeoUnitDescriptor, GeoSite> OnCardDoubleClick;
-
-
-
-        // Handles single vs double click without firing both
-        private sealed class CardClickHandler : MonoBehaviour, IPointerClickHandler
-        {
-            public Action OnSingle;
-            public Action OnDouble;
-            public float doubleClickDelay = 0.25f;  // seconds, unscaled
-            private Coroutine pendingSingle;
-
-            public void OnPointerClick(PointerEventData e)
-            {
-                if (e.button != PointerEventData.InputButton.Left) return;
-
-                if (e.clickCount >= 2)
-                {
-                    if (pendingSingle != null) { StopCoroutine(pendingSingle); pendingSingle = null; }
-                    OnDouble?.Invoke();
-                }
-                else
-                {
-                    if (pendingSingle != null) StopCoroutine(pendingSingle);
-                    pendingSingle = StartCoroutine(FireSingleAfterDelay());
-                }
-            }
-
-            private IEnumerator FireSingleAfterDelay()
-            {
-                yield return new WaitForSecondsRealtime(doubleClickDelay);
-                OnSingle?.Invoke();
-                pendingSingle = null;
-            }
-        }
-
-
         [HarmonyPatch(typeof(UIModuleSiteManagement), "Awake")]
         public static class AddRecruitsButton_OnSiteManagementAwake
         {
@@ -580,15 +143,235 @@ class TFTVHavenRecruitsScreen
                 catch (Exception ex) { TFTVLogger.Error(ex); }
             }
         }
+    }
+
+  
+
+    /// <summary>
+    /// Helper methods for controlling the objectives module visibility when the recruits overlay is displayed.
+    /// </summary>
+    public static class RecruitsOverlayObjectives
+    {
+        private sealed class ObjectivesVisibilityState
+        {
+            public bool HeaderActive { get; }
+
+            public bool ContainerActive { get; }
+
+            public bool PrimaryContainerActive { get; }
+
+            public bool SecondaryContainerActive { get; }
+
+            public bool SeparatorActive { get; }
+
+            public bool DiplomacyIconActive { get; }
+
+            public ObjectivesVisibilityState(UIModuleGeoObjectives module)
+            {
+                HeaderActive = GetActive(module.ObjectivesHeader);
+                ContainerActive = GetActive(module.ObjectivesContainer);
+                PrimaryContainerActive = GetActive(module.PrimaryObjectivesContainer);
+                SecondaryContainerActive = GetActive(module.SecondaryObjectivesContainer);
+                SeparatorActive = GetActive(module.Separator);
+                DiplomacyIconActive = GetActive(module.DiplomacyMissionsIconContainer);
+            }
+        }
+
+        private static readonly ConditionalWeakTable<UIModuleGeoObjectives, ObjectivesVisibilityState> _visibilityStates = new ConditionalWeakTable<UIModuleGeoObjectives, ObjectivesVisibilityState>();
+
+        /// <summary>
+        /// Sets the visibility of the objectives module when the recruits overlay is toggled.
+        /// </summary>
+        /// <param name="view">The geoscape view owning the objectives module.</param>
+        /// <param name="hidden">Whether the objectives UI should be hidden.</param>
+        public static void SetObjectivesHiddenForRecruitsOverlay(GeoscapeView view, bool hidden)
+        {
+            if (view == null)
+            {
+                return;
+            }
+
+            SetObjectivesHiddenForRecruitsOverlay(view.GeoscapeModules?.ObjectivesModule, hidden);
+        }
+
+        /// <summary>
+        /// Sets the visibility of the objectives module when the recruits overlay is toggled.
+        /// </summary>
+        /// <param name="objectivesModule">The objectives module to toggle.</param>
+        /// <param name="hidden">Whether the objectives UI should be hidden.</param>
+        public static void SetObjectivesHiddenForRecruitsOverlay(UIModuleGeoObjectives objectivesModule, bool hidden)
+        {
+            if (objectivesModule == null)
+            {
+                return;
+            }
+
+            if (hidden)
+            {
+                _ = _visibilityStates.GetValue(objectivesModule, m => new ObjectivesVisibilityState(m));
+
+                SetActive(objectivesModule.ObjectivesHeader, false);
+                SetActive(objectivesModule.ObjectivesContainer, false);
+                SetActive(objectivesModule.PrimaryObjectivesContainer, false);
+                SetActive(objectivesModule.SecondaryObjectivesContainer, false);
+                SetActive(objectivesModule.Separator, false);
+                SetActive(objectivesModule.DiplomacyMissionsIconContainer, false);
+            }
+            else
+            {
+                if (_visibilityStates.TryGetValue(objectivesModule, out ObjectivesVisibilityState state))
+                {
+                    SetActive(objectivesModule.ObjectivesHeader, state.HeaderActive);
+                    SetActive(objectivesModule.ObjectivesContainer, state.ContainerActive);
+                    SetActive(objectivesModule.PrimaryObjectivesContainer, state.PrimaryContainerActive);
+                    SetActive(objectivesModule.SecondaryObjectivesContainer, state.SecondaryContainerActive);
+                    SetActive(objectivesModule.Separator, state.SeparatorActive);
+                    SetActive(objectivesModule.DiplomacyMissionsIconContainer, state.DiplomacyIconActive);
+                    _visibilityStates.Remove(objectivesModule);
+                }
+                else
+                {
+                    SetActive(objectivesModule.ObjectivesHeader, true);
+                    SetActive(objectivesModule.ObjectivesContainer, true);
+                    SetActive(objectivesModule.PrimaryObjectivesContainer, true);
+                    SetActive(objectivesModule.SecondaryObjectivesContainer, true);
+                    SetActive(objectivesModule.Separator, true);
+                    SetActive(objectivesModule.DiplomacyMissionsIconContainer, true);
+                }
+            }
+
+            objectivesModule.NavHolder?.RefreshInteractableList();
+        }
+
+        private static bool GetActive(GameObject go)
+        {
+            return go != null && go.activeSelf;
+        }
+
+        private static void SetActive(GameObject go, bool active)
+        {
+            if (go != null)
+            {
+                go.SetActive(active);
+            }
+        }
+    }
+
+
+    class TFTVHavenRecruitsScreen
+    {
+
+        public static void ClearInternalData()
+        {
+            try
+            {
+                _sortGroup = null;
+                _sortToggles.Clear();
+                RecruitOverlayManager.isInitialized = false;
+
+
+            }
+            catch (Exception ex) { TFTVLogger.Error(ex); }
+        }
+
+        private static readonly SharedData Shared = TFTVMain.Shared;
+
+        // Spacing / sizing
+
+        // width (as fraction of screen width) used by the 3-column area
+        private const float ColumnsWidthPercent = 0.25f;  // 0.60 = 60% of screen, centered
+
+
+        private const float ColumnPadding = 12f;
+        private const float ItemSpacing = 6f;     // space between cards
+        private const int RowSpacing = 2;      // space between rows inside a card
+        private const int AbilityIconSize = 36;  // abilities
+        private const int EquipIconSize = 48;  // equipment & armor (match abilities)
+        private const int ArmorIconSize = 48;
+        private const int ResourceIconSize = 24;
+        private const int TextFontSize = 20;
 
 
 
 
+        private static Font _puristaSemibold = null;
 
+        private enum SortMode { Level, Class, Distance}
+        private static SortMode _sortMode = SortMode.Level;
+
+        private static ToggleGroup _sortGroup;
+        private static readonly Dictionary<SortMode, Toggle> _sortToggles = new Dictionary<SortMode, Toggle>();
+
+
+        private static readonly Dictionary<GeoFaction, Text> _countLabelByFaction = new Dictionary<GeoFaction, Text>();
+        // private static readonly Dictionary<GeoFaction, Image> _iconByFaction = new Dictionary<GeoFaction, Image>();
+
+        private sealed class RecruitCardHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+        {
+            public bool Collapsible;
+            public readonly List<GameObject> Rows = new List<GameObject>();
+
+            public void OnPointerEnter(PointerEventData e)
+            {
+                if (!Collapsible) return;
+                foreach (var r in Rows) if (r) r.SetActive(true);
+                LayoutRebuilder.MarkLayoutForRebuild((RectTransform)transform);
+            }
+
+            public void OnPointerExit(PointerEventData e)
+            {
+                if (!Collapsible) return;
+                foreach (var r in Rows) if (r) r.SetActive(false);
+                LayoutRebuilder.MarkLayoutForRebuild((RectTransform)transform);
+            }
+        }
+
+        // Hook you can set from outside if you want:
+        public static Action<GeoUnitDescriptor, GeoSite> OnCardDoubleClick;
+
+
+
+        // Handles single vs double click without firing both
+        private sealed class CardClickHandler : MonoBehaviour, IPointerClickHandler
+        {
+            public Action OnSingle;
+            public Action OnDouble;
+            public float doubleClickDelay = 0.25f;  // seconds, unscaled
+            private Coroutine pendingSingle;
+
+            public void OnPointerClick(PointerEventData e)
+            {
+                if (e.button != PointerEventData.InputButton.Left) return;
+
+                if (e.clickCount >= 2)
+                {
+                    if (pendingSingle != null) { StopCoroutine(pendingSingle); pendingSingle = null; }
+                    OnDouble?.Invoke();
+                }
+                else
+                {
+                    if (pendingSingle != null) StopCoroutine(pendingSingle);
+                    pendingSingle = StartCoroutine(FireSingleAfterDelay());
+                }
+            }
+
+            private IEnumerator FireSingleAfterDelay()
+            {
+                yield return new WaitForSecondsRealtime(doubleClickDelay);
+                OnSingle?.Invoke();
+                pendingSingle = null;
+            }
+        }
+
+
+     
         public static class RecruitOverlayManager
         {
             static GameObject overlayPanel;
             public static bool isInitialized;
+            private static OverlayAnimator _overlayAnimator;
+            private static bool _isOverlayVisible;
+            private const float OverlaySlideDuration = 0.3f;
 
             public static void ToggleOverlay()
             {
@@ -600,11 +383,39 @@ class TFTVHavenRecruitsScreen
                         isInitialized = true;
                     }
 
-                   // GeoscapeCameraPanExtensions.TryApplyOverlayPan(!overlayPanel.activeSelf);
-                    RecruitsOverlayObjectives.SetObjectivesHiddenForRecruitsOverlay(GameUtl.CurrentLevel().GetComponent<GeoLevelController>()?.View, !overlayPanel.activeSelf);
-                    overlayPanel.SetActive(!overlayPanel.activeSelf);
-                    if (overlayPanel.activeSelf)
+                    bool show = !_isOverlayVisible;
+
+                    RecruitsOverlayObjectives.SetObjectivesHiddenForRecruitsOverlay(GameUtl.CurrentLevel().GetComponent<GeoLevelController>()?.View, show);
+
+                    if (show && !overlayPanel.activeSelf)
+                    {
+                        overlayPanel.SetActive(true);
+                    }
+
+                    if (show)
+                    {
                         RefreshColumns(); // repopulate each time it opens
+                    }
+
+                    _isOverlayVisible = show;
+
+                    if (_overlayAnimator != null)
+                    {
+                        _overlayAnimator.Play(show, () =>
+                        {
+                            if (!show)
+                            {
+                                overlayPanel.SetActive(false);
+                            }
+                        });
+                    }
+                    else
+                    {
+                        if (!show)
+                        {
+                            overlayPanel.SetActive(false);
+                        }
+                    }
                 }
                 catch (Exception ex) { TFTVLogger.Error(ex); }
             }
@@ -653,7 +464,7 @@ class TFTVHavenRecruitsScreen
                     // 0..1 screen-space margins for the overlay band
                     const float TOP_MARGIN = 0.06f;
                     const float BOTTOM_MARGIN = 0.16f;  // was 0.06f  ➜  add ~10% more bottom margin
-                    const float RIGHT_MARGIN = 0.02f;
+                    const float RIGHT_MARGIN = 0.0f;
 
                     overlayPanel = new GameObject("TFTV_RecruitOverlay");
                     overlayPanel.transform.SetParent(canvas.transform, false);
@@ -665,7 +476,7 @@ class TFTVHavenRecruitsScreen
                     overlayPanel.AddComponent<GraphicRaycaster>();
 
                     var panelImage = overlayPanel.AddComponent<Image>();
-                    panelImage.color = new Color(0f, 0f, 0f, 1f);
+                    panelImage.color = new Color(0f, 0f, 0f, 0.95f);
 
                     var rt = overlayPanel.GetComponent<RectTransform>();
 
@@ -673,6 +484,7 @@ class TFTVHavenRecruitsScreen
                     float w = ColumnsWidthPercent;
                     rt.anchorMin = new Vector2(1f - RIGHT_MARGIN - w, BOTTOM_MARGIN);
                     rt.anchorMax = new Vector2(1f - RIGHT_MARGIN, 1f - TOP_MARGIN);
+                    rt.pivot = new Vector2(1f, 0.5f);
                     rt.offsetMin = Vector2.zero;
                     rt.offsetMax = Vector2.zero;
 
@@ -714,9 +526,121 @@ class TFTVHavenRecruitsScreen
                         try { SendClosestAircraftToSite(site); } catch (Exception ex) { TFTVLogger.Error(ex); }
                     };
 
+                    _overlayAnimator = overlayPanel.AddComponent<OverlayAnimator>();
+                    _overlayAnimator.Initialize(rt);
+                    _isOverlayVisible = false;
+
+
                     overlayPanel.SetActive(false);
                 }
                 catch (Exception ex) { TFTVLogger.Error(ex); }
+            }
+            private sealed class OverlayAnimator : MonoBehaviour
+            {
+                private RectTransform _rectTransform;
+                private Coroutine _animation;
+
+                public bool IsVisible { get; private set; }
+
+                public void Initialize(RectTransform rectTransform)
+                {
+                    _rectTransform = rectTransform ? rectTransform : GetComponent<RectTransform>();
+                    Canvas.ForceUpdateCanvases();
+                    HideInstant();
+                }
+
+                public void Play(bool show, Action onComplete)
+                {
+                    EnsureRect();
+
+                    if (_animation != null)
+                    {
+                        StopCoroutine(_animation);
+                        _animation = null;
+                    }
+
+                    if (show)
+                    {
+                        Canvas.ForceUpdateCanvases();
+                    }
+
+                    float targetX = show ? 0f : GetHiddenOffset();
+                    float startX = _rectTransform.anchoredPosition.x;
+
+                    if (Mathf.Approximately(startX, targetX))
+                    {
+                        SetPosition(targetX);
+                        IsVisible = show;
+                        onComplete?.Invoke();
+                        return;
+                    }
+
+                    _animation = StartCoroutine(SlideRoutine(startX, targetX, show, onComplete));
+                }
+
+                private IEnumerator SlideRoutine(float startX, float targetX, bool show, Action onComplete)
+                {
+                    float elapsed = 0f;
+
+                    while (elapsed < OverlaySlideDuration)
+                    {
+                        elapsed += Time.unscaledDeltaTime;
+                        float t = Mathf.Clamp01(elapsed / OverlaySlideDuration);
+                        float eased = Mathf.SmoothStep(0f, 1f, t);
+                        SetPosition(Mathf.Lerp(startX, targetX, eased));
+                        yield return null;
+                    }
+
+                    SetPosition(targetX);
+                    IsVisible = show;
+                    _animation = null;
+                    onComplete?.Invoke();
+                }
+
+                private void HideInstant()
+                {
+                    SetPosition(GetHiddenOffset());
+                    IsVisible = false;
+                }
+
+                private float GetHiddenOffset()
+                {
+                    EnsureRect();
+
+                    float width = _rectTransform.rect.width;
+
+                    RectTransform parent = _rectTransform.parent as RectTransform;
+                    if (parent != null)
+                    {
+                        float anchorWidth = parent.rect.width * (_rectTransform.anchorMax.x - _rectTransform.anchorMin.x);
+                        if (anchorWidth > 0f)
+                        {
+                            width = anchorWidth;
+                        }
+                    }
+
+                    if (width <= 0f)
+                    {
+                        width = Screen.width * ColumnsWidthPercent;
+                    }
+
+                    return Mathf.Max(0f, width);
+                }
+
+                private void SetPosition(float x)
+                {
+                    Vector2 pos = _rectTransform.anchoredPosition;
+                    pos.x = x;
+                    _rectTransform.anchoredPosition = pos;
+                }
+
+                private void EnsureRect()
+                {
+                    if (_rectTransform == null)
+                    {
+                        _rectTransform = GetComponent<RectTransform>();
+                    }
+                }
             }
 
 
@@ -923,7 +847,7 @@ class TFTVHavenRecruitsScreen
                 AddSortToggle(bar.transform, "Level", SortMode.Level, isOn: true);
                 AddSortToggle(bar.transform, "Class", SortMode.Class);
                 AddSortToggle(bar.transform, "Closest to Phoenix Aircraft", SortMode.Distance);
-                AddSortToggle(bar.transform, "Alphabetical", SortMode.Alphabetical);
+                
             }
 
             private static void AddSortToggle(Transform parent, string labelText, SortMode mode, bool isOn = false)
@@ -1021,9 +945,7 @@ class TFTVHavenRecruitsScreen
                             return string.Compare(a.Recruit?.GetName(), b.Recruit?.GetName(), StringComparison.Ordinal);
                         });
                         break;
-                    case SortMode.Alphabetical:
-                        list.Sort((a, b) => string.Compare(a.Recruit?.GetName(), b.Recruit?.GetName(), StringComparison.Ordinal));
-                        break;
+                   
                 }
             }
 

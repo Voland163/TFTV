@@ -269,6 +269,16 @@ namespace TFTV.TFTVDrills
         private static void ConfigureUnlockConditions()
         {
 
+            var viralPupeteer = new DrillUnlockCondition();
+            viralPupeteer.ClassLevelRequirements.Add(new DrillClassLevelRequirement
+            {
+                ClassTag = DefCache.GetDef<ClassTagDef>("Priest_ClassTagDef"),
+                MinimumLevel = 7,
+                RequireSelectedOperative = true
+            });
+            viralPupeteer.RequiredResearchIds.Add("SYN_ViralWeapons_ResearchDef");
+
+
             var ordnanceResupply = new DrillUnlockCondition();
             ordnanceResupply.ClassLevelRequirements.Add(new DrillClassLevelRequirement
             {
