@@ -438,6 +438,7 @@ namespace TFTV
 
                     if (show)
                     {
+                        ApplySortMode(SortMode.Level, refresh: false);
                         RefreshColumns(); // repopulate each time it opens
                     }
 
@@ -770,10 +771,14 @@ namespace TFTV
                 _sortGroup = bar.AddComponent<ToggleGroup>();
                 _sortGroup.allowSwitchOff = false;
 
-                // Create the 3 checkboxes 
+                _sortToggles.Clear();
+
+                // Create the 3 checkboxes
                 AddSortToggle(bar.transform, "Level", SortMode.Level, isOn: true);
                 AddSortToggle(bar.transform, "Class", SortMode.Class);
                 AddSortToggle(bar.transform, "Closest to Phoenix Aircraft", SortMode.Distance);
+
+                ApplySortMode(SortMode.Level, refresh: false);
 
             }
             private static void CreateFactionTabs(Transform overlayRoot)
@@ -936,6 +941,10 @@ namespace TFTV
                     {
                         kvp.Value.Icon.color = isActive ? Color.black : GetFactionColor(kvp.Key);
                     }
+                    if (kvp.Value.CountLabel != null)
+                    {
+                        kvp.Value.CountLabel.color = isActive ? Color.black : Color.white;
+                    }
                 }
             }
 
@@ -1061,7 +1070,33 @@ namespace TFTV
 
                 _recruitListRoot = contentGO.transform;
             }
+            private static void ApplySortMode(SortMode mode, bool refresh)
+            {
+                var previousMode = _sortMode;
+                _sortMode = mode;
 
+                foreach (var kvp in _sortToggles)
+                {
+                    var toggle = kvp.Value;
+                    if (toggle == null)
+                    {
+                        continue;
+                    }
+
+                    bool shouldBeOn = kvp.Key == mode;
+                    toggle.SetIsOnWithoutNotify(shouldBeOn);
+                }
+
+                if (previousMode == SortMode.Distance && mode != SortMode.Distance)
+                {
+                    _siteTravelTimeCache.Clear();
+                }
+
+                if (refresh)
+                {
+                    RefreshColumns();
+                }
+            }
             private static void AddSortToggle(Transform parent, string labelText, SortMode mode, bool isOn = false)
             {
                 // Container (so the toggle box and label sit side-by-side)
@@ -1390,10 +1425,10 @@ namespace TFTV
                 levelText.fontSize = TextFontSize;
                 levelText.color = Color.white;
                 levelText.alignment = TextAnchor.MiddleLeft;
-                levelText.text = $"Lv {data.Recruit?.Level ?? 0}";
+                levelText.text = $"{data.Recruit?.Level ?? 0}";
                 var levelLE = levelGO.AddComponent<LayoutElement>();
-                levelLE.minWidth = 60f;
-                levelLE.preferredWidth = 60f;
+                levelLE.minWidth = 0f;
+                levelLE.preferredWidth = -1f;
 
                 var (nameGO, _) = NewUI("Name", card.transform);
                 var nameText = nameGO.AddComponent<Text>();
