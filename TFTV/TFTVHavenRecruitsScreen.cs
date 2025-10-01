@@ -934,7 +934,7 @@ namespace TFTV
                     }
                     if (kvp.Value.Icon != null)
                     {
-                        kvp.Value.Icon.color = isActive ? Color.white : GetFactionColor(kvp.Key);
+                        kvp.Value.Icon.color = isActive ? Color.black : GetFactionColor(kvp.Key);
                     }
                 }
             }
@@ -1581,7 +1581,7 @@ namespace TFTV
                 {
                     TFTVLogger.Error(ex);
                 }
-              
+
             }
 
             private static void AddResourceVisual(ResourceType resourceType, MonoBehaviour controller)
@@ -1694,25 +1694,51 @@ namespace TFTV
                     var costs = new Dictionary<ResourceType, int>();
                     ResourcePack cost = haven.GetRecruitCost(phoenix);
 
-                  
-
-                    foreach (var r in cost)
+                    foreach (var type in _resourceDisplayOrder)
                     {
-                        int amount = Mathf.RoundToInt(r.Value);
-                        if (amount <= 0)
+                        var unit = cost.ByResourceType(type);
+                        AddCost(type, unit.Value);
+                    }
+
+                    foreach (var unit in cost)
+                    {
+
+
+                        var normalizedType = NormalizeResourceType(unit.Type);
+                        if (costs.ContainsKey(normalizedType))
                         {
                             continue;
                         }
 
-                        costs[r.Type] = amount;
+                        AddCost(normalizedType, unit.Value);
 
                     }
 
                     return costs;
 
+                    void AddCost(ResourceType type, float value)
+                    {
+                        int amount = Mathf.RoundToInt(value);
+                        if (amount <= 0)
+                        {
+                            return;
+                        }
+
+                        costs[NormalizeResourceType(type)] = amount;
+                    }
                 }
                 catch (Exception ex) { TFTVLogger.Error(ex); throw; }
 
+            }
+
+            private static ResourceType NormalizeResourceType(ResourceType type)
+            {
+                if (string.Equals(type.ToString(), "Food", StringComparison.OrdinalIgnoreCase))
+                {
+                    return ResourceType.Supplies;
+                }
+
+                return type;
             }
 
             // ====== DOUBLE-CLICK: SEND CLOSEST AIRCRAFT ======
