@@ -341,6 +341,7 @@ namespace TFTV
             public Toggle Toggle;
             public Image Background;
             public Text CountLabel;
+            public Image Icon;
         }
 
         private static ToggleGroup _factionTabGroup;
@@ -866,6 +867,7 @@ namespace TFTV
                 {
                     Toggle = toggle,
                     Background = background,
+                    Icon = iconImage,
                     CountLabel = count
                 };
 
@@ -929,6 +931,10 @@ namespace TFTV
                     if (kvp.Value.Background != null)
                     {
                         kvp.Value.Background.color = isActive ? TabHighlightColor : TabDefaultColor;
+                    }
+                    if (kvp.Value.Icon != null)
+                    {
+                        kvp.Value.Icon.color = isActive ? Color.white : GetFactionColor(kvp.Key);
                     }
                 }
             }
@@ -1536,37 +1542,73 @@ namespace TFTV
                 return "Unknown Class";
             }
 
-            private static Dictionary<Sprite, Color> _resourceIconsColors = new Dictionary<Sprite, Color>();
-
-            private static Sprite _sprMat, _sprTech, _sprFood;
-            private static Color _colMat, _colTech, _colFood;
-
-            private static void PopulateResourceIconColorsDictionary()
+            private sealed class ResourceVisual
             {
-                if (_sprMat) return;
-
-                var mod = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ResourcesModule;
-                var mat = mod.MaterialsController.transform.parent.GetComponent<ResourceIconContainer>();
-                var tec = mod.TechController.transform.parent.GetComponent<ResourceIconContainer>();
-                var sup = mod.FoodController.transform.parent.GetComponent<ResourceIconContainer>();
-
-                _sprMat = mat.Icon.sprite; _colMat = mat.Icon.color;
-                _sprTech = tec.Icon.sprite; _colTech = tec.Icon.color;
-                _sprFood = sup.Icon.sprite; _colFood = sup.Icon.color;
-
-                _resourceIconsColors[_sprMat] = _colMat;
-                _resourceIconsColors[_sprTech] = _colTech;
-                _resourceIconsColors[_sprFood] = _colFood;
+                public Sprite Icon;
+                public Color Color;
             }
 
+            private static readonly Dictionary<ResourceType, ResourceVisual> _resourceVisuals = new Dictionary<ResourceType, ResourceVisual>();
+
+            private static readonly ResourceType[] _resourceDisplayOrder =
+             {
+                ResourceType.Materials,
+                ResourceType.Tech,
+                ResourceType.Supplies
+            };
+
+            private static void EnsureResourceVisuals()
+            {
+                if (_resourceVisuals.Count > 0)
+                {
+                    return;
+                }
+
+                try
+                {
+                    var geoLevel = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                    var resourcesModule = geoLevel?.View?.GeoscapeModules?.ResourcesModule;
+                    if (resourcesModule == null)
+                    {
+                        return;
+                    }
+
+                    AddResourceVisual(ResourceType.Materials, resourcesModule.MaterialsController);
+                    AddResourceVisual(ResourceType.Tech, resourcesModule.TechController);
+                    AddResourceVisual(ResourceType.Supplies, resourcesModule.FoodController);
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
+              
+            }
+
+            private static void AddResourceVisual(ResourceType resourceType, MonoBehaviour controller)
+            {
+                if (controller == null)
+                {
+                    return;
+                }
+
+                var container = controller.transform.parent.GetComponent<ResourceIconContainer>();
+                if (container?.Icon == null)
+                {
+                    return;
+                }
+                _resourceVisuals[resourceType] = new ResourceVisual
+                {
+                    Icon = container.Icon.sprite,
+                    Color = container.Icon.color
+                };
+            }
 
             private static GameObject CreateCostRow(Transform parent, GeoHaven haven, GeoPhoenixFaction phoenix)
             {
 
-                PopulateResourceIconColorsDictionary();
+                EnsureResourceVisuals();
 
-                // read cost
-                (int materials, int tech, int food) = GetRecruitCost(haven, phoenix);
+                var resourceCosts = GetRecruitCost(haven, phoenix);
 
                 var (row, _) = NewUI("Row_Cost", parent);
 
@@ -1578,17 +1620,33 @@ namespace TFTV
                 h.childForceExpandWidth = false;
                 h.childForceExpandHeight = false;
 
-                CreateResourceChip(row.transform, _sprMat, materials);
-                CreateResourceChip(row.transform, _sprTech, tech);
-                CreateResourceChip(row.transform, _sprFood, food);
+                foreach (var type in _resourceDisplayOrder)
+                {
+                    if (resourceCosts.TryGetValue(type, out var amount))
+                    {
+                        CreateResourceChip(row.transform, type, amount);
+                        resourceCosts.Remove(type);
+                    }
+                }
+
+                foreach (var kvp in resourceCosts)
+                {
+                    CreateResourceChip(row.transform, kvp.Key, kvp.Value);
+                }
 
                 return row;
 
             }
 
 
-            private static GameObject CreateResourceChip(Transform parent, Sprite sprite, int amount)
+            private static GameObject CreateResourceChip(Transform parent, ResourceType resourceType, int amount)
             {
+                if (amount <= 0)
+                {
+                    return null;
+                }
+
+
                 var (chip, _) = NewUI("Res", parent);
 
                 var layout = chip.AddComponent<VerticalLayoutGroup>();
@@ -1600,10 +1658,20 @@ namespace TFTV
                 layout.childForceExpandHeight = false;
 
 
-                var img = MakeFixedIcon(chip.transform, sprite, ResourceIconSize);
-                if (_resourceIconsColors.TryGetValue(sprite, out var col))
+                Image img = null;
+                if (_resourceVisuals.TryGetValue(resourceType, out var visual) && visual?.Icon != null)
                 {
-                    img.color = col;
+                    img = MakeFixedIcon(chip.transform, visual.Icon, ResourceIconSize);
+                    img.color = visual.Color;
+                }
+                else
+                {
+                    var (typeLabelGO, _) = NewUI("Type", chip.transform);
+                    var typeLabel = typeLabelGO.AddComponent<Text>();
+                    typeLabel.text = resourceType.ToString();
+                    typeLabel.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
+                    typeLabel.fontSize = TextFontSize - 4;
+                    typeLabel.alignment = TextAnchor.MiddleCenter;
                 }
 
                 // amount
@@ -1618,28 +1686,29 @@ namespace TFTV
             }
 
 
-            private static (int materials, int tech, int food) GetRecruitCost(GeoHaven haven, GeoPhoenixFaction phoenix)
+            private static Dictionary<ResourceType, int> GetRecruitCost(GeoHaven haven, GeoPhoenixFaction phoenix)
             {
                 try
                 {
 
-
+                    var costs = new Dictionary<ResourceType, int>();
                     ResourcePack cost = haven.GetRecruitCost(phoenix);
 
-                    int m = 0, t = 0, f = 0;
+                  
 
                     foreach (var r in cost)
                     {
-                        if (r.Type == ResourceType.Materials)
-                            m = (int)r.Value;
-                        else if (r.Type == ResourceType.Tech)
-                            t = (int)r.Value;
-                        else if (r.Type == ResourceType.Supplies)
-                            f = (int)r.Value;
+                        int amount = Mathf.RoundToInt(r.Value);
+                        if (amount <= 0)
+                        {
+                            continue;
+                        }
+
+                        costs[r.Type] = amount;
 
                     }
 
-                    return (m, t, f);
+                    return costs;
 
                 }
                 catch (Exception ex) { TFTVLogger.Error(ex); throw; }
