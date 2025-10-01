@@ -145,7 +145,7 @@ namespace TFTV
         }
     }
 
-  
+
 
     /// <summary>
     /// Helper methods for controlling the objectives module visibility when the recruits overlay is displayed.
@@ -320,7 +320,7 @@ namespace TFTV
 
         private static Font _puristaSemibold = null;
 
-        private enum SortMode { Level, Class, Distance}
+        private enum SortMode { Level, Class, Distance }
         private static SortMode _sortMode = SortMode.Level;
 
         private static ToggleGroup _sortGroup;
@@ -407,7 +407,7 @@ namespace TFTV
         }
 
 
-     
+
         public static class RecruitOverlayManager
         {
             static GameObject overlayPanel;
@@ -519,6 +519,10 @@ namespace TFTV
                     var panelImage = overlayPanel.AddComponent<Image>();
                     panelImage.color = new Color(0f, 0f, 0f, 0.95f);
 
+                    var panelOutline = overlayPanel.AddComponent<Outline>();
+                    panelOutline.effectColor = HeaderBorderColor;
+                    panelOutline.effectDistance = new Vector2(2f, 2f);
+
                     var rt = overlayPanel.GetComponent<RectTransform>();
 
                     // RIGHT-ALIGNED, NARROW BAND: width = ColumnsWidthPercent, right padding = RIGHT_MARGIN
@@ -529,7 +533,7 @@ namespace TFTV
                     rt.offsetMin = Vector2.zero;
                     rt.offsetMax = Vector2.zero;
 
-                    
+
 
                     GeoLevelController geoLevel = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
@@ -662,7 +666,7 @@ namespace TFTV
 
 
 
-           
+
 
             private static void RefreshColumns()
             {
@@ -697,15 +701,18 @@ namespace TFTV
 
                     }
 
-                    if (!factionRecruits.TryGetValue(_activeFactionFilter, out var recruits)) 
+                    int totalRecruits = factionRecruits.Sum(kvp => kvp.Value.Count);
+
+                    if (!factionRecruits.TryGetValue(_activeFactionFilter, out var recruits))
                     {
                         recruits = new List<RecruitAtSite>();
 
                     }
 
-                        if (_totalRecruitsLabel != null)
+
+                    if (_totalRecruitsLabel != null)
                     {
-                        _totalRecruitsLabel.text = recruits.Count.ToString();
+                        _totalRecruitsLabel.text = totalRecruits.ToString();
                     }
 
                     UpdateFactionTabVisuals();
@@ -766,7 +773,7 @@ namespace TFTV
                 AddSortToggle(bar.transform, "Level", SortMode.Level, isOn: true);
                 AddSortToggle(bar.transform, "Class", SortMode.Class);
                 AddSortToggle(bar.transform, "Closest to Phoenix Aircraft", SortMode.Distance);
-                
+
             }
             private static void CreateFactionTabs(Transform overlayRoot)
             {
@@ -842,6 +849,7 @@ namespace TFTV
                 iconImage.sprite = iconSprite;
                 iconImage.preserveAspect = true;
                 iconImage.enabled = iconSprite != null;
+                iconImage.color = iconSprite != null ? GetFactionColor(filter) : Color.white;
                 var iconLE = iconGO.AddComponent<LayoutElement>();
                 iconLE.preferredWidth = 36f;
                 iconLE.preferredHeight = 36f;
@@ -872,6 +880,45 @@ namespace TFTV
                     UpdateFactionTabVisuals();
                     RefreshColumns();
                 });
+            }
+
+            private static Color GetFactionColor(FactionFilter filter)
+            {
+                try
+                {
+                    var geoLevel = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                    if (geoLevel == null)
+                    {
+                        return Color.white;
+                    }
+
+                    GeoFaction faction = null;
+                    switch (filter)
+                    {
+                        case FactionFilter.Anu:
+                            faction = geoLevel.AnuFaction;
+                            break;
+                        case FactionFilter.NewJericho:
+                            faction = geoLevel.NewJerichoFaction;
+                            break;
+                        case FactionFilter.Synedrion:
+                            faction = geoLevel.SynedrionFaction;
+                            break;
+                    }
+
+                    var color = faction.Def.FactionColor;
+                    if (color.a <= 0f)
+                    {
+                        color.a = 1f;
+                    }
+
+                    return color;
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                    return Color.white;
+                }
             }
 
             private static void UpdateFactionTabVisuals()
@@ -921,7 +968,7 @@ namespace TFTV
                 return sprite;
             }
 
-            
+
             private static void CreateHeader(Transform overlayRoot)
             {
                 var (header, rt) = NewUI("Header", overlayRoot);
@@ -1104,7 +1151,7 @@ namespace TFTV
                             return string.Compare(a.Recruit?.GetName(), b.Recruit?.GetName(), StringComparison.Ordinal);
                         });
                         break;
-                   
+
                 }
             }
 
@@ -1221,38 +1268,7 @@ namespace TFTV
                 return (go, (RectTransform)go.transform);
             }
 
-            private static void CreateHeaderRow(Transform parent, GeoUnitDescriptor recruit)
-            {
-                var (row, _) = NewUI("Row_Header", parent);
 
-                var h = row.AddComponent<HorizontalLayoutGroup>();
-                h.childAlignment = TextAnchor.MiddleLeft;
-                h.spacing = 6;
-                h.childControlHeight = true;
-                h.childControlWidth = false;
-                h.childForceExpandWidth = false;
-                h.childForceExpandHeight = false;
-
-
-                // Class icon
-                var classIcon = GetClassIcon(recruit);
-                if (classIcon != null)
-                {
-                    // Use the same size as abilities so it feels consistent
-                    MakeFixedIcon(row.transform, classIcon, AbilityIconSize);
-                }
-
-                // Level
-                var (lvlGO, _) = NewUI("Lvl", row.transform);
-                var lvl = lvlGO.AddComponent<Text>();
-                lvl.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
-                lvl.fontSize = TextFontSize;
-                lvl.alignment = TextAnchor.MiddleLeft;
-                lvl.color = Color.white;
-                lvl.text = $"{recruit?.Level} {recruit?.GetName()}";
-                lvl.horizontalOverflow = HorizontalWrapMode.Overflow;
-                lvl.verticalOverflow = VerticalWrapMode.Truncate;
-            }
 
             private static Sprite GetClassIcon(GeoUnitDescriptor recruit)
             {
@@ -1316,34 +1332,7 @@ namespace TFTV
             }
 
 
-            private static void CreateTextRow(Transform parent, string text, FontStyle style, Color color)
-            {
-                var go = new GameObject("Row_Text");
-                go.transform.SetParent(parent, false);
-                var t = go.AddComponent<Text>();
-                t.text = text ?? "";
-                t.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
-                t.fontSize = TextFontSize;
-                t.fontStyle = style;
-                t.color = color;
-                t.alignment = TextAnchor.MiddleLeft;
-            }
 
-            private static GameObject CreateIconRow(Transform parent, string name, IEnumerable<Sprite> sprites, int iconSize)
-            {
-                var (row, _) = NewUI($"Row_{name}", parent);
-                var h = row.AddComponent<HorizontalLayoutGroup>();
-                h.childAlignment = TextAnchor.MiddleLeft; h.spacing = 3;
-                h.childControlWidth = true; h.childControlHeight = true;
-                h.childForceExpandWidth = false; h.childForceExpandHeight = false;
-
-                foreach (var sp in sprites ?? Enumerable.Empty<Sprite>())
-                {
-                    if (sp == null) continue;
-                    MakeFixedIcon(row.transform, sp, iconSize);
-                }
-                return row.gameObject;
-            }
 
 
 
@@ -1351,13 +1340,14 @@ namespace TFTV
             private static void CreateRecruitItem(Transform parent, RecruitAtSite data, bool collapse)
 
             {
+                _ = collapse;
 
                 var card = new GameObject($"Recruit_{Safe(data.Recruit?.GetName())}");
                 card.transform.SetParent(parent, false);
 
                 // background
                 var bg = card.AddComponent<Image>();
-                bg.color = new Color(1, 1, 1, 0.06f);
+                bg.color = new Color(1f, 1f, 1f, 0.08f);
 
 
                 // button (keep it for hover/tint states, but don't use onClick directly)
@@ -1367,52 +1357,154 @@ namespace TFTV
                 // click handler: single = focus; double = your hook
                 var click = card.AddComponent<CardClickHandler>();
                 click.OnSingle = () => FocusOnSite(data.Site);
-                click.OnDouble = () =>
-                {
-                    // your custom behavior here (or attach via the public hook)
-                    OnCardDoubleClick?.Invoke(data.Recruit, data.Site);
-                };
+                click.OnDouble = () => OnCardDoubleClick?.Invoke(data.Recruit, data.Site);
 
-                // vertical stack (one row per thing)
-                var v = card.AddComponent<VerticalLayoutGroup>();
-                v.childAlignment = TextAnchor.UpperLeft;
-                v.childForceExpandWidth = true;
-                v.childForceExpandHeight = false;
-                v.spacing = RowSpacing;
-                v.padding = new RectOffset(6, 6, 6, 6);
+                var layout = card.AddComponent<HorizontalLayoutGroup>();
+                layout.childAlignment = TextAnchor.MiddleLeft;
+                layout.spacing = 12f;
+                layout.childControlWidth = false;
+                layout.childControlHeight = true;
+                layout.childForceExpandWidth = false;
+                layout.childForceExpandHeight = false;
+                layout.padding = new RectOffset(12, 12, 8, 8);
 
                 // Let height fit content (no fixed height anymore)
                 var fit = card.AddComponent<ContentSizeFitter>();
                 fit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-                // --- Row: Abilities ---
-                // header + haven + cost as before...
-                CreateHeaderRow(card.transform, data.Recruit);
-                CreateTextRow(card.transform, data.Site?.Name ?? "Unknown Haven", FontStyle.Italic, new Color(.8f, .8f, .95f));
-                CreateCostRow(card.transform, data.Haven, data.Haven.Site.GeoLevel.PhoenixFaction);
-
-                // rows we might collapse
-                var abilitiesRow = CreateIconRow(card.transform, "Abilities", GetAbilityIcons(data.Recruit), AbilityIconSize);
-                var equipmentRow = CreateIconRow(card.transform, "Equipment", GetEquipmentIcons(data.Recruit), EquipIconSize);
-                var armorRow = CreateIconRow(card.transform, "Armor", GetArmorIcons(data.Recruit), ArmorIconSize);
-
-                // hover behaviour
-                var hover = card.AddComponent<RecruitCardHover>();
-                hover.Collapsible = collapse;
-                hover.Rows.Add(abilitiesRow);
-                hover.Rows.Add(equipmentRow);
-                hover.Rows.Add(armorRow);
-
-                // initial state
-                if (collapse)
+                var classIcon = GetClassIcon(data.Recruit);
+                if (classIcon != null)
                 {
-                    abilitiesRow.SetActive(false);
-                    equipmentRow.SetActive(false);
-                    armorRow.SetActive(false);
+                    MakeFixedIcon(card.transform, classIcon, AbilityIconSize);
+                }
+
+                var (levelGO, _) = NewUI("Level", card.transform);
+                var levelText = levelGO.AddComponent<Text>();
+                levelText.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
+                levelText.fontSize = TextFontSize;
+                levelText.color = Color.white;
+                levelText.alignment = TextAnchor.MiddleLeft;
+                levelText.text = $"Lv {data.Recruit?.Level ?? 0}";
+                var levelLE = levelGO.AddComponent<LayoutElement>();
+                levelLE.minWidth = 60f;
+                levelLE.preferredWidth = 60f;
+
+                var (nameGO, _) = NewUI("Name", card.transform);
+                var nameText = nameGO.AddComponent<Text>();
+                nameText.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
+                nameText.fontSize = TextFontSize;
+                nameText.color = Color.white;
+                nameText.alignment = TextAnchor.MiddleLeft;
+                nameText.text = data.Recruit?.GetName() ?? "Unknown Recruit";
+                nameText.horizontalOverflow = HorizontalWrapMode.Overflow;
+                nameText.verticalOverflow = VerticalWrapMode.Truncate;
+                var nameLE = nameGO.AddComponent<LayoutElement>();
+                nameLE.flexibleWidth = 1f;
+                nameLE.minWidth = 120f;
+
+                var abilityIcons = GetSelectedAbilityIcons(data.Recruit).ToList();
+                var mutationIcons = GetMutatedArmorIcons(data.Recruit).ToList();
+
+                if (abilityIcons.Count > 0 || mutationIcons.Count > 0)
+                {
+                    var (abilitiesGO, _) = NewUI("Abilities", card.transform);
+                    var abilitiesLayout = abilitiesGO.AddComponent<HorizontalLayoutGroup>();
+                    abilitiesLayout.childAlignment = TextAnchor.MiddleLeft;
+                    abilitiesLayout.spacing = 4f;
+                    abilitiesLayout.childControlWidth = false;
+                    abilitiesLayout.childControlHeight = true;
+                    abilitiesLayout.childForceExpandWidth = false;
+                    abilitiesLayout.childForceExpandHeight = false;
+
+                    foreach (var icon in abilityIcons)
+                    {
+                        if (icon == null) continue;
+                        MakeFixedIcon(abilitiesGO.transform, icon, AbilityIconSize);
+                    }
+
+                    foreach (var icon in mutationIcons)
+                    {
+                        if (icon == null) continue;
+                        MakeFixedIcon(abilitiesGO.transform, icon, ArmorIconSize);
+                    }
+                }
+
+                var (spacerGO, _) = NewUI("Spacer", card.transform);
+                var spacerLE = spacerGO.AddComponent<LayoutElement>();
+                spacerLE.flexibleWidth = 1f;
+
+                var costRow = CreateCostRow(card.transform, data.Haven, data.Haven.Site.GeoLevel.PhoenixFaction);
+                if (costRow != null)
+                {
+                    var costLE = costRow.GetComponent<LayoutElement>() ?? costRow.AddComponent<LayoutElement>();
+                    costLE.minWidth = 0f;
                 }
 
 
 
+            }
+
+            private static IEnumerable<Sprite> GetSelectedAbilityIcons(GeoUnitDescriptor recruit)
+            {
+                if (recruit == null)
+                {
+                    yield break;
+                }
+
+
+                var track = recruit.GetPersonalAbilityTrack();
+                var abilities = track?.AbilitiesByLevel?.ToList();
+                if (abilities == null || abilities.Count == 0)
+                {
+                    yield break;
+                }
+
+                int[] desiredIndexes = { 0, 3, 4 };
+                foreach (int index in desiredIndexes)
+                {
+                    if (index < 0 || index >= abilities.Count)
+                    {
+                        continue;
+                    }
+
+                    var view = abilities[index]?.Ability?.ViewElementDef;
+                    if (view?.SmallIcon != null)
+                    {
+                        yield return view.SmallIcon;
+                    }
+                }
+
+            }
+
+            private static IEnumerable<Sprite> GetMutatedArmorIcons(GeoUnitDescriptor recruit)
+            {
+                if (recruit?.ArmorItems == null)
+                {
+                    yield break;
+                }
+
+
+                var mutationTag = Shared?.SharedGameTags?.AnuMutationTag;
+                if (mutationTag == null)
+                {
+                    yield break;
+                }
+
+                foreach (var def in recruit.ArmorItems.Where(i => i != null))
+                {
+
+                    if (def.Tags == null || !def.Tags.Contains(mutationTag))
+                    {
+                        continue;
+                    }
+
+                    var ve = def.ViewElementDef;
+                    if (ve?.InventoryIcon != null)
+                    {
+                        yield return ve.InventoryIcon;
+                    }
+
+                }
 
             }
 
@@ -1428,46 +1520,6 @@ namespace TFTV
                 t.color = new Color(0.85f, 0.85f, 0.9f, 0.9f);
                 var rt = go.GetComponent<RectTransform>();
                 rt.sizeDelta = new Vector2(0, 48);
-            }
-
-            // ---------- ABILITIES / EQUIPMENT ----------
-
-            private static IEnumerable<Sprite> GetAbilityIcons(GeoUnitDescriptor recruit)
-            {
-                if (recruit == null) yield break;
-
-                var track = recruit.GetPersonalAbilityTrack();
-                var views = track?.AbilitiesByLevel?
-                    .Select(a => a?.Ability?.ViewElementDef)
-                    .Where(v => v != null);
-
-                foreach (var v in views ?? Enumerable.Empty<ViewElementDef>())
-                {
-                    if (v.SmallIcon != null) yield return v.SmallIcon;
-                }
-
-            }
-
-            private static IEnumerable<Sprite> GetEquipmentIcons(GeoUnitDescriptor recruit)
-            {
-                if (recruit?.Equipment == null) yield break;
-
-                foreach (var def in recruit.Equipment.Where(i => i != null))
-                {
-                    var ve = def.ViewElementDef;
-                    if (ve?.InventoryIcon != null) yield return ve.InventoryIcon;
-                }
-            }
-
-            private static IEnumerable<Sprite> GetArmorIcons(GeoUnitDescriptor recruit)
-            {
-                if (recruit?.ArmorItems == null) yield break;
-
-                foreach (var def in recruit.ArmorItems.Where(i => i != null))
-                {
-                    var ve = def.ViewElementDef;
-                    if (ve?.InventoryIcon != null) yield return ve.InventoryIcon;
-                }
             }
 
 
@@ -1508,7 +1560,7 @@ namespace TFTV
             }
 
 
-            private static void CreateCostRow(Transform parent, GeoHaven haven, GeoPhoenixFaction phoenix)
+            private static GameObject CreateCostRow(Transform parent, GeoHaven haven, GeoPhoenixFaction phoenix)
             {
 
                 PopulateResourceIconColorsDictionary();
@@ -1516,54 +1568,54 @@ namespace TFTV
                 // read cost
                 (int materials, int tech, int food) = GetRecruitCost(haven, phoenix);
 
-                var row = new GameObject("Row_Cost");
-                row.transform.SetParent(parent, false);
+                var (row, _) = NewUI("Row_Cost", parent);
 
                 var h = row.AddComponent<HorizontalLayoutGroup>();
-                h.childAlignment = TextAnchor.MiddleLeft;
-                h.spacing = 8;
-                h.childForceExpandWidth = false;
-                h.childForceExpandHeight = false;
-
-
-
-                // Chip: Materials
-                if (materials > 0) CreateResourceChip(row.transform, _sprMat, materials);
-                if (tech > 0) CreateResourceChip(row.transform, _sprTech, tech);
-                if (food > 0) CreateResourceChip(row.transform, _sprFood, food);
-
-            }
-
-
-
-
-
-            private static void CreateResourceChip(Transform parent, Sprite sprite, int amount)
-            {
-                var (chip, _) = NewUI("Res", parent);
-
-                var h = chip.AddComponent<HorizontalLayoutGroup>();
-                h.childAlignment = TextAnchor.MiddleCenter;
-                h.spacing = 3;
-                h.childControlWidth = true;
+                h.childAlignment = TextAnchor.MiddleRight;
+                h.spacing = 12f;
+                h.childControlWidth = false;
                 h.childControlHeight = true;
                 h.childForceExpandWidth = false;
                 h.childForceExpandHeight = false;
 
-                // icon (pick size you like, e.g. 12 or 14)
-                var img = MakeFixedIcon(chip.transform, sprite, 22);
+                CreateResourceChip(row.transform, _sprMat, materials);
+                CreateResourceChip(row.transform, _sprTech, tech);
+                CreateResourceChip(row.transform, _sprFood, food);
+
+                return row;
+
+            }
+
+
+            private static GameObject CreateResourceChip(Transform parent, Sprite sprite, int amount)
+            {
+                var (chip, _) = NewUI("Res", parent);
+
+                var layout = chip.AddComponent<VerticalLayoutGroup>();
+                layout.childAlignment = TextAnchor.MiddleCenter;
+                layout.spacing = 2f;
+                layout.childControlWidth = false;
+                layout.childControlHeight = true;
+                layout.childForceExpandWidth = false;
+                layout.childForceExpandHeight = false;
+
+
+                var img = MakeFixedIcon(chip.transform, sprite, ResourceIconSize);
                 if (_resourceIconsColors.TryGetValue(sprite, out var col))
+                {
                     img.color = col;
+                }
 
                 // amount
                 var (txtGO, _) = NewUI("Amt", chip.transform);
                 var t = txtGO.AddComponent<Text>();
                 t.text = amount.ToString();
                 t.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
-                t.fontSize = TextFontSize;
-                t.alignment = TextAnchor.MiddleLeft;
-            }
+                t.fontSize = TextFontSize - 2;
+                t.alignment = TextAnchor.MiddleCenter;
 
+                return chip;
+            }
 
 
             private static (int materials, int tech, int food) GetRecruitCost(GeoHaven haven, GeoPhoenixFaction phoenix)
