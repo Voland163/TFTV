@@ -267,7 +267,7 @@ namespace TFTV
             {
                 _sortGroup = null;
                 _sortToggles.Clear();
-                RecruitOverlayManager.isInitialized = false;
+                RecruitOverlayManager.ResetState();
                 _recruitListRoot = null;
                 _totalRecruitsLabel = null;
                 _factionTabGroup = null;
@@ -285,6 +285,10 @@ namespace TFTV
         // width (as fraction of screen width) used by the 3-column area
         private const float ColumnsWidthPercent = 0.25f;  // 0.60 = 60% of screen, centered
 
+        private const float OverlayTopMargin = 0.06f;
+        private const float OverlayBottomMargin = 0.16f;
+        private const float OverlayRightMargin = 0.0f;
+        private const float OverlayLeftMargin = 0.0f;
 
         private const float ColumnPadding = 12f;
         private const float ItemSpacing = 6f;     // space between cards
@@ -300,6 +304,10 @@ namespace TFTV
         private static readonly Color TabBorderColor = HexToColor("55606f");
         private static readonly Color TabHighlightColor = HexToColor("ffb339");
         private static readonly Color TabDefaultColor = HexToColor("1a2733");
+        private static readonly Color CardBackgroundColor = new Color(1f, 1f, 1f, 0.08f);
+        private static readonly Color CardSelectedColor = new Color(1f, 1f, 1f, 0.18f);
+        private static readonly Color DetailSubTextColor = new Color(0.75f, 0.8f, 0.9f, 1f);
+
 
         private static Color HexToColor(string hex)
         {
@@ -417,6 +425,65 @@ namespace TFTV
             private static bool _isOverlayVisible;
             private const float OverlaySlideDuration = 0.3f;
 
+            private static GameObject _detailPanel;
+            private static OverlayAnimator _detailAnimator;
+            private static bool _isDetailVisible;
+            private static GameObject _currentSelectedCard;
+            private static RecruitAtSite _selectedRecruit;
+            private static GameObject _detailEmptyState;
+            private static Transform _detailInfoRoot;
+            private static Text _detailNameLabel;
+            private static Text _detailClassLabel;
+            private static Text _detailLocationLabel;
+            private static GameObject _detailAbilityGroup;
+            private static Transform _detailAbilityRoot;
+            private static GameObject _detailMutationGroup;
+            private static Transform _detailMutationRoot;
+            private static GameObject _detailCostGroup;
+            private static Transform _detailCostRoot;
+
+            internal static void ResetState()
+            {
+                try
+                {
+                    ClearSelection(immediate: true);
+
+                    if (_detailPanel != null)
+                    {
+                        Object.Destroy(_detailPanel);
+                        _detailPanel = null;
+                    }
+
+                    if (overlayPanel != null)
+                    {
+                        Object.Destroy(overlayPanel);
+                        overlayPanel = null;
+                    }
+
+                    _overlayAnimator = null;
+                    _detailAnimator = null;
+                    _isOverlayVisible = false;
+                    _isDetailVisible = false;
+                    _currentSelectedCard = null;
+                    _selectedRecruit = null;
+                    _detailEmptyState = null;
+                    _detailInfoRoot = null;
+                    _detailNameLabel = null;
+                    _detailClassLabel = null;
+                    _detailLocationLabel = null;
+                    _detailAbilityGroup = null;
+                    _detailAbilityRoot = null;
+                    _detailMutationGroup = null;
+                    _detailMutationRoot = null;
+                    _detailCostGroup = null;
+                    _detailCostRoot = null;
+
+                    isInitialized = false;
+                }
+                catch (Exception ex) { TFTVLogger.Error(ex); }
+            }
+
+
             public static void ToggleOverlay()
             {
                 try
@@ -430,6 +497,14 @@ namespace TFTV
                     bool show = !_isOverlayVisible;
 
                     RecruitsOverlayObjectives.SetObjectivesHiddenForRecruitsOverlay(GameUtl.CurrentLevel().GetComponent<GeoLevelController>()?.View, show);
+
+
+                    if (!show)
+                    {
+                        ClearSelection(immediate: false);
+                    }
+
+
 
                     if (show && !overlayPanel.activeSelf)
                     {
@@ -504,10 +579,7 @@ namespace TFTV
 
                     var canvas = FindGeoscapeCanvas();
 
-                    // 0..1 screen-space margins for the overlay band
-                    const float TOP_MARGIN = 0.06f;
-                    const float BOTTOM_MARGIN = 0.16f;  // was 0.06f  ➜  add ~10% more bottom margin
-                    const float RIGHT_MARGIN = 0.0f;
+                    CreateDetailPanel(canvas);
 
                     overlayPanel = new GameObject("TFTV_RecruitOverlay");
                     overlayPanel.transform.SetParent(canvas.transform, false);
@@ -529,8 +601,8 @@ namespace TFTV
 
                     // RIGHT-ALIGNED, NARROW BAND: width = ColumnsWidthPercent, right padding = RIGHT_MARGIN
                     float w = ColumnsWidthPercent;
-                    rt.anchorMin = new Vector2(1f - RIGHT_MARGIN - w, BOTTOM_MARGIN);
-                    rt.anchorMax = new Vector2(1f - RIGHT_MARGIN, 1f - TOP_MARGIN);
+                    rt.anchorMin = new Vector2(1f - OverlayRightMargin - w, OverlayBottomMargin);
+                    rt.anchorMax = new Vector2(1f - OverlayRightMargin, 1f - OverlayTopMargin);
                     rt.pivot = new Vector2(1f, 0.5f);
                     rt.offsetMin = Vector2.zero;
                     rt.offsetMax = Vector2.zero;
@@ -558,16 +630,123 @@ namespace TFTV
                 }
                 catch (Exception ex) { TFTVLogger.Error(ex); }
             }
+
+            private static void CreateDetailPanel(Canvas canvas)
+            {
+                try
+                {
+                    if (canvas == null)
+                    {
+                        return;
+                    }
+
+                    if (_detailPanel != null)
+                    {
+                        return;
+                    }
+
+                    _detailPanel = new GameObject("TFTV_RecruitDetailPanel");
+                    _detailPanel.transform.SetParent(canvas.transform, false);
+
+                    var detailCanvas = _detailPanel.AddComponent<Canvas>();
+                    detailCanvas.overrideSorting = true;
+                    detailCanvas.sortingOrder = 5000;
+                    _detailPanel.AddComponent<GraphicRaycaster>();
+
+                    var image = _detailPanel.AddComponent<Image>();
+                    image.color = new Color(0f, 0f, 0f, 0.95f);
+
+                    var outline = _detailPanel.AddComponent<Outline>();
+                    outline.effectColor = HeaderBorderColor;
+                    outline.effectDistance = new Vector2(2f, 2f);
+
+                    var rt = _detailPanel.GetComponent<RectTransform>();
+                    float width = ColumnsWidthPercent;
+                    rt.anchorMin = new Vector2(OverlayLeftMargin, OverlayBottomMargin);
+                    rt.anchorMax = new Vector2(OverlayLeftMargin + width, 1f - OverlayTopMargin);
+                    rt.pivot = new Vector2(0f, 0.5f);
+                    rt.offsetMin = Vector2.zero;
+                    rt.offsetMax = Vector2.zero;
+
+                    var (contentGO, contentRT) = NewUI("Content", _detailPanel.transform);
+                    contentRT.anchorMin = new Vector2(0f, 0f);
+                    contentRT.anchorMax = new Vector2(1f, 1f);
+                    contentRT.offsetMin = new Vector2(24f, 24f);
+                    contentRT.offsetMax = new Vector2(-24f, -24f);
+
+                    var layout = contentGO.AddComponent<VerticalLayoutGroup>();
+                    layout.childAlignment = TextAnchor.UpperLeft;
+                    layout.spacing = 12f;
+                    layout.childControlWidth = true;
+                    layout.childControlHeight = false;
+                    layout.childForceExpandWidth = true;
+                    layout.childForceExpandHeight = false;
+
+                    _detailEmptyState = CreateDetailPlaceholder(contentGO.transform);
+
+                    var (infoRootGO, _) = NewUI("InfoRoot", contentGO.transform);
+                    var infoLayout = infoRootGO.AddComponent<VerticalLayoutGroup>();
+                    infoLayout.childAlignment = TextAnchor.UpperLeft;
+                    infoLayout.spacing = 12f;
+                    infoLayout.childControlWidth = true;
+                    infoLayout.childControlHeight = false;
+                    infoLayout.childForceExpandWidth = true;
+                    infoLayout.childForceExpandHeight = false;
+
+                    _detailInfoRoot = infoRootGO.transform;
+                    _detailInfoRoot.gameObject.SetActive(false);
+
+                    _detailNameLabel = CreateDetailText(infoRootGO.transform, "Name", TextFontSize + 4, Color.white, TextAnchor.UpperLeft);
+                    _detailClassLabel = CreateDetailText(infoRootGO.transform, "Class", TextFontSize, DetailSubTextColor, TextAnchor.UpperLeft);
+                    _detailLocationLabel = CreateDetailText(infoRootGO.transform, "Location", TextFontSize - 2, DetailSubTextColor, TextAnchor.UpperLeft);
+
+                    _detailAbilityGroup = CreateDetailGroup(infoRootGO.transform, "Key Abilities", out _detailAbilityRoot);
+                    _detailMutationGroup = CreateDetailGroup(infoRootGO.transform, "Mutation Traits", out _detailMutationRoot);
+                    _detailCostGroup = CreateDetailGroup(infoRootGO.transform, "Recruitment Cost", out _detailCostRoot);
+
+                    if (_detailAbilityGroup != null)
+                    {
+                        _detailAbilityGroup.SetActive(false);
+                    }
+                    if (_detailMutationGroup != null)
+                    {
+                        _detailMutationGroup.SetActive(false);
+                    }
+                    if (_detailCostGroup != null)
+                    {
+                        _detailCostGroup.SetActive(false);
+                    }
+
+                    if (_detailCostRoot != null)
+                    {
+                        var costLayout = _detailCostRoot.GetComponent<HorizontalLayoutGroup>();
+                        if (costLayout != null)
+                        {
+                            costLayout.childAlignment = TextAnchor.MiddleLeft;
+                        }
+                    }
+
+                    _detailAnimator = _detailPanel.AddComponent<OverlayAnimator>();
+                    _detailAnimator.Initialize(rt, slideFromLeft: true);
+                    _isDetailVisible = false;
+
+                    _detailPanel.SetActive(false);
+                }
+                catch (Exception ex) { TFTVLogger.Error(ex); }
+            }
+
             private sealed class OverlayAnimator : MonoBehaviour
             {
                 private RectTransform _rectTransform;
                 private Coroutine _animation;
+                private float _hiddenDirection = 1f;
 
                 public bool IsVisible { get; private set; }
 
-                public void Initialize(RectTransform rectTransform)
+                public void Initialize(RectTransform rectTransform, bool slideFromLeft = false)
                 {
                     _rectTransform = rectTransform ? rectTransform : GetComponent<RectTransform>();
+                    _hiddenDirection = slideFromLeft ? -1f : 1f;
                     Canvas.ForceUpdateCanvases();
                     HideInstant();
                 }
@@ -619,6 +798,16 @@ namespace TFTV
                     _animation = null;
                     onComplete?.Invoke();
                 }
+                public void HideImmediate()
+                {
+                    EnsureRect();
+                    if (_animation != null)
+                    {
+                        StopCoroutine(_animation);
+                        _animation = null;
+                    }
+                    HideInstant();
+                }
 
                 private void HideInstant()
                 {
@@ -647,7 +836,7 @@ namespace TFTV
                         width = Screen.width * ColumnsWidthPercent;
                     }
 
-                    return Mathf.Max(0f, width);
+                    return Mathf.Max(0f, width) * _hiddenDirection;
                 }
 
                 private void SetPosition(float x)
@@ -666,7 +855,341 @@ namespace TFTV
                 }
             }
 
+            private static void HandleRecruitSelected(GameObject card, RecruitAtSite data)
+            {
+                try
+                {
+                    if (card == null || data == null)
+                    {
+                        return;
+                    }
 
+                    if (_currentSelectedCard != null && _currentSelectedCard != card)
+                    {
+                        SetCardSelected(_currentSelectedCard, false);
+                    }
+
+                    _currentSelectedCard = card;
+                    SetCardSelected(card, true);
+                    ShowRecruitDetails(data);
+                }
+                catch (Exception ex) { TFTVLogger.Error(ex); }
+            }
+
+            private static void SetCardSelected(GameObject card, bool selected)
+            {
+                if (card == null)
+                {
+                    return;
+                }
+
+                var image = card.GetComponent<Image>();
+                if (image != null)
+                {
+                    image.color = selected ? CardSelectedColor : CardBackgroundColor;
+                }
+            }
+
+            private static void ClearSelection(bool immediate = true)
+            {
+                try
+                {
+                    if (_currentSelectedCard != null)
+                    {
+                        SetCardSelected(_currentSelectedCard, false);
+                        _currentSelectedCard = null;
+                    }
+
+                    _selectedRecruit = null;
+                    HideRecruitDetails(immediate);
+                }
+                catch (Exception ex) { TFTVLogger.Error(ex); }
+            }
+
+            private static void ShowRecruitDetails(RecruitAtSite data)
+            {
+                try
+                {
+                    if (data == null)
+                    {
+                        return;
+                    }
+
+                    _selectedRecruit = data;
+
+                    if (_detailPanel == null)
+                    {
+                        return;
+                    }
+
+                    if (!_detailPanel.activeSelf)
+                    {
+                        _detailPanel.SetActive(true);
+                    }
+
+                    PopulateDetailPanel(data);
+
+                    if (_detailAnimator != null && !_isDetailVisible)
+                    {
+                        _detailAnimator.Play(true, null);
+                    }
+
+                    _isDetailVisible = true;
+                }
+                catch (Exception ex) { TFTVLogger.Error(ex); }
+            }
+
+            private static void HideRecruitDetails(bool immediate = false)
+            {
+                try
+                {
+                    if (_detailPanel == null)
+                    {
+                        _isDetailVisible = false;
+                        return;
+                    }
+
+                    if (_detailInfoRoot != null)
+                    {
+                        _detailInfoRoot.gameObject.SetActive(false);
+                    }
+
+                    if (_detailEmptyState != null)
+                    {
+                        _detailEmptyState.SetActive(true);
+                    }
+
+                    if (_detailAnimator != null)
+                    {
+                        if (!_detailPanel.activeSelf && !_isDetailVisible)
+                        {
+                            _isDetailVisible = false;
+                            return;
+                        }
+
+                        if (immediate)
+                        {
+                            _detailAnimator.HideImmediate();
+                            _detailPanel.SetActive(false);
+                        }
+                        else
+                        {
+                            _detailAnimator.Play(false, () =>
+                            {
+                                if (_detailPanel != null)
+                                {
+                                    _detailPanel.SetActive(false);
+                                }
+                            });
+                        }
+                    }
+                    else
+                    {
+                        _detailPanel.SetActive(false);
+                    }
+
+                    _isDetailVisible = false;
+                }
+                catch (Exception ex) { TFTVLogger.Error(ex); }
+            }
+
+            private static void PopulateDetailPanel(RecruitAtSite data)
+            {
+                try
+                {
+                    if (data?.Recruit == null)
+                    {
+                        return;
+                    }
+
+                    if (_detailEmptyState != null)
+                    {
+                        _detailEmptyState.SetActive(false);
+                    }
+
+                    if (_detailInfoRoot != null)
+                    {
+                        _detailInfoRoot.gameObject.SetActive(true);
+                    }
+
+                    if (_detailNameLabel != null)
+                    {
+                        _detailNameLabel.text = data.Recruit.GetName() ?? "Unknown Recruit";
+                    }
+
+                    if (_detailClassLabel != null)
+                    {
+                        string className = GetClassName(data.Recruit);
+                        int level = data.Recruit.Level;
+                        _detailClassLabel.text = $"{className} • Level {level}";
+                    }
+
+                    if (_detailLocationLabel != null)
+                    {
+                        string location = Safe(data.Site?.LocalizedSiteName);
+                        if (string.IsNullOrEmpty(location))
+                        {
+                            location = "Unknown Location";
+                        }
+                        _detailLocationLabel.text = $"Location: {location}";
+                    }
+
+                    var abilityIcons = GetSelectedAbilityIcons(data.Recruit).Where(sp => sp != null).ToList();
+                    PopulateIconGroup(_detailAbilityGroup, _detailAbilityRoot, abilityIcons, AbilityIconSize);
+
+                    var mutationIcons = GetMutatedArmorIcons(data.Recruit).Where(sp => sp != null).ToList();
+                    PopulateIconGroup(_detailMutationGroup, _detailMutationRoot, mutationIcons, ArmorIconSize);
+
+                    PopulateRecruitCost(data);
+
+                    var infoRect = _detailInfoRoot as RectTransform;
+                    if (infoRect != null)
+                    {
+                        LayoutRebuilder.ForceRebuildLayoutImmediate(infoRect);
+                    }
+                }
+                catch (Exception ex) { TFTVLogger.Error(ex); }
+            }
+
+            private static void PopulateIconGroup(GameObject group, Transform container, IList<Sprite> icons, int iconSize)
+            {
+                try
+                {
+                    if (container == null)
+                    {
+                        return;
+                    }
+
+                    ClearTransformChildren(container);
+
+                    bool hasIcons = icons != null && icons.Count > 0;
+                    if (hasIcons)
+                    {
+                        foreach (var icon in icons)
+                        {
+                            if (icon == null)
+                            {
+                                continue;
+                            }
+
+                            MakeFixedIcon(container, icon, iconSize);
+                        }
+                    }
+
+                    if (group != null)
+                    {
+                        group.SetActive(hasIcons);
+                    }
+                    else
+                    {
+                        container.gameObject.SetActive(hasIcons);
+                    }
+                }
+                catch (Exception ex) { TFTVLogger.Error(ex); }
+            }
+
+            private static void PopulateRecruitCost(RecruitAtSite data)
+            {
+                try
+                {
+                    if (_detailCostRoot == null)
+                    {
+                        return;
+                    }
+
+                    ClearTransformChildren(_detailCostRoot);
+
+                    if (data?.Haven == null || data.Haven.Site?.GeoLevel?.PhoenixFaction == null)
+                    {
+                        if (_detailCostGroup != null)
+                        {
+                            _detailCostGroup.SetActive(false);
+                        }
+                        return;
+                    }
+
+                    var phoenix = data.Haven.Site.GeoLevel.PhoenixFaction;
+                    var row = CreateCostRow(_detailCostRoot, data.Haven, phoenix);
+                    if (row != null)
+                    {
+                        var layout = row.GetComponent<HorizontalLayoutGroup>();
+                        if (layout != null)
+                        {
+                            layout.childAlignment = TextAnchor.MiddleLeft;
+                        }
+                    }
+
+                    bool hasCost = row != null && row.transform.childCount > 0;
+                    if (_detailCostGroup != null)
+                    {
+                        _detailCostGroup.SetActive(hasCost);
+                    }
+                }
+                catch (Exception ex) { TFTVLogger.Error(ex); }
+            }
+
+            private static GameObject CreateDetailGroup(Transform parent, string headerText, out Transform contentRoot)
+            {
+                var (groupGO, _) = NewUI($"{headerText.Replace(" ", string.Empty)}Group", parent);
+                var groupLayout = groupGO.AddComponent<VerticalLayoutGroup>();
+                groupLayout.childAlignment = TextAnchor.UpperLeft;
+                groupLayout.spacing = 6f;
+                groupLayout.childControlWidth = true;
+                groupLayout.childControlHeight = false;
+                groupLayout.childForceExpandWidth = true;
+                groupLayout.childForceExpandHeight = false;
+
+                var header = CreateDetailText(groupGO.transform, "Header", TextFontSize - 2, TabHighlightColor, TextAnchor.UpperLeft);
+                header.text = headerText;
+
+                var (contentGO, _) = NewUI("Content", groupGO.transform);
+                var contentLayout = contentGO.AddComponent<HorizontalLayoutGroup>();
+                contentLayout.childAlignment = TextAnchor.MiddleLeft;
+                contentLayout.spacing = 6f;
+                contentLayout.childControlWidth = false;
+                contentLayout.childControlHeight = true;
+                contentLayout.childForceExpandWidth = false;
+                contentLayout.childForceExpandHeight = false;
+
+                contentRoot = contentGO.transform;
+                return groupGO;
+            }
+
+            private static Text CreateDetailText(Transform parent, string name, int fontSize, Color color, TextAnchor alignment)
+            {
+                var (go, _) = NewUI(name, parent);
+                var text = go.AddComponent<Text>();
+                text.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
+                text.fontSize = fontSize;
+                text.color = color;
+                text.alignment = alignment;
+                text.horizontalOverflow = HorizontalWrapMode.Wrap;
+                text.verticalOverflow = VerticalWrapMode.Overflow;
+                text.supportRichText = true;
+                return text;
+            }
+
+            private static GameObject CreateDetailPlaceholder(Transform parent)
+            {
+                var placeholder = CreateDetailText(parent, "Placeholder", TextFontSize, DetailSubTextColor, TextAnchor.MiddleCenter);
+                placeholder.text = "Select a recruit to view details.";
+                var le = placeholder.gameObject.AddComponent<LayoutElement>();
+                le.flexibleHeight = 1f;
+                return placeholder.gameObject;
+            }
+
+            private static void ClearTransformChildren(Transform transform)
+            {
+                if (transform == null)
+                {
+                    return;
+                }
+
+                for (int i = transform.childCount - 1; i >= 0; i--)
+                {
+                    Object.Destroy(transform.GetChild(i).gameObject);
+                }
+            }
 
 
 
@@ -683,6 +1206,8 @@ namespace TFTV
                     {
                         return;
                     }
+
+                    ClearSelection();
 
                     foreach (Transform child in _recruitListRoot)
                     {
@@ -1388,7 +1913,7 @@ namespace TFTV
 
                 // background
                 var bg = card.AddComponent<Image>();
-                bg.color = new Color(1f, 1f, 1f, 0.08f);
+                bg.color = CardBackgroundColor;
 
 
                 // button (keep it for hover/tint states, but don't use onClick directly)
@@ -1397,17 +1922,25 @@ namespace TFTV
 
                 // click handler: single = focus; double = your hook
                 var click = card.AddComponent<CardClickHandler>();
-                click.OnSingle = () => FocusOnSite(data.Site);
-                click.OnDouble = () => OnCardDoubleClick?.Invoke(data.Recruit, data.Site);
+                click.OnSingle = () =>
+                {
+                    FocusOnSite(data.Site);
+                    HandleRecruitSelected(card, data);
+                };
+                click.OnDouble = () =>
+                {
+                    HandleRecruitSelected(card, data);
+                    OnCardDoubleClick?.Invoke(data.Recruit, data.Site);
+                };
 
                 var layout = card.AddComponent<HorizontalLayoutGroup>();
-                layout.childAlignment = TextAnchor.MiddleLeft;
-                layout.spacing = 12f;
+                layout.childAlignment = TextAnchor.UpperLeft;
+                layout.spacing = 2f;
                 layout.childControlWidth = false;
                 layout.childControlHeight = true;
                 layout.childForceExpandWidth = false;
                 layout.childForceExpandHeight = false;
-                layout.padding = new RectOffset(12, 12, 8, 8);
+                layout.padding = new RectOffset(8, 6, 6, 6);
 
                 // Let height fit content (no fixed height anymore)
                 var fit = card.AddComponent<ContentSizeFitter>();
@@ -1424,24 +1957,29 @@ namespace TFTV
                 levelText.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
                 levelText.fontSize = TextFontSize;
                 levelText.color = Color.white;
-                levelText.alignment = TextAnchor.MiddleLeft;
+                levelText.alignment = TextAnchor.UpperLeft;
                 levelText.text = $"{data.Recruit?.Level ?? 0}";
                 var levelLE = levelGO.AddComponent<LayoutElement>();
                 levelLE.minWidth = 0f;
-                levelLE.preferredWidth = -1f;
+                levelLE.preferredWidth = 0f;
+                levelLE.flexibleWidth = 0f;
+
+                var levelSizeFitter = levelGO.AddComponent<ContentSizeFitter>();
+                levelSizeFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+                levelSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
                 var (nameGO, _) = NewUI("Name", card.transform);
                 var nameText = nameGO.AddComponent<Text>();
                 nameText.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
                 nameText.fontSize = TextFontSize;
                 nameText.color = Color.white;
-                nameText.alignment = TextAnchor.MiddleLeft;
+                nameText.alignment = TextAnchor.UpperLeft;
                 nameText.text = data.Recruit?.GetName() ?? "Unknown Recruit";
                 nameText.horizontalOverflow = HorizontalWrapMode.Overflow;
                 nameText.verticalOverflow = VerticalWrapMode.Truncate;
-                var nameLE = nameGO.AddComponent<LayoutElement>();
-                nameLE.flexibleWidth = 1f;
-                nameLE.minWidth = 120f;
+                var nameFitter = nameGO.AddComponent<ContentSizeFitter>();
+                nameFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+                nameFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
                 var abilityIcons = GetSelectedAbilityIcons(data.Recruit).ToList();
                 var mutationIcons = GetMutatedArmorIcons(data.Recruit).ToList();
@@ -1451,7 +1989,7 @@ namespace TFTV
                     var (abilitiesGO, _) = NewUI("Abilities", card.transform);
                     var abilitiesLayout = abilitiesGO.AddComponent<HorizontalLayoutGroup>();
                     abilitiesLayout.childAlignment = TextAnchor.MiddleLeft;
-                    abilitiesLayout.spacing = 4f;
+                    abilitiesLayout.spacing = 3f;
                     abilitiesLayout.childControlWidth = false;
                     abilitiesLayout.childControlHeight = true;
                     abilitiesLayout.childForceExpandWidth = false;
@@ -1470,15 +2008,15 @@ namespace TFTV
                     }
                 }
 
-                var (spacerGO, _) = NewUI("Spacer", card.transform);
-                var spacerLE = spacerGO.AddComponent<LayoutElement>();
-                spacerLE.flexibleWidth = 1f;
+               
 
                 var costRow = CreateCostRow(card.transform, data.Haven, data.Haven.Site.GeoLevel.PhoenixFaction);
                 if (costRow != null)
                 {
                     var costLE = costRow.GetComponent<LayoutElement>() ?? costRow.AddComponent<LayoutElement>();
                     costLE.minWidth = 0f;
+                    costLE.preferredWidth = 0f;
+                    costLE.flexibleWidth = 1f;
                 }
 
 
@@ -1587,8 +2125,8 @@ namespace TFTV
 
             private static readonly ResourceType[] _resourceDisplayOrder =
              {
-                ResourceType.Materials,
                 ResourceType.Tech,
+                ResourceType.Materials, 
                 ResourceType.Supplies
             };
 
@@ -1648,8 +2186,8 @@ namespace TFTV
                 var (row, _) = NewUI("Row_Cost", parent);
 
                 var h = row.AddComponent<HorizontalLayoutGroup>();
-                h.childAlignment = TextAnchor.MiddleRight;
-                h.spacing = 12f;
+                h.childAlignment = TextAnchor.MiddleLeft;
+                h.spacing = 1f;
                 h.childControlWidth = false;
                 h.childControlHeight = true;
                 h.childForceExpandWidth = false;
@@ -1686,7 +2224,7 @@ namespace TFTV
 
                 var layout = chip.AddComponent<VerticalLayoutGroup>();
                 layout.childAlignment = TextAnchor.MiddleCenter;
-                layout.spacing = 2f;
+                layout.spacing = 1f;
                 layout.childControlWidth = false;
                 layout.childControlHeight = true;
                 layout.childForceExpandWidth = false;
