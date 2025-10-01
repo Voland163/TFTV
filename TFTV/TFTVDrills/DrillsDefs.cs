@@ -60,7 +60,9 @@ namespace TFTV.TFTVDrills
         private static readonly Dictionary<TacticalAbilityDef, DrillUnlockCondition> DrillUnlockConditions = new Dictionary<TacticalAbilityDef, DrillUnlockCondition>();
 
         internal static DamageMultiplierStatusDef _drawfireStatus;
+        internal static ApplyStatusAbilityDef _drawFire;
         internal static DamageMultiplierStatusDef _markedwatchStatus;
+        internal static ApplyStatusAbilityDef _markedWatch;
         internal static GameTagDef OrdnanceResupplyTag;
 
         internal static PassiveModifierAbilityDef _causticJamming;
@@ -78,6 +80,8 @@ namespace TFTV.TFTVDrills
         internal static ReloadAbilityDef _ordnanceResupply;
         internal static PassiveModifierAbilityDef _pinpointToss;
         internal static ApplyStatusAbilityDef _heavyConditioning;
+
+        internal static ApplyStatusAbilityDef _aksuSprint;
 
         internal static PassiveModifierAbilityDef _shockDrop;
         internal static ShockDropStatusDef _shockDropStatus;
@@ -268,6 +272,16 @@ namespace TFTV.TFTVDrills
 
         private static void ConfigureUnlockConditions()
         {
+            var aksuSprint = new DrillUnlockCondition();
+            aksuSprint.ClassLevelRequirements.Add(new DrillClassLevelRequirement
+            {
+                ClassTag = DefCache.GetDef<ClassTagDef>("Berserker_ClassTagDef"),
+                MinimumLevel = 1,
+                RequireSelectedOperative = true
+            });
+            aksuSprint.RequiredResearchIds.Add("ANU_Berserker_ResearchDef");
+            SetUnlockCondition(_aksuSprint, aksuSprint);
+
             var viralGrip = new DrillUnlockCondition();
             viralGrip.ClassLevelRequirements.Add(new DrillClassLevelRequirement
             {
@@ -441,7 +455,7 @@ namespace TFTV.TFTVDrills
 
                 _drawfireStatus = CreateDummyStatus("drawfire", "{65B5A8AC-FBB0-42CC-BC2E-EB9DB7460FC8}", "{7557CA9F-DAB8-4AE1-AF1A-853261A4CF05}");
                 Drills.Add(
-                    CreateApplyStatusAbilityDef("drawfire", "8f7c0a6a-6b63-4b01-9d69-6f7e3d4a4b9a", "f2a5a2d1-0c1f-4c28-8a3a-2f4a0cc2fd3c", "3a0f4d0b-0a8f-4b8f-a8cc-1f4f4f3c3f9d", 2, 0, _drawfireStatus));
+                 _drawFire =   CreateApplyStatusAbilityDef("drawfire", "8f7c0a6a-6b63-4b01-9d69-6f7e3d4a4b9a", "f2a5a2d1-0c1f-4c28-8a3a-2f4a0cc2fd3c", "3a0f4d0b-0a8f-4b8f-a8cc-1f4f4f3c3f9d", 2, 0, _drawfireStatus));
 
 
 
@@ -879,6 +893,8 @@ namespace TFTV.TFTVDrills
                 newAbility.AnimType = -1;
                 newAbility.StatusDef = newStatus;
                 newAbility.TargetApplicationConditions = new EffectConditionDef[] { };
+
+                _aksuSprint = newAbility;
 
                 Drills.Add(newAbility);
 
@@ -1420,7 +1436,7 @@ namespace TFTV.TFTVDrills
                 newTacticalAbility.ViewElementDef.LargeIcon = icon;
                 newTacticalAbility.ViewElementDef.SmallIcon = icon;
 
-
+                _markedWatch = newTacticalAbility;
 
                 Drills.Add(newTacticalAbility);
                 _markedwatchStatus = newStatus;

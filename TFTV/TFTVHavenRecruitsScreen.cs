@@ -270,7 +270,9 @@ namespace TFTV
                 RecruitOverlayManager.isInitialized = false;
                 _recruitListRoot = null;
                 _totalRecruitsLabel = null;
-
+                _factionTabGroup = null;
+                _factionTabs.Clear();
+                _activeFactionFilter = FactionFilter.Anu;
 
             }
             catch (Exception ex) { TFTVLogger.Error(ex); }
@@ -293,6 +295,26 @@ namespace TFTV
         private const int ResourceIconSize = 24;
         private const int TextFontSize = 20;
 
+        private static readonly Color HeaderBackgroundColor = HexToColor("16222a");
+        private static readonly Color HeaderBorderColor = HexToColor("222e40");
+        private static readonly Color TabBorderColor = HexToColor("55606f");
+        private static readonly Color TabHighlightColor = HexToColor("ffb339");
+        private static readonly Color TabDefaultColor = HexToColor("1a2733");
+
+        private static Color HexToColor(string hex)
+        {
+            if (string.IsNullOrEmpty(hex))
+            {
+                return Color.white;
+            }
+
+            if (!hex.StartsWith("#"))
+            {
+                hex = "#" + hex;
+            }
+
+            return ColorUtility.TryParseHtmlString(hex, out var color) ? color : Color.white;
+        }
 
 
 
@@ -307,7 +329,25 @@ namespace TFTV
         private static Transform _recruitListRoot;
         private static Text _totalRecruitsLabel;
 
-       
+        private enum FactionFilter
+        {
+            Anu,
+            NewJericho,
+            Synedrion
+        }
+
+        private sealed class FactionTabUI
+        {
+            public Toggle Toggle;
+            public Image Background;
+            public Text CountLabel;
+        }
+
+        private static ToggleGroup _factionTabGroup;
+        private static readonly Dictionary<FactionFilter, FactionTabUI> _factionTabs = new Dictionary<FactionFilter, FactionTabUI>();
+        private static readonly Dictionary<FactionFilter, Sprite> _factionIconCache = new Dictionary<FactionFilter, Sprite>();
+        private static FactionFilter _activeFactionFilter = FactionFilter.Anu;
+
 
         private sealed class RecruitCardHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         {
@@ -495,6 +535,7 @@ namespace TFTV
 
                     CreateHeader(overlayPanel.transform);
                     CreateToolbar(overlayPanel.transform);
+                    CreateFactionTabs(overlayPanel.transform);
                     CreateRecruitListArea(overlayPanel.transform);
                     // Double-click on a card = send the closest Phoenix aircraft to that recruit's site
                     OnCardDoubleClick = (recruit, site) =>
@@ -642,24 +683,33 @@ namespace TFTV
                         Object.Destroy(child.gameObject);
                     }
 
-                    var recruits = new List<RecruitAtSite>();
-                    if (geoLevelController.NewJerichoFaction != null)
+                    var factionRecruits = new Dictionary<FactionFilter, List<RecruitAtSite>>
+                    {  { FactionFilter.Anu, geoLevelController.AnuFaction != null ? GetRecruitsForFaction(geoLevelController.AnuFaction) : new List<RecruitAtSite>() },
+                        { FactionFilter.NewJericho, geoLevelController.NewJerichoFaction != null ? GetRecruitsForFaction(geoLevelController.NewJerichoFaction) : new List<RecruitAtSite>() },
+                        { FactionFilter.Synedrion, geoLevelController.SynedrionFaction != null ? GetRecruitsForFaction(geoLevelController.SynedrionFaction) : new List<RecruitAtSite>() }
+                    };
+                    foreach (var kvp in factionRecruits)
                     {
-                        recruits.AddRange(GetRecruitsForFaction(geoLevelController.NewJerichoFaction));
-                    }
-                    if (geoLevelController.SynedrionFaction != null)
-                    {
-                        recruits.AddRange(GetRecruitsForFaction(geoLevelController.SynedrionFaction));
-                    }
-                    if (geoLevelController.AnuFaction != null)
-                    {
-                        recruits.AddRange(GetRecruitsForFaction(geoLevelController.AnuFaction));
+                        if (_factionTabs.TryGetValue(kvp.Key, out var tab) && tab.CountLabel != null)
+                        {
+                            tab.CountLabel.text = $"[{kvp.Value.Count}]";
+                        }
+
                     }
 
-                    if (_totalRecruitsLabel != null)
+                    if (!factionRecruits.TryGetValue(_activeFactionFilter, out var recruits)) 
+                    {
+                        recruits = new List<RecruitAtSite>();
+
+                    }
+
+                        if (_totalRecruitsLabel != null)
                     {
                         _totalRecruitsLabel.text = recruits.Count.ToString();
                     }
+
+                    UpdateFactionTabVisuals();
+
                     if (recruits.Count == 0)
                     {
                         CreateEmptyLabel(_recruitListRoot, "No recruits discovered.");
@@ -718,7 +768,160 @@ namespace TFTV
                 AddSortToggle(bar.transform, "Closest to Phoenix Aircraft", SortMode.Distance);
                 
             }
+            private static void CreateFactionTabs(Transform overlayRoot)
+            {
+                var (tabsRoot, rt) = NewUI("FactionTabs", overlayRoot);
+                rt.anchorMin = new Vector2(0f, 0.82f);
+                rt.anchorMax = new Vector2(1f, 0.88f);
+                rt.offsetMin = Vector2.zero;
+                rt.offsetMax = Vector2.zero;
 
+                var layout = tabsRoot.AddComponent<HorizontalLayoutGroup>();
+                layout.childAlignment = TextAnchor.MiddleCenter;
+                layout.spacing = 12f;
+                layout.childControlWidth = true;
+                layout.childControlHeight = true;
+                layout.childForceExpandWidth = true;
+                layout.childForceExpandHeight = false;
+                layout.padding = new RectOffset(24, 24, 4, 4);
+
+                _factionTabGroup = tabsRoot.AddComponent<ToggleGroup>();
+                _factionTabGroup.allowSwitchOff = false;
+
+                CreateFactionTab(tabsRoot.transform, FactionFilter.Anu);
+                CreateFactionTab(tabsRoot.transform, FactionFilter.NewJericho);
+                CreateFactionTab(tabsRoot.transform, FactionFilter.Synedrion);
+
+                UpdateFactionTabVisuals();
+            }
+
+            private static void CreateFactionTab(Transform parent, FactionFilter filter)
+            {
+                var (tabGO, tabRT) = NewUI($"FactionTab_{filter}", parent);
+                tabRT.anchorMin = new Vector2(0f, 0f);
+                tabRT.anchorMax = new Vector2(1f, 1f);
+                tabRT.offsetMin = Vector2.zero;
+                tabRT.offsetMax = Vector2.zero;
+
+                var layoutElement = tabGO.AddComponent<LayoutElement>();
+                layoutElement.flexibleWidth = 1f;
+                layoutElement.preferredHeight = 56f;
+
+                var background = tabGO.AddComponent<Image>();
+                background.color = TabDefaultColor;
+
+                var outline = tabGO.AddComponent<Outline>();
+                outline.effectColor = TabBorderColor;
+                outline.effectDistance = new Vector2(1f, 1f);
+
+                var toggle = tabGO.AddComponent<Toggle>();
+                toggle.group = _factionTabGroup;
+                toggle.transition = Selectable.Transition.None;
+                toggle.targetGraphic = background;
+
+                bool isActive = filter == _activeFactionFilter;
+                toggle.SetIsOnWithoutNotify(isActive);
+
+                var (contentGO, contentRT) = NewUI("Content", tabGO.transform);
+                contentRT.anchorMin = new Vector2(0f, 0f);
+                contentRT.anchorMax = new Vector2(1f, 1f);
+                contentRT.offsetMin = new Vector2(8f, 8f);
+                contentRT.offsetMax = new Vector2(-8f, -8f);
+
+                var contentLayout = contentGO.AddComponent<HorizontalLayoutGroup>();
+                contentLayout.childAlignment = TextAnchor.MiddleCenter;
+                contentLayout.spacing = 6f;
+                contentLayout.childControlWidth = false;
+                contentLayout.childControlHeight = true;
+                contentLayout.childForceExpandWidth = false;
+                contentLayout.childForceExpandHeight = false;
+
+                var iconSprite = GetFactionIcon(filter);
+                var (iconGO, _) = NewUI("Icon", contentGO.transform);
+                var iconImage = iconGO.AddComponent<Image>();
+                iconImage.sprite = iconSprite;
+                iconImage.preserveAspect = true;
+                iconImage.enabled = iconSprite != null;
+                var iconLE = iconGO.AddComponent<LayoutElement>();
+                iconLE.preferredWidth = 36f;
+                iconLE.preferredHeight = 36f;
+
+                var (countGO, _) = NewUI("Count", contentGO.transform);
+                var count = countGO.AddComponent<Text>();
+                count.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
+                count.fontSize = TextFontSize - 2;
+                count.color = Color.white;
+                count.alignment = TextAnchor.MiddleLeft;
+                count.text = "[0]";
+
+                _factionTabs[filter] = new FactionTabUI
+                {
+                    Toggle = toggle,
+                    Background = background,
+                    CountLabel = count
+                };
+
+                toggle.onValueChanged.AddListener(on =>
+                {
+                    if (!on)
+                    {
+                        return;
+                    }
+
+                    _activeFactionFilter = filter;
+                    UpdateFactionTabVisuals();
+                    RefreshColumns();
+                });
+            }
+
+            private static void UpdateFactionTabVisuals()
+            {
+                foreach (var kvp in _factionTabs)
+                {
+                    bool isActive = kvp.Key == _activeFactionFilter && kvp.Value.Toggle != null && kvp.Value.Toggle.isOn;
+                    if (kvp.Value.Background != null)
+                    {
+                        kvp.Value.Background.color = isActive ? TabHighlightColor : TabDefaultColor;
+                    }
+                }
+            }
+
+            private static Sprite GetFactionIcon(FactionFilter filter)
+            {
+                if (_factionIconCache.TryGetValue(filter, out var cached) && cached != null)
+                {
+                    return cached;
+                }
+
+                string fileName = null;
+                switch (filter)
+                {
+                    case FactionFilter.Anu:
+                        fileName = "FactionIcons_Anu.png";
+                        break;
+                    case FactionFilter.NewJericho:
+                        fileName = "FactionIcons_NewJericho.png";
+                        break;
+                    case FactionFilter.Synedrion:
+                        fileName = "FactionIcons_Synedrion.png";
+                        break;
+                }
+
+                if (string.IsNullOrEmpty(fileName))
+                {
+                    return null;
+                }
+
+                var sprite = Helper.CreateSpriteFromImageFile(fileName);
+                if (sprite != null)
+                {
+                    _factionIconCache[filter] = sprite;
+                }
+
+                return sprite;
+            }
+
+            
             private static void CreateHeader(Transform overlayRoot)
             {
                 var (header, rt) = NewUI("Header", overlayRoot);
@@ -727,14 +930,21 @@ namespace TFTV
                 rt.offsetMin = Vector2.zero;
                 rt.offsetMax = Vector2.zero;
 
+                var background = header.AddComponent<Image>();
+                background.color = HeaderBackgroundColor;
+
+                var outline = header.AddComponent<Outline>();
+                outline.effectColor = HeaderBorderColor;
+                outline.effectDistance = new Vector2(2f, 2f);
+
                 var layout = header.AddComponent<HorizontalLayoutGroup>();
                 layout.childAlignment = TextAnchor.MiddleLeft;
                 layout.spacing = 8f;
-                layout.childControlWidth = false;
+                layout.childControlWidth = true;
                 layout.childControlHeight = true;
-                layout.childForceExpandWidth = false;
+                layout.childForceExpandWidth = true;
                 layout.childForceExpandHeight = false;
-                layout.padding = new RectOffset(32, 32, 0, 0);
+                layout.padding = new RectOffset(24, 24, 12, 12);
 
                 var (titleGO, _) = NewUI("Title", header.transform);
                 var title = titleGO.AddComponent<Text>();
@@ -766,7 +976,7 @@ namespace TFTV
 
                 var listRT = listGO.AddComponent<RectTransform>();
                 listRT.anchorMin = new Vector2(0f, 0.01f);
-                listRT.anchorMax = new Vector2(1f, 0.88f);
+                listRT.anchorMax = new Vector2(1f, 0.82f);
                 listRT.offsetMin = Vector2.zero;
                 listRT.offsetMax = Vector2.zero;
 
