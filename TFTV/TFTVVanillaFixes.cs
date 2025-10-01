@@ -1233,7 +1233,63 @@ namespace TFTV
 
         internal class Tactical
         {
-            internal class RFAnimationBug 
+            internal class TacticalSavesAIBug 
+            {
+                [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.StartTurn))]
+                internal static class TacticalActorStartTurnPatch
+                {
+                     private static readonly FieldInfo AbilityUsesThisTurnField = AccessTools.Field(typeof(TacticalActor), "__abilityUsesThisTurn");
+                  
+
+                    public static void Prefix(TacticalActor __instance, bool ____currentlyDeserializing)
+                    {
+                        try
+                        {
+
+
+
+                            if (__instance == null)
+                            {
+                                return;
+                            }
+
+                            TFTVLogger.Always($"Start Turn for TacticalActor {__instance?.DisplayName}");
+
+                            if (__instance.AbilityTraits.Contains(TacticalActor.DoNotResetThisTurnTrait))
+                            {
+                                TFTVLogger.Always($"TacticalActor has DoNotResetThisTurnTrait");
+
+                                return;
+                            }
+
+                            TFTVLogger.Always($"____currentlyDeserializing null? {____currentlyDeserializing==null}");
+
+                            if (!____currentlyDeserializing)
+                            {
+                                TFTVLogger.Always($"TacticalActor is not deserializing");
+                                return;
+                            }
+
+                            TFTVLogger.Always($"AbilityUsesThisTurnField null? {AbilityUsesThisTurnField == null}");
+
+                            if (AbilityUsesThisTurnField.GetValue(__instance) is Dictionary<TacticalAbilityDef, int> abilityUses)
+                            {
+                                abilityUses.Clear();
+                            }
+
+
+                            return;
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+            }
+
+            internal class RFAnimationBug
             {
                 [HarmonyPatch(typeof(TacticalNavigationComponent), "WaitForAnimation")]
                 public static class TacticalNavigationComponent_WaitForAnimation_Patch

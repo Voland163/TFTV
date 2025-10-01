@@ -9,6 +9,7 @@ using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers.PhoenixBase;
 using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Tactical.Entities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -299,14 +300,14 @@ namespace TFTV
         private const int ArmorIconSize = 48;
         private const int ResourceIconSize = 24;
         private const int TextFontSize = 20;
-        private const float AbilityIconsCenterOffsetPx = 40f;
+        private const float AbilityIconsCenterOffsetPx = -180f;
 
         private static readonly Color HeaderBackgroundColor = HexToColor("16222a");
         private static readonly Color HeaderBorderColor = HexToColor("222e40");
-        private static readonly Color TabBorderColor = HexToColor("55606f");
+        private static readonly Color TabBorderColor = HexToColor("55606F");
         private static readonly Color TabHighlightColor = HexToColor("ffb339");
-        private static readonly Color TabDefaultColor = HexToColor("1a2733");
-        private static readonly Color CardBackgroundColor = new Color(1f, 1f, 1f, 0.08f);
+        private static readonly Color TabDefaultColor = HexToColor("060B16");
+        private static readonly Color CardBackgroundColor = HexToColor("#1E2026");
         private static readonly Color CardSelectedColor = new Color(1f, 1f, 1f, 0.18f);
         private static readonly Color DetailSubTextColor = new Color(0.75f, 0.8f, 0.9f, 1f);
 
@@ -605,7 +606,7 @@ namespace TFTV
                     // draw above the HUD
                     var ovCanvas = overlayPanel.AddComponent<Canvas>();
                     ovCanvas.overrideSorting = true;
-                    ovCanvas.sortingOrder = 5000;
+                    ovCanvas.sortingOrder = 2; //5000;
                     overlayPanel.AddComponent<GraphicRaycaster>();
 
                     var panelImage = overlayPanel.AddComponent<Image>();
@@ -2083,7 +2084,52 @@ namespace TFTV
             }
 
 
+            private static Image MakeMutationIcon(Transform parent, Sprite sp, int px)
+            {
+                var (frame, frt) = NewUI("MutationIconFrame", parent);
+                var le = frame.AddComponent<LayoutElement>();
+                le.preferredWidth = px; le.minWidth = px;
+                le.preferredHeight = px; le.minHeight = px;
+                frt.sizeDelta = new Vector2(px, px);
 
+                if (_iconBackground != null)
+                {
+                    var (bgGO, bgRT) = NewUI("Background", frame.transform);
+                    var bg = bgGO.AddComponent<Image>();
+                    bg.sprite = _iconBackground;
+                    bg.raycastTarget = false;
+                    bg.type = Image.Type.Sliced;
+                    bgRT.anchorMin = Vector2.zero; bgRT.anchorMax = Vector2.one;
+                    bgRT.offsetMin = Vector2.zero; bgRT.offsetMax = Vector2.zero;
+                }
+
+                var (imgGO, imgRT) = NewUI("Img", frame.transform);
+                var img = imgGO.AddComponent<Image>();
+                img.sprite = sp;
+                img.raycastTarget = false;
+
+                imgRT.anchorMin = new Vector2(0.1f, 0.1f);
+                imgRT.anchorMax = new Vector2(0.9f, 0.9f);
+                imgRT.offsetMin = Vector2.zero; imgRT.offsetMax = Vector2.zero;
+
+                var arf = imgGO.AddComponent<AspectRatioFitter>();
+                arf.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+                if (sp && sp.rect.height > 0f)
+                    arf.aspectRatio = sp.rect.width / sp.rect.height;
+
+                if (_mutationBound != null)
+                {
+                    var (boundGO, boundRT) = NewUI("Bound", frame.transform);
+                    var bound = boundGO.AddComponent<Image>();
+                    bound.sprite = _mutationBound;
+                    bound.raycastTarget = false;
+                    bound.type = Image.Type.Sliced;
+                    boundRT.anchorMin = Vector2.zero; boundRT.anchorMax = Vector2.one;
+                    boundRT.offsetMin = Vector2.zero; boundRT.offsetMax = Vector2.zero;
+                }
+
+                return img;
+            }
 
 
 
@@ -2185,7 +2231,18 @@ namespace TFTV
 
                     abilitiesRT.anchorMin = new Vector2(0.5f, 0.5f);
                     abilitiesRT.anchorMax = new Vector2(0.5f, 0.5f);
-                    abilitiesRT.pivot = new Vector2(0.5f, 0.5f);
+                    
+                    // Plan (pseudocode):
+                    // 1. Anchor the abilities container to the RIGHT side of its parent so it aligns to the right edge.
+                    // 2. Use a pivot of (1, 0.5) so positioning is calculated from the right edge.
+                    // 3. Provide a negative anchoredPosition.x to move the container leftwards by a "considerable offset".
+                    // 4. Keep other layout settings the same so the icons still size and layout correctly.
+                    // 5. Minimal change: replace the existing anchor/pivot/position lines with right-aligned equivalents.
+
+                    abilitiesRT.anchorMin = new Vector2(1f, 0.5f);
+                    abilitiesRT.anchorMax = new Vector2(1f, 0.5f);
+                    abilitiesRT.pivot = new Vector2(1f, 0.5f);
+                    // Move left from the right edge by a considerable offset. Adjust the multiplier or added value as needed.
                     abilitiesRT.anchoredPosition = new Vector2(AbilityIconsCenterOffsetPx, 0f);
 
                     var abilitiesLayout = abilitiesGO.AddComponent<HorizontalLayoutGroup>();
@@ -2200,17 +2257,19 @@ namespace TFTV
                     abilitiesFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
                     abilitiesFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
+                    foreach (var icon in mutationIcons)
+                    {
+                        if (icon == null) continue;
+                        MakeMutationIcon(abilitiesGO.transform, icon, ArmorIconSize);
+                    }
+
                     foreach (var icon in abilityIcons)
                     {
                         if (icon == null) continue;
                         MakeFixedIcon(abilitiesGO.transform, icon, AbilityIconSize);
                     }
 
-                    foreach (var icon in mutationIcons)
-                    {
-                        if (icon == null) continue;
-                        MakeFixedIcon(abilitiesGO.transform, icon, ArmorIconSize);
-                    }
+                   
                 }
 
 
