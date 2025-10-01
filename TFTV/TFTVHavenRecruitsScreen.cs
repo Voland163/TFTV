@@ -145,7 +145,7 @@ namespace TFTV
         }
     }
 
-
+    
 
     /// <summary>
     /// Helper methods for controlling the objectives module visibility when the recruits overlay is displayed.
@@ -260,7 +260,7 @@ namespace TFTV
 
     class TFTVHavenRecruitsScreen
     {
-
+        
         public static void ClearInternalData()
         {
             try
@@ -293,7 +293,8 @@ namespace TFTV
         private const float ColumnPadding = 12f;
         private const float ItemSpacing = 6f;     // space between cards
         private const int RowSpacing = 2;      // space between rows inside a card
-        private const int AbilityIconSize = 36;  // abilities
+        private const int AbilityIconSize = 48;  // abilities
+        private const int ClassIconSize = 32;    // class badge on list entry
         private const int EquipIconSize = 48;  // equipment & armor (match abilities)
         private const int ArmorIconSize = 48;
         private const int ResourceIconSize = 24;
@@ -378,6 +379,8 @@ namespace TFTV
             }
         }
 
+
+
         // Hook you can set from outside if you want:
         public static Action<GeoUnitDescriptor, GeoSite> OnCardDoubleClick;
 
@@ -441,6 +444,7 @@ namespace TFTV
             private static Transform _detailMutationRoot;
             private static GameObject _detailCostGroup;
             private static Transform _detailCostRoot;
+            private static Image _detailFactionLogoImage;
 
             internal static void ResetState()
             {
@@ -477,7 +481,7 @@ namespace TFTV
                     _detailMutationRoot = null;
                     _detailCostGroup = null;
                     _detailCostRoot = null;
-
+                    _detailFactionLogoImage = null;
                     isInitialized = false;
                 }
                 catch (Exception ex) { TFTVLogger.Error(ex); }
@@ -668,11 +672,30 @@ namespace TFTV
                     rt.offsetMin = Vector2.zero;
                     rt.offsetMax = Vector2.zero;
 
+                    var (logoGO, logoRT) = NewUI("FactionLogo", _detailPanel.transform);
+                    logoRT.anchorMin = new Vector2(0.5f, 0.5f);
+                    logoRT.anchorMax = new Vector2(0.5f, 0.5f);
+                    logoRT.pivot = new Vector2(0.5f, 0.5f);
+                    logoRT.sizeDelta = new Vector2(420f, 420f);
+                    logoRT.anchoredPosition = Vector2.zero;
+                    logoGO.transform.SetAsFirstSibling();
+
+                    var logoImage = logoGO.AddComponent<Image>();
+                    logoImage.color = new Color(1f, 1f, 1f, 0.18f);
+                    logoImage.raycastTarget = false;
+                    logoImage.preserveAspect = true;
+                    logoImage.enabled = false;
+                    _detailFactionLogoImage = logoImage;
+
+                    CreateDetailHeader(_detailPanel.transform);
+
                     var (contentGO, contentRT) = NewUI("Content", _detailPanel.transform);
                     contentRT.anchorMin = new Vector2(0f, 0f);
-                    contentRT.anchorMax = new Vector2(1f, 1f);
+                    contentRT.anchorMax = new Vector2(1f, 0.94f);
                     contentRT.offsetMin = new Vector2(24f, 24f);
                     contentRT.offsetMax = new Vector2(-24f, -24f);
+
+
 
                     var layout = contentGO.AddComponent<VerticalLayoutGroup>();
                     layout.childAlignment = TextAnchor.UpperLeft;
@@ -959,6 +982,8 @@ namespace TFTV
                         _detailEmptyState.SetActive(true);
                     }
 
+                    ResetDetailFactionVisuals();
+
                     if (_detailAnimator != null)
                     {
                         if (!_detailPanel.activeSelf && !_isDetailVisible)
@@ -1034,6 +1059,8 @@ namespace TFTV
                         _detailLocationLabel.text = $"Location: {location}";
                     }
 
+                    UpdateDetailPanelFactionVisuals(data);
+
                     var abilityIcons = GetSelectedAbilityIcons(data.Recruit).Where(sp => sp != null).ToList();
                     PopulateIconGroup(_detailAbilityGroup, _detailAbilityRoot, abilityIcons, AbilityIconSize);
 
@@ -1047,6 +1074,150 @@ namespace TFTV
                     {
                         LayoutRebuilder.ForceRebuildLayoutImmediate(infoRect);
                     }
+                }
+                catch (Exception ex) { TFTVLogger.Error(ex); }
+            }
+
+            private static void UpdateDetailPanelFactionVisuals(RecruitAtSite data)
+            {
+                try
+                {
+                    if (_detailFactionLogoImage == null)
+                    {
+                        return;
+                    }
+
+                    Sprite factionSprite = null;
+                    Color tintColor = new Color(1f, 1f, 1f, 0f);
+
+                    if (data?.HavenOwner != null && TryGetFactionFilter(data.HavenOwner, out var filter))
+                    {
+                        factionSprite = GetFactionIcon(filter);
+                        var factionColor = GetFactionColor(filter);
+                        tintColor = new Color(factionColor.r, factionColor.g, factionColor.b, 0.22f);
+                    }
+
+                    _detailFactionLogoImage.sprite = factionSprite;
+                    _detailFactionLogoImage.color = tintColor;
+                    _detailFactionLogoImage.enabled = factionSprite != null;
+                }
+                catch (Exception ex) { TFTVLogger.Error(ex); }
+            }
+
+            private static void ResetDetailFactionVisuals()
+            {
+                if (_detailFactionLogoImage != null)
+                {
+                    _detailFactionLogoImage.sprite = null;
+                    _detailFactionLogoImage.enabled = false;
+                }
+            }
+
+            private static bool TryGetFactionFilter(GeoFaction faction, out FactionFilter filter)
+            {
+                filter = default;
+
+                try
+                {
+                    if (faction == null)
+                    {
+                        return false;
+                    }
+
+                    var geoLevel = faction.GeoLevel;
+                    if (geoLevel != null)
+                    {
+                        if (faction == geoLevel.AnuFaction)
+                        {
+                            filter = FactionFilter.Anu;
+                            return true;
+                        }
+
+                        if (faction == geoLevel.NewJerichoFaction)
+                        {
+                            filter = FactionFilter.NewJericho;
+                            return true;
+                        }
+
+                        if (faction == geoLevel.SynedrionFaction)
+                        {
+                            filter = FactionFilter.Synedrion;
+                            return true;
+                        }
+                    }
+
+                    var defName = faction.Def?.name;
+                    if (!string.IsNullOrEmpty(defName))
+                    {
+                        if (defName.IndexOf("Anu", StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            filter = FactionFilter.Anu;
+                            return true;
+                        }
+
+                        if (defName.IndexOf("Jericho", StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            filter = FactionFilter.NewJericho;
+                            return true;
+                        }
+
+                        if (defName.IndexOf("Synedrion", StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            filter = FactionFilter.Synedrion;
+                            return true;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
+
+                return false;
+            }
+
+            private static void CreateDetailHeader(Transform parent)
+            {
+                try
+                {
+                    if (parent == null)
+                    {
+                        return;
+                    }
+
+                    var (headerGO, headerRT) = NewUI("DetailHeader", parent);
+                    headerRT.anchorMin = new Vector2(0f, 0.94f);
+                    headerRT.anchorMax = new Vector2(1f, 1f);
+                    headerRT.offsetMin = Vector2.zero;
+                    headerRT.offsetMax = Vector2.zero;
+
+                    var background = headerGO.AddComponent<Image>();
+                    background.color = HeaderBackgroundColor;
+
+                    var outline = headerGO.AddComponent<Outline>();
+                    outline.effectColor = HeaderBorderColor;
+                    outline.effectDistance = new Vector2(2f, 2f);
+
+                    var layout = headerGO.AddComponent<HorizontalLayoutGroup>();
+                    layout.childAlignment = TextAnchor.MiddleLeft;
+                    layout.spacing = 8f;
+                    layout.childControlWidth = true;
+                    layout.childControlHeight = true;
+                    layout.childForceExpandWidth = true;
+                    layout.childForceExpandHeight = false;
+                    layout.padding = new RectOffset(24, 24, 12, 12);
+
+                    var (titleGO, _) = NewUI("Title", headerGO.transform);
+                    var title = titleGO.AddComponent<Text>();
+                    title.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
+                    title.fontSize = TextFontSize + 2;
+                    title.color = Color.white;
+                    title.alignment = TextAnchor.MiddleLeft;
+                    title.text = "RECRUIT DETAILS";
+
+                    var (spacer, _) = NewUI("Spacer", headerGO.transform);
+                    var spacerElement = spacer.AddComponent<LayoutElement>();
+                    spacerElement.flexibleWidth = 1f;
                 }
                 catch (Exception ex) { TFTVLogger.Error(ex); }
             }
@@ -1934,13 +2105,13 @@ namespace TFTV
                 };
 
                 var layout = card.AddComponent<HorizontalLayoutGroup>();
-                layout.childAlignment = TextAnchor.UpperLeft;
-                layout.spacing = 2f;
-                layout.childControlWidth = false;
+                layout.childAlignment = TextAnchor.MiddleLeft;
+                layout.spacing = 10f;
+                layout.childControlWidth = true;
                 layout.childControlHeight = true;
                 layout.childForceExpandWidth = false;
                 layout.childForceExpandHeight = false;
-                layout.padding = new RectOffset(8, 6, 6, 6);
+                layout.padding = new RectOffset(4, 6, 4, 4);
 
                 // Let height fit content (no fixed height anymore)
                 var fit = card.AddComponent<ContentSizeFitter>();
@@ -1949,34 +2120,38 @@ namespace TFTV
                 var classIcon = GetClassIcon(data.Recruit);
                 if (classIcon != null)
                 {
-                    MakeFixedIcon(card.transform, classIcon, AbilityIconSize);
+                    MakeFixedIcon(card.transform, classIcon, ClassIconSize);
                 }
 
-                var (levelGO, _) = NewUI("Level", card.transform);
+                var (levelGO, levelRT) = NewUI("Level", card.transform);
                 var levelText = levelGO.AddComponent<Text>();
                 levelText.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
                 levelText.fontSize = TextFontSize;
                 levelText.color = Color.white;
-                levelText.alignment = TextAnchor.UpperLeft;
+                levelText.alignment = TextAnchor.MiddleLeft;
                 levelText.text = $"{data.Recruit?.Level ?? 0}";
-                var levelLE = levelGO.AddComponent<LayoutElement>();
-                levelLE.minWidth = 0f;
-                levelLE.preferredWidth = 0f;
-                levelLE.flexibleWidth = 0f;
+                levelRT.pivot = new Vector2(0f, 0.5f);
+                levelRT.anchorMin = new Vector2(0f, 0.5f);
+                levelRT.anchorMax = new Vector2(0f, 0.5f);
+                levelRT.anchoredPosition = Vector2.zero;
 
                 var levelSizeFitter = levelGO.AddComponent<ContentSizeFitter>();
                 levelSizeFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
                 levelSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-                var (nameGO, _) = NewUI("Name", card.transform);
+                var (nameGO, nameRT) = NewUI("Name", card.transform);
                 var nameText = nameGO.AddComponent<Text>();
                 nameText.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
                 nameText.fontSize = TextFontSize;
                 nameText.color = Color.white;
-                nameText.alignment = TextAnchor.UpperLeft;
+                nameText.alignment = TextAnchor.MiddleLeft;
                 nameText.text = data.Recruit?.GetName() ?? "Unknown Recruit";
                 nameText.horizontalOverflow = HorizontalWrapMode.Overflow;
                 nameText.verticalOverflow = VerticalWrapMode.Truncate;
+                nameRT.pivot = new Vector2(0f, 0.5f);
+                nameRT.anchorMin = new Vector2(0f, 0.5f);
+                nameRT.anchorMax = new Vector2(0f, 0.5f);
+                nameRT.anchoredPosition = Vector2.zero;
                 var nameFitter = nameGO.AddComponent<ContentSizeFitter>();
                 nameFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
                 nameFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -1988,9 +2163,9 @@ namespace TFTV
                 {
                     var (abilitiesGO, _) = NewUI("Abilities", card.transform);
                     var abilitiesLayout = abilitiesGO.AddComponent<HorizontalLayoutGroup>();
-                    abilitiesLayout.childAlignment = TextAnchor.MiddleLeft;
-                    abilitiesLayout.spacing = 3f;
-                    abilitiesLayout.childControlWidth = false;
+                    abilitiesLayout.childAlignment = TextAnchor.MiddleCenter;
+                    abilitiesLayout.spacing = 4f;
+                    abilitiesLayout.childControlWidth = true;
                     abilitiesLayout.childControlHeight = true;
                     abilitiesLayout.childForceExpandWidth = false;
                     abilitiesLayout.childForceExpandHeight = false;
@@ -2186,12 +2361,13 @@ namespace TFTV
                 var (row, _) = NewUI("Row_Cost", parent);
 
                 var h = row.AddComponent<HorizontalLayoutGroup>();
-                h.childAlignment = TextAnchor.MiddleLeft;
-                h.spacing = 1f;
-                h.childControlWidth = false;
+                h.childAlignment = TextAnchor.MiddleRight;
+                h.spacing = 0f;
+                h.childControlWidth = true;
                 h.childControlHeight = true;
                 h.childForceExpandWidth = false;
                 h.childForceExpandHeight = false;
+                h.padding = new RectOffset(0, 0, 0, 0);
 
                 foreach (var type in _resourceDisplayOrder)
                 {
@@ -2220,7 +2396,7 @@ namespace TFTV
                 }
 
 
-                var (chip, _) = NewUI("Res", parent);
+                var (chip, chipRT) = NewUI("Res", parent);
 
                 var layout = chip.AddComponent<VerticalLayoutGroup>();
                 layout.childAlignment = TextAnchor.MiddleCenter;
@@ -2229,6 +2405,14 @@ namespace TFTV
                 layout.childControlHeight = true;
                 layout.childForceExpandWidth = false;
                 layout.childForceExpandHeight = false;
+
+                chipRT.pivot = new Vector2(0.5f, 0.5f);
+
+                var chipLE = chip.AddComponent<LayoutElement>();
+                float chipWidth = ResourceIconSize + 20f;
+                chipLE.minWidth = chipWidth;
+                chipLE.preferredWidth = chipWidth;
+                chipLE.flexibleWidth = 0f;
 
 
                 Image img = null;
@@ -2245,6 +2429,7 @@ namespace TFTV
                     typeLabel.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
                     typeLabel.fontSize = TextFontSize - 4;
                     typeLabel.alignment = TextAnchor.MiddleCenter;
+
                 }
 
                 // amount
@@ -2254,6 +2439,7 @@ namespace TFTV
                 t.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
                 t.fontSize = TextFontSize - 2;
                 t.alignment = TextAnchor.MiddleCenter;
+                t.horizontalOverflow = HorizontalWrapMode.Overflow;
 
                 return chip;
             }
@@ -2450,39 +2636,7 @@ namespace TFTV
                 catch (Exception ex) { TFTVLogger.Error(ex); }
             }
 
-            // ---------- CLOSE BUTTON ----------
-
-            private static void AddCloseButton(GameObject parentPanel)
-            {
-                try
-                {
-                    var close = new GameObject("Close");
-                    close.transform.SetParent(parentPanel.transform, false);
-                    var img = close.AddComponent<Image>();
-                    img.color = new Color(0.6f, 0.2f, 0.2f, 0.95f);
-                    var btn = close.AddComponent<Button>();
-
-                    var rt = close.GetComponent<RectTransform>();
-                    rt.anchorMin = new Vector2(1, 1);
-                    rt.anchorMax = new Vector2(1, 1);
-                    rt.pivot = new Vector2(1, 1);
-                    rt.sizeDelta = new Vector2(80, 32);
-                    rt.anchoredPosition = new Vector2(-20, -20);
-
-                    var txt = new GameObject("Text").AddComponent<Text>();
-                    txt.transform.SetParent(close.transform, false);
-                    txt.text = "Close";
-                    txt.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-                    txt.alignment = TextAnchor.MiddleCenter;
-                    txt.color = Color.white;
-                    var tr = txt.GetComponent<RectTransform>();
-                    tr.anchorMin = Vector2.zero; tr.anchorMax = Vector2.one;
-                    tr.offsetMin = Vector2.zero; tr.offsetMax = Vector2.zero;
-
-                    btn.onClick.AddListener(() => parentPanel.SetActive(false));
-                }
-                catch (Exception ex) { TFTVLogger.Error(ex); }
-            }
+          
 
             private static string Safe(string s) => string.IsNullOrEmpty(s) ? "Unknown" : s;
         }
