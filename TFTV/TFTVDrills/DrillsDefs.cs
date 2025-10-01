@@ -268,15 +268,26 @@ namespace TFTV.TFTVDrills
 
         private static void ConfigureUnlockConditions()
         {
+            var viralGrip = new DrillUnlockCondition();
+            viralGrip.ClassLevelRequirements.Add(new DrillClassLevelRequirement
+            {
+                ClassTag = DefCache.GetDef<ClassTagDef>("Priest_ClassTagDef"),
+                MinimumLevel = 5,
+                RequireSelectedOperative = true
+            });
+            viralGrip.RequiredResearchIds.Add("ANU_AdvancedInfectionTech_ResearchDef");
+            SetUnlockCondition(_virulentGrip, viralGrip);
 
-            var viralPupeteer = new DrillUnlockCondition();
-            viralPupeteer.ClassLevelRequirements.Add(new DrillClassLevelRequirement
+            var viralPuppeteer = new DrillUnlockCondition();
+            viralPuppeteer.ClassLevelRequirements.Add(new DrillClassLevelRequirement
             {
                 ClassTag = DefCache.GetDef<ClassTagDef>("Priest_ClassTagDef"),
                 MinimumLevel = 7,
                 RequireSelectedOperative = true
             });
-            viralPupeteer.RequiredResearchIds.Add("SYN_ViralWeapons_ResearchDef");
+            viralPuppeteer.RequiredResearchIds.Add("ANU_AdvancedInfectionTech_ResearchDef");
+
+            SetUnlockCondition(_viralPuppeteer, viralPuppeteer);
 
 
             var ordnanceResupply = new DrillUnlockCondition();
@@ -417,12 +428,11 @@ namespace TFTV.TFTVDrills
                 CreateDrillNominalAbility("pounceprotocol", "af607182-b3b4-344d-f607-18293a4b5c6d", "d7e8f901-1213-c4d5-e6f7-08192a3b4c5d", "e7f80912-1314-d5e6-f7f8-192a3b4c5d6e"); //pending
 
                 _ordnanceResupply = CreateOrdnanceResupplyAbility(); //done
-                _viralPuppeteer = CreateDrillNominalAbility("viralpuppeteer", "e39a4b5c-f7f8-7881-0a11-2c3d4e5f6071", "23344556-2021-10f3-0405-8091a2b3c4d5", "33445566-2122-11f4-0506-91a2b3c4d5e6");
-                _virulentGrip = CreateDrillNominalAbility("virulentgrip", "f4a5b6c7-0809-8992-1b22-3d4e5f607182", "34455667-2223-12f5-0607-a2b3c4d5e6f7", "45566778-2324-13f6-0708-b3c4d5e6f708");
-                _packLoyalty = CreateDrillNominalAbility("packloyalty", "05b6c7d8-191a-9aa3-2c33-4e5f60718293", "45566789-2425-14f7-0809-c4d5e6f70819", "56677889-2526-15f8-0910-d5e6f708192a");
-
-
-
+                _viralPuppeteer = CreateDrillNominalAbility("viralpuppeteer", "e39a4b5c-f7f8-7881-0a11-2c3d4e5f6071", "23344556-2021-10f3-0405-8091a2b3c4d5", "33445566-2122-11f4-0506-91a2b3c4d5e6"); //done
+                _virulentGrip = CreateDrillNominalAbility("virulentgrip", "f4a5b6c7-0809-8992-1b22-3d4e5f607182", "34455667-2223-12f5-0607-a2b3c4d5e6f7", "45566778-2324-13f6-0708-b3c4d5e6f708"); //done
+               
+                
+                _packLoyalty = CreateDrillNominalAbility("packloyalty", "05b6c7d8-191a-9aa3-2c33-4e5f60718293", "45566789-2425-14f7-0809-c4d5e6f70819", "56677889-2526-15f8-0910-d5e6f708192a"); //pending
 
                 CreateMightMakesRightAddStatusAbilityDef("mightmakesright", "d2a3b4c5-6e7f-4819-9a0b-1c2d3e4f5a60", "1e2f3a4b-5c6d-7081-92a3-b4c5d6e7f809", "2a3b4c5d-6e7f-8091-a2b3-c4d5e6f70819");
 

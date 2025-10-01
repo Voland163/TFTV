@@ -268,6 +268,8 @@ namespace TFTV
                 _sortGroup = null;
                 _sortToggles.Clear();
                 RecruitOverlayManager.isInitialized = false;
+                _recruitListRoot = null;
+                _totalRecruitsLabel = null;
 
 
             }
@@ -302,9 +304,10 @@ namespace TFTV
         private static ToggleGroup _sortGroup;
         private static readonly Dictionary<SortMode, Toggle> _sortToggles = new Dictionary<SortMode, Toggle>();
 
+        private static Transform _recruitListRoot;
+        private static Text _totalRecruitsLabel;
 
-        private static readonly Dictionary<GeoFaction, Text> _countLabelByFaction = new Dictionary<GeoFaction, Text>();
-        // private static readonly Dictionary<GeoFaction, Image> _iconByFaction = new Dictionary<GeoFaction, Image>();
+       
 
         private sealed class RecruitCardHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         {
@@ -446,8 +449,6 @@ namespace TFTV
                 catch (Exception ex) { TFTVLogger.Error(ex); throw; }
             }
 
-            private static HorizontalLayoutGroup _columnsRoot;
-            private static Dictionary<GeoFaction, Transform> _columnByFaction = new Dictionary<GeoFaction, Transform>();
 
             private static void CreateOverlay()
             {
@@ -488,38 +489,13 @@ namespace TFTV
                     rt.offsetMin = Vector2.zero;
                     rt.offsetMax = Vector2.zero;
 
-                    // Root: horizontal layout for the 3 scrollable columns
-                    var colsGO = new GameObject("Columns");
-                    colsGO.transform.SetParent(overlayPanel.transform, false);
-                    var colsRT = colsGO.AddComponent<RectTransform>();
-
-                    // Fill overlay horizontally; leave top 7% to the toolbar (adjust to taste)
-                    // Fill overlay horizontally; leave 7% top for toolbar and 10% bottom padding
-                    colsRT.anchorMin = new Vector2(0f, 0.01f);  // was 0f
-                    colsRT.anchorMax = new Vector2(1f, 0.93f);
-                    colsRT.offsetMin = Vector2.zero;
-                    colsRT.offsetMax = Vector2.zero;
-
-                    _columnsRoot = colsGO.AddComponent<HorizontalLayoutGroup>();
-                    _columnsRoot.childForceExpandWidth = true;
-                    _columnsRoot.childForceExpandHeight = true;
-                    _columnsRoot.childAlignment = TextAnchor.UpperCenter;
-                    _columnsRoot.spacing = ColumnPadding;
-
-                    var fitter = colsGO.AddComponent<ContentSizeFitter>();
-                    fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-                    fitter.verticalFit = ContentSizeFitter.FitMode.Unconstrained;
-
-                    // Build 3 columns
+                    
 
                     GeoLevelController geoLevel = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
+                    CreateHeader(overlayPanel.transform);
                     CreateToolbar(overlayPanel.transform);
-
-                    BuildFactionColumn(geoLevel.AnuFaction, "Disciples of Anu");
-                    BuildFactionColumn(geoLevel.NewJerichoFaction, "New Jericho");
-                    BuildFactionColumn(geoLevel.SynedrionFaction, "Synedrion");
-
+                    CreateRecruitListArea(overlayPanel.transform);
                     // Double-click on a card = send the closest Phoenix aircraft to that recruit's site
                     OnCardDoubleClick = (recruit, site) =>
                     {
@@ -645,104 +621,7 @@ namespace TFTV
 
 
 
-            private static void BuildFactionColumn(GeoFaction faction, string title)
-            {
-                try
-                {
-                    var colRoot = new GameObject($"Column_{title}");
-                    colRoot.transform.SetParent(_columnsRoot.transform, false);
-                    colRoot.AddComponent<RectTransform>();
-
-                    // --- Title: [small icon] (count) ---
-                    var (titleGO, titleRT) = NewUI("Title", colRoot.transform);
-                    titleRT.anchorMin = new Vector2(0, 1);
-                    titleRT.anchorMax = new Vector2(1, 1);
-                    titleRT.pivot = new Vector2(0.5f, 1);
-                    titleRT.sizeDelta = new Vector2(0, 30);   // height of the title row
-
-                    var tH = titleGO.AddComponent<HorizontalLayoutGroup>();
-                    tH.childAlignment = TextAnchor.MiddleCenter;
-                    tH.spacing = 6;
-                    tH.childForceExpandWidth = false;
-                    tH.childForceExpandHeight = false;
-
-                    // Small icon
-                    /*    var (icoGO, _) = NewUI("FactionIconSmall", titleGO.transform);
-                        var ico = icoGO.AddComponent<Image>();
-                        ico.sprite = GetFactionIcon(faction);
-                        ico.preserveAspect = true;
-                        var icoLE = icoGO.AddComponent<LayoutElement>();
-                        icoLE.preferredWidth = 22;   // <-- set the intended size here
-                        icoLE.preferredHeight = 22;
-                        _iconByFaction[faction] = ico;*/
-
-                    // Count
-                    var (cntGO, _) = NewUI("Count", titleGO.transform);
-                    var cntText = cntGO.AddComponent<Text>();
-                    cntText.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
-                    cntText.fontSize = TextFontSize;
-                    cntText.alignment = TextAnchor.MiddleLeft;
-                    cntText.color = Color.white;
-                    cntText.text = "(0)";
-                    _countLabelByFaction[faction] = cntText;
-
-                    // --- ScrollView ---
-                    var scrollGO = new GameObject("Scroll");
-                    scrollGO.transform.SetParent(colRoot.transform, false);
-                    var scrollRect = scrollGO.AddComponent<ScrollRect>();
-                    var mask = scrollGO.AddComponent<Mask>(); mask.showMaskGraphic = false;
-                    var bg = scrollGO.AddComponent<Image>(); bg.color = new Color(1, 1, 1, 0.05f);
-
-                    var scrollRT = scrollGO.GetComponent<RectTransform>();
-                    scrollRT.anchorMin = new Vector2(0, 0);
-                    scrollRT.anchorMax = new Vector2(1, 1);
-                    scrollRT.offsetMin = new Vector2(0, 0);
-                    scrollRT.offsetMax = new Vector2(0, -34); // leaves room for Title
-
-                    // --- Watermark (created BEFORE Content so it renders behind) ---
-                    var (wmGO, wmRT) = NewUI("Watermark", scrollGO.transform);
-                    var wmImg = wmGO.AddComponent<Image>();
-                    wmImg.sprite = GetFactionIcon(faction);
-                    wmImg.raycastTarget = false;              // don't block clicks/scroll
-                    wmImg.preserveAspect = true;
-                    var facColor = faction.Def.FactionColor;  // tint by faction
-                    facColor.a = 0.15f;                       // nice semi-transparency
-                    wmImg.color = facColor;
-                    // fill the scroll area
-                    wmRT.anchorMin = Vector2.zero; wmRT.anchorMax = Vector2.one;
-                    wmRT.offsetMin = Vector2.zero; wmRT.offsetMax = Vector2.zero;
-                    // keep aspect while fitting in parent
-                    var wmFit = wmGO.AddComponent<AspectRatioFitter>();
-                    wmFit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
-
-                    // --- Content (drawn on top, after watermark) ---
-                    var contentGO = new GameObject("Content");
-                    contentGO.transform.SetParent(scrollGO.transform, false);
-                    var contentRT = contentGO.AddComponent<RectTransform>();
-                    contentRT.anchorMin = new Vector2(0, 1);
-                    contentRT.anchorMax = new Vector2(1, 1);
-                    contentRT.pivot = new Vector2(0.5f, 1);
-                    contentRT.offsetMin = new Vector2(8, 8);
-                    contentRT.offsetMax = new Vector2(-8, -8);
-
-                    var vlg = contentGO.AddComponent<VerticalLayoutGroup>();
-                    vlg.childForceExpandWidth = true;
-                    vlg.childForceExpandHeight = false;
-                    vlg.spacing = ItemSpacing;
-                    vlg.childAlignment = TextAnchor.UpperCenter;
-
-                    var fitter = contentGO.AddComponent<ContentSizeFitter>();
-                    fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-                    scrollRect.content = contentRT;
-                    scrollRect.vertical = true;
-                    scrollRect.horizontal = false;
-
-                    _columnByFaction[faction] = contentGO.transform;
-                }
-                catch (Exception ex) { TFTVLogger.Error(ex); }
-            }
-
+           
 
             private static void RefreshColumns()
             {
@@ -753,56 +632,46 @@ namespace TFTV
                     var geoLevelController = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
                     if (!geoLevelController) return;
 
-                    var player = geoLevelController.PhoenixFaction; // player faction wrapper
-
-                    // Clear old
-                    foreach (var t in _columnByFaction.Values)
+                    if (_recruitListRoot == null)
                     {
-                        foreach (Transform c in t) Object.Destroy(c.gameObject);
-                    }
-
-                    // Populate per faction
-                    PopulateFactionColumn(geoLevelController.NewJerichoFaction);
-                    PopulateFactionColumn(geoLevelController.SynedrionFaction);
-                    PopulateFactionColumn(geoLevelController.AnuFaction);
-                }
-                catch (Exception ex) { TFTVLogger.Error(ex); }
-            }
-
-            private static Sprite GetFactionIcon(GeoFaction faction)
-            {
-                return faction.Def.GeoFactionViewDef.FactionIcon;
-            }
-
-
-            private static void PopulateFactionColumn(GeoFaction faction)
-            {
-                try
-                {
-                    if (faction == null) return;
-
-                    Transform contentRoot = _columnByFaction[faction];
-
-                    if (contentRoot == null)
-                    {
-                        TFTVLogger.Always($"No content root found for faction {faction.Name}");
                         return;
                     }
 
+                    foreach (Transform child in _recruitListRoot)
+                    {
+                        Object.Destroy(child.gameObject);
+                    }
 
+                    var recruits = new List<RecruitAtSite>();
+                    if (geoLevelController.NewJerichoFaction != null)
+                    {
+                        recruits.AddRange(GetRecruitsForFaction(geoLevelController.NewJerichoFaction));
+                    }
+                    if (geoLevelController.SynedrionFaction != null)
+                    {
+                        recruits.AddRange(GetRecruitsForFaction(geoLevelController.SynedrionFaction));
+                    }
+                    if (geoLevelController.AnuFaction != null)
+                    {
+                        recruits.AddRange(GetRecruitsForFaction(geoLevelController.AnuFaction));
+                    }
 
-                    List<RecruitAtSite> recruits = GetRecruitsForFaction(faction);
-
-                    _countLabelByFaction[faction].text = $"({recruits.Count})";
-
-                    if (recruits.Count == 0) { CreateEmptyLabel(contentRoot, "No recruits discovered."); return; }
+                    if (_totalRecruitsLabel != null)
+                    {
+                        _totalRecruitsLabel.text = recruits.Count.ToString();
+                    }
+                    if (recruits.Count == 0)
+                    {
+                        CreateEmptyLabel(_recruitListRoot, "No recruits discovered.");
+                        return;
+                    }
 
                     SortRecruits(recruits);
 
                     bool collapse = recruits.Count > 4;   // show compact by default if many
                     foreach (var r in recruits)
                     {
-                        CreateRecruitItem(contentRoot, r, collapse);
+                        CreateRecruitItem(_recruitListRoot, r, collapse);
                     }
                 }
                 catch (Exception ex)
@@ -814,8 +683,8 @@ namespace TFTV
             private static void CreateToolbar(Transform overlayRoot)
             {
                 var (bar, rt) = NewUI("Toolbar", overlayRoot);
-                rt.anchorMin = new Vector2(0f, 0.93f);
-                rt.anchorMax = new Vector2(1f, 1f);
+                rt.anchorMin = new Vector2(0f, 0.88f);
+                rt.anchorMax = new Vector2(1f, 0.94f);
                 rt.offsetMin = Vector2.zero;
                 rt.offsetMax = Vector2.zero;
 
@@ -843,11 +712,91 @@ namespace TFTV
                 _sortGroup = bar.AddComponent<ToggleGroup>();
                 _sortGroup.allowSwitchOff = false;
 
-                // Create the four checkboxes 
+                // Create the 3 checkboxes 
                 AddSortToggle(bar.transform, "Level", SortMode.Level, isOn: true);
                 AddSortToggle(bar.transform, "Class", SortMode.Class);
                 AddSortToggle(bar.transform, "Closest to Phoenix Aircraft", SortMode.Distance);
                 
+            }
+
+            private static void CreateHeader(Transform overlayRoot)
+            {
+                var (header, rt) = NewUI("Header", overlayRoot);
+                rt.anchorMin = new Vector2(0f, 0.94f);
+                rt.anchorMax = new Vector2(1f, 1f);
+                rt.offsetMin = Vector2.zero;
+                rt.offsetMax = Vector2.zero;
+
+                var layout = header.AddComponent<HorizontalLayoutGroup>();
+                layout.childAlignment = TextAnchor.MiddleLeft;
+                layout.spacing = 8f;
+                layout.childControlWidth = false;
+                layout.childControlHeight = true;
+                layout.childForceExpandWidth = false;
+                layout.childForceExpandHeight = false;
+                layout.padding = new RectOffset(32, 32, 0, 0);
+
+                var (titleGO, _) = NewUI("Title", header.transform);
+                var title = titleGO.AddComponent<Text>();
+                title.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
+                title.fontSize = TextFontSize + 2;
+                title.color = Color.white;
+                title.alignment = TextAnchor.MiddleLeft;
+                title.text = "RECRUITS";
+
+                var (spacer, _) = NewUI("Spacer", header.transform);
+                var spacerElement = spacer.AddComponent<LayoutElement>();
+                spacerElement.flexibleWidth = 1f;
+
+                var (countGO, _) = NewUI("TotalCount", header.transform);
+                var count = countGO.AddComponent<Text>();
+                count.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
+                count.fontSize = TextFontSize + 2;
+                count.color = Color.white;
+                count.alignment = TextAnchor.MiddleRight;
+                count.text = "0";
+
+                _totalRecruitsLabel = count;
+            }
+
+            private static void CreateRecruitListArea(Transform overlayRoot)
+            {
+                var listGO = new GameObject("RecruitList");
+                listGO.transform.SetParent(overlayRoot, false);
+
+                var listRT = listGO.AddComponent<RectTransform>();
+                listRT.anchorMin = new Vector2(0f, 0.01f);
+                listRT.anchorMax = new Vector2(1f, 0.88f);
+                listRT.offsetMin = Vector2.zero;
+                listRT.offsetMax = Vector2.zero;
+
+                var scrollRect = listGO.AddComponent<ScrollRect>();
+                var mask = listGO.AddComponent<Mask>();
+                mask.showMaskGraphic = false;
+                var bg = listGO.AddComponent<Image>();
+                bg.color = new Color(1f, 1f, 1f, 0.05f);
+
+                var (contentGO, contentRT) = NewUI("Content", listGO.transform);
+                contentRT.anchorMin = new Vector2(0f, 1f);
+                contentRT.anchorMax = new Vector2(1f, 1f);
+                contentRT.pivot = new Vector2(0.5f, 1f);
+                contentRT.offsetMin = new Vector2(8f, 8f);
+                contentRT.offsetMax = new Vector2(-8f, -8f);
+
+                var vlg = contentGO.AddComponent<VerticalLayoutGroup>();
+                vlg.childForceExpandWidth = true;
+                vlg.childForceExpandHeight = false;
+                vlg.spacing = ItemSpacing;
+                vlg.childAlignment = TextAnchor.UpperCenter;
+
+                var fitter = contentGO.AddComponent<ContentSizeFitter>();
+                fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+                scrollRect.content = contentRT;
+                scrollRect.vertical = true;
+                scrollRect.horizontal = false;
+
+                _recruitListRoot = contentGO.transform;
             }
 
             private static void AddSortToggle(Transform parent, string labelText, SortMode mode, bool isOn = false)
@@ -1023,6 +972,11 @@ namespace TFTV
                 var list = new List<RecruitAtSite>();
                 try
                 {
+                    if (faction == null)
+                    {
+                        return list;
+                    }
+
 
                     GeoPhoenixFaction geoPhoenixFaction = faction.GeoLevel.PhoenixFaction; // player faction wrapper
                                                                                            // All sites with havens, owned by factionDef, revealed to player
