@@ -66,7 +66,7 @@ namespace TFTV
 {
     class TFTVAircraftRework
     {
-        public static bool AircraftReworkOn = false;
+        public static bool AircraftReworkOn = true;
         private static readonly float _mistSpeedMalus = 0.2f;
         //  private static readonly float _mistSpeedBuff = 0.5f;
         private static readonly float _mistSpeedModuleBuff = 150;
