@@ -1263,7 +1263,7 @@ namespace TFTV
                                 return;
                             }
 
-                            TFTVLogger.Always($"____currentlyDeserializing null? {____currentlyDeserializing == null}");
+                         
 
                             if (!____currentlyDeserializing)
                             {

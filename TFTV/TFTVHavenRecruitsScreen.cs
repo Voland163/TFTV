@@ -383,6 +383,59 @@ namespace TFTV
             }
         }
 
+        private sealed class RecruitCardView : MonoBehaviour
+        {
+            public Image ClassIconImage;
+            public Color ClassIconDefaultColor = Color.white;
+            public Text LevelLabel;
+            public Color LevelDefaultColor = Color.white;
+            public Text NameLabel;
+            public Color NameDefaultColor = Color.white;
+
+            private readonly List<Text> _resourceAmountLabels = new List<Text>();
+            private readonly List<Color> _resourceAmountDefaultColors = new List<Color>();
+
+            public void RegisterResourceAmount(Text label)
+            {
+                if (label == null)
+                {
+                    return;
+                }
+
+                _resourceAmountLabels.Add(label);
+                _resourceAmountDefaultColors.Add(label.color);
+            }
+
+            public void SetSelected(bool selected)
+            {
+                if (ClassIconImage != null)
+                {
+                    ClassIconImage.color = selected ? Color.black : ClassIconDefaultColor;
+                }
+
+                if (LevelLabel != null)
+                {
+                    LevelLabel.color = selected ? Color.black : LevelDefaultColor;
+                }
+
+                if (NameLabel != null)
+                {
+                    NameLabel.color = selected ? Color.black : NameDefaultColor;
+                }
+
+                for (int i = 0; i < _resourceAmountLabels.Count; i++)
+                {
+                    var label = _resourceAmountLabels[i];
+                    if (label == null)
+                    {
+                        continue;
+                    }
+
+                    label.color = selected ? Color.black : _resourceAmountDefaultColors[i];
+                }
+            }
+        }
+
 
 
         // Hook you can set from outside if you want:
@@ -453,7 +506,7 @@ namespace TFTV
             private static Sprite _mutationBound;
             private static Sprite _iconBackground;
             private static Sprite _abilityIconBackground;
-            private static Sprite _factionTabFrame;
+     
 
             internal static void ResetState()
             {
@@ -519,10 +572,7 @@ namespace TFTV
                     {
                         _abilityIconBackground = Helper.CreateSpriteFromImageFile("UI_ButtonFrame_Main_Sliced.png");
                     }
-                    if (_factionTabFrame == null)
-                    {
-                        _factionTabFrame = Helper.CreateSpriteFromImageFile("UI_MainButton_ChippedFrame.png");
-                    }
+                  
 
                     bool show = !_isOverlayVisible;
 
@@ -627,14 +677,7 @@ namespace TFTV
                     panelOutline.effectColor = HeaderBorderColor;
                     panelOutline.effectDistance = new Vector2(2f, 2f);
 
-                   /* var rightClickCloser = overlayPanel.AddComponent<OverlayRightClickCloser>();
-                    rightClickCloser.OnRightClick = () =>
-                    {
-                        if (_isOverlayVisible)
-                        {
-                            ToggleOverlay();
-                        }
-                    };*/
+                 
 
                     var rt = overlayPanel.GetComponent<RectTransform>();
 
@@ -649,6 +692,8 @@ namespace TFTV
 
 
                     GeoLevelController geoLevel = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                
 
                     CreateHeader(overlayPanel.transform);
                     CreateToolbar(overlayPanel.transform);
@@ -913,24 +958,6 @@ namespace TFTV
                 }
             }
 
-          /*  private sealed class OverlayRightClickCloser : MonoBehaviour
-            {
-                public Action OnRightClick;
-
-                private void Update()
-                {
-                    if (!gameObject.activeInHierarchy)
-                    {
-                        return;
-                    }
-
-                    if (Input.GetMouseButtonDown(1))
-                    {
-                        OnRightClick?.Invoke();
-                    }
-                }
-            }*/
-
             private static void HandleRecruitSelected(GameObject card, RecruitAtSite data)
             {
                 try
@@ -970,6 +997,10 @@ namespace TFTV
                 {
                     outline.effectColor = selected ? CardSelectedBorderColor : CardBorderColor;
                 }
+
+
+                var view = card.GetComponent<RecruitCardView>();
+                view?.SetSelected(selected);
             }
 
             private static void ClearSelection(bool immediate = true)
@@ -1345,7 +1376,7 @@ namespace TFTV
                     }
 
                     var phoenix = data.Haven.Site.GeoLevel.PhoenixFaction;
-                    var row = CreateCostRow(_detailCostRoot, data.Haven, phoenix);
+                    var row = CreateCostRow(_detailCostRoot, data.Haven, phoenix, null);
                     if (row != null)
                     {
                         var layout = row.GetComponent<HorizontalLayoutGroup>();
@@ -1627,7 +1658,7 @@ namespace TFTV
                 count.fontSize = TextFontSize - 2;
                 count.color = Color.white;
                 count.alignment = TextAnchor.MiddleLeft;
-                count.text = "[0]";
+                count.text = "0";
 
                 _factionTabs[filter] = new FactionTabUI
                 {
@@ -1767,7 +1798,7 @@ namespace TFTV
                 layout.childControlHeight = true;
                 layout.childForceExpandWidth = true;
                 layout.childForceExpandHeight = false;
-                layout.padding = new RectOffset(24, 24, 12, 12);
+                layout.padding = new RectOffset(24, 24, 6, 6);
 
                 var (titleGO, _) = NewUI("Title", header.transform);
                 var title = titleGO.AddComponent<Text>();
@@ -2223,6 +2254,8 @@ namespace TFTV
                 var card = new GameObject($"Recruit_{Safe(data.Recruit?.GetName())}");
                 card.transform.SetParent(parent, false);
 
+                var cardView = card.AddComponent<RecruitCardView>();
+
                 // background
                 var bg = card.AddComponent<Image>();
                 bg.color = CardBackgroundColor;
@@ -2265,7 +2298,12 @@ namespace TFTV
                 var classIcon = GetClassIcon(data.Recruit);
                 if (classIcon != null)
                 {
-                    MakeFixedIcon(card.transform, classIcon, ClassIconSize);
+                    var iconImage = MakeFixedIcon(card.transform, classIcon, ClassIconSize);
+                    if (iconImage != null)
+                    {
+                        cardView.ClassIconImage = iconImage;
+                        cardView.ClassIconDefaultColor = iconImage.color;
+                    }
                 }
 
                 var (levelGO, levelRT) = NewUI("Level", card.transform);
@@ -2275,6 +2313,8 @@ namespace TFTV
                 levelText.color = Color.white;
                 levelText.alignment = TextAnchor.MiddleLeft;
                 levelText.text = $"{data.Recruit?.Level ?? 0}";
+                cardView.LevelLabel = levelText;
+                cardView.LevelDefaultColor = levelText.color;
                 levelRT.pivot = new Vector2(0f, 0.5f);
                 levelRT.anchorMin = new Vector2(0f, 0.5f);
                 levelRT.anchorMax = new Vector2(0f, 0.5f);
@@ -2291,6 +2331,8 @@ namespace TFTV
                 nameText.color = Color.white;
                 nameText.alignment = TextAnchor.MiddleLeft;
                 nameText.text = data.Recruit?.GetName() ?? "Unknown Recruit";
+                cardView.NameLabel = nameText;
+                cardView.NameDefaultColor = nameText.color;
                 nameText.horizontalOverflow = HorizontalWrapMode.Overflow;
                 nameText.verticalOverflow = VerticalWrapMode.Truncate;
                 nameRT.pivot = new Vector2(0f, 0.5f);
@@ -2359,7 +2401,7 @@ namespace TFTV
 
 
 
-                var costRow = CreateCostRow(card.transform, data.Haven, data.Haven.Site.GeoLevel.PhoenixFaction);
+                var costRow = CreateCostRow(card.transform, data.Haven, data.Haven.Site.GeoLevel.PhoenixFaction, cardView);
                 if (costRow != null)
                 {
                     var costLE = costRow.GetComponent<LayoutElement>() ?? costRow.AddComponent<LayoutElement>();
@@ -2528,7 +2570,7 @@ namespace TFTV
                 };
             }
 
-            private static GameObject CreateCostRow(Transform parent, GeoHaven haven, GeoPhoenixFaction phoenix)
+            private static GameObject CreateCostRow(Transform parent, GeoHaven haven, GeoPhoenixFaction phoenix, RecruitCardView cardView)
             {
 
                 EnsureResourceVisuals();
@@ -2550,14 +2592,14 @@ namespace TFTV
                 {
                     if (resourceCosts.TryGetValue(type, out var amount))
                     {
-                        CreateResourceChip(row.transform, type, amount);
+                        CreateResourceChip(row.transform, type, amount, cardView);
                         resourceCosts.Remove(type);
                     }
                 }
 
                 foreach (var kvp in resourceCosts)
                 {
-                    CreateResourceChip(row.transform, kvp.Key, kvp.Value);
+                    CreateResourceChip(row.transform, kvp.Key, kvp.Value, cardView);
                 }
 
                 return row;
@@ -2565,7 +2607,7 @@ namespace TFTV
             }
 
 
-            private static GameObject CreateResourceChip(Transform parent, ResourceType resourceType, int amount)
+            private static GameObject CreateResourceChip(Transform parent, ResourceType resourceType, int amount, RecruitCardView cardView)
             {
                 if (amount <= 0)
                 {
@@ -2617,6 +2659,7 @@ namespace TFTV
                 t.fontSize = TextFontSize - 2;
                 t.alignment = TextAnchor.MiddleCenter;
                 t.horizontalOverflow = HorizontalWrapMode.Overflow;
+                cardView?.RegisterResourceAmount(t);
 
                 return chip;
             }
