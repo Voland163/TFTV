@@ -1234,13 +1234,13 @@ namespace TFTV
 
         internal class Tactical
         {
-            internal class TacticalSavesAIBug 
+            internal class TacticalSavesAIBug
             {
                 [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.StartTurn))]
                 internal static class TacticalActorStartTurnPatch
                 {
-                     private static readonly FieldInfo AbilityUsesThisTurnField = AccessTools.Field(typeof(TacticalActor), "__abilityUsesThisTurn");
-                  
+                    private static readonly FieldInfo AbilityUsesThisTurnField = AccessTools.Field(typeof(TacticalActor), "__abilityUsesThisTurn");
+
 
                     public static void Prefix(TacticalActor __instance, bool ____currentlyDeserializing)
                     {
@@ -1263,7 +1263,7 @@ namespace TFTV
                                 return;
                             }
 
-                            TFTVLogger.Always($"____currentlyDeserializing null? {____currentlyDeserializing==null}");
+                            TFTVLogger.Always($"____currentlyDeserializing null? {____currentlyDeserializing == null}");
 
                             if (!____currentlyDeserializing)
                             {
@@ -1293,169 +1293,15 @@ namespace TFTV
             internal class RFAnimationBug
             {
 
-                [HarmonyPatch(typeof(TacticalNavigationComponent))]
-                internal static class TacticalNavigationComponentPatches
-                {
-                    private const float CrossFadeDuration = 0.02f;
-
-                    private static readonly ConditionalWeakTable<TacticalNavigationComponent, AnimatorForceCache> CacheTable = new ConditionalWeakTable<TacticalNavigationComponent, AnimatorForceCache>();
-
-                    [HarmonyPatch("WaitForAnimation")]
-                    [HarmonyPrefix]
-                    private static void WaitForAnimationPrefix(TacticalNavigationComponent __instance, AnimationClip animation)
-                    {
-                        if (animation != null)
-                        {
-                            TryForceAnimation(__instance, animation);
-                        }
-                    }
-
-                    private static bool TryForceAnimation(TacticalNavigationComponent component, AnimationClip clip)
-                    {
-                        if (clip == null)
-                        {
-                            return false;
-                        }
-
-                        Animator animator = component.Animator;
-                        if (animator == null)
-                        {
-                            return false;
-                        }
-
-                        AnimatorForceCache cache = CacheTable.GetValue(component, _ => new AnimatorForceCache());
-                        RuntimeAnimatorController controller = animator.runtimeAnimatorController;
-                        if (cache.LastController != controller)
-                        {
-                            cache.LastController = controller;
-                            cache.ClipStateMappings.Clear();
-                            cache.LoggedRemappedClips.Clear();
-                        }
-
-                        ClipStateMapping mapping;
-                        if (!cache.ClipStateMappings.TryGetValue(clip, out mapping) || !mapping.Resolved)
-                        {
-                            mapping = ResolveClipStateMapping(animator, controller, clip, cache.OverrideBuffer);
-                            cache.ClipStateMappings[clip] = mapping;
-                        }
-
-                        if (!animator.HasState(0, mapping.StateHash))
-                        {
-                            mapping.StateName = clip.name;
-                            mapping.StateHash = Animator.StringToHash(mapping.StateName);
-                            mapping.Remapped = false;
-                            mapping.Resolved = true;
-                            cache.ClipStateMappings[clip] = mapping;
-                        }
-
-                        if (!animator.HasState(0, mapping.StateHash))
-                        {
-                            return false;
-                        }
-
-                        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-                        if (stateInfo.fullPathHash == mapping.StateHash)
-                        {
-                            animator.Play(mapping.StateHash, 0, 0f);
-                        }
-                        else
-                        {
-                            animator.CrossFadeInFixedTime(mapping.StateHash, CrossFadeDuration, 0, 0f);
-                        }
-
-                        if (mapping.Remapped && cache.LoggedRemappedClips.Add(clip))
-                        {
-                            string message = string.Format("Forced animation remap applied for clip '{0}' -> state '{1}'.", clip.name, mapping.StateName);
-                            if (clip.name.IndexOf("StepBack", StringComparison.OrdinalIgnoreCase) >= 0)
-                            {
-                                message = string.Format("Forced step-back animation remap applied: clip '{0}' -> state '{1}'.", clip.name, mapping.StateName);
-                            }
-
-                            Debug.Log(message, component);
-                        }
-
-                        return true;
-                    }
-
-                    private static ClipStateMapping ResolveClipStateMapping(Animator animator, RuntimeAnimatorController controller, AnimationClip clip, List<KeyValuePair<AnimationClip, AnimationClip>> overrideBuffer)
-                    {
-                        ClipStateMapping mapping = new ClipStateMapping
-                        {
-                            StateName = clip.name,
-                            StateHash = Animator.StringToHash(clip.name),
-                            Remapped = false,
-                            Resolved = true
-                        };
-
-                        HashSet<RuntimeAnimatorController> visited = null;
-                        while (controller is AnimatorOverrideController overrideController)
-                        {
-                            // Replace this line:
-                            // visited ??= new HashSet<RuntimeAnimatorController>();
-                            // With the following C# 7.3-compatible code:
-                            if (visited == null)
-                            {
-                                visited = new HashSet<RuntimeAnimatorController>();
-                            }
-                           
-                            if (!visited.Add(controller))
-                            {
-                                break;
-                            }
-
-                            if (overrideBuffer.Capacity < overrideController.overridesCount)
-                            {
-                                overrideBuffer.Capacity = overrideController.overridesCount;
-                            }
-
-                            overrideBuffer.Clear();
-                            overrideController.GetOverrides(overrideBuffer);
-                            for (int i = 0; i < overrideBuffer.Count; i++)
-                            {
-                                KeyValuePair<AnimationClip, AnimationClip> pair = overrideBuffer[i];
-                                if (pair.Value == clip)
-                                {
-                                    AnimationClip key = pair.Key;
-                                    if (key != null)
-                                    {
-                                        mapping.StateName = key.name;
-                                        mapping.StateHash = Animator.StringToHash(mapping.StateName);
-                                        mapping.Remapped = true;
-                                        return mapping;
-                                    }
-                                }
-                            }
-
-                            controller = overrideController.runtimeAnimatorController;
-                        }
-
-                        return mapping;
-                    }
-
-                    private sealed class AnimatorForceCache
-                    {
-                        public RuntimeAnimatorController LastController;
-                        public readonly Dictionary<AnimationClip, ClipStateMapping> ClipStateMappings = new Dictionary<AnimationClip, ClipStateMapping>();
-                        public readonly List<KeyValuePair<AnimationClip, AnimationClip>> OverrideBuffer = new List<KeyValuePair<AnimationClip, AnimationClip>>();
-                        public readonly HashSet<AnimationClip> LoggedRemappedClips = new HashSet<AnimationClip>();
-                    }
-
-                    private struct ClipStateMapping
-                    {
-                        public string StateName;
-                        public int StateHash;
-                        public bool Remapped;
-                        public bool Resolved;
-                    }
-                }
-
-
                 [HarmonyPatch(typeof(TacticalNavigationComponent), "WaitForAnimation")]
                 public static class TacticalNavigationComponent_WaitForAnimation_Patch
                 {
+                    private const float CrossFadeDuration = 0.02f;
                     private const int ForcedStepBackFrameThreshold = 4;
                     private const int ForcedStepBackCooldownFrames = 12;
                     private const float ForcedStepBackCrossFadeDuration = 0.05f;
+
+                    private static readonly ConditionalWeakTable<TacticalNavigationComponent, AnimatorForceCache> CacheTable = new ConditionalWeakTable<TacticalNavigationComponent, AnimatorForceCache>();
 
                     private static readonly MethodInfo GetCurrentAnimInfoMethod =
                         AccessTools.Method(typeof(TacticalNavigationComponent), "GetCurrentAnimInfo", new[] { typeof(AnimInfo).MakeByRefType() });
@@ -1466,6 +1312,11 @@ namespace TFTV
                     [HarmonyPrefix]
                     public static bool Prefix(TacticalNavigationComponent __instance, AnimationClip animation, ref IEnumerator<NextUpdate> __result)
                     {
+                        if (animation != null)
+                        {
+                            TryForceAnimation(__instance, animation, CrossFadeDuration, false);
+                        }
+
                         __result = Replacement(__instance, animation);
                         return false;
                     }
@@ -1532,6 +1383,148 @@ namespace TFTV
                                 }
                             }
                         }
+                    }
+
+                    internal static bool TryForceAnimation(TacticalNavigationComponent component, AnimationClip clip, float transitionDuration, bool hardSwitch)
+                    {
+                        if (clip == null)
+                        {
+                            return false;
+                        }
+
+                        Animator animator = component.Animator;
+                        if (animator == null)
+                        {
+                            return false;
+                        }
+
+                        AnimatorForceCache cache = CacheTable.GetValue(component, _ => new AnimatorForceCache());
+                        RuntimeAnimatorController controller = animator.runtimeAnimatorController;
+                        if (cache.LastController != controller)
+                        {
+                            cache.LastController = controller;
+                            cache.ClipStateMappings.Clear();
+                            cache.LoggedRemappedClips.Clear();
+                        }
+
+                        ClipStateMapping mapping;
+                        if (!cache.ClipStateMappings.TryGetValue(clip, out mapping) || !mapping.Resolved)
+                        {
+                            mapping = ResolveClipStateMapping(animator, controller, clip, cache.OverrideBuffer);
+                            cache.ClipStateMappings[clip] = mapping;
+                        }
+
+                        if (!animator.HasState(0, mapping.StateHash))
+                        {
+                            mapping.StateName = clip.name;
+                            mapping.StateHash = Animator.StringToHash(mapping.StateName);
+                            mapping.Remapped = false;
+                            mapping.Resolved = true;
+                            cache.ClipStateMappings[clip] = mapping;
+                        }
+
+                        if (!animator.HasState(0, mapping.StateHash))
+                        {
+                            return false;
+                        }
+
+                        if (hardSwitch)
+                        {
+                            animator.Play(mapping.StateHash, 0, 0f);
+                        }
+                        else
+                        {
+                            AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+                            if (stateInfo.fullPathHash == mapping.StateHash)
+                            {
+                                animator.Play(mapping.StateHash, 0, 0f);
+                            }
+                            else
+                            {
+                                animator.CrossFadeInFixedTime(mapping.StateHash, transitionDuration, 0, 0f);
+                            }
+                        }
+
+                        if (mapping.Remapped && cache.LoggedRemappedClips.Add(clip))
+                        {
+                            string message = string.Format("Forced animation remap applied for clip '{0}' -> state '{1}'.", clip.name, mapping.StateName);
+                            if (clip.name.IndexOf("StepBack", StringComparison.OrdinalIgnoreCase) >= 0)
+                            {
+                                message = string.Format("Forced step-back animation remap applied: clip '{0}' -> state '{1}'.", clip.name, mapping.StateName);
+                            }
+
+                            Debug.Log(message, component);
+                        }
+
+                        return true;
+                    }
+
+                    private static ClipStateMapping ResolveClipStateMapping(Animator animator, RuntimeAnimatorController controller, AnimationClip clip, List<KeyValuePair<AnimationClip, AnimationClip>> overrideBuffer)
+                    {
+                        ClipStateMapping mapping = new ClipStateMapping
+                        {
+                            StateName = clip.name,
+                            StateHash = Animator.StringToHash(clip.name),
+                            Remapped = false,
+                            Resolved = true
+                        };
+
+                        HashSet<RuntimeAnimatorController> visited = null;
+                        while (controller is AnimatorOverrideController overrideController)
+                        {
+                            if (visited == null)
+                            {
+                                visited = new HashSet<RuntimeAnimatorController>();
+                            }
+
+                            if (!visited.Add(controller))
+                            {
+                                break;
+                            }
+
+                            if (overrideBuffer.Capacity < overrideController.overridesCount)
+                            {
+                                overrideBuffer.Capacity = overrideController.overridesCount;
+                            }
+
+                            overrideBuffer.Clear();
+                            overrideController.GetOverrides(overrideBuffer);
+                            for (int i = 0; i < overrideBuffer.Count; i++)
+                            {
+                                KeyValuePair<AnimationClip, AnimationClip> pair = overrideBuffer[i];
+                                if (pair.Value == clip)
+                                {
+                                    AnimationClip key = pair.Key;
+                                    if (key != null)
+                                    {
+                                        mapping.StateName = key.name;
+                                        mapping.StateHash = Animator.StringToHash(mapping.StateName);
+                                        mapping.Remapped = true;
+                                        return mapping;
+                                    }
+                                }
+                            }
+
+                            controller = overrideController.runtimeAnimatorController;
+                        }
+
+                        return mapping;
+                    }
+
+                    private sealed class AnimatorForceCache
+                    {
+                        public RuntimeAnimatorController LastController;
+                        public readonly Dictionary<AnimationClip, ClipStateMapping> ClipStateMappings = new Dictionary<AnimationClip, ClipStateMapping>();
+                        public readonly List<KeyValuePair<AnimationClip, AnimationClip>> OverrideBuffer = new List<KeyValuePair<AnimationClip, AnimationClip>>();
+                        public readonly HashSet<AnimationClip> LoggedRemappedClips = new HashSet<AnimationClip>();
+                    }
+
+                    private struct ClipStateMapping
+                    {
+                        public string StateName;
+                        public int StateHash;
+                        public bool Remapped;
+                        public bool Resolved;
                     }
 
                     private static bool IsCurrentAnimation(AnimationClip expectedClip, AnimationClip currentClip)
@@ -1646,11 +1639,15 @@ namespace TFTV
                             Debug.Log(string.Format("{0} forcing step back animation {1}", instance.name, expectedClip));
                         }
 
-                        bool crossFadeQueued = TryForceAnimation(animator, expectedClip, ForcedStepBackCrossFadeDuration, false);
-                        if (!crossFadeQueued)
+                        bool crossFadeQueued = TryForceAnimation(instance, expectedClip, ForcedStepBackCrossFadeDuration, false);
+                        animator.Update(0f);
+                        if (!crossFadeQueued || !IsAnimationQueuedOrPlaying(animator, expectedClip))
                         {
                             Debug.LogWarning(string.Format("{0} forcing hard switch to step back animation {1} after cross-fade failed; current animation: {2}", instance.name, expectedClip, lingeringClip));
-                            TryForceAnimation(animator, expectedClip, 0f, true);
+                            if (TryForceAnimation(instance, expectedClip, 0f, true))
+                            {
+                                animator.Update(0f);
+                            }
                         }
                     }
 
@@ -1687,26 +1684,6 @@ namespace TFTV
                         }
 
                         return pointInfos[segmentIndex];
-                    }
-
-                    private static bool TryForceAnimation(Animator animator, AnimationClip clip, float transitionDuration, bool hardSwitch)
-                    {
-                        if (animator == null || clip == null)
-                        {
-                            return false;
-                        }
-
-                        if (hardSwitch)
-                        {
-                            animator.Play(clip.name, 0, 0f);
-                        }
-                        else
-                        {
-                            animator.CrossFadeInFixedTime(clip.name, transitionDuration, 0, 0f);
-                        }
-
-                        animator.Update(0f);
-                        return IsAnimationQueuedOrPlaying(animator, clip);
                     }
 
                     private static bool IsAnimationQueuedOrPlaying(Animator animator, AnimationClip expectedClip)
@@ -1758,9 +1735,7 @@ namespace TFTV
                         return clip.name.IndexOf("ShotLoop", StringComparison.OrdinalIgnoreCase) >= 0;
                     }
                 }
-
             }
-
             internal class DecimalWillpoints
             {
 

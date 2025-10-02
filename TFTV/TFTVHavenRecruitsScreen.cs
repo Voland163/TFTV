@@ -294,13 +294,13 @@ namespace TFTV
         private const float ColumnPadding = 12f;
         private const float ItemSpacing = 6f;     // space between cards
         private const int RowSpacing = 2;      // space between rows inside a card
-        private const int AbilityIconSize = 48;  // abilities
-        private const int ClassIconSize = 48;    // class badge on list entry
+        private const int AbilityIconSize = 46;  // abilities
+        private const int ClassIconSize = 46;    // class badge on list entry
         private const int EquipIconSize = 48;  // equipment & armor (match abilities)
         private const int ArmorIconSize = 48;
         private const int ResourceIconSize = 24;
         private const int TextFontSize = 20;
-        private const float AbilityIconsCenterOffsetPx = -180f;
+        private const float AbilityIconsCenterOffsetPx = -160f;
 
         private static readonly Color HeaderBackgroundColor = HexToColor("16222a");
         private static readonly Color HeaderBorderColor = HexToColor("222e40");
@@ -453,6 +453,7 @@ namespace TFTV
             private static Sprite _mutationBound;
             private static Sprite _iconBackground;
             private static Sprite _abilityIconBackground;
+            private static Sprite _factionTabFrame;
 
             internal static void ResetState()
             {
@@ -510,7 +511,6 @@ namespace TFTV
                     {
                         _mutationBound = Helper.CreateSpriteFromImageFile("UI_Frame_Mutationbound.png");
                     }
-
                     if(_iconBackground == null)
                     {
                         _iconBackground = Helper.CreateSpriteFromImageFile("UI_Frame_Feathered.png");
@@ -518,6 +518,10 @@ namespace TFTV
                     if (_abilityIconBackground == null)
                     {
                         _abilityIconBackground = Helper.CreateSpriteFromImageFile("UI_ButtonFrame_Main_Sliced.png");
+                    }
+                    if (_factionTabFrame == null)
+                    {
+                        _factionTabFrame = Helper.CreateSpriteFromImageFile("UI_MainButton_ChippedFrame.png");
                     }
 
                     bool show = !_isOverlayVisible;
@@ -2103,6 +2107,16 @@ namespace TFTV
             }
 
 
+            // PSEUDOCODE / PLAN:
+            // - Create a small padding value based on the requested icon pixel size (px).
+            // - When a backgroundSprite is provided, create a background child RectTransform that is slightly LARGER
+            //   than the frame by using negative offsetMin and positive offsetMax. This makes the background visually
+            //   extend beyond the strict frame bounds.
+            // - Create the foreground image as another child, but inset it slightly (positive offsetMin, negative offsetMax)
+            //   so it sits a bit inside the frame. This ensures the background appears slightly larger than the image on top.
+            // - Keep AspectRatioFitter on the foreground image so the sprite retains correct aspect ratio.
+            // - Return the Image component for the foreground so callers can tint it if needed.
+
             private static Image MakeFixedIcon(Transform parent, Sprite sp, int px, Sprite backgroundSprite = null)
             {
                 // Frame with RectTransform + LayoutElement fixes size for layout
@@ -2112,6 +2126,10 @@ namespace TFTV
                 le.preferredHeight = px; le.minHeight = px;
                 frt.sizeDelta = new Vector2(px, px);
 
+                // Padding used to make the background slightly larger and the image slightly smaller than the frame.
+                int pad = Mathf.Max(2, Mathf.RoundToInt(px * 0.12f)); // ~12% of px, minimum 2px
+                float inset = pad * 0.5f; // foreground inset (half of the background oversize)
+
                 if (backgroundSprite != null)
                 {
                     var (bgGO, bgRT) = NewUI("Background", frame.transform);
@@ -2119,20 +2137,24 @@ namespace TFTV
                     bgImage.sprite = backgroundSprite;
                     bgImage.type = Image.Type.Sliced;
                     bgImage.raycastTarget = false;
+
+                    // Make the background slightly larger than the frame by expanding its offsets beyond the parent rect.
                     bgRT.anchorMin = Vector2.zero;
                     bgRT.anchorMax = Vector2.one;
-                    bgRT.offsetMin = Vector2.zero;
-                    bgRT.offsetMax = Vector2.zero;
+                    bgRT.offsetMin = new Vector2(-pad, -pad); // extend left/bottom
+                    bgRT.offsetMax = new Vector2(pad, pad);   // extend right/top
                 }
 
-                // Child image stretched to frame + aspect fit
+                // Child image inset a little so the background reads as larger
                 var (imgGO, imgRT) = NewUI("Img", frame.transform);
                 var img = imgGO.AddComponent<Image>();
                 img.sprite = sp;
                 img.raycastTarget = false;
 
-                imgRT.anchorMin = Vector2.zero; imgRT.anchorMax = Vector2.one;
-                imgRT.offsetMin = Vector2.zero; imgRT.offsetMax = Vector2.zero;
+                imgRT.anchorMin = Vector2.zero;
+                imgRT.anchorMax = Vector2.one;
+                imgRT.offsetMin = new Vector2(inset, inset);    // inward from left/bottom
+                imgRT.offsetMax = new Vector2(-inset, -inset);  // inward from right/top
 
                 var arf = imgGO.AddComponent<AspectRatioFitter>();
                 arf.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
@@ -2229,7 +2251,7 @@ namespace TFTV
 
                 var layout = card.AddComponent<HorizontalLayoutGroup>();
                 layout.childAlignment = TextAnchor.MiddleLeft;
-                layout.spacing = 10f;
+                layout.spacing = 15f;
                 layout.childControlWidth = true;
                 layout.childControlHeight = true;
                 layout.childForceExpandWidth = false;
@@ -2310,7 +2332,7 @@ namespace TFTV
 
                     var abilitiesLayout = abilitiesGO.AddComponent<HorizontalLayoutGroup>();
                     abilitiesLayout.childAlignment = TextAnchor.MiddleCenter;
-                    abilitiesLayout.spacing = 4f;
+                    abilitiesLayout.spacing = 10f;
                     abilitiesLayout.childControlWidth = true;
                     abilitiesLayout.childControlHeight = true;
                     abilitiesLayout.childForceExpandWidth = false;
