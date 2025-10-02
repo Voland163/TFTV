@@ -67,6 +67,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static PhoenixPoint.Tactical.Entities.Effects.DamageEffect;
@@ -1291,6 +1292,164 @@ namespace TFTV
 
             internal class RFAnimationBug
             {
+
+                [HarmonyPatch(typeof(TacticalNavigationComponent))]
+                internal static class TacticalNavigationComponentPatches
+                {
+                    private const float CrossFadeDuration = 0.02f;
+
+                    private static readonly ConditionalWeakTable<TacticalNavigationComponent, AnimatorForceCache> CacheTable = new ConditionalWeakTable<TacticalNavigationComponent, AnimatorForceCache>();
+
+                    [HarmonyPatch("WaitForAnimation")]
+                    [HarmonyPrefix]
+                    private static void WaitForAnimationPrefix(TacticalNavigationComponent __instance, AnimationClip animation)
+                    {
+                        if (animation != null)
+                        {
+                            TryForceAnimation(__instance, animation);
+                        }
+                    }
+
+                    private static bool TryForceAnimation(TacticalNavigationComponent component, AnimationClip clip)
+                    {
+                        if (clip == null)
+                        {
+                            return false;
+                        }
+
+                        Animator animator = component.Animator;
+                        if (animator == null)
+                        {
+                            return false;
+                        }
+
+                        AnimatorForceCache cache = CacheTable.GetValue(component, _ => new AnimatorForceCache());
+                        RuntimeAnimatorController controller = animator.runtimeAnimatorController;
+                        if (cache.LastController != controller)
+                        {
+                            cache.LastController = controller;
+                            cache.ClipStateMappings.Clear();
+                            cache.LoggedRemappedClips.Clear();
+                        }
+
+                        ClipStateMapping mapping;
+                        if (!cache.ClipStateMappings.TryGetValue(clip, out mapping) || !mapping.Resolved)
+                        {
+                            mapping = ResolveClipStateMapping(animator, controller, clip, cache.OverrideBuffer);
+                            cache.ClipStateMappings[clip] = mapping;
+                        }
+
+                        if (!animator.HasState(0, mapping.StateHash))
+                        {
+                            mapping.StateName = clip.name;
+                            mapping.StateHash = Animator.StringToHash(mapping.StateName);
+                            mapping.Remapped = false;
+                            mapping.Resolved = true;
+                            cache.ClipStateMappings[clip] = mapping;
+                        }
+
+                        if (!animator.HasState(0, mapping.StateHash))
+                        {
+                            return false;
+                        }
+
+                        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+                        if (stateInfo.fullPathHash == mapping.StateHash)
+                        {
+                            animator.Play(mapping.StateHash, 0, 0f);
+                        }
+                        else
+                        {
+                            animator.CrossFadeInFixedTime(mapping.StateHash, CrossFadeDuration, 0, 0f);
+                        }
+
+                        if (mapping.Remapped && cache.LoggedRemappedClips.Add(clip))
+                        {
+                            string message = string.Format("Forced animation remap applied for clip '{0}' -> state '{1}'.", clip.name, mapping.StateName);
+                            if (clip.name.IndexOf("StepBack", StringComparison.OrdinalIgnoreCase) >= 0)
+                            {
+                                message = string.Format("Forced step-back animation remap applied: clip '{0}' -> state '{1}'.", clip.name, mapping.StateName);
+                            }
+
+                            Debug.Log(message, component);
+                        }
+
+                        return true;
+                    }
+
+                    private static ClipStateMapping ResolveClipStateMapping(Animator animator, RuntimeAnimatorController controller, AnimationClip clip, List<KeyValuePair<AnimationClip, AnimationClip>> overrideBuffer)
+                    {
+                        ClipStateMapping mapping = new ClipStateMapping
+                        {
+                            StateName = clip.name,
+                            StateHash = Animator.StringToHash(clip.name),
+                            Remapped = false,
+                            Resolved = true
+                        };
+
+                        HashSet<RuntimeAnimatorController> visited = null;
+                        while (controller is AnimatorOverrideController overrideController)
+                        {
+                            // Replace this line:
+                            // visited ??= new HashSet<RuntimeAnimatorController>();
+                            // With the following C# 7.3-compatible code:
+                            if (visited == null)
+                            {
+                                visited = new HashSet<RuntimeAnimatorController>();
+                            }
+                           
+                            if (!visited.Add(controller))
+                            {
+                                break;
+                            }
+
+                            if (overrideBuffer.Capacity < overrideController.overridesCount)
+                            {
+                                overrideBuffer.Capacity = overrideController.overridesCount;
+                            }
+
+                            overrideBuffer.Clear();
+                            overrideController.GetOverrides(overrideBuffer);
+                            for (int i = 0; i < overrideBuffer.Count; i++)
+                            {
+                                KeyValuePair<AnimationClip, AnimationClip> pair = overrideBuffer[i];
+                                if (pair.Value == clip)
+                                {
+                                    AnimationClip key = pair.Key;
+                                    if (key != null)
+                                    {
+                                        mapping.StateName = key.name;
+                                        mapping.StateHash = Animator.StringToHash(mapping.StateName);
+                                        mapping.Remapped = true;
+                                        return mapping;
+                                    }
+                                }
+                            }
+
+                            controller = overrideController.runtimeAnimatorController;
+                        }
+
+                        return mapping;
+                    }
+
+                    private sealed class AnimatorForceCache
+                    {
+                        public RuntimeAnimatorController LastController;
+                        public readonly Dictionary<AnimationClip, ClipStateMapping> ClipStateMappings = new Dictionary<AnimationClip, ClipStateMapping>();
+                        public readonly List<KeyValuePair<AnimationClip, AnimationClip>> OverrideBuffer = new List<KeyValuePair<AnimationClip, AnimationClip>>();
+                        public readonly HashSet<AnimationClip> LoggedRemappedClips = new HashSet<AnimationClip>();
+                    }
+
+                    private struct ClipStateMapping
+                    {
+                        public string StateName;
+                        public int StateHash;
+                        public bool Remapped;
+                        public bool Resolved;
+                    }
+                }
+
+
                 [HarmonyPatch(typeof(TacticalNavigationComponent), "WaitForAnimation")]
                 public static class TacticalNavigationComponent_WaitForAnimation_Patch
                 {

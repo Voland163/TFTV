@@ -308,7 +308,9 @@ namespace TFTV
         private static readonly Color TabHighlightColor = HexToColor("ffb339");
         private static readonly Color TabDefaultColor = HexToColor("060B16");
         private static readonly Color CardBackgroundColor = HexToColor("#1E2026");
-        private static readonly Color CardSelectedColor = new Color(1f, 1f, 1f, 0.18f);
+        private static readonly Color CardSelectedColor = HexToColor("#ffc02c");
+        private static readonly Color CardBorderColor = HexToColor("#233044");
+        private static readonly Color CardSelectedBorderColor = HexToColor("#fb9716");
         private static readonly Color DetailSubTextColor = new Color(0.75f, 0.8f, 0.9f, 1f);
 
 
@@ -621,6 +623,15 @@ namespace TFTV
                     panelOutline.effectColor = HeaderBorderColor;
                     panelOutline.effectDistance = new Vector2(2f, 2f);
 
+                   /* var rightClickCloser = overlayPanel.AddComponent<OverlayRightClickCloser>();
+                    rightClickCloser.OnRightClick = () =>
+                    {
+                        if (_isOverlayVisible)
+                        {
+                            ToggleOverlay();
+                        }
+                    };*/
+
                     var rt = overlayPanel.GetComponent<RectTransform>();
 
                     // RIGHT-ALIGNED, NARROW BAND: width = ColumnsWidthPercent, right padding = RIGHT_MARGIN
@@ -898,6 +909,24 @@ namespace TFTV
                 }
             }
 
+          /*  private sealed class OverlayRightClickCloser : MonoBehaviour
+            {
+                public Action OnRightClick;
+
+                private void Update()
+                {
+                    if (!gameObject.activeInHierarchy)
+                    {
+                        return;
+                    }
+
+                    if (Input.GetMouseButtonDown(1))
+                    {
+                        OnRightClick?.Invoke();
+                    }
+                }
+            }*/
+
             private static void HandleRecruitSelected(GameObject card, RecruitAtSite data)
             {
                 try
@@ -930,6 +959,12 @@ namespace TFTV
                 if (image != null)
                 {
                     image.color = selected ? CardSelectedColor : CardBackgroundColor;
+                }
+
+                var outline = card.GetComponent<Outline>();
+                if (outline != null)
+                {
+                    outline.effectColor = selected ? CardSelectedBorderColor : CardBorderColor;
                 }
             }
 
@@ -1082,7 +1117,7 @@ namespace TFTV
                     UpdateDetailPanelFactionVisuals(data);
 
                     var abilityIcons = GetSelectedAbilityIcons(data.Recruit).Where(sp => sp != null).ToList();
-                    PopulateIconGroup(_detailAbilityGroup, _detailAbilityRoot, abilityIcons, AbilityIconSize);
+                    PopulateIconGroup(_detailAbilityGroup, _detailAbilityRoot, abilityIcons, AbilityIconSize, useAbilityBackground: true);
 
                     var mutationIcons = GetMutatedArmorIcons(data.Recruit).Where(sp => sp != null).ToList();
                     PopulateIconGroup(_detailMutationGroup, _detailMutationRoot, mutationIcons, ArmorIconSize);
@@ -1242,7 +1277,7 @@ namespace TFTV
                 catch (Exception ex) { TFTVLogger.Error(ex); }
             }
 
-            private static void PopulateIconGroup(GameObject group, Transform container, IList<Sprite> icons, int iconSize)
+            private static void PopulateIconGroup(GameObject group, Transform container, IList<Sprite> icons, int iconSize, bool useAbilityBackground = false)
             {
                 try
                 {
@@ -1252,6 +1287,11 @@ namespace TFTV
                     }
 
                     ClearTransformChildren(container);
+
+                    if (useAbilityBackground && _abilityIconBackground == null)
+                    {
+                        _abilityIconBackground = Helper.CreateSpriteFromImageFile("UI_ButtonFrame_Main_Sliced.png");
+                    }
 
                     bool hasIcons = icons != null && icons.Count > 0;
                     if (hasIcons)
@@ -1263,7 +1303,8 @@ namespace TFTV
                                 continue;
                             }
 
-                            MakeFixedIcon(container, icon, iconSize);
+                            var background = useAbilityBackground ? _abilityIconBackground : null;
+                            MakeFixedIcon(container, icon, iconSize, background);
                         }
                     }
 
@@ -2062,14 +2103,27 @@ namespace TFTV
             }
 
 
-            private static Image MakeFixedIcon(Transform parent, Sprite sp, int px)
+            private static Image MakeFixedIcon(Transform parent, Sprite sp, int px, Sprite backgroundSprite = null)
             {
                 // Frame with RectTransform + LayoutElement fixes size for layout
-                var (frame, frt) = NewUI("IconFrame", parent);
+                var (frame, frt) = NewUI(backgroundSprite != null ? "IconFrameAbility" : "IconFrame", parent);
                 var le = frame.AddComponent<LayoutElement>();
                 le.preferredWidth = px; le.minWidth = px;
                 le.preferredHeight = px; le.minHeight = px;
                 frt.sizeDelta = new Vector2(px, px);
+
+                if (backgroundSprite != null)
+                {
+                    var (bgGO, bgRT) = NewUI("Background", frame.transform);
+                    var bgImage = bgGO.AddComponent<Image>();
+                    bgImage.sprite = backgroundSprite;
+                    bgImage.type = Image.Type.Sliced;
+                    bgImage.raycastTarget = false;
+                    bgRT.anchorMin = Vector2.zero;
+                    bgRT.anchorMax = Vector2.one;
+                    bgRT.offsetMin = Vector2.zero;
+                    bgRT.offsetMax = Vector2.zero;
+                }
 
                 // Child image stretched to frame + aspect fit
                 var (imgGO, imgRT) = NewUI("Img", frame.transform);
@@ -2151,6 +2205,10 @@ namespace TFTV
                 var bg = card.AddComponent<Image>();
                 bg.color = CardBackgroundColor;
 
+                var border = card.AddComponent<Outline>();
+                border.effectColor = CardBorderColor;
+                border.effectDistance = new Vector2(2f, 2f);
+                border.useGraphicAlpha = false;
 
                 // button (keep it for hover/tint states, but don't use onClick directly)
                 var btn = card.AddComponent<Button>();
@@ -2271,7 +2329,7 @@ namespace TFTV
                     foreach (var icon in abilityIcons)
                     {
                         if (icon == null) continue;
-                        MakeFixedIcon(abilitiesGO.transform, icon, AbilityIconSize);
+                        MakeFixedIcon(abilitiesGO.transform, icon, AbilityIconSize, _abilityIconBackground);
                     }
 
                    
