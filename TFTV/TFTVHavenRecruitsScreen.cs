@@ -9,7 +9,6 @@ using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers.PhoenixBase;
 using PhoenixPoint.Geoscape.View.ViewModules;
-using PhoenixPoint.Tactical.Entities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -284,7 +283,9 @@ namespace TFTV
         // Spacing / sizing
 
         // width (as fraction of screen width) used by the 3-column area
-        private const float ColumnsWidthPercent = 0.25f;  // 0.60 = 60% of screen, centered
+        private const float ColumnsWidthPercent = 0.25f;  // baseline fraction used for overlay width
+        private const float OverlayMinWidthPx = 650f;
+        private const float OverlayMaxWidthFraction = 0.98f;
 
         private const float OverlayTopMargin = 0.06f;
         private const float OverlayBottomMargin = 0.16f;
@@ -313,6 +314,15 @@ namespace TFTV
         private static readonly Color CardSelectedBorderColor = HexToColor("#fb9716");
         private static readonly Color DetailSubTextColor = new Color(0.75f, 0.8f, 0.9f, 1f);
 
+
+        private static float GetOverlayWidthFraction(out float resolvedPixelWidth)
+        {
+            float screenWidth = Mathf.Max(1f, Screen.width);
+            float fraction = Mathf.Max(ColumnsWidthPercent, OverlayMinWidthPx / screenWidth);
+            fraction = Mathf.Min(fraction, OverlayMaxWidthFraction);
+            resolvedPixelWidth = fraction * screenWidth;
+            return fraction;
+        }
 
         private static Color HexToColor(string hex)
         {
@@ -484,6 +494,7 @@ namespace TFTV
             private static OverlayAnimator _overlayAnimator;
             private static bool _isOverlayVisible;
             private const float OverlaySlideDuration = 0.3f;
+            private static int _lastLayoutScreenWidth;
 
             private static GameObject _detailPanel;
             private static OverlayAnimator _detailAnimator;
@@ -506,7 +517,7 @@ namespace TFTV
             private static Sprite _mutationBound;
             private static Sprite _iconBackground;
             private static Sprite _abilityIconBackground;
-     
+
 
             internal static void ResetState()
             {
@@ -544,6 +555,7 @@ namespace TFTV
                     _detailCostGroup = null;
                     _detailCostRoot = null;
                     _detailFactionLogoImage = null;
+                    _lastLayoutScreenWidth = 0;
                     isInitialized = false;
                 }
                 catch (Exception ex) { TFTVLogger.Error(ex); }
@@ -564,7 +576,7 @@ namespace TFTV
                     {
                         _mutationBound = Helper.CreateSpriteFromImageFile("UI_Frame_Mutationbound.png");
                     }
-                    if(_iconBackground == null)
+                    if (_iconBackground == null)
                     {
                         _iconBackground = Helper.CreateSpriteFromImageFile("UI_Frame_Feathered.png");
                     }
@@ -572,9 +584,11 @@ namespace TFTV
                     {
                         _abilityIconBackground = Helper.CreateSpriteFromImageFile("UI_ButtonFrame_Main_Sliced.png");
                     }
-                  
+
 
                     bool show = !_isOverlayVisible;
+
+                    EnsureOverlayLayout(force: true);
 
                     RecruitsOverlayObjectives.SetObjectivesHiddenForRecruitsOverlay(GameUtl.CurrentLevel().GetComponent<GeoLevelController>()?.View, show);
 
@@ -667,7 +681,7 @@ namespace TFTV
                     // draw above the HUD
                     var ovCanvas = overlayPanel.AddComponent<Canvas>();
                     ovCanvas.overrideSorting = true;
-                    ovCanvas.sortingOrder = 2; //5000;
+                    ovCanvas.sortingOrder = 5000;
                     overlayPanel.AddComponent<GraphicRaycaster>();
 
                     var panelImage = overlayPanel.AddComponent<Image>();
@@ -677,13 +691,13 @@ namespace TFTV
                     panelOutline.effectColor = HeaderBorderColor;
                     panelOutline.effectDistance = new Vector2(2f, 2f);
 
-                 
+
 
                     var rt = overlayPanel.GetComponent<RectTransform>();
 
                     // RIGHT-ALIGNED, NARROW BAND: width = ColumnsWidthPercent, right padding = RIGHT_MARGIN
-                    float w = ColumnsWidthPercent;
-                    rt.anchorMin = new Vector2(1f - OverlayRightMargin - w, OverlayBottomMargin);
+                    float overlayWidth = GetOverlayWidthFraction(out float overlayPixels);
+                    rt.anchorMin = new Vector2(1f - OverlayRightMargin - overlayWidth, OverlayBottomMargin);
                     rt.anchorMax = new Vector2(1f - OverlayRightMargin, 1f - OverlayTopMargin);
                     rt.pivot = new Vector2(1f, 0.5f);
                     rt.offsetMin = Vector2.zero;
@@ -693,7 +707,7 @@ namespace TFTV
 
                     GeoLevelController geoLevel = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
-                
+
 
                     CreateHeader(overlayPanel.transform);
                     CreateToolbar(overlayPanel.transform);
@@ -706,11 +720,13 @@ namespace TFTV
                     };
 
                     _overlayAnimator = overlayPanel.AddComponent<OverlayAnimator>();
-                    _overlayAnimator.Initialize(rt);
+                    _overlayAnimator.Initialize(rt, resolvedWidth: overlayPixels);
+                    overlayPanel.AddComponent<ScreenSizeWatcher>();
                     _isOverlayVisible = false;
 
 
                     overlayPanel.SetActive(false);
+                    EnsureOverlayLayout(force: true);
                 }
                 catch (Exception ex) { TFTVLogger.Error(ex); }
             }
@@ -745,7 +761,7 @@ namespace TFTV
                     outline.effectDistance = new Vector2(2f, 2f);
 
                     var rt = _detailPanel.GetComponent<RectTransform>();
-                    float width = ColumnsWidthPercent;
+                    float width = GetOverlayWidthFraction(out float detailPixels);
                     rt.anchorMin = new Vector2(OverlayLeftMargin, OverlayBottomMargin);
                     rt.anchorMax = new Vector2(OverlayLeftMargin + width, 1f - OverlayTopMargin);
                     rt.pivot = new Vector2(0f, 0.5f);
@@ -830,28 +846,95 @@ namespace TFTV
                     }
 
                     _detailAnimator = _detailPanel.AddComponent<OverlayAnimator>();
-                    _detailAnimator.Initialize(rt, slideFromLeft: true);
+                    _detailAnimator.Initialize(rt, slideFromLeft: true, resolvedWidth: detailPixels);
                     _isDetailVisible = false;
 
                     _detailPanel.SetActive(false);
+                    EnsureOverlayLayout(force: true);
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
+            }
+
+            private static void EnsureOverlayLayout(bool force = false)
+            {
+                try
+                {
+                    int screenWidth = Mathf.Max(1, Screen.width);
+                    if (!force && screenWidth == _lastLayoutScreenWidth)
+                    {
+                        return;
+                    }
+
+                    float widthFraction = GetOverlayWidthFraction(out float pixelWidth);
+
+                    if (overlayPanel != null)
+                    {
+                        var overlayRect = overlayPanel.GetComponent<RectTransform>();
+                        if (overlayRect != null)
+                        {
+                            overlayRect.anchorMin = new Vector2(1f - OverlayRightMargin - widthFraction, OverlayBottomMargin);
+                            overlayRect.anchorMax = new Vector2(1f - OverlayRightMargin, 1f - OverlayTopMargin);
+                            overlayRect.pivot = new Vector2(1f, 0.5f);
+                            overlayRect.offsetMin = Vector2.zero;
+                            overlayRect.offsetMax = Vector2.zero;
+                        }
+
+                        _overlayAnimator?.SetResolvedWidth(pixelWidth);
+                    }
+
+                    if (_detailPanel != null)
+                    {
+                        var detailRect = _detailPanel.GetComponent<RectTransform>();
+                        if (detailRect != null)
+                        {
+                            detailRect.anchorMin = new Vector2(OverlayLeftMargin, OverlayBottomMargin);
+                            detailRect.anchorMax = new Vector2(OverlayLeftMargin + widthFraction, 1f - OverlayTopMargin);
+                            detailRect.pivot = new Vector2(0f, 0.5f);
+                            detailRect.offsetMin = Vector2.zero;
+                            detailRect.offsetMax = Vector2.zero;
+                        }
+
+                        _detailAnimator?.SetResolvedWidth(pixelWidth);
+                    }
+
+                    _lastLayoutScreenWidth = screenWidth;
                 }
                 catch (Exception ex) { TFTVLogger.Error(ex); }
             }
+
+            private static void OnScreenSizeChanged()
+            {
+                EnsureOverlayLayout(force: true);
+            }
+
 
             private sealed class OverlayAnimator : MonoBehaviour
             {
                 private RectTransform _rectTransform;
                 private Coroutine _animation;
                 private float _hiddenDirection = 1f;
+                private float _resolvedWidth;
 
                 public bool IsVisible { get; private set; }
 
-                public void Initialize(RectTransform rectTransform, bool slideFromLeft = false)
+                public void Initialize(RectTransform rectTransform, bool slideFromLeft = false, float resolvedWidth = 0f)
                 {
                     _rectTransform = rectTransform ? rectTransform : GetComponent<RectTransform>();
                     _hiddenDirection = slideFromLeft ? -1f : 1f;
+                    _resolvedWidth = Mathf.Max(0f, resolvedWidth);
                     Canvas.ForceUpdateCanvases();
                     HideInstant();
+                }
+                public void SetResolvedWidth(float width)
+                {
+                    _resolvedWidth = Mathf.Max(0f, width);
+                    if (!IsVisible && _animation == null)
+                    {
+                        HideImmediate();
+                    }
                 }
 
                 public void Play(bool show, Action onComplete)
@@ -936,9 +1019,13 @@ namespace TFTV
 
                     if (width <= 0f)
                     {
-                        width = Screen.width * ColumnsWidthPercent;
+                        width = _resolvedWidth > 0f ? _resolvedWidth : Screen.width * ColumnsWidthPercent;
                     }
 
+                    if (_resolvedWidth > 0f)
+                    {
+                        width = _resolvedWidth;
+                    }
                     return Mathf.Max(0f, width) * _hiddenDirection;
                 }
 
@@ -957,7 +1044,27 @@ namespace TFTV
                     }
                 }
             }
+            private sealed class ScreenSizeWatcher : MonoBehaviour
+            {
+                private int _lastWidth;
+                private int _lastHeight;
 
+                private void OnEnable()
+                {
+                    _lastWidth = Screen.width;
+                    _lastHeight = Screen.height;
+                }
+
+                private void Update()
+                {
+                    if (Screen.width != _lastWidth || Screen.height != _lastHeight)
+                    {
+                        _lastWidth = Screen.width;
+                        _lastHeight = Screen.height;
+                        OnScreenSizeChanged();
+                    }
+                }
+            }
             private static void HandleRecruitSelected(GameObject card, RecruitAtSite data)
             {
                 try
@@ -2210,7 +2317,7 @@ namespace TFTV
                     var (bgGO, bgRT) = NewUI("Background", frame.transform);
                     var bg = bgGO.AddComponent<Image>();
                     bg.sprite = _iconBackground;
-                   // bg.color = CardBackgroundColor;
+                    // bg.color = CardBackgroundColor;
                     bg.raycastTarget = false;
                     bg.type = Image.Type.Sliced;
                     bgRT.anchorMin = Vector2.zero; bgRT.anchorMax = Vector2.one;
@@ -2360,7 +2467,7 @@ namespace TFTV
 
                     abilitiesRT.anchorMin = new Vector2(0.5f, 0.5f);
                     abilitiesRT.anchorMax = new Vector2(0.5f, 0.5f);
-                    
+
                     // Plan (pseudocode):
                     // 1. Anchor the abilities container to the RIGHT side of its parent so it aligns to the right edge.
                     // 2. Use a pivot of (1, 0.5) so positioning is calculated from the right edge.
@@ -2398,7 +2505,7 @@ namespace TFTV
                         MakeFixedIcon(abilitiesGO.transform, icon, AbilityIconSize, _abilityIconBackground);
                     }
 
-                   
+
                 }
 
 
