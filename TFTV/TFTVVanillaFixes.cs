@@ -1405,6 +1405,9 @@ namespace TFTV
                             cache.LastController = controller;
                             cache.ClipStateMappings.Clear();
                             cache.LoggedRemappedClips.Clear();
+                            cache.NameToFullPathHashes.Clear();
+                            cache.LoggedMissingNames.Clear();
+                            BuildStateHashCache(controller, cache.NameToFullPathHashes);
                         }
 
                         ClipStateMapping mapping;
@@ -1416,30 +1419,31 @@ namespace TFTV
 
                         string remappedStateName = mapping.StateName;
                         int remappedStateHash = mapping.StateHash;
-                        bool hasRemappedState = animator.HasState(0, remappedStateHash);
+                        int remappedLayerIndex = mapping.LayerIndex;
+                        bool hasRemappedState = AnimatorHasState(animator, remappedLayerIndex, remappedStateHash, out remappedLayerIndex);
 
-                        if (!hasRemappedState && !string.IsNullOrEmpty(remappedStateName))
+                        List<int> cachedHashes;
+                        if (!hasRemappedState && !string.IsNullOrEmpty(remappedStateName) && cache.NameToFullPathHashes.TryGetValue(remappedStateName, out cachedHashes))
                         {
-                            string layerName = null;
-                            try
+                            int resolvedHash;
+                            int resolvedLayerIndex;
+                            if (TryResolveStateHashFromCache(animator, cachedHashes, out resolvedHash, out resolvedLayerIndex))
                             {
-                                layerName = animator.GetLayerName(0);
+                                remappedStateHash = resolvedHash;
+                                remappedLayerIndex = resolvedLayerIndex;
+                                mapping.StateHash = remappedStateHash;
+                                mapping.LayerIndex = remappedLayerIndex;
+                                cache.ClipStateMappings[clip] = mapping;
+                                hasRemappedState = true;
                             }
-                            catch
+                            else
                             {
-                                layerName = null;
-                            }
-
-                            if (!string.IsNullOrEmpty(layerName))
-                            {
-                                int fullPathHash = Animator.StringToHash(string.Concat(layerName, ".", remappedStateName));
-                                if (fullPathHash != remappedStateHash && animator.HasState(0, fullPathHash))
+                                if (cache.LoggedMissingNames.Add(remappedStateName))
                                 {
-                                    remappedStateHash = fullPathHash;
-                                    mapping.StateHash = remappedStateHash;
-                                    cache.ClipStateMappings[clip] = mapping;
-                                    hasRemappedState = true;
+                                    Debug.LogWarning(string.Format("Unable to resolve forced animation state '{0}' for clip '{1}' on animator '{2}'.", remappedStateName, clip.name, animator.name), component);
                                 }
+
+                                return false;
                             }
                         }
 
@@ -1449,15 +1453,42 @@ namespace TFTV
                             mapping.StateHash = Animator.StringToHash(mapping.StateName);
                             mapping.Remapped = false;
                             mapping.Resolved = true;
+                            mapping.LayerIndex = 0;
                             cache.ClipStateMappings[clip] = mapping;
                             remappedStateName = mapping.StateName;
                             remappedStateHash = mapping.StateHash;
-                            hasRemappedState = animator.HasState(0, remappedStateHash);
+                            remappedLayerIndex = mapping.LayerIndex;
+                            hasRemappedState = AnimatorHasState(animator, remappedLayerIndex, remappedStateHash, out remappedLayerIndex);
+
+                            if (!hasRemappedState && cache.NameToFullPathHashes.TryGetValue(remappedStateName, out cachedHashes))
+                            {
+                                int resolvedHash;
+                                int resolvedLayerIndex;
+                                if (TryResolveStateHashFromCache(animator, cachedHashes, out resolvedHash, out resolvedLayerIndex))
+                                {
+                                    remappedStateHash = resolvedHash;
+                                    remappedLayerIndex = resolvedLayerIndex;
+                                    mapping.StateHash = remappedStateHash;
+                                    mapping.LayerIndex = remappedLayerIndex;
+                                    cache.ClipStateMappings[clip] = mapping;
+                                    hasRemappedState = true;
+                                }
+                                else
+                                {
+                                    if (cache.LoggedMissingNames.Add(remappedStateName))
+                                    {
+                                        Debug.LogWarning(string.Format("Unable to resolve forced animation clip '{0}' on animator '{1}'.", remappedStateName, animator.name), component);
+                                    }
+
+                                    return false;
+                                }
+                            }
                         }
 
-                        if (hasRemappedState)
+                        if (hasRemappedState && QueueAnimatorState(animator, remappedStateHash, remappedLayerIndex, transitionDuration, hardSwitch))
                         {
-                            ForceAnimatorState(animator, remappedStateHash, transitionDuration, hardSwitch);
+                            mapping.LayerIndex = remappedLayerIndex;
+                            cache.ClipStateMappings[clip] = mapping;
                             if (mapping.Remapped && cache.LoggedRemappedClips.Add(clip))
                             {
                                 string message = string.Format("Forced animation remap applied for clip '{0}' -> state '{1}'.", clip.name, remappedStateName);
@@ -1470,6 +1501,11 @@ namespace TFTV
                             }
 
                             return true;
+                        }
+
+                        if (hasRemappedState)
+                        {
+                            return false;
                         }
 
                         if (ForceAnimatorState(animator, remappedStateName, transitionDuration, hardSwitch))
@@ -1487,7 +1523,8 @@ namespace TFTV
                             StateName = clip.name,
                             StateHash = Animator.StringToHash(clip.name),
                             Remapped = false,
-                            Resolved = true
+                            Resolved = true,
+                            LayerIndex = 0
                         };
 
                         HashSet<RuntimeAnimatorController> visited = null;
@@ -1532,12 +1569,323 @@ namespace TFTV
                         return mapping;
                     }
 
+                    private static void BuildStateHashCache(RuntimeAnimatorController controller, Dictionary<string, List<int>> cache)
+                    {
+                        cache.Clear();
+                        RuntimeAnimatorController baseController = GetBaseRuntimeAnimatorController(controller);
+                        if (baseController == null)
+                        {
+                            return;
+                        }
+
+                        Array layers = GetControllerLayers(baseController);
+                        if (layers == null)
+                        {
+                            return;
+                        }
+
+                        for (int i = 0; i < layers.Length; i++)
+                        {
+                            object layer = layers.GetValue(i);
+                            if (layer == null)
+                            {
+                                continue;
+                            }
+
+                            string layerName = GetObjectName(layer);
+                            object stateMachine = GetMemberValue(layer, "stateMachine");
+                            if (stateMachine == null)
+                            {
+                                continue;
+                            }
+
+                            string prefix = string.IsNullOrEmpty(layerName) ? string.Empty : layerName;
+                            TraverseStateMachine(stateMachine, prefix, cache);
+                        }
+                    }
+
+                    private static RuntimeAnimatorController GetBaseRuntimeAnimatorController(RuntimeAnimatorController controller)
+                    {
+                        HashSet<RuntimeAnimatorController> visited = null;
+                        while (controller is AnimatorOverrideController overrideController)
+                        {
+                            if (visited == null)
+                            {
+                                visited = new HashSet<RuntimeAnimatorController>();
+                            }
+
+                            if (!visited.Add(controller))
+                            {
+                                break;
+                            }
+
+                            controller = overrideController.runtimeAnimatorController;
+                            if (controller == null)
+                            {
+                                break;
+                            }
+                        }
+
+                        return controller;
+                    }
+
+                    private static Array GetControllerLayers(RuntimeAnimatorController controller)
+                    {
+                        if (controller == null)
+                        {
+                            return null;
+                        }
+
+                        Type controllerType = controller.GetType();
+                        PropertyInfo layersProperty = AccessTools.Property(controllerType, "layers");
+                        if (layersProperty != null)
+                        {
+                            if (layersProperty.GetValue(controller) is Array propertyLayers)
+                            {
+                                return propertyLayers;
+                            }
+                        }
+
+                        FieldInfo layersField = AccessTools.Field(controllerType, "m_Layers");
+                        if (layersField != null)
+                        {
+                            if (layersField.GetValue(controller) is Array fieldLayers)
+                            {
+                                return fieldLayers;
+                            }
+                        }
+
+                        return null;
+                    }
+
+                    private static void TraverseStateMachine(object stateMachine, string prefix, Dictionary<string, List<int>> cache)
+                    {
+                        if (stateMachine == null)
+                        {
+                            return;
+                        }
+
+                        Array states = GetMemberValue(stateMachine, "states") as Array;
+                        if (states != null)
+                        {
+                            for (int i = 0; i < states.Length; i++)
+                            {
+                                object childState = states.GetValue(i);
+                                object animatorState = GetMemberValue(childState, "state") ?? childState;
+                                string stateName = GetObjectName(animatorState);
+                                if (string.IsNullOrEmpty(stateName))
+                                {
+                                    continue;
+                                }
+
+                                string fullPath = string.IsNullOrEmpty(prefix) ? stateName : string.Concat(prefix, ".", stateName);
+                                int fullPathHash = Animator.StringToHash(fullPath);
+                                AddNameHash(cache, stateName, fullPathHash);
+
+                                AnimationClip motionClip = GetStateMotionClip(animatorState);
+                                if (motionClip != null)
+                                {
+                                    AddNameHash(cache, motionClip.name, fullPathHash);
+                                }
+                            }
+                        }
+
+                        Array childMachines = GetMemberValue(stateMachine, "stateMachines") as Array;
+                        if (childMachines == null)
+                        {
+                            return;
+                        }
+
+                        for (int i = 0; i < childMachines.Length; i++)
+                        {
+                            object childMachine = childMachines.GetValue(i);
+                            object nestedStateMachine = GetMemberValue(childMachine, "stateMachine") ?? childMachine;
+                            if (nestedStateMachine == null)
+                            {
+                                continue;
+                            }
+
+                            string nestedName = GetObjectName(nestedStateMachine);
+                            string nextPrefix;
+                            if (string.IsNullOrEmpty(prefix))
+                            {
+                                nextPrefix = nestedName ?? string.Empty;
+                            }
+                            else if (string.IsNullOrEmpty(nestedName))
+                            {
+                                nextPrefix = prefix;
+                            }
+                            else
+                            {
+                                nextPrefix = string.Concat(prefix, ".", nestedName);
+                            }
+
+                            TraverseStateMachine(nestedStateMachine, nextPrefix, cache);
+                        }
+                    }
+
+                    private static void AddNameHash(Dictionary<string, List<int>> cache, string name, int hash)
+                    {
+                        if (string.IsNullOrEmpty(name))
+                        {
+                            return;
+                        }
+
+                        List<int> hashes;
+                        if (!cache.TryGetValue(name, out hashes))
+                        {
+                            hashes = new List<int>();
+                            cache[name] = hashes;
+                        }
+
+                        if (!hashes.Contains(hash))
+                        {
+                            hashes.Add(hash);
+                        }
+                    }
+
+                    private static AnimationClip GetStateMotionClip(object animatorState)
+                    {
+                        if (animatorState == null)
+                        {
+                            return null;
+                        }
+
+                        return GetMemberValue(animatorState, "motion") as AnimationClip;
+                    }
+
+                    private static object GetMemberValue(object instance, string memberName)
+                    {
+                        if (instance == null)
+                        {
+                            return null;
+                        }
+
+                        Type type = instance.GetType();
+                        PropertyInfo property = AccessTools.Property(type, memberName);
+                        if (property != null)
+                        {
+                            return property.GetValue(instance);
+                        }
+
+                        FieldInfo field = AccessTools.Field(type, memberName);
+                        if (field != null)
+                        {
+                            return field.GetValue(instance);
+                        }
+
+                        return null;
+                    }
+
+                    private static string GetObjectName(object instance)
+                    {
+                        if (instance == null)
+                        {
+                            return null;
+                        }
+
+                        object value = GetMemberValue(instance, "name");
+                        return value as string ?? value?.ToString();
+                    }
+
+                    private static bool TryResolveStateHashFromCache(Animator animator, List<int> candidateHashes, out int stateHash, out int layerIndex)
+                    {
+                        stateHash = 0;
+                        layerIndex = 0;
+                        if (animator == null || candidateHashes == null || candidateHashes.Count == 0)
+                        {
+                            return false;
+                        }
+
+                        int layerCount = animator.layerCount;
+                        for (int i = 0; i < candidateHashes.Count; i++)
+                        {
+                            int candidate = candidateHashes[i];
+                            for (int layer = 0; layer < layerCount; layer++)
+                            {
+                                if (animator.HasState(layer, candidate))
+                                {
+                                    stateHash = candidate;
+                                    layerIndex = layer;
+                                    return true;
+                                }
+                            }
+                        }
+
+                        return false;
+                    }
+
+                    private static bool AnimatorHasState(Animator animator, int preferredLayerIndex, int stateHash, out int resolvedLayerIndex)
+                    {
+                        resolvedLayerIndex = preferredLayerIndex;
+                        if (animator == null || stateHash == 0)
+                        {
+                            return false;
+                        }
+
+                        int layerCount = animator.layerCount;
+                        if (preferredLayerIndex >= 0 && preferredLayerIndex < layerCount && animator.HasState(preferredLayerIndex, stateHash))
+                        {
+                            return true;
+                        }
+
+                        for (int layer = 0; layer < layerCount; layer++)
+                        {
+                            if (animator.HasState(layer, stateHash))
+                            {
+                                resolvedLayerIndex = layer;
+                                return true;
+                            }
+                        }
+
+                        resolvedLayerIndex = preferredLayerIndex >= 0 ? preferredLayerIndex : 0;
+                        return false;
+                    }
+
+                    private static bool QueueAnimatorState(Animator animator, int stateHash, int layerIndex, float transitionDuration, bool hardSwitch)
+                    {
+                        if (animator == null)
+                        {
+                            return false;
+                        }
+
+                        if (layerIndex < 0 || layerIndex >= animator.layerCount)
+                        {
+                            layerIndex = 0;
+                        }
+
+                        if (!animator.HasState(layerIndex, stateHash))
+                        {
+                            return false;
+                        }
+
+                        if (hardSwitch)
+                        {
+                            animator.Play(stateHash, layerIndex, 0f);
+                            return true;
+                        }
+
+                        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(layerIndex);
+                        if (stateInfo.fullPathHash == stateHash)
+                        {
+                            animator.Play(stateHash, layerIndex, 0f);
+                        }
+                        else
+                        {
+                            animator.CrossFadeInFixedTime(stateHash, transitionDuration, layerIndex, 0f);
+                        }
+
+                        return true;
+                    }
+
                     private sealed class AnimatorForceCache
                     {
                         public RuntimeAnimatorController LastController;
                         public readonly Dictionary<AnimationClip, ClipStateMapping> ClipStateMappings = new Dictionary<AnimationClip, ClipStateMapping>();
                         public readonly List<KeyValuePair<AnimationClip, AnimationClip>> OverrideBuffer = new List<KeyValuePair<AnimationClip, AnimationClip>>();
                         public readonly HashSet<AnimationClip> LoggedRemappedClips = new HashSet<AnimationClip>();
+                        public readonly Dictionary<string, List<int>> NameToFullPathHashes = new Dictionary<string, List<int>>(StringComparer.Ordinal);
+                        public readonly HashSet<string> LoggedMissingNames = new HashSet<string>(StringComparer.Ordinal);
                     }
 
                     private struct ClipStateMapping
@@ -1546,6 +1894,7 @@ namespace TFTV
                         public int StateHash;
                         public bool Remapped;
                         public bool Resolved;
+                        public int LayerIndex;
                     }
 
                     private static bool IsCurrentAnimation(AnimationClip expectedClip, AnimationClip currentClip)
@@ -1743,26 +2092,7 @@ namespace TFTV
 
                     private static void ForceAnimatorState(Animator animator, int stateHash, float transitionDuration, bool hardSwitch)
                     {
-                        if (animator == null)
-                        {
-                            return;
-                        }
-
-                        if (hardSwitch)
-                        {
-                            animator.Play(stateHash, 0, 0f);
-                            return;
-                        }
-
-                        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-                        if (stateInfo.fullPathHash == stateHash)
-                        {
-                            animator.Play(stateHash, 0, 0f);
-                        }
-                        else
-                        {
-                            animator.CrossFadeInFixedTime(stateHash, transitionDuration, 0, 0f);
-                        }
+                        QueueAnimatorState(animator, stateHash, 0, transitionDuration, hardSwitch);
                     }
 
                     private static bool ForceAnimatorState(Animator animator, string stateName, float transitionDuration, bool hardSwitch)
@@ -1801,6 +2131,7 @@ namespace TFTV
                 }
 
             }
+
 
             internal class DecimalWillpoints
             {

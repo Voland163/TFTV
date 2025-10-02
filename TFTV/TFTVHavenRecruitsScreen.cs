@@ -294,7 +294,7 @@ namespace TFTV
         private const float ColumnPadding = 12f;
         private const float ItemSpacing = 6f;     // space between cards
         private const int RowSpacing = 2;      // space between rows inside a card
-        private const int AbilityIconSize = 46;  // abilities
+        private const int AbilityIconSize = 40;  // abilities
         private const int ClassIconSize = 46;    // class badge on list entry
         private const int EquipIconSize = 48;  // equipment & armor (match abilities)
         private const int ArmorIconSize = 48;
@@ -2376,7 +2376,7 @@ namespace TFTV
 
                     var abilitiesLayout = abilitiesGO.AddComponent<HorizontalLayoutGroup>();
                     abilitiesLayout.childAlignment = TextAnchor.MiddleCenter;
-                    abilitiesLayout.spacing = 10f;
+                    abilitiesLayout.spacing = 20f;
                     abilitiesLayout.childControlWidth = true;
                     abilitiesLayout.childControlHeight = true;
                     abilitiesLayout.childForceExpandWidth = false;
