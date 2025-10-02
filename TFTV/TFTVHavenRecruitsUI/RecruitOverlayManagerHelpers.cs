@@ -7,6 +7,18 @@ namespace TFTV
 {
     internal static class RecruitOverlayManagerHelpers
     {
+        internal static void ClearTransformChildren(Transform transform)
+        {
+            if (transform == null)
+            {
+                return;
+            }
+
+            for (int i = transform.childCount - 1; i >= 0; i--)
+            {
+                Object.Destroy(transform.GetChild(i).gameObject);
+            }
+        }
 
         internal static Image MakeFixedIcon(Transform parent, Sprite sp, int px, Sprite backgroundSprite = null)
         {
