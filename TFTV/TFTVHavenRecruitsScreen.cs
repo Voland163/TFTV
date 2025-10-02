@@ -1490,7 +1490,7 @@ namespace TFTV
                     {
                         if (_factionTabs.TryGetValue(kvp.Key, out var tab) && tab.CountLabel != null)
                         {
-                            tab.CountLabel.text = $"[{kvp.Value.Count}]";
+                            tab.CountLabel.text = kvp.Value.Count.ToString();
                         }
 
                     }
@@ -1610,7 +1610,8 @@ namespace TFTV
 
                 var layoutElement = tabGO.AddComponent<LayoutElement>();
                 layoutElement.flexibleWidth = 1f;
-                layoutElement.preferredHeight = 56f;
+                layoutElement.preferredHeight = ClassIconSize + 8f;
+                layoutElement.minHeight = layoutElement.preferredHeight;
 
                 var background = tabGO.AddComponent<Image>();
                 background.color = TabDefaultColor;
@@ -1630,13 +1631,13 @@ namespace TFTV
                 var (contentGO, contentRT) = NewUI("Content", tabGO.transform);
                 contentRT.anchorMin = new Vector2(0f, 0f);
                 contentRT.anchorMax = new Vector2(1f, 1f);
-                contentRT.offsetMin = new Vector2(8f, 8f);
-                contentRT.offsetMax = new Vector2(-8f, -8f);
+                contentRT.offsetMin = new Vector2(6f, 6f);
+                contentRT.offsetMax = new Vector2(-6f, -6f);
 
                 var contentLayout = contentGO.AddComponent<HorizontalLayoutGroup>();
                 contentLayout.childAlignment = TextAnchor.MiddleCenter;
                 contentLayout.spacing = 6f;
-                contentLayout.childControlWidth = false;
+                contentLayout.childControlWidth = true;
                 contentLayout.childControlHeight = true;
                 contentLayout.childForceExpandWidth = false;
                 contentLayout.childForceExpandHeight = false;
@@ -1649,15 +1650,15 @@ namespace TFTV
                 iconImage.enabled = iconSprite != null;
                 iconImage.color = iconSprite != null ? GetFactionColor(filter) : Color.white;
                 var iconLE = iconGO.AddComponent<LayoutElement>();
-                iconLE.preferredWidth = 36f;
-                iconLE.preferredHeight = 36f;
+                iconLE.preferredWidth = 34f;
+                iconLE.preferredHeight = 34f;
 
                 var (countGO, _) = NewUI("Count", contentGO.transform);
                 var count = countGO.AddComponent<Text>();
                 count.font = _puristaSemibold ? _puristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
-                count.fontSize = TextFontSize - 2;
+                count.fontSize = TextFontSize + 4;
                 count.color = Color.white;
-                count.alignment = TextAnchor.MiddleLeft;
+                count.alignment = TextAnchor.MiddleCenter;
                 count.text = "0";
 
                 _factionTabs[filter] = new FactionTabUI
@@ -2209,6 +2210,7 @@ namespace TFTV
                     var (bgGO, bgRT) = NewUI("Background", frame.transform);
                     var bg = bgGO.AddComponent<Image>();
                     bg.sprite = _iconBackground;
+                   // bg.color = CardBackgroundColor;
                     bg.raycastTarget = false;
                     bg.type = Image.Type.Sliced;
                     bgRT.anchorMin = Vector2.zero; bgRT.anchorMax = Vector2.one;

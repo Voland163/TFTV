@@ -1414,49 +1414,70 @@ namespace TFTV
                             cache.ClipStateMappings[clip] = mapping;
                         }
 
-                        if (!animator.HasState(0, mapping.StateHash))
+                        string remappedStateName = mapping.StateName;
+                        int remappedStateHash = mapping.StateHash;
+                        bool hasRemappedState = animator.HasState(0, remappedStateHash);
+
+                        if (!hasRemappedState && !string.IsNullOrEmpty(remappedStateName))
+                        {
+                            string layerName = null;
+                            try
+                            {
+                                layerName = animator.GetLayerName(0);
+                            }
+                            catch
+                            {
+                                layerName = null;
+                            }
+
+                            if (!string.IsNullOrEmpty(layerName))
+                            {
+                                int fullPathHash = Animator.StringToHash(string.Concat(layerName, ".", remappedStateName));
+                                if (fullPathHash != remappedStateHash && animator.HasState(0, fullPathHash))
+                                {
+                                    remappedStateHash = fullPathHash;
+                                    mapping.StateHash = remappedStateHash;
+                                    cache.ClipStateMappings[clip] = mapping;
+                                    hasRemappedState = true;
+                                }
+                            }
+                        }
+
+                        if (!hasRemappedState)
                         {
                             mapping.StateName = clip.name;
                             mapping.StateHash = Animator.StringToHash(mapping.StateName);
                             mapping.Remapped = false;
                             mapping.Resolved = true;
                             cache.ClipStateMappings[clip] = mapping;
+                            remappedStateName = mapping.StateName;
+                            remappedStateHash = mapping.StateHash;
+                            hasRemappedState = animator.HasState(0, remappedStateHash);
                         }
 
-                        if (!animator.HasState(0, mapping.StateHash))
+                        if (hasRemappedState)
                         {
-                            return false;
-                        }
+                            ForceAnimatorState(animator, remappedStateHash, transitionDuration, hardSwitch);
+                            if (mapping.Remapped && cache.LoggedRemappedClips.Add(clip))
+                            {
+                                string message = string.Format("Forced animation remap applied for clip '{0}' -> state '{1}'.", clip.name, remappedStateName);
+                                if (clip.name.IndexOf("StepBack", StringComparison.OrdinalIgnoreCase) >= 0)
+                                {
+                                    message = string.Format("Forced step-back animation remap applied: clip '{0}' -> state '{1}'.", clip.name, remappedStateName);
+                                }
 
-                        if (hardSwitch)
-                        {
-                            animator.Play(mapping.StateHash, 0, 0f);
-                        }
-                        else
-                        {
-                            AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-                            if (stateInfo.fullPathHash == mapping.StateHash)
-                            {
-                                animator.Play(mapping.StateHash, 0, 0f);
-                            }
-                            else
-                            {
-                                animator.CrossFadeInFixedTime(mapping.StateHash, transitionDuration, 0, 0f);
-                            }
-                        }
-
-                        if (mapping.Remapped && cache.LoggedRemappedClips.Add(clip))
-                        {
-                            string message = string.Format("Forced animation remap applied for clip '{0}' -> state '{1}'.", clip.name, mapping.StateName);
-                            if (clip.name.IndexOf("StepBack", StringComparison.OrdinalIgnoreCase) >= 0)
-                            {
-                                message = string.Format("Forced step-back animation remap applied: clip '{0}' -> state '{1}'.", clip.name, mapping.StateName);
+                                Debug.Log(message, component);
                             }
 
-                            Debug.Log(message, component);
+                            return true;
                         }
 
-                        return true;
+                        if (ForceAnimatorState(animator, remappedStateName, transitionDuration, hardSwitch))
+                        {
+                            return true;
+                        }
+
+                        return ForceAnimatorState(animator, clip.name, transitionDuration, hardSwitch);
                     }
 
                     private static ClipStateMapping ResolveClipStateMapping(Animator animator, RuntimeAnimatorController controller, AnimationClip clip, List<KeyValuePair<AnimationClip, AnimationClip>> overrideBuffer)
@@ -1720,6 +1741,49 @@ namespace TFTV
                         return false;
                     }
 
+                    private static void ForceAnimatorState(Animator animator, int stateHash, float transitionDuration, bool hardSwitch)
+                    {
+                        if (animator == null)
+                        {
+                            return;
+                        }
+
+                        if (hardSwitch)
+                        {
+                            animator.Play(stateHash, 0, 0f);
+                            return;
+                        }
+
+                        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+                        if (stateInfo.fullPathHash == stateHash)
+                        {
+                            animator.Play(stateHash, 0, 0f);
+                        }
+                        else
+                        {
+                            animator.CrossFadeInFixedTime(stateHash, transitionDuration, 0, 0f);
+                        }
+                    }
+
+                    private static bool ForceAnimatorState(Animator animator, string stateName, float transitionDuration, bool hardSwitch)
+                    {
+                        if (animator == null || string.IsNullOrEmpty(stateName))
+                        {
+                            return false;
+                        }
+
+                        if (hardSwitch)
+                        {
+                            animator.Play(stateName, 0, 0f);
+                        }
+                        else
+                        {
+                            animator.CrossFadeInFixedTime(stateName, transitionDuration, 0, 0f);
+                        }
+
+                        return true;
+                    }
+
                     private static bool IsStepBackSegment(ShootSegmentType segmentType)
                     {
                         return segmentType == ShootSegmentType.StepBackLeft || segmentType == ShootSegmentType.StepBackRight;
@@ -1735,7 +1799,9 @@ namespace TFTV
                         return clip.name.IndexOf("ShotLoop", StringComparison.OrdinalIgnoreCase) >= 0;
                     }
                 }
+
             }
+
             internal class DecimalWillpoints
             {
 
