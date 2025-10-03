@@ -1,4 +1,5 @@
-﻿using PhoenixPoint.Common.UI;
+﻿using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using System;
@@ -23,46 +24,19 @@ namespace TFTV
         internal static GameObject _detailEmptyState;
         internal static Transform _detailInfoRoot;
         internal static Image _detailClassIconImage;
-        internal static Text _detailClassLabel;
         internal static Text _detailLevelLabel;
         internal static Text _detailNameLabel;
         internal static Image _detailFactionIconImage;
-        internal static Text _detailFactionNameLabel;
         internal static Text _detailHavenLabel;
-        internal static GameObject _detailAbilityDescriptionGroup;
-        internal static Transform _detailAbilityDescriptionRoot;
-        internal static GameObject _detailMutationGroup;
+        internal static GameObject _detailMutationSection;
         internal static Transform _detailMutationRoot;
-        internal static GameObject _detailCostGroup;
+        internal static GameObject _detailAbilitySection;
+        internal static Transform _detailAbilityRoot;
+        internal static GameObject _detailEquipmentSection;
+        internal static Transform _detailEquipmentRoot;
+        internal static GameObject _detailCostSection;
         internal static Transform _detailCostRoot;
         internal static Image _detailFactionLogoImage;
-
-        private static GameObject CreateDetailGroup(Transform parent, string headerText, out Transform contentRoot)
-        {
-            var (groupGO, _) = RecruitOverlayManagerHelpers.NewUI($"{headerText.Replace(" ", string.Empty)}Group", parent);
-            var groupLayout = groupGO.AddComponent<VerticalLayoutGroup>();
-            groupLayout.childAlignment = TextAnchor.UpperLeft;
-            groupLayout.spacing = 6f;
-            groupLayout.childControlWidth = true;
-            groupLayout.childControlHeight = false;
-            groupLayout.childForceExpandWidth = true;
-            groupLayout.childForceExpandHeight = false;
-
-            var header = HavenRecruitsDetailsPanel.CreateDetailText(groupGO.transform, "Header", TextFontSize - 2, TabHighlightColor, TextAnchor.UpperLeft);
-            header.text = headerText;
-
-            var (contentGO, _) = RecruitOverlayManagerHelpers.NewUI("Content", groupGO.transform);
-            var contentLayout = contentGO.AddComponent<HorizontalLayoutGroup>();
-            contentLayout.childAlignment = TextAnchor.MiddleLeft;
-            contentLayout.spacing = 6f;
-            contentLayout.childControlWidth = false;
-            contentLayout.childControlHeight = true;
-            contentLayout.childForceExpandWidth = false;
-            contentLayout.childForceExpandHeight = false;
-
-            contentRoot = contentGO.transform;
-            return groupGO;
-        }
 
         private static void CreateDetailHeader(Transform parent)
         {
@@ -90,16 +64,17 @@ namespace TFTV
                 var layout = headerGO.AddComponent<HorizontalLayoutGroup>();
                 layout.childAlignment = TextAnchor.MiddleLeft;
                 layout.spacing = 8f;
-                layout.childControlWidth = true;
+                layout.childControlWidth = false;
                 layout.childControlHeight = true;
-                layout.childForceExpandWidth = true;
+                layout.childForceExpandWidth = false;
                 layout.childForceExpandHeight = false;
                 layout.padding = new RectOffset(24, 24, 12, 12);
 
                 var (titleGO, _) = RecruitOverlayManagerHelpers.NewUI("Title", headerGO.transform);
-                var title = CreateDetailText(headerGO.transform, "Title", TextFontSize + 2, Color.white, TextAnchor.MiddleLeft);
+                var title = CreateDetailText(titleGO.transform, "Title", TextFontSize + 2, Color.white, TextAnchor.MiddleLeft);
 
                 title.text = "RECRUIT DETAILS";
+                title.horizontalOverflow = HorizontalWrapMode.Overflow;
 
             }
             catch (Exception ex) { TFTVLogger.Error(ex); }
@@ -146,12 +121,12 @@ namespace TFTV
                 logoRT.anchorMin = new Vector2(0.5f, 0.5f);
                 logoRT.anchorMax = new Vector2(0.5f, 0.5f);
                 logoRT.pivot = new Vector2(0.5f, 0.5f);
-                logoRT.sizeDelta = new Vector2(420f, 420f);
+                logoRT.sizeDelta = new Vector2(120f, 120f);
                 logoRT.anchoredPosition = Vector2.zero;
                 logoGO.transform.SetAsFirstSibling();
 
                 var logoImage = logoGO.AddComponent<Image>();
-                logoImage.color = new Color(1f, 1f, 1f, 0.18f);
+                logoImage.color = new Color(1f, 1f, 1f, 0.3f);
                 logoImage.raycastTarget = false;
                 logoImage.preserveAspect = true;
                 logoImage.enabled = false;
@@ -165,11 +140,9 @@ namespace TFTV
                 contentRT.offsetMin = new Vector2(24f, 24f);
                 contentRT.offsetMax = new Vector2(-24f, -24f);
 
-
-
                 var layout = contentGO.AddComponent<VerticalLayoutGroup>();
-                layout.childAlignment = TextAnchor.UpperLeft;
-                layout.spacing = 12f;
+                layout.childAlignment = TextAnchor.UpperCenter;
+                layout.spacing = 6f;
                 layout.childControlWidth = true;
                 layout.childControlHeight = false;
                 layout.childForceExpandWidth = true;
@@ -180,7 +153,7 @@ namespace TFTV
                 var (infoRootGO, _) = RecruitOverlayManagerHelpers.NewUI("InfoRoot", contentGO.transform);
                 var infoLayout = infoRootGO.AddComponent<VerticalLayoutGroup>();
                 infoLayout.childAlignment = TextAnchor.UpperCenter;
-                infoLayout.spacing = 12f;
+                infoLayout.spacing = 6f;
                 infoLayout.childControlWidth = true;
                 infoLayout.childControlHeight = false;
                 infoLayout.childForceExpandWidth = true;
@@ -190,24 +163,18 @@ namespace TFTV
                 _detailInfoRoot.gameObject.SetActive(false);
 
                 var (mainInfoGO, _) = RecruitOverlayManagerHelpers.NewUI("MainInfo", infoRootGO.transform);
-                var mainLayout = mainInfoGO.AddComponent<VerticalLayoutGroup>();
-                mainLayout.childAlignment = TextAnchor.UpperCenter;
-                mainLayout.spacing = 10f;
-                mainLayout.childControlWidth = true;
+                var mainInfoLE = mainInfoGO.AddComponent<LayoutElement>();
+                mainInfoLE.flexibleWidth = 1f;
+                mainInfoLE.minWidth = 0f;
+                var mainLayout = mainInfoGO.AddComponent<HorizontalLayoutGroup>();
+                mainLayout.childAlignment = TextAnchor.MiddleCenter;
+                mainLayout.spacing = 6f;
+                mainLayout.childControlWidth = false;
                 mainLayout.childControlHeight = false;
-                mainLayout.childForceExpandWidth = true;
+                mainLayout.childForceExpandWidth = false;
                 mainLayout.childForceExpandHeight = false;
 
-                var (primaryInfoGO, _) = RecruitOverlayManagerHelpers.NewUI("PrimaryInfo", mainInfoGO.transform);
-                var primaryLayout = primaryInfoGO.AddComponent<HorizontalLayoutGroup>();
-                primaryLayout.childAlignment = TextAnchor.MiddleCenter;
-                primaryLayout.spacing = 12f;
-                primaryLayout.childControlWidth = true;
-                primaryLayout.childControlHeight = false;
-                primaryLayout.childForceExpandWidth = false;
-                primaryLayout.childForceExpandHeight = false;
-
-                var (classIconGO, classIconRT) = RecruitOverlayManagerHelpers.NewUI("ClassIcon", primaryInfoGO.transform);
+                var (classIconGO, classIconRT) = RecruitOverlayManagerHelpers.NewUI("ClassIcon", mainInfoGO.transform);
                 _detailClassIconImage = classIconGO.AddComponent<Image>();
                 _detailClassIconImage.preserveAspect = true;
                 _detailClassIconImage.raycastTarget = false;
@@ -219,31 +186,31 @@ namespace TFTV
                 classIconLE.minHeight = DetailClassIconSize;
                 classIconRT.sizeDelta = new Vector2(DetailClassIconSize, DetailClassIconSize);
 
-                _detailClassLabel = CreateDetailText(primaryInfoGO.transform, "ClassName", TextFontSize + 2, Color.white, TextAnchor.MiddleCenter);
-                var classLabelLE = _detailClassLabel.gameObject.AddComponent<LayoutElement>();
-                classLabelLE.minWidth = 0f;
-                classLabelLE.flexibleWidth = 0f;
-
-                _detailLevelLabel = CreateDetailText(primaryInfoGO.transform, "Level", TextFontSize + 2, Color.white, TextAnchor.MiddleCenter);
+                _detailLevelLabel = CreateDetailText(mainInfoGO.transform, "Level", TextFontSize + 4, Color.white, TextAnchor.MiddleCenter);
+                _detailLevelLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
                 var levelLabelLE = _detailLevelLabel.gameObject.AddComponent<LayoutElement>();
-                levelLabelLE.minWidth = 0f;
-                levelLabelLE.flexibleWidth = 0f;
+                levelLabelLE.minWidth = 28f;
+                levelLabelLE.preferredWidth = 28f;
 
-                _detailNameLabel = CreateDetailText(primaryInfoGO.transform, "Name", TextFontSize + 6, Color.white, TextAnchor.MiddleCenter);
+                _detailNameLabel = CreateDetailText(mainInfoGO.transform, "Name", TextFontSize + 6, Color.white, TextAnchor.MiddleCenter);
+                _detailNameLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
                 var nameLabelLE = _detailNameLabel.gameObject.AddComponent<LayoutElement>();
                 nameLabelLE.minWidth = 0f;
                 nameLabelLE.flexibleWidth = 1f;
 
-                var (secondaryInfoGO, _) = RecruitOverlayManagerHelpers.NewUI("SecondaryInfo", mainInfoGO.transform);
-                var secondaryLayout = secondaryInfoGO.AddComponent<HorizontalLayoutGroup>();
-                secondaryLayout.childAlignment = TextAnchor.MiddleCenter;
-                secondaryLayout.spacing = 8f;
-                secondaryLayout.childControlWidth = true;
-                secondaryLayout.childControlHeight = false;
-                secondaryLayout.childForceExpandWidth = false;
-                secondaryLayout.childForceExpandHeight = false;
+                var (factionInfoGO, _) = RecruitOverlayManagerHelpers.NewUI("FactionInfo", infoRootGO.transform);
+                var factionInfoLE = factionInfoGO.AddComponent<LayoutElement>();
+                factionInfoLE.flexibleWidth = 1f;
+                factionInfoLE.minWidth = 0f;
+                var factionLayout = factionInfoGO.AddComponent<HorizontalLayoutGroup>();
+                factionLayout.childAlignment = TextAnchor.MiddleCenter;
+                factionLayout.spacing = 4f;
+                factionLayout.childControlWidth = false;
+                factionLayout.childControlHeight = false;
+                factionLayout.childForceExpandWidth = false;
+                factionLayout.childForceExpandHeight = false;
 
-                var (factionIconGO, factionIconRT) = RecruitOverlayManagerHelpers.NewUI("FactionIcon", secondaryInfoGO.transform);
+                var (factionIconGO, factionIconRT) = RecruitOverlayManagerHelpers.NewUI("FactionIcon", factionInfoGO.transform);
                 _detailFactionIconImage = factionIconGO.AddComponent<Image>();
                 _detailFactionIconImage.preserveAspect = true;
                 _detailFactionIconImage.raycastTarget = false;
@@ -255,37 +222,67 @@ namespace TFTV
                 factionIconLE.minHeight = DetailFactionIconSize;
                 factionIconRT.sizeDelta = new Vector2(DetailFactionIconSize, DetailFactionIconSize);
 
-
-                _detailHavenLabel = HavenRecruitsDetailsPanel.CreateDetailText(secondaryInfoGO.transform, "HavenName", TextFontSize + 2, Color.white, TextAnchor.MiddleCenter);
+                _detailHavenLabel = CreateDetailText(factionInfoGO.transform, "HavenName", TextFontSize + 2, Color.white, TextAnchor.MiddleCenter);
+                _detailHavenLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
                 var havenLabelLE = _detailHavenLabel.gameObject.AddComponent<LayoutElement>();
                 havenLabelLE.minWidth = 0f;
                 havenLabelLE.flexibleWidth = 1f;
 
-                _detailAbilityDescriptionGroup = CreateAbilityDescriptionGroup(infoRootGO.transform, "Key Abilities", out _detailAbilityDescriptionRoot);
-                _detailMutationGroup = HavenRecruitsDetailsPanel.CreateDetailGroup(infoRootGO.transform, "Mutation Traits", out _detailMutationRoot);
-                _detailCostGroup = HavenRecruitsDetailsPanel.CreateDetailGroup(infoRootGO.transform, "Recruitment Cost", out _detailCostRoot);
+                var (mutationsGO, _) = RecruitOverlayManagerHelpers.NewUI("MutationDetails", infoRootGO.transform);
+                var mutationLayout = mutationsGO.AddComponent<VerticalLayoutGroup>();
+                mutationLayout.childAlignment = TextAnchor.UpperRight;
+                mutationLayout.spacing = 8f;
+                mutationLayout.childControlWidth = true;
+                mutationLayout.childControlHeight = false;
+                mutationLayout.childForceExpandWidth = true;
+                mutationLayout.childForceExpandHeight = false;
+                mutationLayout.padding = new RectOffset(24, 24, 0, 0);
+                var mutationLE = mutationsGO.AddComponent<LayoutElement>();
+                mutationLE.flexibleWidth = 1f;
+                mutationLE.minWidth = 0f;
+                _detailMutationSection = mutationsGO;
+                _detailMutationRoot = mutationsGO.transform;
+                _detailMutationSection.SetActive(false);
 
-                if (_detailAbilityDescriptionGroup != null)
-                {
-                    _detailAbilityDescriptionGroup.SetActive(false);
-                }
-                if (_detailMutationGroup != null)
-                {
-                    _detailMutationGroup.SetActive(false);
-                }
-                if (_detailCostGroup != null)
-                {
-                    _detailCostGroup.SetActive(false);
-                }
+                var (abilitiesGO, _) = RecruitOverlayManagerHelpers.NewUI("AbilityDetails", infoRootGO.transform);
+                var abilityLayout = abilitiesGO.AddComponent<VerticalLayoutGroup>();
+                abilityLayout.childAlignment = TextAnchor.UpperRight;
+                abilityLayout.spacing = 8f;
+                abilityLayout.childControlWidth = true;
+                abilityLayout.childControlHeight = false;
+                abilityLayout.childForceExpandWidth = true;
+                abilityLayout.childForceExpandHeight = false;
+                abilityLayout.padding = new RectOffset(24, 24, 0, 0);
+                var abilityLE = abilitiesGO.AddComponent<LayoutElement>();
+                abilityLE.flexibleWidth = 1f;
+                abilityLE.minWidth = 0f;
+                _detailAbilitySection = abilitiesGO;
+                _detailAbilityRoot = abilitiesGO.transform;
+                _detailAbilitySection.SetActive(false);
 
-                if (_detailCostRoot != null)
-                {
-                    var costLayout = _detailCostRoot.GetComponent<HorizontalLayoutGroup>();
-                    if (costLayout != null)
-                    {
-                        costLayout.childAlignment = TextAnchor.MiddleLeft;
-                    }
-                }
+                var (equipmentGO, _) = RecruitOverlayManagerHelpers.NewUI("EquipmentRow", infoRootGO.transform);
+                var equipmentLayout = equipmentGO.AddComponent<HorizontalLayoutGroup>();
+                equipmentLayout.childAlignment = TextAnchor.MiddleCenter;
+                equipmentLayout.spacing = 10f;
+                equipmentLayout.childControlWidth = false;
+                equipmentLayout.childControlHeight = false;
+                equipmentLayout.childForceExpandWidth = false;
+                equipmentLayout.childForceExpandHeight = false;
+                _detailEquipmentSection = equipmentGO;
+                _detailEquipmentRoot = equipmentGO.transform;
+                _detailEquipmentSection.SetActive(false);
+
+                var (costGO, _) = RecruitOverlayManagerHelpers.NewUI("CostRow", infoRootGO.transform);
+                var costLayout = costGO.AddComponent<HorizontalLayoutGroup>();
+                costLayout.childAlignment = TextAnchor.MiddleCenter;
+                costLayout.spacing = 10f;
+                costLayout.childControlWidth = false;
+                costLayout.childControlHeight = false;
+                costLayout.childForceExpandWidth = false;
+                costLayout.childForceExpandHeight = false;
+                _detailCostSection = costGO;
+                _detailCostRoot = costGO.transform;
+                _detailCostSection.SetActive(false);
 
                 _detailAnimator = _detailPanel.AddComponent<OverlayAnimator>();
                 _detailAnimator.Initialize(rt, slideFromLeft: true, resolvedWidth: detailPixels);
@@ -384,11 +381,6 @@ namespace TFTV
                 _detailFactionIconImage.enabled = false;
                 _detailFactionIconImage.color = Color.white;
             }
-            if (_detailFactionNameLabel != null)
-            {
-                _detailFactionNameLabel.text = string.Empty;
-                _detailFactionNameLabel.color = Color.white;
-            }
             if (_detailHavenLabel != null)
             {
                 _detailHavenLabel.color = Color.white;
@@ -416,20 +408,18 @@ namespace TFTV
 
                 if (_detailClassIconImage != null)
                 {
-
                     var classIcon = HavenRecruitsUtils.GetClassIcon(data.Recruit);
                     _detailClassIconImage.sprite = classIcon;
                     _detailClassIconImage.color = Color.white;
                     _detailClassIconImage.enabled = classIcon != null;
                 }
 
-
                 if (_detailLevelLabel != null)
                 {
                     _detailLevelLabel.text = $"{data.Recruit.Level}";
                 }
 
-                if(_detailNameLabel != null)
+                if (_detailNameLabel != null)
                 {
                     _detailNameLabel.text = data.Recruit.GetName();
                 }
@@ -440,14 +430,15 @@ namespace TFTV
                     _detailHavenLabel.text = location;
                 }
 
-
                 UpdateDetailPanelFactionVisuals(data);
 
-                var abilityViews = GetSelectedAbilityViews(data.Recruit).ToList();
-                PopulateAbilityDescriptions(_detailAbilityDescriptionGroup, _detailAbilityDescriptionRoot, abilityViews);
+                var abilityViews = GetRecruitAbilityViews(data.Recruit).ToList();
+                PopulateAbilityDetails(abilityViews);
 
-                var mutationIcons = HavenRecruitsUtils.GetMutatedArmorIcons(data.Recruit).Where(sp => sp != null).ToList();
-                PopulateIconGroup(_detailMutationGroup, _detailMutationRoot, mutationIcons, ArmorIconSize);
+                var mutationViews = GetMutationViewElements(data.Recruit).ToList();
+                PopulateMutationDetails(mutationViews);
+
+                PopulateEquipmentIcons(data.Recruit);
 
                 PopulateRecruitCost(data);
 
@@ -481,7 +472,6 @@ namespace TFTV
                     _detailPanel.SetActive(true);
                 }
 
-
                 PopulateDetailPanel(data);
 
                 if (_detailAnimator != null && !_isDetailVisible)
@@ -511,7 +501,7 @@ namespace TFTV
                 {
                     factionSprite = RecruitOverlayManagerHelpers.GetFactionIcon(filter);
                     var factionColor = GetFactionColor(filter);
-                    tintColor = new Color(factionColor.r, factionColor.g, factionColor.b, 0.22f);
+                    tintColor = new Color(factionColor.r, factionColor.g, factionColor.b, 0.7f);
                     factionColorFull = factionColor;
                 }
 
@@ -534,16 +524,16 @@ namespace TFTV
             catch (Exception ex) { TFTVLogger.Error(ex); }
         }
 
-        internal static void PopulateAbilityDescriptions(GameObject group, Transform container, IList<ViewElementDef> abilities)
+        private static void PopulateAbilityDetails(IList<ViewElementDef> abilities)
         {
             try
             {
-                if (container == null)
+                if (_detailAbilityRoot == null)
                 {
                     return;
                 }
 
-                RecruitOverlayManagerHelpers.ClearTransformChildren(container);
+                RecruitOverlayManagerHelpers.ClearTransformChildren(_detailAbilityRoot);
 
                 bool hasAbilities = abilities != null && abilities.Count > 0;
 
@@ -563,25 +553,124 @@ namespace TFTV
                         }
 
                         string description = view.Description != null ? view.Description.Localize() : string.Empty;
-                        string textContent = string.IsNullOrWhiteSpace(description)
-                            ? $"<b>{displayName}</b>"
-                            : $"<b>{displayName}</b>: {description}";
-
-                        var text = HavenRecruitsDetailsPanel.CreateDetailText(container, displayName.Replace(" ", string.Empty), TextFontSize, Color.white, TextAnchor.UpperLeft);
-                        text.text = textContent;
+                        AddDetailRow(_detailAbilityRoot, view.SmallIcon ?? view.InventoryIcon, AbilityIconSize, displayName, description, useAbilityBackground: true);
                     }
                 }
 
-                if (group != null)
+                if (_detailAbilitySection != null)
                 {
-                    group.SetActive(hasAbilities);
-                }
-                else
-                {
-                    container.gameObject.SetActive(hasAbilities);
+                    _detailAbilitySection.SetActive(hasAbilities);
                 }
             }
             catch (Exception ex) { TFTVLogger.Error(ex); }
+        }
+
+        private static void PopulateMutationDetails(IList<ViewElementDef> mutations)
+        {
+            try
+            {
+                if (_detailMutationRoot == null)
+                {
+                    return;
+                }
+
+                RecruitOverlayManagerHelpers.ClearTransformChildren(_detailMutationRoot);
+
+                bool hasMutations = mutations != null && mutations.Count > 0;
+
+                if (hasMutations)
+                {
+                    foreach (var view in mutations)
+                    {
+                        if (view == null)
+                        {
+                            continue;
+                        }
+
+                        string displayName = view.DisplayName1 != null ? view.DisplayName1.Localize() : view.name;
+                        if (string.IsNullOrWhiteSpace(displayName))
+                        {
+                            displayName = "Unknown Mutation";
+                        }
+
+                        string description = view.Description != null ? view.Description.Localize() : string.Empty;
+                        AddDetailRow(_detailMutationRoot, view.InventoryIcon ?? view.SmallIcon, ArmorIconSize, displayName, description);
+                    }
+                }
+
+                if (_detailMutationSection != null)
+                {
+                    _detailMutationSection.SetActive(hasMutations);
+                }
+            }
+            catch (Exception ex) { TFTVLogger.Error(ex); }
+        }
+
+        private static void PopulateEquipmentIcons(GeoUnitDescriptor recruit)
+        {
+            try
+            {
+                if (_detailEquipmentRoot == null)
+                {
+                    return;
+                }
+
+                RecruitOverlayManagerHelpers.ClearTransformChildren(_detailEquipmentRoot);
+
+                var icons = new List<Sprite>();
+                if (recruit != null)
+                {
+                    icons.AddRange(GetItemIcons(recruit.Equipment));
+                    icons.AddRange(GetItemIcons(recruit.ArmorItems));
+                    icons.AddRange(GetItemIcons(recruit.Inventory));
+                }
+
+                bool hasIcons = icons.Count > 0;
+
+                foreach (var icon in icons)
+                {
+                    if (icon == null)
+                    {
+                        continue;
+                    }
+
+                    RecruitOverlayManagerHelpers.MakeFixedIcon(_detailEquipmentRoot, icon, ArmorIconSize);
+                }
+
+                if (_detailEquipmentSection != null)
+                {
+                    _detailEquipmentSection.SetActive(hasIcons);
+                }
+            }
+            catch (Exception ex) { TFTVLogger.Error(ex); }
+        }
+
+        private static IEnumerable<Sprite> GetItemIcons(IEnumerable<ItemDef> items)
+        {
+            if (items == null)
+            {
+                yield break;
+            }
+
+            foreach (var item in items)
+            {
+                if (item == null)
+                {
+                    continue;
+                }
+
+                var view = item.ViewElementDef;
+                if (view?.InventoryIcon != null)
+                {
+                    yield return view.InventoryIcon;
+                    continue;
+                }
+
+                if (view?.SmallIcon != null)
+                {
+                    yield return view.SmallIcon;
+                }
+            }
         }
 
         internal static bool TryGetFactionFilter(GeoFaction faction, out FactionFilter filter)
@@ -647,49 +736,70 @@ namespace TFTV
             return false;
         }
 
-
-
-        internal static void PopulateIconGroup(GameObject group, Transform container, IList<Sprite> icons, int iconSize, bool useAbilityBackground = false)
+        private static void AddDetailRow(Transform parent, Sprite icon, int iconSize, string title, string description, bool useAbilityBackground = false)
         {
-            try
+            string sanitizedName = SanitizeName(title);
+            var (rowGO, _) = RecruitOverlayManagerHelpers.NewUI($"{sanitizedName}Row{parent.childCount}", parent);
+
+            var rowLayout = rowGO.AddComponent<HorizontalLayoutGroup>();
+            rowLayout.childAlignment = TextAnchor.UpperRight;
+            rowLayout.spacing = 10f;
+            rowLayout.childControlWidth = false;
+            rowLayout.childControlHeight = false;
+            rowLayout.childForceExpandWidth = false;
+            rowLayout.childForceExpandHeight = false;
+            rowLayout.padding = new RectOffset(16, 16, 0, 0);
+
+            if (icon != null)
             {
-                if (container == null)
+                Sprite background = null;
+                if (useAbilityBackground)
                 {
-                    return;
-                }
-
-                RecruitOverlayManagerHelpers.ClearTransformChildren(container);
-
-                if (useAbilityBackground && _abilityIconBackground == null)
-                {
-                    _abilityIconBackground = Helper.CreateSpriteFromImageFile("UI_ButtonFrame_Main_Sliced.png");
-                }
-
-                bool hasIcons = icons != null && icons.Count > 0;
-                if (hasIcons)
-                {
-                    foreach (var icon in icons)
+                    if (_abilityIconBackground == null)
                     {
-                        if (icon == null)
-                        {
-                            continue;
-                        }
-
-                        var background = useAbilityBackground ? _abilityIconBackground : null;
-                        RecruitOverlayManagerHelpers.MakeFixedIcon(container, icon, iconSize, background);
+                        _abilityIconBackground = Helper.CreateSpriteFromImageFile("UI_ButtonFrame_Main_Sliced.png");
                     }
+
+                    background = _abilityIconBackground;
                 }
 
-                if (group != null)
-                {
-                    group.SetActive(hasIcons);
-                }
-                else
-                {
-                    container.gameObject.SetActive(hasIcons);
-                }
+                RecruitOverlayManagerHelpers.MakeFixedIcon(rowGO.transform, icon, iconSize, background);
             }
-            catch (Exception ex) { TFTVLogger.Error(ex); }
+
+            var (textContainer, _) = RecruitOverlayManagerHelpers.NewUI("Text", rowGO.transform);
+            var textLayout = textContainer.AddComponent<VerticalLayoutGroup>();
+            textLayout.childAlignment = TextAnchor.UpperRight;
+            textLayout.spacing = 2f;
+            textLayout.childControlWidth = true;
+            textLayout.childControlHeight = false;
+            textLayout.childForceExpandWidth = true;
+            textLayout.childForceExpandHeight = false;
+            var textLE = textContainer.AddComponent<LayoutElement>();
+            textLE.flexibleWidth = 1f;
+            textLE.minWidth = 0f;
+
+            var nameLabel = CreateDetailText(textContainer.transform, "Title", TextFontSize, Color.white, TextAnchor.MiddleRight);
+            nameLabel.text = title;
+
+            if (!string.IsNullOrWhiteSpace(description))
+            {
+                var descriptionLabel = CreateDetailText(textContainer.transform, "Description", TextFontSize - 2, DetailSubTextColor, TextAnchor.UpperRight);
+                descriptionLabel.text = description;
+            }
+
+            var rowLE = rowGO.AddComponent<LayoutElement>();
+            rowLE.minWidth = 0f;
+            rowLE.flexibleWidth = 1f;
+        }
+
+        private static string SanitizeName(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return "Detail";
+            }
+
+            return new string(value.Where(char.IsLetterOrDigit).ToArray());
         }
 
         internal static void PopulateRecruitCost(RecruitAtSite data)
@@ -705,9 +815,9 @@ namespace TFTV
 
                 if (data?.Haven == null || data.Haven.Site?.GeoLevel?.PhoenixFaction == null)
                 {
-                    if (_detailCostGroup != null)
+                    if (_detailCostSection != null)
                     {
-                        _detailCostGroup.SetActive(false);
+                        _detailCostSection.SetActive(false);
                     }
                     return;
                 }
@@ -719,46 +829,47 @@ namespace TFTV
                     var layout = row.GetComponent<HorizontalLayoutGroup>();
                     if (layout != null)
                     {
-                        layout.childAlignment = TextAnchor.MiddleLeft;
+                        layout.childAlignment = TextAnchor.MiddleCenter;
                     }
                 }
 
                 bool hasCost = row != null && row.transform.childCount > 0;
-                if (_detailCostGroup != null)
+                if (_detailCostSection != null)
                 {
-                    _detailCostGroup.SetActive(hasCost);
+                    _detailCostSection.SetActive(hasCost);
                 }
             }
             catch (Exception ex) { TFTVLogger.Error(ex); }
         }
-        internal static GameObject CreateAbilityDescriptionGroup(Transform parent, string headerText, out Transform contentRoot)
+
+        internal static IEnumerable<ViewElementDef> GetMutationViewElements(GeoUnitDescriptor recruit)
         {
-            var (groupGO, _) = RecruitOverlayManagerHelpers.NewUI($"{headerText.Replace(" ", string.Empty)}Descriptions", parent);
-            var groupLayout = groupGO.AddComponent<VerticalLayoutGroup>();
-            groupLayout.childAlignment = TextAnchor.UpperLeft;
-            groupLayout.spacing = 6f;
-            groupLayout.childControlWidth = true;
-            groupLayout.childControlHeight = false;
-            groupLayout.childForceExpandWidth = true;
-            groupLayout.childForceExpandHeight = false;
+            if (recruit?.ArmorItems == null)
+            {
+                yield break;
+            }
 
-            var header = HavenRecruitsDetailsPanel.CreateDetailText(groupGO.transform, "Header", TextFontSize - 2, TabHighlightColor, TextAnchor.UpperLeft);
-            header.text = headerText;
+            var mutationTag = Shared?.SharedGameTags?.AnuMutationTag;
+            foreach (var item in recruit.ArmorItems.Where(i => i != null))
+            {
+                if (mutationTag != null)
+                {
+                    var tags = item.Tags;
+                    if (tags == null || !tags.Contains(mutationTag))
+                    {
+                        continue;
+                    }
+                }
 
-            var (contentGO, _) = RecruitOverlayManagerHelpers.NewUI("Content", groupGO.transform);
-            var contentLayout = contentGO.AddComponent<VerticalLayoutGroup>();
-            contentLayout.childAlignment = TextAnchor.UpperLeft;
-            contentLayout.spacing = 8f;
-            contentLayout.childControlWidth = true;
-            contentLayout.childControlHeight = false;
-            contentLayout.childForceExpandWidth = true;
-            contentLayout.childForceExpandHeight = false;
-
-            contentRoot = contentGO.transform;
-            return groupGO;
+                var view = item.ViewElementDef;
+                if (view != null)
+                {
+                    yield return view;
+                }
+            }
         }
 
-        internal static IEnumerable<ViewElementDef> GetSelectedAbilityViews(GeoUnitDescriptor recruit)
+        internal static IEnumerable<ViewElementDef> GetRecruitAbilityViews(GeoUnitDescriptor recruit)
         {
             if (recruit == null)
             {
@@ -772,14 +883,9 @@ namespace TFTV
                 yield break;
             }
 
-            int[] desiredIndexes = { 0, 3, 4 };
-            foreach (int index in desiredIndexes)
+            int abilityCount = Math.Min(6, abilities.Count);
+            for (int index = 0; index < abilityCount; index++)
             {
-                if (index < 0 || index >= abilities.Count)
-                {
-                    continue;
-                }
-
                 var view = abilities[index]?.Ability?.ViewElementDef;
                 if (view != null)
                 {

@@ -1,6 +1,5 @@
 ﻿using Base.Core;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using System;
@@ -11,10 +10,10 @@ using TFTV.TFTVHavenRecruitsUI;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using static TFTV.HavenRecruitsDetailsPanel;
 using static TFTV.TFTVHavenRecruitsUI.HavenRecruitsOverlayAnimator;
 using HavenRecruitsRecruitItem = TFTV.TFTVHavenRecruitsUI.HavenRecruitsRecruitItem;
 using HavenRecruitsUtils = TFTV.TFTVHavenRecruitsUI.HavenRecruitsUtils;
-using static TFTV.HavenRecruitsDetailsPanel;
 using Object = UnityEngine.Object;
 
 
@@ -238,9 +237,9 @@ namespace TFTV
             public static bool isInitialized;
             internal static OverlayAnimator _overlayAnimator;
             internal static bool _isOverlayVisible;
-       
+
             internal static int _lastLayoutScreenWidth;
-            
+
             internal static OverlayAnimator _detailAnimator;
             internal static bool _isDetailVisible;
             internal static GameObject _currentSelectedCard;
@@ -282,11 +281,11 @@ namespace TFTV
                     _detailNameLabel = null;
                     _detailFactionIconImage = null;
                     _detailHavenLabel = null;
-                    _detailAbilityDescriptionGroup = null;
-                    _detailAbilityDescriptionRoot = null;
-                    _detailMutationGroup = null;
+                    // _detailAbilityDescriptionGroup = null;
+                    // _detailAbilityDescriptionRoot = null;
+                    // _detailMutationGroup = null;
                     _detailMutationRoot = null;
-                    _detailCostGroup = null;
+                    //  _detailCostGroup = null;
                     _detailCostRoot = null;
                     _detailFactionLogoImage = null;
                     _lastLayoutScreenWidth = 0;
@@ -517,7 +516,7 @@ namespace TFTV
             }
 
 
-           
+
             internal sealed class ScreenSizeWatcher : MonoBehaviour
             {
                 private int _lastWidth;
@@ -600,7 +599,7 @@ namespace TFTV
                 catch (Exception ex) { TFTVLogger.Error(ex); }
             }
 
-           
+
             private static void RefreshColumns()
             {
                 try
