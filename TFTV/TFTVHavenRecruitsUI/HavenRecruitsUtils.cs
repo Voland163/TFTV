@@ -118,6 +118,19 @@ namespace TFTV.TFTVHavenRecruitsUI
             public int SkillPointCost { get; }
         }
 
+        internal readonly struct MutationIconData
+        {
+            public MutationIconData(ViewElementDef view)
+            {
+                View = view;
+                Icon = view?.InventoryIcon ?? view?.SmallIcon;
+            }
+
+            public ViewElementDef View { get; }
+
+            public Sprite Icon { get; }
+        }
+
         internal static IEnumerable<AbilityIconData> GetSelectedAbilityIcons(GeoUnitDescriptor recruit)
         {
             if (recruit == null)
@@ -201,7 +214,7 @@ namespace TFTV.TFTVHavenRecruitsUI
 
             return 0;
         }
-        internal static IEnumerable<Sprite> GetMutatedArmorIcons(GeoUnitDescriptor recruit)
+        internal static IEnumerable<MutationIconData> GetMutationIcons(GeoUnitDescriptor recruit)
         {
             if (recruit?.ArmorItems == null)
             {
@@ -224,11 +237,17 @@ namespace TFTV.TFTVHavenRecruitsUI
                 }
 
                 var ve = def.ViewElementDef;
-                if (ve?.InventoryIcon != null)
+                if (ve == null)
                 {
-                    yield return ve.InventoryIcon;
+                    continue;
                 }
 
+                var data = new MutationIconData(ve);
+                if (data.Icon != null)
+                {
+                    yield return data;
+
+                }
             }
 
         }

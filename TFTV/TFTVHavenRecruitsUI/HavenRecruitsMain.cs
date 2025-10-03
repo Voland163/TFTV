@@ -2,6 +2,8 @@
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
+using SoftMasking.Samples;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -118,6 +120,13 @@ namespace TFTV
 
         internal static Transform _recruitListRoot;
         internal static Text _totalRecruitsLabel;
+
+        internal static GeoRosterAbilityDetailTooltip OverlayAbilityTooltip { get; private set; }
+        internal static RectTransform OverlayRootRect { get; private set; }
+        internal static void RegisterOverlayAbilityTooltip(GeoRosterAbilityDetailTooltip tooltip)
+        {
+            OverlayAbilityTooltip = tooltip;
+        }
 
         internal static Canvas OverlayCanvas { get; private set; }
         internal enum FactionFilter
@@ -268,6 +277,8 @@ namespace TFTV
                         Object.Destroy(overlayPanel);
                         overlayPanel = null;
                     }
+                    OverlayAbilityTooltip = null;
+                    OverlayRootRect = null;
                     OverlayCanvas = null;
                     _overlayAnimator = null;
                     _detailAnimator = null;
@@ -426,6 +437,7 @@ namespace TFTV
                     panelOutline.effectDistance = new Vector2(2f, 2f);
 
                     var rt = overlayPanel.GetComponent<RectTransform>();
+                    OverlayRootRect = rt;
 
                     // RIGHT-ALIGNED, NARROW BAND: width = ColumnsWidthPercent, right padding = RIGHT_MARGIN
                     float overlayWidth = GetOverlayWidthFraction(out float overlayPixels);
@@ -441,6 +453,7 @@ namespace TFTV
                     CreateToolbar(overlayPanel.transform);
                     CreateFactionTabs(overlayPanel.transform);
                     CreateRecruitListArea(overlayPanel.transform);
+                    EnsureAbilityTooltipInstance(overlayPanel.transform);
                     // Double-click on a card = send the closest Phoenix aircraft to that recruit's site
                     OnCardDoubleClick = (recruit, site) =>
                     {
@@ -458,7 +471,101 @@ namespace TFTV
                 }
                 catch (Exception ex) { TFTVLogger.Error(ex); }
             }
+            internal static GeoRosterAbilityDetailTooltip EnsureOverlayTooltip()
+            {
+                try
+                {
+                    if (OverlayAbilityTooltip == null)
+                    {
+                        Transform parent = overlayPanel != null ? overlayPanel.transform : null;
+                        if (parent == null && OverlayCanvas != null)
+                        {
+                            parent = OverlayCanvas.transform;
+                        }
 
+                        EnsureAbilityTooltipInstance(parent);
+                    }
+
+                    return OverlayAbilityTooltip;
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                    return null;
+                }
+            }
+
+            private static void EnsureAbilityTooltipInstance(Transform overlayTransform)
+            {
+                try
+                {
+                    if (overlayTransform == null)
+                    {
+                        return;
+                    }
+
+                    if (OverlayAbilityTooltip != null)
+                    {
+                        if (OverlayAbilityTooltip.transform.parent != overlayTransform)
+                        {
+                            OverlayAbilityTooltip.transform.SetParent(overlayTransform, false);
+                        }
+                        return;
+                    }
+
+                    var template = FindTooltipTemplate();
+                    if (template == null)
+                    {
+                        TFTVLogger.Always("[RecruitsOverlay] Could not locate GeoRosterAbilityDetailTooltip template.");
+                        return;
+                    }
+
+                    var cloneGO = Object.Instantiate(template.gameObject, overlayTransform, worldPositionStays: false);
+                    cloneGO.transform.localScale = Vector3.one * 0.5f;
+                    cloneGO.name = "TFTV_RecruitAbilityTooltip";
+                    cloneGO.SetActive(false);
+                    OverlayAbilityTooltip = cloneGO.GetComponent<GeoRosterAbilityDetailTooltip>();
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
+            }
+
+            private static GeoRosterAbilityDetailTooltip FindTooltipTemplate()
+            {
+                try
+                {
+                    GeoRosterAbilityDetailTooltip template = null;
+
+                    var geoLevel = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                    var view = geoLevel?.View;
+                    if (view != null)
+                    {
+                        template = view.GetComponentsInChildren<GeoRosterAbilityDetailTooltip>(true)
+                            .FirstOrDefault(t => t != null && t != OverlayAbilityTooltip);
+                    }
+
+                    if (template == null)
+                    {
+                        template = Resources.FindObjectsOfTypeAll<GeoRosterAbilityDetailTooltip>()
+                            .FirstOrDefault(t => t != null && t.hideFlags == HideFlags.None && t != OverlayAbilityTooltip);
+                    }
+
+                    if (template == null)
+                    {
+                        template = Object.FindObjectsOfType<GeoRosterAbilityDetailTooltip>()
+                            .FirstOrDefault(t => t != null && t != OverlayAbilityTooltip);
+                    }
+
+                    return template;
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                    return null;
+                }
+            }
             internal static void EnsureOverlayLayout(bool force = false)
             {
                 try

@@ -1,7 +1,9 @@
-﻿using UnityEngine;
+﻿using TFTV.TFTVHavenRecruitsUI;
+using UnityEngine;
 using UnityEngine.UI;
-using static TFTV.HavenRecruitsMain.RecruitOverlayManager;
 using static TFTV.HavenRecruitsMain;
+using static TFTV.HavenRecruitsMain.RecruitOverlayManager;
+using static TFTV.TFTVHavenRecruitsUI.HavenRecruitItemsTooltip;
 
 namespace TFTV
 {
@@ -68,7 +70,7 @@ namespace TFTV
         }
 
 
-        internal static Image MakeMutationIcon(Transform parent, Sprite sp, int px)
+        internal static Image MakeMutationIcon(Transform parent, HavenRecruitsUtils.MutationIconData data, int px)
         {
             var (frame, frt) = NewUI("MutationIconFrame", parent);
             var le = frame.AddComponent<LayoutElement>();
@@ -90,8 +92,8 @@ namespace TFTV
 
             var (imgGO, imgRT) = NewUI("Img", frame.transform);
             var img = imgGO.AddComponent<Image>();
-            img.sprite = sp;
-            img.raycastTarget = false;
+            img.sprite = data.Icon;
+            img.raycastTarget = true;
 
             imgRT.anchorMin = new Vector2(0.1f, 0.1f);
             imgRT.anchorMax = new Vector2(0.9f, 0.9f);
@@ -99,8 +101,8 @@ namespace TFTV
 
             var arf = imgGO.AddComponent<AspectRatioFitter>();
             arf.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
-            if (sp && sp.rect.height > 0f)
-                arf.aspectRatio = sp.rect.width / sp.rect.height;
+            if (data.Icon && data.Icon.rect.height > 0f)
+                arf.aspectRatio = data.Icon.rect.width / data.Icon.rect.height;
 
             if (_mutationBound != null)
             {
@@ -112,6 +114,9 @@ namespace TFTV
                 boundRT.anchorMin = Vector2.zero; boundRT.anchorMax = Vector2.one;
                 boundRT.offsetMin = Vector2.zero; boundRT.offsetMax = Vector2.zero;
             }
+
+            var trigger = imgGO.AddComponent<HavenRecruitMutationTooltipTrigger>();
+            trigger.Initialize(data);
 
             return img;
         }

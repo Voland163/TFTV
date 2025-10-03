@@ -111,7 +111,7 @@ namespace TFTV.TFTVHavenRecruitsUI
             nameFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
             var abilityInfos = GetSelectedAbilityIcons(data.Recruit).ToList();
-            var mutationIcons = GetMutatedArmorIcons(data.Recruit).ToList();
+            var mutationIcons = GetMutationIcons(data.Recruit).ToList();
 
             Transform abilitiesTransform = null;
 
@@ -153,7 +153,10 @@ namespace TFTV.TFTVHavenRecruitsUI
 
                 foreach (var icon in mutationIcons)
                 {
-                    if (icon == null) continue;
+                    if (icon.Icon == null)
+                    {
+                        continue;
+                    }
                     RecruitOverlayManagerHelpers.MakeMutationIcon(abilitiesGO.transform, icon, ArmorIconSize);
                 }
 
