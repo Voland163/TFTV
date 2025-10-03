@@ -119,6 +119,7 @@ namespace TFTV
         internal static Transform _recruitListRoot;
         internal static Text _totalRecruitsLabel;
 
+        internal static Canvas OverlayCanvas { get; private set; }
         internal enum FactionFilter
         {
             Anu,
@@ -267,7 +268,7 @@ namespace TFTV
                         Object.Destroy(overlayPanel);
                         overlayPanel = null;
                     }
-
+                    OverlayCanvas = null;
                     _overlayAnimator = null;
                     _detailAnimator = null;
                     _isOverlayVisible = false;
@@ -401,19 +402,20 @@ namespace TFTV
                     if (PuristaSemibold == null)
                     {
                         PuristaSemibold = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.PhoenixpediaModule.EntryTitle.font;
-                        TFTVLogger.Always($"Font is {PuristaSemibold?.name}");
+                       // TFTVLogger.Always($"Font is {PuristaSemibold?.name}");
                     }
 
                     var canvas = FindGeoscapeCanvas();
-                    HavenRecruitsDetailsPanel.CreateDetailPanel(canvas);
+                    CreateDetailPanel(canvas);
 
                     overlayPanel = new GameObject("TFTV_RecruitOverlay");
                     overlayPanel.transform.SetParent(canvas.transform, false);
 
                     // draw above the HUD
                     var ovCanvas = overlayPanel.AddComponent<Canvas>();
-                    ovCanvas.overrideSorting = true;
-                    ovCanvas.sortingOrder = 5000;
+                    ovCanvas.overrideSorting = false;
+                    // ovCanvas.sortingOrder = 5000;
+                    OverlayCanvas = ovCanvas;
                     overlayPanel.AddComponent<GraphicRaycaster>();
 
                     var panelImage = overlayPanel.AddComponent<Image>();
@@ -422,8 +424,6 @@ namespace TFTV
                     var panelOutline = overlayPanel.AddComponent<Outline>();
                     panelOutline.effectColor = HeaderBorderColor;
                     panelOutline.effectDistance = new Vector2(2f, 2f);
-
-
 
                     var rt = overlayPanel.GetComponent<RectTransform>();
 
@@ -435,11 +435,7 @@ namespace TFTV
                     rt.offsetMin = Vector2.zero;
                     rt.offsetMax = Vector2.zero;
 
-
-
                     GeoLevelController geoLevel = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-
-
 
                     CreateHeader(overlayPanel.transform);
                     CreateToolbar(overlayPanel.transform);

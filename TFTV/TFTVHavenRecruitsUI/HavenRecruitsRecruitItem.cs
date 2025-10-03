@@ -110,12 +110,12 @@ namespace TFTV.TFTVHavenRecruitsUI
             nameFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
             nameFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-            var abilityIcons = GetSelectedAbilityIcons(data.Recruit).ToList();
+            var abilityInfos = GetSelectedAbilityIcons(data.Recruit).ToList();
             var mutationIcons = GetMutatedArmorIcons(data.Recruit).ToList();
 
             Transform abilitiesTransform = null;
 
-            if (abilityIcons.Count > 0 || mutationIcons.Count > 0)
+            if (abilityInfos.Count > 0 || mutationIcons.Count > 0)
             {
                 var (abilitiesGO, abilitiesRT) = RecruitOverlayManagerHelpers.NewUI("Abilities", card.transform);
                 abilitiesTransform = abilitiesGO.transform;
@@ -157,10 +157,23 @@ namespace TFTV.TFTVHavenRecruitsUI
                     RecruitOverlayManagerHelpers.MakeMutationIcon(abilitiesGO.transform, icon, ArmorIconSize);
                 }
 
-                foreach (var icon in abilityIcons)
+                foreach (var ability in abilityInfos)
                 {
-                    if (icon == null) continue;
-                    RecruitOverlayManagerHelpers.MakeFixedIcon(abilitiesGO.transform, icon, AbilityIconSize, _abilityIconBackground);
+                    if (ability.Icon == null)
+                    {
+                        continue;
+                    }
+
+                    var iconImage = RecruitOverlayManagerHelpers.MakeFixedIcon(abilitiesGO.transform, ability.Icon, AbilityIconSize, _abilityIconBackground);
+                    if (iconImage == null)
+                    {
+                        continue;
+                    }
+
+                    iconImage.raycastTarget = true;
+
+                    var tooltipTrigger = iconImage.gameObject.AddComponent<HavenRecruitAbilityTooltipTrigger>();
+                    tooltipTrigger.Initialize(ability);
                 }
 
 

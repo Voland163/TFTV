@@ -1,4 +1,6 @@
-﻿using PhoenixPoint.Common.Core;
+﻿using HarmonyLib;
+using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
@@ -7,8 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using static TFTV.HavenRecruitsMain;
 using static TFTV.TFTVHavenRecruitsUI.HavenRecruitsPrice;
@@ -19,7 +19,7 @@ namespace TFTV.TFTVHavenRecruitsUI
     internal class HavenRecruitsUtils
     {
 
-       
+
         internal static void SortRecruits(List<RecruitAtSite> list)
         {
             switch (_sortMode)
@@ -52,6 +52,7 @@ namespace TFTV.TFTVHavenRecruitsUI
 
             }
         }
+
 
         internal static List<RecruitAtSite> GetRecruitsForFaction(GeoFaction faction)
         {
@@ -96,7 +97,28 @@ namespace TFTV.TFTVHavenRecruitsUI
             catch (Exception ex) { TFTVLogger.Error(ex); }
             return "Unknown Class";
         }
-        internal static IEnumerable<Sprite> GetSelectedAbilityIcons(GeoUnitDescriptor recruit)
+        private static readonly Func<AbilityTrackSlot, int> AbilitySlotSkillPointCostGetter = CreateSkillPointCostGetter();
+
+        internal readonly struct AbilityIconData
+        {
+            public AbilityIconData(AbilityTrackSlot slot)
+            {
+                Slot = slot;
+                View = slot?.Ability?.ViewElementDef;
+                Icon = View?.SmallIcon;
+                SkillPointCost = GetAbilitySlotSkillPointCost(slot);
+            }
+
+            public AbilityTrackSlot Slot { get; }
+
+            public ViewElementDef View { get; }
+
+            public Sprite Icon { get; }
+
+            public int SkillPointCost { get; }
+        }
+
+        internal static IEnumerable<AbilityIconData> GetSelectedAbilityIcons(GeoUnitDescriptor recruit)
         {
             if (recruit == null)
             {
@@ -119,15 +141,66 @@ namespace TFTV.TFTVHavenRecruitsUI
                     continue;
                 }
 
-                var view = abilities[index]?.Ability?.ViewElementDef;
-                if (view?.SmallIcon != null)
+                var slot = abilities[index];
+                if (slot == null)
                 {
-                    yield return view.SmallIcon;
+                    continue;
+                }
+
+                var data = new AbilityIconData(slot);
+                if (data.Icon != null)
+                {
+                    yield return data;
                 }
             }
 
         }
+        private static Func<AbilityTrackSlot, int> CreateSkillPointCostGetter()
+        {
+            try
+            {
+                var getter = AccessTools.PropertyGetter(typeof(AbilityTrackSlot), "SkillPointCost");
+                if (getter != null)
+                {
+                    return AccessTools.MethodDelegate<Func<AbilityTrackSlot, int>>(getter);
+                }
 
+                var field = AccessTools.Field(typeof(AbilityTrackSlot), "SkillPointCost");
+                if (field != null)
+                {
+                    return slot => slot != null ? (int)field.GetValue(slot) : 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+            }
+
+            return null;
+        }
+
+        private static int GetAbilitySlotSkillPointCost(AbilityTrackSlot slot)
+        {
+            if (slot == null)
+            {
+                return 0;
+            }
+
+            if (AbilitySlotSkillPointCostGetter != null)
+            {
+                try
+                {
+                    return AbilitySlotSkillPointCostGetter(slot);
+                }
+                catch (Exception ex)
+                {
+
+                    TFTVLogger.Error(ex);
+                }
+            }
+
+            return 0;
+        }
         internal static IEnumerable<Sprite> GetMutatedArmorIcons(GeoUnitDescriptor recruit)
         {
             if (recruit?.ArmorItems == null)

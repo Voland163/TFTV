@@ -2,6 +2,9 @@
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Tactical.View.ViewControllers;
+using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -245,6 +248,7 @@ namespace TFTV
                 _detailMutationSection.SetActive(false);
 
                 var (abilitiesGO, _) = RecruitOverlayManagerHelpers.NewUI("AbilityDetails", infoRootGO.transform);
+
                 var abilityLayout = abilitiesGO.AddComponent<VerticalLayoutGroup>();
                 abilityLayout.childAlignment = TextAnchor.UpperRight;
                 abilityLayout.spacing = 8f;

@@ -143,6 +143,7 @@
     <Compile Include="TFTVEvacAll.cs" />
     <Compile Include="TFTVExperienceDistribution.cs" />
     <Compile Include="TFTVDragandDropFunctionality.cs" />
+    <Compile Include="TFTVHavenRecruitsUI\HavenRecruitAbilityTooltipTrigger.cs" />
     <Compile Include="TFTVHavenRecruitsUI\HavenRecruitsButton.cs" />
     <Compile Include="TFTVHavenRecruitsUI\HavenRecruitsDetailsPanel.cs" />
     <Compile Include="TFTVHavenRecruitsUI\HavenRecruitsGeoscapeInteractions.cs" />
