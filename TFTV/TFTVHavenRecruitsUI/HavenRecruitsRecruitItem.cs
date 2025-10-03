@@ -8,6 +8,8 @@ using UnityEngine.UI;
 using static TFTV.HavenRecruitsMain;
 using static TFTV.TFTVHavenRecruitsUI.HavenRecruitsUtils;
 using static TFTV.HavenRecruitsMain.RecruitOverlayManager;
+using PhoenixPoint.Tactical.View.ViewModules;
+using PhoenixPoint.Common.View.ViewControllers.Inventory;
 
 namespace TFTV.TFTVHavenRecruitsUI
 {

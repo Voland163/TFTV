@@ -1,5 +1,6 @@
 ﻿using Base.Core;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
@@ -123,9 +124,14 @@ namespace TFTV
 
         internal static GeoRosterAbilityDetailTooltip OverlayAbilityTooltip { get; private set; }
         internal static RectTransform OverlayRootRect { get; private set; }
+        internal static UIInventoryTooltip OverlayItemTooltip { get; private set; }
         internal static void RegisterOverlayAbilityTooltip(GeoRosterAbilityDetailTooltip tooltip)
         {
             OverlayAbilityTooltip = tooltip;
+        }
+        internal static void RegisterOverlayItemTooltip(UIInventoryTooltip tooltip)
+        {
+            OverlayItemTooltip = tooltip;
         }
 
         internal static Canvas OverlayCanvas { get; private set; }
@@ -276,6 +282,7 @@ namespace TFTV
                     {
                         Object.Destroy(overlayPanel);
                         overlayPanel = null;
+                        HavenRecruitAbilityTooltipTrigger.ResetCache();
                     }
                     OverlayAbilityTooltip = null;
                     OverlayRootRect = null;
@@ -454,6 +461,7 @@ namespace TFTV
                     CreateFactionTabs(overlayPanel.transform);
                     CreateRecruitListArea(overlayPanel.transform);
                     EnsureAbilityTooltipInstance(overlayPanel.transform);
+                    EnsureItemTooltipInstance(overlayPanel.transform);
                     // Double-click on a card = send the closest Phoenix aircraft to that recruit's site
                     OnCardDoubleClick = (recruit, site) =>
                     {
@@ -531,6 +539,66 @@ namespace TFTV
                     TFTVLogger.Error(ex);
                 }
             }
+            internal static UIInventoryTooltip EnsureOverlayItemTooltip()
+            {
+                try
+                {
+                    if (OverlayItemTooltip == null)
+                    {
+                        Transform parent = overlayPanel != null ? overlayPanel.transform : null;
+                        if (parent == null && OverlayCanvas != null)
+                        {
+                            parent = OverlayCanvas.transform;
+                        }
+
+                        EnsureItemTooltipInstance(parent);
+                    }
+
+                    return OverlayItemTooltip;
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                    return null;
+                }
+            }
+
+            private static void EnsureItemTooltipInstance(Transform overlayTransform)
+            {
+                try
+                {
+                    if (overlayTransform == null)
+                    {
+                        return;
+                    }
+
+                    if (OverlayItemTooltip != null)
+                    {
+                        if (OverlayItemTooltip.transform.parent != overlayTransform)
+                        {
+                            OverlayItemTooltip.transform.SetParent(overlayTransform, false);
+                        }
+
+                        return;
+                    }
+
+                    var template = FindItemTooltipTemplate();
+                    if (template == null)
+                    {
+                        TFTVLogger.Always("[RecruitsOverlay] Could not locate UIInventoryTooltip template.");
+                        return;
+                    }
+
+                    var cloneGO = Object.Instantiate(template.gameObject, overlayTransform, worldPositionStays: false);
+                    cloneGO.name = "TFTV_RecruitItemTooltip";
+                    cloneGO.SetActive(false);
+                    OverlayItemTooltip = cloneGO.GetComponent<UIInventoryTooltip>();
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
+            }
 
             private static GeoRosterAbilityDetailTooltip FindTooltipTemplate()
             {
@@ -556,6 +624,41 @@ namespace TFTV
                     {
                         template = Object.FindObjectsOfType<GeoRosterAbilityDetailTooltip>()
                             .FirstOrDefault(t => t != null && t != OverlayAbilityTooltip);
+                    }
+
+                    return template;
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                    return null;
+                }
+            }
+
+            private static UIInventoryTooltip FindItemTooltipTemplate()
+            {
+                try
+                {
+                    UIInventoryTooltip template = null;
+
+                    var geoLevel = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                    var view = geoLevel?.View;
+                    if (view != null)
+                    {
+                        template = view.GetComponentsInChildren<UIInventoryTooltip>(true)
+                            .FirstOrDefault(t => t != null && t.hideFlags == HideFlags.None && t != OverlayItemTooltip);
+                    }
+
+                    if (template == null)
+                    {
+                        template = Resources.FindObjectsOfTypeAll<UIInventoryTooltip>()
+                            .FirstOrDefault(t => t != null && t.hideFlags == HideFlags.None && t != OverlayItemTooltip);
+                    }
+
+                    if (template == null)
+                    {
+                        template = Object.FindObjectsOfType<UIInventoryTooltip>()
+                            .FirstOrDefault(t => t != null && t.hideFlags == HideFlags.None && t != OverlayItemTooltip);
                     }
 
                     return template;

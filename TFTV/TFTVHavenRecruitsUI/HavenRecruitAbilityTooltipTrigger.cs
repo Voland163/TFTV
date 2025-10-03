@@ -1,9 +1,4 @@
-﻿using Base.Core;
-using PhoenixPoint.Common.View.ViewControllers.Inventory;
-using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.View.ViewControllers.Inventory;
-using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
-using SoftMasking.Samples;
+﻿using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using System;
 using System.Linq;
 using UnityEngine;
@@ -21,7 +16,9 @@ namespace TFTV.TFTVHavenRecruitsUI
 
         private GeoRosterAbilityDetailTooltip _tooltip;
 
-        private const float TooltipHorizontalPadding = 24f;
+        private const float TooltipHorizontalPadding = 290f;
+        private const float TooltipVerticalPadding = 80f;
+        private static readonly Vector3[] OverlayCornerBuffer = new Vector3[4];
 
         public void Initialize(HavenRecruitsUtils.AbilityIconData data)
         {
@@ -30,6 +27,7 @@ namespace TFTV.TFTVHavenRecruitsUI
 
         public void OnPointerEnter(PointerEventData eventData)
         {
+            
             ShowTooltip(eventData);
         }
 
@@ -65,6 +63,7 @@ namespace TFTV.TFTVHavenRecruitsUI
             _tooltipVisible = true;
         }
 
+        
         private void HideTooltip()
         {
             if (!_tooltipVisible)
@@ -96,7 +95,12 @@ namespace TFTV.TFTVHavenRecruitsUI
                 return;
             }
 
-            var canvas = _tooltipCanvas ?? (_tooltipCanvas = tooltip.GetComponentInParent<Canvas>());
+            var canvas = _tooltipCanvas;
+            if (canvas == null)
+            {
+                _tooltipCanvas = tooltip.GetComponentInParent<Canvas>();
+                canvas = _tooltipCanvas;
+            }
             if (canvas == null)
             {
                 return;
@@ -107,18 +111,32 @@ namespace TFTV.TFTVHavenRecruitsUI
                 return;
             }
 
+            var referenceCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 canvasRect,
                 eventData.position,
-                canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera,
+                 referenceCamera,
                 out Vector2 localPoint);
 
+            float anchoredY = localPoint.y + TooltipVerticalPadding;
+            TFTVLogger.Always($"canvas rect xMin: {canvasRect.rect.xMin} TooltipHorizontalPadding: {TooltipHorizontalPadding}");
+            float anchoredX = canvasRect.rect.xMin + TooltipHorizontalPadding;
+            TFTVLogger.Always($"{anchoredX}");
+            var overlayRect = HavenRecruitsMain.OverlayRootRect;
+            if (overlayRect != null)
+            {
+                overlayRect.GetWorldCorners(OverlayCornerBuffer);
+                var overlayLeftScreen = RectTransformUtility.WorldToScreenPoint(referenceCamera, OverlayCornerBuffer[0]);
 
-            const float horizontalPadding = 20f;
-            float pivotOffset = rectTransform.rect.width * rectTransform.pivot.x;
-            float anchoredX = canvasRect.rect.xMin + horizontalPadding + pivotOffset;
-
-            rectTransform.anchoredPosition = new Vector2(anchoredX, localPoint.y);
+                rectTransform.anchoredPosition = new Vector2(anchoredX, anchoredY);
+                if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, overlayLeftScreen, referenceCamera, out var overlayLeftLocal))
+                {
+                    TFTVLogger.Always($"overlayLeftLocal.x: {overlayLeftLocal.x} anchoredX: {anchoredX}");
+                    float pivotOffset = rectTransform.rect.width * (1f - rectTransform.pivot.x);
+                    anchoredX = overlayLeftLocal.x - TooltipHorizontalPadding - pivotOffset;
+                }
+            }
         }
 
         private GeoRosterAbilityDetailTooltip EnsureTooltip()
@@ -140,7 +158,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                             return null;
                         }
 
-                        
+
                         var parent = overlayCanvas != null ? overlayCanvas.transform : template.transform.parent;
                         var cloneGO = UnityEngine.Object.Instantiate(template.gameObject, parent, worldPositionStays: false);
                         cloneGO.name = "TFTV_RecruitAbilityTooltip_Fallback";
@@ -170,7 +188,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                         _tooltipCanvas.sortingOrder = overlayCanvas.sortingOrder + 1;
                     }
                 }
-              
+
                 return _tooltip;
             }
             catch (Exception ex)
@@ -178,6 +196,11 @@ namespace TFTV.TFTVHavenRecruitsUI
                 TFTVLogger.Error(ex);
                 return null;
             }
+        }
+
+        internal static void ResetCache()
+        {
+            _tooltipCanvas = null;
         }
     }
 }

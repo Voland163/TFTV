@@ -115,11 +115,11 @@ namespace TFTV
                 }
                 else if (odiPerc < 25)
                 {
-                    currentDeliriumLevel = medDelirium;
+                    currentDeliriumLevel = lowDelirium;
                 }
                 else if (odiPerc < 45)
                 {
-                    currentDeliriumLevel = lowDelirium;
+                    currentDeliriumLevel = medDelirium;
                 }
 
 

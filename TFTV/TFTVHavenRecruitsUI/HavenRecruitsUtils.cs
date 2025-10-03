@@ -2,9 +2,11 @@
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Tactical.Entities.Equipments;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -118,17 +120,20 @@ namespace TFTV.TFTVHavenRecruitsUI
             public int SkillPointCost { get; }
         }
 
+
         internal readonly struct MutationIconData
         {
-            public MutationIconData(ViewElementDef view)
+            public MutationIconData(TacticalItemDef item, ViewElementDef view)
             {
+                Item = item;
                 View = view;
                 Icon = view?.InventoryIcon ?? view?.SmallIcon;
             }
-
+            public TacticalItemDef Item { get; }
             public ViewElementDef View { get; }
 
             public Sprite Icon { get; }
+            public bool HasItem => Item != null;
         }
 
         internal static IEnumerable<AbilityIconData> GetSelectedAbilityIcons(GeoUnitDescriptor recruit)
@@ -236,13 +241,18 @@ namespace TFTV.TFTVHavenRecruitsUI
                     continue;
                 }
 
-                var ve = def.ViewElementDef;
+                if (!(def is TacticalItemDef tactical))
+                {
+                    continue;
+                }
+
+                var ve = tactical.ViewElementDef;
                 if (ve == null)
                 {
                     continue;
                 }
 
-                var data = new MutationIconData(ve);
+                var data = new MutationIconData(tactical, ve);
                 if (data.Icon != null)
                 {
                     yield return data;

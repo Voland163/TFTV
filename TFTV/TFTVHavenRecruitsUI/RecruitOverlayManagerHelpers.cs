@@ -115,7 +115,7 @@ namespace TFTV
                 boundRT.offsetMin = Vector2.zero; boundRT.offsetMax = Vector2.zero;
             }
 
-            var trigger = imgGO.AddComponent<HavenRecruitMutationTooltipTrigger>();
+            var trigger = imgGO.AddComponent<HavenRecruitItemsTooltip.HavenRecruitMutationItemTooltipTrigger>();
             trigger.Initialize(data);
 
             return img;

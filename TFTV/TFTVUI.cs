@@ -739,7 +739,7 @@ namespace TFTV
 
                         GeoCharacter geoCharacter = GameUtl.CurrentLevel().GetComponent<GeoLevelController>()?.View.GeoscapeModules.ActorCycleModule.CurrentCharacter;
 
-                        TFTVLogger.Always($"{geoCharacter?.DisplayName} has hc? {geoCharacter?.Progression?.Abilities?.Contains(TFTVDrills.DrillsDefs._heavyConditioning)}");
+                      //  TFTVLogger.Always($"{geoCharacter?.DisplayName} has hc? {geoCharacter?.Progression?.Abilities?.Contains(TFTVDrills.DrillsDefs._heavyConditioning)}");
 
                         if (!data.Abilities.Any(ad => ad.Ability == TFTVDrills.DrillsDefs._heavyConditioning)) return;
 
