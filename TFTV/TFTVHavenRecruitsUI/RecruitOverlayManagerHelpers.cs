@@ -139,16 +139,14 @@ namespace TFTV
                 {
                     ResetSlotHandlers(slot);
 
-                    MethodInfo methodInfoShowTooltip = typeof(UIGeoItemTooltip).GetMethod("ShowStats", BindingFlags.Instance | BindingFlags.NonPublic);
-                    MethodInfo methodInfoHideTooltip = typeof(UIGeoItemTooltip).GetMethod("HideStats", BindingFlags.Instance | BindingFlags.NonPublic);
 
                     GeoItem geoItem = slot.Item as GeoItem;
                     TFTVLogger.Always($"geoItem: {geoItem?.ItemDef?.name}");
 
                     var forwarder = slotGO.GetComponent<MutationSlotTooltipForwarder>() ?? slotGO.AddComponent<MutationSlotTooltipForwarder>();
-                    forwarder.Initialize(slot, geoItem,  tooltip, methodInfoShowTooltip, methodInfoHideTooltip);
 
 
+                    forwarder.Initialize(slot, geoItem, tooltip);
                 }
                 return slot;
 
@@ -165,36 +163,28 @@ namespace TFTV
             private UIInventorySlot _slot;
             private UIGeoItemTooltip _tooltip;
             private GeoItem _item;
-            private MethodInfo _showMethod;
-            private MethodInfo _hideMethod;
-            private FieldInfo _hoveredSlotField;
 
-            internal void Initialize(UIInventorySlot slot, GeoItem geoItem, UIGeoItemTooltip tooltip, MethodInfo showMethod, MethodInfo hideMethod)
+
+            internal void Initialize(UIInventorySlot slot, GeoItem geoItem, UIGeoItemTooltip tooltip)
             {
                 _slot = slot;
                 _item = geoItem;
                 _tooltip = tooltip;
-                _showMethod = showMethod;
-                _hideMethod = hideMethod;
-              
             }
 
             public void OnPointerEnter(PointerEventData eventData)
             {
                 try
                 {
-                    // RewardsController
-
-                    TFTVLogger.Always($"_tooltip == null? {_tooltip == null} is _slot null? {_slot == null} item {_item.ItemDef.name}");
-                   /* if (_item !=null && _tooltip != null && _showMethod != null)
-                    {*/
+                    TFTVLogger.Always($"_tooltip == null? {_tooltip == null} is _slot null? {_slot == null} item {_item?.ItemDef?.name}");
+                    if (_item != null && _tooltip != null)
+                    {
                         TFTVLogger.Always($"got here for item {_item.ItemDef.name}");
 
-                        
+                        _tooltip.ShowStats(_item, _slot.transform);
+                        PositionTooltip();
+                    }
 
-                        _showMethod.Invoke(_tooltip, new object[] { _item, _slot.transform });
-
-                   // }
                 }
                 catch (Exception ex)
                 {
@@ -216,14 +206,71 @@ namespace TFTV
             {
                 try
                 {
-                    if (_tooltip != null && _hideMethod != null)
+                    if (_tooltip != null)
                     {
-                        _hideMethod.Invoke(_tooltip, Array.Empty<object>());
+                        _tooltip.HideStats();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
+            }
 
-                        if (_hoveredSlotField != null)
+            private void PositionTooltip()
+            {
+                try
+                {
+                    if (_tooltip == null)
+                    {
+                        return;
+                    }
+
+                    var tooltipRect = _tooltip.transform as RectTransform;
+                    if (tooltipRect == null)
+                    {
+                        return;
+                    }
+
+                    var abilityTooltip = HavenRecruitsMain.OverlayAbilityTooltip;
+                    if (abilityTooltip != null)
+                    {
+                        var abilityRect = abilityTooltip.transform as RectTransform;
+                        if (abilityRect != null)
                         {
-                            _hoveredSlotField.SetValue(_tooltip, null);
+                            RecruitOverlayManagerHelpers.EnsureTooltipLayoutIsolation(tooltipRect);
+                            if (tooltipRect.parent != abilityRect.parent)
+                            {
+                                tooltipRect.SetParent(abilityRect.parent, worldPositionStays: false);
+                            }
+
+                            tooltipRect.anchorMin = abilityRect.anchorMin;
+                            tooltipRect.anchorMax = abilityRect.anchorMax;
+                            tooltipRect.pivot = abilityRect.pivot;
+                            tooltipRect.sizeDelta = abilityRect.sizeDelta;
+                            tooltipRect.localScale = abilityRect.localScale;
+                            tooltipRect.localRotation = abilityRect.localRotation;
+                            tooltipRect.anchoredPosition = abilityRect.anchoredPosition;
+                            tooltipRect.SetAsLastSibling();
+                            return;
                         }
+                    }
+
+
+                    var overlayRect = HavenRecruitsMain.OverlayRootRect;
+                    if (overlayRect != null)
+                    {
+                        RecruitOverlayManagerHelpers.EnsureTooltipLayoutIsolation(tooltipRect);
+                        if (tooltipRect.parent != overlayRect)
+                        {
+
+                            tooltipRect.SetParent(overlayRect, false);
+                        }
+
+                        tooltipRect.anchorMin = new Vector2(0f, 1f);
+                        tooltipRect.anchorMax = new Vector2(0f, 1f);
+                        tooltipRect.pivot = new Vector2(0f, 1f);
+                        tooltipRect.anchoredPosition = Vector2.zero;
                     }
                 }
                 catch (Exception ex)
@@ -232,6 +279,7 @@ namespace TFTV
                 }
             }
         }
+
 
         private static void PrepareSlotForDisplay(UIInventorySlot slot, int size)
         {
@@ -285,6 +333,27 @@ namespace TFTV
             {
                 TFTVLogger.Error(ex);
             }
+        }
+        internal static void EnsureTooltipLayoutIsolation(RectTransform rect)
+        {
+            if (rect == null)
+            {
+                return;
+            }
+
+            var layout = rect.GetComponent<LayoutElement>();
+            if (layout == null)
+            {
+                layout = rect.gameObject.AddComponent<LayoutElement>();
+            }
+
+            layout.ignoreLayout = true;
+            layout.flexibleWidth = 0f;
+            layout.flexibleHeight = 0f;
+            layout.preferredWidth = -1f;
+            layout.preferredHeight = -1f;
+            layout.minWidth = -1f;
+            layout.minHeight = -1f;
         }
 
         private static void ResetSlotHandlers(UIInventorySlot slot)

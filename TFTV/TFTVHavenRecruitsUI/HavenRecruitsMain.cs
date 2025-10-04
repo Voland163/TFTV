@@ -583,7 +583,7 @@ namespace TFTV
                         {
                             OverlayItemTooltip.transform.SetParent(overlayTransform, false);
                         }
-
+                        RecruitOverlayManagerHelpers.EnsureTooltipLayoutIsolation(OverlayAbilityTooltip.transform as RectTransform);
                         return;
                     }
 
@@ -596,8 +596,10 @@ namespace TFTV
 
                     var cloneGO = Object.Instantiate(template.gameObject, overlayTransform, worldPositionStays: false);
                     cloneGO.name = "TFTV_RecruitItemTooltip";
+                    cloneGO.transform.localScale = Vector3.one * 0.5f;
                     cloneGO.SetActive(false);
                     OverlayItemTooltip = cloneGO.GetComponent<UIGeoItemTooltip>();
+                    RecruitOverlayManagerHelpers.EnsureTooltipLayoutIsolation(OverlayAbilityTooltip.transform as RectTransform);
                 }
                 catch (Exception ex)
                 {
