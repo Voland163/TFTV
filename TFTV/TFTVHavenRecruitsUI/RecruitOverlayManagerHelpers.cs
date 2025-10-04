@@ -16,6 +16,7 @@ namespace TFTV
 
     internal static class RecruitOverlayManagerHelpers
     {
+        private const float MutationIconOverlayScale = 1.5f;
         internal static void ClearTransformChildren(Transform transform)
         {
             if (transform == null)
@@ -107,7 +108,31 @@ namespace TFTV
                 GeoItem item = new GeoItem(data.Item);
 
                 slot.Item = item;
-              
+
+                if (data.Icon != null)
+                {
+                    var (overlayGO, overlayRT) = NewUI("MutationIconOverlay", slot.transform);
+                    overlayRT.anchorMin = new Vector2(0.5f, 0.5f);
+                    overlayRT.anchorMax = new Vector2(0.5f, 0.5f);
+                    overlayRT.pivot = new Vector2(0.5f, 0.5f);
+                    overlayRT.anchoredPosition = Vector2.zero;
+                    overlayRT.offsetMin = Vector2.zero;
+                    overlayRT.offsetMax = Vector2.zero;
+                    overlayRT.sizeDelta = new Vector2(px * MutationIconOverlayScale, px * MutationIconOverlayScale);
+                    overlayRT.SetAsLastSibling();
+
+                    var overlayImage = overlayGO.AddComponent<Image>();
+                    overlayImage.sprite = data.Icon;
+                    overlayImage.raycastTarget = false;
+
+                    var aspectFitter = overlayGO.AddComponent<AspectRatioFitter>();
+                    aspectFitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+                    if (data.Icon.rect.height > 0f)
+                    {
+                        aspectFitter.aspectRatio = data.Icon.rect.width / data.Icon.rect.height;
+                    }
+                }
+
                 var tooltip = EnsureOverlayItemTooltip();
                 if (tooltip != null)
                 {
@@ -116,27 +141,10 @@ namespace TFTV
                     MethodInfo methodInfoShowTooltip = typeof(UIInventoryTooltip).GetMethod("ShowStats", BindingFlags.Instance | BindingFlags.NonPublic);
                     MethodInfo methodInfoHideTooltip = typeof(UIInventoryTooltip).GetMethod("HideStats", BindingFlags.Instance | BindingFlags.NonPublic);
 
-                    TFTVLogger.Always($"methodInfoShowTooltip==null? {methodInfoShowTooltip==null}");
+                    var forwarder = slotGO.GetComponent<MutationSlotTooltipForwarder>() ?? slotGO.AddComponent<MutationSlotTooltipForwarder>();
+                    forwarder.Initialize(slot, tooltip, methodInfoShowTooltip, methodInfoHideTooltip);
 
-                    {
-                        slot.OnPointerEnteredHandlers.AddUnique(delegate (UIInventorySlot s)
-                        {
-                            TFTVLogger.Always($"s?.Item?.ItemDef?.name: {s?.Item?.ItemDef?.name}");
-
-                            if (s?.Item is GeoItem displayedItem)
-                            {
-                                methodInfoShowTooltip.Invoke(tooltip, new object[] { displayedItem, s.transform });
-                            }
-                        });
-
-                        slot.OnPointerExitedHandlers.AddUnique(delegate
-                        {
-
-                            methodInfoHideTooltip.Invoke(tooltip, new object[] { });
-
-
-                        });
-                    }
+                    
                 }
                 return slot;
 
@@ -145,6 +153,64 @@ namespace TFTV
             {
                 TFTVLogger.Error(ex);
                 return null;
+            }
+        }
+
+        private class MutationSlotTooltipForwarder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+        {
+            private UIInventorySlot _slot;
+            private UIInventoryTooltip _tooltip;
+            private MethodInfo _showMethod;
+            private MethodInfo _hideMethod;
+
+            internal void Initialize(UIInventorySlot slot, UIInventoryTooltip tooltip, MethodInfo showMethod, MethodInfo hideMethod)
+            {
+                _slot = slot;
+                _tooltip = tooltip;
+                _showMethod = showMethod;
+                _hideMethod = hideMethod;
+            }
+
+            public void OnPointerEnter(PointerEventData eventData)
+            {
+                try
+                {
+                    TFTVLogger.Always($"_tooltip == null? {_tooltip == null}");
+
+                    if (_slot?.Item is GeoItem item && _tooltip != null && _showMethod != null)
+                    {
+                        _showMethod.Invoke(_tooltip, new object[] { _slot, null });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
+            }
+
+            public void OnPointerExit(PointerEventData eventData)
+            {
+                HideTooltip();
+            }
+
+            private void OnDisable()
+            {
+                HideTooltip();
+            }
+
+            private void HideTooltip()
+            {
+                try
+                {
+                    if (_tooltip != null && _hideMethod != null)
+                    {
+                        _hideMethod.Invoke(_tooltip, Array.Empty<object>());
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
             }
         }
 

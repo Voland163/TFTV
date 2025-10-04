@@ -60,7 +60,7 @@ namespace TFTV
         internal const float ItemSpacing = 6f;     // space between cards
         internal const int AbilityIconSize = 40;  // abilities
         internal const int ClassIconSize = 46;    // class badge on list entry
-        internal const int ArmorIconSize = 48;
+        internal const int ArmorIconSize = 45;
         internal const int ResourceIconSize = 24;
         internal const int TextFontSize = 20;
         internal const float AbilityIconsCenterOffsetPx = -160f;
