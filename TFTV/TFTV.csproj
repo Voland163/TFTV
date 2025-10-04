@@ -151,6 +151,7 @@
     <Compile Include="TFTVHavenRecruitsUI\HavenRecruitsOverlayObjectivesHider.cs" />
     <Compile Include="TFTVHavenRecruitsUI\HavenRecruitsPrice.cs" />
     <Compile Include="TFTVHavenRecruitsUI\HavenRecruitsRecruitItem.cs" />
+    <Compile Include="TFTVHavenRecruitsUI\HavenRecruitsTooltipFixes.cs" />
     <Compile Include="TFTVHavenRecruitsUI\HavenRecruitsUtils.cs" />
     <Compile Include="TFTVHavenRecruitsUI\RecruitOverlayManagerHelpers.cs" />
     <Compile Include="TFTVHavenRecruitsUI\HavenRecruitsMain.cs" />

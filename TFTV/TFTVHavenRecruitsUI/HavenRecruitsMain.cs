@@ -127,6 +127,23 @@ namespace TFTV
         internal static GeoRosterAbilityDetailTooltip OverlayAbilityTooltip { get; private set; }
         internal static RectTransform OverlayRootRect { get; private set; }
         internal static UIGeoItemTooltip OverlayItemTooltip { get; private set; }
+
+        private static RectTransform _tooltipsRoot;
+        private static void ConfigureTooltipsRoot(RectTransform rect)
+        {
+            if (rect == null)
+            {
+                return;
+            }
+
+            var layoutElement = rect.GetComponent<LayoutElement>();
+            if (layoutElement == null)
+            {
+                layoutElement = rect.gameObject.AddComponent<LayoutElement>();
+            }
+
+            layoutElement.ignoreLayout = true;
+        }
         internal static void RegisterOverlayAbilityTooltip(GeoRosterAbilityDetailTooltip tooltip)
         {
             OverlayAbilityTooltip = tooltip;
@@ -517,11 +534,17 @@ namespace TFTV
                         return;
                     }
 
+                    var tooltipRoot = EnsureTooltipsRoot(overlayTransform);
+                    if (tooltipRoot == null)
+                    {
+                        return;
+                    }
+
                     if (OverlayAbilityTooltip != null)
                     {
-                        if (OverlayAbilityTooltip.transform.parent != overlayTransform)
+                        if (OverlayAbilityTooltip.transform.parent != tooltipRoot)
                         {
-                            OverlayAbilityTooltip.transform.SetParent(overlayTransform, false);
+                            OverlayAbilityTooltip.transform.SetParent(tooltipRoot, false);
                         }
                         return;
                     }
@@ -533,7 +556,7 @@ namespace TFTV
                         return;
                     }
 
-                    var cloneGO = Object.Instantiate(template.gameObject, overlayTransform, worldPositionStays: false);
+                    var cloneGO = Object.Instantiate(template.gameObject, tooltipRoot, worldPositionStays: false);
                     cloneGO.transform.localScale = Vector3.one * 0.5f;
                     cloneGO.name = "TFTV_RecruitAbilityTooltip";
                     cloneGO.SetActive(false);
@@ -577,13 +600,19 @@ namespace TFTV
                         return;
                     }
 
+                    var tooltipRoot = EnsureTooltipsRoot(overlayTransform);
+                    if (tooltipRoot == null)
+                    {
+                        return;
+                    }
+
                     if (OverlayItemTooltip != null)
                     {
-                        if (OverlayItemTooltip.transform.parent != overlayTransform)
+                        if (OverlayItemTooltip.transform.parent != tooltipRoot)
                         {
-                            OverlayItemTooltip.transform.SetParent(overlayTransform, false);
+                            OverlayItemTooltip.transform.SetParent(tooltipRoot, false);
                         }
-                      
+                        TooltipLayoutFixes.RegisterTooltip(OverlayItemTooltip);
                         return;
                     }
 
@@ -594,18 +623,52 @@ namespace TFTV
                         return;
                     }
 
-                    var cloneGO = Object.Instantiate(template.gameObject, overlayTransform, worldPositionStays: false);
+                    var cloneGO = Object.Instantiate(template.gameObject, tooltipRoot, worldPositionStays: false);
                     cloneGO.name = "TFTV_RecruitItemTooltip";
                     cloneGO.transform.localScale = Vector3.one * 0.5f;
                     cloneGO.SetActive(false);
                     OverlayItemTooltip = cloneGO.GetComponent<UIGeoItemTooltip>();
-                    
+                    TooltipLayoutFixes.RegisterTooltip(OverlayItemTooltip);
                 }
                 catch (Exception ex)
                 {
                     TFTVLogger.Error(ex);
                 }
             }
+
+            private static RectTransform EnsureTooltipsRoot(Transform overlayTransform)
+            {
+                if (overlayTransform == null)
+                {
+                    return null;
+                }
+
+                if (_tooltipsRoot != null)
+                {
+                    if (_tooltipsRoot.transform.parent != overlayTransform)
+                    {
+                        _tooltipsRoot.SetParent(overlayTransform, false);
+                    }
+
+                    ConfigureTooltipsRoot(_tooltipsRoot);
+                    return _tooltipsRoot;
+                }
+
+                var go = new GameObject("TFTV_RecruitsTooltipsRoot", typeof(RectTransform));
+                var rect = go.GetComponent<RectTransform>();
+                rect.SetParent(overlayTransform, false);
+                rect.anchorMin = Vector2.zero;
+                rect.anchorMax = Vector2.one;
+                rect.pivot = new Vector2(0.5f, 0.5f);
+                rect.offsetMin = Vector2.zero;
+                rect.offsetMax = Vector2.zero;
+
+                ConfigureTooltipsRoot(rect);
+
+                _tooltipsRoot = rect;
+                return _tooltipsRoot;
+            }
+
             internal static UIInventorySlot EnsureMutationSlotTemplate(Transform overlayTransform)
             {
                 try
