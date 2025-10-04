@@ -1,12 +1,19 @@
-﻿using TFTV.TFTVHavenRecruitsUI;
+﻿using PhoenixPoint.Common.View.ViewControllers.Inventory;
+using PhoenixPoint.Geoscape.Entities;
+using System;
+using System.Reflection;
+using TFTV.TFTVHavenRecruitsUI;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static TFTV.HavenRecruitsMain;
 using static TFTV.HavenRecruitsMain.RecruitOverlayManager;
-using static TFTV.TFTVHavenRecruitsUI.HavenRecruitItemsTooltip;
+using Object = UnityEngine.Object;
 
 namespace TFTV
 {
+
+
     internal static class RecruitOverlayManagerHelpers
     {
         internal static void ClearTransformChildren(Transform transform)
@@ -70,55 +77,154 @@ namespace TFTV
         }
 
 
-        internal static Image MakeMutationIcon(Transform parent, HavenRecruitsUtils.MutationIconData data, int px)
+        internal static UIInventorySlot MakeMutationSlot(Transform parent, HavenRecruitsUtils.MutationIconData data, int px)
         {
-            var (frame, frt) = NewUI("MutationIconFrame", parent);
-            var le = frame.AddComponent<LayoutElement>();
-            le.preferredWidth = px; le.minWidth = px;
-            le.preferredHeight = px; le.minHeight = px;
-            frt.sizeDelta = new Vector2(px, px);
-
-            if (_iconBackground != null)
+            try
             {
-                var (bgGO, bgRT) = NewUI("Background", frame.transform);
-                var bg = bgGO.AddComponent<Image>();
-                bg.sprite = _iconBackground;
-                // bg.color = CardBackgroundColor;
-                bg.raycastTarget = false;
-                bg.type = Image.Type.Sliced;
-                bgRT.anchorMin = Vector2.zero; bgRT.anchorMax = Vector2.one;
-                bgRT.offsetMin = Vector2.zero; bgRT.offsetMax = Vector2.zero;
+                if (parent == null || !data.HasItem)
+                {
+                    return null;
+                }
+
+                UIInventorySlot template = EnsureMutationSlotTemplate(parent);
+                if (template == null)
+                {
+                    return null;
+                }
+
+                GameObject slotGO = Object.Instantiate(template.gameObject, parent, worldPositionStays: false);
+                slotGO.name = $"MutationSlot_{data.Item?.name ?? "Unknown"}";
+                slotGO.SetActive(true);
+
+                UIInventorySlot slot = slotGO.GetComponent<UIInventorySlot>();
+                if (slot == null)
+                {
+                    Object.Destroy(slotGO);
+                    return null;
+                }
+                PrepareSlotForDisplay(slot, px);
+
+                GeoItem item = new GeoItem(data.Item);
+
+                slot.Item = item;
+              
+                var tooltip = EnsureOverlayItemTooltip();
+                if (tooltip != null)
+                {
+                    ResetSlotHandlers(slot);
+
+                    MethodInfo methodInfoShowTooltip = typeof(UIInventoryTooltip).GetMethod("ShowStats", BindingFlags.Instance | BindingFlags.NonPublic);
+                    MethodInfo methodInfoHideTooltip = typeof(UIInventoryTooltip).GetMethod("HideStats", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                    TFTVLogger.Always($"methodInfoShowTooltip==null? {methodInfoShowTooltip==null}");
+
+                    {
+                        slot.OnPointerEnteredHandlers.AddUnique(delegate (UIInventorySlot s)
+                        {
+                            TFTVLogger.Always($"s?.Item?.ItemDef?.name: {s?.Item?.ItemDef?.name}");
+
+                            if (s?.Item is GeoItem displayedItem)
+                            {
+                                methodInfoShowTooltip.Invoke(tooltip, new object[] { displayedItem, s.transform });
+                            }
+                        });
+
+                        slot.OnPointerExitedHandlers.AddUnique(delegate
+                        {
+
+                            methodInfoHideTooltip.Invoke(tooltip, new object[] { });
+
+
+                        });
+                    }
+                }
+                return slot;
+
             }
-
-            var (imgGO, imgRT) = NewUI("Img", frame.transform);
-            var img = imgGO.AddComponent<Image>();
-            img.sprite = data.Icon;
-            img.raycastTarget = true;
-
-            imgRT.anchorMin = new Vector2(0.1f, 0.1f);
-            imgRT.anchorMax = new Vector2(0.9f, 0.9f);
-            imgRT.offsetMin = Vector2.zero; imgRT.offsetMax = Vector2.zero;
-
-            var arf = imgGO.AddComponent<AspectRatioFitter>();
-            arf.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
-            if (data.Icon && data.Icon.rect.height > 0f)
-                arf.aspectRatio = data.Icon.rect.width / data.Icon.rect.height;
-
-            if (_mutationBound != null)
+            catch (Exception ex)
             {
-                var (boundGO, boundRT) = NewUI("Bound", frame.transform);
-                var bound = boundGO.AddComponent<Image>();
-                bound.sprite = _mutationBound;
-                bound.raycastTarget = false;
-                bound.type = Image.Type.Sliced;
-                boundRT.anchorMin = Vector2.zero; boundRT.anchorMax = Vector2.one;
-                boundRT.offsetMin = Vector2.zero; boundRT.offsetMax = Vector2.zero;
+                TFTVLogger.Error(ex);
+                return null;
             }
+        }
 
-            var trigger = imgGO.AddComponent<HavenRecruitMutationTooltipTrigger>();
-            trigger.Initialize(data);
+        private static void PrepareSlotForDisplay(UIInventorySlot slot, int size)
+        {
+            if (slot == null)
+            {
+                return;
+            }
+            try
+            {
+                slot.Item = null;
 
-            return img;
+                var rect = slot.transform as RectTransform;
+                if (rect != null)
+                {
+                    rect.anchorMin = new Vector2(0.5f, 0.5f);
+                    rect.anchorMax = new Vector2(0.5f, 0.5f);
+                    rect.pivot = new Vector2(0.5f, 0.5f);
+                    rect.sizeDelta = new Vector2(size, size);
+                }
+
+                var layout = slot.GetComponent<LayoutElement>() ?? slot.gameObject.AddComponent<LayoutElement>();
+                layout.preferredWidth = size;
+                layout.preferredHeight = size;
+                layout.minWidth = size;
+                layout.minHeight = size;
+                layout.flexibleWidth = 0f;
+                layout.flexibleHeight = 0f;
+
+                foreach (var selectable in slot.GetComponentsInChildren<Selectable>(true))
+                {
+                    if (selectable != null)
+                    {
+                        selectable.interactable = false;
+                    }
+                }
+
+                foreach (var behaviour in slot.GetComponentsInChildren<MonoBehaviour>(true))
+                {
+                    if (behaviour == null || behaviour == slot)
+                    {
+                        continue;
+                    }
+
+                    if (behaviour is IBeginDragHandler || behaviour is IDragHandler || behaviour is IEndDragHandler || behaviour is IDropHandler)
+                    {
+                        behaviour.enabled = false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+            }
+        }
+
+        private static void ResetSlotHandlers(UIInventorySlot slot)
+        {
+            if (slot == null) return;
+
+            try
+            {
+                var enterHandlers = slot.OnPointerEnteredHandlers;
+                if (enterHandlers != null)
+                {
+                    MethodInfo clear = enterHandlers.GetType().GetMethod("Clear", BindingFlags.Instance | BindingFlags.Public);
+                    clear?.Invoke(enterHandlers, null);
+                }
+                var exitHandlers = slot.OnPointerExitedHandlers;
+                if (exitHandlers != null)
+                {
+                    MethodInfo clear = exitHandlers.GetType().GetMethod("Clear", BindingFlags.Instance | BindingFlags.Public);
+                    clear?.Invoke(exitHandlers, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+            }
         }
 
         internal static (GameObject go, RectTransform rt) NewUI(string name, Transform parent = null)

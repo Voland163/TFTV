@@ -9,6 +9,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using TFTV.TFTVHavenRecruitsUI;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -129,10 +130,7 @@ namespace TFTV
         {
             OverlayAbilityTooltip = tooltip;
         }
-        internal static void RegisterOverlayItemTooltip(UIInventoryTooltip tooltip)
-        {
-            OverlayItemTooltip = tooltip;
-        }
+        
 
         internal static Canvas OverlayCanvas { get; private set; }
         internal enum FactionFilter
@@ -261,10 +259,10 @@ namespace TFTV
             internal static GameObject _currentSelectedCard;
             internal static RecruitAtSite _selectedRecruit;
 
-            internal static Sprite _mutationBound;
-            internal static Sprite _iconBackground;
+          //  internal static Sprite _mutationBound;
+          //  internal static Sprite _iconBackground;
             internal static Sprite _abilityIconBackground;
-
+            internal static UIInventorySlot _mutationSlotTemplate;
 
             internal static void ResetState()
             {
@@ -307,6 +305,11 @@ namespace TFTV
                     //  _detailCostGroup = null;
                     _detailCostRoot = null;
                     _detailFactionLogoImage = null;
+                    if (_mutationSlotTemplate != null)
+                    {
+                        Object.Destroy(_mutationSlotTemplate.gameObject);
+                        _mutationSlotTemplate = null;
+                    }
                     _lastLayoutScreenWidth = 0;
                     isInitialized = false;
                 }
@@ -324,14 +327,14 @@ namespace TFTV
                         isInitialized = true;
                     }
 
-                    if (_mutationBound == null)
+                   /* if (_mutationBound == null)
                     {
                         _mutationBound = Helper.CreateSpriteFromImageFile("UI_Frame_Mutationbound.png");
                     }
                     if (_iconBackground == null)
                     {
                         _iconBackground = Helper.CreateSpriteFromImageFile("UI_Frame_Feathered.png");
-                    }
+                    }*/
                     if (_abilityIconBackground == null)
                     {
                         _abilityIconBackground = Helper.CreateSpriteFromImageFile("UI_ButtonFrame_Main_Sliced.png");
@@ -462,6 +465,7 @@ namespace TFTV
                     CreateRecruitListArea(overlayPanel.transform);
                     EnsureAbilityTooltipInstance(overlayPanel.transform);
                     EnsureItemTooltipInstance(overlayPanel.transform);
+                    EnsureMutationSlotTemplate(overlayPanel.transform);
                     // Double-click on a card = send the closest Phoenix aircraft to that recruit's site
                     OnCardDoubleClick = (recruit, site) =>
                     {
@@ -599,7 +603,162 @@ namespace TFTV
                     TFTVLogger.Error(ex);
                 }
             }
+            internal static UIInventorySlot EnsureMutationSlotTemplate(Transform overlayTransform)
+            {
+                try
+                {
+                    if (overlayTransform == null)
+                    {
+                        overlayTransform = overlayPanel?.transform;
+                    }
 
+                    if (_mutationSlotTemplate != null)
+                    {
+                        if (overlayTransform != null && _mutationSlotTemplate.transform.parent != overlayTransform)
+                        {
+                            _mutationSlotTemplate.transform.SetParent(overlayTransform, false);
+                        }
+
+                        return _mutationSlotTemplate;
+                    }
+
+                    var template = FindInventorySlotTemplate();
+                    if (template == null)
+                    {
+                        TFTVLogger.Always("[RecruitsOverlay] Could not locate UIInventorySlot template.");
+                        return null;
+                    }
+
+                    Transform parent = overlayTransform ?? OverlayCanvas?.transform ?? template.transform.parent;
+                    var cloneGO = Object.Instantiate(template.gameObject, parent, worldPositionStays: false);
+                    cloneGO.name = "TFTV_RecruitMutationSlotTemplate";
+                    cloneGO.SetActive(false);
+
+                    _mutationSlotTemplate = cloneGO.GetComponent<UIInventorySlot>();
+                    if (_mutationSlotTemplate == null)
+                    {
+                        Object.Destroy(cloneGO);
+                        return null;
+                    }
+
+                    PrepareMutationSlotTemplate(_mutationSlotTemplate);
+                    return _mutationSlotTemplate;
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                    return null;
+                }
+            }
+
+            private static void PrepareMutationSlotTemplate(UIInventorySlot template)
+            {
+                if (template == null)
+                {
+                    return;
+                }
+
+                try
+                {
+                    template.gameObject.name = "TFTV_RecruitMutationSlotTemplate";
+                    template.Item = null;
+
+                    var enterHandlers = template.OnPointerEnteredHandlers;
+                    if (enterHandlers != null)
+                    {
+                        var clear = enterHandlers.GetType().GetMethod("Clear", BindingFlags.Instance | BindingFlags.Public);
+                        clear?.Invoke(enterHandlers, null);
+                    }
+
+                    var exitHandlers = template.OnPointerExitedHandlers;
+                    if (exitHandlers != null)
+                    {
+                        var clear = exitHandlers.GetType().GetMethod("Clear", BindingFlags.Instance | BindingFlags.Public);
+                        clear?.Invoke(exitHandlers, null);
+                    }
+
+                    foreach (var selectable in template.GetComponentsInChildren<Selectable>(true))
+                    {
+                        if (selectable != null)
+                        {
+                            selectable.interactable = false;
+                        }
+                    }
+
+                    foreach (var behaviour in template.GetComponentsInChildren<MonoBehaviour>(true))
+                    {
+                        if (behaviour == null || behaviour == template)
+                        {
+                            continue;
+                        }
+
+                        if (behaviour is IBeginDragHandler || behaviour is IDragHandler || behaviour is IEndDragHandler || behaviour is IDropHandler)
+                        {
+                            behaviour.enabled = false;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
+            }
+
+            private static UIInventorySlot FindInventorySlotTemplate()
+            {
+                try
+                {
+                    UIInventorySlot template = null;
+
+                    var geoLevel = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                    var view = geoLevel?.View;
+                    if (view != null)
+                    {
+                        template = view.GetComponentsInChildren<UIInventorySlot>(true)
+                            .FirstOrDefault(t => t != null && !IsOurMutationTemplate(t) && t.hideFlags == HideFlags.None);
+                    }
+
+                    if (template == null)
+                    {
+                        template = Resources.FindObjectsOfTypeAll<UIInventorySlot>()
+                            .FirstOrDefault(t => t != null && !IsOurMutationTemplate(t) && t.hideFlags == HideFlags.None);
+                    }
+
+                    if (template == null)
+                    {
+                        template = Object.FindObjectsOfType<UIInventorySlot>()
+                            .FirstOrDefault(t => t != null && !IsOurMutationTemplate(t) && t.hideFlags == HideFlags.None);
+                    }
+
+                    return template;
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                    return null;
+                }
+            }
+
+            private static bool IsOurMutationTemplate(UIInventorySlot slot)
+            {
+                if (slot == null)
+                {
+                    return false;
+                }
+
+                if (_mutationSlotTemplate != null && slot == _mutationSlotTemplate)
+                {
+                    return true;
+                }
+
+                var go = slot.gameObject;
+                if (go == null)
+                {
+                    return false;
+                }
+
+                return go.name.StartsWith("TFTV_RecruitMutationSlotTemplate", StringComparison.Ordinal);
+            }
             private static GeoRosterAbilityDetailTooltip FindTooltipTemplate()
             {
                 try

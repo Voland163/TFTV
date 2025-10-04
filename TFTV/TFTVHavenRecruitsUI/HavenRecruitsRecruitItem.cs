@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using static TFTV.HavenRecruitsMain;
-using static TFTV.TFTVHavenRecruitsUI.HavenRecruitsUtils;
 using static TFTV.HavenRecruitsMain.RecruitOverlayManager;
-using PhoenixPoint.Tactical.View.ViewModules;
-using PhoenixPoint.Common.View.ViewControllers.Inventory;
+using static TFTV.TFTVHavenRecruitsUI.HavenRecruitsUtils;
 
 namespace TFTV.TFTVHavenRecruitsUI
 {
@@ -124,17 +118,6 @@ namespace TFTV.TFTVHavenRecruitsUI
 
                 var abilitiesLE = abilitiesGO.AddComponent<LayoutElement>();
                 abilitiesLE.ignoreLayout = true;
-
-                abilitiesRT.anchorMin = new Vector2(0.5f, 0.5f);
-                abilitiesRT.anchorMax = new Vector2(0.5f, 0.5f);
-
-                // Plan (pseudocode):
-                // 1. Anchor the abilities container to the RIGHT side of its parent so it aligns to the right edge.
-                // 2. Use a pivot of (1, 0.5) so positioning is calculated from the right edge.
-                // 3. Provide a negative anchoredPosition.x to move the container leftwards by a "considerable offset".
-                // 4. Keep other layout settings the same so the icons still size and layout correctly.
-                // 5. Minimal change: replace the existing anchor/pivot/position lines with right-aligned equivalents.
-
                 abilitiesRT.anchorMin = new Vector2(1f, 0.5f);
                 abilitiesRT.anchorMax = new Vector2(1f, 0.5f);
                 abilitiesRT.pivot = new Vector2(1f, 0.5f);
@@ -159,7 +142,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                     {
                         continue;
                     }
-                    RecruitOverlayManagerHelpers.MakeMutationIcon(abilitiesGO.transform, icon, ArmorIconSize);
+                    RecruitOverlayManagerHelpers.MakeMutationSlot(abilitiesGO.transform, icon, ArmorIconSize);
                 }
 
                 foreach (var ability in abilityInfos)
@@ -193,10 +176,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                 costLE.flexibleWidth = 1f;
             }
 
-            if (abilitiesTransform != null)
-            {
-                abilitiesTransform.SetAsLastSibling();
-            }
+            abilitiesTransform?.SetAsLastSibling();
 
         }
 
