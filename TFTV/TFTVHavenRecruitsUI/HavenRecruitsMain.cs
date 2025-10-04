@@ -3,6 +3,7 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using SoftMasking.Samples;
 using System;
@@ -125,7 +126,7 @@ namespace TFTV
 
         internal static GeoRosterAbilityDetailTooltip OverlayAbilityTooltip { get; private set; }
         internal static RectTransform OverlayRootRect { get; private set; }
-        internal static UIInventoryTooltip OverlayItemTooltip { get; private set; }
+        internal static UIGeoItemTooltip OverlayItemTooltip { get; private set; }
         internal static void RegisterOverlayAbilityTooltip(GeoRosterAbilityDetailTooltip tooltip)
         {
             OverlayAbilityTooltip = tooltip;
@@ -543,7 +544,7 @@ namespace TFTV
                     TFTVLogger.Error(ex);
                 }
             }
-            internal static UIInventoryTooltip EnsureOverlayItemTooltip()
+            internal static UIGeoItemTooltip EnsureOverlayItemTooltip()
             {
                 try
                 {
@@ -596,7 +597,7 @@ namespace TFTV
                     var cloneGO = Object.Instantiate(template.gameObject, overlayTransform, worldPositionStays: false);
                     cloneGO.name = "TFTV_RecruitItemTooltip";
                     cloneGO.SetActive(false);
-                    OverlayItemTooltip = cloneGO.GetComponent<UIInventoryTooltip>();
+                    OverlayItemTooltip = cloneGO.GetComponent<UIGeoItemTooltip>();
                 }
                 catch (Exception ex)
                 {

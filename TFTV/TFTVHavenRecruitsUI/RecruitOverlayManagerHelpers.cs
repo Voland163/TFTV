@@ -1,5 +1,6 @@
 ﻿using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.View.ViewControllers.Inventory;
 using System;
 using System.Reflection;
 using TFTV.TFTVHavenRecruitsUI;
@@ -138,13 +139,16 @@ namespace TFTV
                 {
                     ResetSlotHandlers(slot);
 
-                    MethodInfo methodInfoShowTooltip = typeof(UIInventoryTooltip).GetMethod("ShowStats", BindingFlags.Instance | BindingFlags.NonPublic);
-                    MethodInfo methodInfoHideTooltip = typeof(UIInventoryTooltip).GetMethod("HideStats", BindingFlags.Instance | BindingFlags.NonPublic);
+                    MethodInfo methodInfoShowTooltip = typeof(UIGeoItemTooltip).GetMethod("ShowStats", BindingFlags.Instance | BindingFlags.NonPublic);
+                    MethodInfo methodInfoHideTooltip = typeof(UIGeoItemTooltip).GetMethod("HideStats", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                    GeoItem geoItem = slot.Item as GeoItem;
+                    TFTVLogger.Always($"geoItem: {geoItem?.ItemDef?.name}");
 
                     var forwarder = slotGO.GetComponent<MutationSlotTooltipForwarder>() ?? slotGO.AddComponent<MutationSlotTooltipForwarder>();
-                    forwarder.Initialize(slot, tooltip, methodInfoShowTooltip, methodInfoHideTooltip);
+                    forwarder.Initialize(slot, geoItem,  tooltip, methodInfoShowTooltip, methodInfoHideTooltip);
 
-                    
+
                 }
                 return slot;
 
@@ -159,28 +163,38 @@ namespace TFTV
         private class MutationSlotTooltipForwarder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         {
             private UIInventorySlot _slot;
-            private UIInventoryTooltip _tooltip;
+            private UIGeoItemTooltip _tooltip;
+            private GeoItem _item;
             private MethodInfo _showMethod;
             private MethodInfo _hideMethod;
+            private FieldInfo _hoveredSlotField;
 
-            internal void Initialize(UIInventorySlot slot, UIInventoryTooltip tooltip, MethodInfo showMethod, MethodInfo hideMethod)
+            internal void Initialize(UIInventorySlot slot, GeoItem geoItem, UIGeoItemTooltip tooltip, MethodInfo showMethod, MethodInfo hideMethod)
             {
                 _slot = slot;
+                _item = geoItem;
                 _tooltip = tooltip;
                 _showMethod = showMethod;
                 _hideMethod = hideMethod;
+              
             }
 
             public void OnPointerEnter(PointerEventData eventData)
             {
                 try
                 {
-                    TFTVLogger.Always($"_tooltip == null? {_tooltip == null}");
+                    // RewardsController
 
-                    if (_slot?.Item is GeoItem item && _tooltip != null && _showMethod != null)
-                    {
-                        _showMethod.Invoke(_tooltip, new object[] { _slot, null });
-                    }
+                    TFTVLogger.Always($"_tooltip == null? {_tooltip == null} is _slot null? {_slot == null} item {_item.ItemDef.name}");
+                   /* if (_item !=null && _tooltip != null && _showMethod != null)
+                    {*/
+                        TFTVLogger.Always($"got here for item {_item.ItemDef.name}");
+
+                        
+
+                        _showMethod.Invoke(_tooltip, new object[] { _item, _slot.transform });
+
+                   // }
                 }
                 catch (Exception ex)
                 {
@@ -205,6 +219,11 @@ namespace TFTV
                     if (_tooltip != null && _hideMethod != null)
                     {
                         _hideMethod.Invoke(_tooltip, Array.Empty<object>());
+
+                        if (_hoveredSlotField != null)
+                        {
+                            _hoveredSlotField.SetValue(_tooltip, null);
+                        }
                     }
                 }
                 catch (Exception ex)
