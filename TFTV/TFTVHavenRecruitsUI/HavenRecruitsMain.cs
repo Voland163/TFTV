@@ -583,7 +583,7 @@ namespace TFTV
                         {
                             OverlayItemTooltip.transform.SetParent(overlayTransform, false);
                         }
-                        RecruitOverlayManagerHelpers.EnsureTooltipLayoutIsolation(OverlayAbilityTooltip.transform as RectTransform);
+                      
                         return;
                     }
 
@@ -599,7 +599,7 @@ namespace TFTV
                     cloneGO.transform.localScale = Vector3.one * 0.5f;
                     cloneGO.SetActive(false);
                     OverlayItemTooltip = cloneGO.GetComponent<UIGeoItemTooltip>();
-                    RecruitOverlayManagerHelpers.EnsureTooltipLayoutIsolation(OverlayAbilityTooltip.transform as RectTransform);
+                    
                 }
                 catch (Exception ex)
                 {

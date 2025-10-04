@@ -11,7 +11,6 @@ namespace TFTV.TFTVHavenRecruitsUI
         private HavenRecruitsUtils.AbilityIconData _abilityData;
         private bool _tooltipVisible;
         private static bool _tooltipPrimed;
-        private static GeoRosterAbilityDetailTooltip _sharedTooltip;
         private static Canvas _tooltipCanvas;
 
         private GeoRosterAbilityDetailTooltip _tooltip;
