@@ -10,7 +10,7 @@ namespace TFTV.TFTVHavenRecruitsUI
     {
         private HavenRecruitsUtils.AbilityIconData _abilityData;
         private bool _tooltipVisible;
-
+        private static bool _tooltipPrimed;
         private static GeoRosterAbilityDetailTooltip _sharedTooltip;
         private static Canvas _tooltipCanvas;
 
@@ -55,6 +55,20 @@ namespace TFTV.TFTVHavenRecruitsUI
             if (tooltip == null || (_abilityData.Slot == null && _abilityData.View == null))
             {
                 return;
+            }
+
+            bool shouldPrimeTooltip = !_tooltipPrimed;
+            if (shouldPrimeTooltip)
+            {
+                _tooltipPrimed = true;
+            }
+
+            tooltip.Show(_abilityData.Slot, _abilityData.View, useMutagens: false, cost: _abilityData.SkillPointCost);
+
+            if (shouldPrimeTooltip)
+            {
+                tooltip.Hide();
+                tooltip.Show(_abilityData.Slot, _abilityData.View, useMutagens: false, cost: _abilityData.SkillPointCost);
             }
 
             tooltip.Show(_abilityData.Slot, _abilityData.View, useMutagens: false, cost: _abilityData.SkillPointCost);
