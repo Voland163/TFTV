@@ -323,12 +323,7 @@ namespace TFTV
                     _detailInfoRoot = null;
                     _detailNameLabel = null;
                     _detailFactionIconImage = null;
-                    _detailHavenLabel = null;
-                    // _detailAbilityDescriptionGroup = null;
-                    // _detailAbilityDescriptionRoot = null;
-                    // _detailMutationGroup = null;
-                    _detailMutationRoot = null;
-                    //  _detailCostGroup = null;
+                    _detailHavenLabel = null;                
                     _detailCostRoot = null;
                     _detailFactionLogoImage = null;
                     if (_mutationSlotTemplate != null)

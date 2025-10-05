@@ -284,8 +284,9 @@ List<TacticalAbilityDef> choices)
                 cancel.GetComponent<Button>().onClick.AddListener(() => UnityEngine.Object.Destroy(overlay));
 
                 var toggleGroup = filterBar.AddComponent<ToggleGroup>();
-                var availableToggle = CreateFilterToggle(filterBar.transform, "Available");
-                var allToggle = CreateFilterToggle(filterBar.transform, "All");
+                toggleGroup.allowSwitchOff = false;
+                var availableToggle = CreateFilterToggle(filterBar.transform, "Available To Character");
+                var allToggle = CreateFilterToggle(filterBar.transform, "All Drills");
                 availableToggle.group = toggleGroup;
                 allToggle.group = toggleGroup;
 
@@ -408,6 +409,8 @@ List<TacticalAbilityDef> choices)
                     btn.onClick.AddListener(() => onChoose?.Invoke());
                 }
 
+                var cardCanvasGroup = card.AddComponent<CanvasGroup>();
+                cardCanvasGroup.alpha = isLocked ? 0.45f : 1f;
                 // icon
                 var ico = new GameObject("Icon", typeof(RectTransform), typeof(Image));
                 var irt = (RectTransform)ico.transform; irt.SetParent(card.transform, false);
@@ -537,7 +540,7 @@ List<TacticalAbilityDef> choices)
                             descriptionText += "\n\n";
                         }
 
-                        descriptionText += $"<color=#FFA0A0>{_missingRequirements}</color>";
+                        descriptionText += $"<color=#FFA0A0><b>Missing requirements:</b>\n{_missingRequirements}</color>";
                         temporaryDescription = new LocalizedTextBind(descriptionText, true);
                         view.Description = temporaryDescription;
                     }
