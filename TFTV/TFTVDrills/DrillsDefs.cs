@@ -10,6 +10,7 @@ using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
+using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -161,7 +162,7 @@ namespace TFTV.TFTVDrills
             DrillUnlockConditions[ability] = condition ?? DrillUnlockCondition.AlwaysUnlocked();
         }
 
-        private static bool MeetsResearchRequirements(GeoPhoenixFaction faction, DrillUnlockCondition condition)
+        internal static bool MeetsResearchRequirements(GeoPhoenixFaction faction, DrillUnlockCondition condition)
         {
             if (condition?.RequiredResearchIds == null || condition.RequiredResearchIds.Count == 0)
             {
@@ -190,7 +191,7 @@ namespace TFTV.TFTVDrills
             return true;
         }
 
-        private static bool MeetsClassLevelRequirements(GeoPhoenixFaction faction, GeoCharacter viewer, DrillUnlockCondition condition)
+        internal static bool MeetsClassLevelRequirements(GeoPhoenixFaction faction, GeoCharacter viewer, DrillUnlockCondition condition)
         {
             if (condition?.ClassLevelRequirements == null || condition.ClassLevelRequirements.Count == 0)
             {
@@ -229,7 +230,7 @@ namespace TFTV.TFTVDrills
             return true;
         }
 
-        private static bool MeetsSingleClassRequirement(GeoCharacter soldier, DrillClassLevelRequirement requirement)
+        internal static bool MeetsSingleClassRequirement(GeoCharacter soldier, DrillClassLevelRequirement requirement)
         {
             if (soldier == null || requirement == null)
             {
@@ -249,6 +250,133 @@ namespace TFTV.TFTVDrills
             return soldier.LevelProgression.Level >= requirement.MinimumLevel;
         }
 
+        internal static IEnumerable<string> GetMissingRequirementDescriptions(GeoPhoenixFaction faction, GeoCharacter viewer, TacticalAbilityDef ability)
+        {
+            if (ability == null)
+            {
+                yield break;
+            }
+
+            if (!DrillUnlockConditions.TryGetValue(ability, out var condition) || condition == null)
+            {
+                yield break;
+            }
+
+            if (condition.AlwaysAvailable)
+            {
+                yield break;
+            }
+
+            if (!MeetsResearchRequirements(faction, condition))
+            {
+                foreach (var researchId in condition.RequiredResearchIds)
+                {
+                    if (string.IsNullOrEmpty(researchId))
+                    {
+                        continue;
+                    }
+
+                    bool completed = faction?.Research?.HasCompleted(researchId) ?? false;
+                    if (completed)
+                    {
+                        continue;
+                    }
+
+                    string researchName = TryGetResearchName(researchId);
+                    if (!string.IsNullOrEmpty(researchName))
+                    {
+                        yield return $"Research: {researchName}";
+                    }
+                }
+            }
+
+            if (!MeetsClassLevelRequirements(faction, viewer, condition))
+            {
+                foreach (var requirement in condition.ClassLevelRequirements)
+                {
+                    if (requirement == null)
+                    {
+                        continue;
+                    }
+
+                    bool satisfied = false;
+                    if (viewer != null && MeetsSingleClassRequirement(viewer, requirement))
+                    {
+                        satisfied = true;
+                    }
+
+                    if (!satisfied && faction?.Soldiers != null)
+                    {
+                        satisfied = faction.Soldiers.Any(soldier => MeetsSingleClassRequirement(soldier, requirement));
+                    }
+
+                    if (satisfied)
+                    {
+                        continue;
+                    }
+
+                    yield return BuildClassRequirementMessage(requirement);
+                }
+            }
+
+            if (condition.RequireAnyPhoenixOperative)
+            {
+                bool hasOperative = faction?.Soldiers != null && faction.Soldiers.Count() > 0;
+                if (!hasOperative)
+                {
+                    yield return "Requires at least one active Phoenix operative.";
+                }
+            }
+        }
+
+        private static string TryGetResearchName(string researchId)
+        {
+            try
+            {
+                ResearchDef researchDef = null;
+
+                try
+                {
+                    researchDef = DefCache.GetDef<ResearchDef>(researchId);
+                }
+                catch
+                {
+                    // ignored – fall back to id string.
+                }
+
+                if (researchDef?.ViewElementDef != null)
+                {
+                    if (researchDef.ViewElementDef.ResearchName != null)
+                    {
+                        return researchDef.ViewElementDef.ResearchName.Localize();
+                    }
+
+                    if (researchDef.ViewElementDef.DisplayName1 != null)
+                    {
+                        return researchDef.ViewElementDef.DisplayName1.Localize();
+                    }
+                }
+
+                return researchId;
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+                return researchId;
+            }
+        }
+
+        private static string BuildClassRequirementMessage(DrillClassLevelRequirement requirement)
+        {
+            string className = requirement.ClassTag?.className;
+            if (string.IsNullOrEmpty(className))
+            {
+                className = "operative";
+            }
+
+            string subject = requirement.RequireSelectedOperative ? "Selected operative" : "Phoenix operative";
+            return $"{subject} must be level {requirement.MinimumLevel} {className}";
+        }
         private static void EnsureDefaultUnlockConditions()
         {
             if (Drills == null)

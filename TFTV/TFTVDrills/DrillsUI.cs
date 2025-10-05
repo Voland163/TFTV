@@ -1,4 +1,5 @@
 ﻿using Base.Core;
+using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.View.ViewControllers;
@@ -6,6 +7,7 @@ using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.ViewControllers;
+using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using System;
@@ -15,6 +17,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace TFTV.TFTVDrills
@@ -22,6 +25,12 @@ namespace TFTV.TFTVDrills
     internal class DrillsUI
     {
         private const int SwapSpCost = 0;
+
+        private static readonly Color FilterActiveColor = new Color(0.25f, 0.55f, 0.85f, 0.6f);
+        private static readonly Color FilterInactiveColor = new Color(1f, 1f, 1f, 0.08f);
+        private static readonly Color LockedIconTint = new Color(1f, 1f, 1f, 0.35f);
+        private static readonly Color LockedLabelTint = new Color(0.7f, 0.7f, 0.7f, 1f);
+        private static readonly Color LockedBackgroundTint = new Color(1f, 1f, 1f, 0.03f);
 
         [HarmonyPatch(typeof(AbilityTrackSkillEntryElement), "OnPointerClick")]
         public static class AbilityTrackSkillEntryElement_OnPointerClick_Patch
@@ -143,114 +152,261 @@ List<TacticalAbilityDef> choices)
                 AbilityTrackSource source,
                 List<TacticalAbilityDef> choices)
             {
-                // ---- overlay ----
+               
                 var overlay = new GameObject("TFTV_SwapOverlay", typeof(RectTransform), typeof(Image), typeof(Button));
-                var ort = (RectTransform)overlay.transform;
-                ort.SetParent(ui.transform, false);
-                ort.anchorMin = Vector2.zero; ort.anchorMax = Vector2.one;
-                ort.offsetMin = Vector2.zero; ort.offsetMax = Vector2.zero;
+                var overlayRect = (RectTransform)overlay.transform;
+                overlayRect.SetParent(ui.transform, false);
+                overlayRect.anchorMin = Vector2.zero;
+                overlayRect.anchorMax = Vector2.one;
+                overlayRect.offsetMin = Vector2.zero;
+                overlayRect.offsetMax = Vector2.zero;
 
-                var obg = overlay.GetComponent<Image>(); obg.color = new Color(0, 0, 0, 0.55f);
-                var oclk = overlay.GetComponent<Button>(); oclk.transition = Selectable.Transition.None;
-                oclk.onClick.AddListener(() => UnityEngine.Object.Destroy(overlay));
+                var overlayBg = overlay.GetComponent<Image>();
+                overlayBg.color = new Color(0f, 0f, 0f, 0.55f);
+                var overlayButton = overlay.GetComponent<Button>();
+                overlayButton.transition = Selectable.Transition.None;
+                overlayButton.onClick.AddListener(() => UnityEngine.Object.Destroy(overlay));
 
-                // ---- panel ----
-                float sw = Screen.width, sh = Screen.height;
-                float pw = Mathf.Clamp(sw * 0.60f, 800f, 1400f);
-                float ph = Mathf.Clamp(sh * 0.70f, 560f, 900f);
+                float screenWidth = Screen.width;
+                float screenHeight = Screen.height;
+                float panelWidth = Mathf.Clamp(screenWidth * 0.60f, 800f, 1400f);
+                float panelHeight = Mathf.Clamp(screenHeight * 0.70f, 560f, 900f);
 
                 var panel = new GameObject("Panel", typeof(RectTransform), typeof(Image), typeof(Button));
-                var prt = (RectTransform)panel.transform; prt.SetParent(overlay.transform, false);
-                prt.anchorMin = prt.anchorMax = new Vector2(0.5f, 0.5f);
-                prt.pivot = new Vector2(0.5f, 0.5f);
-                prt.sizeDelta = new Vector2(pw, ph);
-                panel.GetComponent<Image>().color = new Color(0.10f, 0.10f, 0.10f, 0.96f);
-                panel.GetComponent<Button>().onClick.AddListener(() => { /* swallow */ });
+                var panelRect = (RectTransform)panel.transform;
+                panelRect.SetParent(overlay.transform, false);
+                panelRect.anchorMin = new Vector2(0.5f, 0.5f);
+                panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+                panelRect.pivot = new Vector2(0.5f, 0.5f);
+                panelRect.sizeDelta = new Vector2(panelWidth, panelHeight);
 
-                // ---- title ----
+                var panelImage = panel.GetComponent<Image>();
+                panelImage.color = new Color(0.10f, 0.10f, 0.10f, 0.96f);
+                panel.GetComponent<Button>().onClick.AddListener(() => { });
+
                 var title = new GameObject("Title", typeof(RectTransform), typeof(Text));
-                var trt = (RectTransform)title.transform; trt.SetParent(panel.transform, false);
-                trt.anchorMin = new Vector2(0, 1); trt.anchorMax = new Vector2(1, 1);
-                trt.pivot = new Vector2(0.5f, 1); trt.sizeDelta = new Vector2(0, 42); trt.anchoredPosition = new Vector2(0, -10);
-                var ttxt = title.GetComponent<Text>(); ttxt.alignment = TextAnchor.MiddleCenter; ttxt.fontSize = 22;
-                ttxt.text = $"Replace: {(original.ViewElementDef?.DisplayName1?.Localize() ?? original.name)}";
+
+                var titleRect = (RectTransform)title.transform;
+                titleRect.SetParent(panel.transform, false);
+                titleRect.anchorMin = new Vector2(0, 1);
+                titleRect.anchorMax = new Vector2(1, 1);
+                titleRect.pivot = new Vector2(0.5f, 1);
+                titleRect.sizeDelta = new Vector2(0, 42);
+                titleRect.anchoredPosition = new Vector2(0, -10);
+
+                var titleText = title.GetComponent<Text>();
+                titleText.alignment = TextAnchor.MiddleCenter;
+                titleText.fontSize = 22;
+                titleText.text = $"Replace: {(original.ViewElementDef?.DisplayName1?.Localize() ?? original.name)}";
+
+                var filterBar = new GameObject("FilterBar", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+                var filterRect = (RectTransform)filterBar.transform;
+                filterRect.SetParent(panel.transform, false);
+                filterRect.anchorMin = new Vector2(0, 1);
+                filterRect.anchorMax = new Vector2(1, 1);
+                filterRect.pivot = new Vector2(0.5f, 1);
+                filterRect.sizeDelta = new Vector2(0, 40f);
+                filterRect.anchoredPosition = new Vector2(0, -58f);
+
+                var filterLayout = filterBar.GetComponent<HorizontalLayoutGroup>();
+                filterLayout.childControlWidth = true;
+                filterLayout.childForceExpandWidth = true;
+                filterLayout.childAlignment = TextAnchor.MiddleCenter;
+                filterLayout.spacing = 12f;
+                filterLayout.padding = new RectOffset(24, 24, 0, 0);
 
                 // ---- scroll view (Viewport + Content) ----
                 var viewport = new GameObject("Viewport", typeof(RectTransform), typeof(Image), typeof(RectMask2D));
-                var vrt = (RectTransform)viewport.transform; vrt.SetParent(panel.transform, false);
-                vrt.anchorMin = new Vector2(0, 0); vrt.anchorMax = new Vector2(1, 1);
-                vrt.offsetMin = new Vector2(16, 64); vrt.offsetMax = new Vector2(-16, -64);
-                viewport.GetComponent<Image>().color = new Color(1, 1, 1, 0.05f);
+
+                var viewportRect = (RectTransform)viewport.transform;
+                viewportRect.SetParent(panel.transform, false);
+                viewportRect.anchorMin = new Vector2(0, 0);
+                viewportRect.anchorMax = new Vector2(1, 1);
+                viewportRect.offsetMin = new Vector2(16, 96);
+                viewportRect.offsetMax = new Vector2(-16, -64);
+                viewport.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.05f);
 
                 var content = new GameObject("Content", typeof(RectTransform), typeof(GridLayoutGroup));
-                var crt = (RectTransform)content.transform; crt.SetParent(viewport.transform, false);
-                // IMPORTANT: top-anchored content that stretches horizontally
-                crt.anchorMin = new Vector2(0, 1); crt.anchorMax = new Vector2(1, 1);
-                crt.pivot = new Vector2(0.5f, 1);
-                crt.anchoredPosition = Vector2.zero;
-                crt.sizeDelta = new Vector2(0, 0); // height will be set below
+
+                var contentRect = (RectTransform)content.transform;
+                contentRect.SetParent(viewport.transform, false);
+                contentRect.anchorMin = new Vector2(0, 1);
+                contentRect.anchorMax = new Vector2(1, 1);
+                contentRect.pivot = new Vector2(0.5f, 1);
+                contentRect.anchoredPosition = Vector2.zero;
+                contentRect.sizeDelta = new Vector2(0, 0);
 
                 var grid = content.GetComponent<GridLayoutGroup>();
-                const int ICON = 128;                                  // big icons
-                var cell = new Vector2(ICON + 56, ICON + 40);          // room for label
-                grid.cellSize = cell;
+                const int ICON = 128;
+                grid.cellSize = new Vector2(ICON + 56, ICON + 40);
                 grid.spacing = new Vector2(12, 12);
                 grid.childAlignment = TextAnchor.UpperLeft;
                 grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
 
-                // compute column count from available width
-                float innerW = pw - 32f;                               // subtract viewport padding
-                int cols = Mathf.Max(1, Mathf.FloorToInt((innerW + grid.spacing.x) / (grid.cellSize.x + grid.spacing.x)));
-                grid.constraintCount = cols;
+                float availableWidth = panelWidth - 32f;
+                int columns = Mathf.Max(1, Mathf.FloorToInt((availableWidth + grid.spacing.x) / (grid.cellSize.x + grid.spacing.x)));
+                grid.constraintCount = columns;
 
-                // populate cards
-                foreach (var def in choices)
-                {
-                    var card = CreateChoiceCard(def, ICON, () =>
-                    {
-                        TryPerformSwap(ui, slot, original, def, source);
-                        UnityEngine.Object.Destroy(overlay);
-                    });
-                    card.transform.SetParent(content.transform, false);
-                }
 
-                // set content height so vertical scroll works
-                int rows = Mathf.CeilToInt((float)choices.Count / cols);
-                float h = rows * grid.cellSize.y + (rows - 1) * grid.spacing.y + 16f; // + top padding
-                crt.sizeDelta = new Vector2(0, h);
-
-                // wire ScrollRect
+                
                 var scroll = panel.AddComponent<ScrollRect>();
-                scroll.viewport = vrt;
-                scroll.content = crt;
+
+
+                scroll.viewport = viewportRect;
+                scroll.content = contentRect;
                 scroll.horizontal = false;
                 scroll.vertical = true;
                 scroll.movementType = ScrollRect.MovementType.Clamped;
                 scroll.scrollSensitivity = 30f;
 
-                // ---- cancel button ----
+          
                 var cancel = new GameObject("Cancel", typeof(RectTransform), typeof(Image), typeof(Button));
-                var crt2 = (RectTransform)cancel.transform; crt2.SetParent(panel.transform, false);
-                crt2.anchorMin = new Vector2(0.5f, 0); crt2.anchorMax = new Vector2(0.5f, 0);
-                crt2.pivot = new Vector2(0.5f, 0); crt2.anchoredPosition = new Vector2(0, 12); crt2.sizeDelta = new Vector2(160, 36);
-                cancel.GetComponent<Image>().color = new Color(1, 1, 1, 0.12f);
-                var cLabel = new GameObject("Label", typeof(RectTransform), typeof(Text));
-                var clrt = (RectTransform)cLabel.transform; clrt.SetParent(cancel.transform, false);
-                clrt.anchorMin = Vector2.zero; clrt.anchorMax = Vector2.one; clrt.offsetMin = Vector2.zero; clrt.offsetMax = Vector2.zero;
-                var ctxt = cLabel.GetComponent<Text>(); ctxt.alignment = TextAnchor.MiddleCenter; ctxt.text = "Cancel";
+                var cancelRect = (RectTransform)cancel.transform;
+                cancelRect.SetParent(panel.transform, false);
+                cancelRect.anchorMin = new Vector2(0.5f, 0);
+                cancelRect.anchorMax = new Vector2(0.5f, 0);
+                cancelRect.pivot = new Vector2(0.5f, 0);
+                cancelRect.anchoredPosition = new Vector2(0, 12);
+                cancelRect.sizeDelta = new Vector2(160, 36);
+
+                cancel.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.12f);
+                var cancelLabel = new GameObject("Label", typeof(RectTransform), typeof(Text));
+                var cancelLabelRect = (RectTransform)cancelLabel.transform;
+                cancelLabelRect.SetParent(cancel.transform, false);
+                cancelLabelRect.anchorMin = Vector2.zero;
+                cancelLabelRect.anchorMax = Vector2.one;
+                cancelLabelRect.offsetMin = Vector2.zero;
+                cancelLabelRect.offsetMax = Vector2.zero;
+
+                var cancelText = cancelLabel.GetComponent<Text>();
+                cancelText.alignment = TextAnchor.MiddleCenter;
+                cancelText.text = "Cancel";         
                 cancel.GetComponent<Button>().onClick.AddListener(() => UnityEngine.Object.Destroy(overlay));
+
+                var toggleGroup = filterBar.AddComponent<ToggleGroup>();
+                var availableToggle = CreateFilterToggle(filterBar.transform, "Available");
+                var allToggle = CreateFilterToggle(filterBar.transform, "All");
+                availableToggle.group = toggleGroup;
+                allToggle.group = toggleGroup;
+
+                var character = GetPrivate<GeoCharacter>(ui, "_character");
+                var phoenixFaction = GetPrivate<GeoPhoenixFaction>(ui, "_phoenixFaction") ?? (character?.Faction?.GeoLevel?.PhoenixFaction);
+
+                var availableChoices = choices?.Where(def => def != null).Distinct().ToList() ?? new List<TacticalAbilityDef>();
+                var allChoices = DrillsDefs.Drills?.Where(def => def != null).Distinct().ToList() ?? new List<TacticalAbilityDef>();
+
+                var canvas = ui.GetComponentInParent<Canvas>();
+                Transform tooltipParent = canvas != null ? canvas.transform : ui.transform;
+
+                void Populate(bool showAll)
+                {
+                    for (int i = content.transform.childCount - 1; i >= 0; i--)
+                    {
+                        var child = content.transform.GetChild(i);
+                        UnityEngine.Object.Destroy(child.gameObject);
+                    }
+
+                    var sourceList = showAll ? allChoices : availableChoices;
+                    foreach (var def in sourceList)
+                    {
+                        bool unlocked = DrillsDefs.IsDrillUnlocked(phoenixFaction, character, def);
+                        bool locked = showAll && !unlocked;
+
+                        string missingRequirements = string.Empty;
+                        if (locked)
+                        {
+                            var missingParts = DrillsDefs.GetMissingRequirementDescriptions(phoenixFaction, character, def)?.ToList();
+                            if (missingParts != null && missingParts.Count > 0)
+                            {
+                                missingRequirements = string.Join("\n", missingParts);
+                            }
+                        }
+
+                        System.Action onChoose = null;
+                        if (!locked)
+                        {
+                            onChoose = () =>
+                            {
+                                TryPerformSwap(ui, slot, original, def, source);
+                                UnityEngine.Object.Destroy(overlay);
+                            };
+                        }
+
+                        var card = CreateChoiceCard(def, ICON, onChoose, locked, missingRequirements, tooltipParent);
+                        card.transform.SetParent(content.transform, false);
+                    }
+
+                    int itemCount = sourceList.Count;
+                    int rows = itemCount > 0 ? Mathf.CeilToInt((float)itemCount / columns) : 0;
+                    float height = rows > 0
+                        ? rows * grid.cellSize.y + (rows - 1) * grid.spacing.y + 16f
+                        : 16f;
+                    contentRect.sizeDelta = new Vector2(0, height);
+                }
+
+                void UpdateToggleVisual(Toggle toggle, bool isOn)
+                {
+                    var image = toggle.GetComponent<Image>();
+                    if (image != null)
+                    {
+                        image.color = isOn ? FilterActiveColor : FilterInactiveColor;
+                    }
+
+                    var label = toggle.GetComponentInChildren<Text>();
+                    if (label != null)
+                    {
+                        label.color = isOn ? Color.white : new Color(0.85f, 0.85f, 0.85f, 1f);
+                    }
+                }
+
+                availableToggle.onValueChanged.AddListener(isOn =>
+                {
+                    UpdateToggleVisual(availableToggle, isOn);
+                    if (isOn)
+                    {
+                        UpdateToggleVisual(allToggle, false);
+                        Populate(showAll: false);
+                    }
+                });
+
+                allToggle.onValueChanged.AddListener(isOn =>
+                {
+                    UpdateToggleVisual(allToggle, isOn);
+                    if (isOn)
+                    {
+                        UpdateToggleVisual(availableToggle, false);
+                        Populate(showAll: true);
+                    }
+                });
+
+                availableToggle.isOn = true;
+                UpdateToggleVisual(availableToggle, true);
+                UpdateToggleVisual(allToggle, false);
+                Populate(showAll: false);
 
                 overlay.transform.SetAsLastSibling();
             }
 
-            private static GameObject CreateChoiceCard(TacticalAbilityDef def, int iconSize, System.Action onChoose)
+            private static GameObject CreateChoiceCard(
+                 TacticalAbilityDef def,
+                 int iconSize,
+                 System.Action onChoose,
+                 bool isLocked,
+                 string missingRequirements,
+                 Transform tooltipParent)
             {
                 var card = new GameObject(def?.name ?? "Ability", typeof(RectTransform), typeof(Image), typeof(Button));
                 var rt = (RectTransform)card.transform;
                 rt.sizeDelta = new Vector2(iconSize + 56, iconSize + 40);
 
-                var bg = card.GetComponent<Image>(); bg.color = new Color(1, 1, 1, 0.08f);
-                var btn = card.GetComponent<Button>(); btn.onClick.AddListener(() => onChoose?.Invoke());
+                var bg = card.GetComponent<Image>();
+                bg.color = isLocked ? LockedBackgroundTint : new Color(1f, 1f, 1f, 0.08f);
+                var btn = card.GetComponent<Button>();
+                btn.interactable = !isLocked && onChoose != null;
+                if (onChoose != null)
+                {
+                    btn.onClick.AddListener(() => onChoose?.Invoke());
+                }
 
                 // icon
                 var ico = new GameObject("Icon", typeof(RectTransform), typeof(Image));
@@ -262,7 +418,7 @@ List<TacticalAbilityDef> choices)
                 var iconImg = ico.GetComponent<Image>();
                 iconImg.sprite = def?.ViewElementDef?.LargeIcon ?? def?.ViewElementDef?.SmallIcon;
                 iconImg.preserveAspect = true;
-
+                iconImg.color = isLocked ? LockedIconTint : Color.white;
                 // label
                 var lab = new GameObject("Label", typeof(RectTransform), typeof(Text));
                 var lrt = (RectTransform)lab.transform; lrt.SetParent(card.transform, false);
@@ -274,10 +430,229 @@ List<TacticalAbilityDef> choices)
                 txt.alignment = TextAnchor.MiddleCenter;
                 txt.resizeTextForBestFit = true; txt.resizeTextMinSize = 12; txt.resizeTextMaxSize = 18;
                 txt.text = def?.ViewElementDef?.DisplayName1?.Localize() ?? def?.name ?? "Ability";
+                txt.color = isLocked ? LockedLabelTint : Color.white;
+
+                var tooltipTrigger = card.AddComponent<DrillTooltipTrigger>();
+                tooltipTrigger.Initialize(def, missingRequirements, isLocked, tooltipParent);
 
                 return card;
             }
 
+            private static Toggle CreateFilterToggle(Transform parent, string label)
+            {
+                var toggleGO = new GameObject($"{label}Toggle", typeof(RectTransform), typeof(Image), typeof(Toggle));
+                var rect = (RectTransform)toggleGO.transform;
+                rect.SetParent(parent, false);
+                rect.anchorMin = new Vector2(0, 0.5f);
+                rect.anchorMax = new Vector2(1, 0.5f);
+                rect.pivot = new Vector2(0.5f, 0.5f);
+                rect.sizeDelta = new Vector2(0, 36f);
+
+                var image = toggleGO.GetComponent<Image>();
+                image.color = FilterInactiveColor;
+
+                var toggle = toggleGO.GetComponent<Toggle>();
+                toggle.isOn = false;
+                toggle.transition = Selectable.Transition.ColorTint;
+
+                var labelGO = new GameObject("Label", typeof(RectTransform), typeof(Text));
+                var labelRect = (RectTransform)labelGO.transform;
+                labelRect.SetParent(toggleGO.transform, false);
+                labelRect.anchorMin = Vector2.zero;
+                labelRect.anchorMax = Vector2.one;
+                labelRect.offsetMin = Vector2.zero;
+                labelRect.offsetMax = Vector2.zero;
+
+                var text = labelGO.GetComponent<Text>();
+                text.alignment = TextAnchor.MiddleCenter;
+                text.fontSize = 18;
+                text.text = label;
+                text.color = new Color(0.85f, 0.85f, 0.85f, 1f);
+
+                return toggle;
+            }
+
+            private sealed class DrillTooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+            {
+                private TacticalAbilityDef _ability;
+                private bool _isLocked;
+                private string _missingRequirements;
+                private Transform _tooltipParent;
+                private bool _tooltipVisible;
+                private static GeoRosterAbilityDetailTooltip _sharedTooltip;
+                private static Canvas _tooltipCanvas;
+                private static bool _tooltipPrimed;
+
+                private const float TooltipHorizontalOffset = 280f;
+                private const float TooltipVerticalOffset = 80f;
+
+                public void Initialize(TacticalAbilityDef ability, string missingRequirements, bool isLocked, Transform tooltipParent)
+                {
+                    _ability = ability;
+                    _missingRequirements = missingRequirements;
+                    _isLocked = isLocked;
+                    _tooltipParent = tooltipParent;
+                }
+
+                public void OnPointerEnter(PointerEventData eventData)
+                {
+                    ShowTooltip(eventData);
+                }
+
+                public void OnPointerExit(PointerEventData eventData)
+                {
+                    HideTooltip();
+                }
+
+                public void OnPointerMove(PointerEventData eventData)
+                {
+                    if (_tooltipVisible)
+                    {
+                        UpdateTooltipPosition(eventData);
+                    }
+                }
+
+                private void OnDisable()
+                {
+                    HideTooltip();
+                }
+
+                private void ShowTooltip(PointerEventData eventData)
+                {
+                    var tooltip = EnsureTooltip();
+                    var view = _ability?.ViewElementDef;
+                    if (tooltip == null || view == null)
+                    {
+                        return;
+                    }
+
+                    var originalDescription = view.Description;
+                    LocalizedTextBind temporaryDescription = null;
+
+                    if (_isLocked && !string.IsNullOrEmpty(_missingRequirements))
+                    {
+                        string descriptionText = originalDescription?.Localize() ?? string.Empty;
+                        if (!string.IsNullOrEmpty(descriptionText))
+                        {
+                            descriptionText += "\n\n";
+                        }
+
+                        descriptionText += $"<color=#FFA0A0>{_missingRequirements}</color>";
+                        temporaryDescription = new LocalizedTextBind(descriptionText, true);
+                        view.Description = temporaryDescription;
+                    }
+
+                    bool shouldPrime = !_tooltipPrimed;
+                    if (shouldPrime)
+                    {
+                        _tooltipPrimed = true;
+                    }
+
+                    try
+                    {
+                        tooltip.Show((AbilityTrackSlot)null, view, useMutagens: false, cost: 0);
+                        if (shouldPrime)
+                        {
+                            tooltip.Hide();
+                            tooltip.Show((AbilityTrackSlot)null, view, useMutagens: false, cost: 0);
+                        }
+
+                        tooltip.transform.SetAsLastSibling();
+                        UpdateTooltipPosition(eventData);
+                        _tooltipVisible = true;
+                    }
+                    finally
+                    {
+                        if (temporaryDescription != null)
+                        {
+                            view.Description = originalDescription;
+                        }
+                    }
+                }
+
+                private void HideTooltip()
+                {
+                    if (!_tooltipVisible)
+                    {
+                        return;
+                    }
+
+                    var tooltip = EnsureTooltip();
+                    tooltip?.Hide();
+                    _tooltipVisible = false;
+                }
+
+                private void UpdateTooltipPosition(PointerEventData eventData)
+                {
+                    var tooltip = EnsureTooltip();
+                    if (tooltip == null || !tooltip.gameObject.activeInHierarchy)
+                    {
+                        return;
+                    }
+
+                    if (!(tooltip.transform is RectTransform rectTransform))
+                    {
+                        return;
+                    }
+
+                    var canvas = _tooltipCanvas;
+                    if (canvas == null)
+                    {
+                        _tooltipCanvas = tooltip.GetComponentInParent<Canvas>();
+                        canvas = _tooltipCanvas;
+                    }
+
+                    if (canvas == null || !(canvas.transform is RectTransform canvasRect))
+                    {
+                        return;
+                    }
+
+                    var referenceCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+                    if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, eventData.position, referenceCamera, out var localPoint))
+                    {
+                        return;
+                    }
+
+                    localPoint.x += TooltipHorizontalOffset;
+                    localPoint.y += TooltipVerticalOffset;
+                    rectTransform.anchoredPosition = localPoint;
+                }
+
+                private GeoRosterAbilityDetailTooltip EnsureTooltip()
+                {
+                    try
+                    {
+                        if (_sharedTooltip == null)
+                        {
+                            var template = Resources.FindObjectsOfTypeAll<GeoRosterAbilityDetailTooltip>().FirstOrDefault();
+                            if (template == null)
+                            {
+                                return null;
+                            }
+
+                            Transform parent = _tooltipParent != null ? _tooltipParent : template.transform.parent;
+                            var clone = UnityEngine.Object.Instantiate(template.gameObject, parent, worldPositionStays: false);
+                            clone.name = "TFTV_DrillAbilityTooltip";
+                            clone.SetActive(false);
+                            _sharedTooltip = clone.GetComponent<GeoRosterAbilityDetailTooltip>();
+                            _tooltipCanvas = null;
+                        }
+
+                        if (_tooltipParent != null && _sharedTooltip.transform.parent != _tooltipParent)
+                        {
+                            _sharedTooltip.transform.SetParent(_tooltipParent, false);
+                            _tooltipCanvas = null;
+                        }
+
+                        return _sharedTooltip;
+                    }
+                    catch (Exception ex)
+                    {
+                        TFTVLogger.Error(ex);
+                        return null;
+                    }
+                }
+            }
 
 
 

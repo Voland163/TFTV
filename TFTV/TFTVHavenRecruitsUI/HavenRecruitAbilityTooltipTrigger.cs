@@ -147,7 +147,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                 {
                     TFTVLogger.Always($"overlayLeftLocal.x: {overlayLeftLocal.x} anchoredX: {anchoredX}");
                     float pivotOffset = rectTransform.rect.width * (1f - rectTransform.pivot.x);
-                    anchoredX = overlayLeftLocal.x - TooltipHorizontalPadding - pivotOffset;
+                    _ = overlayLeftLocal.x - TooltipHorizontalPadding - pivotOffset;
                 }
             }
         }

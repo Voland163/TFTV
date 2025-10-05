@@ -282,10 +282,18 @@ namespace TFTV
             internal static Sprite _abilityIconBackground;
             internal static UIInventorySlot _mutationSlotTemplate;
 
+            private static readonly HashSet<string> _allowedGeoscapeMapStates = new HashSet<string>(StringComparer.Ordinal)
+            {
+                "UIStateNothingSelected",
+                "UIStateVehicleSelected",
+                "UIStateInitial",
+                "UIStateData"
+            };
             internal static void ResetState()
             {
                 try
                 {
+                    SetOverlayVisible(false);
                     ClearSelection(immediate: true);
 
                     if (_detailPanel != null)
@@ -345,14 +353,14 @@ namespace TFTV
                         isInitialized = true;
                     }
 
-                   /* if (_mutationBound == null)
-                    {
-                        _mutationBound = Helper.CreateSpriteFromImageFile("UI_Frame_Mutationbound.png");
-                    }
-                    if (_iconBackground == null)
-                    {
-                        _iconBackground = Helper.CreateSpriteFromImageFile("UI_Frame_Feathered.png");
-                    }*/
+                    /* if (_mutationBound == null)
+                     {
+                         _mutationBound = Helper.CreateSpriteFromImageFile("UI_Frame_Mutationbound.png");
+                     }
+                     if (_iconBackground == null)
+                     {
+                         _iconBackground = Helper.CreateSpriteFromImageFile("UI_Frame_Feathered.png");
+                     }*/
                     if (_abilityIconBackground == null)
                     {
                         _abilityIconBackground = Helper.CreateSpriteFromImageFile("UI_ButtonFrame_Main_Sliced.png");
@@ -361,17 +369,44 @@ namespace TFTV
 
                     bool show = !_isOverlayVisible;
 
+                    //  EnsureOverlayLayout(force: true);
+
+                    SetOverlayVisible(show);
+
+                }
+                catch (Exception ex) { TFTVLogger.Error(ex); }
+
+            }
+
+            private static void SetOverlayVisible(bool show)
+            {
+                try
+                {
+                    if (overlayPanel == null)
+                    {
+                        _isOverlayVisible = false;
+                        return;
+                    }
+
+                    if (_isOverlayVisible == show)
+                    {
+                        if (show && !overlayPanel.activeSelf)
+                        {
+                            overlayPanel.SetActive(true);
+                        }
+                        return;
+                    }
+
                     EnsureOverlayLayout(force: true);
 
-                    HavenRecruitsOverlayObjectivesHider.SetObjectivesHiddenForRecruitsOverlay(GameUtl.CurrentLevel().GetComponent<GeoLevelController>()?.View, show);
+                    var geoLevelController = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                    HavenRecruitsOverlayObjectivesHider.SetObjectivesHiddenForRecruitsOverlay(geoLevelController?.View, show);
 
 
                     if (!show)
                     {
                         ClearSelection(immediate: false);
                     }
-
-
 
                     if (show && !overlayPanel.activeSelf)
                     {
@@ -381,7 +416,7 @@ namespace TFTV
                     if (show)
                     {
                         ApplySortMode(SortMode.Level, refresh: false);
-                        RefreshColumns(); // repopulate each time it opens
+                        RefreshColumns();
                     }
 
                     _isOverlayVisible = show;
@@ -396,12 +431,9 @@ namespace TFTV
                             }
                         });
                     }
-                    else
+                    else if(!show)
                     {
-                        if (!show)
-                        {
-                            overlayPanel.SetActive(false);
-                        }
+                        overlayPanel.SetActive(false);
                     }
                 }
                 catch (Exception ex) { TFTVLogger.Error(ex); }
@@ -493,6 +525,7 @@ namespace TFTV
                     _overlayAnimator = overlayPanel.AddComponent<OverlayAnimator>();
                     _overlayAnimator.Initialize(rt, resolvedWidth: overlayPixels);
                     overlayPanel.AddComponent<ScreenSizeWatcher>();
+                    overlayPanel.AddComponent<OverlayStateWatcher>();
                     _isOverlayVisible = false;
 
 
@@ -946,8 +979,45 @@ namespace TFTV
                 EnsureOverlayLayout(force: true);
             }
 
+            private static bool IsActiveStateAllowed(object activeState)
+            {
+                if (activeState == null)
+                {
+                    return false;
+                }
 
+                string typeName = activeState.GetType()?.Name;
+                if (string.IsNullOrEmpty(typeName))
+                {
+                    return false;
+                }
 
+                return _allowedGeoscapeMapStates.Contains(typeName);
+            }
+            internal sealed class OverlayStateWatcher : MonoBehaviour
+            {
+                private void Update()
+                {
+                    try
+                    {
+                        if (!_isOverlayVisible)
+                        {
+                            return;
+                        }
+
+                        var activeState = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()?.View?.CurrentViewState;
+                       // TFTVLogger.Always($"[RecruitsOverlay] CurrentViewState state: {activeState?.GetType().Name}");
+                        if (!IsActiveStateAllowed(activeState))
+                        {
+                            SetOverlayVisible(false);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        TFTVLogger.Error(ex);
+                    }
+                }
+            }
             internal sealed class ScreenSizeWatcher : MonoBehaviour
             {
                 private int _lastWidth;

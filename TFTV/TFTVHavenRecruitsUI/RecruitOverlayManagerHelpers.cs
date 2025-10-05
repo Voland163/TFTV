@@ -17,6 +17,8 @@ namespace TFTV
 
     internal static class RecruitOverlayManagerHelpers
     {
+        private const float TooltipHorizontalPadding = 290f;
+        private const float TooltipVerticalPadding = 80f;
         private const float MutationIconOverlayScale = 1.5f;
         internal static void ClearTransformChildren(Transform transform)
         {
@@ -143,7 +145,7 @@ namespace TFTV
                     GeoItem geoItem = slot.Item as GeoItem;
                     TFTVLogger.Always($"geoItem: {geoItem?.ItemDef?.name}");
 
-                    var forwarder = slotGO.GetComponent<MutationSlotTooltipForwarder>() ?? slotGO.AddComponent<MutationSlotTooltipForwarder>();
+                    var forwarder = slotGO.GetComponent<TacticalItemSlotTooltipForwarder>() ?? slotGO.AddComponent<TacticalItemSlotTooltipForwarder>();
                     
 
                     forwarder.Initialize(slot, geoItem, tooltip);
@@ -158,7 +160,7 @@ namespace TFTV
             }
         }
 
-        private class MutationSlotTooltipForwarder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+        private class TacticalItemSlotTooltipForwarder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         {
             private UIInventorySlot _slot;
             private UIGeoItemTooltip _tooltip;
@@ -182,7 +184,7 @@ namespace TFTV
                         TFTVLogger.Always($"got here for item {_item.ItemDef.name}");
 
                         _tooltip.ShowStats(_item, _slot.transform);
-                        PositionTooltip();
+                        PositionTooltip(eventData);
                     }
 
                 }
@@ -217,7 +219,7 @@ namespace TFTV
                 }
             }
 
-            private void PositionTooltip()
+            private void PositionTooltip(PointerEventData eventData)
             {
                 try
                 {
@@ -227,49 +229,10 @@ namespace TFTV
                     }
 
                     var tooltipRect = _tooltip.transform as RectTransform;
-                    if (tooltipRect == null)
-                    {
-                        return;
-                    }
 
-                    var abilityTooltip = HavenRecruitsMain.OverlayAbilityTooltip;
-                    if (abilityTooltip != null)
-                    {
-                        var abilityRect = abilityTooltip.transform as RectTransform;
-                        if (abilityRect != null)
-                        {
-                            if (tooltipRect.parent != abilityRect.parent)
-                            {
-                                tooltipRect.SetParent(abilityRect.parent, worldPositionStays: false);
-                            }
+                    tooltipRect.anchoredPosition = new Vector2(-550, -600);
 
-                            tooltipRect.anchorMin = abilityRect.anchorMin;
-                            tooltipRect.anchorMax = abilityRect.anchorMax;
-                            tooltipRect.pivot = abilityRect.pivot;
-                            tooltipRect.sizeDelta = abilityRect.sizeDelta;
-                            tooltipRect.localScale = abilityRect.localScale;
-                            tooltipRect.localRotation = abilityRect.localRotation;
-                            tooltipRect.anchoredPosition = abilityRect.anchoredPosition;
-                            tooltipRect.SetAsLastSibling();
-                            return;
-                        }
-                    }
-
-                  
-                        var overlayRect = HavenRecruitsMain.OverlayRootRect;
-                    if (overlayRect != null)
-                    {
-                        if (tooltipRect.parent != overlayRect)
-                        {
-                       
-                            tooltipRect.SetParent(overlayRect, false);
-                        }
-
-                        tooltipRect.anchorMin = new Vector2(0f, 1f);
-                        tooltipRect.anchorMax = new Vector2(0f, 1f);
-                        tooltipRect.pivot = new Vector2(0f, 1f);
-                        tooltipRect.anchoredPosition = Vector2.zero;
-                    }
+                
                 }
                 catch (Exception ex)
                 {
