@@ -8,6 +8,7 @@ using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using TFTV.TFTVHavenRecruitsUI;
 using UnityEngine;
 using UnityEngine.UI;
@@ -27,8 +28,7 @@ namespace TFTV
         internal static GameObject _detailEmptyState;
         internal static Transform _detailInfoRoot;
         internal static Image _detailClassIconImage;
-        internal static Text _detailLevelLabel;
-        internal static Text _detailNameLabel;
+        internal static Text _detailLevelNameLabel;
         internal static Image _detailFactionIconImage;
         internal static Text _detailHavenLabel;
         internal static GameObject _detailAbilitySection;
@@ -45,8 +45,21 @@ namespace TFTV
         internal static Image _detailFactionLogoImage;
 
         private const string StatPlaceholder = "--";
-        private static readonly string[] DefaultStatOrder =
+        private static readonly Dictionary<string, Sprite> _statIconCache = new Dictionary<string, Sprite>(StringComparer.OrdinalIgnoreCase);
+        private static readonly Color StatPositiveColor = new Color(0.3137f, 0.7843f, 0.3921f);
+        private static readonly Color StatNegativeColor = new Color(0.8627f, 0.3529f, 0.3529f);
+        private static readonly string BaseColorHex = ColorUtility.ToHtmlStringRGB(DetailSubTextColor);
+        private static readonly Dictionary<string, string[]> StatPropertyNames = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
         {
+            ["Strength"] = new[] { "Strength", "Endurance" },
+            ["Willpower"] = new[] { "Willpower" },
+            ["Speed"] = new[] { "Speed" },
+            ["Perception"] = new[] { "Perception" },
+            ["Accuracy"] = new[] { "Accuracy" },
+            ["Stealth"] = new[] { "Stealth" }
+        };
+        private static readonly string[] DefaultStatOrder =
+       {
             "Strength",
             "Willpower",
             "Speed",
@@ -54,7 +67,6 @@ namespace TFTV
             "Accuracy",
             "Stealth"
         };
-
         internal readonly struct StatCell
         {
             public StatCell(Image icon, Text value)
@@ -221,7 +233,7 @@ namespace TFTV
 
                 var (classInfoGO, _) = RecruitOverlayManagerHelpers.NewUI("ClassInfo", infoRootGO.transform);
                 var classInfoLayout = classInfoGO.AddComponent<HorizontalLayoutGroup>();
-                classInfoLayout.childAlignment = TextAnchor.UpperCenter;
+                classInfoLayout.childAlignment = TextAnchor.MiddleLeft;
                 classInfoLayout.spacing = 6f;
                 classInfoLayout.childControlWidth = true;
                 classInfoLayout.childControlHeight = false;
@@ -240,26 +252,12 @@ namespace TFTV
                 classIconLE.minHeight = DetailClassIconSize;
                 classIconRT.sizeDelta = new Vector2(DetailClassIconSize, DetailClassIconSize);
 
-                var (classTextStackGO, _) = RecruitOverlayManagerHelpers.NewUI("ClassTextStack", classInfoGO.transform);
-                var classTextLayout = classTextStackGO.AddComponent<VerticalLayoutGroup>();
-                classTextLayout.childAlignment = TextAnchor.MiddleCenter;
-                classTextLayout.spacing = 2f;
-                classTextLayout.childControlWidth = false;
-                classTextLayout.childControlHeight = false;
-                classTextLayout.childForceExpandWidth = false;
-                classTextLayout.childForceExpandHeight = false;
-
-            
-                _detailLevelLabel = CreateDetailText(classTextStackGO.transform, "Level", TextFontSize + 4, Color.white, TextAnchor.MiddleCenter);
-                _detailLevelLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
-                _detailLevelLabel.text = StatPlaceholder;
-
-                _detailNameLabel = CreateDetailText(classTextStackGO.transform, "Name", TextFontSize + 6, Color.white, TextAnchor.MiddleCenter);
-                _detailNameLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
-             //   _detailNameLabel.text = string.Empty;
-                var nameLabelLE = _detailNameLabel.gameObject.AddComponent<LayoutElement>();
-                nameLabelLE.minWidth = 0f;
-                nameLabelLE.flexibleWidth = 1f;
+                _detailLevelNameLabel = CreateDetailText(classInfoGO.transform, "LevelName", TextFontSize + 6, Color.white, TextAnchor.MiddleLeft);
+                _detailLevelNameLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
+                _detailLevelNameLabel.text = StatPlaceholder;
+                var levelNameLE = _detailLevelNameLabel.gameObject.AddComponent<LayoutElement>();
+                levelNameLE.minWidth = 0f;
+                levelNameLE.flexibleWidth = 1f;
 
                 var (costGO, _) = RecruitOverlayManagerHelpers.NewUI("CostRow", infoRootGO.transform);
                 var costLayout = costGO.AddComponent<HorizontalLayoutGroup>();
@@ -449,14 +447,10 @@ namespace TFTV
                     _detailClassIconImage.enabled = false;
                 }
 
-                if (_detailLevelLabel != null)
+                if (_detailLevelNameLabel != null)
                 {
-                    _detailLevelLabel.text = StatPlaceholder;
-                }
 
-                if (_detailNameLabel != null)
-                {
-                    _detailNameLabel.text = string.Empty;
+                    _detailLevelNameLabel.text = StatPlaceholder;
                 }
 
                 PopulateStats(null);
@@ -552,9 +546,404 @@ namespace TFTV
 
             if (recruit == null)
             {
+                RefreshStatsLayout();
                 return;
             }
+            try
+            {
+                var stats = recruit.GetStats();
+                if (stats == null)
+                {
+                    RefreshStatsLayout();
+                    return;
+                }
 
+                foreach (var statName in DefaultStatOrder)
+                {
+                    if (!_detailStatCells.TryGetValue(statName, out var cell))
+                    {
+                        continue;
+                    }
+
+                    var statObject = GetStatObject(stats, statName);
+                    if (statObject == null)
+                    {
+                        continue;
+                    }
+
+                    var (baseValue, modifiedValue) = GetStatValues(statObject);
+                    Sprite icon = GetStatIcon(statName, statObject);
+
+                    if (cell.Icon != null)
+                    {
+                        cell.Icon.sprite = icon;
+                        cell.Icon.enabled = icon != null;
+                    }
+
+                    if (cell.Value != null)
+                    {
+                        string formatted = FormatStatValue(baseValue, modifiedValue);
+                        cell.Value.text = string.IsNullOrEmpty(formatted) ? StatPlaceholder : formatted;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+            }
+
+            RefreshStatsLayout();
+        }
+
+        private static void RefreshStatsLayout()
+        {
+            if (_detailStatsGridRoot is RectTransform statsRect)
+            {
+                LayoutRebuilder.ForceRebuildLayoutImmediate(statsRect);
+            }
+        }
+
+        private static object GetStatObject(object stats, string statName)
+        {
+            if (stats == null || string.IsNullOrEmpty(statName))
+            {
+                return null;
+            }
+
+            if (StatPropertyNames.TryGetValue(statName, out var candidates))
+            {
+                foreach (var candidate in candidates)
+                {
+                    var value = GetMemberValue(stats, candidate);
+                    if (value != null)
+                    {
+                        return value;
+                    }
+                }
+            }
+
+            var direct = GetMemberValue(stats, statName);
+            if (direct != null)
+            {
+                return direct;
+            }
+
+            object methodResult = InvokeStatAccessor(stats, "GetStat", statName);
+            if (methodResult != null)
+            {
+                return methodResult;
+            }
+
+            methodResult = InvokeStatAccessor(stats, "GetAttribute", statName);
+            if (methodResult != null)
+            {
+                return methodResult;
+            }
+
+            return null;
+        }
+
+        private static object InvokeStatAccessor(object stats, string methodName, string statName)
+        {
+            if (stats == null)
+            {
+                return null;
+            }
+
+            var methods = stats.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .Where(m => string.Equals(m.Name, methodName, StringComparison.Ordinal) && m.GetParameters().Length == 1);
+
+            foreach (var method in methods)
+            {
+                try
+                {
+                    var parameter = method.GetParameters()[0];
+                    object argument = null;
+
+                    if (parameter.ParameterType == typeof(string))
+                    {
+                        argument = statName;
+                    }
+                    else if (parameter.ParameterType.IsEnum)
+                    {
+                        if (TryParseEnum(parameter.ParameterType, statName, out var enumValue))
+                        {
+                            argument = enumValue;
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    var result = method.Invoke(stats, new[] { argument });
+                    if (result != null)
+                    {
+                        return result;
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+            return null;
+        }
+
+        private static bool TryParseEnum(Type enumType, string value, out object parsed)
+        {
+            parsed = null;
+            if (enumType == null || string.IsNullOrEmpty(value) || !enumType.IsEnum)
+            {
+                return false;
+            }
+
+            try
+            {
+                parsed = Enum.Parse(enumType, value, true);
+                return true;
+            }
+            catch
+            {
+            }
+
+            if (StatPropertyNames.TryGetValue(value, out var synonyms))
+            {
+                foreach (var synonym in synonyms)
+                {
+                    try
+                    {
+                        parsed = Enum.Parse(enumType, synonym, true);
+                        return true;
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static object GetMemberValue(object target, string memberName)
+        {
+            if (target == null || string.IsNullOrEmpty(memberName))
+            {
+                return null;
+            }
+
+            var type = target.GetType();
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+            try
+            {
+                var prop = type.GetProperty(memberName, flags);
+                if (prop != null)
+                {
+                    return prop.GetValue(target);
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                var field = type.GetField(memberName, flags);
+                if (field != null)
+                {
+                    return field.GetValue(target);
+                }
+            }
+            catch
+            {
+            }
+
+            return null;
+        }
+
+        private static (float? BaseValue, float? ModifiedValue) GetStatValues(object statObject)
+        {
+            if (statObject == null)
+            {
+                return (null, null);
+            }
+
+            object valueContainer = GetMemberValue(statObject, "Value") ?? statObject;
+
+            float? baseValue = TryExtractValue(valueContainer, statObject, new[]
+            {
+                "BaseValue", "BaseValueInt", "BaseValueFloat", "Base", "BaseAmount"
+            });
+
+            float? modifiedValue = TryExtractValue(valueContainer, statObject, new[]
+            {
+                "ModifiedValue", "ModifiedValueInt", "ModifiedValueFloat", "MutatedValue", "MutatedValueInt", "MutatedValueFloat",
+                "Value", "ValueInt", "ValueFloat", "CurrentValue", "EffectiveValue", "FinalValue", "ResultValue", "TotalValue"
+            });
+
+            if (!baseValue.HasValue)
+            {
+                baseValue = modifiedValue;
+            }
+
+            if (!modifiedValue.HasValue)
+            {
+                modifiedValue = baseValue;
+            }
+
+            return (baseValue, modifiedValue);
+        }
+
+        private static float? TryExtractValue(object primary, object fallback, IEnumerable<string> memberNames)
+        {
+            foreach (var member in memberNames)
+            {
+                var value = TryConvertToFloat(GetMemberValue(primary, member));
+                if (!value.HasValue)
+                {
+                    value = TryConvertToFloat(GetMemberValue(fallback, member));
+                }
+
+                if (value.HasValue)
+                {
+                    return value;
+                }
+            }
+
+            return null;
+        }
+
+        private static float? TryConvertToFloat(object value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            switch (value)
+            {
+                case float f:
+                    return f;
+                case double d:
+                    return (float)d;
+                case int i:
+                    return i;
+                case long l:
+                    return l;
+                case short s:
+                    return s;
+                case byte b:
+                    return b;
+                case decimal m:
+                    return (float)m;
+                default:
+                    if (float.TryParse(value.ToString(), out float parsed))
+                    {
+                        return parsed;
+                    }
+                    break;
+            }
+
+            return null;
+        }
+
+        private static Sprite GetStatIcon(string statName, object statObject)
+        {
+            if (string.IsNullOrEmpty(statName))
+            {
+                return null;
+            }
+
+            if (_statIconCache.TryGetValue(statName, out var cached) && cached != null)
+            {
+                return cached;
+            }
+
+            Sprite icon = null;
+
+            object statDef = GetMemberValue(statObject, "StatDef") ?? GetMemberValue(statObject, "StatDefinition");
+            object viewElement = GetMemberValue(statObject, "ViewElementDef") ?? GetMemberValue(statDef, "ViewElementDef");
+
+            if (viewElement is ViewElementDef ved)
+            {
+                icon = ved.SmallIcon ?? ved.InventoryIcon ?? ved.LargeIcon ?? ved.RosterIcon;
+            }
+
+            if (icon == null)
+            {
+                icon = GetMemberValue(statObject, "Icon") as Sprite;
+            }
+
+            if (icon != null)
+            {
+                _statIconCache[statName] = icon;
+            }
+
+            return icon;
+        }
+
+        private static string FormatStatValue(float? baseValue, float? modifiedValue)
+        {
+            if (!baseValue.HasValue && !modifiedValue.HasValue)
+            {
+                return null;
+            }
+
+            if (!baseValue.HasValue || !modifiedValue.HasValue)
+            {
+                float value = modifiedValue ?? baseValue ?? 0f;
+                return FormatColoredValue(value, modifiedValue, baseValue);
+            }
+
+            if (IsApproximatelyEqual(baseValue.Value, modifiedValue.Value))
+            {
+                return $"<color=#{BaseColorHex}>{FormatNumber(baseValue.Value)}</color>";
+            }
+
+            Color modColor = modifiedValue.Value >= baseValue.Value ? StatPositiveColor : StatNegativeColor;
+            string modHex = ColorUtility.ToHtmlStringRGB(modColor);
+
+            return $"<color=#{BaseColorHex}>{FormatNumber(baseValue.Value)}</color> / <color=#{modHex}>{FormatNumber(modifiedValue.Value)}</color>";
+        }
+
+        private static string FormatColoredValue(float value, float? modifiedValue, float? baseValue)
+        {
+            bool hasBase = baseValue.HasValue;
+            bool hasModified = modifiedValue.HasValue;
+
+            if (hasBase && hasModified && !IsApproximatelyEqual(baseValue.Value, modifiedValue.Value))
+            {
+                Color diffColor = modifiedValue.Value >= baseValue.Value ? StatPositiveColor : StatNegativeColor;
+                string diffHex = ColorUtility.ToHtmlStringRGB(diffColor);
+                return $"<color=#{diffHex}>{FormatNumber(modifiedValue.Value)}</color>";
+            }
+
+            if (hasBase)
+            {
+                return $"<color=#{BaseColorHex}>{FormatNumber(baseValue.Value)}</color>";
+            }
+
+            return FormatNumber(value);
+        }
+
+        private static string FormatNumber(float value)
+        {
+            if (Mathf.Approximately(value, Mathf.Round(value)))
+            {
+                return Mathf.RoundToInt(value).ToString();
+            }
+
+            return value.ToString("0.##");
+        }
+
+        private static bool IsApproximatelyEqual(float a, float b)
+        {
+            return Mathf.Abs(a - b) <= 0.01f;
             // Placeholder implementation until detailed stat data is wired up.
         }
 
@@ -724,14 +1113,11 @@ namespace TFTV
                     _detailClassIconImage.enabled = classIcon != null;
                 }
 
-                if (_detailLevelLabel != null)
+                if (_detailLevelNameLabel != null)
                 {
-                    _detailLevelLabel.text = $"{data.Recruit.Level}";
-                }
-
-                if (_detailNameLabel != null)
-                {
-                    _detailNameLabel.text = data.Recruit.GetName();
+                    var className = HavenRecruitsUtils.GetClassName(data.Recruit);
+                    var recruitName = data.Recruit.GetName();
+                    _detailLevelNameLabel.text = $"{data.Recruit.Level} {className} {recruitName}";
                 }
 
                 PopulateArmorSlots(data.Recruit);

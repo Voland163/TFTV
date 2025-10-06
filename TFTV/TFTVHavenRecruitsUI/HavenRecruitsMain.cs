@@ -317,11 +317,11 @@ namespace TFTV
                     _isDetailVisible = false;
                     _currentSelectedCard = null;
                     _detailClassIconImage = null;
-                    _detailLevelLabel = null;
+
                     _selectedRecruit = null;
                     _detailEmptyState = null;
                     _detailInfoRoot = null;
-                    _detailNameLabel = null;
+
                     _detailFactionIconImage = null;
                     _detailHavenLabel = null;                
                     _detailCostRoot = null;
