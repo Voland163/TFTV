@@ -173,6 +173,58 @@ namespace TFTV.TFTVHavenRecruitsUI
             }
 
         }
+
+        internal static IEnumerable<AbilityIconData> GetClassAbilityIcons(GeoUnitDescriptor recruit)
+        {
+            if (recruit?.Progression?.MainSpecDef?.AbilityTrack?.AbilitiesByLevel == null)
+            {
+                yield break;
+            }
+
+            foreach (var slot in recruit.Progression.MainSpecDef.AbilityTrack.AbilitiesByLevel)
+            {
+                if (slot == null)
+                {
+                    continue;
+                }
+
+                var data = new AbilityIconData(slot);
+                if (data.Icon != null)
+                {
+                    yield return data;
+                }
+            }
+        }
+
+        internal static IEnumerable<AbilityIconData> GetPersonalAbilityIcons(GeoUnitDescriptor recruit)
+        {
+            if (recruit == null)
+            {
+                yield break;
+            }
+
+            var track = recruit.GetPersonalAbilityTrack();
+            var slots = track?.AbilitiesByLevel;
+            if (slots == null)
+            {
+                yield break;
+            }
+
+            foreach (var slot in slots)
+            {
+                if (slot == null)
+                {
+                    continue;
+                }
+
+                var data = new AbilityIconData(slot);
+                if (data.Icon != null)
+                {
+                    yield return data;
+                }
+            }
+        }
+
         private static Func<AbilityTrackSlot, int> CreateSkillPointCostGetter()
         {
             try

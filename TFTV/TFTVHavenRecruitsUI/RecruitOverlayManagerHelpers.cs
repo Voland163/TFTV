@@ -1,4 +1,5 @@
-﻿using PhoenixPoint.Common.View.ViewControllers.Inventory;
+﻿using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.View.ViewControllers.Inventory;
 using System;
@@ -160,6 +161,54 @@ namespace TFTV
             }
         }
 
+        internal static UIInventorySlot MakeInventorySlot(Transform parent, ItemDef item, int size, string namePrefix)
+        {
+            try
+            {
+                if (parent == null || item == null)
+                {
+                    return null;
+                }
+
+                UIInventorySlot template = EnsureMutationSlotTemplate(parent);
+                if (template == null)
+                {
+                    return null;
+                }
+
+                GameObject slotGO = Object.Instantiate(template.gameObject, parent, worldPositionStays: false);
+                slotGO.name = $"{namePrefix}_{item.name}";
+                slotGO.SetActive(true);
+
+                UIInventorySlot slot = slotGO.GetComponent<UIInventorySlot>();
+                if (slot == null)
+                {
+                    Object.Destroy(slotGO);
+                    return null;
+                }
+
+                PrepareSlotForDisplay(slot, size);
+
+                GeoItem geoItem = new GeoItem(item);
+                slot.Item = geoItem;
+
+                var tooltip = EnsureOverlayItemTooltip();
+                if (tooltip != null)
+                {
+                    ResetSlotHandlers(slot);
+
+                    var forwarder = slotGO.GetComponent<TacticalItemSlotTooltipForwarder>() ?? slotGO.AddComponent<TacticalItemSlotTooltipForwarder>();
+                    forwarder.Initialize(slot, geoItem, tooltip);
+                }
+
+                return slot;
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+                return null;
+            }
+        }
         private class TacticalItemSlotTooltipForwarder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         {
             private UIInventorySlot _slot;
