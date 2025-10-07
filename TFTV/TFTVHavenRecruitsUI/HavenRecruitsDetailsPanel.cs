@@ -24,6 +24,7 @@ namespace TFTV
         internal const float DetailClassIconSize = 48f;
         internal const float DetailFactionIconSize = 36f;
 
+        internal static Text _detailFactionNameLabel;
         internal static GameObject _detailPanel;
         internal static GameObject _detailEmptyState;
         internal static Transform _detailInfoRoot;
@@ -179,12 +180,12 @@ namespace TFTV
                 var (contentGO, contentRT) = RecruitOverlayManagerHelpers.NewUI("Content", _detailPanel.transform);
                 contentRT.anchorMin = new Vector2(0f, 0f);
                 contentRT.anchorMax = new Vector2(1f, 0.94f);
-                contentRT.offsetMin = new Vector2(24f, 24f);
-                contentRT.offsetMax = new Vector2(-24f, -24f);
+                contentRT.offsetMin = new Vector2(24f, 12f);
+                contentRT.offsetMax = new Vector2(-24f, -12f);
 
                 var layout = contentGO.AddComponent<VerticalLayoutGroup>();
                 layout.childAlignment = TextAnchor.UpperLeft;
-                layout.spacing = 12f;
+                layout.spacing = 8f;
                 layout.childControlWidth = true;
                 layout.childControlHeight = false;
                 layout.childForceExpandWidth = true;
@@ -195,7 +196,7 @@ namespace TFTV
                 var (infoRootGO, _) = RecruitOverlayManagerHelpers.NewUI("InfoRoot", contentGO.transform);
                 var infoLayout = infoRootGO.AddComponent<VerticalLayoutGroup>();
                 infoLayout.childAlignment = TextAnchor.UpperLeft;
-                infoLayout.spacing = 8f;
+                infoLayout.spacing = 6f;
                 infoLayout.childControlWidth = true;
                 infoLayout.childControlHeight = false;
                 infoLayout.childForceExpandWidth = true;
@@ -207,7 +208,7 @@ namespace TFTV
                 var (factionHeaderGO, _) = RecruitOverlayManagerHelpers.NewUI("FactionHeader", infoRootGO.transform);
                 var factionHeaderLayout = factionHeaderGO.AddComponent<HorizontalLayoutGroup>();
                 factionHeaderLayout.childAlignment = TextAnchor.UpperLeft;
-                factionHeaderLayout.spacing = 4f;
+                factionHeaderLayout.spacing = 8f;
                 factionHeaderLayout.childControlWidth = false;
                 factionHeaderLayout.childControlHeight = false;
                 factionHeaderLayout.childForceExpandWidth = false;
@@ -225,7 +226,25 @@ namespace TFTV
                 factionIconLE.minHeight = DetailFactionIconSize;
                 factionIconRT.sizeDelta = new Vector2(DetailFactionIconSize, DetailFactionIconSize);
 
-                _detailHavenLabel = CreateDetailText(factionHeaderGO.transform, "HavenName", TextFontSize + 2, Color.white, TextAnchor.MiddleLeft);
+                var (factionTextContainerGO, _) = RecruitOverlayManagerHelpers.NewUI("FactionTextContainer", factionHeaderGO.transform);
+                var factionTextLayout = factionTextContainerGO.AddComponent<VerticalLayoutGroup>();
+                factionTextLayout.childAlignment = TextAnchor.UpperLeft;
+                factionTextLayout.spacing = 0f;
+                factionTextLayout.childControlWidth = true;
+                factionTextLayout.childControlHeight = false;
+                factionTextLayout.childForceExpandWidth = false;
+                factionTextLayout.childForceExpandHeight = false;
+                var factionTextLE = factionTextContainerGO.AddComponent<LayoutElement>();
+                factionTextLE.minWidth = 0f;
+                factionTextLE.flexibleWidth = 1f;
+
+                _detailFactionNameLabel = CreateDetailText(factionTextContainerGO.transform, "FactionName", TextFontSize + 2, DetailSubTextColor, TextAnchor.MiddleLeft);
+                _detailFactionNameLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
+                var factionNameLE = _detailFactionNameLabel.gameObject.AddComponent<LayoutElement>();
+                factionNameLE.minWidth = 0f;
+                factionNameLE.flexibleWidth = 1f;
+
+                _detailHavenLabel = CreateDetailText(factionTextContainerGO.transform, "HavenName", TextFontSize + 2, Color.white, TextAnchor.MiddleLeft);
                 _detailHavenLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
                 var havenLabelLE = _detailHavenLabel.gameObject.AddComponent<LayoutElement>();
                 havenLabelLE.minWidth = 0f;
@@ -233,8 +252,8 @@ namespace TFTV
 
                 var (classInfoGO, _) = RecruitOverlayManagerHelpers.NewUI("ClassInfo", infoRootGO.transform);
                 var classInfoLayout = classInfoGO.AddComponent<HorizontalLayoutGroup>();
-                classInfoLayout.childAlignment = TextAnchor.MiddleCenter;
-                classInfoLayout.spacing = 0f;
+                classInfoLayout.childAlignment = TextAnchor.MiddleLeft;
+                classInfoLayout.spacing = 8f;
                 classInfoLayout.childControlWidth = false;
                 classInfoLayout.childControlHeight = false;
                 classInfoLayout.childForceExpandWidth = false;
@@ -340,8 +359,8 @@ namespace TFTV
 
                 var (abilitiesGO, _) = RecruitOverlayManagerHelpers.NewUI("AbilitySection", infoRootGO.transform);
                 var abilityLayout = abilitiesGO.AddComponent<VerticalLayoutGroup>();
-                abilityLayout.childAlignment = TextAnchor.MiddleCenter;
-                abilityLayout.spacing = 6f;
+                abilityLayout.childAlignment = TextAnchor.UpperCenter;
+                abilityLayout.spacing = 4f;
                 abilityLayout.childControlWidth = false;
                 abilityLayout.childControlHeight = false;
                 abilityLayout.childForceExpandWidth = false;
@@ -421,6 +440,12 @@ namespace TFTV
             var value = CreateDetailText(cellGO.transform, $"{sanitized}Value", TextFontSize + 2, Color.white, TextAnchor.MiddleCenter);
             value.text = StatPlaceholder;
 
+            var valueRect = value.rectTransform;
+            valueRect.anchorMin = new Vector2(0f, 0.5f);
+            valueRect.anchorMax = new Vector2(1f, 0.5f);
+            valueRect.offsetMin = Vector2.zero;
+            valueRect.offsetMax = Vector2.zero;
+
             return new StatCell(icon, value);
         }
 
@@ -470,6 +495,12 @@ namespace TFTV
 
                     _detailLevelNameLabel.text = StatPlaceholder;
                 }
+
+                if (_detailFactionNameLabel != null)
+                {
+                    _detailFactionNameLabel.text = string.Empty;
+                }
+
 
                 PopulateStats(null);
                 PopulateArmorSlots(null);
@@ -543,6 +574,10 @@ namespace TFTV
             if (_detailHavenLabel != null)
             {
                 _detailHavenLabel.color = Color.white;
+            }
+            if (_detailFactionNameLabel != null)
+            {
+                _detailFactionNameLabel.color = DetailSubTextColor;
             }
         }
 
@@ -1084,7 +1119,8 @@ namespace TFTV
                         continue;
                     }
 
-                    var trigger = iconImage.gameObject.AddComponent<HavenRecruitAbilityTooltipTrigger>();
+                    var triggerTarget = iconImage.transform?.parent != null ? iconImage.transform.parent.gameObject : iconImage.gameObject;
+                    var trigger = triggerTarget.AddComponent<HavenRecruitAbilityTooltipTrigger>();
                     trigger.Initialize(ability);
                     hasAny = true;
                 }
@@ -1108,7 +1144,10 @@ namespace TFTV
                 _detailInfoRoot?.gameObject.SetActive(true);
 
                 UpdateDetailPanelFactionVisuals(data);
-
+                if (_detailFactionNameLabel != null)
+                {
+                    _detailFactionNameLabel.text = GetFactionDisplayName(data?.HavenOwner);
+                }
                 if (_detailHavenLabel != null)
                 {
                     string location = data.Site?.LocalizedSiteName;
@@ -1219,8 +1258,37 @@ namespace TFTV
                 {
                     _detailHavenLabel.color = factionSprite != null ? factionColorFull : Color.white;
                 }
+
+                if (_detailFactionNameLabel != null)
+                {
+                    _detailFactionNameLabel.color = factionSprite != null ? factionColorFull : DetailSubTextColor;
+                }
             }
             catch (Exception ex) { TFTVLogger.Error(ex); }
+        }
+
+        private static string GetFactionDisplayName(GeoFaction faction)
+        {
+            try
+            {
+                if (faction == null)
+                {
+                    return string.Empty;
+                }
+
+                string localized = faction.PPFactionDef.GetName();
+                if (!string.IsNullOrWhiteSpace(localized))
+                {
+                    return localized;
+                }
+
+                return string.Empty;
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+                return string.Empty;
+            }
         }
 
         internal static bool TryGetFactionFilter(GeoFaction faction, out FactionFilter filter)

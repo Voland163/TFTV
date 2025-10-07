@@ -38,6 +38,12 @@ namespace TFTV
         {
             // Frame with RectTransform + LayoutElement fixes size for layout
             var (frame, frt) = NewUI(backgroundSprite != null ? "IconFrameAbility" : "IconFrame", parent);
+            var frameImage = frame.AddComponent<Image>();
+            frameImage.sprite = null;
+            frameImage.color = new Color(1f, 1f, 1f, 0f);
+            frameImage.raycastTarget = true;
+            frameImage.type = Image.Type.Simple;
+
             var le = frame.AddComponent<LayoutElement>();
             le.preferredWidth = px; le.minWidth = px;
             le.preferredHeight = px; le.minHeight = px;
