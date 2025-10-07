@@ -51,6 +51,8 @@ namespace TFTV
         // width (as fraction of screen width) used by the 3-column area
         internal const float ColumnsWidthPercent = 0.25f;  // baseline fraction used for overlay width
         internal const float OverlayMinWidthPx = 650f;
+        internal const float DetailPanelWidthPercent = 0.15f; // narrower detail panel on the left
+        internal const float DetailPanelMinWidthPx = 480f;
         internal const float OverlayMaxWidthFraction = 0.98f;
 
         internal const float OverlayTopMargin = 0.06f;
@@ -87,10 +89,12 @@ namespace TFTV
             public GeoFaction HavenOwner;
         }
 
-        internal static float GetOverlayWidthFraction(out float resolvedPixelWidth)
+        internal static float GetOverlayWidthFraction(out float resolvedPixelWidth, float? preferredFraction = null, float? preferredMinWidthPx = null)
         {
             float screenWidth = Mathf.Max(1f, Screen.width);
-            float fraction = Mathf.Max(ColumnsWidthPercent, OverlayMinWidthPx / screenWidth);
+            float baseFraction = preferredFraction ?? ColumnsWidthPercent;
+            float minWidthPx = preferredMinWidthPx ?? OverlayMinWidthPx;
+            float fraction = Mathf.Max(baseFraction, minWidthPx / screenWidth);
             fraction = Mathf.Min(fraction, OverlayMaxWidthFraction);
             resolvedPixelWidth = fraction * screenWidth;
             return fraction;
@@ -322,10 +326,9 @@ namespace TFTV
                     _detailEmptyState = null;
                     _detailInfoRoot = null;
 
-                    _detailFactionIconImage = null;
-                    _detailHavenLabel = null;                
+                    _detailFactionIconImage = null;              
                     _detailCostRoot = null;
-                    _detailFactionLogoImage = null;
+                   
                     if (_mutationSlotTemplate != null)
                     {
                         Object.Destroy(_mutationSlotTemplate.gameObject);
@@ -932,21 +935,28 @@ namespace TFTV
                         return;
                     }
 
-                    float widthFraction = GetOverlayWidthFraction(out float pixelWidth);
+                    float overlayFraction = GetOverlayWidthFraction(out float overlayPixelWidth);
+                    float detailFraction = overlayFraction;
+                    float detailPixelWidth = overlayPixelWidth;
+
+                    if (_detailPanel != null)
+                    {
+                        detailFraction = GetOverlayWidthFraction(out detailPixelWidth, DetailPanelWidthPercent, DetailPanelMinWidthPx);
+                    }
 
                     if (overlayPanel != null)
                     {
                         var overlayRect = overlayPanel.GetComponent<RectTransform>();
                         if (overlayRect != null)
                         {
-                            overlayRect.anchorMin = new Vector2(1f - OverlayRightMargin - widthFraction, OverlayBottomMargin);
+                            overlayRect.anchorMin = new Vector2(1f - OverlayRightMargin - overlayFraction, OverlayBottomMargin);
                             overlayRect.anchorMax = new Vector2(1f - OverlayRightMargin, 1f - OverlayTopMargin);
                             overlayRect.pivot = new Vector2(1f, 0.5f);
                             overlayRect.offsetMin = Vector2.zero;
                             overlayRect.offsetMax = Vector2.zero;
                         }
 
-                        _overlayAnimator?.SetResolvedWidth(pixelWidth);
+                        _overlayAnimator?.SetResolvedWidth(overlayPixelWidth);
                     }
 
                     if (_detailPanel != null)
@@ -955,13 +965,13 @@ namespace TFTV
                         if (detailRect != null)
                         {
                             detailRect.anchorMin = new Vector2(OverlayLeftMargin, OverlayBottomMargin);
-                            detailRect.anchorMax = new Vector2(OverlayLeftMargin + widthFraction, 1f - OverlayTopMargin);
+                            _overlayAnimator?.SetResolvedWidth(overlayPixelWidth);
                             detailRect.pivot = new Vector2(0f, 0.5f);
                             detailRect.offsetMin = Vector2.zero;
                             detailRect.offsetMax = Vector2.zero;
                         }
 
-                        _detailAnimator?.SetResolvedWidth(pixelWidth);
+                        _detailAnimator?.SetResolvedWidth(detailPixelWidth);
                     }
 
                     _lastLayoutScreenWidth = screenWidth;

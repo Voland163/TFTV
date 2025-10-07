@@ -1,4 +1,5 @@
 ﻿using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.View.ViewControllers.Inventory;
@@ -20,7 +21,9 @@ namespace TFTV
     {
         private const float TooltipHorizontalPadding = 290f;
         private const float TooltipVerticalPadding = 80f;
-        private const float MutationIconOverlayScale = 1.5f;
+        private const float InventorySlotIconOverlayScale = 1.5f;
+        private const string MutationOverlayName = "MutationIconOverlay";
+        private const string InventoryOverlayName = "InventoryIconOverlay";
         internal static void ClearTransformChildren(Transform transform)
         {
             if (transform == null)
@@ -88,7 +91,7 @@ namespace TFTV
         }
 
 
-        internal static UIInventorySlot MakeMutationSlot(Transform parent, HavenRecruitsUtils.MutationIconData data, int px)
+        internal static UIInventorySlot MakeMutationSlot(Transform parent, HavenRecruitsUtils.MutationIconData data, int size)
         {
             try
             {
@@ -113,35 +116,13 @@ namespace TFTV
                     Object.Destroy(slotGO);
                     return null;
                 }
-                PrepareSlotForDisplay(slot, px);
+                PrepareSlotForDisplay(slot, size);
 
                 GeoItem item = new GeoItem(data.Item);
 
                 slot.Item = item;
 
-                if (data.Icon != null)
-                {
-                    var (overlayGO, overlayRT) = NewUI("MutationIconOverlay", slot.transform);
-                    overlayRT.anchorMin = new Vector2(0.5f, 0.5f);
-                    overlayRT.anchorMax = new Vector2(0.5f, 0.5f);
-                    overlayRT.pivot = new Vector2(0.5f, 0.5f);
-                    overlayRT.anchoredPosition = Vector2.zero;
-                    overlayRT.offsetMin = Vector2.zero;
-                    overlayRT.offsetMax = Vector2.zero;
-                    overlayRT.sizeDelta = new Vector2(px * MutationIconOverlayScale, px * MutationIconOverlayScale);
-                    overlayRT.SetAsLastSibling();
-
-                    var overlayImage = overlayGO.AddComponent<Image>();
-                    overlayImage.sprite = data.Icon;
-                    overlayImage.raycastTarget = false;
-
-                    var aspectFitter = overlayGO.AddComponent<AspectRatioFitter>();
-                    aspectFitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
-                    if (data.Icon.rect.height > 0f)
-                    {
-                        aspectFitter.aspectRatio = data.Icon.rect.width / data.Icon.rect.height;
-                    }
-                }
+                ApplyOversizedIconOverlay(slot, data.Icon, size, MutationOverlayName);
 
                 var tooltip = EnsureOverlayItemTooltip();
                 if (tooltip != null)
@@ -198,6 +179,11 @@ namespace TFTV
                 GeoItem geoItem = new GeoItem(item);
                 slot.Item = geoItem;
 
+                ViewElementDef view = item.ViewElementDef;
+
+                var icon = view.InventoryIcon ?? view?.SmallIcon;
+                ApplyOversizedIconOverlay(slot, icon, size, InventoryOverlayName);
+
                 var tooltip = EnsureOverlayItemTooltip();
                 if (tooltip != null)
                 {
@@ -215,6 +201,51 @@ namespace TFTV
                 return null;
             }
         }
+
+     
+        private static void ApplyOversizedIconOverlay(UIInventorySlot slot, Sprite icon, int baseSize, string overlayName)
+        {
+            if (slot == null || icon == null)
+            {
+                return;
+            }
+
+            try
+            {
+                var existing = slot.transform.Find(overlayName);
+                if (existing != null)
+                {
+                    Object.Destroy(existing.gameObject);
+                }
+
+                var (overlayGO, overlayRT) = NewUI(overlayName, slot.transform);
+                overlayRT.anchorMin = new Vector2(0.5f, 0.5f);
+                overlayRT.anchorMax = new Vector2(0.5f, 0.5f);
+                overlayRT.pivot = new Vector2(0.5f, 0.5f);
+                overlayRT.anchoredPosition = Vector2.zero;
+                overlayRT.offsetMin = Vector2.zero;
+                overlayRT.offsetMax = Vector2.zero;
+                float overlaySize = baseSize * InventorySlotIconOverlayScale;
+                overlayRT.sizeDelta = new Vector2(overlaySize, overlaySize);
+                overlayRT.SetAsLastSibling();
+
+                var overlayImage = overlayGO.AddComponent<Image>();
+                overlayImage.sprite = icon;
+                overlayImage.raycastTarget = false;
+
+                var aspectFitter = overlayGO.AddComponent<AspectRatioFitter>();
+                aspectFitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+                if (icon.rect.height > 0f)
+                {
+                    aspectFitter.aspectRatio = icon.rect.width / icon.rect.height;
+                }
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+            }
+        }
+
         private class TacticalItemSlotTooltipForwarder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         {
             private UIInventorySlot _slot;
