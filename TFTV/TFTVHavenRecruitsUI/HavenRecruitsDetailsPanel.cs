@@ -31,7 +31,8 @@ namespace TFTV
         internal static GameObject _detailEmptyState;
         internal static Transform _detailInfoRoot;
         internal static Image _detailClassIconImage;
-        internal static Text _detailLevelNameLabel;
+        internal static Text _detailLevelLabel;
+        internal static Text _detailNameLabel;
         internal static Image _detailFactionIconImage;
 
         internal static GameObject _detailAbilitySection;
@@ -183,7 +184,7 @@ namespace TFTV
                 var (infoRootGO, _) = RecruitOverlayManagerHelpers.NewUI("InfoRoot", contentGO.transform);
                 var infoLayout = infoRootGO.AddComponent<VerticalLayoutGroup>();
                 infoLayout.childAlignment = TextAnchor.UpperLeft;
-                infoLayout.spacing = 6f;
+                infoLayout.spacing = 4f;
                 infoLayout.childControlWidth = true;
                 infoLayout.childControlHeight = false;
                 infoLayout.childForceExpandWidth = true;
@@ -233,10 +234,10 @@ namespace TFTV
 
                 var (classInfoGO, _) = RecruitOverlayManagerHelpers.NewUI("ClassInfo", infoRootGO.transform);
                 var classInfoLayout = classInfoGO.AddComponent<HorizontalLayoutGroup>();
-                classInfoLayout.childAlignment = TextAnchor.MiddleCenter;
-                classInfoLayout.spacing = 4f;
+                classInfoLayout.childAlignment = TextAnchor.MiddleLeft;
+                classInfoLayout.spacing = 6f;
                 classInfoLayout.childControlWidth = false;
-                classInfoLayout.childControlHeight = false;
+                classInfoLayout.childControlHeight = true;
                 classInfoLayout.childForceExpandWidth = false;
                 classInfoLayout.childForceExpandHeight = false;
                 var classInfoLE = classInfoGO.AddComponent<LayoutElement>();
@@ -255,18 +256,35 @@ namespace TFTV
                 classIconLE.minHeight = DetailClassIconSize;
                 classIconRT.sizeDelta = new Vector2(DetailClassIconSize, DetailClassIconSize);
 
-                _detailLevelNameLabel = CreateDetailText(classInfoGO.transform, "LevelName", TextFontSize + 6, Color.white, TextAnchor.MiddleCenter);
-                _detailLevelNameLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
-                _detailLevelNameLabel.text = StatPlaceholder;
+                var (classTextContainerGO, _) = RecruitOverlayManagerHelpers.NewUI("ClassText", classInfoGO.transform);
+                var classTextLayout = classTextContainerGO.AddComponent<HorizontalLayoutGroup>();
+                classTextLayout.childAlignment = TextAnchor.MiddleLeft;
+                classTextLayout.spacing = 4f;
+                classTextLayout.childControlWidth = false;
+                classTextLayout.childControlHeight = false;
+                classTextLayout.childForceExpandWidth = false;
+                classTextLayout.childForceExpandHeight = false;
+                var classTextLE = classTextContainerGO.AddComponent<LayoutElement>();
+                classTextLE.minWidth = 0f;
+                classTextLE.flexibleWidth = 1f;
 
-                var levelNameLE = _detailLevelNameLabel.gameObject.AddComponent<LayoutElement>();
-                levelNameLE.minWidth = 0f;
-                levelNameLE.flexibleWidth = 0f;
+                _detailLevelLabel = CreateDetailText(classTextContainerGO.transform, "Level", TextFontSize + 6, Color.white, TextAnchor.MiddleLeft);
+                _detailLevelLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
+                _detailLevelLabel.text = StatPlaceholder;
+                var levelLE = _detailLevelLabel.gameObject.AddComponent<LayoutElement>();
+                levelLE.minWidth = 0f;
+
+                _detailNameLabel = CreateDetailText(classTextContainerGO.transform, "Name", TextFontSize + 6, Color.white, TextAnchor.MiddleLeft);
+                _detailNameLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
+                _detailNameLabel.text = string.Empty;
+                var nameLE = _detailNameLabel.gameObject.AddComponent<LayoutElement>();
+                nameLE.minWidth = 0f;
+                nameLE.flexibleWidth = 1f;
 
                 var (costGO, _) = RecruitOverlayManagerHelpers.NewUI("CostRow", infoRootGO.transform);
                 var costLayout = costGO.AddComponent<HorizontalLayoutGroup>();
-                costLayout.childAlignment = TextAnchor.UpperCenter;
-                costLayout.spacing =0f;
+                costLayout.childAlignment = TextAnchor.MiddleLeft;
+                costLayout.spacing = 12f;
                 costLayout.childControlWidth = false;
                 costLayout.childControlHeight = false;
                 costLayout.childForceExpandWidth = false;
@@ -288,8 +306,8 @@ namespace TFTV
                 var statsGrid = statsGridGO.AddComponent<GridLayoutGroup>();
                 statsGrid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
                 statsGrid.constraintCount = 2;
-                statsGrid.cellSize = new Vector2(210f, 52f);
-                statsGrid.spacing = new Vector2(12f, 6f);
+                statsGrid.cellSize = new Vector2(210f, 44f);
+                statsGrid.spacing = new Vector2(12f, 4f);
                 statsGrid.childAlignment = TextAnchor.UpperLeft;
                 statsGridRT.anchorMin = new Vector2(0.5f, 0.5f);
                 statsGridRT.anchorMax = new Vector2(0.5f, 0.5f);
@@ -319,8 +337,10 @@ namespace TFTV
                 abilityLayout.childForceExpandWidth = false;
                 abilityLayout.childForceExpandHeight = false;
                 var abilityLE = abilitiesGO.AddComponent<LayoutElement>();
-                abilityLE.minHeight = 0f;
+                abilityLE.minHeight = AbilityIconSize;
+                abilityLE.preferredHeight = AbilityIconSize + 6f;
                 abilityLE.flexibleWidth = 1f;
+                abilityLE.flexibleHeight = 1f;
                 _detailAbilitySection = abilitiesGO;
                 _detailAbilitySection.SetActive(false);
 
@@ -332,6 +352,9 @@ namespace TFTV
                 classAbilityLayout.childControlHeight = false;
                 classAbilityLayout.childForceExpandWidth = false;
                 classAbilityLayout.childForceExpandHeight = false;
+                var classAbilityLE = classAbilityRowGO.AddComponent<LayoutElement>();
+                classAbilityLE.minHeight = AbilityIconSize;
+                classAbilityLE.preferredHeight = AbilityIconSize;
                 _detailClassAbilityRowRoot = classAbilityRowGO.transform;
                 _detailClassAbilityRowRoot.gameObject.SetActive(false);
 
@@ -343,6 +366,9 @@ namespace TFTV
                 personalAbilityLayout.childControlHeight = false;
                 personalAbilityLayout.childForceExpandWidth = false;
                 personalAbilityLayout.childForceExpandHeight = false;
+                var personalAbilityLE = personalAbilityRowGO.AddComponent<LayoutElement>();
+                personalAbilityLE.minHeight = AbilityIconSize;
+                personalAbilityLE.preferredHeight = AbilityIconSize;
                 _detailPersonalAbilityRowRoot = personalAbilityRowGO.transform;
                 _detailPersonalAbilityRowRoot.gameObject.SetActive(false);
 
@@ -471,10 +497,14 @@ namespace TFTV
                     _detailClassIconImage.enabled = false;
                 }
 
-                if (_detailLevelNameLabel != null)
+                if (_detailLevelLabel != null)
                 {
+                    _detailLevelLabel.text = StatPlaceholder;
+                }
 
-                    _detailLevelNameLabel.text = StatPlaceholder;
+                if (_detailNameLabel != null)
+                {
+                    _detailNameLabel.text = string.Empty;
                 }
 
                 if (_detailFactionNameLabel != null)
@@ -1144,14 +1174,17 @@ namespace TFTV
                     _detailClassIconImage.enabled = classIcon != null;
                 }
 
-                if (_detailLevelNameLabel != null)
+                if (_detailLevelLabel != null)
                 {
-                   
-                    var recruitName = data.Recruit.GetName();
-                    _detailLevelNameLabel.text = $"{data.Recruit.Level} {recruitName}";
+                    _detailLevelLabel.text = data.Recruit.Level.ToString();
                 }
 
-                PopulateArmorSlots(data.Recruit);
+                if (_detailNameLabel != null) 
+                {
+                    _detailNameLabel.text = data.Recruit.GetName();
+                }
+
+                    PopulateArmorSlots(data.Recruit);
                 PopulateEquipmentSlots(data.Recruit);
 
                 var infoRect = _detailInfoRoot as RectTransform;
