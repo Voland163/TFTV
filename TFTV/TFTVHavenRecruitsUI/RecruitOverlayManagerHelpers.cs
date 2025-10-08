@@ -178,7 +178,11 @@ namespace TFTV
 
                 GeoItem geoItem = new GeoItem(item);
                 slot.Item = geoItem;
-
+               
+                slot.EmptyAmmoImageNode.gameObject.SetActive(false);
+                slot.EmptyAmmoScaleNode.gameObject.SetActive(false);
+                slot.AmmoImageNode.gameObject.SetActive(false);
+               
                 ViewElementDef view = item.ViewElementDef;
 
                 var icon = view.InventoryIcon ?? view?.SmallIcon;
