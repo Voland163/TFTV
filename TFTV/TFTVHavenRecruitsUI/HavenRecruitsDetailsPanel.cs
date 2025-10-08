@@ -183,8 +183,8 @@ namespace TFTV
 
                 var (infoRootGO, _) = RecruitOverlayManagerHelpers.NewUI("InfoRoot", contentGO.transform);
                 var infoLayout = infoRootGO.AddComponent<VerticalLayoutGroup>();
-                infoLayout.childAlignment = TextAnchor.UpperLeft;
-                infoLayout.spacing = 4f;
+                infoLayout.childAlignment = TextAnchor.UpperCenter;
+                infoLayout.spacing = 2f;
                 infoLayout.childControlWidth = true;
                 infoLayout.childControlHeight = false;
                 infoLayout.childForceExpandWidth = true;
@@ -243,6 +243,7 @@ namespace TFTV
                 var classInfoLE = classInfoGO.AddComponent<LayoutElement>();
                 classInfoLE.minWidth = 0f;
                 classInfoLE.flexibleWidth = 1f;
+                classInfoLE.preferredWidth = 0f;
 
                 var (classIconGO, classIconRT) = RecruitOverlayManagerHelpers.NewUI("ClassIcon", classInfoGO.transform);
                 _detailClassIconImage = classIconGO.AddComponent<Image>();
@@ -258,23 +259,24 @@ namespace TFTV
 
                 var (classTextContainerGO, _) = RecruitOverlayManagerHelpers.NewUI("ClassText", classInfoGO.transform);
                 var classTextLayout = classTextContainerGO.AddComponent<HorizontalLayoutGroup>();
-                classTextLayout.childAlignment = TextAnchor.MiddleLeft;
-                classTextLayout.spacing = 4f;
+                classTextLayout.childAlignment = TextAnchor.MiddleCenter;
+                classTextLayout.spacing = 6f;
                 classTextLayout.childControlWidth = false;
                 classTextLayout.childControlHeight = false;
                 classTextLayout.childForceExpandWidth = false;
                 classTextLayout.childForceExpandHeight = false;
                 var classTextLE = classTextContainerGO.AddComponent<LayoutElement>();
                 classTextLE.minWidth = 0f;
-                classTextLE.flexibleWidth = 1f;
+                classTextLE.flexibleWidth = 0f;
 
-                _detailLevelLabel = CreateDetailText(classTextContainerGO.transform, "Level", TextFontSize + 6, Color.white, TextAnchor.MiddleLeft);
+                _detailLevelLabel = CreateDetailText(classTextContainerGO.transform, "Level", TextFontSize + 6, Color.white, TextAnchor.MiddleCenter);
                 _detailLevelLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
                 _detailLevelLabel.text = StatPlaceholder;
                 var levelLE = _detailLevelLabel.gameObject.AddComponent<LayoutElement>();
                 levelLE.minWidth = 0f;
+                levelLE.preferredWidth = DetailClassIconSize * 0.65f;
 
-                _detailNameLabel = CreateDetailText(classTextContainerGO.transform, "Name", TextFontSize + 6, Color.white, TextAnchor.MiddleLeft);
+                _detailNameLabel = CreateDetailText(classTextContainerGO.transform, "Name", TextFontSize + 6, Color.white, TextAnchor.MiddleCenter);
                 _detailNameLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
                 _detailNameLabel.text = string.Empty;
                 var nameLE = _detailNameLabel.gameObject.AddComponent<LayoutElement>();
@@ -283,7 +285,7 @@ namespace TFTV
 
                 var (costGO, _) = RecruitOverlayManagerHelpers.NewUI("CostRow", infoRootGO.transform);
                 var costLayout = costGO.AddComponent<HorizontalLayoutGroup>();
-                costLayout.childAlignment = TextAnchor.MiddleLeft;
+                costLayout.childAlignment = TextAnchor.MiddleCenter;
                 costLayout.spacing = 12f;
                 costLayout.childControlWidth = false;
                 costLayout.childControlHeight = false;
@@ -292,6 +294,9 @@ namespace TFTV
                 _detailCostSection = costGO;
                 _detailCostRoot = costGO.transform;
                 _detailCostSection.SetActive(false);
+                var costLE = costGO.AddComponent<LayoutElement>();
+                costLE.minWidth = 0f;
+                costLE.flexibleWidth = 1f;
 
                 var (statsSectionGO, _) = RecruitOverlayManagerHelpers.NewUI("StatsSection", infoRootGO.transform);
                 var statsSectionLayout = statsSectionGO.AddComponent<HorizontalLayoutGroup>();
@@ -307,7 +312,7 @@ namespace TFTV
                 statsGrid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
                 statsGrid.constraintCount = 2;
                 statsGrid.cellSize = new Vector2(210f, 44f);
-                statsGrid.spacing = new Vector2(12f, 4f);
+                statsGrid.spacing = new Vector2(12f, 2f);
                 statsGrid.childAlignment = TextAnchor.UpperLeft;
                 statsGridRT.anchorMin = new Vector2(0.5f, 0.5f);
                 statsGridRT.anchorMax = new Vector2(0.5f, 0.5f);
@@ -337,10 +342,11 @@ namespace TFTV
                 abilityLayout.childForceExpandWidth = false;
                 abilityLayout.childForceExpandHeight = false;
                 var abilityLE = abilitiesGO.AddComponent<LayoutElement>();
-                abilityLE.minHeight = AbilityIconSize;
-                abilityLE.preferredHeight = AbilityIconSize + 6f;
+                float abilityReservedHeight = AbilityIconSize * 2f + abilityLayout.spacing + 12f;
+                abilityLE.minHeight = abilityReservedHeight;
+                abilityLE.preferredHeight = abilityReservedHeight;
                 abilityLE.flexibleWidth = 1f;
-                abilityLE.flexibleHeight = 1f;
+                abilityLE.flexibleHeight = 0f;
                 _detailAbilitySection = abilitiesGO;
                 _detailAbilitySection.SetActive(false);
 
