@@ -3,6 +3,7 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
+using SoftMasking.Samples;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ using System.Reflection;
 using TFTV.TFTVHavenRecruitsUI;
 using UnityEngine;
 using UnityEngine.UI;
+using static RootMotion.FinalIK.GrounderQuadruped;
 using static TFTV.HavenRecruitsMain;
 using static TFTV.HavenRecruitsMain.RecruitOverlayManager;
 using static TFTV.TFTVHavenRecruitsUI.HavenRecruitsOverlayAnimator;
@@ -102,11 +104,15 @@ namespace TFTV
         private static Image _detailDeliriumIcon;
         private static Text _detailDeliriumLabel;
         private static Sprite _detailDeliriumIconSprite;
+        private static Shadow _detailPanelGlowShadow;
 
         private const string StatPlaceholder = "--";
         private static readonly Dictionary<string, Sprite> _statIconCache = new Dictionary<string, Sprite>(StringComparer.OrdinalIgnoreCase);
         private static readonly Color StatPositiveColor = new Color(0.3137f, 0.7843f, 0.3921f);
         private static readonly Color StatNegativeColor = new Color(0.8627f, 0.3529f, 0.3529f);
+        private static readonly Color DetailStatHighlightColor = new Color32(0xD0, 0xA4, 0x56, 0xFF);
+        private static readonly Color DetailDeliriumHighlightColor = new Color32(0xA2, 0x48, 0xD1, 0xFF);
+        private const string StatTooltipPlaceholderText = "placeholder";
         private static readonly string BaseColorHex = ColorUtility.ToHtmlStringRGB(DetailSubTextColor);
         private static readonly Dictionary<string, string[]> StatPropertyNames = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
         {
@@ -128,15 +134,19 @@ namespace TFTV
         };
         internal readonly struct StatCell
         {
-            public StatCell(Image icon, Text label)
+            public StatCell(GameObject root, Image icon, Text label, UITooltipText tooltip)
             {
+                Root = root;
                 Icon = icon;
                 Label = label;
+                Tooltip = tooltip;
             }
-
+            public GameObject Root { get; }
             public Image Icon { get; }
 
             public Text Label { get; }
+
+            public UITooltipText Tooltip { get; }
         }
 
         private static void CreateDetailHeader(Transform parent)
@@ -213,6 +223,11 @@ namespace TFTV
                 var outline = _detailPanel.AddComponent<Outline>();
                 outline.effectColor = HeaderBorderColor;
                 outline.effectDistance = new Vector2(2f, 2f);
+
+                _detailPanelGlowShadow = _detailPanel.AddComponent<Shadow>();
+                _detailPanelGlowShadow.effectDistance = new Vector2(0f, -24f);
+                _detailPanelGlowShadow.effectColor = new Color(DetailSubTextColor.r, DetailSubTextColor.g, DetailSubTextColor.b, 0.35f);
+                _detailPanelGlowShadow.useGraphicAlpha = false;
 
                 var rt = _detailPanel.GetComponent<RectTransform>();
                 float width = GetOverlayWidthFraction(out float detailPixels, DetailPanelWidthPercent, DetailPanelMinWidthPx);
@@ -426,7 +441,7 @@ namespace TFTV
                 _detailDeliriumIcon = deliriumIconGO.AddComponent<Image>();
                 _detailDeliriumIcon.preserveAspect = true;
                 _detailDeliriumIcon.raycastTarget = false;
-
+                _detailDeliriumIcon.color = DetailDeliriumHighlightColor;
                 // Ensure the RectTransform has the desired size instead of relying on SetNativeSize()
                 var deliriumIconRT = deliriumIconGO.GetComponent<RectTransform>();
                 if (deliriumIconRT != null)
@@ -442,7 +457,7 @@ namespace TFTV
                 deliriumIconLE.minHeight = DetailDeliriumIconSize;
 
                 var (deliriumLabelGO, _) = RecruitOverlayManagerHelpers.NewUI("Label", deliriumRowGO.transform);
-                _detailDeliriumLabel = CreateDetailText(deliriumLabelGO.transform, "Delirium", TextFontSize + 2, Color.white, TextAnchor.MiddleLeft);
+                _detailDeliriumLabel = CreateDetailText(deliriumLabelGO.transform, "Delirium", TextFontSize + 2, DetailDeliriumHighlightColor, TextAnchor.MiddleLeft);
                 _detailDeliriumLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
                 var deliriumLabelLE = _detailDeliriumLabel.gameObject.AddComponent<LayoutElement>();
                 deliriumLabelLE.minWidth = 0f;
@@ -584,6 +599,7 @@ namespace TFTV
             icon.preserveAspect = true;
             icon.raycastTarget = false;
             icon.enabled = false;
+            icon.color = DetailStatHighlightColor;
             var iconLE = iconGO.AddComponent<LayoutElement>();
             iconLE.preferredWidth = DetailStatIconSize;
             iconLE.preferredHeight = DetailStatIconSize;
@@ -591,15 +607,17 @@ namespace TFTV
             iconLE.minHeight = DetailStatIconSize;
             iconRT.sizeDelta = new Vector2(DetailStatIconSize, DetailStatIconSize);
 
-            var statText = CreateDetailText(cellGO.transform, $"{sanitized}Text", TextFontSize + 1, Color.white, TextAnchor.MiddleLeft);
+            var statText = CreateDetailText(cellGO.transform, $"{sanitized}Text", TextFontSize + 1, DetailStatHighlightColor, TextAnchor.MiddleLeft);
             statText.horizontalOverflow = HorizontalWrapMode.Overflow;
             statText.text = $"{name} {StatPlaceholder}";
             var textLE = statText.gameObject.AddComponent<LayoutElement>();
             textLE.minWidth = 0f;
             textLE.flexibleWidth = 1f;
 
+            var tooltip = cellGO.AddComponent<UITooltipText>();
+            tooltip.TipText = StatTooltipPlaceholderText;
 
-            return new StatCell(icon, statText);
+            return new StatCell(cellGO, icon, statText, tooltip);
         }
 
         internal static Text CreateDetailText(Transform parent, string name, int fontSize, Color color, TextAnchor alignment)
@@ -725,6 +743,12 @@ namespace TFTV
             {
                 _detailFactionNameLabel.text = string.Empty;
             }
+            if (_detailPanelGlowShadow != null)
+            {
+                var glowColor = DetailSubTextColor;
+                glowColor.a = 0.35f;
+                _detailPanelGlowShadow.effectColor = glowColor;
+            }
         }
 
         private static void PopulateStats(RecruitAtSite recruit)
@@ -738,11 +762,18 @@ namespace TFTV
                 {
                     cell.Icon.sprite = null;
                     cell.Icon.enabled = false;
+                    cell.Icon.color = DetailStatHighlightColor;
                 }
 
                 if (cell.Label != null)
                 {
                     cell.Label.text = $"{statName} {StatPlaceholder}";
+                    cell.Label.color = DetailStatHighlightColor;
+                }
+
+                if (cell.Tooltip != null)
+                {
+                    cell.Tooltip.TipText = StatTooltipPlaceholderText;
                 }
             }
 
@@ -819,12 +850,13 @@ namespace TFTV
                     {
                         cell.Icon.sprite = icon;
                         cell.Icon.enabled = icon != null;
+                        cell.Icon.color = DetailStatHighlightColor;
                     }
 
                     if (cell.Label != null)
                     {
-
                         cell.Label.text = $"{statName} {valueText}";
+                        cell.Label.color = DetailStatHighlightColor;
                     }
                 }
                 PopulateDeliriumRow(delirium);
@@ -854,12 +886,14 @@ namespace TFTV
             if (_detailDeliriumLabel != null)
             {
                 _detailDeliriumLabel.text = $"Delirium {deliriumValue}";
+                _detailDeliriumLabel.color = DetailDeliriumHighlightColor;
             }
 
             if (_detailDeliriumIcon != null)
             {
                 var sprite = DefCache.GetDef<ViewElementDef>("E_Visuals [Corruption_StatusDef]").SmallIcon;
                 _detailDeliriumIcon.sprite = sprite;
+                _detailDeliriumIcon.color = DetailDeliriumHighlightColor;
                 _detailDeliriumIcon.enabled = sprite != null;
             }
 
@@ -1612,6 +1646,14 @@ namespace TFTV
                 {
                     _detailFactionNameLabel.color = Color.white;
                 }
+
+                if (_detailPanelGlowShadow != null)
+                {
+                    var glowColor = factionSprite != null ? factionColorFull : DetailSubTextColor;
+                    glowColor.a = 0.35f;
+                    _detailPanelGlowShadow.effectColor = glowColor;
+                }
+
                 return factionSprite != null ? factionColorFull : DetailSubTextColor;
             }
             catch (Exception ex) { TFTVLogger.Error(ex); }
