@@ -21,43 +21,44 @@ namespace TFTV
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
+        internal const int DetailAbilityIconSize = 40;
         internal const float DetailClassIconSize = 36f;
         internal const float DetailFactionIconSize = 36f;
-        internal const int DetailInventorySlotSize = 48;
-        internal const float DetailStatIconSize = 36f;
+        internal const int DetailInventorySlotSize = 70;
+        internal const float DetailStatIconSize = 25f;
         internal const float DetailStatsGridCellWidth = 210f;
         internal const float DetailStatsGridCellHeight = 44f;
         internal const int DetailStatsGridColumnCount = 2;
         internal const float DetailStatsGridSpacingX = 12f;
         internal const float DetailStatsGridSpacingY = 2f;
-        internal const float DetailAbilityRowHeight = AbilityIconSize;
+        internal const float DetailAbilityRowHeight = DetailAbilityIconSize;
         internal const float DetailArmorRowHeight = DetailClassIconSize;
         internal const float DetailEquipmentRowHeight = DetailClassIconSize;
         internal const float DetailLevelLabelPreferredWidth = DetailClassIconSize * 0.65f;
         internal const float DetailHeaderSpacing = 8f;
         internal const int DetailHeaderHorizontalPadding = 24;
         internal const int DetailHeaderVerticalPadding = 12;
-        internal const float DetailFactionHeaderSpacing = 8f;
+        internal const float DetailFactionHeaderSpacing = 12f;
         internal const float DetailFactionTextSpacing = 2f;
         internal const float DetailClassInfoSpacing = 4f;
-        internal const int DetailClassInfoPaddingTop = -80;
+        internal const int DetailClassInfoPaddingTop = -20;
         internal const int DetailClassInfoPaddingBottom = 0;
         internal const float DetailClassTextSpacing = 4f;
         internal const float DetailCostSpacing = 0f;
-        internal const int DetailCostPaddingTop = -80;
+        internal const int DetailCostPaddingTop = -20;
         internal const int DetailCostPaddingLeft = 0;
         internal const int DetailCostPaddingBottom = 0;
         internal const float DetailStatsSectionSpacing = 0f;
         internal const float DetailStatRowSpacing = 6f;
         internal const float DetailDeliriumIconSize = DetailStatIconSize;
         internal const float DetailDeliriumRowHeight = DetailStatsGridCellHeight;
-        internal const float DetailAbilityRowHorizontalSpacing = 12f;
-        internal const float DetailGearRowSpacing = 3f;
-        internal const int DetailStatsSectionPaddingTop = -40;
+        internal const float DetailAbilityRowHorizontalSpacing = 25f;
+        internal const float DetailGearRowSpacing = 30f;
+        internal const int DetailStatsSectionPaddingTop = -20;
         internal const int DetailStatsSectionPaddingBottom = 8;
-        internal const int DetailAbilitySectionPaddingTop = 40;
+        internal const int DetailAbilitySectionPaddingTop = 80;
         internal const int DetailAbilitySectionPaddingBottom = 0;
-        internal const int DetailGearSectionPaddingTop = 160;
+        internal const int DetailGearSectionPaddingTop = 140;
         internal const int DetailGearSectionPaddingBottom = 0;
         // Spacing between the major layout groups is intentionally tiny because the visible gaps
         // are dominated by the min/preferred heights we assign via LayoutElement (for example the
@@ -66,7 +67,7 @@ namespace TFTV
         // constants below should be used when a more noticeable gap between sections is required.
         private const float DetailContentSpacing = 1f;
         private const float DetailInfoSpacing = 1f;
-        private const float DetailAbilityRowSpacing = 0f;
+        private const float DetailAbilityRowSpacing = 40f;
         private const float DetailAbilityReservedPadding = 1f;
         private const float DetailGearSpacing = 1f;
         private const float DetailAbilityLockedIconAlpha = 0.5f;
@@ -340,7 +341,7 @@ namespace TFTV
                 classIconLE.minHeight = DetailClassIconSize;
                 classIconRT.sizeDelta = new Vector2(DetailClassIconSize, DetailClassIconSize);
 
-                _detailLevelNameLabel = CreateDetailText(classInfoGO.transform, "Level", TextFontSize + 6, Color.white, TextAnchor.MiddleLeft);
+                _detailLevelNameLabel = CreateDetailText(classInfoGO.transform, "Level", TextFontSize + 12, Color.white, TextAnchor.MiddleLeft);
                 _detailLevelNameLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
                 _detailLevelNameLabel.text = StatPlaceholder;
                 var levelLE = _detailLevelNameLabel.gameObject.AddComponent<LayoutElement>();
@@ -455,7 +456,7 @@ namespace TFTV
                 abilityLayout.childAlignment = TextAnchor.UpperLeft;
                 abilityLayout.spacing = DetailAbilityRowSpacing;
                 abilityLayout.childControlWidth = true;
-                abilityLayout.childControlHeight = false;
+                abilityLayout.childControlHeight = true;
                 abilityLayout.childForceExpandWidth = false;
                 abilityLayout.childForceExpandHeight = false;
                 abilityLayout.padding = new RectOffset(
@@ -464,11 +465,10 @@ namespace TFTV
                     DetailAbilitySectionPaddingTop,
                     DetailAbilitySectionPaddingBottom);
                 var abilityLE = abilitiesGO.AddComponent<LayoutElement>();
-
                 abilityLE.flexibleWidth = 1f;
                 abilityLE.flexibleHeight = 0f;
-                abilityLE.minHeight = 0f;
-                abilityLE.preferredHeight = 0f;
+                abilityLE.minHeight = DetailAbilityRowHeight * 1.5f;
+                abilityLE.preferredHeight = DetailAbilityRowHeight*1.5f;
                 _detailAbilityLayoutElement = abilityLE;
                 _detailAbilitySection = abilitiesGO;
                 _detailAbilitySection.SetActive(false);
@@ -1384,7 +1384,7 @@ namespace TFTV
                         continue;
                     }
 
-                    var iconImage = RecruitOverlayManagerHelpers.MakeFixedIcon(root, ability.Icon, AbilityIconSize, _abilityIconBackground);
+                    var iconImage = RecruitOverlayManagerHelpers.MakeFixedIcon(root, ability.Icon, DetailAbilityIconSize, _abilityIconBackground);
                     if (iconImage == null)
                     {
                         continue;
