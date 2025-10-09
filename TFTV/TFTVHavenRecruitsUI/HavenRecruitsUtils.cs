@@ -37,9 +37,9 @@ namespace TFTV.TFTVHavenRecruitsUI
             {
                 if (AnuFactionName == "")
                 {
-                    AnuFactionName = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_ANU");
-                    NJFactionName = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_NJ");
-                    SynFactionName = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_SYN");
+                    AnuFactionName = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_ANU")?.Trim() ?? "";
+                    NJFactionName = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_NJ")?.Trim() ?? "";
+                    SynFactionName = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_SYN")?.Trim() ?? "";
                 }
 
             }

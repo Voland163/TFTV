@@ -45,7 +45,7 @@ namespace TFTV
         internal const float DetailClassTextSpacing = 4f;
         internal const float DetailCostSpacing = 0f;
         internal const int DetailCostPaddingTop = -80;
-        internal const int DetailCostPaddingLeft = -35;
+        internal const int DetailCostPaddingLeft = 0;
         internal const int DetailCostPaddingBottom = 0;
         internal const float DetailStatsSectionSpacing = 0f;
         internal const float DetailStatRowSpacing = 6f;
@@ -351,7 +351,7 @@ namespace TFTV
 
                 var (costGO, _) = RecruitOverlayManagerHelpers.NewUI("CostRow", infoRootGO.transform);
                 var costLayout = costGO.AddComponent<HorizontalLayoutGroup>();
-                costLayout.childAlignment = TextAnchor.MiddleCenter;
+                costLayout.childAlignment = TextAnchor.MiddleLeft;
                 costLayout.spacing = DetailCostSpacing;
                 costLayout.childControlWidth = false;
                 costLayout.childControlHeight = false;

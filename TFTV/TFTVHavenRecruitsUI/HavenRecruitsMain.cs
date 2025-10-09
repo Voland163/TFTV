@@ -1018,7 +1018,7 @@ namespace TFTV
                         if (detailRect != null)
                         {
                             detailRect.anchorMin = new Vector2(OverlayLeftMargin, OverlayBottomMargin);
-                            _overlayAnimator?.SetResolvedWidth(overlayPixelWidth);
+                            detailRect.anchorMax = new Vector2(OverlayLeftMargin + detailFraction, 1f - OverlayTopMargin);
                             detailRect.pivot = new Vector2(0f, 0.5f);
                             detailRect.offsetMin = Vector2.zero;
                             detailRect.offsetMax = Vector2.zero;
