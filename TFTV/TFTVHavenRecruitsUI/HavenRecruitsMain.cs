@@ -1504,12 +1504,40 @@ namespace TFTV
                 var bg = listGO.AddComponent<Image>();
                 bg.color = new Color(1f, 1f, 1f, 0.05f);
 
+                var (scrollbarGO, scrollbarRT) = RecruitOverlayManagerHelpers.NewUI("Scrollbar", listGO.transform);
+                scrollbarRT.anchorMin = new Vector2(1f, 0f);
+                scrollbarRT.anchorMax = new Vector2(1f, 1f);
+                scrollbarRT.pivot = new Vector2(1f, 1f);
+                scrollbarRT.sizeDelta = new Vector2(14f, 0f);
+                scrollbarRT.offsetMin = new Vector2(-20f, 10f);
+                scrollbarRT.offsetMax = new Vector2(-6f, -10f);
+
+                var scrollbarBackground = scrollbarGO.AddComponent<Image>();
+                scrollbarBackground.color = new Color(1f, 1f, 1f, 0.08f);
+                scrollbarBackground.maskable = false;
+
+                var (handleGO, handleRT) = RecruitOverlayManagerHelpers.NewUI("Handle", scrollbarGO.transform);
+                handleRT.anchorMin = new Vector2(0f, 0f);
+                handleRT.anchorMax = new Vector2(1f, 1f);
+                handleRT.offsetMin = new Vector2(2f, 2f);
+                handleRT.offsetMax = new Vector2(-2f, -2f);
+
+                var handleImage = handleGO.AddComponent<Image>();
+                handleImage.color = new Color(1f, 1f, 1f, 0.6f);
+                handleImage.maskable = false;
+
+                var scrollbar = scrollbarGO.AddComponent<Scrollbar>();
+                scrollbar.direction = Scrollbar.Direction.BottomToTop;
+                scrollbar.handleRect = handleRT;
+                scrollbar.targetGraphic = handleImage;
+
+
                 var (contentGO, contentRT) = RecruitOverlayManagerHelpers.NewUI("Content", listGO.transform);
                 contentRT.anchorMin = new Vector2(0f, 1f);
                 contentRT.anchorMax = new Vector2(1f, 1f);
                 contentRT.pivot = new Vector2(0.5f, 1f);
                 contentRT.offsetMin = new Vector2(8f, 8f);
-                contentRT.offsetMax = new Vector2(-8f, -8f);
+                contentRT.offsetMax = new Vector2(-24f, -8f); // leave room for scrollbar
 
                 var vlg = contentGO.AddComponent<VerticalLayoutGroup>();
                 vlg.childForceExpandWidth = true;
@@ -1523,6 +1551,9 @@ namespace TFTV
                 scrollRect.content = contentRT;
                 scrollRect.vertical = true;
                 scrollRect.horizontal = false;
+
+                scrollRect.verticalScrollbar = scrollbar;
+                scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
 
                 _recruitListRoot = contentGO.transform;
             }

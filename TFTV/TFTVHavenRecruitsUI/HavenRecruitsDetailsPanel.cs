@@ -1,4 +1,5 @@
-﻿using PhoenixPoint.Common.Entities;
+﻿using Epic.OnlineServices;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
@@ -51,7 +52,7 @@ namespace TFTV
         internal const float DetailDeliriumIconSize = DetailStatIconSize;
         internal const float DetailDeliriumRowHeight = DetailStatsGridCellHeight;
         internal const float DetailAbilityRowHorizontalSpacing = 12f;
-        internal const float DetailGearRowSpacing = 6f;
+        internal const float DetailGearRowSpacing = 3f;
         internal const int DetailStatsSectionPaddingTop = -40;
         internal const int DetailStatsSectionPaddingBottom = 8;
         internal const int DetailAbilitySectionPaddingTop = 40;
@@ -65,18 +66,24 @@ namespace TFTV
         // constants below should be used when a more noticeable gap between sections is required.
         private const float DetailContentSpacing = 1f;
         private const float DetailInfoSpacing = 1f;
-        private const float DetailAbilityRowSpacing = 1f;
+        private const float DetailAbilityRowSpacing = 0f;
         private const float DetailAbilityReservedPadding = 1f;
         private const float DetailGearSpacing = 1f;
+        private const float DetailAbilityLockedIconAlpha = 0.5f;
 
         private static LayoutElement _detailAbilityLayoutElement;
+        private static readonly Color AbilityUnlockedIconColor = Color.white;
+        private static readonly Color AbilityLockedIconColor = new Color(0.45f, 0.45f, 0.45f, DetailAbilityLockedIconAlpha);
+        private static readonly Color AbilityUnlockedBackgroundColor = Color.white;
+        private static readonly Color AbilityLockedBackgroundColor = new Color(1f, 1f, 1f, 0.35f);
+        
         internal static Text _detailFactionNameLabel;
         internal static GameObject _detailPanel;
         internal static GameObject _detailEmptyState;
         internal static Transform _detailInfoRoot;
         internal static Image _detailClassIconImage;
         internal static Text _detailLevelNameLabel;
-       
+      
         internal static Image _detailFactionIconImage;
 
         internal static GameObject _detailAbilitySection;
@@ -291,21 +298,18 @@ namespace TFTV
 
                 var (classInfoGO, _) = RecruitOverlayManagerHelpers.NewUI("ClassInfo", infoRootGO.transform);
                 var classInfoLayout = classInfoGO.AddComponent<HorizontalLayoutGroup>();
-                classInfoLayout.childAlignment = TextAnchor.MiddleCenter;
+                classInfoLayout.childAlignment = TextAnchor.MiddleLeft;
                 classInfoLayout.spacing = DetailClassInfoSpacing;
-                classInfoLayout.childControlWidth = true;
+                classInfoLayout.childControlWidth = false;
                 classInfoLayout.childControlHeight = true;
-                classInfoLayout.childForceExpandWidth = true;
+                classInfoLayout.childForceExpandWidth = false;
                 classInfoLayout.childForceExpandHeight = false;
                 classInfoLayout.padding = new RectOffset(
                     0,
                     0,
                     DetailClassInfoPaddingTop,
                     DetailClassInfoPaddingBottom);
-                var classInfoLE = classInfoGO.AddComponent<LayoutElement>();
-                classInfoLE.minWidth = width;
-                classInfoLE.flexibleWidth = width;
-                classInfoLE.preferredWidth = width;
+               
 
                 var classInfoFitter = classInfoGO.AddComponent<ContentSizeFitter>();
                 classInfoFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -323,14 +327,14 @@ namespace TFTV
                 classIconLE.minHeight = DetailClassIconSize;
                 classIconRT.sizeDelta = new Vector2(DetailClassIconSize, DetailClassIconSize);
 
-                _detailLevelNameLabel = CreateDetailText(classInfoGO.transform, "Level", TextFontSize + 6, Color.white, TextAnchor.MiddleCenter);
+                _detailLevelNameLabel = CreateDetailText(classInfoGO.transform, "Level", TextFontSize + 6, Color.white, TextAnchor.MiddleLeft);
                 _detailLevelNameLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
                 _detailLevelNameLabel.text = StatPlaceholder;
                 var levelLE = _detailLevelNameLabel.gameObject.AddComponent<LayoutElement>();
                 levelLE.minWidth = 0f;
-                levelLE.preferredWidth = DetailLevelLabelPreferredWidth;
+                levelLE.preferredWidth = -1;
+                levelLE.flexibleWidth = 0f;
 
-               
 
                 var (costGO, _) = RecruitOverlayManagerHelpers.NewUI("CostRow", infoRootGO.transform);
                 var costLayout = costGO.AddComponent<HorizontalLayoutGroup>();
@@ -404,7 +408,7 @@ namespace TFTV
                 deliriumLE.minHeight = DetailDeliriumRowHeight;
                 deliriumLE.preferredHeight = DetailDeliriumRowHeight;
                 var (deliriumIconGO, _) = RecruitOverlayManagerHelpers.NewUI("Icon", deliriumRowGO.transform);
-                
+
                 _detailDeliriumIcon = deliriumIconGO.AddComponent<Image>();
                 _detailDeliriumIcon.preserveAspect = true;
                 _detailDeliriumIcon.raycastTarget = false;
@@ -422,7 +426,7 @@ namespace TFTV
                 deliriumIconLE.preferredHeight = DetailDeliriumIconSize;
                 deliriumIconLE.minWidth = DetailDeliriumIconSize;
                 deliriumIconLE.minHeight = DetailDeliriumIconSize;
-                
+
                 var (deliriumLabelGO, _) = RecruitOverlayManagerHelpers.NewUI("Label", deliriumRowGO.transform);
                 _detailDeliriumLabel = CreateDetailText(deliriumLabelGO.transform, "Delirium", TextFontSize + 2, Color.white, TextAnchor.MiddleLeft);
                 _detailDeliriumLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
@@ -642,7 +646,7 @@ namespace TFTV
                 PopulateStats(null);
                 PopulateArmorSlots(null);
                 PopulateEquipmentSlots(null);
-                PopulateAbilityRows(null, null);
+                PopulateAbilityRows(null, null, null, null);
 
                 if (_detailArmorSection != null)
                 {
@@ -1287,15 +1291,16 @@ namespace TFTV
             }
         }
 
-        private static void PopulateAbilityRows(IEnumerable<HavenRecruitsUtils.AbilityIconData> classAbilities, IEnumerable<HavenRecruitsUtils.AbilityIconData> personalAbilities)
+        private static void PopulateAbilityRows(
+            IReadOnlyList<HavenRecruitsUtils.AbilityIconData> classAbilities,
+            IReadOnlyList<HavenRecruitsUtils.AbilityIconData> personalAbilities,
+            ISet<int> lockedClassAbilityIndexes,
+            ISet<int> lockedPersonalAbilityIndexes)
         {
-            bool hasClassAbilities = PopulateAbilityRow(_detailClassAbilityRowRoot, classAbilities);
-            bool hasPersonalAbilities = PopulateAbilityRow(_detailPersonalAbilityRowRoot, personalAbilities);
+            bool hasClassAbilities = PopulateAbilityRow(_detailClassAbilityRowRoot, classAbilities, lockedClassAbilityIndexes);
+            bool hasPersonalAbilities = PopulateAbilityRow(_detailPersonalAbilityRowRoot, personalAbilities, lockedPersonalAbilityIndexes);
 
-            if (_detailAbilitySection != null)
-            {
-                _detailAbilitySection.SetActive(hasClassAbilities || hasPersonalAbilities);
-            }
+            _detailAbilitySection?.SetActive(hasClassAbilities || hasPersonalAbilities);
 
             UpdateAbilitySectionHeight(hasClassAbilities, hasPersonalAbilities);
 
@@ -1346,7 +1351,7 @@ namespace TFTV
             _detailAbilityLayoutElement.preferredHeight = totalHeight;
         }
 
-        private static bool PopulateAbilityRow(Transform root, IEnumerable<HavenRecruitsUtils.AbilityIconData> abilities)
+        private static bool PopulateAbilityRow(Transform root, IReadOnlyList<HavenRecruitsUtils.AbilityIconData> abilities, ISet<int> lockedAbilityIndexes)
         {
             if (root == null)
             {
@@ -1358,8 +1363,9 @@ namespace TFTV
             bool hasAny = false;
             if (abilities != null)
             {
-                foreach (var ability in abilities)
+                for (int i = 0; i < abilities.Count; i++)
                 {
+                    var ability = abilities[i];
                     if (ability.Icon == null)
                     {
                         continue;
@@ -1370,6 +1376,9 @@ namespace TFTV
                     {
                         continue;
                     }
+
+                    bool isLocked = lockedAbilityIndexes != null && lockedAbilityIndexes.Contains(i);
+                    ApplyAbilityLockState(iconImage, isLocked);
 
                     var triggerTarget = iconImage.transform?.parent != null ? iconImage.transform.parent.gameObject : iconImage.gameObject;
                     var trigger = triggerTarget.AddComponent<HavenRecruitAbilityTooltipTrigger>();
@@ -1382,6 +1391,94 @@ namespace TFTV
             return hasAny;
         }
 
+        private static void ApplyAbilityLockState(Image iconImage, bool isLocked)
+        {
+            if (iconImage == null)
+            {
+                return;
+            }
+
+            iconImage.color = isLocked ? AbilityLockedIconColor : AbilityUnlockedIconColor;
+
+            var frameTransform = iconImage.transform?.parent;
+            if (frameTransform == null)
+            {
+                return;
+            }
+
+            var background = frameTransform.Find("Background")?.GetComponent<Image>();
+            if (background != null)
+            {
+                background.color = isLocked ? AbilityLockedBackgroundColor : AbilityUnlockedBackgroundColor;
+            }
+        }
+
+        private static ISet<int> GetLockedClassAbilityIndexes(int recruitLevel, int abilityCount)
+        {
+            var locked = new HashSet<int>();
+            if (abilityCount <= 0)
+            {
+                return locked;
+            }
+
+            int unlockedCount;
+            if (recruitLevel >= 7)
+            {
+                unlockedCount = abilityCount;
+            }
+            else if (recruitLevel == 6)
+            {
+                unlockedCount = Mathf.Clamp(abilityCount - 1, 0, abilityCount);
+            }
+            else if (recruitLevel == 5)
+            {
+                unlockedCount = Mathf.Clamp(abilityCount - 2, 0, abilityCount);
+            }
+            else if (recruitLevel == 4 || recruitLevel == 3)
+            {
+                unlockedCount = Mathf.Clamp(3, 0, abilityCount);
+            }
+            else if (recruitLevel == 2)
+            {
+                unlockedCount = Mathf.Clamp(2, 0, abilityCount);
+            }
+            else if (recruitLevel == 1)
+            {
+                unlockedCount = Mathf.Clamp(1, 0, abilityCount);
+            }
+            else
+            {
+                unlockedCount = Mathf.Clamp(0, 0, abilityCount);
+            }
+
+            for (int i = unlockedCount; i < abilityCount; i++)
+            {
+                locked.Add(i);
+            }
+
+            return locked;
+        }
+
+        private static ISet<int> GetLockedPersonalAbilityIndexes(int abilityCount)
+        {
+            var locked = new HashSet<int>();
+            if (abilityCount <= 0)
+            {
+                return locked;
+            }
+
+            TFTVConfig config = TFTVMain.Main.Config;
+
+            int startIndex = config.LearnFirstSkill ? 0 : 1;
+            startIndex = Mathf.Clamp(startIndex, 0, abilityCount);
+
+            for (int i = startIndex; i < abilityCount; i++)
+            {
+                locked.Add(i);
+            }
+
+            return locked;
+        }
         private static void PopulateDetailPanel(RecruitAtSite data)
         {
             try
@@ -1409,7 +1506,9 @@ namespace TFTV
 
                 var classAbilities = HavenRecruitsUtils.GetClassAbilityIcons(data.Recruit).ToList();
                 var personalAbilities = HavenRecruitsUtils.GetPersonalAbilityIcons(data.Recruit).ToList();
-                PopulateAbilityRows(classAbilities, personalAbilities);
+                var lockedClassAbilities = GetLockedClassAbilityIndexes(data.Recruit.Level, classAbilities.Count);
+                var lockedPersonalAbilities = GetLockedPersonalAbilityIndexes(personalAbilities.Count);
+                PopulateAbilityRows(classAbilities, personalAbilities, lockedClassAbilities, lockedPersonalAbilities);
 
                 if (_detailClassIconImage != null)
                 {

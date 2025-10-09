@@ -4,6 +4,7 @@ using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities.Equipments;
@@ -69,7 +70,12 @@ namespace TFTV.TFTVHavenRecruitsUI
 
                 GeoPhoenixFaction geoPhoenixFaction = faction.GeoLevel.PhoenixFaction; // player faction wrapper
                                                                                        // All sites with havens, owned by factionDef, revealed to player
-                List<GeoHaven> havens = faction.Havens.Where(s => s != null && s.AvailableRecruit != null && s.Site.GetVisible(geoPhoenixFaction)).ToList();
+                List<GeoHaven> havens = faction.Havens.Where(s => s != null 
+                && s.AvailableRecruit != null 
+                && s.Site.GetVisible(geoPhoenixFaction)
+                && s.Leader.CanRecruitWithFaction(geoPhoenixFaction)
+                && s.Zones.Any((GeoHavenZone z) => z.Def.ProvidesRecruitment && z.IsOperational)
+               ).ToList();
 
                 foreach (var haven in havens)
                 {
