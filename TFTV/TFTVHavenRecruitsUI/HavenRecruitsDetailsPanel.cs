@@ -241,7 +241,7 @@ namespace TFTV
 
                 var (infoRootGO, _) = RecruitOverlayManagerHelpers.NewUI("InfoRoot", contentGO.transform);
                 var infoLayout = infoRootGO.AddComponent<VerticalLayoutGroup>();
-                infoLayout.childAlignment = TextAnchor.UpperCenter;
+                infoLayout.childAlignment = TextAnchor.UpperLeft;
                 infoLayout.spacing = DetailInfoSpacing;
                 infoLayout.childControlWidth = true;
                 infoLayout.childControlHeight = false;
@@ -296,7 +296,7 @@ namespace TFTV
                 factionNameLE.minWidth = 0f;
                 factionNameLE.flexibleWidth = 1f;
 
-                var (classInfoGO, _) = RecruitOverlayManagerHelpers.NewUI("ClassInfo", infoRootGO.transform);
+                var (classInfoGO, classInfoRT) = RecruitOverlayManagerHelpers.NewUI("ClassInfo", infoRootGO.transform);
                 var classInfoLayout = classInfoGO.AddComponent<HorizontalLayoutGroup>();
                 classInfoLayout.childAlignment = TextAnchor.MiddleLeft;
                 classInfoLayout.spacing = DetailClassInfoSpacing;
@@ -309,10 +309,23 @@ namespace TFTV
                     0,
                     DetailClassInfoPaddingTop,
                     DetailClassInfoPaddingBottom);
-               
+
+                if (classInfoRT != null)
+                {
+                    var offsetMin = classInfoRT.offsetMin;
+                    var offsetMax = classInfoRT.offsetMax;
+                    var anchoredPosition = classInfoRT.anchoredPosition;
+
+                    classInfoRT.anchorMin = new Vector2(0f, classInfoRT.anchorMin.y);
+                    classInfoRT.anchorMax = new Vector2(1f, classInfoRT.anchorMax.y);
+                    classInfoRT.pivot = new Vector2(0f, classInfoRT.pivot.y);
+                    classInfoRT.offsetMin = new Vector2(0f, offsetMin.y);
+                    classInfoRT.offsetMax = new Vector2(0f, offsetMax.y);
+                    classInfoRT.anchoredPosition = new Vector2(0f, anchoredPosition.y);
+                }
 
                 var classInfoFitter = classInfoGO.AddComponent<ContentSizeFitter>();
-                classInfoFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+                classInfoFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
                 classInfoFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
                 var (classIconGO, classIconRT) = RecruitOverlayManagerHelpers.NewUI("ClassIcon", classInfoGO.transform);
@@ -1469,7 +1482,7 @@ namespace TFTV
 
             TFTVConfig config = TFTVMain.Main.Config;
 
-            int startIndex = config.LearnFirstSkill ? 0 : 1;
+            int startIndex = !config.LearnFirstSkill ? 0 : 1;
             startIndex = Mathf.Clamp(startIndex, 0, abilityCount);
 
             for (int i = startIndex; i < abilityCount; i++)
@@ -1614,13 +1627,21 @@ namespace TFTV
                     return string.Empty;
                 }
 
-                string localized = faction.PPFactionDef.GetName();
-                if (!string.IsNullOrWhiteSpace(localized))
+                if(faction == faction.GeoLevel.AnuFaction)
                 {
-                    return localized;
+                    return HavenRecruitsUtils.AnuFactionName;
+                }
+                if (faction == faction.GeoLevel.NewJerichoFaction)
+                {
+                    return HavenRecruitsUtils.NJFactionName;
+                }
+                if (faction == faction.GeoLevel.SynedrionFaction)
+                {
+                    return HavenRecruitsUtils.SynFactionName;
                 }
 
                 return string.Empty;
+
             }
             catch (Exception ex)
             {

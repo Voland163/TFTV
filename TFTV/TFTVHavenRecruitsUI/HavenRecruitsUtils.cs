@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using Epic.OnlineServices.RTCAudio;
+using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.UI;
@@ -7,6 +8,7 @@ using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using System;
 using System.Collections.Generic;
@@ -21,7 +23,31 @@ namespace TFTV.TFTVHavenRecruitsUI
 {
     internal class HavenRecruitsUtils
     {
+        //TFTV_HUMAN_ENEMIES_NJ
+        //TFTV_HUMAN_ENEMIES_SYN
+        //TFTV_HUMAN_ENEMIES_ANU
 
+        internal static string AnuFactionName = "";
+        internal static string NJFactionName = "";
+        internal static string SynFactionName = "";
+
+        internal static void PopulateFactionNames()
+        {
+            try
+            {
+                if (AnuFactionName == "")
+                {
+                    AnuFactionName = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_ANU");
+                    NJFactionName = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_NJ");
+                    SynFactionName = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_SYN");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+            }
+        }
 
         internal static void SortRecruits(List<RecruitAtSite> list)
         {
