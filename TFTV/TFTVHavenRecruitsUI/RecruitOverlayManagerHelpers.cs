@@ -349,7 +349,10 @@ namespace TFTV
                     rect.anchorMax = new Vector2(0.5f, 0.5f);
                     rect.pivot = new Vector2(0.5f, 0.5f);
                     rect.sizeDelta = new Vector2(size, size);
+                    rect.localScale = Vector3.one;
                 }
+
+                slot.transform.localScale = Vector3.one;
 
                 var layout = slot.GetComponent<LayoutElement>() ?? slot.gameObject.AddComponent<LayoutElement>();
                 layout.preferredWidth = size;

@@ -1,4 +1,6 @@
-﻿using PhoenixPoint.Geoscape.Entities;
+﻿using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.UI;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using System;
 using System.Collections.Generic;
@@ -16,7 +18,9 @@ namespace TFTV
 {
     internal static class HavenRecruitsDetailsPanel
     {
-        internal const float DetailClassIconSize = 48f;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
+        internal const float DetailClassIconSize = 36f;
         internal const float DetailFactionIconSize = 36f;
         internal const int DetailInventorySlotSize = 48;
         internal const float DetailStatIconSize = 36f;
@@ -40,16 +44,19 @@ namespace TFTV
         internal const float DetailClassTextSpacing = 4f;
         internal const float DetailCostSpacing = 0f;
         internal const int DetailCostPaddingTop = -80;
+        internal const int DetailCostPaddingLeft = -35;
         internal const int DetailCostPaddingBottom = 0;
         internal const float DetailStatsSectionSpacing = 0f;
         internal const float DetailStatRowSpacing = 6f;
+        internal const float DetailDeliriumIconSize = DetailStatIconSize;
+        internal const float DetailDeliriumRowHeight = DetailStatsGridCellHeight;
         internal const float DetailAbilityRowHorizontalSpacing = 12f;
         internal const float DetailGearRowSpacing = 6f;
         internal const int DetailStatsSectionPaddingTop = -40;
         internal const int DetailStatsSectionPaddingBottom = 8;
-        internal const int DetailAbilitySectionPaddingTop = 0;
+        internal const int DetailAbilitySectionPaddingTop = 40;
         internal const int DetailAbilitySectionPaddingBottom = 0;
-        internal const int DetailGearSectionPaddingTop = 120;
+        internal const int DetailGearSectionPaddingTop = 160;
         internal const int DetailGearSectionPaddingBottom = 0;
         // Spacing between the major layout groups is intentionally tiny because the visible gaps
         // are dominated by the min/preferred heights we assign via LayoutElement (for example the
@@ -68,8 +75,8 @@ namespace TFTV
         internal static GameObject _detailEmptyState;
         internal static Transform _detailInfoRoot;
         internal static Image _detailClassIconImage;
-        internal static Text _detailLevelLabel;
-        internal static Text _detailNameLabel;
+        internal static Text _detailLevelNameLabel;
+       
         internal static Image _detailFactionIconImage;
 
         internal static GameObject _detailAbilitySection;
@@ -83,7 +90,10 @@ namespace TFTV
         internal static readonly Dictionary<string, StatCell> _detailStatCells = new Dictionary<string, StatCell>();
         internal static GameObject _detailCostSection;
         internal static Transform _detailCostRoot;
-
+        private static GameObject _detailDeliriumRow;
+        private static Image _detailDeliriumIcon;
+        private static Text _detailDeliriumLabel;
+        private static Sprite _detailDeliriumIconSprite;
 
         private const string StatPlaceholder = "--";
         private static readonly Dictionary<string, Sprite> _statIconCache = new Dictionary<string, Sprite>(StringComparer.OrdinalIgnoreCase);
@@ -285,7 +295,7 @@ namespace TFTV
                 classInfoLayout.spacing = DetailClassInfoSpacing;
                 classInfoLayout.childControlWidth = true;
                 classInfoLayout.childControlHeight = true;
-                classInfoLayout.childForceExpandWidth = false;
+                classInfoLayout.childForceExpandWidth = true;
                 classInfoLayout.childForceExpandHeight = false;
                 classInfoLayout.padding = new RectOffset(
                     0,
@@ -293,9 +303,9 @@ namespace TFTV
                     DetailClassInfoPaddingTop,
                     DetailClassInfoPaddingBottom);
                 var classInfoLE = classInfoGO.AddComponent<LayoutElement>();
-                classInfoLE.minWidth = 0f;
-                classInfoLE.flexibleWidth = 0f;
-                classInfoLE.preferredWidth = 0f;
+                classInfoLE.minWidth = width;
+                classInfoLE.flexibleWidth = width;
+                classInfoLE.preferredWidth = width;
 
                 var classInfoFitter = classInfoGO.AddComponent<ContentSizeFitter>();
                 classInfoFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -313,31 +323,14 @@ namespace TFTV
                 classIconLE.minHeight = DetailClassIconSize;
                 classIconRT.sizeDelta = new Vector2(DetailClassIconSize, DetailClassIconSize);
 
-                var (classTextContainerGO, _) = RecruitOverlayManagerHelpers.NewUI("ClassText", classInfoGO.transform);
-                var classTextLayout = classTextContainerGO.AddComponent<HorizontalLayoutGroup>();
-                classTextLayout.childAlignment = TextAnchor.MiddleCenter;
-                classTextLayout.spacing = DetailClassTextSpacing;
-                classTextLayout.childControlWidth = true;
-                classTextLayout.childControlHeight = false;
-                classTextLayout.childForceExpandWidth = true;
-                classTextLayout.childForceExpandHeight = false;
-                var classTextLE = classTextContainerGO.AddComponent<LayoutElement>();
-                classTextLE.minWidth = 0f;
-                classTextLE.flexibleWidth = width * 0.8f;
-
-                _detailLevelLabel = CreateDetailText(classTextContainerGO.transform, "Level", TextFontSize + 6, Color.white, TextAnchor.MiddleCenter);
-                _detailLevelLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
-                _detailLevelLabel.text = StatPlaceholder;
-                var levelLE = _detailLevelLabel.gameObject.AddComponent<LayoutElement>();
+                _detailLevelNameLabel = CreateDetailText(classInfoGO.transform, "Level", TextFontSize + 6, Color.white, TextAnchor.MiddleCenter);
+                _detailLevelNameLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
+                _detailLevelNameLabel.text = StatPlaceholder;
+                var levelLE = _detailLevelNameLabel.gameObject.AddComponent<LayoutElement>();
                 levelLE.minWidth = 0f;
                 levelLE.preferredWidth = DetailLevelLabelPreferredWidth;
 
-                _detailNameLabel = CreateDetailText(classTextContainerGO.transform, "Name", TextFontSize + 6, Color.white, TextAnchor.MiddleCenter);
-                _detailNameLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
-                _detailNameLabel.text = string.Empty;
-                var nameLE = _detailNameLabel.gameObject.AddComponent<LayoutElement>();
-                nameLE.minWidth = 0f;
-                nameLE.flexibleWidth = 1f;
+               
 
                 var (costGO, _) = RecruitOverlayManagerHelpers.NewUI("CostRow", infoRootGO.transform);
                 var costLayout = costGO.AddComponent<HorizontalLayoutGroup>();
@@ -348,7 +341,7 @@ namespace TFTV
                 costLayout.childForceExpandWidth = false;
                 costLayout.childForceExpandHeight = false;
                 costLayout.padding = new RectOffset(
-                   0,
+                   DetailCostPaddingLeft,
                    0,
                    DetailCostPaddingTop,
                    DetailCostPaddingBottom);
@@ -360,9 +353,9 @@ namespace TFTV
                 costLE.flexibleWidth = 1f;
 
                 var (statsSectionGO, _) = RecruitOverlayManagerHelpers.NewUI("StatsSection", infoRootGO.transform);
-                var statsSectionLayout = statsSectionGO.AddComponent<HorizontalLayoutGroup>();
+                var statsSectionLayout = statsSectionGO.AddComponent<VerticalLayoutGroup>();
                 statsSectionLayout.childAlignment = TextAnchor.UpperCenter;
-                statsSectionLayout.spacing = DetailStatsSectionSpacing;
+                statsSectionLayout.spacing = DetailStatRowSpacing;
                 statsSectionLayout.childControlWidth = true;
                 statsSectionLayout.childControlHeight = true;
                 statsSectionLayout.childForceExpandWidth = true;
@@ -398,6 +391,47 @@ namespace TFTV
                     var cell = CreateStatCell(statName, _detailStatsGridRoot);
                     _detailStatCells[statName] = cell;
                 }
+
+                var (deliriumRowGO, _) = RecruitOverlayManagerHelpers.NewUI("DeliriumRow", statsSectionGO.transform);
+                var deliriumLayout = deliriumRowGO.AddComponent<HorizontalLayoutGroup>();
+                deliriumLayout.childAlignment = TextAnchor.MiddleCenter;
+                deliriumLayout.spacing = DetailClassTextSpacing;
+                deliriumLayout.childControlWidth = false;
+                deliriumLayout.childControlHeight = false;
+                deliriumLayout.childForceExpandWidth = false;
+                deliriumLayout.childForceExpandHeight = false;
+                var deliriumLE = deliriumRowGO.AddComponent<LayoutElement>();
+                deliriumLE.minHeight = DetailDeliriumRowHeight;
+                deliriumLE.preferredHeight = DetailDeliriumRowHeight;
+                var (deliriumIconGO, _) = RecruitOverlayManagerHelpers.NewUI("Icon", deliriumRowGO.transform);
+                
+                _detailDeliriumIcon = deliriumIconGO.AddComponent<Image>();
+                _detailDeliriumIcon.preserveAspect = true;
+                _detailDeliriumIcon.raycastTarget = false;
+
+                // Ensure the RectTransform has the desired size instead of relying on SetNativeSize()
+                var deliriumIconRT = deliriumIconGO.GetComponent<RectTransform>();
+                if (deliriumIconRT != null)
+                {
+                    deliriumIconRT.sizeDelta = new Vector2(DetailDeliriumIconSize, DetailDeliriumIconSize);
+                }
+
+                // Also add a LayoutElement so layout systems have the correct preferred/min sizes
+                var deliriumIconLE = deliriumIconGO.AddComponent<LayoutElement>();
+                deliriumIconLE.preferredWidth = DetailDeliriumIconSize;
+                deliriumIconLE.preferredHeight = DetailDeliriumIconSize;
+                deliriumIconLE.minWidth = DetailDeliriumIconSize;
+                deliriumIconLE.minHeight = DetailDeliriumIconSize;
+                
+                var (deliriumLabelGO, _) = RecruitOverlayManagerHelpers.NewUI("Label", deliriumRowGO.transform);
+                _detailDeliriumLabel = CreateDetailText(deliriumLabelGO.transform, "Delirium", TextFontSize + 2, Color.white, TextAnchor.MiddleLeft);
+                _detailDeliriumLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
+                var deliriumLabelLE = _detailDeliriumLabel.gameObject.AddComponent<LayoutElement>();
+                deliriumLabelLE.minWidth = 0f;
+                deliriumLabelLE.flexibleWidth = 0f;
+                _detailDeliriumRow = deliriumRowGO;
+                _detailDeliriumRow.SetActive(false);
+
 
                 var (abilitiesGO, _) = RecruitOverlayManagerHelpers.NewUI("AbilitySection", infoRootGO.transform);
                 var abilityLayout = abilitiesGO.AddComponent<VerticalLayoutGroup>();
@@ -592,15 +626,12 @@ namespace TFTV
                     _detailClassIconImage.enabled = false;
                 }
 
-                if (_detailLevelLabel != null)
+                if (_detailLevelNameLabel != null)
                 {
-                    _detailLevelLabel.text = StatPlaceholder;
+                    _detailLevelNameLabel.text = StatPlaceholder;
                 }
 
-                if (_detailNameLabel != null)
-                {
-                    _detailNameLabel.text = string.Empty;
-                }
+               
 
                 if (_detailFactionNameLabel != null)
                 {
@@ -679,7 +710,7 @@ namespace TFTV
             }
         }
 
-        private static void PopulateStats(GeoUnitDescriptor recruit)
+        private static void PopulateStats(RecruitAtSite recruit)
         {
             foreach (var kvp in _detailStatCells)
             {
@@ -700,12 +731,13 @@ namespace TFTV
 
             if (recruit == null)
             {
+                PopulateDeliriumRow(0);
                 RefreshStatsLayout();
                 return;
             }
             try
             {
-                var stats = recruit.GetStats();
+                var stats = recruit.Recruit.GetStats();
 
                 TFTVLogger.Always($"strength: {stats.Endurance.Value}");
                 TFTVLogger.Always($"willpower: {stats.Willpower.Value}");
@@ -713,6 +745,8 @@ namespace TFTV
                 TFTVLogger.Always($"speed: {stats.Speed.Value}");
                 TFTVLogger.Always($"accuracy: {stats.Accuracy.Value}");
                 TFTVLogger.Always($"stealth: {stats.Stealth.Value}");
+
+                int delirium = recruit.Haven.RecruitCorruption;
 
                 if (stats == null)
                 {
@@ -751,16 +785,16 @@ namespace TFTV
                         case "Stealth":
                             statValue = stats.Stealth;
                             break;
-                       
+
                     }
 
                     string valueText = statValue.ToString();
 
-                    if (statName=="Accuracy" || statName == "Stealth")
+                    if (statName == "Accuracy" || statName == "Stealth")
                     {
                         valueText = Mathf.RoundToInt(statValue * 100f) + "%";
                     }
-                    
+
 
                     Sprite icon = GetStatIcon(statName);
 
@@ -776,6 +810,7 @@ namespace TFTV
                         cell.Label.text = $"{statName} {valueText}";
                     }
                 }
+                PopulateDeliriumRow(delirium);
             }
             catch (Exception ex)
             {
@@ -784,6 +819,47 @@ namespace TFTV
 
             RefreshStatsLayout();
         }
+        private static void PopulateDeliriumRow(int deliriumValue)
+        {
+            TFTVLogger.Always($"_detailDeliriumRow == null: {_detailDeliriumRow == null}");
+
+            if (_detailDeliriumRow == null)
+            {
+                return;
+            }
+
+            if (deliriumValue==0)
+            {
+                _detailDeliriumRow.SetActive(false);
+                return;
+            }
+           
+            if (_detailDeliriumLabel != null)
+            {
+                _detailDeliriumLabel.text = $"Delirium {deliriumValue}";
+            }
+
+            if (_detailDeliriumIcon != null)
+            {
+                var sprite = DefCache.GetDef<ViewElementDef>("E_Visuals [Corruption_StatusDef]").SmallIcon;
+                _detailDeliriumIcon.sprite = sprite;
+                _detailDeliriumIcon.enabled = sprite != null;
+            }
+
+            _detailDeliriumRow.SetActive(true);
+        }
+
+        private static Sprite GetDeliriumIcon()
+        {
+            if (_detailDeliriumIconSprite == null)
+            {
+                _detailDeliriumIconSprite = Helper.CreateSpriteFromImageFile("Stat_Delirium.png");
+            }
+
+            return _detailDeliriumIconSprite;
+        }
+
+       
 
         private static void RefreshStatsLayout()
         {
@@ -1329,7 +1405,7 @@ namespace TFTV
 
                 PopulateRecruitCost(data);
 
-                PopulateStats(data.Recruit);
+                PopulateStats(data);
 
                 var classAbilities = HavenRecruitsUtils.GetClassAbilityIcons(data.Recruit).ToList();
                 var personalAbilities = HavenRecruitsUtils.GetPersonalAbilityIcons(data.Recruit).ToList();
@@ -1343,14 +1419,9 @@ namespace TFTV
                     _detailClassIconImage.enabled = classIcon != null;
                 }
 
-                if (_detailLevelLabel != null)
+                if (_detailLevelNameLabel != null)
                 {
-                    _detailLevelLabel.text = data.Recruit.Level.ToString();
-                }
-
-                if (_detailNameLabel != null)
-                {
-                    _detailNameLabel.text = data.Recruit.GetName();
+                    _detailLevelNameLabel.text = $"{data.Recruit.Level.ToString()} {data.Recruit.GetName()}";
                 }
 
                 PopulateArmorSlots(data.Recruit);

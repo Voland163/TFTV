@@ -79,7 +79,7 @@ namespace TFTV.TFTVHavenRecruitsUI
             };
         }
 
-        internal static GameObject CreateCostRow(Transform parent, GeoHaven haven, GeoPhoenixFaction phoenix, RecruitCardView cardView)
+        internal static GameObject CreateCostRow(Transform parent, GeoHaven haven, GeoPhoenixFaction phoenix, RecruitCardView cardView, bool detailPanel=false)
         {
 
             EnsureResourceVisuals();
@@ -96,6 +96,13 @@ namespace TFTV.TFTVHavenRecruitsUI
             h.childForceExpandWidth = false;
             h.childForceExpandHeight = false;
             h.padding = new RectOffset(0, 0, 0, 0);
+
+            if(detailPanel)
+            {
+                h.childAlignment = TextAnchor.MiddleCenter;
+                h.childControlWidth = false;
+
+            }
 
             foreach (var type in _resourceDisplayOrder)
             {

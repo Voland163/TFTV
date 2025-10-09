@@ -285,6 +285,7 @@ namespace TFTV
           //  internal static Sprite _iconBackground;
             internal static Sprite _abilityIconBackground;
             internal static UIInventorySlot _mutationSlotTemplate;
+            internal static RectTransform _mutationTemplateRoot;
 
             private static readonly HashSet<string> _allowedGeoscapeMapStates = new HashSet<string>(StringComparer.Ordinal)
             {
@@ -334,6 +335,13 @@ namespace TFTV
                         Object.Destroy(_mutationSlotTemplate.gameObject);
                         _mutationSlotTemplate = null;
                     }
+
+                    if (_mutationTemplateRoot != null)
+                    {
+                        Object.Destroy(_mutationTemplateRoot.gameObject);
+                        _mutationTemplateRoot = null;
+                    }
+
                     _lastLayoutScreenWidth = 0;
                     isInitialized = false;
                 }
@@ -709,11 +717,13 @@ namespace TFTV
                         overlayTransform = overlayPanel?.transform;
                     }
 
+                    Transform desiredParent = EnsureMutationTemplateRoot(overlayTransform);
+
                     if (_mutationSlotTemplate != null)
                     {
-                        if (overlayTransform != null && _mutationSlotTemplate.transform.parent != overlayTransform)
+                        if (desiredParent != null && _mutationSlotTemplate.transform.parent != desiredParent)
                         {
-                            _mutationSlotTemplate.transform.SetParent(overlayTransform, false);
+                            _mutationSlotTemplate.transform.SetParent(desiredParent, false);
                         }
 
                         return _mutationSlotTemplate;
@@ -726,7 +736,7 @@ namespace TFTV
                         return null;
                     }
 
-                    Transform parent = overlayTransform ?? OverlayCanvas?.transform ?? template.transform.parent;
+                    Transform parent = desiredParent ?? template.transform.parent;
                     var cloneGO = Object.Instantiate(template.gameObject, parent, worldPositionStays: false);
                     cloneGO.name = "TFTV_RecruitMutationSlotTemplate";
                     cloneGO.SetActive(false);
@@ -745,6 +755,49 @@ namespace TFTV
                 {
                     TFTVLogger.Error(ex);
                     return null;
+                }
+            }
+
+            private static RectTransform EnsureMutationTemplateRoot(Transform overlayTransform)
+            {
+                try
+                {
+                    Transform desiredParent = overlayPanel != null
+                        ? overlayPanel.transform
+                        : overlayTransform ?? OverlayCanvas?.transform;
+
+                    if (desiredParent == null)
+                    {
+                        return _mutationTemplateRoot;
+                    }
+
+                    if (_mutationTemplateRoot != null)
+                    {
+                        if (_mutationTemplateRoot.transform.parent != desiredParent)
+                        {
+                            _mutationTemplateRoot.SetParent(desiredParent, false);
+                        }
+
+                        return _mutationTemplateRoot;
+                    }
+
+                    var go = new GameObject("TFTV_RecruitTemplateRoot", typeof(RectTransform));
+                    go.hideFlags = HideFlags.HideAndDontSave;
+                    var rect = go.GetComponent<RectTransform>();
+                    rect.SetParent(desiredParent, false);
+                    rect.anchorMin = new Vector2(0.5f, 0.5f);
+                    rect.anchorMax = new Vector2(0.5f, 0.5f);
+                    rect.pivot = new Vector2(0.5f, 0.5f);
+                    rect.sizeDelta = Vector2.zero;
+                    rect.anchoredPosition = Vector2.zero;
+
+                    _mutationTemplateRoot = rect;
+                    return _mutationTemplateRoot;
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                    return _mutationTemplateRoot;
                 }
             }
 
