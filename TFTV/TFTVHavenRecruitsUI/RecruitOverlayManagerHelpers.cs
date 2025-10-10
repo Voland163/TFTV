@@ -124,20 +124,7 @@ namespace TFTV
 
                 ApplyOversizedIconOverlay(slot, data.Icon, size, MutationOverlayName);
 
-                var tooltip = EnsureOverlayItemTooltip();
-                if (tooltip != null)
-                {
-                    ResetSlotHandlers(slot);
-
-                  
-                    GeoItem geoItem = slot.Item as GeoItem;
-                   // TFTVLogger.Always($"geoItem: {geoItem?.ItemDef?.name}");
-
-                    var forwarder = slotGO.GetComponent<TacticalItemSlotTooltipForwarder>() ?? slotGO.AddComponent<TacticalItemSlotTooltipForwarder>();
-                    
-
-                    forwarder.Initialize(slot, geoItem, tooltip);
-                }
+                RecruitCardView.ConfigureMutationSlot(slot);
                 return slot;
 
             }
@@ -250,7 +237,7 @@ namespace TFTV
             }
         }
 
-        private class TacticalItemSlotTooltipForwarder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+        internal sealed class TacticalItemSlotTooltipForwarder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         {
             private UIInventorySlot _slot;
             private UIGeoItemTooltip _tooltip;
@@ -389,7 +376,7 @@ namespace TFTV
             }
         }
 
-        private static void ResetSlotHandlers(UIInventorySlot slot)
+        internal static void ResetSlotHandlers(UIInventorySlot slot)
         {
             if (slot == null) return;
 

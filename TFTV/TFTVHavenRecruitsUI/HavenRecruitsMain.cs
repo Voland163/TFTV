@@ -196,8 +196,43 @@ namespace TFTV
             public Text NameLabel;
             public Color NameDefaultColor = Color.white;
 
+            public RectTransform RectTransform;
+            public CardClickHandler ClickHandler;
+            public Transform AbilityContainer;
+            public RectTransform AbilityContainerRect;
+            public Transform CostRoot;
+
+            private readonly List<MutationSlotEntry> _mutationSlots = new List<MutationSlotEntry>();
+            private readonly List<AbilityIconEntry> _abilityIcons = new List<AbilityIconEntry>();
+            private readonly List<ResourceCostEntry> _costEntries = new List<ResourceCostEntry>();
+
+
             private readonly List<Text> _resourceAmountLabels = new List<Text>();
             private readonly List<Color> _resourceAmountDefaultColors = new List<Color>();
+
+            private sealed class MutationSlotEntry
+            {
+                public UIInventorySlot Slot;
+                public Image OverlayImage;
+                public MonoBehaviour TooltipForwarder;
+            }
+
+            private sealed class AbilityIconEntry
+            {
+                public GameObject Frame;
+                public Image Icon;
+                public HavenRecruitAbilityTooltipTrigger Tooltip;
+            }
+
+            private sealed class ResourceCostEntry
+            {
+                public GameObject Root;
+                public Image IconImage;
+                public GameObject IconFrame;
+                public Text TypeLabel;
+                public Text AmountLabel;
+                public ResourceType ResourceType;
+            }
 
             public void RegisterResourceAmount(Text label)
             {
@@ -206,9 +241,56 @@ namespace TFTV
                     return;
                 }
 
+                if (_resourceAmountLabels.Contains(label))
+                {
+                    return;
+                }
+
+
                 _resourceAmountLabels.Add(label);
                 _resourceAmountDefaultColors.Add(label.color);
             }
+
+            internal static void ConfigureMutationSlot(UIInventorySlot slot)
+            {
+                try
+                {
+                    if (slot == null)
+                    {
+                        return;
+                    }
+
+                    var geoItem = slot.Item as GeoItem;
+                    if (geoItem == null)
+                    {
+                        return;
+                    }
+
+                    RecruitOverlayManagerHelpers.ResetSlotHandlers(slot);
+
+                    var itemTooltip = RecruitOverlayManager.EnsureOverlayItemTooltip();
+                    if (itemTooltip == null)
+                    {
+                        return;
+                    }
+
+                    var slotObject = slot.gameObject;
+                    if (slotObject == null)
+                    {
+                        return;
+                    }
+
+                    var forwarder = slotObject.GetComponent<RecruitOverlayManagerHelpers.TacticalItemSlotTooltipForwarder>()
+                        ?? slotObject.AddComponent<RecruitOverlayManagerHelpers.TacticalItemSlotTooltipForwarder>();
+
+                    forwarder.Initialize(slot, geoItem, itemTooltip);
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
+            }
+
 
             public void SetSelected(bool selected)
             {
@@ -237,6 +319,507 @@ namespace TFTV
 
                     label.color = selected ? Color.black : _resourceAmountDefaultColors[i];
                 }
+            }
+            public void BindData(RecruitAtSite data)
+            {
+                if (data == null)
+                {
+                    gameObject.SetActive(false);
+                    return;
+                }
+
+                var recruit = data.Recruit;
+                gameObject.name = $"Recruit_{recruit?.GetName() ?? "Unknown"}";
+
+                if (RectTransform == null)
+                {
+                    RectTransform = GetComponent<RectTransform>();
+                }
+
+                if (ClassIconImage != null)
+                {
+                    var classIcon = HavenRecruitsUtils.GetClassIcon(recruit);
+                    ClassIconImage.sprite = classIcon;
+                    if (ClassIconImage.transform.parent != null)
+                    {
+                        ClassIconImage.transform.parent.gameObject.SetActive(classIcon != null);
+                    }
+                    ClassIconImage.gameObject.SetActive(classIcon != null);
+                }
+
+                if (LevelLabel != null)
+                {
+                    LevelLabel.text = $"{recruit?.Level ?? 0}";
+                }
+
+                if (NameLabel != null)
+                {
+                    NameLabel.text = recruit?.GetName() ?? "Unknown Recruit";
+                }
+
+                if (ClickHandler != null)
+                {
+                    ClickHandler.OnSingle = () =>
+                    {
+                        HavenRecruitsGeoscapeInteractions.FocusOnSite(data.Site);
+                        RecruitOverlayManager.HandleRecruitSelected(gameObject, data);
+                    };
+
+                    ClickHandler.OnDouble = () =>
+                    {
+                        RecruitOverlayManager.HandleRecruitSelected(gameObject, data);
+                        OnCardDoubleClick?.Invoke(recruit, data.Site);
+                    };
+                }
+
+                UpdateMutationSlots(data);
+                UpdateAbilityIcons(data);
+                UpdateCostEntries(data);
+            }
+
+            private void UpdateMutationSlots(RecruitAtSite data)
+            {
+                if (AbilityContainer == null)
+                {
+                    return;
+                }
+
+                var mutationIcons = HavenRecruitsUtils.GetMutationIcons(data.Recruit).ToList();
+                int siblingIndex = 0;
+
+                for (int i = 0; i < mutationIcons.Count; i++)
+                {
+                    var entry = EnsureMutationSlot(i, mutationIcons[i]);
+                    ConfigureMutationSlot(entry, mutationIcons[i], siblingIndex++);
+                }
+
+                for (int i = mutationIcons.Count; i < _mutationSlots.Count; i++)
+                {
+                    var slot = _mutationSlots[i]?.Slot;
+                    if (slot != null)
+                    {
+                        slot.gameObject.SetActive(false);
+                    }
+                }
+
+                UpdateAbilityContainerVisibility();
+            }
+
+            private void UpdateAbilityIcons(RecruitAtSite data)
+            {
+                if (AbilityContainer == null)
+                {
+                    return;
+                }
+
+                var abilityInfos = HavenRecruitsUtils.GetSelectedAbilityIcons(data.Recruit).ToList();
+                int baseIndex = _mutationSlots.Count(slot => slot?.Slot != null && slot.Slot.gameObject.activeSelf);
+
+                for (int i = 0; i < abilityInfos.Count; i++)
+                {
+                    var entry = EnsureAbilityIcon(i);
+                    ConfigureAbilityIcon(entry, abilityInfos[i], baseIndex + i);
+                }
+
+                for (int i = abilityInfos.Count; i < _abilityIcons.Count; i++)
+                {
+                    var icon = _abilityIcons[i];
+                    if (icon?.Frame != null)
+                    {
+                        icon.Frame.SetActive(false);
+                    }
+                }
+
+                UpdateAbilityContainerVisibility();
+            }
+
+            private void UpdateAbilityContainerVisibility()
+            {
+                if (AbilityContainer == null)
+                {
+                    return;
+                }
+
+                bool hasActiveMutation = _mutationSlots.Any(m => m?.Slot != null && m.Slot.gameObject.activeSelf);
+                bool hasActiveAbility = _abilityIcons.Any(a => a?.Frame != null && a.Frame.activeSelf);
+                AbilityContainer.gameObject.SetActive(hasActiveMutation || hasActiveAbility);
+                if (AbilityContainer.gameObject.activeSelf)
+                {
+                    AbilityContainer.SetAsLastSibling();
+                }
+            }
+
+            private MutationSlotEntry EnsureMutationSlot(int index, HavenRecruitsUtils.MutationIconData data)
+            {
+                while (_mutationSlots.Count <= index)
+                {
+                    var created = CreateMutationSlot(data);
+                    if (created == null)
+                    {
+                        break;
+                    }
+                    _mutationSlots.Add(created);
+                }
+
+                return index < _mutationSlots.Count ? _mutationSlots[index] : null;
+            }
+
+            private MutationSlotEntry CreateMutationSlot(HavenRecruitsUtils.MutationIconData data)
+            {
+                if (AbilityContainer == null)
+                {
+                    return null;
+                }
+
+                var slot = RecruitOverlayManagerHelpers.MakeMutationSlot(AbilityContainer, data, ArmorIconSize);
+                if (slot == null)
+                {
+                    return null;
+                }
+
+                var entry = new MutationSlotEntry
+                {
+                    Slot = slot,
+                    OverlayImage = slot.transform.Find("MutationIconOverlay")?.GetComponent<Image>()
+                };
+
+                entry.TooltipForwarder = slot.GetComponents<MonoBehaviour>()
+                    .FirstOrDefault(m => m != null && m.GetType().Name == "TacticalItemSlotTooltipForwarder");
+
+                slot.gameObject.SetActive(false);
+                return entry;
+            }
+
+            private void ConfigureMutationSlot(MutationSlotEntry entry, HavenRecruitsUtils.MutationIconData data, int siblingIndex)
+            {
+                if (entry?.Slot == null)
+                {
+                    return;
+                }
+
+                entry.Slot.transform.SetParent(AbilityContainer, false);
+                entry.Slot.transform.SetSiblingIndex(Mathf.Clamp(siblingIndex, 0, AbilityContainer.childCount));
+                entry.Slot.gameObject.SetActive(true);
+
+                if (data.HasItem)
+                {
+                    entry.Slot.Item = new GeoItem(data.Item);
+                }
+                else
+                {
+                    entry.Slot.Item = null;
+                }
+
+                if (entry.OverlayImage == null)
+                {
+                    entry.OverlayImage = entry.Slot.transform.Find("MutationIconOverlay")?.GetComponent<Image>();
+                }
+
+                if (entry.OverlayImage != null)
+                {
+                    entry.OverlayImage.sprite = data.Icon;
+                }
+
+                if (entry.TooltipForwarder == null && entry.Slot != null)
+                {
+                    entry.TooltipForwarder = entry.Slot.GetComponents<MonoBehaviour>()
+                        .FirstOrDefault(m => m != null && m.GetType().Name == "TacticalItemSlotTooltipForwarder");
+                }
+
+                var tooltip = RecruitOverlayManager.EnsureOverlayTooltip();
+                if (tooltip != null && entry.TooltipForwarder != null)
+                {
+                    var method = entry.TooltipForwarder.GetType().GetMethod(
+                        "Initialize",
+                        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+                    method?.Invoke(entry.TooltipForwarder, new object[] { entry.Slot, entry.Slot.Item, tooltip });
+                }
+            }
+
+            private AbilityIconEntry EnsureAbilityIcon(int index)
+            {
+                while (_abilityIcons.Count <= index)
+                {
+                    var created = CreateAbilityIcon();
+                    if (created == null)
+                    {
+                        break;
+                    }
+                    _abilityIcons.Add(created);
+                }
+
+                return index < _abilityIcons.Count ? _abilityIcons[index] : null;
+            }
+
+            private AbilityIconEntry CreateAbilityIcon()
+            {
+                if (AbilityContainer == null)
+                {
+                    return null;
+                }
+
+                var iconImage = RecruitOverlayManagerHelpers.MakeFixedIcon(
+                    AbilityContainer,
+                    null,
+                    AbilityIconSize,
+                    RecruitOverlayManager._abilityIconBackground);
+
+                if (iconImage == null)
+                {
+                    return null;
+                }
+
+                var trigger = iconImage.gameObject.GetComponent<HavenRecruitAbilityTooltipTrigger>()
+                    ?? iconImage.gameObject.AddComponent<HavenRecruitAbilityTooltipTrigger>();
+
+                var entry = new AbilityIconEntry
+                {
+                    Frame = iconImage.transform.parent != null ? iconImage.transform.parent.gameObject : iconImage.gameObject,
+                    Icon = iconImage,
+                    Tooltip = trigger
+                };
+
+                entry.Frame.SetActive(false);
+                iconImage.raycastTarget = true;
+                return entry;
+            }
+
+            private void ConfigureAbilityIcon(AbilityIconEntry entry, HavenRecruitsUtils.AbilityIconData data, int siblingIndex)
+            {
+                if (entry?.Frame == null || entry.Icon == null)
+                {
+                    return;
+                }
+
+                entry.Frame.transform.SetParent(AbilityContainer, false);
+                entry.Frame.transform.SetSiblingIndex(Mathf.Clamp(siblingIndex, 0, AbilityContainer.childCount));
+                entry.Frame.SetActive(true);
+                entry.Icon.sprite = data.Icon;
+                entry.Tooltip?.Initialize(data);
+            }
+
+            private void UpdateCostEntries(RecruitAtSite data)
+            {
+                if (CostRoot == null)
+                {
+                    return;
+                }
+
+                EnsureCostEntryCache();
+
+                var phoenixFaction = data.Haven?.Site?.GeoLevel?.PhoenixFaction;
+                var costs = HavenRecruitsUtils.GetRecruitCost(data.Haven, phoenixFaction);
+                int index = 0;
+
+                foreach (var type in HavenRecruitsPrice._resourceDisplayOrder)
+                {
+                    if (costs.TryGetValue(type, out var amount))
+                    {
+                        ConfigureCostEntry(index++, type, amount);
+                        costs.Remove(type);
+                    }
+                }
+
+                foreach (var kvp in costs)
+                {
+                    ConfigureCostEntry(index++, kvp.Key, kvp.Value);
+                }
+
+                for (int i = index; i < _costEntries.Count; i++)
+                {
+                    var entry = _costEntries[i];
+                    if (entry?.Root != null)
+                    {
+                        entry.Root.SetActive(false);
+                    }
+                }
+            }
+
+            private void EnsureCostEntryCache()
+            {
+                if (CostRoot == null)
+                {
+                    return;
+                }
+
+                if (_costEntries.Count > 0)
+                {
+                    return;
+                }
+
+                for (int i = 0; i < CostRoot.childCount; i++)
+                {
+                    var child = CostRoot.GetChild(i);
+                    if (child == null)
+                    {
+                        continue;
+                    }
+
+                    var entry = new ResourceCostEntry
+                    {
+                        Root = child.gameObject,
+                        IconFrame = child.Find("IconFrame")?.gameObject ?? child.Find("IconFrameAbility")?.gameObject,
+                        IconImage = child.Find("IconFrame/Img")?.GetComponent<Image>() ?? child.Find("IconFrameAbility/Img")?.GetComponent<Image>(),
+                        TypeLabel = child.Find("Type")?.GetComponent<Text>(),
+                        AmountLabel = child.Find("Amt")?.GetComponent<Text>()
+                    };
+
+                    if (entry.AmountLabel != null)
+                    {
+                        RegisterResourceAmount(entry.AmountLabel);
+                    }
+
+                    _costEntries.Add(entry);
+                }
+            }
+
+            private void ConfigureCostEntry(int index, ResourceType resourceType, int amount)
+            {
+                if (amount <= 0)
+                {
+                    return;
+                }
+
+                var entry = EnsureCostEntry(index);
+                if (entry == null)
+                {
+                    return;
+                }
+
+                entry.ResourceType = resourceType;
+                if (entry.Root != null)
+                {
+                    entry.Root.transform.SetSiblingIndex(Mathf.Clamp(index, 0, CostRoot.childCount));
+                    entry.Root.SetActive(true);
+                }
+
+                if (entry.AmountLabel != null)
+                {
+                    entry.AmountLabel.text = amount.ToString();
+                }
+
+                if (HavenRecruitsPrice._resourceVisuals.TryGetValue(resourceType, out var visual) && visual?.Icon != null)
+                {
+                    if (entry.IconFrame != null)
+                    {
+                        entry.IconFrame.SetActive(true);
+                    }
+
+                    if (entry.IconImage != null)
+                    {
+                        entry.IconImage.sprite = visual.Icon;
+                        entry.IconImage.color = visual.Color;
+                    }
+
+                    if (entry.TypeLabel != null)
+                    {
+                        entry.TypeLabel.gameObject.SetActive(false);
+                    }
+                }
+                else
+                {
+                    if (entry.IconFrame != null)
+                    {
+                        entry.IconFrame.SetActive(false);
+                    }
+
+                    if (entry.TypeLabel == null)
+                    {
+                        entry.TypeLabel = CreateTypeLabel(entry.Root.transform);
+                    }
+
+                    if (entry.TypeLabel != null)
+                    {
+                        entry.TypeLabel.gameObject.SetActive(true);
+                        entry.TypeLabel.text = resourceType.ToString();
+                    }
+                }
+            }
+
+            private ResourceCostEntry EnsureCostEntry(int index)
+            {
+                while (_costEntries.Count <= index)
+                {
+                    var created = CreateCostEntry();
+                    if (created == null)
+                    {
+                        break;
+                    }
+                    _costEntries.Add(created);
+                }
+
+                return index < _costEntries.Count ? _costEntries[index] : null;
+            }
+
+            private ResourceCostEntry CreateCostEntry()
+            {
+                if (CostRoot == null)
+                {
+                    return null;
+                }
+
+                var (chip, _) = RecruitOverlayManagerHelpers.NewUI("Res", CostRoot);
+
+                var layout = chip.AddComponent<VerticalLayoutGroup>();
+                layout.childAlignment = TextAnchor.MiddleCenter;
+                layout.spacing = 1f;
+                layout.childControlWidth = false;
+                layout.childControlHeight = true;
+                layout.childForceExpandWidth = false;
+                layout.childForceExpandHeight = false;
+
+                var chipLE = chip.AddComponent<LayoutElement>();
+                float chipWidth = ResourceIconSize + 20f;
+                chipLE.minWidth = chipWidth;
+                chipLE.preferredWidth = chipWidth;
+                chipLE.flexibleWidth = 0f;
+
+                var iconImage = RecruitOverlayManagerHelpers.MakeFixedIcon(chip.transform, null, ResourceIconSize);
+                GameObject iconFrame = iconImage != null ? iconImage.transform.parent.gameObject : null;
+
+                var (typeGO, _) = RecruitOverlayManagerHelpers.NewUI("Type", chip.transform);
+                var typeLabel = typeGO.AddComponent<Text>();
+                typeLabel.font = PuristaSemibold ? PuristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
+                typeLabel.fontSize = TextFontSize - 4;
+                typeLabel.alignment = TextAnchor.MiddleCenter;
+                typeLabel.gameObject.SetActive(false);
+
+                var (txtGO, _) = RecruitOverlayManagerHelpers.NewUI("Amt", chip.transform);
+                var amountLabel = txtGO.AddComponent<Text>();
+                amountLabel.font = PuristaSemibold ? PuristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
+                amountLabel.fontSize = TextFontSize - 2;
+                amountLabel.alignment = TextAnchor.MiddleCenter;
+                amountLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
+                amountLabel.text = "0";
+                RegisterResourceAmount(amountLabel);
+
+                chip.SetActive(false);
+
+                return new ResourceCostEntry
+                {
+                    Root = chip,
+                    IconImage = iconImage,
+                    IconFrame = iconFrame,
+                    TypeLabel = typeLabel,
+                    AmountLabel = amountLabel
+                };
+            }
+
+            private Text CreateTypeLabel(Transform parent)
+            {
+                if (parent == null)
+                {
+                    return null;
+                }
+
+                var (typeGO, _) = RecruitOverlayManagerHelpers.NewUI("Type", parent);
+                var label = typeGO.AddComponent<Text>();
+                label.font = PuristaSemibold ? PuristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
+                label.fontSize = TextFontSize - 4;
+                label.alignment = TextAnchor.MiddleCenter;
+                typeGO.transform.SetSiblingIndex(Mathf.Max(0, parent.childCount - 1));
+                return label;
             }
         }
 
@@ -293,8 +876,13 @@ namespace TFTV
             internal static GameObject _currentSelectedCard;
             internal static RecruitAtSite _selectedRecruit;
 
-          //  internal static Sprite _mutationBound;
-          //  internal static Sprite _iconBackground;
+            internal static readonly Dictionary<GeoSite, RecruitCardView> _cardCache = new Dictionary<GeoSite, RecruitCardView>();
+            private static readonly List<RecruitCardView> _cardPool = new List<RecruitCardView>();
+            private static GameObject _emptyStateLabel;
+
+
+            //  internal static Sprite _mutationBound;
+            //  internal static Sprite _iconBackground;
             internal static Sprite _abilityIconBackground;
             internal static UIInventorySlot _mutationSlotTemplate;
             internal static RectTransform _mutationTemplateRoot;
@@ -312,6 +900,32 @@ namespace TFTV
                 {
                     SetOverlayVisible(false);
                     ClearSelection(immediate: true);
+
+                    foreach (var card in _cardCache.Values)
+                    {
+                        if (card != null)
+                        {
+                            Object.Destroy(card.gameObject);
+                        }
+                    }
+
+                    foreach (var pooled in _cardPool)
+                    {
+                        if (pooled != null)
+                        {
+                            Object.Destroy(pooled.gameObject);
+                        }
+                    }
+
+                    _cardCache.Clear();
+                    _cardPool.Clear();
+
+                    if (_emptyStateLabel != null)
+                    {
+                        Object.Destroy(_emptyStateLabel);
+                        _emptyStateLabel = null;
+                    }
+
 
                     if (_detailPanel != null)
                     {
@@ -1184,7 +1798,11 @@ namespace TFTV
                     _siteTravelTimeCache.Clear();
 
                     var geoLevelController = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-                    if (!geoLevelController) return;
+                 
+                    if (!geoLevelController)
+                    {
+                        return;
+                    }
 
                     if (_recruitListRoot == null)
                     {
@@ -1193,23 +1811,21 @@ namespace TFTV
 
                     ClearSelection();
 
-                    foreach (Transform child in _recruitListRoot)
-                    {
-                        Object.Destroy(child.gameObject);
-                    }
+                    
 
                     var factionRecruits = new Dictionary<FactionFilter, List<RecruitAtSite>>
-                    {  { FactionFilter.Anu, geoLevelController.AnuFaction != null ? HavenRecruitsUtils.GetRecruitsForFaction(geoLevelController.AnuFaction) : new List<RecruitAtSite>() },
+                    {   
+                        { FactionFilter.Anu, geoLevelController.AnuFaction != null ? HavenRecruitsUtils.GetRecruitsForFaction(geoLevelController.AnuFaction) : new List<RecruitAtSite>() },
                         { FactionFilter.NewJericho, geoLevelController.NewJerichoFaction != null ? HavenRecruitsUtils.GetRecruitsForFaction(geoLevelController.NewJerichoFaction) : new List<RecruitAtSite>() },
                         { FactionFilter.Synedrion, geoLevelController.SynedrionFaction != null ? HavenRecruitsUtils.GetRecruitsForFaction(geoLevelController.SynedrionFaction) : new List<RecruitAtSite>() }
                     };
+
                     foreach (var kvp in factionRecruits)
                     {
                         if (_factionTabs.TryGetValue(kvp.Key, out var tab) && tab.CountLabel != null)
                         {
                             tab.CountLabel.text = kvp.Value.Count.ToString();
                         }
-
                     }
 
                     int totalRecruits = factionRecruits.Sum(kvp => kvp.Value.Count);
@@ -1217,9 +1833,7 @@ namespace TFTV
                     if (!factionRecruits.TryGetValue(_activeFactionFilter, out var recruits))
                     {
                         recruits = new List<RecruitAtSite>();
-
                     }
-
 
                     if (_totalRecruitsLabel != null)
                     {
@@ -1227,6 +1841,11 @@ namespace TFTV
                     }
 
                     UpdateFactionTabVisuals();
+
+                    if (_emptyStateLabel != null)
+                    {
+                        _emptyStateLabel.SetActive(false);
+                    }
 
                     if (recruits.Count == 0)
                     {
@@ -1236,10 +1855,36 @@ namespace TFTV
 
                     HavenRecruitsUtils.SortRecruits(recruits);
 
-                    bool collapse = recruits.Count > 4;   // show compact by default if many
-                    foreach (var r in recruits)
+                    var usedSites = new HashSet<GeoSite>();
+                    int siblingIndex = 0;
+
+                    foreach (var recruit in recruits)
                     {
-                        HavenRecruitsRecruitItem.CreateRecruitItem(_recruitListRoot, r, collapse);
+                        var cardView = GetOrCreateCardView(recruit);
+                        if (cardView == null)
+                        {
+                            continue;
+                        }
+
+                        usedSites.Add(recruit.Site);
+                        cardView.transform.SetParent(_recruitListRoot, false);
+                        cardView.gameObject.SetActive(true);
+                        cardView.transform.SetSiblingIndex(siblingIndex++);
+                        cardView.BindData(recruit);
+                    }
+
+                    foreach (var kvp in _cardCache.ToList())
+                    {
+                        if (!usedSites.Contains(kvp.Key))
+                        {
+                            if (kvp.Value != null)
+                            {
+                                kvp.Value.gameObject.SetActive(false);
+                                _cardPool.Add(kvp.Value);
+                            }
+
+                            _cardCache.Remove(kvp.Key);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -1248,6 +1893,56 @@ namespace TFTV
                 }
             }
 
+            private static RecruitCardView GetOrCreateCardView(RecruitAtSite data)
+            {
+                if (data?.Site == null || _recruitListRoot == null)
+                {
+                    return null;
+                }
+
+                if (_cardCache.TryGetValue(data.Site, out var cached) && cached != null)
+                {
+                    return cached;
+                }
+
+                RecruitCardView cardView = null;
+
+                for (int i = _cardPool.Count - 1; i >= 0; i--)
+                {
+                    cardView = _cardPool[i];
+                    _cardPool.RemoveAt(i);
+                    if (cardView != null)
+                    {
+                        break;
+                    }
+                }
+
+                if (cardView == null)
+                {
+                    cardView = HavenRecruitsRecruitItem.EnsureRecruitCard(_recruitListRoot, data);
+                }
+
+                if (cardView != null)
+                {
+                    _cardCache[data.Site] = cardView;
+                }
+
+                return cardView;
+            }
+
+            private static void ReleaseUnusedCards()
+            {
+                foreach (var kvp in _cardCache.ToList())
+                {
+                    if (kvp.Value != null)
+                    {
+                        kvp.Value.gameObject.SetActive(false);
+                        _cardPool.Add(kvp.Value);
+                    }
+
+                    _cardCache.Remove(kvp.Key);
+                }
+            }
             internal static void CreateToolbar(Transform overlayRoot)
             {
                 var (bar, rt) = RecruitOverlayManagerHelpers.NewUI("Toolbar", overlayRoot);

@@ -1,4 +1,5 @@
-﻿using PhoenixPoint.Common.UI;
+﻿using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using System;
@@ -110,7 +111,7 @@ namespace TFTV
 
         private static readonly Color DetailStatHighlightColor = new Color32(0xD0, 0xA4, 0x56, 0xFF);
         private static readonly Color DetailDeliriumHighlightColor = new Color32(0xA2, 0x48, 0xD1, 0xFF);
-        private const string StatTooltipPlaceholderText = "placeholder";
+        private const string StatTooltipPlaceholderText = "";
 
         private static readonly string[] DefaultStatOrder =
        {
@@ -764,7 +765,7 @@ namespace TFTV
 
         private static void SetStatTooltip(StatCell cell, string tooltipText)
         {
-            return; // not using for now
+          
 
             if (tooltipText == null)
             {
@@ -816,12 +817,39 @@ namespace TFTV
             {
                 var stats = recruit.Recruit.GetStats();
 
-                /*  TFTVLogger.Always($"strength: base {stats.Endurance.Value.BaseValueInt} end: {stats.Endurance.Value}");
-                  TFTVLogger.Always($"willpower:  base {stats.Willpower.Value.BaseValueInt} end: {stats.Willpower.Value}");
-                  TFTVLogger.Always($"perception: {stats.Perception.Value.BaseValueInt} end: {stats.Perception.Value}");
-                  TFTVLogger.Always($"speed: {stats.Speed.Value.BaseValueInt} end: {stats.Speed.Value}");
-                  TFTVLogger.Always($"accuracy: {stats.Accuracy.Value.BaseValueInt} end: {stats.Accuracy.Value}");
-                  TFTVLogger.Always($"stealth: {stats.Stealth.Value.BaseValueInt} end: {stats.Stealth.Value}");*/
+                var statsSummary = HavenRecruitStatCalculator.GeoUnitStatsHelper.Calculate(recruit.Recruit);
+                var baseStats = statsSummary.BaseStats;
+                var finalStats = statsSummary.FinalStats;
+                string modifiersDescription = statsSummary.ModifiersDescription ?? string.Empty;
+                bool hasBaseStats = !((object)baseStats == null);
+                bool hasFinalStats = !((object)finalStats == null);
+
+                string FormatNumber(float value)
+                {
+                    return value.ToString("0.#");
+                }
+
+                string FormatBaseAndFinal(float baseValue, float finalValue)
+                {
+                    return $"{FormatNumber(baseValue)} ({FormatNumber(finalValue)})";
+                }
+
+                string FormatStatWithSummary(Func<BaseCharacterStats, float> selector, float fallbackFinal)
+                {
+                    if (!hasFinalStats)
+                    {
+                        return FormatNumber(fallbackFinal);
+                    }
+
+                    float finalValue = selector(finalStats);
+                    if (!hasBaseStats)
+                    {
+                        return FormatNumber(finalValue);
+                    }
+
+                    float baseValue = selector(baseStats);
+                    return FormatBaseAndFinal(baseValue, finalValue);
+                }
 
                 int delirium = recruit.Haven.RecruitCorruption;
 
@@ -835,43 +863,44 @@ namespace TFTV
                 {
 
                     string statName = DefaultStatOrder[x];
-                    float statValue = 0f;
+                  
 
                     if (!_detailStatCells.TryGetValue(statName, out var cell))
                     {
                         continue;
                     }
 
+                    string valueText = StatPlaceholder;
+                    string tooltipText = StatTooltipPlaceholderText;
+
                     switch (statName)
                     {
                         case "Strength":
-                            statValue = stats.Endurance;
+                            valueText = FormatStatWithSummary(s => s.Endurance, stats.Endurance);
+                            tooltipText = hasFinalStats ? modifiersDescription : StatTooltipPlaceholderText;
                             break;
                         case "Perception":
-                            statValue = stats.GetPerception();
+                            valueText = FormatNumber(stats.GetPerception());
                             break;
                         case "Willpower":
-                            statValue = stats.WillPoints;
+                            valueText = FormatStatWithSummary(s => s.Willpower, stats.WillPoints);
+                            tooltipText = hasFinalStats ? modifiersDescription : StatTooltipPlaceholderText;
                             break;
                         case "Accuracy":
-                            statValue = stats.GetAccuracy();
+                            valueText = Mathf.RoundToInt(stats.GetAccuracy() * 100f) + "%";
                             break;
                         case "Speed":
-                            statValue = stats.Speed;
+                            valueText = FormatStatWithSummary(s => s.Speed, stats.Speed);
+                            tooltipText = hasFinalStats ? modifiersDescription : StatTooltipPlaceholderText;
                             break;
                         case "Stealth":
-                            statValue = stats.Stealth;
+                            valueText = Mathf.RoundToInt(stats.Stealth * 100f) + "%";
+                            break;
+                        default:
+                            valueText = StatPlaceholder;
                             break;
 
                     }
-
-                    string valueText = statValue.ToString();
-
-                    if (statName == "Accuracy" || statName == "Stealth")
-                    {
-                        valueText = Mathf.RoundToInt(statValue * 100f) + "%";
-                    }
-
 
                     Sprite icon = GetStatIcon(statName);
 
@@ -888,7 +917,7 @@ namespace TFTV
                         cell.Label.color = DetailStatHighlightColor;
                     }
 
-                    SetStatTooltip(cell, $"{statName} {valueText}");
+                    SetStatTooltip(cell, tooltipText);
                 }
                 PopulateDeliriumRow(delirium);
             }
