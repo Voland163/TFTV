@@ -1570,30 +1570,30 @@ namespace TFTV
                 }
             }
 
-            private static UIInventoryTooltip FindItemTooltipTemplate()
+            private static UIGeoItemTooltip FindItemTooltipTemplate()
             {
                 try
                 {
-                    UIInventoryTooltip template = null;
+                    UIGeoItemTooltip template = null;
 
                     var geoLevel = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
                     var view = geoLevel?.View;
                     if (view != null)
                     {
-                        template = view.GetComponentsInChildren<UIInventoryTooltip>(true)
-                            .FirstOrDefault(t => t != null && t.hideFlags == HideFlags.None && t != OverlayItemTooltip);
+                        template = view.GetComponentsInChildren<UIGeoItemTooltip>(true)
+                             .FirstOrDefault(IsValidItemTooltipTemplate);
                     }
 
                     if (template == null)
                     {
-                        template = Resources.FindObjectsOfTypeAll<UIInventoryTooltip>()
-                            .FirstOrDefault(t => t != null && t.hideFlags == HideFlags.None && t != OverlayItemTooltip);
+                        template = Resources.FindObjectsOfTypeAll<UIGeoItemTooltip>()
+                            .FirstOrDefault(IsValidItemTooltipTemplate);
                     }
 
                     if (template == null)
                     {
-                        template = Object.FindObjectsOfType<UIInventoryTooltip>()
-                            .FirstOrDefault(t => t != null && t.hideFlags == HideFlags.None && t != OverlayItemTooltip);
+                        template = Object.FindObjectsOfType<UIGeoItemTooltip>()
+                            .FirstOrDefault(IsValidItemTooltipTemplate);
                     }
 
                     return template;
@@ -1603,6 +1603,25 @@ namespace TFTV
                     TFTVLogger.Error(ex);
                     return null;
                 }
+            }
+            private static bool IsValidItemTooltipTemplate(UIGeoItemTooltip tooltip)
+            {
+                if (tooltip == null)
+                {
+                    return false;
+                }
+
+                if (tooltip == OverlayItemTooltip)
+                {
+                    return false;
+                }
+
+                if (tooltip.hideFlags != HideFlags.None)
+                {
+                    return false;
+                }
+
+                return !(tooltip is GeoRosterAbilityDetailTooltip);
             }
             internal static void EnsureOverlayLayout(bool force = false)
             {
