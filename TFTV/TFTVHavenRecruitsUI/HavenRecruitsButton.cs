@@ -49,8 +49,6 @@ namespace TFTV.TFTVHavenRecruitsUI
                     cloneGO.name = RecruitsBtnName;
                     cloneGO.SetActive(true);
 
-                    TFTVLogger.Always($"[RecruitsBtn] Cloned button '{cloneGO.name}'. ActiveSelf={cloneGO.activeSelf}, ActiveInHierarchy={cloneGO.activeInHierarchy}");
-
                     // Match rect and offset to the LEFT by width + padding
                     var tplRT = templateGO.GetComponent<RectTransform>();
                     var rt = cloneGO.GetComponent<RectTransform>();
@@ -67,13 +65,13 @@ namespace TFTV.TFTVHavenRecruitsUI
 
                     // Set label to RECRUITS (first Text under the button)
                     var group = cloneGO.transform.Find("Group") as RectTransform;
-                    TFTVLogger.Always($"[RecruitsBtn] Group rect present={group != null}");
+                 
                     if (group != null)
                     {
                         var groupCanvas = group.GetComponent<CanvasGroup>();
                         if (groupCanvas != null)
                         {
-                            TFTVLogger.Always($"[RecruitsBtn] Group CanvasGroup alpha={groupCanvas.alpha}; forcing visible state.");
+                          
                             groupCanvas.alpha = 1f;
                             groupCanvas.interactable = true;
                             groupCanvas.blocksRaycasts = true;
@@ -162,7 +160,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                         }
                     }
 
-                    var labelParent = stack != null ? stack : group;
+                    var labelParent = stack ?? group;
                     Text label = null;
                     if (labelParent != null)
                     {
@@ -188,14 +186,12 @@ namespace TFTV.TFTVHavenRecruitsUI
                     }
                     else
                     {
-                        TFTVLogger.Always("[RecruitsBtn] Label parent is null; falling back to global search for text.");
-
                         label = cloneGO.GetComponentsInChildren<Text>(true)
                             .FirstOrDefault(t => !string.Equals(t.gameObject.name, "Label_Bottom", StringComparison.Ordinal));
                     }
                     if (label != null)
                     {
-                        TFTVLogger.Always($"[RecruitsBtn] Top label found on '{label.gameObject.name}'. Enabled={label.enabled}, ActiveSelf={label.gameObject.activeSelf}, ActiveInHierarchy={label.gameObject.activeInHierarchy}");
+                       
                         label.enabled = true;
                         label.gameObject.SetActive(true);
                         var labelColor = label.color;
@@ -221,12 +217,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                         labelRT.sizeDelta = new Vector2(0f, preferredHeight);
                         labelRT.anchoredPosition = Vector2.zero;
 
-                        var labelLayout = label.GetComponent<LayoutElement>();
-                        if (labelLayout == null)
-                        {
-                            labelLayout = label.gameObject.AddComponent<LayoutElement>();
-                        }
-
+                        var labelLayout = label.GetComponent<LayoutElement>() ?? label.gameObject.AddComponent<LayoutElement>();
                         labelLayout.minHeight = Mathf.Max(labelLayout.minHeight, preferredHeight);
                         labelLayout.preferredHeight = Mathf.Max(labelLayout.preferredHeight, preferredHeight);
                         labelLayout.flexibleHeight = 0f;
@@ -236,10 +227,7 @@ namespace TFTV.TFTVHavenRecruitsUI
 
                         label.transform.SetSiblingIndex(0);
                     }
-                    else
-                    {
-                        TFTVLogger.Always("[RecruitsBtn] Failed to locate a top Text component for the recruits button.");
-                    }
+                   
 
                     Transform iconTr = null;
                     if (stack != null)
@@ -248,20 +236,14 @@ namespace TFTV.TFTVHavenRecruitsUI
                         if (iconTr == null)
                         {
                             iconTr = group != null ? group.Find("Image_Icon") : null;
-                            if (iconTr != null)
-                            {
-                                iconTr.SetParent(stack, false);
-                            }
+                            iconTr?.SetParent(stack, false);
                         }
                     }
                     else
                     {
                         iconTr = cloneGO.transform.Find("Group/Image_Icon");
                     }
-                    if (iconTr == null)
-                    {
-                        TFTVLogger.Always("[RecruitsBtn] Could not find 'Group/Image_Icon' on clone.");
-                    }
+                  
                     var iconImg = iconTr ? iconTr.GetComponent<Image>() : null;
 
 
@@ -311,17 +293,9 @@ namespace TFTV.TFTVHavenRecruitsUI
                                 iconTr.SetSiblingIndex(Mathf.Min(1, labelParent.childCount - 1));
                             }
                         }
-                        else
-                        {
-                            TFTVLogger.Always("[RecruitsBtn] Failed to load sprite 'UI_StatusesIcons_CanBeRecruitedIntoPhoenix-2.png'");
-                        }
-                    }
-                    else if (iconTr != null)
-                    {
                       
-                        TFTVLogger.Always("[RecruitsBtn] Icon image component missing.");
                     }
-
+                    
                     if (labelParent != null && label != null && labelParent.Find("Label_Bottom") == null)
                     {
                         var bottomLabelGO = UnityEngine.Object.Instantiate(label.gameObject, labelParent);
@@ -358,9 +332,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                             bottomLayout.flexibleHeight = 0f;
                             bottomLayout.minWidth = 0f;
                             bottomLayout.preferredWidth = -1f;
-                            bottomLayout.flexibleWidth = 1f;
-
-                            TFTVLogger.Always($"[RecruitsBtn] Bottom label cloned. Enabled={bottomLabel.enabled}, ActiveSelf={bottomLabel.gameObject.activeSelf}, ActiveInHierarchy={bottomLabel.gameObject.activeInHierarchy}");
+                            bottomLayout.flexibleWidth = 1f;                       
                         }
 
                         if (iconTr != null)
@@ -372,14 +344,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                             bottomLabelGO.transform.SetAsLastSibling();
                         }
                     }
-                    else if (labelParent == null)
-                    {
-                        TFTVLogger.Always("[RecruitsBtn] Skipping bottom label setup because label parent is missing.");
-                    }
-                    else if (label == null)
-                    {
-                        TFTVLogger.Always("[RecruitsBtn] Skipping bottom label setup because no top label was found.");
-                    }
+                   
 
                     // Wire up click -> toggle your overlay (use BaseButton to keep stock animations)
                     var pgb = cloneGO.GetComponent<PhoenixGeneralButton>();
@@ -388,7 +353,6 @@ namespace TFTV.TFTVHavenRecruitsUI
                         pgb.BaseButton.onClick.RemoveAllListeners(); // cloned button shouldn't open Bases
                         pgb.BaseButton.onClick.AddListener(() =>
                         {
-                            TFTVLogger.Always("[RecruitsBtn] Clicked RECRUITS button.");
                             HavenRecruitsMain.RecruitOverlayManager.ToggleOverlay();
                         });
                     }
@@ -401,7 +365,6 @@ namespace TFTV.TFTVHavenRecruitsUI
                             uiBtn.onClick.RemoveAllListeners();
                             uiBtn.onClick.AddListener(() =>
                             {
-                                TFTVLogger.Always("[RecruitsBtn] Clicked RECRUITS button (fallback).");
                                 HavenRecruitsMain.RecruitOverlayManager.ToggleOverlay();
                             });
                         }
@@ -415,8 +378,6 @@ namespace TFTV.TFTVHavenRecruitsUI
                     {
                         LayoutRebuilder.ForceRebuildLayoutImmediate(group);
                     }
-
-                    TFTVLogger.Always("[RecruitsBtn] Recruits button added left of Bases.");
                 }
                 catch (Exception ex) { TFTVLogger.Error(ex); }
             }

@@ -131,7 +131,7 @@ namespace TFTV
 
                   
                     GeoItem geoItem = slot.Item as GeoItem;
-                    TFTVLogger.Always($"geoItem: {geoItem?.ItemDef?.name}");
+                   // TFTVLogger.Always($"geoItem: {geoItem?.ItemDef?.name}");
 
                     var forwarder = slotGO.GetComponent<TacticalItemSlotTooltipForwarder>() ?? slotGO.AddComponent<TacticalItemSlotTooltipForwarder>();
                     
@@ -268,10 +268,10 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always($"_tooltip == null? {_tooltip == null} is _slot null? {_slot == null} item {_item?.ItemDef?.name}");
+                   // TFTVLogger.Always($"_tooltip == null? {_tooltip == null} is _slot null? {_slot == null} item {_item?.ItemDef?.name}");
                     if (_item != null && _tooltip != null)
                     {
-                        TFTVLogger.Always($"got here for item {_item.ItemDef.name}");
+                       // TFTVLogger.Always($"got here for item {_item.ItemDef.name}");
 
                         _tooltip.ShowStats(_item, _slot.transform);
                         PositionTooltip(eventData);

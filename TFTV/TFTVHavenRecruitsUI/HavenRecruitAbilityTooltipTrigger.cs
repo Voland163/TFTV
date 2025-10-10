@@ -133,9 +133,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                 out Vector2 localPoint);
 
             float anchoredY = localPoint.y + TooltipVerticalPadding;
-            TFTVLogger.Always($"canvas rect xMin: {canvasRect.rect.xMin} TooltipHorizontalPadding: {TooltipHorizontalPadding}");
-            float anchoredX = canvasRect.rect.xMin + TooltipHorizontalPadding;
-            TFTVLogger.Always($"{anchoredX}");
+            float anchoredX = canvasRect.rect.xMin + TooltipHorizontalPadding;            
             var overlayRect = HavenRecruitsMain.OverlayRootRect;
             if (overlayRect != null)
             {
@@ -144,8 +142,7 @@ namespace TFTV.TFTVHavenRecruitsUI
 
                 rectTransform.anchoredPosition = new Vector2(anchoredX, anchoredY);
                 if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, overlayLeftScreen, referenceCamera, out var overlayLeftLocal))
-                {
-                    TFTVLogger.Always($"overlayLeftLocal.x: {overlayLeftLocal.x} anchoredX: {anchoredX}");
+                {                 
                     float pivotOffset = rectTransform.rect.width * (1f - rectTransform.pivot.x);
                     _ = overlayLeftLocal.x - TooltipHorizontalPadding - pivotOffset;
                 }
