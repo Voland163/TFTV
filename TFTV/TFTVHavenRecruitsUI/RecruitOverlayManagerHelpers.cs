@@ -1,4 +1,5 @@
-﻿using PhoenixPoint.Common.Entities.Items;
+﻿using PhoenixPoint.Common.Entities.Characters;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Entities;
@@ -175,15 +176,6 @@ namespace TFTV
                 var icon = view.InventoryIcon ?? view?.SmallIcon;
                 ApplyOversizedIconOverlay(slot, icon, size, InventoryOverlayName);
 
-                var tooltip = EnsureOverlayItemTooltip();
-                if (tooltip != null)
-                {
-                    ResetSlotHandlers(slot);
-
-                    var forwarder = slotGO.GetComponent<TacticalItemSlotTooltipForwarder>() ?? slotGO.AddComponent<TacticalItemSlotTooltipForwarder>();
-                    forwarder.Initialize(slot, geoItem, tooltip);
-                }
-
                 return slot;
             }
             catch (Exception ex)
@@ -317,8 +309,165 @@ namespace TFTV
                 }
             }
         }
-        
 
+        internal sealed class MutationSlotTooltipForwarder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+        {
+            private static bool _tooltipPrimed;
+            private static Canvas _tooltipCanvas;
+            private static readonly Vector3[] OverlayCornerBuffer = new Vector3[4];
+
+            private HavenRecruitsUtils.MutationIconData _data;
+            private bool _tooltipVisible;
+
+            internal void Initialize(UIInventorySlot slot, HavenRecruitsUtils.MutationIconData data)
+            {
+                _data = data;
+            }
+
+            public void OnPointerEnter(PointerEventData eventData)
+            {
+                ShowTooltip(eventData);
+            }
+
+            public void OnPointerMove(PointerEventData eventData)
+            {
+                if (_tooltipVisible)
+                {
+                    UpdateTooltipPosition(eventData);
+                }
+            }
+
+            public void OnPointerExit(PointerEventData eventData)
+            {
+                HideTooltip();
+            }
+
+            private void OnDisable()
+            {
+                HideTooltip();
+            }
+
+            private void ShowTooltip(PointerEventData eventData)
+            {
+                try
+                {
+                    var tooltip = RecruitOverlayManager.EnsureOverlayTooltip();
+                    if (tooltip == null)
+                    {
+                        return;
+                    }
+
+                    var view = _data.View ?? _data.Item?.ViewElementDef;
+                    if (view == null)
+                    {
+                        return;
+                    }
+
+                    bool shouldPrime = !_tooltipPrimed;
+                    if (shouldPrime)
+                    {
+                        _tooltipPrimed = true;
+                    }
+
+                    tooltip.Show((AbilityTrackSlot)null, view, useMutagens: false, cost: 0);
+                    if (shouldPrime)
+                    {
+                        tooltip.Hide();
+                        tooltip.Show((AbilityTrackSlot)null, view, useMutagens: false, cost: 0);
+                    }
+
+                    tooltip.Show((AbilityTrackSlot)null, view, useMutagens: false, cost: 0);
+                    tooltip.transform.SetAsLastSibling();
+                    _tooltipCanvas = null;
+
+                    _tooltipVisible = true;
+                    UpdateTooltipPosition(eventData);
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
+            }
+
+            private void HideTooltip()
+            {
+                try
+                {
+                    if (!_tooltipVisible)
+                    {
+                        return;
+                    }
+
+                    var tooltip = RecruitOverlayManager.EnsureOverlayTooltip();
+                    tooltip?.Hide();
+                    _tooltipCanvas = null;
+                    _tooltipVisible = false;
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
+            }
+
+            private void UpdateTooltipPosition(PointerEventData eventData)
+            {
+                try
+                {
+                    var tooltip = RecruitOverlayManager.EnsureOverlayTooltip();
+                    if (tooltip == null || !tooltip.gameObject.activeInHierarchy)
+                    {
+                        return;
+                    }
+
+                    if (!(tooltip.transform is RectTransform rectTransform))
+                    {
+                        return;
+                    }
+
+                    var canvas = _tooltipCanvas;
+                    if (canvas == null)
+                    {
+                        _tooltipCanvas = tooltip.GetComponentInParent<Canvas>();
+                        canvas = _tooltipCanvas;
+                    }
+
+                    if (canvas == null || !(canvas.transform is RectTransform canvasRect))
+                    {
+                        return;
+                    }
+
+                    var referenceCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+
+                    RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                        canvasRect,
+                        eventData.position,
+                        referenceCamera,
+                        out Vector2 localPoint);
+
+                    float anchoredY = localPoint.y + TooltipVerticalPadding;
+                    float anchoredX = canvasRect.rect.xMin + TooltipHorizontalPadding;
+
+                    var overlayRect = HavenRecruitsMain.OverlayRootRect;
+                    if (overlayRect != null)
+                    {
+                        overlayRect.GetWorldCorners(OverlayCornerBuffer);
+                        var overlayLeftScreen = RectTransformUtility.WorldToScreenPoint(referenceCamera, OverlayCornerBuffer[0]);
+
+                        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, overlayLeftScreen, referenceCamera, out var overlayLeftLocal))
+                        {
+                            float pivotOffset = rectTransform.rect.width * (1f - rectTransform.pivot.x);
+                            anchoredX = overlayLeftLocal.x - TooltipHorizontalPadding - pivotOffset;
+                        }
+                    }
+
+                    rectTransform.anchoredPosition = new Vector2(anchoredX, anchoredY);
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
+            }
+        }
         private static void PrepareSlotForDisplay(UIInventorySlot slot, int size)
         {
             if (slot == null)

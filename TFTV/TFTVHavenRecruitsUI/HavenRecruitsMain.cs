@@ -214,7 +214,7 @@ namespace TFTV
             {
                 public UIInventorySlot Slot;
                 public Image OverlayImage;
-                public MonoBehaviour TooltipForwarder;
+                public RecruitOverlayManagerHelpers.MutationSlotTooltipForwarder TooltipForwarder;
             }
 
             private sealed class AbilityIconEntry
@@ -251,43 +251,50 @@ namespace TFTV
                 _resourceAmountDefaultColors.Add(label.color);
             }
 
-            internal static void ConfigureMutationSlot(UIInventorySlot slot)
+            internal static RecruitOverlayManagerHelpers.MutationSlotTooltipForwarder ConfigureMutationSlot(UIInventorySlot slot)
             {
                 try
                 {
                     if (slot == null)
-                    {
-                        return;
-                    }
-
-                    var geoItem = slot.Item as GeoItem;
-                    if (geoItem == null)
-                    {
-                        return;
+                    {                  
+                        return null;
                     }
 
                     RecruitOverlayManagerHelpers.ResetSlotHandlers(slot);
 
-                    var itemTooltip = RecruitOverlayManager.EnsureOverlayItemTooltip();
-                    if (itemTooltip == null)
+                    RecruitOverlayManagerHelpers.MutationSlotTooltipForwarder forwarder = null;
+
+                    foreach (var behaviour in slot.GetComponents<MonoBehaviour>())
                     {
-                        return;
+                        if (behaviour == null)
+                        {
+                            continue;
+                        }
+
+                        if (behaviour is RecruitOverlayManagerHelpers.MutationSlotTooltipForwarder mutationForwarder)
+                        {
+                            forwarder = mutationForwarder;
+                            continue;
+                        }
+
+                        if (behaviour.GetType().Name == "TacticalItemSlotTooltipForwarder")
+                        {
+                            Object.Destroy(behaviour);
+                        }
+
                     }
 
-                    var slotObject = slot.gameObject;
-                    if (slotObject == null)
+                    if (forwarder == null)
                     {
-                        return;
+                        forwarder = slot.gameObject.AddComponent<RecruitOverlayManagerHelpers.MutationSlotTooltipForwarder>();
                     }
 
-                    var forwarder = slotObject.GetComponent<RecruitOverlayManagerHelpers.TacticalItemSlotTooltipForwarder>()
-                        ?? slotObject.AddComponent<RecruitOverlayManagerHelpers.TacticalItemSlotTooltipForwarder>();
-
-                    forwarder.Initialize(slot, geoItem, itemTooltip);
+                    return forwarder;
                 }
                 catch (Exception ex)
                 {
                     TFTVLogger.Error(ex);
+                    return null;
                 }
             }
 
@@ -480,11 +487,9 @@ namespace TFTV
                 var entry = new MutationSlotEntry
                 {
                     Slot = slot,
-                    OverlayImage = slot.transform.Find("MutationIconOverlay")?.GetComponent<Image>()
+                    OverlayImage = slot.transform.Find("MutationIconOverlay")?.GetComponent<Image>(),
+                    TooltipForwarder = ConfigureMutationSlot(slot)
                 };
-
-                entry.TooltipForwarder = slot.GetComponents<MonoBehaviour>()
-                    .FirstOrDefault(m => m != null && m.GetType().Name == "TacticalItemSlotTooltipForwarder");
 
                 slot.gameObject.SetActive(false);
                 return entry;
@@ -522,19 +527,10 @@ namespace TFTV
 
                 if (entry.TooltipForwarder == null && entry.Slot != null)
                 {
-                    entry.TooltipForwarder = entry.Slot.GetComponents<MonoBehaviour>()
-                        .FirstOrDefault(m => m != null && m.GetType().Name == "TacticalItemSlotTooltipForwarder");
+                    entry.TooltipForwarder = ConfigureMutationSlot(entry.Slot);
                 }
 
-                var tooltip = RecruitOverlayManager.EnsureOverlayTooltip();
-                if (tooltip != null && entry.TooltipForwarder != null)
-                {
-                    var method = entry.TooltipForwarder.GetType().GetMethod(
-                        "Initialize",
-                        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-                    method?.Invoke(entry.TooltipForwarder, new object[] { entry.Slot, entry.Slot.Item, tooltip });
-                }
+                entry.TooltipForwarder?.Initialize(entry.Slot, data);
             }
 
             private AbilityIconEntry EnsureAbilityIcon(int index)
