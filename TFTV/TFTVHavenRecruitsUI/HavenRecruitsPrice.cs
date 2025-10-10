@@ -79,46 +79,81 @@ namespace TFTV.TFTVHavenRecruitsUI
             };
         }
 
-        internal static GameObject CreateCostRow(Transform parent, GeoHaven haven, GeoPhoenixFaction phoenix, RecruitCardView cardView, bool detailPanel=false)
+        internal static GameObject CreateCostRow(Transform parent, GeoHaven haven, GeoPhoenixFaction phoenix, RecruitCardView cardView, bool detailPanel = false)
         {
+            EnsureResourceVisuals();
+
+            var (row, _) = RecruitOverlayManagerHelpers.NewUI("Row_Cost", parent);
+
+            PopulateCostRow(row.transform, haven, phoenix, cardView, detailPanel);
+
+            return row;
+
+        }
+
+        internal static void PopulateCostRow(Transform row, GeoHaven haven, GeoPhoenixFaction phoenix, RecruitCardView cardView, bool detailPanel = false)
+        {
+            if (row == null)
+            {
+                return;
+            }
 
             EnsureResourceVisuals();
 
             var resourceCosts = HavenRecruitsUtils.GetRecruitCost(haven, phoenix);
 
-            var (row, _) = RecruitOverlayManagerHelpers.NewUI("Row_Cost", parent);
-
-            var h = row.AddComponent<HorizontalLayoutGroup>();
-            h.childAlignment = TextAnchor.MiddleRight;
-            h.spacing = detailPanel ? 16f : 0f;
-            h.childControlWidth = true;
-            h.childControlHeight = true;
-            h.childForceExpandWidth = false;
-            h.childForceExpandHeight = false;
-            h.padding = new RectOffset(0, 0, 0, 0);
-
-            if(detailPanel)
+            if (resourceCosts == null)
             {
-                h.childAlignment = TextAnchor.MiddleLeft;
-                h.childControlWidth = false;
-
+                return;
             }
+
+            var layout = row.GetComponent<HorizontalLayoutGroup>();
+            if (layout == null)
+            {
+                layout = row.gameObject.AddComponent<HorizontalLayoutGroup>();
+            }
+
+            layout.childAlignment = detailPanel ? TextAnchor.MiddleLeft : TextAnchor.MiddleRight;
+            layout.spacing = detailPanel ? 16f : 0f;
+            layout.childControlWidth = detailPanel ? false : true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = false;
+            layout.childForceExpandHeight = false;
+            layout.padding = new RectOffset(0, 0, 0, 0);
+
+            var layoutElement = row.GetComponent<LayoutElement>();
+            if (!detailPanel)
+            {
+                if (layoutElement == null)
+                {
+                    layoutElement = row.gameObject.AddComponent<LayoutElement>();
+                }
+                layoutElement.minWidth = 0f;
+                layoutElement.preferredWidth = 0f;
+                layoutElement.flexibleWidth = 1f;
+            }
+            else if (layoutElement != null)
+            {
+                layoutElement.minWidth = 0f;
+                layoutElement.preferredWidth = 0f;
+                layoutElement.flexibleWidth = 0f;
+            }
+
+            RecruitOverlayManagerHelpers.ClearTransformChildren(row);
 
             foreach (var type in _resourceDisplayOrder)
             {
-                if (resourceCosts.TryGetValue(type, out var amount))
+                if (resourceCosts.TryGetValue(type, out var orderedAmount))
                 {
-                    CreateResourceChip(row.transform, type, amount, cardView, detailPanel);
+                    CreateResourceChip(row, type, orderedAmount, cardView, detailPanel);
                     resourceCosts.Remove(type);
                 }
             }
 
             foreach (var kvp in resourceCosts)
             {
-                CreateResourceChip(row.transform, kvp.Key, kvp.Value, cardView, detailPanel);
+                CreateResourceChip(row, kvp.Key, kvp.Value, cardView, detailPanel);
             }
-
-            return row;
 
         }
 

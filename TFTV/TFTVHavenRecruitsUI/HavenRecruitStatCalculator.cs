@@ -11,8 +11,6 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace TFTV.TFTVHavenRecruitsUI
@@ -27,21 +25,21 @@ namespace TFTV.TFTVHavenRecruitsUI
                 {
                     throw new ArgumentNullException("descriptor");
                 }
-                CharacterProgression characterProgression = GeoUnitStatsHelper.CreateProgression(descriptor);
-                BaseCharacterStats baseCharacterStats = GeoUnitStatsHelper.GetBaseCharacterStats(descriptor, characterProgression);
-                List<BodyPartAspectDef> nakedBodyParts = GeoUnitStatsHelper.GetBaseBodyParts(descriptor);
-                CharacterStats baseStats = GeoUnitStatsHelper.BuildCharacterStats(descriptor, nakedBodyParts, Enumerable.Empty<PassiveModifierAbilityDef>(), baseCharacterStats);
-                List<BodyPartAspectDef> armoredBodyParts = GeoUnitStatsHelper.GetArmoredBodyParts(descriptor, nakedBodyParts);
-                CharacterStats armorOnlyStats = GeoUnitStatsHelper.BuildCharacterStats(descriptor, armoredBodyParts, Enumerable.Empty<PassiveModifierAbilityDef>(), baseCharacterStats);
-                List<PassiveModifierAbilityDef> passiveAbilities = GeoUnitStatsHelper.GetPassiveAbilities(descriptor, characterProgression);
-                CharacterStats finalStats = GeoUnitStatsHelper.BuildCharacterStats(descriptor, armoredBodyParts, passiveAbilities, baseCharacterStats);
-                BaseCharacterStats baseValues = GeoUnitStatsHelper.ExtractStats(baseStats);
-                BaseCharacterStats armorValues = GeoUnitStatsHelper.ExtractStats(armorOnlyStats);
-                BaseCharacterStats finalValues = GeoUnitStatsHelper.ExtractStats(finalStats);
+                CharacterProgression characterProgression = CreateProgression(descriptor);
+                BaseCharacterStats baseCharacterStats = GetBaseCharacterStats(descriptor, characterProgression);
+                List<BodyPartAspectDef> nakedBodyParts = GetBaseBodyParts(descriptor);
+                CharacterStats baseStats = BuildCharacterStats(descriptor, nakedBodyParts, Enumerable.Empty<PassiveModifierAbilityDef>(), baseCharacterStats);
+                List<BodyPartAspectDef> armoredBodyParts = GetArmoredBodyParts(descriptor, nakedBodyParts);
+                CharacterStats armorOnlyStats = BuildCharacterStats(descriptor, armoredBodyParts, Enumerable.Empty<PassiveModifierAbilityDef>(), baseCharacterStats);
+                List<PassiveModifierAbilityDef> passiveAbilities = GetPassiveAbilities(descriptor, characterProgression);
+                CharacterStats finalStats = BuildCharacterStats(descriptor, armoredBodyParts, passiveAbilities, baseCharacterStats);
+                BaseCharacterStats baseValues = ExtractStats(baseStats);
+                BaseCharacterStats armorValues = ExtractStats(armorOnlyStats);
+                BaseCharacterStats finalValues = ExtractStats(finalStats);
                 List<GeoUnitStatsHelper.ModifierContribution> contributions = new List<GeoUnitStatsHelper.ModifierContribution>();
-                contributions.AddRange(GeoUnitStatsHelper.GetArmorContributions(descriptor, nakedBodyParts, baseValues, baseCharacterStats));
-                contributions.AddRange(GeoUnitStatsHelper.GetAbilityContributions(descriptor, passiveAbilities, armoredBodyParts, armorValues, baseCharacterStats));
-                string modifiers = GeoUnitStatsHelper.BuildModifierSummary(contributions);
+                contributions.AddRange(GetArmorContributions(descriptor, nakedBodyParts, baseValues, baseCharacterStats));
+                contributions.AddRange(GetAbilityContributions(descriptor, passiveAbilities, armoredBodyParts, armorValues, baseCharacterStats));
+                string modifiers = BuildModifierSummary(contributions);
                 return new GeoUnitStatsSummary(baseValues, finalValues, modifiers);
             }
 
@@ -142,22 +140,24 @@ namespace TFTV.TFTVHavenRecruitsUI
 
             private static List<PassiveModifierAbilityDef> GetPassiveAbilities(GeoUnitDescriptor descriptor, CharacterProgression progression)
             {
-                HashSet<PassiveModifierAbilityDef> hashSet = new HashSet<PassiveModifierAbilityDef>();
-                if (descriptor.Progression != null)
+                TFTVConfig config = TFTVMain.Main.Config;
+
+                List < PassiveModifierAbilityDef > passiveAbilities = new List<PassiveModifierAbilityDef>();
+
+                if (!config.LearnFirstSkill) 
                 {
-                    foreach (PassiveModifierAbilityDef passiveModifierAbilityDef in descriptor.GetTacticalAbilities().OfType<PassiveModifierAbilityDef>())
-                    {
-                        hashSet.Add(passiveModifierAbilityDef);
-                    }
+                    return passiveAbilities;
                 }
-                if (progression != null)
+
+                if(progression.PersonalAbilityTrack.GetAbilitySlotForLevel(1).Ability is PassiveModifierAbilityDef passiveAbilityDef) 
                 {
-                    foreach (PassiveModifierAbilityDef passiveModifierAbilityDef2 in progression.Abilities.OfType<PassiveModifierAbilityDef>())
-                    {
-                        hashSet.Add(passiveModifierAbilityDef2);
-                    }
+                    TFTVLogger.Always($"passiveAbilityDef: {passiveAbilityDef.name}");
+                    passiveAbilities.Add(passiveAbilityDef);   
                 }
-                return hashSet.ToList();
+
+                return passiveAbilities;
+
+               
             }
 
             private static IEnumerable<GeoUnitStatsHelper.ModifierContribution> GetArmorContributions(GeoUnitDescriptor descriptor, List<BodyPartAspectDef> baseBodyParts, BaseCharacterStats baseStats, BaseCharacterStats baseCharacterStats)
@@ -175,9 +175,9 @@ namespace TFTV.TFTVHavenRecruitsUI
                     tacticalItemDef
                     };
                     GeoUnitDescriptor.GetBodypartStats(itemDefs, list2);
-                    CharacterStats characterStats = GeoUnitStatsHelper.BuildCharacterStats(descriptor, list2, Enumerable.Empty<PassiveModifierAbilityDef>(), baseCharacterStats);
-                    BaseCharacterStats stats = GeoUnitStatsHelper.ExtractStats(characterStats);
-                    GeoUnitStatsHelper.ModifierContribution item = new GeoUnitStatsHelper.ModifierContribution(GeoUnitStatsHelper.GetViewName(tacticalItemDef.ViewElementDef) ?? tacticalItemDef.name, stats.Endurance - baseStats.Endurance, stats.Willpower - baseStats.Willpower, stats.Speed - baseStats.Speed);
+                    CharacterStats characterStats = BuildCharacterStats(descriptor, list2, Enumerable.Empty<PassiveModifierAbilityDef>(), baseCharacterStats);
+                    BaseCharacterStats stats = ExtractStats(characterStats);
+                    GeoUnitStatsHelper.ModifierContribution item = new GeoUnitStatsHelper.ModifierContribution(GetViewName(tacticalItemDef.ViewElementDef) ?? tacticalItemDef.name, stats.Endurance - baseStats.Endurance, stats.Willpower - baseStats.Willpower, stats.Speed - baseStats.Speed);
                     list.Add(item);
                 }
                 return list;
@@ -185,16 +185,22 @@ namespace TFTV.TFTVHavenRecruitsUI
 
             private static IEnumerable<GeoUnitStatsHelper.ModifierContribution> GetAbilityContributions(GeoUnitDescriptor descriptor, IEnumerable<PassiveModifierAbilityDef> abilities, IEnumerable<BodyPartAspectDef> armoredBodyParts, BaseCharacterStats armorStats, BaseCharacterStats baseCharacterStats)
             {
-                List<GeoUnitStatsHelper.ModifierContribution> list = new List<GeoUnitStatsHelper.ModifierContribution>();
+                List<ModifierContribution> list = new List<ModifierContribution>();
                 foreach (PassiveModifierAbilityDef passiveModifierAbilityDef in abilities)
                 {
-                    CharacterStats characterStats = GeoUnitStatsHelper.BuildCharacterStats(descriptor, armoredBodyParts, new PassiveModifierAbilityDef[]
+                    if (passiveModifierAbilityDef.StatModifications != null && passiveModifierAbilityDef.StatModifications.Count() > 0)
                     {
+                        CharacterStats characterStats = BuildCharacterStats(descriptor, armoredBodyParts, new PassiveModifierAbilityDef[]
+                        {
                     passiveModifierAbilityDef
-                    }, baseCharacterStats);
-                    BaseCharacterStats stats = GeoUnitStatsHelper.ExtractStats(characterStats);
-                    GeoUnitStatsHelper.ModifierContribution item = new GeoUnitStatsHelper.ModifierContribution(GeoUnitStatsHelper.GetViewName(passiveModifierAbilityDef.ViewElementDef) ?? passiveModifierAbilityDef.name, stats.Endurance - armorStats.Endurance, stats.Willpower - armorStats.Willpower, stats.Speed - armorStats.Speed);
-                    list.Add(item);
+                        }, baseCharacterStats);
+
+
+                        BaseCharacterStats stats = ExtractStats(characterStats);
+
+                        ModifierContribution item = new ModifierContribution(GetViewName(passiveModifierAbilityDef.ViewElementDef) ?? passiveModifierAbilityDef.name, stats.Endurance - armorStats.Endurance, stats.Willpower - armorStats.Willpower, stats.Speed - armorStats.Speed);
+                        list.Add(item);
+                    }
                 }
                 return list;
             }
@@ -214,9 +220,9 @@ namespace TFTV.TFTVHavenRecruitsUI
                 foreach (GeoUnitStatsHelper.ModifierContribution modifierContribution in contributions)
                 {
                     List<string> list2 = new List<string>();
-                    GeoUnitStatsHelper.TryAddStatContribution(list2, modifierContribution.Endurance, "STR");
-                    GeoUnitStatsHelper.TryAddStatContribution(list2, modifierContribution.Willpower, "WILL");
-                    GeoUnitStatsHelper.TryAddStatContribution(list2, modifierContribution.Speed, "SPD");
+                    TryAddStatContribution(list2, modifierContribution.Endurance, "STR");
+                    TryAddStatContribution(list2, modifierContribution.Willpower, "WILL");
+                    TryAddStatContribution(list2, modifierContribution.Speed, "SPD");
                     if (list2.Count > 0)
                     {
                         list.Add(string.Format("{0}: {1}", modifierContribution.Source, string.Join(" ", list2)));

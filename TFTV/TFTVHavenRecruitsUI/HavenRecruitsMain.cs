@@ -190,11 +190,15 @@ namespace TFTV
         internal sealed class RecruitCardView : MonoBehaviour
         {
             public Image ClassIconImage;
+            public GameObject ClassIconRoot;
             public Color ClassIconDefaultColor = Color.white;
             public Text LevelLabel;
             public Color LevelDefaultColor = Color.white;
             public Text NameLabel;
             public Color NameDefaultColor = Color.white;
+            public Transform AbilityContainer;
+            public Transform CostRow;
+
 
             private readonly List<Text> _resourceAmountLabels = new List<Text>();
             private readonly List<Color> _resourceAmountDefaultColors = new List<Color>();
@@ -236,6 +240,55 @@ namespace TFTV
                     }
 
                     label.color = selected ? Color.black : _resourceAmountDefaultColors[i];
+                }
+            }
+
+            public void ResetForReuse()
+            {
+                try
+                {
+                    SetSelected(false);
+
+                    if (ClassIconRoot != null)
+                    {
+                        ClassIconRoot.SetActive(false);
+                    }
+
+                    if (ClassIconImage != null)
+                    {
+                        ClassIconImage.sprite = null;
+                        ClassIconImage.color = ClassIconDefaultColor;
+                    }
+
+                    if (LevelLabel != null)
+                    {
+                        LevelLabel.text = string.Empty;
+                        LevelLabel.color = LevelDefaultColor;
+                    }
+
+                    if (NameLabel != null)
+                    {
+                        NameLabel.text = string.Empty;
+                        NameLabel.color = NameDefaultColor;
+                    }
+
+                    if (AbilityContainer != null)
+                    {
+                        RecruitOverlayManagerHelpers.ClearTransformChildren(AbilityContainer);
+                        AbilityContainer.gameObject.SetActive(false);
+                    }
+
+                    if (CostRow != null)
+                    {
+                        RecruitOverlayManagerHelpers.ClearTransformChildren(CostRow);
+                    }
+
+                    _resourceAmountLabels.Clear();
+                    _resourceAmountDefaultColors.Clear();
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
                 }
             }
         }
@@ -293,6 +346,10 @@ namespace TFTV
             internal static GameObject _currentSelectedCard;
             internal static RecruitAtSite _selectedRecruit;
 
+            private static readonly Queue<RecruitCardView> _cardPool = new Queue<RecruitCardView>();
+            private static readonly List<RecruitCardView> _activeCards = new List<RecruitCardView>();
+            private static Transform _cardPoolRoot;
+
             //  internal static Sprite _mutationBound;
             //  internal static Sprite _iconBackground;
             internal static Sprite _abilityIconBackground;
@@ -312,6 +369,25 @@ namespace TFTV
                 {
                     SetOverlayVisible(false);
                     ClearSelection(immediate: true);
+
+                    RecycleActiveCards();
+
+                    while (_cardPool.Count > 0)
+                    {
+                        var pooled = _cardPool.Dequeue();
+                        if (pooled != null)
+                        {
+                            Object.Destroy(pooled.gameObject);
+                        }
+                    }
+                    _activeCards.Clear();
+
+                    if (_cardPoolRoot != null)
+                    {
+                        Object.Destroy(_cardPoolRoot.gameObject);
+                        _cardPoolRoot = null;
+                    }
+
 
                     if (_detailPanel != null)
                     {
@@ -531,6 +607,7 @@ namespace TFTV
                     CreateToolbar(overlayPanel.transform);
                     CreateFactionTabs(overlayPanel.transform);
                     CreateRecruitListArea(overlayPanel.transform);
+                    EnsureCardPoolRoot();
                     EnsureAbilityTooltipInstance(overlayPanel.transform);
                     EnsureItemTooltipInstance(overlayPanel.transform);
                     EnsureMutationSlotTemplate(overlayPanel.transform);
@@ -1167,6 +1244,14 @@ namespace TFTV
                     if (_currentSelectedCard != null)
                     {
                         SetCardSelected(_currentSelectedCard, false);
+                        if (immediate)
+                        {
+                            var selectedView = _currentSelectedCard.GetComponent<RecruitCardView>();
+                            if (selectedView != null)
+                            {
+                                RecycleCard(selectedView);
+                            }
+                        }
                         _currentSelectedCard = null;
                     }
 
@@ -1176,6 +1261,124 @@ namespace TFTV
                 catch (Exception ex) { TFTVLogger.Error(ex); }
             }
 
+            private static void EnsureCardPoolRoot()
+            {
+                if (_cardPoolRoot != null)
+                {
+                    if (overlayPanel != null && _cardPoolRoot.parent != overlayPanel.transform)
+                    {
+                        _cardPoolRoot.SetParent(overlayPanel.transform, false);
+                    }
+                    return;
+                }
+
+                var poolGO = new GameObject("RecruitCardPool");
+                if (overlayPanel != null)
+                {
+                    poolGO.transform.SetParent(overlayPanel.transform, false);
+                }
+                poolGO.SetActive(false);
+                _cardPoolRoot = poolGO.transform;
+            }
+
+            private static void RecycleCard(RecruitCardView view)
+            {
+                try
+                {
+                    if (view == null || view.gameObject == null)
+                    {
+                        return;
+                    }
+
+                    _activeCards.Remove(view);
+
+                    SetCardSelected(view.gameObject, false);
+                    view.ResetForReuse();
+
+                    if (_cardPoolRoot == null)
+                    {
+                        EnsureCardPoolRoot();
+                    }
+
+                    if (_cardPoolRoot != null)
+                    {
+                        view.transform.SetParent(_cardPoolRoot, false);
+                    }
+                    view.gameObject.SetActive(false);
+                    _cardPool.Enqueue(view);
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
+            }
+
+            private static void RecycleActiveCards()
+            {
+                try
+                {
+                    if (_activeCards.Count == 0)
+                    {
+                        return;
+                    }
+
+                    for (int i = _activeCards.Count - 1; i >= 0; i--)
+                    {
+                        var view = _activeCards[i];
+                        if (view != null)
+                        {
+                            RecycleCard(view);
+                        }
+                    }
+                    _activeCards.Clear();
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
+            }
+
+            private static RecruitCardView GetCard(Transform parent)
+            {
+                try
+                {
+                    EnsureCardPoolRoot();
+
+                    RecruitCardView view = null;
+                    while (_cardPool.Count > 0 && view == null)
+                    {
+                        var candidate = _cardPool.Dequeue();
+                        if (candidate == null || candidate.gameObject == null)
+                        {
+                            continue;
+                        }
+                        view = candidate;
+                    }
+
+                    if (view == null)
+                    {
+                        view = HavenRecruitsRecruitItem.EnsureCardHierarchy(parent);
+                    }
+                    else
+                    {
+                        view.transform.SetParent(parent, false);
+                        view.gameObject.SetActive(true);
+                        view.ResetForReuse();
+                    }
+
+                    if (view != null && !_activeCards.Contains(view))
+                    {
+                        _activeCards.Add(view);
+                    }
+
+                    return view;
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                    return null;
+                }
+            }
 
             private static void RefreshColumns()
             {
@@ -1193,10 +1396,8 @@ namespace TFTV
 
                     ClearSelection();
 
-                    foreach (Transform child in _recruitListRoot)
-                    {
-                        Object.Destroy(child.gameObject);
-                    }
+                    RecycleActiveCards();
+                    RecruitOverlayManagerHelpers.ClearTransformChildren(_recruitListRoot);
 
                     var factionRecruits = new Dictionary<FactionFilter, List<RecruitAtSite>>
                     {  { FactionFilter.Anu, geoLevelController.AnuFaction != null ? HavenRecruitsUtils.GetRecruitsForFaction(geoLevelController.AnuFaction) : new List<RecruitAtSite>() },
@@ -1239,7 +1440,13 @@ namespace TFTV
                     bool collapse = recruits.Count > 4;   // show compact by default if many
                     foreach (var r in recruits)
                     {
-                        HavenRecruitsRecruitItem.CreateRecruitItem(_recruitListRoot, r, collapse);
+                        var cardView = GetCard(_recruitListRoot);
+                        if (cardView == null)
+                        {
+                            continue;
+                        }
+
+                        HavenRecruitsRecruitItem.PopulateRecruitItem(cardView, r, collapse);
                     }
                 }
                 catch (Exception ex)

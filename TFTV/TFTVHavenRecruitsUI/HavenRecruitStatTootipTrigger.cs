@@ -21,7 +21,7 @@ namespace TFTV.TFTVHavenRecruitsUI
         private static CanvasGroup _tooltipCanvasGroup;
         private static Canvas _tooltipCanvas;
 
-        private const float TooltipHorizontalPadding = 290f;
+        private const float TooltipHorizontalPadding = -600f;
         private const float TooltipVerticalPadding = 80f;
         private const float TooltipMaxWidth = 210f;
         private const float TooltipScale = 0.5f;
@@ -45,10 +45,10 @@ namespace TFTV.TFTVHavenRecruitsUI
 
         public void OnPointerMove(PointerEventData eventData)
         {
-            if (_tooltipVisible)
+          /*  if (_tooltipVisible)
             {
                 UpdateTooltipPosition(eventData);
-            }
+            }*/
         }
 
         public void OnPointerExit(PointerEventData eventData)
@@ -76,13 +76,17 @@ namespace TFTV.TFTVHavenRecruitsUI
 
             UpdateTooltipContent();
 
+            // Ensure tooltip appears above sibling UI
+            tooltip.transform.SetAsLastSibling();
+
+            // Activate and fade in
             tooltip.gameObject.SetActive(true);
             if (_tooltipCanvasGroup != null)
             {
                 _tooltipCanvasGroup.alpha = 1f;
             }
 
-            UpdateTooltipPosition(eventData);
+        //    UpdateTooltipPosition(eventData);
             _tooltipVisible = true;
         }
 
@@ -156,9 +160,9 @@ namespace TFTV.TFTVHavenRecruitsUI
                 out Vector2 localPoint);
 
             float anchoredY = localPoint.y + TooltipVerticalPadding;
-            float anchoredX = canvasRect.rect.xMin + TooltipHorizontalPadding;
+            float anchoredX = TooltipHorizontalPadding;//canvasRect.rect.xMin + TooltipHorizontalPadding;
 
-            var targetRect = DetailPanelRect != null
+           /* var targetRect = DetailPanelRect != null
                  ? DetailPanelRect
                  : transform as RectTransform;
             if (targetRect != null)
@@ -169,7 +173,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                 {
                     anchoredX = targetLeftLocal.x + TooltipHorizontalPadding;
                 }
-            }
+            }*/
 
             tooltip.anchoredPosition = new Vector2(anchoredX, anchoredY);
 
@@ -198,7 +202,7 @@ namespace TFTV.TFTVHavenRecruitsUI
 
             try
             {
-                var canvas = DetailPanelCanvas != null ? DetailPanelCanvas : HavenRecruitsMain.OverlayCanvas;
+                var canvas = DetailPanelCanvas != null ? DetailPanelCanvas : OverlayCanvas;
                 if (canvas == null)
                 {
                     return null;
@@ -211,7 +215,17 @@ namespace TFTV.TFTVHavenRecruitsUI
                 tooltipRect.anchoredPosition = Vector2.zero;
                 tooltipRect.offsetMin = Vector2.zero;
                 tooltipRect.offsetMax = Vector2.zero;
-                tooltipRect.localScale = Vector3.one * TooltipScale;
+                tooltipRect.localScale = Vector3.one;
+
+                // Add a small local canvas so this tooltip can sort above other UI without
+                // changing overlay/canvas global settings.
+                var localCanvas = tooltipGO.AddComponent<Canvas>();
+                localCanvas.overrideSorting = true;
+                localCanvas.sortingOrder = 5000; // large value to ensure it's on top
+
+                // If you need raycasts for the tooltip (usually not), add GraphicRaycaster.
+                // If you don't need interaction, skip adding this component.
+                // tooltipGO.AddComponent<GraphicRaycaster>();
 
                 var background = tooltipGO.AddComponent<Image>();
                 background.color = new Color(0f, 0f, 0f, 0.92f);

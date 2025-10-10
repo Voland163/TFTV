@@ -9,17 +9,15 @@ namespace TFTV.TFTVHavenRecruitsUI
 {
     internal class HavenRecruitsRecruitItem
     {
-        internal static void CreateRecruitItem(Transform parent, RecruitAtSite data, bool collapse)
+        internal static RecruitCardView EnsureCardHierarchy(Transform parent)
 
         {
-            _ = collapse;
-
-            var card = new GameObject($"Recruit_{data.Recruit?.GetName()}");
+            var card = new GameObject("RecruitCard", typeof(RectTransform));
             card.transform.SetParent(parent, false);
 
             var cardView = card.AddComponent<RecruitCardView>();
 
-            // background
+          
             var bg = card.AddComponent<Image>();
             bg.color = CardBackgroundColor;
 
@@ -28,22 +26,11 @@ namespace TFTV.TFTVHavenRecruitsUI
             border.effectDistance = new Vector2(2f, 2f);
             border.useGraphicAlpha = false;
 
-            // button (keep it for hover/tint states, but don't use onClick directly)
+       
             var btn = card.AddComponent<Button>();
             btn.transition = Selectable.Transition.ColorTint;
 
-            // click handler: single = focus; double = your hook
-            var click = card.AddComponent<CardClickHandler>();
-            click.OnSingle = () =>
-            {
-                HavenRecruitsGeoscapeInteractions.FocusOnSite(data.Site);
-                HandleRecruitSelected(card, data);
-            };
-            click.OnDouble = () =>
-            {
-                HandleRecruitSelected(card, data);
-                OnCardDoubleClick?.Invoke(data.Recruit, data.Site);
-            };
+            card.AddComponent<CardClickHandler>();
 
             var layout = card.AddComponent<HorizontalLayoutGroup>();
             layout.childAlignment = TextAnchor.MiddleLeft;
@@ -54,18 +41,19 @@ namespace TFTV.TFTVHavenRecruitsUI
             layout.childForceExpandHeight = false;
             layout.padding = new RectOffset(4, 6, 4, 4);
 
-            // Let height fit content (no fixed height anymore)
+         
             var fit = card.AddComponent<ContentSizeFitter>();
             fit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-            var classIcon = GetClassIcon(data.Recruit);
-            if (classIcon != null)
+            var classIconImage = RecruitOverlayManagerHelpers.MakeFixedIcon(card.transform, null, ClassIconSize);
+            if (classIconImage != null)
             {
-                var iconImage = RecruitOverlayManagerHelpers.MakeFixedIcon(card.transform, classIcon, ClassIconSize);
-                if (iconImage != null)
+                cardView.ClassIconImage = classIconImage;
+                cardView.ClassIconDefaultColor = classIconImage.color;
+                cardView.ClassIconRoot = classIconImage.transform.parent?.gameObject;
+                if (cardView.ClassIconRoot != null)
                 {
-                    cardView.ClassIconImage = iconImage;
-                    cardView.ClassIconDefaultColor = iconImage.color;
+                    cardView.ClassIconRoot.SetActive(false);
                 }
             }
 
@@ -75,7 +63,7 @@ namespace TFTV.TFTVHavenRecruitsUI
             levelText.fontSize = TextFontSize;
             levelText.color = Color.white;
             levelText.alignment = TextAnchor.MiddleLeft;
-            levelText.text = $"{data.Recruit?.Level ?? 0}";
+            levelText.text = string.Empty;
             cardView.LevelLabel = levelText;
             cardView.LevelDefaultColor = levelText.color;
             levelRT.pivot = new Vector2(0f, 0.5f);
@@ -93,92 +81,196 @@ namespace TFTV.TFTVHavenRecruitsUI
             nameText.fontSize = TextFontSize;
             nameText.color = Color.white;
             nameText.alignment = TextAnchor.MiddleLeft;
-            nameText.text = data.Recruit?.GetName() ?? "Unknown Recruit";
-            cardView.NameLabel = nameText;
-            cardView.NameDefaultColor = nameText.color;
+            nameText.text = string.Empty;
             nameText.horizontalOverflow = HorizontalWrapMode.Overflow;
             nameText.verticalOverflow = VerticalWrapMode.Truncate;
+            cardView.NameLabel = nameText;
+            cardView.NameDefaultColor = nameText.color;
             nameRT.pivot = new Vector2(0f, 0.5f);
             nameRT.anchorMin = new Vector2(0f, 0.5f);
             nameRT.anchorMax = new Vector2(0f, 0.5f);
             nameRT.anchoredPosition = Vector2.zero;
+
             var nameFitter = nameGO.AddComponent<ContentSizeFitter>();
             nameFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
             nameFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            var (costRowGO, _) = RecruitOverlayManagerHelpers.NewUI("CostRow", card.transform);
+            var costLayout = costRowGO.AddComponent<HorizontalLayoutGroup>();
+            costLayout.childAlignment = TextAnchor.MiddleRight;
+            costLayout.spacing = 0f;
+            costLayout.childControlWidth = true;
+            costLayout.childControlHeight = true;
+            costLayout.childForceExpandWidth = false;
+            costLayout.childForceExpandHeight = false;
+            var costLE = costRowGO.AddComponent<LayoutElement>();
+            costLE.minWidth = 0f;
+            costLE.preferredWidth = 0f;
+            costLE.flexibleWidth = 1f;
+            cardView.CostRow = costRowGO.transform;
 
-            var abilityInfos = GetSelectedAbilityIcons(data.Recruit).ToList();
-            var mutationIcons = GetMutationIcons(data.Recruit).ToList();
+            var (abilitiesGO, abilitiesRT) = RecruitOverlayManagerHelpers.NewUI("Abilities", card.transform);
+            var abilitiesLE = abilitiesGO.AddComponent<LayoutElement>();
+            abilitiesLE.ignoreLayout = true;
+            abilitiesRT.anchorMin = new Vector2(1f, 0.5f);
+            abilitiesRT.anchorMax = new Vector2(1f, 0.5f);
+            abilitiesRT.pivot = new Vector2(1f, 0.5f);
+            abilitiesRT.anchoredPosition = new Vector2(AbilityIconsCenterOffsetPx, 0f);
 
-            Transform abilitiesTransform = null;
+            var abilitiesLayout = abilitiesGO.AddComponent<HorizontalLayoutGroup>();
+            abilitiesLayout.childAlignment = TextAnchor.MiddleCenter;
+            abilitiesLayout.spacing = 20f;
+            abilitiesLayout.childControlWidth = true;
+            abilitiesLayout.childControlHeight = true;
+            abilitiesLayout.childForceExpandWidth = false;
+            abilitiesLayout.childForceExpandHeight = false;
 
-            if (abilityInfos.Count > 0 || mutationIcons.Count > 0)
-            {
-                var (abilitiesGO, abilitiesRT) = RecruitOverlayManagerHelpers.NewUI("Abilities", card.transform);
-                abilitiesTransform = abilitiesGO.transform;
+            var abilitiesFitter = abilitiesGO.AddComponent<ContentSizeFitter>();
+            abilitiesFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            abilitiesFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            cardView.AbilityContainer = abilitiesGO.transform;
+            abilitiesGO.SetActive(false);
 
-                var abilitiesLE = abilitiesGO.AddComponent<LayoutElement>();
-                abilitiesLE.ignoreLayout = true;
-                abilitiesRT.anchorMin = new Vector2(1f, 0.5f);
-                abilitiesRT.anchorMax = new Vector2(1f, 0.5f);
-                abilitiesRT.pivot = new Vector2(1f, 0.5f);
-                // Move left from the right edge by a considerable offset. Adjust the multiplier or added value as needed.
-                abilitiesRT.anchoredPosition = new Vector2(AbilityIconsCenterOffsetPx, 0f);
-
-                var abilitiesLayout = abilitiesGO.AddComponent<HorizontalLayoutGroup>();
-                abilitiesLayout.childAlignment = TextAnchor.MiddleCenter;
-                abilitiesLayout.spacing = 20f;
-                abilitiesLayout.childControlWidth = true;
-                abilitiesLayout.childControlHeight = true;
-                abilitiesLayout.childForceExpandWidth = false;
-                abilitiesLayout.childForceExpandHeight = false;
-
-                var abilitiesFitter = abilitiesGO.AddComponent<ContentSizeFitter>();
-                abilitiesFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-                abilitiesFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-                foreach (var icon in mutationIcons)
-                {
-                    if (icon.Icon == null)
-                    {
-                        continue;
-                    }
-                    RecruitOverlayManagerHelpers.MakeMutationSlot(abilitiesGO.transform, icon, ArmorIconSize);
-                }
-
-                foreach (var ability in abilityInfos)
-                {
-                    if (ability.Icon == null)
-                    {
-                        continue;
-                    }
-
-                    var iconImage = RecruitOverlayManagerHelpers.MakeFixedIcon(abilitiesGO.transform, ability.Icon, AbilityIconSize, _abilityIconBackground);
-                    if (iconImage == null)
-                    {
-                        continue;
-                    }
-
-                    iconImage.raycastTarget = true;
-
-                    var tooltipTrigger = iconImage.gameObject.AddComponent<HavenRecruitAbilityTooltipTrigger>();
-                    tooltipTrigger.Initialize(ability);
-                }
-
-
-            }
-
-            var costRow = HavenRecruitsPrice.CreateCostRow(card.transform, data.Haven, data.Haven.Site.GeoLevel.PhoenixFaction, cardView);
-            if (costRow != null)
-            {
-                var costLE = costRow.GetComponent<LayoutElement>() ?? costRow.AddComponent<LayoutElement>();
-                costLE.minWidth = 0f;
-                costLE.preferredWidth = 0f;
-                costLE.flexibleWidth = 1f;
-            }
-
-            abilitiesTransform?.SetAsLastSibling();
-
+            return cardView;
         }
+        internal static void PopulateRecruitItem(RecruitCardView cardView, RecruitAtSite data, bool collapse)
+        {
+            try
+            {
+                if (cardView == null || data == null)
+                {
+                    return;
+                }
+
+                _ = collapse;
+
+                var card = cardView.gameObject;
+                card.name = $"Recruit_{data.Recruit?.GetName()}";
+
+                var bg = card.GetComponent<Image>();
+                if (bg != null)
+                {
+                    bg.color = CardBackgroundColor;
+                }
+                var outline = card.GetComponent<Outline>();
+                if (outline != null)
+                {
+                    outline.effectColor = CardBorderColor;
+                }
+
+                var btn = card.GetComponent<Button>();
+                if (btn != null)
+                {
+                    btn.interactable = true;
+                }
+
+                var click = card.GetComponent<CardClickHandler>();
+                if (click != null)
+                {
+                    click.OnSingle = () =>
+                    {
+                        HavenRecruitsGeoscapeInteractions.FocusOnSite(data.Site);
+                        HandleRecruitSelected(card, data);
+                    };
+                    click.OnDouble = () =>
+                    {
+                        HandleRecruitSelected(card, data);
+                        OnCardDoubleClick?.Invoke(data.Recruit, data.Site);
+                    };
+                }
+
+                if (cardView.LevelLabel != null)
+                {
+                    cardView.LevelLabel.text = $"{data.Recruit?.Level ?? 0}";
+                    cardView.LevelLabel.color = cardView.LevelDefaultColor;
+                }
+
+                if (cardView.NameLabel != null)
+                {
+                    cardView.NameLabel.text = data.Recruit?.GetName() ?? "Unknown Recruit";
+                    cardView.NameLabel.color = cardView.NameDefaultColor;
+                }
+
+                var classIcon = GetClassIcon(data.Recruit);
+                if (cardView.ClassIconImage != null)
+                {
+                    cardView.ClassIconImage.sprite = classIcon;
+                    cardView.ClassIconImage.color = cardView.ClassIconDefaultColor;
+                }
+                if (cardView.ClassIconRoot != null)
+                {
+                    cardView.ClassIconRoot.SetActive(classIcon != null);
+                }
+
+                var abilityInfos = GetSelectedAbilityIcons(data.Recruit).ToList();
+                var mutationIcons = GetMutationIcons(data.Recruit).ToList();
+
+                var abilitiesTransform = cardView.AbilityContainer;
+                if (abilitiesTransform != null)
+                {
+                    RecruitOverlayManagerHelpers.ClearTransformChildren(abilitiesTransform);
+                    bool hasAbilities = abilityInfos.Count > 0 || mutationIcons.Count > 0;
+                    abilitiesTransform.gameObject.SetActive(hasAbilities);
+
+                    if (hasAbilities)
+                    {
+                        foreach (var icon in mutationIcons)
+                        {
+                            if (icon.Icon == null)
+                            {
+                                continue;
+                            }
+                            RecruitOverlayManagerHelpers.MakeMutationSlot(abilitiesTransform, icon, ArmorIconSize);
+                        }
+
+                        foreach (var ability in abilityInfos)
+                        {
+                            if (ability.Icon == null)
+                            {
+                                continue;
+                            }
+
+                            var iconImage = RecruitOverlayManagerHelpers.MakeFixedIcon(abilitiesTransform, ability.Icon, AbilityIconSize, _abilityIconBackground);
+                            if (iconImage == null)
+                            {
+                                continue;
+                            }
+
+                            iconImage.raycastTarget = true;
+
+                            var tooltipTrigger = iconImage.gameObject.AddComponent<HavenRecruitAbilityTooltipTrigger>();
+                            tooltipTrigger.Initialize(ability);
+                        }
+
+                        abilitiesTransform.SetAsLastSibling();
+                    }
+                }
+
+                var costRow = cardView.CostRow;
+                if (costRow != null)
+                {
+                    RecruitOverlayManagerHelpers.ClearTransformChildren(costRow);
+                    var haven = data.Haven;
+                    var phoenix = data.Haven?.Site?.GeoLevel?.PhoenixFaction;
+                    if (haven != null && phoenix != null)
+                    {
+                        HavenRecruitsPrice.PopulateCostRow(costRow, haven, phoenix, cardView);
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                TFTVLogger.Error(ex);
+            }
+        }
+
+        internal static RecruitCardView CreateRecruitItem(Transform parent, RecruitAtSite data, bool collapse)
+        {
+            var cardView = EnsureCardHierarchy(parent);
+            PopulateRecruitItem(cardView, data, collapse);
+            return cardView;
+        }
+
+
 
         internal static void CreateEmptyLabel(Transform parent, string msg)
         {

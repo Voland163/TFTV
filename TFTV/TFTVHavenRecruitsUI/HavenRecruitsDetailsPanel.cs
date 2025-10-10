@@ -777,11 +777,6 @@ namespace TFTV
                 tooltipText = string.Empty;
             }
 
-            if (cell.Tooltip != null)
-            {
-                cell.Tooltip.TipText = tooltipText;
-            }
-
             cell.TooltipTrigger?.SetTooltipText(tooltipText);
         }
 
