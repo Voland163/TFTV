@@ -19,8 +19,6 @@ namespace TFTV
 
     internal static class RecruitOverlayManagerHelpers
     {
-        private const float TooltipHorizontalPadding = 290f;
-        private const float TooltipVerticalPadding = 80f;
         private const float InventorySlotIconOverlayScale = 1.5f;
         private const string MutationOverlayName = "MutationIconOverlay";
         private const string InventoryOverlayName = "InventoryIconOverlay";
