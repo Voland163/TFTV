@@ -53,6 +53,8 @@ namespace TFTV
         internal const float OverlayMinWidthPx = 650f;
         internal const float DetailPanelWidthPercent = 0.15f; // narrower detail panel on the left
         internal const float DetailPanelMinWidthPx = 480f;
+        internal const float DetailPanelHeightPercent = 0.7f;
+        internal const float DetailPanelMinHeightPx = 850f;
         internal const float OverlayMaxWidthFraction = 0.98f;
 
         internal const float OverlayTopMargin = 0.06f;
@@ -100,6 +102,16 @@ namespace TFTV
             return fraction;
         }
 
+        internal static float GetOverlayHeightFraction(out float resolvedPixelHeight, float? preferredFraction = null, float? preferredMinHeightPx = null)
+        {
+            float screenHeight = Mathf.Max(1f, Screen.height);
+            float baseFraction = preferredFraction ?? (1f - OverlayTopMargin - OverlayBottomMargin);
+            float minHeightPx = preferredMinHeightPx ?? DetailPanelMinHeightPx;
+            float fraction = Mathf.Max(baseFraction, minHeightPx / screenHeight);
+            fraction = Mathf.Min(fraction, 1f);
+            resolvedPixelHeight = fraction * screenHeight;
+            return fraction;
+        }
         private static Color HexToColor(string hex)
         {
             if (string.IsNullOrEmpty(hex))
@@ -991,6 +1003,12 @@ namespace TFTV
                     float overlayFraction = GetOverlayWidthFraction(out float overlayPixelWidth);
                     float detailFraction = overlayFraction;
                     float detailPixelWidth = overlayPixelWidth;
+                    float detailHeightFraction = GetOverlayHeightFraction(out _, DetailPanelHeightPercent, DetailPanelMinHeightPx);
+                    float availableDetailHeight = Mathf.Max(0f, 1f - OverlayTopMargin - OverlayBottomMargin);
+                    detailHeightFraction = Mathf.Min(detailHeightFraction, availableDetailHeight);
+                    float detailVerticalPadding = (availableDetailHeight - detailHeightFraction) * 0.5f;
+                    float detailAnchorMinY = OverlayBottomMargin + detailVerticalPadding;
+                    float detailAnchorMaxY = detailAnchorMinY + detailHeightFraction;
 
                     if (_detailPanel != null)
                     {
@@ -1017,8 +1035,8 @@ namespace TFTV
                         var detailRect = _detailPanel.GetComponent<RectTransform>();
                         if (detailRect != null)
                         {
-                            detailRect.anchorMin = new Vector2(OverlayLeftMargin, OverlayBottomMargin);
-                            detailRect.anchorMax = new Vector2(OverlayLeftMargin + detailFraction, 1f - OverlayTopMargin);
+                            detailRect.anchorMin = new Vector2(OverlayLeftMargin, detailAnchorMinY);
+                            detailRect.anchorMax = new Vector2(OverlayLeftMargin + detailFraction, detailAnchorMaxY);
                             detailRect.pivot = new Vector2(0f, 0.5f);
                             detailRect.offsetMin = Vector2.zero;
                             detailRect.offsetMax = Vector2.zero;

@@ -90,7 +90,7 @@ namespace TFTV.TFTVHavenRecruitsUI
 
             var h = row.AddComponent<HorizontalLayoutGroup>();
             h.childAlignment = TextAnchor.MiddleRight;
-            h.spacing = 0f;
+            h.spacing = detailPanel ? 16f : 0f;
             h.childControlWidth = true;
             h.childControlHeight = true;
             h.childForceExpandWidth = false;
@@ -99,7 +99,7 @@ namespace TFTV.TFTVHavenRecruitsUI
 
             if(detailPanel)
             {
-                h.childAlignment = TextAnchor.MiddleCenter;
+                h.childAlignment = TextAnchor.MiddleLeft;
                 h.childControlWidth = false;
 
             }
@@ -108,14 +108,14 @@ namespace TFTV.TFTVHavenRecruitsUI
             {
                 if (resourceCosts.TryGetValue(type, out var amount))
                 {
-                    CreateResourceChip(row.transform, type, amount, cardView);
+                    CreateResourceChip(row.transform, type, amount, cardView, detailPanel);
                     resourceCosts.Remove(type);
                 }
             }
 
             foreach (var kvp in resourceCosts)
             {
-                CreateResourceChip(row.transform, kvp.Key, kvp.Value, cardView);
+                CreateResourceChip(row.transform, kvp.Key, kvp.Value, cardView, detailPanel);
             }
 
             return row;
@@ -123,7 +123,7 @@ namespace TFTV.TFTVHavenRecruitsUI
         }
 
 
-        private static GameObject CreateResourceChip(Transform parent, ResourceType resourceType, int amount, RecruitCardView cardView)
+        private static GameObject CreateResourceChip(Transform parent, ResourceType resourceType, int amount, RecruitCardView cardView, bool detailPanel)
         {
             if (amount <= 0)
             {
@@ -133,21 +133,38 @@ namespace TFTV.TFTVHavenRecruitsUI
 
             var (chip, chipRT) = RecruitOverlayManagerHelpers.NewUI("Res", parent);
 
-            var layout = chip.AddComponent<VerticalLayoutGroup>();
-            layout.childAlignment = TextAnchor.MiddleCenter;
-            layout.spacing = 1f;
-            layout.childControlWidth = false;
-            layout.childControlHeight = true;
-            layout.childForceExpandWidth = false;
-            layout.childForceExpandHeight = false;
+            if (detailPanel)
+            {
+                var layout = chip.AddComponent<HorizontalLayoutGroup>();
+                layout.childAlignment = TextAnchor.MiddleCenter;
+                layout.spacing = 2f;
+                layout.childControlWidth = true;
+                layout.childControlHeight = false;
+                layout.childForceExpandWidth = false;
+                layout.childForceExpandHeight = false;
+            }
+            else
+            {
+                var layout = chip.AddComponent<VerticalLayoutGroup>();
+                layout.childAlignment = TextAnchor.MiddleCenter;
+                layout.spacing = 1f;
+                layout.childControlWidth = false;
+                layout.childControlHeight = true;
+                layout.childForceExpandWidth = false;
+                layout.childForceExpandHeight = false;
+            }
 
             chipRT.pivot = new Vector2(0.5f, 0.5f);
 
-            var chipLE = chip.AddComponent<LayoutElement>();
-            float chipWidth = ResourceIconSize + 20f;
-            chipLE.minWidth = chipWidth;
-            chipLE.preferredWidth = chipWidth;
-            chipLE.flexibleWidth = 0f;
+            if (!detailPanel)
+            {
+                var chipLE = chip.AddComponent<LayoutElement>();
+                float chipWidth = ResourceIconSize + 20f;
+                chipLE.minWidth = chipWidth;
+                chipLE.preferredWidth = chipWidth;
+                chipLE.flexibleWidth = 0f;
+            }
+
 
 
             Image img = null;
@@ -163,7 +180,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                 typeLabel.text = resourceType.ToString();
                 typeLabel.font = PuristaSemibold ? PuristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
                 typeLabel.fontSize = TextFontSize - 4;
-                typeLabel.alignment = TextAnchor.MiddleCenter;
+                typeLabel.alignment = detailPanel ? TextAnchor.MiddleLeft : TextAnchor.MiddleCenter;
 
             }
 

@@ -1,17 +1,14 @@
-﻿using Epic.OnlineServices;
-using PhoenixPoint.Common.Entities;
-using PhoenixPoint.Common.UI;
+﻿using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
-using SoftMasking.Samples;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices.WindowsRuntime;
 using TFTV.TFTVHavenRecruitsUI;
 using UnityEngine;
 using UnityEngine.UI;
-using static RootMotion.FinalIK.GrounderQuadruped;
 using static TFTV.HavenRecruitsMain;
 using static TFTV.HavenRecruitsMain.RecruitOverlayManager;
 using static TFTV.TFTVHavenRecruitsUI.HavenRecruitsOverlayAnimator;
@@ -79,14 +76,23 @@ namespace TFTV
         private static readonly Color AbilityLockedIconColor = new Color(0.45f, 0.45f, 0.45f, DetailAbilityLockedIconAlpha);
         private static readonly Color AbilityUnlockedBackgroundColor = Color.white;
         private static readonly Color AbilityLockedBackgroundColor = new Color(1f, 1f, 1f, 0.35f);
-        
+        private static readonly Color DetailPanelBaseColor = new Color(0f, 0f, 0f, 0.95f);
+        private const float DetailPanelFactionOverlayAlpha = 0.12f;
+        private const float DetailPanelGlowAlpha = 0.3f;
+        private const float DetailPanelFactionTintAnchorMinX = 0.55f;
+        private const float DetailPanelFactionTintAnchorMaxY = 0.35f;
+        private static readonly Sprite DetailPanelFactionTintSprite = Helper.CreateSpriteFromImageFile("VFX_Abstract_TrailParticle_fxSCA.png");
+
         internal static Text _detailFactionNameLabel;
         internal static GameObject _detailPanel;
+        
         internal static GameObject _detailEmptyState;
         internal static Transform _detailInfoRoot;
+        private static Image _detailPanelBackground;
+        private static Image _detailPanelFactionTintImage;
         internal static Image _detailClassIconImage;
         internal static Text _detailLevelNameLabel;
-      
+
         internal static Image _detailFactionIconImage;
 
         internal static GameObject _detailAbilitySection;
@@ -125,21 +131,22 @@ namespace TFTV
         };
         private static readonly string[] DefaultStatOrder =
        {
-            "Strength",
-            "Perception",
-            "Willpower",
-            "Accuracy",
-            "Speed",
-            "Stealth"
-        };
+     "Strength",
+     "Perception",
+     "Willpower",
+     "Accuracy",
+     "Speed",
+     "Stealth"
+ };
         internal readonly struct StatCell
         {
-            public StatCell(GameObject root, Image icon, Text label, UITooltipText tooltip)
+            public StatCell(GameObject root, Image icon, Text label, UITooltipText tooltip, HavenRecruitStatTooltipTrigger tooltipTrigger)
             {
                 Root = root;
                 Icon = icon;
                 Label = label;
                 Tooltip = tooltip;
+                TooltipTrigger = tooltipTrigger;
             }
             public GameObject Root { get; }
             public Image Icon { get; }
@@ -147,6 +154,7 @@ namespace TFTV
             public Text Label { get; }
 
             public UITooltipText Tooltip { get; }
+            public HavenRecruitStatTooltipTrigger TooltipTrigger { get; }
         }
 
         private static void CreateDetailHeader(Transform parent)
@@ -217,22 +225,50 @@ namespace TFTV
                 detailCanvas.sortingOrder = 5000;
                 _detailPanel.AddComponent<GraphicRaycaster>();
 
-                var image = _detailPanel.AddComponent<Image>();
-                image.color = new Color(0f, 0f, 0f, 0.95f);
+                _detailPanelBackground = _detailPanel.AddComponent<Image>();
+                _detailPanelBackground.color = DetailPanelBaseColor;
 
                 var outline = _detailPanel.AddComponent<Outline>();
                 outline.effectColor = HeaderBorderColor;
                 outline.effectDistance = new Vector2(2f, 2f);
 
                 _detailPanelGlowShadow = _detailPanel.AddComponent<Shadow>();
-                _detailPanelGlowShadow.effectDistance = new Vector2(0f, -24f);
-                _detailPanelGlowShadow.effectColor = new Color(DetailSubTextColor.r, DetailSubTextColor.g, DetailSubTextColor.b, 0.35f);
+                _detailPanelGlowShadow.effectDistance = Vector2.zero;
+                _detailPanelGlowShadow.effectColor = new Color(DetailSubTextColor.r, DetailSubTextColor.g, DetailSubTextColor.b, DetailPanelGlowAlpha);
                 _detailPanelGlowShadow.useGraphicAlpha = false;
 
+                if (DetailPanelFactionTintSprite != null)
+                {
+                    var factionTintGO = new GameObject("FactionTintOverlay", typeof(RectTransform));
+                    factionTintGO.transform.SetParent(_detailPanel.transform, false);
+
+                    var tintRect = factionTintGO.GetComponent<RectTransform>();
+                    tintRect.anchorMin = new Vector2(DetailPanelFactionTintAnchorMinX, 0f);
+                    tintRect.anchorMax = new Vector2(1f, DetailPanelFactionTintAnchorMaxY);
+                    tintRect.pivot = new Vector2(1f, 0f);
+                    tintRect.anchoredPosition = Vector2.zero;
+                    tintRect.offsetMin = Vector2.zero;
+                    tintRect.offsetMax = Vector2.zero;
+
+                    _detailPanelFactionTintImage = factionTintGO.AddComponent<Image>();
+                    _detailPanelFactionTintImage.sprite = DetailPanelFactionTintSprite;
+                    _detailPanelFactionTintImage.color = Color.clear;
+                    _detailPanelFactionTintImage.raycastTarget = false;
+                    _detailPanelFactionTintImage.preserveAspect = false;
+
+                    factionTintGO.transform.SetAsFirstSibling();
+                }
+
                 var rt = _detailPanel.GetComponent<RectTransform>();
-                float width = GetOverlayWidthFraction(out float detailPixels, DetailPanelWidthPercent, DetailPanelMinWidthPx);
-                rt.anchorMin = new Vector2(OverlayLeftMargin, OverlayBottomMargin);
-                rt.anchorMax = new Vector2(OverlayLeftMargin + width, 1f - OverlayTopMargin);
+                float width = GetOverlayWidthFraction(out _, DetailPanelWidthPercent, DetailPanelMinWidthPx);
+                float height = GetOverlayHeightFraction(out _, DetailPanelHeightPercent, DetailPanelMinHeightPx);
+                float availableVerticalSpace = Mathf.Max(0f, 1f - OverlayTopMargin - OverlayBottomMargin);
+                height = Mathf.Min(height, availableVerticalSpace);
+                float verticalPadding = (availableVerticalSpace - height) * 0.5f;
+                float anchorMinY = OverlayBottomMargin + verticalPadding;
+                float anchorMaxY = anchorMinY + height;
+                rt.anchorMin = new Vector2(OverlayLeftMargin, anchorMinY);
+                rt.anchorMax = new Vector2(OverlayLeftMargin + width, anchorMaxY);
                 rt.pivot = new Vector2(0f, 0.5f);
                 rt.offsetMin = Vector2.zero;
                 rt.offsetMax = Vector2.zero;
@@ -483,7 +519,7 @@ namespace TFTV
                 abilityLE.flexibleWidth = 1f;
                 abilityLE.flexibleHeight = 0f;
                 abilityLE.minHeight = DetailAbilityRowHeight * 1.5f;
-                abilityLE.preferredHeight = DetailAbilityRowHeight*1.5f;
+                abilityLE.preferredHeight = DetailAbilityRowHeight * 1.5f;
                 _detailAbilityLayoutElement = abilityLE;
                 _detailAbilitySection = abilitiesGO;
                 _detailAbilitySection.SetActive(false);
@@ -566,7 +602,7 @@ namespace TFTV
                 _detailEquipmentSection.SetActive(false);
 
                 _detailAnimator = _detailPanel.AddComponent<OverlayAnimator>();
-                _detailAnimator.Initialize(rt, slideFromLeft: true, resolvedWidth: detailPixels);
+                _detailAnimator.Initialize(rt, slideFromLeft: true, resolvedWidth: width);
                 _isDetailVisible = false;
 
                 _detailPanel.SetActive(false);
@@ -617,7 +653,10 @@ namespace TFTV
             var tooltip = cellGO.AddComponent<UITooltipText>();
             tooltip.TipText = StatTooltipPlaceholderText;
 
-            return new StatCell(cellGO, icon, statText, tooltip);
+            var tooltipTrigger = cellGO.AddComponent<HavenRecruitStatTooltipTrigger>();
+          //  tooltipTrigger.SetTooltipText(StatTooltipPlaceholderText);
+
+            return new StatCell(cellGO, icon, statText, tooltip, tooltipTrigger);
         }
 
         internal static Text CreateDetailText(Transform parent, string name, int fontSize, Color color, TextAnchor alignment)
@@ -666,7 +705,7 @@ namespace TFTV
                     _detailLevelNameLabel.text = StatPlaceholder;
                 }
 
-               
+
 
                 if (_detailFactionNameLabel != null)
                 {
@@ -746,9 +785,30 @@ namespace TFTV
             if (_detailPanelGlowShadow != null)
             {
                 var glowColor = DetailSubTextColor;
-                glowColor.a = 0.35f;
+                glowColor.a = DetailPanelGlowAlpha;
                 _detailPanelGlowShadow.effectColor = glowColor;
             }
+            if (_detailPanelBackground != null)
+            {
+                _detailPanelBackground.color = DetailPanelBaseColor;
+            }
+        }
+
+        private static void SetStatTooltip(StatCell cell, string tooltipText)
+        {
+            return; // not using for now
+
+            if (tooltipText == null)
+            {
+                tooltipText = string.Empty;
+            }
+
+            if (cell.Tooltip != null)
+            {
+                cell.Tooltip.TipText = tooltipText;
+            }
+
+            cell.TooltipTrigger?.SetTooltipText(tooltipText);
         }
 
         private static void PopulateStats(RecruitAtSite recruit)
@@ -771,10 +831,11 @@ namespace TFTV
                     cell.Label.color = DetailStatHighlightColor;
                 }
 
-                if (cell.Tooltip != null)
+              /*  if (cell.Tooltip != null)
                 {
                     cell.Tooltip.TipText = StatTooltipPlaceholderText;
-                }
+                }*/
+                SetStatTooltip(cell, StatTooltipPlaceholderText);
             }
 
             if (recruit == null)
@@ -787,12 +848,12 @@ namespace TFTV
             {
                 var stats = recruit.Recruit.GetStats();
 
-                TFTVLogger.Always($"strength: {stats.Endurance.Value}");
-                TFTVLogger.Always($"willpower: {stats.Willpower.Value}");
-                TFTVLogger.Always($"perception: {stats.Perception.Value}");
-                TFTVLogger.Always($"speed: {stats.Speed.Value}");
-                TFTVLogger.Always($"accuracy: {stats.Accuracy.Value}");
-                TFTVLogger.Always($"stealth: {stats.Stealth.Value}");
+                TFTVLogger.Always($"strength: base {stats.Endurance.Value.BaseValueInt} end: {stats.Endurance.Value}");
+                TFTVLogger.Always($"willpower:  base {stats.Willpower.Value.BaseValueInt} end: {stats.Willpower.Value}");
+                TFTVLogger.Always($"perception: {stats.Perception.Value.BaseValueInt} end: {stats.Perception.Value}");
+                TFTVLogger.Always($"speed: {stats.Speed.Value.BaseValueInt} end: {stats.Speed.Value}");
+                TFTVLogger.Always($"accuracy: {stats.Accuracy.Value.BaseValueInt} end: {stats.Accuracy.Value}");
+                TFTVLogger.Always($"stealth: {stats.Stealth.Value.BaseValueInt} end: {stats.Stealth.Value}");
 
                 int delirium = recruit.Haven.RecruitCorruption;
 
@@ -858,6 +919,8 @@ namespace TFTV
                         cell.Label.text = $"{statName} {valueText}";
                         cell.Label.color = DetailStatHighlightColor;
                     }
+
+                   SetStatTooltip(cell, $"{statName} {valueText}");
                 }
                 PopulateDeliriumRow(delirium);
             }
@@ -877,12 +940,12 @@ namespace TFTV
                 return;
             }
 
-            if (deliriumValue==0)
+            if (deliriumValue == 0)
             {
                 _detailDeliriumRow.SetActive(false);
                 return;
             }
-           
+
             if (_detailDeliriumLabel != null)
             {
                 _detailDeliriumLabel.text = $"Delirium {deliriumValue}";
@@ -910,7 +973,7 @@ namespace TFTV
             return _detailDeliriumIconSprite;
         }
 
-       
+
 
         private static void RefreshStatsLayout()
         {
@@ -1642,19 +1705,39 @@ namespace TFTV
 
 
 
-                if (_detailFactionNameLabel != null)
+                var tintSource = factionSprite != null ? factionColorFull : DetailSubTextColor;
+
+                if (_detailPanelBackground != null)
                 {
-                    _detailFactionNameLabel.color = Color.white;
+                    _detailPanelBackground.color = DetailPanelBaseColor;
                 }
+
+                TFTVLogger.Always($"_detailPanelFactionTintImage==null {_detailPanelFactionTintImage == null}");
+                TFTVLogger.Always($"DetailPanelFactionTintSprite==null {DetailPanelFactionTintSprite == null}");
+
+
+                if (DetailPanelFactionTintSprite != null)
+                {
+                    _detailPanelFactionTintImage.sprite = DetailPanelFactionTintSprite;
+                    var overlayColor = tintSource;
+                    overlayColor.a = DetailPanelFactionOverlayAlpha;
+                    _detailPanelFactionTintImage.color = overlayColor;
+                    _detailPanelFactionTintImage.enabled = true;
+                }
+                else
+                {
+                    _detailPanelFactionTintImage.enabled = false;
+                }
+
 
                 if (_detailPanelGlowShadow != null)
                 {
-                    var glowColor = factionSprite != null ? factionColorFull : DetailSubTextColor;
-                    glowColor.a = 0.35f;
+                    var glowColor = tintSource;
+                    glowColor.a = DetailPanelGlowAlpha;
                     _detailPanelGlowShadow.effectColor = glowColor;
                 }
 
-                return factionSprite != null ? factionColorFull : DetailSubTextColor;
+                return tintSource;
             }
             catch (Exception ex) { TFTVLogger.Error(ex); }
             return DetailSubTextColor;
@@ -1669,7 +1752,7 @@ namespace TFTV
                     return string.Empty;
                 }
 
-                if(faction == faction.GeoLevel.AnuFaction)
+                if (faction == faction.GeoLevel.AnuFaction)
                 {
                     return HavenRecruitsUtils.AnuFactionName;
                 }
@@ -1811,7 +1894,7 @@ namespace TFTV
                 }
 
                 var phoenix = data.Haven.Site.GeoLevel.PhoenixFaction;
-                var row = HavenRecruitsPrice.CreateCostRow(_detailCostRoot, data.Haven, phoenix, null);
+                var row = HavenRecruitsPrice.CreateCostRow(_detailCostRoot, data.Haven, phoenix, null, detailPanel: true);
                 if (row != null)
                 {
                     var layout = row.GetComponent<HorizontalLayoutGroup>();
