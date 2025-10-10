@@ -81,6 +81,9 @@ namespace TFTV
         internal static Text _detailFactionNameLabel;
         internal static GameObject _detailPanel;
 
+        internal static RectTransform DetailPanelRect { get; private set; }
+        internal static Canvas DetailPanelCanvas { get; private set; }
+
         internal static GameObject _detailEmptyState;
         internal static Transform _detailInfoRoot;
         private static Image _detailPanelBackground;
@@ -207,6 +210,7 @@ namespace TFTV
                 var detailCanvas = _detailPanel.AddComponent<Canvas>();
                 detailCanvas.overrideSorting = true;
                 detailCanvas.sortingOrder = 5000;
+                DetailPanelCanvas = detailCanvas;
                 _detailPanel.AddComponent<GraphicRaycaster>();
 
                 _detailPanelBackground = _detailPanel.AddComponent<Image>();
@@ -244,6 +248,7 @@ namespace TFTV
                 }
 
                 var rt = _detailPanel.GetComponent<RectTransform>();
+                DetailPanelRect = rt;
                 float width = GetOverlayWidthFraction(out _, DetailPanelWidthPercent, DetailPanelMinWidthPx);
                 float height = GetOverlayHeightFraction(out _, DetailPanelHeightPercent, DetailPanelMinHeightPx);
                 float availableVerticalSpace = Mathf.Max(0f, 1f - OverlayTopMargin - OverlayBottomMargin);

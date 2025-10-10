@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static TFTV.HavenRecruitsMain;
+using static TFTV.HavenRecruitsDetailsPanel;
 
 namespace TFTV.TFTVHavenRecruitsUI
 {
@@ -25,7 +26,7 @@ namespace TFTV.TFTVHavenRecruitsUI
         private const float TooltipMaxWidth = 210f;
         private const float TooltipScale = 0.5f;
 
-        private static readonly Vector3[] OverlayCornerBuffer = new Vector3[4];
+        private static readonly Vector3[] RectCornerBuffer = new Vector3[4];
 
         internal void SetTooltipText(string tooltipText)
         {
@@ -157,14 +158,16 @@ namespace TFTV.TFTVHavenRecruitsUI
             float anchoredY = localPoint.y + TooltipVerticalPadding;
             float anchoredX = canvasRect.rect.xMin + TooltipHorizontalPadding;
 
-            var overlayRect = HavenRecruitsMain.OverlayRootRect;
-            if (overlayRect != null)
+            var targetRect = DetailPanelRect != null
+                 ? DetailPanelRect
+                 : transform as RectTransform;
+            if (targetRect != null)
             {
-                overlayRect.GetWorldCorners(OverlayCornerBuffer);
-                var overlayLeftScreen = RectTransformUtility.WorldToScreenPoint(referenceCamera, OverlayCornerBuffer[0]);
-                if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, overlayLeftScreen, referenceCamera, out var overlayLeftLocal))
+                targetRect.GetWorldCorners(RectCornerBuffer);
+                var targetLeftScreen = RectTransformUtility.WorldToScreenPoint(referenceCamera, RectCornerBuffer[0]);
+                if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, targetLeftScreen, referenceCamera, out var targetLeftLocal))
                 {
-                    anchoredX = overlayLeftLocal.x + TooltipHorizontalPadding;
+                    anchoredX = targetLeftLocal.x + TooltipHorizontalPadding;
                 }
             }
 
@@ -195,7 +198,7 @@ namespace TFTV.TFTVHavenRecruitsUI
 
             try
             {
-                var canvas = HavenRecruitsMain.OverlayCanvas;
+                var canvas = DetailPanelCanvas != null ? DetailPanelCanvas : HavenRecruitsMain.OverlayCanvas;
                 if (canvas == null)
                 {
                     return null;
