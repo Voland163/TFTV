@@ -229,16 +229,15 @@ namespace TFTV.TFTVHavenRecruitsUI
                                 continue;
                             }
 
-                            var iconImage = RecruitOverlayManagerHelpers.MakeFixedIcon(abilitiesTransform, ability.Icon, AbilityIconSize, _abilityIconBackground);
-                            if (iconImage == null)
+                            var abilityView = GetAbilityIconView(abilitiesTransform);
+                            if (abilityView == null)
                             {
                                 continue;
                             }
 
-                            iconImage.raycastTarget = true;
+                            abilityView.Prepare(ability, _abilityIconBackground);
 
-                            var tooltipTrigger = iconImage.gameObject.AddComponent<HavenRecruitAbilityTooltipTrigger>();
-                            tooltipTrigger.Initialize(ability);
+                          
                         }
 
                         abilitiesTransform.SetAsLastSibling();
@@ -248,7 +247,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                 var costRow = cardView.CostRow;
                 if (costRow != null)
                 {
-                    RecruitOverlayManagerHelpers.ClearTransformChildren(costRow);
+                    
                     var haven = data.Haven;
                     var phoenix = data.Haven?.Site?.GeoLevel?.PhoenixFaction;
                     if (haven != null && phoenix != null)

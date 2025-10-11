@@ -6,13 +6,12 @@ using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.ViewControllers.PhoenixBase;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
-using HavenRecruitsUtils = TFTV.TFTVHavenRecruitsUI.HavenRecruitsUtils;
 using static TFTV.HavenRecruitsMain;
+using static TFTV.HavenRecruitsMain.RecruitOverlayManager;
+using static TFTV.TFTVHavenRecruitsUI.HavenRecruitResourceChipView;
+using Object = UnityEngine.Object;
 
 namespace TFTV.TFTVHavenRecruitsUI
 {
@@ -114,8 +113,8 @@ namespace TFTV.TFTVHavenRecruitsUI
             }
 
             layout.childAlignment = detailPanel ? TextAnchor.MiddleLeft : TextAnchor.MiddleRight;
-            layout.spacing = detailPanel ? 16f : 0f;
-            layout.childControlWidth = detailPanel ? false : true;
+            layout.spacing = detailPanel ? 40f : 0f;
+            layout.childControlWidth = true;
             layout.childControlHeight = true;
             layout.childForceExpandWidth = false;
             layout.childForceExpandHeight = false;
@@ -139,7 +138,30 @@ namespace TFTV.TFTVHavenRecruitsUI
                 layoutElement.flexibleWidth = 0f;
             }
 
-            RecruitOverlayManagerHelpers.ClearTransformChildren(row);
+            if (detailPanel)
+            {
+                RecruitOverlayManagerHelpers.ClearTransformChildren(row);
+            }
+            else
+            {
+                for (int i = row.childCount - 1; i >= 0; i--)
+                {
+                    var child = row.GetChild(i);
+                    if (child == null)
+                    {
+                        continue;
+                    }
+
+                    var chipView = child.GetComponent<ResourceChipView>();
+                    if (chipView != null)
+                    {
+                        ReleaseResourceChipView(chipView);
+                        continue;
+                    }
+
+                    Object.Destroy(child.gameObject);
+                }
+            }
 
             foreach (var type in _resourceDisplayOrder)
             {
@@ -165,48 +187,44 @@ namespace TFTV.TFTVHavenRecruitsUI
                 return null;
             }
 
+            if (!detailPanel)
+            {
+
+                var chipView = GetResourceChipView(parent);
+                if (chipView == null)
+                {
+                    return null;
+                }
+
+                _resourceVisuals.TryGetValue(resourceType, out var visual);
+                chipView.Prepare(visual, resourceType.ToString(), amount);
+
+                if (cardView != null && chipView.AmountLabel != null)
+                {
+                    cardView.RegisterResourceAmount(chipView.AmountLabel);
+                }
+
+                chipView.gameObject.name = $"Res_{resourceType}";
+                return chipView.gameObject;
+
+            }
 
             var (chip, chipRT) = RecruitOverlayManagerHelpers.NewUI("Res", parent);
 
-            if (detailPanel)
-            {
-                var layout = chip.AddComponent<HorizontalLayoutGroup>();
-                layout.childAlignment = TextAnchor.MiddleCenter;
-                layout.spacing = 2f;
-                layout.childControlWidth = true;
-                layout.childControlHeight = false;
-                layout.childForceExpandWidth = false;
-                layout.childForceExpandHeight = false;
-            }
-            else
-            {
-                var layout = chip.AddComponent<VerticalLayoutGroup>();
-                layout.childAlignment = TextAnchor.MiddleCenter;
-                layout.spacing = 1f;
-                layout.childControlWidth = false;
-                layout.childControlHeight = true;
-                layout.childForceExpandWidth = false;
-                layout.childForceExpandHeight = false;
-            }
+            var detailLayout = chip.AddComponent<HorizontalLayoutGroup>();
+            detailLayout.childAlignment = TextAnchor.MiddleCenter;
+            detailLayout.spacing = detailPanel ? 20f : 0f;
+            detailLayout.childControlWidth = true;
+            detailLayout.childControlHeight = false;
+            detailLayout.childForceExpandWidth = false;
+            detailLayout.childForceExpandHeight = false;
 
             chipRT.pivot = new Vector2(0.5f, 0.5f);
 
-            if (!detailPanel)
+            if (_resourceVisuals.TryGetValue(resourceType, out var detailVisual) && detailVisual?.Icon != null)
             {
-                var chipLE = chip.AddComponent<LayoutElement>();
-                float chipWidth = ResourceIconSize + 20f;
-                chipLE.minWidth = chipWidth;
-                chipLE.preferredWidth = chipWidth;
-                chipLE.flexibleWidth = 0f;
-            }
-
-
-
-            Image img = null;
-            if (_resourceVisuals.TryGetValue(resourceType, out var visual) && visual?.Icon != null)
-            {
-                img = RecruitOverlayManagerHelpers.MakeFixedIcon(chip.transform, visual.Icon, ResourceIconSize);
-                img.color = visual.Color;
+                Image img = RecruitOverlayManagerHelpers.MakeFixedIcon(chip.transform, detailVisual.Icon, ResourceIconSize);
+                img.color = detailVisual.Color;
             }
             else
             {
@@ -215,7 +233,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                 typeLabel.text = resourceType.ToString();
                 typeLabel.font = PuristaSemibold ? PuristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
                 typeLabel.fontSize = TextFontSize - 4;
-                typeLabel.alignment = detailPanel ? TextAnchor.MiddleLeft : TextAnchor.MiddleCenter;
+                typeLabel.alignment = TextAnchor.MiddleLeft;
 
             }
 

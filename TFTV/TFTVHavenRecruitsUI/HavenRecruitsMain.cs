@@ -16,6 +16,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static TFTV.HavenRecruitsDetailsPanel;
+using static TFTV.TFTVHavenRecruitsUI.HavenRecruitResourceChipView;
 using static TFTV.TFTVHavenRecruitsUI.HavenRecruitsOverlayAnimator;
 using HavenRecruitsRecruitItem = TFTV.TFTVHavenRecruitsUI.HavenRecruitsRecruitItem;
 using HavenRecruitsUtils = TFTV.TFTVHavenRecruitsUI.HavenRecruitsUtils;
@@ -274,13 +275,59 @@ namespace TFTV
 
                     if (AbilityContainer != null)
                     {
-                        RecruitOverlayManagerHelpers.ClearTransformChildren(AbilityContainer);
+                        for (int i = AbilityContainer.childCount - 1; i >= 0; i--)
+                        {
+                            var child = AbilityContainer.GetChild(i);
+                            if (child == null)
+                            {
+                                continue;
+                            }
+
+                            var mutationSlot = child.GetComponent<UIInventorySlot>();
+                            if (mutationSlot != null)
+                            {
+                                Object.Destroy(child.gameObject);
+                                continue;
+                            }
+
+                            var abilityView = child.GetComponent<AbilityIconView>();
+                            if (abilityView != null)
+                            {
+                                RecruitOverlayManager.ReleaseAbilityIconView(abilityView);
+                                continue;
+                            }
+
+                            Object.Destroy(child.gameObject);
+                        }
                         AbilityContainer.gameObject.SetActive(false);
                     }
 
                     if (CostRow != null)
                     {
-                        RecruitOverlayManagerHelpers.ClearTransformChildren(CostRow);
+                        for (int i = CostRow.childCount - 1; i >= 0; i--)
+                        {
+                            var child = CostRow.GetChild(i);
+                            if (child == null)
+                            {
+                                continue;
+                            }
+
+                            var chipView = child.GetComponent<ResourceChipView>();
+                            if (chipView != null)
+                            {
+                                RecruitOverlayManager.ReleaseResourceChipView(chipView);
+                                continue;
+                            }
+
+                            var slot = child.GetComponent<UIInventorySlot>();
+                            if (slot != null)
+                            {
+                                Object.Destroy(child.gameObject);
+                                continue;
+                            }
+
+                            Object.Destroy(child.gameObject);
+                        }
                     }
 
                     _resourceAmountLabels.Clear();
@@ -350,6 +397,12 @@ namespace TFTV
             private static readonly List<RecruitCardView> _activeCards = new List<RecruitCardView>();
             private static Transform _cardPoolRoot;
 
+            private static readonly Queue<AbilityIconView> _abilityIconPool = new Queue<AbilityIconView>();
+            private static Transform _abilityPoolRoot;
+
+            private static readonly Queue<ResourceChipView> _resourceChipPool = new Queue<ResourceChipView>();
+            private static Transform _resourcePoolRoot;
+
             //  internal static Sprite _mutationBound;
             //  internal static Sprite _iconBackground;
             internal static Sprite _abilityIconBackground;
@@ -388,6 +441,35 @@ namespace TFTV
                         _cardPoolRoot = null;
                     }
 
+                    while (_abilityIconPool.Count > 0)
+                    {
+                        var ability = _abilityIconPool.Dequeue();
+                        if (ability != null)
+                        {
+                            Object.Destroy(ability.gameObject);
+                        }
+                    }
+
+                    if (_abilityPoolRoot != null)
+                    {
+                        Object.Destroy(_abilityPoolRoot.gameObject);
+                        _abilityPoolRoot = null;
+                    }
+
+                    while (_resourceChipPool.Count > 0)
+                    {
+                        var resource = _resourceChipPool.Dequeue();
+                        if (resource != null)
+                        {
+                            Object.Destroy(resource.gameObject);
+                        }
+                    }
+
+                    if (_resourcePoolRoot != null)
+                    {
+                        Object.Destroy(_resourcePoolRoot.gameObject);
+                        _resourcePoolRoot = null;
+                    }
 
                     if (_detailPanel != null)
                     {
@@ -1281,6 +1363,298 @@ namespace TFTV
                 _cardPoolRoot = poolGO.transform;
             }
 
+            private static void EnsureAbilityPoolRoot()
+            {
+                if (_abilityPoolRoot != null)
+                {
+                    if (overlayPanel != null && _abilityPoolRoot.parent != overlayPanel.transform)
+                    {
+                        _abilityPoolRoot.SetParent(overlayPanel.transform, false);
+                    }
+                    return;
+                }
+
+                var poolGO = new GameObject("AbilityIconPool");
+                if (overlayPanel != null)
+                {
+                    poolGO.transform.SetParent(overlayPanel.transform, false);
+                }
+                poolGO.SetActive(false);
+                _abilityPoolRoot = poolGO.transform;
+            }
+
+            private static void EnsureResourcePoolRoot()
+            {
+                if (_resourcePoolRoot != null)
+                {
+                    if (overlayPanel != null && _resourcePoolRoot.parent != overlayPanel.transform)
+                    {
+                        _resourcePoolRoot.SetParent(overlayPanel.transform, false);
+                    }
+                    return;
+                }
+
+                var poolGO = new GameObject("ResourceChipPool");
+                if (overlayPanel != null)
+                {
+                    poolGO.transform.SetParent(overlayPanel.transform, false);
+                }
+                poolGO.SetActive(false);
+                _resourcePoolRoot = poolGO.transform;
+            }
+
+            private static AbilityIconView CreateAbilityIconView()
+            {
+                try
+                {
+                    EnsureAbilityPoolRoot();
+
+                    var (frameGO, frameRT) = RecruitOverlayManagerHelpers.NewUI("AbilityIcon", _abilityPoolRoot);
+
+                    var frameImage = frameGO.AddComponent<Image>();
+                    frameImage.color = new Color(1f, 1f, 1f, 0f);
+                    frameImage.raycastTarget = true;
+                    frameImage.type = Image.Type.Simple;
+
+                    var layout = frameGO.AddComponent<LayoutElement>();
+                    layout.preferredWidth = AbilityIconSize;
+                    layout.minWidth = AbilityIconSize;
+                    layout.preferredHeight = AbilityIconSize;
+                    layout.minHeight = AbilityIconSize;
+
+                    frameRT.sizeDelta = new Vector2(AbilityIconSize, AbilityIconSize);
+
+                    int pad = Mathf.Max(2, Mathf.RoundToInt(AbilityIconSize * 0.12f));
+                    float inset = pad * 0.5f;
+
+                    var (bgGO, bgRT) = RecruitOverlayManagerHelpers.NewUI("Background", frameGO.transform);
+                    var bgImage = bgGO.AddComponent<Image>();
+                    bgImage.type = Image.Type.Sliced;
+                    bgImage.raycastTarget = false;
+                    bgRT.anchorMin = Vector2.zero;
+                    bgRT.anchorMax = Vector2.one;
+                    bgRT.offsetMin = new Vector2(-pad, -pad);
+                    bgRT.offsetMax = new Vector2(pad, pad);
+                    bgImage.sprite = _abilityIconBackground;
+                    bgImage.enabled = _abilityIconBackground != null;
+
+                    var (iconGO, iconRT) = RecruitOverlayManagerHelpers.NewUI("Img", frameGO.transform);
+                    var iconImage = iconGO.AddComponent<Image>();
+                    iconImage.raycastTarget = true;
+                    iconRT.anchorMin = Vector2.zero;
+                    iconRT.anchorMax = Vector2.one;
+                    iconRT.offsetMin = new Vector2(inset, inset);
+                    iconRT.offsetMax = new Vector2(-inset, -inset);
+
+                    var aspect = iconGO.AddComponent<AspectRatioFitter>();
+                    aspect.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+
+                    var tooltip = iconGO.AddComponent<HavenRecruitAbilityTooltipTrigger>();
+
+                    var view = frameGO.AddComponent<AbilityIconView>();
+                    view.Initialize(iconImage, bgImage, tooltip);
+
+                    frameGO.SetActive(false);
+                    return view;
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                    return null;
+                }
+            }
+
+            private static ResourceChipView CreateResourceChipView()
+            {
+                try
+                {
+                    EnsureResourcePoolRoot();
+
+                    var (chipGO, chipRT) = RecruitOverlayManagerHelpers.NewUI("ResourceChip", _resourcePoolRoot);
+
+                    var layout = chipGO.AddComponent<VerticalLayoutGroup>();
+                    layout.childAlignment = TextAnchor.MiddleCenter;
+                    layout.spacing = 1f;
+                    layout.childControlWidth = false;
+                    layout.childControlHeight = true;
+                    layout.childForceExpandWidth = false;
+                    layout.childForceExpandHeight = false;
+
+                    var chipLE = chipGO.AddComponent<LayoutElement>();
+                    float chipWidth = ResourceIconSize + 20f;
+                    chipLE.minWidth = chipWidth;
+                    chipLE.preferredWidth = chipWidth;
+                    chipLE.flexibleWidth = 0f;
+
+                    chipRT.pivot = new Vector2(0.5f, 0.5f);
+
+                    var iconImage = RecruitOverlayManagerHelpers.MakeFixedIcon(chipGO.transform, null, ResourceIconSize);
+                    GameObject iconRoot = null;
+                    if (iconImage != null)
+                    {
+                        iconRoot = iconImage.transform.parent != null
+                            ? iconImage.transform.parent.gameObject
+                            : iconImage.gameObject;
+                        iconRoot.name = "Icon";
+                        iconRoot.SetActive(false);
+                        iconImage.enabled = false;
+                    }
+
+                    var (typeLabelGO, _) = RecruitOverlayManagerHelpers.NewUI("TypeLabel", chipGO.transform);
+                    var typeLabel = typeLabelGO.AddComponent<Text>();
+                    typeLabel.font = PuristaSemibold ? PuristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
+                    typeLabel.fontSize = TextFontSize - 4;
+                    typeLabel.alignment = TextAnchor.MiddleCenter;
+                    typeLabel.gameObject.SetActive(false);
+
+                    var (amountGO, _) = RecruitOverlayManagerHelpers.NewUI("Amount", chipGO.transform);
+                    var amountLabel = amountGO.AddComponent<Text>();
+                    amountLabel.font = PuristaSemibold ? PuristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
+                    amountLabel.fontSize = TextFontSize - 2;
+                    amountLabel.alignment = TextAnchor.MiddleCenter;
+                    amountLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
+
+                    var view = chipGO.AddComponent<ResourceChipView>();
+                    view.Initialize(iconImage, typeLabel, amountLabel, iconRoot);
+
+                    chipGO.SetActive(false);
+                    return view;
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                    return null;
+                }
+            }
+
+            internal static AbilityIconView GetAbilityIconView(Transform parent)
+            {
+                try
+                {
+                    EnsureAbilityPoolRoot();
+
+                    AbilityIconView view = null;
+                    while (_abilityIconPool.Count > 0 && view == null)
+                    {
+                        var candidate = _abilityIconPool.Dequeue();
+                        if (candidate == null || candidate.gameObject == null)
+                        {
+                            continue;
+                        }
+                        view = candidate;
+                    }
+
+                    if (view == null)
+                    {
+                        view = CreateAbilityIconView();
+                    }
+
+                    if (view == null)
+                    {
+                        return null;
+                    }
+
+                    view.transform.SetParent(parent, false);
+                    view.gameObject.SetActive(true);
+                    return view;
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                    return null;
+                }
+            }
+
+            internal static void ReleaseAbilityIconView(AbilityIconView view)
+            {
+                try
+                {
+                    if (view == null || view.gameObject == null)
+                    {
+                        return;
+                    }
+
+                    view.Release();
+                    view.gameObject.SetActive(false);
+
+                    EnsureAbilityPoolRoot();
+                    if (_abilityPoolRoot != null)
+                    {
+                        view.transform.SetParent(_abilityPoolRoot, false);
+                    }
+
+                    _abilityIconPool.Enqueue(view);
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
+            }
+
+            internal static ResourceChipView GetResourceChipView(Transform parent)
+            {
+                try
+                {
+                    EnsureResourcePoolRoot();
+
+                    ResourceChipView view = null;
+                    while (_resourceChipPool.Count > 0 && view == null)
+                    {
+                        var candidate = _resourceChipPool.Dequeue();
+                        if (candidate == null || candidate.gameObject == null)
+                        {
+                            continue;
+                        }
+                        view = candidate;
+                    }
+
+                    if (view == null)
+                    {
+                        view = CreateResourceChipView();
+                    }
+
+                    if (view == null)
+                    {
+                        return null;
+                    }
+
+                    view.transform.SetParent(parent, false);
+                    view.gameObject.SetActive(true);
+                    return view;
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                    return null;
+                }
+            }
+
+            internal static void ReleaseResourceChipView(ResourceChipView view)
+            {
+                try
+                {
+                    if (view == null || view.gameObject == null)
+                    {
+                        return;
+                    }
+
+                    view.Release();
+                    view.gameObject.SetActive(false);
+
+                    EnsureResourcePoolRoot();
+                    if (_resourcePoolRoot != null)
+                    {
+                        view.transform.SetParent(_resourcePoolRoot, false);
+                    }
+
+                    _resourceChipPool.Enqueue(view);
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
+            }
+
             private static void RecycleCard(RecruitCardView view)
             {
                 try
@@ -1695,7 +2069,7 @@ namespace TFTV
                 title.fontSize = TextFontSize + 2;
                 title.color = Color.white;
                 title.alignment = TextAnchor.MiddleLeft;
-                title.text = "RECRUITS";
+                title.text = "HAVEN RECRUITS";
 
                 var (spacer, _) = RecruitOverlayManagerHelpers.NewUI("Spacer", header.transform);
                 var spacerElement = spacer.AddComponent<LayoutElement>();
@@ -1721,7 +2095,7 @@ namespace TFTV
                 listRT.anchorMin = new Vector2(0f, 0.01f);
                 listRT.anchorMax = new Vector2(1f, 0.82f);
                 listRT.offsetMin = Vector2.zero;
-                listRT.offsetMax = Vector2.zero;
+                listRT.offsetMax = new Vector2(0f, -12f); ;
 
                 var scrollRect = listGO.AddComponent<ScrollRect>();
                 var mask = listGO.AddComponent<Mask>();

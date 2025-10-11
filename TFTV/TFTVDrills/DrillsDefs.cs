@@ -25,11 +25,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static TFTV.TFTVDrills.DrillsExplosiveShoot;
 using static TFTV.TFTVDrills.DrillsHarmony;
 using static TFTV.TFTVDrills.DrillsPublicClasses;
 
+
 namespace TFTV.TFTVDrills
 {
+
     internal sealed class DrillClassLevelRequirement
     {
         public ClassTagDef ClassTag;
@@ -81,6 +84,7 @@ namespace TFTV.TFTVDrills
         internal static ReloadAbilityDef _ordnanceResupply;
         internal static PassiveModifierAbilityDef _pinpointToss;
         internal static ApplyStatusAbilityDef _heavyConditioning;
+        internal static ExplosiveDisableShootAbilityDef _explosiveShot;
 
         internal static ApplyStatusAbilityDef _aksuSprint;
 
@@ -400,6 +404,15 @@ namespace TFTV.TFTVDrills
 
         private static void ConfigureUnlockConditions()
         {
+            var explosiveShoot = new DrillUnlockCondition();
+            explosiveShoot.ClassLevelRequirements.Add(new DrillClassLevelRequirement
+            {
+                ClassTag = DefCache.GetDef<ClassTagDef>("Sniper_ClassTagDef"),
+                MinimumLevel = 3,
+                RequireSelectedOperative = true
+            });
+            SetUnlockCondition(_explosiveShot, explosiveShoot);
+
             var aksuSprint = new DrillUnlockCondition();
             aksuSprint.ClassLevelRequirements.Add(new DrillClassLevelRequirement
             {
@@ -586,7 +599,7 @@ namespace TFTV.TFTVDrills
                  _drawFire =   CreateApplyStatusAbilityDef("drawfire", "8f7c0a6a-6b63-4b01-9d69-6f7e3d4a4b9a", "f2a5a2d1-0c1f-4c28-8a3a-2f4a0cc2fd3c", "3a0f4d0b-0a8f-4b8f-a8cc-1f4f4f3c3f9d", 2, 0, _drawfireStatus));
 
 
-
+                _explosiveShot = CreateExplosiveShot();
 
 
                 CreateMarkedWatch();
@@ -600,12 +613,56 @@ namespace TFTV.TFTVDrills
 
                 EnsureDefaultUnlockConditions();
                 ConfigureUnlockConditions();
+               
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
         }
+
+        private static ExplosiveDisableShootAbilityDef CreateExplosiveShot()
+        {
+            try
+            {
+                const string name = "explosiveshot";
+                const string abilityGuid = "{52BD5C35-15A6-42B9-97A4-75CF60299AAB}";
+                const string viewGuid = "{EB24BB6E-DF97-412C-B07D-7980F2D33F83}";
+                string locKeyName = $"TFTV_DRILL_{name.ToUpper()}_NAME";
+                string locKeyDesc = $"TFTV_DRILL_{name.ToUpper()}_DESC";
+                Sprite icon = Helper.CreateSpriteFromImageFile($"Drill_{name}.png");
+
+                ShootAbilityDef source = DefCache.GetDef<ShootAbilityDef>("Weapon_ShootAbilityDef");
+
+                ExplosiveDisableShootAbilityDef abilityDef = Helper.CreateDefFromClone(
+                    (ExplosiveDisableShootAbilityDef)null,
+                    abilityGuid,
+                    $"TFTV_{name}_AbilityDef");
+                abilityDef.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    viewGuid,
+                    $"TFTV_{name}_View");
+                abilityDef.ViewElementDef.DisplayName1.LocalizationKey = locKeyName;
+                abilityDef.ViewElementDef.Description.LocalizationKey = locKeyDesc;
+                abilityDef.ViewElementDef.LargeIcon = icon;
+                abilityDef.ViewElementDef.SmallIcon = icon;
+
+                PRMBetterClasses.Helper.CopyFieldsByReflection(source, abilityDef);
+
+                abilityDef.name = $"TFTV_{name}_AbilityDef";
+                abilityDef.TriggerItemTags.Add(DefCache.GetDef<GameTagDef>("ExplosiveWeapon_TagDef"));
+                abilityDef.ExplosionEffectDef = DefCache.GetDef<ExplosionEffectDef>("E_ShrapnelExplosion [ExplodingBarrel_ExplosionEffectDef]");
+                //  abilityDef.RequiredWeaponClassTag = DefCache.GetDef<ItemTypeTagDef>("SniperRifleItem_TagDef");
+                Drills.Add(abilityDef);
+                return abilityDef;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
 
         private static ShockDropStatusDef CreateShockDropStatus()
         {

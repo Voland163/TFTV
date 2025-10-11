@@ -113,6 +113,8 @@ namespace TFTV
         private static readonly Dictionary<string, Sprite> _statIconCache = new Dictionary<string, Sprite>(StringComparer.OrdinalIgnoreCase);
 
         private static readonly Color DetailStatHighlightColor = new Color32(0xD0, 0xA4, 0x56, 0xFF);
+        private static readonly Color DetailStatPositiveColor = Color.green;
+        private static readonly Color DetailStatNegativeColor = Color.red;
         private static readonly Color DetailDeliriumHighlightColor = new Color32(0xA2, 0x48, 0xD1, 0xFF);
         private const string StatTooltipPlaceholderText = "";
 
@@ -125,6 +127,48 @@ namespace TFTV
      "Speed",
      "Stealth"
  };
+
+        private static string WrapWithColor(string text, Color color)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return string.Empty;
+            }
+
+            return $"<color=#{ColorUtility.ToHtmlStringRGBA(color)}>{text}</color>";
+        }
+
+        private static string FormatStatLabel(string statName, string baseValue, string finalValue = null, Color? finalColor = null)
+        {
+            string nameSegment = WrapWithColor(statName, Color.white);
+            string baseSegment = WrapWithColor(baseValue, DetailStatHighlightColor);
+
+            if (string.IsNullOrEmpty(finalValue))
+            {
+                return $"{nameSegment}: {baseSegment}";
+            }
+
+            Color colorToUse = finalColor ?? DetailStatHighlightColor;
+            string finalSegment = WrapWithColor(finalValue, colorToUse);
+            return $"{nameSegment}: {baseSegment} ({finalSegment})";
+        }
+
+        private static Color GetDeltaColor(float delta)
+        {
+            const float epsilon = 0.01f;
+
+            if (delta > epsilon)
+            {
+                return DetailStatPositiveColor;
+            }
+
+            if (delta < -epsilon)
+            {
+                return DetailStatNegativeColor;
+            }
+
+            return DetailStatHighlightColor;
+        }
         internal readonly struct StatCell
         {
             public StatCell(GameObject root, Image icon, Text label, UITooltipText tooltip, HavenRecruitStatTooltipTrigger tooltipTrigger)
@@ -624,7 +668,7 @@ namespace TFTV
             icon.preserveAspect = true;
             icon.raycastTarget = false;
             icon.enabled = false;
-            icon.color = DetailStatHighlightColor;
+            icon.color = Color.white;
             var iconLE = iconGO.AddComponent<LayoutElement>();
             iconLE.preferredWidth = DetailStatIconSize;
             iconLE.preferredHeight = DetailStatIconSize;
@@ -632,9 +676,9 @@ namespace TFTV
             iconLE.minHeight = DetailStatIconSize;
             iconRT.sizeDelta = new Vector2(DetailStatIconSize, DetailStatIconSize);
 
-            var statText = CreateDetailText(cellGO.transform, $"{sanitized}Text", TextFontSize + 1, DetailStatHighlightColor, TextAnchor.MiddleLeft);
+            var statText = CreateDetailText(cellGO.transform, $"{sanitized}Text", TextFontSize + 1, Color.white, TextAnchor.MiddleLeft);
             statText.horizontalOverflow = HorizontalWrapMode.Overflow;
-            statText.text = $"{name} {StatPlaceholder}";
+            statText.text = FormatStatLabel(name, StatPlaceholder);
             var textLE = statText.gameObject.AddComponent<LayoutElement>();
             textLE.minWidth = 0f;
             textLE.flexibleWidth = 1f;
@@ -791,13 +835,13 @@ namespace TFTV
                 {
                     cell.Icon.sprite = null;
                     cell.Icon.enabled = false;
-                    cell.Icon.color = DetailStatHighlightColor;
+                    cell.Icon.color = Color.white;
                 }
 
                 if (cell.Label != null)
                 {
-                    cell.Label.text = $"{statName} {StatPlaceholder}";
-                    cell.Label.color = DetailStatHighlightColor;
+                    cell.Label.text = FormatStatLabel(statName, StatPlaceholder);
+                    cell.Label.color = Color.white;
                 }
 
                 /*  if (cell.Tooltip != null)
@@ -824,32 +868,8 @@ namespace TFTV
                 bool hasBaseStats = !((object)baseStats == null);
                 bool hasFinalStats = !((object)finalStats == null);
 
-                string FormatNumber(float value)
-                {
-                    return value.ToString("0.#");
-                }
-
-                string FormatBaseAndFinal(float baseValue, float finalValue)
-                {
-                    return $"{FormatNumber(baseValue)} ({FormatNumber(finalValue)})";
-                }
-
-                string FormatStatWithSummary(Func<BaseCharacterStats, float> selector, float fallbackFinal)
-                {
-                    if (!hasFinalStats)
-                    {
-                        return FormatNumber(fallbackFinal);
-                    }
-
-                    float finalValue = selector(finalStats);
-                    if (!hasBaseStats)
-                    {
-                        return FormatNumber(finalValue);
-                    }
-
-                    float baseValue = selector(baseStats);
-                    return FormatBaseAndFinal(baseValue, finalValue);
-                }
+                string FormatNumber(float value) => value.ToString("0.#");
+                string FormatPercent(float ratio) => Mathf.RoundToInt(ratio * 100f) + "%";
 
                 int delirium = recruit.Haven.RecruitCorruption;
 
@@ -870,34 +890,57 @@ namespace TFTV
                         continue;
                     }
 
-                    string valueText = StatPlaceholder;
+                    string baseText = StatPlaceholder;
+                    string finalText = null;
+                    Color? finalColor = null;
                     string tooltipText = StatTooltipPlaceholderText;
 
                     switch (statName)
                     {
                         case "Strength":
-                            valueText = FormatStatWithSummary(s => s.Endurance, stats.Endurance);
+                            float? baseStrength = hasBaseStats ? (float?)baseStats.Endurance : null;
+                            float finalStrength = hasFinalStats ? finalStats.Endurance : stats.Endurance;
+                            baseText = FormatNumber(baseStrength ?? finalStrength);
+                            if (baseStrength.HasValue)
+                            {
+                                finalText = FormatNumber(finalStrength);
+                                finalColor = GetDeltaColor(finalStrength - baseStrength.Value);
+                            }
                             tooltipText = hasFinalStats ? modifiersDescription : StatTooltipPlaceholderText;
                             break;
                         case "Perception":
-                            valueText = FormatNumber(stats.GetPerception());
+                            baseText = FormatNumber(stats.GetPerception());
                             break;
                         case "Willpower":
-                            valueText = FormatStatWithSummary(s => s.Willpower, stats.WillPoints);
+                            float? baseWill = hasBaseStats ? (float?)baseStats.Willpower : null;
+                            float finalWill = hasFinalStats ? finalStats.Willpower : stats.WillPoints;
+                            baseText = FormatNumber(baseWill ?? finalWill);
+                            if (baseWill.HasValue)
+                            {
+                                finalText = FormatNumber(finalWill);
+                                finalColor = GetDeltaColor(finalWill - baseWill.Value);
+                            }
                             tooltipText = hasFinalStats ? modifiersDescription : StatTooltipPlaceholderText;
                             break;
                         case "Accuracy":
-                            valueText = Mathf.RoundToInt(stats.GetAccuracy() * 100f) + "%";
+                            baseText = FormatPercent(stats.GetAccuracy());
                             break;
                         case "Speed":
-                            valueText = FormatStatWithSummary(s => s.Speed, stats.Speed);
+                            float? baseSpeed = hasBaseStats ? (float?)baseStats.Speed : null;
+                            float finalSpeed = hasFinalStats ? finalStats.Speed : stats.Speed;
+                            baseText = FormatNumber(baseSpeed ?? finalSpeed);
+                            if (baseSpeed.HasValue)
+                            {
+                                finalText = FormatNumber(finalSpeed);
+                                finalColor = GetDeltaColor(finalSpeed - baseSpeed.Value);
+                            }
                             tooltipText = hasFinalStats ? modifiersDescription : StatTooltipPlaceholderText;
                             break;
                         case "Stealth":
-                            valueText = Mathf.RoundToInt(stats.Stealth * 100f) + "%";
+                            baseText = FormatPercent(stats.Stealth);
                             break;
                         default:
-                            valueText = StatPlaceholder;
+                            baseText = StatPlaceholder;
                             break;
 
                     }
@@ -908,13 +951,13 @@ namespace TFTV
                     {
                         cell.Icon.sprite = icon;
                         cell.Icon.enabled = icon != null;
-                        cell.Icon.color = DetailStatHighlightColor;
+                        cell.Icon.color = Color.white;
                     }
 
                     if (cell.Label != null)
                     {
-                        cell.Label.text = $"{statName} {valueText}";
-                        cell.Label.color = DetailStatHighlightColor;
+                        cell.Label.text = FormatStatLabel(statName, baseText, finalText, finalColor);
+                        cell.Label.color = Color.white;
                     }
 
                     SetStatTooltip(cell, tooltipText);

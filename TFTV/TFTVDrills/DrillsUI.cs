@@ -222,8 +222,16 @@ List<TacticalAbilityDef> choices)
                 viewportRect.SetParent(panel.transform, false);
                 viewportRect.anchorMin = new Vector2(0, 0);
                 viewportRect.anchorMax = new Vector2(1, 1);
-                viewportRect.offsetMin = new Vector2(16, 96);
-                viewportRect.offsetMax = new Vector2(-16, -64);
+                const float viewportHorizontalPadding = 16f;
+                const float viewportBottomPadding = 96f;
+                const float viewportTopExtraPadding = 16f;
+
+                float filterTopOffset = Mathf.Abs(filterRect.anchoredPosition.y);
+                float filterHeight = filterRect.rect.height > 0 ? filterRect.rect.height : filterRect.sizeDelta.y;
+                float viewportTopPadding = filterTopOffset + filterHeight + viewportTopExtraPadding;
+
+                viewportRect.offsetMin = new Vector2(viewportHorizontalPadding, viewportBottomPadding);
+                viewportRect.offsetMax = new Vector2(-viewportHorizontalPadding, -viewportTopPadding);
                 viewport.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.05f);
 
                 var content = new GameObject("Content", typeof(RectTransform), typeof(GridLayoutGroup));
@@ -423,6 +431,7 @@ List<TacticalAbilityDef> choices)
                 iconImg.preserveAspect = true;
                 iconImg.color = isLocked ? LockedIconTint : Color.white;
                 // label
+                iconImg.raycastTarget = false;
                 var lab = new GameObject("Label", typeof(RectTransform), typeof(Text));
                 var lrt = (RectTransform)lab.transform; lrt.SetParent(card.transform, false);
                 lrt.anchorMin = new Vector2(0, 0); lrt.anchorMax = new Vector2(1, 0);
@@ -434,7 +443,7 @@ List<TacticalAbilityDef> choices)
                 txt.resizeTextForBestFit = true; txt.resizeTextMinSize = 12; txt.resizeTextMaxSize = 18;
                 txt.text = def?.ViewElementDef?.DisplayName1?.Localize() ?? def?.name ?? "Ability";
                 txt.color = isLocked ? LockedLabelTint : Color.white;
-
+                txt.raycastTarget = false;
                 var tooltipTrigger = card.AddComponent<DrillTooltipTrigger>();
                 tooltipTrigger.Initialize(def, missingRequirements, isLocked, tooltipParent);
 
