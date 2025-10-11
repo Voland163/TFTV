@@ -1,6 +1,5 @@
 ﻿using Base.Core;
 using Base.Defs;
-using Base.Entities.Abilities;
 using Base.Entities.Statuses;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -11,9 +10,7 @@ using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects;
-using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
@@ -52,7 +49,7 @@ namespace TFTV.TFTVDrills
                         return false; // nothing to do, skip original
                     }
 
-                    if(tacticalActor.GetAbilityWithDef<BashAbility>(_shockDropBash)==null)
+                    if (tacticalActor.GetAbilityWithDef<BashAbility>(_shockDropBash) == null)
                     {
                         return true; // not our special bash, let original run
                     }
@@ -109,11 +106,11 @@ namespace TFTV.TFTVDrills
                     BashAbility __instance,
                     ref float __result)
                 {
-                   
-                    if(__instance.BashAbilityDef==SpecialBashAbilityDef)
+
+                    if (__instance.BashAbilityDef == SpecialBashAbilityDef)
                     {
                         __result += _shockDropStatus.DamageKeywordPairs[0].Value;
-                    }                 
+                    }
                 }
 
             }
@@ -159,7 +156,7 @@ namespace TFTV.TFTVDrills
             }
         }
 
-        internal class OneHandedGrip 
+        internal class OneHandedGrip
         {
             /// <summary>
             /// Provides shared helpers for attaching and detaching the one-handed accuracy penalty ability.
@@ -185,14 +182,14 @@ namespace TFTV.TFTVDrills
                 /// <param name="status">The status that triggered the check.</param>
                 public static void TryAddStatus(TacticalActor tacticalActor)
                 {
-                    
+
 
                     TFTVLogger.Always($"running TryAddAbility for {tacticalActor.DisplayName}");
 
-                    if (tacticalActor.HasStatus(OneHandedGripAccPenalty)) 
+                    if (tacticalActor.HasStatus(OneHandedGripAccPenalty))
                     {
                         return;
-                    } 
+                    }
 
                     tacticalActor.Status.ApplyStatus(OneHandedGripAccPenalty);
                     TFTVLogger.Always($"{tacticalActor.DisplayName} has accpenalty status (should)? " +
@@ -232,15 +229,15 @@ namespace TFTV.TFTVDrills
             {
                 public static bool Prefix(TacticalActor __instance, ref int ____usableHands)
                 {
-                    try 
-                    { 
-                        if(__instance.GetAbilityWithDef<PassiveModifierAbility>(OneHandedPenaltyAbilityManager.OneHandedGrip) == null)
-                        {                          
+                    try
+                    {
+                        if (__instance.GetAbilityWithDef<PassiveModifierAbility>(OneHandedPenaltyAbilityManager.OneHandedGrip) == null)
+                        {
                             return true;
                         }
 
                         int num = 0;
-                       
+
                         foreach (UnusableHandStatus status in __instance.Status.GetStatuses<UnusableHandStatus>())
                         {
                             num += status.HandsDisabled;
@@ -248,13 +245,13 @@ namespace TFTV.TFTVDrills
 
                         int num2 = 0;
                         bool providesHandsIfDisabled = __instance.Status.HasStatus<FreezeAspectStatsStatus>();
-                        
+
                         foreach (ItemSlot slot in __instance.BodyState.GetSlots())
-                        {                            
+                        {
                             num2 += slot.GetHandsProvided(providesHandsIfDisabled);
                         }
 
-                        if(num2==1)
+                        if (num2 == 1)
                         {
                             TFTVLogger.Always($"{__instance.DisplayName} has 1 hand enabled and the OneHandedGrip ability, so number of usable hands should increase to 2");
                             num2++;
@@ -269,7 +266,7 @@ namespace TFTV.TFTVDrills
                         }
 
 
-                        int usableHands = ____usableHands; 
+                        int usableHands = ____usableHands;
                         ____usableHands = num2 - num;
 
                         if (____usableHands < 0)
@@ -294,7 +291,7 @@ namespace TFTV.TFTVDrills
                 }
             }
 
-          
+
 
         }
 
@@ -381,7 +378,7 @@ namespace TFTV.TFTVDrills
                         attacker.Status.UnapplyStatus(existingBulletHellStatus);
                     }
 
-                    if(existingBulletHellAPCostReduction != null)
+                    if (existingBulletHellAPCostReduction != null)
                     {
                         attacker.Status.UnapplyStatus(existingBulletHellAPCostReduction);
                     }
@@ -392,7 +389,7 @@ namespace TFTV.TFTVDrills
                         TFTVLogger.Always($"Applying Bullet Hell attack boost to {attacker.DisplayName} because no RC status present");
                         attacker.Status.ApplyStatus(_bulletHellAttackBoostStatus);
                     }
-                   
+
 
                 }
                 catch (Exception e)
@@ -805,7 +802,8 @@ namespace TFTV.TFTVDrills
             {
                 try
                 {
-                    return tacticalActor.GetAbilityWithDef<PassiveModifierAbility>(_mentorProtocol) != null;
+
+                    return _mentorProtocol != null && tacticalActor.GetAbilityWithDef<PassiveModifierAbility>(_mentorProtocol) != null;
 
                 }
                 catch (Exception ex)
@@ -819,12 +817,116 @@ namespace TFTV.TFTVDrills
         }
         internal class PounceProtocol
         {
+            private const string PhoenixCommandName = "px";
 
-           
+
+            [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
+            private static class TacticalLevelController_ActorEnteredPlay_PounceProtocolPatch
+            {
+                public static void Postfix(TacticalLevelController __instance)
+                {
+                    try
+                    {
+                        RefreshPounceProtocolStatus(__instance);
+                    }
+                    catch (Exception ex)
+                    {
+                        TFTVLogger.Error(ex);
+                        throw;
+                    }
+                }
+            }
+
+            [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
+            private static class TacticalLevelController_ActorDied_PounceProtocolPatch
+            {
+                public static void Postfix(TacticalLevelController __instance)
+                {
+                    try
+                    {
+                        RefreshPounceProtocolStatus(__instance);
+                    }
+                    catch (Exception ex)
+                    {
+                        TFTVLogger.Error(ex);
+                        throw;
+                    }
+                }
+            }
+
+            private static void RefreshPounceProtocolStatus(TacticalLevelController controller)
+            {
+                try
+                {
+                    if (controller == null || _pounceProtocol == null || _pounceProtocolSpeedStatus == null)
+                    {
+                        return;
+                    }
+
+                    TacticalFaction phoenixFaction = controller.GetFactionByCommandName(PhoenixCommandName);
+                    if (phoenixFaction == null)
+                    {
+                        return;
+                    }
+
+                    bool hasPounceOperative = phoenixFaction.TacticalActors.Any(HasPounceProtocolAbility);
+
+                    foreach (TacticalActor drone in phoenixFaction.TacticalActors.Where(actor => IsPlayerSpiderDrone(actor, phoenixFaction)))
+                    {
+                        if (drone?.Status == null)
+                        {
+                            continue;
+                        }
+
+                        TacStatsModifyStatus existingStatus = drone.Status.GetStatus<TacStatsModifyStatus>(_pounceProtocolSpeedStatus);
+
+                        if (hasPounceOperative)
+                        {
+                            if (existingStatus == null)
+                            {
+                                drone.Status.ApplyStatus(_pounceProtocolSpeedStatus);
+                            }
+                        }
+                        else if (existingStatus != null)
+                        {
+                            drone.Status.UnapplyStatus(existingStatus);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                    throw;
+                }
+            }
+
+            private static bool HasPounceProtocolAbility(TacticalActor actor)
+            {
+                if (actor == null || !actor.IsAlive || actor.IsEvacuated)
+                {
+                    return false;
+                }
+
+                return actor.GetAbilityWithDef<PassiveModifierAbility>(_pounceProtocol) != null;
+            }
+
+            private static bool IsPlayerSpiderDrone(TacticalActor actor, TacticalFaction phoenixFaction)
+            {
+                if (actor == null || actor.TacticalFaction != phoenixFaction)
+                {
+                    return false;
+                }
+
+                if (!actor.IsAlive || actor.IsEvacuated)
+                {
+                    return false;
+                }
+
+                return actor.GameTags.Contains(DefCache.GetDef<GameTagDef>("SpiderDrone_ClassTagDef"));
+
+            }
 
         }
-
-
 
         internal class ViralPuppeteerToxicLink
         {
@@ -1247,26 +1349,270 @@ namespace TFTV.TFTVDrills
 
         internal class PackLoyalty
         {
+            private static readonly Dictionary<TacticalActor, HashSet<DamageMultiplierStatus>> _activeMindWardLinks = new Dictionary<TacticalActor, HashSet<DamageMultiplierStatus>>();
+            private static readonly object _packLoyaltyImmunitySource = new object();
+
+            private static DamageMultiplierStatusDef _psychicWardStatusDef;
+            private static TacStatusDef _mindControlImmunityStatusDef;
+
+            private static DamageMultiplierStatusDef PsychicWardStatusDef
+            {
+                get
+                {
+                    if (_psychicWardStatusDef == null)
+                    {
+                        _psychicWardStatusDef = DefCache.GetDef<DamageMultiplierStatusDef>("PsychicWard_StatusDef");
+                    }
+
+                    return _psychicWardStatusDef;
+                }
+            }
+
+            private static TacStatusDef MindControlImmunityStatusDef
+            {
+                get
+                {
+                    if (_mindControlImmunityStatusDef == null)
+                    {
+                        _mindControlImmunityStatusDef = DefCache.GetDef<TacStatusDef>("MindControlImmunity_StatusDef");
+                    }
+
+                    return _mindControlImmunityStatusDef;
+                }
+            }
+
             public static void CheckForPackLoyaltyDrill(TacticalLevelController controller)
             {
                 try
                 {
-
-
-
-
+                    _activeMindWardLinks.Clear();
                 }
                 catch (Exception ex)
                 {
                     TFTVLogger.Error(ex);
                     throw;
                 }
-
             }
 
+            private static bool TryGetPackLoyaltyParticipants(DamageMultiplierStatus status, out TacticalActor priest, out TacticalActor mutog)
+            {
+                priest = null;
+                mutog = null;
 
+                if (status == null)
+                {
+                    return false;
+                }
+
+                if (PsychicWardStatusDef == null || status.TacStatusDef != PsychicWardStatusDef)
+                {
+                    return false;
+                }
+
+                mutog = status.TacticalActor as TacticalActor;
+                if (mutog == null)
+                {
+                    return false;
+                }
+
+                priest = ResolveSourceActor(status.Source);
+                return priest != null;
+            }
+
+            private static TacticalActor ResolveSourceActor(object source)
+            {
+                switch (source)
+                {
+                    case TacticalActor actor:
+                        return actor;
+                    case TacticalActorBase actorBase:
+                        return actorBase as TacticalActor;
+                    case TacticalAbility ability:
+                        return ability.TacticalActor;
+                    default:
+                        return null;
+                }
+            }
+
+            private static bool ShouldApplyPackLoyalty(TacticalActor priest, TacticalActor mutog)
+            {
+                if (priest == null || mutog == null || MindControlImmunityStatusDef == null)
+                {
+                    return false;
+                }
+
+                if (!mutog.HasGameTag(Shared.SharedGameTags.MutogTag))
+                {
+                    return false;
+                }
+
+                if (priest.GetAbilityWithDef<PassiveModifierAbility>(_packLoyalty) == null)
+                {
+                    return false;
+                }
+
+                if (priest.RelationTo(mutog) != FactionRelation.Friend)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            private static void RegisterMindWard(DamageMultiplierStatus status, TacticalActor priest, TacticalActor mutog)
+            {
+                if (status == null || priest == null || mutog == null)
+                {
+                    return;
+                }
+
+                if (!_activeMindWardLinks.TryGetValue(mutog, out var links))
+                {
+                    links = new HashSet<DamageMultiplierStatus>();
+                    _activeMindWardLinks[mutog] = links;
+                }
+
+                int previousCount = links.Count;
+                links.Add(status);
+
+                if (previousCount == 0 && links.Count > 0)
+                {
+                    EnsureImmunity(mutog);
+                }
+            }
+
+            private static void EnsureImmunity(TacticalActor mutog)
+            {
+                try
+                {
+                    if (mutog?.Status == null)
+                    {
+                        return;
+                    }
+
+                    TacStatusDef immunityDef = MindControlImmunityStatusDef;
+                    if (immunityDef == null)
+                    {
+                        return;
+                    }
+
+                    if (!HasPackLoyaltyImmunity(mutog))
+                    {
+                        mutog.Status.ApplyStatus(immunityDef, _packLoyaltyImmunitySource);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
+            }
+
+            private static bool HasPackLoyaltyImmunity(TacticalActor mutog)
+            {
+                TacStatusDef immunityDef = MindControlImmunityStatusDef;
+                if (mutog?.Status == null || immunityDef == null)
+                {
+                    return false;
+                }
+
+                TacStatus status = mutog.Status.GetStatus<TacStatus>(immunityDef);
+                return status != null && status.Source == _packLoyaltyImmunitySource;
+            }
+
+            private static void UnregisterMindWard(DamageMultiplierStatus status)
+            {
+                if (status == null)
+                {
+                    return;
+                }
+
+                TacticalActor mutog = status.TacticalActor as TacticalActor;
+                if (mutog == null)
+                {
+                    return;
+                }
+
+                if (_activeMindWardLinks.TryGetValue(mutog, out var links))
+                {
+                    links.Remove(status);
+                    if (links.Count == 0)
+                    {
+                        _activeMindWardLinks.Remove(mutog);
+                        RemoveImmunityIfOwned(mutog);
+                    }
+                }
+            }
+
+            private static void RemoveImmunityIfOwned(TacticalActor mutog)
+            {
+                try
+                {
+                    TacStatusDef immunityDef = MindControlImmunityStatusDef;
+                    if (mutog?.Status == null || immunityDef == null)
+                    {
+                        return;
+                    }
+
+                    TacStatus status = mutog.Status.GetStatus<TacStatus>(immunityDef);
+                    if (status != null && status.Source == _packLoyaltyImmunitySource)
+                    {
+                        mutog.Status.UnapplyStatus(status);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                    throw;
+                }
+            }
+
+            [HarmonyPatch(typeof(DamageMultiplierStatus), nameof(DamageMultiplierStatus.OnApply))]
+            public static class DamageMultiplierStatus_OnApply_PackLoyalty_Patch
+            {
+                public static void Postfix(DamageMultiplierStatus __instance)
+                {
+                    try
+                    {
+                        if (!TryGetPackLoyaltyParticipants(__instance, out var priest, out var mutog))
+                        {
+                            return;
+                        }
+
+                        if (!ShouldApplyPackLoyalty(priest, mutog))
+                        {
+                            return;
+                        }
+
+                        RegisterMindWard(__instance, priest, mutog);
+                    }
+                    catch (Exception ex)
+                    {
+                        TFTVLogger.Error(ex);
+                    }
+                }
+            }
+
+            [HarmonyPatch(typeof(TacStatus), nameof(TacStatus.OnUnapply))]
+            public static class DamageMultiplierStatus_OnUnapply_PackLoyalty_Patch
+            {
+                public static void Postfix(DamageMultiplierStatus __instance)
+                {
+                    try
+                    {
+                        if (PsychicWardStatusDef == null || __instance?.TacStatusDef != PsychicWardStatusDef)
+                        {
+                            return;
+                        }
+
+                        UnregisterMindWard(__instance);
+                    }
+                    catch (Exception ex)
+                    {
+                        TFTVLogger.Error(ex);
+                    }
+                }
+            }
         }
-
     }
 
 }

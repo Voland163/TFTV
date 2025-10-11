@@ -4,23 +4,29 @@ using Base.Entities;
 using Base.Entities.Effects;
 using Base.Serialization.General;
 using HarmonyLib;
+using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
-using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.DamageKeywords;
+using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
+using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Web;
 using UnityEngine;
 
 namespace TFTV.TFTVDrills
 {
     internal class DrillsExplosiveShoot
     {
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        private static readonly SharedData Shared = TFTVMain.Shared;
+
         [CreateAssetMenu(fileName = "ExplosiveDisableShootAbilityDef", menuName = "Defs/Abilities/Tactical/Shoot/ExplosiveDisable")]
         [DefTarget(typeof(ExplosiveDisableShootAbility))]
         [SerializeType(InheritCustomCreateFrom = typeof(ShootAbilityDef))]
@@ -74,7 +80,7 @@ namespace TFTV.TFTVDrills
                 }
 
                 ExplosiveDisableShootAbilityDef def = ExplosiveDef;
-                if (def == null || def.ExplosionEffectDef == null)
+                if (def == null)
                 {
                     return false;
                 }
@@ -96,25 +102,88 @@ namespace TFTV.TFTVDrills
                 return false;
             }
 
-            internal void TriggerExplosionForDisabledItem(TacticalItem item)
+            internal void TriggerExplosionForDisabledItem(TacticalItem item, TacticalActorBase fallbackActor = null)
             {
-                ExplosiveDisableShootAbilityDef def = ExplosiveDef;
-                if (def == null || def.ExplosionEffectDef == null)
-                {
-                    return;
-                }
+                EffectTarget effectTarget = CreateEffectTarget(item, fallbackActor);
 
-                EffectTarget effectTarget = CreateEffectTarget(item);
                 if (effectTarget == null)
                 {
                     return;
                 }
 
+                ExplosiveDisableShootAbilityDef def = ExplosiveDef;
+
+                if (def == null || def.ExplosionEffectDef == null)
+                {
+                    return;
+                }
+
                 object effectSource = base.Source ?? this;
-                Effect.Apply(base.Repo, def.ExplosionEffectDef, effectTarget, effectSource);
+
+                DamagePayloadEffectDef explosionEffect = (DamagePayloadEffectDef)def.ExplosionEffectDef;
+
+                explosionEffect.DamagePayload.DamageKeywords = new List<DamageKeywordPair>() 
+                { 
+                    explosionEffect.DamagePayload.DamageKeywords[0], 
+                };
+
+                explosionEffect.DamagePayload.ObjectToSpawnOnExplosion = DefCache.GetDef<ExplosionEffectDef>("E_ShrapnelExplosion [ExplodingBarrel_ExplosionEffectDef]").ObjectToSpawn;
+
+                float radius = 2.5f;
+                float damage = 50;
+
+                if (item is Weapon weapon)
+                {
+                    WeaponDef weaponDef = weapon.WeaponDef;
+
+                    DamagePayload weaponPayload = weapon.GetDamagePayload();
+
+                    List<DamageKeywordPair> damageKeywordPairs = new List<DamageKeywordPair>();
+
+                    foreach (DamageKeywordPair damageKeywordPair in weaponPayload.DamageKeywords)
+                    {
+                        TFTVLogger.Always($"damageKeywordPair: {damageKeywordPair?.DamageKeywordDef?.name} {damageKeywordPair?.Value}");
+                       
+                        if (damageKeywordPair?.DamageKeywordDef == Shared.SharedDamageKeywords.BlastKeyword)
+                        {
+                            damage = damageKeywordPair.Value;
+                            TFTVLogger.Always($"setting blast damage to... {damage}");
+                        }
+
+                        if (damageKeywordPair?.DamageKeywordDef == Shared.SharedDamageKeywords.ShreddingKeyword)
+                        {
+                            TFTVLogger.Always($"{weaponDef.name} does shred damage");
+                            explosionEffect.DamagePayload.DamageKeywords.Add(damageKeywordPair);
+                        }
+                        
+                        if(damageKeywordPair?.DamageKeywordDef == Shared.SharedDamageKeywords.AcidKeyword)
+                            {
+                                TFTVLogger.Always($"{weaponDef.name} does acid damage");
+                                 explosionEffect.DamagePayload.DamageKeywords.Add(damageKeywordPair);
+                            }
+                        if (damageKeywordPair?.DamageKeywordDef == Shared.SharedDamageKeywords.BurningKeyword)
+                        {
+                            TFTVLogger.Always($"{weaponDef.name} does fire damage");
+                            explosionEffect.DamagePayload.DamageKeywords.Add(damageKeywordPair);
+                        }
+                    }
+
+                    if (weaponPayload.ObjectToSpawnOnExplosion != null)
+                    {
+
+                        TFTVLogger.Always($"weaponPayload.ObjectToSpawnOnExplosion: {weaponPayload.ObjectToSpawnOnExplosion.name}");
+                       // explosionEffect.DamagePayload.ObjectToSpawnOnExplosion = weaponPayload.ObjectToSpawnOnExplosion;
+                    }
+                   
+                }
+
+                explosionEffect.DamagePayload.AoeRadius = radius;
+                explosionEffect.DamagePayload.DamageKeywords[0].Value = damage;
+
+                Effect.Apply(base.Repo, explosionEffect, effectTarget, effectSource);
             }
 
-            private EffectTarget CreateEffectTarget(TacticalItem item)
+            private EffectTarget CreateEffectTarget(TacticalItem item, TacticalActorBase fallbackActor)
             {
                 if (item == null)
                 {
@@ -145,6 +214,13 @@ namespace TFTV.TFTVDrills
                     hasPosition = true;
                 }
 
+                if (!hasPosition && fallbackActor != null)
+                {
+                    position = fallbackActor.Pos;
+                    hasPosition = true;
+                    actor = fallbackActor;
+                }
+
                 if (!hasPosition)
                 {
                     return null;
@@ -152,11 +228,17 @@ namespace TFTV.TFTVDrills
 
                 return new EffectTarget
                 {
-                    Object = item,
+                    Object = item != null ? (object)item : actor,
+                    GameObject = actor?.gameObject,
                     Position = position,
+                    Rotation = Quaternion.identity,
                     Param = item
                 };
             }
+
+
+
+
         }
 
         internal static class ExplosiveDisableShotContext
@@ -179,7 +261,7 @@ namespace TFTV.TFTVDrills
                 }
 
                 ExplosiveDisableShootAbilityDef def = ability.ExplosiveDef;
-                if (def == null || def.ExplosionEffectDef == null)
+                if (def == null)
                 {
                     return false;
                 }
@@ -205,7 +287,30 @@ namespace TFTV.TFTVDrills
                 _currentAbility = null;
                 _processedItems = null;
             }
+
+            public static void TryProcessDisabledItem(TacticalItem item, TacticalActorBase fallbackActor)
+            {
+                ExplosiveDisableShootAbility ability = _currentAbility;
+                HashSet<TacticalItem> processed = _processedItems;
+                if (ability == null || processed == null || item == null)
+                {
+                    return;
+                }
+
+                if (!processed.Add(item))
+                {
+                    return;
+                }
+
+                if (!ability.ShouldTriggerOnDisabledItem(item))
+                {
+                    return;
+                }
+
+                ability.TriggerExplosionForDisabledItem(item, fallbackActor);
+            }
         }
+
 
         [HarmonyPatch(typeof(TacticalAbilityReport))]
         internal static class ExplosiveDisableShootAbilityPatches
@@ -215,23 +320,35 @@ namespace TFTV.TFTVDrills
             private static void ExplosiveDisable_OnRaiseDamageEvents(IEnumerable<TacticalAbilityReport> reports)
             {
                 ExplosiveDisableShootAbility ability = ExplosiveDisableShotContext.CurrentAbility;
+
+                TFTVLogger.Always($"ExplosiveDisable_OnRaiseDamageEvents: ability {ability == null}");
+
                 if (ability == null)
                 {
                     return;
                 }
 
                 HashSet<TacticalItem> processed = ExplosiveDisableShotContext.ProcessedItems;
+
+                TFTVLogger.Always($"processed: {processed == null}");
+
                 if (processed == null)
                 {
                     return;
                 }
 
+                TFTVLogger.Always($"reports count: {reports.Count()}");
+
                 foreach (TacticalAbilityReport report in reports)
                 {
+                    TFTVLogger.Always($"report: damaged actor: {report?.DamagedActor?.name} disabled parts: {report?.DisabledItems?.Count()} ");
+
                     if (report == null)
                     {
                         continue;
                     }
+
+                    TacticalActorBase damagedActor = report.DamagedActor;
 
                     foreach (TacticalItem item in report.DisabledItems)
                     {
@@ -240,21 +357,251 @@ namespace TFTV.TFTVDrills
                             continue;
                         }
 
-                        if (!processed.Add(item))
-                        {
-                            continue;
-                        }
-
-                        if (!ability.ShouldTriggerOnDisabledItem(item))
-                        {
-                            continue;
-                        }
-
-                        ability.TriggerExplosionForDisabledItem(item);
+                        ExplosiveDisableShotContext.TryProcessDisabledItem(item, damagedActor);
                     }
                 }
             }
         }
+
+        [HarmonyPatch(typeof(TacticalItem))]
+        internal static class ExplosiveDisableShootAbilityItemPatches
+        {
+            [HarmonyPrefix]
+            [HarmonyPatch(nameof(TacticalItem.SetToDisabled))]
+            private static void ExplosiveDisable_CacheOwner(TacticalItem __instance, ref TacticalActorBase __state)
+            {
+                TFTVLogger.Always($"disabledItem {__instance?.DisplayName}");
+
+                __state = __instance != null ? __instance.TacticalActorBase : null;
+            }
+
+            [HarmonyPostfix]
+            [HarmonyPatch(nameof(TacticalItem.SetToDisabled))]
+            private static void ExplosiveDisable_OnItemDisabled(TacticalItem __instance, TacticalActorBase __state)
+            {
+                if (__instance == null)
+                {
+                    return;
+                }
+
+                ExplosiveDisableShotContext.TryProcessDisabledItem(__instance, __state);
+            }
+        }
+
+        [HarmonyPatch(typeof(UIModuleFreeFirstPersonShooting))]
+        internal static class ExplosiveDisableShootAbilityUIModulePatches
+        {
+            [HarmonyPostfix]
+            [HarmonyPatch(nameof(UIModuleFreeFirstPersonShooting.OnNewDamageReceiverSelected))]
+            private static void ExplosiveDisable_OnNewDamageReceiverSelected(UIModuleFreeFirstPersonShooting __instance, IDamageReceiver damageReceiver, bool inRange)
+            {
+                ExplosiveDisableTargetHighlighter.Update(__instance != null ? (__instance.SelectedAbility as ExplosiveDisableShootAbility) : null, damageReceiver);
+            }
+
+            [HarmonyPrefix]
+            [HarmonyPatch(nameof(UIModuleFreeFirstPersonShooting.ClearFirstPersonShootingLayout))]
+            private static void ExplosiveDisable_OnClearFirstPersonLayout()
+            {
+                ExplosiveDisableTargetHighlighter.Clear();
+            }
+        }
+
+        internal static class ExplosiveDisableTargetHighlighter
+        {
+            private static readonly HashSet<IHighlightable> _highlighted = new HashSet<IHighlightable>();
+
+            public static void Update(ExplosiveDisableShootAbility ability, IDamageReceiver damageReceiver)
+            {
+                if (ability == null)
+                {
+                    Clear();
+                    return;
+                }
+
+                TacticalActorBase tacticalActorBase = damageReceiver != null ? damageReceiver.GetActor() : null;
+                if (tacticalActorBase == null)
+                {
+                    Clear();
+                    return;
+                }
+
+                HashSet<IHighlightable> next = GatherHighlightTargets(ability, tacticalActorBase);
+                Apply(next);
+            }
+
+            public static void Clear()
+            {
+                if (_highlighted.Count == 0)
+                {
+                    return;
+                }
+
+                foreach (IHighlightable highlightable in _highlighted)
+                {
+                    highlightable?.Highlight(false, false, true);
+                }
+
+                _highlighted.Clear();
+            }
+
+            private static HashSet<IHighlightable> GatherHighlightTargets(ExplosiveDisableShootAbility ability, TacticalActorBase actor)
+            {
+                HashSet<IHighlightable> hashSet = new HashSet<IHighlightable>();
+                TacticalActor tacticalActor = actor as TacticalActor;
+                if (tacticalActor == null || tacticalActor.BodyState == null)
+                {
+                    return hashSet;
+                }
+
+                foreach (ItemSlot itemSlot in tacticalActor.BodyState.GetSlots())
+                {
+                    bool flag = false;
+                    foreach (TacticalItem tacticalItem in itemSlot.GetAllDirectItems(false))
+                    {
+                        if (tacticalItem != null && ability.ShouldTriggerOnDisabledItem(tacticalItem))
+                        {
+                            hashSet.Add(tacticalItem);
+                            flag = true;
+                        }
+                    }
+
+                    if (flag)
+                    {
+                        hashSet.Add(itemSlot);
+                    }
+                }
+
+                if (tacticalActor.Equipments != null)
+                {
+                    foreach (TacticalItem tacticalItem2 in tacticalActor.Equipments.Items.OfType<TacticalItem>())
+                    {
+                        if (tacticalItem2 != null && ability.ShouldTriggerOnDisabledItem(tacticalItem2))
+                        {
+                            hashSet.Add(tacticalItem2);
+                            ItemSlot parentItemSlot = tacticalItem2.ParentItemSlot;
+                            if (parentItemSlot != null)
+                            {
+                                hashSet.Add(parentItemSlot);
+                            }
+                        }
+                    }
+                }
+
+                return hashSet;
+            }
+
+            private static void Apply(HashSet<IHighlightable> next)
+            {
+                if (next.Count == 0)
+                {
+                    Clear();
+                    return;
+                }
+
+                foreach (IHighlightable highlightable in _highlighted)
+                {
+                    if (highlightable == null || !next.Contains(highlightable))
+                    {
+                        highlightable?.Highlight(false, false, true);
+                    }
+                }
+
+                foreach (IHighlightable highlightable2 in next)
+                {
+                    if (highlightable2 != null && !_highlighted.Contains(highlightable2))
+                    {
+                        highlightable2.Highlight(true, false, true);
+                    }
+                }
+
+                _highlighted.Clear();
+                _highlighted.UnionWith(next);
+            }
+        }
+
+        /*[HarmonyPatch(typeof(TacticalAbilityReport))]
+        internal static class ExplosiveDisableShootAbilityPatches
+        {
+            [HarmonyPostfix]
+            [HarmonyPatch(nameof(TacticalAbilityReport.RaiseDamageEvents))]
+            private static void ExplosiveDisable_OnRaiseDamageEvents(IEnumerable<TacticalAbilityReport> reports)
+            {
+                try
+                {
+                    ExplosiveDisableShootAbility ability = ExplosiveDisableShotContext.CurrentAbility;
+                    TFTVLogger.Always("ExplosiveDisableShootAbilityPatches: OnRaiseDamageEvents called. CurrentAbility: " + (ability != null ? ability.TacticalAbilityDef.name : "null"));
+                    if (ability == null)
+                    {
+                        return;
+                    }
+
+                    HashSet<TacticalItem> processed = ExplosiveDisableShotContext.ProcessedItems;
+
+                    TFTVLogger.Always($"processed: {processed == null}");
+
+                    if (processed == null)
+                    {
+                        return;
+                    }
+                    TFTVLogger.Always($"reports: {reports == null} count: {reports.Count()}");
+
+                  
+                    foreach (TacticalAbilityReport report in reports)
+                    {
+                        TFTVLogger.Always($"report: {report == null}");
+
+                        TFTVLogger.Always($"damaged actor? {report?.DamagedActor?.DisplayName}");
+
+                        TFTVLogger.Always($"instance.DisabledItems null? {report.DisabledItems == null} count: {report.DisabledItems?.Count}");
+
+                        foreach (TacticalItem tacticalItem in report.DisabledItems)
+                        {
+                            TFTVLogger.Always($"disabled item in report: {tacticalItem?.ItemDef?.name}");
+                        }
+
+
+                        if (report == null)
+                        {
+                            continue;
+                        }
+
+                        TFTVLogger.Always($"report.DisabledItems: {report.DisabledItems == null} count: {report.DisabledItems?.Count}");
+
+                        foreach (TacticalItem item in report.DisabledItems)
+                        {
+                            TFTVLogger.Always($"item: {item == null} name: {item?.ItemDef?.name}");
+
+                            if (item == null)
+                            {
+                                continue;
+                            }
+
+                            TFTVLogger.Always($"processed.Contains(item): {processed.Contains(item)}");
+
+                            if (!processed.Add(item))
+                            {
+                                continue;
+                            }
+
+                            TFTVLogger.Always("ExplosiveDisableShootAbilityPatches: Processing disabled item " + item.ItemDef.name);
+
+                            if (!ability.ShouldTriggerOnDisabledItem(item))
+                            {
+                                continue;
+                            }
+
+
+
+                            ability.TriggerExplosionForDisabledItem(item);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }*/
 
     }
 }

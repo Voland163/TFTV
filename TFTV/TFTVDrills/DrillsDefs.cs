@@ -85,6 +85,7 @@ namespace TFTV.TFTVDrills
         internal static PassiveModifierAbilityDef _pinpointToss;
         internal static ApplyStatusAbilityDef _heavyConditioning;
         internal static ExplosiveDisableShootAbilityDef _explosiveShot;
+        internal static PassiveModifierAbilityDef _pounceProtocol;
 
         internal static ApplyStatusAbilityDef _aksuSprint;
 
@@ -96,6 +97,7 @@ namespace TFTV.TFTVDrills
         internal static AddAttackBoostStatusDef _bulletHellAttackBoostStatus;
         internal static TacStatsModifyStatusDef _bulletHellSlowStatus;
         internal static ChangeAbilitiesCostStatusDef _bulletHellAPCostReductionStatus;
+        internal static TacStatsModifyStatusDef _pounceProtocolSpeedStatus;
 
         //  private static ApplyStatusAbilityDef _veiledMarksman;
 
@@ -580,7 +582,8 @@ namespace TFTV.TFTVDrills
                 _shieldedRiposte = CreateDrillNominalAbility("shieldedriposte", "7c3d4e5f-8091-011a-c3d4-e5f60718293a", "9a4b5c6d-7e8f-9010-ab1c-2d3e4f506172", "a94b5c6d-7e8f-9010-ab1c-2d3e4f506173"); //pending fixing animation when deploying shield in different direction                
 
                 _toxicLink = CreateDrillNominalAbility("toxiclink", "9e5f6071-a2a3-233c-e5f6-0718293a4b5c", "c6d7e8f9-1011-b2c3-d4e5-f60718293a4b", "d6e7f809-1112-c3d4-e5f6-0718293a4b5c"); //done
-                CreateDrillNominalAbility("pounceprotocol", "af607182-b3b4-344d-f607-18293a4b5c6d", "d7e8f901-1213-c4d5-e6f7-08192a3b4c5d", "e7f80912-1314-d5e6-f7f8-192a3b4c5d6e"); //pending
+                _pounceProtocol = CreateDrillNominalAbility("pounceprotocol", "af607182-b3b4-344d-f607-18293a4b5c6d", "d7e8f901-1213-c4d5-e6f7-08192a3b4c5d", "e7f80912-1314-d5e6-f7f8-192a3b4c5d6e"); //pending
+                _pounceProtocolSpeedStatus = CreatePounceProtocolSpeedStatus();
 
                 _ordnanceResupply = CreateOrdnanceResupplyAbility(); //done
                 _viralPuppeteer = CreateDrillNominalAbility("viralpuppeteer", "e39a4b5c-f7f8-7881-0a11-2c3d4e5f6071", "23344556-2021-10f3-0405-8091a2b3c4d5", "33445566-2122-11f4-0506-91a2b3c4d5e6"); //done
@@ -628,8 +631,8 @@ namespace TFTV.TFTVDrills
                 const string name = "explosiveshot";
                 const string abilityGuid = "{52BD5C35-15A6-42B9-97A4-75CF60299AAB}";
                 const string viewGuid = "{EB24BB6E-DF97-412C-B07D-7980F2D33F83}";
-                string locKeyName = $"TFTV_DRILL_{name.ToUpper()}_NAME";
-                string locKeyDesc = $"TFTV_DRILL_{name.ToUpper()}_DESC";
+                string locKeyName = $"TFTV_DRILL_{name}_NAME";
+                string locKeyDesc = $"TFTV_DRILL_{name}_DESC";
                 Sprite icon = Helper.CreateSpriteFromImageFile($"Drill_{name}.png");
 
                 ShootAbilityDef source = DefCache.GetDef<ShootAbilityDef>("Weapon_ShootAbilityDef");
@@ -638,6 +641,9 @@ namespace TFTV.TFTVDrills
                     (ExplosiveDisableShootAbilityDef)null,
                     abilityGuid,
                     $"TFTV_{name}_AbilityDef");
+
+                PRMBetterClasses.Helper.CopyFieldsByReflection(source, abilityDef);
+
                 abilityDef.ViewElementDef = Helper.CreateDefFromClone(
                     source.ViewElementDef,
                     viewGuid,
@@ -647,12 +653,29 @@ namespace TFTV.TFTVDrills
                 abilityDef.ViewElementDef.LargeIcon = icon;
                 abilityDef.ViewElementDef.SmallIcon = icon;
 
-                PRMBetterClasses.Helper.CopyFieldsByReflection(source, abilityDef);
+                abilityDef.TargetingDataDef = Helper.CreateDefFromClone(
+                    source.TargetingDataDef,
+                    "{C4E14BDB-03A1-4A87-9147-E11304DAD39F}",
+                    $"TFTV_{name}_TargetingDataDef");
+                abilityDef.SceneViewElementDef = Helper.CreateDefFromClone(
+                    source.SceneViewElementDef,
+                    "{D5F25CFC-14B2-5B98-A258-F22415EBE4A0}",
+                    $"TFTV_{name}_SceneViewElementDef");
 
                 abilityDef.name = $"TFTV_{name}_AbilityDef";
+                abilityDef.ExplosionEffectDef = Helper.CreateDefFromClone(
+                     DefCache.GetDef<DamagePayloadEffectDef>("E_Element0 [SwarmerAcidExplosion_Die_AbilityDef]"), "{B1E6E17A-230B-42F6-B4B1-7515EDC3BF38}", name);
+
+                DamagePayloadEffectDef damagePayloadEffectDef = (DamagePayloadEffectDef)abilityDef.ExplosionEffectDef;
+                damagePayloadEffectDef.DamagePayload.DamageKeywords.Remove(damagePayloadEffectDef.DamagePayload.DamageKeywords[1]);
+                damagePayloadEffectDef.DamagePayload.ObjectMultiplier = 2.0f;
+                damagePayloadEffectDef.DamagePayload.AoeRadius = 2.5f;
+                damagePayloadEffectDef.DamagePayload.ObjectToSpawnOnExplosion = DefCache.GetDef<ExplosionEffectDef>("E_ShrapnelExplosion [ExplodingBarrel_ExplosionEffectDef]").ObjectToSpawn;
+
                 abilityDef.TriggerItemTags.Add(DefCache.GetDef<GameTagDef>("ExplosiveWeapon_TagDef"));
-                abilityDef.ExplosionEffectDef = DefCache.GetDef<ExplosionEffectDef>("E_ShrapnelExplosion [ExplodingBarrel_ExplosionEffectDef]");
-                //  abilityDef.RequiredWeaponClassTag = DefCache.GetDef<ItemTypeTagDef>("SniperRifleItem_TagDef");
+                abilityDef.TriggerItemTags.Add(DefCache.GetDef<GameTagDef>("FlamethrowerItem_TagDef"));
+                abilityDef.EquipmentTags = abilityDef.EquipmentTags.AddToArray(DefCache.GetDef<ItemTypeTagDef>("SniperRifleItem_TagDef"));
+                
                 Drills.Add(abilityDef);
                 return abilityDef;
             }
@@ -980,6 +1003,57 @@ namespace TFTV.TFTVDrills
             }
         }
 
+        private static TacStatsModifyStatusDef CreatePounceProtocolSpeedStatus()
+        {
+            try
+            {
+                const string statusName = "PounceProtocol_SpeedBonus_StatusDef";
+                const string statusGuid = "{F6E53B6B-0F85-43A3-B61C-BAA3C8E7D951}";
+                const string visualsGuid = "{4B63F03B-C1DF-4C1F-A2AC-BF742B2F2B53}";
+
+                TacStatsModifyStatusDef sourceStatus = DefCache.GetDef<TacStatsModifyStatusDef>("Slowed_StatusDef");
+                TacStatsModifyStatusDef status = Helper.CreateDefFromClone(sourceStatus, statusGuid, statusName);
+
+                status.EffectName = "PounceProtocolSpeedBonus";
+                status.ApplicationConditions = Array.Empty<EffectConditionDef>();
+                status.DurationTurns = -1;
+                status.ExpireOnEndOfTurn = false;
+                status.SingleInstance = true;
+                status.ShowNotification = false;
+                status.VisibleOnPassiveBar = false;
+                status.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.Hidden;
+                status.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                status.StackMultipleStatusesAsSingleIcon = false;
+
+                status.StatsModifiers = new[]
+                {
+                    new StatsModifierPopup
+                    {
+                        StatModification = new StatModification(
+                            StatModificationType.Add,
+                            "Speed",
+                            5f,
+                            null,
+                            0f),
+                        PopupInfoMessageId = null
+                    }
+                };
+
+                status.Visuals = Helper.CreateDefFromClone(sourceStatus.Visuals, visualsGuid, statusName);
+                status.Visuals.DisplayName1.LocalizationKey = "TFTV_DRILL_pounceprotocol_NAME";
+                status.Visuals.Description.LocalizationKey = "TFTV_DRILL_pounceprotocol_DESC";
+                Sprite icon = Helper.CreateSpriteFromImageFile("Drill_pounceprotocol.png");
+                status.Visuals.LargeIcon = icon;
+                status.Visuals.SmallIcon = icon;
+
+                return status;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
 
         private static void CreateMightMakesRightAddStatusAbilityDef(string name, string guid0, string guid1, string guid2)
         {
