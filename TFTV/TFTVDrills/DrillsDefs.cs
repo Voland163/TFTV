@@ -965,7 +965,7 @@ namespace TFTV.TFTVDrills
                "{277B6FDB-A88C-452D-9F67-285FA3668AEE}",
                "E_AbilityCostModifier [BulletHell_AbilityDef]");
 
-                _bulletHellAPCostReductionStatus.AbilityCostModification.ActionPointMod = -0.25f;
+                _bulletHellAPCostReductionStatus.AbilityCostModification.ActionPointMod = -0.5f;
                 _bulletHellAttackBoostStatus.EffectName = "BulletHellAttackBoost";
 
                 _bulletHellAttackBoostStatus.AdditionalStatusesToApply = new TacStatusDef[]
@@ -974,6 +974,7 @@ namespace TFTV.TFTVDrills
                 };
 
                 newAbility.StatusDef = _bulletHellSlowStatus;
+                newAbility.EquipmentTags = new GameTagDef[] {DefCache.GetDef<GameTagDef>("AssaultRifleItem_TagDef") };
 
                 _bulletHell = newAbility;
 

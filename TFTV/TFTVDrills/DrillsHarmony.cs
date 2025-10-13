@@ -16,6 +16,7 @@ using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.UI.Abilities;
+using PhoenixPoint.Tactical.View;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -398,7 +399,50 @@ namespace TFTV.TFTVDrills
                 }
             }
 
+            [HarmonyPatch(typeof(EquipmentComponent))]
+            internal static class EquipmentComponentPatches
+            {
+                [HarmonyPatch(nameof(EquipmentComponent.SetSelectedEquipment))]
+                [HarmonyPrefix]
+                private static bool PreventSwitchingWhenLocked(EquipmentComponent __instance, Equipment equipment)
+                {
+                    TacticalActor actor = __instance.TacticalActor;
+                    if (actor != null && equipment != null && equipment != __instance.SelectedEquipment && actor.Status.HasStatus(_bulletHellSlowStatus))
+                    {
+                        return false;
+                    }
 
+                    return true;
+                }
+            }
+
+            [HarmonyPatch(typeof(TacticalView))]
+            internal static class TacticalViewPatches
+            {
+                [HarmonyPatch(nameof(TacticalView.CanSwitchEquipment))]
+                [HarmonyPostfix]
+                private static void BlockUiSwitchingWhenLocked(TacticalActor actor, ref bool __result)
+                {
+                    if (__result && actor != null && actor.Status.HasStatus(_bulletHellSlowStatus))
+                    {
+                        __result = false;
+                    }
+                }
+            }
+
+            [HarmonyPatch(typeof(ReloadAbility))]
+            internal static class ReloadAbilityPatches
+            {
+                [HarmonyPatch("GetDisabledStateInternal")]
+                [HarmonyPostfix]
+                private static void BlockReloadingWhenLocked(ReloadAbility __instance, ref AbilityDisabledState __result)
+                {
+                    if (__result == AbilityDisabledState.NotDisabled && __instance?.TacticalActor?.Status != null && __instance.TacticalActor.Status.HasStatus(_bulletHellSlowStatus))
+                    {
+                        __result = AbilityDisabledState.BlockedByStatus;
+                    }
+                }
+            }
 
         }
 
