@@ -296,6 +296,138 @@ namespace TFTV.TFTVDrills
 
         }
 
+        internal static class CommandOverlay
+        {
+            private const string PhoenixCommandName = "px";
+
+            [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
+            private static class TacticalLevelController_ActorEnteredPlay_CommandOverlayPatch
+            {
+                public static void Postfix(TacticalLevelController __instance)
+                {
+                    try
+                    {
+                        RefreshCommandOverlayStatus();
+                    }
+                    catch (Exception ex)
+                    {
+                        TFTVLogger.Error(ex);
+                        throw;
+                    }
+                }
+            }
+
+
+            [HarmonyPatch(typeof(StatusComponent), nameof(StatusComponent.ApplyStatus), typeof(Status))]
+            private static class StatusComponent_ApplyStatus_CommandOverlayPatch
+            {
+                public static void Postfix(StatusComponent __instance, Status status)
+                {
+                    try
+                    {
+                        if (status?.Def == _augmentedRealityStatus)
+                        {
+                            RefreshCommandOverlayStatus();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        TFTVLogger.Error(ex);
+                        throw;
+                    }
+                }
+            }
+
+            [HarmonyPatch(typeof(StatusComponent), nameof(StatusComponent.UnapplyStatus), typeof(Status))]
+            private static class StatusComponent_UnapplyStatus_CommandOverlayPatch
+            {
+                public static void Postfix(StatusComponent __instance, Status status)
+                {
+                    try
+                    {
+                        if (status?.Def == _augmentedRealityStatus || status?.Def == _commandOverlayRemoteControlStatus)
+                        {
+                            RefreshCommandOverlayStatus();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        TFTVLogger.Error(ex);
+                        throw;
+                    }
+                }
+            }
+
+            private static void RefreshCommandOverlayStatus()
+            {
+                try
+                {
+                    TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
+                    if (controller == null || _commandOverlay == null || _commandOverlayRemoteControlStatus == null || _augmentedRealityStatus == null || _remoteControlAbilityDef == null)
+                    {
+                        return;
+                    }
+
+                    TacticalFaction phoenixFaction = controller.GetFactionByCommandName(PhoenixCommandName);
+                    if (phoenixFaction == null)
+                    {
+                        return;
+                    }
+
+                    bool hasCommandOverlay = phoenixFaction.TacticalActors.Any(HasCommandOverlayAbility);
+
+                    foreach (TacticalActor actor in phoenixFaction.TacticalActors)
+                    {
+                        if (actor?.Status == null)
+                        {
+                            continue;
+                        }
+
+                        AddAbilityStatus existingStatus = actor.Status.GetStatus<AddAbilityStatus>(_commandOverlayRemoteControlStatus);
+
+                        if (!actor.IsAlive || actor.IsEvacuated)
+                        {
+                            if (existingStatus != null)
+                            {
+                                actor.Status.UnapplyStatus(existingStatus);
+                            }
+                            continue;
+                        }
+
+                        bool shouldHave = hasCommandOverlay
+                            && actor.Status.HasStatus(_augmentedRealityStatus)
+                            && actor.GetAbilityWithDef<TacticalAbility>(_remoteControlAbilityDef) == null;
+
+                        if (shouldHave)
+                        {
+                            if (existingStatus == null)
+                            {
+                                actor.Status.ApplyStatus(_commandOverlayRemoteControlStatus);
+                            }
+                        }
+                        else if (existingStatus != null)
+                        {
+                            actor.Status.UnapplyStatus(existingStatus);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                    throw;
+                }
+            }
+
+            private static bool HasCommandOverlayAbility(TacticalActor actor)
+            {
+                return actor != null
+                    && actor.IsAlive
+                    && !actor.IsEvacuated
+                    && actor.GetAbilityWithDef<PassiveModifierAbility>(_commandOverlay) != null;
+            }
+        }
+
         internal class BulletHell
         {
             private static readonly GameTagDef AssaultRifleTag = DefCache.GetDef<GameTagDef>("AssaultRifleItem_TagDef");

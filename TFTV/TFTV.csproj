@@ -138,6 +138,7 @@
     <Compile Include="TFTVCustomPortraits.cs" />
     <Compile Include="TFTVDrills\DrillsDefs.cs" />
     <Compile Include="TFTVDrills\DrillsExplosiveShoot.cs" />
+    <Compile Include="TFTVDrills\DrillShotgunSurgeon.cs" />
     <Compile Include="TFTVDrills\DrillsPublicClasses.cs" />
     <Compile Include="TFTVDrills\DrillsHarmony.cs" />
     <Compile Include="TFTVDrills\DrillsUI.cs" />

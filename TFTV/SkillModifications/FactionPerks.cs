@@ -798,6 +798,13 @@ namespace PRMBetterClasses.SkillModifications
                     {
                         return true;
                     }
+
+                    //Voland's change to make SoW react to melee damage only
+                    if (damageResult.DamageTypeDef != TFTVMeleeDamage.MeleeStandardDamageType)
+                    {
+                        return true;
+                    }
+
                     PRMLogger.Debug("----------------------------------------------------------------------------------------------------", false);
                     PRMLogger.Debug($"OnActorDamageReceivedStatus.OnActorDamageReceived() called from '{SowerOfChange.AbilityDef.name}' ...");
                     PRMLogger.Debug($"Actor: {tacticalActor.DisplayName}");

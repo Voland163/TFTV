@@ -9,7 +9,6 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
@@ -20,7 +19,6 @@ using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
-using PhoenixPoint.Tactical.UI.Abilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,11 +38,19 @@ namespace TFTV.TFTVDrills
         public bool RequireSelectedOperative; // TODO: confirm whether this should only check the viewing operative.
     }
 
+    internal sealed class DrillWeaponProficiencyRequirement
+    {
+        public List<TacticalAbilityDef> ProficiencyAbilities { get; } = new List<TacticalAbilityDef>();
+        public bool RequireSelectedOperative = true;
+    }
+
     internal sealed class DrillUnlockCondition
     {
         public bool AlwaysAvailable;
         public List<string> RequiredResearchIds { get; } = new List<string>();
         public List<DrillClassLevelRequirement> ClassLevelRequirements { get; } = new List<DrillClassLevelRequirement>();
+        public List<DrillWeaponProficiencyRequirement> WeaponProficiencyRequirements { get; } = new List<DrillWeaponProficiencyRequirement>();
+       
         public bool RequireAnyPhoenixOperative; // TODO: clarify how mixed class requirements should behave.
 
         public static DrillUnlockCondition AlwaysUnlocked()
@@ -86,6 +92,11 @@ namespace TFTV.TFTVDrills
         internal static ApplyStatusAbilityDef _heavyConditioning;
         internal static ExplosiveDisableShootAbilityDef _explosiveShot;
         internal static PassiveModifierAbilityDef _pounceProtocol;
+
+        internal static PassiveModifierAbilityDef _commandOverlay;
+        internal static AddAbilityStatusDef _commandOverlayRemoteControlStatus;
+        internal static StanceStatusDef _augmentedRealityStatus;
+        internal static TacticalAbilityDef _remoteControlAbilityDef;
 
         internal static ApplyStatusAbilityDef _aksuSprint;
 
@@ -154,6 +165,12 @@ namespace TFTV.TFTVDrills
             {
                 return false;
             }
+
+            if (!MeetsWeaponProficiencyRequirements(faction, viewer, condition))
+            {
+                return false;
+            }
+
 
             return true;
         }
@@ -235,6 +252,63 @@ namespace TFTV.TFTVDrills
 
             return true;
         }
+
+        internal static bool MeetsWeaponProficiencyRequirements(GeoPhoenixFaction faction, GeoCharacter viewer, DrillUnlockCondition condition)
+        {
+            if (condition?.WeaponProficiencyRequirements == null || condition.WeaponProficiencyRequirements.Count == 0)
+            {
+                return true;
+            }
+
+            foreach (var requirement in condition.WeaponProficiencyRequirements)
+            {
+                if (requirement?.ProficiencyAbilities == null || requirement.ProficiencyAbilities.Count == 0)
+                {
+                    continue;
+                }
+
+                bool satisfied = false;
+
+                if (viewer != null && SoldierHasWeaponProficiency(viewer, requirement.ProficiencyAbilities))
+                {
+                    satisfied = true;
+                }
+
+                if (!satisfied && !requirement.RequireSelectedOperative)
+                {
+                    if (faction?.Soldiers != null)
+                    {
+                        satisfied = faction.Soldiers.Any(soldier => SoldierHasWeaponProficiency(soldier, requirement.ProficiencyAbilities));
+                    }
+                }
+
+                if (!satisfied)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool SoldierHasWeaponProficiency(GeoCharacter soldier, IEnumerable<TacticalAbilityDef> proficiencyAbilities)
+        {
+            if (soldier?.Progression?.Abilities == null || proficiencyAbilities == null)
+            {
+                return false;
+            }
+
+            foreach (var ability in proficiencyAbilities)
+            {
+                if (ability != null && soldier.Progression.Abilities.Contains(ability))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
 
         internal static bool MeetsSingleClassRequirement(GeoCharacter soldier, DrillClassLevelRequirement requirement)
         {
@@ -325,6 +399,36 @@ namespace TFTV.TFTVDrills
                 }
             }
 
+            if (!MeetsWeaponProficiencyRequirements(faction, viewer, condition))
+            {
+                foreach (var requirement in condition.WeaponProficiencyRequirements)
+                {
+                    if (requirement?.ProficiencyAbilities == null || requirement.ProficiencyAbilities.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    bool satisfied = false;
+                    if (viewer != null && SoldierHasWeaponProficiency(viewer, requirement.ProficiencyAbilities))
+                    {
+                        satisfied = true;
+                    }
+
+                    if (!satisfied && !requirement.RequireSelectedOperative && faction?.Soldiers != null)
+                    {
+                        satisfied = faction.Soldiers.Any(soldier => SoldierHasWeaponProficiency(soldier, requirement.ProficiencyAbilities));
+                    }
+
+                    if (satisfied)
+                    {
+                        continue;
+                    }
+
+                    yield return BuildWeaponProficiencyRequirementMessage(requirement);
+                }
+            }
+
+
             if (condition.RequireAnyPhoenixOperative)
             {
                 bool hasOperative = faction?.Soldiers != null && faction.Soldiers.Count() > 0;
@@ -383,6 +487,26 @@ namespace TFTV.TFTVDrills
             string subject = requirement.RequireSelectedOperative ? "Selected operative" : "Phoenix operative";
             return $"{subject} must be level {requirement.MinimumLevel} {className}";
         }
+
+        private static string BuildWeaponProficiencyRequirementMessage(DrillWeaponProficiencyRequirement requirement)
+        {
+            List<string> abilityNames = requirement?.ProficiencyAbilities?
+                .Where(ability => ability != null)
+                .Select(ability => ability.ViewElementDef?.DisplayName1?.Localize() ?? ability.name)
+                .Where(name => !string.IsNullOrEmpty(name))
+                .Distinct()
+                .ToList();
+
+            if (abilityNames == null || abilityNames.Count == 0)
+            {
+                abilityNames = new List<string> { "required weapon proficiency" };
+            }
+
+            string abilityRequirement = abilityNames.Count == 1 ? abilityNames[0] : string.Join(" or ", abilityNames);
+            string subject = requirement?.RequireSelectedOperative ?? true ? "Selected operative" : "A Phoenix operative";
+            return $"{subject} must have {abilityRequirement}.";
+        }
+
         private static void EnsureDefaultUnlockConditions()
         {
             if (Drills == null)
@@ -406,6 +530,16 @@ namespace TFTV.TFTVDrills
 
         private static void ConfigureUnlockConditions()
         {
+            var commandOverlay = new DrillUnlockCondition();
+            commandOverlay.ClassLevelRequirements.Add(new DrillClassLevelRequirement
+            {
+                ClassTag = DefCache.GetDef<ClassTagDef>("Technician_ClassTagDef"),
+                MinimumLevel = 7,
+                RequireSelectedOperative = true
+            });
+            SetUnlockCondition(_commandOverlay, commandOverlay);
+
+
             var explosiveShoot = new DrillUnlockCondition();
             explosiveShoot.ClassLevelRequirements.Add(new DrillClassLevelRequirement
             {
@@ -588,9 +722,14 @@ namespace TFTV.TFTVDrills
                 _ordnanceResupply = CreateOrdnanceResupplyAbility(); //done
                 _viralPuppeteer = CreateDrillNominalAbility("viralpuppeteer", "e39a4b5c-f7f8-7881-0a11-2c3d4e5f6071", "23344556-2021-10f3-0405-8091a2b3c4d5", "33445566-2122-11f4-0506-91a2b3c4d5e6"); //done
                 _virulentGrip = CreateDrillNominalAbility("virulentgrip", "f4a5b6c7-0809-8992-1b22-3d4e5f607182", "34455667-2223-12f5-0607-a2b3c4d5e6f7", "45566778-2324-13f6-0708-b3c4d5e6f708"); //done
-               
-                
+
+
                 _packLoyalty = CreateDrillNominalAbility("packloyalty", "05b6c7d8-191a-9aa3-2c33-4e5f60718293", "45566789-2425-14f7-0809-c4d5e6f70819", "56677889-2526-15f8-0910-d5e6f708192a"); //pending
+
+                _remoteControlAbilityDef = DefCache.GetDef<ApplyStatusAbilityDef>("ManualControl_AbilityDef");
+                _augmentedRealityStatus = DefCache.GetDef<StanceStatusDef>("ARTargeting_Stance_StatusDef");
+                _commandOverlay = CreateCommandOverlayAbility();
+                _commandOverlayRemoteControlStatus = CreateCommandOverlayStatus();
 
                 CreateMightMakesRightAddStatusAbilityDef("mightmakesright", "d2a3b4c5-6e7f-4819-9a0b-1c2d3e4f5a60", "1e2f3a4b-5c6d-7081-92a3-b4c5d6e7f809", "2a3b4c5d-6e7f-8091-a2b3-c4d5e6f70819");
 
@@ -599,7 +738,7 @@ namespace TFTV.TFTVDrills
 
                 _drawfireStatus = CreateDummyStatus("drawfire", "{65B5A8AC-FBB0-42CC-BC2E-EB9DB7460FC8}", "{7557CA9F-DAB8-4AE1-AF1A-853261A4CF05}");
                 Drills.Add(
-                 _drawFire =   CreateApplyStatusAbilityDef("drawfire", "8f7c0a6a-6b63-4b01-9d69-6f7e3d4a4b9a", "f2a5a2d1-0c1f-4c28-8a3a-2f4a0cc2fd3c", "3a0f4d0b-0a8f-4b8f-a8cc-1f4f4f3c3f9d", 2, 0, _drawfireStatus));
+                 _drawFire = CreateApplyStatusAbilityDef("drawfire", "8f7c0a6a-6b63-4b01-9d69-6f7e3d4a4b9a", "f2a5a2d1-0c1f-4c28-8a3a-2f4a0cc2fd3c", "3a0f4d0b-0a8f-4b8f-a8cc-1f4f4f3c3f9d", 2, 0, _drawfireStatus));
 
 
                 _explosiveShot = CreateExplosiveShot();
@@ -616,11 +755,101 @@ namespace TFTV.TFTVDrills
 
                 EnsureDefaultUnlockConditions();
                 ConfigureUnlockConditions();
-               
+
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
+            }
+        }
+
+        private static PassiveModifierAbilityDef CreateCommandOverlayAbility()
+        {
+            try
+            {
+                const string name = "commandoverlay";
+                const string abilityGuid = "cc49adae-e2fe-40ad-8688-d9f6656af146";
+                const string progressionGuid = "aa5a7c6b-fc1d-46fd-97be-79254a32995c";
+                const string viewGuid = "dd599e05-0cbe-464e-a403-45efd09bad19";
+                string locKeyName = $"TFTV_DRILL_{name}_NAME";
+                string locKeyDesc = $"TFTV_DRILL_{name}_DESC";
+
+                Sprite icon = Helper.CreateSpriteFromImageFile($"Drill_{name}.png");
+
+                PassiveModifierAbilityDef sourceAbility = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
+
+
+                PassiveModifierAbilityDef newAbility = Helper.CreateDefFromClone(
+                    sourceAbility,
+                    abilityGuid,
+                    $"TFTV_{name}_AbilityDef");
+
+                newAbility.CharacterProgressionData = Helper.CreateDefFromClone(
+                    sourceAbility.CharacterProgressionData,
+                    progressionGuid,
+                    newAbility.name);
+
+                newAbility.ViewElementDef = Helper.CreateDefFromClone(
+                    sourceAbility.ViewElementDef,
+                    viewGuid,
+                    newAbility.name);
+
+                newAbility.StatModifications = Array.Empty<ItemStatModification>();
+                newAbility.ItemTagStatModifications = Array.Empty<EquipmentItemTagStatModification>();
+                newAbility.ViewElementDef.DisplayName1.LocalizationKey = locKeyName;
+                newAbility.ViewElementDef.Description.LocalizationKey = locKeyDesc;
+
+
+                newAbility.ViewElementDef.LargeIcon = icon;
+                newAbility.ViewElementDef.SmallIcon = icon;
+
+
+                Drills.Add(newAbility);
+                return newAbility;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        private static AddAbilityStatusDef CreateCommandOverlayStatus()
+        {
+            try
+            {
+                string statusGuid = "11c59724-397a-498d-8cd4-a7f5a6afb5e4";
+                string visualsGuid = "68c27669-5dc6-4b57-926c-0541d138fc7c";
+
+                AddAbilityStatusDef sourceStatus = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");
+
+                TFTVLogger.Always($"sourceStatus==null: {sourceStatus==null}");
+
+                AddAbilityStatusDef statusDef = Helper.CreateDefFromClone(
+                    sourceStatus,
+                    statusGuid,
+                    "TFTV_CommandOverlay_AddAbilityStatusDef");
+
+                statusDef.AbilityDef = _remoteControlAbilityDef;
+                statusDef.ApplicationConditions = new EffectConditionDef[] { };
+                statusDef.Visuals = Helper.CreateDefFromClone(
+                    _augmentedRealityStatus.Visuals,
+                    visualsGuid,
+                    "TFTV_CommandOverlay_AddAbilityStatus_View");
+                statusDef.Visuals.DisplayName1.LocalizationKey = "TFTV_DRILL_commandoverlay_NAME";
+                statusDef.Visuals.Description.LocalizationKey = "TFTV_DRILL_commandoverlay_DESC";
+
+
+                statusDef.Visuals.LargeIcon = _commandOverlay.ViewElementDef.LargeIcon;
+                statusDef.Visuals.SmallIcon = _commandOverlay.ViewElementDef.SmallIcon;
+
+
+                return statusDef;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
             }
         }
 
@@ -675,7 +904,7 @@ namespace TFTV.TFTVDrills
                 abilityDef.TriggerItemTags.Add(DefCache.GetDef<GameTagDef>("ExplosiveWeapon_TagDef"));
                 abilityDef.TriggerItemTags.Add(DefCache.GetDef<GameTagDef>("FlamethrowerItem_TagDef"));
                 abilityDef.EquipmentTags = abilityDef.EquipmentTags.AddToArray(DefCache.GetDef<ItemTypeTagDef>("SniperRifleItem_TagDef"));
-                
+
                 Drills.Add(abilityDef);
                 return abilityDef;
             }
@@ -713,31 +942,31 @@ namespace TFTV.TFTVDrills
                     "d3b4c5d6-e7f8-9010-ab1c-2d3e4f506172",
                     "TFTV_ShockDrop_Bash_View");
 
-                
 
-              /*  List<DamageKeywordPair> damageKeywords = new List<DamageKeywordPair>();
-                if (shockDropBashAbility.DamagePayload?.DamageKeywords != null)
-                {
-                    damageKeywords.AddRange(shockDropBashAbility.DamagePayload.DamageKeywords);
-                }
 
-               int shockKeywordIndex = damageKeywords.FindIndex(pair => pair.DamageKeywordDef == Shared.SharedDamageKeywords.ShockKeyword);
-                if (shockKeywordIndex >= 0)
-                {
-                    DamageKeywordPair updatedPair = damageKeywords[shockKeywordIndex];
-                    updatedPair.Value += shockValue;
-                    damageKeywords[shockKeywordIndex] = updatedPair;
-                }
-                else
-                {
-                    damageKeywords.Add(new DamageKeywordPair
-                    {
-                        DamageKeywordDef = Shared.SharedDamageKeywords.ShockKeyword,
-                        Value = shockValue
-                    });
-                }
+                /*  List<DamageKeywordPair> damageKeywords = new List<DamageKeywordPair>();
+                  if (shockDropBashAbility.DamagePayload?.DamageKeywords != null)
+                  {
+                      damageKeywords.AddRange(shockDropBashAbility.DamagePayload.DamageKeywords);
+                  }
 
-                shockDropBashAbility.DamagePayload.DamageKeywords = damageKeywords;*/
+                 int shockKeywordIndex = damageKeywords.FindIndex(pair => pair.DamageKeywordDef == Shared.SharedDamageKeywords.ShockKeyword);
+                  if (shockKeywordIndex >= 0)
+                  {
+                      DamageKeywordPair updatedPair = damageKeywords[shockKeywordIndex];
+                      updatedPair.Value += shockValue;
+                      damageKeywords[shockKeywordIndex] = updatedPair;
+                  }
+                  else
+                  {
+                      damageKeywords.Add(new DamageKeywordPair
+                      {
+                          DamageKeywordDef = Shared.SharedDamageKeywords.ShockKeyword,
+                          Value = shockValue
+                      });
+                  }
+
+                  shockDropBashAbility.DamagePayload.DamageKeywords = damageKeywords;*/
 
                 _shockDropBash = shockDropBashAbility;
 
@@ -745,7 +974,7 @@ namespace TFTV.TFTVDrills
                 {
                     if (animActionDef.AbilityDefs != null && animActionDef.AbilityDefs.Contains(defaultBashAbility) && !animActionDef.AbilityDefs.Contains(shockDropBashAbility))
                     {
-                        animActionDef.AbilityDefs = animActionDef.AbilityDefs.Append(shockDropBashAbility).ToArray();              
+                        animActionDef.AbilityDefs = animActionDef.AbilityDefs.Append(shockDropBashAbility).ToArray();
                     }
                 }
 
@@ -794,7 +1023,7 @@ namespace TFTV.TFTVDrills
                     }*/
                 };
 
-               // TFTVLogger.Always($"{statusDef.DamageKeywordPairs[1].DamageKeywordDef.name}");
+                // TFTVLogger.Always($"{statusDef.DamageKeywordPairs[1].DamageKeywordDef.name}");
 
                 statusDef.DefaultBashAbility = defaultBashAbility;
                 statusDef.ReplacementBashAbility = shockDropBashAbility;
@@ -974,7 +1203,7 @@ namespace TFTV.TFTVDrills
                 };
 
                 newAbility.StatusDef = _bulletHellSlowStatus;
-                newAbility.EquipmentTags = new GameTagDef[] {DefCache.GetDef<GameTagDef>("AssaultRifleItem_TagDef") };
+                newAbility.EquipmentTags = new GameTagDef[] { DefCache.GetDef<GameTagDef>("AssaultRifleItem_TagDef") };
 
                 _bulletHell = newAbility;
 
