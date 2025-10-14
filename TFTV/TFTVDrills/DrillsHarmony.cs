@@ -578,7 +578,7 @@ namespace TFTV.TFTVDrills
 
         }
 
-        internal class DesperateShot
+        internal class OrdenanceResupply
         {
 
 
@@ -750,6 +750,9 @@ namespace TFTV.TFTVDrills
                 }
             }
 
+        }
+        internal class DesperateShot
+        {
 
             //Allow activation even with insufficient AP (when our status says OK)
             [HarmonyPatch(typeof(TacticalAbility), "get_ActionPointRequirementSatisfied")]
@@ -819,6 +822,8 @@ namespace TFTV.TFTVDrills
                     }
                 }
             }
+
+
         }
 
         internal class MarkedWatch

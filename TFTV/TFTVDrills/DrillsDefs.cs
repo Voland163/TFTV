@@ -1,4 +1,5 @@
-﻿using Base.Defs;
+﻿using Base.Core;
+using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
@@ -16,6 +17,7 @@ using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects;
+using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
@@ -50,7 +52,7 @@ namespace TFTV.TFTVDrills
         public List<string> RequiredResearchIds { get; } = new List<string>();
         public List<DrillClassLevelRequirement> ClassLevelRequirements { get; } = new List<DrillClassLevelRequirement>();
         public List<DrillWeaponProficiencyRequirement> WeaponProficiencyRequirements { get; } = new List<DrillWeaponProficiencyRequirement>();
-       
+
         public bool RequireAnyPhoenixOperative; // TODO: clarify how mixed class requirements should behave.
 
         public static DrillUnlockCondition AlwaysUnlocked()
@@ -96,7 +98,7 @@ namespace TFTV.TFTVDrills
         internal static PassiveModifierAbilityDef _commandOverlay;
         internal static AddAbilityStatusDef _commandOverlayRemoteControlStatus;
         internal static StanceStatusDef _augmentedRealityStatus;
-        internal static TacticalAbilityDef _remoteControlAbilityDef;
+        internal static ApplyStatusAbilityDef _remoteControlAbilityDef;
 
         internal static ApplyStatusAbilityDef _aksuSprint;
 
@@ -662,7 +664,7 @@ namespace TFTV.TFTVDrills
         {
             try
             {
-
+                ModifyRemoteControl();
                 CreateDrills();
                 ReplaceStunStatusWithNewConditionalStatusDef();
 
@@ -673,6 +675,56 @@ namespace TFTV.TFTVDrills
             }
         }
 
+
+        private static void ModifyRemoteControl()
+        {
+            try
+            {
+                _remoteControlAbilityDef = DefCache.GetDef<ApplyStatusAbilityDef>("ManualControl_AbilityDef");
+                MultiStatusDef multiStatusDef = Helper.CreateDefFromClone(
+                    DefCache.GetDef<MultiStatusDef>("E_MultiStatus [RapidClearance_AbilityDef]"), "{CD46E75F-06CE-427F-B276-B54470FD054D}", $"{_remoteControlAbilityDef.name}");
+
+
+
+                DamageMultiplierStatusDef sourceStatus = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
+                DamageMultiplierStatusDef newStatus = Helper.CreateDefFromClone(sourceStatus, "{183F8A02-49FD-4AB5-B5B1-BAC8FCB729D2}", $"{_remoteControlAbilityDef.name}");
+                newStatus.Visuals = Helper.CreateDefFromClone(sourceStatus.Visuals, "{8E2F042B-BEDA-4121-BF63-9832965087BB}", $"{_remoteControlAbilityDef.name}");
+
+                newStatus.Visuals.SmallIcon = _remoteControlAbilityDef.ViewElementDef.SmallIcon;
+                newStatus.Visuals.LargeIcon = _remoteControlAbilityDef.ViewElementDef.LargeIcon;
+                newStatus.DamageTypeDefs = new DamageTypeBaseEffectDef[] { };
+                newStatus.DurationTurns = 1;
+                newStatus.EffectName = _remoteControlAbilityDef.name;
+
+
+
+                newStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.Hidden;
+                newStatus.VisibleOnPassiveBar = false;
+                newStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+
+                multiStatusDef.Duration = 1;
+                multiStatusDef.EffectName = _remoteControlAbilityDef.name;
+                multiStatusDef.Statuses = new StatusDef[] { _remoteControlAbilityDef.StatusDef, newStatus };
+
+                ActorHasStatusEffectConditionDef effectConditionDef = Helper.CreateDefFromClone(DefCache.GetDef<ActorHasStatusEffectConditionDef>("Actor_HasImprovedMedkit_ApplicationCondition"),
+                    "{1F48650D-C805-4A4C-8D32-1D5A107996F8}", $"{_remoteControlAbilityDef.name}");
+
+                effectConditionDef.StatusDef = newStatus;
+                effectConditionDef.HasStatus = false;
+
+                _remoteControlAbilityDef.StatusDef = multiStatusDef;
+
+                _remoteControlAbilityDef.TargetApplicationConditions = _remoteControlAbilityDef.TargetApplicationConditions.AddToArray(effectConditionDef);
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
+        }
 
 
         private static void CreateDrills()
@@ -726,7 +778,7 @@ namespace TFTV.TFTVDrills
 
                 _packLoyalty = CreateDrillNominalAbility("packloyalty", "05b6c7d8-191a-9aa3-2c33-4e5f60718293", "45566789-2425-14f7-0809-c4d5e6f70819", "56677889-2526-15f8-0910-d5e6f708192a"); //pending
 
-                _remoteControlAbilityDef = DefCache.GetDef<ApplyStatusAbilityDef>("ManualControl_AbilityDef");
+
                 _augmentedRealityStatus = DefCache.GetDef<StanceStatusDef>("ARTargeting_Stance_StatusDef");
                 _commandOverlay = CreateCommandOverlayAbility();
                 _commandOverlayRemoteControlStatus = CreateCommandOverlayStatus();
@@ -823,7 +875,7 @@ namespace TFTV.TFTVDrills
 
                 AddAbilityStatusDef sourceStatus = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");
 
-                TFTVLogger.Always($"sourceStatus==null: {sourceStatus==null}");
+                TFTVLogger.Always($"sourceStatus==null: {sourceStatus == null}");
 
                 AddAbilityStatusDef statusDef = Helper.CreateDefFromClone(
                     sourceStatus,
@@ -1476,7 +1528,7 @@ namespace TFTV.TFTVDrills
                 newAbility.ViewElementDef.ConfirmationButtonKey.LocalizationKey = "Testing";
 
                 newAbility.CharacterProgressionData = Helper.CreateDefFromClone(
-                    DefCache.GetDef<ApplyStatusAbilityDef>("ManualControl_AbilityDef").CharacterProgressionData,
+                    _remoteControlAbilityDef.CharacterProgressionData,
                     "{77D0E030-1031-41E3-8863-7B746CEEBEE0}",
                     name);
 
@@ -1674,16 +1726,9 @@ namespace TFTV.TFTVDrills
                 string guid5 = "{8D86FE5B-8577-4DA6-B5B7-3D969B98C1A5}";
 
 
-
-
-
                 Sprite icon = Helper.CreateSpriteFromImageFile($"Drill_{name}.png");
 
-                ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("ManualControl_AbilityDef");
-
-
-                source.TargetingDataDef.Origin.TargetEnemies = true;
-
+                ApplyStatusAbilityDef source = _remoteControlAbilityDef;
 
                 ApplyStatusAbilityDef newAbility = Helper.CreateDefFromClone(
                     source,
@@ -1764,6 +1809,7 @@ namespace TFTV.TFTVDrills
                 newStatus.Visuals.SmallIcon = icon;
                 newStatus.DamageTypeDefs = new DamageTypeBaseEffectDef[] { };
                 newStatus.DurationTurns = 1;
+                newStatus.EffectName = name;
 
                 return newStatus;
             }
