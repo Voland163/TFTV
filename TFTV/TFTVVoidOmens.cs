@@ -1425,7 +1425,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if (VoidOmensCheck[7] && config.MoreMistVO && !TFTVAircraftRework.AircraftReworkOn)
+                    if (VoidOmensCheck[7] && config.MoreMistVO && !TFTVAircraftReworkMain.AircraftReworkOn)
                     {
                         __result += 1;
                     }

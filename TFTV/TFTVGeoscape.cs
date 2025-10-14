@@ -126,7 +126,7 @@ namespace TFTV
             TFTVCustomPortraits.CharacterPortrait.PopulatePortraitFileList();
             TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
             TFTVUIGeoMap.UnpoweredFacilitiesInfo.CheckUnpoweredBasesOnGeoscapeStart();
-            TFTVAircraftRework.AircraftSpeed.Init(Controller);
+            TFTVAircraftReworkMain.AircraftSpeed.Init(Controller);
 
           /* foreach(GeoFactionObjective geoFactionObjective in Controller.PhoenixFaction.Objectives) 
             {
@@ -243,7 +243,7 @@ namespace TFTV
                 RevenantPoints = TFTVRevenant.TFTVRevenantResearch.RevenantPoints,
                 CharacterPortraits = TFTVCustomPortraits.CharacterPortrait.characterPics,
                 PlayerVehicles = TFTVDragandDropFunctionality.VehicleRoster.PlayerVehicles,
-                AircraftScanningSites = TFTVAircraftRework.Modules.Geoscape.Scanning.AircraftScanningSites,
+                AircraftScanningSites = TFTVAircraftReworkMain.Modules.Geoscape.Scanning.AircraftScanningSites,
                 NewTrainingFacilities = TFTVNewGameOptions.NewTrainingFacilities,
                 //   Update35GeoscapeCheck = TFTVNewGameOptions.Update35Check,
 
@@ -358,7 +358,7 @@ namespace TFTV
 
                 TFTVDefsWithConfigDependency.ImplementConfigChoices();
                 TFTVDragandDropFunctionality.VehicleRoster.RestoreVehicleOrder(Controller);
-                TFTVAircraftRework.Modules.Geoscape.Scanning.AircraftScanningSites = data.AircraftScanningSites;
+                TFTVAircraftReworkMain.Modules.Geoscape.Scanning.AircraftScanningSites = data.AircraftScanningSites;
                 //   TFTVBetaSaveGamesFixes.Fix(Controller);
 
                 // TFTVNewGameOptions.Update35Check = data.Update35GeoscapeCheck;

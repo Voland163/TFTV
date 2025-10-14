@@ -92,7 +92,7 @@ namespace TFTV
                 {
                     localizationChanged |= AddLocalizationFromCSV(MissionObjectivesLocalizationFileName, null, false);
                 }
-                if (TFTVAircraftRework.AircraftReworkOn && File.Exists(Path.Combine(LocalizationDirectory, AircraftReworkLocalizationFileName)))
+                if (TFTVAircraftReworkMain.AircraftReworkOn && File.Exists(Path.Combine(LocalizationDirectory, AircraftReworkLocalizationFileName)))
                 {
                     localizationChanged |= AddLocalizationFromCSV(AircraftReworkLocalizationFileName, null, false);
                 }

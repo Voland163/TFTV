@@ -2804,12 +2804,12 @@ namespace TFTV
             {
                 try
                 {
-                    if (!TFTVAircraftRework.AircraftReworkOn)
+                    if (!TFTVAircraftReworkMain.AircraftReworkOn)
                     {
                         return 0.5f;
                     }
 
-                    return 0.5f * TFTVAircraftRework.Modules.Geoscape.Healing.GetRepairBionicsCostFactor(geoCharacter);
+                    return 0.5f * TFTVAircraftReworkMain.Modules.Geoscape.Healing.GetRepairBionicsCostFactor(geoCharacter);
 
                 }
                 catch (Exception e)

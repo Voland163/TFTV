@@ -102,7 +102,7 @@ namespace TFTV
             {
                 try
                 {
-                    if (TFTVAircraftRework.AircraftReworkOn)
+                    if (TFTVAircraftReworkMain.AircraftReworkOn)
                     {
                         return;
                     }
@@ -163,7 +163,7 @@ namespace TFTV
 
                     GeoVehicle geoVehicle = __instance.Vehicles.First();
 
-                    if (!TFTVAircraftRework.AircraftReworkOn)
+                    if (!TFTVAircraftReworkMain.AircraftReworkOn)
                     {
                         geoVehicle.AddEquipment(hibernationModule);
                     }

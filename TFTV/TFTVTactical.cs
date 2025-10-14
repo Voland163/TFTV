@@ -224,13 +224,13 @@ namespace TFTV
             TFTVLogger.Always($"Difficulty level is {tacController.Difficulty.name} and treated as {TFTVSpecialDifficulties.DifficultyOrderConverter(tacController.Difficulty.Order)} after TFTV conversion.");
             TFTVLogger.Always($"Etermes vulnerability/resistance: {TFTVNewGameOptions.EtermesResistanceAndVulnerability}");
 
-            if (TFTVAircraftRework.AircraftReworkOn)
+            if (TFTVAircraftReworkMain.AircraftReworkOn)
             {
-                TFTVLogger.Always($"# Aircraft modules in tactical: {TFTVAircraftRework.InternalData.ModulesInTactical.Where(b => b > 0).Count()}\n" +
-                    $"{TFTVAircraftRework.Modules.Tactical.ReportModulesPresent()}");
+                TFTVLogger.Always($"# Aircraft modules in tactical: {TFTVAircraftReworkMain.InternalData.ModulesInTactical.Where(b => b > 0).Count()}\n" +
+                    $"{TFTVAircraftReworkMain.Modules.Tactical.ReportModulesPresent()}");
             }
 
-            TFTVAircraftRework.Modules.Tactical.HeliosStatisChamber.ImplementVestBuff();
+            TFTVAircraftReworkMain.Modules.Tactical.HeliosStatisChamber.ImplementVestBuff();
 
             TFTVLogger.Always("Tactical start completed");
 
@@ -364,10 +364,10 @@ namespace TFTV
                 }
                 //    TFTVDefsWithConfigDependency.ImplementConfigChoices();
 
-                if (TFTVAircraftRework.AircraftReworkOn)
+                if (TFTVAircraftReworkMain.AircraftReworkOn)
                 {
-                    TFTVAircraftRework.InternalData.ModulesInTactical = data.AircraftModulesInTactical;
-                    TFTVAircraftRework.Modules.Tactical.LoadInternalDataForTactical();
+                    TFTVAircraftReworkMain.InternalData.ModulesInTactical = data.AircraftModulesInTactical;
+                    TFTVAircraftReworkMain.Modules.Tactical.LoadInternalDataForTactical();
                 }
 
                 TurnZeroMethodsExecuted = data.TurnZeroMethodsExecuted;
@@ -386,9 +386,9 @@ namespace TFTV
         public override object RecordTacticalInstanceData()
         {
 
-            if (TFTVAircraftRework.AircraftReworkOn)
+            if (TFTVAircraftReworkMain.AircraftReworkOn)
             {
-                TFTVAircraftRework.Modules.Tactical.SaveInternalDataForTactical();
+                TFTVAircraftReworkMain.Modules.Tactical.SaveInternalDataForTactical();
             }
 
 
@@ -440,7 +440,7 @@ namespace TFTV
                 OperativesPortraits = TFTVCustomPortraits.CharacterPortrait.characterPics,
                 AvailableSecondaryObjectives = TFTVUITactical.SecondaryObjectivesTactical.AvailableSecondaryObjectivesTactical,
                 AccumulatedRevenantPoints = TFTVRevenant.TFTVRevenantResearch.PreviousRevenantPoints,
-                AircraftModulesInTactical = TFTVAircraftRework.InternalData.ModulesInTactical,
+                AircraftModulesInTactical = TFTVAircraftReworkMain.InternalData.ModulesInTactical,
 
                 internalDifficultyCheck = Controller.Difficulty.Order,
 
@@ -488,7 +488,7 @@ namespace TFTV
                         TFTVVoidOmens.VO5TurnHostileCivviesFriendly(Controller);
                         TFTVBaseDefenseTactical.Map.FirstTurnBaseDefenseDeployment(Controller);
                         TFTVNJQuestline.IntroMission.MissionStartChanges.TurnNeutralGruntsOverToNJAndApplyMCStatus(Controller);
-                        TFTVAircraftRework.Modules.Tactical.FirstTurn.ImplementModuleEffectsOnFirstTurn(Controller);
+                        TFTVAircraftReworkMain.Modules.Tactical.FirstTurn.ImplementModuleEffectsOnFirstTurn(Controller);
                         //  TFTVBaseDefenseTactical.ModifyObjectives(Controller.TacMission.MissionData.MissionType);
                         TurnZeroMethodsExecuted = true;
 

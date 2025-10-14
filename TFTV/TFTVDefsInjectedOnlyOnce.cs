@@ -275,7 +275,7 @@ namespace TFTV
 
                 ChangeRenderedPortraitsParam();
 
-                TFTVAircraftRework.Defs.CreateAndModifyDefs();
+                TFTVAircraftReworkMain.Defs.CreateAndModifyDefs();
 
                 TFTVMeleeDamage.AddMeleeDamageType();
 
@@ -4400,7 +4400,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
             };
 
             nanoVestAbility.StatusDef = nanoVestBuffStatus;
-            TFTVAircraftRework.NanoVestStatusDef = nanoVestBuffStatus;
+            TFTVAircraftReworkMain.NanoVestStatusDef = nanoVestBuffStatus;
         }
 
         internal static void ModifyBlastAndFireResVests()
@@ -4414,10 +4414,10 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 blastVest.Abilities = new AbilityDef[] { fireVest.Abilities[0], blastVest.Abilities[0] };
                 blastVest.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("modules_blastresvest.png");
                 blastVest.ViewElementDef.InventoryIcon = blastVest.ViewElementDef.LargeIcon;
-               // TFTVAircraftRework.BlastVestResistance = (DamageMultiplierAbilityDef)blastVest.Abilities[0];
-               // TFTVAircraftRework.FireVestResistance = (DamageMultiplierAbilityDef)fireVest.Abilities[0];
-                TFTVAircraftRework.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)blastVest.Abilities[0]);
-                TFTVAircraftRework.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)fireVest.Abilities[0]);
+                // TFTVAircraftRework.BlastVestResistance = (DamageMultiplierAbilityDef)blastVest.Abilities[0];
+                // TFTVAircraftRework.FireVestResistance = (DamageMultiplierAbilityDef)fireVest.Abilities[0];
+                TFTVAircraftReworkMain.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)blastVest.Abilities[0]);
+                TFTVAircraftReworkMain.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)fireVest.Abilities[0]);
 
 
 
@@ -4525,7 +4525,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 fireVest.Abilities = new AbilityDef[] { DefCache.GetDef<DamageMultiplierAbilityDef>("AcidResistant_DamageMultiplierAbilityDef") };
                 fireVest.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("modules_fireresvest.png");
                 fireVest.ViewElementDef.InventoryIcon = fireVest.ViewElementDef.LargeIcon;
-                TFTVAircraftRework.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)fireVest.Abilities[0]);
+                TFTVAircraftReworkMain.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)fireVest.Abilities[0]);
                
             }
 
@@ -4671,8 +4671,8 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 ParalysisNotShcokResistance.ViewElementDef.Description.LocalizationKey = "RESISTANCE_TO_PARALYSIS_DESCRIPTION";
                 ParalysisNotShcokResistance.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("ParalysisImmunity.png");
                 ParalysisNotShcokResistance.ViewElementDef.SmallIcon = Helper.CreateSpriteFromImageFile("ParalysisImmunity.png");
-               // TFTVAircraftRework.ParalysysVestResistance = ParalysisNotShcokResistance;
-                TFTVAircraftRework.VestResistanceMultiplierAbilities.Add(ParalysisNotShcokResistance);
+                // TFTVAircraftRework.ParalysysVestResistance = ParalysisNotShcokResistance;
+                TFTVAircraftReworkMain.VestResistanceMultiplierAbilities.Add(ParalysisNotShcokResistance);
             }
             catch (Exception e)
             {
@@ -4692,8 +4692,8 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 //DamageMultiplierAbilityDef ExtraHealing = DefCache.GetDef<DamageMultiplierAbilityDef>("ExtraHealing_DamageMultiplierAbilityDef");
 
                 poisonVest.Abilities = new AbilityDef[] { poisonVest.Abilities[0], ParalysisNotShcokResistance };
-               // TFTVAircraftRework.PoisonVestResistance = (DamageMultiplierAbilityDef)poisonVest.Abilities[0];
-                TFTVAircraftRework.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)poisonVest.Abilities[0]);
+                // TFTVAircraftRework.PoisonVestResistance = (DamageMultiplierAbilityDef)poisonVest.Abilities[0];
+                TFTVAircraftReworkMain.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)poisonVest.Abilities[0]);
             }
             catch (Exception e)
             {

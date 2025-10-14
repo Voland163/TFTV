@@ -131,7 +131,8 @@
     <Compile Include="Tactical\Entities\Statuses\OnActorDazedEffectStatusDef.cs" />
     <Compile Include="TFTVAAAgendaTracker.cs" />
     <Compile Include="TFTVAcid.cs" />
-    <Compile Include="TFTVAircraftRework.cs" />
+    <Compile Include="TFTVAircraftRework\TFTVAircraftReworkMain.cs" />
+    <Compile Include="TFTVAircraftRework\AWOffMapBombardmentAbility.cs" />
     <Compile Include="TFTVAnniversaryCheats.cs" />
     <Compile Include="TFTVBackgrounds.cs" />
     <Compile Include="TFTVCrisis.cs" />

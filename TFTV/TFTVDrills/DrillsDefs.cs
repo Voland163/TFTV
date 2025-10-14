@@ -880,7 +880,7 @@ namespace TFTV.TFTVDrills
 
                 AddAbilityStatusDef sourceStatus = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");
 
-                TFTVLogger.Always($"sourceStatus==null: {sourceStatus == null}");
+              
 
                 AddAbilityStatusDef statusDef = Helper.CreateDefFromClone(
                     sourceStatus,
@@ -1592,8 +1592,6 @@ namespace TFTV.TFTVDrills
         private static void CreateShockDisciplineStatus()
         {
             try
-
-
             {
                 string name = "shockdiscipline";
                 string guid0 = "{ACE8F8F1-B07B-43A4-A807-7700D5981AD4}";

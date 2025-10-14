@@ -279,7 +279,7 @@ namespace TFTV
                     voidOmensList.Add(7);
                 }
 
-                if (config.LimitedDeploymentVO && !TFTVAircraftRework.AircraftReworkOn)
+                if (config.LimitedDeploymentVO && !TFTVAircraftReworkMain.AircraftReworkOn)
                 {
                     voidOmensList.Add(4);
                 }

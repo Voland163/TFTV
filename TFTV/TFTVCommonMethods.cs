@@ -184,7 +184,7 @@ namespace TFTV
                 TFTVVanillaFixes.UI.ShowPerceptionCirclesBindingApplied = false;    
 
                 TFTVNJQuestline.IntroMission.ClearDataOnMissionRestartLoadAndStateChange();
-              TFTVAircraftRework.InternalData.ClearDataOnStateChange();
+                TFTVAircraftReworkMain.InternalData.ClearDataOnStateChange();
                 HavenRecruitsMain.ClearInternalData();
 
                 TFTVLogger.Always($"Internal variables cleared on State change or Load");
@@ -251,7 +251,7 @@ namespace TFTV
 
                 TFTVBaseDefenseTactical.InternalData.BaseDefenseDataToClearOnLoadOnly();
 
-                TFTVAircraftRework.InternalData.ClearDataOnLoad();
+                TFTVAircraftReworkMain.InternalData.ClearDataOnLoad();
 
                 TFTVLogger.Always($"Variables cleared on load");
 

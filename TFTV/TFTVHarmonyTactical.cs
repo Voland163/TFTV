@@ -120,7 +120,7 @@ namespace TFTV
 
                 try
                 {
-                    TFTVAircraftRework.Modules.Tactical.MistRepeller.ImplementMistRepellerTurnStart(__instance, ____voxels);
+                    TFTVAircraftReworkMain.Modules.Tactical.MistRepeller.ImplementMistRepellerTurnStart(__instance, ____voxels);
 
                 }
                 catch (Exception e)
@@ -209,8 +209,7 @@ namespace TFTV
                 {
 
 
-                    if (TFTVVanillaFixes.UI.CheckIfEnemyActorTargeted()
-                        && TFTVAircraftRework.Modules.Tactical.GroundAttackWeapon.CheckForGroundAttackWeaponExplosions(__instance.ActorBase.TacticalLevel))
+                    if (TFTVVanillaFixes.UI.CheckIfEnemyActorTargeted())
                     {
                         return true;
                     }
@@ -497,7 +496,7 @@ namespace TFTV
                     TFTVHumanEnemies.ImplementStartingVolleyHumanEnemiesTactic(__instance.Faction);
                     TFTVRevenant.Resistance.ApplySpecialRevenantResistanceArmorStack(__instance.Faction.TacticalLevel, __instance.Faction);
                     PRMBetterClasses.SkillModifications.FactionPerks.DieHardOnFactionStartTurn(__instance.Faction);
-                    TFTVAircraftRework.Modules.Tactical.EveryTurn.ImplementModuleEffectsOnEveryPhoenixTurn(__instance.Faction);
+                    TFTVAircraftReworkMain.Modules.Tactical.EveryTurn.ImplementModuleEffectsOnEveryPhoenixTurn(__instance.Faction);
                     // TFTVNJQuestline.IntroMission.MissionQuips.NJQuips.PopulateQuips(__instance.Faction);
 
                 }

@@ -38,7 +38,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVAircraftRework.Modules.Geoscape.PassengerModules.AdjustMaxCharacterSpacePassengerModules(__instance, ref __result);
+                    TFTVAircraftReworkMain.Modules.Geoscape.PassengerModules.AdjustMaxCharacterSpacePassengerModules(__instance, ref __result);
 
                 }
                 catch (Exception e)
@@ -55,8 +55,8 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVAircraftRework.Modules.Geoscape.Scanning.CheckAircraftScannerAbility(__instance);
-                    TFTVAircraftRework.Modules.Geoscape.PassengerModules.CheckAircraftNewPassengerCapacity(__instance);
+                    TFTVAircraftReworkMain.Modules.Geoscape.Scanning.CheckAircraftScannerAbility(__instance);
+                    TFTVAircraftReworkMain.Modules.Geoscape.PassengerModules.CheckAircraftNewPassengerCapacity(__instance);
 
                 }
                 catch (Exception e)
@@ -76,7 +76,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVAircraftRework.Modules.Geoscape.PassengerModules.AdjustAircraftInfoPassengerModules(__instance, ref __result);
+                    TFTVAircraftReworkMain.Modules.Geoscape.PassengerModules.AdjustAircraftInfoPassengerModules(__instance, ref __result);
 
                 }
                 catch (Exception e)
@@ -122,7 +122,7 @@ namespace TFTV
                     TFTVCapturePandoransGeoscape.LimitedHarvestingHourlyActions(__instance.GeoLevel);
                     TFTVBaseDefenseGeoscape.InitAttack.ContainmentBreach.HourlyCheckContainmentBreachDuringBaseDefense(__instance.GeoLevel);
                     TFTVChangesToDLC4Events.SoldierReachesFiveDelirium(__instance.GeoLevel);
-                    TFTVAircraftRework.AircraftMaintenance.MaintenanceToll(__instance.GeoLevel);
+                    TFTVAircraftReworkMain.AircraftMaintenance.MaintenanceToll(__instance.GeoLevel);
                 }
                 catch (Exception e)
                 {
@@ -142,7 +142,7 @@ namespace TFTV
                 {
                     TFTVInfestation.StoryFirstInfestedHaven.InfestationStoryMission(__instance, squad);
                     TFTVNJQuestline.IntroMission.Geoscape.RecordHavenName(__instance);
-                    TFTVAircraftRework.Modules.Tactical.CheckTacticallyRelevantModulesOnVehicle(__instance.GetLocalAircraft(squad), __instance);
+                    TFTVAircraftReworkMain.Modules.Tactical.CheckTacticallyRelevantModulesOnVehicle(__instance.GetLocalAircraft(squad), __instance);
 
                 }
                 catch (Exception e)

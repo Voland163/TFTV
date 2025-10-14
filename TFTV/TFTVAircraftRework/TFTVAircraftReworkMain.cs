@@ -49,6 +49,7 @@ using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Eventus;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using PhoenixPoint.Tactical.Levels.Mist;
@@ -58,6 +59,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using TFTV.TFTVAircraftRework;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -65,7 +67,7 @@ using Research = PhoenixPoint.Geoscape.Entities.Research.Research;
 
 namespace TFTV
 {
-    class TFTVAircraftRework
+    class TFTVAircraftReworkMain
     {
         public static bool AircraftReworkOn = true;
         private static readonly float _mistSpeedMalus = 0.2f;
@@ -153,7 +155,7 @@ namespace TFTV
         private static StanceStatusDef _argusEyeStatus = null;
 
         private static List<GeoMarketplaceItemOptionDef> _listOfModulesSoldInMarketplace = new List<GeoMarketplaceItemOptionDef>();
-        private static JetJumpAbilityDef _groundAttackAbility = null;
+        private static GroundAttackWeaponAbilityDef _groundAttackAbility = null;
         private static List<DelayedEffectDef> _groundAttackWeaponExplosions = new List<DelayedEffectDef>();
 
         public static ItemSlotStatsModifyStatusDef NanoVestStatusDef = null;
@@ -231,8 +233,8 @@ namespace TFTV
                     RemoveAircombat();
                     CreateHeliosStealthModuleStatus();
                     CreateArgusEyesStatus();
-                    CreateGroundAttackAbility();
                     CreateGroundAttackWeaponExplosion();
+                    CreateGroundAttackAbility(); 
                     MakeMyrmidonsAvailableWithoutFlyers();
                     ModifyVehicleBayHealing();
                     AddManufactureTagToResourceCrates();
@@ -395,8 +397,8 @@ namespace TFTV
                     DelayedEffectDef newDelayedEffect1 = Helper.CreateDefFromClone(newDelayedEffect0, gUIDDelayedEffect1, name);
                     DelayedEffectDef newDelayedEffect2 = Helper.CreateDefFromClone(newDelayedEffect0, gUIDDelayedEffect2, name);
 
-                    newDelayedEffect1.SecondsDelay = 0.5f;
-                    newDelayedEffect2.SecondsDelay = 1f;
+                    newDelayedEffect1.SecondsDelay = 0.0f;
+                    newDelayedEffect2.SecondsDelay = 0.0f;
 
                     _groundAttackWeaponExplosions.Add(newDelayedEffect0);
                     _groundAttackWeaponExplosions.Add(newDelayedEffect1);
@@ -413,7 +415,6 @@ namespace TFTV
                 try
                 {
                     JetJumpAbilityDef jetJumpAbilityDef = DefCache.GetDef<JetJumpAbilityDef>("JetJump_AbilityDef");
-
                     ShootAbilitySceneViewDef shootAbilitySceneViewDef = DefCache.GetDef<ShootAbilitySceneViewDef>("_Sphere_ShootAbilitySceneViewElementDef");
 
                     string name = "TFTV_GroundAttackAbility";
@@ -422,26 +423,48 @@ namespace TFTV
                     string guid3 = "{8330134B-A2D2-4EF7-BAD9-C601B070463C}";
                     string guid4 = "{067F3041-EF22-41C8-A1DB-09E4EE6E5A3B}";
 
-                    JetJumpAbilityDef newAbility = Helper.CreateDefFromClone(jetJumpAbilityDef, guid1, name);
+                    GroundAttackWeaponAbilityDef newAbility = Helper.CreateDefFromClone<GroundAttackWeaponAbilityDef>(null, guid1, name);
+                    PRMBetterClasses.Helper.CopyFieldsByReflection(jetJumpAbilityDef, newAbility);
+                    newAbility.name = name;
+                    newAbility.AnimType = -1;
                     newAbility.ViewElementDef = Helper.CreateDefFromClone(jetJumpAbilityDef.ViewElementDef, guid2, name);
                     newAbility.TargetingDataDef = Helper.CreateDefFromClone(jetJumpAbilityDef.TargetingDataDef, guid3, name);
+
+                    TacticalTargetingDataDef tacticalTargetingDataDef = newAbility.TargetingDataDef;
+
+                    tacticalTargetingDataDef.Target.TargetResult = TargetResult.Position;
+                    tacticalTargetingDataDef.Target.Range = 100f;
+                    tacticalTargetingDataDef.Target.MinRange = 0f;
+                    tacticalTargetingDataDef.Target.LineOfSight = LineOfSightType.Ignore;
+                    tacticalTargetingDataDef.Target.FactionVisibility = LineOfSightType.Ignore;
+                    tacticalTargetingDataDef.Target.FloorPositions = FloorPositionType.AllFloors;
+                    tacticalTargetingDataDef.Target.TargetTags.Clear();
+                    tacticalTargetingDataDef.Origin.TargetResult = TargetResult.Position;
+                    tacticalTargetingDataDef.Origin.Range = 100;
+
+                    newAbility.EventOnActivate = DefCache.GetDef<TacticalEventDef>("LaunchDamageVoice_EventDef");
+
                     newAbility.SceneViewElementDef = Helper.CreateDefFromClone(jetJumpAbilityDef.SceneViewElementDef, guid4, name);
-
-
-
 
                     newAbility.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_THUNDERBIRD_GAW_ABILITY_NAME";
                     newAbility.ViewElementDef.Description.LocalizationKey = "TFTV_THUNDERBIRD_GAW_ABILITY_DESCRIPTION";
 
-                    Sprite icon = Helper.CreateSpriteFromImageFile("TFTV_Thunderbird_GroundAttack_Ability1.png");
+                    Sprite iconLevel1 = Helper.CreateSpriteFromImageFile("TFTV_Thunderbird_GroundAttack_Ability1.png");
+                    Sprite iconLevel2 = Helper.CreateSpriteFromImageFile("TFTV_Thunderbird_GroundAttack_Ability2.png");
+                    Sprite iconLevel3 = Helper.CreateSpriteFromImageFile("TFTV_Thunderbird_GroundAttack_Ability3.png");
 
-                    newAbility.ViewElementDef.SmallIcon = icon;
-                    newAbility.ViewElementDef.LargeIcon = icon;
+                    newAbility.LevelIcons = new Sprite[]
+                   {
+                        iconLevel1,
+                        iconLevel2,
+                        iconLevel3
+                   };
 
-                    newAbility.TargetingDataDef.Origin.Range = 100;
-                    //  newAbility.TargetingDataDef.Target.Range = 5;
+                    newAbility.ViewElementDef.SmallIcon = iconLevel1;
+                    newAbility.ViewElementDef.LargeIcon = iconLevel1;
+
+
                     newAbility.SceneViewElementDef.HoverMarker = PhoenixPoint.Tactical.View.GroundMarkerType.AttackGround;
-                    //   newAbility.SceneViewElementDef.LineToCursor = PhoenixPoint.Tactical.View.GroundMarkerType.;
 
                     newAbility.SceneViewElementDef.DrawCoverAtHoverMarker = false;
 
@@ -452,6 +475,20 @@ namespace TFTV
 
                     newAbility.ActionPointCost = 0;
                     newAbility.WillPointCost = 0;
+
+                    newAbility.ExplosionDefs = new List<DelayedEffectDef>(_groundAttackWeaponExplosions);
+                    newAbility.ImpactOffsets = new List<Vector3>
+                    {
+                        Vector3.zero,
+                        new Vector3(1.5f, 0f, 0f),
+                        new Vector3(-1.5f, 0f, 0f),
+                        new Vector3(0f, 0f, 1.5f),
+                        new Vector3(0f, 0f, -1.5f)
+                    };
+                    newAbility.PatternRadius = 4f;
+                    newAbility.PreImpactDelaySeconds = 0.25f;
+                    newAbility.DelayBetweenStrikesSeconds = 0.5f;
+
 
                     _groundAttackAbility = newAbility;
                 }
@@ -2851,19 +2888,23 @@ namespace TFTV
                                 return;
                             }
 
-                            Sprite icon = Helper.CreateSpriteFromImageFile($"TFTV_Thunderbird_GroundAttack_Ability{_thunderbirdGroundAttackWeaponPresent}.png");
+                            Sprite icon = null;
+                            if (_groundAttackAbility.LevelIcons != null && _thunderbirdGroundAttackWeaponPresent - 1 < _groundAttackAbility.LevelIcons.Length)
+                            {
+                                icon = _groundAttackAbility.LevelIcons[Math.Max(_thunderbirdGroundAttackWeaponPresent - 1, 0)];
+                            }
 
 
-                            _groundAttackAbility.ViewElementDef.SmallIcon = icon;
-                            _groundAttackAbility.ViewElementDef.LargeIcon = icon;
+                            if (icon != null)
+                            {
+                                _groundAttackAbility.ViewElementDef.SmallIcon = icon;
+                                _groundAttackAbility.ViewElementDef.LargeIcon = icon;
+                            }
 
                             foreach (TacticalActor tacticalActor in controller.GetFactionByCommandName("px").TacticalActors)
                             {
-                                if (tacticalActor.GetAbilityWithDef<JetJumpAbility>(_groundAttackAbility) == null)
-                                {
-                                    tacticalActor.AddAbility(_groundAttackAbility, tacticalActor);
-                                }
-
+                                GroundAttackWeaponAbility ability = tacticalActor.GetAbilityWithDef<GroundAttackWeaponAbility>(_groundAttackAbility) ?? (GroundAttackWeaponAbility)tacticalActor.AddAbility(_groundAttackAbility, tacticalActor);
+                                ability.ConfigureForLevel(_thunderbirdGroundAttackWeaponPresent);
                             }
                         }
                         catch (Exception e)
@@ -3081,453 +3122,9 @@ namespace TFTV
                 internal class GroundAttackWeapon
                 {
 
-                    [HarmonyPatch(typeof(TacticalAbility), "GetTargetPositions", new Type[] { typeof(TacticalTargetData), typeof(TacticalActorBase), typeof(Vector3) })]
-                    public static class MissileRainGetTargetPositionsPatch
-                    {
-                        static void Prefix(TacticalAbility __instance, TacticalTargetData targetData, TacticalActorBase sourceActor, ref Vector3 sourcePosition, ref IEnumerable<TacticalAbilityTarget> __result)
-                        {
-                            try
-                            {
-                                // Check if the ability is our missile rain ability.
-                                // (Assumes that your missile rain is implemented via a JetJumpAbility with your custom JetJumpAbilityDef.)
-                                if (__instance is JetJumpAbility jumpAbility &&
-                                    jumpAbility.JetJumpAbilityDef != null &&
-                                    jumpAbility.JetJumpAbilityDef == _groundAttackAbility)  // adjust as needed
-                                {
 
 
-                                    // Replace the sourcePosition with our offmap start.
-                                    sourcePosition = GetMissileRainStartPosition(jumpAbility);
-
-                                    // Now, call the original method with the modified sourcePosition.
-                                    // One way is to let the original method run (by returning true)
-                                    // OR (if necessary) you could manually invoke the method.
-                                    // In many cases, simply modifying the ref sourcePosition before the original runs is enough.
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                TFTVLogger.Error(e);
-                                throw;
-                            }
-                        }
-
-                        // You can reuse your offmap start calculation from your missile rain patch:
-                        private static Vector3 GetMissileRainStartPosition(JetJumpAbility ability)
-                        {
-                            try
-                            {
-                                var map = ability.TacticalActor.Map;
-                                Vector3 center = (map.Bounds.min + map.Bounds.max) / 2f;
-                                float highY = map.Bounds.max.y + 5; // 10 units above the highest point.
-                                return new Vector3(center.x, highY, center.z);
-                            }
-                            catch (Exception e)
-                            {
-                                TFTVLogger.Error(e);
-                                throw;
-                            }
-                        }
-                    }
-
-
-
-                    // This patch applies to missile rain instances (customized JetJumpAbilityDef)
-                    [HarmonyPatch(typeof(JetJumpAbility))]
-                    public static class MissileRainCanJumpPatch
-                    {
-                        // Prefix patch to override CanJumpTo
-                        [HarmonyPatch("CanJumpTo")]
-                        [HarmonyPrefix]
-                        public static bool CanJumpTo_Prefix(JetJumpAbility __instance, Vector3 target, ref bool __result)
-                        {
-                            try
-                            {
-
-                                if (AircraftReworkOn && __instance.JetJumpAbilityDef != null && __instance.JetJumpAbilityDef == _groundAttackAbility)
-                                {
-                                    // Instead of starting from the actor's position, use an offmap start point.
-                                    Vector3 offMapStart = GetMissileRainStartPosition(__instance);
-                                    __result = CanMissileRainTo(__instance, offMapStart, target);
-                                    return false; // Skip original method.
-                                }
-                                return true; // Proceed with original logic otherwise.
-                            }
-                            catch (Exception e)
-                            {
-                                TFTVLogger.Error(e);
-                                throw;
-                            }
-                        }
-
-                        // Calculate an offmap starting position: the center of the mission map with a high Y coordinate.
-                        private static Vector3 GetMissileRainStartPosition(JetJumpAbility ability)
-                        {
-                            try
-                            {
-                                var map = ability.TacticalActor.Map;
-                                Vector3 center = (map.Bounds.min + map.Bounds.max) / 2f;
-                                // TFTVLogger.Always($"center is {center}");
-                                float highY = map.Bounds.max.y + 5; // 10 units above the highest point.
-                                return new Vector3(center.x, highY, center.z);
-                            }
-                            catch (Exception e)
-                            {
-                                TFTVLogger.Error(e);
-                                throw;
-                            }
-
-                        }
-
-                        // Prefix patch to override InitTrajectory
-                        [HarmonyPatch("InitTrajectory")]
-                        [HarmonyPrefix]
-                        public static bool InitTrajectory_Prefix(JetJumpAbility __instance, Vector3 target, ref ParabolicTrajectory ____trajectory)
-                        {
-                            try
-                            {
-
-                                if (AircraftReworkOn && __instance.JetJumpAbilityDef != null && __instance.JetJumpAbilityDef == _groundAttackAbility)
-                                {
-
-                                    ____trajectory.Set(GetMissileRainStartPosition(__instance), target, __instance.JetJumpAbilityDef.HeightToWidth, 1f);
-
-                                    return false; // Skip original method.
-                                }
-                                return true; // Proceed with original logic otherwise.
-                            }
-                            catch (Exception e)
-                            {
-                                TFTVLogger.Error(e);
-                                throw;
-                            }
-                        }
-
-                        [HarmonyPatch("GetNavSettings")]
-                        [HarmonyPrefix]
-                        public static bool GetNavSettings_Prefix(JetJumpAbility __instance, Vector3 target, ref NavigationSettings __result, ClipSequence ____jumpClips)
-                        {
-                            try
-                            {
-
-                                if (AircraftReworkOn && __instance.JetJumpAbilityDef != null && __instance.JetJumpAbilityDef == _groundAttackAbility)
-                                {
-
-                                    NavigationSettings navigationSettings = new NavigationSettings();
-                                    navigationSettings.CostsAPToActor = false;
-                                    navigationSettings.UpdateNavigationPerceptionRange = false;
-                                    navigationSettings.SkipUncarveOnStart = false;
-                                    navigationSettings.UpdateNavigationPerceptionRange = true;
-                                    navigationSettings.OverrideNavigationPerceptionRange = __instance.JetJumpAbilityDef.PerceptionRange;
-                                    navigationSettings.TriggerOverwatch = true;
-                                    navigationSettings.SpeedOverTimeCurve = __instance.JetJumpAbilityDef.SpeedOverTimeCurve;
-                                    if (__instance.JetJumpAbilityDef.UseLeapAnimation)
-                                    {
-                                        navigationSettings.SetPathProcessors(new LeapJumpPathProcessor(__instance, ____jumpClips));
-                                    }
-                                    else
-                                    {
-                                        navigationSettings.SetPathProcessors(new JetJumpPathProcessor(__instance, ____jumpClips));
-                                    }
-
-                                    navigationSettings.OverridePath = new List<Vector3>
-        {
-            GetMissileRainStartPosition(__instance),
-            target
-        };
-                                    __result = navigationSettings;
-
-                                    return false; // Skip original method.
-                                }
-                                return true; // Proceed with original logic otherwise.
-                            }
-                            catch (Exception e)
-                            {
-                                TFTVLogger.Error(e);
-                                throw;
-                            }
-                        }
-
-
-
-
-
-                        // Duplicate logic from the original CanJumpTo, but starting at the offmap position.
-                        private static bool CanMissileRainTo(JetJumpAbility ability, Vector3 start, Vector3 target)
-                        {
-                            try
-                            {
-                                MethodInfo initTrajectoryMethodInfo = typeof(JetJumpAbility)
-                                    .GetMethod("InitTrajectory", BindingFlags.NonPublic | BindingFlags.Instance);
-                                MethodInfo getNavSettingsMethodInfo = typeof(JetJumpAbility)
-                                    .GetMethod("GetNavSettings", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                                // Initialize trajectory using the target.
-                                initTrajectoryMethodInfo.Invoke(ability, new object[] { target });
-
-                                // ____trajectory.Set(start, target, ability.JetJumpAbilityDef.HeightToWidth, 1f);
-
-                                // Create a path request.
-                                TacticalPathRequest pathRequest = ability.TacticalActor.TacticalNav.CreatePathRequest() as TacticalPathRequest;
-
-                                // Get the NavigationSettings, then override the path.
-                                NavigationSettings navSettings = (NavigationSettings)getNavSettingsMethodInfo
-                                    .Invoke(ability, new object[] { target });
-
-                                // Set the override path to use our offmap start and the target.
-                                navSettings.OverridePath = new List<Vector3> { start, target };
-
-                                pathRequest.NavigationSettings = navSettings;
-                                pathRequest.Calculate();
-
-                                // Use the TacticalActor's capsule to simulate the missile path.
-                                Capsule capsuleLocal = ability.TacticalActor.TacticalPerception.GetCapsuleLocal();
-                                Vector3 currentPoint = start;
-                                PhysicsCast jumpCast = GetJumpCastForAbility(ability);
-                                jumpCast.Capsule = capsuleLocal;
-
-                                //   TFTVLogger.Always($"start position: {start}, pathRequest.PointInfos.First().Position: {pathRequest.PointInfos.First().Position}");
-
-
-                                // Iterate through path points and check for obstructions.
-                                foreach (PathPointInfo pointInfo in pathRequest.PointInfos)
-                                {
-
-                                    Vector3 nextPoint = pointInfo.Position;
-
-                                    if (!Utl.Equals(currentPoint, nextPoint))
-                                    {
-                                        jumpCast.SetLine(currentPoint, nextPoint);
-                                        if (jumpCast.Cast())
-                                            return false;
-                                        currentPoint = nextPoint;
-                                    }
-                                }
-
-                                return true;
-                            }
-                            catch (Exception e)
-                            {
-                                TFTVLogger.Error(e);
-                                throw;
-                            }
-                        }
-
-
-                        // Create a PhysicsCast similar to the one used in JetJumpAbility.
-                        private static PhysicsCast GetJumpCastForAbility(JetJumpAbility ability)
-                        {
-                            try
-                            {
-                                PhysicsCast jumpCast = new PhysicsCast
-                                {
-                                    LayerMask = (UnityLayers.CameraCollider | UnityLayers.BlockingAll),
-                                    SingleResult = true,
-                                    FilterPredicate = IgnoreActors(ability.TacticalActor)
-                                };
-                                return jumpCast;
-                            }
-                            catch (Exception e)
-                            {
-                                TFTVLogger.Error(e);
-                                throw;
-                            }
-
-                        }
-
-
-                        private static Func<CastResult, bool> IgnoreActors(TacticalActor actor)
-                        {
-                            return delegate (CastResult r)
-                            {
-                                TacticalActor componentInParent = r.Collider.GetComponentInParent<TacticalActor>();
-                                return componentInParent == null;
-                            };
-                        }
-
-
-
-                        [HarmonyPatch(typeof(JetJumpAbility), "Activate")]
-                        public static class ActorComponentActivateAbilityPatch
-                        {
-                            // Prefix patch – before the original Activate runs.
-                            public static bool Prefix(TacticalAbility __instance, object parameter)
-                            {
-                                try
-                                {
-                                    if (AircraftReworkOn && __instance.TacticalAbilityDef != null && __instance.TacticalAbilityDef == _groundAttackAbility)
-                                    {
-                                        // Check if the activation parameter contains target info.
-                                        if (parameter is TacticalAbilityTarget targetData)
-                                        {
-                                            Vector3 targetPos = targetData.PositionToApply;
-                                            // Instead of a single explosion, trigger multiple explosions nearby.
-                                            GenerateMultipleExplosions(targetPos);
-
-                                            _explosionsInProgress = true;
-
-                                            __instance.TacticalActor.CameraDirector.Hint(CameraHint.ChaseTarget, new CameraChaseParams
-                                            {
-                                                ChaseVector = targetPos,
-                                                ChaseTransform = null,
-                                                ChaseCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f),
-                                                LockCameraMovement = false,
-                                                Instant = true,
-                                                ChaseOnlyOutsideFrame = false,
-                                                SnapToFloorHeight = true
-
-                                            });
-                                        }
-                                        return false;
-                                    }
-                                    else
-                                    {
-                                        return true;
-                                    }
-                                }
-                                catch (Exception e)
-                                {
-                                    TFTVLogger.Error(e);
-                                    throw;
-                                }
-                            }
-                            public static void Postfix(TacticalAbility __instance, object parameter)
-                            {
-                                try
-                                {
-                                    if (AircraftReworkOn && __instance.TacticalAbilityDef != null && __instance.TacticalAbilityDef == _groundAttackAbility)
-                                    {
-                                        RemoveGroundAttackWeaponModuleAbility(__instance.TacticalActor.TacticalLevel);
-                                        //   TFTVLogger.Always($"ability should be removed");
-                                    }
-                                }
-                                catch (Exception e)
-                                {
-                                    TFTVLogger.Error(e);
-                                }
-                            }
-
-                            /// <summary>
-                            /// Finds several nearby suitable tiles (within a radius) and generates explosions on them.
-                            /// </summary>
-                            private static void GenerateMultipleExplosions(Vector3 center)
-                            {
-                                // Define a radius within which to search (e.g., 4 units).
-                                float radius = 4f;
-                                // Define candidate offsets – here we use a simple pattern: the center and the four cardinal directions.
-                                List<Vector3> candidateOffsets = new List<Vector3>
-        {
-            Vector3.zero,
-            new Vector3(1, 0, 0),
-            new Vector3(-1, 0, 0),
-            new Vector3(0, 0, 1),
-            new Vector3(0, 0, -1)
-        };
-
-                                // Optionally, you could expand this list (for example, add diagonals or more refined grid samples)
-                                // and/or randomize the offsets for more variety.
-
-                                List<Vector3> tilesToExplode = new List<Vector3>();
-
-                                foreach (Vector3 offset in candidateOffsets)
-                                {
-                                    Vector3 candidatePos = center + offset;
-                                    // Check if candidate is within the desired radius.
-                                    if (Vector3.Distance(candidatePos, center) <= radius)
-                                    {
-                                        // Validate that this candidate is suitable.
-                                        if (IsValidExplosionTile(candidatePos))
-                                        {
-                                            tilesToExplode.Add(candidatePos);
-                                            if (tilesToExplode.Count == _thunderbirdGroundAttackWeaponPresent)
-                                            {
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                for (int x = 0; x < tilesToExplode.Count(); x++)
-                                {
-                                    Vector3 pos = tilesToExplode[x];
-                                    DelayedEffectDef explostion = _groundAttackWeaponExplosions[x];
-                                    {
-                                        GenerateExplosion(pos, explostion);
-                                    }
-                                }
-                            }
-
-                            /// <summary>
-                            /// Performs a simple check to see if candidatePos is a valid explosion location.
-                            /// This can be as simple as a downward raycast to check for ground.
-                            /// </summary>
-                            private static bool IsValidExplosionTile(Vector3 candidatePos)
-                            {
-                                // Offset a little above the candidate position.
-                                Vector3 rayStart = candidatePos + Vector3.up * 5f;
-                                Ray ray = new Ray(rayStart, Vector3.down);
-                                // We'll use a max distance that covers the expected map height.
-                                float maxDistance = 10f;
-                                if (Physics.Raycast(ray, out RaycastHit hit, maxDistance, UnityLayers.FloorAllMask))
-                                {
-                                    // Optionally check the hit normal, tag, or other properties to determine
-                                    // if this is a “suitable” tile (e.g. not under a roof, etc.).
-                                    return true;
-                                }
-                                return false;
-                            }
-
-                            internal static void GenerateExplosion(Vector3 position, DelayedEffectDef explosion)
-                            {
-                                try
-                                {
-
-                                    Effect.Apply(Repo, explosion, new EffectTarget
-                                    {
-                                        Position = position
-                                    }, null);
-
-
-                                }
-                                catch (Exception e)
-                                {
-                                    TFTVLogger.Error(e);
-                                }
-                            }
-
-
-                        }
-
-
-
-
-
-                    }
-
-                    private static bool _explosionsInProgress = false;
-
-                    public static bool CheckForGroundAttackWeaponExplosions(TacticalLevelController controller)
-                    {
-                        try
-                        {
-                            if (_explosionsInProgress)
-                            {
-                                _explosionsInProgress = false;
-
-                                return false;
-                            }
-
-                            return true;
-
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            throw;
-                        }
-                    }
-
-                    private static void RemoveGroundAttackWeaponModuleAbility(TacticalLevelController controller)
+                    internal static void RemoveGroundAttackWeaponModuleAbility(TacticalLevelController controller)
                     {
                         try
                         {
@@ -3538,25 +3135,18 @@ namespace TFTV
 
                             foreach (TacticalActor tacticalActor in controller.GetFactionByCommandName("px").TacticalActors)
                             {
-                                if (tacticalActor.GetAbilityWithDef<JetJumpAbility>(_groundAttackAbility) != null)
+                                if (tacticalActor.GetAbilityWithDef<GroundAttackWeaponAbility>(_groundAttackAbility) != null)
                                 {
                                     tacticalActor.RemoveAbility(_groundAttackAbility);
                                 }
-                            }
-
-                            //  _thunderbirdGroundAttackWeaponPresent = 0;
-                            //  controller.View.ResetCharacterSelectedState();
-
+                            }                
                         }
                         catch (Exception e)
                         {
                             TFTVLogger.Error(e);
                             throw;
                         }
-
-
                     }
-
                 }
                 internal class AnuMistModule
                 {

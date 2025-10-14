@@ -10,6 +10,8 @@ using Base.Entities.Statuses;
 using Base.Eventus;
 using Base.Input;
 using Base.Levels;
+using Base.Levels.Nav;
+using Base.Levels.Nav.Tiled;
 using Base.Rendering.ObjectRendering;
 using Base.Utils.Maths;
 using HarmonyLib;
@@ -1231,6 +1233,68 @@ namespace TFTV
 
         internal class Tactical
         {
+
+            internal class ExtraLongDetoursAroundFire 
+            {
+                [HarmonyPatch(typeof(NodePathSourceData))]
+                internal static class TacticalFirePathingFix
+                {
+                    private const float ExtraDistanceAllowance = 3f;
+                    private const float DetourMultiplier = 1.5f;
+
+                    private static readonly FieldInfo ActorField = AccessTools.Field(typeof(TacticalNavCostFactorFuncs), "_actor");
+
+                    [HarmonyPatch(
+                        nameof(NodePathSourceData.Set),
+                        new[]
+                        {
+                typeof(NodeGraph),
+                typeof(Vector3),
+                typeof(NodeAreas),
+                typeof(NodeObstacle),
+                typeof(float),
+                typeof(INavCostFactorFuncs)
+                        })]
+                    [HarmonyPrefix]
+                    private static void LimitTacticalMaxDistance(ref float maxDistance, INavCostFactorFuncs navCosts)
+                    {
+                        if (navCosts == null || ActorField == null)
+                        {
+                            return;
+                        }
+
+                        TacticalNavCostFactorFuncs tacticalFuncs = navCosts as TacticalNavCostFactorFuncs;
+                        if (tacticalFuncs == null)
+                        {
+                            return;
+                        }
+
+                        TacticalActor actor = ActorField.GetValue(tacticalFuncs) as TacticalActor;
+                        if (actor == null)
+                        {
+                            return;
+                        }
+
+                        float moveRange = Mathf.Max(0f, actor.MaxMoveRange);
+                        if (moveRange <= 0f)
+                        {
+                            return;
+                        }
+
+                        float allowed = Mathf.Max(moveRange + ExtraDistanceAllowance, moveRange * DetourMultiplier);
+                        if (float.IsNaN(allowed) || float.IsInfinity(allowed) || allowed <= 0f)
+                        {
+                            return;
+                        }
+
+                        if (float.IsPositiveInfinity(maxDistance) || maxDistance > allowed)
+                        {
+                            maxDistance = allowed;
+                        }
+                    }
+                }
+            }
+
             internal class TacticalSavesAIBug
             {
                 [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.StartTurn))]
