@@ -10,6 +10,7 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
@@ -94,6 +95,7 @@ namespace TFTV.TFTVDrills
         internal static ApplyStatusAbilityDef _heavyConditioning;
         internal static ExplosiveDisableShootAbilityDef _explosiveShot;
         internal static PassiveModifierAbilityDef _pounceProtocol;
+        internal static ApplyStatusAbilityDef _override;
 
         internal static PassiveModifierAbilityDef _commandOverlay;
         internal static AddAbilityStatusDef _commandOverlayRemoteControlStatus;
@@ -681,9 +683,9 @@ namespace TFTV.TFTVDrills
             try
             {
                 _remoteControlAbilityDef = DefCache.GetDef<ApplyStatusAbilityDef>("ManualControl_AbilityDef");
-                MultiStatusDef multiStatusDef = Helper.CreateDefFromClone(
+               MultiStatusDef multiStatusDef = Helper.CreateDefFromClone(
                     DefCache.GetDef<MultiStatusDef>("E_MultiStatus [RapidClearance_AbilityDef]"), "{CD46E75F-06CE-427F-B276-B54470FD054D}", $"{_remoteControlAbilityDef.name}");
-
+               
 
 
                 DamageMultiplierStatusDef sourceStatus = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
@@ -711,6 +713,9 @@ namespace TFTV.TFTVDrills
 
                 effectConditionDef.StatusDef = newStatus;
                 effectConditionDef.HasStatus = false;
+
+               // AddAttackBoostStatusDef addAttackBoostStatusDef = (AddAttackBoostStatusDef)_remoteControlAbilityDef.StatusDef;
+              //  addAttackBoostStatusDef.AdditionalStatusesToApply = addAttackBoostStatusDef.AdditionalStatusesToApply.AddToArray(newStatus);
 
                 _remoteControlAbilityDef.StatusDef = multiStatusDef;
 
@@ -754,7 +759,7 @@ namespace TFTV.TFTVDrills
                 };
 
 
-                _shockDrop = CreateDrillNominalAbility("shockdrop", "c1f7c2e4-9a2d-4b8c-ae3e-2c4b5d6e7f81", "f0a1b2c3-4d5e-6f70-8a91-b2c3d4e5f607", "0a1b2c3d-4e5f-6071-8293-a4b5c6d7e8f9"); //pending
+                _shockDrop = CreateDrillNominalAbility("shockdrop", "c1f7c2e4-9a2d-4b8c-ae3e-2c4b5d6e7f81", "f0a1b2c3-4d5e-6f70-8a91-b2c3d4e5f607", "0a1b2c3d-4e5f-6071-8293-a4b5c6d7e8f9"); //done
                 _shockDropStatus = CreateShockDropStatus();
 
 
@@ -768,7 +773,7 @@ namespace TFTV.TFTVDrills
                 _shieldedRiposte = CreateDrillNominalAbility("shieldedriposte", "7c3d4e5f-8091-011a-c3d4-e5f60718293a", "9a4b5c6d-7e8f-9010-ab1c-2d3e4f506172", "a94b5c6d-7e8f-9010-ab1c-2d3e4f506173"); //pending fixing animation when deploying shield in different direction                
 
                 _toxicLink = CreateDrillNominalAbility("toxiclink", "9e5f6071-a2a3-233c-e5f6-0718293a4b5c", "c6d7e8f9-1011-b2c3-d4e5-f60718293a4b", "d6e7f809-1112-c3d4-e5f6-0718293a4b5c"); //done
-                _pounceProtocol = CreateDrillNominalAbility("pounceprotocol", "af607182-b3b4-344d-f607-18293a4b5c6d", "d7e8f901-1213-c4d5-e6f7-08192a3b4c5d", "e7f80912-1314-d5e6-f7f8-192a3b4c5d6e"); //pending
+                _pounceProtocol = CreateDrillNominalAbility("pounceprotocol", "af607182-b3b4-344d-f607-18293a4b5c6d", "d7e8f901-1213-c4d5-e6f7-08192a3b4c5d", "e7f80912-1314-d5e6-f7f8-192a3b4c5d6e"); //done
                 _pounceProtocolSpeedStatus = CreatePounceProtocolSpeedStatus();
 
                 _ordnanceResupply = CreateOrdnanceResupplyAbility(); //done
@@ -776,7 +781,7 @@ namespace TFTV.TFTVDrills
                 _virulentGrip = CreateDrillNominalAbility("virulentgrip", "f4a5b6c7-0809-8992-1b22-3d4e5f607182", "34455667-2223-12f5-0607-a2b3c4d5e6f7", "45566778-2324-13f6-0708-b3c4d5e6f708"); //done
 
 
-                _packLoyalty = CreateDrillNominalAbility("packloyalty", "05b6c7d8-191a-9aa3-2c33-4e5f60718293", "45566789-2425-14f7-0809-c4d5e6f70819", "56677889-2526-15f8-0910-d5e6f708192a"); //pending
+                _packLoyalty = CreateDrillNominalAbility("packloyalty", "05b6c7d8-191a-9aa3-2c33-4e5f60718293", "45566789-2425-14f7-0809-c4d5e6f70819", "56677889-2526-15f8-0910-d5e6f708192a"); //done
 
 
                 _augmentedRealityStatus = DefCache.GetDef<StanceStatusDef>("ARTargeting_Stance_StatusDef");
@@ -797,7 +802,7 @@ namespace TFTV.TFTVDrills
 
 
                 CreateMarkedWatch();
-                CreateOverride();
+                _override = CreateOverride();
                 CreateAksuSprint();
                 CreateHeavyconditioning();
 
@@ -995,31 +1000,6 @@ namespace TFTV.TFTVDrills
                     "TFTV_ShockDrop_Bash_View");
 
 
-
-                /*  List<DamageKeywordPair> damageKeywords = new List<DamageKeywordPair>();
-                  if (shockDropBashAbility.DamagePayload?.DamageKeywords != null)
-                  {
-                      damageKeywords.AddRange(shockDropBashAbility.DamagePayload.DamageKeywords);
-                  }
-
-                 int shockKeywordIndex = damageKeywords.FindIndex(pair => pair.DamageKeywordDef == Shared.SharedDamageKeywords.ShockKeyword);
-                  if (shockKeywordIndex >= 0)
-                  {
-                      DamageKeywordPair updatedPair = damageKeywords[shockKeywordIndex];
-                      updatedPair.Value += shockValue;
-                      damageKeywords[shockKeywordIndex] = updatedPair;
-                  }
-                  else
-                  {
-                      damageKeywords.Add(new DamageKeywordPair
-                      {
-                          DamageKeywordDef = Shared.SharedDamageKeywords.ShockKeyword,
-                          Value = shockValue
-                      });
-                  }
-
-                  shockDropBashAbility.DamagePayload.DamageKeywords = damageKeywords;*/
-
                 _shockDropBash = shockDropBashAbility;
 
                 foreach (TacActorAimingAbilityAnimActionDef animActionDef in Repo.GetAllDefs<TacActorAimingAbilityAnimActionDef>().Where(aad => aad.name.Contains("Soldier_Utka_AnimActionsDef")))
@@ -1068,15 +1048,10 @@ namespace TFTV.TFTVDrills
                         DamageKeywordDef = Shared.SharedDamageKeywords.ShockKeyword,
                         Value = shockValue
                     },
-                 /*   new DamageKeywordPair
-                    {
-                        DamageKeywordDef = Shared.SharedDamageKeywords.DamageKeyword,
-                        Value = shockValue
-                    }*/
+               
                 };
 
-                // TFTVLogger.Always($"{statusDef.DamageKeywordPairs[1].DamageKeywordDef.name}");
-
+            
                 statusDef.DefaultBashAbility = defaultBashAbility;
                 statusDef.ReplacementBashAbility = shockDropBashAbility;
 
@@ -1653,13 +1628,7 @@ namespace TFTV.TFTVDrills
                 TFTVLogger.Error(e);
                 throw;
             }
-
-
         }
-
-
-
-
 
 
         private static void CreateHeavyconditioning()
@@ -1718,12 +1687,12 @@ namespace TFTV.TFTVDrills
                 string locKeyName = $"TFTV_DRILL_{name}_NAME";
                 string locKeyDesc = $"TFTV_DRILL_{name}_DESC";
 
-                string guid0 = "f2711bfc-b4cb-46dd-bb9f-599a88c1ebff";
-                string guid1 = "f7ce1c44-1447-41a3-8112-666c82451e25";
-                string guid2 = "0324925f-e318-40b6-ac8c-b68033823cd9";
-                string guid3 = "c3d9e8f0-3b4a-4c5d-e6f7-8091a2b3c4d5";
-                string guid4 = "d4e5f607-1829-4a5b-6c7d-8e9f0a1b2c3d";
-                string guid5 = "{8D86FE5B-8577-4DA6-B5B7-3D969B98C1A5}";
+                string guid0 = "{71B362EF-724C-462B-86F4-1D99E18BDF9C}";
+                string guid1 = "{3DA70F84-F3A5-4E16-8C13-0BFEA3419D38}";
+                string guid2 = "{4DB2272D-07E8-4EE6-83C6-74A14F8067C1}";
+                string guid3 = "{0533DF0F-4196-4168-9D49-782BA6DCFF6B}";
+                string guid4 = "{07CFF14B-15CC-4738-967B-DBC4DF594DA0}";
+                string guid5 = "{CB709879-0ED6-4CEF-856C-0F7BB2EFDD5D}";
 
 
                 Sprite icon = Helper.CreateSpriteFromImageFile($"Drill_{name}.png");
@@ -1754,7 +1723,7 @@ namespace TFTV.TFTVDrills
                 newAbility.ViewElementDef.Description.LocalizationKey = locKeyDesc; // = description;
                 newAbility.ViewElementDef.LargeIcon = icon;
                 newAbility.ViewElementDef.SmallIcon = icon;
-                newAbility.TargetApplicationConditions = new EffectConditionDef[] { source.TargetApplicationConditions[0] };
+                newAbility.TargetApplicationConditions = new EffectConditionDef[] { source.TargetApplicationConditions[0], source.TargetApplicationConditions[1] };
                 newAbility.TargetingDataDef.Origin.TargetEnemies = true;
                 newAbility.TargetingDataDef.Origin.TargetFriendlies = false;
                 newAbility.AnimType = 1;
@@ -1778,9 +1747,11 @@ namespace TFTV.TFTVDrills
 
                 newMindControlStatusDef.ControlFactionDef = DefCache.GetDef<PPFactionDef>("Phoenix_FactionDef");
 
-                AddAttackBoostStatusDef addAttackBoostStatusDef = (AddAttackBoostStatusDef)newAbility.StatusDef;
+                MultiStatusDef multiStatusDef = (MultiStatusDef)newAbility.StatusDef;
+               
+                AddAttackBoostStatusDef addAttackBoostStatusDef = (AddAttackBoostStatusDef)Helper.CreateDefFromClone(multiStatusDef.Statuses[0], "{945A027E-6E85-4056-84CF-1DAD3DCED40A}", name);
                 addAttackBoostStatusDef.AdditionalStatusesToApply = addAttackBoostStatusDef.AdditionalStatusesToApply.AddToArray(newMindControlStatusDef);
-
+                multiStatusDef.Statuses[0] = addAttackBoostStatusDef;
 
                 Drills.Add(newAbility);
 
