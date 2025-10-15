@@ -1,4 +1,6 @@
-﻿using Base.Entities;
+﻿using AK.Wwise;
+using Base.Audio;
+using Base.Entities;
 using Base.Eventus;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -7,13 +9,566 @@ using PhoenixPoint.Tactical.Eventus.Contexts;
 using PhoenixPoint.Tactical.Eventus.Filters;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using UnityEngine;
+using UnityEngine.Networking;
 
 namespace TFTV
 {
     internal class TFTVAudio
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
+        /// <summary>
+        ///     Provides a Harmony based hook that replaces the stock Wwise playback path with a
+        ///     fully managed alternative that can map <see cref="AudioEventData"/> instances to
+        ///     arbitrary <see cref="AudioClip"/> assets.
+        /// </summary>
+        [HarmonyPatch]
+        public static class ExternalAudioInjector
+        {
+            private static readonly ConditionalWeakTable<AudioManager, AudioManagerHook> Hooks = new ConditionalWeakTable<AudioManager, AudioManagerHook>();
+            private static readonly Dictionary<string, IExternalAudioPlayback> Registrations =
+                new Dictionary<string, IExternalAudioPlayback>(StringComparer.OrdinalIgnoreCase);
+
+            private static GameObject _fallbackEmitter;
+
+            /// <summary>
+            ///     Gets or sets whether events without an explicit external registration should fall back to
+            ///     the original Wwise handler. Defaults to <c>false</c> which effectively mutes unregistered events.
+            /// </summary>
+            public static bool FallbackToOriginalHandler { get; set; }
+
+            /// <summary>
+            ///     Registers a fixed <see cref="AudioClip"/> for the supplied Wwise event name.
+            /// </summary>
+            public static void RegisterClip(
+    string eventName,
+    AudioClip clip,
+    float volume = 1f,
+    bool loop = false,
+    float spatialBlend = 1f,
+    Action<AudioSource> configureSource = null)
+            {
+                if (string.IsNullOrWhiteSpace(eventName))
+                    throw new ArgumentException("Event name must be provided", nameof(eventName));
+                if (clip == null)
+                    throw new ArgumentNullException(nameof(clip));
+
+                Registrations[eventName] = new ExternalAudioClipPlayback(
+                    (ctx, evt) => clip, // replace (_, _) => clip
+                    volume,
+                    loop,
+                    spatialBlend,
+                    (source, ctx, evt) =>
+                    {
+                        if (configureSource != null)
+                            configureSource(source);
+                    });
+            }
+
+
+            /// <summary>
+            ///     Loads an <see cref="AudioClip"/> from disk and registers it for the supplied Wwise event name.
+            /// </summary>
+            public static AudioClip RegisterClipFromFile(
+                string eventName,
+                string filePath,
+                float volume = 1f,
+                bool loop = false,
+                float spatialBlend = 1f,
+                Action<AudioSource> configureSource = null,
+                AudioType audioType = AudioType.UNKNOWN,
+                bool streamAudio = false)
+            {
+
+                TFTVLogger.Always($"registering clip {filePath}");
+                AudioClip clip = LoadClipFromFile(filePath, audioType, streamAudio);
+                TFTVLogger.Always($"got the clip");
+                RegisterClip(eventName, clip, volume, loop, spatialBlend, configureSource);
+                TFTVLogger.Always($"registering the clip");
+                return clip;
+            }
+
+            /// <summary>
+            ///     Registers a delegate that resolves a clip at runtime for the given Wwise event name.
+            /// </summary>
+            public static void RegisterResolver(string eventName,
+                Func<AudioEventData, BaseEventContext, AudioClip> clipResolver,
+                float volume = 1f,
+                bool loop = false,
+                float spatialBlend = 1f,
+                Action<AudioSource, AudioEventData, BaseEventContext> configureSource = null)
+            {
+                if (string.IsNullOrWhiteSpace(eventName))
+                {
+                    throw new ArgumentException("Event name must be provided", nameof(eventName));
+                }
+
+                if (clipResolver == null)
+                {
+                    throw new ArgumentNullException(nameof(clipResolver));
+                }
+
+                Registrations[eventName] = new ExternalAudioClipPlayback(
+                    clipResolver,
+                    volume,
+                    loop,
+                    spatialBlend,
+                    configureSource);
+            }
+
+            /// <summary>
+            ///     Registers a custom playback delegate for the supplied Wwise event name.
+            ///     The delegate should return <c>true</c> when it consumes the event.
+            /// </summary>
+            public static void RegisterHandler(string eventName,
+                Func<AudioEventData, BaseEventContext, bool> playbackHandler)
+            {
+                if (string.IsNullOrWhiteSpace(eventName))
+                {
+                    throw new ArgumentException("Event name must be provided", nameof(eventName));
+                }
+
+                if (playbackHandler == null)
+                {
+                    throw new ArgumentNullException(nameof(playbackHandler));
+                }
+
+                Registrations[eventName] = new DelegateAudioPlayback(playbackHandler);
+            }
+
+            /// <summary>
+            ///     Clears any custom registration for the provided event name.
+            /// </summary>
+            public static bool Unregister(string eventName) => Registrations.Remove(eventName);
+
+            /// <summary>
+            ///     Removes all registered mappings.
+            /// </summary>
+            public static void ClearRegistrations() => Registrations.Clear();
+
+            /// <summary>
+            ///     Loads an <see cref="AudioClip"/> from the specified file path.
+            /// </summary>
+            public static AudioClip LoadClipFromFile(string filePath, AudioType audioType = AudioType.UNKNOWN, bool streamAudio = false)
+            {
+                if (string.IsNullOrWhiteSpace(filePath))
+                {
+                    throw new ArgumentException("File path must be provided", nameof(filePath));
+                }
+
+                string absolutePath = Path.GetFullPath(filePath);
+                if (!File.Exists(absolutePath))
+                {
+                    throw new FileNotFoundException("Audio file not found", absolutePath);
+                }
+
+                if (audioType == AudioType.UNKNOWN)
+                {
+                    audioType = GuessAudioType(Path.GetExtension(absolutePath));
+                }
+
+                if (audioType == AudioType.UNKNOWN)
+                {
+                    throw new NotSupportedException($"Unable to determine audio type for '{absolutePath}'. Specify the AudioType explicitly.");
+                }
+
+                string uri = new Uri(absolutePath).AbsoluteUri;
+
+                using (UnityWebRequest request = UnityWebRequestMultimedia.GetAudioClip(uri, audioType))
+                {
+                    DownloadHandlerAudioClip downloadHandler = request.downloadHandler as DownloadHandlerAudioClip;
+                    if (downloadHandler != null)
+                    {
+                        downloadHandler.streamAudio = streamAudio;
+                    }
+
+                    UnityWebRequestAsyncOperation operation = request.SendWebRequest();
+                    while (!operation.isDone)
+                    {
+                        Thread.Sleep(1);
+                    }
+
+                    if (request.isNetworkError || request.isHttpError)
+                    {
+                        throw new InvalidOperationException($"Failed to load audio clip from '{absolutePath}': {request.error}");
+                    }
+
+                    AudioClip clip = DownloadHandlerAudioClip.GetContent(request) ?? throw new InvalidOperationException($"Failed to decode audio clip from '{absolutePath}'.");
+                    clip.name = Path.GetFileNameWithoutExtension(absolutePath);
+                    return clip;
+                }
+            }
+
+            [HarmonyPatch(typeof(AudioManager), nameof(AudioManager.Init))]
+            [HarmonyPostfix]
+            private static void AudioManagerInitPostfix(AudioManager __instance)
+            {
+                if (__instance == null)
+                {
+                    return;
+                }
+
+                EventusManager eventusManager = __instance.GetComponent<EventusManager>();
+                if (eventusManager == null)
+                {
+                    return;
+                }
+
+                MethodInfoCache methodCache = MethodInfoCache.ForAudioManager();
+                if (methodCache == null)
+                {
+                    return;
+                }
+
+                if (Hooks.TryGetValue(__instance, out AudioManagerHook existingHook))
+                {
+                    existingHook.Install(eventusManager);
+                    return;
+                }
+
+                var hook = new AudioManagerHook(__instance, methodCache);
+                hook.Install(eventusManager);
+                Hooks.Add(__instance, hook);
+            }
+
+            [HarmonyPatch(typeof(AudioManager), "OnDestroy")]
+            [HarmonyPrefix]
+            private static void AudioManagerOnDestroyPrefix(AudioManager __instance)
+            {
+                if (__instance == null)
+                {
+                    return;
+                }
+
+                EventusManager eventusManager = __instance.GetComponent<EventusManager>();
+                if (eventusManager == null)
+                {
+                    return;
+                }
+
+                if (Hooks.TryGetValue(__instance, out AudioManagerHook hook))
+                {
+                    hook.Uninstall(eventusManager);
+                    Hooks.Remove(__instance);
+                }
+            }
+
+            private static bool TryHandle(AudioManager manager, AudioEventData audioEvent, BaseEventContext context)
+            {
+                TFTVLogger.Always($"audioEvent == null {audioEvent == null}");
+
+                if (audioEvent == null)
+                {
+                    return false;
+                }
+
+
+
+                string key = ResolveEventKey(audioEvent);
+
+
+                TFTVLogger.Always($"string.IsNullOrEmpty(key) {string.IsNullOrEmpty(key)}");
+
+                if (string.IsNullOrEmpty(key))
+                {
+                    return false;
+                }
+
+       
+                if (!Registrations.TryGetValue(key, out IExternalAudioPlayback playback))
+                {
+                    TFTVLogger.Always($"!Registrations.TryGetValue(key, out IExternalAudioPlayback playback)");
+                    return false;
+                }
+
+                return playback.TryPlay(manager, audioEvent, context ?? new SimpleEventContext(manager.gameObject));
+            }
+
+            private static string ResolveEventKey(AudioEventData audioEvent)
+            {
+                Event wwiseEvent = audioEvent.Event;
+                if (wwiseEvent != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(wwiseEvent.Name))
+                    {
+                        return wwiseEvent.Name;
+                    }
+
+                    if (wwiseEvent.Id != 0U)
+                    {
+                        return wwiseEvent.Id.ToString(CultureInfo.InvariantCulture);
+                    }
+                }
+
+                return audioEvent.EventDef.Name;
+            }
+
+            private static Transform ResolveEmitter(AudioManager manager, BaseEventContext context)
+            {
+                if (context is IWorldEventContext worldContext && worldContext.TargetTransform)
+                {
+                    return worldContext.TargetTransform;
+                }
+
+                Transform senderTransform = context?.SenderTransform;
+                if (senderTransform)
+                {
+                    return senderTransform;
+                }
+
+                if (manager != null && manager.transform)
+                {
+                    return manager.transform;
+                }
+
+                return EnsureFallbackEmitter().transform;
+            }
+
+            private static GameObject EnsureFallbackEmitter()
+            {
+                if (_fallbackEmitter != null)
+                {
+                    return _fallbackEmitter;
+                }
+
+                _fallbackEmitter = new GameObject("ExternalAudioEmitter");
+                UnityEngine.Object.DontDestroyOnLoad(_fallbackEmitter);
+                _fallbackEmitter.hideFlags = HideFlags.HideAndDontSave;
+                _fallbackEmitter.AddComponent<AudioSource>();
+                return _fallbackEmitter;
+            }
+
+            private static AudioType GuessAudioType(string extension)
+            {
+                if (string.IsNullOrEmpty(extension))
+                {
+                    return AudioType.UNKNOWN;
+                }
+
+                switch (extension.ToLowerInvariant())
+                {
+                    case ".wav":
+                    case ".wave":
+                        return AudioType.WAV;
+                    case ".ogg":
+                    case ".oga":
+                        return AudioType.OGGVORBIS;
+                    case ".mp3":
+                        return AudioType.MPEG;
+                    case ".aif":
+                    case ".aiff":
+                        return AudioType.AIFF;
+                    default:
+                        return AudioType.UNKNOWN;
+                }
+            }
+
+            private sealed class AudioManagerHook
+            {
+                private readonly AudioManager _manager;
+                private readonly MethodInfoCache _methodCache;
+                private readonly EventusManager.EventusHandler _dispatcher;
+
+                private EventusManager.EventusHandler _originalHandler;
+
+                public AudioManagerHook(AudioManager manager, MethodInfoCache methodCache)
+                {
+                    _manager = manager;
+                    _methodCache = methodCache;
+                    _dispatcher = Dispatch;
+                    _originalHandler = methodCache.CreateDelegate(manager);
+                }
+
+                public void Install(EventusManager eventusManager)
+                {
+                    if (eventusManager == null)
+                    {
+                        return;
+                    }
+
+                    if (_originalHandler == null)
+                    {
+                        _originalHandler = _methodCache.CreateDelegate(_manager);
+                    }
+
+                    if (_originalHandler != null)
+                    {
+                        eventusManager.UnregisterHandler(typeof(AudioEventData), _originalHandler);
+                    }
+
+                    eventusManager.RegisterHandler(typeof(AudioEventData), _dispatcher);
+                }
+
+                public void Uninstall(EventusManager eventusManager)
+                {
+                    if (eventusManager == null)
+                    {
+                        return;
+                    }
+
+                    eventusManager.UnregisterHandler(typeof(AudioEventData), _dispatcher);
+
+                    if (_originalHandler != null)
+                    {
+                        eventusManager.RegisterHandler(typeof(AudioEventData), _originalHandler);
+                    }
+                }
+
+                private void Dispatch(BaseEventData eventData, BaseEventContext context)
+                {
+                    AudioEventData audioEventData = eventData as AudioEventData;
+                    bool handled = TryHandle(_manager, audioEventData, context);
+                    if (!handled && (FallbackToOriginalHandler || audioEventData == null))
+                    {
+                        _originalHandler?.Invoke(eventData, context);
+                    }
+                }
+            }
+
+            private interface IExternalAudioPlayback
+            {
+                bool TryPlay(AudioManager manager, AudioEventData eventData, BaseEventContext context);
+            }
+
+            private sealed class ExternalAudioClipPlayback : IExternalAudioPlayback
+            {
+                private readonly Func<AudioEventData, BaseEventContext, AudioClip> _clipResolver;
+                private readonly float _volume;
+                private readonly bool _loop;
+                private readonly float _spatialBlend;
+                private readonly Action<AudioSource, AudioEventData, BaseEventContext> _configureSource;
+
+                public ExternalAudioClipPlayback(
+                    Func<AudioEventData, BaseEventContext, AudioClip> clipResolver,
+                    float volume,
+                    bool loop,
+                    float spatialBlend,
+                    Action<AudioSource, AudioEventData, BaseEventContext> configureSource)
+                {
+                    _clipResolver = clipResolver;
+                    _volume = Mathf.Clamp01(volume);
+                    _loop = loop;
+                    _spatialBlend = Mathf.Clamp01(spatialBlend);
+                    _configureSource = configureSource;
+                }
+
+                public bool TryPlay(AudioManager manager, AudioEventData eventData, BaseEventContext context)
+                {
+                    AudioClip clip = _clipResolver(eventData, context);
+
+                    TFTVLogger.Always($"clip==null? {clip==null}");
+
+                    if (clip == null)
+                    {
+                        return false;
+                    }
+
+                    Transform emitter = ResolveEmitter(manager, context);
+
+                    TFTVLogger.Always($"emitter==null? {emitter == null}");
+                    if (emitter == null)
+                    {
+                        return false;
+                    }
+
+                    AudioSource audioSource = emitter.GetComponent<AudioSource>();
+
+                    TFTVLogger.Always($"audioSource==null? {audioSource==null}");
+
+                    if (audioSource == null)
+                    {
+                        audioSource = emitter.gameObject.AddComponent<AudioSource>();
+                        audioSource.playOnAwake = false;
+                    }
+
+                    audioSource.spatialBlend = _spatialBlend;
+                    audioSource.loop = _loop;
+                    audioSource.volume = _volume;
+                    _configureSource?.Invoke(audioSource, eventData, context);
+
+                    if (_loop)
+                    {
+                        if (audioSource.clip != clip)
+                        {
+                            audioSource.Stop();
+                            audioSource.clip = clip;
+                        }
+
+                        audioSource.Play();
+                    }
+                    else
+                    {
+                        audioSource.clip = null;
+                        audioSource.PlayOneShot(clip);
+                    }
+
+                    TFTVLogger.Always($"got all the way to the end");
+
+
+                    return true;
+                }
+            }
+
+            private sealed class DelegateAudioPlayback : IExternalAudioPlayback
+            {
+                private readonly Func<AudioEventData, BaseEventContext, bool> _handler;
+
+                public DelegateAudioPlayback(Func<AudioEventData, BaseEventContext, bool> handler)
+                {
+                    _handler = handler;
+                }
+
+                public bool TryPlay(AudioManager manager, AudioEventData eventData, BaseEventContext context)
+                {
+                    return _handler(eventData, context);
+                }
+            }
+
+            private sealed class MethodInfoCache
+            {
+                private readonly MethodInfo _methodInfo;
+
+                private MethodInfoCache(MethodInfo methodInfo)
+                {
+                    _methodInfo = methodInfo;
+                }
+
+                public static MethodInfoCache ForAudioManager()
+                {
+                    var method = AccessTools.Method(typeof(AudioManager), "OnPlayEvent", new[]
+                    {
+                    typeof(BaseEventData), typeof(BaseEventContext)
+                });
+
+                    if (method == null)
+                    {
+                        return null;
+                    }
+
+                    return new MethodInfoCache(method);
+                }
+
+                public EventusManager.EventusHandler CreateDelegate(AudioManager manager)
+                {
+                    if (_methodInfo == null || manager == null)
+                    {
+                        return null;
+                    }
+
+                    return (EventusManager.EventusHandler)Delegate.CreateDelegate(
+                        typeof(EventusManager.EventusHandler),
+                        manager,
+                        _methodInfo);
+                }
+            }
+        }
 
 
         [HarmonyPatch(typeof(HasTagsEventFilterDef), "ShouldPlayEvent")]
@@ -89,18 +644,18 @@ namespace TFTV
 
                         TacticalActorBase tacticalActorBase = tacActorEventContext.Actor;
 
-                       /* TFTVLogger.Always($"TacActorHeadMutationsFilterDef: bark from {tacticalActorBase.DisplayName} {_palaceMissionGameTagsToCheck.Any(gt => tacticalActorBase.GameTags.Contains(gt))}");
-                   
-                        foreach (GameTagDef gameTagDef in tacticalActorBase.GameTags)
-                        {
-                            TFTVLogger.Always($"{tacticalActorBase.DisplayName} has tag {gameTagDef.name}");
-                        }*/
+                        /* TFTVLogger.Always($"TacActorHeadMutationsFilterDef: bark from {tacticalActorBase.DisplayName} {_palaceMissionGameTagsToCheck.Any(gt => tacticalActorBase.GameTags.Contains(gt))}");
+
+                         foreach (GameTagDef gameTagDef in tacticalActorBase.GameTags)
+                         {
+                             TFTVLogger.Always($"{tacticalActorBase.DisplayName} has tag {gameTagDef.name}");
+                         }*/
 
                         if (config.NoBarks && tacActorEventContext.Actor.Health.Value > 0 &&
                             tacActorEventContext.Actor.HasGameTag(humanTag) ||
                             _palaceMissionGameTagsToCheck.Any(gt => tacticalActorBase.GameTags.Contains(gt)))
                         {
-                           // TFTVLogger.Always($"TacActorHeadMutationsFilterDef: stopping bark from {tacticalActorBase.DisplayName}");
+                            // TFTVLogger.Always($"TacActorHeadMutationsFilterDef: stopping bark from {tacticalActorBase.DisplayName}");
                             __result = false;
                         }
                     }

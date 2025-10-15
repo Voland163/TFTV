@@ -58,6 +58,7 @@ using PhoenixPoint.Tactical.Levels.PathProcessors;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using TFTV.TFTVAircraftRework;
@@ -430,8 +431,13 @@ namespace TFTV
                     newAbility.AnimType = -1;
                     newAbility.ViewElementDef = Helper.CreateDefFromClone(jetJumpAbilityDef.ViewElementDef, guid2, name);
                     newAbility.TargetingDataDef = Helper.CreateDefFromClone(jetJumpAbilityDef.TargetingDataDef, guid3, name);
-                    newAbility.ProjectilePrefab = (GameObject)DefCache.GetDef<ProjectileDef>("E_ProjectileVisuals [PX_Scarab_Missile_Turret_GroundVehicleWeaponDef]").Prefab;
-                        
+                    newAbility.ProjectileDef = DefCache.GetDef<ProjectileDef>("E_ProjectileVisuals [PX_Scarab_Missile_Turret_GroundVehicleWeaponDef]");
+                    TacticalEventDef tacticalEventDef = DefCache.GetDef<TacticalEventDef>("HurtVoice_EventDef");
+                    newAbility.EventOnActivate = tacticalEventDef;
+
+                    string filePath = Path.Combine(TFTVMain.ModDirectory, "Assets", "incoming_projectile_sfx.mp3");
+
+                    TFTVAudio.ExternalAudioInjector.RegisterClipFromFile(tacticalEventDef.Name, filePath);
 
                     TacticalTargetingDataDef tacticalTargetingDataDef = newAbility.TargetingDataDef;
 
@@ -445,7 +451,7 @@ namespace TFTV
                     tacticalTargetingDataDef.Origin.TargetResult = TargetResult.Position;
                     tacticalTargetingDataDef.Origin.Range = 100;
 
-                    newAbility.EventOnActivate = DefCache.GetDef<TacticalEventDef>("LaunchDamageVoice_EventDef");
+                   // newAbility.EventOnActivate = DefCache.GetDef<TacticalEventDef>("LaunchDamageVoice_EventDef");
 
                     newAbility.SceneViewElementDef = Helper.CreateDefFromClone(jetJumpAbilityDef.SceneViewElementDef, guid4, name);
 
@@ -468,7 +474,7 @@ namespace TFTV
 
 
                     newAbility.SceneViewElementDef.HoverMarker = PhoenixPoint.Tactical.View.GroundMarkerType.AttackGround;
-
+                    newAbility.SceneViewElementDef.TargetPositionMarker  = PhoenixPoint.Tactical.View.GroundMarkerType.Invalid; 
                     newAbility.SceneViewElementDef.DrawCoverAtHoverMarker = false;
 
 

@@ -3,11 +3,15 @@ using Base.Core;
 using Base.Defs;
 using Base.Entities;
 using Base.Entities.Effects;
+using Base.Eventus;
 using Base.Serialization.General;
 using PhoenixPoint.Common.Utils;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Effects;
+using PhoenixPoint.Tactical.Entities.Weapons;
+using PhoenixPoint.Tactical.Eventus;
+using PhoenixPoint.Tactical.Eventus.Contexts;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -39,7 +43,10 @@ namespace TFTV.TFTVAircraftRework
         public Sprite[] LevelIcons = System.Array.Empty<Sprite>();
 
         [Header("Projectile Settings")]
-        public GameObject ProjectilePrefab = null;
+        public ProjectileDef ProjectileDef = null;
+
+        [Tooltip("Audio event played when the projectile is spawned and travelling toward the target.")]
+        public TacticalEventDef ProjectileIncomingAudioEvent = null;
 
         [Tooltip("Height above the impact point where the projectile is spawned.")]
         public float ProjectileSpawnHeight = 100f;
@@ -125,8 +132,6 @@ namespace TFTV.TFTVAircraftRework
                     yield return NextUpdate.Seconds(def.DelayBetweenStrikesSeconds);
                 }
             }
-
-            //  TFTVAircraftReworkMain.Modules.Tactical.GroundAttackWeapon.RemoveGroundAttackWeaponModuleAbility(TacticalActor.TacticalLevel);
         }
 
         private List<Vector3> GenerateImpactPattern(Vector3 center)
@@ -194,14 +199,15 @@ namespace TFTV.TFTVAircraftRework
         {
             GroundAttackWeaponAbilityDef def = GroundAttackWeaponAbilityDef;
 
-            if (def.ProjectilePrefab == null || def.ProjectileSpawnHeight <= 0f)
+            Vector3 spawnPoint = position + Vector3.up * Mathf.Max(0f, def.ProjectileSpawnHeight);
+            float rayLength = def.ProjectileSpawnHeight + Mathf.Max(0f, def.ProjectileMaxRaycastDistanceBuffer);
+
+            if (def.ProjectileDef == null || def.ProjectileSpawnHeight <= 0f)
             {
+                PlayProjectileIncomingAudio(null, spawnPoint, position);
                 ApplyExplosion(position, explosion);
                 yield break;
             }
-
-            Vector3 spawnPoint = position + Vector3.up * Mathf.Max(0f, def.ProjectileSpawnHeight);
-            float rayLength = def.ProjectileSpawnHeight + Mathf.Max(0f, def.ProjectileMaxRaycastDistanceBuffer);
 
             if (Physics.Raycast(spawnPoint, Vector3.down, out RaycastHit hit, rayLength, def.ProjectileRaycastMask))
             {
@@ -213,19 +219,42 @@ namespace TFTV.TFTVAircraftRework
                 yield break;
             }
 
+            PlayProjectileIncomingAudio(null, spawnPoint, position);
             ApplyExplosion(position, explosion);
         }
 
         private IEnumerable<NextUpdate> SpawnProjectileAndResolve(Vector3 spawnPoint, Vector3 impactPoint, DelayedEffectDef explosion)
         {
-            GameObject projectileInstance = null;
+            Projectile projectileInstance = null;
+            GroundAttackWeaponAbilityDef def = GroundAttackWeaponAbilityDef;
 
-            if (GroundAttackWeaponAbilityDef.ProjectilePrefab != null)
+            if (def.ProjectileDef != null)
             {
-                projectileInstance = UnityEngine.Object.Instantiate(GroundAttackWeaponAbilityDef.ProjectilePrefab, spawnPoint, Quaternion.LookRotation(Vector3.down));
+                Vector3 direction = (impactPoint - spawnPoint).normalized;
+                if (direction == Vector3.zero)
+                {
+                    direction = Vector3.down;
+                }
+
+                projectileInstance = base.Repo.Instantiate<Projectile>(
+                    def.ProjectileDef,
+                    null,
+                    new Vector3?(spawnPoint),
+                    new Quaternion?(Quaternion.LookRotation(direction)),
+                    false);
+
+                if (projectileInstance != null)
+                {
+                    projectileInstance.Setup(TacticalActor, this, TacticalActor?.Equipments?.SelectedWeapon);
+                    projectileInstance.OnProjectileStart();
+                }
             }
 
-            foreach (NextUpdate update in AnimateProjectile(projectileInstance, spawnPoint, impactPoint))
+            Transform projectileTransform = projectileInstance != null ? projectileInstance.transform : null;
+
+            PlayProjectileIncomingAudio(projectileTransform, spawnPoint, impactPoint);
+
+            foreach (NextUpdate update in AnimateProjectile(projectileTransform, spawnPoint, impactPoint))
             {
                 yield return update;
             }
@@ -234,35 +263,92 @@ namespace TFTV.TFTVAircraftRework
 
             if (projectileInstance != null)
             {
-                UnityEngine.Object.Destroy(projectileInstance);
+                if (projectileTransform != null)
+                {
+                    projectileTransform.position = impactPoint;
+                }
+
+                projectileInstance.OnTrajectoryEnd();
             }
         }
 
-        private IEnumerable<NextUpdate> AnimateProjectile(GameObject projectileInstance, Vector3 start, Vector3 end)
+        private void PlayProjectileIncomingAudio(Transform projectileTransform, Vector3 spawnPoint, Vector3 impactPoint)
+        {
+            GroundAttackWeaponAbilityDef def = GroundAttackWeaponAbilityDef;
+            TacticalEventDef audioEvent = def.ProjectileIncomingAudioEvent;
+            if (audioEvent == null)
+            {
+                return;
+            }
+
+            EventusManager eventusManager = GameUtl.GameComponent<EventusManager>();
+            if (eventusManager == null)
+            {
+                return;
+            }
+
+            TacticalActor tacticalActor = TacticalActor;
+            BaseEventContext context;
+            if (projectileTransform != null && tacticalActor != null)
+            {
+                TFTVLogger.Always($"context, first option");
+                context = new TacActorEventContext(tacticalActor, tacticalActor, projectileTransform, null);
+            }
+            else
+            {
+                TFTVLogger.Always($"context, second option");
+                Vector3 targetPosition = projectileTransform != null ? projectileTransform.position : spawnPoint;
+                Quaternion? orientation = null;
+                Vector3 travelVector = impactPoint - spawnPoint;
+                if (travelVector.sqrMagnitude > 0.001f)
+                {
+                    orientation = Quaternion.LookRotation(travelVector.normalized);
+                }
+
+                object sender = (object)tacticalActor ?? this;
+                context = new SimpleWorldEventContext(sender, projectileTransform, targetPosition, null, orientation);
+            }
+
+            TFTVLogger.Always($"playing event");
+
+            eventusManager.PlayEventDirect(audioEvent, context);
+        }
+
+        private IEnumerable<NextUpdate> AnimateProjectile(Transform projectileTransform, Vector3 start, Vector3 end)
         {
             float distance = Vector3.Distance(start, end);
             float travelTime = distance / Mathf.Max(1f, GroundAttackWeaponAbilityDef.ProjectileSpeed);
             float elapsed = 0f;
+
+            if (projectileTransform != null)
+            {
+                Vector3 direction = (end - start).normalized;
+                if (direction == Vector3.zero)
+                {
+                    direction = Vector3.down;
+                }
+
+                projectileTransform.rotation = Quaternion.LookRotation(direction);
+            }
 
             while (elapsed < travelTime)
             {
                 elapsed += Timing.Delta;
                 float t = Mathf.Clamp01(elapsed / travelTime);
 
-                if (projectileInstance != null)
+                if (projectileTransform != null)
                 {
-                    projectileInstance.transform.position = Vector3.Lerp(start, end, t);
+                    projectileTransform.position = Vector3.Lerp(start, end, t);
                 }
 
                 yield return NextUpdate.NextFrame;
             }
 
-            if (projectileInstance != null)
+            if (projectileTransform != null)
             {
-                projectileInstance.transform.position = end;
+                projectileTransform.position = end;
             }
         }
-
 
         private void ApplyExplosion(Vector3 position, DelayedEffectDef explosion)
         {
