@@ -17,6 +17,7 @@ using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.Levels;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.Utils;
 using PhoenixPoint.Common.View.ViewModules;
@@ -432,13 +433,8 @@ namespace TFTV
                     newAbility.ViewElementDef = Helper.CreateDefFromClone(jetJumpAbilityDef.ViewElementDef, guid2, name);
                     newAbility.TargetingDataDef = Helper.CreateDefFromClone(jetJumpAbilityDef.TargetingDataDef, guid3, name);
                     newAbility.ProjectileDef = DefCache.GetDef<ProjectileDef>("E_ProjectileVisuals [PX_Scarab_Missile_Turret_GroundVehicleWeaponDef]");
-                    TacticalEventDef tacticalEventDef = DefCache.GetDef<TacticalEventDef>("HurtVoice_EventDef");
-                    newAbility.EventOnActivate = tacticalEventDef;
-
-                    string filePath = Path.Combine(TFTVMain.ModDirectory, "Assets", "incoming_projectile_sfx.mp3");
-
-                    TFTVAudio.ExternalAudioInjector.RegisterClipFromFile(tacticalEventDef.Name, filePath);
-
+               
+                   
                     TacticalTargetingDataDef tacticalTargetingDataDef = newAbility.TargetingDataDef;
 
                     tacticalTargetingDataDef.Target.TargetResult = TargetResult.Position;

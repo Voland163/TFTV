@@ -5,6 +5,7 @@ using Base.Eventus;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Eventus;
 using PhoenixPoint.Tactical.Eventus.Contexts;
 using PhoenixPoint.Tactical.Eventus.Filters;
 using System;
@@ -33,8 +34,8 @@ namespace TFTV
         public static class ExternalAudioInjector
         {
             private static readonly ConditionalWeakTable<AudioManager, AudioManagerHook> Hooks = new ConditionalWeakTable<AudioManager, AudioManagerHook>();
-            private static readonly Dictionary<string, IExternalAudioPlayback> Registrations =
-                new Dictionary<string, IExternalAudioPlayback>(StringComparer.OrdinalIgnoreCase);
+            private static readonly Dictionary<TacticalEventDef, IExternalAudioPlayback> Registrations =
+                new Dictionary<TacticalEventDef, IExternalAudioPlayback>();
 
             private static readonly MethodInfo _getEventusManagerMethod =
                AccessTools.Method(typeof(AudioManager), "GetEventusManager", Type.EmptyTypes);
@@ -45,25 +46,31 @@ namespace TFTV
             ///     Gets or sets whether events without an explicit external registration should fall back to
             ///     the original Wwise handler. Defaults to <c>false</c> which effectively mutes unregistered events.
             /// </summary>
+            /// 
+            static ExternalAudioInjector()
+            {
+                FallbackToOriginalHandler = true;
+            }
+
             public static bool FallbackToOriginalHandler { get; set; }
 
             /// <summary>
-            ///     Registers a fixed <see cref="AudioClip"/> for the supplied Wwise event name.
+            ///    Registers a fixed <see cref="AudioClip"/> for the supplied tactical event definition.
             /// </summary>
             public static void RegisterClip(
-    string eventName,
+    TacticalEventDef eventDef,
     AudioClip clip,
     float volume = 1f,
     bool loop = false,
     float spatialBlend = 1f,
     Action<AudioSource> configureSource = null)
             {
-                if (string.IsNullOrWhiteSpace(eventName))
-                    throw new ArgumentException("Event name must be provided", nameof(eventName));
+                if (eventDef == null)
+                    throw new ArgumentNullException(nameof(eventDef));
                 if (clip == null)
                     throw new ArgumentNullException(nameof(clip));
 
-                Registrations[eventName] = new ExternalAudioClipPlayback(
+                Registrations[eventDef] = new ExternalAudioClipPlayback(
                     (ctx, evt) => clip, // replace (_, _) => clip
                     volume,
                     loop,
@@ -74,13 +81,13 @@ namespace TFTV
                             configureSource(source);
                     });
             }
-
+            
 
             /// <summary>
-            ///     Loads an <see cref="AudioClip"/> from disk and registers it for the supplied Wwise event name.
+            ///     Loads an <see cref="AudioClip"/> from disk and registers it for the supplied tactical event definition.
             /// </summary>
             public static AudioClip RegisterClipFromFile(
-                string eventName,
+                TacticalEventDef eventDef,
                 string filePath,
                 float volume = 1f,
                 bool loop = false,
@@ -93,24 +100,24 @@ namespace TFTV
                 TFTVLogger.Always($"registering clip {filePath}");
                 AudioClip clip = LoadClipFromFile(filePath, audioType, streamAudio);
                 TFTVLogger.Always($"got the clip");
-                RegisterClip(eventName, clip, volume, loop, spatialBlend, configureSource);
+                RegisterClip(eventDef, clip, volume, loop, spatialBlend, configureSource);
                 TFTVLogger.Always($"registering the clip");
                 return clip;
             }
 
             /// <summary>
-            ///     Registers a delegate that resolves a clip at runtime for the given Wwise event name.
+            ///      Registers a delegate that resolves a clip at runtime for the given tactical event definition.
             /// </summary>
-            public static void RegisterResolver(string eventName,
-                Func<AudioEventData, BaseEventContext, AudioClip> clipResolver,
+            public static void RegisterResolver(TacticalEventDef eventDef,
+               Func<AudioEventData, BaseEventContext, AudioClip> clipResolver,
                 float volume = 1f,
                 bool loop = false,
                 float spatialBlend = 1f,
                 Action<AudioSource, AudioEventData, BaseEventContext> configureSource = null)
             {
-                if (string.IsNullOrWhiteSpace(eventName))
+                if (eventDef == null)
                 {
-                    throw new ArgumentException("Event name must be provided", nameof(eventName));
+                    throw new ArgumentNullException(nameof(eventDef));
                 }
 
                 if (clipResolver == null)
@@ -118,8 +125,8 @@ namespace TFTV
                     throw new ArgumentNullException(nameof(clipResolver));
                 }
 
-                Registrations[eventName] = new ExternalAudioClipPlayback(
-                    clipResolver,
+                Registrations[eventDef] = new ExternalAudioClipPlayback(
+                  clipResolver,
                     volume,
                     loop,
                     spatialBlend,
@@ -130,12 +137,12 @@ namespace TFTV
             ///     Registers a custom playback delegate for the supplied Wwise event name.
             ///     The delegate should return <c>true</c> when it consumes the event.
             /// </summary>
-            public static void RegisterHandler(string eventName,
-                Func<AudioEventData, BaseEventContext, bool> playbackHandler)
+            public static void RegisterHandler(TacticalEventDef eventDef,
+                 Func<AudioEventData, BaseEventContext, bool> playbackHandler)
             {
-                if (string.IsNullOrWhiteSpace(eventName))
+                if (eventDef == null)
                 {
-                    throw new ArgumentException("Event name must be provided", nameof(eventName));
+                    throw new ArgumentNullException(nameof(eventDef));
                 }
 
                 if (playbackHandler == null)
@@ -143,8 +150,10 @@ namespace TFTV
                     throw new ArgumentNullException(nameof(playbackHandler));
                 }
 
-                Registrations[eventName] = new DelegateAudioPlayback(playbackHandler);
+                Registrations[eventDef] = new DelegateAudioPlayback(playbackHandler);
             }
+
+            
 
             public static void EnsureHooksOnExistingManagers()
             {
@@ -184,9 +193,17 @@ namespace TFTV
             }
 
             /// <summary>
-            ///     Clears any custom registration for the provided event name.
+            ///     Clears any custom registration for the provided event definition.
             /// </summary>
-            public static bool Unregister(string eventName) => Registrations.Remove(eventName);
+            public static bool Unregister(TacticalEventDef eventDef)
+            {
+                if (eventDef == null)
+                {
+                    throw new ArgumentNullException(nameof(eventDef));
+                }
+
+                return Registrations.Remove(eventDef);
+            }
 
             /// <summary>
             ///     Removes all registered mappings.
@@ -242,6 +259,8 @@ namespace TFTV
 
                     AudioClip clip = DownloadHandlerAudioClip.GetContent(request) ?? throw new InvalidOperationException($"Failed to decode audio clip from '{absolutePath}'.");
                     clip.name = Path.GetFileNameWithoutExtension(absolutePath);
+
+                    TFTVLogger.Always($"clip null? {clip == null}");
                     return clip;
                 }
             }
@@ -311,46 +330,31 @@ namespace TFTV
                     return false;
                 }
 
+                TacticalEventDef eventDef = audioEvent.EventDef as TacticalEventDef;
 
+                TFTVLogger.Always($"audioEvent.EventDef == null {audioEvent.EventDef == null} {eventDef?.Name}");
 
-                string key = ResolveEventKey(audioEvent);
-
-
-                TFTVLogger.Always($"string.IsNullOrEmpty(key) {string.IsNullOrEmpty(key)}");
-
-                if (string.IsNullOrEmpty(key))
+                if (eventDef == null)
                 {
+                    if (audioEvent.EventDef != null)
+                    {
+                        TFTVLogger.Always($"audioEvent.EventDef type {audioEvent.EventDef.GetType()} not TacticalEventDef");
+                    }
                     return false;
                 }
 
-
-                if (!Registrations.TryGetValue(key, out IExternalAudioPlayback playback))
+                if (!Registrations.TryGetValue(eventDef, out IExternalAudioPlayback playback))
                 {
-                    TFTVLogger.Always($"!Registrations.TryGetValue(key, out IExternalAudioPlayback playback)");
+                    TFTVLogger.Always($"!Registrations.TryGetValue({eventDef.name}, out IExternalAudioPlayback playback)");
                     return false;
                 }
+
+                TFTVLogger.Always($"going to try play {audioEvent?.Event?.Name} {audioEvent?.EventDef?.name}");
 
                 return playback.TryPlay(manager, audioEvent, context ?? new SimpleEventContext(manager.gameObject));
             }
 
-            private static string ResolveEventKey(AudioEventData audioEvent)
-            {
-                Event wwiseEvent = audioEvent.Event;
-                if (wwiseEvent != null)
-                {
-                    if (!string.IsNullOrWhiteSpace(wwiseEvent.Name))
-                    {
-                        return wwiseEvent.Name;
-                    }
-
-                    if (wwiseEvent.Id != 0U)
-                    {
-                        return wwiseEvent.Id.ToString(CultureInfo.InvariantCulture);
-                    }
-                }
-
-                return audioEvent.EventDef.Name;
-            }
+           
 
             private static Transform ResolveEmitter(AudioManager manager, BaseEventContext context)
             {
@@ -531,7 +535,7 @@ namespace TFTV
                 {
                     AudioClip clip = _clipResolver(eventData, context);
 
-                    TFTVLogger.Always($"clip==null? {clip == null}");
+                    TFTVLogger.Always($"trying to play {eventData?.EventDef?.name} clip==null? {clip == null}");
 
                     if (clip == null)
                     {
@@ -559,6 +563,9 @@ namespace TFTV
                     audioSource.spatialBlend = _spatialBlend;
                     audioSource.loop = _loop;
                     audioSource.volume = _volume;
+
+                    TFTVLogger.Always($"_configureSource==null: {_configureSource==null}");
+
                     _configureSource?.Invoke(audioSource, eventData, context);
 
                     if (_loop)

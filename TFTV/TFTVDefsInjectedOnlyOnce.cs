@@ -24,6 +24,7 @@ using PhoenixPoint.Common.Entities.RedeemableCodes;
 using PhoenixPoint.Common.Levels;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
@@ -52,6 +53,7 @@ using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 using static PhoenixPoint.Common.Entities.Addons.AddonDef;
@@ -239,6 +241,8 @@ namespace TFTV
 
                 Print();
 
+                ChangeScyllaSounds();
+
             }
             catch (Exception e)
             {
@@ -246,6 +250,23 @@ namespace TFTV
             }
         }
 
+        private static void ChangeScyllaSounds()
+        {
+            try 
+            {
+                TacticalEventDef tacticalEventDef = DefCache.GetDef<TacticalEventDef>("Queen_MistHurt_EventDef");
+
+                string filePath = Path.Combine(TFTVMain.ModDirectory, "Assets", "scylla_mist_hurt_roar.mp3");
+
+                TFTVAudio.ExternalAudioInjector.RegisterClipFromFile(tacticalEventDef, filePath, 100, false, 1, null, AudioType.MPEG);
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
        
 
 
