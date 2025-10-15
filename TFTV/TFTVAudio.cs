@@ -2,6 +2,7 @@
 using Base.Audio;
 using Base.Entities;
 using Base.Eventus;
+using Base.Utils;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Tactical.Entities;
@@ -18,9 +19,14 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Networking;
+using Object = UnityEngine.Object;
 
 namespace TFTV
 {
+
+   
+
+
     internal class TFTVAudio
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
@@ -34,54 +40,57 @@ namespace TFTV
         public static class ExternalAudioInjector
         {
             private static readonly ConditionalWeakTable<AudioManager, AudioManagerHook> Hooks = new ConditionalWeakTable<AudioManager, AudioManagerHook>();
+
             private static readonly Dictionary<TacticalEventDef, IExternalAudioPlayback> Registrations =
                 new Dictionary<TacticalEventDef, IExternalAudioPlayback>();
 
-            private static readonly MethodInfo _getEventusManagerMethod =
-               AccessTools.Method(typeof(AudioManager), "GetEventusManager", Type.EmptyTypes);
+            private static readonly MethodInfo GetEventusManagerMethod =
+                AccessTools.Method(typeof(AudioManager), "GetEventusManager", Type.EmptyTypes);
 
             private static GameObject _fallbackEmitter;
+            private static AudioListener _managedListener;
+            private static string _fallbackAnchorName;
 
-            /// <summary>
-            ///     Gets or sets whether events without an explicit external registration should fall back to
-            ///     the original Wwise handler. Defaults to <c>false</c> which effectively mutes unregistered events.
-            /// </summary>
-            /// 
             static ExternalAudioInjector()
             {
                 FallbackToOriginalHandler = true;
             }
 
+            /// <summary>
+            ///     Gets or sets whether events without an explicit external registration should fall back to
+            ///     the original Wwise handler. Defaults to <c>false</c> which effectively mutes unregistered events.
+            /// </summary>
             public static bool FallbackToOriginalHandler { get; set; }
 
             /// <summary>
-            ///    Registers a fixed <see cref="AudioClip"/> for the supplied tactical event definition.
+            ///     Registers a fixed <see cref="AudioClip"/> for the supplied tactical event definition.
             /// </summary>
             public static void RegisterClip(
     TacticalEventDef eventDef,
     AudioClip clip,
     float volume = 1f,
     bool loop = false,
-    float spatialBlend = 1f,
+    float spatialBlend = 0f,
     Action<AudioSource> configureSource = null)
             {
                 if (eventDef == null)
                     throw new ArgumentNullException(nameof(eventDef));
+
                 if (clip == null)
                     throw new ArgumentNullException(nameof(clip));
 
                 Registrations[eventDef] = new ExternalAudioClipPlayback(
-                    (ctx, evt) => clip, // replace (_, _) => clip
+                    (ctx, evt) => clip,              // replaced (_, _) => clip
                     volume,
                     loop,
                     spatialBlend,
-                    (source, ctx, evt) =>
+                    (source, ctx, evt) =>            // replaced (source, _, _) => ...
                     {
                         if (configureSource != null)
                             configureSource(source);
                     });
             }
-            
+
 
             /// <summary>
             ///     Loads an <see cref="AudioClip"/> from disk and registers it for the supplied tactical event definition.
@@ -96,20 +105,17 @@ namespace TFTV
                 AudioType audioType = AudioType.UNKNOWN,
                 bool streamAudio = false)
             {
-
-                TFTVLogger.Always($"registering clip {filePath}");
                 AudioClip clip = LoadClipFromFile(filePath, audioType, streamAudio);
-                TFTVLogger.Always($"got the clip");
                 RegisterClip(eventDef, clip, volume, loop, spatialBlend, configureSource);
-                TFTVLogger.Always($"registering the clip");
                 return clip;
             }
 
             /// <summary>
             ///      Registers a delegate that resolves a clip at runtime for the given tactical event definition.
             /// </summary>
-            public static void RegisterResolver(TacticalEventDef eventDef,
-               Func<AudioEventData, BaseEventContext, AudioClip> clipResolver,
+            public static void RegisterResolver(
+                TacticalEventDef eventDef,
+                Func<AudioEventData, BaseEventContext, AudioClip> clipResolver,
                 float volume = 1f,
                 bool loop = false,
                 float spatialBlend = 1f,
@@ -126,7 +132,7 @@ namespace TFTV
                 }
 
                 Registrations[eventDef] = new ExternalAudioClipPlayback(
-                  clipResolver,
+                    clipResolver,
                     volume,
                     loop,
                     spatialBlend,
@@ -134,11 +140,12 @@ namespace TFTV
             }
 
             /// <summary>
-            ///     Registers a custom playback delegate for the supplied Wwise event name.
+            ///     Registers a custom playback delegate for the supplied tactical event definition.
             ///     The delegate should return <c>true</c> when it consumes the event.
             /// </summary>
-            public static void RegisterHandler(TacticalEventDef eventDef,
-                 Func<AudioEventData, BaseEventContext, bool> playbackHandler)
+            public static void RegisterHandler(
+                TacticalEventDef eventDef,
+                Func<AudioEventData, BaseEventContext, bool> playbackHandler)
             {
                 if (eventDef == null)
                 {
@@ -152,8 +159,6 @@ namespace TFTV
 
                 Registrations[eventDef] = new DelegateAudioPlayback(playbackHandler);
             }
-
-            
 
             public static void EnsureHooksOnExistingManagers()
             {
@@ -208,7 +213,10 @@ namespace TFTV
             /// <summary>
             ///     Removes all registered mappings.
             /// </summary>
-            public static void ClearRegistrations() => Registrations.Clear();
+            public static void ClearRegistrations()
+            {
+                Registrations.Clear();
+            }
 
             /// <summary>
             ///     Loads an <see cref="AudioClip"/> from the specified file path.
@@ -240,8 +248,7 @@ namespace TFTV
 
                 using (UnityWebRequest request = UnityWebRequestMultimedia.GetAudioClip(uri, audioType))
                 {
-                    DownloadHandlerAudioClip downloadHandler = request.downloadHandler as DownloadHandlerAudioClip;
-                    if (downloadHandler != null)
+                    if (request.downloadHandler is DownloadHandlerAudioClip downloadHandler)
                     {
                         downloadHandler.streamAudio = streamAudio;
                     }
@@ -252,15 +259,17 @@ namespace TFTV
                         Thread.Sleep(1);
                     }
 
+#if UNITY_2020_2_OR_NEWER
+                if (request.result != UnityWebRequest.Result.Success)
+#else
                     if (request.isNetworkError || request.isHttpError)
+#endif
                     {
                         throw new InvalidOperationException($"Failed to load audio clip from '{absolutePath}': {request.error}");
                     }
 
                     AudioClip clip = DownloadHandlerAudioClip.GetContent(request) ?? throw new InvalidOperationException($"Failed to decode audio clip from '{absolutePath}'.");
                     clip.name = Path.GetFileNameWithoutExtension(absolutePath);
-
-                    TFTVLogger.Always($"clip null? {clip == null}");
                     return clip;
                 }
             }
@@ -269,8 +278,6 @@ namespace TFTV
             [HarmonyPostfix]
             private static void AudioManagerInitPostfix(AudioManager __instance)
             {
-                TFTVLogger.Always($"AudioManager.Init: __instance == null {__instance == null} ");
-
                 if (__instance == null)
                 {
                     return;
@@ -294,7 +301,7 @@ namespace TFTV
                     return;
                 }
 
-                var hook = new AudioManagerHook(__instance, methodCache);
+                AudioManagerHook hook = new AudioManagerHook(__instance, methodCache);
                 hook.Install(eventusManager);
                 Hooks.Add(__instance, hook);
             }
@@ -323,38 +330,24 @@ namespace TFTV
 
             private static bool TryHandle(AudioManager manager, AudioEventData audioEvent, BaseEventContext context)
             {
-                TFTVLogger.Always($"audioEvent == null {audioEvent == null}");
-
                 if (audioEvent == null)
                 {
                     return false;
                 }
 
                 TacticalEventDef eventDef = audioEvent.EventDef as TacticalEventDef;
-
-                TFTVLogger.Always($"audioEvent.EventDef == null {audioEvent.EventDef == null} {eventDef?.Name}");
-
                 if (eventDef == null)
                 {
-                    if (audioEvent.EventDef != null)
-                    {
-                        TFTVLogger.Always($"audioEvent.EventDef type {audioEvent.EventDef.GetType()} not TacticalEventDef");
-                    }
                     return false;
                 }
 
                 if (!Registrations.TryGetValue(eventDef, out IExternalAudioPlayback playback))
                 {
-                    TFTVLogger.Always($"!Registrations.TryGetValue({eventDef.name}, out IExternalAudioPlayback playback)");
                     return false;
                 }
 
-                TFTVLogger.Always($"going to try play {audioEvent?.Event?.Name} {audioEvent?.EventDef?.name}");
-
                 return playback.TryPlay(manager, audioEvent, context ?? new SimpleEventContext(manager.gameObject));
             }
-
-           
 
             private static Transform ResolveEmitter(AudioManager manager, BaseEventContext context)
             {
@@ -374,39 +367,168 @@ namespace TFTV
                     return manager.transform;
                 }
 
-                return EnsureFallbackEmitter().transform;
+                return EnsureFallbackEmitter(manager, context).transform;
             }
 
-
-
-            private static GameObject EnsureFallbackEmitter()
+            private static GameObject EnsureFallbackEmitter(AudioManager manager, BaseEventContext context)
             {
                 if (_fallbackEmitter != null)
                 {
-                    return _fallbackEmitter;
+                    if (_fallbackEmitter)
+                    {
+                        SyncFallbackEmitterAnchor(manager, context);
+                        return _fallbackEmitter;
+                    }
+
+                    _fallbackEmitter = null;
                 }
 
                 _fallbackEmitter = new GameObject("ExternalAudioEmitter");
                 UnityEngine.Object.DontDestroyOnLoad(_fallbackEmitter);
                 _fallbackEmitter.hideFlags = HideFlags.HideAndDontSave;
                 _fallbackEmitter.AddComponent<AudioSource>();
+                SyncFallbackEmitterAnchor(manager, context);
                 return _fallbackEmitter;
+            }
+
+            private static void SyncFallbackEmitterAnchor(AudioManager manager, BaseEventContext context)
+            {
+                if (_fallbackEmitter == null)
+                {
+                    return;
+                }
+
+                Transform anchor = ResolveFallbackAnchor(manager, context);
+                if (anchor != null)
+                {
+                    if (_fallbackEmitter.transform.parent != anchor)
+                    {
+                        if (_fallbackEmitter.transform.parent != null)
+                        {
+                            AudioSource source = _fallbackEmitter.GetComponent<AudioSource>();
+                            if (source != null && source.isPlaying)
+                            {
+                                source.Stop();
+                            }
+                        }
+
+                        _fallbackEmitter.transform.SetParent(anchor, false);
+                        _fallbackEmitter.transform.localPosition = Vector3.zero;
+                        _fallbackEmitter.transform.localRotation = Quaternion.identity;
+                        _fallbackEmitter.transform.localScale = Vector3.one;
+
+                        string anchorScene = anchor.gameObject.scene.IsValid() ? anchor.gameObject.scene.name : "<no-scene>";
+                        string anchorName = $"{anchor.name} (scene: {anchorScene}, id: {anchor.GetInstanceID()})";
+                        if (_fallbackAnchorName != anchorName)
+                        {
+                            _fallbackAnchorName = anchorName;
+                        }
+                    }
+                }
+                else if (_fallbackEmitter.transform.parent != null)
+                {
+                    _fallbackEmitter.transform.SetParent(null, false);
+                    _fallbackAnchorName = null;
+                }
+            }
+
+            private static Transform ResolveFallbackAnchor(AudioManager manager, BaseEventContext context)
+            {
+                Camera managerCamera = manager?.GetComponentInChildren<Camera>();
+                if (managerCamera != null)
+                {
+                    return managerCamera.transform;
+                }
+
+                if (context is IWorldEventContext worldContext)
+                {
+                    Transform worldTarget = worldContext.TargetTransform;
+                    if (worldTarget)
+                    {
+                        Camera contextCamera = worldTarget.GetComponentInChildren<Camera>();
+                        if (contextCamera != null)
+                        {
+                            return contextCamera.transform;
+                        }
+                    }
+                }
+
+                if (Camera.main != null)
+                {
+                    return Camera.main.transform;
+                }
+
+                Camera anyCamera = UnityEngine.Object.FindObjectOfType<Camera>();
+                if (anyCamera != null)
+                {
+                    return anyCamera.transform;
+                }
+
+                return manager != null ? manager.transform : null;
+            }
+
+            private static AudioListener EnsureManagedAudioListener(AudioManager manager, BaseEventContext context)
+            {
+                if (_managedListener != null)
+                {
+                    if (_managedListener && _managedListener.isActiveAndEnabled)
+                    {
+                        return _managedListener;
+                    }
+
+                    _managedListener = null;
+                }
+
+                AudioListener listener = (manager?.GetComponentInChildren<AudioListener>()) ?? UnityEngine.Object.FindObjectOfType<AudioListener>();
+                TFTVLogger.Always($"found a listener? {listener != null}");
+
+                if (listener != null && listener.gameObject != _fallbackEmitter)
+                {
+                    if (!listener.isActiveAndEnabled)
+                    {
+                        listener = null;
+                    }
+                }
+
+                if (listener != null)
+                {
+                    _managedListener = listener;
+                    return _managedListener;
+                }
+
+                GameObject fallback = EnsureFallbackEmitter(manager, context);
+                listener = fallback.GetComponent<AudioListener>();
+                if (listener == null)
+                {
+                    listener = fallback.AddComponent<AudioListener>();
+                }
+
+                if (!listener.enabled)
+                {
+                    listener.enabled = true;
+                }
+
+                if (!listener.gameObject.activeSelf)
+                {
+                    listener.gameObject.SetActive(true);
+                }
+
+                _managedListener = listener;
+                return _managedListener;
             }
 
             private static EventusManager ResolveEventusManager(AudioManager manager)
             {
-                TFTVLogger.Always($"Manager null? {manager == null}");
-
                 if (manager == null)
                 {
                     return null;
                 }
 
-                if (_getEventusManagerMethod != null)
+                if (GetEventusManagerMethod != null)
                 {
                     try
                     {
-                        return (EventusManager)_getEventusManagerMethod.Invoke(manager, Array.Empty<object>());
+                        return (EventusManager)GetEventusManagerMethod.Invoke(manager, Array.Empty<object>());
                     }
                     catch
                     {
@@ -533,9 +655,16 @@ namespace TFTV
 
                 public bool TryPlay(AudioManager manager, AudioEventData eventData, BaseEventContext context)
                 {
+
+                    TFTVLogger.Always($"TryPlay: {eventData?.EventDef?.name}");
+
+                    EnsureManagedAudioListener(manager, context);
+
+                    TFTVLogger.Always($"_managedListener==null: {_managedListener==null}");
+
                     AudioClip clip = _clipResolver(eventData, context);
 
-                    TFTVLogger.Always($"trying to play {eventData?.EventDef?.name} clip==null? {clip == null}");
+                    TFTVLogger.Always($"clip {clip == null}");
 
                     if (clip == null)
                     {
@@ -543,16 +672,16 @@ namespace TFTV
                     }
 
                     Transform emitter = ResolveEmitter(manager, context);
+                    
+                    TFTVLogger.Always($"emitter == null {emitter == null}");
 
-                    TFTVLogger.Always($"emitter==null? {emitter == null}");
                     if (emitter == null)
                     {
                         return false;
                     }
 
                     AudioSource audioSource = emitter.GetComponent<AudioSource>();
-
-                    TFTVLogger.Always($"audioSource==null? {audioSource == null}");
+                    TFTVLogger.Always($"audioSource == null {audioSource == null}");
 
                     if (audioSource == null)
                     {
@@ -560,12 +689,13 @@ namespace TFTV
                         audioSource.playOnAwake = false;
                     }
 
-                    audioSource.spatialBlend = _spatialBlend;
+                    
+
+                    audioSource.spatialBlend = 0; //_spatialBlend;
                     audioSource.loop = _loop;
                     audioSource.volume = _volume;
-
-                    TFTVLogger.Always($"_configureSource==null: {_configureSource==null}");
-
+                    TFTVLogger.Always($"audioSource.spatialBlend: {audioSource.spatialBlend}");
+                    TFTVLogger.Always($"_configureSource == null {_configureSource == null}");
                     _configureSource?.Invoke(audioSource, eventData, context);
 
                     if (_loop)
@@ -583,9 +713,7 @@ namespace TFTV
                         audioSource.clip = null;
                         audioSource.PlayOneShot(clip);
                     }
-
                     TFTVLogger.Always($"got all the way to the end");
-
 
                     return true;
                 }

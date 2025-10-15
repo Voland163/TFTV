@@ -91,6 +91,7 @@ namespace TFTV.TFTVDrills
         internal static PassiveModifierAbilityDef _snapBrace;
         internal static ShootAbilityDef _partingShot;
         internal static ReloadAbilityDef _ordnanceResupply;
+        internal static ShootAbilityDef _heavySharpshot;
         internal static PassiveModifierAbilityDef _pinpointToss;
         internal static ApplyStatusAbilityDef _heavyConditioning;
         internal static ExplosiveDisableShootAbilityDef _explosiveShot;
@@ -806,6 +807,9 @@ namespace TFTV.TFTVDrills
                 CreateAksuSprint();
                 CreateHeavyconditioning();
 
+                _heavySharpshot = CreateHeavySharpshotAbility();
+                Drills.Add(_heavySharpshot);
+
                 CreatePartingShotAccuracyaMalusStatus();
                 CreatePartingShootAbility();
                 CreateBulletHellDrill();
@@ -819,6 +823,62 @@ namespace TFTV.TFTVDrills
                 TFTVLogger.Error(e);
             }
         }
+
+        private static ShootAbilityDef CreateHeavySharpshotAbility()
+        {
+            try
+            {
+                const string name = "heavysharpshot";
+                const string abilityGuid = "5b0e3a7c-3c05-4c9f-8264-6f6ad7b1f158";
+                const string progressionGuid = "8f7b4a3e-3d1c-4a7f-bd75-0a2f9a6d8e44";
+                const string viewGuid = "2c7d650d-5dc6-46fd-a0e2-2b9a51c6bd9c";
+
+                string locKeyName = $"TFTV_DRILL_{name}_NAME";
+                string locKeyDesc = $"TFTV_DRILL_{name}_DESC";
+
+                Sprite icon = Helper.CreateSpriteFromImageFile($"Drill_{name}.png");
+
+                ShootAbilityDef source = DefCache.GetDef<ShootAbilityDef>("Weapon_ShootAbilityDef");
+                ShootAbilityDef newAbility = Helper.CreateDefFromClone(source, abilityGuid, name);
+
+                newAbility.CharacterProgressionData = Helper.CreateDefFromClone(
+                    source.CharacterProgressionData,
+                    progressionGuid,
+                    name);
+
+                newAbility.ViewElementDef = Helper.CreateDefFromClone(
+                    source.ViewElementDef,
+                    viewGuid,
+                    name);
+
+                newAbility.ViewElementDef.DisplayName1.LocalizationKey = locKeyName;
+                newAbility.ViewElementDef.Description.LocalizationKey = locKeyDesc;
+                newAbility.ViewElementDef.LargeIcon = icon;
+                newAbility.ViewElementDef.SmallIcon = icon;
+
+                newAbility.CharacterProgressionData.RequiredStrength = 0;
+                newAbility.CharacterProgressionData.RequiredSpeed = 0;
+                newAbility.CharacterProgressionData.RequiredWill = 0;
+
+                newAbility.ActionPointCost = 1f;
+                newAbility.WillPointCost = 2f;
+                newAbility.EquipmentTags = new GameTagDef[]
+                {
+                    DefCache.GetDef<GameTagDef>("HeavyItem_TagDef")
+                };
+                newAbility.ActorTags = Array.Empty<GameTagDef>();
+                newAbility.ProjectileSpreadMultiplier = 0.5f;
+                newAbility.DisablingStatuses = Array.Empty<StatusDef>();
+
+                return newAbility;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
 
         private static PassiveModifierAbilityDef CreateCommandOverlayAbility()
         {
