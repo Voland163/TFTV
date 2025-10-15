@@ -36,6 +36,9 @@ namespace TFTV
             private static readonly Dictionary<string, IExternalAudioPlayback> Registrations =
                 new Dictionary<string, IExternalAudioPlayback>(StringComparer.OrdinalIgnoreCase);
 
+            private static readonly MethodInfo _getEventusManagerMethod =
+               AccessTools.Method(typeof(AudioManager), "GetEventusManager", Type.EmptyTypes);
+
             private static GameObject _fallbackEmitter;
 
             /// <summary>
@@ -143,6 +146,43 @@ namespace TFTV
                 Registrations[eventName] = new DelegateAudioPlayback(playbackHandler);
             }
 
+            public static void EnsureHooksOnExistingManagers()
+            {
+                MethodInfoCache methodCache = MethodInfoCache.ForAudioManager();
+                if (methodCache == null)
+                {
+                    return;
+                }
+
+                AudioManager[] managers = Resources.FindObjectsOfTypeAll<AudioManager>();
+                if (managers == null || managers.Length == 0)
+                {
+                    return;
+                }
+
+                foreach (AudioManager manager in managers)
+                {
+                    if (manager == null)
+                    {
+                        continue;
+                    }
+
+                    EventusManager eventusManager = ResolveEventusManager(manager);
+                    if (eventusManager == null)
+                    {
+                        continue;
+                    }
+
+                    if (!Hooks.TryGetValue(manager, out AudioManagerHook hook))
+                    {
+                        hook = new AudioManagerHook(manager, methodCache);
+                        Hooks.Add(manager, hook);
+                    }
+
+                    hook.Install(eventusManager);
+                }
+            }
+
             /// <summary>
             ///     Clears any custom registration for the provided event name.
             /// </summary>
@@ -210,12 +250,14 @@ namespace TFTV
             [HarmonyPostfix]
             private static void AudioManagerInitPostfix(AudioManager __instance)
             {
+                TFTVLogger.Always($"AudioManager.Init: __instance == null {__instance == null} ");
+
                 if (__instance == null)
                 {
                     return;
                 }
 
-                EventusManager eventusManager = __instance.GetComponent<EventusManager>();
+                EventusManager eventusManager = ResolveEventusManager(__instance);
                 if (eventusManager == null)
                 {
                     return;
@@ -247,7 +289,7 @@ namespace TFTV
                     return;
                 }
 
-                EventusManager eventusManager = __instance.GetComponent<EventusManager>();
+                EventusManager eventusManager = ResolveEventusManager(__instance);
                 if (eventusManager == null)
                 {
                     return;
@@ -281,7 +323,7 @@ namespace TFTV
                     return false;
                 }
 
-       
+
                 if (!Registrations.TryGetValue(key, out IExternalAudioPlayback playback))
                 {
                     TFTVLogger.Always($"!Registrations.TryGetValue(key, out IExternalAudioPlayback playback)");
@@ -331,6 +373,8 @@ namespace TFTV
                 return EnsureFallbackEmitter().transform;
             }
 
+
+
             private static GameObject EnsureFallbackEmitter()
             {
                 if (_fallbackEmitter != null)
@@ -343,6 +387,30 @@ namespace TFTV
                 _fallbackEmitter.hideFlags = HideFlags.HideAndDontSave;
                 _fallbackEmitter.AddComponent<AudioSource>();
                 return _fallbackEmitter;
+            }
+
+            private static EventusManager ResolveEventusManager(AudioManager manager)
+            {
+                TFTVLogger.Always($"Manager null? {manager == null}");
+
+                if (manager == null)
+                {
+                    return null;
+                }
+
+                if (_getEventusManagerMethod != null)
+                {
+                    try
+                    {
+                        return (EventusManager)_getEventusManagerMethod.Invoke(manager, Array.Empty<object>());
+                    }
+                    catch
+                    {
+                        // ignored - fall back to component lookup below
+                    }
+                }
+
+                return manager.GetComponent<EventusManager>();
             }
 
             private static AudioType GuessAudioType(string extension)
@@ -463,7 +531,7 @@ namespace TFTV
                 {
                     AudioClip clip = _clipResolver(eventData, context);
 
-                    TFTVLogger.Always($"clip==null? {clip==null}");
+                    TFTVLogger.Always($"clip==null? {clip == null}");
 
                     if (clip == null)
                     {
@@ -480,7 +548,7 @@ namespace TFTV
 
                     AudioSource audioSource = emitter.GetComponent<AudioSource>();
 
-                    TFTVLogger.Always($"audioSource==null? {audioSource==null}");
+                    TFTVLogger.Always($"audioSource==null? {audioSource == null}");
 
                     if (audioSource == null)
                     {
@@ -533,19 +601,30 @@ namespace TFTV
 
             private sealed class MethodInfoCache
             {
+                private static readonly string[] MethodNames = { "OnPlayEvent", "PlayEvent" };
+
                 private readonly MethodInfo _methodInfo;
+                private readonly ParameterInfo[] _parameters;
 
                 private MethodInfoCache(MethodInfo methodInfo)
                 {
                     _methodInfo = methodInfo;
+                    _parameters = methodInfo?.GetParameters() ?? Array.Empty<ParameterInfo>();
                 }
 
                 public static MethodInfoCache ForAudioManager()
                 {
-                    var method = AccessTools.Method(typeof(AudioManager), "OnPlayEvent", new[]
+                    MethodInfo handlerInvoke = typeof(EventusManager.EventusHandler).GetMethod("Invoke");
+                    Type[] handlerParameters = handlerInvoke?.GetParameters()?.Select(p => p.ParameterType).ToArray();
+
+                    MethodInfo method = FindMethod(handlerParameters);
+
+                    if (method == null && handlerParameters != null && handlerParameters.Length > 0)
                     {
-                    typeof(BaseEventData), typeof(BaseEventContext)
-                });
+                        Type[] audioSpecificParameters = (Type[])handlerParameters.Clone();
+                        audioSpecificParameters[0] = typeof(AudioEventData);
+                        method = FindMethod(audioSpecificParameters);
+                    }
 
                     if (method == null)
                     {
@@ -555,6 +634,25 @@ namespace TFTV
                     return new MethodInfoCache(method);
                 }
 
+                private static MethodInfo FindMethod(Type[] parameterTypes)
+                {
+                    if (parameterTypes == null)
+                    {
+                        return null;
+                    }
+
+                    foreach (string name in MethodNames)
+                    {
+                        MethodInfo method = AccessTools.Method(typeof(AudioManager), name, parameterTypes);
+                        if (method != null)
+                        {
+                            return method;
+                        }
+                    }
+
+                    return null;
+                }
+
                 public EventusManager.EventusHandler CreateDelegate(AudioManager manager)
                 {
                     if (_methodInfo == null || manager == null)
@@ -562,10 +660,56 @@ namespace TFTV
                         return null;
                     }
 
-                    return (EventusManager.EventusHandler)Delegate.CreateDelegate(
-                        typeof(EventusManager.EventusHandler),
-                        manager,
-                        _methodInfo);
+                    try
+                    {
+                        EventusManager.EventusHandler handler = (EventusManager.EventusHandler)Delegate.CreateDelegate(
+                            typeof(EventusManager.EventusHandler),
+                            manager,
+                            _methodInfo,
+                            throwOnBindFailure: false);
+
+                        if (handler != null)
+                        {
+                            return handler;
+                        }
+                    }
+                    catch
+                    {
+                        // Fall through to wrapper creation when a direct delegate cannot be created.
+                    }
+
+                    if (_parameters.Length != 2)
+                    {
+                        return null;
+                    }
+
+                    Type eventParameterType = _parameters[0].ParameterType;
+                    Type contextParameterType = _parameters[1].ParameterType;
+
+                    return (eventData, context) =>
+                    {
+                        if (eventParameterType != null && !IsArgumentCompatible(eventParameterType, eventData))
+                        {
+                            return;
+                        }
+
+                        if (contextParameterType != null && !IsArgumentCompatible(contextParameterType, context))
+                        {
+                            return;
+                        }
+
+                        _methodInfo.Invoke(manager, new object[] { eventData, context });
+                    };
+                }
+
+                private static bool IsArgumentCompatible(Type parameterType, object argument)
+                {
+                    if (argument == null)
+                    {
+                        return !parameterType.IsValueType || Nullable.GetUnderlyingType(parameterType) != null;
+                    }
+
+                    return parameterType.IsInstanceOfType(argument);
                 }
             }
         }

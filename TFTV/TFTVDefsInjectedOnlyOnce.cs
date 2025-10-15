@@ -21,6 +21,7 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Entities.RedeemableCodes;
+using PhoenixPoint.Common.Levels;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
@@ -106,63 +107,16 @@ namespace TFTV
         {
             try
             {
-
-                DefCache.GetDef<GameTagDef>("AssaultRifleItem_TagDef");
-                DefCache.GetDef<GameTagDef>("HeavyItem_TagDef");
-                DefCache.GetDef<GameTagDef>("PDWItem_TagDef");
-                DefCache.GetDef<GameTagDef>("SniperRifleItem_TagDef");
-
-                List<WeaponDef> weapons = Repo.GetAllDefs<WeaponDef>().Where(w=>w.HandsToUse>1).ToList();
-
-            TFTVLogger.Always($"There are {weapons.Count} weapons that require 2 hands:");
-
-                foreach (TacticalItemDef item in weapons)
+                foreach(GamestateSoundDef gamestateSoundDef in Repo.GetAllDefs<GamestateSoundDef>()) 
                 {
-                    TFTVLogger.Always($"{item.name} requires 2 hands"); 
-                    
-                    if(item.Tags.Contains(DefCache.GetDef<GameTagDef>("AssaultRifleItem_TagDef"))||
-                        item.Tags.Contains(DefCache.GetDef<GameTagDef>("HeavyItem_TagDef"))||
-                        item.Tags.Contains(DefCache.GetDef<GameTagDef>("PDWItem_TagDef"))||
-                        item.Tags.Contains(DefCache.GetDef<GameTagDef>("SniperRifleItem_TagDef"))||
-                        item.Tags.Contains(DefCache.GetDef<GameTagDef>("ShotgunItem_TagDef")) ||
-                         item.Tags.Contains(DefCache.GetDef<GameTagDef>("ViralItem_TagDef"))||
-                            item.Tags.Contains(DefCache.GetDef<GameTagDef>("CrossbowItem_TagDef"))
-                        )
-                    {
-                        TFTVLogger.Always($" and has a correct tag");
-                    }
-                    else
-                    {
-                        TFTVLogger.Always($" and DOES NOT HAVE A CORRECT TAG");
-                    } 
+                    TFTVLogger.Always($"GamestateSoundDef: {gamestateSoundDef.name}", false);
+                
                 }
-
-                List<WeaponDef> weapons2 = Repo.GetAllDefs<WeaponDef>().Where(w => w.HandsToUse < 2).ToList();
-
-                TFTVLogger.Always($"There are {weapons.Count} weapons that require 1 hand:");
-
-                foreach (TacticalItemDef item in weapons2)
+                foreach (GeoscapeSoundDef gamestateSoundDef in Repo.GetAllDefs<GeoscapeSoundDef>())
                 {
-                    TFTVLogger.Always($"{item.name} requires 1 hand");
-
-                    if (item.Tags.Contains(DefCache.GetDef<GameTagDef>("AssaultRifleItem_TagDef")) ||
-                        item.Tags.Contains(DefCache.GetDef<GameTagDef>("HeavyItem_TagDef")) ||
-                        item.Tags.Contains(DefCache.GetDef<GameTagDef>("PDWItem_TagDef")) ||
-                        item.Tags.Contains(DefCache.GetDef<GameTagDef>("SniperRifleItem_TagDef")) ||
-                        item.Tags.Contains(DefCache.GetDef<GameTagDef>("ShotgunItem_TagDef")) ||
-                         item.Tags.Contains(DefCache.GetDef<GameTagDef>("ViralItem_TagDef")) ||
-                            item.Tags.Contains(DefCache.GetDef<GameTagDef>("CrossbowItem_TagDef"))
-                        )
-                    {
-                        TFTVLogger.Always($" and DOES NOT HAVE A CORRECT TAG");
-                    }
-                    else
-                    {
-                        TFTVLogger.Always($" and has a correct tag");
-                    }
+                    TFTVLogger.Always($"GeoscapeSoundDef: {gamestateSoundDef.name}", false);
 
                 }
-
 
             }
             catch (Exception e)
@@ -283,7 +237,7 @@ namespace TFTV
 
                 // Experimental();
 
-              //  Print();
+                Print();
 
             }
             catch (Exception e)
