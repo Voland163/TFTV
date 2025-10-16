@@ -231,6 +231,7 @@ namespace TFTV
             }
 
             TFTVAircraftReworkMain.Modules.Tactical.HeliosStatisChamber.ImplementVestBuff();
+            TFTVAircraftReworkMain.Modules.Tactical.GroundAttackWeapon.ImplementGroundAttackWeaponModule(Controller);
 
             TFTVLogger.Always("Tactical start completed");
 

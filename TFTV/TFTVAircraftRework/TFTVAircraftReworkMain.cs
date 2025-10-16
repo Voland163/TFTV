@@ -447,7 +447,7 @@ namespace TFTV
                     tacticalTargetingDataDef.Origin.TargetResult = TargetResult.Position;
                     tacticalTargetingDataDef.Origin.Range = 100;
 
-                   // newAbility.EventOnActivate = DefCache.GetDef<TacticalEventDef>("LaunchDamageVoice_EventDef");
+                    newAbility.EventOnActivate = DefCache.GetDef<TacticalEventDef>("LaunchDamageVoice_EventDef");
 
                     newAbility.SceneViewElementDef = Helper.CreateDefFromClone(jetJumpAbilityDef.SceneViewElementDef, guid4, name);
 
@@ -2832,7 +2832,7 @@ namespace TFTV
                             ImplementHeliosStealthModule(controller);
                             //  ImplementBlimpWPModule(controller);
                             HeliosStatisChamber.ImplementPanaceaNanotechTactical(controller);
-                            ImplementGroundAttackWeaponModule(controller);
+                        
                             ImplementMutationLabFrenzy(controller);
                         }
                         catch (Exception e)
@@ -2884,40 +2884,7 @@ namespace TFTV
                         }
                     }
 
-                    private static void ImplementGroundAttackWeaponModule(TacticalLevelController controller)
-                    {
-                        try
-                        {
-                            if (_thunderbirdGroundAttackWeaponPresent == 0)
-                            {
-                                return;
-                            }
-
-                            Sprite icon = null;
-                            if (_groundAttackAbility.LevelIcons != null && _thunderbirdGroundAttackWeaponPresent - 1 < _groundAttackAbility.LevelIcons.Length)
-                            {
-                                icon = _groundAttackAbility.LevelIcons[Math.Max(_thunderbirdGroundAttackWeaponPresent - 1, 0)];
-                            }
-
-
-                            if (icon != null)
-                            {
-                                _groundAttackAbility.ViewElementDef.SmallIcon = icon;
-                                _groundAttackAbility.ViewElementDef.LargeIcon = icon;
-                            }
-
-                            foreach (TacticalActor tacticalActor in controller.GetFactionByCommandName("px").TacticalActors)
-                            {
-                                GroundAttackWeaponAbility ability = tacticalActor.GetAbilityWithDef<GroundAttackWeaponAbility>(_groundAttackAbility) ?? (GroundAttackWeaponAbility)tacticalActor.AddAbility(_groundAttackAbility, tacticalActor);
-                                ability.ConfigureForLevel(_thunderbirdGroundAttackWeaponPresent);
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            throw;
-                        }
-                    }
+                  
 
                     //Stealth module
                     private static void ImplementHeliosStealthModule(TacticalLevelController controller)
@@ -3127,7 +3094,40 @@ namespace TFTV
                 internal class GroundAttackWeapon
                 {
 
+                    internal static void ImplementGroundAttackWeaponModule(TacticalLevelController controller)
+                    {
+                        try
+                        {
+                            if (_thunderbirdGroundAttackWeaponPresent == 0)
+                            {
+                                return;
+                            }
 
+                            Sprite icon = null;
+                            if (_groundAttackAbility.LevelIcons != null && _thunderbirdGroundAttackWeaponPresent - 1 < _groundAttackAbility.LevelIcons.Length)
+                            {
+                                icon = _groundAttackAbility.LevelIcons[Math.Max(_thunderbirdGroundAttackWeaponPresent - 1, 0)];
+                            }
+
+
+                            if (icon != null)
+                            {
+                                _groundAttackAbility.ViewElementDef.SmallIcon = icon;
+                                _groundAttackAbility.ViewElementDef.LargeIcon = icon;
+                            }
+
+                            foreach (TacticalActor tacticalActor in controller.GetFactionByCommandName("px").TacticalActors)
+                            {
+                                GroundAttackWeaponAbility ability = tacticalActor.GetAbilityWithDef<GroundAttackWeaponAbility>(_groundAttackAbility) ?? (GroundAttackWeaponAbility)tacticalActor.AddAbility(_groundAttackAbility, tacticalActor);
+                                ability.ConfigureForLevel(_thunderbirdGroundAttackWeaponPresent);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
 
                     internal static void RemoveGroundAttackWeaponModuleAbility(TacticalLevelController controller)
                     {
@@ -3144,7 +3144,10 @@ namespace TFTV
                                 {
                                     tacticalActor.RemoveAbility(_groundAttackAbility);
                                 }
-                            }                
+                            }
+
+                            _thunderbirdGroundAttackWeaponPresent = 0;
+
                         }
                         catch (Exception e)
                         {

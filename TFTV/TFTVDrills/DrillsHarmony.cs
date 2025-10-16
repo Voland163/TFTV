@@ -296,7 +296,7 @@ namespace TFTV.TFTVDrills
 
         }
 
-        internal static class CommandOverlay
+        internal static class NeuralLink
         {
             private const string PhoenixCommandName = "px";
 
@@ -307,7 +307,7 @@ namespace TFTV.TFTVDrills
                 {
                     try
                     {
-                        RefreshCommandOverlayStatus();
+                        RefreshNeuralLinkStatus();
                     }
                     catch (Exception ex)
                     {
@@ -327,7 +327,7 @@ namespace TFTV.TFTVDrills
                     {
                         if (status?.Def == _augmentedRealityStatus)
                         {
-                            RefreshCommandOverlayStatus();
+                            RefreshNeuralLinkStatus();
                         }
                     }
                     catch (Exception ex)
@@ -345,9 +345,9 @@ namespace TFTV.TFTVDrills
                 {
                     try
                     {
-                        if (status?.Def == _augmentedRealityStatus || status?.Def == _commandOverlayRemoteControlStatus)
+                        if (status?.Def == _augmentedRealityStatus || status?.Def == _neuralLinkControlStatus)
                         {
-                            RefreshCommandOverlayStatus();
+                            RefreshNeuralLinkStatus();
                         }
                     }
                     catch (Exception ex)
@@ -358,13 +358,13 @@ namespace TFTV.TFTVDrills
                 }
             }
 
-            private static void RefreshCommandOverlayStatus()
+            private static void RefreshNeuralLinkStatus()
             {
                 try
                 {
                     TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
-                    if (controller == null || _commandOverlay == null || _commandOverlayRemoteControlStatus == null || _augmentedRealityStatus == null || _remoteControlAbilityDef == null)
+                    if (controller == null || _neuralLink == null || _neuralLinkControlStatus == null || _augmentedRealityStatus == null || _remoteControlAbilityDef == null)
                     {
                         return;
                     }
@@ -375,7 +375,7 @@ namespace TFTV.TFTVDrills
                         return;
                     }
 
-                    bool hasCommandOverlay = phoenixFaction.TacticalActors.Any(HasCommandOverlayAbility);
+                    bool hasCommandOverlay = phoenixFaction.TacticalActors.Any(HasNeuralLinkAbility);
 
                     foreach (TacticalActor actor in phoenixFaction.TacticalActors)
                     {
@@ -384,7 +384,7 @@ namespace TFTV.TFTVDrills
                             continue;
                         }
 
-                        AddAbilityStatus existingStatus = actor.Status.GetStatus<AddAbilityStatus>(_commandOverlayRemoteControlStatus);
+                        AddAbilityStatus existingStatus = actor.Status.GetStatus<AddAbilityStatus>(_neuralLinkControlStatus);
 
                         if (!actor.IsAlive || actor.IsEvacuated)
                         {
@@ -403,7 +403,7 @@ namespace TFTV.TFTVDrills
                         {
                             if (existingStatus == null)
                             {
-                                actor.Status.ApplyStatus(_commandOverlayRemoteControlStatus);
+                                actor.Status.ApplyStatus(_neuralLinkControlStatus);
                             }
                         }
                         else if (existingStatus != null)
@@ -419,12 +419,12 @@ namespace TFTV.TFTVDrills
                 }
             }
 
-            private static bool HasCommandOverlayAbility(TacticalActor actor)
+            private static bool HasNeuralLinkAbility(TacticalActor actor)
             {
                 return actor != null
                     && actor.IsAlive
                     && !actor.IsEvacuated
-                    && actor.GetAbilityWithDef<PassiveModifierAbility>(_commandOverlay) != null;
+                    && actor.GetAbilityWithDef<PassiveModifierAbility>(_neuralLink) != null;
             }
         }
 

@@ -98,8 +98,8 @@ namespace TFTV.TFTVDrills
         internal static PassiveModifierAbilityDef _pounceProtocol;
         internal static ApplyStatusAbilityDef _override;
 
-        internal static PassiveModifierAbilityDef _commandOverlay;
-        internal static AddAbilityStatusDef _commandOverlayRemoteControlStatus;
+        internal static PassiveModifierAbilityDef _neuralLink;
+        internal static AddAbilityStatusDef _neuralLinkControlStatus;
         internal static StanceStatusDef _augmentedRealityStatus;
         internal static ApplyStatusAbilityDef _remoteControlAbilityDef;
 
@@ -542,7 +542,7 @@ namespace TFTV.TFTVDrills
                 MinimumLevel = 7,
                 RequireSelectedOperative = true
             });
-            SetUnlockCondition(_commandOverlay, commandOverlay);
+            SetUnlockCondition(_neuralLink, commandOverlay);
 
 
             var explosiveShoot = new DrillUnlockCondition();
@@ -786,8 +786,8 @@ namespace TFTV.TFTVDrills
 
 
                 _augmentedRealityStatus = DefCache.GetDef<StanceStatusDef>("ARTargeting_Stance_StatusDef");
-                _commandOverlay = CreateCommandOverlayAbility();
-                _commandOverlayRemoteControlStatus = CreateCommandOverlayStatus();
+                _neuralLink = CreateCommandOverlayAbility();
+                _neuralLinkControlStatus = CreateCommandOverlayStatus();
 
                 CreateMightMakesRightAddStatusAbilityDef("mightmakesright", "d2a3b4c5-6e7f-4819-9a0b-1c2d3e4f5a60", "1e2f3a4b-5c6d-7081-92a3-b4c5d6e7f809", "2a3b4c5d-6e7f-8091-a2b3-c4d5e6f70819");
 
@@ -868,7 +868,7 @@ namespace TFTV.TFTVDrills
                 };
                 newAbility.ActorTags = Array.Empty<GameTagDef>();
                 newAbility.ProjectileSpreadMultiplier = 0.5f;
-                newAbility.DisablingStatuses = Array.Empty<StatusDef>();
+                newAbility.DisablingStatuses = new StatusDef[] {DefCache.GetDef<StatMultiplierStatusDef>("E AccuracyMultiplier [BC_QuickAim_AbilityDef]") };
 
                 return newAbility;
             }
@@ -884,7 +884,7 @@ namespace TFTV.TFTVDrills
         {
             try
             {
-                const string name = "commandoverlay";
+                const string name = "neurallink";
                 const string abilityGuid = "cc49adae-e2fe-40ad-8688-d9f6656af146";
                 const string progressionGuid = "aa5a7c6b-fc1d-46fd-97be-79254a32995c";
                 const string viewGuid = "dd599e05-0cbe-464e-a403-45efd09bad19";
@@ -945,20 +945,20 @@ namespace TFTV.TFTVDrills
                 AddAbilityStatusDef statusDef = Helper.CreateDefFromClone(
                     sourceStatus,
                     statusGuid,
-                    "TFTV_CommandOverlay_AddAbilityStatusDef");
+                    "TFTV_NeuralLink_AddAbilityStatusDef");
 
                 statusDef.AbilityDef = _remoteControlAbilityDef;
                 statusDef.ApplicationConditions = new EffectConditionDef[] { };
                 statusDef.Visuals = Helper.CreateDefFromClone(
                     _augmentedRealityStatus.Visuals,
                     visualsGuid,
-                    "TFTV_CommandOverlay_AddAbilityStatus_View");
-                statusDef.Visuals.DisplayName1.LocalizationKey = "TFTV_DRILL_commandoverlay_NAME";
-                statusDef.Visuals.Description.LocalizationKey = "TFTV_DRILL_commandoverlay_DESC";
+                    "TFTV_NeuralLink_AddAbilityStatus_View");
+                statusDef.Visuals.DisplayName1.LocalizationKey = "TFTV_DRILL_neurallink_NAME";
+                statusDef.Visuals.Description.LocalizationKey = "TFTV_DRILL_neurallink_DESC";
 
 
-                statusDef.Visuals.LargeIcon = _commandOverlay.ViewElementDef.LargeIcon;
-                statusDef.Visuals.SmallIcon = _commandOverlay.ViewElementDef.SmallIcon;
+                statusDef.Visuals.LargeIcon = _neuralLink.ViewElementDef.LargeIcon;
+                statusDef.Visuals.SmallIcon = _neuralLink.ViewElementDef.SmallIcon;
 
 
                 return statusDef;

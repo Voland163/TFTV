@@ -19,6 +19,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Networking;
+using static RootMotion.FinalIK.AimPoser;
 using Object = UnityEngine.Object;
 
 namespace TFTV
@@ -718,10 +719,14 @@ namespace TFTV
                     }
 
                     AudioSource audioSource = emitter.GetComponent<AudioSource>();
+
+                    TFTVLogger.Always($"emitter?.name: {emitter?.name}");
                     TFTVLogger.Always($"audioSource == null {audioSource == null}");
 
-                    if (audioSource == null)
+                  /*  if (audioSource == null)
                     {
+
+
                         audioSource = emitter.gameObject.AddComponent<AudioSource>();
                         audioSource.playOnAwake = false;
                     }
@@ -739,9 +744,25 @@ namespace TFTV
                             fallbackSource.ignoreListenerPause = true;
                             fallbackSource.ignoreListenerVolume = true;
                         }
-                    }
+                    }*/
 
-                    audioSource.spatialBlend = 0; //_spatialBlend;
+                    var go = new GameObject("RuntimeAudio_" + clip.name, typeof(Transform));
+                    go.transform.position = new Vector3(10.5f,1,15.5f);
+                    var src = go.AddComponent<AudioSource>();
+
+                    src.clip = clip;
+                    src.volume = 100;// _volume;
+                    src.loop = _loop;
+                    src.spatialBlend = _spatialBlend; // 0 = 2D, 1 = 3D
+                    src.playOnAwake = false;
+                    src.mute = false;
+                    src.enabled = true;
+                    src.ignoreListenerPause = true;
+                    src.ignoreListenerVolume = true;
+                    src.PlayOneShot(clip, 100);
+
+
+                 /*   audioSource.spatialBlend = _spatialBlend;
                     audioSource.loop = _loop;
                     audioSource.volume = _volume;
                     TFTVLogger.Always($"audioSource.spatialBlend: {audioSource.spatialBlend}");
@@ -762,7 +783,7 @@ namespace TFTV
                     {
                         audioSource.clip = null;
                         audioSource.PlayOneShot(clip);
-                    }
+                    }*/
                     TFTVLogger.Always($"got all the way to the end");
 
                     return true;
