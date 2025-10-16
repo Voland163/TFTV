@@ -325,7 +325,7 @@ namespace TFTV.TFTVDrills
                 {
                     try
                     {
-                        if (status?.Def == _augmentedRealityStatus)
+                        if (status?.Def == _commandOverlayStatus)
                         {
                             RefreshNeuralLinkStatus();
                         }
@@ -345,7 +345,7 @@ namespace TFTV.TFTVDrills
                 {
                     try
                     {
-                        if (status?.Def == _augmentedRealityStatus || status?.Def == _neuralLinkControlStatus)
+                        if (status?.Def == _commandOverlayStatus || status?.Def == _neuralLinkControlStatus)
                         {
                             RefreshNeuralLinkStatus();
                         }
@@ -364,7 +364,7 @@ namespace TFTV.TFTVDrills
                 {
                     TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
-                    if (controller == null || _neuralLink == null || _neuralLinkControlStatus == null || _augmentedRealityStatus == null || _remoteControlAbilityDef == null)
+                    if (controller == null || _neuralLink == null || _neuralLinkControlStatus == null || _commandOverlayStatus == null || _remoteControlAbilityDef == null)
                     {
                         return;
                     }
@@ -396,7 +396,7 @@ namespace TFTV.TFTVDrills
                         }
 
                         bool shouldHave = hasCommandOverlay
-                            && actor.Status.HasStatus(_augmentedRealityStatus)
+                            && actor.Status.HasStatus(_commandOverlayStatus)
                             && actor.GetAbilityWithDef<TacticalAbility>(_remoteControlAbilityDef) == null;
 
                         if (shouldHave)

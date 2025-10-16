@@ -100,7 +100,7 @@ namespace TFTV.TFTVDrills
 
         internal static PassiveModifierAbilityDef _neuralLink;
         internal static AddAbilityStatusDef _neuralLinkControlStatus;
-        internal static StanceStatusDef _augmentedRealityStatus;
+        internal static DrillCommandOverlay.PerceptionAuraStatusDef _commandOverlayStatus;
         internal static ApplyStatusAbilityDef _remoteControlAbilityDef;
 
         internal static ApplyStatusAbilityDef _aksuSprint;
@@ -784,10 +784,8 @@ namespace TFTV.TFTVDrills
 
                 _packLoyalty = CreateDrillNominalAbility("packloyalty", "05b6c7d8-191a-9aa3-2c33-4e5f60718293", "45566789-2425-14f7-0809-c4d5e6f70819", "56677889-2526-15f8-0910-d5e6f708192a"); //done
 
-
-                _augmentedRealityStatus = DefCache.GetDef<StanceStatusDef>("ARTargeting_Stance_StatusDef");
-                _neuralLink = CreateCommandOverlayAbility();
-                _neuralLinkControlStatus = CreateCommandOverlayStatus();
+                _neuralLink = CreateNeuralLinkAbility();
+                _neuralLinkControlStatus = CreateNeuralLinkStatus();
 
                 CreateMightMakesRightAddStatusAbilityDef("mightmakesright", "d2a3b4c5-6e7f-4819-9a0b-1c2d3e4f5a60", "1e2f3a4b-5c6d-7081-92a3-b4c5d6e7f809", "2a3b4c5d-6e7f-8091-a2b3-c4d5e6f70819");
 
@@ -880,7 +878,7 @@ namespace TFTV.TFTVDrills
         }
 
 
-        private static PassiveModifierAbilityDef CreateCommandOverlayAbility()
+        private static PassiveModifierAbilityDef CreateNeuralLinkAbility()
         {
             try
             {
@@ -931,7 +929,7 @@ namespace TFTV.TFTVDrills
             }
         }
 
-        private static AddAbilityStatusDef CreateCommandOverlayStatus()
+        private static AddAbilityStatusDef CreateNeuralLinkStatus()
         {
             try
             {
@@ -950,7 +948,7 @@ namespace TFTV.TFTVDrills
                 statusDef.AbilityDef = _remoteControlAbilityDef;
                 statusDef.ApplicationConditions = new EffectConditionDef[] { };
                 statusDef.Visuals = Helper.CreateDefFromClone(
-                    _augmentedRealityStatus.Visuals,
+                    _commandOverlayStatus.Visuals,
                     visualsGuid,
                     "TFTV_NeuralLink_AddAbilityStatus_View");
                 statusDef.Visuals.DisplayName1.LocalizationKey = "TFTV_DRILL_neurallink_NAME";

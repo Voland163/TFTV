@@ -13,8 +13,10 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PRMBetterClasses.Tactical.Entities.Statuses;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using TFTV;
+using TFTV.TFTVDrills;
 using UnityEngine;
 
 namespace PRMBetterClasses.SkillModifications
@@ -40,6 +42,12 @@ namespace PRMBetterClasses.SkillModifications
 
             // Amplify Pain: If your next attack deals special damage, double that damage (Bleeding, Paralysis, Viral, Poison, Fire, EMP, Sonic, Shock, Virophage)
             Create_AmplifyPain();
+
+            if (TFTVAircraftReworkMain.AircraftReworkOn)
+            {
+                Create_CommandOverlay();
+                ApplyAircraftReworkSkillSwaps();
+            }
         }
 
         private static void Fix_FieldMedic()
@@ -254,6 +262,116 @@ namespace PRMBetterClasses.SkillModifications
                         PRMLogger.Debug("  " + ad.name);
                     }
                     PRMLogger.Debug("----------------------------------------------------", false);
+                }
+            }
+        }
+
+        private static void Create_CommandOverlay()
+        {
+            string abilityName = "CommandOverlay_AbilityDef";
+            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("QuickAim_AbilityDef");
+            Sprite icon = Helper.CreateSpriteFromImageFile("CommandOverlay.png");
+
+            ApplyStatusAbilityDef commandOverlay = Helper.CreateDefFromClone(
+                source,
+                "c6e3321c-1d8d-4a05-9f73-50a4c7d8ff5b",
+                abilityName);
+
+            commandOverlay.CharacterProgressionData = Helper.CreateDefFromClone(
+                source.CharacterProgressionData,
+                "bc6d0b8f-b0ed-42db-87b6-411d2c42f4bf",
+                abilityName);
+
+            commandOverlay.ViewElementDef = Helper.CreateDefFromClone(
+                source.ViewElementDef,
+                "fde2c01a-6a5a-4e1d-a4a1-f7e85e67f124",
+                abilityName);
+
+            DrillCommandOverlay.PerceptionAuraStatusDef auraStatus = Helper.CreateDefFromClone<DrillCommandOverlay.PerceptionAuraStatusDef>(
+                null,
+                "75c7d3d5-6fba-4b59-ae5e-e1d9cd7742df",
+                $"E_Status [{abilityName}]");
+
+            commandOverlay.StatusDef = auraStatus;
+            commandOverlay.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_TECH7_COMMANDOVERLAY_NAME";
+            commandOverlay.ViewElementDef.Description.LocalizationKey = "TFTV_TECH7_COMMANDOVERLAY_DESC";
+            commandOverlay.ViewElementDef.LargeIcon = icon;
+            commandOverlay.ViewElementDef.SmallIcon = icon;
+
+            commandOverlay.TargetingDataDef.Origin.Range = 10f;
+            commandOverlay.ActionPointCost = 0f;
+            commandOverlay.WillPointCost = 2f;
+            commandOverlay.UsesPerTurn = 1;
+            commandOverlay.DisablingStatuses = new StatusDef[] { commandOverlay.StatusDef };
+
+            commandOverlay.CharacterProgressionData.RequiredSpeed = 0;
+            commandOverlay.CharacterProgressionData.RequiredStrength = 0;
+            commandOverlay.CharacterProgressionData.RequiredWill = 0;
+
+            auraStatus.EffectName = "CommandOverlay";
+            auraStatus.ApplicationConditions = Array.Empty<EffectConditionDef>();
+            auraStatus.DisablesActor = false;
+            auraStatus.SingleInstance = true;
+            auraStatus.ShowNotification = false;
+            auraStatus.VisibleOnPassiveBar = true;
+            auraStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+            auraStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+            auraStatus.HealthbarPriority = 0;
+            auraStatus.StackMultipleStatusesAsSingleIcon = false;
+            auraStatus.Visuals = commandOverlay.ViewElementDef;
+            auraStatus.ParticleEffectPrefab = null;
+            auraStatus.DontRaiseOnApplyOnLoad = false;
+            auraStatus.EventOnApply = null;
+            auraStatus.EventOnUnapply = null;
+            auraStatus.DurationTurns = 1;
+            auraStatus.ExpireOnEndOfTurn = true;
+            auraStatus.AccuracyBonus = 20f;
+
+            DrillsDefs._commandOverlayStatus = auraStatus;
+        }
+
+        private static void ApplyAircraftReworkSkillSwaps()
+        {
+            BCSettings config = TFTVMain.Main.Settings;
+
+            int technicianIndex = config.ClassSpecializations.FindIndex(cs => cs.ClassName.Equals(ClassKeys.Technician.Name, StringComparison.OrdinalIgnoreCase));
+            if (technicianIndex >= 0)
+            {
+                ClassSpecDef technicianSpec = config.ClassSpecializations[technicianIndex];
+                if (technicianSpec.MainSpec.Length > 6)
+                {
+                    technicianSpec.MainSpec[6] = "COMMAND OVERLAY";
+                    config.ClassSpecializations[technicianIndex] = technicianSpec;
+                }
+            }
+
+            if (Helper.AbilityNameToDefMap != null)
+            {
+                Helper.AbilityNameToDefMap["COMMAND OVERLAY"] = "CommandOverlay_AbilityDef";
+                Helper.AbilityNameToDefMap["AMPLIFY PAIN"] = "AmplifyPain_AbilityDef";
+            }
+
+            for (int i = 0; i < config.PersonalPerks.Count; i++)
+            {
+                PersonalPerksDef perk = config.PersonalPerks[i];
+                if (!perk.PerkKey.Equals(PerkType.Faction_2, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                Dictionary<string, Dictionary<string, string>> relatedPerks = perk.RelatedFixedPerks;
+                if (relatedPerks == null)
+                {
+                    continue;
+                }
+
+                if (relatedPerks.TryGetValue(FactionKeys.NJ, out Dictionary<string, string> njPerks)
+                    && njPerks.ContainsKey(ClassKeys.Technician.Name))
+                {
+                    njPerks[ClassKeys.Technician.Name] = "AMPLIFY PAIN";
+                    relatedPerks[FactionKeys.NJ] = njPerks;
+                    perk.RelatedFixedPerks = relatedPerks;
+                    config.PersonalPerks[i] = perk;
                 }
             }
         }

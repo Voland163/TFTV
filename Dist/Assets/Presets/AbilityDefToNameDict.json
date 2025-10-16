@@ -27,6 +27,7 @@
   "CLOSE QUARTERS SPECIALIST": "CloseQuartersSpecialist_AbilityDef",
   "COMBAT MATRIX": "MartialArtist_AbilityDef",
   "CONDO RAIDER": "CondoRaider_AbilityDef",
+  "COMMAND OVERLAY": "CommandOverlay_AbilityDef",
   "CONFUSION CLOUD": "Mutoid_ParalyticCloud_AbilityDef",
   "CORPSE DISPOSER": "CorpseDisposer_AbilityDef",
   "CURE SPRAY": "Mutoid_Adapt_Arm_CureSpray_AbilityDef",

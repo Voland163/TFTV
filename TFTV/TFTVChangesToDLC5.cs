@@ -8,6 +8,7 @@ using com.ootii.Collections;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
@@ -376,6 +377,19 @@ namespace TFTV
                         newSpec.AbilityTrack = Helper.CreateDefFromClone(specializationDefSource.AbilityTrack, "{14CDBFDA-DE81-48BA-B8DD-AC2192858982}", $"{newSpec.name}");
 
                         newSpec.AbilityTrack.AbilitiesByLevel[5].Ability = SlugFieldMedic;
+
+                        if (TFTVAircraftReworkMain.AircraftReworkOn
+                           && newSpec.AbilityTrack?.AbilitiesByLevel != null
+                           && newSpec.AbilityTrack.AbilitiesByLevel.Length > 6)
+                        {
+                            TacticalAbilityDef amplifyPain = DefCache.GetDef<TacticalAbilityDef>("AmplifyPain_AbilityDef");
+                            if (amplifyPain != null)
+                            {
+                                AbilityTrackSlot slugLevelSeven = newSpec.AbilityTrack.AbilitiesByLevel[6];
+                                slugLevelSeven.Ability = amplifyPain;
+                                newSpec.AbilityTrack.AbilitiesByLevel[6] = slugLevelSeven;
+                            }
+                        }
                         // newSpec.ClassTag = SlugClassTagDef;
 
                         SlugSpecialization = newSpec;
@@ -1036,7 +1050,8 @@ namespace TFTV
                                 }
 
                                 geoUnitDescriptor.Progression.PersonalAbilities[2] = DefCache.GetDef<RepositionAbilityDef>("Vanish_AbilityDef");
-                                geoUnitDescriptor.Progression.PersonalAbilities[5] = DefCache.GetDef<ApplyStatusAbilityDef>("BC_ARTargeting_AbilityDef");
+                                string njFactionAbility = TFTVAircraftReworkMain.AircraftReworkOn ? "AmplifyPain_AbilityDef" : "BC_ARTargeting_AbilityDef";
+                                geoUnitDescriptor.Progression.PersonalAbilities[5] = DefCache.GetDef<ApplyStatusAbilityDef>(njFactionAbility);
                                 geoUnitDescriptor.Progression.PersonalAbilities[6] = DefCache.GetDef<PassiveModifierAbilityDef>("Endurance_AbilityDef");
 
 

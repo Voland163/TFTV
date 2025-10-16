@@ -3306,7 +3306,9 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 ApplyStatusAbilityDef manualControl = DefCache.GetDef<ApplyStatusAbilityDef>("ManualControl_AbilityDef");
                 PassiveModifierAbilityDef remoteDeployment = DefCache.GetDef<PassiveModifierAbilityDef>("RemoteDeployment_AbilityDef");
                 ApplyStatusAbilityDef takedown = DefCache.GetDef<ApplyStatusAbilityDef>("BC_Takedown_AbilityDef");
-                ApplyStatusAbilityDef arTargeting = DefCache.GetDef<ApplyStatusAbilityDef>("BC_ARTargeting_AbilityDef");
+                ApplyStatusAbilityDef arTargeting = TFTVAircraftReworkMain.AircraftReworkOn
+                    ? DefCache.GetDef<ApplyStatusAbilityDef>("AmplifyPain_AbilityDef")
+                    : DefCache.GetDef<ApplyStatusAbilityDef>("BC_ARTargeting_AbilityDef");
 
                 string nameDef = "Sofia_TacCharacterDef";
 
@@ -3315,9 +3317,10 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
 
                 List<TacticalAbilityDef> abilities = new List<TacticalAbilityDef>()
                 {
-                manualControl, remoteDeployment, takedown, arTargeting
-
-
+                  manualControl,
+                    remoteDeployment,
+                    takedown,
+                    arTargeting
                 };
 
                 sofia.Data.Abilites = abilities.ToArray();
@@ -3503,15 +3506,6 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 tacCharacterDefs.Add(uniqueChatarcterBind);
                 DefCache.GetDef<CustomMissionTypeDef>("SYPolyVictory_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits = tacCharacterDefs.ToArray();
                 DefCache.GetDef<CustomMissionTypeDef>("SYTerraVictory_CustomMissionTypeDef").ParticipantsData[0].UniqueUnits = tacCharacterDefs.ToArray();
-
-
-
-
-
-
-
-
-
 
             }
             catch (Exception e)
