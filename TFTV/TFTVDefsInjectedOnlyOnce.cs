@@ -256,9 +256,9 @@ namespace TFTV
             {
                 TacticalEventDef tacticalEventDef = DefCache.GetDef<TacticalEventDef>("Queen_MistHurt_EventDef");
 
-                string filePath = Path.Combine(TFTVMain.ModDirectory, "Assets", "scylla_mist_hurt_roar.mp3");
+                string filePath = Path.Combine(TFTVMain.ModDirectory, "Assets", "scylla_mist_hurt_roar.wav");
 
-                TFTVAudio.ExternalAudioInjector.RegisterClipFromFile(tacticalEventDef, filePath, 100, false, 1, null, AudioType.MPEG);
+                TFTVAudio.ExternalAudioInjector.RegisterClipFromFile(tacticalEventDef, filePath, 1, false, 1, null, AudioType.WAV);
 
             }
             catch (Exception e)

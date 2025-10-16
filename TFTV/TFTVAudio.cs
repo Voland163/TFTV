@@ -21,8 +21,14 @@ namespace TFTV
 {
 
     internal class TFTVAudio
+    
     {
+
+
+
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
+
 
 
         /// <summary>
@@ -85,7 +91,7 @@ namespace TFTV
                     });
 
                 LogClipDetails("RegisterClip", clip, eventDef);
-                bool clipReady = EnsureClipPlayable(clip, eventDef, "RegisterClip", attemptLoad: false);
+                bool clipReady = EnsureClipPlayable(clip, clip.name);
                 TFTVLogger.Always($"RegisterClip: EnsureClipPlayable returned {clipReady}");
             }
 
@@ -138,6 +144,54 @@ namespace TFTV
                     configureSource);
 
                 TFTVLogger.Always($"RegisterResolver: registered resolver for '{eventDef.name}' (volume={volume}, loop={loop}, spatialBlend={spatialBlend})");
+            }
+
+
+            private static bool EnsureClipPlayable(AudioClip clip, string clipLabel)
+            {
+                if (clip == null)
+                {
+                    Debug.LogError("ExternalAudioInjector: Provided clip is null.");
+                    return false;
+                }
+
+                clip.LoadAudioData();
+                AudioDataLoadState state = clip.loadState;
+                int iterations = 0;
+                while (state == AudioDataLoadState.Unloaded || state == AudioDataLoadState.Loading)
+                {
+                    if (iterations++ >= LoadStatePollLimit)
+                    {
+                        break;
+                    }
+                    if (state == AudioDataLoadState.Unloaded)
+                    {
+                        clip.LoadAudioData();
+                    }
+                    Thread.Sleep(1);
+                    state = clip.loadState;
+                }
+
+                state = clip.loadState;
+                float length = clip.length;
+                int samples = clip.samples;
+
+                bool hasAudioData = length > 0f && samples > 0;
+                bool failedToLoad = state == AudioDataLoadState.Failed || !hasAudioData;
+                if (failedToLoad)
+                {
+                    string clipName = !string.IsNullOrEmpty(clipLabel) ? clipLabel : clip.name;
+                    Debug.LogErrorFormat("ExternalAudioInjector: Failed to prepare audio clip '{0}'. State={1}, Length={2}, Samples={3}", new object[]
+                    {
+                                clipName,
+                                state,
+                                length,
+                                samples
+                    });
+                    return false;
+                }
+
+                return true;
             }
 
             /// <summary>
@@ -274,7 +328,7 @@ namespace TFTV
                     AudioClip clip = DownloadHandlerAudioClip.GetContent(request) ?? throw new InvalidOperationException($"Failed to decode audio clip from '{absolutePath}'.");
                     clip.name = Path.GetFileNameWithoutExtension(absolutePath);
                     LogClipDetails("LoadClipFromFile", clip);
-                    bool clipReady = EnsureClipPlayable(clip, null, "LoadClipFromFile");
+                    bool clipReady = EnsureClipPlayable(clip, clip.name);
                     TFTVLogger.Always($"LoadClipFromFile: EnsureClipPlayable returned {clipReady}");
                     return clip;
                 }
@@ -649,52 +703,8 @@ namespace TFTV
                     $"{stage}: event='{eventName}', clip='{clip.name}', loadState={loadState}, length={clip.length}s, samples={clip.samples}, channels={clip.channels}, frequency={clip.frequency}Hz, loadInBackground={clip.loadInBackground}, preloadAudioData={clip.preloadAudioData}");
             }
 
-            private static bool EnsureClipPlayable(AudioClip clip, TacticalEventDef eventDef, string origin, bool attemptLoad = true)
-            {
-                string eventName = eventDef != null ? eventDef.name : "<unbound>";
-                if (clip == null)
-                {
-                    TFTVLogger.Always($"{origin}: clip is null for event '{eventName}'");
-                    return false;
-                }
 
-                AudioDataLoadState loadState = clip.loadState;
-                TFTVLogger.Always($"{origin}: verifying clip '{clip.name}' for event '{eventName}' (loadState={loadState}, length={clip.length}s, samples={clip.samples})");
-
-                if (attemptLoad && loadState == AudioDataLoadState.Unloaded)
-                {
-                    bool loadRequested = clip.LoadAudioData();
-                    TFTVLogger.Always($"{origin}: clip '{clip.name}' was unloaded, LoadAudioData requested={loadRequested}");
-                    loadState = clip.loadState;
-                }
-
-                if (attemptLoad && loadState == AudioDataLoadState.Loading)
-                {
-                    int waited = 0;
-                    while (clip.loadState == AudioDataLoadState.Loading && waited < 200)
-                    {
-                        Thread.Sleep(1);
-                        waited++;
-                    }
-
-                    loadState = clip.loadState;
-                    TFTVLogger.Always($"{origin}: waited {waited}ms for clip '{clip.name}' to load, loadState now {loadState}");
-                }
-
-                if (loadState == AudioDataLoadState.Failed)
-                {
-                    TFTVLogger.Always($"{origin}: clip '{clip.name}' failed to load (loadState=Failed)");
-                    return false;
-                }
-
-                if (clip.length <= 0f || clip.samples <= 0)
-                {
-                    TFTVLogger.Always($"{origin}: clip '{clip.name}' has no audio data (length={clip.length}, samples={clip.samples})");
-                    return false;
-                }
-
-                return true;
-            }
+            private const int LoadStatePollLimit = 2000;
 
             private static ParticleSpawnSoundPlayer EnsureSoundPlayer(Transform emitter)
             {
@@ -840,7 +850,7 @@ namespace TFTV
                     }
 
                     LogClipDetails("ExternalAudioClipPlayback.TryPlay: resolver result", clip, tacticalEvent);
-                    if (!EnsureClipPlayable(clip, tacticalEvent, "ExternalAudioClipPlayback.TryPlay"))
+                    if (!EnsureClipPlayable(clip, clip.name))
                     {
                         TFTVLogger.Always("ExternalAudioClipPlayback.TryPlay: clip is not ready for playback");
                         return false;
