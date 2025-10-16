@@ -146,6 +146,7 @@
     <Compile Include="TFTVBackgrounds.cs" />
     <Compile Include="TFTVCrisis.cs" />
     <Compile Include="TFTVCustomPortraits.cs" />
+    <Compile Include="TFTVDrills\DrillCommandOverlay.cs" />
     <Compile Include="TFTVDrills\DrillsDefs.cs" />
     <Compile Include="TFTVDrills\DrillsExplosiveShoot.cs" />
     <Compile Include="TFTVDrills\DrillsPublicClasses.cs" />

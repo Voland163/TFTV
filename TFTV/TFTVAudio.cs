@@ -473,6 +473,7 @@ namespace TFTV
                 {
                     if (_managedListener && _managedListener.isActiveAndEnabled)
                     {
+                        ActivateManagedAudioListener(_managedListener);
                         return _managedListener;
                     }
 
@@ -492,7 +493,7 @@ namespace TFTV
 
                 if (listener != null)
                 {
-                    _managedListener = listener;
+                    ActivateManagedAudioListener(listener);
                     return _managedListener;
                 }
 
@@ -513,8 +514,44 @@ namespace TFTV
                     listener.gameObject.SetActive(true);
                 }
 
-                _managedListener = listener;
+                ActivateManagedAudioListener(listener);
                 return _managedListener;
+            }
+
+            private static void ActivateManagedAudioListener(AudioListener listener)
+            {
+                if (listener == null)
+                {
+                    return;
+                }
+
+                _managedListener = listener;
+
+                if (AudioListener.pause)
+                {
+                    AudioListener.pause = false;
+                }
+
+                bool restartOutput = false;
+
+                if (AudioSettings.Mobile.stopAudioOutputOnMute)
+                {
+                    AudioSettings.Mobile.stopAudioOutputOnMute = false;
+                    restartOutput = true;
+                }
+
+                TFTVLogger.Always($"AudioSettings.Mobile.muteState: {AudioSettings.Mobile.muteState}");
+
+                if (AudioSettings.Mobile.muteState)
+                {
+                   // AudioSettings.Mobile.muteState = false;
+                    restartOutput = true;
+                }
+
+                if (restartOutput)
+                {
+                    AudioSettings.Mobile.StartAudioOutput();
+                }
             }
 
             private static EventusManager ResolveEventusManager(AudioManager manager)
@@ -689,7 +726,20 @@ namespace TFTV
                         audioSource.playOnAwake = false;
                     }
 
-                    
+                    TFTVLogger.Always($"audioSource.ignoreListenerPause {audioSource?.ignoreListenerPause}");
+
+                    audioSource.ignoreListenerPause = true;
+                    audioSource.ignoreListenerVolume = true;
+
+                    if (_fallbackEmitter != null && emitter == _fallbackEmitter.transform)
+                    {
+                        AudioSource fallbackSource = _fallbackEmitter.GetComponent<AudioSource>();
+                        if (fallbackSource != null)
+                        {
+                            fallbackSource.ignoreListenerPause = true;
+                            fallbackSource.ignoreListenerVolume = true;
+                        }
+                    }
 
                     audioSource.spatialBlend = 0; //_spatialBlend;
                     audioSource.loop = _loop;

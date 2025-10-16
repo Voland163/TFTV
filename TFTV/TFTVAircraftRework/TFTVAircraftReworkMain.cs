@@ -433,7 +433,7 @@ namespace TFTV
                     newAbility.ViewElementDef = Helper.CreateDefFromClone(jetJumpAbilityDef.ViewElementDef, guid2, name);
                     newAbility.TargetingDataDef = Helper.CreateDefFromClone(jetJumpAbilityDef.TargetingDataDef, guid3, name);
                     newAbility.ProjectileDef = DefCache.GetDef<ProjectileDef>("E_ProjectileVisuals [PX_Scarab_Missile_Turret_GroundVehicleWeaponDef]");
-               
+                    newAbility.TrackWithCamera = false;
                    
                     TacticalTargetingDataDef tacticalTargetingDataDef = newAbility.TargetingDataDef;
 
