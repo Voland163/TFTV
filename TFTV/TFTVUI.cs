@@ -569,6 +569,9 @@ namespace TFTV
                             if (____character == null)
                                 return false;
 
+                            if (!TFTVAircraftReworkMain.AircraftReworkOn)
+                                return true; // let original handle it
+
                             bool hasHeavyConditioning = ____character.Progression?.Abilities?
                                 .Any(a => a != null && a.name != null && a.name.IndexOf("heavyconditioning", StringComparison.OrdinalIgnoreCase) >= 0) ?? false;
 

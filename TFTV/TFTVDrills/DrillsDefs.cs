@@ -667,6 +667,8 @@ namespace TFTV.TFTVDrills
         {
             try
             {
+                if (!TFTVAircraftReworkMain.AircraftReworkOn) { return; }
+
                 ModifyRemoteControl();
                 CreateDrills();
                 ReplaceStunStatusWithNewConditionalStatusDef();

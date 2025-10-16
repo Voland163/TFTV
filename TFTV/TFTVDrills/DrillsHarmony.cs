@@ -36,6 +36,11 @@ namespace TFTV.TFTVDrills
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
+        private static bool IsReworkEnabled()
+        {
+            return TFTVAircraftReworkMain.AircraftReworkOn;
+        }
+
         internal static class ShockDrop
         {
             [HarmonyPatch(typeof(AbilitySummaryData), "ProcessDamageTypeFlowPayload")]
@@ -45,6 +50,13 @@ namespace TFTV.TFTVDrills
                 [HarmonyPrefix]
                 public static bool Prefix(AbilitySummaryData __instance, TacticalActor tacticalActor, DamagePayload payload, int numActions)
                 {
+                    if (!IsReworkEnabled())
+                    {
+                        return true;
+                    }
+
+
+
                     if (payload == null)
                     {
                         return false; // nothing to do, skip original
@@ -107,6 +119,12 @@ namespace TFTV.TFTVDrills
                     BashAbility __instance,
                     ref float __result)
                 {
+                    if (!IsReworkEnabled())
+                    {
+                        return;
+                    }
+
+
 
                     if (__instance.BashAbilityDef == SpecialBashAbilityDef)
                     {
@@ -122,6 +140,13 @@ namespace TFTV.TFTVDrills
             {
                 public static void Postfix(JetJumpAbility __instance)
                 {
+                    if (!IsReworkEnabled())
+                    {
+                        return;
+                    }
+
+
+
                     try
                     {
                         if (_shockDrop == null || _shockDropStatus == null)
@@ -232,6 +257,12 @@ namespace TFTV.TFTVDrills
                 {
                     try
                     {
+                        if (!IsReworkEnabled())
+                        {
+                            return true;
+                        }
+
+
                         if (__instance.GetAbilityWithDef<PassiveModifierAbility>(OneHandedPenaltyAbilityManager.OneHandedGrip) == null)
                         {
                             return true;
@@ -305,6 +336,13 @@ namespace TFTV.TFTVDrills
             {
                 public static void Postfix(TacticalLevelController __instance)
                 {
+                    if (!IsReworkEnabled())
+                    {
+                        return;
+                    }
+
+
+
                     try
                     {
                         RefreshNeuralLinkStatus();
@@ -323,6 +361,13 @@ namespace TFTV.TFTVDrills
             {
                 public static void Postfix(StatusComponent __instance, Status status)
                 {
+
+                    if (!IsReworkEnabled())
+                    {
+                        return;
+                    }
+
+
                     try
                     {
                         if (status?.Def == _commandOverlayStatus)
@@ -345,6 +390,12 @@ namespace TFTV.TFTVDrills
                 {
                     try
                     {
+                        if (!IsReworkEnabled())
+                        {
+                            return;
+                        }
+
+
                         if (status?.Def == _commandOverlayStatus || status?.Def == _neuralLinkControlStatus)
                         {
                             RefreshNeuralLinkStatus();
@@ -443,6 +494,12 @@ namespace TFTV.TFTVDrills
                 {
                     try
                     {
+                        if (!IsReworkEnabled())
+                        {
+                            return;
+                        }
+
+
                         if (_bulletHell == null || aspect == null)
                         {
                             return;
@@ -538,6 +595,12 @@ namespace TFTV.TFTVDrills
                 [HarmonyPrefix]
                 private static bool PreventSwitchingWhenLocked(EquipmentComponent __instance, Equipment equipment)
                 {
+                    if (!IsReworkEnabled())
+                    {
+                        return true;
+                    }
+
+
                     TacticalActor actor = __instance.TacticalActor;
                     if (actor != null && equipment != null && equipment != __instance.SelectedEquipment && actor.Status.HasStatus(_bulletHellSlowStatus))
                     {
@@ -555,6 +618,12 @@ namespace TFTV.TFTVDrills
                 [HarmonyPostfix]
                 private static void BlockUiSwitchingWhenLocked(TacticalActor actor, ref bool __result)
                 {
+                    if (!IsReworkEnabled())
+                    {
+                        return;
+                    }
+
+
                     if (__result && actor != null && actor.Status.HasStatus(_bulletHellSlowStatus))
                     {
                         __result = false;
@@ -569,6 +638,13 @@ namespace TFTV.TFTVDrills
                 [HarmonyPostfix]
                 private static void BlockReloadingWhenLocked(ReloadAbility __instance, ref AbilityDisabledState __result)
                 {
+                    if (!IsReworkEnabled())
+                    {
+                        return;
+                    }
+
+
+
                     if (__result == AbilityDisabledState.NotDisabled && __instance?.TacticalActor?.Status != null && __instance.TacticalActor.Status.HasStatus(_bulletHellSlowStatus))
                     {
                         __result = AbilityDisabledState.BlockedByStatus;
@@ -602,6 +678,13 @@ namespace TFTV.TFTVDrills
                     Vector3 sourcePosition,
                     ref IEnumerable<TacticalAbilityTarget> __result)
                 {
+
+                    if (!IsReworkEnabled())
+                    {
+                        return;
+                    }
+
+
                     if (__instance.ReloadAbilityDef != _ordnanceResupply)
                     {
                         return;
@@ -706,6 +789,12 @@ namespace TFTV.TFTVDrills
                 [HarmonyPostfix]
                 private static void EnsureActionPointCost(ReloadAbility __instance, ref float __result)
                 {
+                    if (!IsReworkEnabled())
+                    {
+                        return;
+                    }
+
+
                     if (__instance?.ReloadAbilityDef?.TargetingDataDef?.Origin?.TargetResult == TargetResult.Actor)
                     {
                         __result = __instance.ReloadAbilityDef.ActionPointCost;
@@ -719,6 +808,12 @@ namespace TFTV.TFTVDrills
                     Equipment equipment,
                     TacticalItem ammoClip)
                 {
+                    if (!IsReworkEnabled())
+                    {
+                        return;
+                    }
+
+
                     if (equipment == null || ammoClip == null)
                     {
                         return;
@@ -758,8 +853,16 @@ namespace TFTV.TFTVDrills
             [HarmonyPatch(typeof(TacticalAbility), "get_ActionPointRequirementSatisfied")]
             static class TacticalAbility_CanActivate_Desperate_Patch
             {
+
+
                 static void Postfix(TacticalAbility __instance, ref bool __result)
                 {
+                    if (!IsReworkEnabled())
+                    {
+                        return;
+                    }
+
+
                     try
                     {
                         var actor = __instance?.TacticalActor;
@@ -803,6 +906,12 @@ namespace TFTV.TFTVDrills
             {
                 static void Postfix(ShootAbility __instance)
                 {
+
+                    if (!IsReworkEnabled())
+                    {
+                        return;
+                    }
+
                     try
                     {
                         if (__instance?.TacticalAbilityDef != _partingShot)
@@ -835,6 +944,12 @@ namespace TFTV.TFTVDrills
             {
                 static bool Prefix(TacticalLevelController __instance, TacticalActor target)
                 {
+
+                    if (!IsReworkEnabled())
+                    {
+                        return true;
+                    }
+
                     try
                     {
                         if (target == null || !target.TacticalFaction.TacticalActors.Any(a => a.Status != null && a.Status.HasStatus(_markedwatchStatus)))
@@ -933,6 +1048,11 @@ namespace TFTV.TFTVDrills
 
                 static void Postfix(AIBlackboard blackboard, TacticalActorBase enemy, ref float __result)
                 {
+                    if (!IsReworkEnabled())
+                    {
+                        return;
+                    }
+
                     try
                     {
                         if (HasTauntStatus(enemy))
@@ -984,6 +1104,11 @@ namespace TFTV.TFTVDrills
                 try
                 {
 
+                    if (!IsReworkEnabled())
+                    {
+                        return false;
+                    }
+
                     return _mentorProtocol != null && tacticalActor.GetAbilityWithDef<PassiveModifierAbility>(_mentorProtocol) != null;
 
                 }
@@ -1008,6 +1133,11 @@ namespace TFTV.TFTVDrills
                 {
                     try
                     {
+                        if (!IsReworkEnabled())
+                        {
+                            return;
+                        }
+
                         RefreshPounceProtocolStatus(__instance);
                     }
                     catch (Exception ex)
@@ -1025,6 +1155,11 @@ namespace TFTV.TFTVDrills
                 {
                     try
                     {
+                        if (!IsReworkEnabled())
+                        {
+                            return;
+                        }
+
                         RefreshPounceProtocolStatus(__instance);
                     }
                     catch (Exception ex)
@@ -1125,6 +1260,12 @@ namespace TFTV.TFTVDrills
                     Vector3 targetPosition,
                     ref bool __result)
                 {
+
+                    if (!IsReworkEnabled())
+                    {
+                        return;
+                    }
+
                     try
                     {
                         // If already valid, don’t touch it.
@@ -1236,6 +1377,12 @@ namespace TFTV.TFTVDrills
             {
                 try
                 {
+                    if (!IsReworkEnabled())
+                    {
+                        return false;
+                    }
+
+
                     return controllerActor.GetAbilityWithDef<PassiveModifierAbility>(_virulentGrip) != null && controlledActor.Status.HasStatus<InfectedStatus>();
 
                 }
@@ -1257,6 +1404,12 @@ namespace TFTV.TFTVDrills
             {
                 public static void Postfix(DeployShieldAbility __instance)
                 {
+
+                    if (!IsReworkEnabled())
+                    {
+                        return;
+                    }
+
                     try
                     {
                         TacticalActor tacticalActor = __instance.TacticalActor;
@@ -1311,6 +1464,12 @@ namespace TFTV.TFTVDrills
 
                 public static bool Prefix(EquipmentComponent __instance, Equipment equipment)
                 {
+
+                    if (!IsReworkEnabled())
+                    {
+                        return true;
+                    }
+
                     var actor = __instance.TacticalActor;
                     var prev = __instance.SelectedEquipment;
 
@@ -1379,29 +1538,7 @@ namespace TFTV.TFTVDrills
 
         }
 
-        internal class MightMakesRight
-        {
-
-            public static float CheckForMightMakesRightDrill(TacticalActor tacticalActor)
-            {
-                try
-                {
-                    if (tacticalActor.GetAbilityWithDef<PassiveModifierAbility>(_mightMakesRight) != null)
-                    {
-                        return 1f + tacticalActor.CharacterStats.Endurance.Value.EndValue / 2 / 100;
-                    }
-
-                    return 0;
-
-                }
-                catch (Exception ex)
-                {
-                    TFTVLogger.Error(ex);
-                    throw;
-                }
-            }
-
-        }
+       
 
         /*  internal class VeiledMarksman
           {
@@ -1754,6 +1891,12 @@ namespace TFTV.TFTVDrills
                 {
                     try
                     {
+                        if (!IsReworkEnabled())
+                        {
+                            return;
+                        }
+
+
                         if (!TryGetPackLoyaltyParticipants(__instance, out var priest, out var mutog))
                         {
                             return;
@@ -1780,6 +1923,12 @@ namespace TFTV.TFTVDrills
                 {
                     try
                     {
+                        if (!IsReworkEnabled())
+                        {
+                            return;
+                        }
+
+
                         if (PsychicWardStatusDef == null || __instance?.TacStatusDef != PsychicWardStatusDef)
                         {
                             return;

@@ -145,7 +145,6 @@ namespace TFTV
                 TFTVVehicleRework.VehiclesMain.ReworkVehicles();
                 Logger.LogInfo("Vehicle Rework Loaded");
 
-
                 TFTVRevenant.TFTVRevenantResearch.CreateRevenantRewardsDefs();
                 TFTVProjectOsiris.Defs.CreateProjectOsirisDefs();
                 //  NoSecondChances.ImplementNoSecondChances();
@@ -179,6 +178,15 @@ namespace TFTV
                     TFTVNewGameMenu.TitleScreen.SetTFTVLogo(homeScreenView);
                 }
 
+                if (TFTVAircraftReworkMain.AircraftReworkOn) 
+                {
+                    BCSettings Config = TFTVMain.Main.Settings;
+                    ClassSpecDef TechMainSpec = Config.ClassSpecializations.FirstOrDefault(cls => cls.Class.Name.Equals(ClassKeys.Technician.Name));
+                    TechMainSpec.MainSpec[6] = "AR TARGETING";
+                    PersonalPerksDef PersonalFactionPerks = Config.PersonalPerks.FirstOrDefault(p => p.PerkKey.Equals(PerkType.Faction_2));
+                    PersonalFactionPerks.RelatedFixedPerks[FactionKeys.NJ][ClassKeys.Technician.Name] = "AMPLIFY PAIN";
+
+                }
 
                 ConsoleCommands.InjectConsoleCommands();
 

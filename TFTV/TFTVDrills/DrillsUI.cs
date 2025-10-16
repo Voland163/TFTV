@@ -40,6 +40,8 @@ namespace TFTV.TFTVDrills
                 try
                 {
 
+                    if(!TFTVAircraftReworkMain.AircraftReworkOn) { return true; }
+
                     TFTVLogger.Always($"AbilityTrackSkillEntryElement OnPointerClick invoked");
                     // Find the owning progression UI
                     var ui = __instance.GetComponentInParent<UIModuleCharacterProgression>();
@@ -113,6 +115,9 @@ TacticalAbilityDef original,
 AbilityTrackSource source,
 List<TacticalAbilityDef> choices)
             {
+
+
+
                 // If the built-in DualClass popup is present, use it
                 var popupGO = GetPrivate<GameObject>(ui, "DualClassPopupWindow");
                 var container = GetPrivate<GameObject>(ui, "DualClassButtonsContainer");

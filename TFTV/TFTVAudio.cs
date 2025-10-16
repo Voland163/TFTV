@@ -151,47 +151,56 @@ namespace TFTV
             {
                 if (clip == null)
                 {
-                    Debug.LogError("ExternalAudioInjector: Provided clip is null.");
+                    TFTVLogger.Always("ExternalAudioInjector: Provided clip is null.");
                     return false;
                 }
 
-                clip.LoadAudioData();
+                string clipName = !string.IsNullOrEmpty(clipLabel) ? clipLabel : clip.name;
+                AudioDataLoadState initialState = clip.loadState;
+                switch (initialState) 
+                {
+                    case AudioDataLoadState.Loaded:
+                        return true;
+                    case AudioDataLoadState.Loading:
+                        return true;
+                    case AudioDataLoadState.Failed:
+                        Debug.LogError($"ExternalAudioInjector: Audio clip '{clipName}' previously failed to load (state={initialState}).");
+                        return false;
+                }
+
+                bool loadRequested;
+               
+                try
+                {
+                    loadRequested = clip.LoadAudioData();
+                }
+
+                catch (Exception ex)
+                {
+                    TFTVLogger.Always($"ExternalAudioInjector: Exception while loading audio clip '{clipName}': {ex}");
+                    return false;
+                }
+
+                if (!loadRequested)
+                {
+                    TFTVLogger.Always($"ExternalAudioInjector: LoadAudioData returned false for clip '{clipName}'.");
+                    return false;
+                }
+
+
                 AudioDataLoadState state = clip.loadState;
-                int iterations = 0;
-                while (state == AudioDataLoadState.Unloaded || state == AudioDataLoadState.Loading)
+                if (state == AudioDataLoadState.Failed)
                 {
-                    if (iterations++ >= LoadStatePollLimit)
-                    {
-                        break;
-                    }
-                    if (state == AudioDataLoadState.Unloaded)
-                    {
-                        clip.LoadAudioData();
-                    }
-                    Thread.Sleep(1);
-                    state = clip.loadState;
-                }
-
-                state = clip.loadState;
-                float length = clip.length;
-                int samples = clip.samples;
-
-                bool hasAudioData = length > 0f && samples > 0;
-                bool failedToLoad = state == AudioDataLoadState.Failed || !hasAudioData;
-                if (failedToLoad)
-                {
-                    string clipName = !string.IsNullOrEmpty(clipLabel) ? clipLabel : clip.name;
-                    Debug.LogErrorFormat("ExternalAudioInjector: Failed to prepare audio clip '{0}'. State={1}, Length={2}, Samples={3}", new object[]
-                    {
-                                clipName,
-                                state,
-                                length,
-                                samples
-                    });
+                    TFTVLogger.Always($"ExternalAudioInjector: Audio clip '{clipName}' failed to load (state={state}).");
                     return false;
                 }
 
-                return true;
+                if (state == AudioDataLoadState.Unloaded)
+                {
+                    TFTVLogger.Always($"EnsureClipPlayable: clip '{clipName}' reports Unloaded immediately after LoadAudioData; awaiting Unity async load.");
+                }
+
+                return true;      
             }
 
             /// <summary>
@@ -300,6 +309,7 @@ namespace TFTV
                 }
 
                 string uri = new Uri(absolutePath).AbsoluteUri;
+
 
                 TFTVLogger.Always($"LoadClipFromFile: loading '{absolutePath}' (audioType={audioType}, streamAudio={streamAudio})");
 
@@ -703,9 +713,6 @@ namespace TFTV
                     $"{stage}: event='{eventName}', clip='{clip.name}', loadState={loadState}, length={clip.length}s, samples={clip.samples}, channels={clip.channels}, frequency={clip.frequency}Hz, loadInBackground={clip.loadInBackground}, preloadAudioData={clip.preloadAudioData}");
             }
 
-
-            private const int LoadStatePollLimit = 2000;
-
             private static ParticleSpawnSoundPlayer EnsureSoundPlayer(Transform emitter)
             {
                 if (emitter == null)
@@ -855,6 +862,14 @@ namespace TFTV
                         TFTVLogger.Always("ExternalAudioClipPlayback.TryPlay: clip is not ready for playback");
                         return false;
                     }
+                    if (clip.loadState != AudioDataLoadState.Loaded)
+                    {
+                        AudioDataLoadState playbackState = clip.loadState;
+                        Debug.LogError($"ExternalAudioInjector: Audio clip '{clip.name}' is not ready (state={playbackState}). Skipping playback.");
+                        TFTVLogger.Always($"ExternalAudioClipPlayback.TryPlay: clip '{clip.name}' not ready for playback (state={playbackState})");
+                        return false;
+                    }
+
                     Transform emitter = ResolveEmitter(manager, context);
                     if (emitter == null)
                     {
