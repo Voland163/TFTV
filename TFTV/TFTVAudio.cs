@@ -30,7 +30,7 @@ namespace TFTV
 
 
 
-
+/*
         /// <summary>
         ///     Provides a Harmony based hook that replaces the stock Wwise playback path with a
         ///     fully managed alternative that can map <see cref="AudioEventData"/> instances to
@@ -1044,7 +1044,7 @@ namespace TFTV
                 }
             }
         }
-
+*/
         [HarmonyPatch(typeof(HasTagsEventFilterDef), "ShouldPlayEvent")]
         public static class HasTagsEventFilterDef_ShouldPlayEvent_patch
         {

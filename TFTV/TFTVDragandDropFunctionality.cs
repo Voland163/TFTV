@@ -298,21 +298,7 @@ namespace TFTV
 
         internal class Manufacturing
         {
-          /*  public static void ClearInternalData()
-            {
-                try 
-                { 
-                
-                
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
-
-            }*/
-
+        
             private static readonly string _amountInInventoryTextObject = "AmountInInventory";
             private static readonly string _techCostTextObject = "TextContainerTechCost";
             private static readonly string _matsCostTextObject = "TextContainerMatsCost";
@@ -667,7 +653,7 @@ namespace TFTV
                 }
             }
 
-
+          
             [HarmonyPatch(typeof(UIModuleManufacturing))]
             public static class UIModuleManufacturingPatch2
             {

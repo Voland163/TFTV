@@ -109,16 +109,12 @@ namespace TFTV
         {
             try
             {
-                foreach(GamestateSoundDef gamestateSoundDef in Repo.GetAllDefs<GamestateSoundDef>()) 
+                foreach(AreaOfEffectAbilitySceneViewDef AreaOfEffectAbilitySceneViewDef in Repo.GetAllDefs<AreaOfEffectAbilitySceneViewDef>()) 
                 {
-                    TFTVLogger.Always($"GamestateSoundDef: {gamestateSoundDef.name}", false);
+                    TFTVLogger.Always($"AreaOfEffectAbilitySceneViewDef: {AreaOfEffectAbilitySceneViewDef.name}", false);
                 
                 }
-                foreach (GeoscapeSoundDef gamestateSoundDef in Repo.GetAllDefs<GeoscapeSoundDef>())
-                {
-                    TFTVLogger.Always($"GeoscapeSoundDef: {gamestateSoundDef.name}", false);
-
-                }
+              
 
             }
             catch (Exception e)
@@ -239,9 +235,9 @@ namespace TFTV
 
                 // Experimental();
 
-                Print();
+               // Print();
 
-                ChangeScyllaSounds();
+              //  ChangeScyllaSounds();
 
             }
             catch (Exception e)
@@ -250,7 +246,7 @@ namespace TFTV
             }
         }
 
-        private static void ChangeScyllaSounds()
+      /*  private static void ChangeScyllaSounds()
         {
             try 
             {
@@ -266,7 +262,7 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
 
-        }
+        }*/
        
 
 

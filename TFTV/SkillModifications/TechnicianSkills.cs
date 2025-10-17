@@ -4,6 +4,7 @@ using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.UI;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -286,6 +287,15 @@ namespace PRMBetterClasses.SkillModifications
                 "fde2c01a-6a5a-4e1d-a4a1-f7e85e67f124",
                 abilityName);
 
+            commandOverlay.SceneViewElementDef = Helper.CreateDefFromClone(
+                DefCache.GetDef<AreaOfEffectAbilitySceneViewDef>("_Generic_PassiveAura_SceneViewElementDef"),
+                "{6C22D25F-D283-4489-9802-B23B8566167D}",
+                abilityName);
+
+            AreaOfEffectAbilitySceneViewDef areaOfEffectAbilitySceneViewDef = (AreaOfEffectAbilitySceneViewDef)commandOverlay.SceneViewElementDef;
+
+            areaOfEffectAbilitySceneViewDef.UseOriginData = false;
+
             DrillCommandOverlay.PerceptionAuraStatusDef auraStatus = Helper.CreateDefFromClone<DrillCommandOverlay.PerceptionAuraStatusDef>(
                 null,
                 "75c7d3d5-6fba-4b59-ae5e-e1d9cd7742df",
@@ -301,6 +311,7 @@ namespace PRMBetterClasses.SkillModifications
             commandOverlay.ViewElementDef.SmallIcon = icon;
 
             commandOverlay.TargetingDataDef.Origin.Range = 10f;
+            commandOverlay.TargetingDataDef.Target.Range = 7.8f;
             commandOverlay.CharacterProgressionData.RequiredSpeed = 0;
             commandOverlay.CharacterProgressionData.RequiredStrength = 0;
             commandOverlay.CharacterProgressionData.RequiredWill = 0;
@@ -320,7 +331,7 @@ namespace PRMBetterClasses.SkillModifications
             auraStatus.DontRaiseOnApplyOnLoad = false;
             auraStatus.EventOnApply = null;
             auraStatus.EventOnUnapply = null;
-            auraStatus.AccuracyBonus = 20f;
+            auraStatus.AccuracyBonus = 0.2f;
 
             DrillsDefs._commandOverlayStatus = auraStatus;
         }

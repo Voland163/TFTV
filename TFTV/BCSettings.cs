@@ -86,7 +86,7 @@ namespace PRMBetterClasses
                     "",
                     "STABILITY",
                     "FIELD MEDIC",
-                    "COMMAND OVERLAY"//"AMPLIFY PAIN"
+                    "AMPLIFY PAIN" //"COMMAND OVERLAY"//
                 }),
             new ClassSpecDef(
                 classDef: ClassKeys.Infiltrator,
@@ -265,7 +265,7 @@ namespace PRMBetterClasses
                         { ClassKeys.Assault.Name, "PUNISHER" },
                         { ClassKeys.Heavy.Name, "PUNISHER" },
                         { ClassKeys.Sniper.Name, "PUNISHER" },
-                        { ClassKeys.Technician.Name, "AMPLIFY PAIN" }//"AR TARGETING" },
+                        { ClassKeys.Technician.Name, "AR TARGETING" },//"AMPLIFY PAIN" }//
                     } },
                     { FactionKeys.Syn, new Dictionary<string, string>
                     {

@@ -36,6 +36,7 @@ using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Geoscape.View.ViewControllers.HavenDetails;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
@@ -1234,7 +1235,226 @@ namespace TFTV
         internal class Tactical
         {
 
-            internal class ExtraLongDetoursAroundFire 
+            internal class OverwatchFix 
+            {
+                [HarmonyPatch(typeof(TacticalLevelController), "ExecuteOverwatch")]
+                public static class TacticalLevelControllerExecuteOverwatchPatch
+                {
+                    private static readonly FieldInfo OverwatchExecutedEventField = AccessTools.Field(typeof(TacticalLevelController), nameof(TacticalLevelController.OverwatchExecutedEvent));
+
+                    private static readonly FieldInfo OverwatchFinishedEventField = AccessTools.Field(typeof(TacticalLevelController), nameof(TacticalLevelController.OverwatchFinishedEvent));
+
+                    private static readonly MethodInfo OverwatchTargetSetter = AccessTools.PropertySetter(typeof(TacticalLevelController), nameof(TacticalLevelController.OverwatchTarget));
+
+                    public static bool Prefix(TacticalLevelController __instance, TacticalActor target, List<OverwatchStatus> overwatchStatuses, ref IEnumerator<NextUpdate> __result)
+                    {
+                        __result = ExecuteOverwatch(__instance, target, overwatchStatuses);
+                        return false;
+                    }
+
+                    private static IEnumerator<NextUpdate> ExecuteOverwatch(TacticalLevelController controller, TacticalActor target, List<OverwatchStatus> overwatchStatuses)
+                    {
+                        if (controller == null)
+                        {
+                            yield break;
+                        }
+
+                        SetOverwatchTarget(controller, target);
+                        target?.TimingScale.AddScale(controller.OverwatchTimeScale, controller);
+
+                        try
+                        {
+                            using (new MultiForceTargetableLock(controller.Map.GetActors<TacticalActorBase>(null)))
+                            {
+                                foreach (OverwatchStatus overwatch in overwatchStatuses)
+                                {
+                                    if (target == null || target.IsDead)
+                                    {
+                                        break;
+                                    }
+
+                                    if (!OverwatchAimPointHelper.IsAnyAimPointInCone(overwatch, target))
+                                    {
+                                        continue;
+                                    }
+
+                                    ShootAbility defaultShootAbility = overwatch.GetWeapon().DefaultShootAbility;
+                                    TacticalActor shooterActor = defaultShootAbility.TacticalActor;
+                                    if (defaultShootAbility.GetWeaponDisabledState(IgnoredAbilityDisabledStatesFilter.CreateDefaultFilter()) != AbilityDisabledState.NotDisabled)
+                                    {
+                                        continue;
+                                    }
+
+                                    if (!TacticalFactionVision.CheckVisibleLineBetweenActors(shooterActor, shooterActor.Pos, target, false, null, 1f, null))
+                                    {
+                                        continue;
+                                    }
+
+                                    TacticalAbilityTarget overwatchTarget = defaultShootAbility.GetAttackActorTarget(target, AttackType.Overwatch);
+                                    if (overwatchTarget == null)
+                                    {
+                                        continue;
+                                    }
+
+                                    if (shooterActor.TacticalPerception.CheckFriendlyFire(defaultShootAbility.GetSource<Weapon>(), overwatchTarget.ShootFromPos, overwatchTarget, out TacticalActor blockingActor, FactionRelation.Neutral | FactionRelation.Friend))
+                                    {
+                                        continue;
+                                    }
+
+                                    overwatch.SetConeVisualsMode(false, false);
+                                    InvokeOverwatchEvent(controller, OverwatchExecutedEventField, overwatchTarget, shooterActor.gameObject);
+                                    yield return controller.Timing.Call(defaultShootAbility.Execute(overwatchTarget), null);
+                                    InvokeOverwatchEvent(controller, OverwatchFinishedEventField, overwatchTarget, shooterActor.gameObject);
+
+                                    if (overwatch.Applied)
+                                    {
+                                        shooterActor.Status.UnapplyStatus(overwatch);
+                                    }
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            target?.TimingScale.RemoveScale(controller.OverwatchTimeScale, controller);
+
+                            SetOverwatchTarget(controller, null);
+                        }
+                    }
+
+                    private static void InvokeOverwatchEvent(TacticalLevelController controller, FieldInfo field, TacticalAbilityTarget overwatchTarget, GameObject shooter)
+                    {
+                        if (controller == null || field == null)
+                        {
+                            return;
+                        }
+
+                        TacticalLevelController.OverwatchExecutedHandler handler = field.GetValue(controller) as TacticalLevelController.OverwatchExecutedHandler;
+                        handler?.Invoke(overwatchTarget, shooter);
+                    }
+
+                    private static void SetOverwatchTarget(TacticalLevelController controller, TacticalActor target)
+                    {
+                        if (controller == null || OverwatchTargetSetter == null)
+                        {
+                            return;
+                        }
+
+                        OverwatchTargetSetter.Invoke(controller, new object[] { target });
+                    }
+                }
+
+                internal static class OverwatchAimPointHelper
+                {
+                    public static bool IsAnyAimPointInCone(OverwatchStatus overwatch, TacticalActor target)
+                    {
+                        if (overwatch == null || target == null)
+                        {
+                            return false;
+                        }
+
+                        Cone cone = overwatch.GetCone();
+                        if (cone.IsDefaultValue<Cone>())
+                        {
+                            return false;
+                        }
+
+                        foreach (Vector3 point in EnumerateAimPointPositions(target))
+                        {
+                            if (cone.Contains(point))
+                            {
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    }
+
+                    private static IEnumerable<Vector3> EnumerateAimPointPositions(TacticalActor actor)
+                    {
+                        if (actor == null)
+                        {
+                            yield break;
+                        }
+
+                        yield return actor.Pos;
+                        yield return actor.VisionPoint;
+
+                        foreach (Vector3 point in EnumerateAimPointPositions((TacticalActorBase)actor))
+                        {
+                            yield return point;
+                        }
+
+                        if (actor.IsDummyReady)
+                        {
+                            foreach (Vector3 point in EnumerateAimPointPositions(actor.TargetDummy))
+                            {
+                                yield return point;
+                            }
+                        }
+
+                        foreach (Vector3 point in EnumerateAimPointPositions((ITargetDummyProvider)actor, actor.TargetDummy))
+                        {
+                            yield return point;
+                        }
+                    }
+
+                    private static IEnumerable<Vector3> EnumerateAimPointPositions(TacticalActorBase actor)
+                    {
+                        if (actor == null)
+                        {
+                            yield break;
+                        }
+
+                        foreach (Transform transform in actor.GetAimPoints())
+                        {
+                            if (transform != null)
+                            {
+                                yield return transform.position;
+                            }
+                        }
+                    }
+
+                    private static IEnumerable<Vector3> EnumerateAimPointPositions(ITargetDummyProvider provider, ITargetDummy ignoredDummy = null)
+                    {
+                        if (provider == null)
+                        {
+                            yield break;
+                        }
+
+                        ITargetDummy dummy = provider.ITargetDummy;
+                        if (dummy == null || dummy == ignoredDummy)
+                        {
+                            yield break;
+                        }
+
+                        foreach (Vector3 point in EnumerateAimPointPositions(dummy))
+                        {
+                            yield return point;
+                        }
+                    }
+
+                    private static IEnumerable<Vector3> EnumerateAimPointPositions(ITargetDummy dummy)
+                    {
+                        if (dummy == null)
+                        {
+                            yield break;
+                        }
+
+                        foreach (Transform transform in dummy.GetAimPoints())
+                        {
+                            if (transform != null)
+                            {
+                                yield return transform.position;
+                            }
+                        }
+                    }
+                }
+
+
+            }
+
+
+            internal class ExtraLongDetoursAroundFire
             {
                 [HarmonyPatch(typeof(NodePathSourceData))]
                 internal static class TacticalFirePathingFix
@@ -1263,8 +1483,7 @@ namespace TFTV
                             return;
                         }
 
-                        TacticalNavCostFactorFuncs tacticalFuncs = navCosts as TacticalNavCostFactorFuncs;
-                        if (tacticalFuncs == null)
+                        if (!(navCosts is TacticalNavCostFactorFuncs tacticalFuncs))
                         {
                             return;
                         }
@@ -2904,6 +3123,126 @@ namespace TFTV
 
         internal class Geoscape
         {
+
+            /// <summary>
+            /// Fixes losing modules when ground vehicle scrapped
+            /// </summary>
+            [HarmonyPatch(typeof(GeoFaction), "KillCharacter")]
+            public static class GeoFaction_KillCharacter_Patch
+            {
+
+                private static void Prefix(GeoFaction __instance, GeoCharacter unit, CharacterDeathReason reason)
+                {
+                    try
+                    {
+                        if (reason != CharacterDeathReason.Dismissed)
+                        {
+                            return;
+                        }
+
+                        if (!(__instance is GeoPhoenixFaction phoenixFaction))
+                        {
+                            return;
+                        }
+
+                        // TFTVLogger.Always($"!unit.GameTags.Contains(Shared.SharedGameTags.VehicleTag) {!unit.GameTags.Contains(Shared.SharedGameTags.VehicleTag)}");
+
+                        if (!unit.GameTags.Contains(Shared.SharedGameTags.VehicleTag))
+                        {
+                            return;
+                        }
+
+                        TransferGroundVehicleModules(phoenixFaction, unit);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogError($"GroundVehicleScrapFix encountered an error while handling ground vehicle scrap: {ex}");
+                    }
+                }
+
+                private static void TransferGroundVehicleModules(GeoPhoenixFaction faction, GeoCharacter vehicle)
+                {
+                    try
+                    {
+                        if (faction?.ItemStorage == null || vehicle == null)
+                        {
+                            return;
+                        }
+
+                        List<GeoItem> itemsToTransfer = new List<GeoItem>();
+                        AddUsableItems(vehicle.InventoryItems, itemsToTransfer, false);
+                        AddUsableItems(vehicle.EquipmentItems, itemsToTransfer);
+                        AddUsableItems(vehicle.ArmourItems, itemsToTransfer);
+
+                        if (itemsToTransfer.Count == 0)
+                        {
+                            return;
+                        }
+
+                        foreach (GeoItem item in itemsToTransfer)
+                        {
+                            faction.ItemStorage.AddItem(item);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+
+                private static void AddUsableItems(IEnumerable<GeoItem> source, List<GeoItem> destination, bool emptyAmmoFirst = true)
+                {
+                    try
+                    {
+
+                        if (source == null)
+                        {
+                            return;
+                        }
+
+                        foreach (GeoItem geoItem in source)
+                        {
+                            if (geoItem == null)
+                            {
+                                continue;
+                            }
+
+                            if (!emptyAmmoFirst)
+                            {
+                                destination.Add(geoItem);
+                                TFTVLogger.Always($"item should be added {geoItem.ItemDef.name}");
+                                continue;
+                            }
+
+                            TFTVLogger.Always($"geoItem.ItemDef {geoItem?.ItemDef?.name} {geoItem?.CommonItemData?.Ammo?.CurrentCharges}");
+
+                            if (geoItem.CommonItemData.Ammo == null)
+                            {
+                                destination.Add(geoItem);
+                                TFTVLogger.Always($"item should be added {geoItem.ItemDef.name}");
+                                continue;
+                            }
+
+                            if (geoItem.CommonItemData.Ammo.CurrentCharges > 0)
+                            {
+                                geoItem.CommonItemData.ModifyCharges(-geoItem.CommonItemData.Ammo.CurrentCharges);
+                                destination.Add(geoItem);
+                                TFTVLogger.Always($"item should be added {geoItem.ItemDef.name}");
+                                continue;
+                            }
+
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+
 
             /// <summary>
             /// Fixes softlock if game picks a turret deployed by a haven defender as a recruit

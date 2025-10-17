@@ -529,14 +529,7 @@ namespace TFTV
                         isInitialized = true;
                     }
 
-                    /* if (_mutationBound == null)
-                     {
-                         _mutationBound = Helper.CreateSpriteFromImageFile("UI_Frame_Mutationbound.png");
-                     }
-                     if (_iconBackground == null)
-                     {
-                         _iconBackground = Helper.CreateSpriteFromImageFile("UI_Frame_Feathered.png");
-                     }*/
+                   
                     if (_abilityIconBackground == null)
                     {
                         _abilityIconBackground = Helper.CreateSpriteFromImageFile("UI_ButtonFrame_Main_Sliced.png");

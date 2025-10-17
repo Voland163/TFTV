@@ -21,9 +21,7 @@ namespace TFTV
         internal static bool doNotLocalize = false;
         private static readonly SharedData sharedData = GameUtl.GameComponent<SharedData>();
 
-        private static readonly TacticalAbilityDef InnerSight_AbilityDef = DefCache.GetDef<TacticalAbilityDef>("InnerSight_AbilityDef");
-        private static readonly TacticalAbilityDef Terror_AbilityDef = DefCache.GetDef<TacticalAbilityDef>("Terror_AbilityDef");
-        private static readonly TacticalAbilityDef feralDeliriumPerk = DefCache.GetDef<TacticalAbilityDef>("FeralNew_AbilityDef");
+      
         private static readonly TacticalAbilityDef hyperalgesiaAbilityDef = DefCache.GetDef<TacticalAbilityDef>("Hyperalgesia_AbilityDef");
         private static readonly TacticalAbilityDef feralAbilityDef = DefCache.GetDef<TacticalAbilityDef>("Feral_AbilityDef");
         private static readonly TacticalAbilityDef bloodthirstyAbilityDef = DefCache.GetDef<TacticalAbilityDef>("Bloodthirsty_AbilityDef");
@@ -37,8 +35,7 @@ namespace TFTV
 
         private static readonly StatMultiplierStatusDef wolverinePassiveStatus = DefCache.GetDef<StatMultiplierStatusDef>("WolverinePassive_StatusDef");
 
-        private static readonly List<TacticalAbilityDef> DeliriumPerks = new List<TacticalAbilityDef>() {InnerSight_AbilityDef, Terror_AbilityDef, feralDeliriumPerk, hyperalgesiaAbilityDef,
-        feralAbilityDef, bloodthirstyAbilityDef, fasterSynapsesDef, anxietyDef, newAnxietyDef, oneOfThemDef, wolverineDef, derealizationDef, newDerealizationDef};
+       
 
         private static readonly StatusDef frenzy = DefCache.GetDef<StatusDef>("Frenzy_StatusDef");
         private static readonly StatusDef anxiety = DefCache.GetDef<StatusDef>("Anxiety_StatusDef");
@@ -126,171 +123,7 @@ namespace TFTV
 
         }
 
-        /// <summary>
-        /// Removed, because this Feral is gone.
-        /// </summary>
-
-        /*  [HarmonyPatch(typeof(TacticalAbility), "FumbleActionCheck")]
-          public static class TacticalAbility_FumbleActionCheck_Patch
-          {
-              private static readonly TacticalAbilityDef feral = DefCache.GetDef<TacticalAbilityDef>("Feral_AbilityDef");
-              public static void Postfix(TacticalAbility __instance, ref bool __result)
-              {
-                  try
-                  {
-                      if (__instance.TacticalActor.GetAbilityWithDef<TacticalAbility>(feral) != null && __instance.Source is Equipment)
-                      {
-                          __result = __result || UnityEngine.Random.Range(0, 100) < 20;
-                          TFTVLogger.Always($"The fumble action is {__instance.GetAbilityDescription()} and the fumble result is {__result}");
-                      }
-
-                  }
-                  catch (Exception e)
-                  {
-                      TFTVLogger.Error(e);
-                  }
-              }
-          }*/
-
-
-
-        /*
-                [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
-                public static class TacticalLevelController_ActorDied_HumanEnemiesTactics_BloodRush_Patch
-                {
-                    private static readonly TacticalAbilityDef feral =DefCache.GetDef<TacticalAbilityDef>("Feral_AbilityDef"));
-
-                    public static void Postfix(DeathReport deathReport)
-                    {
-                        try
-                        {
-                            TacticalActorBase killer = deathReport.Killer;
-
-                            if(killer.GetAbilityWithDef<TacticalAbility>(feral) != null) 
-                            {
-                                UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                                int roll = UnityEngine.Random.Range(0, 100);
-                                TFTVLogger.Always("FumbleActionCheck roll is " + roll);
-
-                                if (roll < 10) 
-                                {
-                                    TacticalActor tacticalActor = killer as TacticalActor;
-                                    TFTVLogger.Always("Max action points are " + tacticalActor.CharacterStats.ActionPoints.Max);
-                                    float maxActionPoints = tacticalActor.CharacterStats.ActionPoints.Max;
-                                    tacticalActor.CharacterStats.ActionPoints.Subtract((maxActionPoints/4)*2);
-                                    TFTVLogger.Always("Action points now " + tacticalActor.CharacterStats.ActionPoints.Value.EndValue);
-                                }
-
-
-                            }
-
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                        }
-                    }
-                }
-        */
-        /*
-        [HarmonyPatch(typeof(TacticalAbility), "get_FumbledAction")]
-        public static class TacticalAbility_FumbleActionCheck_Patch
-        {
-           private static readonly TacticalAbilityDef feral =DefCache.GetDef<TacticalAbilityDef>("Feral_AbilityDef"));
-
-            public static bool Prefix(TacticalAbility __instance, ref bool __result)
-            {
-               
-                try
-                {
-                   
-                    TFTVLogger.Always("get_FumbledAction " + __instance.Source);
-
-                    TFTVLogger.Always("The actor is " + __instance.TacticalActor.DisplayName + " and the ability is " + __instance.GetAbilityDescription());
-
-                    if (__instance.TacticalActor.GetAbilityWithDef<TacticalAbility>(feral) != null && __instance.Source is Equipment)
-                    {
-                        
-                         UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                          int roll = UnityEngine.Random.Range(0, 100);
-                        TFTVLogger.Always("FumbleActionCheck roll is " + roll);
-
-                        if (roll > 10)
-                        {
-                            // typeof(TacticalAbility).GetMethod("FumbleAction", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { __instance.ActionComponent. });
-                            __result = true;
-                            return false;
-                        }
-                        
-                        return true;
-
-                    }
-                    return true;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-                return true;
-            }
-        }
-        */
-        //Dtony's Delirium perks patch
-        /*    [HarmonyPatch(typeof(RecruitsListElementController), "SetRecruitElement")]
-            public static class RecruitsListElementController_SetRecruitElement_Patch
-            {
-                public static bool Prefix(RecruitsListElementController __instance, RecruitsListEntryData entryData, List<RowIconTextController> ____abilityIcons)
-                {
-                    try
-                    {
-                        if (____abilityIcons == null)
-                        {
-                            ____abilityIcons = new List<RowIconTextController>();
-                            if (__instance.PersonalTrackRoot.transform.childCount < entryData.PersonalTrackAbilities.Count())
-                            {
-                                RectTransform parent = __instance.PersonalTrackRoot.GetComponent<RectTransform>();
-                                RowIconTextController source = parent.GetComponentInChildren<RowIconTextController>();
-                                parent.DetachChildren();
-                                source.Icon.GetComponent<RectTransform>().sizeDelta = new Vector2(95f, 95f);
-                                for (int i = 0; i < entryData.PersonalTrackAbilities.Count(); i++)
-                                {
-                                    RowIconTextController entry = UnityEngine.Object.Instantiate(source, parent, true);
-                                }
-                            }
-                            UIUtil.GetComponentsFromContainer(__instance.PersonalTrackRoot.transform, ____abilityIcons);
-                        }
-                        __instance.RecruitData = entryData;
-                        __instance.RecruitName.SetSoldierData(entryData.Recruit);
-                        BC_SetAbilityIcons(entryData.PersonalTrackAbilities.ToList(), ____abilityIcons);
-                        if (entryData.SuppliesCost != null && __instance.CostText != null && __instance.CostColorController != null)
-                        {
-                            __instance.CostText.text = entryData.SuppliesCost.ByResourceType(ResourceType.Supplies).RoundedValue.ToString();
-                            __instance.CostColorController.SetWarningActive(!entryData.IsAffordable, true);
-                        }
-                        __instance.NavHolder.RefreshNavigation();
-                        return false;
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        return true;
-                    }
-                }
-
-
-                private static void BC_SetAbilityIcons(List<TacticalAbilityViewElementDef> abilities, List<RowIconTextController> abilityIcons)
-                {
-                    foreach (RowIconTextController rowIconTextController in abilityIcons)
-                    {
-                        rowIconTextController.gameObject.SetActive(false);
-                    }
-                    for (int i = 0; i < abilities.Count; i++)
-                    {
-                        abilityIcons[i].gameObject.SetActive(true);
-                        abilityIcons[i].SetController(abilities[i].LargeIcon, abilities[i].DisplayName1, abilities[i].Description);
-                    }
-                }
-            }*/
+      
 
         [HarmonyPatch(typeof(TacticalActor), "OnAnotherActorDeath")]
         public static class TacticalActor_OnAnotherActorDeath_Patch

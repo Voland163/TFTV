@@ -569,6 +569,8 @@ namespace TFTV
                             if (____character == null)
                                 return false;
 
+                            FixCarsWithDelirium(____character);
+
                             if (!TFTVAircraftReworkMain.AircraftReworkOn)
                                 return true; // let original handle it
 
@@ -722,6 +724,7 @@ namespace TFTV
                                 break;
                         }
                     }
+
                 }
 
                 [HarmonyPatch(typeof(GeoRosterStatisticsController))]
@@ -742,7 +745,26 @@ namespace TFTV
 
                         GeoCharacter geoCharacter = GameUtl.CurrentLevel().GetComponent<GeoLevelController>()?.View.GeoscapeModules.ActorCycleModule.CurrentCharacter;
 
-                      //  TFTVLogger.Always($"{geoCharacter?.DisplayName} has hc? {geoCharacter?.Progression?.Abilities?.Contains(TFTVDrills.DrillsDefs._heavyConditioning)}");
+                        float maxCorruption = TFTVDelirium.CalculateMaxCorruption(geoCharacter);
+                        float delirium = geoCharacter.CharacterStats.Corruption;
+                        if (maxCorruption < delirium)
+                        {
+                            delirium = maxCorruption;
+                        }
+
+                        __instance.CorruptionProgressBar.minValue = 0f;
+                        __instance.CorruptionProgressBar.maxValue = Mathf.RoundToInt(maxCorruption);
+                        __instance.CorruptionProgressBar.value = delirium;
+
+                        UITooltipText corruptionSliderTip = __instance.CorruptionProgressBar.gameObject.GetComponent<UITooltipText>() ?? __instance.CorruptionProgressBar.gameObject.AddComponent<UITooltipText>();
+                        corruptionSliderTip.TipText = $"{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DELIRIUM_EXPLANATION")} {TFTVDelirium.CurrentDeliriumLevel(geoCharacter.Faction.GeoLevel)}.";
+                        __instance.CorruptionText.text = $"{Mathf.RoundToInt(delirium)}/{Mathf.RoundToInt(__instance.CorruptionProgressBar.maxValue)}";
+
+
+                        if (!TFTVNewGameOptions.IsReworkEnabled()) 
+                        {
+                            return;
+                        }
 
                         if (!data.Abilities.Any(ad => ad.Ability == TFTVDrills.DrillsDefs._heavyConditioning)) return;
 
@@ -782,21 +804,21 @@ namespace TFTV
                         //  StealthText.text = $"{data.Stealth}%";
 
                         // Highlight perception if the soldier exceeds a threshold.
-                        if (fPerception<0)
+                        if (fPerception < 0)
                         {
-                            __instance.PerceptionText.text = $"{data.Perception-fPerception+fPerception/2}";
+                            __instance.PerceptionText.text = $"{data.Perception - fPerception + fPerception / 2}";
                         }
 
                         // Accentuate accuracy for elite marksmen.
-                        if (fAccuracy<0)
+                        if (fAccuracy < 0)
                         {
-                            __instance.AccuracyText.text = $"{data.Accuracy-fAccuracy+fAccuracy/2}% ";
+                            __instance.AccuracyText.text = $"{data.Accuracy - fAccuracy + fAccuracy / 2}% ";
                         }
 
                         // Flag units that are exceptionally stealthy.
-                        if (fStealth<0)
+                        if (fStealth < 0)
                         {
-                            __instance.StealthText.text = $"{data.Stealth-fStealth+fStealth/2}%";
+                            __instance.StealthText.text = $"{data.Stealth - fStealth + fStealth / 2}%";
                         }
                     }
                 }

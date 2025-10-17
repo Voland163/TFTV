@@ -9,8 +9,6 @@ using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TFTV
 {
@@ -38,7 +36,17 @@ namespace TFTV
             try
             {
                 CorruptionStatusDef corruptionStatusDef = DefCache.GetDef<CorruptionStatusDef>("Corruption_StatusDef");
-                corruptionStatusDef.DamageTypeDefs = new List<DamageTypeBaseEffectDef> { MeleeStandardDamageType, PsychicStandardDamageType };
+
+                if (TFTVNewGameOptions.IsReworkEnabled())
+                {
+                    corruptionStatusDef.DamageTypeDefs = new List<DamageTypeBaseEffectDef> { MeleeStandardDamageType, PsychicStandardDamageType };
+                }
+                else
+                {
+                    corruptionStatusDef.DamageTypeDefs.Add(MeleeStandardDamageType);
+                    corruptionStatusDef.DamageTypeDefs.Add(PsychicStandardDamageType);
+                }
+
 
             }
             catch (Exception e)

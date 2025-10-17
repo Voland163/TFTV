@@ -72,6 +72,8 @@ namespace TFTV.TFTVDrills
 
         private static readonly Dictionary<TacticalAbilityDef, DrillUnlockCondition> DrillUnlockConditions = new Dictionary<TacticalAbilityDef, DrillUnlockCondition>();
 
+        internal static Sprite _drillAvailable = null;
+
         internal static DamageMultiplierStatusDef _drawfireStatus;
         internal static ApplyStatusAbilityDef _drawFire;
         internal static DamageMultiplierStatusDef _markedwatchStatus;
@@ -672,7 +674,7 @@ namespace TFTV.TFTVDrills
                 ModifyRemoteControl();
                 CreateDrills();
                 ReplaceStunStatusWithNewConditionalStatusDef();
-
+                SetDrillAvailableSprite();
             }
             catch (Exception e)
             {
@@ -680,6 +682,19 @@ namespace TFTV.TFTVDrills
             }
         }
 
+        private static void SetDrillAvailableSprite()
+        {
+            try 
+            {
+                _drillAvailable = Helper.CreateSpriteFromImageFile("drill_arrow.png");
+            
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
 
         private static void ModifyRemoteControl()
         {
