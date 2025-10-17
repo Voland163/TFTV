@@ -36,10 +36,6 @@ namespace TFTV.TFTVDrills
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
-        private static bool IsReworkEnabled()
-        {
-            return TFTVAircraftReworkMain.AircraftReworkOn;
-        }
 
         internal static class ShockDrop
         {
@@ -50,7 +46,7 @@ namespace TFTV.TFTVDrills
                 [HarmonyPrefix]
                 public static bool Prefix(AbilitySummaryData __instance, TacticalActor tacticalActor, DamagePayload payload, int numActions)
                 {
-                    if (!IsReworkEnabled())
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return true;
                     }
@@ -119,7 +115,7 @@ namespace TFTV.TFTVDrills
                     BashAbility __instance,
                     ref float __result)
                 {
-                    if (!IsReworkEnabled())
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return;
                     }
@@ -140,7 +136,7 @@ namespace TFTV.TFTVDrills
             {
                 public static void Postfix(JetJumpAbility __instance)
                 {
-                    if (!IsReworkEnabled())
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return;
                     }
@@ -257,7 +253,7 @@ namespace TFTV.TFTVDrills
                 {
                     try
                     {
-                        if (!IsReworkEnabled())
+                        if (!TFTVNewGameOptions.IsReworkEnabled())
                         {
                             return true;
                         }
@@ -336,7 +332,7 @@ namespace TFTV.TFTVDrills
             {
                 public static void Postfix(TacticalLevelController __instance)
                 {
-                    if (!IsReworkEnabled())
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return;
                     }
@@ -362,7 +358,7 @@ namespace TFTV.TFTVDrills
                 public static void Postfix(StatusComponent __instance, Status status)
                 {
 
-                    if (!IsReworkEnabled())
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return;
                     }
@@ -390,7 +386,7 @@ namespace TFTV.TFTVDrills
                 {
                     try
                     {
-                        if (!IsReworkEnabled())
+                        if (!TFTVNewGameOptions.IsReworkEnabled())
                         {
                             return;
                         }
@@ -494,7 +490,7 @@ namespace TFTV.TFTVDrills
                 {
                     try
                     {
-                        if (!IsReworkEnabled())
+                        if (!TFTVNewGameOptions.IsReworkEnabled())
                         {
                             return;
                         }
@@ -595,7 +591,7 @@ namespace TFTV.TFTVDrills
                 [HarmonyPrefix]
                 private static bool PreventSwitchingWhenLocked(EquipmentComponent __instance, Equipment equipment)
                 {
-                    if (!IsReworkEnabled())
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return true;
                     }
@@ -618,7 +614,7 @@ namespace TFTV.TFTVDrills
                 [HarmonyPostfix]
                 private static void BlockUiSwitchingWhenLocked(TacticalActor actor, ref bool __result)
                 {
-                    if (!IsReworkEnabled())
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return;
                     }
@@ -638,7 +634,7 @@ namespace TFTV.TFTVDrills
                 [HarmonyPostfix]
                 private static void BlockReloadingWhenLocked(ReloadAbility __instance, ref AbilityDisabledState __result)
                 {
-                    if (!IsReworkEnabled())
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return;
                     }
@@ -679,7 +675,7 @@ namespace TFTV.TFTVDrills
                     ref IEnumerable<TacticalAbilityTarget> __result)
                 {
 
-                    if (!IsReworkEnabled())
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return;
                     }
@@ -789,7 +785,7 @@ namespace TFTV.TFTVDrills
                 [HarmonyPostfix]
                 private static void EnsureActionPointCost(ReloadAbility __instance, ref float __result)
                 {
-                    if (!IsReworkEnabled())
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return;
                     }
@@ -808,7 +804,7 @@ namespace TFTV.TFTVDrills
                     Equipment equipment,
                     TacticalItem ammoClip)
                 {
-                    if (!IsReworkEnabled())
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return;
                     }
@@ -857,7 +853,7 @@ namespace TFTV.TFTVDrills
 
                 static void Postfix(TacticalAbility __instance, ref bool __result)
                 {
-                    if (!IsReworkEnabled())
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return;
                     }
@@ -907,7 +903,7 @@ namespace TFTV.TFTVDrills
                 static void Postfix(ShootAbility __instance)
                 {
 
-                    if (!IsReworkEnabled())
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return;
                     }
@@ -945,7 +941,7 @@ namespace TFTV.TFTVDrills
                 static bool Prefix(TacticalLevelController __instance, TacticalActor target)
                 {
 
-                    if (!IsReworkEnabled())
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return true;
                     }
@@ -1048,7 +1044,7 @@ namespace TFTV.TFTVDrills
 
                 static void Postfix(AIBlackboard blackboard, TacticalActorBase enemy, ref float __result)
                 {
-                    if (!IsReworkEnabled())
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return;
                     }
@@ -1104,7 +1100,7 @@ namespace TFTV.TFTVDrills
                 try
                 {
 
-                    if (!IsReworkEnabled())
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return false;
                     }
@@ -1133,7 +1129,7 @@ namespace TFTV.TFTVDrills
                 {
                     try
                     {
-                        if (!IsReworkEnabled())
+                        if (!TFTVNewGameOptions.IsReworkEnabled())
                         {
                             return;
                         }
@@ -1155,7 +1151,7 @@ namespace TFTV.TFTVDrills
                 {
                     try
                     {
-                        if (!IsReworkEnabled())
+                        if (!TFTVNewGameOptions.IsReworkEnabled())
                         {
                             return;
                         }
@@ -1261,7 +1257,7 @@ namespace TFTV.TFTVDrills
                     ref bool __result)
                 {
 
-                    if (!IsReworkEnabled())
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return;
                     }
@@ -1377,7 +1373,7 @@ namespace TFTV.TFTVDrills
             {
                 try
                 {
-                    if (!IsReworkEnabled())
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return false;
                     }
@@ -1405,7 +1401,7 @@ namespace TFTV.TFTVDrills
                 public static void Postfix(DeployShieldAbility __instance)
                 {
 
-                    if (!IsReworkEnabled())
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return;
                     }
@@ -1465,7 +1461,7 @@ namespace TFTV.TFTVDrills
                 public static bool Prefix(EquipmentComponent __instance, Equipment equipment)
                 {
 
-                    if (!IsReworkEnabled())
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return true;
                     }
@@ -1538,7 +1534,7 @@ namespace TFTV.TFTVDrills
 
         }
 
-       
+
 
         /*  internal class VeiledMarksman
           {
@@ -1891,7 +1887,7 @@ namespace TFTV.TFTVDrills
                 {
                     try
                     {
-                        if (!IsReworkEnabled())
+                        if (!TFTVNewGameOptions.IsReworkEnabled())
                         {
                             return;
                         }
@@ -1923,7 +1919,7 @@ namespace TFTV.TFTVDrills
                 {
                     try
                     {
-                        if (!IsReworkEnabled())
+                        if (!TFTVNewGameOptions.IsReworkEnabled())
                         {
                             return;
                         }

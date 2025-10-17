@@ -62,7 +62,7 @@ namespace TFTV.TFTVDrills
         }
     }
 
-
+    
     internal class DrillsDefs
     {
 
@@ -667,7 +667,7 @@ namespace TFTV.TFTVDrills
         {
             try
             {
-                if (!TFTVAircraftReworkMain.AircraftReworkOn) { return; }
+                if (!TFTVNewGameOptions.IsReworkEnabled()) { return; }
 
                 ModifyRemoteControl();
                 CreateDrills();

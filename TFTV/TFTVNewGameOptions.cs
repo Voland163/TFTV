@@ -6,6 +6,12 @@ namespace TFTV
     internal class TFTVNewGameOptions
     {
 
+        public static bool IsReworkEnabled()
+        {
+            return TFTVAircraftReworkMain.AircraftReworkOn; //&& .NewTrainingFacilities;
+        }
+
+
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
 

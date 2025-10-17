@@ -179,71 +179,14 @@ namespace TFTV
                     TFTVNewGameMenu.TitleScreen.SetTFTVLogo(homeScreenView);
                 }
 
-              /*  if (TFTVAircraftReworkMain.AircraftReworkOn) 
-                {
-                    BCSettings Config = TFTVMain.Main.Settings;
-                    int technicianIndex = Config.ClassSpecializations.FindIndex(cls => cls.Class.Name.Equals(ClassKeys.Technician.Name));
-                    if (technicianIndex >= 0)
-                    {
-                        ClassSpecDef technicianSpec = Config.ClassSpecializations[technicianIndex];
-                        if (technicianSpec.MainSpec != null && technicianSpec.MainSpec.Length > 6)
-                        {
-                            string[] updatedMainSpec = technicianSpec.MainSpec.ToArray();
-                            updatedMainSpec[6] = "AR TARGETING";
-                            technicianSpec.MainSpec = updatedMainSpec;
-                            Config.ClassSpecializations[technicianIndex] = technicianSpec;
-                        }
-                    }
+                
 
-                    int personalPerkIndex = Config.PersonalPerks.FindIndex(p => p.PerkKey.Equals(PerkType.Faction_2));
-                    if (personalPerkIndex >= 0)
-                    {
-                        PersonalPerksDef perk = Config.PersonalPerks[personalPerkIndex];
-                        Dictionary<string, Dictionary<string, string>> relatedPerks = perk.RelatedFixedPerks?.ToDictionary(
-                            outer => outer.Key,
-                            outer => new Dictionary<string, string>(outer.Value));
-
-                        if (relatedPerks != null
-                            && relatedPerks.TryGetValue(FactionKeys.NJ, out Dictionary<string, string> njPerks)
-                            && njPerks.ContainsKey(ClassKeys.Technician.Name))
-                        {
-                            Dictionary<string, string> updatedNjPerks = new Dictionary<string, string>(njPerks)
-                            {
-                                [ClassKeys.Technician.Name] = "AMPLIFY PAIN"
-                            };
-                            relatedPerks[FactionKeys.NJ] = updatedNjPerks;
-                            perk.RelatedFixedPerks = relatedPerks;
-                            Config.PersonalPerks[personalPerkIndex] = perk;
-                        }
-                    }
-
-                }*/
+             
 
                 ConsoleCommands.InjectConsoleCommands();
 
 
-                /*     Type renderingEnvironmentType = typeof(RenderingEnvironment);
-
-                     // Get all public constructors
-                     ConstructorInfo[] constructors = renderingEnvironmentType.GetConstructors();
-
-                     // Print the names of constructors
-                     foreach (ConstructorInfo constructor in constructors)
-                     {
-                         TFTVLogger.Always("Constructor Name: " + constructor.FullDescription());
-                     }*/
-
-
-
-                /*  if(GetLevel()!=null && GetLevel().name.Contains("HomeScreenLevel")) 
-                  {
-                      TFTVLogger.Always($"TFTV is enabled!");
-                      string warning = $"Terror from the Void is now enabled! PLEASE QUIT TO DESKTOP BEFORE STARTING OR LOADING A GAME";
-
-                      GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
-
-
-                  }*/
+            
                 if (!injectionComplete)
                 {
                     injectionComplete = true;

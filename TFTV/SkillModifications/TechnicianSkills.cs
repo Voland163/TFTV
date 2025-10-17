@@ -2,8 +2,6 @@
 using Base.Entities.Abilities;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
-using Base.UI;
-using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -45,8 +43,9 @@ namespace PRMBetterClasses.SkillModifications
 
             if (TFTVAircraftReworkMain.AircraftReworkOn)
             {
+
                 Create_CommandOverlay();
-               // ApplyAircraftReworkSkillSwaps();
+                //  ApplyAircraftReworkSkillSwaps();
             }
         }
 
@@ -269,7 +268,7 @@ namespace PRMBetterClasses.SkillModifications
         private static void Create_CommandOverlay()
         {
             string abilityName = "CommandOverlay_AbilityDef";
-            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("QuickAim_AbilityDef");
+            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("PsychicWard_AbilityDef");
             Sprite icon = Helper.CreateSpriteFromImageFile("CommandOverlay.png");
 
             ApplyStatusAbilityDef commandOverlay = Helper.CreateDefFromClone(
@@ -292,6 +291,9 @@ namespace PRMBetterClasses.SkillModifications
                 "75c7d3d5-6fba-4b59-ae5e-e1d9cd7742df",
                 $"E_Status [{abilityName}]");
 
+            DamageMultiplierStatusDef sourceStatus = DefCache.GetDef<DamageMultiplierStatusDef>("PsychicWard_StatusDef");
+            Helper.CopyFieldsByReflection(sourceStatus, auraStatus);
+
             commandOverlay.StatusDef = auraStatus;
             commandOverlay.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_TECH7_COMMANDOVERLAY_NAME";
             commandOverlay.ViewElementDef.Description.LocalizationKey = "TFTV_TECH7_COMMANDOVERLAY_DESC";
@@ -299,11 +301,6 @@ namespace PRMBetterClasses.SkillModifications
             commandOverlay.ViewElementDef.SmallIcon = icon;
 
             commandOverlay.TargetingDataDef.Origin.Range = 10f;
-            commandOverlay.ActionPointCost = 0f;
-            commandOverlay.WillPointCost = 2f;
-            commandOverlay.UsesPerTurn = 1;
-            commandOverlay.DisablingStatuses = new StatusDef[] { commandOverlay.StatusDef };
-
             commandOverlay.CharacterProgressionData.RequiredSpeed = 0;
             commandOverlay.CharacterProgressionData.RequiredStrength = 0;
             commandOverlay.CharacterProgressionData.RequiredWill = 0;
@@ -317,14 +314,12 @@ namespace PRMBetterClasses.SkillModifications
             auraStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
             auraStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
             auraStatus.HealthbarPriority = 0;
-            auraStatus.StackMultipleStatusesAsSingleIcon = false;
+            auraStatus.StackMultipleStatusesAsSingleIcon = true;
             auraStatus.Visuals = commandOverlay.ViewElementDef;
             auraStatus.ParticleEffectPrefab = null;
             auraStatus.DontRaiseOnApplyOnLoad = false;
             auraStatus.EventOnApply = null;
             auraStatus.EventOnUnapply = null;
-            auraStatus.DurationTurns = 1;
-            auraStatus.ExpireOnEndOfTurn = true;
             auraStatus.AccuracyBonus = 20f;
 
             DrillsDefs._commandOverlayStatus = auraStatus;
