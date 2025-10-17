@@ -15,6 +15,7 @@ using PRMBetterClasses;
 using PRMBetterClasses.SkillModifications;
 using PRMBetterClasses.VariousAdjustments;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -178,15 +179,45 @@ namespace TFTV
                     TFTVNewGameMenu.TitleScreen.SetTFTVLogo(homeScreenView);
                 }
 
-                if (TFTVAircraftReworkMain.AircraftReworkOn) 
+              /*  if (TFTVAircraftReworkMain.AircraftReworkOn) 
                 {
                     BCSettings Config = TFTVMain.Main.Settings;
-                    ClassSpecDef TechMainSpec = Config.ClassSpecializations.FirstOrDefault(cls => cls.Class.Name.Equals(ClassKeys.Technician.Name));
-                    TechMainSpec.MainSpec[6] = "AR TARGETING";
-                    PersonalPerksDef PersonalFactionPerks = Config.PersonalPerks.FirstOrDefault(p => p.PerkKey.Equals(PerkType.Faction_2));
-                    PersonalFactionPerks.RelatedFixedPerks[FactionKeys.NJ][ClassKeys.Technician.Name] = "AMPLIFY PAIN";
+                    int technicianIndex = Config.ClassSpecializations.FindIndex(cls => cls.Class.Name.Equals(ClassKeys.Technician.Name));
+                    if (technicianIndex >= 0)
+                    {
+                        ClassSpecDef technicianSpec = Config.ClassSpecializations[technicianIndex];
+                        if (technicianSpec.MainSpec != null && technicianSpec.MainSpec.Length > 6)
+                        {
+                            string[] updatedMainSpec = technicianSpec.MainSpec.ToArray();
+                            updatedMainSpec[6] = "AR TARGETING";
+                            technicianSpec.MainSpec = updatedMainSpec;
+                            Config.ClassSpecializations[technicianIndex] = technicianSpec;
+                        }
+                    }
 
-                }
+                    int personalPerkIndex = Config.PersonalPerks.FindIndex(p => p.PerkKey.Equals(PerkType.Faction_2));
+                    if (personalPerkIndex >= 0)
+                    {
+                        PersonalPerksDef perk = Config.PersonalPerks[personalPerkIndex];
+                        Dictionary<string, Dictionary<string, string>> relatedPerks = perk.RelatedFixedPerks?.ToDictionary(
+                            outer => outer.Key,
+                            outer => new Dictionary<string, string>(outer.Value));
+
+                        if (relatedPerks != null
+                            && relatedPerks.TryGetValue(FactionKeys.NJ, out Dictionary<string, string> njPerks)
+                            && njPerks.ContainsKey(ClassKeys.Technician.Name))
+                        {
+                            Dictionary<string, string> updatedNjPerks = new Dictionary<string, string>(njPerks)
+                            {
+                                [ClassKeys.Technician.Name] = "AMPLIFY PAIN"
+                            };
+                            relatedPerks[FactionKeys.NJ] = updatedNjPerks;
+                            perk.RelatedFixedPerks = relatedPerks;
+                            Config.PersonalPerks[personalPerkIndex] = perk;
+                        }
+                    }
+
+                }*/
 
                 ConsoleCommands.InjectConsoleCommands();
 

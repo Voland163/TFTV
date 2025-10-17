@@ -46,7 +46,7 @@ namespace PRMBetterClasses.SkillModifications
             if (TFTVAircraftReworkMain.AircraftReworkOn)
             {
                 Create_CommandOverlay();
-                ApplyAircraftReworkSkillSwaps();
+               // ApplyAircraftReworkSkillSwaps();
             }
         }
 
@@ -338,9 +338,11 @@ namespace PRMBetterClasses.SkillModifications
             if (technicianIndex >= 0)
             {
                 ClassSpecDef technicianSpec = config.ClassSpecializations[technicianIndex];
-                if (technicianSpec.MainSpec.Length > 6)
+                if (technicianSpec.MainSpec != null && technicianSpec.MainSpec.Length > 6)
                 {
-                    technicianSpec.MainSpec[6] = "COMMAND OVERLAY";
+                    string[] updatedMainSpec = technicianSpec.MainSpec.ToArray();
+                    updatedMainSpec[6] = "COMMAND OVERLAY";
+                    technicianSpec.MainSpec = updatedMainSpec;
                     config.ClassSpecializations[technicianIndex] = technicianSpec;
                 }
             }
@@ -359,7 +361,9 @@ namespace PRMBetterClasses.SkillModifications
                     continue;
                 }
 
-                Dictionary<string, Dictionary<string, string>> relatedPerks = perk.RelatedFixedPerks;
+                Dictionary<string, Dictionary<string, string>> relatedPerks = perk.RelatedFixedPerks?.ToDictionary(
+                   outer => outer.Key,
+                   outer => new Dictionary<string, string>(outer.Value));
                 if (relatedPerks == null)
                 {
                     continue;
@@ -368,8 +372,11 @@ namespace PRMBetterClasses.SkillModifications
                 if (relatedPerks.TryGetValue(FactionKeys.NJ, out Dictionary<string, string> njPerks)
                     && njPerks.ContainsKey(ClassKeys.Technician.Name))
                 {
-                    njPerks[ClassKeys.Technician.Name] = "AMPLIFY PAIN";
-                    relatedPerks[FactionKeys.NJ] = njPerks;
+                    Dictionary<string, string> updatedNjPerks = new Dictionary<string, string>(njPerks)
+                    {
+                        [ClassKeys.Technician.Name] = "AMPLIFY PAIN"
+                    };
+                    relatedPerks[FactionKeys.NJ] = updatedNjPerks;
                     perk.RelatedFixedPerks = relatedPerks;
                     config.PersonalPerks[i] = perk;
                 }
