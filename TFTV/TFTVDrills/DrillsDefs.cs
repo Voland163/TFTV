@@ -1,5 +1,4 @@
-﻿using Base.Core;
-using Base.Defs;
+﻿using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
@@ -10,7 +9,6 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
@@ -43,7 +41,7 @@ namespace TFTV.TFTVDrills
 
     internal sealed class DrillWeaponProficiencyRequirement
     {
-        public List<TacticalAbilityDef> ProficiencyAbilities { get; } = new List<TacticalAbilityDef>();
+        public List<TacticalAbilityDef> ProficiencyAbilities { get; set; } = new List<TacticalAbilityDef>();
         public bool RequireSelectedOperative = true;
     }
 
@@ -62,7 +60,7 @@ namespace TFTV.TFTVDrills
         }
     }
 
-    
+
     internal class DrillsDefs
     {
 
@@ -546,15 +544,64 @@ namespace TFTV.TFTVDrills
             });
             SetUnlockCondition(_neuralLink, commandOverlay);
 
+            var bulletHell = new DrillUnlockCondition();
+            bulletHell.ClassLevelRequirements.Add(new DrillClassLevelRequirement { ClassTag = null, MinimumLevel = 5, RequireSelectedOperative = true });
+            bulletHell.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
+            {
+                ProficiencyAbilities = new List<TacticalAbilityDef>()
+                {
+                    DefCache.GetDef<ClassProficiencyAbilityDef>("Assault_ClassProficiency_AbilityDef"),
+                    DefCache.GetDef<PassiveModifierAbilityDef>("AssaultRiflesTalent_AbilityDef")
+                },
+                RequireSelectedOperative = true
+            });
+
+            SetUnlockCondition(_bulletHell, bulletHell);
 
             var explosiveShoot = new DrillUnlockCondition();
             explosiveShoot.ClassLevelRequirements.Add(new DrillClassLevelRequirement
             {
-                ClassTag = DefCache.GetDef<ClassTagDef>("Sniper_ClassTagDef"),
-                MinimumLevel = 3,
+                ClassTag = null,
+                MinimumLevel = 5,
                 RequireSelectedOperative = true
             });
+
+            explosiveShoot.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
+            {
+                ProficiencyAbilities = new List<TacticalAbilityDef>()
+                { DefCache.GetDef<ClassProficiencyAbilityDef>("Sniper_ClassProficiency_AbilityDef"),
+                    DefCache.GetDef<PassiveModifierAbilityDef>("SniperTalent_AbilityDef")
+
+                },
+                RequireSelectedOperative = true
+
+            }
+
+          );
+
             SetUnlockCondition(_explosiveShot, explosiveShoot);
+
+            var heavySharpshot = new DrillUnlockCondition();
+
+            heavySharpshot.ClassLevelRequirements.Add(new DrillClassLevelRequirement
+            {
+                ClassTag = null,
+                MinimumLevel = 4,
+                RequireSelectedOperative = true
+            });
+
+            heavySharpshot.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
+            {
+                ProficiencyAbilities = new List<TacticalAbilityDef>()
+            {
+            DefCache.GetDef<ClassProficiencyAbilityDef>("Heavy_ClassProficiency_AbilityDef"),
+                    DefCache.GetDef<PassiveModifierAbilityDef>("HeavyWeaponsTalent_AbilityDef")
+
+            }
+            });
+
+            SetUnlockCondition(_heavySharpshot, heavySharpshot);
+
 
             var aksuSprint = new DrillUnlockCondition();
             aksuSprint.ClassLevelRequirements.Add(new DrillClassLevelRequirement
@@ -563,8 +610,20 @@ namespace TFTV.TFTVDrills
                 MinimumLevel = 1,
                 RequireSelectedOperative = true
             });
+
             aksuSprint.RequiredResearchIds.Add("ANU_Berserker_ResearchDef");
+
             SetUnlockCondition(_aksuSprint, aksuSprint);
+
+            var packLoyalty = new DrillUnlockCondition();
+            packLoyalty.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
+            {
+                ProficiencyAbilities = new List<TacticalAbilityDef>() { DefCache.GetDef<ApplyStatusAbilityDef>("PsychicWard_AbilityDef") },
+                RequireSelectedOperative = true
+
+            });
+
+            SetUnlockCondition(_packLoyalty, packLoyalty);
 
             var viralGrip = new DrillUnlockCondition();
             viralGrip.ClassLevelRequirements.Add(new DrillClassLevelRequirement
@@ -684,10 +743,10 @@ namespace TFTV.TFTVDrills
 
         private static void SetDrillAvailableSprite()
         {
-            try 
+            try
             {
                 _drillAvailable = Helper.CreateSpriteFromImageFile("drill_arrow.png");
-            
+
             }
             catch (Exception e)
             {
@@ -701,9 +760,9 @@ namespace TFTV.TFTVDrills
             try
             {
                 _remoteControlAbilityDef = DefCache.GetDef<ApplyStatusAbilityDef>("ManualControl_AbilityDef");
-               MultiStatusDef multiStatusDef = Helper.CreateDefFromClone(
-                    DefCache.GetDef<MultiStatusDef>("E_MultiStatus [RapidClearance_AbilityDef]"), "{CD46E75F-06CE-427F-B276-B54470FD054D}", $"{_remoteControlAbilityDef.name}");
-               
+                MultiStatusDef multiStatusDef = Helper.CreateDefFromClone(
+                     DefCache.GetDef<MultiStatusDef>("E_MultiStatus [RapidClearance_AbilityDef]"), "{CD46E75F-06CE-427F-B276-B54470FD054D}", $"{_remoteControlAbilityDef.name}");
+
 
 
                 DamageMultiplierStatusDef sourceStatus = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
@@ -732,8 +791,8 @@ namespace TFTV.TFTVDrills
                 effectConditionDef.StatusDef = newStatus;
                 effectConditionDef.HasStatus = false;
 
-               // AddAttackBoostStatusDef addAttackBoostStatusDef = (AddAttackBoostStatusDef)_remoteControlAbilityDef.StatusDef;
-              //  addAttackBoostStatusDef.AdditionalStatusesToApply = addAttackBoostStatusDef.AdditionalStatusesToApply.AddToArray(newStatus);
+                // AddAttackBoostStatusDef addAttackBoostStatusDef = (AddAttackBoostStatusDef)_remoteControlAbilityDef.StatusDef;
+                //  addAttackBoostStatusDef.AdditionalStatusesToApply = addAttackBoostStatusDef.AdditionalStatusesToApply.AddToArray(newStatus);
 
                 _remoteControlAbilityDef.StatusDef = multiStatusDef;
 
@@ -883,7 +942,7 @@ namespace TFTV.TFTVDrills
                 };
                 newAbility.ActorTags = Array.Empty<GameTagDef>();
                 newAbility.ProjectileSpreadMultiplier = 0.5f;
-                newAbility.DisablingStatuses = new StatusDef[] {DefCache.GetDef<StatMultiplierStatusDef>("E AccuracyMultiplier [BC_QuickAim_AbilityDef]") };
+                newAbility.DisablingStatuses = new StatusDef[] { DefCache.GetDef<StatMultiplierStatusDef>("E AccuracyMultiplier [BC_QuickAim_AbilityDef]") };
 
                 return newAbility;
             }
@@ -955,7 +1014,7 @@ namespace TFTV.TFTVDrills
 
                 AddAbilityStatusDef sourceStatus = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");
 
-              
+
 
                 AddAbilityStatusDef statusDef = Helper.CreateDefFromClone(
                     sourceStatus,
@@ -1123,10 +1182,10 @@ namespace TFTV.TFTVDrills
                         DamageKeywordDef = Shared.SharedDamageKeywords.ShockKeyword,
                         Value = shockValue
                     },
-               
+
                 };
 
-            
+
                 statusDef.DefaultBashAbility = defaultBashAbility;
                 statusDef.ReplacementBashAbility = shockDropBashAbility;
 
@@ -1821,7 +1880,7 @@ namespace TFTV.TFTVDrills
                 newMindControlStatusDef.ControlFactionDef = DefCache.GetDef<PPFactionDef>("Phoenix_FactionDef");
 
                 MultiStatusDef multiStatusDef = (MultiStatusDef)newAbility.StatusDef;
-               
+
                 AddAttackBoostStatusDef addAttackBoostStatusDef = (AddAttackBoostStatusDef)Helper.CreateDefFromClone(multiStatusDef.Statuses[0], "{945A027E-6E85-4056-84CF-1DAD3DCED40A}", name);
                 addAttackBoostStatusDef.AdditionalStatusesToApply = addAttackBoostStatusDef.AdditionalStatusesToApply.AddToArray(newMindControlStatusDef);
                 multiStatusDef.Statuses[0] = addAttackBoostStatusDef;
