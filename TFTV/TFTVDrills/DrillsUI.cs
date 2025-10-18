@@ -31,6 +31,7 @@ namespace TFTV.TFTVDrills
         private static readonly Color LockedBackgroundTint = new Color(1f, 1f, 1f, 0.03f);
         private static readonly Color DrillPulseColor = new Color(1f, 0.29803923f, 0f, 1f); // #FF4C00
 
+
         private static Sprite _originalAvailableImage = null;
 
         [HarmonyPatch(typeof(AbilityTrackSkillEntryElement), nameof(AbilityTrackSkillEntryElement.OnPointerClick))]
@@ -163,6 +164,42 @@ namespace TFTV.TFTVDrills
                 }
             }
 
+        }
+
+        [HarmonyPatch(typeof(AbilityTrackSkillEntryElement), "LateUpdate")]
+        public static class AbilityTrackSkillEntryElement_LateUpdate_Patch
+        {
+            public static void Postfix(AbilityTrackSkillEntryElement __instance)
+            {
+                if (!TFTVAircraftReworkMain.AircraftReworkOn || __instance == null)
+                {
+                    return;
+                }
+
+                var availableImage = __instance.Available;
+                if (availableImage == null || DrillsDefs._drillAvailable == null)
+                {
+                    return;
+                }
+
+                if (availableImage.sprite != DrillsDefs._drillAvailable)
+                {
+                    return;
+                }
+
+                if (!__instance.AvailableSkill || !availableImage.gameObject.activeSelf)
+                {
+                    return;
+                }
+
+                float t = Time.time * 2f % 2f;
+                if (t > 1f)
+                {
+                    t = 1f - (t - 1f);
+                }
+
+                availableImage.color = Color.Lerp(DrillPulseColor, Color.white, t);
+            }
         }
 
         private static class DrillIndicator
