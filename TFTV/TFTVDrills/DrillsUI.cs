@@ -1389,7 +1389,7 @@ namespace TFTV.TFTVDrills
             private static readonly Vector3[] TooltipCorners = new Vector3[4];
 
             private const float TooltipGap = 16f;
-
+            private const int DrillSkillPointCost = 10;
             public static RectTransform ActiveTooltipRect { get; private set; }
 
             public void Initialize(TacticalAbilityDef ability, string missingRequirements, bool isLocked, Transform tooltipParent, RectTransform menuRect, Canvas canvas)
@@ -1528,13 +1528,14 @@ namespace TFTV.TFTVDrills
 
                 try
                 {
-                    tooltip.Show((AbilityTrackSlot)null, view, useMutagens: false, cost: 0);
+                    tooltip.Show(_ability, view, useMutagens: false, cost: DrillSkillPointCost);
                     if (shouldPrime)
                     {
                         tooltip.Hide();
-                        tooltip.Show((AbilityTrackSlot)null, view, useMutagens: false, cost: 0);
+                        tooltip.Show(_ability, view, useMutagens: false, cost: DrillSkillPointCost);
                     }
 
+                    ApplyTooltipCostOverrides(tooltip);
                     tooltip.transform.SetAsLastSibling();
                     ActiveTooltipRect = tooltip.transform as RectTransform;
                     PositionTooltip();
@@ -1597,15 +1598,14 @@ namespace TFTV.TFTVDrills
                 if (_menuRect != null)
                 {
                     _menuRect.GetWorldCorners(TooltipCorners);
-                    Vector3 leftCenter = (TooltipCorners[0] + TooltipCorners[1]) * 0.5f;
-                    Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(camera, leftCenter);
-                    if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPoint, camera, out var localPoint))
+                    Vector3 overlayTopLeft = TooltipCorners[1];
+                    Vector2 overlayTopLeftScreen = RectTransformUtility.WorldToScreenPoint(camera, overlayTopLeft);
+                    if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, overlayTopLeftScreen, camera, out var localPoint))
                     {
-                        rectTransform.pivot = new Vector2(1f, 0.5f);
-                        float halfHeight = rectTransform.rect.height * 0.5f;
-                        float canvasHalfHeight = canvasRect.rect.height * 0.5f;
-                        localPoint.x -= TooltipGap;
-                        localPoint.y = Mathf.Clamp(localPoint.y, -canvasHalfHeight + halfHeight + 12f, canvasHalfHeight - halfHeight - 12f);
+                        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+                        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+                        rectTransform.pivot = new Vector2(1f, 1f);
+                        localPoint.x -= TooltipGap;                      
                         rectTransform.anchoredPosition = localPoint;
                         return;
                     }
@@ -1614,11 +1614,65 @@ namespace TFTV.TFTVDrills
                 if (DrillInputHelper.TryGetCursorScreenPosition(out var fallbackPosition) &&
                     RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, fallbackPosition, camera, out var fallbackLocal))
                 {
-                    rectTransform.pivot = new Vector2(1f, 0.5f);
+                    rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+                    rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+                    rectTransform.pivot = new Vector2(1f, 1f);
                     rectTransform.anchoredPosition = fallbackLocal + new Vector2(-TooltipGap, 0f);
                 }
             }
+            private void ApplyTooltipCostOverrides(GeoRosterAbilityDetailTooltip tooltip)
+            {
+                if (tooltip == null)
+                {
+                    return;
+                }
 
+                if (tooltip.AbilitySkillCostText != null && tooltip.AbilitySkillCostText.transform?.parent != null)
+                {
+                    tooltip.AbilitySkillCostText.transform.parent.gameObject.SetActive(true);
+                    string spFormat = tooltip.SPCostTextKey != null ? tooltip.SPCostTextKey.Localize() : "Skill Points";
+                    if (tooltip.SkillCostHeaderText != null)
+                    {
+                        tooltip.SkillCostHeaderText.text = spFormat;
+                    }
+
+                    string spPattern = !string.IsNullOrEmpty(tooltip.SPCostPattern) ? tooltip.SPCostPattern : "{0}";
+                    tooltip.AbilitySkillCostText.text = string.Format(spPattern, DrillSkillPointCost);
+                }
+
+                if (_ability == null)
+                {
+                    return;
+                }
+
+                int apCost = Mathf.RoundToInt(_ability.ActionPointCost);
+                int wpCost = Mathf.RoundToInt(_ability.WillPointCost);
+
+                if (tooltip.AbilitySkillCostGroup != null)
+                {
+                    tooltip.AbilitySkillCostGroup.SetActive(apCost > 0 || wpCost > 0);
+                }
+
+                if (tooltip.AbilitySkillAPCostText != null)
+                {
+                    tooltip.AbilitySkillAPCostText.gameObject.SetActive(apCost > 0);
+                    if (apCost > 0)
+                    {
+                        string apFormat = tooltip.APCostTextKey != null ? tooltip.APCostTextKey.Localize() : "{0}";
+                        tooltip.AbilitySkillAPCostText.text = string.Format(apFormat, apCost);
+                    }
+                }
+
+                if (tooltip.AbilitySkillWPCostText != null)
+                {
+                    tooltip.AbilitySkillWPCostText.gameObject.SetActive(wpCost > 0);
+                    if (wpCost > 0)
+                    {
+                        string wpFormat = tooltip.WPCostTextKey != null ? tooltip.WPCostTextKey.Localize() : "{0}";
+                        tooltip.AbilitySkillWPCostText.text = string.Format(wpFormat, wpCost);
+                    }
+                }
+            }
             private GeoRosterAbilityDetailTooltip EnsureTooltip()
             {
                 try
