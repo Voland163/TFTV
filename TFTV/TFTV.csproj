@@ -143,7 +143,6 @@
     <Compile Include="TFTVDrills\DrillsPublicClasses.cs" />
     <Compile Include="TFTVDrills\DrillsHarmony.cs" />
     <Compile Include="TFTVDrills\DrillsUI.cs" />
-    <Compile Include="TFTVDrills\DrillTooltip.cs" />
     <Compile Include="TFTVEvacAll.cs" />
     <Compile Include="TFTVExperienceDistribution.cs" />
     <Compile Include="TFTVDragandDropFunctionality.cs" />

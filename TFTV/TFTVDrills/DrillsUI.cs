@@ -341,6 +341,8 @@ namespace TFTV.TFTVDrills
                     return;
                 }
 
+                controller.AttachTooltipSuppression(TooltipSuppressor.Begin());
+
                 var canvas = overlay.GetComponentInParent<Canvas>() ?? ui.GetComponentInParent<Canvas>();
 
                 var header = UIBuilder.AddHeader(contentRect, original);
@@ -465,7 +467,7 @@ namespace TFTV.TFTVDrills
                 panelRect = (RectTransform)panel.transform;
                 panelRect.SetParent(overlayRect, false);
                 panelRect.anchorMin = panelRect.anchorMax = new Vector2(0.5f, 0.5f);
-                panelRect.pivot = new Vector2(1f, 0.5f);
+                panelRect.pivot = new Vector2(1f, 1f);
                 panelRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, MenuWidth);
                 panelRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, MenuMaxHeight);
 
@@ -1102,6 +1104,7 @@ namespace TFTV.TFTVDrills
             private RectTransform _overlayRect;
             private RectTransform _panelRect;
             private RectTransform _anchorRect;
+            private RectTransform _leftEdgeAnchorRect;
             private Button _backgroundButton;
             private CanvasGroup _canvasGroup;
             private RectTransform _viewportRect;
@@ -1111,6 +1114,7 @@ namespace TFTV.TFTVDrills
             private bool _closing;
             private Action _onClosed;
             private InputController _inputController;
+            private TooltipSuppressor.Handle _tooltipSuppression;
 
             public void Initialize(Canvas canvas, RectTransform overlayRect, RectTransform panelRect, RectTransform anchorRect, Button backgroundButton)
             {
@@ -1118,9 +1122,16 @@ namespace TFTV.TFTVDrills
                 _overlayRect = overlayRect;
                 _panelRect = panelRect;
                 _anchorRect = anchorRect;
+                _leftEdgeAnchorRect = DetermineLeftEdgeAnchor(anchorRect);
                 _backgroundButton = backgroundButton;
                 _canvasGroup = panelRect != null ? panelRect.GetComponent<CanvasGroup>() : null;
                 _inputController = GameUtl.GameComponent<InputController>();
+            }
+
+            public void AttachTooltipSuppression(TooltipSuppressor.Handle handle)
+            {
+                _tooltipSuppression?.Dispose();
+                _tooltipSuppression = handle;
             }
 
             public void ConfigureContent(RectTransform viewportRect, RectTransform contentRect, float width, float maxHeight)
@@ -1234,6 +1245,9 @@ namespace TFTV.TFTVDrills
                 }
                 finally
                 {
+                    var handle = _tooltipSuppression;
+                    _tooltipSuppression = null;
+                    handle?.Dispose();
                     UnityEngine.Object.Destroy(gameObject);
                 }
             }
@@ -1278,6 +1292,13 @@ namespace TFTV.TFTVDrills
                 }
             }
 
+            private void OnDestroy()
+            {
+                var handle = _tooltipSuppression;
+                _tooltipSuppression = null;
+                handle?.Dispose();
+            }
+
             private Vector2 CalculateTargetPosition()
             {
                 if (_overlayRect == null || _panelRect == null)
@@ -1285,22 +1306,27 @@ namespace TFTV.TFTVDrills
                     return Vector2.zero;
                 }
 
+                RectTransform anchorSource = GetActiveAnchor();
                 Vector2 anchorLocal = Vector2.zero;
-                if (_anchorRect != null)
+                if (anchorSource != null)
                 {
-                    _anchorRect.GetWorldCorners(CornerBuffer);
-                    Vector3 leftCenter = (CornerBuffer[0] + CornerBuffer[1]) * 0.5f;
+                    anchorSource.GetWorldCorners(CornerBuffer);
+                    Vector3 topLeftWorld = CornerBuffer[1];
                     Camera camera = GetCameraForCanvas(_canvas);
-                    Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(camera, leftCenter);
-                    RectTransformUtility.ScreenPointToLocalPointInRectangle(_overlayRect, screenPoint, camera, out anchorLocal);
+                    Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(camera, topLeftWorld);
+                    if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(_overlayRect, screenPoint, camera, out anchorLocal))
+                    {
+                        anchorLocal = Vector2.zero;
+                    }
                 }
 
                 float canvasHalfWidth = _overlayRect.rect.width * 0.5f;
                 float canvasHalfHeight = _overlayRect.rect.height * 0.5f;
-                float halfHeight = _panelRect.rect.height * 0.5f;
-                float minY = -canvasHalfHeight + halfHeight + 8f;
-                float maxY = canvasHalfHeight - halfHeight - 8f;
-                anchorLocal.y = Mathf.Clamp(anchorLocal.y, minY, maxY);
+                float panelHeight = _panelRect.rect.height;
+
+                float minTop = -canvasHalfHeight + panelHeight + 8f;
+                float maxTop = canvasHalfHeight - 8f;
+                float clampedY = Mathf.Clamp(anchorLocal.y, minTop, maxTop);
 
                 float desiredRight = anchorLocal.x - Gap;
                 float leftEdge = desiredRight - _panelRect.rect.width;
@@ -1310,7 +1336,51 @@ namespace TFTV.TFTVDrills
                     desiredRight += minLeft - leftEdge;
                 }
 
-                return new Vector2(desiredRight, anchorLocal.y);
+                return new Vector2(desiredRight, clampedY);
+            }
+
+            private RectTransform DetermineLeftEdgeAnchor(RectTransform anchorRect)
+            {
+                if (anchorRect == null)
+                {
+                    return null;
+                }
+
+                var parent = anchorRect.parent as RectTransform;
+                if (parent == null || parent.childCount == 0)
+                {
+                    return anchorRect;
+                }
+
+                RectTransform leftMost = null;
+                float bestX = float.PositiveInfinity;
+                for (int i = 0; i < parent.childCount; i++)
+                {
+                    if (!(parent.GetChild(i) is RectTransform child) || !child.gameObject.activeInHierarchy)
+                    {
+                        continue;
+                    }
+
+                    child.GetWorldCorners(CornerBuffer);
+                    float x = CornerBuffer[1].x;
+                    if (x < bestX)
+                    {
+                        bestX = x;
+                        leftMost = child;
+                    }
+                }
+
+                return leftMost ?? anchorRect;
+            }
+
+            private RectTransform GetActiveAnchor()
+            {
+                if (_leftEdgeAnchorRect != null && _leftEdgeAnchorRect.gameObject.activeInHierarchy)
+                {
+                    return _leftEdgeAnchorRect;
+                }
+
+                return _anchorRect;
             }
 
             private bool IsPointerNear(Vector2 screenPoint)
@@ -1581,11 +1651,25 @@ namespace TFTV.TFTVDrills
                     return;
                 }
 
+                var overlayCanvas = _menuRect != null ? _menuRect.GetComponentInParent<Canvas>() : null;
+                if (_tooltipParent != null && tooltip.transform.parent != _tooltipParent)
+                {
+                    tooltip.transform.SetParent(_tooltipParent, false);
+                    _tooltipCanvas = null;
+                }
+
                 var canvas = _tooltipCanvas;
                 if (canvas == null)
                 {
-                    _tooltipCanvas = tooltip.GetComponentInParent<Canvas>();
-                    canvas = _tooltipCanvas;
+                    canvas = tooltip.GetComponentInParent<Canvas>();
+                    _tooltipCanvas = canvas;
+                }
+
+                if (overlayCanvas != null && canvas != overlayCanvas)
+                {
+                    tooltip.transform.SetParent(overlayCanvas.transform, false);
+                    canvas = overlayCanvas;
+                    _tooltipCanvas = canvas;
                 }
 
                 if (canvas == null || !(canvas.transform is RectTransform canvasRect))
@@ -1595,31 +1679,23 @@ namespace TFTV.TFTVDrills
 
                 Camera camera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
 
-                if (_menuRect != null)
+                if (_menuRect == null)
                 {
-                    _menuRect.GetWorldCorners(TooltipCorners);
-                    Vector3 overlayTopLeft = TooltipCorners[1];
-                    Vector2 overlayTopLeftScreen = RectTransformUtility.WorldToScreenPoint(camera, overlayTopLeft);
-                    if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, overlayTopLeftScreen, camera, out var localPoint))
-                    {
-                        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-                        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-                        rectTransform.pivot = new Vector2(1f, 1f);
-                        localPoint.x -= TooltipGap;                      
-                        rectTransform.anchoredPosition = localPoint;
-                        return;
-                    }
+                    return;
                 }
 
-                if (DrillInputHelper.TryGetCursorScreenPosition(out var fallbackPosition) &&
-                    RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, fallbackPosition, camera, out var fallbackLocal))
+                _menuRect.GetWorldCorners(TooltipCorners);
+                Vector3 overlayTopLeft = TooltipCorners[1];
+                Vector2 overlayTopLeftScreen = RectTransformUtility.WorldToScreenPoint(camera, overlayTopLeft);
+                if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, overlayTopLeftScreen, camera, out var localPoint))
                 {
                     rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
                     rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
                     rectTransform.pivot = new Vector2(1f, 1f);
-                    rectTransform.anchoredPosition = fallbackLocal + new Vector2(-TooltipGap, 0f);
+                    rectTransform.anchoredPosition = new Vector2(localPoint.x - TooltipGap, localPoint.y);
                 }
             }
+
             private void ApplyTooltipCostOverrides(GeoRosterAbilityDetailTooltip tooltip)
             {
                 if (tooltip == null)
@@ -1673,6 +1749,7 @@ namespace TFTV.TFTVDrills
                     }
                 }
             }
+
             private GeoRosterAbilityDetailTooltip EnsureTooltip()
             {
                 try
@@ -1706,6 +1783,65 @@ namespace TFTV.TFTVDrills
                     TFTVLogger.Error(ex);
                     return null;
                 }
+            }
+
+            public static bool IsSharedTooltip(GeoRosterAbilityDetailTooltip tooltip)
+            {
+                return tooltip != null && _sharedTooltip == tooltip;
+            }
+        }
+
+        private static class TooltipSuppressor
+        {
+            internal sealed class Handle : IDisposable
+            {
+                private readonly List<GameObject> _disabledTooltips;
+                private bool _disposed;
+
+                internal Handle(List<GameObject> disabledTooltips)
+                {
+                    _disabledTooltips = disabledTooltips;
+                }
+
+                public void Dispose()
+                {
+                    if (_disposed)
+                    {
+                        return;
+                    }
+
+                    foreach (var go in _disabledTooltips)
+                    {
+                        if (go != null)
+                        {
+                            go.SetActive(true);
+                        }
+                    }
+
+                    _disabledTooltips.Clear();
+                    _disposed = true;
+                }
+            }
+
+            public static Handle Begin()
+            {
+                var disabled = new List<GameObject>();
+                foreach (var tooltip in Resources.FindObjectsOfTypeAll<GeoRosterAbilityDetailTooltip>())
+                {
+                    if (tooltip == null || DrillTooltipTrigger.IsSharedTooltip(tooltip))
+                    {
+                        continue;
+                    }
+
+                    if (tooltip.gameObject.activeSelf)
+                    {
+                        tooltip.Hide();
+                        tooltip.gameObject.SetActive(false);
+                        disabled.Add(tooltip.gameObject);
+                    }
+                }
+
+                return new Handle(disabled);
             }
         }
     }
