@@ -42,8 +42,6 @@ namespace TFTV.TFTVDrills
             }
 
             [Header("Explosive Disable Settings")]
-            [Tooltip("Optional tag that restricts the behaviour to weapons whose ItemClassTag matches this value.")]
-            public GameTagDef RequiredWeaponClassTag;
 
             [Tooltip("Explosion will trigger when any disabled item carries at least one of these tags. Leave empty to trigger on all disabled items.")]
             public List<GameTagDef> TriggerItemTags = new List<GameTagDef>();
@@ -268,11 +266,6 @@ namespace TFTV.TFTVDrills
 
                 Weapon weapon = ability.Weapon;
                 if (weapon == null)
-                {
-                    return false;
-                }
-
-                if (def.RequiredWeaponClassTag != null && weapon.ItemClassTag != def.RequiredWeaponClassTag)
                 {
                     return false;
                 }

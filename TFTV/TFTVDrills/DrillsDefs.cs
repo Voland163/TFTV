@@ -36,13 +36,13 @@ namespace TFTV.TFTVDrills
     {
         public ClassTagDef ClassTag;
         public int MinimumLevel = 1;
-        public bool RequireSelectedOperative; // TODO: confirm whether this should only check the viewing operative.
+        
     }
 
     internal sealed class DrillWeaponProficiencyRequirement
     {
         public List<TacticalAbilityDef> ProficiencyAbilities { get; set; } = new List<TacticalAbilityDef>();
-        public bool RequireSelectedOperative = true;
+        
     }
 
     internal sealed class DrillUnlockCondition
@@ -51,9 +51,6 @@ namespace TFTV.TFTVDrills
         public List<string> RequiredResearchIds { get; } = new List<string>();
         public List<DrillClassLevelRequirement> ClassLevelRequirements { get; } = new List<DrillClassLevelRequirement>();
         public List<DrillWeaponProficiencyRequirement> WeaponProficiencyRequirements { get; } = new List<DrillWeaponProficiencyRequirement>();
-
-        public bool RequireAnyPhoenixOperative; // TODO: clarify how mixed class requirements should behave.
-
         public static DrillUnlockCondition AlwaysUnlocked()
         {
             return new DrillUnlockCondition { AlwaysAvailable = true };
@@ -166,12 +163,12 @@ namespace TFTV.TFTVDrills
                 return false;
             }
 
-            if (!MeetsClassLevelRequirements(faction, viewer, condition))
+            if (!MeetsClassLevelRequirements(viewer, condition))
             {
                 return false;
             }
 
-            if (!MeetsWeaponProficiencyRequirements(faction, viewer, condition))
+            if (!MeetsWeaponProficiencyRequirements(viewer, condition))
             {
                 return false;
             }
@@ -197,29 +194,19 @@ namespace TFTV.TFTVDrills
                 return true;
             }
 
-            if (faction?.Research == null)
-            {
-                return false;
-            }
-
             foreach (var researchId in condition.RequiredResearchIds)
             {
-                if (string.IsNullOrEmpty(researchId))
-                {
-                    // TODO: populate missing research identifiers.
-                    continue;
-                }
-
+              
                 if (!faction.Research.HasCompleted(researchId))
                 {
                     return false;
                 }
             }
-
+           
             return true;
         }
 
-        internal static bool MeetsClassLevelRequirements(GeoPhoenixFaction faction, GeoCharacter viewer, DrillUnlockCondition condition)
+        internal static bool MeetsClassLevelRequirements(GeoCharacter viewer, DrillUnlockCondition condition)
         {
             if (condition?.ClassLevelRequirements == null || condition.ClassLevelRequirements.Count == 0)
             {
@@ -242,14 +229,6 @@ namespace TFTV.TFTVDrills
 
                 if (!satisfied)
                 {
-                    if (faction?.Soldiers != null)
-                    {
-                        satisfied = faction.Soldiers.Any(soldier => MeetsSingleClassRequirement(soldier, requirement));
-                    }
-                }
-
-                if (!satisfied)
-                {
                     // TODO: decide whether we should surface unmet requirements to the UI.
                     return false;
                 }
@@ -258,7 +237,7 @@ namespace TFTV.TFTVDrills
             return true;
         }
 
-        internal static bool MeetsWeaponProficiencyRequirements(GeoPhoenixFaction faction, GeoCharacter viewer, DrillUnlockCondition condition)
+        internal static bool MeetsWeaponProficiencyRequirements(GeoCharacter viewer, DrillUnlockCondition condition)
         {
             if (condition?.WeaponProficiencyRequirements == null || condition.WeaponProficiencyRequirements.Count == 0)
             {
@@ -277,14 +256,6 @@ namespace TFTV.TFTVDrills
                 if (viewer != null && SoldierHasWeaponProficiency(viewer, requirement.ProficiencyAbilities))
                 {
                     satisfied = true;
-                }
-
-                if (!satisfied && !requirement.RequireSelectedOperative)
-                {
-                    if (faction?.Soldiers != null)
-                    {
-                        satisfied = faction.Soldiers.Any(soldier => SoldierHasWeaponProficiency(soldier, requirement.ProficiencyAbilities));
-                    }
                 }
 
                 if (!satisfied)
@@ -375,7 +346,7 @@ namespace TFTV.TFTVDrills
                 }
             }
 
-            if (!MeetsClassLevelRequirements(faction, viewer, condition))
+            if (!MeetsClassLevelRequirements(viewer, condition))
             {
                 foreach (var requirement in condition.ClassLevelRequirements)
                 {
@@ -390,11 +361,6 @@ namespace TFTV.TFTVDrills
                         satisfied = true;
                     }
 
-                    if (!satisfied && faction?.Soldiers != null)
-                    {
-                        satisfied = faction.Soldiers.Any(soldier => MeetsSingleClassRequirement(soldier, requirement));
-                    }
-
                     if (satisfied)
                     {
                         continue;
@@ -404,7 +370,7 @@ namespace TFTV.TFTVDrills
                 }
             }
 
-            if (!MeetsWeaponProficiencyRequirements(faction, viewer, condition))
+            if (!MeetsWeaponProficiencyRequirements(viewer, condition))
             {
                 foreach (var requirement in condition.WeaponProficiencyRequirements)
                 {
@@ -419,27 +385,12 @@ namespace TFTV.TFTVDrills
                         satisfied = true;
                     }
 
-                    if (!satisfied && !requirement.RequireSelectedOperative && faction?.Soldiers != null)
-                    {
-                        satisfied = faction.Soldiers.Any(soldier => SoldierHasWeaponProficiency(soldier, requirement.ProficiencyAbilities));
-                    }
-
                     if (satisfied)
                     {
                         continue;
                     }
 
                     yield return BuildWeaponProficiencyRequirementMessage(requirement);
-                }
-            }
-
-
-            if (condition.RequireAnyPhoenixOperative)
-            {
-                bool hasOperative = faction?.Soldiers != null && faction.Soldiers.Count() > 0;
-                if (!hasOperative)
-                {
-                    yield return "Requires at least one active Phoenix operative.";
                 }
             }
         }
@@ -489,7 +440,7 @@ namespace TFTV.TFTVDrills
                 className = "operative";
             }
 
-            string subject = requirement.RequireSelectedOperative ? "Selected operative" : "Phoenix operative";
+            string subject = "Selected operative";
             return $"{subject} must be level {requirement.MinimumLevel} {className}";
         }
 
@@ -508,7 +459,7 @@ namespace TFTV.TFTVDrills
             }
 
             string abilityRequirement = abilityNames.Count == 1 ? abilityNames[0] : string.Join(" or ", abilityNames);
-            string subject = requirement?.RequireSelectedOperative ?? true ? "Selected operative" : "A Phoenix operative";
+            string subject = "Selected operative";
             return $"{subject} must have {abilityRequirement}.";
         }
 
@@ -540,12 +491,12 @@ namespace TFTV.TFTVDrills
             {
                 ClassTag = DefCache.GetDef<ClassTagDef>("Technician_ClassTagDef"),
                 MinimumLevel = 7,
-                RequireSelectedOperative = true
+               
             });
             SetUnlockCondition(_neuralLink, commandOverlay);
 
             var bulletHell = new DrillUnlockCondition();
-            bulletHell.ClassLevelRequirements.Add(new DrillClassLevelRequirement { ClassTag = null, MinimumLevel = 5, RequireSelectedOperative = true });
+            bulletHell.ClassLevelRequirements.Add(new DrillClassLevelRequirement { ClassTag = null, MinimumLevel = 5 });
             bulletHell.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
             {
                 ProficiencyAbilities = new List<TacticalAbilityDef>()
@@ -553,7 +504,7 @@ namespace TFTV.TFTVDrills
                     DefCache.GetDef<ClassProficiencyAbilityDef>("Assault_ClassProficiency_AbilityDef"),
                     DefCache.GetDef<PassiveModifierAbilityDef>("AssaultRiflesTalent_AbilityDef")
                 },
-                RequireSelectedOperative = true
+               
             });
 
             SetUnlockCondition(_bulletHell, bulletHell);
@@ -563,7 +514,7 @@ namespace TFTV.TFTVDrills
             {
                 ClassTag = null,
                 MinimumLevel = 5,
-                RequireSelectedOperative = true
+               
             });
 
             explosiveShoot.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
@@ -573,7 +524,7 @@ namespace TFTV.TFTVDrills
                     DefCache.GetDef<PassiveModifierAbilityDef>("SniperTalent_AbilityDef")
 
                 },
-                RequireSelectedOperative = true
+                
 
             }
 
@@ -587,7 +538,7 @@ namespace TFTV.TFTVDrills
             {
                 ClassTag = null,
                 MinimumLevel = 4,
-                RequireSelectedOperative = true
+              
             });
 
             heavySharpshot.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
@@ -608,7 +559,7 @@ namespace TFTV.TFTVDrills
             {
                 ClassTag = DefCache.GetDef<ClassTagDef>("Berserker_ClassTagDef"),
                 MinimumLevel = 1,
-                RequireSelectedOperative = true
+                
             });
 
             aksuSprint.RequiredResearchIds.Add("ANU_Berserker_ResearchDef");
@@ -619,7 +570,7 @@ namespace TFTV.TFTVDrills
             packLoyalty.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
             {
                 ProficiencyAbilities = new List<TacticalAbilityDef>() { DefCache.GetDef<ApplyStatusAbilityDef>("PsychicWard_AbilityDef") },
-                RequireSelectedOperative = true
+                
 
             });
 
@@ -630,7 +581,7 @@ namespace TFTV.TFTVDrills
             {
                 ClassTag = DefCache.GetDef<ClassTagDef>("Priest_ClassTagDef"),
                 MinimumLevel = 5,
-                RequireSelectedOperative = true
+                
             });
             viralGrip.RequiredResearchIds.Add("ANU_AdvancedInfectionTech_ResearchDef");
             SetUnlockCondition(_virulentGrip, viralGrip);
@@ -640,7 +591,7 @@ namespace TFTV.TFTVDrills
             {
                 ClassTag = DefCache.GetDef<ClassTagDef>("Priest_ClassTagDef"),
                 MinimumLevel = 7,
-                RequireSelectedOperative = true
+                
             });
             viralPuppeteer.RequiredResearchIds.Add("ANU_AdvancedInfectionTech_ResearchDef");
 
@@ -652,7 +603,7 @@ namespace TFTV.TFTVDrills
             {
                 ClassTag = DefCache.GetDef<ClassTagDef>("Technician_ClassTagDef"),
                 MinimumLevel = 5,
-                RequireSelectedOperative = true
+                
             });
             SetUnlockCondition(_ordnanceResupply, ordnanceResupply);
 
@@ -662,7 +613,7 @@ namespace TFTV.TFTVDrills
             {
                 ClassTag = DefCache.GetDef<ClassTagDef>("Infiltrator_ClassTagDef"),
                 MinimumLevel = 7,
-                RequireSelectedOperative = true
+                
             });
             toxicLink.RequiredResearchIds.Add("SYN_PoisonWeapons_ResearchDef");
             SetUnlockCondition(_toxicLink, toxicLink);
@@ -673,7 +624,7 @@ namespace TFTV.TFTVDrills
             {
                 ClassTag = DefCache.GetDef<ClassTagDef>("Infiltrator_ClassTagDef"),
                 MinimumLevel = 5,
-                RequireSelectedOperative = true
+                
             });
             causticJamming.RequiredResearchIds.Add("SYN_PoisonWeapons_ResearchDef");
             SetUnlockCondition(_causticJamming, causticJamming);
@@ -683,7 +634,7 @@ namespace TFTV.TFTVDrills
             {
                 ClassTag = null,
                 MinimumLevel = 7,
-                RequireSelectedOperative = true
+                
             });
             SetUnlockCondition(_mentorProtocol, mentorUnlock);
 
@@ -692,7 +643,7 @@ namespace TFTV.TFTVDrills
             {
                 ClassTag = null,
                 MinimumLevel = 3,
-                RequireSelectedOperative = true
+                
             });
             SetUnlockCondition(_pinpointToss, pintpointToss);
 
@@ -701,7 +652,7 @@ namespace TFTV.TFTVDrills
             {
                 ClassTag = null,
                 MinimumLevel = 5,
-                RequireSelectedOperative = true
+               
             });
             SetUnlockCondition(OneHandedGrip.OneHandedPenaltyAbilityManager.OneHandedGrip, oneHandedGrip);
 
@@ -716,7 +667,7 @@ namespace TFTV.TFTVDrills
             {
                 ClassTag = DefCache.GetDef<ClassTagDef>("Heavy_ClassTagDef"),
                 MinimumLevel = 2,
-                RequireSelectedOperative = true
+               
             });
             SetUnlockCondition(_shieldedRiposte, shieldedRiposte);
 

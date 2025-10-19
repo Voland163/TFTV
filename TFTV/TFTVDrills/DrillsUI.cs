@@ -24,7 +24,7 @@ namespace TFTV.TFTVDrills
 {
     internal static class DrillsUI
     {
-        private const int SwapSpCost = 0;
+        private const int SwapSpCost = 10;
         private const float MenuMaxHeight = 900f;
         private const float MenuWidth = 760f;
         private const int GridColumns = 5;
@@ -148,7 +148,8 @@ namespace TFTV.TFTVDrills
                         availableImage.sprite = DrillsDefs._drillAvailable;
                         availableImage.gameObject.SetActive(true);
                         __instance.AvailableSkill = true;
-                        methodInfo.Invoke(__instance, null);
+                       // availableImage.color = DrillPulseColor;
+                       // methodInfo.Invoke(__instance, null);
                     }
                     else
                     {
@@ -196,7 +197,7 @@ namespace TFTV.TFTVDrills
                     t = 1f - (t - 1f);
                 }
 
-                availableImage.color = Color.Lerp(DrillPulseColor, Color.white, t);
+                availableImage.color = DrillPulseColor;// Color.Lerp(DrillPulseColor, Color.white, t);
             }
         }
 
@@ -417,7 +418,7 @@ namespace TFTV.TFTVDrills
                 }
 
                 UIBuilder.AddDivider(contentRect);
-                UIBuilder.AddCancelButton(contentRect, () => controller.Close(), panelRect, tooltipParent, canvas);
+               // UIBuilder.AddCancelButton(contentRect, () => controller.Close(), panelRect, tooltipParent, canvas);
 
                 controller.ConfigureContent(viewportRect, contentRect, MenuWidth, MenuMaxHeight);
                 overlay.transform.SetAsLastSibling();
@@ -1104,7 +1105,6 @@ namespace TFTV.TFTVDrills
             private RectTransform _overlayRect;
             private RectTransform _panelRect;
             private RectTransform _anchorRect;
-            private RectTransform _leftEdgeAnchorRect;
             private Button _backgroundButton;
             private CanvasGroup _canvasGroup;
             private RectTransform _viewportRect;
@@ -1122,7 +1122,6 @@ namespace TFTV.TFTVDrills
                 _overlayRect = overlayRect;
                 _panelRect = panelRect;
                 _anchorRect = anchorRect;
-                _leftEdgeAnchorRect = DetermineLeftEdgeAnchor(anchorRect);
                 _backgroundButton = backgroundButton;
                 _canvasGroup = panelRect != null ? panelRect.GetComponent<CanvasGroup>() : null;
                 _inputController = GameUtl.GameComponent<InputController>();
@@ -1306,11 +1305,10 @@ namespace TFTV.TFTVDrills
                     return Vector2.zero;
                 }
 
-                RectTransform anchorSource = GetActiveAnchor();
                 Vector2 anchorLocal = Vector2.zero;
-                if (anchorSource != null)
+                if (_anchorRect != null)
                 {
-                    anchorSource.GetWorldCorners(CornerBuffer);
+                    _anchorRect.GetWorldCorners(CornerBuffer);
                     Vector3 topLeftWorld = CornerBuffer[1];
                     Camera camera = GetCameraForCanvas(_canvas);
                     Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(camera, topLeftWorld);
@@ -1326,7 +1324,9 @@ namespace TFTV.TFTVDrills
 
                 float minTop = -canvasHalfHeight + panelHeight + 8f;
                 float maxTop = canvasHalfHeight - 8f;
-                float clampedY = Mathf.Clamp(anchorLocal.y, minTop, maxTop);
+                float topEdge = Mathf.Clamp(anchorLocal.y, minTop, maxTop);
+                float pivotOffsetY = (1f - _panelRect.pivot.y) * panelHeight;
+                float anchoredY = topEdge - pivotOffsetY;
 
                 float desiredRight = anchorLocal.x - Gap;
                 float leftEdge = desiredRight - _panelRect.rect.width;
@@ -1336,51 +1336,7 @@ namespace TFTV.TFTVDrills
                     desiredRight += minLeft - leftEdge;
                 }
 
-                return new Vector2(desiredRight, clampedY);
-            }
-
-            private RectTransform DetermineLeftEdgeAnchor(RectTransform anchorRect)
-            {
-                if (anchorRect == null)
-                {
-                    return null;
-                }
-
-                var parent = anchorRect.parent as RectTransform;
-                if (parent == null || parent.childCount == 0)
-                {
-                    return anchorRect;
-                }
-
-                RectTransform leftMost = null;
-                float bestX = float.PositiveInfinity;
-                for (int i = 0; i < parent.childCount; i++)
-                {
-                    if (!(parent.GetChild(i) is RectTransform child) || !child.gameObject.activeInHierarchy)
-                    {
-                        continue;
-                    }
-
-                    child.GetWorldCorners(CornerBuffer);
-                    float x = CornerBuffer[1].x;
-                    if (x < bestX)
-                    {
-                        bestX = x;
-                        leftMost = child;
-                    }
-                }
-
-                return leftMost ?? anchorRect;
-            }
-
-            private RectTransform GetActiveAnchor()
-            {
-                if (_leftEdgeAnchorRect != null && _leftEdgeAnchorRect.gameObject.activeInHierarchy)
-                {
-                    return _leftEdgeAnchorRect;
-                }
-
-                return _anchorRect;
+                return new Vector2(desiredRight, anchoredY);
             }
 
             private bool IsPointerNear(Vector2 screenPoint)
