@@ -15,6 +15,7 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.Levels.PathProcessors;
 using PhoenixPoint.Tactical.UI.Abilities;
 using PhoenixPoint.Tactical.View;
 using System;
@@ -1394,6 +1395,32 @@ namespace TFTV.TFTVDrills
         internal class ShieldedRiposte
         {
             private static bool _shieldRiposteDeployingShield = false;
+
+            [HarmonyPatch(typeof(PathProcessorUtils), nameof(PathProcessorUtils.UsesTurnAnimations))]
+            private static class PathProcessorUtils_UsesTurnAnimations_Patch
+            {
+                public static bool Prefix(TacticalActor actor, ref bool __result)
+                {
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
+                    {
+                        return true;
+                    }
+
+                    if (actor == null)
+                    {
+                        return true;
+                    }
+
+                    if (!actor.ExecutingAbilities.Any(ability => ability is DeployShieldAbility))
+                    {
+                        return true;
+                    }
+
+                    __result = false;
+                    return false;
+                }
+            }
+
 
             [HarmonyPatch(typeof(DeployShieldAbility), "Activate")]
             public static class Patch_DeployShieldAbility_Activate

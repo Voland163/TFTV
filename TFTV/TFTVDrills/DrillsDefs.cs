@@ -847,7 +847,7 @@ namespace TFTV.TFTVDrills
                 _shockDiscipline = CreateDrillNominalAbility("shockdiscipline", "27f8091a-3b4c-5d6e-e7f8-091a2b3c4d5e", "1a0b1c2d-3e4f-5061-7283-9a4b5c6d7e8f", "2b1c2d3e-4f50-6172-839a-4b5c6d7e8f90"); //done
 
                 _snapBrace = CreateDrillNominalAbility("snapbrace", "38091a2b-4c5d-6e7f-f809-1a2b3c4d5e6f", "2c3d4e5f-6172-839a-4b5c-6d7e8f9010ab", "3d4e5f61-7283-9a4b-5c6d-7e8f9010ab1c"); //done
-                _shieldedRiposte = CreateDrillNominalAbility("shieldedriposte", "7c3d4e5f-8091-011a-c3d4-e5f60718293a", "9a4b5c6d-7e8f-9010-ab1c-2d3e4f506172", "a94b5c6d-7e8f-9010-ab1c-2d3e4f506173"); //pending fixing animation when deploying shield in different direction                
+                _shieldedRiposte = CreateDrillNominalAbility("shieldedriposte", "7c3d4e5f-8091-011a-c3d4-e5f60718293a", "9a4b5c6d-7e8f-9010-ab1c-2d3e4f506172", "a94b5c6d-7e8f-9010-ab1c-2d3e4f506173"); //done
 
                 _toxicLink = CreateDrillNominalAbility("toxiclink", "9e5f6071-a2a3-233c-e5f6-0718293a4b5c", "c6d7e8f9-1011-b2c3-d4e5-f60718293a4b", "d6e7f809-1112-c3d4-e5f6-0718293a4b5c"); //done
                 _pounceProtocol = CreateDrillNominalAbility("pounceprotocol", "af607182-b3b4-344d-f607-18293a4b5c6d", "d7e8f901-1213-c4d5-e6f7-08192a3b4c5d", "e7f80912-1314-d5e6-f7f8-192a3b4c5d6e"); //done
