@@ -6,6 +6,7 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.Entities;
@@ -37,6 +38,30 @@ namespace TFTV.TFTVDrills
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
+
+        internal class Mutoids
+       {
+            [HarmonyPatch(typeof(GeoCharacter), nameof(GeoCharacter.CreateCharacter))]
+            internal static class MutoidStaminaZero_CreateCharacter_Patch
+            {
+                private static void Postfix(GeoUnitDescriptor unit, GeoCharacter __result)
+                {
+                    if (TFTVNewGameOptions.IsReworkEnabled())
+                    {
+
+                        if (__result?.TemplateDef?.IsMutoid == true)
+                        {
+                            var stamina = __result.Fatigue?.Stamina;
+                            if (stamina != null && stamina.Value > 0f)
+                            {
+                                stamina.Set(0f, true);
+                            }
+                        }
+                    }
+                }
+            }
+
+        } 
 
         internal static class ShockDrop
         {

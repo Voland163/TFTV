@@ -5025,6 +5025,12 @@ namespace TFTV
                         }
 
                         tooltipInstance.SetActive(true);
+
+                        float padding = 150f;
+                        float minHeight = 400f;
+                        float maxHeight = 1750f;
+                        float finalHeight = Mathf.Clamp(distanceCounter + padding, minHeight, maxHeight);
+                        tooltipRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, finalHeight);
                     }
                     catch (Exception e)
                     {
@@ -6118,10 +6124,11 @@ namespace TFTV
                     {
                         SharedData shared = GameUtl.GameComponent<SharedData>();
                         SharedDamageKeywordsDataDef damageKeywords = shared.SharedDamageKeywords;
-                        StandardDamageTypeEffectDef meleeDamageStandardDamageTypeEffectDef = TFTVMeleeDamage.MeleeStandardDamageType;
                        
+                        CorruptionStatusDef corruptionStatusDef = DefCache.GetDef<CorruptionStatusDef>("Corruption_StatusDef");
 
-                        if (tacticalActor != null && damageKeyword.DamageTypeDef == meleeDamageStandardDamageTypeEffectDef && damageKeyword != damageKeywords.SyphonKeyword) //&& damageKeyword is PiercingDamageKeywordDataDef == false) 
+
+                        if (tacticalActor != null && corruptionStatusDef.DamageTypeDefs.Contains(damageKeyword.DamageTypeDef) && damageKeyword != damageKeywords.SyphonKeyword) //&& damageKeyword is PiercingDamageKeywordDataDef == false) 
                         {
 
                             float numberOfMutations = 0;

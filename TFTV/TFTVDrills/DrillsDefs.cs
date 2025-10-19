@@ -486,6 +486,63 @@ namespace TFTV.TFTVDrills
 
         private static void ConfigureUnlockConditions()
         {
+            var shockDrop = new DrillUnlockCondition();
+            shockDrop.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
+            {
+                ProficiencyAbilities = new List<TacticalAbilityDef>()
+                {
+                    DefCache.GetDef<ClassProficiencyAbilityDef>("Rocketeer_AbilityDef"),
+                    DefCache.GetDef<ClassProficiencyAbilityDef>("Heavy_ClassProficiency_AbilityDef"),
+                },
+
+            });
+
+            SetUnlockCondition(_shockDrop, shockDrop);
+
+            var pounceProtocol = new DrillUnlockCondition();
+            pounceProtocol.ClassLevelRequirements.Add(new DrillClassLevelRequirement 
+            { ClassTag = DefCache.GetDef<ClassTagDef>("Infiltrator_ClassTagDef"), 
+                MinimumLevel = 5 });
+
+            SetUnlockCondition(_pounceProtocol, pounceProtocol);
+
+            var mightMakesRight = new DrillUnlockCondition();
+            mightMakesRight.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
+            {
+                ProficiencyAbilities = new List<TacticalAbilityDef>()
+                {
+                    DefCache.GetDef<ClassProficiencyAbilityDef>("Berserker_ClassProficiency_AbilityDef"),
+                    DefCache.GetDef<PassiveModifierAbilityDef>("MeleeWeaponTalent_AbilityDef")
+                },
+
+            });
+           
+            mightMakesRight.ClassLevelRequirements.Add(new DrillClassLevelRequirement { ClassTag = null, MinimumLevel = 5 });
+
+            SetUnlockCondition(_mightMakesRight, mightMakesRight);
+
+            var heavyConditioning = new DrillUnlockCondition();
+
+            heavyConditioning.ClassLevelRequirements.Add(new DrillClassLevelRequirement { ClassTag = DefCache.GetDef<ClassTagDef>("Heavy_ClassTagDef"), MinimumLevel = 4 });
+
+            SetUnlockCondition(_heavyConditioning, heavyConditioning);
+
+            var partingShot = new DrillUnlockCondition();
+            partingShot.ClassLevelRequirements.Add(new DrillClassLevelRequirement { ClassTag = null, MinimumLevel = 5 });
+            partingShot.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
+            {
+                ProficiencyAbilities = new List<TacticalAbilityDef>()
+                {
+                    DefCache.GetDef<ClassProficiencyAbilityDef>("Sniper_ClassProficiency_AbilityDef"),
+                    DefCache.GetDef<ClassProficiencyAbilityDef>("Berserker_ClassProficiency_AbilityDef"),
+                    DefCache.GetDef<PassiveModifierAbilityDef>("HandgunsTalent_AbilityDef")
+                },
+
+            });
+
+            SetUnlockCondition(_partingShot, partingShot);
+
+
             var commandOverlay = new DrillUnlockCondition();
             commandOverlay.ClassLevelRequirements.Add(new DrillClassLevelRequirement
             {
@@ -524,10 +581,7 @@ namespace TFTV.TFTVDrills
                     DefCache.GetDef<PassiveModifierAbilityDef>("SniperTalent_AbilityDef")
 
                 },
-                
-
             }
-
           );
 
             SetUnlockCondition(_explosiveShot, explosiveShoot);
@@ -821,7 +875,7 @@ namespace TFTV.TFTVDrills
 
                 _drawfireStatus = CreateDummyStatus("drawfire", "{65B5A8AC-FBB0-42CC-BC2E-EB9DB7460FC8}", "{7557CA9F-DAB8-4AE1-AF1A-853261A4CF05}");
                 Drills.Add(
-                 _drawFire = CreateApplyStatusAbilityDef("drawfire", "8f7c0a6a-6b63-4b01-9d69-6f7e3d4a4b9a", "f2a5a2d1-0c1f-4c28-8a3a-2f4a0cc2fd3c", "3a0f4d0b-0a8f-4b8f-a8cc-1f4f4f3c3f9d", 2, 0, _drawfireStatus));
+                 _drawFire = CreateDrawFire("drawfire", "8f7c0a6a-6b63-4b01-9d69-6f7e3d4a4b9a", "f2a5a2d1-0c1f-4c28-8a3a-2f4a0cc2fd3c", "3a0f4d0b-0a8f-4b8f-a8cc-1f4f4f3c3f9d", 2, 0, _drawfireStatus));
 
 
                 _explosiveShot = CreateExplosiveShot();
@@ -1032,6 +1086,12 @@ namespace TFTV.TFTVDrills
                     source.SceneViewElementDef,
                     "{D5F25CFC-14B2-5B98-A258-F22415EBE4A0}",
                     $"TFTV_{name}_SceneViewElementDef");
+
+                abilityDef.CharacterProgressionData = Helper.CreateDefFromClone(
+                    DefCache.GetDef<ApplyStatusAbilityDef>("MasterMarksman_AbilityDef").CharacterProgressionData,
+                    "{146955AE-BC76-4269-AA81-81075DC7418E}",
+                    name
+                    );
 
                 abilityDef.name = $"TFTV_{name}_AbilityDef";
                 abilityDef.ExplosionEffectDef = Helper.CreateDefFromClone(
@@ -1850,8 +1910,8 @@ namespace TFTV.TFTVDrills
         {
             try
             {
-                string locKeyName = $"TFTV_DRILL_{name}_NAME";
-                string locKeyDesc = $"TFTV_DRILL_{name}_DESC";
+                string locKeyName = $"TFTV_DRILL_{name}_STATUS_NAME";
+                string locKeyDesc = $"TFTV_DRILL_{name}_STATUS_DESC";
                 Sprite icon = Helper.CreateSpriteFromImageFile($"Drill_{name}.png");
 
                 DamageMultiplierStatusDef sourceStatus = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
@@ -1864,6 +1924,9 @@ namespace TFTV.TFTVDrills
                 newStatus.DamageTypeDefs = new DamageTypeBaseEffectDef[] { };
                 newStatus.DurationTurns = 1;
                 newStatus.EffectName = name;
+                newStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+                newStatus.VisibleOnPassiveBar = true;
+                newStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
 
                 return newStatus;
             }
@@ -1925,7 +1988,7 @@ namespace TFTV.TFTVDrills
         }
 
 
-        private static ApplyStatusAbilityDef CreateApplyStatusAbilityDef(string name, string guid0, string guid1, string guid2, int wpCost, int apCost, StatusDef statusDef)
+        private static ApplyStatusAbilityDef CreateDrawFire(string name, string guid0, string guid1, string guid2, int wpCost, int apCost, StatusDef statusDef)
         {
             try
             {
@@ -1942,11 +2005,27 @@ namespace TFTV.TFTVDrills
                 newAbility.ViewElementDef.Description.LocalizationKey = locKeyDesc;
                 newAbility.ViewElementDef.LargeIcon = icon;
                 newAbility.ViewElementDef.SmallIcon = icon;
-                newAbility.AnimType = -1;
+                newAbility.AnimType = 1;
                 newAbility.StatusDef = statusDef;
 
                 newAbility.WillPointCost = wpCost;
                 newAbility.ActionPointCost = apCost;
+
+                TacticalAbilityDef animSource = DefCache.GetDef<TacticalAbilityDef>("WarCry_AbilityDef");
+                foreach (TacActorSimpleAbilityAnimActionDef animActionDef in Repo.GetAllDefs<TacActorSimpleAbilityAnimActionDef>().Where(aad => aad.name.Contains("Soldier_Utka_AnimActionsDef")))
+                {
+                    if (animActionDef.AbilityDefs != null && animActionDef.AbilityDefs.Contains(animSource) && !animActionDef.AbilityDefs.Contains(newAbility))
+                    {
+                        animActionDef.AbilityDefs = animActionDef.AbilityDefs.Append(newAbility).ToArray();
+                        TFTVLogger.Always("Anim Action '" + animActionDef.name + "' set for abilities:");
+                        foreach (AbilityDef ad in animActionDef.AbilityDefs)
+                        {
+                            TFTVLogger.Always("  " + ad.name);
+                        }
+                        TFTVLogger.Always("----------------------------------------------------", false);
+                    }
+                }
+
 
                 return newAbility;
 
@@ -1992,6 +2071,8 @@ namespace TFTV.TFTVDrills
 
                 string locKeyName = $"TFTV_DRILL_{name}_NAME";
                 string locKeyDesc = $"TFTV_DRILL_{name}_DESC";
+
+
 
                 Sprite icon = Helper.CreateSpriteFromImageFile($"Drill_{name}.png");
 
