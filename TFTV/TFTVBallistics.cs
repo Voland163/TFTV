@@ -18,9 +18,6 @@ namespace TFTV
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
-        private static readonly MethodInfo AffectTargetMethod = typeof(ProjectileLogic).GetMethod("AffectTarget", BindingFlags.Instance | BindingFlags.NonPublic);
-        private static readonly WeaponDef ScorpionWeaponDef = DefCache.GetDef<WeaponDef>("AC_Scorpion_WeaponDef");
-
         //Make bullets go through Umbra and Decoy, method by Dimitar "Codemite" Evtimov from Snapshot Games
 
         public static IDamageReceiver GetDamageReceiver(DamagePredictor predictor, GameObject gameObject, Vector3 pos, Quaternion rot)
@@ -31,7 +28,7 @@ namespace TFTV
                 return null;
             }
 
-            IDamageReceiver recv = damageableObject.GetDamageReceiverForHit(pos, rot * Vector3.forward);
+            IDamageReceiver recv = damageableObject.GetDamageReceiverForHit(pos, rot * Vector3.forward); ;
             if (predictor != null)
             {
                 recv = predictor.GetPredictingReceiver(recv);
@@ -41,8 +38,7 @@ namespace TFTV
         }
 
         public static Dictionary<Projectile, List<TacticalActor>> ProjectileActor = new Dictionary<Projectile, List<TacticalActor>>();
-        public static Dictionary<Projectile, HashSet<string>> ProjectileSlotName = new Dictionary<Projectile, HashSet<string>>();
-        public static Dictionary<DamagePredictor, HashSet<string>> PredictorSlotName = new Dictionary<DamagePredictor, HashSet<string>>();
+        public static Dictionary<Projectile, List<string>> ProjectileSlotName = new Dictionary<Projectile, List<string>>();
 
         //Also clear projectiles Dictionary, used to make bullets go through Umbra/Decoy
 
@@ -52,7 +48,6 @@ namespace TFTV
             {
                 ProjectileActor.Clear();
                 ProjectileSlotName.Clear();
-                PredictorSlotName.Clear();
             }
 
             catch (Exception e)
@@ -143,7 +138,8 @@ namespace TFTV
                                 __instance.Projectile.OnProjectileHit(hit);
 
 
-                                AffectTargetMethod?.Invoke(__instance, new object[] { hit, dir });
+                                MethodInfo affectTargetMethod = typeof(ProjectileLogic).GetMethod("AffectTarget", BindingFlags.Instance | BindingFlags.NonPublic);
+                                affectTargetMethod.Invoke(__instance, new object[] { hit, dir });
 
                                 ____damageAccum?.ResetToInitalAmount();
 
@@ -160,36 +156,49 @@ namespace TFTV
                             }
                             return false;
                         }
-                    }
-
-                    WeaponDef weaponDef = __instance.TryGetWeapon()?.WeaponDef;
-                    if (weaponDef == ScorpionWeaponDef && !string.IsNullOrEmpty(slotName))
-                    {
-                        if (!TryGetSlotTracker(__instance, out HashSet<string> processedSlots))
+                        else if (__instance.Projectile.TryGetWeapon().WeaponDef == DefCache.GetDef<WeaponDef>("AC_Scorpion_WeaponDef") && slotName != "")
                         {
-                            return true;
+                            // TFTVLogger.Always("here we are!!");
+
+                            __result = false;
+
+                            if (ProjectileSlotName.ContainsKey(__instance.Projectile) && ProjectileSlotName[__instance.Projectile] != null && ProjectileSlotName[__instance.Projectile].Contains(slotName))
+                            {
+
+                                __instance.Projectile.OnProjectileHit(hit);
+                                ____damageAccum?.ResetToInitalAmount();
+
+                            }
+                            else
+                            {
+
+
+                                __instance.Projectile.OnProjectileHit(hit);
+
+
+                                MethodInfo affectTargetMethod = typeof(ProjectileLogic).GetMethod("AffectTarget", BindingFlags.Instance | BindingFlags.NonPublic);
+                                affectTargetMethod.Invoke(__instance, new object[] { hit, dir });
+
+                                ____damageAccum?.ResetToInitalAmount();
+
+                                if (ProjectileSlotName.ContainsKey(__instance.Projectile))
+                                {
+                                    ProjectileSlotName[__instance.Projectile].Add(slotName);
+                                }
+                                else
+                                {
+                                    ProjectileSlotName.Add(__instance.Projectile, new List<string> { slotName });
+                                }
+
+
+                            }
+                            return false;
+
+
+
+
                         }
 
-                        __result = false;
-
-                        bool isNewSlot = processedSlots.Add(slotName);
-
-                        if (__instance.Projectile != null)
-                        {
-                            __instance.Projectile.OnProjectileHit(hit);
-                        }
-
-                        if (isNewSlot)
-                        {
-                            AffectTargetMethod?.Invoke(__instance, new object[] { hit, dir });
-                        }
-
-                        if (__instance.Projectile != null || isNewSlot)
-                        {
-                            ____damageAccum?.ResetToInitalAmount();
-                        }
-
-                        return false;
                     }
 
                     return true;
@@ -200,32 +209,6 @@ namespace TFTV
                     TFTVLogger.Error(e);
                     throw;
                 }
-            }
-
-            private static bool TryGetSlotTracker(ProjectileLogic logic, out HashSet<string> processedSlots)
-            {
-                if (logic.Predictor != null)
-                {
-                    if (!PredictorSlotName.TryGetValue(logic.Predictor, out processedSlots) || processedSlots == null)
-                    {
-                        processedSlots = new HashSet<string>();
-                        PredictorSlotName[logic.Predictor] = processedSlots;
-                    }
-                    return true;
-                }
-
-                if (logic.Projectile != null)
-                {
-                    if (!ProjectileSlotName.TryGetValue(logic.Projectile, out processedSlots) || processedSlots == null)
-                    {
-                        processedSlots = new HashSet<string>();
-                        ProjectileSlotName[logic.Projectile] = processedSlots;
-                    }
-                    return true;
-                }
-
-                processedSlots = null;
-                return false;
             }
         }
 
@@ -286,7 +269,7 @@ namespace TFTV
                      TFTVLogger.Always($"damagedealer null? {damageDealer == null}");
                      TFTVLogger.Always($"damagePayload null? {damageDealer.GetDamagePayload() == null}");*/
 
-                    if (damageDealer.GetDamagePayload() == null || actor == null) //|| damageDealer.GetDamagePayload().DamageKeywords.Count==0)
+                    if (damageDealer.GetDamagePayload() == null || actor == null) //|| damageDealer.GetDamagePayload().DamageKeywords.Count==0) 
                     {
                         return;
                     }

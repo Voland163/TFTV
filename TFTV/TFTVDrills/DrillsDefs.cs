@@ -132,6 +132,11 @@ namespace TFTV.TFTVDrills
                     continue;
                 }
 
+                if (CharacterHasDrill(viewer, ability))
+                {
+                    continue;
+                }
+
                 if (IsDrillUnlocked(faction, viewer, ability))
                 {
                     results.Add(ability);
@@ -283,6 +288,16 @@ namespace TFTV.TFTVDrills
             }
 
             return false;
+        }
+
+        internal static bool CharacterHasDrill(GeoCharacter soldier, TacticalAbilityDef drill)
+        {
+            if (soldier?.Progression?.Abilities == null || drill == null)
+            {
+                return false;
+            }
+
+            return soldier.Progression.Abilities.Contains(drill);
         }
 
 

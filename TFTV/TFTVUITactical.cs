@@ -5025,12 +5025,6 @@ namespace TFTV
                         }
 
                         tooltipInstance.SetActive(true);
-
-                        float padding = 150f;
-                        float minHeight = 400f;
-                        float maxHeight = 1750f;
-                        float finalHeight = Mathf.Clamp(distanceCounter + padding, minHeight, maxHeight);
-                        tooltipRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, finalHeight);
                     }
                     catch (Exception e)
                     {

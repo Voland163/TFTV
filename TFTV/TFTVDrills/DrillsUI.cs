@@ -205,7 +205,7 @@ namespace TFTV.TFTVDrills
         {
             public static bool ShouldShow(GeoCharacter character, GeoPhoenixFaction phoenixFaction, TacticalAbilityDef ability, Image availableImage)
             {
-                if (DrillsDefs._drillAvailable == null || availableImage == null)
+                if (DrillsDefs._drillAvailable == null || availableImage == null || character.IsMutoid)
                 {
                     return false;
                 }
@@ -325,8 +325,7 @@ namespace TFTV.TFTVDrills
                             popupGO.SetActive(false);
                         });
                     }
-
-                    AddCancel(container.transform, () => popupGO.SetActive(false));
+            
                     popupGO.SetActive(true);
                     return;
                 }
@@ -359,7 +358,7 @@ namespace TFTV.TFTVDrills
                 var character = Reflection.GetPrivate<GeoCharacter>(ui, "_character");
                 var phoenixFaction = Reflection.GetPrivate<GeoPhoenixFaction>(ui, "_phoenixFaction") ?? (character?.Faction?.GeoLevel?.PhoenixFaction);
 
-                var availableChoices = choices?.Where(def => def != null).Distinct().ToList() ?? new List<TacticalAbilityDef>();
+                var availableChoices = choices?.Where(def => def != null && !DrillsDefs.CharacterHasDrill(character, def)).Distinct().ToList() ?? new List<TacticalAbilityDef>();
                 var ordered = DrillsDefs.Drills?.Where(def => def != null).Distinct().ToList() ?? new List<TacticalAbilityDef>();
 
                 foreach (var ability in availableChoices)
@@ -370,7 +369,7 @@ namespace TFTV.TFTVDrills
                     }
                 }
 
-                ordered.RemoveAll(def => def == null || def == original);
+                ordered.RemoveAll(def => def == null || def == original || DrillsDefs.CharacterHasDrill(character, def));
                 ordered = ordered
                     .OrderBy(def => availableChoices.Contains(def) ? 0 : 1)
                     .ThenBy(def => def.ViewElementDef?.DisplayName1?.Localize() ?? def.name)
@@ -1097,18 +1096,6 @@ namespace TFTV.TFTVDrills
             labelFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         }
 
-        private static void AddCancel(Transform parent, Action onClick)
-        {
-            var go = new GameObject("TFTV_Cancel", typeof(RectTransform), typeof(Button), typeof(Image));
-            go.transform.SetParent(parent, false);
-            var labelGo = new GameObject("Label", typeof(RectTransform), typeof(Text));
-            labelGo.transform.SetParent(go.transform, false);
-            var label = labelGo.GetComponent<Text>();
-            label.alignment = TextAnchor.MiddleCenter;
-            label.text = "Cancel";
-            go.GetComponent<Button>().onClick.AddListener(() => onClick?.Invoke());
-        }
-
         private static void WireButton(GameObject buttonGO, TacticalAbilityDef def, Action onClick)
         {
             if (buttonGO == null || def == null)
@@ -1711,6 +1698,11 @@ namespace TFTV.TFTVDrills
                     _currentTooltipOwner._tooltipVisible = false;
                 }
 
+                var originalTitle = view.DisplayName1;
+                string titleText = $"<color=#FF4C00>{originalTitle.Localize()}</color>";
+                LocalizedTextBind temporaryTitle = new LocalizedTextBind(titleText, true);
+                view.DisplayName1 = temporaryTitle;
+
                 var originalDescription = view.Description;
                 LocalizedTextBind temporaryDescription = null;
 
@@ -1722,7 +1714,7 @@ namespace TFTV.TFTVDrills
                         descriptionText += "\n\n";
                     }
 
-                    descriptionText += $"<color=#FFA0A0><b>Missing requirements:</b>\n{_missingRequirements}</color>";
+                    descriptionText += $"<color=#E21515><b>Missing requirements:</b>\n{_missingRequirements}</color>";
                     temporaryDescription = new LocalizedTextBind(descriptionText, true);
                     view.Description = temporaryDescription;
                 }
@@ -1755,6 +1747,11 @@ namespace TFTV.TFTVDrills
                     if (temporaryDescription != null)
                     {
                         view.Description = originalDescription;
+                    }
+
+                    if(temporaryTitle != null) 
+                    { 
+                        view.DisplayName1 = originalTitle;
                     }
                 }
             }

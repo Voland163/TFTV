@@ -83,9 +83,6 @@ namespace TFTV
                     {
                         __result = 1f + (numberOfMutations * 2) / 100 * (float)base_TacticalActor.CharacterStats.Corruption;
                     }
-
-                   
-
                 }
 
                 catch (Exception e)
