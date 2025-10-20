@@ -34,8 +34,8 @@ namespace TFTV.TFTVDrills
         private const float GridSpacing = 12f;
         private const float GridPadding = 18f;
 
-        private static readonly Color LockedIconTint = new Color(1f, 1f, 1f, 0.35f);
-        private static readonly Color LockedLabelTint = new Color(0.7f, 0.7f, 0.7f, 1f);
+        private static readonly Color LockedIconTint = new Color(0.2f, 0.2f, 0.2f, 1f);
+        private static readonly Color LockedLabelTint = new Color(0.82f, 0.82f, 0.82f, 1f);
         private static readonly Color DrillPulseColor = new Color(1f, 0.29803923f, 0f, 1f);
 
         private static Sprite _originalAvailableImage = null;
@@ -428,9 +428,11 @@ namespace TFTV.TFTVDrills
         {
             private static readonly Color PanelColor = new Color(0.09f, 0.13f, 0.2f, 1f);
             private static readonly Color ButtonNormalColor = new Color(1f, 1f, 1f, 0.08f);
-            private static readonly Color ButtonHighlightColor = new Color(0.25f, 0.55f, 0.85f, 0.22f);
-            private static readonly Color ButtonPressedColor = new Color(0.25f, 0.55f, 0.85f, 0.35f);
-            private static readonly Color ButtonDisabledColor = new Color(1f, 1f, 1f, 0.04f);
+            private static readonly Color ButtonHighlightColor = new Color(0.2f, 0.0588f, 0f, 1f);
+            private static readonly Color ButtonPressedColor = new Color(0.3137255f, 0.11764706f, 0.019607844f, 1f);
+            private static readonly Color ButtonDisabledColor = new Color(0.1f, 0.1f, 0.1f, 0.4f);
+            private static readonly Color DrillFrameColor = new Color(0.29803923f, 0.09019608f, 0f, 1f);
+            private static readonly Color LockedFrameColor = new Color(0.15294118f, 0.15294118f, 0.15294118f, 1f);
             private static Font _defaultFont;
 
             public static GameObject CreateHoverOverlay(UIModuleCharacterProgression ui, AbilityTrackSkillEntryElement entry, out RectTransform panelRect, out RectTransform contentRect, out RectTransform viewportRect, out DrillOverlayController controller, out Transform tooltipParent)
@@ -712,7 +714,7 @@ namespace TFTV.TFTVDrills
                 else
                 {
                     button.interactable = false;
-                    background.color = new Color(background.color.r, background.color.g, background.color.b, 0.04f);
+                    background.color = ButtonDisabledColor;
                 }
 
                 var layout = option.AddComponent<VerticalLayoutGroup>();
@@ -740,6 +742,8 @@ namespace TFTV.TFTVDrills
 
                 float borderThickness = 4f;
 
+                Color frameColor = isLocked ? LockedFrameColor : DrillFrameColor;
+
                 void CreateBorder(string name, Vector2 anchorMin, Vector2 anchorMax, Vector2 sizeDelta)
                 {
                     var borderGO = new GameObject(name, typeof(RectTransform), typeof(Image));
@@ -752,7 +756,7 @@ namespace TFTV.TFTVDrills
                     borderRect.sizeDelta = sizeDelta;
 
                     var borderImage = borderGO.GetComponent<Image>();
-                    borderImage.color = DrillPulseColor;
+                    borderImage.color = frameColor;
                     borderImage.raycastTarget = false;
                 }
 
@@ -1193,6 +1197,8 @@ namespace TFTV.TFTVDrills
                 if (TFTVNewGameOptions.StaminaPenaltyFromInjurySetting)
                 {
                     TFTVCommonMethods.SetStaminaToZero(character);
+                    Reflection.CallPrivate(ui, "SetStatusesPanel");
+                    Reflection.CallPrivate(ui, "RefreshStatusesPanel");
                 }
 
                 slot.Ability = replacement;
@@ -1973,14 +1979,18 @@ namespace TFTV.TFTVDrills
                 var disabled = new List<GameObject>();
                 foreach (var tooltip in Resources.FindObjectsOfTypeAll<GeoRosterAbilityDetailTooltip>())
                 {
+                    TFTVLogger.Always($"{tooltip.AbilityTitleText.text} {tooltip == null} {DrillTooltipTrigger.IsSharedTooltip(tooltip)} {tooltip.gameObject.activeSelf}");
+
                     if (tooltip == null || DrillTooltipTrigger.IsSharedTooltip(tooltip))
                     {
                         continue;
                     }
 
+                    tooltip.Hide();
+
                     if (tooltip.gameObject.activeSelf)
                     {
-                        tooltip.Hide();
+                        
                         tooltip.gameObject.SetActive(false);
                         disabled.Add(tooltip.gameObject);
                     }
