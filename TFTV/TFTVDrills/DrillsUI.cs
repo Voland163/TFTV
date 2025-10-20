@@ -40,7 +40,7 @@ namespace TFTV.TFTVDrills
 
         private static readonly Color LockedIconTint = new Color(0.2f, 0.2f, 0.2f, 1f);
         private static readonly Color LockedLabelTint = new Color(0.82f, 0.82f, 0.82f, 1f);
-        private static readonly Color DrillPulseColor = new Color(1f, 0.29803923f, 0f, 1f);
+        private static readonly Color DrillPulseColor = new Color(1f, 0.4f, 0f, 1f);// new Color(1f, 0.29803923f, 0f, 1f);
 
         private static Sprite _originalAvailableImage = null;
 
@@ -63,7 +63,7 @@ namespace TFTV.TFTVDrills
                     }
 
                     var character = Reflection.GetPrivate<GeoCharacter>(ui, "_character");
-                    TFTVLogger.Always($"AbilityTrackSkillEntryElement.OnPointerClick: {character?.DisplayName}");
+                  //  TFTVLogger.Always($"AbilityTrackSkillEntryElement.OnPointerClick: {character?.DisplayName}");
 
                     if (character?.Progression == null)
                     {
@@ -71,7 +71,7 @@ namespace TFTV.TFTVDrills
                     }
 
                     var ability = __instance.AbilityDef ?? ElementHelpers.FindSlot(__instance)?.Ability;
-                    TFTVLogger.Always($"ability {ability?.name}");
+                   // TFTVLogger.Always($"ability {ability?.name}");
 
                     if (ability == null || !character.Progression.Abilities.Contains(ability))
                     {
@@ -114,7 +114,7 @@ namespace TFTV.TFTVDrills
         {
             public static void Postfix(AbilityTrackSkillEntryElement __instance, bool isAvailable, bool isBuyable)
             {
-                TFTVLogger.Always($"SetSkillState invoked; __instance==null: {__instance == null}");
+              //  TFTVLogger.Always($"SetSkillState invoked; __instance==null: {__instance == null}");
 
                 if (!TFTVAircraftReworkMain.AircraftReworkOn || __instance == null)
                 {
@@ -131,15 +131,15 @@ namespace TFTV.TFTVDrills
                     }
 
                     var character = Reflection.GetPrivate<GeoCharacter>(ui, "_character");
-                    TFTVLogger.Always($"var character: {character?.DisplayName}");
+                   // TFTVLogger.Always($"var character: {character?.DisplayName}");
 
                     MethodInfo methodInfo = typeof(AbilityTrackSkillEntryElement).GetMethod("SetAnimator", BindingFlags.NonPublic | BindingFlags.Instance);
 
                     var phoenixFaction = character?.Faction?.GeoLevel?.PhoenixFaction;
                     var ability = __instance.AbilityDef ?? ElementHelpers.FindSlot(__instance)?.Ability;
-                    TFTVLogger.Always($"ability: {ability?.name}");
+                  //  TFTVLogger.Always($"ability: {ability?.name}");
                     var availableImage = __instance.Available;
-                    TFTVLogger.Always($"availableImage==null: {availableImage == null}");
+                  //  TFTVLogger.Always($"availableImage==null: {availableImage == null}");
                     bool shouldShowIndicator = DrillIndicator.ShouldShow(character, phoenixFaction, ability, availableImage);
 
                     if (shouldShowIndicator)
@@ -193,12 +193,6 @@ namespace TFTV.TFTVDrills
                 if (!__instance.AvailableSkill || !availableImage.gameObject.activeSelf)
                 {
                     return;
-                }
-
-                float t = Time.time * 2f % 2f;
-                if (t > 1f)
-                {
-                    t = 1f - (t - 1f);
                 }
 
                 availableImage.color = DrillPulseColor;// Color.Lerp(DrillPulseColor, Color.white, t);
@@ -430,7 +424,7 @@ namespace TFTV.TFTVDrills
 
         private static class UIBuilder
         {
-            private static readonly Color PanelColor = new Color(0.09f, 0.13f, 0.2f, 1f);
+            private static readonly Color PanelColor = new Color(0f, 0.05098039f, 0.08627451f, 1f); //new Color(0.09f, 0.13f, 0.2f, 1f);
             private static readonly Color ButtonNormalColor = new Color(1f, 1f, 1f, 0.08f);
             private static readonly Color ButtonHighlightColor = new Color(0.2f, 0.0588f, 0f, 1f);
             private static readonly Color ButtonPressedColor = new Color(0.3137255f, 0.11764706f, 0.019607844f, 1f);
