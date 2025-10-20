@@ -1,13 +1,17 @@
 ﻿using Base.Core;
+using Base.Entities.Abilities;
 using Base.Input;
 using Base.UI;
 using HarmonyLib;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Characters;
+using PhoenixPoint.Common.Utils;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.ViewControllers;
+using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -321,11 +325,11 @@ namespace TFTV.TFTVDrills
                         var go = UnityEngine.Object.Instantiate(prefab, container.transform);
                         WireButton(go, def, () =>
                         {
-                            TryPerformSwap(ui, slot, original, def);
                             popupGO.SetActive(false);
+                            ShowDrillConfirmation(ui, slot, original, def);
                         });
                     }
-            
+
                     popupGO.SetActive(true);
                     return;
                 }
@@ -388,7 +392,7 @@ namespace TFTV.TFTVDrills
                     {
                         onChoose = () => controller.Close(() =>
                         {
-                            TryPerformSwap(ui, slot, original, def);
+                            ShowDrillConfirmation(ui, slot, original, def);
                         });
                     }
 
@@ -533,7 +537,6 @@ namespace TFTV.TFTVDrills
 
             public static Text AddHeader(RectTransform content, TacticalAbilityDef original)
             {
-
                 if (content == null)
                 {
                     return null;
@@ -614,8 +617,6 @@ namespace TFTV.TFTVDrills
                 {
                     iconGO.SetActive(false);
                 }
-
-               
 
                 return headerText;
             }
@@ -1052,7 +1053,6 @@ namespace TFTV.TFTVDrills
             text.fontSize = 18;
             text.raycastTarget = false;
             text.color = Color.white;
-            //   text.font = GetDefaultFont();
             text.text = $"Replace: {original?.ViewElementDef?.DisplayName1?.Localize() ?? original?.name}";
 
             var textLayout = labelGO.AddComponent<LayoutElement>();
@@ -1092,8 +1092,6 @@ namespace TFTV.TFTVDrills
             {
                 iconGO.SetActive(false);
             }
-
-           
 
             var labelFitter = labelGO.AddComponent<ContentSizeFitter>();
             labelFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -1137,6 +1135,79 @@ namespace TFTV.TFTVDrills
 
             label.text = def.ViewElementDef?.DisplayName1?.Localize() ?? def.name;
             btn.onClick.AddListener(() => onClick?.Invoke());
+        }
+
+        private static void ShowDrillConfirmation(UIModuleCharacterProgression ui, AbilityTrackSlot slot, TacticalAbilityDef original, TacticalAbilityDef replacement)
+        {
+            if (ui == null || slot == null || original == null || replacement == null)
+            {
+                return;
+            }
+
+            AbilityCharacterProgressionDef progressionData = null;
+            int originalCost = 0;
+            bool costOverridden = false;
+
+            try
+            {
+                var character = Reflection.GetPrivate<GeoCharacter>(ui, "_character");
+                if (character?.Progression == null)
+                {
+                    TryPerformSwap(ui, slot, original, replacement);
+                    return;
+                }
+
+                var levelController = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                var view = levelController?.View;
+                if (view == null)
+                {
+                    TryPerformSwap(ui, slot, original, replacement);
+                    return;
+                }
+
+                progressionData = replacement.CharacterProgressionData;
+                if (progressionData != null)
+                {
+                    originalCost = progressionData.SkillPointCost;
+                    progressionData.SkillPointCost = SwapSpCost;
+                    costOverridden = true;
+                }
+
+                ConfirmBuyAbilityDataBind.Data data = new ConfirmBuyAbilityDataBind.Data
+                {
+                    Progression = character.Progression,
+                    AbilitySlot = slot,
+                    Ability = replacement,
+                    CostType = ResourceType.None
+                };
+
+                view.OpenModal(ModalType.CharacterProgressionConfirmCharacter, res =>
+                {
+                    if (costOverridden && progressionData != null)
+                    {
+                        progressionData.SkillPointCost = originalCost;
+                        costOverridden = false;
+                    }
+
+                    if (res == ModalResult.Confirm)
+                    {
+                        TryPerformSwap(ui, slot, original, replacement);
+                    }
+                    else
+                    {
+                        Reflection.CallPrivate(ui, "RefreshAbilityTracks");
+                    }
+                }, data, 100, true, false);
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+                if (costOverridden && progressionData != null)
+                {
+                    progressionData.SkillPointCost = originalCost;
+                }
+                TryPerformSwap(ui, slot, original, replacement);
+            }
         }
 
         private static void TryPerformSwap(UIModuleCharacterProgression ui, AbilityTrackSlot slot, TacticalAbilityDef original, TacticalAbilityDef replacement)
@@ -1213,7 +1284,6 @@ namespace TFTV.TFTVDrills
                 TFTVLogger.Always($"[TFTV] Ability swap failed: {e}");
             }
         }
-
         private static class DrillInputHelper
         {
             public static bool TryGetCursorScreenPosition(InputController controller, out Vector2 position)
@@ -1557,7 +1627,6 @@ namespace TFTV.TFTVDrills
                 return canvas.worldCamera;
             }
         }
-
         private sealed class DrillTooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         {
             private TacticalAbilityDef _ability;
@@ -1619,7 +1688,6 @@ namespace TFTV.TFTVDrills
                 {
                     _isTooltipOwner = false;
                 }
-
 
                 _hideRoutine = StartCoroutine(DelayedHide());
             }
@@ -1755,8 +1823,8 @@ namespace TFTV.TFTVDrills
                         view.Description = originalDescription;
                     }
 
-                    if(temporaryTitle != null) 
-                    { 
+                    if (temporaryTitle != null)
+                    {
                         view.DisplayName1 = originalTitle;
                     }
                 }
@@ -1990,7 +2058,6 @@ namespace TFTV.TFTVDrills
 
                     if (tooltip.gameObject.activeSelf)
                     {
-                        
                         tooltip.gameObject.SetActive(false);
                         disabled.Add(tooltip.gameObject);
                     }
