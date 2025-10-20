@@ -40,7 +40,7 @@ namespace TFTV.TFTVDrills
 
         private static readonly Color LockedIconTint = new Color(0.2f, 0.2f, 0.2f, 1f);
         private static readonly Color LockedLabelTint = new Color(0.82f, 0.82f, 0.82f, 1f);
-        private static readonly Color DrillPulseColor = new Color(1f, 0.4f, 0f, 1f);// new Color(1f, 0.29803923f, 0f, 1f);
+        internal static readonly Color DrillPulseColor = new Color(1f, 0.4f, 0f, 1f);
 
         private static Sprite _originalAvailableImage = null;
 
@@ -63,7 +63,6 @@ namespace TFTV.TFTVDrills
                     }
 
                     var character = Reflection.GetPrivate<GeoCharacter>(ui, "_character");
-                  //  TFTVLogger.Always($"AbilityTrackSkillEntryElement.OnPointerClick: {character?.DisplayName}");
 
                     if (character?.Progression == null)
                     {
@@ -71,7 +70,6 @@ namespace TFTV.TFTVDrills
                     }
 
                     var ability = __instance.AbilityDef ?? ElementHelpers.FindSlot(__instance)?.Ability;
-                   // TFTVLogger.Always($"ability {ability?.name}");
 
                     if (ability == null || !character.Progression.Abilities.Contains(ability))
                     {
@@ -114,8 +112,6 @@ namespace TFTV.TFTVDrills
         {
             public static void Postfix(AbilityTrackSkillEntryElement __instance, bool isAvailable, bool isBuyable)
             {
-              //  TFTVLogger.Always($"SetSkillState invoked; __instance==null: {__instance == null}");
-
                 if (!TFTVAircraftReworkMain.AircraftReworkOn || __instance == null)
                 {
                     return;
@@ -131,15 +127,12 @@ namespace TFTV.TFTVDrills
                     }
 
                     var character = Reflection.GetPrivate<GeoCharacter>(ui, "_character");
-                   // TFTVLogger.Always($"var character: {character?.DisplayName}");
 
                     MethodInfo methodInfo = typeof(AbilityTrackSkillEntryElement).GetMethod("SetAnimator", BindingFlags.NonPublic | BindingFlags.Instance);
 
                     var phoenixFaction = character?.Faction?.GeoLevel?.PhoenixFaction;
                     var ability = __instance.AbilityDef ?? ElementHelpers.FindSlot(__instance)?.Ability;
-                  //  TFTVLogger.Always($"ability: {ability?.name}");
                     var availableImage = __instance.Available;
-                  //  TFTVLogger.Always($"availableImage==null: {availableImage == null}");
                     bool shouldShowIndicator = DrillIndicator.ShouldShow(character, phoenixFaction, ability, availableImage);
 
                     if (shouldShowIndicator)
@@ -152,14 +145,65 @@ namespace TFTV.TFTVDrills
                         availableImage.sprite = DrillsDefs._drillAvailable;
                         availableImage.gameObject.SetActive(true);
                         __instance.AvailableSkill = true;
-                        // availableImage.color = DrillPulseColor;
-                        // methodInfo.Invoke(__instance, null);
                     }
                     else
                     {
                         availableImage.gameObject.SetActive(isAvailable && isBuyable);
                         __instance.AvailableSkill = isAvailable;
                         availableImage.sprite = _originalAvailableImage;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(ConfirmBuyAbilityDataBind), nameof(ConfirmBuyAbilityDataBind.ModalShowHandler))]
+        public static class ConfirmBuyAbilityDataBind_ModalShowHandler_Patch
+        {
+            public static void Postfix(ConfirmBuyAbilityDataBind __instance, UIModal modal)
+            {
+                if (!TFTVAircraftReworkMain.AircraftReworkOn || __instance == null || modal == null)
+                {
+                    return;
+                }
+
+                try
+                {
+                    if (!(modal.Data is ConfirmBuyAbilityDataBind.Data data))
+                    {
+                        return;
+                    }
+
+                    var ability = data.Ability;
+                    var drills = DrillsDefs.Drills;
+                    if (ability == null || drills == null || !drills.Contains(ability))
+                    {
+                        return;
+                    }
+
+                    string abilityName = ability.ViewElementDef?.DisplayName1?.Localize() ?? ability.name ?? string.Empty;
+                    string pulseHex = ColorUtility.ToHtmlStringRGB(DrillPulseColor);
+
+                    if (__instance.AbilityNameText != null)
+                    {
+                        __instance.AbilityNameText.supportRichText = true;
+                        __instance.AbilityNameText.text = string.Format("DRILL: <color=#{0}>{1}</color>", pulseHex, abilityName);
+                    }
+
+                    if (__instance.AbilitiyDescriptionText != null)
+                    {
+                        __instance.AbilitiyDescriptionText.supportRichText = true;
+                        var slotAbility = data.AbilitySlot != null ? data.AbilitySlot.Ability : null;
+                        string description = ability.ViewElementDef?.GetInterpolatedDescription(slotAbility) ?? string.Empty;
+                        if (!string.IsNullOrEmpty(description))
+                        {
+                            description += "\n\n";
+                        }
+
+                        __instance.AbilitiyDescriptionText.text = description + "<color=#E21515><b>Warning:</b> This soldier will lose all Stamina.</color>";
                     }
                 }
                 catch (Exception ex)
@@ -195,7 +239,7 @@ namespace TFTV.TFTVDrills
                     return;
                 }
 
-                availableImage.color = DrillPulseColor;// Color.Lerp(DrillPulseColor, Color.white, t);
+                availableImage.color = DrillPulseColor;
             }
         }
 
@@ -415,16 +459,14 @@ namespace TFTV.TFTVDrills
                 }
 
                 UIBuilder.AddDivider(contentRect);
-                // UIBuilder.AddCancelButton(contentRect, () => controller.Close(), panelRect, tooltipParent, canvas);
 
                 controller.ConfigureContent(viewportRect, contentRect, MenuWidth, MenuMaxHeight);
                 overlay.transform.SetAsLastSibling();
             }
         }
-
         private static class UIBuilder
         {
-            private static readonly Color PanelColor = new Color(0f, 0.05098039f, 0.08627451f, 1f); //new Color(0.09f, 0.13f, 0.2f, 1f);
+            private static readonly Color PanelColor = new Color(0f, 0.05098039f, 0.08627451f, 1f);
             private static readonly Color ButtonNormalColor = new Color(1f, 1f, 1f, 0.08f);
             private static readonly Color ButtonHighlightColor = new Color(0.2f, 0.0588f, 0f, 1f);
             private static readonly Color ButtonPressedColor = new Color(0.3137255f, 0.11764706f, 0.019607844f, 1f);
@@ -771,7 +813,7 @@ namespace TFTV.TFTVDrills
                 frameBackgroundRect.offsetMax = new Vector2(-borderThickness, -borderThickness);
 
                 var frameBackgroundImage = frameBackground.GetComponent<Image>();
-                frameBackgroundImage.color = Color.clear;
+                frameBackgroundImage.color = Color.black;
                 frameBackgroundImage.raycastTarget = false;
 
                 var iconGO = new GameObject("Icon", typeof(RectTransform), typeof(Image));
@@ -941,7 +983,6 @@ namespace TFTV.TFTVDrills
                 return _defaultFont;
             }
         }
-
         private static class ElementHelpers
         {
             public static AbilityTrackSlot FindSlot(AbilityTrackSkillEntryElement element)
@@ -1264,13 +1305,12 @@ namespace TFTV.TFTVDrills
                 if (TFTVNewGameOptions.StaminaPenaltyFromInjurySetting)
                 {
                     TFTVCommonMethods.SetStaminaToZero(character);
-                    ui.SetStatusesPanel();             
-                }  
+                    ui.SetStatusesPanel();
+                }
 
                 ui.CommitStatChanges();
                 ui.RefreshStatPanel();
                 Reflection.CallPrivate(ui, "SetAbilityTracks");
-      
             }
             catch (Exception e)
             {
@@ -1961,6 +2001,7 @@ namespace TFTV.TFTVDrills
                     }
                 }
             }
+
             private GeoRosterAbilityDetailTooltip EnsureTooltip()
             {
                 try
@@ -2039,8 +2080,6 @@ namespace TFTV.TFTVDrills
                 var disabled = new List<GameObject>();
                 foreach (var tooltip in Resources.FindObjectsOfTypeAll<GeoRosterAbilityDetailTooltip>())
                 {
-                  //  TFTVLogger.Always($"{tooltip.AbilityTitleText.text} {tooltip == null} {DrillTooltipTrigger.IsSharedTooltip(tooltip)} {tooltip.gameObject.activeSelf}");
-
                     if (tooltip == null || DrillTooltipTrigger.IsSharedTooltip(tooltip))
                     {
                         continue;
@@ -2059,7 +2098,10 @@ namespace TFTV.TFTVDrills
             }
         }
     }
+}
 
+namespace TFTV.TFTVDrills
+{
     internal static class CanvasGroupExtensions
     {
         public static void SetAlpha(this CanvasGroup group, float alpha)

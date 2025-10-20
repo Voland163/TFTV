@@ -333,6 +333,7 @@ namespace PRMBetterClasses.SkillModifications
             auraStatus.EventOnUnapply = null;
             auraStatus.AccuracyBonus = 0.2f;
 
+            DrillsDefs._commandOverlay = commandOverlay;
             DrillsDefs._commandOverlayStatus = auraStatus;
         }
 

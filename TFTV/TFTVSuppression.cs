@@ -3,6 +3,7 @@ using Base.Levels;
 using HarmonyLib;
 using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
@@ -398,17 +399,20 @@ namespace TFTV
             /// <summary>
             /// Tac status shown when an actor is lightly suppressed.
             /// </summary>
-            public static TacStatusDef LightSuppressionStatus { get; } = CreateStatus("LightSuppressionStatus");
+            public static TacStatusDef LightSuppressionStatus { get; } = CreateStatus(0, 
+                "{8214A4CE-DDA3-4059-9EEB-FE3BD22DE960}", "{0C8B14A3-2F02-4DAC-BE47-4A80A39366BC}");
 
             /// <summary>
             /// Tac status shown when an actor is moderately suppressed.
             /// </summary>
-            public static TacStatusDef ModerateSuppressionStatus { get; } = CreateStatus("ModerateSuppressionStatus");
+            public static TacStatusDef ModerateSuppressionStatus { get; } = CreateStatus(1, 
+                "{86BC2CB1-FA02-42B5-A987-7F754AEEC0EB}", "{F49EEACA-D08D-4BFF-ABBC-513F75D860B0}");
 
             /// <summary>
             /// Tac status shown when an actor is heavily suppressed.
             /// </summary>
-            public static TacStatusDef HeavySuppressionStatus { get; } = CreateStatus("HeavySuppressionStatus");
+            public static TacStatusDef HeavySuppressionStatus { get; } = CreateStatus(2, 
+                "{A7AF311C-22C6-44D8-95D7-6A9DFFF78C10}", "{C4D48E1F-7519-4EB8-87F4-13FAB6826EE3}");
 
             /// <summary>
             /// Returns the status definition that corresponds to the provided suppression level.
@@ -428,18 +432,30 @@ namespace TFTV
                 }
             }
 
-            private static TacStatusDef CreateStatus(string name)
+            private static TacStatusDef CreateStatus(int level, string guid0, string guid1)
             {
-                TacStatusDef status = ScriptableObject.CreateInstance<TacStatusDef>();
-                status.name = name;
-                status.SingleInstance = true;
-                status.ExpireOnEndOfTurn = false;
-                status.VisibleOnPassiveBar = true;
-                status.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.VisibleWhenSelected;
-                status.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
-                status.ShowNotification = false;
-                status.HealthbarPriority = 0;
-                return status;
+                DefCache DefCache = TFTVMain.Main.DefCache;
+
+                string name = $"TFTV_SUPPRESSION_STATUS";
+                string locKeyName = $"{name}_{level}_NAME";
+                string locKeyDesc = $"{name}_{level}_DESC";
+                Sprite icon = Helper.CreateSpriteFromImageFile($"Suppression_{level}.png");
+
+                DamageMultiplierStatusDef sourceStatus = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
+                DamageMultiplierStatusDef newStatus = Helper.CreateDefFromClone(sourceStatus, guid0, name);
+                newStatus.Visuals = Helper.CreateDefFromClone(sourceStatus.Visuals, guid1, name);
+                newStatus.Visuals.DisplayName1.LocalizationKey = locKeyName;
+                newStatus.Visuals.Description.LocalizationKey = locKeyDesc;
+                newStatus.Visuals.LargeIcon = icon;
+                newStatus.Visuals.SmallIcon = icon;
+                newStatus.DamageTypeDefs = new DamageTypeBaseEffectDef[] { };
+                newStatus.DurationTurns = 1;
+                newStatus.EffectName = name;
+                newStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
+                newStatus.VisibleOnPassiveBar = true;
+                newStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+
+                return newStatus;
             }
         }
 

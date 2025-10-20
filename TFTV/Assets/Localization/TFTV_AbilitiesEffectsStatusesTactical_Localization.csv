@@ -394,3 +394,13 @@ TFTV_DRILL_neurallink_NAME,Text,,NEURAL LINK,,,,,,,,
 TFTV_DRILL_neurallink_DESC,Text,,"Characters affected by Command Overlay gain Remote Control, allowing command of friendly vehicles, turrets, and drones.",,,,,,,,
 TFTV_DRILL_markedwatch_STATUS_NAME,Text,,MARKED FOR OVERWATCH,,,,,,,,
 TFTV_DRILL_markedwatch_STATUS_DESC,Text,,The target has been marked for overwatch by someone.,,,,,,,,
+TFTV_SUPPRESSION_STATUS_0_NAME,Text,,LIGHT SUPPRESSION,,,,,,,,
+TFTV_SUPPRESSION_STATUS_0_DESC,Text,,"Incoming fire has disrupted your movement and focus.
+Effect: −0.5 Action Points next turn.",,,,,,,,
+TFTV_SUPPRESSION_STATUS_1_NAME,Text,,MODERATE SUPPRESSION,,,,,,,,
+TFTV_SUPPRESSION_STATUS_1_DESC,Text,,"Sustained enemy fire is forcing you to keep your head down.
+Effect: −1 Action Point next turn.",,,,,,,,
+TFTV_SUPPRESSION_STATUS_2_NAME,Text,,HEAVY SUPPRESSION,,,,,,,,
+TFTV_SUPPRESSION_STATUS_2_DESC,Text,,"Relentless gunfire has pinned you down, severely limiting your ability to act.
+Effect: −1.5 Action Points next turn.",,,,,,,,
+LIGHT ,,,,,,,,,,,

@@ -314,7 +314,7 @@ namespace TFTV.TFTVDrills
             {
                 ExplosiveDisableShootAbility ability = ExplosiveDisableShotContext.CurrentAbility;
 
-                TFTVLogger.Always($"ExplosiveDisable_OnRaiseDamageEvents: ability {ability == null}");
+               // TFTVLogger.Always($"ExplosiveDisable_OnRaiseDamageEvents: ability {ability == null}");
 
                 if (ability == null)
                 {
@@ -323,18 +323,18 @@ namespace TFTV.TFTVDrills
 
                 HashSet<TacticalItem> processed = ExplosiveDisableShotContext.ProcessedItems;
 
-                TFTVLogger.Always($"processed: {processed == null}");
+              //  TFTVLogger.Always($"processed: {processed == null}");
 
                 if (processed == null)
                 {
                     return;
                 }
 
-                TFTVLogger.Always($"reports count: {reports.Count()}");
+            //    TFTVLogger.Always($"reports count: {reports.Count()}");
 
                 foreach (TacticalAbilityReport report in reports)
                 {
-                    TFTVLogger.Always($"report: damaged actor: {report?.DamagedActor?.name} disabled parts: {report?.DisabledItems?.Count()} ");
+                 //   TFTVLogger.Always($"report: damaged actor: {report?.DamagedActor?.name} disabled parts: {report?.DisabledItems?.Count()} ");
 
                     if (report == null)
                     {
@@ -363,7 +363,7 @@ namespace TFTV.TFTVDrills
             [HarmonyPatch(nameof(TacticalItem.SetToDisabled))]
             private static void ExplosiveDisable_CacheOwner(TacticalItem __instance, ref TacticalActorBase __state)
             {
-                TFTVLogger.Always($"disabledItem {__instance?.DisplayName}");
+               // TFTVLogger.Always($"disabledItem {__instance?.DisplayName}");
 
                 __state = __instance != null ? __instance.TacticalActorBase : null;
             }
@@ -512,89 +512,6 @@ namespace TFTV.TFTVDrills
             }
         }
 
-        /*[HarmonyPatch(typeof(TacticalAbilityReport))]
-        internal static class ExplosiveDisableShootAbilityPatches
-        {
-            [HarmonyPostfix]
-            [HarmonyPatch(nameof(TacticalAbilityReport.RaiseDamageEvents))]
-            private static void ExplosiveDisable_OnRaiseDamageEvents(IEnumerable<TacticalAbilityReport> reports)
-            {
-                try
-                {
-                    ExplosiveDisableShootAbility ability = ExplosiveDisableShotContext.CurrentAbility;
-                    TFTVLogger.Always("ExplosiveDisableShootAbilityPatches: OnRaiseDamageEvents called. CurrentAbility: " + (ability != null ? ability.TacticalAbilityDef.name : "null"));
-                    if (ability == null)
-                    {
-                        return;
-                    }
-
-                    HashSet<TacticalItem> processed = ExplosiveDisableShotContext.ProcessedItems;
-
-                    TFTVLogger.Always($"processed: {processed == null}");
-
-                    if (processed == null)
-                    {
-                        return;
-                    }
-                    TFTVLogger.Always($"reports: {reports == null} count: {reports.Count()}");
-
-                  
-                    foreach (TacticalAbilityReport report in reports)
-                    {
-                        TFTVLogger.Always($"report: {report == null}");
-
-                        TFTVLogger.Always($"damaged actor? {report?.DamagedActor?.DisplayName}");
-
-                        TFTVLogger.Always($"instance.DisabledItems null? {report.DisabledItems == null} count: {report.DisabledItems?.Count}");
-
-                        foreach (TacticalItem tacticalItem in report.DisabledItems)
-                        {
-                            TFTVLogger.Always($"disabled item in report: {tacticalItem?.ItemDef?.name}");
-                        }
-
-
-                        if (report == null)
-                        {
-                            continue;
-                        }
-
-                        TFTVLogger.Always($"report.DisabledItems: {report.DisabledItems == null} count: {report.DisabledItems?.Count}");
-
-                        foreach (TacticalItem item in report.DisabledItems)
-                        {
-                            TFTVLogger.Always($"item: {item == null} name: {item?.ItemDef?.name}");
-
-                            if (item == null)
-                            {
-                                continue;
-                            }
-
-                            TFTVLogger.Always($"processed.Contains(item): {processed.Contains(item)}");
-
-                            if (!processed.Add(item))
-                            {
-                                continue;
-                            }
-
-                            TFTVLogger.Always("ExplosiveDisableShootAbilityPatches: Processing disabled item " + item.ItemDef.name);
-
-                            if (!ability.ShouldTriggerOnDisabledItem(item))
-                            {
-                                continue;
-                            }
-
-
-
-                            ability.TriggerExplosionForDisabledItem(item);
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }*/
-
+        
     }
 }

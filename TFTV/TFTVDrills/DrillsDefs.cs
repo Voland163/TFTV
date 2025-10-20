@@ -20,6 +20,7 @@ using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using RootMotion.FinalIK;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -94,6 +95,7 @@ namespace TFTV.TFTVDrills
         internal static ExplosiveDisableShootAbilityDef _explosiveShot;
         internal static PassiveModifierAbilityDef _pounceProtocol;
         internal static ApplyStatusAbilityDef _override;
+        internal static ApplyStatusAbilityDef _commandOverlay;
 
         internal static PassiveModifierAbilityDef _neuralLink;
         internal static AddAbilityStatusDef _neuralLinkControlStatus;
@@ -558,14 +560,16 @@ namespace TFTV.TFTVDrills
             SetUnlockCondition(_partingShot, partingShot);
 
 
-            var commandOverlay = new DrillUnlockCondition();
-            commandOverlay.ClassLevelRequirements.Add(new DrillClassLevelRequirement
+            var neurolink = new DrillUnlockCondition();
+            neurolink.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
             {
-                ClassTag = DefCache.GetDef<ClassTagDef>("Technician_ClassTagDef"),
-                MinimumLevel = 7,
+                ProficiencyAbilities = new List<TacticalAbilityDef>()
+                {
+                    _commandOverlay
+                },
                
             });
-            SetUnlockCondition(_neuralLink, commandOverlay);
+            SetUnlockCondition(_neuralLink, neurolink);
 
             var bulletHell = new DrillUnlockCondition();
             bulletHell.ClassLevelRequirements.Add(new DrillClassLevelRequirement { ClassTag = null, MinimumLevel = 5 });
@@ -740,6 +744,15 @@ namespace TFTV.TFTVDrills
             });
             SetUnlockCondition(_shieldedRiposte, shieldedRiposte);
 
+            var overRide = new DrillUnlockCondition();
+            overRide.ClassLevelRequirements.Add(new DrillClassLevelRequirement
+            {
+                ClassTag = DefCache.GetDef<ClassTagDef>("Technician_ClassTagDef"),
+                MinimumLevel = 6,
+
+            });
+
+            SetUnlockCondition(_override, overRide);
         }
 
 
@@ -940,6 +953,8 @@ namespace TFTV.TFTVDrills
                     progressionGuid,
                     name);
 
+                newAbility.CharacterProgressionData.SkillPointCost = 10;
+
                 newAbility.ViewElementDef = Helper.CreateDefFromClone(
                     source.ViewElementDef,
                     viewGuid,
@@ -999,6 +1014,8 @@ namespace TFTV.TFTVDrills
                     sourceAbility.CharacterProgressionData,
                     progressionGuid,
                     newAbility.name);
+
+                newAbility.CharacterProgressionData.SkillPointCost = 10;
 
                 newAbility.ViewElementDef = Helper.CreateDefFromClone(
                     sourceAbility.ViewElementDef,
@@ -1107,6 +1124,8 @@ namespace TFTV.TFTVDrills
                     "{146955AE-BC76-4269-AA81-81075DC7418E}",
                     name
                     );
+
+                abilityDef.CharacterProgressionData.SkillPointCost = 10;
 
                 abilityDef.name = $"TFTV_{name}_AbilityDef";
                 abilityDef.ExplosionEffectDef = Helper.CreateDefFromClone(
@@ -1337,6 +1356,8 @@ namespace TFTV.TFTVDrills
                     guidView,
                     name);
 
+                newAbility.CharacterProgressionData.SkillPointCost = 10;
+
                 newAbility.ViewElementDef.DisplayName1.LocalizationKey = locKeyName;
                 newAbility.ViewElementDef.Description.LocalizationKey = locKeyDesc;
                 newAbility.ViewElementDef.LargeIcon = icon;
@@ -1487,6 +1508,8 @@ namespace TFTV.TFTVDrills
                 ApplyStatusAbilityDef newAbility = Helper.CreateDefFromClone(source, guid0, name);
                 newAbility.CharacterProgressionData = Helper.CreateDefFromClone(source.CharacterProgressionData, guid1, name);
 
+                newAbility.CharacterProgressionData.SkillPointCost = 10;
+
                 newAbility.ViewElementDef = Helper.CreateDefFromClone(source.ViewElementDef, guid2, name);
                 newAbility.ViewElementDef.DisplayName1.LocalizationKey = locKeyName;
                 newAbility.ViewElementDef.Description.LocalizationKey = locKeyDesc;
@@ -1569,6 +1592,8 @@ namespace TFTV.TFTVDrills
                 newAbility.AnimType = -1;
                 newAbility.StatusDef = newStatus;
                 newAbility.TargetApplicationConditions = new EffectConditionDef[] { };
+
+                newAbility.CharacterProgressionData.SkillPointCost = 10;
 
                 _aksuSprint = newAbility;
 
@@ -1666,6 +1691,8 @@ namespace TFTV.TFTVDrills
                     _remoteControlAbilityDef.CharacterProgressionData,
                     "{77D0E030-1031-41E3-8863-7B746CEEBEE0}",
                     name);
+
+                newAbility.CharacterProgressionData.SkillPointCost = 10;
 
                 newAbility.TargetingDataDef = Helper.CreateDefFromClone(
                     sourceAbility.TargetingDataDef, "{BCFAF995-5FA6-4CF8-BCBD-D193FBA151B6}", name);
@@ -1825,6 +1852,7 @@ namespace TFTV.TFTVDrills
                 newAbility.AnimType = -1;
                 newAbility.StatusDef = newStatus;
                 newAbility.TargetApplicationConditions = new EffectConditionDef[] { };
+                newAbility.CharacterProgressionData.SkillPointCost = 10;
 
                 Drills.Add(newAbility);
                 _heavyConditioning = newAbility;
@@ -1874,9 +1902,12 @@ namespace TFTV.TFTVDrills
                     guid3,
                     name);
 
+                
+
                 newAbility.CharacterProgressionData.RequiredStrength = 0;
                 newAbility.CharacterProgressionData.RequiredWill = 0;
                 newAbility.CharacterProgressionData.RequiredSpeed = 0;
+                newAbility.CharacterProgressionData.SkillPointCost = 10;
                 newAbility.ViewElementDef.DisplayName1.LocalizationKey = locKeyName; // displayName;
                 newAbility.ViewElementDef.Description.LocalizationKey = locKeyDesc; // = description;
                 newAbility.ViewElementDef.LargeIcon = icon;
@@ -1979,6 +2010,7 @@ namespace TFTV.TFTVDrills
                 newAbility.CharacterProgressionData.RequiredStrength = 0;
                 newAbility.CharacterProgressionData.RequiredSpeed = 0;
                 newAbility.CharacterProgressionData.RequiredWill = 0;
+                newAbility.CharacterProgressionData.SkillPointCost = 10;
 
                 newAbility.ActionPointCost = 0f;
                 newAbility.WillPointCost = 0f;
@@ -2014,6 +2046,7 @@ namespace TFTV.TFTVDrills
                 ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("BigBooms_AbilityDef");
                 ApplyStatusAbilityDef newAbility = Helper.CreateDefFromClone(source, guid0, name);
                 newAbility.CharacterProgressionData = Helper.CreateDefFromClone(source.CharacterProgressionData, guid1, name);
+                newAbility.CharacterProgressionData.SkillPointCost = 10;
 
                 newAbility.ViewElementDef = Helper.CreateDefFromClone(source.ViewElementDef, guid2, name);
                 newAbility.ViewElementDef.DisplayName1.LocalizationKey = locKeyName;
@@ -2112,6 +2145,7 @@ namespace TFTV.TFTVDrills
                     guid2,
                     name);
 
+                newTacticalAbility.CharacterProgressionData.SkillPointCost = 10;
 
                 newTacticalAbility.WillPointCost = 2;
                 newTacticalAbility.StatusDef = newStatus;
@@ -2157,6 +2191,8 @@ namespace TFTV.TFTVDrills
                     sourceAbility.CharacterProgressionData,
                     guid1,
                     name);
+
+                newTacticalAbility.CharacterProgressionData.SkillPointCost = 10;
 
                 newTacticalAbility.ViewElementDef = Helper.CreateDefFromClone(
                     sourceAbility.ViewElementDef,
