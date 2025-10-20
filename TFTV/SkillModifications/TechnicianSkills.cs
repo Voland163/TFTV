@@ -296,7 +296,7 @@ namespace PRMBetterClasses.SkillModifications
 
             areaOfEffectAbilitySceneViewDef.UseOriginData = false;
 
-            DrillCommandOverlay.PerceptionAuraStatusDef auraStatus = Helper.CreateDefFromClone<DrillCommandOverlay.PerceptionAuraStatusDef>(
+            PerceptionAuraStatusDef auraStatus = Helper.CreateDefFromClone<PerceptionAuraStatusDef>(
                 null,
                 "75c7d3d5-6fba-4b59-ae5e-e1d9cd7742df",
                 $"E_Status [{abilityName}]");

@@ -99,7 +99,7 @@ namespace TFTV.TFTVDrills
 
         internal static PassiveModifierAbilityDef _neuralLink;
         internal static AddAbilityStatusDef _neuralLinkControlStatus;
-        internal static DrillCommandOverlay.PerceptionAuraStatusDef _commandOverlayStatus;
+        internal static PerceptionAuraStatusDef _commandOverlayStatus;
         internal static ApplyStatusAbilityDef _remoteControlAbilityDef;
 
         internal static ApplyStatusAbilityDef _aksuSprint;
@@ -896,25 +896,25 @@ namespace TFTV.TFTVDrills
                 _neuralLink = CreateNeuralLinkAbility();
                 _neuralLinkControlStatus = CreateNeuralLinkStatus();
 
-                CreateMightMakesRightAddStatusAbilityDef("mightmakesright", "d2a3b4c5-6e7f-4819-9a0b-1c2d3e4f5a60", "1e2f3a4b-5c6d-7081-92a3-b4c5d6e7f809", "2a3b4c5d-6e7f-8091-a2b3-c4d5e6f70819");
+               CreateMightMakesRightAddStatusAbilityDef("mightmakesright", "d2a3b4c5-6e7f-4819-9a0b-1c2d3e4f5a60", "1e2f3a4b-5c6d-7081-92a3-b4c5d6e7f809", "2a3b4c5d-6e7f-8091-a2b3-c4d5e6f70819");
 
                 Drills.Add(_mightMakesRight);
                 Drills.Add(_ordnanceResupply);
 
                 _drawfireStatus = CreateDummyStatus("drawfire", "{65B5A8AC-FBB0-42CC-BC2E-EB9DB7460FC8}", "{7557CA9F-DAB8-4AE1-AF1A-853261A4CF05}");
                 Drills.Add(
-                 _drawFire = CreateDrawFire("drawfire", "8f7c0a6a-6b63-4b01-9d69-6f7e3d4a4b9a", "f2a5a2d1-0c1f-4c28-8a3a-2f4a0cc2fd3c", "3a0f4d0b-0a8f-4b8f-a8cc-1f4f4f3c3f9d", 2, 0, _drawfireStatus));
+                _drawFire = CreateDrawFire("drawfire", "8f7c0a6a-6b63-4b01-9d69-6f7e3d4a4b9a", "f2a5a2d1-0c1f-4c28-8a3a-2f4a0cc2fd3c", "3a0f4d0b-0a8f-4b8f-a8cc-1f4f4f3c3f9d", 2, 0, _drawfireStatus));
 
 
                 _explosiveShot = CreateExplosiveShot();
 
 
-                CreateMarkedWatch();
+                 CreateMarkedWatch();
                 _override = CreateOverride();
                 CreateAksuSprint();
                 CreateHeavyconditioning();
 
-                _heavySharpshot = CreateHeavySharpshotAbility();
+                _heavySharpshot = CreateHeavySharpshotAbility(); 
                 Drills.Add(_heavySharpshot);
 
                 CreatePartingShotAccuracyaMalusStatus();
@@ -949,7 +949,7 @@ namespace TFTV.TFTVDrills
                 ShootAbilityDef newAbility = Helper.CreateDefFromClone(source, abilityGuid, name);
 
                 newAbility.CharacterProgressionData = Helper.CreateDefFromClone(
-                    source.CharacterProgressionData,
+                    DefCache.GetDef<ApplyStatusAbilityDef>("MasterMarksman_AbilityDef").CharacterProgressionData,
                     progressionGuid,
                     name);
 
@@ -1050,8 +1050,6 @@ namespace TFTV.TFTVDrills
                 string visualsGuid = "68c27669-5dc6-4b57-926c-0541d138fc7c";
 
                 AddAbilityStatusDef sourceStatus = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");
-
-
 
                 AddAbilityStatusDef statusDef = Helper.CreateDefFromClone(
                     sourceStatus,

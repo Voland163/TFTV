@@ -44,6 +44,7 @@ namespace PRMBetterClasses
                     PRMLogger.Debug("PREFIX GenerateUnit called:");
                     PRMLogger.Debug("ShouldGeneratePersonalAbilities: " + ShouldGeneratePersonalAbilities);
                     PRMLogger.Debug("----------------------------------------------------", false);
+
                     return true;
                 }
                 catch (Exception e)

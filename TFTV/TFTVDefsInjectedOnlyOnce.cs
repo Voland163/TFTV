@@ -17,6 +17,7 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.Characters;
+using PhoenixPoint.Common.Entities.Characters.CharacterTemplates;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
@@ -109,9 +110,14 @@ namespace TFTV
         {
             try
             {
-                foreach(AreaOfEffectAbilitySceneViewDef AreaOfEffectAbilitySceneViewDef in Repo.GetAllDefs<AreaOfEffectAbilitySceneViewDef>()) 
-                {
-                    TFTVLogger.Always($"AreaOfEffectAbilitySceneViewDef: {AreaOfEffectAbilitySceneViewDef.name}", false);
+                foreach (TacCharacterDef tacCharacterDef in Repo.GetAllDefs<TacCharacterDef>().
+                    Where(tad => tad.ClassTag == DefCache.GetDef<ClassTagDef>("Technician_ClassTagDef"))) 
+                { 
+                foreach (TacticalAbilityDef tacticalAbilityDef in tacCharacterDef.GetAbilities()) 
+                    {
+                        TFTVLogger.Always($"tacticalAbilityDef: {tacticalAbilityDef?.name}");
+                    
+                    }
                 
                 }
               
@@ -235,15 +241,32 @@ namespace TFTV
 
                 // Experimental();
 
-               // Print();
+                //  Print();
 
-              //  ChangeScyllaSounds();
+                //  ChangeScyllaSounds();
+                CreateSuppressionStatusDefs();
+
 
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        private static void CreateSuppressionStatusDefs()
+        {
+            try 
+            {
+                TacStatusDef suppression0 = TFTVSuppression.SuppressionStatuses.LightSuppressionStatus;
+                TacStatusDef suppression1 = TFTVSuppression.SuppressionStatuses.ModerateSuppressionStatus;
+                TacStatusDef suppression2 = TFTVSuppression.SuppressionStatuses.HeavySuppressionStatus;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
         }
 
       /*  private static void ChangeScyllaSounds()

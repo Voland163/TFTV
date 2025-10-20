@@ -3,16 +3,14 @@ using Base.Levels;
 using HarmonyLib;
 using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace TFTV
@@ -69,6 +67,7 @@ namespace TFTV
                 public readonly SuppressionTracker Tracker = new SuppressionTracker();
                 public SuppressionLevel CurrentLevel = SuppressionLevel.None;
                 public SuppressionLevel DisplayedLevel = SuppressionLevel.None;
+                public CoverPose? ForcedPose;
             }
 
             private sealed class WeaponSuppressionState
@@ -255,6 +254,9 @@ namespace TFTV
 
                 SuppressionLevel pendingLevel = SuppressionSettings.GetPenaltyFor(state.Tracker.PendingSuppression).Level;
                 SuppressionLevel desiredLevel = (SuppressionLevel)Mathf.Max((int)pendingLevel, (int)state.CurrentLevel);
+
+                MaintainSuppressionPose(actor, state, desiredLevel);
+
                 if (state.DisplayedLevel == desiredLevel)
                 {
                     return;
@@ -290,6 +292,104 @@ namespace TFTV
                 }
 
                 state.DisplayedLevel = desiredLevel;
+            }
+
+            private static void MaintainSuppressionPose(TacticalActor actor, ActorSuppressionState state, SuppressionLevel desiredLevel)
+            {
+                if (actor == null || !actor.IsAlive)
+                {
+                    state.ForcedPose = null;
+                    return;
+                }
+
+                IdleAbility idleAbility = actor.IdleAbility;
+                if (idleAbility == null)
+                {
+                    state.ForcedPose = null;
+                    return;
+                }
+
+                bool shouldKneel = desiredLevel != SuppressionLevel.None;
+                if (shouldKneel)
+                {
+                    CoverPose pose;
+                    if (!state.ForcedPose.HasValue || NeedsPoseRefresh(actor, state.ForcedPose.Value))
+                    {
+                        pose = CreateSuppressionPose(actor);
+                        state.ForcedPose = pose;
+                    }
+                    else
+                    {
+                        pose = state.ForcedPose.Value;
+                    }
+
+                    idleAbility.ForceRefresh(false, pose);
+                }
+                else if (state.ForcedPose.HasValue)
+                {
+                    state.ForcedPose = null;
+                    idleAbility.ForceRefresh(false, null);
+                }
+            }
+
+            private static bool NeedsPoseRefresh(TacticalActor actor, CoverPose pose)
+            {
+                Vector3 actorPos = actor.Pos;
+                Vector3 diff = actorPos - pose.GridPos;
+                diff.y = 0f;
+                if (diff.sqrMagnitude > 0.01f)
+                {
+                    return true;
+                }
+
+                Vector3 currentForward = GetActorForward(actor);
+                if (currentForward.sqrMagnitude < 0.0001f)
+                {
+                    return false;
+                }
+
+                return Vector3.Dot(currentForward, pose.FaceDir) < 0.99f;
+            }
+
+            private static CoverPose CreateSuppressionPose(TacticalActor actor)
+            {
+                Vector3 forward = GetActorForward(actor);
+                if (forward.sqrMagnitude < 0.0001f)
+                {
+                    forward = Vector3.forward;
+                }
+                forward.Normalize();
+
+                CoverInfo coverInfo = CoverInfo.NoCover;
+                coverInfo.CoverType = CoverType.Low;
+                coverInfo.DirectionFromSource = -forward;
+
+                return new CoverPose
+                {
+                    CoverInfo = coverInfo,
+                    FaceDir = forward,
+                    GridPos = actor.Pos,
+                    LookAtTarget = null,
+                    LookAtUsedWeapon = null
+                };
+            }
+
+            private static Vector3 GetActorForward(TacticalActor actor)
+            {
+                Vector3 forward = Vector3.forward;
+                Transform transform = actor?.transform;
+                if (transform != null)
+                {
+                    forward = transform.forward;
+                }
+
+                forward.y = 0f;
+                if (forward.sqrMagnitude < 1E-06f)
+                {
+                    forward = Vector3.forward;
+                }
+
+                return forward.normalized;
             }
 
             private static void RegisterDirectHitSuppression(TacticalActor actor, DamageResult damageResult)
@@ -399,19 +499,19 @@ namespace TFTV
             /// <summary>
             /// Tac status shown when an actor is lightly suppressed.
             /// </summary>
-            public static TacStatusDef LightSuppressionStatus { get; } = CreateStatus(0, 
+            public static TacStatusDef LightSuppressionStatus { get; } = CreateStatus(0,
                 "{8214A4CE-DDA3-4059-9EEB-FE3BD22DE960}", "{0C8B14A3-2F02-4DAC-BE47-4A80A39366BC}");
 
             /// <summary>
             /// Tac status shown when an actor is moderately suppressed.
             /// </summary>
-            public static TacStatusDef ModerateSuppressionStatus { get; } = CreateStatus(1, 
+            public static TacStatusDef ModerateSuppressionStatus { get; } = CreateStatus(1,
                 "{86BC2CB1-FA02-42B5-A987-7F754AEEC0EB}", "{F49EEACA-D08D-4BFF-ABBC-513F75D860B0}");
 
             /// <summary>
             /// Tac status shown when an actor is heavily suppressed.
             /// </summary>
-            public static TacStatusDef HeavySuppressionStatus { get; } = CreateStatus(2, 
+            public static TacStatusDef HeavySuppressionStatus { get; } = CreateStatus(2,
                 "{A7AF311C-22C6-44D8-95D7-6A9DFFF78C10}", "{C4D48E1F-7519-4EB8-87F4-13FAB6826EE3}");
 
             /// <summary>
@@ -449,6 +549,7 @@ namespace TFTV
                 newStatus.Visuals.LargeIcon = icon;
                 newStatus.Visuals.SmallIcon = icon;
                 newStatus.DamageTypeDefs = new DamageTypeBaseEffectDef[] { };
+                newStatus.Multiplier = 1;
                 newStatus.DurationTurns = 1;
                 newStatus.EffectName = name;
                 newStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
@@ -534,7 +635,5 @@ namespace TFTV
             /// </summary>
             public IReadOnlyDictionary<WeaponDef, float> WeaponContributions => _weaponContributions;
         }
-
-
     }
 }

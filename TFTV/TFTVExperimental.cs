@@ -1,12 +1,16 @@
 ﻿using Base.Core;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.Characters;
+using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using PRMBetterClasses;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -21,16 +25,26 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
-        /*  [HarmonyPatch(typeof(FactionCharacterGenerator), "GenerateUnit", new Type[] { typeof(GeoFaction), typeof(TacActorUnitResult) })]
+
+
+      /* [HarmonyPatch(typeof(FactionCharacterGenerator), "GeneratePersonalAbilities")]
           internal static class Debug_GenerateUnit_Patches
           {
               // Called before 'GenerateUnit' -> PREFIX.
               [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
-              private static void Prefix(TacActorUnitResult fromResult)
+              private static void Prefix(FactionCharacterGenerator __instance, int abilitiesCount, LevelProgressionDef levelDef, List<TacticalAbilityDef> ____personalAbilityPool)
               {
                   try
                   {
-                      TFTVLogger.Always($"GenerateUnit {fromResult?.SourceTemplate?.name} {fromResult?.TacticalActorBaseDef?.name}");
+                      TFTVLogger.Always($"GeneratePersonalAbilities {abilitiesCount} {levelDef?.name} ____personalAbilityPool==null: {____personalAbilityPool==null}");
+
+                    foreach (var ability in ____personalAbilityPool)
+                    {
+                        TFTVLogger.Always($"ability null? {ability==null} {ability?.name}");
+
+
+                    }
+
                   }
                   catch (Exception e)
                   {
