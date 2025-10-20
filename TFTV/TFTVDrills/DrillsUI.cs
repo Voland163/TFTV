@@ -1260,24 +1260,23 @@ namespace TFTV.TFTVDrills
                     abilities.Remove(original);
                 }
 
-                if (!abilities.Contains(replacement))
+                slot.Ability = replacement;
+
+                if (!character.Progression.Abilities.Contains(replacement))
                 {
-                    abilities.Add(replacement);
+                    character.Progression.LearnAbility(slot);
                 }
 
                 if (TFTVNewGameOptions.StaminaPenaltyFromInjurySetting)
                 {
                     TFTVCommonMethods.SetStaminaToZero(character);
-                    Reflection.CallPrivate(ui, "SetStatusesPanel");
-                    Reflection.CallPrivate(ui, "RefreshStatusesPanel");
-                }
+                    ui.SetStatusesPanel();             
+                }  
 
-                slot.Ability = replacement;
-
-                Reflection.CallPrivate(ui, "CommitStatChanges");
-                Reflection.CallPrivate(ui, "RefreshStatPanel");
+                ui.CommitStatChanges();
+                ui.RefreshStatPanel();
                 Reflection.CallPrivate(ui, "SetAbilityTracks");
-                Reflection.CallPrivate(ui, "RefreshAbilityTracks");
+      
             }
             catch (Exception e)
             {
@@ -1968,7 +1967,6 @@ namespace TFTV.TFTVDrills
                     }
                 }
             }
-
             private GeoRosterAbilityDetailTooltip EnsureTooltip()
             {
                 try
@@ -2047,7 +2045,7 @@ namespace TFTV.TFTVDrills
                 var disabled = new List<GameObject>();
                 foreach (var tooltip in Resources.FindObjectsOfTypeAll<GeoRosterAbilityDetailTooltip>())
                 {
-                    TFTVLogger.Always($"{tooltip.AbilityTitleText.text} {tooltip == null} {DrillTooltipTrigger.IsSharedTooltip(tooltip)} {tooltip.gameObject.activeSelf}");
+                  //  TFTVLogger.Always($"{tooltip.AbilityTitleText.text} {tooltip == null} {DrillTooltipTrigger.IsSharedTooltip(tooltip)} {tooltip.gameObject.activeSelf}");
 
                     if (tooltip == null || DrillTooltipTrigger.IsSharedTooltip(tooltip))
                     {
