@@ -1,4 +1,5 @@
-﻿using Base.Entities.Statuses;
+﻿using Base.Entities;
+using Base.Entities.Statuses;
 using Base.Levels;
 using HarmonyLib;
 using PhoenixPoint.Tactical;
@@ -70,62 +71,13 @@ namespace TFTV
                 public CoverPose? ForcedPose;
             }
 
-            private sealed class WeaponSuppressionState
-            {
-                public float ContributionMultiplier = 1f;
-            }
-
             private static readonly ConditionalWeakTable<TacticalActor, ActorSuppressionState> ActorStates = new ConditionalWeakTable<TacticalActor, ActorSuppressionState>();
-            private static readonly ConditionalWeakTable<WeaponDef, WeaponSuppressionState> WeaponStates = new ConditionalWeakTable<WeaponDef, WeaponSuppressionState>();
+
             private static readonly object StatusSource = new object();
 
             private static ActorSuppressionState GetActorState(TacticalActor actor)
             {
                 return ActorStates.GetValue(actor, _ => new ActorSuppressionState());
-            }
-
-            internal static float GetWeaponContributionMultiplier(Weapon weapon)
-            {
-                WeaponDef weaponDef = weapon?.WeaponDef;
-                if (weaponDef == null)
-                {
-                    return 1f;
-                }
-
-                WeaponSuppressionState state = WeaponStates.GetValue(weaponDef, _ => new WeaponSuppressionState());
-                return Mathf.Max(state.ContributionMultiplier, 0f);
-            }
-
-            /// <summary>
-            /// Sets the suppression multiplier for the provided weapon definition. Values below 1 treat projectile clusters as a single point of suppression.
-            /// </summary>
-            public static void SetWeaponContributionMultiplier(WeaponDef weaponDef, float multiplier)
-            {
-                if (weaponDef == null)
-                {
-                    return;
-                }
-
-                WeaponStates.GetValue(weaponDef, _ => new WeaponSuppressionState()).ContributionMultiplier = Mathf.Max(multiplier, 0f);
-            }
-
-            /// <summary>
-            /// Returns the multiplier previously configured for the weapon definition, defaulting to 1 when unset.
-            /// </summary>
-            public static float GetWeaponContributionMultiplier(WeaponDef weaponDef)
-            {
-                if (weaponDef == null)
-                {
-                    return 1f;
-                }
-
-                WeaponSuppressionState state;
-                if (WeaponStates.TryGetValue(weaponDef, out state))
-                {
-                    return Mathf.Max(state.ContributionMultiplier, 0f);
-                }
-
-                return 1f;
             }
 
             /// <summary>
@@ -139,7 +91,31 @@ namespace TFTV
                 }
 
                 ActorSuppressionState state = GetActorState(actor);
-                state.Tracker.RegisterEvent(weapon, weight);
+                state.Tracker.RegisterEvent(actor, weapon, weight);
+
+                if (ShouldApplyImmediatePenalty(actor))
+                {
+                    SuppressionPenalty pendingPenalty = SuppressionSettings.GetPenaltyFor(state.Tracker.PendingSuppression, actor);
+                    if (pendingPenalty.HasPenalty)
+                    {
+                        SuppressionLevel desiredLevel = (SuppressionLevel)Mathf.Max((int)state.CurrentLevel, (int)pendingPenalty.Level);
+                        float previousFraction = SuppressionSettings.GetPenaltyFraction(state.CurrentLevel);
+                        float desiredFraction = SuppressionSettings.GetPenaltyFraction(desiredLevel);
+                        float fractionDelta = desiredFraction - previousFraction;
+
+                        state.CurrentLevel = desiredLevel;
+
+                        if (fractionDelta > 0f && actor.IsAlive)
+                        {
+                            float apToRemove = actor.CharacterStats.ActionPoints.Max * fractionDelta;
+                            if (apToRemove > 0f)
+                            {
+                                actor.CharacterStats.ActionPoints.Subtract(apToRemove);
+                            }
+                        }
+                    }
+                }
+
                 UpdateSuppressionStatus(actor, state);
             }
 
@@ -154,11 +130,15 @@ namespace TFTV
                 }
 
                 ActorSuppressionState state = GetActorState(actor);
-                SuppressionPenalty penalty = state.Tracker.ConsumePendingPenalty();
+                SuppressionPenalty penalty = state.Tracker.ConsumePendingPenalty(actor);
+                float previousFraction = SuppressionSettings.GetPenaltyFraction(state.CurrentLevel);
                 state.CurrentLevel = penalty.Level;
-                if (actor.IsAlive && penalty.HasPenalty)
+                float desiredFraction = SuppressionSettings.GetPenaltyFraction(state.CurrentLevel);
+                float fractionDelta = desiredFraction - previousFraction;
+
+                if (actor.IsAlive && penalty.HasPenalty && fractionDelta > 0f)
                 {
-                    float apToRemove = actor.CharacterStats.ActionPoints.Max * penalty.PenaltyFraction;
+                    float apToRemove = actor.CharacterStats.ActionPoints.Max * fractionDelta;
                     if (apToRemove > 0f)
                     {
                         actor.CharacterStats.ActionPoints.Subtract(apToRemove);
@@ -201,6 +181,42 @@ namespace TFTV
                 return GetActorState(actor).Tracker;
             }
 
+            /// <summary>
+            /// Clears the accumulated suppression for the specified actor.
+            /// </summary>
+            public static void ClearSuppression(TacticalActor actor)
+            {
+                if (actor == null)
+                {
+                    return;
+                }
+
+                if (!ActorStates.TryGetValue(actor, out ActorSuppressionState state))
+                {
+                    return;
+                }
+
+                state.Tracker.Clear();
+                state.CurrentLevel = SuppressionLevel.None;
+                UpdateSuppressionStatus(actor, state);
+            }
+
+            /// <summary>
+            /// Clears suppression for all actors in the supplied faction.
+            /// </summary>
+            public static void ClearSuppressionForFaction(TacticalFaction faction)
+            {
+                if (faction == null)
+                {
+                    return;
+                }
+
+                foreach (TacticalActor tacticalActor in faction.TacticalActors)
+                {
+                    ClearSuppression(tacticalActor);
+                }
+            }
+
             internal static void TryRegisterSuppressionNearMiss(ProjectileLogic logic, CastHit hit)
             {
                 if (logic == null || logic.IsSimulation)
@@ -229,20 +245,42 @@ namespace TFTV
                 float radius = SuppressionSettings.NearMissRadius;
                 float sqrRadius = radius * radius;
 
-                foreach (TacticalActor actor in map.GetActors((TacticalActor candidate) => candidate.IsAlive))
+                foreach (TacticalActor nearbyActor in map.GetActors((TacticalActor candidate) => candidate.IsAlive))
                 {
-                    if (actor == shooter)
+                    if (nearbyActor == shooter)
                     {
                         continue;
                     }
 
-                    Vector3 offset = actor.Pos - impactPoint;
+                    Vector3 offset = nearbyActor.Pos - impactPoint;
                     offset.y = 0f;
                     if (offset.sqrMagnitude <= sqrRadius)
                     {
-                        RegisterSuppressionEvent(actor, logic.Weapon, 1f);
+                        RegisterSuppressionEvent(nearbyActor, logic.Weapon, 1f);
                     }
                 }
+            }
+
+            private static bool ShouldApplyImmediatePenalty(TacticalActor actor)
+            {
+                TacticalLevelController level = actor?.TacticalLevel;
+                if (level == null)
+                {
+                    return false;
+                }
+
+                TacticalFaction currentFaction = level.CurrentFaction;
+                if (currentFaction == null || currentFaction != actor.TacticalFaction)
+                {
+                    return false;
+                }
+
+                if (!level.TurnIsPlaying || !currentFaction.IsPlayingTurn)
+                {
+                    return false;
+                }
+
+                return true;
             }
 
             private static void UpdateSuppressionStatus(TacticalActor actor, ActorSuppressionState state)
@@ -252,7 +290,7 @@ namespace TFTV
                     return;
                 }
 
-                SuppressionLevel pendingLevel = SuppressionSettings.GetPenaltyFor(state.Tracker.PendingSuppression).Level;
+                SuppressionLevel pendingLevel = SuppressionSettings.GetPenaltyFor(state.Tracker.PendingSuppression, actor).Level;
                 SuppressionLevel desiredLevel = (SuppressionLevel)Mathf.Max((int)pendingLevel, (int)state.CurrentLevel);
 
                 MaintainSuppressionPose(actor, state, desiredLevel);
@@ -436,6 +474,15 @@ namespace TFTV
                         TryRegisterSuppressionNearMiss(__instance, hit);
                     }
                 }
+
+                [HarmonyPatch(typeof(TacticalFaction), nameof(TacticalFaction.EndTurn))]
+                private static class TacticalFaction_EndTurn_Patch
+                {
+                    private static void Postfix(TacticalFaction __instance)
+                    {
+                        ClearSuppressionForFaction(__instance);
+                    }
+                }
             }
         }
 
@@ -462,19 +509,24 @@ namespace TFTV
             /// <summary>
             /// Calculates the penalty that should be applied for the provided suppression amount.
             /// </summary>
-            public static SuppressionPenalty GetPenaltyFor(float suppressionPoints)
+            public static SuppressionPenalty GetPenaltyFor(float suppressionPoints, TacticalActor actor = null)
             {
-                if (suppressionPoints >= HeavySuppressionThreshold)
+                float multiplier = GetThresholdMultiplier(actor);
+                float heavyThreshold = HeavySuppressionThreshold * multiplier;
+                float moderateThreshold = ModerateSuppressionThreshold * multiplier;
+                float lightThreshold = LightSuppressionThreshold * multiplier;
+
+                if (suppressionPoints >= heavyThreshold)
                 {
                     return new SuppressionPenalty(SuppressionLevel.Heavy, HeavySuppressionPenalty);
                 }
 
-                if (suppressionPoints >= ModerateSuppressionThreshold)
+                if (suppressionPoints >= moderateThreshold)
                 {
                     return new SuppressionPenalty(SuppressionLevel.Moderate, ModerateSuppressionPenalty);
                 }
 
-                if (suppressionPoints >= LightSuppressionThreshold)
+                if (suppressionPoints >= lightThreshold)
                 {
                     return new SuppressionPenalty(SuppressionLevel.Light, LightSuppressionPenalty);
                 }
@@ -483,11 +535,58 @@ namespace TFTV
             }
 
             /// <summary>
+            /// Returns the penalty fraction associated with the specified level.
+            /// </summary>
+            public static float GetPenaltyFraction(SuppressionLevel level)
+            {
+                switch (level)
+                {
+                    case SuppressionLevel.Light:
+                        return LightSuppressionPenalty;
+                    case SuppressionLevel.Moderate:
+                        return ModerateSuppressionPenalty;
+                    case SuppressionLevel.Heavy:
+                        return HeavySuppressionPenalty;
+                    default:
+                        return 0f;
+                }
+            }
+
+            /// <summary>
+            /// Returns the maximum suppression that should be stored for the supplied actor.
+            /// </summary>
+            public static float GetMaxSuppressionFor(TacticalActor actor)
+            {
+                return HeavySuppressionThreshold * GetThresholdMultiplier(actor);
+            }
+
+            /// <summary>
             /// Clamps the incoming value to the maximum allowed suppression.
             /// </summary>
-            public static float ClampSuppression(float value)
+            public static float ClampSuppression(float value, TacticalActor actor = null)
             {
-                return Mathf.Clamp(value, 0f, MaxSuppressionPoints);
+                float maxSuppression = GetMaxSuppressionFor(actor);
+                return Mathf.Clamp(value, 0f, maxSuppression);
+            }
+
+            private static float GetThresholdMultiplier(TacticalActor actor)
+            {
+                NavMeshNavigationComponent navMeshNavigationComponent = actor?.NavigationComponent as NavMeshNavigationComponent;
+                if (navMeshNavigationComponent != null)
+                {
+                    float agentRadius = navMeshNavigationComponent.AgentNavSettings.AgentRadius;
+                    if (agentRadius > 2f)
+                    {
+                        return 3f;
+                    }
+
+                    if (agentRadius > 1f)
+                    {
+                        return 2f;
+                    }
+                }
+
+                return 1f;
             }
         }
 
@@ -567,73 +666,64 @@ namespace TFTV
         public class SuppressionTracker
         {
             private float _pendingSuppression;
-            private readonly Dictionary<WeaponDef, float> _weaponContributions = new Dictionary<WeaponDef, float>();
 
             /// <summary>
             /// Registers a suppression event caused by the provided weapon.
             /// </summary>
-            public void RegisterEvent(Weapon weapon, float weight)
+            public void RegisterEvent(TacticalActor actor, Weapon weapon, float weight)
             {
                 if (weight <= 0f)
                 {
                     return;
                 }
 
-                WeaponDef weaponDef = null;
-                float modifier = 1f;
+                float contribution = weight;
                 if (weapon != null)
                 {
-                    weaponDef = weapon.WeaponDef;
-                    modifier = SuppressionRuntime.GetWeaponContributionMultiplier(weapon);
+                    WeaponDef weaponDef = weapon.WeaponDef;
+                    if (weaponDef != null && weaponDef.DamagePayload.ProjectilesPerShot > 1)
+                    {
+                        contribution = Mathf.Min(contribution, 1f);
+                    }
                 }
 
-                float contribution = weight * modifier;
                 if (contribution <= 0f)
                 {
                     return;
                 }
 
-                _pendingSuppression = SuppressionSettings.ClampSuppression(_pendingSuppression + contribution);
-
-                if (weaponDef != null)
-                {
-                    float total;
-                    if (_weaponContributions.TryGetValue(weaponDef, out total))
-                    {
-                        _weaponContributions[weaponDef] = total + contribution;
-                    }
-                    else
-                    {
-                        _weaponContributions.Add(weaponDef, contribution);
-                    }
-                }
+                float newValue = _pendingSuppression + contribution;
+                _pendingSuppression = SuppressionSettings.ClampSuppression(newValue, actor);
             }
 
             /// <summary>
             /// Consumes the currently accumulated suppression, returning the penalty to apply.
             /// </summary>
-            public SuppressionPenalty ConsumePendingPenalty()
+            public SuppressionPenalty ConsumePendingPenalty(TacticalActor actor)
             {
                 if (_pendingSuppression <= 0f)
                 {
                     return SuppressionPenalty.None;
                 }
 
-                SuppressionPenalty penalty = SuppressionSettings.GetPenaltyFor(_pendingSuppression);
+                SuppressionPenalty penalty = SuppressionSettings.GetPenaltyFor(_pendingSuppression, actor);
                 _pendingSuppression = 0f;
-                _weaponContributions.Clear();
+
                 return penalty;
+            }
+
+            /// <summary>
+            /// Clears all accumulated suppression without applying any penalty.
+            /// </summary>
+            public void Clear()
+            {
+                _pendingSuppression = 0f;
             }
 
             /// <summary>
             /// Returns the current suppression before it is consumed.
             /// </summary>
             public float PendingSuppression => _pendingSuppression;
-
-            /// <summary>
-            /// Returns the suppression contributions grouped by weapon definition.
-            /// </summary>
-            public IReadOnlyDictionary<WeaponDef, float> WeaponContributions => _weaponContributions;
         }
     }
 }

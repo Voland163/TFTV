@@ -98,7 +98,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                                                                                        // All sites with havens, owned by factionDef, revealed to player
                 List<GeoHaven> havens = faction.Havens.Where(s => s != null 
                 && s.AvailableRecruit != null 
-                && s.Site.GetVisible(geoPhoenixFaction)
+                && s.Site.GetInspected(geoPhoenixFaction)
                 && s.Leader.CanRecruitWithFaction(geoPhoenixFaction)
                 && s.Zones.Any((GeoHavenZone z) => z.Def.ProvidesRecruitment && z.IsOperational)
                ).ToList();

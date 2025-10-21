@@ -1,15 +1,19 @@
-﻿using HarmonyLib;
+﻿using Base.Core;
+using Base.Defs;
+using HarmonyLib;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Characters;
-using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Statuses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Base.Defs;
-using PhoenixPoint.Common.Core;
 using UnityEngine;
 
 namespace TFTV
@@ -21,6 +25,69 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
+        [HarmonyPatch(typeof(PhoenixStatisticsManager), "ActorKilledInGeoscape")]
+        internal static class PhoenixStatisticsManager_ActorKilledInGeoscape_Patch
+        {
+            private static readonly HashSet<CharacterDeathReason> MissionDeathReasons = new HashSet<CharacterDeathReason>
+        {
+            CharacterDeathReason.DiedOnMission,
+            CharacterDeathReason.MindControlledOnMission
+        };
+
+            static void Postfix(PhoenixStatisticsManager __instance, GeoFaction faction, GeoCharacter charater, IGeoCharacterContainer container, CharacterDeathReason reason)
+            {
+                if (__instance?.CurrentGameStats == null)
+                {
+                    return;
+                }
+
+                if (charater == null || charater.TemplateDef == null || !charater.TemplateDef.IsHuman)
+                {
+                    return;
+                }
+
+                if (!MissionDeathReasons.Contains(reason))
+                {
+                    return;
+                }
+
+                GeoPhoenixFaction phoenixFaction = faction as GeoPhoenixFaction;
+                if (phoenixFaction == null)
+                {
+                    return;
+                }
+
+                SoldierStats soldierStats = __instance.CurrentGameStats.GetSoldierStat(charater.Id, true) ?? __instance.CurrentGameStats.GetSoldierStat(charater.Id, false);
+                if (soldierStats == null)
+                {
+                    return;
+                }
+
+                GeoLevelController geoLevel = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                GameDifficultyLevelDef difficulty = geoLevel?.CurrentDifficultyLevel;
+                if (difficulty == null)
+                {
+                    return;
+                }
+
+                int missionsParticipated = Math.Max(0, soldierStats.MissionsParticipated);
+                int skillPointsPerMission = Math.Max(0, difficulty.SoldierSkillPointsPerMission);
+                if (missionsParticipated == 0 || skillPointsPerMission == 0)
+                {
+                    return;
+                }
+
+                int refund = missionsParticipated * skillPointsPerMission / 2;
+                if (refund <= 0)
+                {
+                    return;
+                }
+
+                phoenixFaction.Skillpoints += refund;
+
+               TFTVLogger.Always($"Refunded {refund} shared skill points after the death of {charater.DisplayName} ({missionsParticipated} missions).");
+            }
+        }
 
         [HarmonyPatch(typeof(TacticalContribution), "AddContribution")]
         public static class TFTV_TacticalContribution_AddContribution

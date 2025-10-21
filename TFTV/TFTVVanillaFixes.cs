@@ -1235,6 +1235,49 @@ namespace TFTV
         internal class Tactical
         {
 
+            internal class SoftlockOnGetStatusesByName 
+            {
+                [HarmonyPatch(typeof(StatusComponent), nameof(StatusComponent.GetStatusesByName))]
+                internal static class StatusComponentGetStatusesByNamePatch
+                {
+                    public static bool Prefix(StatusComponent __instance, string statusName, ref IEnumerable<Status> __result)
+                    {
+                        try
+                        {
+                            if (__instance == null || string.IsNullOrWhiteSpace(statusName))
+                            {
+                                __result = Enumerable.Empty<Status>();
+                                return false;
+                            }
+
+                            string normalizedName = statusName.Trim();
+                            if (normalizedName.Length == 0)
+                            {
+                                __result = Enumerable.Empty<Status>();
+                                return false;
+                            }
+
+                            IEnumerable<Status> statuses = __instance.Statuses ?? Enumerable.Empty<Status>();
+                            __result = statuses.Where(status =>
+                                status?.Def?.EffectName != null &&
+                                status.Def.EffectName.Equals(normalizedName, StringComparison.OrdinalIgnoreCase));
+
+                            return false;
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+
+                    }
+                }
+
+
+
+            }
+
+
             internal class OverwatchFix 
             {
                 [HarmonyPatch(typeof(TacticalLevelController), "ExecuteOverwatch")]
@@ -1534,11 +1577,11 @@ namespace TFTV
                                 return;
                             }
 
-                            TFTVLogger.Always($"Start Turn for TacticalActor {__instance?.DisplayName}");
+                          //  TFTVLogger.Always($"Start Turn for TacticalActor {__instance?.DisplayName}");
 
                             if (__instance.AbilityTraits.Contains(TacticalActor.DoNotResetThisTurnTrait))
                             {
-                                TFTVLogger.Always($"TacticalActor has DoNotResetThisTurnTrait");
+                              //  TFTVLogger.Always($"TacticalActor has DoNotResetThisTurnTrait");
 
                                 return;
                             }
@@ -1547,11 +1590,11 @@ namespace TFTV
 
                             if (!____currentlyDeserializing)
                             {
-                                TFTVLogger.Always($"TacticalActor is not deserializing");
+                              //  TFTVLogger.Always($"TacticalActor is not deserializing");
                                 return;
                             }
 
-                            TFTVLogger.Always($"AbilityUsesThisTurnField null? {AbilityUsesThisTurnField == null}");
+                          //  TFTVLogger.Always($"AbilityUsesThisTurnField null? {AbilityUsesThisTurnField == null}");
 
                             if (AbilityUsesThisTurnField.GetValue(__instance) is Dictionary<TacticalAbilityDef, int> abilityUses)
                             {
@@ -3123,6 +3166,29 @@ namespace TFTV
 
         internal class Geoscape
         {
+            /// <summary>
+            /// Fixes not getting SP from Training Facilities
+            /// </summary>
+
+            [HarmonyPatch(typeof(GeoLevelController), "DailyUpdate")]
+            public static class GeoLevelControllerDailyUpdatePatch
+            {
+                public static void Postfix(GeoLevelController __instance)
+                {
+                    foreach (GeoFaction geoFaction in __instance.Factions)
+                    {
+                        if (geoFaction != null && geoFaction.Def != null && geoFaction.Def.UpdateFaction)
+                        {
+                            GeoPhoenixFaction geoPhoenixFaction = geoFaction as GeoPhoenixFaction;
+                            if (geoPhoenixFaction != null)
+                            {
+                                geoPhoenixFaction.UpdateBasesDaily();
+                            }
+                        }
+                    }
+                }
+            }
+
 
             /// <summary>
             /// Fixes losing modules when ground vehicle scrapped

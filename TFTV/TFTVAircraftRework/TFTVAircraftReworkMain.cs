@@ -2707,22 +2707,20 @@ namespace TFTV
                                 TacticalActor tacticalActor = __instance.TacticalActor;
                                 //   TFTVLogger.Always($"running ApplyEffect. ta null? {tacticalActor == null} {__instance.DamageOverTimeStatusDef.name}");
 
-                                if (!AircraftReworkOn || _thunderbirdWorkshopPresent < 2 || !tacticalActor.IsControlledByPlayer)
+                                if (!AircraftReworkOn || _thunderbirdWorkshopPresent < 2 || __instance.TacticalActor == null|| !tacticalActor.IsControlledByPlayer)
                                 {
                                     return;
                                 }
 
-                                ItemSlot itemSlot1 = __instance.Target as ItemSlot;
+                                ItemSlot itemSlot = __instance.Target as ItemSlot;
 
-                                /*  TFTVLogger.Always($"{tacticalActor.DisplayName} {} {tacticalActor.TacticalFaction==tacticalActor.TacticalLevel.GetFactionByCommandName("px")}");
+                                if(itemSlot == null) 
+                                {
+                                    return;
+                                }
 
-                                  foreach(TacticalItem tacticalItem in itemSlot1?.GetAllDirectItems(false))
-                                  {
-                                      TFTVLogger.Always($"tacticalItem: {tacticalItem.DisplayName} {tacticalItem.GetTopMainAddon()?.GameTags.Contains(Shared.SharedGameTags.BionicalTag)}" +
-                                          $";{tacticalItem.GetTopMainAddon()?.AddonDef?.name}"); //.
-                                  }*/
 
-                                if (__instance.Target is ItemSlot itemSlot && (itemSlot.GetAllDirectItems(false).
+                                if (itemSlot.GetAllDirectItems(false) != null && (itemSlot.GetAllDirectItems(false).
                                     Any(ti => ti.GameTags.Contains(Shared.SharedGameTags.BionicalTag) ||
                                     ti.GetTopMainAddon() != null && ti.GetTopMainAddon().GameTags.Contains(Shared.SharedGameTags.BionicalTag))
                                     || tacticalActor.HasGameTag(Shared.SharedGameTags.VehicleTag)))
@@ -5396,7 +5394,8 @@ namespace TFTV
 
                                             if (geoCharacter.ArmourItems.Any(a => a.ItemDef.Tags.Contains(Shared.SharedGameTags.AnuMutationTag))
                                                 || geoCharacter.GameTags.Contains(Shared.SharedGameTags.MutogTag)
-                                                || geoCharacter.GameTags.Contains(DefCache.GetDef<ClassTagDef>("Mutoid_ClassTagDef")))
+                                                || geoCharacter.GameTags.Contains(DefCache.GetDef<ClassTagDef>("Mutoid_ClassTagDef"))
+                                                || geoCharacter.Progression.MainSpecDef== TFTVChangesToDLC5.TFTVMercenaries.SlugClassTagDef)
                                             {
                                                 if (geoCharacter.IsAlive && geoCharacter.IsInjured)
                                                 {

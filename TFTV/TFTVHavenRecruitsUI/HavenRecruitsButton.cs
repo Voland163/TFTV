@@ -1,7 +1,10 @@
-﻿using HarmonyLib;
+﻿using Base.Core;
+using HarmonyLib;
 using PhoenixPoint.Common.View.ViewControllers;
+using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using System;
+using System.Collections;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -37,9 +40,12 @@ namespace TFTV.TFTVHavenRecruitsUI
                     }
 
                     // Avoid duplicates if Awake runs more than once.
-                    if (parent.Find(RecruitsBtnName) != null)
+                    var existingButton = parent.Find(RecruitsBtnName);
+                    if (existingButton != null)
                     {
                         TFTVLogger.Always("[RecruitsBtn] Recruits button already present; skipping.");
+
+                        EnsureVisibilityController(__instance, existingButton.gameObject);
                         return;
                     }
 
@@ -378,8 +384,108 @@ namespace TFTV.TFTVHavenRecruitsUI
                     {
                         LayoutRebuilder.ForceRebuildLayoutImmediate(group);
                     }
+
+                    EnsureVisibilityController(__instance, cloneGO);
                 }
                 catch (Exception ex) { TFTVLogger.Error(ex); }
+            }
+        }
+
+        private static void EnsureVisibilityController(UIModuleSiteManagement module, GameObject button)
+        {
+            if (module == null || button == null)
+            {
+                return;
+            }
+
+            var controller = module.GetComponent<HavenRecruitsButtonVisibilityController>();
+            if (controller == null)
+            {
+                controller = module.gameObject.AddComponent<HavenRecruitsButtonVisibilityController>();
+            }
+
+            controller.Initialize(button);
+        }
+
+        private sealed class HavenRecruitsButtonVisibilityController : MonoBehaviour
+        {
+            private GameObject _button;
+            private bool _lastVisible;
+            private Coroutine _refreshRoutine;
+
+            internal void Initialize(GameObject button)
+            {
+                _button = button;
+                UpdateVisibility(force: true);
+
+                if (isActiveAndEnabled && _refreshRoutine == null)
+                {
+                    _refreshRoutine = StartCoroutine(RefreshRoutine());
+                }
+            }
+
+            private void OnEnable()
+            {
+                if (_refreshRoutine == null)
+                {
+                    _refreshRoutine = StartCoroutine(RefreshRoutine());
+                }
+
+                UpdateVisibility(force: true);
+            }
+
+            private void OnDisable()
+            {
+                if (_refreshRoutine != null)
+                {
+                    StopCoroutine(_refreshRoutine);
+                    _refreshRoutine = null;
+                }
+            }
+
+            private IEnumerator RefreshRoutine()
+            {
+                var wait = new WaitForSecondsRealtime(1f);
+                while (true)
+                {
+                    yield return wait;
+                    UpdateVisibility(force: false);
+                }
+            }
+
+            private void UpdateVisibility(bool force)
+            {
+                if (_button == null)
+                {
+                    return;
+                }
+
+                bool shouldShow = ShouldShowButton();
+                if (!force && shouldShow == _lastVisible)
+                {
+                    return;
+                }
+
+                _lastVisible = shouldShow;
+                if (_button.activeSelf != shouldShow)
+                {
+                    _button.SetActive(shouldShow);
+                }
+            }
+
+            private static bool ShouldShowButton()
+            {
+                try
+                {
+                    var geoLevelController = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                    var research = geoLevelController?.PhoenixFaction?.Research;
+                    return research != null && research.HasCompleted(HavenRecruitsMain.HavenRecruitsResearchId);
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                    return false;
+                }
             }
         }
     }

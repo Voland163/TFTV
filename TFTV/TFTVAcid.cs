@@ -28,9 +28,26 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
 
+        /// <summary>
+        /// Prevents disabled body parts from reducing stats
+        /// </summary>
+        [HarmonyPatch(typeof(SlotStateStatus), "ApplyItemModifications")]
+        static class DisableBodyPartStatPatch
+        {
+            static bool Prefix(TacticalItem item, bool invertValue)
+            {
+                if (invertValue && item.IsBodyPart && item.IsHealthAboveMinThreshold)
+                {
+                    // limb is being “disabled” without having been damaged – keep its stats
+                    return false;   // skip the original method
+                }
+
+                return true;        // fall back to vanilla behaviour otherwise
+            }
+        }
 
 
-        
+
         [HarmonyPatch(typeof(TacticalActorBase), "ApplyDamageInternal")]
         public static class TacticalActorBase_ApplyDamageInternal_Patch
         {

@@ -91,10 +91,10 @@ namespace TFTV.TFTVDrills
 
                     GeoPhoenixFaction phoenixFaction = character?.Faction?.GeoLevel?.PhoenixFaction;
                     List<TacticalAbilityDef> availableChoices = DrillsDefs.GetAvailableDrills(phoenixFaction, character);
-                    if (availableChoices == null || availableChoices.Count == 0)
+                  /*  if (availableChoices == null || availableChoices.Count == 0)
                     {
                         return true;
-                    }
+                    }*/
 
                     DrillSwapUI.Show(ui, slot, ability, availableChoices, __instance);
                     return false;
@@ -271,8 +271,11 @@ namespace TFTV.TFTVDrills
                     return false;
                 }
 
-                var availableDrills = DrillsDefs.GetAvailableDrills(phoenixFaction, character);
-                return availableDrills != null && availableDrills.Any(def => def != null && def != ability);
+                return true;
+
+
+              //  var availableDrills = DrillsDefs.GetAvailableDrills(phoenixFaction, character);
+              //  return availableDrills != null && availableDrills.Any(def => def != null && def != ability);
             }
         }
 

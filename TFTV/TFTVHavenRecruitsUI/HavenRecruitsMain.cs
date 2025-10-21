@@ -27,7 +27,7 @@ namespace TFTV
 {
     class HavenRecruitsMain
     {
-
+        internal const string HavenRecruitsResearchId = "PX_HavenRecruits_ResearchDef";
         public static void ClearInternalData()
         {
             try

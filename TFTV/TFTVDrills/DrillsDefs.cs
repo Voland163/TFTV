@@ -9,7 +9,9 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.Research;
+using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -127,6 +129,14 @@ namespace TFTV.TFTVDrills
                 return results;
             }
 
+           /* if (!HasFunctioningTrainingFacility(faction))
+            {
+
+                TFTVLogger.Always($"GetAvailableDrills: !HasFunctioningTrainingFacility(faction)");
+                return results;
+            }*/
+
+
             foreach (var ability in Drills)
             {
                 if (ability == null)
@@ -152,6 +162,13 @@ namespace TFTV.TFTVDrills
         {
             if (ability == null)
             {
+                return false;
+            }
+
+            if (!HasFunctioningTrainingFacility(faction))
+            {
+
+              //  TFTVLogger.Always($"IsDrillUnlocked: !HasFunctioningTrainingFacility(faction)");
                 return false;
             }
 
@@ -330,6 +347,12 @@ namespace TFTV.TFTVDrills
                 yield break;
             }
 
+            if (!HasFunctioningTrainingFacility(faction))
+            {
+                //TFTVLogger.Always($"GetMissingRequirementDescriptions: !HasFunctioningTrainingFacility(faction)");
+                yield return "Requires a functioning Training Facility";
+            }
+
             if (!DrillUnlockConditions.TryGetValue(ability, out var condition) || condition == null)
             {
                 yield break;
@@ -412,6 +435,47 @@ namespace TFTV.TFTVDrills
             }
         }
 
+        private static bool HasFunctioningTrainingFacility(GeoPhoenixFaction faction)
+        {
+            try
+            {
+                if (faction?.Bases == null)
+                {
+                    return false;
+                }
+
+                PhoenixFacilityDef trainingFacilityDef = DefCache.GetDef<PhoenixFacilityDef>("TrainingFacility_PhoenixFacilityDef");
+                if (trainingFacilityDef == null)
+                {
+                    return false;
+                }
+
+                foreach (GeoPhoenixBase phoenixBase in faction.Bases)
+                {
+                    if (phoenixBase?.Layout?.Facilities == null)
+                    {
+                        continue;
+                    }
+
+                    bool hasFunctioningFacility = phoenixBase.Layout.Facilities.Any(facility =>
+                        facility != null &&
+                        facility.Def == trainingFacilityDef &&
+                        facility.State == GeoPhoenixFacility.FacilityState.Functioning &&
+                        facility.IsPowered);
+
+                    if (hasFunctioningFacility)
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+            return false;
+        }
         private static string TryGetResearchName(string researchId)
         {
             try

@@ -165,7 +165,6 @@
     <Compile Include="TFTVMeleeDamage.cs" />
     <Compile Include="TFTVNerdPerks.cs" />
     <Compile Include="TFTVNJQuestline.cs" />
-    <Compile Include="TFTVPersonnelRoster.cs" />
     <Compile Include="TFTVSuppression.cs" />
     <Compile Include="TFTVTauntsAndQuips.cs" />
     <Compile Include="TFTVTimeScaling.cs" />
