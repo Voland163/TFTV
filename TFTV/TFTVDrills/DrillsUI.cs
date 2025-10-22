@@ -69,16 +69,21 @@ namespace TFTV.TFTVDrills
                         return true;
                     }
 
-                    var ability = __instance.AbilityDef ?? ElementHelpers.FindSlot(__instance)?.Ability;
+                    var slot = ElementHelpers.FindSlot(__instance);
+                    var ability = __instance.AbilityDef ?? slot?.Ability;
 
-                    if (ability == null || !character.Progression.Abilities.Contains(ability))
+                    var (track, resolvedSlot) = CharacterLookup.FindTrackSlot(character, ability);
+                    if (resolvedSlot != null)
+                    {
+                        slot = resolvedSlot;
+                    }
+
+                    if (ability == null || slot == null)
                     {
                         return true;
                     }
 
-                    var (track, slot) = CharacterLookup.FindTrackSlot(character, ability);
-
-                    if (slot == null || !CharacterLookup.IsPersonalTrack(track, character.Progression.PersonalAbilityTrack))
+                    if (!CharacterLookup.IsPersonalTrack(track, character.Progression.PersonalAbilityTrack))
                     {
                         return true;
                     }
@@ -89,14 +94,24 @@ namespace TFTV.TFTVDrills
                         return true;
                     }
 
-                    GeoPhoenixFaction phoenixFaction = character?.Faction?.GeoLevel?.PhoenixFaction;
-                    List<TacticalAbilityDef> availableChoices = DrillsDefs.GetAvailableDrills(phoenixFaction, character);
-                  /*  if (availableChoices == null || availableChoices.Count == 0)
+                    int abilityLevel = CharacterLookup.GetAbilityLevel(track, slot);
+                    if (abilityLevel > 0 && character.Progression.LevelProgression.Level < abilityLevel)
                     {
                         return true;
-                    }*/
+                    }
 
-                    DrillSwapUI.Show(ui, slot, ability, availableChoices, __instance);
+                    bool baseAbilityLearned = character.Progression.Abilities.Contains(ability);
+                    int baseAbilityCost = character.Progression.GetAbilitySlotCost(slot);
+
+
+                    GeoPhoenixFaction phoenixFaction = character?.Faction?.GeoLevel?.PhoenixFaction;
+                    List<TacticalAbilityDef> availableChoices = DrillsDefs.GetAvailableDrills(phoenixFaction, character);
+                    /*  if (availableChoices == null || availableChoices.Count == 0)
+                      {
+                          return true;
+                      }*/
+
+                    DrillSwapUI.Show(ui, slot, ability, availableChoices, __instance, baseAbilityLearned, track, abilityLevel, baseAbilityCost);
                     return false;
                 }
                 catch (Exception ex)
@@ -243,6 +258,26 @@ namespace TFTV.TFTVDrills
             }
         }
 
+        public sealed class HeaderContext
+        {
+            public bool BaseAbilityLearned;
+            public int BaseAbilityCost;
+            public int DrillSkillPointCost;
+            public int AbilityLevel;
+            public bool SlotUnlocked;
+            public bool CanLearnBaseAbility;
+            public bool CanAffordBaseAbility;
+            public string HeaderLabel;
+            public string MissingRequirements;
+            public AbilityTrack Track;
+            public AbilityTrackSkillEntryElement EntryElement;
+            public AbilityTrackSlot Slot;
+            public UIModuleCharacterProgression Ui;
+            public TacticalAbilityDef Ability;
+
+            public bool CanPurchaseBaseAbility => BaseAbilityLearned || (SlotUnlocked && CanLearnBaseAbility && CanAffordBaseAbility);
+        }
+
         private static class DrillIndicator
         {
             public static bool ShouldShow(GeoCharacter character, GeoPhoenixFaction phoenixFaction, TacticalAbilityDef ability, Image availableImage)
@@ -338,11 +373,32 @@ namespace TFTV.TFTVDrills
 
                 return AbilityTrackSource.Personal;
             }
+
+            public static int GetAbilityLevel(AbilityTrack track, AbilityTrackSlot slot)
+            {
+                if (track == null || slot == null)
+                {
+                    return 0;
+                }
+
+                try
+                {
+                    return track.GetAbilityLevel(slot);
+                }
+                catch
+                {
+                    return 0;
+                }
+            }
         }
 
         private static class DrillSwapUI
         {
-            public static void Show(UIModuleCharacterProgression ui, AbilityTrackSlot slot, TacticalAbilityDef original, List<TacticalAbilityDef> choices, AbilityTrackSkillEntryElement entry)
+            public static void Show(UIModuleCharacterProgression ui, 
+                AbilityTrackSlot slot, TacticalAbilityDef original, 
+                List<TacticalAbilityDef> choices, AbilityTrackSkillEntryElement entry, 
+                bool baseAbilityLearned, AbilityTrack track, 
+                int abilityLevel, int baseAbilityCost)
             {
                 if (ui == null || slot == null || original == null || choices == null)
                 {
@@ -360,14 +416,25 @@ namespace TFTV.TFTVDrills
                         UnityEngine.Object.Destroy(child.gameObject);
                     }
 
-                    AddHeader(container.transform, original);
+                    HeaderContext headerContext = BuildHeaderContext(ui, slot, original, baseAbilityLearned, track, abilityLevel, baseAbilityCost, entry);
+                    Action acquireAction = null;
+                    if (!headerContext.BaseAbilityLearned)
+                    {
+                        acquireAction = () =>
+                        {
+                            popupGO.SetActive(false);
+                            AcquireBaseAbility(ui, slot, original, track, abilityLevel);
+                        };
+                    }
+
+                    AddHeader(container.transform, original, headerContext, acquireAction);
                     foreach (var def in choices.Where(def => def != null))
                     {
                         var go = UnityEngine.Object.Instantiate(prefab, container.transform);
                         WireButton(go, def, () =>
                         {
                             popupGO.SetActive(false);
-                            ShowDrillConfirmation(ui, slot, original, def);
+                            ShowDrillConfirmation(ui, slot, original, def, headerContext.DrillSkillPointCost);
                         });
                     }
 
@@ -375,10 +442,13 @@ namespace TFTV.TFTVDrills
                     return;
                 }
 
-                BuildOverlay(ui, slot, original, choices, entry);
+                BuildOverlay(ui, slot, original, choices, entry, baseAbilityLearned, track, abilityLevel, baseAbilityCost);
             }
 
-            private static void BuildOverlay(UIModuleCharacterProgression ui, AbilityTrackSlot slot, TacticalAbilityDef original, List<TacticalAbilityDef> choices, AbilityTrackSkillEntryElement entry)
+            private static void BuildOverlay(UIModuleCharacterProgression ui, AbilityTrackSlot slot, 
+                TacticalAbilityDef original, List<TacticalAbilityDef> choices, 
+                AbilityTrackSkillEntryElement entry, bool baseAbilityLearned, 
+                AbilityTrack track, int abilityLevel, int baseAbilityCost)
             {
                 var overlay = UIBuilder.CreateHoverOverlay(ui, entry, out var panelRect, out var contentRect, out var viewportRect, out var controller, out var tooltipParent);
                 if (overlay == null || panelRect == null || contentRect == null || viewportRect == null || controller == null)
@@ -390,11 +460,8 @@ namespace TFTV.TFTVDrills
 
                 var canvas = overlay.GetComponentInParent<Canvas>() ?? ui.GetComponentInParent<Canvas>();
 
-                var header = UIBuilder.AddHeader(contentRect, original);
-                if (header != null)
-                {
-                    header.text = $"Replace: {original.ViewElementDef?.DisplayName1?.Localize() ?? original.name}";
-                }
+                var headerContext = BuildHeaderContext(ui, slot, original, baseAbilityLearned, track, abilityLevel, baseAbilityCost, entry);
+                UIBuilder.AddHeader(contentRect, original, headerContext, tooltipParent, panelRect, canvas, () => controller.Close(() => AcquireBaseAbility(ui, slot, original, track, abilityLevel)));
 
                 UIBuilder.AddDivider(contentRect);
 
@@ -433,16 +500,17 @@ namespace TFTV.TFTVDrills
                     {
                         onChoose = () => controller.Close(() =>
                         {
-                            ShowDrillConfirmation(ui, slot, original, def);
+                            ShowDrillConfirmation(ui, slot, original, def, headerContext.DrillSkillPointCost);
                         });
                     }
 
-                    var option = UIBuilder.CreateDrillOption(gridRect, panelRect, def, locked, missingRequirements, tooltipParent, canvas, onChoose);
+                    var option = UIBuilder.CreateDrillOption(gridRect, panelRect, def, locked, missingRequirements, tooltipParent, canvas, onChoose, headerContext.DrillSkillPointCost);
                     if (option != null)
                     {
                         optionCount++;
                     }
                 }
+            
 
                 if (gridRect != null)
                 {
@@ -466,6 +534,230 @@ namespace TFTV.TFTVDrills
                 controller.ConfigureContent(viewportRect, contentRect, MenuWidth, MenuMaxHeight);
                 overlay.transform.SetAsLastSibling();
             }
+
+            private static HeaderContext BuildHeaderContext(UIModuleCharacterProgression ui, AbilityTrackSlot slot, TacticalAbilityDef original, bool baseAbilityLearned, AbilityTrack track, int abilityLevel, int baseAbilityCost, AbilityTrackSkillEntryElement entry)
+            {
+                var character = Reflection.GetPrivate<GeoCharacter>(ui, "_character");
+                int currentSp = Reflection.GetPrivate<int>(ui, "_currentSkillPoints");
+                int currentFp = Reflection.GetPrivate<int>(ui, "_currentFactionPoints");
+                int currentStr = Reflection.GetPrivate<int>(ui, "_currentStrengthStat");
+                int currentWill = Reflection.GetPrivate<int>(ui, "_currentWillStat");
+                int currentSpeed = Reflection.GetPrivate<int>(ui, "_currentSpeedStat");
+
+                bool slotUnlocked = abilityLevel <= 0 || (character?.Progression?.LevelProgression?.Level ?? 0) >= abilityLevel;
+                bool canLearn = baseAbilityLearned || (character?.Progression?.CanLearnAbility(slot, currentStr, currentWill, currentSpeed) ?? false);
+                bool canAfford = baseAbilityLearned || (currentSp + currentFp) >= baseAbilityCost;
+
+                var abilityName = original?.ViewElementDef?.DisplayName1?.Localize() ?? original?.name ?? string.Empty;
+
+                var missingDetails = new List<string>();
+                if (!baseAbilityLearned)
+                {
+                    if (!slotUnlocked)
+                    {
+                        missingDetails.Add("Level requirement not met");
+                    }
+
+                    if (!canAfford)
+                    {
+                        missingDetails.Add("Not enough Skill Points");
+                    }
+
+                    if (!canLearn && slotUnlocked)
+                    {
+                        missingDetails.Add("Requirements not met");
+                    }
+                }
+
+                return new HeaderContext
+                {
+                    BaseAbilityLearned = baseAbilityLearned,
+                    BaseAbilityCost = baseAbilityCost,
+                    DrillSkillPointCost = baseAbilityLearned ? SwapSpCost : Math.Max(0, baseAbilityCost),
+                    AbilityLevel = abilityLevel,
+                    SlotUnlocked = slotUnlocked,
+                    CanLearnBaseAbility = canLearn,
+                    CanAffordBaseAbility = canAfford,
+                    HeaderLabel = baseAbilityLearned ? $"Replace: {abilityName}" : $"Acquire: {abilityName}",
+                    MissingRequirements = missingDetails.Count > 0 ? string.Join("\n", missingDetails.Distinct()) : string.Empty,
+                    Track = track,
+                    EntryElement = entry,
+                    Slot = slot,
+                    Ui = ui,
+                    Ability = original
+                };
+            }
+
+            
+
+            private static void AcquireBaseAbility(UIModuleCharacterProgression ui, AbilityTrackSlot slot, TacticalAbilityDef ability, AbilityTrack track, int abilityLevel)
+            {
+                if (ui == null || slot == null || ability == null)
+                {
+                    return;
+                }
+
+                try
+                {
+                    int resolvedLevel = abilityLevel > 0 ? abilityLevel : CharacterLookup.GetAbilityLevel(track, slot);
+                    var source = CharacterLookup.ResolveTrackSource(track);
+
+                    Reflection.SetPrivate(ui, "_boughtAbilitySlot", slot);
+                    Reflection.SetPrivate(ui, "_boughtAbility", ability);
+                    Reflection.SetPrivate(ui, "_boughtAbilitySource", source);
+                    Reflection.SetPrivate(ui, "_boughtAbilityLevel", resolvedLevel);
+
+                    ui.AbilityBoughtConfirmation?.Invoke(slot, ability);
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
+            }
+
+            private static void AddHeader(Transform parent, TacticalAbilityDef original, 
+                HeaderContext context, Action onAcquire)
+            {
+                var header = new GameObject("TFTV_SwapHeader", typeof(RectTransform));
+                header.transform.SetParent(parent, false);
+
+                var layoutGroup = header.AddComponent<HorizontalLayoutGroup>();
+                layoutGroup.childAlignment = TextAnchor.MiddleCenter;
+                layoutGroup.childForceExpandWidth = false;
+                layoutGroup.childForceExpandHeight = false;
+                layoutGroup.childControlWidth = false;
+                layoutGroup.childControlHeight = true;
+                layoutGroup.padding = new RectOffset(6, 6, 0, 0);
+                layoutGroup.spacing = 8f;
+
+                var headerLayout = header.AddComponent<LayoutElement>();
+                headerLayout.minHeight = 48f;
+                headerLayout.preferredHeight = 48f;
+
+                var labelGO = new GameObject("Label", typeof(RectTransform), typeof(Text));
+                var labelRect = (RectTransform)labelGO.transform;
+                labelRect.SetParent(header.transform, false);
+                labelRect.anchorMin = new Vector2(0f, 0.5f);
+                labelRect.anchorMax = new Vector2(1f, 0.5f);
+
+                var text = labelGO.GetComponent<Text>();
+                text.alignment = TextAnchor.MiddleCenter;
+                text.fontSize = 18;
+                text.raycastTarget = false;
+                text.color = Color.white;
+                text.text = context?.HeaderLabel ?? $"Replace: {original?.ViewElementDef?.DisplayName1?.Localize() ?? original?.name}";
+
+                var textLayout = labelGO.AddComponent<LayoutElement>();
+                textLayout.minWidth = 0f;
+                textLayout.flexibleWidth = 0f;
+
+                if (context == null || context.BaseAbilityLearned || onAcquire == null)
+                {
+                    var iconGO = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+                    var iconRect0 = (RectTransform)iconGO.transform;
+                    iconRect0.SetParent(header.transform, false);
+                    iconRect0.anchorMin = new Vector2(0.5f, 0.5f);
+                    iconRect0.anchorMax = new Vector2(0.5f, 0.5f);
+                    iconRect0.pivot = new Vector2(0.5f, 0.5f);
+                    iconRect0.localScale = Vector3.one;
+                    iconRect0.anchoredPosition = Vector2.zero;
+
+                    var iconImage0 = iconGO.GetComponent<Image>();
+                    iconImage0.raycastTarget = false;
+                    iconImage0.color = Color.white;
+
+                    var iconSprite = original?.ViewElementDef?.LargeIcon ?? original?.ViewElementDef?.SmallIcon;
+                    if (iconSprite != null)
+                    {
+                        iconImage0.sprite = iconSprite;
+                        iconImage0.preserveAspect = true;
+
+                        var iconLayout = iconGO.AddComponent<LayoutElement>();
+                        const float iconSize = 48f;
+                        iconLayout.minWidth = iconSize;
+                        iconLayout.minHeight = iconSize;
+                        iconLayout.preferredWidth = iconSize;
+                        iconLayout.preferredHeight = iconSize;
+                        iconLayout.flexibleWidth = 0f;
+                        iconLayout.flexibleHeight = 0f;
+                        iconRect0.sizeDelta = new Vector2(iconSize, iconSize);
+                    }
+                    else
+                    {
+                        iconGO.SetActive(false);
+                    }
+
+                    var labelFitter = labelGO.AddComponent<ContentSizeFitter>();
+                    labelFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+                    labelFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+                    return;
+                }
+
+                var buttonGO = new GameObject("AcquireBaseAbility", typeof(RectTransform), typeof(Image), typeof(Button));
+                var buttonRect = (RectTransform)buttonGO.transform;
+                buttonRect.SetParent(header.transform, false);
+                buttonRect.anchorMin = new Vector2(0.5f, 0.5f);
+                buttonRect.anchorMax = new Vector2(0.5f, 0.5f);
+                buttonRect.pivot = new Vector2(0.5f, 0.5f);
+                buttonRect.localScale = Vector3.one;
+                buttonRect.anchoredPosition = Vector2.zero;
+
+                var buttonImage = buttonGO.GetComponent<Image>();
+                Color normalColor = new Color(1f, 1f, 1f, 0.08f);
+                Color highlightColor = new Color(0.2f, 0.0588f, 0f, 1f);
+                Color pressedColor = new Color(0.3137255f, 0.11764706f, 0.019607844f, 1f);
+                Color disabledColor = new Color(0.1f, 0.1f, 0.1f, 0.4f);
+                buttonImage.color = normalColor;
+
+                var button = buttonGO.GetComponent<Button>();
+                button.transition = Selectable.Transition.ColorTint;
+                var colors = button.colors;
+                colors.normalColor = normalColor;
+                colors.highlightedColor = highlightColor;
+                colors.pressedColor = pressedColor;
+                colors.selectedColor = highlightColor;
+                colors.disabledColor = disabledColor;
+                button.colors = colors;
+
+                if (context.CanPurchaseBaseAbility)
+                {
+                    button.onClick.AddListener(() => onAcquire());
+                }
+                else
+                {
+                    button.interactable = false;
+                    buttonImage.color = disabledColor;
+                }
+                var buttonLayout = buttonGO.AddComponent<LayoutElement>();
+                buttonLayout.minWidth = 120f;
+                buttonLayout.minHeight = 60f;
+                buttonLayout.preferredWidth = 120f;
+                buttonLayout.preferredHeight = 60f;
+                buttonLayout.flexibleWidth = 0f;
+                buttonLayout.flexibleHeight = 0f;
+
+                var iconContainer = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+                var iconRect = (RectTransform)iconContainer.transform;
+                iconRect.SetParent(buttonGO.transform, false);
+                iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+                iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+                iconRect.pivot = new Vector2(0.5f, 0.5f);
+                iconRect.localScale = Vector3.one;
+                iconRect.anchoredPosition = Vector2.zero;
+                iconRect.sizeDelta = new Vector2(48f, 48f);
+
+                var iconImage = iconContainer.GetComponent<Image>();
+                iconImage.sprite = original?.ViewElementDef?.LargeIcon ?? original?.ViewElementDef?.SmallIcon;
+                iconImage.preserveAspect = true;
+                iconImage.color = context.CanPurchaseBaseAbility ? Color.white : LockedIconTint;
+                iconImage.raycastTarget = false;
+
+                var labelFitterSwap = labelGO.AddComponent<ContentSizeFitter>();
+                labelFitterSwap.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+                labelFitterSwap.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            }
+
         }
         private static class UIBuilder
         {
@@ -574,11 +866,12 @@ namespace TFTV.TFTVDrills
                 return overlay;
             }
 
-            public static Text AddHeader(RectTransform content, TacticalAbilityDef original)
+            public static void AddHeader(RectTransform content, TacticalAbilityDef original, 
+                 HeaderContext context, Transform tooltipParent, RectTransform panelRect, Canvas canvas, Action onAcquire)
             {
                 if (content == null)
                 {
-                    return null;
+                    return;
                 }
 
                 var headerGO = new GameObject("Header", typeof(RectTransform));
@@ -609,7 +902,7 @@ namespace TFTV.TFTVDrills
 
                 var headerText = headerTextGO.GetComponent<Text>();
                 headerText.font = GetDefaultFont();
-                headerText.text = original?.ViewElementDef?.DisplayName1?.Localize() ?? original?.name ?? "Replace";
+                headerText.text = context?.HeaderLabel ?? (original?.ViewElementDef?.DisplayName1?.Localize() ?? original?.name ?? "Replace");
                 headerText.color = Color.white;
                 headerText.fontSize = 20;
                 headerText.alignment = TextAnchor.MiddleCenter;
@@ -623,41 +916,102 @@ namespace TFTV.TFTVDrills
                 textFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
                 textFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-                var iconGO = new GameObject("Icon", typeof(RectTransform), typeof(Image));
-                var iconRect = (RectTransform)iconGO.transform;
-                iconRect.SetParent(headerRect, false);
+                if (context == null || context.BaseAbilityLearned || onAcquire == null)
+                {
+                    var iconGO = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+                    var iconRect0 = (RectTransform)iconGO.transform;
+                    iconRect0.SetParent(headerRect, false);
+                    iconRect0.anchorMin = new Vector2(0.5f, 0.5f);
+                    iconRect0.anchorMax = new Vector2(0.5f, 0.5f);
+                    iconRect0.pivot = new Vector2(0.5f, 0.5f);
+                    iconRect0.localScale = Vector3.one;
+                    iconRect0.anchoredPosition = Vector2.zero;
+
+                    var iconImage0 = iconGO.GetComponent<Image>();
+                iconImage0.raycastTarget = false;
+                iconImage0.color = Color.white;
+
+                    var iconSprite = original?.ViewElementDef?.LargeIcon ?? original?.ViewElementDef?.SmallIcon;
+                    if (iconSprite != null)
+                    {
+                        iconImage0.sprite = iconSprite;
+                        iconImage0.preserveAspect = true;
+
+                        var iconLayout = iconGO.AddComponent<LayoutElement>();
+                        const float iconSize = 48f;
+                        iconLayout.minWidth = iconSize;
+                        iconLayout.minHeight = iconSize;
+                        iconLayout.preferredWidth = iconSize;
+                        iconLayout.preferredHeight = iconSize;
+                        iconLayout.flexibleWidth = 0f;
+                        iconLayout.flexibleHeight = 0f;
+                        iconRect0.sizeDelta = new Vector2(iconSize, iconSize);
+                    }
+                    else
+                    {
+                        iconGO.SetActive(false);
+                    }
+
+                    return;
+                }
+                var buttonGO = new GameObject("AcquireBaseAbility", typeof(RectTransform), typeof(Image), typeof(Button));
+                var buttonRect = (RectTransform)buttonGO.transform;
+                buttonRect.SetParent(headerRect, false);
+                buttonRect.anchorMin = new Vector2(0.5f, 0.5f);
+                buttonRect.anchorMax = new Vector2(0.5f, 0.5f);
+                buttonRect.pivot = new Vector2(0.5f, 0.5f);
+                buttonRect.localScale = Vector3.one;
+                buttonRect.anchoredPosition = Vector2.zero;
+
+                var buttonImage = buttonGO.GetComponent<Image>();
+                buttonImage.color = ButtonNormalColor;
+
+                var button = buttonGO.GetComponent<Button>();
+                button.transition = Selectable.Transition.ColorTint;
+                var colors = button.colors;
+                colors.normalColor = ButtonNormalColor;
+                colors.highlightedColor = ButtonHighlightColor;
+                colors.pressedColor = ButtonPressedColor;
+                colors.selectedColor = ButtonHighlightColor;
+                colors.disabledColor = ButtonDisabledColor;
+                button.colors = colors;
+
+                if (context.CanPurchaseBaseAbility)
+                {
+                    button.onClick.AddListener(() => onAcquire());
+                }
+                else
+                {
+                    button.interactable = false;
+                    buttonImage.color = ButtonDisabledColor;
+                }
+
+                var buttonLayout = buttonGO.AddComponent<LayoutElement>();
+                buttonLayout.minWidth = 120f;
+                buttonLayout.minHeight = 60f;
+                buttonLayout.preferredWidth = 120f;
+                buttonLayout.preferredHeight = 60f;
+                buttonLayout.flexibleWidth = 0f;
+                buttonLayout.flexibleHeight = 0f;
+
+                var iconContainer = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+                var iconRect = (RectTransform)iconContainer.transform;
+                iconRect.SetParent(buttonGO.transform, false);
                 iconRect.anchorMin = new Vector2(0.5f, 0.5f);
                 iconRect.anchorMax = new Vector2(0.5f, 0.5f);
                 iconRect.pivot = new Vector2(0.5f, 0.5f);
                 iconRect.localScale = Vector3.one;
                 iconRect.anchoredPosition = Vector2.zero;
+                iconRect.sizeDelta = new Vector2(48f, 48f);
 
-                var iconImage = iconGO.GetComponent<Image>();
+                var iconImage = iconContainer.GetComponent<Image>();
+                iconImage.sprite = original?.ViewElementDef?.LargeIcon ?? original?.ViewElementDef?.SmallIcon;
+                iconImage.preserveAspect = true;
+                iconImage.color = context.CanPurchaseBaseAbility ? Color.white : LockedIconTint;
                 iconImage.raycastTarget = false;
-                iconImage.color = Color.white;
 
-                var iconSprite = original?.ViewElementDef?.LargeIcon ?? original?.ViewElementDef?.SmallIcon;
-                if (iconSprite != null)
-                {
-                    iconImage.sprite = iconSprite;
-                    iconImage.preserveAspect = true;
-
-                    var iconLayout = iconGO.AddComponent<LayoutElement>();
-                    const float iconSize = 48f;
-                    iconLayout.minWidth = iconSize;
-                    iconLayout.minHeight = iconSize;
-                    iconLayout.preferredWidth = iconSize;
-                    iconLayout.preferredHeight = iconSize;
-                    iconLayout.flexibleWidth = 0f;
-                    iconLayout.flexibleHeight = 0f;
-                    iconRect.sizeDelta = new Vector2(iconSize, iconSize);
-                }
-                else
-                {
-                    iconGO.SetActive(false);
-                }
-
-                return headerText;
+                var tooltipTrigger = buttonGO.AddComponent<DrillTooltipTrigger>();
+                tooltipTrigger.Initialize(original, context.MissingRequirements, !context.CanPurchaseBaseAbility, tooltipParent, panelRect, canvas, context.BaseAbilityCost);
             }
 
             public static void AddDivider(RectTransform content)
@@ -718,7 +1072,9 @@ namespace TFTV.TFTVDrills
                 return gridRect;
             }
 
-            public static GameObject CreateDrillOption(RectTransform gridRect, RectTransform panelRect, TacticalAbilityDef def, bool isLocked, string missingRequirements, Transform tooltipParent, Canvas canvas, Action onChoose)
+            public static GameObject CreateDrillOption(RectTransform gridRect, 
+                RectTransform panelRect, TacticalAbilityDef def, bool isLocked, 
+                string missingRequirements, Transform tooltipParent, Canvas canvas, Action onChoose, int skillPointCost)
             {
                 if (gridRect == null || def == null)
                 {
@@ -856,7 +1212,7 @@ namespace TFTV.TFTVDrills
                 labelLayout.preferredHeight = 24f;
 
                 var tooltipTrigger = option.AddComponent<DrillTooltipTrigger>();
-                tooltipTrigger.Initialize(def, missingRequirements, isLocked, tooltipParent, panelRect, canvas);
+                tooltipTrigger.Initialize(def, missingRequirements, isLocked, tooltipParent, panelRect, canvas, skillPointCost);
 
                 return option;
             }
@@ -973,7 +1329,7 @@ namespace TFTV.TFTVDrills
                 layout.preferredHeight = 60f;
 
                 var tooltipTrigger = cancel.AddComponent<DrillTooltipTrigger>();
-                tooltipTrigger.Initialize(null, string.Empty, false, tooltipParent, panelRect, canvas);
+                tooltipTrigger.Initialize(null, string.Empty, false, tooltipParent, panelRect, canvas, 0);
             }
 
             private static Font GetDefaultFont()
@@ -1062,79 +1418,7 @@ namespace TFTV.TFTVDrills
             }
         }
 
-        private static void AddHeader(Transform parent, TacticalAbilityDef original)
-        {
-            var header = new GameObject("TFTV_SwapHeader", typeof(RectTransform));
-            header.transform.SetParent(parent, false);
-
-            var layoutGroup = header.AddComponent<HorizontalLayoutGroup>();
-            layoutGroup.childAlignment = TextAnchor.MiddleCenter;
-            layoutGroup.childForceExpandWidth = false;
-            layoutGroup.childForceExpandHeight = false;
-            layoutGroup.childControlWidth = false;
-            layoutGroup.childControlHeight = true;
-            layoutGroup.padding = new RectOffset(6, 6, 0, 0);
-            layoutGroup.spacing = 8f;
-
-            var headerLayout = header.AddComponent<LayoutElement>();
-            headerLayout.minHeight = 48f;
-            headerLayout.preferredHeight = 48f;
-
-            var labelGO = new GameObject("Label", typeof(RectTransform), typeof(Text));
-            var labelRect = (RectTransform)labelGO.transform;
-            labelRect.SetParent(header.transform, false);
-            labelRect.anchorMin = new Vector2(0f, 0.5f);
-            labelRect.anchorMax = new Vector2(1f, 0.5f);
-
-            var text = labelGO.GetComponent<Text>();
-            text.alignment = TextAnchor.MiddleCenter;
-            text.fontSize = 18;
-            text.raycastTarget = false;
-            text.color = Color.white;
-            text.text = $"Replace: {original?.ViewElementDef?.DisplayName1?.Localize() ?? original?.name}";
-
-            var textLayout = labelGO.AddComponent<LayoutElement>();
-            textLayout.minWidth = 0f;
-            textLayout.flexibleWidth = 0f;
-
-            var iconGO = new GameObject("Icon", typeof(RectTransform), typeof(Image));
-            var iconRect = (RectTransform)iconGO.transform;
-            iconRect.SetParent(header.transform, false);
-            iconRect.anchorMin = new Vector2(0.5f, 0.5f);
-            iconRect.anchorMax = new Vector2(0.5f, 0.5f);
-            iconRect.pivot = new Vector2(0.5f, 0.5f);
-            iconRect.localScale = Vector3.one;
-            iconRect.anchoredPosition = Vector2.zero;
-
-            var iconImage = iconGO.GetComponent<Image>();
-            iconImage.raycastTarget = false;
-            iconImage.color = Color.white;
-
-            var iconSprite = original?.ViewElementDef?.LargeIcon ?? original?.ViewElementDef?.SmallIcon;
-            if (iconSprite != null)
-            {
-                iconImage.sprite = iconSprite;
-                iconImage.preserveAspect = true;
-
-                var iconLayout = iconGO.AddComponent<LayoutElement>();
-                const float iconSize = 48f;
-                iconLayout.minWidth = iconSize;
-                iconLayout.minHeight = iconSize;
-                iconLayout.preferredWidth = iconSize;
-                iconLayout.preferredHeight = iconSize;
-                iconLayout.flexibleWidth = 0f;
-                iconLayout.flexibleHeight = 0f;
-                iconRect.sizeDelta = new Vector2(iconSize, iconSize);
-            }
-            else
-            {
-                iconGO.SetActive(false);
-            }
-
-            var labelFitter = labelGO.AddComponent<ContentSizeFitter>();
-            labelFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-            labelFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-        }
+       
 
         private static void WireButton(GameObject buttonGO, TacticalAbilityDef def, Action onClick)
         {
@@ -1175,7 +1459,8 @@ namespace TFTV.TFTVDrills
             btn.onClick.AddListener(() => onClick?.Invoke());
         }
 
-        private static void ShowDrillConfirmation(UIModuleCharacterProgression ui, AbilityTrackSlot slot, TacticalAbilityDef original, TacticalAbilityDef replacement)
+        private static void ShowDrillConfirmation(UIModuleCharacterProgression ui, AbilityTrackSlot slot, 
+            TacticalAbilityDef original, TacticalAbilityDef replacement, int skillPointCost)
         {
             if (ui == null || slot == null || original == null || replacement == null)
             {
@@ -1191,7 +1476,7 @@ namespace TFTV.TFTVDrills
                 var character = Reflection.GetPrivate<GeoCharacter>(ui, "_character");
                 if (character?.Progression == null)
                 {
-                    TryPerformSwap(ui, slot, original, replacement);
+                    TryPerformSwap(ui, slot, original, replacement, skillPointCost);
                     return;
                 }
 
@@ -1199,7 +1484,7 @@ namespace TFTV.TFTVDrills
                 var view = levelController?.View;
                 if (view == null)
                 {
-                    TryPerformSwap(ui, slot, original, replacement);
+                    TryPerformSwap(ui, slot, original, replacement, skillPointCost);
                     return;
                 }
 
@@ -1207,7 +1492,7 @@ namespace TFTV.TFTVDrills
                 if (progressionData != null)
                 {
                     originalCost = progressionData.SkillPointCost;
-                    progressionData.SkillPointCost = SwapSpCost;
+                    progressionData.SkillPointCost = skillPointCost;
                     costOverridden = true;
                 }
 
@@ -1229,7 +1514,7 @@ namespace TFTV.TFTVDrills
 
                     if (res == ModalResult.Confirm)
                     {
-                        TryPerformSwap(ui, slot, original, replacement);
+                        TryPerformSwap(ui, slot, original, replacement, skillPointCost);
                     }
                     else
                     {
@@ -1244,11 +1529,12 @@ namespace TFTV.TFTVDrills
                 {
                     progressionData.SkillPointCost = originalCost;
                 }
-                TryPerformSwap(ui, slot, original, replacement);
+                TryPerformSwap(ui, slot, original, replacement, skillPointCost);
             }
         }
 
-        private static void TryPerformSwap(UIModuleCharacterProgression ui, AbilityTrackSlot slot, TacticalAbilityDef original, TacticalAbilityDef replacement)
+        private static void TryPerformSwap(UIModuleCharacterProgression ui, AbilityTrackSlot slot, TacticalAbilityDef original, 
+            TacticalAbilityDef replacement, int skillPointCost)
         {
             try
             {
@@ -1265,11 +1551,11 @@ namespace TFTV.TFTVDrills
                     return;
                 }
 
-                if (SwapSpCost > 0)
+                if (skillPointCost > 0)
                 {
                     var currSP = Reflection.GetPrivate<int>(ui, "_currentSkillPoints");
                     var currFP = Reflection.GetPrivate<int>(ui, "_currentFactionPoints");
-                    int remaining = SwapSpCost;
+                    int remaining = skillPointCost;
 
                     if (currSP >= remaining)
                     {
@@ -1286,6 +1572,7 @@ namespace TFTV.TFTVDrills
                         else
                         {
                             Debug.LogWarning("[TFTV] Not enough SP/FS for swap; aborting.");
+                            Reflection.CallPrivate(ui, "RefreshAbilityTracks");
                             return;
                         }
                     }
@@ -1682,10 +1969,11 @@ namespace TFTV.TFTVDrills
             private static readonly Vector3[] TooltipCorners = new Vector3[4];
 
             private const float TooltipGap = 16f;
-            private const int DrillSkillPointCost = 10;
+            private int _skillPointCost = SwapSpCost;
             public static RectTransform ActiveTooltipRect { get; private set; }
 
-            public void Initialize(TacticalAbilityDef ability, string missingRequirements, bool isLocked, Transform tooltipParent, RectTransform menuRect, Canvas canvas)
+            public void Initialize(TacticalAbilityDef ability, string missingRequirements, bool isLocked, 
+                Transform tooltipParent, RectTransform menuRect, Canvas canvas, int skillPointCost)
             {
                 _ability = ability;
                 _missingRequirements = missingRequirements;
@@ -1694,6 +1982,7 @@ namespace TFTV.TFTVDrills
                 _menuRect = menuRect;
                 _canvas = canvas;
                 _selfRect = transform as RectTransform;
+                _skillPointCost = skillPointCost > 0 ? skillPointCost : 0;
             }
 
             public void OnPointerEnter(PointerEventData eventData)
@@ -1837,11 +2126,11 @@ namespace TFTV.TFTVDrills
 
                 try
                 {
-                    tooltip.Show(_ability, view, useMutagens: false, cost: DrillSkillPointCost);
+                    tooltip.Show(_ability, view, useMutagens: false, cost: _skillPointCost);
                     if (shouldPrime)
                     {
                         tooltip.Hide();
-                        tooltip.Show(_ability, view, useMutagens: false, cost: DrillSkillPointCost);
+                        tooltip.Show(_ability, view, useMutagens: false, cost: _skillPointCost);
                     }
 
                     ApplyTooltipCostOverrides(tooltip);
@@ -1968,7 +2257,7 @@ namespace TFTV.TFTVDrills
                     }
 
                     string spPattern = !string.IsNullOrEmpty(tooltip.SPCostPattern) ? tooltip.SPCostPattern : "{0}";
-                    tooltip.AbilitySkillCostText.text = string.Format(spPattern, DrillSkillPointCost);
+                    tooltip.AbilitySkillCostText.text = string.Format(spPattern, _skillPointCost);
                 }
 
                 if (_ability == null)
