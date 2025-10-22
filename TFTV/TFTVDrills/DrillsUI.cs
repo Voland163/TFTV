@@ -29,7 +29,7 @@ namespace TFTV.TFTVDrills
     internal static class DrillsUI
     {
         private const int SwapSpCost = 10;
-        private const float MenuMaxHeight = 900f;
+        private const float MenuMaxHeight = 950f;
         private const float MenuWidth = 760f;
         private const int GridColumns = 5;
         private const int VisibleGridRows = 5;
@@ -37,12 +37,116 @@ namespace TFTV.TFTVDrills
         private const float GridCellHeight = 140f;
         private const float GridSpacing = 12f;
         private const float GridPadding = 18f;
+        private const float HeaderIconFrameSize = 100f;
+        private const float HeaderIconSize = 92f;
+        private const float HeaderFrameBorderThickness = 4f;
 
         private static readonly Color LockedIconTint = new Color(0.2f, 0.2f, 0.2f, 1f);
         private static readonly Color LockedLabelTint = new Color(0.82f, 0.82f, 0.82f, 1f);
         internal static readonly Color DrillPulseColor = new Color(1f, 0.4f, 0f, 1f);
+        private static readonly Color DrillFrameColor = new Color(0.29803923f, 0.09019608f, 0f, 1f);
+        private static readonly Color LockedFrameColor = new Color(0.15294118f, 0.15294118f, 0.15294118f, 1f);
 
         private static Sprite _originalAvailableImage = null;
+
+        private static bool IsDrillAbility(TacticalAbilityDef ability)
+        {
+            return ability != null && DrillsDefs.Drills != null && DrillsDefs.Drills.Contains(ability);
+        }
+
+        private static Image CreateHeaderIcon(Transform parent, TacticalAbilityDef ability, Color iconColor, bool showFrame, bool isLocked)
+        {
+            if (parent == null || ability == null)
+            {
+                return null;
+            }
+
+            var iconRoot = new GameObject(showFrame ? "IconFrame" : "IconContainer", typeof(RectTransform));
+            var iconRootRect = (RectTransform)iconRoot.transform;
+            iconRootRect.SetParent(parent, false);
+            iconRootRect.anchorMin = new Vector2(0.5f, 0.5f);
+            iconRootRect.anchorMax = new Vector2(0.5f, 0.5f);
+            iconRootRect.pivot = new Vector2(0.5f, 0.5f);
+            iconRootRect.anchoredPosition = Vector2.zero;
+            iconRootRect.sizeDelta = new Vector2(HeaderIconFrameSize, HeaderIconFrameSize);
+
+            var layout = iconRoot.AddComponent<LayoutElement>();
+            layout.minWidth = HeaderIconFrameSize;
+            layout.minHeight = HeaderIconFrameSize;
+            layout.preferredWidth = HeaderIconFrameSize;
+            layout.preferredHeight = HeaderIconFrameSize;
+            layout.flexibleWidth = 0f;
+            layout.flexibleHeight = 0f;
+
+            Transform iconParent = iconRoot.transform;
+
+            if (showFrame)
+            {
+                Color frameColor = isLocked ? LockedFrameColor : DrillFrameColor;
+
+                void CreateBorder(string name, Vector2 anchorMin, Vector2 anchorMax, Vector2 sizeDelta)
+                {
+                    var borderGO = new GameObject(name, typeof(RectTransform), typeof(Image));
+                    var borderRect = (RectTransform)borderGO.transform;
+                    borderRect.SetParent(iconRoot.transform, false);
+                    borderRect.anchorMin = anchorMin;
+                    borderRect.anchorMax = anchorMax;
+                    borderRect.pivot = new Vector2(0.5f, 0.5f);
+                    borderRect.anchoredPosition = Vector2.zero;
+                    borderRect.sizeDelta = sizeDelta;
+
+                    var borderImage = borderGO.GetComponent<Image>();
+                    borderImage.color = frameColor;
+                    borderImage.raycastTarget = false;
+                }
+
+                CreateBorder("Left", new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(HeaderFrameBorderThickness, 0f));
+                CreateBorder("Right", new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(HeaderFrameBorderThickness, 0f));
+                CreateBorder("Top", new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, HeaderFrameBorderThickness));
+                CreateBorder("Bottom", new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0f, HeaderFrameBorderThickness));
+
+                var frameBackground = new GameObject("FrameBackground", typeof(RectTransform), typeof(Image));
+                var frameBackgroundRect = (RectTransform)frameBackground.transform;
+                frameBackgroundRect.SetParent(iconRoot.transform, false);
+                frameBackgroundRect.anchorMin = new Vector2(0f, 0f);
+                frameBackgroundRect.anchorMax = new Vector2(1f, 1f);
+                frameBackgroundRect.pivot = new Vector2(0.5f, 0.5f);
+                frameBackgroundRect.anchoredPosition = Vector2.zero;
+                frameBackgroundRect.offsetMin = new Vector2(HeaderFrameBorderThickness, HeaderFrameBorderThickness);
+                frameBackgroundRect.offsetMax = new Vector2(-HeaderFrameBorderThickness, -HeaderFrameBorderThickness);
+
+                var frameBackgroundImage = frameBackground.GetComponent<Image>();
+                frameBackgroundImage.color = Color.black;
+                frameBackgroundImage.raycastTarget = false;
+
+                iconParent = frameBackground.transform;
+            }
+
+            var iconGO = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+            var iconRect = (RectTransform)iconGO.transform;
+            iconRect.SetParent(iconParent, false);
+            iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+            iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+            iconRect.pivot = new Vector2(0.5f, 0.5f);
+            iconRect.anchoredPosition = Vector2.zero;
+            iconRect.sizeDelta = new Vector2(HeaderIconSize, HeaderIconSize);
+
+            var iconImage = iconGO.GetComponent<Image>();
+            iconImage.sprite = ability.ViewElementDef?.LargeIcon ?? ability.ViewElementDef?.SmallIcon;
+
+            if (iconImage.sprite == null)
+            {
+                iconRoot.SetActive(false);
+                return null;
+            }
+
+            iconImage.preserveAspect = true;
+            iconImage.color = iconColor;
+            iconImage.raycastTarget = false;
+
+            return iconImage;
+        }
+
 
         [HarmonyPatch(typeof(AbilityTrackSkillEntryElement), nameof(AbilityTrackSkillEntryElement.OnPointerClick))]
         public static class AbilityTrackSkillEntryElement_OnPointerClick_Patch
@@ -631,8 +735,8 @@ namespace TFTV.TFTVDrills
                 layoutGroup.spacing = 8f;
 
                 var headerLayout = header.AddComponent<LayoutElement>();
-                headerLayout.minHeight = 48f;
-                headerLayout.preferredHeight = 48f;
+                headerLayout.minHeight = 120f;
+                headerLayout.preferredHeight = 120f;
 
                 var labelGO = new GameObject("Label", typeof(RectTransform), typeof(Text));
                 var labelRect = (RectTransform)labelGO.transform;
@@ -642,7 +746,7 @@ namespace TFTV.TFTVDrills
 
                 var text = labelGO.GetComponent<Text>();
                 text.alignment = TextAnchor.MiddleCenter;
-                text.fontSize = 18;
+                text.fontSize = 26;
                 text.raycastTarget = false;
                 text.color = Color.white;
                 text.text = context?.HeaderLabel ?? $"Replace: {original?.ViewElementDef?.DisplayName1?.Localize() ?? original?.name}";
@@ -653,39 +757,8 @@ namespace TFTV.TFTVDrills
 
                 if (context == null || context.BaseAbilityLearned || onAcquire == null)
                 {
-                    var iconGO = new GameObject("Icon", typeof(RectTransform), typeof(Image));
-                    var iconRect0 = (RectTransform)iconGO.transform;
-                    iconRect0.SetParent(header.transform, false);
-                    iconRect0.anchorMin = new Vector2(0.5f, 0.5f);
-                    iconRect0.anchorMax = new Vector2(0.5f, 0.5f);
-                    iconRect0.pivot = new Vector2(0.5f, 0.5f);
-                    iconRect0.localScale = Vector3.one;
-                    iconRect0.anchoredPosition = Vector2.zero;
 
-                    var iconImage0 = iconGO.GetComponent<Image>();
-                    iconImage0.raycastTarget = false;
-                    iconImage0.color = Color.white;
-
-                    var iconSprite = original?.ViewElementDef?.LargeIcon ?? original?.ViewElementDef?.SmallIcon;
-                    if (iconSprite != null)
-                    {
-                        iconImage0.sprite = iconSprite;
-                        iconImage0.preserveAspect = true;
-
-                        var iconLayout = iconGO.AddComponent<LayoutElement>();
-                        const float iconSize = 48f;
-                        iconLayout.minWidth = iconSize;
-                        iconLayout.minHeight = iconSize;
-                        iconLayout.preferredWidth = iconSize;
-                        iconLayout.preferredHeight = iconSize;
-                        iconLayout.flexibleWidth = 0f;
-                        iconLayout.flexibleHeight = 0f;
-                        iconRect0.sizeDelta = new Vector2(iconSize, iconSize);
-                    }
-                    else
-                    {
-                        iconGO.SetActive(false);
-                    }
+                    CreateHeaderIcon(header.transform, original, Color.white, IsDrillAbility(original), false);
 
                     var labelFitter = labelGO.AddComponent<ContentSizeFitter>();
                     labelFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -730,27 +803,15 @@ namespace TFTV.TFTVDrills
                 }
                 var buttonLayout = buttonGO.AddComponent<LayoutElement>();
                 buttonLayout.minWidth = 120f;
-                buttonLayout.minHeight = 60f;
+                buttonLayout.minHeight = 120f;
                 buttonLayout.preferredWidth = 120f;
-                buttonLayout.preferredHeight = 60f;
+                buttonLayout.preferredHeight = 120f;
                 buttonLayout.flexibleWidth = 0f;
                 buttonLayout.flexibleHeight = 0f;
 
-                var iconContainer = new GameObject("Icon", typeof(RectTransform), typeof(Image));
-                var iconRect = (RectTransform)iconContainer.transform;
-                iconRect.SetParent(buttonGO.transform, false);
-                iconRect.anchorMin = new Vector2(0.5f, 0.5f);
-                iconRect.anchorMax = new Vector2(0.5f, 0.5f);
-                iconRect.pivot = new Vector2(0.5f, 0.5f);
-                iconRect.localScale = Vector3.one;
-                iconRect.anchoredPosition = Vector2.zero;
-                iconRect.sizeDelta = new Vector2(48f, 48f);
-
-                var iconImage = iconContainer.GetComponent<Image>();
-                iconImage.sprite = original?.ViewElementDef?.LargeIcon ?? original?.ViewElementDef?.SmallIcon;
-                iconImage.preserveAspect = true;
-                iconImage.color = context.CanPurchaseBaseAbility ? Color.white : LockedIconTint;
-                iconImage.raycastTarget = false;
+                CreateHeaderIcon(buttonGO.transform, original,
+                    context.CanPurchaseBaseAbility ? Color.white : LockedIconTint,
+                    IsDrillAbility(original), !context.CanPurchaseBaseAbility);
 
                 var labelFitterSwap = labelGO.AddComponent<ContentSizeFitter>();
                 labelFitterSwap.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -879,7 +940,7 @@ namespace TFTV.TFTVDrills
                 headerRect.SetParent(content, false);
                 headerRect.anchorMin = new Vector2(0f, 0.5f);
                 headerRect.anchorMax = new Vector2(1f, 0.5f);
-                headerRect.sizeDelta = new Vector2(0f, 48f);
+                headerRect.sizeDelta = new Vector2(0f, 120f);
 
                 var layoutGroup = headerGO.AddComponent<HorizontalLayoutGroup>();
                 layoutGroup.childAlignment = TextAnchor.MiddleCenter;
@@ -891,8 +952,8 @@ namespace TFTV.TFTVDrills
                 layoutGroup.spacing = 8f;
 
                 var headerLayout = headerGO.AddComponent<LayoutElement>();
-                headerLayout.minHeight = 48f;
-                headerLayout.preferredHeight = 48f;
+                headerLayout.minHeight = 120f;
+                headerLayout.preferredHeight = 120f;
 
                 var headerTextGO = new GameObject("Label", typeof(RectTransform), typeof(Text));
                 var headerTextRect = (RectTransform)headerTextGO.transform;
@@ -904,7 +965,7 @@ namespace TFTV.TFTVDrills
                 headerText.font = GetDefaultFont();
                 headerText.text = context?.HeaderLabel ?? (original?.ViewElementDef?.DisplayName1?.Localize() ?? original?.name ?? "Replace");
                 headerText.color = Color.white;
-                headerText.fontSize = 20;
+                headerText.fontSize = 26;
                 headerText.alignment = TextAnchor.MiddleCenter;
                 headerText.raycastTarget = false;
 
@@ -918,39 +979,7 @@ namespace TFTV.TFTVDrills
 
                 if (context == null || context.BaseAbilityLearned || onAcquire == null)
                 {
-                    var iconGO = new GameObject("Icon", typeof(RectTransform), typeof(Image));
-                    var iconRect0 = (RectTransform)iconGO.transform;
-                    iconRect0.SetParent(headerRect, false);
-                    iconRect0.anchorMin = new Vector2(0.5f, 0.5f);
-                    iconRect0.anchorMax = new Vector2(0.5f, 0.5f);
-                    iconRect0.pivot = new Vector2(0.5f, 0.5f);
-                    iconRect0.localScale = Vector3.one;
-                    iconRect0.anchoredPosition = Vector2.zero;
-
-                    var iconImage0 = iconGO.GetComponent<Image>();
-                iconImage0.raycastTarget = false;
-                iconImage0.color = Color.white;
-
-                    var iconSprite = original?.ViewElementDef?.LargeIcon ?? original?.ViewElementDef?.SmallIcon;
-                    if (iconSprite != null)
-                    {
-                        iconImage0.sprite = iconSprite;
-                        iconImage0.preserveAspect = true;
-
-                        var iconLayout = iconGO.AddComponent<LayoutElement>();
-                        const float iconSize = 48f;
-                        iconLayout.minWidth = iconSize;
-                        iconLayout.minHeight = iconSize;
-                        iconLayout.preferredWidth = iconSize;
-                        iconLayout.preferredHeight = iconSize;
-                        iconLayout.flexibleWidth = 0f;
-                        iconLayout.flexibleHeight = 0f;
-                        iconRect0.sizeDelta = new Vector2(iconSize, iconSize);
-                    }
-                    else
-                    {
-                        iconGO.SetActive(false);
-                    }
+                    CreateHeaderIcon(headerRect, original, Color.white, IsDrillAbility(original), false);
 
                     return;
                 }
@@ -988,27 +1017,15 @@ namespace TFTV.TFTVDrills
 
                 var buttonLayout = buttonGO.AddComponent<LayoutElement>();
                 buttonLayout.minWidth = 120f;
-                buttonLayout.minHeight = 60f;
+                buttonLayout.minHeight = 120f;
                 buttonLayout.preferredWidth = 120f;
-                buttonLayout.preferredHeight = 60f;
+                buttonLayout.preferredHeight = 120f;
                 buttonLayout.flexibleWidth = 0f;
                 buttonLayout.flexibleHeight = 0f;
 
-                var iconContainer = new GameObject("Icon", typeof(RectTransform), typeof(Image));
-                var iconRect = (RectTransform)iconContainer.transform;
-                iconRect.SetParent(buttonGO.transform, false);
-                iconRect.anchorMin = new Vector2(0.5f, 0.5f);
-                iconRect.anchorMax = new Vector2(0.5f, 0.5f);
-                iconRect.pivot = new Vector2(0.5f, 0.5f);
-                iconRect.localScale = Vector3.one;
-                iconRect.anchoredPosition = Vector2.zero;
-                iconRect.sizeDelta = new Vector2(48f, 48f);
-
-                var iconImage = iconContainer.GetComponent<Image>();
-                iconImage.sprite = original?.ViewElementDef?.LargeIcon ?? original?.ViewElementDef?.SmallIcon;
-                iconImage.preserveAspect = true;
-                iconImage.color = context.CanPurchaseBaseAbility ? Color.white : LockedIconTint;
-                iconImage.raycastTarget = false;
+                CreateHeaderIcon(buttonGO.transform, original,
+                    context.CanPurchaseBaseAbility ? Color.white : LockedIconTint,
+                    IsDrillAbility(original), !context.CanPurchaseBaseAbility);
 
                 var tooltipTrigger = buttonGO.AddComponent<DrillTooltipTrigger>();
                 tooltipTrigger.Initialize(original, context.MissingRequirements, !context.CanPurchaseBaseAbility, tooltipParent, panelRect, canvas, context.BaseAbilityCost);
