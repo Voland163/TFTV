@@ -365,11 +365,14 @@ namespace TFTV
                         RemoveDeathBelcherAbilities(actor);
                         actor.RemoveAbility(hiddenTBTVAbilityDef);
 
-                        Status hiddenTBTVStatus = actor.Status.GetStatusByName(hiddenTBTVAddAbilityStatus.EffectName);
-
-                        if (hiddenTBTVAddAbilityStatus != null)
+                        if (actor?.Status != null)
                         {
-                            actor.Status.UnapplyStatus(hiddenTBTVStatus);
+                            Status hiddenTBTVStatus = actor.Status.GetStatusByName(hiddenTBTVAddAbilityStatus.EffectName);
+
+                            if (hiddenTBTVStatus != null)
+                            {
+                                actor.Status.UnapplyStatus(hiddenTBTVStatus);
+                            }
                         }
 
                         actor.GameTags.Remove(voidTouchedTag);

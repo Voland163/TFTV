@@ -1,6 +1,7 @@
 ﻿using Base.Core;
 using Base.Defs;
 using Base.Entities.Statuses;
+using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
@@ -1057,67 +1058,165 @@ namespace TFTV.TFTVDrills
         }
         internal class DrawFire
         {
-
-
-
-            [HarmonyPatch(typeof(AIUtil), nameof(AIUtil.GetEnemyWeight))]
-            internal static class Patch_AIUtil_GetEnemyWeight
-            {
-                // Config
                 private const float Multiplier = 100f;
 
+                private static readonly Stack<TacAIActor> _currentActors = new Stack<TacAIActor>();
 
-
-                static void Postfix(AIBlackboard blackboard, TacticalActorBase enemy, ref float __result)
+                [HarmonyPatch(typeof(AIBlackboard), nameof(AIBlackboard.BeforeAIActorEvaluation))]
+                private static class Patch_AIBlackboard_BeforeAIActorEvaluation
                 {
-                    if (!TFTVNewGameOptions.IsReworkEnabled())
+                    private static void Prefix(TacAIActor aiActor)
                     {
-                        return;
+                        _currentActors.Push(aiActor);
                     }
+                }
 
-                    try
+                [HarmonyPatch(typeof(AIBlackboard), nameof(AIBlackboard.AfterAIActorEvaluation))]
+                private static class Patch_AIBlackboard_AfterAIActorEvaluation
+                {
+                    private static void Postfix()
                     {
-                        if (HasTauntStatus(enemy))
+                        if (_currentActors.Count > 0)
                         {
+                            _currentActors.Pop();
+                        }
+                    }
+                }
+
+                [HarmonyPatch(typeof(AIUtil), nameof(AIUtil.GetEnemyWeight))]
+                private static class Patch_AIUtil_GetEnemyWeight
+                {
+                    private static void Postfix(AIBlackboard blackboard, TacticalActorBase enemy, ref float __result)
+                    {
+                        if (!TFTVNewGameOptions.IsReworkEnabled())
+                        {
+                            return;
+                        }
+
+                        try
+                        {
+                            if (!HasTauntStatus(enemy))
+                            {
+                                return;
+                            }
+
+                            TacAIActor currentAiActor = GetCurrentActor();
+                            if (!ShouldApplyTauntMultiplier(enemy, currentAiActor))
+                            {
+                                TacticalActorBase actingActor = currentAiActor != null ? currentAiActor.TacticalActor : null;
+                                string actorName = actingActor != null ? actingActor.DisplayName : "unknown actor";
+                                TFTVLogger.Always($"Skipping taunt multiplier for {enemy?.DisplayName}; {actorName} cannot reach this turn.");
+                                return;
+                            }
+
                             TFTVLogger.Always($"{enemy?.DisplayName} initial score is {__result}");
                             __result *= Multiplier;
                             TFTVLogger.Always($"{enemy?.DisplayName} new score is {__result}");
                         }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+
+                private static TacAIActor GetCurrentActor()
+                {
+                    return _currentActors.Count > 0 ? _currentActors.Peek() : null;
+                }
+
+                private static bool ShouldApplyTauntMultiplier(TacticalActorBase enemy, TacAIActor aiActor)
+                {
+                    if (enemy == null)
+                    {
+                        return false;
+                    }
+
+                    if (aiActor == null)
+                    {
+                        return true;
+                    }
+
+                    TacticalActor tacticalActor = aiActor.TacticalActor;
+                    if (tacticalActor == null || tacticalActor.IsDead || !tacticalActor.InPlay)
+                    {
+                        return false;
+                    }
+
+                    EquipmentComponent equipmentComponent = tacticalActor.Equipments;
+                    if (equipmentComponent == null)
+                    {
+                        return false;
+                    }
+
+                    foreach (Equipment equipment in equipmentComponent.Equipments)
+                    {
+                        Weapon weapon = equipment as Weapon;
+                        if (weapon == null || !weapon.IsUsable)
+                        {
+                            continue;
+                        }
+
+                        TacticalAbility attackAbility = tacticalActor.GetDefaultAttackAbility(weapon);
+                        if (attackAbility == null || !attackAbility.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsAndEquipmentNotSelected))
+                        {
+                            continue;
+                        }
+
+                        DamagePayload damagePayload = weapon.GetDamagePayload();
+                        if (damagePayload == null)
+                        {
+                            continue;
+                        }
+
+                        if (damagePayload.DamageDeliveryType != DamageDeliveryType.Melee)
+                        {
+                            return true;
+                        }
+
+                        float moveAndActRange = tacticalActor.GetMaxMoveAndActRange(weapon, null);
+                        if (moveAndActRange <= 0f)
+                        {
+                            continue;
+                        }
+
+                        float actorRadius = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(0f, tacticalActor);
+                        float enemyRadius = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(0f, enemy);
+                        float destinationRadius = actorRadius + enemyRadius;
+                        float pathLength = AIUtil.GetPathLength(tacticalActor, tacticalActor.Pos, enemy.Pos, true, destinationRadius);
+                        if (!float.IsPositiveInfinity(pathLength) && Utl.LesserThanOrEqualTo(pathLength, moveAndActRange, 0.01f))
+                        {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+
+                private static bool HasTauntStatus(TacticalActorBase actor)
+                {
+                    try
+                    {
 
 
+                        if (actor != null && actor.Status != null && actor.Status.HasStatus(_drawfireStatus))
+                        {
+                            TFTVLogger.Always($"{actor.DisplayName} has drawFireStatus! should be aggroed");
+                            return true;
+                        }
+
+                        return false;
                     }
                     catch (Exception e)
                     {
                         TFTVLogger.Error(e);
-                        throw;
+                        return false;
                     }
-
-                }
-            }
-
-            private static bool HasTauntStatus(TacticalActorBase actor)
-            {
-                try
-                {
-
-                    if (actor.Status != null && actor.Status.HasStatus(_drawfireStatus))
-                    {
-                        TFTVLogger.Always($"{actor.DisplayName} has drawFireStatus! should be aggroed");
-                        return true;
-
-                    }
-
-                    return false;
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    return false;
                 }
 
-
-            }
+            
+            
         }
         internal class MentorProtocol
         {
