@@ -567,8 +567,6 @@ namespace TFTV.TFTVDrills
                 var headerContext = BuildHeaderContext(ui, slot, original, baseAbilityLearned, track, abilityLevel, baseAbilityCost, entry);
                 UIBuilder.AddHeader(contentRect, original, headerContext, tooltipParent, panelRect, canvas, () => controller.Close(() => AcquireBaseAbility(ui, slot, original, track, abilityLevel)));
 
-                UIBuilder.AddDivider(contentRect);
-
                 var gridRect = UIBuilder.CreateOptionGrid(contentRect, out var gridLayout);
 
                 var character = Reflection.GetPrivate<GeoCharacter>(ui, "_character");
@@ -632,8 +630,6 @@ namespace TFTV.TFTVDrills
                 {
                     UIBuilder.AddEmptyLabel(contentRect, "No drills available");
                 }
-
-                UIBuilder.AddDivider(contentRect);
 
                 controller.ConfigureContent(viewportRect, contentRect, MenuWidth, MenuMaxHeight);
                 overlay.transform.SetAsLastSibling();
@@ -725,62 +721,48 @@ namespace TFTV.TFTVDrills
                 var header = new GameObject("TFTV_SwapHeader", typeof(RectTransform));
                 header.transform.SetParent(parent, false);
 
-                var layoutGroup = header.AddComponent<HorizontalLayoutGroup>();
-                layoutGroup.childAlignment = TextAnchor.MiddleCenter;
-                layoutGroup.childForceExpandWidth = false;
-                layoutGroup.childForceExpandHeight = false;
-                layoutGroup.childControlWidth = false;
-                layoutGroup.childControlHeight = true;
-                layoutGroup.padding = new RectOffset(6, 6, 0, 0);
-                layoutGroup.spacing = 8f;
+                var headerRect = (RectTransform)header.transform;
+                headerRect.SetParent(parent, false);
+                headerRect.anchorMin = new Vector2(0f, 0.5f);
+                headerRect.anchorMax = new Vector2(1f, 0.5f);
+                headerRect.pivot = new Vector2(0.5f, 0.5f);
+                headerRect.anchoredPosition = Vector2.zero;
 
                 var headerLayout = header.AddComponent<LayoutElement>();
                 headerLayout.minHeight = 120f;
                 headerLayout.preferredHeight = 120f;
 
-                var labelGO = new GameObject("Label", typeof(RectTransform), typeof(Text));
-                var labelRect = (RectTransform)labelGO.transform;
-                labelRect.SetParent(header.transform, false);
-                labelRect.anchorMin = new Vector2(0f, 0.5f);
-                labelRect.anchorMax = new Vector2(1f, 0.5f);
-
-                var text = labelGO.GetComponent<Text>();
-                text.alignment = TextAnchor.MiddleCenter;
-                text.fontSize = 26;
-                text.raycastTarget = false;
-                text.color = Color.white;
-                text.text = context?.HeaderLabel ?? $"Replace: {original?.ViewElementDef?.DisplayName1?.Localize() ?? original?.name}";
-
-                var textLayout = labelGO.AddComponent<LayoutElement>();
-                textLayout.minWidth = 0f;
-                textLayout.flexibleWidth = 0f;
-
-                if (context == null || context.BaseAbilityLearned || onAcquire == null)
-                {
-
-                    CreateHeaderIcon(header.transform, original, Color.white, IsDrillAbility(original), false);
-
-                    var labelFitter = labelGO.AddComponent<ContentSizeFitter>();
-                    labelFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-                    labelFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-                    return;
-                }
+               
 
                 var buttonGO = new GameObject("AcquireBaseAbility", typeof(RectTransform), typeof(Image), typeof(Button));
                 var buttonRect = (RectTransform)buttonGO.transform;
-                buttonRect.SetParent(header.transform, false);
+                buttonRect.SetParent(headerRect.transform, false);
                 buttonRect.anchorMin = new Vector2(0.5f, 0.5f);
                 buttonRect.anchorMax = new Vector2(0.5f, 0.5f);
                 buttonRect.pivot = new Vector2(0.5f, 0.5f);
                 buttonRect.localScale = Vector3.one;
                 buttonRect.anchoredPosition = Vector2.zero;
+                buttonRect.sizeDelta = new Vector2(GridCellWidth * 2f, 120f);
 
+                var buttonLayout = buttonGO.AddComponent<LayoutElement>();
+                buttonLayout.minWidth = GridCellWidth * 2f;
+                buttonLayout.preferredWidth = GridCellWidth * 2f;
+                buttonLayout.minHeight = 120f;
+                buttonLayout.preferredHeight = 120f;
+                buttonLayout.flexibleWidth = 0f;
+                buttonLayout.flexibleHeight = 0f;
+
+                var normalColor = Color.black;
+                var highlightColor = new Color(0.2f, 0.2f, 0.2f, 1f);
+                var pressedColor = new Color(0.1f, 0.1f, 0.1f, 1f);
+                var disabledColor = new Color(0.1f, 0.1f, 0.1f, 0.4f);
                 var buttonImage = buttonGO.GetComponent<Image>();
-                Color normalColor = new Color(1f, 1f, 1f, 0.08f);
-                Color highlightColor = new Color(0.2f, 0.0588f, 0f, 1f);
-                Color pressedColor = new Color(0.3137255f, 0.11764706f, 0.019607844f, 1f);
-                Color disabledColor = new Color(0.1f, 0.1f, 0.1f, 0.4f);
+              
                 buttonImage.color = normalColor;
+
+                var border = buttonGO.AddComponent<Outline>();
+                border.effectColor = new Color(0.23137255f, 0.23137255f, 0.23137255f, 1f);
+                border.effectDistance = new Vector2(2f, 2f);
 
                 var button = buttonGO.GetComponent<Button>();
                 button.transition = Selectable.Transition.ColorTint;
@@ -792,30 +774,23 @@ namespace TFTV.TFTVDrills
                 colors.disabledColor = disabledColor;
                 button.colors = colors;
 
-                if (context.CanPurchaseBaseAbility)
+                bool allowAcquire = context != null && !context.BaseAbilityLearned && onAcquire != null;
+                bool canPurchase = allowAcquire && context.CanPurchaseBaseAbility;
+
+                if (canPurchase)
                 {
                     button.onClick.AddListener(() => onAcquire());
                 }
                 else
                 {
                     button.interactable = false;
-                    buttonImage.color = disabledColor;
+                    buttonImage.color = allowAcquire ? disabledColor : normalColor;
                 }
-                var buttonLayout = buttonGO.AddComponent<LayoutElement>();
-                buttonLayout.minWidth = 120f;
-                buttonLayout.minHeight = 120f;
-                buttonLayout.preferredWidth = 120f;
-                buttonLayout.preferredHeight = 120f;
-                buttonLayout.flexibleWidth = 0f;
-                buttonLayout.flexibleHeight = 0f;
 
-                CreateHeaderIcon(buttonGO.transform, original,
-                    context.CanPurchaseBaseAbility ? Color.white : LockedIconTint,
-                    IsDrillAbility(original), !context.CanPurchaseBaseAbility);
+                bool isLocked = allowAcquire && !context.CanPurchaseBaseAbility;
+                Color iconColor = isLocked ? LockedIconTint : Color.white;
 
-                var labelFitterSwap = labelGO.AddComponent<ContentSizeFitter>();
-                labelFitterSwap.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-                labelFitterSwap.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+                CreateHeaderIcon(buttonGO.transform, original, iconColor, IsDrillAbility(original), isLocked);
 
             }
 
@@ -896,8 +871,8 @@ namespace TFTV.TFTVDrills
                 contentRect.anchoredPosition = Vector2.zero;
 
                 var layout = content.AddComponent<VerticalLayoutGroup>();
-                layout.padding = new RectOffset(18, 18, 18, 18);
-                layout.spacing = 10f;
+                layout.padding = new RectOffset(18, 18, 20, 24);
+                layout.spacing = 20f;
                 layout.childAlignment = TextAnchor.UpperLeft;
                 layout.childControlWidth = true;
                 layout.childControlHeight = false;
@@ -927,7 +902,7 @@ namespace TFTV.TFTVDrills
                 return overlay;
             }
 
-            public static void AddHeader(RectTransform content, TacticalAbilityDef original, 
+            public static void AddHeader(RectTransform content, TacticalAbilityDef original,
                  HeaderContext context, Transform tooltipParent, RectTransform panelRect, Canvas canvas, Action onAcquire)
             {
                 if (content == null)
@@ -940,49 +915,17 @@ namespace TFTV.TFTVDrills
                 headerRect.SetParent(content, false);
                 headerRect.anchorMin = new Vector2(0f, 0.5f);
                 headerRect.anchorMax = new Vector2(1f, 0.5f);
+                headerRect.pivot = new Vector2(0.5f, 0.5f);
+                headerRect.anchoredPosition = Vector2.zero;
                 headerRect.sizeDelta = new Vector2(0f, 120f);
 
-                var layoutGroup = headerGO.AddComponent<HorizontalLayoutGroup>();
-                layoutGroup.childAlignment = TextAnchor.MiddleCenter;
-                layoutGroup.childForceExpandWidth = false;
-                layoutGroup.childForceExpandHeight = false;
-                layoutGroup.childControlWidth = false;
-                layoutGroup.childControlHeight = true;
-                layoutGroup.padding = new RectOffset(6, 6, 0, 0);
-                layoutGroup.spacing = 8f;
+
 
                 var headerLayout = headerGO.AddComponent<LayoutElement>();
                 headerLayout.minHeight = 120f;
                 headerLayout.preferredHeight = 120f;
 
-                var headerTextGO = new GameObject("Label", typeof(RectTransform), typeof(Text));
-                var headerTextRect = (RectTransform)headerTextGO.transform;
-                headerTextRect.SetParent(headerRect, false);
-                headerTextRect.anchorMin = new Vector2(0f, 0.5f);
-                headerTextRect.anchorMax = new Vector2(1f, 0.5f);
 
-                var headerText = headerTextGO.GetComponent<Text>();
-                headerText.font = GetDefaultFont();
-                headerText.text = context?.HeaderLabel ?? (original?.ViewElementDef?.DisplayName1?.Localize() ?? original?.name ?? "Replace");
-                headerText.color = Color.white;
-                headerText.fontSize = 26;
-                headerText.alignment = TextAnchor.MiddleCenter;
-                headerText.raycastTarget = false;
-
-                var textLayout = headerTextGO.AddComponent<LayoutElement>();
-                textLayout.minWidth = 0f;
-                textLayout.flexibleWidth = 0f;
-
-                var textFitter = headerTextGO.AddComponent<ContentSizeFitter>();
-                textFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-                textFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-                if (context == null || context.BaseAbilityLearned || onAcquire == null)
-                {
-                    CreateHeaderIcon(headerRect, original, Color.white, IsDrillAbility(original), false);
-
-                    return;
-                }
                 var buttonGO = new GameObject("AcquireBaseAbility", typeof(RectTransform), typeof(Image), typeof(Button));
                 var buttonRect = (RectTransform)buttonGO.transform;
                 buttonRect.SetParent(headerRect, false);
@@ -991,21 +934,41 @@ namespace TFTV.TFTVDrills
                 buttonRect.pivot = new Vector2(0.5f, 0.5f);
                 buttonRect.localScale = Vector3.one;
                 buttonRect.anchoredPosition = Vector2.zero;
+                buttonRect.sizeDelta = new Vector2(GridCellWidth * 2f, 120f);
+
+                var buttonLayout = buttonGO.AddComponent<LayoutElement>();
+                buttonLayout.minWidth = GridCellWidth * 2f;
+                buttonLayout.preferredWidth = GridCellWidth * 2f;
+                buttonLayout.minHeight = 120f;
+                buttonLayout.preferredHeight = 120f;
+                buttonLayout.flexibleWidth = 0f;
+                buttonLayout.flexibleHeight = 0f;
 
                 var buttonImage = buttonGO.GetComponent<Image>();
-                buttonImage.color = ButtonNormalColor;
+                var normalColor = Color.black;
+                var highlightColor = new Color(0.2f, 0.2f, 0.2f, 1f);
+                var pressedColor = new Color(0.1f, 0.1f, 0.1f, 1f);
+                var disabledColor = new Color(0.1f, 0.1f, 0.1f, 0.4f);
+                buttonImage.color = normalColor;
+
+                var border = buttonGO.AddComponent<Outline>();
+                border.effectColor = new Color(0.23137255f, 0.23137255f, 0.23137255f, 1f);
+                border.effectDistance = new Vector2(2f, 2f);
 
                 var button = buttonGO.GetComponent<Button>();
                 button.transition = Selectable.Transition.ColorTint;
                 var colors = button.colors;
-                colors.normalColor = ButtonNormalColor;
-                colors.highlightedColor = ButtonHighlightColor;
-                colors.pressedColor = ButtonPressedColor;
-                colors.selectedColor = ButtonHighlightColor;
-                colors.disabledColor = ButtonDisabledColor;
+                colors.normalColor = normalColor;
+                colors.highlightedColor = highlightColor;
+                colors.pressedColor = pressedColor;
+                colors.selectedColor = highlightColor;
+                colors.disabledColor = disabledColor;
                 button.colors = colors;
 
-                if (context.CanPurchaseBaseAbility)
+                bool allowAcquire = context != null && !context.BaseAbilityLearned && onAcquire != null;
+                bool canPurchase = allowAcquire && context.CanPurchaseBaseAbility;
+
+                if (canPurchase)
                 {
                     button.onClick.AddListener(() => onAcquire());
                 }
@@ -1013,46 +976,21 @@ namespace TFTV.TFTVDrills
                 {
                     button.interactable = false;
                     buttonImage.color = ButtonDisabledColor;
+                    buttonImage.color = allowAcquire ? disabledColor : normalColor;
                 }
 
-                var buttonLayout = buttonGO.AddComponent<LayoutElement>();
-                buttonLayout.minWidth = 120f;
-                buttonLayout.minHeight = 120f;
-                buttonLayout.preferredWidth = 120f;
-                buttonLayout.preferredHeight = 120f;
-                buttonLayout.flexibleWidth = 0f;
-                buttonLayout.flexibleHeight = 0f;
+                bool isLocked = allowAcquire && !context.CanPurchaseBaseAbility;
+                Color iconColor = isLocked ? LockedIconTint : Color.white;
 
-                CreateHeaderIcon(buttonGO.transform, original,
-                    context.CanPurchaseBaseAbility ? Color.white : LockedIconTint,
-                    IsDrillAbility(original), !context.CanPurchaseBaseAbility);
+                CreateHeaderIcon(buttonGO.transform, original, iconColor, IsDrillAbility(original), isLocked);
 
-                var tooltipTrigger = buttonGO.AddComponent<DrillTooltipTrigger>();
-                tooltipTrigger.Initialize(original, context.MissingRequirements, !context.CanPurchaseBaseAbility, tooltipParent, panelRect, canvas, context.BaseAbilityCost);
-            }
-
-            public static void AddDivider(RectTransform content)
-            {
-                if (content == null)
+                if (allowAcquire)
                 {
-                    return;
+                    var tooltipTrigger = buttonGO.AddComponent<DrillTooltipTrigger>();
+                    tooltipTrigger.Initialize(original, context.MissingRequirements, !context.CanPurchaseBaseAbility, tooltipParent, panelRect, canvas, context.BaseAbilityCost);
                 }
-
-                var divider = new GameObject("Divider", typeof(RectTransform), typeof(Image));
-                var dividerRect = (RectTransform)divider.transform;
-                dividerRect.SetParent(content, false);
-                dividerRect.anchorMin = new Vector2(0f, 0.5f);
-                dividerRect.anchorMax = new Vector2(1f, 0.5f);
-                dividerRect.sizeDelta = new Vector2(0f, 2f);
-
-                var dividerImage = divider.GetComponent<Image>();
-                dividerImage.color = new Color(1f, 1f, 1f, 0.08f);
-
-                var layout = divider.AddComponent<LayoutElement>();
-                layout.minHeight = 8f;
-                layout.preferredHeight = 8f;
             }
-
+           
             public static RectTransform CreateOptionGrid(RectTransform content, out GridLayoutGroup grid)
             {
                 grid = null;
