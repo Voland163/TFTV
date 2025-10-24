@@ -245,6 +245,8 @@ namespace TFTV.TFTVDrills
                         return;
                     }
 
+                 
+
                     var character = Reflection.GetPrivate<GeoCharacter>(ui, "_character");
 
                     MethodInfo methodInfo = typeof(AbilityTrackSkillEntryElement).GetMethod("SetAnimator", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -253,6 +255,11 @@ namespace TFTV.TFTVDrills
                     var ability = __instance.AbilityDef ?? ElementHelpers.FindSlot(__instance)?.Ability;
                     var availableImage = __instance.Available;
                     bool shouldShowIndicator = DrillIndicator.ShouldShow(character, phoenixFaction, ability, availableImage);
+
+                    if (_originalAvailableImage != null)
+                    {
+                        availableImage.sprite = _originalAvailableImage;
+                    }
 
                     if (shouldShowIndicator)
                     {
@@ -270,6 +277,14 @@ namespace TFTV.TFTVDrills
                         availableImage.gameObject.SetActive(isAvailable && isBuyable);
                         __instance.AvailableSkill = isAvailable;
                         availableImage.sprite = _originalAvailableImage;
+                    }
+
+                    if (ability != null && DrillsDefs.Drills != null && DrillsDefs.Drills.Contains(ability))
+                    {
+                        if (character != null && DrillsDefs.CharacterHasDrill(character, ability) && __instance.SkillIcon != null)
+                        {
+                            __instance.SkillIcon.color = DrillPulseColor;
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -572,7 +587,8 @@ namespace TFTV.TFTVDrills
                 var character = Reflection.GetPrivate<GeoCharacter>(ui, "_character");
                 var phoenixFaction = Reflection.GetPrivate<GeoPhoenixFaction>(ui, "_phoenixFaction") ?? (character?.Faction?.GeoLevel?.PhoenixFaction);
 
-                var availableChoices = choices?.Where(def => def != null && !DrillsDefs.CharacterHasDrill(character, def)).Distinct().ToList() ?? new List<TacticalAbilityDef>();
+                var availableChoices = choices?.Where(def => def != null).Distinct().ToList() ?? new List<TacticalAbilityDef>();
+                var availableSet = new HashSet<TacticalAbilityDef>(availableChoices);
                 var ordered = DrillsDefs.Drills?.Where(def => def != null).Distinct().ToList() ?? new List<TacticalAbilityDef>();
 
                 foreach (var ability in availableChoices)
@@ -583,10 +599,31 @@ namespace TFTV.TFTVDrills
                     }
                 }
 
-                ordered.RemoveAll(def => def == null || def == original || DrillsDefs.CharacterHasDrill(character, def));
+                ordered.RemoveAll(def => def == null || def == original);
                 ordered = ordered
-                    .OrderBy(def => availableChoices.Contains(def) ? 0 : 1)
-                    .ThenBy(def => def.ViewElementDef?.DisplayName1?.Localize() ?? def.name)
+                    .Distinct()
+                    .OrderBy(def =>
+                    {
+                        bool acquired = DrillsDefs.CharacterHasDrill(character, def);
+                        bool unlocked = DrillsDefs.IsDrillUnlocked(phoenixFaction, character, def);
+                        bool selectable = !acquired && unlocked;
+                        if (selectable && availableSet.Contains(def))
+                        {
+                            return 0;
+                        }
+
+                        if (selectable)
+                        {
+                            return 1;
+                        }
+
+                        if (acquired)
+                        {
+                            return 2;
+                        }
+
+                        return 3;
+                    }).ThenBy(def => def.ViewElementDef?.DisplayName1?.Localize() ?? def.name)
                     .ToList();
 
                 int optionCount = 0;
@@ -594,11 +631,19 @@ namespace TFTV.TFTVDrills
                 foreach (var def in ordered)
                 {
                     bool unlocked = DrillsDefs.IsDrillUnlocked(phoenixFaction, character, def);
+                    bool acquired = DrillsDefs.CharacterHasDrill(character, def);
                     bool locked = !unlocked;
                     string missingRequirements = locked ? string.Join("\n", DrillsDefs.GetMissingRequirementDescriptions(phoenixFaction, character, def) ?? Enumerable.Empty<string>()) : string.Empty;
 
+                    if (acquired)
+                    {
+                        missingRequirements = string.IsNullOrEmpty(missingRequirements)
+                            ? "Already acquired"
+                            : missingRequirements + "\nAlready acquired";
+                    }
+   
                     Action onChoose = null;
-                    if (!locked)
+                    if (!locked && !acquired)
                     {
                         onChoose = () => controller.Close(() =>
                         {
@@ -606,7 +651,7 @@ namespace TFTV.TFTVDrills
                         });
                     }
 
-                    var option = UIBuilder.CreateDrillOption(gridRect, panelRect, def, locked, missingRequirements, tooltipParent, canvas, onChoose, headerContext.DrillSkillPointCost);
+                    var option = UIBuilder.CreateDrillOption(gridRect, panelRect, def, locked, acquired, missingRequirements, tooltipParent, canvas, onChoose, headerContext.DrillSkillPointCost);
                     if (option != null)
                     {
                         optionCount++;
@@ -975,19 +1020,29 @@ namespace TFTV.TFTVDrills
                 else
                 {
                     button.interactable = false;
-                    buttonImage.color = ButtonDisabledColor;
                     buttonImage.color = allowAcquire ? disabledColor : normalColor;
                 }
 
                 bool isLocked = allowAcquire && !context.CanPurchaseBaseAbility;
-                Color iconColor = isLocked ? LockedIconTint : Color.white;
+
+                bool baseAbilityLearned = context?.BaseAbilityLearned ?? false;
+                Color iconColor;
+                if (baseAbilityLearned)
+                {
+                    iconColor = context?.EntryElement != null ? context.EntryElement.KnownSkillColor : Color.white;
+                }
+                else
+                {
+                    iconColor = isLocked ? LockedIconTint : Color.white;
+                }
+
 
                 CreateHeaderIcon(buttonGO.transform, original, iconColor, IsDrillAbility(original), isLocked);
 
                 if (allowAcquire)
                 {
                     var tooltipTrigger = buttonGO.AddComponent<DrillTooltipTrigger>();
-                    tooltipTrigger.Initialize(original, context.MissingRequirements, !context.CanPurchaseBaseAbility, tooltipParent, panelRect, canvas, context.BaseAbilityCost);
+                    tooltipTrigger.Initialize(original, context.MissingRequirements, !context.CanPurchaseBaseAbility, false, tooltipParent, panelRect, canvas, context.BaseAbilityCost);
                 }
             }
            
@@ -1027,8 +1082,8 @@ namespace TFTV.TFTVDrills
                 return gridRect;
             }
 
-            public static GameObject CreateDrillOption(RectTransform gridRect, 
-                RectTransform panelRect, TacticalAbilityDef def, bool isLocked, 
+            public static GameObject CreateDrillOption(RectTransform gridRect,
+                RectTransform panelRect, TacticalAbilityDef def, bool isLocked, bool isAcquired,
                 string missingRequirements, Transform tooltipParent, Canvas canvas, Action onChoose, int skillPointCost)
             {
                 if (gridRect == null || def == null)
@@ -1058,14 +1113,15 @@ namespace TFTV.TFTVDrills
                 colors.colorMultiplier = 1f;
                 button.colors = colors;
 
-                if (!isLocked && onChoose != null)
+                bool canSelect = !isLocked && !isAcquired && onChoose != null;
+                if (canSelect)
                 {
                     button.onClick.AddListener(() => onChoose());
                 }
                 else
                 {
                     button.interactable = false;
-                    background.color = ButtonDisabledColor;
+                    background.color = isAcquired ? ButtonNormalColor : ButtonDisabledColor;
                 }
 
                 var layout = option.AddComponent<VerticalLayoutGroup>();
@@ -1142,7 +1198,7 @@ namespace TFTV.TFTVDrills
                 var iconImage = iconGO.GetComponent<Image>();
                 iconImage.sprite = def.ViewElementDef?.LargeIcon ?? def.ViewElementDef?.SmallIcon;
                 iconImage.preserveAspect = true;
-                iconImage.color = isLocked ? LockedIconTint : Color.white;
+                iconImage.color = isLocked ? LockedIconTint : (isAcquired ? DrillPulseColor : Color.white);
                 iconImage.raycastTarget = false;
 
                 var labelGO = new GameObject("Label", typeof(RectTransform), typeof(Text));
@@ -1155,7 +1211,7 @@ namespace TFTV.TFTVDrills
                 var labelText = labelGO.GetComponent<Text>();
                 labelText.font = GetDefaultFont();
                 labelText.text = def.ViewElementDef?.DisplayName1?.Localize() ?? def.name ?? "Ability";
-                labelText.color = isLocked ? LockedLabelTint : Color.white;
+                labelText.color = isLocked ? LockedLabelTint : (isAcquired ? DrillPulseColor : Color.white);
                 labelText.alignment = TextAnchor.MiddleCenter;
                 labelText.resizeTextForBestFit = true;
                 labelText.resizeTextMinSize = 12;
@@ -1167,7 +1223,7 @@ namespace TFTV.TFTVDrills
                 labelLayout.preferredHeight = 24f;
 
                 var tooltipTrigger = option.AddComponent<DrillTooltipTrigger>();
-                tooltipTrigger.Initialize(def, missingRequirements, isLocked, tooltipParent, panelRect, canvas, skillPointCost);
+                tooltipTrigger.Initialize(def, missingRequirements, isLocked, isAcquired, tooltipParent, panelRect, canvas, skillPointCost);
 
                 return option;
             }
@@ -1235,63 +1291,14 @@ namespace TFTV.TFTVDrills
                 layout.preferredHeight = 48f;
             }
 
-            public static void AddCancelButton(RectTransform content, Action onCancel, RectTransform panelRect, Transform tooltipParent, Canvas canvas)
-            {
-                if (content == null)
-                {
-                    return;
-                }
-
-                var cancel = new GameObject("Cancel", typeof(RectTransform), typeof(Image), typeof(Button));
-                var cancelRect = (RectTransform)cancel.transform;
-                cancelRect.SetParent(content, false);
-                cancelRect.anchorMin = new Vector2(0f, 1f);
-                cancelRect.anchorMax = new Vector2(1f, 1f);
-                cancelRect.pivot = new Vector2(0.5f, 1f);
-                cancelRect.sizeDelta = new Vector2(0f, 60f);
-
-                var cancelImage = cancel.GetComponent<Image>();
-                cancelImage.color = new Color(1f, 1f, 1f, 0.08f);
-
-                var button = cancel.GetComponent<Button>();
-                button.transition = Selectable.Transition.ColorTint;
-                var colors = button.colors;
-                colors.normalColor = new Color(1f, 1f, 1f, 0.08f);
-                colors.highlightedColor = new Color(0.25f, 0.55f, 0.85f, 0.22f);
-                colors.pressedColor = new Color(0.25f, 0.55f, 0.85f, 0.35f);
-                colors.disabledColor = new Color(1f, 1f, 1f, 0.04f);
-                button.colors = colors;
-                button.onClick.AddListener(() => onCancel?.Invoke());
-
-                var labelGO = new GameObject("Label", typeof(RectTransform), typeof(Text));
-                var labelRect = (RectTransform)labelGO.transform;
-                labelRect.SetParent(cancel.transform, false);
-                labelRect.anchorMin = new Vector2(0f, 0f);
-                labelRect.anchorMax = new Vector2(1f, 1f);
-                labelRect.offsetMin = Vector2.zero;
-                labelRect.offsetMax = Vector2.zero;
-
-                var labelText = labelGO.GetComponent<Text>();
-                labelText.font = GetDefaultFont();
-                labelText.text = "Cancel";
-                labelText.fontSize = 18;
-                labelText.alignment = TextAnchor.MiddleCenter;
-                labelText.color = Color.white;
-                labelText.raycastTarget = false;
-
-                var layout = cancel.AddComponent<LayoutElement>();
-                layout.minHeight = 60f;
-                layout.preferredHeight = 60f;
-
-                var tooltipTrigger = cancel.AddComponent<DrillTooltipTrigger>();
-                tooltipTrigger.Initialize(null, string.Empty, false, tooltipParent, panelRect, canvas, 0);
-            }
-
             private static Font GetDefaultFont()
             {
                 if (_defaultFont == null)
                 {
-                    _defaultFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
+                   _defaultFont = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.PhoenixpediaModule.EntryTitle.font;
+                        
+
+                  //  _defaultFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
                 }
 
                 return _defaultFont;
@@ -1925,14 +1932,16 @@ namespace TFTV.TFTVDrills
 
             private const float TooltipGap = 16f;
             private int _skillPointCost = SwapSpCost;
+            private bool _isAcquired;
             public static RectTransform ActiveTooltipRect { get; private set; }
 
-            public void Initialize(TacticalAbilityDef ability, string missingRequirements, bool isLocked, 
+            public void Initialize(TacticalAbilityDef ability, string missingRequirements, bool isLocked, bool isAcquired,
                 Transform tooltipParent, RectTransform menuRect, Canvas canvas, int skillPointCost)
             {
                 _ability = ability;
                 _missingRequirements = missingRequirements;
                 _isLocked = isLocked;
+                _isAcquired = isAcquired;
                 _tooltipParent = tooltipParent;
                 _menuRect = menuRect;
                 _canvas = canvas;
@@ -2060,16 +2069,33 @@ namespace TFTV.TFTVDrills
                 var originalDescription = view.Description;
                 LocalizedTextBind temporaryDescription = null;
 
+                string descriptionText = originalDescription?.Localize() ?? string.Empty;
+                List<string> extraSections = null;
+
                 if (_isLocked && !string.IsNullOrEmpty(_missingRequirements))
                 {
-                    string descriptionText = originalDescription?.Localize() ?? string.Empty;
+                    if (extraSections == null)
+                        extraSections = new List<string>();
+                    extraSections.Add($"<color=#E21515><b>Missing requirements:</b>\n{_missingRequirements}</color>");
+                }
+
+                if (_isAcquired)
+                {
+                    if(extraSections==null) extraSections = new List<string>();
+                    extraSections.Add("<color=#FF4C00><b>Already acquired</b></color>");
+                }
+
+                if (extraSections != null && extraSections.Count > 0)
+                {
+
                     if (!string.IsNullOrEmpty(descriptionText))
                     {
                         descriptionText += "\n\n";
                     }
 
-                    descriptionText += $"<color=#E21515><b>Missing requirements:</b>\n{_missingRequirements}</color>";
+                    descriptionText += string.Join("\n\n", extraSections);
                     temporaryDescription = new LocalizedTextBind(descriptionText, true);
+
                     view.Description = temporaryDescription;
                 }
 
