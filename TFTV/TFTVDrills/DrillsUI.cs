@@ -54,6 +54,7 @@ namespace TFTV.TFTVDrills
         private static readonly Color LockedFrameColor = new Color(0.15294118f, 0.15294118f, 0.15294118f, 1f);
 
         private static Sprite _originalAvailableImage = null;
+        private static DrillConfirmationContext _pendingDrillConfirmation;
 
         private static bool IsDrillAbility(TacticalAbilityDef ability)
         {
@@ -318,9 +319,11 @@ namespace TFTV.TFTVDrills
                     }
 
                     var ability = data.Ability;
+                    var confirmationContext = _pendingDrillConfirmation;
                     var drills = DrillsDefs.Drills;
                     if (ability == null || drills == null || !drills.Contains(ability))
                     {
+                        _pendingDrillConfirmation = null;
                         return;
                     }
 
@@ -330,7 +333,7 @@ namespace TFTV.TFTVDrills
                     if (__instance.AbilityNameText != null)
                     {
                         __instance.AbilityNameText.supportRichText = true;
-                        __instance.AbilityNameText.text = string.Format("DRILL: <color=#{0}>{1}</color>", pulseHex, abilityName);
+                        __instance.AbilityNameText.text = string.Format("<color=#{0}>{1}</color>", pulseHex, abilityName);
                     }
 
                     if (__instance.AbilitiyDescriptionText != null)
@@ -345,6 +348,18 @@ namespace TFTV.TFTVDrills
 
                         __instance.AbilitiyDescriptionText.text = description + "<color=#E21515><b>Warning:</b> This soldier will lose all Stamina.</color>";
                     }
+
+                    var headerText = ResolveConfirmationHeaderText(__instance, modal);
+                    if (headerText != null)
+                    {
+                        string headerLabel = DetermineDrillActionLabel(data, ability, confirmationContext);
+                        if (!string.IsNullOrEmpty(headerLabel))
+                        {
+                            headerText.text = headerLabel;
+                        }
+                    }
+
+                    _pendingDrillConfirmation = null;
                 }
                 catch (Exception ex)
                 {
@@ -381,6 +396,103 @@ namespace TFTV.TFTVDrills
 
                 availableImage.color = DrillPulseColor;
             }
+        }
+
+        private sealed class DrillConfirmationContext
+        {
+            public TacticalAbilityDef Ability;
+            public bool BaseAbilityLearned;
+        }
+
+        private static string DetermineDrillActionLabel(ConfirmBuyAbilityDataBind.Data data, TacticalAbilityDef ability, DrillConfirmationContext context)
+        {
+            bool isReplacement = false;
+
+            if (context != null && context.Ability == ability)
+            {
+                isReplacement = context.BaseAbilityLearned;
+            }
+            else if (data.AbilitySlot?.Ability != null && data.AbilitySlot.Ability != ability)
+            {
+                isReplacement = true;
+            }
+
+            return isReplacement ? "REPLACE DRILL" : "ACQUIRE DRILL";
+        }
+
+        private static Text ResolveConfirmationHeaderText(ConfirmBuyAbilityDataBind bind, UIModal modal)
+        {
+            if (bind == null)
+            {
+                return null;
+            }
+
+            Text header = TryGetHeaderFromFields(bind);
+            if (header != null)
+            {
+                return header;
+            }
+
+            if (modal != null)
+            {
+                foreach (var text in modal.GetComponentsInChildren<Text>(true))
+                {
+                    if (text == null || text == bind.AbilityNameText || text == bind.AbilitiyDescriptionText)
+                    {
+                        continue;
+                    }
+
+                    if (IsConfirmationHeaderText(text.text))
+                    {
+                        return text;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private static Text TryGetHeaderFromFields(ConfirmBuyAbilityDataBind bind)
+        {
+            var fields = bind.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            foreach (var field in fields)
+            {
+                if (!typeof(Text).IsAssignableFrom(field.FieldType))
+                {
+                    continue;
+                }
+
+                if (!(field.GetValue(bind) is Text text) || text == null)
+                {
+                    continue;
+                }
+
+                if (text == bind.AbilityNameText || text == bind.AbilitiyDescriptionText)
+                {
+                    continue;
+                }
+
+                if (IsConfirmationHeaderText(text.text))
+                {
+                    return text;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool IsConfirmationHeaderText(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return false;
+            }
+
+            string trimmed = value.Trim();
+            return trimmed.Equals("ACQUIRE ABILITY", StringComparison.OrdinalIgnoreCase)
+                || trimmed.Equals("REPLACE ABILITY", StringComparison.OrdinalIgnoreCase)
+                || trimmed.Equals("ACQUIRE DRILL", StringComparison.OrdinalIgnoreCase)
+                || trimmed.Equals("REPLACE DRILL", StringComparison.OrdinalIgnoreCase);
         }
 
         public sealed class HeaderContext
@@ -559,7 +671,7 @@ namespace TFTV.TFTVDrills
                         WireButton(go, def, () =>
                         {
                             popupGO.SetActive(false);
-                            ShowDrillConfirmation(ui, slot, original, def, headerContext.DrillSkillPointCost);
+                            ShowDrillConfirmation(ui, slot, original, def, headerContext.BaseAbilityLearned, headerContext.DrillSkillPointCost);
                         });
                     }
 
@@ -665,7 +777,7 @@ namespace TFTV.TFTVDrills
                     {
                         onChoose = () => controller.Close(() =>
                         {
-                            ShowDrillConfirmation(ui, slot, original, def, headerContext.DrillSkillPointCost);
+                            ShowDrillConfirmation(ui, slot, original, def, headerContext.BaseAbilityLearned, headerContext.DrillSkillPointCost);
                         });
                     }
 
@@ -1562,8 +1674,8 @@ namespace TFTV.TFTVDrills
             btn.onClick.AddListener(() => onClick?.Invoke());
         }
 
-        private static void ShowDrillConfirmation(UIModuleCharacterProgression ui, AbilityTrackSlot slot, 
-            TacticalAbilityDef original, TacticalAbilityDef replacement, int skillPointCost)
+        private static void ShowDrillConfirmation(UIModuleCharacterProgression ui, AbilityTrackSlot slot,
+             TacticalAbilityDef original, TacticalAbilityDef replacement, bool baseAbilityLearned, int skillPointCost)
         {
             if (ui == null || slot == null || original == null || replacement == null)
             {
@@ -1607,6 +1719,12 @@ namespace TFTV.TFTVDrills
                     CostType = ResourceType.None
                 };
 
+                _pendingDrillConfirmation = new DrillConfirmationContext
+                {
+                    Ability = replacement,
+                    BaseAbilityLearned = baseAbilityLearned
+                };
+
                 view.OpenModal(ModalType.CharacterProgressionConfirmCharacter, res =>
                 {
                     if (costOverridden && progressionData != null)
@@ -1632,6 +1750,7 @@ namespace TFTV.TFTVDrills
                 {
                     progressionData.SkillPointCost = originalCost;
                 }
+                _pendingDrillConfirmation = null;
                 TryPerformSwap(ui, slot, original, replacement, skillPointCost);
             }
         }
