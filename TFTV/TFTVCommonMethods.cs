@@ -33,6 +33,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using TFTV.TFTVDrills;
 using static PhoenixPoint.Tactical.Entities.Statuses.TacStatusDef;
 
 namespace TFTV
@@ -186,6 +187,7 @@ namespace TFTV
                 TFTVNJQuestline.IntroMission.ClearDataOnMissionRestartLoadAndStateChange();
                 TFTVAircraftReworkMain.InternalData.ClearDataOnStateChange();
                 HavenRecruitsMain.ClearInternalData();
+                DrillsUI.InternalData.ClearInternalData();
 
                 TFTVLogger.Always($"Internal variables cleared on State change or Load");
             }

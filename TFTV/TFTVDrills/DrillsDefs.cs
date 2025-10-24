@@ -1419,6 +1419,7 @@ namespace TFTV.TFTVDrills
                 newAbility.ViewElementDef.LargeIcon = icon;
                 newAbility.ViewElementDef.SmallIcon = icon;
 
+                newAbility.DisablingStatuses = new StatusDef[] { DefCache.GetDef<StatMultiplierStatusDef>("E AccuracyMultiplier [BC_QuickAim_AbilityDef]") };
 
                 TacStatsModifyStatusDef slowSource = DefCache.GetDef<TacStatsModifyStatusDef>("Slowed_StatusDef");
                 _bulletHellSlowStatus = Helper.CreateDefFromClone(
@@ -2030,6 +2031,7 @@ namespace TFTV.TFTVDrills
                 newStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
                 newStatus.VisibleOnPassiveBar = true;
                 newStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                newStatus.SingleInstance = true;
 
                 return newStatus;
             }
@@ -2182,7 +2184,7 @@ namespace TFTV.TFTVDrills
                 Sprite icon = Helper.CreateSpriteFromImageFile($"Drill_{name}.png");
 
                 DamageMultiplierStatusDef newStatus = CreateDummyStatus(name, guid3, guid4);
-
+                newStatus.SingleInstance = false;
 
                 ApplyStatusAbilityDef sourceAbility = DefCache.GetDef<ApplyStatusAbilityDef>("MarkedForDeath_AbilityDef");
 

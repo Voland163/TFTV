@@ -566,23 +566,6 @@ namespace TFTV
 
 
 
-                            /*  float actorRange = tacticalActor.CharacterStats.Speed * 1.5f;
-
-                              TFTVLogger.Always($"{tacticalActor.name} speed: {tacticalActor.CharacterStats.Speed} ap: {tacticalActor.CharacterStats.ActionPoints}" +
-                                  $"actorRange: {actorRange}");
-
-                              foreach (TacticalActorBase enemy in tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(tacticalActor.AIActor.GetEnemyMask(__instance.Def.EnemyMask)))
-                              {
-                                  if ((enemy.Pos - tacticalActor.Pos).magnitude <= actorRange)
-                                  {
-                                      __result = 1;
-                                   //   TFTVLogger.Always($"found enemy {enemy.DisplayName} within range, but returning 0 to see what happens");
-                                      return false;
-                                  }
-                              }
-
-                              __result = 0;
-                              return false;*/
 
 
                         }
@@ -669,14 +652,7 @@ namespace TFTV
                     {
 
 
-                        /*   if (enemies.Count > 0)
-                           {
-                               if (CheckForMeleeTargets(tacticalActor, enemies))
-                               {
-                                   tacticalActor.AIActor.SetTurnOrderPriorityOverride(-900);
-                                   // TFTVLogger.Always(tacticalActor.DisplayName + " should act third");
-                               }
-                           }*/
+                       
                         if (enemies.Count > 0)
                         {
                             if (CheckWorms(tacticalActor, enemies))//, tacticalActors)) 
@@ -877,15 +853,7 @@ namespace TFTV
                             {
                                 TFTVLogger.Always(enemy.DisplayName + " is within range of " + actor.DisplayName);
 
-                                /* foreach (TacticalActor friendly in friendlies)
-                                 {
-                                     if (CheckDistance(friendly, enemy, 2) && friendly.GameTags != actor.GameTags)
-                                     {
-                                         TFTVLogger.Always(friendly.DisplayName + " not same kind of worm, is within range of " + enemy.DisplayName);
-                                         return true;
-
-                                     }
-                                 }*/
+                            
                                 return true;
                             }
                         }
@@ -1078,17 +1046,7 @@ namespace TFTV
                             {
                                 // TFTVLogger.Always($"{item.name}");
 
-                                /*  TacticalActor tacticalActor2 = item as TacticalActor;
-                                  int num3 = 0;
-                                  if (tacticalActor2 != null)
-                                  {
-                                      //TFTVLogger.Always($"{tacticalActor2.name}");
-                                      num3 = tacticalActor2.CharacterStats.Speed.IntValue;
-                                  }
-
-                                  float num4 = Mathf.Min(1f - Mathf.Min((float)num3 / 20f, 1f), 1f);
-                                  zero += (item.Pos - tacAITarget.Pos).normalized;
-                                  num2 += num4;*/
+                             
                                 zero += (item.Pos - tacAITarget.Pos).normalized;
                                 num2 += 1;
                             }
@@ -1189,16 +1147,7 @@ namespace TFTV
 
                             TacticalNavigationComponent component = __instance.TacticalActor.GetComponent<TacticalNavigationComponent>();
 
-                            /*    string[] extraNavAreas = new string[] { "WalkableMedMonster" };
-
-                                __instance.TacticalActor.TacticalNav.AddNavAreas(extraNavAreas);*/
-
-                            /*   TFTVLogger.Always($"{__instance.TacticalActor.DisplayName} has {component.NavAreas.GetAreaCount()} navigation areas, " +
-                                   $"navcomp agent is {component.AgentTypeName}");
-
-
-                               TacticalDemolitionComponent demo = __instance.TacticalActor.GetComponent<TacticalDemolitionComponent>();
-                               demo.TacticalDemolitionComponentDef.RectangleCenter = new Vector3(0f, 1.5f, 0f);*/
+                          
                             component.CurrentPath = component.CreatePathRequest();
                         }
 
@@ -1388,9 +1337,6 @@ namespace TFTV
             {
                 //Need to patch to check if enemy has Delirium, is in Mist or VO in effect
                 //  AIVisibleEnemiesConsiderationDef aIVisibleEnemiesConsiderationDef = DefCache.GetDef<AIVisibleEnemiesConsiderationDef>("AnyFactionVisibleEnemy_AIConsiderationDef");
-
-                //Need to patch to check if enemy has Delirium, is in Mist or VO in effect, so it mirrors anyFactionVisibleEnemyConsideration
-                //   AIVisibleEnemiesConsiderationDef NOaIVisibleEnemiesConsiderationDef = DefCache.GetDef<AIVisibleEnemiesConsiderationDef>("NoFactionVisibleEnemy_AIConsiderationDef");
 
                 public static bool UmbraAIClosestEnemyConsideration(AIClosestEnemyConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
                 {
@@ -1894,96 +1840,7 @@ namespace TFTV
 
 
 
-                /* [HarmonyPatch(typeof(AIClosestEnemyConsideration), "Evaluate")]
-                 public static class AIClosestEnemyConsideration_Evaluate_patch
-                 {
-
-                     public static bool Prefix(AIClosestEnemyConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
-                     {
-                         try
-                         {
-
-                             AIClosestEnemyConsiderationDef queenConsideration = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Queen_ClosestEnemy_AIConsiderationDef");
-                             AIClosestEnemyConsiderationDef chironConsideration = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Chiron_ClosestEnemy_AIConsiderationDef");
-                             AIClosestEnemyConsiderationDef acheronConsideration = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Acheron_ClosestLineToEnemy_AIConsiderationDef");
-
-                             List<AIClosestEnemyConsiderationDef> aIClosestEnemyConsiderationDefs = new List<AIClosestEnemyConsiderationDef>() { queenConsideration, chironConsideration, acheronConsideration };
-
-                             GameTagDef caterpillarDamage = DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef");
-
-                             if (aIClosestEnemyConsiderationDefs.Contains(__instance.BaseDef))
-                             {
-                                 AIClosestEnemyConsiderationDef Def = (AIClosestEnemyConsiderationDef)__instance.BaseDef;
-                                 TacticalActor tacticalActor = (TacticalActor)actor;
-                                 TacAITarget tacAITarget = (TacAITarget)target;
-                                 float num = 0f;
-                                 TacticalActorBase tacticalActorBase = null;
-
-                                 //  TFTVLogger.Always($"{tacticalActor.name} considering closest enemy");
-
-                                 foreach (TacticalActorBase enemy in tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(tacticalActor.AIActor.GetEnemyMask(Def.EnemyMask)).Where(ta => !ta.HasGameTag(caterpillarDamage)))
-                                 {
-
-                                     float num2 = 0f;
-                                     if (Def.DistanceType == DistanceType.Line)
-                                     {
-                                         num2 = (tacAITarget.Pos - enemy.Pos).magnitude;
-                                     }
-                                     else if (Def.DistanceType == DistanceType.PathLength)
-                                     {
-                                         float num3 = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(0f, tacticalActor);
-                                         float num4 = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(0f, enemy);
-                                         float destinationRadius = num3 + num4 + Def.DestinationRadius;
-                                         num2 = AIUtil.GetPathLength(tacticalActor, tacAITarget.Pos, enemy.Pos, useAStar: true, destinationRadius);
-                                     }
-
-                                     float num5 = num2.Clamp(Def.MinDistance, Def.MaxDistance);
-                                     float num6 = 1f - (num5 - Def.MinDistance) / (Def.MaxDistance - Def.MinDistance);
-                                     if (Def.ConsiderEnemyWeight)
-                                     {
-                                         num6 *= AIUtil.GetEnemyWeight(tacticalActor.TacticalFaction.AIBlackboard, enemy);
-                                     }
-
-                                     if (num6 > num)
-                                     {
-                                         num = num6;
-                                         tacticalActorBase = enemy;
-                                     }
-
-                                     // TFTVLogger.Always($"the enemy is {enemy.name} and their score is {num6}");
-                                 }
-
-                                 if (tacticalActorBase == null)
-                                 {
-                                     __result = Def.NoEnemiesValue;
-                                     //  TFTVLogger.Always($"no enemies!");
-                                     return false;
-                                 }
-
-                                 if (Def.SetEnemyAsTarget)
-                                 {
-                                     tacAITarget.Actor = tacticalActorBase;
-                                 }
-
-                                 num = Mathf.Clamp(num, 0f, 1f);
-                                 if (Utl.Equals(num, 0f, 0.01f))
-                                 {
-                                     num = 0.1f;
-                                 }
-
-                                 __result = num;
-                                 //  TFTVLogger.Always($"the score is {num}");
-                                 return false;
-                             }
-                             return true;
-                         }
-                         catch (Exception e)
-                         {
-                             TFTVLogger.Error(e);
-                             throw;
-                         }
-                     }
-                 }*/
+           
 
 
                 //Patch to prevent Scylla from MELEE targeting tiny critters like worms and spider drones
@@ -2119,118 +1976,7 @@ namespace TFTV
 
 
 
-                /*   [HarmonyPatch(typeof(Weapon), "GetShootTargets")]
-                   public static class TFTV_Weapon_GetShootTargets_Patch
-                   {
-                       public static IEnumerable<TacticalAbilityTarget> Postfix(
-                           IEnumerable<TacticalAbilityTarget> results, Weapon __instance, TacticalAbilityTarget target, TacticalTargetData ____originData,
-                           Vector3? shooterPosition, TacticalTargetData targetData)
-                       {
-
-                           if (CheckIfTargetingAcheron(target))
-                           {
-                               MethodInfo methodInfoCheckShootTarget = typeof(Weapon).GetMethod("CheckShootTarget", BindingFlags.Instance | BindingFlags.NonPublic);
-
-                               if (targetData == null)
-                               {
-                                   targetData = ____originData;
-                               }
-
-                               Vector3 shooterPos = shooterPosition ?? __instance.TacticalActorBase.Pos;
-                               Vector3 enemyPos = target.GetActorOrWorkingPosition();
-                               var enemyDir = enemyPos - shooterPos;
-
-                               float range = targetData.Range;
-                               float dist = enemyDir.magnitude;
-
-                               if (dist < targetData.MinRange)
-                               {
-                                   yield break;
-                               }
-
-                               if (target.GetTargetActor() != null)
-                               {
-                                   range = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(range, target.GetTargetActor());
-                               }
-
-                               bool inRange = dist <= range;
-                               if (!inRange && targetData.HorizontalRangeOnly)
-                               {
-                                   inRange = Vector3.Distance(shooterPos.SetY(enemyPos.y), enemyPos) <= range;
-                               }
-
-                               if (!inRange)
-                               {
-                                   yield break;
-                               }
-
-                               TacticalAbilityTarget testedTarget = new TacticalAbilityTarget(target);
-                               testedTarget.DamageReceiver = target.Actor;
-                               if (!Utl.IsZero(enemyDir.x) || !Utl.IsZero(enemyDir.z))
-                               {
-                                   testedTarget.CoverDirection = __instance.TacticalActor.TacticalPerception.GetCoverDirection(shooterPos, enemyDir);
-                               }
-
-                               // Activate all actor dummy colliders, to check if some are in the way.
-                               using (new MultiForceDummyTargetableLock(__instance.TacticalActor.Map.GetActors<TacticalActor>()))
-                               {
-                                   DamageDeliveryType deliveryType = __instance.GetDamagePayload().DamageDeliveryType;
-                                   bool shouldTestBodyparts =
-                                       deliveryType != DamageDeliveryType.Parabola &&
-                                       deliveryType != DamageDeliveryType.Sphere
-                                       ;
-
-                                   if (testedTarget.Actor == null
-                                       || testedTarget.TacticalItem != null
-                                       || testedTarget.Equipment != null
-                                       || !shouldTestBodyparts)
-                                   {
-                                       bool canShoot = (bool)methodInfoCheckShootTarget.Invoke(__instance, new object[] { testedTarget, shooterPos, targetData.HorizontalRangeOnly }); //__instance.CheckShootTarget(testedTarget, shooterPos, targetData.HorizontalRangeOnly);
-                                       if (canShoot)
-                                           yield return testedTarget;
-
-                                       yield break;
-                                   }
-
-                                   // Get default aim point body part
-                                   TacticalPerception targetPerception = testedTarget.Actor.GetComponent<TacticalPerception>();
-                                   BodyPartAspect defaultTargetPart = null;
-                                   if (targetPerception != null)
-                                   {
-                                       var defaultSlot = (ItemSlot)testedTarget.Actor.AddonsManager.RootAddon
-                                           .FindAddonSlot(targetPerception.TacticalPerceptionDef.DefaultAimSlot);
-                                       var defaultItem = defaultSlot.GetAllDirectItems().FirstOrDefault();
-                                       if (defaultItem != null && defaultItem.BodyPartAspect != null)
-                                       {
-                                           defaultTargetPart = defaultItem.BodyPartAspect;
-                                           testedTarget.TacticalItem = defaultItem;
-                                           testedTarget.DamageReceiver = defaultItem;
-                                           bool canShoot = (bool)methodInfoCheckShootTarget.Invoke(__instance, new object[] { testedTarget, shooterPos, targetData.HorizontalRangeOnly });//CheckShootTarget(testedTarget, shooterPos, targetData.HorizontalRangeOnly);
-                                           if (canShoot)
-                                               yield return new TacticalAbilityTarget(testedTarget);
-                                       }
-                                   }
-
-                                   var targetBodyParts = __instance.GetTargetBodyParts(testedTarget.Actor);
-                                   foreach (BodyPartAspect part in targetBodyParts)
-                                   {
-                                       if (part == defaultTargetPart)
-                                       {
-                                           // We already returned it above
-                                           continue;
-                                       }
-
-                                       testedTarget.TacticalItem = part.OwnerItem;
-                                       testedTarget.DamageReceiver = part.OwnerItem;
-                                       bool canShoot = (bool)methodInfoCheckShootTarget.Invoke(__instance, new object[] { testedTarget, shooterPos, targetData.HorizontalRangeOnly });//CheckShootTarget(testedTarget, shooterPos, targetData.HorizontalRangeOnly);
-                                       if (canShoot)
-                                           yield return new TacticalAbilityTarget(testedTarget);
-                                   }
-                               }
-                           }
-
-                       }
-                   }*/
+            
 
                 /// <summary>
                 /// Codemite's solution to Acheron targetting issues. All hail Codemite!
@@ -2401,10 +2147,5 @@ namespace TFTV
             }
 
         }
-
-
-
-
-
     }
 }

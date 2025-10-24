@@ -872,27 +872,6 @@ namespace TFTV
                 dashAI.Evaluations[0].Considerations[2].Consideration = DefCache.GetDef<AILineOfSightToEnemiesConsiderationDef>("LineofSight_AIConsiderationDef");
                 dashAI.Evaluations[0].Considerations[3].Consideration = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Worm_ClosestPathToEnemy_AIConsiderationDef");
 
-                /*  dashAI.Evaluations[0].Considerations = new AIAdjustedConsideration[] {
-                  dashAI.Evaluations[0].Considerations[0],
-                  dashAI.Evaluations[0].Considerations[3],
-                  dashAI.Evaluations[0].Considerations[4]
-                  };*/
-
-
-                //  dashAI.Evaluations[0].TargetGeneratorDef = DefCache.GetDef<AIActorMovementZoneTargetGeneratorDef>("DashMovementZoneNoSelfPosition_AITargetGeneratorDef");
-
-                //  dashAI.Weight = 50;
-                //   AIStrategicPositionConsiderationDef offStrat = 
-
-                /*   dashAI.Evaluations[0].Considerations = new AIAdjustedConsideration[] {
-                       dashAI.Evaluations[0].Considerations[0], 
-                       dashAI.Evaluations[0].Considerations[1],
-                    //   dashAI.Evaluations[0].Considerations[3],
-                      dashAI.Evaluations[0].Considerations[4]
-                   };*/
-
-                //  dashAI.Evaluations[0].Considerations[0].Consideration = offStrat;
-
             }
             catch (Exception e)
             {

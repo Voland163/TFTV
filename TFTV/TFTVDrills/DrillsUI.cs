@@ -1,28 +1,5 @@
-﻿using Base.Core;
-using Base.Entities.Abilities;
-using Base.Input;
-using Base.UI;
-using HarmonyLib;
-using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities.Characters;
-using PhoenixPoint.Common.UI;
-using PhoenixPoint.Common.Utils;
-using PhoenixPoint.Common.View.ViewControllers;
-using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Geoscape.View.ViewControllers;
-using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
-using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
-using PhoenixPoint.Geoscape.View.ViewModules;
-using PhoenixPoint.Tactical.Entities.Abilities;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using PhoenixPoint.Tactical.Entities.Abilities;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace TFTV.TFTVDrills
@@ -61,6 +38,16 @@ namespace TFTV.TFTVDrills
 
         private static Sprite _originalAvailableImage = null;
         private static DrillConfirmationContext _pendingDrillConfirmation;
+        private static Text _headerText = null;
+
+        internal class InternalData
+        {
+            public static void ClearInternalData()
+            {
+                _headerText = null;
+            }
+
+        }
 
         private static bool IsDrillAbility(TacticalAbilityDef ability)
         {

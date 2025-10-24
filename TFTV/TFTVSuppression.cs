@@ -678,12 +678,18 @@ namespace TFTV
                 }
 
                 float contribution = weight;
+
+              //  TFTVLogger.Always($"{actor?.name} {weapon?.DisplayName} {weight}");
+
                 if (weapon != null)
                 {
+                  
+
                     WeaponDef weaponDef = weapon.WeaponDef;
                     if (weaponDef != null && weaponDef.DamagePayload.ProjectilesPerShot > 1)
                     {
-                        contribution = Mathf.Min(contribution, 1f);
+                        contribution = Mathf.Min(contribution/ weaponDef.DamagePayload.ProjectilesPerShot, 1f);
+                      //  TFTVLogger.Always($"{actor?.name} {weapon?.DisplayName} {contribution}");
                     }
                 }
 
@@ -692,7 +698,9 @@ namespace TFTV
                     return;
                 }
 
+                //TFTVLogger.Always($"_pendingSuppression: {_pendingSuppression} contribution: {contribution}");
                 float newValue = _pendingSuppression + contribution;
+
                 _pendingSuppression = SuppressionSettings.ClampSuppression(newValue, actor);
             }
 

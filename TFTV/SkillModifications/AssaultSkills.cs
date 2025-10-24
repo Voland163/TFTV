@@ -4,29 +4,20 @@ using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Statuses;
-using Base.Input;
-using Base.UI;
 using HarmonyLib;
-using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.UI;
-using PhoenixPoint.Common.View.ViewControllers;
-using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Cameras.Filters;
-using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
-using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using TFTV;
+using TFTV.TFTVDrills;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace PRMBetterClasses.SkillModifications
 {
@@ -42,7 +33,7 @@ namespace PRMBetterClasses.SkillModifications
         public static void ApplyChanges()
         {
             DefCache DefCache = TFTVMain.Main.DefCache;
-        
+
             // Quick Aim: Adding accuracy modification
             Create_BC_QuickAim(DefCache);
 
@@ -95,10 +86,16 @@ namespace PRMBetterClasses.SkillModifications
             quickAim.ViewElementDef.Description.LocalizationKey = "PR_BC_QUICK_AIM_DESC"; // qaDescription;
             quickAim.UsesPerTurn = qaUsesPerTurn;
             quickAim.DisablingStatuses = new StatusDef[]
-            { 
+            {
                 quickAim.StatusDef,
                 defCache.GetDef<ApplyStatusAbilityDef>("ArmourBreak_AbilityDef").StatusDef
             };
+
+            if (DrillsDefs._bulletHellSlowStatus != null)
+            {
+                quickAim.DisablingStatuses = quickAim.DisablingStatuses.AddToArray(DrillsDefs._bulletHellSlowStatus);
+            }
+
             qaAccMod.EffectName = "";
             qaAccMod.ShowNotification = false;
             qaAccMod.VisibleOnHealthbar = 0;
@@ -197,7 +194,7 @@ namespace PRMBetterClasses.SkillModifications
             killAndRunAbility.StatusDef = multiStatus;
             killAndRunAbility.StatusApplicationTrigger = StatusApplicationTrigger.StartTurn;
 
-            bool doNotLocalize =  TFTVMain.Main.Settings.DoNotLocalizeChangedTexts;
+            bool doNotLocalize = TFTVMain.Main.Settings.DoNotLocalizeChangedTexts;
             viewElement.DisplayName1.LocalizationKey = "PR_BC_KILL_N_RUN"; // new LocalizedTextBind("KILL'N'RUN", doNotLocalize);
             viewElement.Description.LocalizationKey = "PR_BC_KILL_N_RUN_DESC"; // new LocalizedTextBind("Once per turn, take a free move after killing an enemy.", doNotLocalize);
             Sprite knR_IconSprite = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_KillNRun.png");
@@ -260,7 +257,7 @@ namespace PRMBetterClasses.SkillModifications
                 }
             }
         }
-        
+
         private static void Change_Onslaught(DefCache defCache)
         {
             // This below works on the target but he can be targeted again from another Assault without any response => the Assault loses 2 AP and the target gets nothing

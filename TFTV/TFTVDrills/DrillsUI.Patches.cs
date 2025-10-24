@@ -176,7 +176,7 @@ namespace TFTV.TFTVDrills
             }
         }
 
-        private static Text _headerText = null;
+      
 
         [HarmonyPatch(typeof(ConfirmBuyAbilityDataBind), nameof(ConfirmBuyAbilityDataBind.ModalShowHandler))]
         public static class ConfirmBuyAbilityDataBind_ModalShowHandler_Patch
@@ -229,26 +229,19 @@ namespace TFTV.TFTVDrills
 
                     var confirmationContext = _pendingDrillConfirmation;
 
-                    TFTVLogger.Always($" __instance.AbilityNameText.text {__instance.AbilityNameText.text}");
+                 /*   TFTVLogger.Always($" __instance.AbilityNameText.text {__instance.AbilityNameText.text}");
                     TFTVLogger.Always($" __instance.AbilitiyDescriptionText.text {__instance.AbilitiyDescriptionText.text}");
                     TFTVLogger.Always($"__instance.SpTextPattern: {__instance.SpTextPattern}");
                     TFTVLogger.Always($"__instance.SPCostText: {__instance.SPCostText}");
-                    TFTVLogger.Always($"__instance.SPCostText: {__instance.SPCostText}");
+                    TFTVLogger.Always($"__instance.SPCostText: {__instance.SPCostText}");*/
 
 
-                    var headerText = _headerText;
-
-                    if (headerText == null)
-                    {
-                        headerText = ResolveConfirmationHeaderText(__instance, modal);
-                        TFTVLogger.Always($"header text is {headerText.text}");
-                    }
-                   
+                    var headerText = _headerText ?? ResolveConfirmationHeaderText(__instance, modal);
                     if (headerText != null)
                     {
                         _headerText = headerText;
                        string label = DetermineDrillActionLabel(data, ability, confirmationContext, exitingAbilityIsDrill, existingAbilityPersonalPerk);
-                        TFTVLogger.Always($"label is {label}");
+                      //  TFTVLogger.Always($"label is {label}");
                         headerText.text = label;
                         headerText.GetComponent<Localize>().enabled = false;
                     }

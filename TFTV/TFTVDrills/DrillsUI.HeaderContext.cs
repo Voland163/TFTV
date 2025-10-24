@@ -62,12 +62,20 @@ namespace TFTV.TFTVDrills
                 isReplacement = true;
             }
             
-            if (existingAbilityIsPersonalPerk)
+            if (existingAbilityIsPersonalPerk && isReplacement)
             {
-                return "REPLACE ABILITY";
+                if (isReplacement)
+                {
+                    return "REPLACE ABILITY";
+                }
+                else 
+                {
+                    return "ACQUIRE DRILL";
+                }
             }
+            
 
-            return isReplacement ? "REPLACE DRILL" : "ACQUIRE DRILL";
+            return "REPLACE DRILL";
         }
 
         private static Text ResolveConfirmationHeaderText(ConfirmBuyAbilityDataBind bind, UIModal modal)

@@ -41,7 +41,7 @@ namespace TFTV.TFTVDrills
 
 
         internal class Mutoids
-       {
+        {
             [HarmonyPatch(typeof(GeoCharacter), nameof(GeoCharacter.CreateCharacter))]
             internal static class MutoidStaminaZero_CreateCharacter_Patch
             {
@@ -56,13 +56,14 @@ namespace TFTV.TFTVDrills
                             if (stamina != null && stamina.Value > 0f)
                             {
                                 stamina.Set(0f, true);
+                                TFTVLogger.Always($"Stamina should be set 0 for new Mutoid");
                             }
                         }
                     }
                 }
             }
 
-        } 
+        }
 
         internal static class ShockDrop
         {
@@ -1058,165 +1059,165 @@ namespace TFTV.TFTVDrills
         }
         internal class DrawFire
         {
-                private const float Multiplier = 100f;
+            private const float Multiplier = 100f;
 
-                private static readonly Stack<TacAIActor> _currentActors = new Stack<TacAIActor>();
+            private static readonly Stack<TacAIActor> _currentActors = new Stack<TacAIActor>();
 
-                [HarmonyPatch(typeof(AIBlackboard), nameof(AIBlackboard.BeforeAIActorEvaluation))]
-                private static class Patch_AIBlackboard_BeforeAIActorEvaluation
+            [HarmonyPatch(typeof(AIBlackboard), nameof(AIBlackboard.BeforeAIActorEvaluation))]
+            private static class Patch_AIBlackboard_BeforeAIActorEvaluation
+            {
+                private static void Prefix(TacAIActor aiActor)
                 {
-                    private static void Prefix(TacAIActor aiActor)
+                    _currentActors.Push(aiActor);
+                }
+            }
+
+            [HarmonyPatch(typeof(AIBlackboard), nameof(AIBlackboard.AfterAIActorEvaluation))]
+            private static class Patch_AIBlackboard_AfterAIActorEvaluation
+            {
+                private static void Postfix()
+                {
+                    if (_currentActors.Count > 0)
                     {
-                        _currentActors.Push(aiActor);
+                        _currentActors.Pop();
                     }
                 }
+            }
 
-                [HarmonyPatch(typeof(AIBlackboard), nameof(AIBlackboard.AfterAIActorEvaluation))]
-                private static class Patch_AIBlackboard_AfterAIActorEvaluation
+            [HarmonyPatch(typeof(AIUtil), nameof(AIUtil.GetEnemyWeight))]
+            private static class Patch_AIUtil_GetEnemyWeight
+            {
+                private static void Postfix(AIBlackboard blackboard, TacticalActorBase enemy, ref float __result)
                 {
-                    private static void Postfix()
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
-                        if (_currentActors.Count > 0)
-                        {
-                            _currentActors.Pop();
-                        }
+                        return;
                     }
-                }
 
-                [HarmonyPatch(typeof(AIUtil), nameof(AIUtil.GetEnemyWeight))]
-                private static class Patch_AIUtil_GetEnemyWeight
-                {
-                    private static void Postfix(AIBlackboard blackboard, TacticalActorBase enemy, ref float __result)
+                    try
                     {
-                        if (!TFTVNewGameOptions.IsReworkEnabled())
+                        if (!HasTauntStatus(enemy))
                         {
                             return;
                         }
 
-                        try
+                        TacAIActor currentAiActor = GetCurrentActor();
+                        if (!ShouldApplyTauntMultiplier(enemy, currentAiActor))
                         {
-                            if (!HasTauntStatus(enemy))
-                            {
-                                return;
-                            }
-
-                            TacAIActor currentAiActor = GetCurrentActor();
-                            if (!ShouldApplyTauntMultiplier(enemy, currentAiActor))
-                            {
-                                TacticalActorBase actingActor = currentAiActor != null ? currentAiActor.TacticalActor : null;
-                                string actorName = actingActor != null ? actingActor.DisplayName : "unknown actor";
-                                TFTVLogger.Always($"Skipping taunt multiplier for {enemy?.DisplayName}; {actorName} cannot reach this turn.");
-                                return;
-                            }
-
-                            TFTVLogger.Always($"{enemy?.DisplayName} initial score is {__result}");
-                            __result *= Multiplier;
-                            TFTVLogger.Always($"{enemy?.DisplayName} new score is {__result}");
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            throw;
-                        }
-                    }
-                }
-
-                private static TacAIActor GetCurrentActor()
-                {
-                    return _currentActors.Count > 0 ? _currentActors.Peek() : null;
-                }
-
-                private static bool ShouldApplyTauntMultiplier(TacticalActorBase enemy, TacAIActor aiActor)
-                {
-                    if (enemy == null)
-                    {
-                        return false;
-                    }
-
-                    if (aiActor == null)
-                    {
-                        return true;
-                    }
-
-                    TacticalActor tacticalActor = aiActor.TacticalActor;
-                    if (tacticalActor == null || tacticalActor.IsDead || !tacticalActor.InPlay)
-                    {
-                        return false;
-                    }
-
-                    EquipmentComponent equipmentComponent = tacticalActor.Equipments;
-                    if (equipmentComponent == null)
-                    {
-                        return false;
-                    }
-
-                    foreach (Equipment equipment in equipmentComponent.Equipments)
-                    {
-                        Weapon weapon = equipment as Weapon;
-                        if (weapon == null || !weapon.IsUsable)
-                        {
-                            continue;
+                            TacticalActorBase actingActor = currentAiActor != null ? currentAiActor.TacticalActor : null;
+                            string actorName = actingActor != null ? actingActor.DisplayName : "unknown actor";
+                            TFTVLogger.Always($"Skipping taunt multiplier for {enemy?.DisplayName}; {actorName} cannot reach this turn.");
+                            return;
                         }
 
-                        TacticalAbility attackAbility = tacticalActor.GetDefaultAttackAbility(weapon);
-                        if (attackAbility == null || !attackAbility.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsAndEquipmentNotSelected))
-                        {
-                            continue;
-                        }
-
-                        DamagePayload damagePayload = weapon.GetDamagePayload();
-                        if (damagePayload == null)
-                        {
-                            continue;
-                        }
-
-                        if (damagePayload.DamageDeliveryType != DamageDeliveryType.Melee)
-                        {
-                            return true;
-                        }
-
-                        float moveAndActRange = tacticalActor.GetMaxMoveAndActRange(weapon, null);
-                        if (moveAndActRange <= 0f)
-                        {
-                            continue;
-                        }
-
-                        float actorRadius = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(0f, tacticalActor);
-                        float enemyRadius = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(0f, enemy);
-                        float destinationRadius = actorRadius + enemyRadius;
-                        float pathLength = AIUtil.GetPathLength(tacticalActor, tacticalActor.Pos, enemy.Pos, true, destinationRadius);
-                        if (!float.IsPositiveInfinity(pathLength) && Utl.LesserThanOrEqualTo(pathLength, moveAndActRange, 0.01f))
-                        {
-                            return true;
-                        }
-                    }
-
-                    return false;
-                }
-
-                private static bool HasTauntStatus(TacticalActorBase actor)
-                {
-                    try
-                    {
-
-
-                        if (actor != null && actor.Status != null && actor.Status.HasStatus(_drawfireStatus))
-                        {
-                            TFTVLogger.Always($"{actor.DisplayName} has drawFireStatus! should be aggroed");
-                            return true;
-                        }
-
-                        return false;
+                        TFTVLogger.Always($"{enemy?.DisplayName} initial score is {__result}");
+                        __result *= Multiplier;
+                        TFTVLogger.Always($"{enemy?.DisplayName} new score is {__result}");
                     }
                     catch (Exception e)
                     {
                         TFTVLogger.Error(e);
-                        return false;
+                        throw;
+                    }
+                }
+            }
+
+            private static TacAIActor GetCurrentActor()
+            {
+                return _currentActors.Count > 0 ? _currentActors.Peek() : null;
+            }
+
+            private static bool ShouldApplyTauntMultiplier(TacticalActorBase enemy, TacAIActor aiActor)
+            {
+                if (enemy == null)
+                {
+                    return false;
+                }
+
+                if (aiActor == null)
+                {
+                    return true;
+                }
+
+                TacticalActor tacticalActor = aiActor.TacticalActor;
+                if (tacticalActor == null || tacticalActor.IsDead || !tacticalActor.InPlay)
+                {
+                    return false;
+                }
+
+                EquipmentComponent equipmentComponent = tacticalActor.Equipments;
+                if (equipmentComponent == null)
+                {
+                    return false;
+                }
+
+                foreach (Equipment equipment in equipmentComponent.Equipments)
+                {
+                    Weapon weapon = equipment as Weapon;
+                    if (weapon == null || !weapon.IsUsable)
+                    {
+                        continue;
+                    }
+
+                    TacticalAbility attackAbility = tacticalActor.GetDefaultAttackAbility(weapon);
+                    if (attackAbility == null || !attackAbility.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsAndEquipmentNotSelected))
+                    {
+                        continue;
+                    }
+
+                    DamagePayload damagePayload = weapon.GetDamagePayload();
+                    if (damagePayload == null)
+                    {
+                        continue;
+                    }
+
+                    if (damagePayload.DamageDeliveryType != DamageDeliveryType.Melee)
+                    {
+                        return true;
+                    }
+
+                    float moveAndActRange = tacticalActor.GetMaxMoveAndActRange(weapon, null);
+                    if (moveAndActRange <= 0f)
+                    {
+                        continue;
+                    }
+
+                    float actorRadius = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(0f, tacticalActor);
+                    float enemyRadius = TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(0f, enemy);
+                    float destinationRadius = actorRadius + enemyRadius;
+                    float pathLength = AIUtil.GetPathLength(tacticalActor, tacticalActor.Pos, enemy.Pos, true, destinationRadius);
+                    if (!float.IsPositiveInfinity(pathLength) && Utl.LesserThanOrEqualTo(pathLength, moveAndActRange, 0.01f))
+                    {
+                        return true;
                     }
                 }
 
-            
-            
+                return false;
+            }
+
+            private static bool HasTauntStatus(TacticalActorBase actor)
+            {
+                try
+                {
+
+
+                    if (actor != null && actor.Status != null && actor.Status.HasStatus(_drawfireStatus))
+                    {
+                        TFTVLogger.Always($"{actor.DisplayName} has drawFireStatus! should be aggroed");
+                        return true;
+                    }
+
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    return false;
+                }
+            }
+
+
+
         }
         internal class MentorProtocol
         {
@@ -1565,8 +1566,8 @@ namespace TFTV.TFTVDrills
                         {
                             _shieldRiposteDeployingShield = true;
 
-                            TFTVLogger.Always($"tacticalActor?.DisplayName: {tacticalActor?.DisplayName} deploying shield, deployed status? " +
-                                $"{tacticalActor.Status.HasStatus<ShieldDeployedStatus>()}");
+                            /* TFTVLogger.Always($"tacticalActor?.DisplayName: {tacticalActor?.DisplayName} deploying shield, deployed status? " +
+                                 $"{tacticalActor.Status.HasStatus<ShieldDeployedStatus>()}");*/
 
                             List<Weapon> weapons = new List<Weapon>(tacticalActor.Equipments.GetWeapons().Where(
                             w => w.IsUsable && w.HasCharges && w.TacticalItemDef.Tags.Contains(DefCache.GetDef<ItemClassificationTagDef>("GunWeapon_TagDef"))
@@ -1684,133 +1685,6 @@ namespace TFTV.TFTVDrills
 
 
         }
-
-
-
-        /*  internal class VeiledMarksman
-          {
-              [HarmonyPatch(typeof(ApplyStatusAbility), "OnActorMovedInNewTile")]
-              public static class Patch_ApplyStatusAbility_OnActorMovedInNewTile
-              {
-                  public static bool Prefix(ApplyStatusAbility __instance, TacticalActorBase movedActor)
-                  {
-                      try
-                      {
-                          if (__instance.TacticalAbilityDef != _veiledMarksman) return true;
-
-                          if (movedActor != __instance.TacticalActor) return false;
-
-                          TacticalActor tacticalActor = __instance.TacticalActor;
-
-
-
-
-                          IdleAbility idleAbility = tacticalActor.IdleAbility;
-                          CoverType? coverType = (idleAbility != null) ? new CoverType?(idleAbility.ActivePose.CoverInfo.CoverType) : null;
-
-                          TFTVLogger.Always($"{tacticalActor?.DisplayName} moving to a new tile. cover null: {coverType==null}");
-
-                          if (coverType == null || coverType ==CoverType.None)
-                          {
-                              TFTVLogger.Always($"the position is not in cover");
-
-                              Status status = tacticalActor.Status.GetStatusByName(_veiledMarksman.StatusDef.EffectName);
-                              if (status != null)
-                              {
-                                  TFTVLogger.Always($"removing veiledMarksman status from {tacticalActor?.DisplayName}");
-                                  movedActor.Status.UnapplyStatus(status);
-                              }
-
-                          }
-                          else
-                          {
-
-
-                              TFTVLogger.Always($"the position is in cover");
-
-                              if (tacticalActor.Status.GetStatusByName(_veiledMarksman.StatusDef.EffectName) == null)
-                              {
-                                  TFTVLogger.Always($"adding veiledMarksman status to {tacticalActor?.DisplayName}");
-                                  movedActor.Status.ApplyStatus(_veiledMarksman.StatusDef);
-                              }
-
-                          }
-
-                          return false;
-
-                      }
-                      catch (Exception ex)
-                      {
-                          TFTVLogger.Error(ex);
-                          throw;
-                      }
-                  }
-
-                  private static bool TryGetGroundPoint(TacticalActor actor, Vector3 approxPos, out Vector3 ground)
-                  {
-                      // Same pattern used elsewhere in the game (see IsValidStepOutPos):
-                      var cast = actor.TacticalPerception.TacMap.CastFirstFloorAt(
-                          approxPos + Vector3.up * actor.TacticalPerception.Height * 0.5f,
-                          actor.TacticalNav.FloorLayers);
-
-                      if (cast.HitIsValid)
-                      {
-                          ground = cast.Point;
-                          return true;
-                      }
-
-                      ground = approxPos; // fall back
-                      return false;
-                  }
-
-                  // Most robust “am I in ANY cover?” probe:
-                  private static CoverType GetCoverAtTileRobust(TacticalActor actor, bool existingOnly = true)
-                  {
-                      var tp = actor.TacticalPerception;
-                      if (tp == null || !tp.UsesCovers) return CoverType.None;
-
-                      Vector3 pos = actor.Pos;
-
-                      // 1) Snap to floor to avoid voxel/height tolerance issues
-                      if (!TryGetGroundPoint(actor, pos, out var ground)) ground = pos;
-
-                      // 2) Use the engine helper that inspects cover in the proper directions
-                      //    (this is what many internal systems rely on).
-                      var around = tp.TacMap.GetCoversAround(ground, tp.Height, existingOnly);
-
-                      bool sawLow = false;
-                      foreach (var c in around)
-                      {
-                          if (c.CoverType == CoverType.High) return CoverType.High;
-                          if (c.CoverType == CoverType.Low) sawLow = true;
-                      }
-
-                      // 3) If nothing came back, do a defensive second-pass:
-                      //    small back-off + orthogonal rays (handles being flush with the wall)
-                      if (!sawLow)
-                      {
-                          const float EPS = 0.12f; // small local nudge (meters)
-                          foreach (var dir in TacticalMap.OrthogonalGridDirections)
-                          {
-                              // back off slightly so the ray won’t start inside the collider
-                              Vector3 sample = ground - dir.normalized * EPS;
-
-                              var info = tp.TacMap.GetCoverInfoInDirection(sample, dir, tp.Height);
-
-                              TFTVLogger.Always($"dir: {dir} cover: {info.CoverType} at pos {actor.Pos}");
-
-                              if (info.CoverType == CoverType.High) return CoverType.High;
-                              if (info.CoverType == CoverType.Low) sawLow = true;
-                          }
-                      }
-
-                      return sawLow ? CoverType.Low : CoverType.None;
-                  }
-
-
-
-              }
-          }*/
 
         internal class PackLoyalty
         {
