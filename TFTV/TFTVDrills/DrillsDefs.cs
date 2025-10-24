@@ -515,8 +515,8 @@ namespace TFTV.TFTVDrills
                 className = "operative";
             }
 
-            string subject = "Selected operative";
-            return $"{subject} must be level {requirement.MinimumLevel} {className}";
+           // string subject = "Selected operative";
+            return $"Level: {requirement.MinimumLevel} {className}";
         }
 
         private static string BuildWeaponProficiencyRequirementMessage(DrillWeaponProficiencyRequirement requirement)
