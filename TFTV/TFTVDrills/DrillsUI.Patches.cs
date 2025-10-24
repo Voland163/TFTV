@@ -127,8 +127,6 @@ namespace TFTV.TFTVDrills
 
                     var character = Reflection.GetPrivate<GeoCharacter>(ui, "_character");
 
-                    MethodInfo methodInfo = typeof(AbilityTrackSkillEntryElement).GetMethod("SetAnimator", BindingFlags.NonPublic | BindingFlags.Instance);
-
                     var phoenixFaction = character?.Faction?.GeoLevel?.PhoenixFaction;
                     var ability = __instance.AbilityDef ?? ElementHelpers.FindSlot(__instance)?.Ability;
                     var availableImage = __instance.Available;
@@ -194,14 +192,39 @@ namespace TFTV.TFTVDrills
                         return;
                     }
 
+
+
                     var ability = data.Ability;
-                    var confirmationContext = _pendingDrillConfirmation;
+
                     var drills = DrillsDefs.Drills;
-                    if (ability == null || drills == null || !drills.Contains(ability))
+                   
+
+                    var existingAbility = data.AbilitySlot?.Ability;
+
+                    bool exitingAbilityIsDrill = false;
+                    bool existingAbilityPersonalPerk = false;
+
+                    if (existingAbility != null)
+                    {
+                        if (drills.Contains(existingAbility))
+                        {
+                            exitingAbilityIsDrill = true;
+                        }
+                        else 
+                        { 
+                            existingAbilityPersonalPerk = true;
+                        }
+                    }
+
+                    if (ability == null || drills == null || !drills.Contains(ability) && !exitingAbilityIsDrill)
                     {
                         _pendingDrillConfirmation = null;
                         return;
                     }
+
+                    
+                    var confirmationContext = _pendingDrillConfirmation;
+                   
 
                     var headerText = ResolveConfirmationHeaderText(__instance, modal);
                     if (headerText != null)
@@ -223,6 +246,8 @@ namespace TFTV.TFTVDrills
                     {
                         __instance.AbilitiyDescriptionText.supportRichText = true;
                         string description = ability.ViewElementDef?.Description?.Localize() ?? string.Empty;
+                        bool showStaminaWarning = confirmationContext?.BaseAbilityLearned == true && TFTVNewGameOptions.StaminaPenaltyFromInjurySetting;
+
                         if (confirmationContext != null)
                         {
                             if (confirmationContext.ReplacementAbility != null)
@@ -235,6 +260,11 @@ namespace TFTV.TFTVDrills
                             {
                                 description += string.Format("\n\n<color=#{0}><b>Cost:</b> {1} SP</color>", pulseHex, confirmationContext.SkillPointCost);
                             }
+                        }
+
+                        if (showStaminaWarning)
+                        {
+                            description += string.Format("\n\n<color=#{0}><b>Warning:</b> Stamina will be set to 0.</color>", pulseHex);
                         }
 
                         __instance.AbilitiyDescriptionText.text = description;

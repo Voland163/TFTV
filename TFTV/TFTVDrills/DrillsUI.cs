@@ -56,6 +56,7 @@ namespace TFTV.TFTVDrills
         private static readonly Color LockedLabelTint = new Color(0.82f, 0.82f, 0.82f, 1f);
         internal static readonly Color DrillPulseColor = new Color(1f, 0.4f, 0f, 1f);
         private static readonly Color DrillFrameColor = new Color(0.29803923f, 0.09019608f, 0f, 1f);
+        private static readonly Color HeaderFrameBorderColor = new Color(0.6f, 0.6f, 0.6f, 1f);
         private static readonly Color LockedFrameColor = new Color(0.15294118f, 0.15294118f, 0.15294118f, 1f);
 
         private static Sprite _originalAvailableImage = null;
@@ -93,7 +94,7 @@ namespace TFTV.TFTVDrills
 
             if (showFrame)
             {
-                Color frameColor = isLocked ? LockedFrameColor : DrillFrameColor;
+                Color frameColor = isLocked ? LockedFrameColor : HeaderFrameBorderColor;
 
                 UIBuilder.CreateFrameBorders(iconRootRect, frameColor, HeaderFrameBorderThickness);
 

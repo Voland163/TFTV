@@ -422,6 +422,9 @@ namespace TFTV.TFTVDrills
 
         private static class TooltipSuppressor
         {
+            private static readonly List<GeoRosterAbilityDetailTooltip> TooltipCache = new List<GeoRosterAbilityDetailTooltip>();
+            private static bool _cacheInitialized;
+
             internal sealed class Handle : IDisposable
             {
                 private readonly List<GameObject> _disabledTooltips;
@@ -454,8 +457,10 @@ namespace TFTV.TFTVDrills
 
             public static Handle Begin()
             {
+                RefreshCacheIfNeeded();
+
                 var disabled = new List<GameObject>();
-                foreach (var tooltip in Resources.FindObjectsOfTypeAll<GeoRosterAbilityDetailTooltip>())
+                foreach (var tooltip in TooltipCache)
                 {
                     if (tooltip == null || DrillTooltipTrigger.IsSharedTooltip(tooltip))
                     {
@@ -472,6 +477,29 @@ namespace TFTV.TFTVDrills
                 }
 
                 return new Handle(disabled);
+            }
+
+            private static void RefreshCacheIfNeeded()
+            {
+                bool needsRefresh = !_cacheInitialized;
+
+                for (int i = TooltipCache.Count - 1; i >= 0; i--)
+                {
+                    if (TooltipCache[i] == null)
+                    {
+                        TooltipCache.RemoveAt(i);
+                        needsRefresh = true;
+                    }
+                }
+
+                if (!needsRefresh)
+                {
+                    return;
+                }
+
+                TooltipCache.Clear();
+                TooltipCache.AddRange(Resources.FindObjectsOfTypeAll<GeoRosterAbilityDetailTooltip>().Where(t => t != null));
+                _cacheInitialized = true;
             }
         }
     }

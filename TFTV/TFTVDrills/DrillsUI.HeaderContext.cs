@@ -1,4 +1,5 @@
 using Base.Entities.Abilities;
+using Base.UI;
 using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers;
@@ -72,28 +73,41 @@ namespace TFTV.TFTVDrills
                 return header;
             }
 
+            Text stringMatch = null;
             if (modal != null)
             {
                 foreach (var text in modal.GetComponentsInChildren<Text>(true))
                 {
-                    if (text == null || text == bind.AbilityNameText || text == bind.AbilitiyDescriptionText)
+                    if (text == null || IsLikelyAbilityField(text, bind))
                     {
                         continue;
                     }
 
-                    if (IsConfirmationHeaderText(text.text))
+                    if (IsHeaderNameMatch(text.gameObject?.name) || MatchesHeaderLocalization(text))
                     {
                         return text;
+                    }
+
+                    if (IsConfirmationHeaderText(text.text))
+                    {
+                        stringMatch = stringMatch ?? text;
                     }
                 }
             }
 
-            return null;
+            if (stringMatch == null)
+            {
+                string abilityInfo = bind.AbilityNameText != null ? bind.AbilityNameText.text : "<unknown ability>";
+                TFTVLogger.Debug($"[DrillsUI] Unable to locate confirmation header text for drill modal (ability: {abilityInfo}).");
+            }
+
+            return stringMatch;
         }
 
         private static Text TryGetHeaderFromFields(ConfirmBuyAbilityDataBind bind)
         {
             var fields = bind.GetType().GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+            Text stringMatch = null;
             foreach (var field in fields)
             {
                 if (!typeof(Text).IsAssignableFrom(field.FieldType))
@@ -111,13 +125,18 @@ namespace TFTV.TFTVDrills
                     continue;
                 }
 
-                if (IsConfirmationHeaderText(text.text))
+                if (IsHeaderNameMatch(field.Name) || IsHeaderNameMatch(text.gameObject?.name) || MatchesHeaderLocalization(text))
                 {
                     return text;
                 }
+
+                if (IsConfirmationHeaderText(text.text))
+                {
+                    stringMatch = stringMatch ?? text;
+                }
             }
 
-            return null;
+            return stringMatch;
         }
 
         private static bool IsConfirmationHeaderText(string value)
@@ -133,5 +152,107 @@ namespace TFTV.TFTVDrills
                 || trimmed.Equals("ACQUIRE DRILL", StringComparison.OrdinalIgnoreCase)
                 || trimmed.Equals("REPLACE DRILL", StringComparison.OrdinalIgnoreCase);
         }
+
+        private static bool IsHeaderNameMatch(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return false;
+            }
+
+            string normalized = value.Replace(" ", string.Empty);
+            normalized = normalized.ToLowerInvariant();
+            foreach (var keyword in HeaderNameKeywords)
+            {
+                if (normalized.Contains(keyword))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool IsLikelyAbilityField(Text text, ConfirmBuyAbilityDataBind bind)
+        {
+            if (text == null)
+            {
+                return false;
+            }
+
+            if (text == bind?.AbilityNameText || text == bind?.AbilitiyDescriptionText)
+            {
+                return true;
+            }
+
+            if (IsHeaderNameMatch(text.gameObject?.name))
+            {
+                return false;
+            }
+
+            string objectName = text.gameObject?.name;
+            if (!string.IsNullOrEmpty(objectName))
+            {
+                string normalizedName = objectName.Replace(" ", string.Empty).ToLowerInvariant();
+                foreach (var keyword in AbilityFieldNameKeywords)
+                {
+                    if (normalizedName.Contains(keyword))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            var localized = text.GetComponent<LocalizedTextBind>();
+            if (localized != null && !string.IsNullOrEmpty(localized.LocalizationKey))
+            {
+                string key = localized.LocalizationKey.ToUpperInvariant();
+                if (key.Contains("ABILITY_NAME")
+                    || key.Contains("ABILITY_DESCRIPTION")
+                    || key.Contains("ABILITY_DESC")
+                    || key.Contains("SKILL_DESCRIPTION")
+                    || key.Contains("SKILL_DESC"))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool MatchesHeaderLocalization(Text text)
+        {
+            if (text == null)
+            {
+                return false;
+            }
+
+            var localized = text.GetComponent<LocalizedTextBind>();
+            if (localized == null || string.IsNullOrEmpty(localized.LocalizationKey))
+            {
+                return false;
+            }
+
+            string key = localized.LocalizationKey;
+            foreach (var knownKey in KnownHeaderLocalizationKeys)
+            {
+                if (string.Equals(key, knownKey, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            string upper = key.ToUpperInvariant();
+            return upper.Contains("CONFIRM") && upper.Contains("ABILITY");
+        }
+
+        private static readonly string[] HeaderNameKeywords = { "header", "title", "question" };
+        private static readonly string[] AbilityFieldNameKeywords = { "abilityname", "abilitydescription", "abilitydesc", "skillname", "skilldescription", "skilldesc" };
+        private static readonly string[] KnownHeaderLocalizationKeys =
+        {
+            "UI_CHARACTERPROGRESSION_CONFIRM_ABILITY_TITLE",
+            "CHARACTERPROGRESSION/CONFIRM_ABILITY_TITLE",
+            "UI/CHARACTERPROGRESSION/CONFIRMABILITY/TITLE"
+        };
     }
 }
