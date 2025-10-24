@@ -192,8 +192,6 @@ namespace TFTV.TFTVDrills
                         return;
                     }
 
-
-
                     var ability = data.Ability;
 
                     var drills = DrillsDefs.Drills;
