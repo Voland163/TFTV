@@ -15,6 +15,13 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
+using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.Levels;
+using Base.Entities.Abilities;
+using HarmonyLib;
+using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Utils;
 
 namespace TFTV.TFTVDrills
 {
@@ -185,6 +192,8 @@ namespace TFTV.TFTVDrills
                 _pendingDrillConfirmation = new DrillConfirmationContext
                 {
                     Ability = replacement,
+                    ReplacementAbility = original,
+                    SkillPointCost = Math.Max(0, skillPointCost),
                     BaseAbilityLearned = baseAbilityLearned
                 };
 

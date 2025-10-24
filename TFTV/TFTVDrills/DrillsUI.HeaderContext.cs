@@ -5,6 +5,9 @@ using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.ViewControllers;
+using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
+using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using System;
 using UnityEngine.UI;
 
@@ -16,6 +19,8 @@ namespace TFTV.TFTVDrills
         {
             public TacticalAbilityDef Ability;
             public bool BaseAbilityLearned;
+            public TacticalAbilityDef ReplacementAbility;
+            public int SkillPointCost;
         }
 
         public sealed class HeaderContext

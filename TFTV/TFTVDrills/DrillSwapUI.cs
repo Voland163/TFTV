@@ -1,16 +1,13 @@
-using Base.Entities.Abilities;
-using Base.Input;
-using Base.UI;
 using PhoenixPoint.Common.Entities.Characters;
-using PhoenixPoint.Common.UI;
-using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -49,11 +46,36 @@ namespace TFTV.TFTVDrills
                 return true;
 
 
-              //  var availableDrills = DrillsDefs.GetAvailableDrills(phoenixFaction, character);
-              //  return availableDrills != null && availableDrills.Any(def => def != null && def != ability);
+                //  var availableDrills = DrillsDefs.GetAvailableDrills(phoenixFaction, character);
+                //  return availableDrills != null && availableDrills.Any(def => def != null && def != ability);
+            }
+
+            public static void Update(AbilityTrackSkillEntryElement element)
+            {
+                if (element == null)
+                {
+                    return;
+                }
+
+                var availableImage = element.Available;
+                if (availableImage == null || DrillsDefs._drillAvailable == null)
+                {
+                    return;
+                }
+
+                if (availableImage.sprite != DrillsDefs._drillAvailable)
+                {
+                    return;
+                }
+
+                if (!element.AvailableSkill || !availableImage.gameObject.activeSelf)
+                {
+                    return;
+                }
+
+                availableImage.color = DrillPulseColor;
             }
         }
-
         private static class CharacterLookup
         {
             public static (AbilityTrack track, AbilityTrackSlot slot) FindTrackSlot(GeoCharacter character, TacticalAbilityDef ability)
@@ -134,10 +156,10 @@ namespace TFTV.TFTVDrills
 
         private static class DrillSwapUI
         {
-            public static void Show(UIModuleCharacterProgression ui, 
-                AbilityTrackSlot slot, TacticalAbilityDef original, 
-                List<TacticalAbilityDef> choices, AbilityTrackSkillEntryElement entry, 
-                bool baseAbilityLearned, AbilityTrack track, 
+            public static void Show(UIModuleCharacterProgression ui,
+                AbilityTrackSlot slot, TacticalAbilityDef original,
+                List<TacticalAbilityDef> choices, AbilityTrackSkillEntryElement entry,
+                bool baseAbilityLearned, AbilityTrack track,
                 int abilityLevel, int baseAbilityCost)
             {
                 if (ui == null || slot == null || original == null || choices == null)
@@ -186,9 +208,9 @@ namespace TFTV.TFTVDrills
                 BuildOverlay(ui, slot, original, choices, entry, baseAbilityLearned, track, abilityLevel, baseAbilityCost);
             }
 
-            private static void BuildOverlay(UIModuleCharacterProgression ui, AbilityTrackSlot slot, 
-                TacticalAbilityDef original, List<TacticalAbilityDef> choices, 
-                AbilityTrackSkillEntryElement entry, bool baseAbilityLearned, 
+            private static void BuildOverlay(UIModuleCharacterProgression ui, AbilityTrackSlot slot,
+                TacticalAbilityDef original, List<TacticalAbilityDef> choices,
+                AbilityTrackSkillEntryElement entry, bool baseAbilityLearned,
                 AbilityTrack track, int abilityLevel, int baseAbilityCost)
             {
                 var overlay = UIBuilder.CreateHoverOverlay(ui, entry, out var panelRect, out var contentRect, out var viewportRect, out var controller, out var tooltipParent);
@@ -275,7 +297,7 @@ namespace TFTV.TFTVDrills
                             ? "Already acquired"
                             : missingRequirements + "\nAlready acquired";
                     }
-   
+
                     Action onChoose = null;
                     if (!locked && !acquired)
                     {
@@ -291,7 +313,7 @@ namespace TFTV.TFTVDrills
                         optionCount++;
                     }
                 }
-            
+
 
                 if (gridRect != null)
                 {
@@ -367,7 +389,7 @@ namespace TFTV.TFTVDrills
                 };
             }
 
-            
+
 
             private static void AcquireBaseAbility(UIModuleCharacterProgression ui, AbilityTrackSlot slot, TacticalAbilityDef ability, AbilityTrack track, int abilityLevel)
             {

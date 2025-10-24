@@ -1,3 +1,4 @@
+using Base.Core;
 using Base.Entities.Abilities;
 using Base.UI;
 using PhoenixPoint.Common.Core;
@@ -5,7 +6,9 @@ using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities.Abilities;

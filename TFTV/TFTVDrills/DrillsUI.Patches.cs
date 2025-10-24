@@ -236,7 +236,7 @@ namespace TFTV.TFTVDrills
             }
         }
 
-        [HarmonyPatch(typeof(AbilityTrackSkillEntryElement), nameof(AbilityTrackSkillEntryElement.LateUpdate))]
+        [HarmonyPatch(typeof(AbilityTrackSkillEntryElement), "LateUpdate")]
         public static class AbilityTrackSkillEntryElement_LateUpdate_Patch
         {
             public static void Prefix(AbilityTrackSkillEntryElement __instance)
