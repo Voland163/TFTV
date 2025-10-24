@@ -390,6 +390,12 @@ namespace TFTV
 
             internal static OverlayAnimator _detailAnimator;
             internal static bool _isDetailVisible;
+            internal static GameObject _detailPanel;
+            internal static Image _detailClassIconImage;
+            internal static GameObject _detailEmptyState;
+            internal static GameObject _detailInfoRoot;
+            internal static Image _detailFactionIconImage;
+            internal static Transform _detailCostRoot;
             internal static GameObject _currentSelectedCard;
             internal static RecruitAtSite _selectedRecruit;
 
@@ -529,7 +535,7 @@ namespace TFTV
                         isInitialized = true;
                     }
 
-                   
+
                     if (_abilityIconBackground == null)
                     {
                         _abilityIconBackground = Helper.CreateSpriteFromImageFile("UI_ButtonFrame_Main_Sliced.png");
@@ -547,7 +553,7 @@ namespace TFTV
 
             }
 
-            private static void SetOverlayVisible(bool show)
+            internal static void SetOverlayVisible(bool show)
             {
                 try
                 {
@@ -660,10 +666,13 @@ namespace TFTV
 
                     var panelImage = overlayPanel.AddComponent<Image>();
                     panelImage.color = new Color(0f, 0f, 0f, 0.95f);
+                    panelImage.raycastTarget = true;
 
                     var panelOutline = overlayPanel.AddComponent<Outline>();
                     panelOutline.effectColor = HeaderBorderColor;
                     panelOutline.effectDistance = new Vector2(2f, 2f);
+
+                    overlayPanel.AddComponent<OverlayRightClickDismissWatcher>();
 
                     var rt = overlayPanel.GetComponent<RectTransform>();
                     OverlayRootRect = rt;
@@ -1222,6 +1231,29 @@ namespace TFTV
 
                 return _allowedGeoscapeMapStates.Contains(typeName);
             }
+            internal sealed class OverlayRightClickDismissWatcher : MonoBehaviour
+            {
+                private void Update()
+                {
+                    try
+                    {
+                        if (!_isOverlayVisible)
+                        {
+                            return;
+                        }
+
+                        if (global::UnityEngine.Input.GetMouseButtonDown(1))
+                        {
+                            SetOverlayVisible(false);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        TFTVLogger.Error(ex);
+                    }
+                }
+            }
+
             internal sealed class OverlayStateWatcher : MonoBehaviour
             {
                 private void Update()
@@ -1519,7 +1551,6 @@ namespace TFTV
                     return null;
                 }
             }
-
             internal static AbilityIconView GetAbilityIconView(Transform parent)
             {
                 try
@@ -1821,7 +1852,6 @@ namespace TFTV
                     TFTVLogger.Error(ex);
                 }
             }
-
             internal static void CreateToolbar(Transform overlayRoot)
             {
                 var (bar, rt) = RecruitOverlayManagerHelpers.NewUI("Toolbar", overlayRoot);

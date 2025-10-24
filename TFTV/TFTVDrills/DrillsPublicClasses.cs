@@ -445,19 +445,26 @@ namespace TFTV.TFTVDrills
                     ApplyEffect();   // <-- make sure our AP reduction runs
                 }
             }
-
+            
             public override void ApplyEffect()
             {
                 //TFTVLogger.Always($"apply effect: {UnapplyRequested} immune: {ActorIsImmune(TacticalActorBase)} tacticalactor null {TacticalActor == null}");
                 if (UnapplyRequested || ActorIsImmune(TacticalActorBase)) return;
 
                 base.ApplyEffect(); // spawns the EffectDef/particles/etc.
-
+                
                 if (TacticalActor != null)
                 {
-                    float cut = TacticalActor.CharacterStats.ActionPoints.Max * LightStunStatusDef.ActionPointsReduction;
-                  //  TFTVLogger.Always($"AP cut (light stun): {cut}");
-                    TacticalActor.CharacterStats.ActionPoints.Subtract(cut);
+                    var actionPoints = TacticalActor.CharacterStats.ActionPoints;
+                    float max = actionPoints.Max;
+                    float floor = max * (1f - LightStunStatusDef.ActionPointsReduction);
+                    float clamped = Mathf.Min(actionPoints.Value, floor);
+                    actionPoints.Set(clamped);
+                }
+
+                if (StatusComponent != null)
+                {
+                    RequestUnapply(StatusComponent);
                 }
             }
         }

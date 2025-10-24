@@ -405,6 +405,16 @@ namespace TFTV.TFTVDrills
                         _tooltipCanvas = null;
                     }
 
+                    var tooltipTransform = _sharedTooltip.transform as RectTransform;
+                    if (tooltipTransform != null)
+                    {
+                        Vector3 tooltipScale = tooltipTransform.localScale;
+                        if (Mathf.Approximately(tooltipScale.x, 0.5f) && Mathf.Approximately(tooltipScale.y, 0.5f))
+                        {
+                            tooltipTransform.localScale = Vector3.one;
+                        }
+                    }
+
                     return _sharedTooltip;
                 }
                 catch (Exception ex)

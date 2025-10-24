@@ -61,14 +61,10 @@ namespace TFTV.TFTVDrills
             {
                 isReplacement = true;
             }
-            else if (existingAbilityIsPersonalPerk)
+            
+            if (existingAbilityIsPersonalPerk)
             {
                 return "REPLACE ABILITY";
-            }
-
-            else if (data.AbilitySlot?.Ability != null && data.AbilitySlot.Ability != ability)
-            {
-                isReplacement = true;
             }
 
             return isReplacement ? "REPLACE DRILL" : "ACQUIRE DRILL";

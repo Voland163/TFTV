@@ -176,6 +176,8 @@ namespace TFTV.TFTVDrills
             }
         }
 
+        private static Text _headerText = null;
+
         [HarmonyPatch(typeof(ConfirmBuyAbilityDataBind), nameof(ConfirmBuyAbilityDataBind.ModalShowHandler))]
         public static class ConfirmBuyAbilityDataBind_ModalShowHandler_Patch
         {
@@ -191,6 +193,12 @@ namespace TFTV.TFTVDrills
                     if (!(modal.Data is ConfirmBuyAbilityDataBind.Data data))
                     {
                         return;
+                    }
+
+                    Localize localize = _headerText?.GetComponent<Localize>();
+                    if (localize != null)
+                    {
+                        localize.enabled = true;
                     }
 
                     var ability = data.Ability;
@@ -226,18 +234,23 @@ namespace TFTV.TFTVDrills
                     TFTVLogger.Always($"__instance.SpTextPattern: {__instance.SpTextPattern}");
                     TFTVLogger.Always($"__instance.SPCostText: {__instance.SPCostText}");
                     TFTVLogger.Always($"__instance.SPCostText: {__instance.SPCostText}");
-                  
-
-                    var headerText = ResolveConfirmationHeaderText(__instance, modal);
-
-                    TFTVLogger.Always($"header text is {headerText.text}");
 
 
+                    var headerText = _headerText;
+
+                    if (headerText == null)
+                    {
+                        headerText = ResolveConfirmationHeaderText(__instance, modal);
+                        TFTVLogger.Always($"header text is {headerText.text}");
+                    }
+                   
                     if (headerText != null)
                     {
+                        _headerText = headerText;
                        string label = DetermineDrillActionLabel(data, ability, confirmationContext, exitingAbilityIsDrill, existingAbilityPersonalPerk);
                         TFTVLogger.Always($"label is {label}");
                         headerText.text = label;
+                        headerText.GetComponent<Localize>().enabled = false;
                     }
 
                     string abilityName = ability.ViewElementDef?.DisplayName1?.Localize() ?? ability.name ?? string.Empty;
@@ -261,12 +274,7 @@ namespace TFTV.TFTVDrills
                             {
                                 string replacementName = confirmationContext.ReplacementAbility.ViewElementDef?.DisplayName1?.Localize() ?? confirmationContext.ReplacementAbility.name ?? string.Empty;
                                 description += string.Format("\n\n<color=#{0}><b>Replaces:</b> {1}</color>", pulseHex, replacementName);
-                            }
-
-                            if (confirmationContext.SkillPointCost > 0)
-                            {
-                                description += string.Format("\n\n<color=#{0}><b>Cost:</b> {1} SP</color>", pulseHex, confirmationContext.SkillPointCost);
-                            }
+                            }                         
                         }
 
                         if (showStaminaWarning)
@@ -275,6 +283,7 @@ namespace TFTV.TFTVDrills
                         }
 
                         __instance.AbilitiyDescriptionText.text = description;
+                        __instance.AbilitiyDescriptionText.fontSize = 40;
                     }
 
                     _pendingDrillConfirmation = null;

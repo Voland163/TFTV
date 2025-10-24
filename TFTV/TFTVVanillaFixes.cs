@@ -2,6 +2,7 @@
 using Base;
 using Base.AI;
 using Base.Audio;
+using Base.Collections;
 using Base.Core;
 using Base.Defs;
 using Base.Entities;
@@ -68,6 +69,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static PhoenixPoint.Tactical.Entities.Effects.DamageEffect;
@@ -1497,30 +1499,35 @@ namespace TFTV
             }
 
 
-            internal class ExtraLongDetoursAroundFire
+           /* internal static class ExtraLongDetoursAroundFire
             {
+                private const float ExtraDistanceAllowance = 3f;
+                private const float DetourMultiplier = 1.5f;
+
+                private static readonly FieldInfo ActorField = AccessTools.Field(typeof(TacticalNavCostFactorFuncs), "_actor");
+
+                private static readonly ConditionalWeakTable<NodePathSourceData, AllowedDistanceInfo> AllowedDistances = new ConditionalWeakTable<NodePathSourceData, AllowedDistanceInfo>();
+
+                private const float DistanceTolerance = 0.01f;
+
                 [HarmonyPatch(typeof(NodePathSourceData))]
-                internal static class TacticalFirePathingFix
+                private static class NodePathSourceDataPatch
                 {
-                    private const float ExtraDistanceAllowance = 3f;
-                    private const float DetourMultiplier = 1.5f;
-
-                    private static readonly FieldInfo ActorField = AccessTools.Field(typeof(TacticalNavCostFactorFuncs), "_actor");
-
                     [HarmonyPatch(
                         nameof(NodePathSourceData.Set),
                         new[]
                         {
-                typeof(NodeGraph),
-                typeof(Vector3),
-                typeof(NodeAreas),
-                typeof(NodeObstacle),
-                typeof(float),
-                typeof(INavCostFactorFuncs)
+                    typeof(NodeGraph),
+                    typeof(Vector3),
+                    typeof(NodeAreas),
+                    typeof(NodeObstacle),
+                    typeof(float),
+                    typeof(INavCostFactorFuncs)
                         })]
                     [HarmonyPrefix]
-                    private static void LimitTacticalMaxDistance(ref float maxDistance, INavCostFactorFuncs navCosts)
+                    private static void CaptureAllowedDistance(NodePathSourceData __instance, INavCostFactorFuncs navCosts)
                     {
+                        AllowedDistances.Remove(__instance);
                         if (navCosts == null || ActorField == null)
                         {
                             return;
@@ -1531,8 +1538,7 @@ namespace TFTV
                             return;
                         }
 
-                        TacticalActor actor = ActorField.GetValue(tacticalFuncs) as TacticalActor;
-                        if (actor == null)
+                        if (!(ActorField.GetValue(tacticalFuncs) is TacticalActor actor))
                         {
                             return;
                         }
@@ -1549,15 +1555,191 @@ namespace TFTV
                             return;
                         }
 
-                        if (float.IsPositiveInfinity(maxDistance) || maxDistance > allowed)
-                        {
-                            maxDistance = allowed;
-                        }
+                        AllowedDistances.Add(__instance, new AllowedDistanceInfo(allowed));
+                    }
+
+                    [HarmonyPatch(nameof(NodePathSourceData.Clear))]
+                    [HarmonyPostfix]
+                    private static void RemoveAllowedDistance(NodePathSourceData __instance)
+                    {
+                        AllowedDistances.Remove(__instance);
                     }
                 }
-            }
 
-            internal class TacticalSavesAIBug
+                [HarmonyPatch(typeof(Pathfinder<GraphNode>))]
+                private static class PathfinderPatches
+                {
+                    [HarmonyPatch("InitQuery_Dijkstra")]
+                    [HarmonyPostfix]
+                    private static void InitializeDijkstra(Pathfinder<GraphNode> __instance, GraphNode startNode)
+                    {
+                        RegisterStartNodeDistance(__instance, __instance.GetVisitedNodeInfos_Dijkstra(), startNode);
+                    }
+
+                    [HarmonyPatch("InitQuery_AStar")]
+                    [HarmonyPostfix]
+                    private static void InitializeAStar(Pathfinder<GraphNode> __instance, GraphNode startNode, float startNodeHeuristicScore)
+                    {
+                        RegisterStartNodeDistance(__instance, __instance.GetVisitedNodeInfos_AStar(), startNode);
+                    }
+
+                    [HarmonyPatch(typeof(Pathfinder<GraphNode>), "UpdateQuery")]
+                    private static class UpdateQueryPatch
+                    {
+                        [HarmonyPrefix]
+                        private static bool LimitByActualDistance(Pathfinder<GraphNode> __instance, GraphNode currentNode, Pathfinder<GraphNode>.NodeInfo currentNodeInfo, GraphNode neighbour)
+                        {
+                            NodePath nodePath = __instance as NodePath;
+                            if (nodePath?.SourceData == null)
+                            {
+                                return true;
+                            }
+
+                            if (!TryGetAllowedInfo(nodePath, out AllowedDistanceInfo allowed))
+                            {
+                                return true;
+                            }
+
+                            if (!TryCalculateCandidateDistance(nodePath, currentNode, neighbour, allowed, out float candidateDistance))
+                            {
+                                return true;
+                            }
+
+                            return !(candidateDistance > allowed.MaxDistance + DistanceTolerance);
+                        }
+
+                        [HarmonyPostfix]
+                        private static void TrackActualDistance(
+                            Pathfinder<GraphNode> __instance,
+                            GraphNode currentNode,
+                            Pathfinder<GraphNode>.NodeInfo currentNodeInfo,
+                            GraphNode neighbour,
+                            [HarmonyArgument(4)] Dictionary<GraphNode, Pathfinder<GraphNode>.NodeInfo> visitedNodeInfos)
+                        {
+                            NodePath nodePath = __instance as NodePath;
+                            if (nodePath?.SourceData == null || visitedNodeInfos == null)
+                            {
+                                return;
+                            }
+
+                            if (!TryGetAllowedInfo(nodePath, out AllowedDistanceInfo allowed))
+                            {
+                                return;
+                            }
+
+                            if (!TryCalculateCandidateDistance(nodePath, currentNode, neighbour, allowed, out float candidateDistance))
+                            {
+                                return;
+                            }
+
+                            if (!visitedNodeInfos.TryGetValue(neighbour, out Pathfinder<GraphNode>.NodeInfo neighbourInfo))
+                            {
+                                return;
+                            }
+
+                            if (neighbourInfo == null || neighbourInfo.CameFromNodeInfo != currentNodeInfo)
+                            {
+                                return;
+                            }
+
+                            allowed.SetActualDistance(neighbour, candidateDistance);
+                        }
+                    }
+
+                    private static void RegisterStartNodeDistance(Pathfinder<GraphNode> pathfinder, Dictionary<GraphNode, Pathfinder<GraphNode>.NodeInfo> visitedInfos, GraphNode startNode)
+                    {
+                        if (!(pathfinder is NodePath nodePath) || nodePath.SourceData == null || visitedInfos == null || startNode == null)
+                        {
+                            return;
+                        }
+
+                        if (!AllowedDistances.TryGetValue(nodePath.SourceData, out AllowedDistanceInfo allowed) || !allowed.IsFinite)
+                        {
+                            return;
+                        }
+
+                        allowed.SetActualDistance(startNode, 0f);
+                    }
+
+                    private static bool TryCalculateCandidateDistance(NodePath nodePath, GraphNode currentNode, GraphNode neighbour, AllowedDistanceInfo allowed, out float distance)
+                    {
+                        distance = -1f;
+
+                        if (nodePath?.SourceData == null || currentNode == null || neighbour == null)
+                        {
+                            return false;
+                        }
+
+                        if (!allowed.TryGetActualDistance(currentNode, out float currentDistance))
+                        {
+                            return false;
+                        }
+
+                        float step = currentNode.GetDistance(neighbour, nodePath.SourceData.Areas, GraphNode.AreasType.Effective, nodePath.SourceData.ObstacleToIgnore);
+                        if (float.IsNaN(step) || float.IsInfinity(step) || step <= 0f)
+                        {
+                            return false;
+                        }
+
+                        distance = currentDistance + step;
+                        return distance > 0f && !float.IsNaN(distance) && !float.IsInfinity(distance);
+                    }
+                }
+
+                private sealed class AllowedDistanceInfo
+                {
+                    public AllowedDistanceInfo(float maxDistance)
+                    {
+                        MaxDistance = maxDistance;
+                    }
+
+                    public float MaxDistance { get; }
+
+                    public bool IsFinite => MaxDistance > 0f && !float.IsInfinity(MaxDistance) && !float.IsNaN(MaxDistance);
+
+                    public bool TryGetActualDistance(GraphNode node, out float distance)
+                    {
+                        if (node == null)
+                        {
+                            distance = 0f;
+                            return false;
+                        }
+
+                        return _actualDistances.TryGetValue(node, out distance);
+                    }
+
+                    public void SetActualDistance(GraphNode node, float distance)
+                    {
+                        if (node == null || float.IsNaN(distance) || float.IsInfinity(distance) || distance < 0f)
+                        {
+                            return;
+                        }
+
+                        _actualDistances[node] = distance;
+                    }
+
+                    private readonly Dictionary<GraphNode, float> _actualDistances = new Dictionary<GraphNode, float>();
+                }
+
+                private static bool TryGetAllowedInfo(NodePath nodePath, out AllowedDistanceInfo allowed)
+                {
+                    allowed = null;
+                    if (nodePath?.SourceData == null)
+                    {
+                        return false;
+                    }
+
+                    if (!AllowedDistances.TryGetValue(nodePath.SourceData, out allowed))
+                    {
+                        return false;
+                    }
+
+                    return allowed != null && allowed.IsFinite;
+                }
+            }*/
+        
+
+        internal class TacticalSavesAIBug
             {
                 [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.StartTurn))]
                 internal static class TacticalActorStartTurnPatch
