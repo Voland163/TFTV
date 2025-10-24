@@ -68,82 +68,63 @@ namespace TFTV.TFTVDrills
                 return null;
             }
 
-            var iconRoot = new GameObject(showFrame ? "IconFrame" : "IconContainer", typeof(RectTransform));
-            var iconRootRect = (RectTransform)iconRoot.transform;
-            iconRootRect.SetParent(parent, false);
-            iconRootRect.anchorMin = new Vector2(0.5f, 0.5f);
-            iconRootRect.anchorMax = new Vector2(0.5f, 0.5f);
-            iconRootRect.pivot = new Vector2(0.5f, 0.5f);
-            iconRootRect.anchoredPosition = Vector2.zero;
-            iconRootRect.sizeDelta = new Vector2(HeaderIconFrameSize, HeaderIconFrameSize);
+            var iconRootRect = UIBuilder.CreateChildRectTransform(parent,
+                 showFrame ? "IconFrame" : "IconContainer",
+                 anchorMin: new Vector2(0.5f, 0.5f),
+                 anchorMax: new Vector2(0.5f, 0.5f),
+                 pivot: new Vector2(0.5f, 0.5f),
+                 anchoredPosition: Vector2.zero,
+                 sizeDelta: new Vector2(HeaderIconFrameSize, HeaderIconFrameSize));
 
-            var layout = iconRoot.AddComponent<LayoutElement>();
-            layout.minWidth = HeaderIconFrameSize;
-            layout.minHeight = HeaderIconFrameSize;
-            layout.preferredWidth = HeaderIconFrameSize;
-            layout.preferredHeight = HeaderIconFrameSize;
-            layout.flexibleWidth = 0f;
-            layout.flexibleHeight = 0f;
+            UIBuilder.ConfigureLayoutElement(iconRootRect,
+                minWidth: HeaderIconFrameSize,
+                minHeight: HeaderIconFrameSize,
+                preferredWidth: HeaderIconFrameSize,
+                preferredHeight: HeaderIconFrameSize,
+                flexibleWidth: 0f,
+                flexibleHeight: 0f);
 
-            Transform iconParent = iconRoot.transform;
+            Transform iconParent = iconRootRect;
 
             if (showFrame)
             {
                 Color frameColor = isLocked ? LockedFrameColor : DrillFrameColor;
 
-                void CreateBorder(string name, Vector2 anchorMin, Vector2 anchorMax, Vector2 sizeDelta)
-                {
-                    var borderGO = new GameObject(name, typeof(RectTransform), typeof(Image));
-                    var borderRect = (RectTransform)borderGO.transform;
-                    borderRect.SetParent(iconRoot.transform, false);
-                    borderRect.anchorMin = anchorMin;
-                    borderRect.anchorMax = anchorMax;
-                    borderRect.pivot = new Vector2(0.5f, 0.5f);
-                    borderRect.anchoredPosition = Vector2.zero;
-                    borderRect.sizeDelta = sizeDelta;
+                UIBuilder.CreateFrameBorders(iconRootRect, frameColor, HeaderFrameBorderThickness);
 
-                    var borderImage = borderGO.GetComponent<Image>();
-                    borderImage.color = frameColor;
-                    borderImage.raycastTarget = false;
-                }
+                var frameBackgroundRect = UIBuilder.CreateChildRectTransform(iconRootRect,
+                    "FrameBackground",
+                    anchorMin: new Vector2(0f, 0f),
+                    anchorMax: new Vector2(1f, 1f),
+                    pivot: new Vector2(0.5f, 0.5f),
+                    anchoredPosition: Vector2.zero,
+                    components: typeof(Image));
 
-                CreateBorder("Left", new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(HeaderFrameBorderThickness, 0f));
-                CreateBorder("Right", new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(HeaderFrameBorderThickness, 0f));
-                CreateBorder("Top", new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, HeaderFrameBorderThickness));
-                CreateBorder("Bottom", new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0f, HeaderFrameBorderThickness));
-
-                var frameBackground = new GameObject("FrameBackground", typeof(RectTransform), typeof(Image));
-                var frameBackgroundRect = (RectTransform)frameBackground.transform;
-                frameBackgroundRect.SetParent(iconRoot.transform, false);
-                frameBackgroundRect.anchorMin = new Vector2(0f, 0f);
-                frameBackgroundRect.anchorMax = new Vector2(1f, 1f);
-                frameBackgroundRect.pivot = new Vector2(0.5f, 0.5f);
-                frameBackgroundRect.anchoredPosition = Vector2.zero;
                 frameBackgroundRect.offsetMin = new Vector2(HeaderFrameBorderThickness, HeaderFrameBorderThickness);
                 frameBackgroundRect.offsetMax = new Vector2(-HeaderFrameBorderThickness, -HeaderFrameBorderThickness);
 
-                var frameBackgroundImage = frameBackground.GetComponent<Image>();
+                var frameBackgroundImage = frameBackgroundRect.GetComponent<Image>();
                 frameBackgroundImage.color = Color.black;
                 frameBackgroundImage.raycastTarget = false;
 
-                iconParent = frameBackground.transform;
+                iconParent = frameBackgroundRect;
             }
 
-            var iconGO = new GameObject("Icon", typeof(RectTransform), typeof(Image));
-            var iconRect = (RectTransform)iconGO.transform;
-            iconRect.SetParent(iconParent, false);
-            iconRect.anchorMin = new Vector2(0.5f, 0.5f);
-            iconRect.anchorMax = new Vector2(0.5f, 0.5f);
-            iconRect.pivot = new Vector2(0.5f, 0.5f);
-            iconRect.anchoredPosition = Vector2.zero;
-            iconRect.sizeDelta = new Vector2(HeaderIconSize, HeaderIconSize);
+            var iconRect = UIBuilder.CreateChildRectTransform(iconParent,
+                "Icon",
+                anchorMin: new Vector2(0.5f, 0.5f),
+                anchorMax: new Vector2(0.5f, 0.5f),
+                pivot: new Vector2(0.5f, 0.5f),
+                anchoredPosition: Vector2.zero,
+                sizeDelta: new Vector2(HeaderIconSize, HeaderIconSize),
+                components: typeof(Image));
 
-            var iconImage = iconGO.GetComponent<Image>();
+            var iconImage = iconRect.GetComponent<Image>();
             iconImage.sprite = ability.ViewElementDef?.LargeIcon ?? ability.ViewElementDef?.SmallIcon;
 
             if (iconImage.sprite == null)
             {
-                iconRoot.SetActive(false);
+                iconRootRect.gameObject.SetActive(false);
                 return null;
             }
 
@@ -890,56 +871,51 @@ namespace TFTV.TFTVDrills
                 }
             }
 
-            private static void AddHeader(Transform parent, TacticalAbilityDef original, 
+            private static void AddHeader(Transform parent, TacticalAbilityDef original,
                 HeaderContext context, Action onAcquire)
             {
-                var header = new GameObject("TFTV_SwapHeader", typeof(RectTransform));
-                header.transform.SetParent(parent, false);
+                var headerRect = UIBuilder.CreateChildRectTransform(parent,
+                     "TFTV_SwapHeader",
+                     anchorMin: new Vector2(0f, 0.5f),
+                     anchorMax: new Vector2(1f, 0.5f),
+                     pivot: new Vector2(0.5f, 0.5f),
+                     anchoredPosition: Vector2.zero);
 
-                var headerRect = (RectTransform)header.transform;
-                headerRect.SetParent(parent, false);
-                headerRect.anchorMin = new Vector2(0f, 0.5f);
-                headerRect.anchorMax = new Vector2(1f, 0.5f);
-                headerRect.pivot = new Vector2(0.5f, 0.5f);
-                headerRect.anchoredPosition = Vector2.zero;
+                UIBuilder.ConfigureLayoutElement(headerRect,
+                    minHeight: HeaderSectionHeight,
+                    preferredHeight: HeaderSectionHeight);
 
-                var headerLayout = header.AddComponent<LayoutElement>();
-                headerLayout.minHeight = 120f;
-                headerLayout.preferredHeight = 120f;
+                var buttonRect = UIBuilder.CreateChildRectTransform(
+      headerRect,
+      "AcquireBaseAbility",
+      anchorMin: new Vector2(0.5f, 0.5f),
+      anchorMax: new Vector2(0.5f, 0.5f),
+      pivot: new Vector2(0.5f, 0.5f),
+      anchoredPosition: Vector2.zero,
+      sizeDelta: new Vector2(GridCellWidth * 2f, HeaderSectionHeight),
+      typeof(Image), typeof(Button));
 
-               
-
-                var buttonGO = new GameObject("AcquireBaseAbility", typeof(RectTransform), typeof(Image), typeof(Button));
-                var buttonRect = (RectTransform)buttonGO.transform;
-                buttonRect.SetParent(headerRect.transform, false);
-                buttonRect.anchorMin = new Vector2(0.5f, 0.5f);
-                buttonRect.anchorMax = new Vector2(0.5f, 0.5f);
-                buttonRect.pivot = new Vector2(0.5f, 0.5f);
-                buttonRect.localScale = Vector3.one;
-                buttonRect.anchoredPosition = Vector2.zero;
-                buttonRect.sizeDelta = new Vector2(GridCellWidth * 2f, 120f);
-
-                var buttonLayout = buttonGO.AddComponent<LayoutElement>();
-                buttonLayout.minWidth = GridCellWidth * 2f;
-                buttonLayout.preferredWidth = GridCellWidth * 2f;
-                buttonLayout.minHeight = 120f;
-                buttonLayout.preferredHeight = 120f;
-                buttonLayout.flexibleWidth = 0f;
-                buttonLayout.flexibleHeight = 0f;
+                UIBuilder.ConfigureLayoutElement(buttonRect,
+                    minWidth: GridCellWidth * 2f,
+                    preferredWidth: GridCellWidth * 2f,
+                    minHeight: HeaderSectionHeight,
+                    preferredHeight: HeaderSectionHeight,
+                    flexibleWidth: 0f,
+                    flexibleHeight: 0f);
 
                 var normalColor = Color.black;
                 var highlightColor = new Color(0.2f, 0.2f, 0.2f, 1f);
                 var pressedColor = new Color(0.1f, 0.1f, 0.1f, 1f);
                 var disabledColor = new Color(0.1f, 0.1f, 0.1f, 0.4f);
-                var buttonImage = buttonGO.GetComponent<Image>();
-              
+                var buttonImage = buttonRect.GetComponent<Image>();
+
                 buttonImage.color = normalColor;
 
-                var border = buttonGO.AddComponent<Outline>();
+                var border = buttonRect.gameObject.AddComponent<Outline>();
                 border.effectColor = new Color(0.23137255f, 0.23137255f, 0.23137255f, 1f);
                 border.effectDistance = new Vector2(2f, 2f);
 
-                var button = buttonGO.GetComponent<Button>();
+                var button = buttonRect.GetComponent<Button>();
                 button.transition = Selectable.Transition.ColorTint;
                 var colors = button.colors;
                 colors.normalColor = normalColor;
@@ -965,7 +941,7 @@ namespace TFTV.TFTVDrills
                 bool isLocked = allowAcquire && !context.CanPurchaseBaseAbility;
                 Color iconColor = isLocked ? LockedIconTint : Color.white;
 
-                CreateHeaderIcon(buttonGO.transform, original, iconColor, IsDrillAbility(original), isLocked);
+                CreateHeaderIcon(buttonRect, original, iconColor, IsDrillAbility(original), isLocked);
 
             }
 
@@ -1086,52 +1062,47 @@ namespace TFTV.TFTVDrills
                     return;
                 }
 
-                var headerGO = new GameObject("Header", typeof(RectTransform));
-                var headerRect = (RectTransform)headerGO.transform;
-                headerRect.SetParent(content, false);
-                headerRect.anchorMin = new Vector2(0f, 0.5f);
-                headerRect.anchorMax = new Vector2(1f, 0.5f);
-                headerRect.pivot = new Vector2(0.5f, 0.5f);
-                headerRect.anchoredPosition = Vector2.zero;
-                headerRect.sizeDelta = new Vector2(0f, 120f);
+                var headerRect = CreateChildRectTransform(content,
+                   "Header",
+                   anchorMin: new Vector2(0f, 0.5f),
+                   anchorMax: new Vector2(1f, 0.5f),
+                   pivot: new Vector2(0.5f, 0.5f),
+                   anchoredPosition: Vector2.zero,
+                   sizeDelta: new Vector2(0f, HeaderSectionHeight));
 
+                ConfigureLayoutElement(headerRect,
+                    minHeight: HeaderSectionHeight,
+                    preferredHeight: HeaderSectionHeight);
 
+                var buttonRect = CreateChildRectTransform(headerRect,
+                    "AcquireBaseAbility",
+                    anchorMin: new Vector2(0.5f, 0.5f),
+                    anchorMax: new Vector2(0.5f, 0.5f),
+                    pivot: new Vector2(0.5f, 0.5f),
+                    anchoredPosition: Vector2.zero,
+                    sizeDelta: new Vector2(GridCellWidth * 2f, HeaderSectionHeight),
+                    typeof(Image), typeof(Button));
 
-                var headerLayout = headerGO.AddComponent<LayoutElement>();
-                headerLayout.minHeight = 120f;
-                headerLayout.preferredHeight = 120f;
+                ConfigureLayoutElement(buttonRect,
+                    minWidth: GridCellWidth * 2f,
+                    preferredWidth: GridCellWidth * 2f,
+                    minHeight: HeaderSectionHeight,
+                    preferredHeight: HeaderSectionHeight,
+                    flexibleWidth: 0f,
+                    flexibleHeight: 0f);
 
-
-                var buttonGO = new GameObject("AcquireBaseAbility", typeof(RectTransform), typeof(Image), typeof(Button));
-                var buttonRect = (RectTransform)buttonGO.transform;
-                buttonRect.SetParent(headerRect, false);
-                buttonRect.anchorMin = new Vector2(0.5f, 0.5f);
-                buttonRect.anchorMax = new Vector2(0.5f, 0.5f);
-                buttonRect.pivot = new Vector2(0.5f, 0.5f);
-                buttonRect.localScale = Vector3.one;
-                buttonRect.anchoredPosition = Vector2.zero;
-                buttonRect.sizeDelta = new Vector2(GridCellWidth * 2f, 120f);
-
-                var buttonLayout = buttonGO.AddComponent<LayoutElement>();
-                buttonLayout.minWidth = GridCellWidth * 2f;
-                buttonLayout.preferredWidth = GridCellWidth * 2f;
-                buttonLayout.minHeight = 120f;
-                buttonLayout.preferredHeight = 120f;
-                buttonLayout.flexibleWidth = 0f;
-                buttonLayout.flexibleHeight = 0f;
-
-                var buttonImage = buttonGO.GetComponent<Image>();
+                var buttonImage = buttonRect.GetComponent<Image>();
                 var normalColor = Color.black;
                 var highlightColor = new Color(0.2f, 0.2f, 0.2f, 1f);
                 var pressedColor = new Color(0.1f, 0.1f, 0.1f, 1f);
                 var disabledColor = new Color(0.1f, 0.1f, 0.1f, 0.4f);
                 buttonImage.color = normalColor;
 
-                var border = buttonGO.AddComponent<Outline>();
+                var border = buttonRect.gameObject.AddComponent<Outline>();
                 border.effectColor = new Color(0.23137255f, 0.23137255f, 0.23137255f, 1f);
                 border.effectDistance = new Vector2(2f, 2f);
 
-                var button = buttonGO.GetComponent<Button>();
+                var button = buttonRect.GetComponent<Button>();
                 button.transition = Selectable.Transition.ColorTint;
                 var colors = button.colors;
                 colors.normalColor = normalColor;
@@ -1168,11 +1139,11 @@ namespace TFTV.TFTVDrills
                 }
 
 
-                CreateHeaderIcon(buttonGO.transform, original, iconColor, IsDrillAbility(original), isLocked);
+                CreateHeaderIcon(buttonRect, original, iconColor, IsDrillAbility(original), isLocked);
 
                 if (allowAcquire)
                 {
-                    var tooltipTrigger = buttonGO.AddComponent<DrillTooltipTrigger>();
+                    var tooltipTrigger = buttonRect.gameObject.AddComponent<DrillTooltipTrigger>();
                     tooltipTrigger.Initialize(original, context.MissingRequirements, !context.CanPurchaseBaseAbility, false, tooltipParent, panelRect, canvas, context.BaseAbilityCost);
                 }
             }
@@ -1222,35 +1193,38 @@ namespace TFTV.TFTVDrills
 
                 DefCache DefCache = TFTVMain.Main.DefCache;
 
-                var overlayGO = new GameObject("TrainingFacilityRequirementOverlay", typeof(RectTransform), typeof(Image), typeof(CanvasGroup));
-                var overlayRect = (RectTransform)overlayGO.transform;
-                overlayRect.SetParent(panelRect, false);
-                overlayRect.anchorMin = new Vector2(0f, 0f);
-                overlayRect.anchorMax = new Vector2(1f, 1f);
-                overlayRect.pivot = new Vector2(0.5f, 0.5f);
+                var overlayRect = CreateChildRectTransform(
+     panelRect,
+     "TrainingFacilityRequirementOverlay",
+     anchorMin: new Vector2(0f, 0f),
+     anchorMax: new Vector2(1f, 1f),
+     pivot: new Vector2(0.5f, 0.5f),
+     anchoredPosition: Vector2.zero,
+     components: new[] { typeof(Image), typeof(CanvasGroup) });
+
                 overlayRect.offsetMin = Vector2.zero;
                 float topOffset = ContentTopPadding + HeaderSectionHeight + ContentSpacing;
                 overlayRect.offsetMax = new Vector2(0f, -topOffset);
                 overlayRect.SetAsLastSibling();
 
-                var overlayImage = overlayGO.GetComponent<Image>();
+                var overlayImage = overlayRect.GetComponent<Image>();
                 var color = PanelColor;
                 overlayImage.color = new Color(color.r, color.g, color.b, FacilityOverlayOpacity);
                 overlayImage.raycastTarget = true;
 
-                var canvasGroup = overlayGO.GetComponent<CanvasGroup>();
+                var canvasGroup = overlayRect.GetComponent<CanvasGroup>();
                 canvasGroup.interactable = false;
                 canvasGroup.blocksRaycasts = true;
+                var messageRect = CreateChildRectTransform(overlayRect,
+                    "Message",
+                    anchorMin: new Vector2(0.5f, 0.5f),
+                    anchorMax: new Vector2(0.5f, 0.5f),
+                    pivot: new Vector2(0.5f, 0.5f),
+                    anchoredPosition: Vector2.zero,
+                    components: new[] { typeof(VerticalLayoutGroup), typeof(ContentSizeFitter) });
 
-                var messageGO = new GameObject("Message", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
-                var messageRect = (RectTransform)messageGO.transform;
-                messageRect.SetParent(overlayRect, false);
-                messageRect.anchorMin = new Vector2(0.5f, 0.5f);
-                messageRect.anchorMax = new Vector2(0.5f, 0.5f);
-                messageRect.pivot = new Vector2(0.5f, 0.5f);
-                messageRect.anchoredPosition = Vector2.zero;
 
-                var messageLayout = messageGO.GetComponent<VerticalLayoutGroup>();
+                var messageLayout = messageRect.GetComponent<VerticalLayoutGroup>();
                 messageLayout.spacing = 8f;
                 messageLayout.childAlignment = TextAnchor.MiddleCenter;
                 messageLayout.childControlWidth = false;
@@ -1258,39 +1232,41 @@ namespace TFTV.TFTVDrills
                 messageLayout.childForceExpandWidth = false;
                 messageLayout.childForceExpandHeight = false;
 
-                var messageFitter = messageGO.GetComponent<ContentSizeFitter>();
+                var messageFitter = messageRect.GetComponent<ContentSizeFitter>();
                 messageFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
                 messageFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-                var iconGO = new GameObject("TrainingFacilityIcon", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
-                var iconRect = (RectTransform)iconGO.transform;
-                iconRect.SetParent(messageRect, false);
-                iconRect.anchorMin = new Vector2(0.5f, 0.5f);
-                iconRect.anchorMax = new Vector2(0.5f, 0.5f);
-                iconRect.pivot = new Vector2(0.5f, 0.5f);
-                iconRect.anchoredPosition = Vector2.zero;
-                iconRect.sizeDelta = new Vector2(FacilityIconSize, FacilityIconSize);
+                var iconRect = CreateChildRectTransform(messageRect,
+                    "TrainingFacilityIcon",
+                    anchorMin: new Vector2(0.5f, 0.5f),
+                    anchorMax: new Vector2(0.5f, 0.5f),
+                    pivot: new Vector2(0.5f, 0.5f),
+                    anchoredPosition: Vector2.zero,
+                    sizeDelta: new Vector2(FacilityIconSize, FacilityIconSize),
+                    typeof(Image), typeof(LayoutElement));
 
-                var iconImage = iconGO.GetComponent<Image>();
+                var iconImage = iconRect.GetComponent<Image>();
                 iconImage.color = Color.white;
                 iconImage.sprite = DefCache.GetDef<ViewElementDef>("E_ViewElement [TrainingFacility_PhoenixFacilityDef]").SmallIcon;
                 iconImage.raycastTarget = false;
 
-                var iconLayout = iconGO.GetComponent<LayoutElement>();
-                iconLayout.minHeight = FacilityIconSize;
-                iconLayout.preferredHeight = FacilityIconSize;
-                iconLayout.minWidth = FacilityIconSize;
-                iconLayout.preferredWidth = FacilityIconSize;
+                ConfigureLayoutElement(iconRect,
+                    minWidth: FacilityIconSize,
+                    minHeight: FacilityIconSize,
+                    preferredWidth: FacilityIconSize,
+                    preferredHeight: FacilityIconSize);
 
-                var placeholderGO = new GameObject("PlaceholderLabel", typeof(RectTransform), typeof(Text));
-                var placeholderRect = (RectTransform)placeholderGO.transform;
-                placeholderRect.SetParent(iconGO.transform, false);
-                placeholderRect.anchorMin = new Vector2(0.5f, 0.5f);
-                placeholderRect.anchorMax = new Vector2(0.5f, 0.5f);
-                placeholderRect.pivot = new Vector2(0.5f, 0.5f);
-                placeholderRect.anchoredPosition = Vector2.zero;
+                var placeholderRect = CreateChildRectTransform(iconRect,
+                    "PlaceholderLabel",
+                    anchorMin: new Vector2(0.5f, 0.5f),
+                    anchorMax: new Vector2(0.5f, 0.5f),
+                    pivot: new Vector2(0.5f, 0.5f),
+                    anchoredPosition: Vector2.zero,
+                    components: typeof(Text));
 
-                var placeholderText = placeholderGO.GetComponent<Text>();
+                var placeholderText = placeholderRect.GetComponent<Text>();
+
+
                 placeholderText.font = GetDefaultFont();
                 placeholderText.text = "ICON";
                 placeholderText.fontSize = 18;
@@ -1301,7 +1277,7 @@ namespace TFTV.TFTVDrills
                 AddTrainingFacilityOverlayLabel(messageRect, "REQUIRES A FUNCTIONING", FacilityRequirementTextColor, 40);
                 AddTrainingFacilityOverlayLabel(messageRect, "TRAINING FACILITY", Color.white, 50);
 
-                return overlayGO;
+                return overlayRect.gameObject;
             }
 
 
@@ -1314,18 +1290,19 @@ namespace TFTV.TFTVDrills
                     return null;
                 }
 
-                var option = new GameObject(def.name ?? "Ability", typeof(RectTransform), typeof(Image), typeof(Button));
-                var optionRect = (RectTransform)option.transform;
-                optionRect.SetParent(gridRect, false);
-                optionRect.anchorMin = new Vector2(0f, 1f);
-                optionRect.anchorMax = new Vector2(0f, 1f);
-                optionRect.pivot = new Vector2(0.5f, 0.5f);
-                optionRect.sizeDelta = Vector2.zero;
+                var optionRect = CreateChildRectTransform(gridRect,
+                      def.name ?? "Ability",
+                      anchorMin: new Vector2(0f, 1f),
+                      anchorMax: new Vector2(0f, 1f),
+                      pivot: new Vector2(0.5f, 0.5f),
+                      anchoredPosition: Vector2.zero,
+                      sizeDelta: Vector2.zero,
+                      typeof(Image), typeof(Button));
 
-                var background = option.GetComponent<Image>();
+                var background = optionRect.GetComponent<Image>();
                 background.color = ButtonNormalColor;
 
-                var button = option.GetComponent<Button>();
+                var button = optionRect.GetComponent<Button>();
                 button.transition = Selectable.Transition.ColorTint;
                 var colors = button.colors;
                 colors.normalColor = ButtonNormalColor;
@@ -1347,7 +1324,7 @@ namespace TFTV.TFTVDrills
                     background.color = isAcquired ? ButtonNormalColor : ButtonDisabledColor;
                 }
 
-                var layout = option.AddComponent<VerticalLayoutGroup>();
+                var layout = optionRect.gameObject.AddComponent<VerticalLayoutGroup>();
                 layout.padding = new RectOffset(8, 8, 8, 8);
                 layout.spacing = 6f;
                 layout.childAlignment = TextAnchor.UpperCenter;
@@ -1355,83 +1332,66 @@ namespace TFTV.TFTVDrills
                 layout.childForceExpandWidth = true;
                 layout.childForceExpandHeight = false;
 
-                var frameGO = new GameObject("IconFrame", typeof(RectTransform));
-                var frameRect = (RectTransform)frameGO.transform;
-                frameRect.SetParent(option.transform, false);
-                frameRect.anchorMin = new Vector2(0.5f, 0.5f);
-                frameRect.anchorMax = new Vector2(0.5f, 0.5f);
-                frameRect.pivot = new Vector2(0.5f, 0.5f);
-                frameRect.anchoredPosition = Vector2.zero;
-                frameRect.sizeDelta = new Vector2(100f, 100f);
+                var frameRect = CreateChildRectTransform(optionRect,
+                    "IconFrame",
+                    anchorMin: new Vector2(0.5f, 0.5f),
+                    anchorMax: new Vector2(0.5f, 0.5f),
+                    pivot: new Vector2(0.5f, 0.5f),
+                    anchoredPosition: Vector2.zero,
+                    sizeDelta: new Vector2(HeaderIconFrameSize, HeaderIconFrameSize));
 
-                var frameLayout = frameGO.AddComponent<LayoutElement>();
-                frameLayout.preferredWidth = 100f;
-                frameLayout.preferredHeight = 100f;
-                frameLayout.minWidth = 100f;
-                frameLayout.minHeight = 100f;
+                ConfigureLayoutElement(frameRect,
+                    minWidth: HeaderIconFrameSize,
+                    minHeight: HeaderIconFrameSize,
+                    preferredWidth: HeaderIconFrameSize,
+                    preferredHeight: HeaderIconFrameSize);
 
-                float borderThickness = 4f;
+                float borderThickness = HeaderFrameBorderThickness;
 
                 Color frameColor = isLocked ? LockedFrameColor : DrillFrameColor;
 
-                void CreateBorder(string name, Vector2 anchorMin, Vector2 anchorMax, Vector2 sizeDelta)
-                {
-                    var borderGO = new GameObject(name, typeof(RectTransform), typeof(Image));
-                    var borderRect = (RectTransform)borderGO.transform;
-                    borderRect.SetParent(frameGO.transform, false);
-                    borderRect.anchorMin = anchorMin;
-                    borderRect.anchorMax = anchorMax;
-                    borderRect.pivot = new Vector2(0.5f, 0.5f);
-                    borderRect.anchoredPosition = Vector2.zero;
-                    borderRect.sizeDelta = sizeDelta;
+                CreateFrameBorders(frameRect, frameColor, borderThickness);
 
-                    var borderImage = borderGO.GetComponent<Image>();
-                    borderImage.color = frameColor;
-                    borderImage.raycastTarget = false;
-                }
-
-                CreateBorder("Left", new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(borderThickness, 0f));
-                CreateBorder("Right", new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(borderThickness, 0f));
-                CreateBorder("Top", new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, borderThickness));
-                CreateBorder("Bottom", new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0f, borderThickness));
-
-                var frameBackground = new GameObject("FrameBackground", typeof(RectTransform), typeof(Image));
-                var frameBackgroundRect = (RectTransform)frameBackground.transform;
-                frameBackgroundRect.SetParent(frameGO.transform, false);
-                frameBackgroundRect.anchorMin = new Vector2(0f, 0f);
-                frameBackgroundRect.anchorMax = new Vector2(1f, 1f);
-                frameBackgroundRect.pivot = new Vector2(0.5f, 0.5f);
-                frameBackgroundRect.anchoredPosition = Vector2.zero;
+                var frameBackgroundRect = CreateChildRectTransform(frameRect,
+                    "FrameBackground",
+                    anchorMin: new Vector2(0f, 0f),
+                    anchorMax: new Vector2(1f, 1f),
+                    pivot: new Vector2(0.5f, 0.5f),
+                    anchoredPosition: Vector2.zero,
+                    components: typeof(Image));
                 frameBackgroundRect.offsetMin = new Vector2(borderThickness, borderThickness);
                 frameBackgroundRect.offsetMax = new Vector2(-borderThickness, -borderThickness);
 
-                var frameBackgroundImage = frameBackground.GetComponent<Image>();
+                var frameBackgroundImage = frameBackgroundRect.GetComponent<Image>();
                 frameBackgroundImage.color = Color.black;
                 frameBackgroundImage.raycastTarget = false;
 
-                var iconGO = new GameObject("Icon", typeof(RectTransform), typeof(Image));
-                var iconRect = (RectTransform)iconGO.transform;
-                iconRect.SetParent(frameBackground.transform, false);
-                iconRect.anchorMin = new Vector2(0.5f, 0.5f);
-                iconRect.anchorMax = new Vector2(0.5f, 0.5f);
-                iconRect.pivot = new Vector2(0.5f, 0.5f);
-                iconRect.anchoredPosition = Vector2.zero;
-                iconRect.sizeDelta = new Vector2(92f, 92f);
+                var iconRect = CreateChildRectTransform(frameBackgroundRect,
+                   "Icon",
+                   anchorMin: new Vector2(0.5f, 0.5f),
+                   anchorMax: new Vector2(0.5f, 0.5f),
+                   pivot: new Vector2(0.5f, 0.5f),
+                   anchoredPosition: Vector2.zero,
+                   sizeDelta: new Vector2(HeaderIconSize, HeaderIconSize),
+                   components: typeof(Image));
 
-                var iconImage = iconGO.GetComponent<Image>();
+
+                var iconImage = iconRect.GetComponent<Image>();
                 iconImage.sprite = def.ViewElementDef?.LargeIcon ?? def.ViewElementDef?.SmallIcon;
                 iconImage.preserveAspect = true;
                 iconImage.color = isLocked ? LockedIconTint : (isAcquired ? DrillPulseColor : Color.white);
                 iconImage.raycastTarget = false;
 
-                var labelGO = new GameObject("Label", typeof(RectTransform), typeof(Text));
-                var labelRect = (RectTransform)labelGO.transform;
-                labelRect.SetParent(option.transform, false);
-                labelRect.anchorMin = new Vector2(0f, 0f);
-                labelRect.anchorMax = new Vector2(1f, 0f);
-                labelRect.sizeDelta = new Vector2(0f, 28f);
+                var labelRect = CreateChildRectTransform(optionRect,
+                    "Label",
+                    anchorMin: new Vector2(0f, 0f),
+                    anchorMax: new Vector2(1f, 0f),
+                    pivot: new Vector2(0.5f, 0.5f),
+                    anchoredPosition: Vector2.zero,
+                    sizeDelta: new Vector2(0f, 28f),
+                    components: typeof(Text));
 
-                var labelText = labelGO.GetComponent<Text>();
+                var labelText = labelRect.GetComponent<Text>();
                 labelText.font = GetDefaultFont();
                 labelText.text = def.ViewElementDef?.DisplayName1?.Localize() ?? def.name ?? "Ability";
                 labelText.color = isLocked ? LockedLabelTint : (isAcquired ? DrillPulseColor : Color.white);
@@ -1441,14 +1401,14 @@ namespace TFTV.TFTVDrills
                 labelText.resizeTextMaxSize = 20;
                 labelText.raycastTarget = false;
 
-                var labelLayout = labelGO.AddComponent<LayoutElement>();
-                labelLayout.minHeight = 24f;
-                labelLayout.preferredHeight = 24f;
+                ConfigureLayoutElement(labelRect,
+                   minHeight: 24f,
+                   preferredHeight: 24f);
 
-                var tooltipTrigger = option.AddComponent<DrillTooltipTrigger>();
+                var tooltipTrigger = optionRect.gameObject.AddComponent<DrillTooltipTrigger>();
                 tooltipTrigger.Initialize(def, missingRequirements, isLocked, isAcquired, tooltipParent, panelRect, canvas, skillPointCost);
 
-                return option;
+                return optionRect.gameObject;
             }
 
             private static void AddTrainingFacilityOverlayLabel(Transform parent, string text, Color color, int fontSize)
@@ -1458,15 +1418,15 @@ namespace TFTV.TFTVDrills
                     return;
                 }
 
-                var labelGO = new GameObject("Label", typeof(RectTransform), typeof(Text), typeof(LayoutElement));
-                var rect = (RectTransform)labelGO.transform;
-                rect.SetParent(parent, false);
-                rect.anchorMin = new Vector2(0.5f, 0.5f);
-                rect.anchorMax = new Vector2(0.5f, 0.5f);
-                rect.pivot = new Vector2(0.5f, 0.5f);
-                rect.anchoredPosition = Vector2.zero;
+                var rect = CreateChildRectTransform(parent,
+                       "Label",
+                       anchorMin: new Vector2(0.5f, 0.5f),
+                       anchorMax: new Vector2(0.5f, 0.5f),
+                       pivot: new Vector2(0.5f, 0.5f),
+                       anchoredPosition: Vector2.zero,
+                       components: new[] { typeof(Text), typeof(LayoutElement) });
 
-                var label = labelGO.GetComponent<Text>();
+                var label = rect.GetComponent<Text>();
                 label.font = GetDefaultFont();
                 label.text = text;
                 label.color = color;
@@ -1476,9 +1436,129 @@ namespace TFTV.TFTVDrills
                 label.horizontalOverflow = HorizontalWrapMode.Overflow;
                 label.raycastTarget = false;
 
-                var layout = labelGO.GetComponent<LayoutElement>();
+                var layout = rect.GetComponent<LayoutElement>();
                 layout.minHeight = fontSize + 6f;
                 layout.preferredHeight = fontSize + 6f;
+            }
+
+            public static RectTransform CreateChildRectTransform(Transform parent, string name,
+                Vector2? anchorMin = null, Vector2? anchorMax = null, Vector2? pivot = null,
+                Vector2? anchoredPosition = null, Vector2? sizeDelta = null, params Type[] components)
+            {
+                if (parent == null)
+                {
+                    return null;
+                }
+
+                var componentList = new List<Type> { typeof(RectTransform) };
+                if (components != null && components.Length > 0)
+                {
+                    componentList.AddRange(components);
+                }
+
+                var child = new GameObject(name, componentList.Distinct().ToArray());
+                var rect = (RectTransform)child.transform;
+                rect.SetParent(parent, false);
+
+                if (anchorMin.HasValue)
+                {
+                    rect.anchorMin = anchorMin.Value;
+                }
+
+                if (anchorMax.HasValue)
+                {
+                    rect.anchorMax = anchorMax.Value;
+                }
+
+                if (pivot.HasValue)
+                {
+                    rect.pivot = pivot.Value;
+                }
+
+                if (anchoredPosition.HasValue)
+                {
+                    rect.anchoredPosition = anchoredPosition.Value;
+                }
+
+                if (sizeDelta.HasValue)
+                {
+                    rect.sizeDelta = sizeDelta.Value;
+                }
+
+                return rect;
+            }
+
+            public static void CreateFrameBorders(RectTransform parentRect, Color color, float thickness)
+            {
+                if (parentRect == null)
+                {
+                    return;
+                }
+
+                void CreateBorder(string name, Vector2 anchorMin, Vector2 anchorMax, Vector2 sizeDelta)
+                {
+                    var borderRect = CreateChildRectTransform(parentRect, name,
+                        anchorMin: anchorMin,
+                        anchorMax: anchorMax,
+                        pivot: new Vector2(0.5f, 0.5f),
+                        anchoredPosition: Vector2.zero,
+                        sizeDelta: sizeDelta,
+                        components: typeof(Image));
+
+                    var image = borderRect.GetComponent<Image>();
+                    image.color = color;
+                    image.raycastTarget = false;
+                }
+
+                CreateBorder("Left", new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(thickness, 0f));
+                CreateBorder("Right", new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(thickness, 0f));
+                CreateBorder("Top", new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, thickness));
+                CreateBorder("Bottom", new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0f, thickness));
+            }
+
+            public static LayoutElement ConfigureLayoutElement(Component owner,
+                float? minWidth = null, float? minHeight = null,
+                float? preferredWidth = null, float? preferredHeight = null,
+                float? flexibleWidth = null, float? flexibleHeight = null)
+            {
+                if (owner == null)
+                {
+                    return null;
+                }
+
+                var layout = owner.GetComponent<LayoutElement>() ?? owner.gameObject.AddComponent<LayoutElement>();
+
+                if (minWidth.HasValue)
+                {
+                    layout.minWidth = minWidth.Value;
+                }
+
+                if (minHeight.HasValue)
+                {
+                    layout.minHeight = minHeight.Value;
+                }
+
+                if (preferredWidth.HasValue)
+                {
+                    layout.preferredWidth = preferredWidth.Value;
+                }
+
+                if (preferredHeight.HasValue)
+                {
+                    layout.preferredHeight = preferredHeight.Value;
+                }
+
+                if (flexibleWidth.HasValue)
+                {
+                    layout.flexibleWidth = flexibleWidth.Value;
+                }
+
+                if (flexibleHeight.HasValue)
+                {
+                    layout.flexibleHeight = flexibleHeight.Value;
+                }
+
+                return layout;
             }
 
             public static void ResizeOptionGrid(RectTransform gridRect, GridLayoutGroup grid, int optionCount)
