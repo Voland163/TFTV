@@ -40,6 +40,11 @@ namespace TFTV.TFTVDrills
         private const float GridPadding = 18f;
         private const float HeaderIconFrameSize = 100f;
         private const float HeaderIconSize = 92f;
+        private const float HeaderIconFrameHeight = 100f;
+        private const float HeaderIconFrameWidth = HeaderIconFrameHeight * 2f;
+        private const float HeaderIconHeight = 92f;
+        private const float HeaderIconWidth = HeaderIconHeight * 2f;
+
         private const float HeaderFrameBorderThickness = 4f;
         private const float HeaderSectionHeight = 120f;
         private const float ContentTopPadding = 20f;
@@ -74,13 +79,13 @@ namespace TFTV.TFTVDrills
                  anchorMax: new Vector2(0.5f, 0.5f),
                  pivot: new Vector2(0.5f, 0.5f),
                  anchoredPosition: Vector2.zero,
-                 sizeDelta: new Vector2(HeaderIconFrameSize, HeaderIconFrameSize));
+                sizeDelta: new Vector2(HeaderIconFrameWidth, HeaderIconFrameHeight));
 
             UIBuilder.ConfigureLayoutElement(iconRootRect,
-                minWidth: HeaderIconFrameSize,
-                minHeight: HeaderIconFrameSize,
-                preferredWidth: HeaderIconFrameSize,
-                preferredHeight: HeaderIconFrameSize,
+                minWidth: HeaderIconFrameWidth,
+                minHeight: HeaderIconFrameHeight,
+                preferredWidth: HeaderIconFrameWidth,
+                preferredHeight: HeaderIconFrameHeight,
                 flexibleWidth: 0f,
                 flexibleHeight: 0f);
 
@@ -116,7 +121,7 @@ namespace TFTV.TFTVDrills
                 anchorMax: new Vector2(0.5f, 0.5f),
                 pivot: new Vector2(0.5f, 0.5f),
                 anchoredPosition: Vector2.zero,
-                sizeDelta: new Vector2(HeaderIconSize, HeaderIconSize),
+               sizeDelta: new Vector2(HeaderIconWidth, HeaderIconHeight),
                 components: typeof(Image));
 
             var iconImage = iconRect.GetComponent<Image>();

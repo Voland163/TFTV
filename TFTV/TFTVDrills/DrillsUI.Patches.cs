@@ -24,6 +24,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using static UnityTools.UI.SnapshotText.Lib.LineGroup;
 
 namespace TFTV.TFTVDrills
 {
@@ -148,12 +149,17 @@ namespace TFTV.TFTVDrills
                         availableImage.sprite = DrillsDefs._drillAvailable;
                         availableImage.gameObject.SetActive(true);
                         __instance.AvailableSkill = true;
+
+                        //TFTVLogger.Always($"should show indicator for ability {ability?.name} true");
+
+                   
                     }
                     else
                     {
                         availableImage.gameObject.SetActive(isAvailable && isBuyable);
                         __instance.AvailableSkill = isAvailable;
                         availableImage.sprite = _originalAvailableImage;
+                       // TFTVLogger.Always($"should show indicator for ability {ability?.name} false");
                     }
 
                     if (ability != null && DrillsDefs.Drills != null && DrillsDefs.Drills.Contains(ability))
@@ -195,6 +201,13 @@ namespace TFTV.TFTVDrills
                     {
                         _pendingDrillConfirmation = null;
                         return;
+                    }
+
+                    var headerText = ResolveConfirmationHeaderText(__instance, modal);
+                    if (headerText != null)
+                    {
+                        string label = DetermineDrillActionLabel(data, ability, confirmationContext);
+                        headerText.text = label;
                     }
 
                     string abilityName = ability.ViewElementDef?.DisplayName1?.Localize() ?? ability.name ?? string.Empty;
@@ -239,20 +252,39 @@ namespace TFTV.TFTVDrills
         [HarmonyPatch(typeof(AbilityTrackSkillEntryElement), "LateUpdate")]
         public static class AbilityTrackSkillEntryElement_LateUpdate_Patch
         {
-            public static void Prefix(AbilityTrackSkillEntryElement __instance)
+            public static bool Prefix(AbilityTrackSkillEntryElement __instance)
             {
                 if (!TFTVAircraftReworkMain.AircraftReworkOn)
                 {
-                    return;
+                    return true;
                 }
 
                 try
                 {
-                    DrillIndicator.Update(__instance);
+                    var availableImage = __instance.Available;
+
+                    if (availableImage == null || DrillsDefs._drillAvailable == null)
+                    {
+                        return true;
+                    }
+
+                    if (availableImage.sprite != DrillsDefs._drillAvailable)
+                    {
+                        return true;
+                    }
+
+                    if (!__instance.AvailableSkill || !availableImage.gameObject.activeSelf)
+                    {
+                        return true;
+                    }
+
+                    availableImage.color = DrillPulseColor;
+                    return false;
                 }
                 catch (Exception ex)
                 {
                     TFTVLogger.Error(ex);
+                    return true;
                 }
             }
         }

@@ -1,27 +1,23 @@
 using Base.Core;
+using Base.Entities.Abilities;
+using HarmonyLib;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Characters;
-using Base.Core;
-using PhoenixPoint.Common.Entities.Characters;
-using PhoenixPoint.Common.UI;
+using PhoenixPoint.Common.Utils;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
-using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
-using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Geoscape.Levels;
-using Base.Entities.Abilities;
-using HarmonyLib;
-using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Utils;
 
 namespace TFTV.TFTVDrills
 {
@@ -103,7 +99,7 @@ namespace TFTV.TFTVDrills
             }
         }
 
-       
+
 
         private static void WireButton(GameObject buttonGO, TacticalAbilityDef def, Action onClick)
         {
@@ -227,7 +223,7 @@ namespace TFTV.TFTVDrills
             }
         }
 
-        private static void TryPerformSwap(UIModuleCharacterProgression ui, AbilityTrackSlot slot, TacticalAbilityDef original, 
+        private static void TryPerformSwap(UIModuleCharacterProgression ui, AbilityTrackSlot slot, TacticalAbilityDef original,
             TacticalAbilityDef replacement, int skillPointCost)
         {
             try
@@ -274,7 +270,9 @@ namespace TFTV.TFTVDrills
 
                 List<TacticalAbilityDef> abilities = Traverse.Create(character.Progression).Field("_abilities").GetValue<List<TacticalAbilityDef>>();
 
-                if (abilities.Contains(original))
+                bool replacedExisting = abilities.Contains(original);
+
+                if (replacedExisting)
                 {
                     abilities.Remove(original);
                 }
@@ -286,12 +284,13 @@ namespace TFTV.TFTVDrills
                     character.Progression.LearnAbility(slot);
                 }
 
-                if (TFTVNewGameOptions.StaminaPenaltyFromInjurySetting)
+                if (replacedExisting && TFTVNewGameOptions.StaminaPenaltyFromInjurySetting)
                 {
                     TFTVCommonMethods.SetStaminaToZero(character);
                     ui.SetStatusesPanel();
                 }
 
+                ui.SetStatusesPanel();
                 ui.CommitStatChanges();
                 ui.RefreshStatPanel();
                 Reflection.CallPrivate(ui, "SetAbilityTracks");
