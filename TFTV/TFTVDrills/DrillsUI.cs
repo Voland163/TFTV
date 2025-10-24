@@ -5,6 +5,7 @@ using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Characters;
+using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.Utils;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
@@ -40,6 +41,11 @@ namespace TFTV.TFTVDrills
         private const float HeaderIconFrameSize = 100f;
         private const float HeaderIconSize = 92f;
         private const float HeaderFrameBorderThickness = 4f;
+        private const float HeaderSectionHeight = 120f;
+        private const float ContentTopPadding = 20f;
+        private const float ContentSpacing = 20f;
+        private const float FacilityOverlayOpacity = 0.75f;
+        private const float FacilityIconSize = 72f;
 
         private static readonly Color LockedIconTint = new Color(0.2f, 0.2f, 0.2f, 1f);
         private static readonly Color LockedLabelTint = new Color(0.82f, 0.82f, 0.82f, 1f);
@@ -586,6 +592,13 @@ namespace TFTV.TFTVDrills
 
                 var character = Reflection.GetPrivate<GeoCharacter>(ui, "_character");
                 var phoenixFaction = Reflection.GetPrivate<GeoPhoenixFaction>(ui, "_phoenixFaction") ?? (character?.Faction?.GeoLevel?.PhoenixFaction);
+                bool hasTrainingFacility = DrillsDefs.HasFunctioningTrainingFacility(phoenixFaction);
+
+                if (!hasTrainingFacility)
+                {
+                    UIBuilder.CreateTrainingFacilityOverlay(panelRect);
+                }
+
 
                 var availableChoices = choices?.Where(def => def != null).Distinct().ToList() ?? new List<TacticalAbilityDef>();
                 var availableSet = new HashSet<TacticalAbilityDef>(availableChoices);
@@ -634,6 +647,11 @@ namespace TFTV.TFTVDrills
                     bool acquired = DrillsDefs.CharacterHasDrill(character, def);
                     bool locked = !unlocked;
                     string missingRequirements = locked ? string.Join("\n", DrillsDefs.GetMissingRequirementDescriptions(phoenixFaction, character, def) ?? Enumerable.Empty<string>()) : string.Empty;
+
+                    if (!hasTrainingFacility)
+                    {
+                        missingRequirements = string.Empty;
+                    }
 
                     if (acquired)
                     {
@@ -849,6 +867,7 @@ namespace TFTV.TFTVDrills
             private static readonly Color ButtonDisabledColor = new Color(0.1f, 0.1f, 0.1f, 0.4f);
             private static readonly Color DrillFrameColor = new Color(0.29803923f, 0.09019608f, 0f, 1f);
             private static readonly Color LockedFrameColor = new Color(0.15294118f, 0.15294118f, 0.15294118f, 1f);
+            private static readonly Color FacilityRequirementTextColor = new Color(0.75f, 0.75f, 0.75f, 1f);
             private static Font _defaultFont;
 
             public static GameObject CreateHoverOverlay(UIModuleCharacterProgression ui, AbilityTrackSkillEntryElement entry, out RectTransform panelRect, out RectTransform contentRect, out RectTransform viewportRect, out DrillOverlayController controller, out Transform tooltipParent)
@@ -1082,6 +1101,98 @@ namespace TFTV.TFTVDrills
                 return gridRect;
             }
 
+            public static GameObject CreateTrainingFacilityOverlay(RectTransform panelRect)
+            {
+                if (panelRect == null)
+                {
+                    return null;
+                }
+
+                DefCache DefCache = TFTVMain.Main.DefCache;
+
+                var overlayGO = new GameObject("TrainingFacilityRequirementOverlay", typeof(RectTransform), typeof(Image), typeof(CanvasGroup));
+                var overlayRect = (RectTransform)overlayGO.transform;
+                overlayRect.SetParent(panelRect, false);
+                overlayRect.anchorMin = new Vector2(0f, 0f);
+                overlayRect.anchorMax = new Vector2(1f, 1f);
+                overlayRect.pivot = new Vector2(0.5f, 0.5f);
+                overlayRect.offsetMin = Vector2.zero;
+                float topOffset = ContentTopPadding + HeaderSectionHeight + ContentSpacing;
+                overlayRect.offsetMax = new Vector2(0f, -topOffset);
+                overlayRect.SetAsLastSibling();
+
+                var overlayImage = overlayGO.GetComponent<Image>();
+                var color = PanelColor;
+                overlayImage.color = new Color(color.r, color.g, color.b, FacilityOverlayOpacity);
+                overlayImage.raycastTarget = true;
+
+                var canvasGroup = overlayGO.GetComponent<CanvasGroup>();
+                canvasGroup.interactable = false;
+                canvasGroup.blocksRaycasts = true;
+
+                var messageGO = new GameObject("Message", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+                var messageRect = (RectTransform)messageGO.transform;
+                messageRect.SetParent(overlayRect, false);
+                messageRect.anchorMin = new Vector2(0.5f, 0.5f);
+                messageRect.anchorMax = new Vector2(0.5f, 0.5f);
+                messageRect.pivot = new Vector2(0.5f, 0.5f);
+                messageRect.anchoredPosition = Vector2.zero;
+
+                var messageLayout = messageGO.GetComponent<VerticalLayoutGroup>();
+                messageLayout.spacing = 8f;
+                messageLayout.childAlignment = TextAnchor.MiddleCenter;
+                messageLayout.childControlWidth = false;
+                messageLayout.childControlHeight = false;
+                messageLayout.childForceExpandWidth = false;
+                messageLayout.childForceExpandHeight = false;
+
+                var messageFitter = messageGO.GetComponent<ContentSizeFitter>();
+                messageFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+                messageFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+                var iconGO = new GameObject("TrainingFacilityIcon", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+                var iconRect = (RectTransform)iconGO.transform;
+                iconRect.SetParent(messageRect, false);
+                iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+                iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+                iconRect.pivot = new Vector2(0.5f, 0.5f);
+                iconRect.anchoredPosition = Vector2.zero;
+                iconRect.sizeDelta = new Vector2(FacilityIconSize, FacilityIconSize);
+
+                var iconImage = iconGO.GetComponent<Image>();
+                iconImage.color = Color.white;
+                iconImage.sprite = DefCache.GetDef<ViewElementDef>("E_ViewElement [TrainingFacility_PhoenixFacilityDef]").SmallIcon;
+                iconImage.raycastTarget = false;
+
+                var iconLayout = iconGO.GetComponent<LayoutElement>();
+                iconLayout.minHeight = FacilityIconSize;
+                iconLayout.preferredHeight = FacilityIconSize;
+                iconLayout.minWidth = FacilityIconSize;
+                iconLayout.preferredWidth = FacilityIconSize;
+
+                var placeholderGO = new GameObject("PlaceholderLabel", typeof(RectTransform), typeof(Text));
+                var placeholderRect = (RectTransform)placeholderGO.transform;
+                placeholderRect.SetParent(iconGO.transform, false);
+                placeholderRect.anchorMin = new Vector2(0.5f, 0.5f);
+                placeholderRect.anchorMax = new Vector2(0.5f, 0.5f);
+                placeholderRect.pivot = new Vector2(0.5f, 0.5f);
+                placeholderRect.anchoredPosition = Vector2.zero;
+
+                var placeholderText = placeholderGO.GetComponent<Text>();
+                placeholderText.font = GetDefaultFont();
+                placeholderText.text = "ICON";
+                placeholderText.fontSize = 18;
+                placeholderText.alignment = TextAnchor.MiddleCenter;
+                placeholderText.color = new Color(0.8f, 0.8f, 0.8f, 0.8f);
+                placeholderText.raycastTarget = false;
+
+                AddTrainingFacilityOverlayLabel(messageRect, "REQUIRES A FUNCTIONING", FacilityRequirementTextColor, 40);
+                AddTrainingFacilityOverlayLabel(messageRect, "TRAINING FACILITY", Color.white, 50);
+
+                return overlayGO;
+            }
+
+
             public static GameObject CreateDrillOption(RectTransform gridRect,
                 RectTransform panelRect, TacticalAbilityDef def, bool isLocked, bool isAcquired,
                 string missingRequirements, Transform tooltipParent, Canvas canvas, Action onChoose, int skillPointCost)
@@ -1226,6 +1337,36 @@ namespace TFTV.TFTVDrills
                 tooltipTrigger.Initialize(def, missingRequirements, isLocked, isAcquired, tooltipParent, panelRect, canvas, skillPointCost);
 
                 return option;
+            }
+
+            private static void AddTrainingFacilityOverlayLabel(Transform parent, string text, Color color, int fontSize)
+            {
+                if (parent == null)
+                {
+                    return;
+                }
+
+                var labelGO = new GameObject("Label", typeof(RectTransform), typeof(Text), typeof(LayoutElement));
+                var rect = (RectTransform)labelGO.transform;
+                rect.SetParent(parent, false);
+                rect.anchorMin = new Vector2(0.5f, 0.5f);
+                rect.anchorMax = new Vector2(0.5f, 0.5f);
+                rect.pivot = new Vector2(0.5f, 0.5f);
+                rect.anchoredPosition = Vector2.zero;
+
+                var label = labelGO.GetComponent<Text>();
+                label.font = GetDefaultFont();
+                label.text = text;
+                label.color = color;
+                label.fontSize = fontSize;
+                label.fontStyle = FontStyle.Bold;
+                label.alignment = TextAnchor.MiddleCenter;
+                label.horizontalOverflow = HorizontalWrapMode.Overflow;
+                label.raycastTarget = false;
+
+                var layout = labelGO.GetComponent<LayoutElement>();
+                layout.minHeight = fontSize + 6f;
+                layout.preferredHeight = fontSize + 6f;
             }
 
             public static void ResizeOptionGrid(RectTransform gridRect, GridLayoutGroup grid, int optionCount)

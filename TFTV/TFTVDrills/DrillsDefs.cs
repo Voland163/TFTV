@@ -347,12 +347,6 @@ namespace TFTV.TFTVDrills
                 yield break;
             }
 
-            if (!HasFunctioningTrainingFacility(faction))
-            {
-                //TFTVLogger.Always($"GetMissingRequirementDescriptions: !HasFunctioningTrainingFacility(faction)");
-                yield return "Requires a functioning Training Facility";
-            }
-
             if (!DrillUnlockConditions.TryGetValue(ability, out var condition) || condition == null)
             {
                 yield break;
@@ -435,7 +429,7 @@ namespace TFTV.TFTVDrills
             }
         }
 
-        private static bool HasFunctioningTrainingFacility(GeoPhoenixFaction faction)
+        internal static bool HasFunctioningTrainingFacility(GeoPhoenixFaction faction)
         {
             try
             {
