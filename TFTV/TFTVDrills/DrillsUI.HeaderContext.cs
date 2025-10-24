@@ -44,7 +44,12 @@ namespace TFTV.TFTVDrills
             public bool CanPurchaseBaseAbility => BaseAbilityLearned || (SlotUnlocked && CanLearnBaseAbility && CanAffordBaseAbility);
         }
 
-        private static string DetermineDrillActionLabel(ConfirmBuyAbilityDataBind.Data data, TacticalAbilityDef ability, DrillConfirmationContext context)
+        private static string DetermineDrillActionLabel(
+            ConfirmBuyAbilityDataBind.Data data,
+            TacticalAbilityDef ability,
+            DrillConfirmationContext context,
+            bool existingAbilityIsDrill,
+            bool existingAbilityIsPersonalPerk)
         {
             bool isReplacement = false;
 
@@ -52,6 +57,15 @@ namespace TFTV.TFTVDrills
             {
                 isReplacement = context.BaseAbilityLearned;
             }
+            else if (existingAbilityIsDrill)
+            {
+                isReplacement = true;
+            }
+            else if (existingAbilityIsPersonalPerk)
+            {
+                return "REPLACE ABILITY";
+            }
+
             else if (data.AbilitySlot?.Ability != null && data.AbilitySlot.Ability != ability)
             {
                 isReplacement = true;
@@ -67,7 +81,11 @@ namespace TFTV.TFTVDrills
                 return null;
             }
 
+
             Text header = TryGetHeaderFromFields(bind);
+
+          //  TFTVLogger.Always($"header null? {header==null} {header?.text}");
+
             if (header != null)
             {
                 return header;
@@ -85,12 +103,14 @@ namespace TFTV.TFTVDrills
 
                     if (IsHeaderNameMatch(text.gameObject?.name) || MatchesHeaderLocalization(text))
                     {
+                       // TFTVLogger.Always($"text? {text?.text}");
                         return text;
                     }
 
                     if (IsConfirmationHeaderText(text.text))
                     {
                         stringMatch = stringMatch ?? text;
+                       // TFTVLogger.Always($"stringMatch? {stringMatch?.text}");
                     }
                 }
             }
@@ -98,7 +118,7 @@ namespace TFTV.TFTVDrills
             if (stringMatch == null)
             {
                 string abilityInfo = bind.AbilityNameText != null ? bind.AbilityNameText.text : "<unknown ability>";
-                TFTVLogger.Debug($"[DrillsUI] Unable to locate confirmation header text for drill modal (ability: {abilityInfo}).");
+                TFTVLogger.Always($"[DrillsUI] Unable to locate confirmation header text for drill modal (ability: {abilityInfo}).");
             }
 
             return stringMatch;

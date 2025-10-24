@@ -1809,6 +1809,7 @@ namespace TFTV.TFTVDrills
                 ConditionalStunStatusDef conditionalStunStatusDef = Helper.CreateDefFromClone<ConditionalStunStatusDef>(null, "{B688BC06-5562-48A3-91BB-1C54FDDB0A2A}", name);
                 conditionalStunStatusDef.Visuals = Helper.CreateDefFromClone(stunStatusDef.Visuals, "{02081B04-3C32-4A70-B6E7-2F6AB2F6363D}", name);
 
+                PRMBetterClasses.Helper.CopyFieldsByReflection(stunStatusDef, conditionalStunStatusDef);
 
                 conditionalStunStatusDef.EffectName = "TFTVConditionalStun";
                 conditionalStunStatusDef.ApplicationConditions = new EffectConditionDef[0];

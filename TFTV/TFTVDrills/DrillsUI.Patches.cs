@@ -3,6 +3,7 @@ using Base.Entities.Abilities;
 using Base.Input;
 using Base.UI;
 using HarmonyLib;
+using I2.Loc;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.UI;
@@ -193,10 +194,7 @@ namespace TFTV.TFTVDrills
                     }
 
                     var ability = data.Ability;
-
                     var drills = DrillsDefs.Drills;
-                   
-
                     var existingAbility = data.AbilitySlot?.Ability;
 
                     bool exitingAbilityIsDrill = false;
@@ -220,20 +218,31 @@ namespace TFTV.TFTVDrills
                         return;
                     }
 
-                    
+
                     var confirmationContext = _pendingDrillConfirmation;
-                   
+
+                    TFTVLogger.Always($" __instance.AbilityNameText.text {__instance.AbilityNameText.text}");
+                    TFTVLogger.Always($" __instance.AbilitiyDescriptionText.text {__instance.AbilitiyDescriptionText.text}");
+                    TFTVLogger.Always($"__instance.SpTextPattern: {__instance.SpTextPattern}");
+                    TFTVLogger.Always($"__instance.SPCostText: {__instance.SPCostText}");
+                    TFTVLogger.Always($"__instance.SPCostText: {__instance.SPCostText}");
+                  
 
                     var headerText = ResolveConfirmationHeaderText(__instance, modal);
+
+                    TFTVLogger.Always($"header text is {headerText.text}");
+
+
                     if (headerText != null)
                     {
-                        string label = DetermineDrillActionLabel(data, ability, confirmationContext);
+                       string label = DetermineDrillActionLabel(data, ability, confirmationContext, exitingAbilityIsDrill, existingAbilityPersonalPerk);
+                        TFTVLogger.Always($"label is {label}");
                         headerText.text = label;
                     }
 
                     string abilityName = ability.ViewElementDef?.DisplayName1?.Localize() ?? ability.name ?? string.Empty;
                     string pulseHex = ColorUtility.ToHtmlStringRGB(DrillPulseColor);
-
+                     
                     if (__instance.AbilityNameText != null)
                     {
                         __instance.AbilityNameText.supportRichText = true;
