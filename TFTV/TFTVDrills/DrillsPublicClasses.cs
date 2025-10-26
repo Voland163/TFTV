@@ -253,9 +253,17 @@ namespace TFTV.TFTVDrills
 
                 StatsModifierPopup[] statsModifiers = GetStatModifiersFromArmor();
 
+                TFTVLogger.Always($"StaticArmorTacStatsStatus: {TacticalActor?.DisplayName}");
+
                 for (int i = 0; i < statsModifiers.Length; i++)
                 {
+                    
+
+
                     StatsModifierPopup statsModifierPopup = statsModifiers[i];
+
+                    TFTVLogger.Always($"statsModifierPopup {statsModifierPopup.StatModification.StatName} {statsModifierPopup.StatModification.Value}");
+
                     base.StatusComponent.AddStatModification(statsModifierPopup.StatModification);
                     if (!string.IsNullOrWhiteSpace(statsModifierPopup.PopupInfoMessageId))
                     {
@@ -302,8 +310,13 @@ namespace TFTV.TFTVDrills
                 perception /= 2;
                 stealth /= 2;
                 speed /= 2;
+               
+                if(speed>0 && speed < 1)
+                {
+                    speed = 1;
+                }
 
-
+                TFTVLogger.Always($"{TacticalActor?.DisplayName} speed={speed}");
 
                 return new StatsModifierPopup[]
                     {

@@ -2,6 +2,7 @@
 using Base.Entities.Statuses;
 using Base.Levels;
 using HarmonyLib;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -18,6 +19,8 @@ namespace TFTV
 {
     internal class TFTVSuppression
     {
+        private static DefCache DefCache = TFTVMain.Main.DefCache;
+
         /// <summary>
         /// Indicates the intensity of suppression accumulated by a tactical actor.
         /// </summary>
@@ -85,7 +88,7 @@ namespace TFTV
             /// </summary>
             public static void RegisterSuppressionEvent(TacticalActor actor, Weapon weapon, float weight = 1f)
             {
-                if (actor == null || !actor.IsAlive)
+                if (actor == null || !actor.IsAlive || weapon == null || weapon.WeaponDef == null|| !weapon.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("GunWeapon_TagDef")))
                 {
                     return;
                 }
@@ -633,7 +636,7 @@ namespace TFTV
 
             private static TacStatusDef CreateStatus(int level, string guid0, string guid1)
             {
-                DefCache DefCache = TFTVMain.Main.DefCache;
+                
 
                 string name = $"TFTV_SUPPRESSION_STATUS";
                 string locKeyName = $"{name}_{level}_NAME";

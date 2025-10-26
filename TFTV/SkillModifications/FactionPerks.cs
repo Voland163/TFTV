@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices.WindowsRuntime;
 using TFTV;
 using UnityEngine;
 
@@ -36,6 +37,7 @@ namespace PRMBetterClasses.SkillModifications
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
+        private static OnActorDamageReceivedStatusDef _socStatus = null;
         public static void ApplyChanges()
         {
             // Die Hard: When you take lethal damage there is 50% to survive with 1HP and have all negative effects cleared and limbs restored. Can only trigger once per combat.
@@ -782,6 +784,7 @@ namespace PRMBetterClasses.SkillModifications
             };
 
             SocStatus.EffectForAttacker = DamageEffect;
+            _socStatus = SocStatus;
         }
         // Sower of Chage: Patching OnActorDamageReceivedStatus.OnActorDamageReceived() to handle the trigger effect preventing errors and to much slow motion
         [HarmonyPatch(typeof(OnActorDamageReceivedStatus), "OnActorDamageReceived")]
@@ -795,12 +798,6 @@ namespace PRMBetterClasses.SkillModifications
                     TacticalActor tacticalActor = __instance.TacticalActor;
                     TacticalAbility SowerOfChange = tacticalActor.GetAbilities<TacticalAbility>().FirstOrDefault(s => s.AbilityDef.name.Equals("SowerOfChange_AbilityDef"));
                     if (SowerOfChange == null)
-                    {
-                        return true;
-                    }
-
-                    //Voland's change to make SoW react to melee damage only
-                    if (damageResult.DamageTypeDef != TFTVMeleeDamage.MeleeStandardDamageType)
                     {
                         return true;
                     }
@@ -853,8 +850,19 @@ namespace PRMBetterClasses.SkillModifications
                         PRMLogger.Debug("----------------------------------------------------------------------------------------------------", false);
                         return false;
                     }
+                   
                     //GameObject effectTargetObject = actorEffectTarget.GameObject;
                     DamagePayloadEffectDef effectDef = (DamagePayloadEffectDef)__instance.OnActorDamageReceivedStatusDef.EffectForAttacker;
+                  //  TFTVLogger.Always($"EffectDef is {effectDef.name} {damageResult.DamageTypeDef?.name}");
+
+                    if (effectDef==_socStatus.EffectForAttacker && damageResult.DamageTypeDef != TFTVMeleeDamage.MeleeStandardDamageType)
+                    {
+                      //  TFTVLogger.Always($"should return false, EffectDef is {effectDef.name} {damageResult.DamageTypeDef?.name}");
+                        return false;
+                    }
+
+                  
+
                     float viralDamage = 1;
                     //float blastDamage = 0;
                     float timingScale = 0.8f;
@@ -862,7 +870,6 @@ namespace PRMBetterClasses.SkillModifications
                     viralDamage = damageResult.HealthDamage >= 4 ? damageResult.HealthDamage / 4 : 1.0f;
                     AddStatusDamageKeywordDataDef RawVirausDamageKeyword = DefCache.GetDef<AddStatusDamageKeywordDataDef>("RawViral_DamageKeywordDataDef");
                     effectDef.DamagePayload.DamageKeywords.Find(dk => dk.DamageKeywordDef == RawVirausDamageKeyword).Value = viralDamage;
-                    //effectDef.DamagePayload.DamageKeywords.Find(dk => dk.DamageKeywordDef == Shared.SharedDamageKeywords.ViralKeyword).Value = viralDamage;
                     tacticalActor.Timing.Scale = timingScale;
                     tacticalActorBase.Timing.Scale = timingScale;
                     PRMLogger.Debug($"'{tacticalActor}' applies {viralDamage} viral damage on '{actorEffectTarget}', position '{actorEffectTarget.Position + effectDef.EffectPositionOffset}'");

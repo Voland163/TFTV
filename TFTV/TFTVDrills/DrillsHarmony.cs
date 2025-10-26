@@ -8,6 +8,7 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.Entities;
@@ -42,21 +43,22 @@ namespace TFTV.TFTVDrills
 
         internal class Mutoids
         {
-            [HarmonyPatch(typeof(GeoCharacter), nameof(GeoCharacter.CreateCharacter))]
-            internal static class MutoidStaminaZero_CreateCharacter_Patch
+            [HarmonyPatch(typeof(GeoLevelController), "CreateCharacterFromDescriptor")]
+            internal static class GeoLevelController_CreateCharacterFromDescriptor_Patch
             {
-                private static void Postfix(GeoUnitDescriptor unit, GeoCharacter __result)
+                private static void Postfix(GeoLevelController __instance, GeoCharacter __result)
                 {
+                 //   TFTVLogger.Always($"GeoLevelController_CreateCharacterFromDescriptor: {__result.IsMutoid}");
+
                     if (TFTVNewGameOptions.IsReworkEnabled())
                     {
-
-                        if (__result?.TemplateDef?.IsMutoid == true)
+                        if (__result.IsMutoid)
                         {
                             var stamina = __result.Fatigue?.Stamina;
                             if (stamina != null && stamina.Value > 0f)
                             {
                                 stamina.Set(0f, true);
-                                TFTVLogger.Always($"Stamina should be set 0 for new Mutoid");
+                               // TFTVLogger.Always($"Stamina should be set 0 for new Mutoid");
                             }
                         }
                     }

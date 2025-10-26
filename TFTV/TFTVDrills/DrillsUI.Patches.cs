@@ -1,31 +1,19 @@
 using Base.Core;
-using Base.Entities.Abilities;
-using Base.Input;
-using Base.UI;
 using HarmonyLib;
 using I2.Loc;
-using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Characters;
-using PhoenixPoint.Common.UI;
-using PhoenixPoint.Common.Utils;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
-using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
-using static UnityTools.UI.SnapshotText.Lib.LineGroup;
 
 namespace TFTV.TFTVDrills
 {
@@ -51,7 +39,7 @@ namespace TFTV.TFTVDrills
 
                     var character = Reflection.GetPrivate<GeoCharacter>(ui, "_character");
 
-                    if (character?.Progression == null)
+                    if (character?.Progression == null || character.IsMutoid)
                     {
                         return true;
                     }
@@ -119,24 +107,34 @@ namespace TFTV.TFTVDrills
                 {
                     var ui = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.CharacterProgressionModule;
 
+
+
                     if (ui == null)
                     {
                         return;
                     }
 
-
-
                     var character = Reflection.GetPrivate<GeoCharacter>(ui, "_character");
+
+
+
+                    if (character.IsMutoid)
+                    {
+                        return;
+                    }
 
                     var phoenixFaction = character?.Faction?.GeoLevel?.PhoenixFaction;
                     var ability = __instance.AbilityDef ?? ElementHelpers.FindSlot(__instance)?.Ability;
                     var availableImage = __instance.Available;
+
+
                     bool shouldShowIndicator = DrillIndicator.ShouldShow(character, phoenixFaction, ability, availableImage);
 
                     if (_originalAvailableImage != null)
                     {
                         availableImage.sprite = _originalAvailableImage;
                     }
+                   
 
                     if (shouldShowIndicator)
                     {
@@ -150,15 +148,13 @@ namespace TFTV.TFTVDrills
                         __instance.AvailableSkill = true;
 
                         //TFTVLogger.Always($"should show indicator for ability {ability?.name} true");
-
-                   
                     }
                     else
                     {
                         availableImage.gameObject.SetActive(isAvailable && isBuyable);
                         __instance.AvailableSkill = isAvailable;
                         availableImage.sprite = _originalAvailableImage;
-                       // TFTVLogger.Always($"should show indicator for ability {ability?.name} false");
+                        // TFTVLogger.Always($"should show indicator for ability {ability?.name} false");
                     }
 
                     if (ability != null && DrillsDefs.Drills != null && DrillsDefs.Drills.Contains(ability))
@@ -176,7 +172,7 @@ namespace TFTV.TFTVDrills
             }
         }
 
-      
+
 
         [HarmonyPatch(typeof(ConfirmBuyAbilityDataBind), nameof(ConfirmBuyAbilityDataBind.ModalShowHandler))]
         public static class ConfirmBuyAbilityDataBind_ModalShowHandler_Patch
@@ -214,8 +210,8 @@ namespace TFTV.TFTVDrills
                         {
                             exitingAbilityIsDrill = true;
                         }
-                        else 
-                        { 
+                        else
+                        {
                             existingAbilityPersonalPerk = true;
                         }
                     }
@@ -229,26 +225,26 @@ namespace TFTV.TFTVDrills
 
                     var confirmationContext = _pendingDrillConfirmation;
 
-                 /*   TFTVLogger.Always($" __instance.AbilityNameText.text {__instance.AbilityNameText.text}");
-                    TFTVLogger.Always($" __instance.AbilitiyDescriptionText.text {__instance.AbilitiyDescriptionText.text}");
-                    TFTVLogger.Always($"__instance.SpTextPattern: {__instance.SpTextPattern}");
-                    TFTVLogger.Always($"__instance.SPCostText: {__instance.SPCostText}");
-                    TFTVLogger.Always($"__instance.SPCostText: {__instance.SPCostText}");*/
+                    /*   TFTVLogger.Always($" __instance.AbilityNameText.text {__instance.AbilityNameText.text}");
+                       TFTVLogger.Always($" __instance.AbilitiyDescriptionText.text {__instance.AbilitiyDescriptionText.text}");
+                       TFTVLogger.Always($"__instance.SpTextPattern: {__instance.SpTextPattern}");
+                       TFTVLogger.Always($"__instance.SPCostText: {__instance.SPCostText}");
+                       TFTVLogger.Always($"__instance.SPCostText: {__instance.SPCostText}");*/
 
 
                     var headerText = _headerText ?? ResolveConfirmationHeaderText(__instance, modal);
                     if (headerText != null)
                     {
                         _headerText = headerText;
-                       string label = DetermineDrillActionLabel(data, ability, confirmationContext, exitingAbilityIsDrill, existingAbilityPersonalPerk);
-                      //  TFTVLogger.Always($"label is {label}");
+                        string label = DetermineDrillActionLabel(data, ability, confirmationContext, exitingAbilityIsDrill, existingAbilityPersonalPerk);
+                        //  TFTVLogger.Always($"label is {label}");
                         headerText.text = label;
                         headerText.GetComponent<Localize>().enabled = false;
                     }
 
                     string abilityName = ability.ViewElementDef?.DisplayName1?.Localize() ?? ability.name ?? string.Empty;
                     string pulseHex = ColorUtility.ToHtmlStringRGB(DrillPulseColor);
-                     
+
                     if (__instance.AbilityNameText != null)
                     {
                         __instance.AbilityNameText.supportRichText = true;
@@ -267,7 +263,7 @@ namespace TFTV.TFTVDrills
                             {
                                 string replacementName = confirmationContext.ReplacementAbility.ViewElementDef?.DisplayName1?.Localize() ?? confirmationContext.ReplacementAbility.name ?? string.Empty;
                                 description += string.Format("\n\n<color=#{0}><b>Replaces:</b> {1}</color>", pulseHex, replacementName);
-                            }                         
+                            }
                         }
 
                         if (showStaminaWarning)

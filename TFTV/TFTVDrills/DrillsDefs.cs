@@ -1600,6 +1600,7 @@ namespace TFTV.TFTVDrills
                 string guid2 = "05d6e7f8-192a-4b3c-c4d5-6e7f08192a3b";
                 string guid3 = "7d8e901a-0b1c-2d3e-4f50-6172839a4b5c";
                 string guid4 = "8e901a0b-1c2d-3e4f-5061-72839a4b5c6d";
+                string guid5 = "{6728C0F9-5CD3-4ADD-876A-9D0129C5B04C}";
 
                 TacStatsModifyStatusDef sourceStatus = DefCache.GetDef<TacStatsModifyStatusDef>("Slowed_StatusDef");
                 TacStatsModifyStatusDef newStatus = Helper.CreateDefFromClone(sourceStatus, guid0, name);
@@ -1617,6 +1618,15 @@ namespace TFTV.TFTVDrills
 
                 newStatus.ApplicationConditions = new EffectConditionDef[] { CreateActorHasAtLeastItemsEffectConditionDef(name, guid1, armourItems, requiredCount) };
 
+                newStatus.Visuals = Helper.CreateDefFromClone(sourceStatus.Visuals, guid5, name);
+
+
+                newStatus.VisibleOnStatusScreen = 0;
+                newStatus.EffectName = "AksuSprintSpeedBonus";
+                newStatus.VisibleOnPassiveBar = false;
+                newStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.Hidden;
+                newStatus.DurationTurns = -1;
+               
                 newStatus.StatsModifiers = new StatsModifierPopup[]
                 {
                     new StatsModifierPopup
@@ -1624,7 +1634,7 @@ namespace TFTV.TFTVDrills
                         StatModification = new StatModification(
                         StatModificationType.Add,
                         "Speed",
-                        6,
+                        4,
                         null, // source argument required by constructor
                         0f    // applicationValue argument required by constructor
                     ),
@@ -1646,12 +1656,18 @@ namespace TFTV.TFTVDrills
                 newAbility.ViewElementDef.Description.LocalizationKey = locKeyDesc;
                 newAbility.ViewElementDef.LargeIcon = icon;
                 newAbility.ViewElementDef.SmallIcon = icon;
+
+                newStatus.Visuals.DisplayName1.LocalizationKey = locKeyName;
+                newStatus.Visuals.Description.LocalizationKey = locKeyDesc;
+                newStatus.Visuals.LargeIcon = icon;
+                newStatus.Visuals.SmallIcon = icon;
+
                 newAbility.AnimType = -1;
                 newAbility.StatusDef = newStatus;
                 newAbility.TargetApplicationConditions = new EffectConditionDef[] { };
 
                 newAbility.CharacterProgressionData.SkillPointCost = 10;
-
+                
                 _aksuSprint = newAbility;
 
                 Drills.Add(newAbility);
@@ -1825,6 +1841,12 @@ namespace TFTV.TFTVDrills
 
                 DefCache.GetDef<StunDamageEffectDef>("ConditionalStun_StunDamageEffectDef").StunStatusDef = conditionalStunStatusDef;
                 DefCache.GetDef<StunDamageKeywordDataDef>("Shock_DamageKeywordDataDef").StatusDef = conditionalStunStatusDef;
+
+                StatusImmunityAbilityDef StunStatusImmunity_AbilityDef = DefCache.GetDef<StatusImmunityAbilityDef>("StunStatusImmunity_AbilityDef");
+                StunStatusImmunity_AbilityDef.StatusDef = conditionalStunStatusDef;
+
+                StatusImmunityAbilityDef MutoidStunImmunity_AbilityDef = DefCache.GetDef<StatusImmunityAbilityDef>("MutoidStunImmunity_AbilityDef");
+                MutoidStunImmunity_AbilityDef.StatusDef = conditionalStunStatusDef;
 
             }
             catch (Exception e)

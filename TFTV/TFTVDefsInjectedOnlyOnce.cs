@@ -110,15 +110,9 @@ namespace TFTV
         {
             try
             {
-                foreach (TacCharacterDef tacCharacterDef in Repo.GetAllDefs<TacCharacterDef>().
-                    Where(tad => tad.ClassTag == DefCache.GetDef<ClassTagDef>("Technician_ClassTagDef"))) 
-                { 
-                foreach (TacticalAbilityDef tacticalAbilityDef in tacCharacterDef.GetAbilities()) 
-                    {
-                        TFTVLogger.Always($"tacticalAbilityDef: {tacticalAbilityDef?.name}");
-                    
-                    }
-                
+               foreach(WeaponDef weaponDef in Repo.GetAllDefs<WeaponDef>().Where(w=>w.Tags.Contains(DefCache.GetDef<GameTagDef>("GunWeapon_TagDef")))) 
+                {
+                    TFTVLogger.Always($"WeaponDef has GunWeapon_TagDef {weaponDef.name}");
                 }
               
 
@@ -241,7 +235,7 @@ namespace TFTV
 
                 // Experimental();
 
-                //  Print();
+              //   Print();
 
                 //  ChangeScyllaSounds();
                 CreateSuppressionStatusDefs();

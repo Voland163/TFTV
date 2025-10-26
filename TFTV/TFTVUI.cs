@@ -379,7 +379,14 @@ namespace TFTV
                         {
                             if (heavyArmorSpeedPenalty < 0f)
                             {
-                                bonuses.HeavyConditioningSpeedBonus = -heavyArmorSpeedPenalty / 2f;
+                                float roundingUp = -heavyArmorSpeedPenalty / 2f;
+
+                                if(roundingUp>0 && roundingUp<1f)
+                                {
+                                    roundingUp = 1f;
+                                }
+
+                                bonuses.HeavyConditioningSpeedBonus = roundingUp;
                             }
 
                             if (heavyArmorAccuracyPenalty < 0f)
@@ -803,22 +810,22 @@ namespace TFTV
                         //  AccuracyText.text = $"{data.Accuracy}%";
                         //  StealthText.text = $"{data.Stealth}%";
 
-                        // Highlight perception if the soldier exceeds a threshold.
+
                         if (fPerception < 0)
                         {
-                            __instance.PerceptionText.text = $"{data.Perception - fPerception + fPerception / 2}";
+                            __instance.PerceptionText.text = $"{Mathf.RoundToInt(data.Perception - fPerception + fPerception / 2)}";
                         }
 
-                        // Accentuate accuracy for elite marksmen.
+
                         if (fAccuracy < 0)
                         {
-                            __instance.AccuracyText.text = $"{data.Accuracy - fAccuracy + fAccuracy / 2}% ";
+                            __instance.AccuracyText.text = $"{Mathf.RoundToInt(data.Accuracy - fAccuracy + fAccuracy / 2)}% ";
                         }
 
-                        // Flag units that are exceptionally stealthy.
+
                         if (fStealth < 0)
                         {
-                            __instance.StealthText.text = $"{data.Stealth - fStealth + fStealth / 2}%";
+                            __instance.StealthText.text = $"{Mathf.RoundToInt(data.Stealth - fStealth + fStealth / 2)}%";
                         }
                     }
                 }
