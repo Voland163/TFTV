@@ -4518,6 +4518,12 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 string gUIDAbility = "{180418BE-8DC8-467E-80FE-D012A51BE5A9}";
                 HealAbilityDef sourceHealAbility = DefCache.GetDef<HealAbilityDef>("Medkit_AbilityDef");
                 HealAbilityDef newDoTMedkitAbility = Helper.CreateDefFromClone(sourceHealAbility, gUIDAbility, nameAbility);
+                TacticalTargetingDataDef newTargetingData = Helper.CreateDefFromClone(sourceHealAbility.TargetingDataDef, "{CF5A9AD8-94A1-4DBE-9AF6-F90C56851437}", nameAbility);
+                newDoTMedkitAbility.TargetingDataDef = newTargetingData;
+                newTargetingData.Origin.TargetTags.Clear();
+              
+
+
                 newDoTMedkitAbility.ViewElementDef = Helper.CreateDefFromClone(sourceHealAbility.ViewElementDef, "{DB136772-7CDF-4FC4-B07B-72867E43E16E}", nameAbility);
 
                 newDoTMedkitAbility.ViewElementDef.InventoryIcon = nanotechFieldkitAbilityIcon;

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using static TFTV.HavenRecruitsMain;
@@ -201,7 +202,9 @@ namespace TFTV.TFTVHavenRecruitsUI
                     cardView.ClassIconRoot.SetActive(classIcon != null);
                 }
 
-                var abilityInfos = GetSelectedAbilityIcons(data.Recruit).ToList();
+                var abilityInfos = IsVehicleOrMutog(data.Recruit)
+                     ? new List<HavenRecruitsUtils.AbilityIconData>()
+                     : GetSelectedAbilityIcons(data.Recruit).ToList();
                 var mutationIcons = GetMutationIcons(data.Recruit).ToList();
 
                 var abilitiesTransform = cardView.AbilityContainer;

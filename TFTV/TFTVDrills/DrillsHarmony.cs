@@ -5,6 +5,7 @@ using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape.Entities;
@@ -1521,6 +1522,44 @@ namespace TFTV.TFTVDrills
 
         internal class ShieldedRiposte
         {
+
+                private static readonly System.Reflection.FieldInfo SourceEquipmentField =
+                    AccessTools.Field(typeof(ShieldDeployedStatus), "_sourceEquipment");
+
+                [HarmonyPatch(typeof(ShieldDeployedStatus), nameof(ShieldDeployedStatus.OnUnapply))]
+                private static class ShieldDeployedStatus_OnUnapply_Patch
+                {
+                    public static void Postfix(ShieldDeployedStatus __instance)
+                    {
+                        if (!TFTVNewGameOptions.IsReworkEnabled())
+                        {
+                            return;
+                        }
+
+                        if (__instance?.TacticalActor == null)
+                        {
+                            return;
+                        }
+
+                        TacticalItem sourceItem = SourceEquipmentField?.GetValue(__instance) as TacticalItem;
+                        if (!(sourceItem is Equipment equipment))
+                        {
+                            return;
+                        }
+
+                        AddonSlot holsterSlot = equipment.HolsterSlot;
+                        if (holsterSlot == null || equipment.ParentSlot == holsterSlot)
+                        {
+                            return;
+                        }
+
+                        equipment.ForceReattachMeTo(holsterSlot);
+                        equipment.UpdateModelVisibility();
+                    }
+                }
+            
+
+
             private static bool _shieldRiposteDeployingShield = false;
 
             [HarmonyPatch(typeof(PathProcessorUtils), nameof(PathProcessorUtils.UsesTurnAnimations))]

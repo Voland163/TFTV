@@ -52,6 +52,7 @@ namespace TFTV
         public bool CustomPortraits = false;
         public bool HandGrenadeScatter = false;
         public bool EquipBeforeAmbush = true;
+        public bool TFTVSuppression = false;
 
         //Cheat options:
         public bool AllowFullAugmentations = false;

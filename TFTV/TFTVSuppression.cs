@@ -78,6 +78,8 @@ namespace TFTV
 
             private static readonly object StatusSource = new object();
 
+            private static bool IsSuppressionEnabled => TFTVMain.Main?.Config?.TFTVSuppression ?? true;
+
             private static ActorSuppressionState GetActorState(TacticalActor actor)
             {
                 return ActorStates.GetValue(actor, _ => new ActorSuppressionState());
@@ -447,6 +449,7 @@ namespace TFTV
                 {
                     private static void Postfix(TacticalActor __instance)
                     {
+                        if (!IsSuppressionEnabled) return;
                         ApplySuppressionPenalty(__instance);
                     }
                 }
@@ -456,6 +459,7 @@ namespace TFTV
                 {
                     private static void Postfix(TacticalActor __instance)
                     {
+                        if (!IsSuppressionEnabled) return;
                         ApplySuppressionPenalty(__instance);
                     }
                 }
@@ -465,6 +469,7 @@ namespace TFTV
                 {
                     private static void Postfix(TacticalActor __instance, DamageResult damageResult)
                     {
+                        if (!IsSuppressionEnabled) return;
                         RegisterDirectHitSuppression(__instance, damageResult);
                     }
                 }
@@ -474,6 +479,9 @@ namespace TFTV
                 {
                     private static void Postfix(ProjectileLogic __instance, CastHit hit)
                     {
+                        if (!IsSuppressionEnabled) return; 
+                      
+
                         TryRegisterSuppressionNearMiss(__instance, hit);
                     }
                 }
@@ -483,6 +491,7 @@ namespace TFTV
                 {
                     private static void Postfix(TacticalFaction __instance)
                     {
+                        if (!IsSuppressionEnabled) return;
                         ClearSuppressionForFaction(__instance);
                     }
                 }

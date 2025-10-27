@@ -140,16 +140,33 @@ namespace TFTV.TFTVHavenRecruitsUI
 
             private static List<PassiveModifierAbilityDef> GetPassiveAbilities(GeoUnitDescriptor descriptor, CharacterProgression progression)
             {
-                TFTVConfig config = TFTVMain.Main.Config;
+                List<PassiveModifierAbilityDef> passiveAbilities = new List<PassiveModifierAbilityDef>();
 
-                List < PassiveModifierAbilityDef > passiveAbilities = new List<PassiveModifierAbilityDef>();
-
-                if (!config.LearnFirstSkill) 
+                if (progression == null)
                 {
                     return passiveAbilities;
                 }
 
-                if(progression.PersonalAbilityTrack.GetAbilitySlotForLevel(1).Ability is PassiveModifierAbilityDef passiveAbilityDef) 
+                AbilityTrack personalAbilityTrack = progression.PersonalAbilityTrack;
+                if (personalAbilityTrack == null)
+                {
+                    return passiveAbilities;
+                }
+
+                var abilitySlotForLevel = personalAbilityTrack.GetAbilitySlotForLevel(1);
+                if (abilitySlotForLevel == null)
+                {
+                    return passiveAbilities;
+                }
+
+                TFTVConfig config = TFTVMain.Main.Config;
+                if (!config.LearnFirstSkill)
+                {
+                    return passiveAbilities;
+                }
+
+
+                if (abilitySlotForLevel.Ability is PassiveModifierAbilityDef passiveAbilityDef)
                 {
                     TFTVLogger.Always($"passiveAbilityDef: {passiveAbilityDef.name}");
                     passiveAbilities.Add(passiveAbilityDef);   

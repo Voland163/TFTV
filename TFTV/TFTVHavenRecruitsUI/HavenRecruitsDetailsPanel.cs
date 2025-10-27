@@ -1329,11 +1329,18 @@ namespace TFTV
 
                 PopulateStats(data);
 
-                var classAbilities = HavenRecruitsUtils.GetClassAbilityIcons(data.Recruit).ToList();
-                var personalAbilities = HavenRecruitsUtils.GetPersonalAbilityIcons(data.Recruit).ToList();
-                var lockedClassAbilities = GetLockedClassAbilityIndexes(data.Recruit.Level, classAbilities.Count);
-                var lockedPersonalAbilities = GetLockedPersonalAbilityIndexes(personalAbilities.Count);
-                PopulateAbilityRows(classAbilities, personalAbilities, lockedClassAbilities, lockedPersonalAbilities);
+                if (!HavenRecruitsUtils.IsVehicleOrMutog(data.Recruit))
+                {
+                    var classAbilities = HavenRecruitsUtils.GetClassAbilityIcons(data.Recruit).ToList();
+                    var personalAbilities = HavenRecruitsUtils.GetPersonalAbilityIcons(data.Recruit).ToList();
+                    var lockedClassAbilities = GetLockedClassAbilityIndexes(data.Recruit.Level, classAbilities.Count);
+                    var lockedPersonalAbilities = GetLockedPersonalAbilityIndexes(personalAbilities.Count);
+                    PopulateAbilityRows(classAbilities, personalAbilities, lockedClassAbilities, lockedPersonalAbilities);
+                }
+                else
+                {
+                    PopulateAbilityRows(null, null, null, null);
+                }
 
                 if (_detailClassIconImage != null)
                 {

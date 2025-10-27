@@ -131,6 +131,27 @@ namespace TFTV.TFTVHavenRecruitsUI
             catch (Exception ex) { TFTVLogger.Error(ex); }
             return "Unknown Class";
         }
+
+        internal static bool IsVehicleOrMutog(GeoUnitDescriptor recruit)
+        {
+            try
+            {
+                var template = recruit?.UnitType?.TemplateDef;
+                if (template == null)
+                {
+                    return false;
+                }
+
+                return template.IsVehicle || template.IsMutog;
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+            }
+
+            return false;
+        }
+
         private static readonly Func<AbilityTrackSlot, int> AbilitySlotSkillPointCostGetter = CreateSkillPointCostGetter();
 
         internal readonly struct AbilityIconData
@@ -175,6 +196,10 @@ namespace TFTV.TFTVHavenRecruitsUI
                 yield break;
             }
 
+            if (IsVehicleOrMutog(recruit))
+            {
+                yield break;
+            }
 
             var track = recruit.GetPersonalAbilityTrack();
             var abilities = track?.AbilitiesByLevel?.ToList();

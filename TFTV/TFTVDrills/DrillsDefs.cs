@@ -1774,7 +1774,7 @@ namespace TFTV.TFTVDrills
                 newAbility.TargetingDataDef.Origin.TargetTags.Add(DefCache.GetDef<GameTagDef>("Vehicle_ClassTagDef"));
 
                 // newAbility.TargetingDataDef.Origin.TargetTags.Add(Shared.SharedGameTags.VehicleTag);
-                newAbility.TargetingDataDef.Origin.Range = 5;
+                newAbility.TargetingDataDef.Origin.Range = 2;
                 newAbility.RequiredCharges = 0;
                 newAbility.ActionPointCost = 1f;
                 newAbility.TargetingDataDef.Origin.TargetResult = TargetResult.Actor;
@@ -1992,7 +1992,7 @@ namespace TFTV.TFTVDrills
                 newAbility.ViewElementDef.Description.LocalizationKey = locKeyDesc; // = description;
                 newAbility.ViewElementDef.LargeIcon = icon;
                 newAbility.ViewElementDef.SmallIcon = icon;
-                newAbility.TargetApplicationConditions = new EffectConditionDef[] { source.TargetApplicationConditions[0], source.TargetApplicationConditions[1] };
+                newAbility.TargetApplicationConditions = new EffectConditionDef[] { source.TargetApplicationConditions[0], source.TargetApplicationConditions[2] };
                 newAbility.TargetingDataDef.Origin.TargetEnemies = true;
                 newAbility.TargetingDataDef.Origin.TargetFriendlies = false;
                 newAbility.AnimType = 1;

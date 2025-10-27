@@ -912,7 +912,8 @@ namespace TFTV
                         HelperMethods.InstantiateArrowPickerController("CustomPortraits", _optionsBool, ConvertBoolToInt(config.CustomPortraits), OnCustomPortraitsValueChangedCallback, 0.5f, _anytimeOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("HandGrenadeScatter", _optionsBool, ConvertBoolToInt(config.HandGrenadeScatter), OnHandGrenadeScatterValueChangedCallback, 0.5f, _anytimeOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("EquipBeforeAmbush", _optionsBool, ConvertBoolToInt(config.EquipBeforeAmbush), OnEquipBeforeAmbushValueChangedCallback, 0.5f, _anytimeOptionsSettings);
-                        
+                        HelperMethods.InstantiateArrowPickerController("TFTVSuppression", _optionsBool, ConvertBoolToInt(config.TFTVSuppression), OnTFTVSuppressionValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+
                         HelperMethods.InstantiateGameOptionViewController("TFTV_CHEAT_OPTIONS_TITLE", "TFTV_CHEAT_OPTIONS_DESCRIPTION", "SetCheatOptionsVisibility");
 
                         HelperMethods.InstantiateArrowPickerController("DeadDropAllLoot", _optionsBool, ConvertBoolToInt(config.DeadDropAllLoot), OnDeadDropAllLootValueChangedCallback, 0.5f, _cheatOptionsSettings);
@@ -1474,7 +1475,21 @@ namespace TFTV
                     }
                 }
 
+                private static void OnTFTVSuppressionValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.TFTVSuppression = option;
 
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
 
                 private static void OnTradingValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
                 {

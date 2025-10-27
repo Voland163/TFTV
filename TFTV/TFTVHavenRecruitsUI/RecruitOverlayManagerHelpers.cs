@@ -161,6 +161,18 @@ namespace TFTV
                     return null;
                 }
 
+                ViewElementDef view = item.ViewElementDef;
+                if (view == null)
+                {
+                    return null;
+                }
+
+                Sprite icon = view.InventoryIcon ?? view.SmallIcon;
+                if (icon == null)
+                {
+                    return null;
+                }
+
                 GameObject slotGO = Object.Instantiate(template.gameObject, parent, worldPositionStays: false);
                 slotGO.name = $"{namePrefix}_{item.name}";
                 slotGO.SetActive(true);
@@ -181,9 +193,7 @@ namespace TFTV
                 slot.EmptyAmmoScaleNode.gameObject.SetActive(false);
                 slot.AmmoImageNode.gameObject.SetActive(false);
                
-                ViewElementDef view = item.ViewElementDef;
-
-                var icon = view.InventoryIcon ?? view?.SmallIcon;
+            
                 ApplyOversizedIconOverlay(slot, icon, size, InventoryOverlayName);
 
                 var tooltip = EnsureOverlayItemTooltip();
