@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using static TFTV.TFTVDrills.DrillsDefs;
 using static TFTV.TFTVDrills.DrillsPublicClasses;
@@ -49,7 +50,7 @@ namespace TFTV.TFTVDrills
             {
                 private static void Postfix(GeoLevelController __instance, GeoCharacter __result)
                 {
-                 //   TFTVLogger.Always($"GeoLevelController_CreateCharacterFromDescriptor: {__result.IsMutoid}");
+                    //   TFTVLogger.Always($"GeoLevelController_CreateCharacterFromDescriptor: {__result.IsMutoid}");
 
                     if (TFTVNewGameOptions.IsReworkEnabled())
                     {
@@ -59,7 +60,7 @@ namespace TFTV.TFTVDrills
                             if (stamina != null && stamina.Value > 0f)
                             {
                                 stamina.Set(0f, true);
-                               // TFTVLogger.Always($"Stamina should be set 0 for new Mutoid");
+                                // TFTVLogger.Always($"Stamina should be set 0 for new Mutoid");
                             }
                         }
                     }
@@ -964,7 +965,120 @@ namespace TFTV.TFTVDrills
 
         internal class MarkedWatch
         {
+            [HarmonyPatch]
+            internal static class MarkedWatchOverwatchAccuracyPatch
+            {
 
+                private const string MarkedWatchEffectName = "markedwatch";
+                private const float AccuracyBuff = 0.5f;
+
+                private static readonly ConditionalWeakTable<ShootAbility, AppliedAccuracyModifier> ActiveAccuracyModifiers = new ConditionalWeakTable<ShootAbility, AppliedAccuracyModifier>();
+
+                [HarmonyPatch(typeof(ShootAbility), nameof(ShootAbility.Activate))]
+                private static class ShootAbility_Activate_MarkedWatchAccuracy
+                {
+                    public static void Postfix(ShootAbility __instance, object parameter)
+                    {
+                        try
+                        {
+                            ApplyAccuracyBonus(__instance, parameter);
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.LogException(ex);
+                            RemoveAccuracyBonus(__instance);
+                        }
+                    }
+                }
+
+                [HarmonyPatch(typeof(ShootAbility), "OnPlayingActionEnd")]
+                private static class ShootAbility_OnPlayingActionEnd_MarkedWatchAccuracy
+                {
+                    public static void Prefix(ShootAbility __instance)
+                    {
+                        try
+                        {
+                            RemoveAccuracyBonus(__instance);
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.LogException(ex);
+                        }
+                    }
+                }
+
+                private static void ApplyAccuracyBonus(ShootAbility ability, object parameter)
+                {
+                    if (ability == null || ability.TacticalActor == null)
+                    {
+                        return;
+                    }
+
+                    TacticalAbilityTarget tacticalAbilityTarget = parameter as TacticalAbilityTarget;
+                    if (tacticalAbilityTarget == null || tacticalAbilityTarget.AttackType != AttackType.Overwatch)
+                    {
+                        return;
+                    }
+
+                    TacticalActor targetActor = tacticalAbilityTarget.Actor as TacticalActor;
+                    if (targetActor?.Status == null)
+                    {
+                        return;
+                    }
+
+                    TacStatus markedStatus = targetActor.Status
+                        .GetStatusesByName(MarkedWatchEffectName)
+                        .OfType<TacStatus>()
+                        .FirstOrDefault(status => status.Source == ability.TacticalActor);
+
+                    if (markedStatus == null)
+                    {
+                        return;
+                    }
+
+                    BaseStat accuracyStat = ability.TacticalActor.CharacterStats?.TryGetStat(StatModificationTarget.Accuracy);
+                    if (accuracyStat == null)
+                    {
+                        return;
+                    }
+
+                    RemoveAccuracyBonus(ability);
+
+                    StatModification modifier = new StatModification(StatModificationType.Add, accuracyStat.Name, AccuracyBuff, ability, 0f);
+                    accuracyStat.AddStatModification(modifier, true);
+
+                    ActiveAccuracyModifiers.Add(ability, new AppliedAccuracyModifier
+                    {
+                        Modification = modifier,
+                        BonusAmount = AccuracyBuff
+                    });
+                }
+
+                private static void RemoveAccuracyBonus(ShootAbility ability)
+                {
+                    if (ability == null)
+                    {
+                        return;
+                    }
+
+                    if (ActiveAccuracyModifiers.TryGetValue(ability, out AppliedAccuracyModifier appliedModifier))
+                    {
+                        BaseStat accuracyStat = ability.TacticalActor?.CharacterStats?.TryGetStat(StatModificationTarget.Accuracy);
+                        if (accuracyStat != null)
+                        {
+                            accuracyStat.RemoveStatModification(appliedModifier.Modification, true);
+                        }
+
+                        ActiveAccuracyModifiers.Remove(ability);
+                    }
+                }
+
+                private sealed class AppliedAccuracyModifier
+                {
+                    public StatModification Modification;
+                    public float BonusAmount;
+                }
+            }
 
             [HarmonyPatch(typeof(TacticalLevelController), "TriggerOverwatch")]
             internal static class TacticalLevelController_TriggerOverwatch
@@ -1006,7 +1120,7 @@ namespace TFTV.TFTVDrills
 
                             if (target.Status.HasStatus(_markedwatchStatus) && listOfMarkedForOverwatch.Count() == 1)
                             {
-                                // TFTVLogger.Always($"target.Status.HasStatus(_markedwatchStatus) && listOfMarkedForOverwatch.Count()==1");
+
 
                             }
                             else
@@ -1523,41 +1637,41 @@ namespace TFTV.TFTVDrills
         internal class ShieldedRiposte
         {
 
-                private static readonly System.Reflection.FieldInfo SourceEquipmentField =
-                    AccessTools.Field(typeof(ShieldDeployedStatus), "_sourceEquipment");
+            private static readonly System.Reflection.FieldInfo SourceEquipmentField =
+                AccessTools.Field(typeof(ShieldDeployedStatus), "_sourceEquipment");
 
-                [HarmonyPatch(typeof(ShieldDeployedStatus), nameof(ShieldDeployedStatus.OnUnapply))]
-                private static class ShieldDeployedStatus_OnUnapply_Patch
+            [HarmonyPatch(typeof(ShieldDeployedStatus), nameof(ShieldDeployedStatus.OnUnapply))]
+            private static class ShieldDeployedStatus_OnUnapply_Patch
+            {
+                public static void Postfix(ShieldDeployedStatus __instance)
                 {
-                    public static void Postfix(ShieldDeployedStatus __instance)
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
-                        if (!TFTVNewGameOptions.IsReworkEnabled())
-                        {
-                            return;
-                        }
-
-                        if (__instance?.TacticalActor == null)
-                        {
-                            return;
-                        }
-
-                        TacticalItem sourceItem = SourceEquipmentField?.GetValue(__instance) as TacticalItem;
-                        if (!(sourceItem is Equipment equipment))
-                        {
-                            return;
-                        }
-
-                        AddonSlot holsterSlot = equipment.HolsterSlot;
-                        if (holsterSlot == null || equipment.ParentSlot == holsterSlot)
-                        {
-                            return;
-                        }
-
-                        equipment.ForceReattachMeTo(holsterSlot);
-                        equipment.UpdateModelVisibility();
+                        return;
                     }
+
+                    if (__instance?.TacticalActor == null)
+                    {
+                        return;
+                    }
+
+                    TacticalItem sourceItem = SourceEquipmentField?.GetValue(__instance) as TacticalItem;
+                    if (!(sourceItem is Equipment equipment))
+                    {
+                        return;
+                    }
+
+                    AddonSlot holsterSlot = equipment.HolsterSlot;
+                    if (holsterSlot == null || equipment.ParentSlot == holsterSlot)
+                    {
+                        return;
+                    }
+
+                    equipment.ForceReattachMeTo(holsterSlot);
+                    equipment.UpdateModelVisibility();
                 }
-            
+            }
+
 
 
             private static bool _shieldRiposteDeployingShield = false;

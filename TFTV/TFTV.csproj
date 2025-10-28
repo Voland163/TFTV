@@ -154,6 +154,7 @@
     <Compile Include="TFTVDrills\DrillsUI.InputHelper.cs" />
     <Compile Include="TFTVDrills\DrillsUI.Patches.cs" />
     <Compile Include="TFTVDrills\DrillsUI.UIBuilder.cs" />
+    <Compile Include="TFTVDrills\DrillsUnlock.cs" />
     <Compile Include="TFTVDrills\DrillSwapUI.cs" />
     <Compile Include="TFTVDrills\DrillTooltipTrigger.cs" />
     <Compile Include="TFTVEvacAll.cs" />

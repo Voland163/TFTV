@@ -194,7 +194,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                     GeoUnitDescriptor.GetBodypartStats(itemDefs, list2);
                     CharacterStats characterStats = BuildCharacterStats(descriptor, list2, Enumerable.Empty<PassiveModifierAbilityDef>(), baseCharacterStats);
                     BaseCharacterStats stats = ExtractStats(characterStats);
-                    GeoUnitStatsHelper.ModifierContribution item = new GeoUnitStatsHelper.ModifierContribution(GetViewName(tacticalItemDef.ViewElementDef) ?? tacticalItemDef.name, stats.Endurance - baseStats.Endurance, stats.Willpower - baseStats.Willpower, stats.Speed - baseStats.Speed);
+                    ModifierContribution item = new ModifierContribution(GetViewName(tacticalItemDef.ViewElementDef) ?? tacticalItemDef.name, stats.Endurance - baseStats.Endurance, stats.Willpower - baseStats.Willpower, stats.Speed - baseStats.Speed);
                     list.Add(item);
                 }
                 return list;

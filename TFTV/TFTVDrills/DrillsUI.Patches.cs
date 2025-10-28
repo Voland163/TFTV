@@ -80,7 +80,7 @@ namespace TFTV.TFTVDrills
 
 
                     GeoPhoenixFaction phoenixFaction = character?.Faction?.GeoLevel?.PhoenixFaction;
-                    List<TacticalAbilityDef> availableChoices = DrillsDefs.GetAvailableDrills(phoenixFaction, character);
+                    List<TacticalAbilityDef> availableChoices = DrillsUnlock.GetAvailableDrills(phoenixFaction, character);
 
                     DrillSwapUI.Show(ui, slot, ability, availableChoices, __instance, baseAbilityLearned, track, abilityLevel, baseAbilityCost);
                     return false;
@@ -159,7 +159,7 @@ namespace TFTV.TFTVDrills
 
                     if (ability != null && DrillsDefs.Drills != null && DrillsDefs.Drills.Contains(ability))
                     {
-                        if (character != null && DrillsDefs.CharacterHasDrill(character, ability) && __instance.SkillIcon != null)
+                        if (character != null && DrillsUnlock.CharacterHasDrill(character, ability) && __instance.SkillIcon != null)
                         {
                             __instance.SkillIcon.color = DrillPulseColor;
                         }

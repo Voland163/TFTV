@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using PhoenixPoint.Common.Entities.Items;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -211,12 +212,15 @@ namespace TFTV.TFTVHavenRecruitsUI
                      ? new List<HavenRecruitsUtils.AbilityIconData>()
                      : GetSelectedAbilityIcons(data.Recruit).ToList();
                 var mutationIcons = GetMutationIcons(data.Recruit).ToList();
+                var weaponItems = IsVehicleOrMutog(data.Recruit)
+                   ? GetVehicleOrMutogWeapons(data.Recruit).ToList()
+                   : new List<ItemDef>();
 
                 var abilitiesTransform = cardView.AbilityContainer;
                 if (abilitiesTransform != null)
                 {
                     RecruitOverlayManagerHelpers.ClearTransformChildren(abilitiesTransform);
-                    bool hasAbilities = abilityInfos.Count > 0 || mutationIcons.Count > 0;
+                    bool hasAbilities = abilityInfos.Count > 0 || mutationIcons.Count > 0 || weaponItems.Count > 0;
                     abilitiesTransform.gameObject.SetActive(hasAbilities);
 
                     if (hasAbilities)
@@ -229,6 +233,17 @@ namespace TFTV.TFTVHavenRecruitsUI
                             }
                             RecruitOverlayManagerHelpers.MakeMutationSlot(abilitiesTransform, icon, ArmorIconSize);
                         }
+
+                        foreach (var weapon in weaponItems)
+                        {
+                            if (weapon == null)
+                            {
+                                continue;
+                            }
+
+                            RecruitOverlayManagerHelpers.MakeInventorySlot(abilitiesTransform, weapon, ArmorIconSize, "WeaponSlot");
+                        }
+
 
                         foreach (var ability in abilityInfos)
                         {

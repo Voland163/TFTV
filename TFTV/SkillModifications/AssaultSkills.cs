@@ -91,11 +91,6 @@ namespace PRMBetterClasses.SkillModifications
                 defCache.GetDef<ApplyStatusAbilityDef>("ArmourBreak_AbilityDef").StatusDef
             };
 
-            if (DrillsDefs._bulletHellSlowStatus != null)
-            {
-                quickAim.DisablingStatuses = quickAim.DisablingStatuses.AddToArray(DrillsDefs._bulletHellSlowStatus);
-            }
-
             qaAccMod.EffectName = "";
             qaAccMod.ShowNotification = false;
             qaAccMod.VisibleOnHealthbar = 0;
@@ -121,6 +116,8 @@ namespace PRMBetterClasses.SkillModifications
                     PRMLogger.Debug("----------------------------------------------------", false);
                 }
             }
+
+            DrillsDefs._quickAim = quickAim;
         }
 
         public static void Create_KillAndRun(DefCache defCache)

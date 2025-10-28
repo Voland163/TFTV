@@ -235,7 +235,7 @@ namespace TFTV.TFTVDrills
                     return;
                 }
 
-                if (!DrillsDefs.IsDrillUnlocked(phoenixFaction, character, replacement))
+                if (!DrillsUnlock.IsDrillUnlocked(phoenixFaction, character, replacement))
                 {
                     TFTVLogger.Always($"[TFTV Drills] Attempted to swap to locked drill {replacement?.name}; aborting swap.");
                     return;

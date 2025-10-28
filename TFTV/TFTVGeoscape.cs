@@ -128,12 +128,12 @@ namespace TFTV
             TFTVUIGeoMap.UnpoweredFacilitiesInfo.CheckUnpoweredBasesOnGeoscapeStart();
             TFTVAircraftReworkMain.AircraftSpeed.Init(Controller);
 
-          /* foreach(GeoFactionObjective geoFactionObjective in Controller.PhoenixFaction.Objectives) 
-            {
-                TFTVLogger.Always($"{geoFactionObjective.Title?.Localize()} {geoFactionObjective.Description?.Localize()} ");
-            }*/
+            /* foreach(GeoFactionObjective geoFactionObjective in Controller.PhoenixFaction.Objectives) 
+              {
+                  TFTVLogger.Always($"{geoFactionObjective.Title?.Localize()} {geoFactionObjective.Description?.Localize()} ");
+              }*/
 
-           // TFTVAircraftRework.Modules.Geoscape.Scanning.CheckAllVehiclesForScannerAbility(Controller);
+            // TFTVAircraftRework.Modules.Geoscape.Scanning.CheckAllVehiclesForScannerAbility(Controller);
             //  TFTVExperimental.PrintAvailableTemplates(Controller);
             // TFTVExperimental.PrintInfoHavenRecruits(Controller);
 
@@ -377,6 +377,7 @@ namespace TFTV
                 Main.Logger.LogInfo("Project Osiris stats count " + TFTVRevenant.TFTVRevenantResearch.ProjectOsirisStats.Count);
                 //  Main.Logger.LogInfo("LOTAGlobalReworkCheck is " + TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck);
                 Main.Logger.LogInfo($"Bases under attack count {TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Count}");
+              
                 Main.Logger.LogInfo($"Infested Phoenix bases {TFTVBaseDefenseGeoscape.PhoenixBasesInfested.Count}");
                 Main.Logger.LogInfo($"Supplies from Pandas pending processing {TFTVCapturePandoransGeoscape.PandasForFoodProcessing}");
                 Main.Logger.LogInfo($"Toxins in food {TFTVCapturePandoransGeoscape.ToxinsInCirculation}");

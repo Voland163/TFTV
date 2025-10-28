@@ -21,9 +21,9 @@ namespace TFTV.TFTVHavenRecruitsUI
         private static CanvasGroup _tooltipCanvasGroup;
         private static Canvas _tooltipCanvas;
 
-        private const float TooltipHorizontalPadding = -600f;
+        private const float TooltipHorizontalPadding = -900f;
         private const float TooltipVerticalPadding = 80f;
-        private const float TooltipMaxWidth = 210f;
+        private const float TooltipMaxWidth = 400f;
         private const float TooltipScale = 0.5f;
 
         private static readonly Vector3[] RectCornerBuffer = new Vector3[4];

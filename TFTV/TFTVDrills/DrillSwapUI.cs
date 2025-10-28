@@ -230,7 +230,7 @@ namespace TFTV.TFTVDrills
 
                 var character = Reflection.GetPrivate<GeoCharacter>(ui, "_character");
                 var phoenixFaction = Reflection.GetPrivate<GeoPhoenixFaction>(ui, "_phoenixFaction") ?? (character?.Faction?.GeoLevel?.PhoenixFaction);
-                bool hasTrainingFacility = DrillsDefs.HasFunctioningTrainingFacility(phoenixFaction);
+                bool hasTrainingFacility = DrillsUnlock.HasFunctioningTrainingFacility(phoenixFaction);
 
                 if (!hasTrainingFacility)
                 {
@@ -255,8 +255,8 @@ namespace TFTV.TFTVDrills
                     .Distinct()
                     .OrderBy(def =>
                     {
-                        bool acquired = DrillsDefs.CharacterHasDrill(character, def);
-                        bool unlocked = DrillsDefs.IsDrillUnlocked(phoenixFaction, character, def);
+                        bool acquired = DrillsUnlock.CharacterHasDrill(character, def);
+                        bool unlocked = DrillsUnlock.IsDrillUnlocked(phoenixFaction, character, def);
                         bool selectable = !acquired && unlocked;
                         if (selectable && availableSet.Contains(def))
                         {
@@ -281,10 +281,10 @@ namespace TFTV.TFTVDrills
 
                 foreach (var def in ordered)
                 {
-                    bool unlocked = DrillsDefs.IsDrillUnlocked(phoenixFaction, character, def);
-                    bool acquired = DrillsDefs.CharacterHasDrill(character, def);
+                    bool unlocked = DrillsUnlock.IsDrillUnlocked(phoenixFaction, character, def);
+                    bool acquired = DrillsUnlock.CharacterHasDrill(character, def);
                     bool locked = !unlocked;
-                    string missingRequirements = locked ? string.Join("\n", DrillsDefs.GetMissingRequirementDescriptions(phoenixFaction, character, def) ?? Enumerable.Empty<string>()) : string.Empty;
+                    string missingRequirements = locked ? string.Join("\n", DrillsUnlock.GetMissingRequirementDescriptions(phoenixFaction, character, def) ?? Enumerable.Empty<string>()) : string.Empty;
 
                     if (!hasTrainingFacility)
                     {

@@ -1,4 +1,5 @@
-﻿using Base.Defs;
+﻿using Base.Core;
+using Base.Defs;
 using Base.Entities.Abilities;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
@@ -8,11 +9,6 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.UI;
-using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.PhoenixBases;
-using PhoenixPoint.Geoscape.Entities.Research;
-using PhoenixPoint.Geoscape.Entities.Sites;
-using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
@@ -22,7 +18,6 @@ using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
-using RootMotion.FinalIK;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,31 +30,6 @@ using static TFTV.TFTVDrills.DrillsPublicClasses;
 namespace TFTV.TFTVDrills
 {
 
-    internal sealed class DrillClassLevelRequirement
-    {
-        public ClassTagDef ClassTag;
-        public int MinimumLevel = 1;
-        
-    }
-
-    internal sealed class DrillWeaponProficiencyRequirement
-    {
-        public List<TacticalAbilityDef> ProficiencyAbilities { get; set; } = new List<TacticalAbilityDef>();
-        
-    }
-
-    internal sealed class DrillUnlockCondition
-    {
-        public bool AlwaysAvailable;
-        public List<string> RequiredResearchIds { get; } = new List<string>();
-        public List<DrillClassLevelRequirement> ClassLevelRequirements { get; } = new List<DrillClassLevelRequirement>();
-        public List<DrillWeaponProficiencyRequirement> WeaponProficiencyRequirements { get; } = new List<DrillWeaponProficiencyRequirement>();
-        public static DrillUnlockCondition AlwaysUnlocked()
-        {
-            return new DrillUnlockCondition { AlwaysAvailable = true };
-        }
-    }
-
 
     internal class DrillsDefs
     {
@@ -67,14 +37,14 @@ namespace TFTV.TFTVDrills
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
-
-        private static readonly Dictionary<TacticalAbilityDef, DrillUnlockCondition> DrillUnlockConditions = new Dictionary<TacticalAbilityDef, DrillUnlockCondition>();
-
         internal static Sprite _drillAvailable = null;
+
+        internal static ApplyStatusAbilityDef _quickAim;
 
         internal static DamageMultiplierStatusDef _drawfireStatus;
         internal static ApplyStatusAbilityDef _drawFire;
         internal static DamageMultiplierStatusDef _markedwatchStatus;
+        internal static StatMultiplierStatusDef _markedWatchAccuracyStatusDef;
         internal static ApplyStatusAbilityDef _markedWatch;
         internal static GameTagDef OrdnanceResupplyTag;
 
@@ -116,704 +86,7 @@ namespace TFTV.TFTVDrills
         internal static ChangeAbilitiesCostStatusDef _bulletHellAPCostReductionStatus;
         internal static TacStatsModifyStatusDef _pounceProtocolSpeedStatus;
 
-        //  private static ApplyStatusAbilityDef _veiledMarksman;
-
-
         public static List<TacticalAbilityDef> Drills = new List<TacticalAbilityDef>();
-
-        public static List<TacticalAbilityDef> GetAvailableDrills(GeoPhoenixFaction faction, GeoCharacter viewer)
-        {
-            var results = new List<TacticalAbilityDef>();
-            if (Drills == null || Drills.Count == 0)
-            {
-                return results;
-            }
-
-           /* if (!HasFunctioningTrainingFacility(faction))
-            {
-
-                TFTVLogger.Always($"GetAvailableDrills: !HasFunctioningTrainingFacility(faction)");
-                return results;
-            }*/
-
-
-            foreach (var ability in Drills)
-            {
-                if (ability == null)
-                {
-                    continue;
-                }
-
-                if (CharacterHasDrill(viewer, ability))
-                {
-                    continue;
-                }
-
-                if (IsDrillUnlocked(faction, viewer, ability))
-                {
-                    results.Add(ability);
-                }
-            }
-
-            return results;
-        }
-
-        public static bool IsDrillUnlocked(GeoPhoenixFaction faction, GeoCharacter viewer, TacticalAbilityDef ability)
-        {
-            if (ability == null)
-            {
-                return false;
-            }
-
-            if (!HasFunctioningTrainingFacility(faction))
-            {
-
-              //  TFTVLogger.Always($"IsDrillUnlocked: !HasFunctioningTrainingFacility(faction)");
-                return false;
-            }
-
-            if (!DrillUnlockConditions.TryGetValue(ability, out var condition) || condition == null)
-            {
-                return true;
-            }
-
-            if (condition.AlwaysAvailable)
-            {
-                return true;
-            }
-
-            if (!MeetsResearchRequirements(faction, condition))
-            {
-                return false;
-            }
-
-            if (!MeetsClassLevelRequirements(viewer, condition))
-            {
-                return false;
-            }
-
-            if (!MeetsWeaponProficiencyRequirements(viewer, condition))
-            {
-                return false;
-            }
-
-
-            return true;
-        }
-
-        public static void SetUnlockCondition(TacticalAbilityDef ability, DrillUnlockCondition condition)
-        {
-            if (ability == null)
-            {
-                return;
-            }
-
-            DrillUnlockConditions[ability] = condition ?? DrillUnlockCondition.AlwaysUnlocked();
-        }
-
-        internal static bool MeetsResearchRequirements(GeoPhoenixFaction faction, DrillUnlockCondition condition)
-        {
-            if (condition?.RequiredResearchIds == null || condition.RequiredResearchIds.Count == 0)
-            {
-                return true;
-            }
-
-            foreach (var researchId in condition.RequiredResearchIds)
-            {
-              
-                if (!faction.Research.HasCompleted(researchId))
-                {
-                    return false;
-                }
-            }
-           
-            return true;
-        }
-
-        internal static bool MeetsClassLevelRequirements(GeoCharacter viewer, DrillUnlockCondition condition)
-        {
-            if (condition?.ClassLevelRequirements == null || condition.ClassLevelRequirements.Count == 0)
-            {
-                return true;
-            }
-
-            foreach (var requirement in condition.ClassLevelRequirements)
-            {
-                if (requirement == null)
-                {
-                    continue;
-                }
-
-                bool satisfied = false;
-
-                if (viewer != null && MeetsSingleClassRequirement(viewer, requirement))
-                {
-                    satisfied = true;
-                }
-
-                if (!satisfied)
-                {
-                    // TODO: decide whether we should surface unmet requirements to the UI.
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        internal static bool MeetsWeaponProficiencyRequirements(GeoCharacter viewer, DrillUnlockCondition condition)
-        {
-            if (condition?.WeaponProficiencyRequirements == null || condition.WeaponProficiencyRequirements.Count == 0)
-            {
-                return true;
-            }
-
-            foreach (var requirement in condition.WeaponProficiencyRequirements)
-            {
-                if (requirement?.ProficiencyAbilities == null || requirement.ProficiencyAbilities.Count == 0)
-                {
-                    continue;
-                }
-
-                bool satisfied = false;
-
-                if (viewer != null && SoldierHasWeaponProficiency(viewer, requirement.ProficiencyAbilities))
-                {
-                    satisfied = true;
-                }
-
-                if (!satisfied)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private static bool SoldierHasWeaponProficiency(GeoCharacter soldier, IEnumerable<TacticalAbilityDef> proficiencyAbilities)
-        {
-            if (soldier?.Progression?.Abilities == null || proficiencyAbilities == null)
-            {
-                return false;
-            }
-
-            foreach (var ability in proficiencyAbilities)
-            {
-                if (ability != null && soldier.Progression.Abilities.Contains(ability))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        internal static bool CharacterHasDrill(GeoCharacter soldier, TacticalAbilityDef drill)
-        {
-            if (soldier?.Progression?.Abilities == null || drill == null)
-            {
-                return false;
-            }
-
-            return soldier.Progression.Abilities.Contains(drill);
-        }
-
-
-        internal static bool MeetsSingleClassRequirement(GeoCharacter soldier, DrillClassLevelRequirement requirement)
-        {
-            if (soldier == null || requirement == null)
-            {
-                return false;
-            }
-
-            if (requirement.ClassTag != null && (soldier.ClassTags == null || !soldier.ClassTags.Contains(requirement.ClassTag)))
-            {
-                return false;
-            }
-
-            if (soldier.LevelProgression == null)
-            {
-                return false;
-            }
-
-            return soldier.LevelProgression.Level >= requirement.MinimumLevel;
-        }
-
-        internal static IEnumerable<string> GetMissingRequirementDescriptions(GeoPhoenixFaction faction, GeoCharacter viewer, TacticalAbilityDef ability)
-        {
-            if (ability == null)
-            {
-                yield break;
-            }
-
-            if (!DrillUnlockConditions.TryGetValue(ability, out var condition) || condition == null)
-            {
-                yield break;
-            }
-
-            if (condition.AlwaysAvailable)
-            {
-                yield break;
-            }
-
-            if (!MeetsResearchRequirements(faction, condition))
-            {
-                foreach (var researchId in condition.RequiredResearchIds)
-                {
-                    if (string.IsNullOrEmpty(researchId))
-                    {
-                        continue;
-                    }
-
-                    bool completed = faction?.Research?.HasCompleted(researchId) ?? false;
-                    if (completed)
-                    {
-                        continue;
-                    }
-
-                    string researchName = TryGetResearchName(researchId);
-                    if (!string.IsNullOrEmpty(researchName))
-                    {
-                        yield return $"Research: {researchName}";
-                    }
-                }
-            }
-
-            if (!MeetsClassLevelRequirements(viewer, condition))
-            {
-                foreach (var requirement in condition.ClassLevelRequirements)
-                {
-                    if (requirement == null)
-                    {
-                        continue;
-                    }
-
-                    bool satisfied = false;
-                    if (viewer != null && MeetsSingleClassRequirement(viewer, requirement))
-                    {
-                        satisfied = true;
-                    }
-
-                    if (satisfied)
-                    {
-                        continue;
-                    }
-
-                    yield return BuildClassRequirementMessage(requirement);
-                }
-            }
-
-            if (!MeetsWeaponProficiencyRequirements(viewer, condition))
-            {
-                foreach (var requirement in condition.WeaponProficiencyRequirements)
-                {
-                    if (requirement?.ProficiencyAbilities == null || requirement.ProficiencyAbilities.Count == 0)
-                    {
-                        continue;
-                    }
-
-                    bool satisfied = false;
-                    if (viewer != null && SoldierHasWeaponProficiency(viewer, requirement.ProficiencyAbilities))
-                    {
-                        satisfied = true;
-                    }
-
-                    if (satisfied)
-                    {
-                        continue;
-                    }
-
-                    yield return BuildWeaponProficiencyRequirementMessage(requirement);
-                }
-            }
-        }
-
-        internal static bool HasFunctioningTrainingFacility(GeoPhoenixFaction faction)
-        {
-            try
-            {
-                if (faction?.Bases == null)
-                {
-                    return false;
-                }
-
-                PhoenixFacilityDef trainingFacilityDef = DefCache.GetDef<PhoenixFacilityDef>("TrainingFacility_PhoenixFacilityDef");
-                if (trainingFacilityDef == null)
-                {
-                    return false;
-                }
-
-                foreach (GeoPhoenixBase phoenixBase in faction.Bases)
-                {
-                    if (phoenixBase?.Layout?.Facilities == null)
-                    {
-                        continue;
-                    }
-
-                    bool hasFunctioningFacility = phoenixBase.Layout.Facilities.Any(facility =>
-                        facility != null &&
-                        facility.Def == trainingFacilityDef &&
-                        facility.State == GeoPhoenixFacility.FacilityState.Functioning &&
-                        facility.IsPowered);
-
-                    if (hasFunctioningFacility)
-                    {
-                        return true;
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-            return false;
-        }
-        private static string TryGetResearchName(string researchId)
-        {
-            try
-            {
-                ResearchDef researchDef = null;
-
-                try
-                {
-                    researchDef = DefCache.GetDef<ResearchDef>(researchId);
-                }
-                catch
-                {
-                    // ignored – fall back to id string.
-                }
-
-                if (researchDef?.ViewElementDef != null)
-                {
-                    if (researchDef.ViewElementDef.ResearchName != null)
-                    {
-                        return researchDef.ViewElementDef.ResearchName.Localize();
-                    }
-
-                    if (researchDef.ViewElementDef.DisplayName1 != null)
-                    {
-                        return researchDef.ViewElementDef.DisplayName1.Localize();
-                    }
-                }
-
-                return researchId;
-            }
-            catch (Exception ex)
-            {
-                TFTVLogger.Error(ex);
-                return researchId;
-            }
-        }
-
-        private static string BuildClassRequirementMessage(DrillClassLevelRequirement requirement)
-        {
-            string className = requirement.ClassTag?.className;
-            if (string.IsNullOrEmpty(className))
-            {
-                className = "operative";
-            }
-
-           // string subject = "Selected operative";
-            return $"Level: {requirement.MinimumLevel} {className}";
-        }
-
-        private static string BuildWeaponProficiencyRequirementMessage(DrillWeaponProficiencyRequirement requirement)
-        {
-            List<string> abilityNames = requirement?.ProficiencyAbilities?
-                .Where(ability => ability != null)
-                .Select(ability => ability.ViewElementDef?.DisplayName1?.Localize() ?? ability.name)
-                .Where(name => !string.IsNullOrEmpty(name))
-                .Distinct()
-                .ToList();
-
-            if (abilityNames == null || abilityNames.Count == 0)
-            {
-                abilityNames = new List<string> { "required weapon proficiency" };
-            }
-
-            string abilityRequirement = abilityNames.Count == 1 ? abilityNames[0] : string.Join(" or ", abilityNames);
-            string subject = "Selected operative";
-            return $"{subject} must have {abilityRequirement}.";
-        }
-
-        private static void EnsureDefaultUnlockConditions()
-        {
-            if (Drills == null)
-            {
-                return;
-            }
-
-            foreach (var ability in Drills)
-            {
-                if (ability == null)
-                {
-                    continue;
-                }
-
-                if (!DrillUnlockConditions.ContainsKey(ability))
-                {
-                    DrillUnlockConditions[ability] = DrillUnlockCondition.AlwaysUnlocked();
-                }
-            }
-        }
-
-        private static void ConfigureUnlockConditions()
-        {
-            var shockDrop = new DrillUnlockCondition();
-            shockDrop.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
-            {
-                ProficiencyAbilities = new List<TacticalAbilityDef>()
-                {
-                    DefCache.GetDef<ClassProficiencyAbilityDef>("Rocketeer_AbilityDef"),
-                    DefCache.GetDef<ClassProficiencyAbilityDef>("Heavy_ClassProficiency_AbilityDef"),
-                },
-
-            });
-
-            SetUnlockCondition(_shockDrop, shockDrop);
-
-            var pounceProtocol = new DrillUnlockCondition();
-            pounceProtocol.ClassLevelRequirements.Add(new DrillClassLevelRequirement 
-            { ClassTag = DefCache.GetDef<ClassTagDef>("Infiltrator_ClassTagDef"), 
-                MinimumLevel = 5 });
-
-            SetUnlockCondition(_pounceProtocol, pounceProtocol);
-
-            var mightMakesRight = new DrillUnlockCondition();
-            mightMakesRight.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
-            {
-                ProficiencyAbilities = new List<TacticalAbilityDef>()
-                {
-                    DefCache.GetDef<ClassProficiencyAbilityDef>("Berserker_ClassProficiency_AbilityDef"),
-                    DefCache.GetDef<PassiveModifierAbilityDef>("MeleeWeaponTalent_AbilityDef")
-                },
-
-            });
-           
-            mightMakesRight.ClassLevelRequirements.Add(new DrillClassLevelRequirement { ClassTag = null, MinimumLevel = 5 });
-
-            SetUnlockCondition(_mightMakesRight, mightMakesRight);
-
-            var heavyConditioning = new DrillUnlockCondition();
-
-            heavyConditioning.ClassLevelRequirements.Add(new DrillClassLevelRequirement { ClassTag = DefCache.GetDef<ClassTagDef>("Heavy_ClassTagDef"), MinimumLevel = 4 });
-
-            SetUnlockCondition(_heavyConditioning, heavyConditioning);
-
-            var partingShot = new DrillUnlockCondition();
-            partingShot.ClassLevelRequirements.Add(new DrillClassLevelRequirement { ClassTag = null, MinimumLevel = 5 });
-            partingShot.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
-            {
-                ProficiencyAbilities = new List<TacticalAbilityDef>()
-                {
-                    DefCache.GetDef<ClassProficiencyAbilityDef>("Sniper_ClassProficiency_AbilityDef"),
-                    DefCache.GetDef<ClassProficiencyAbilityDef>("Berserker_ClassProficiency_AbilityDef"),
-                    DefCache.GetDef<PassiveModifierAbilityDef>("HandgunsTalent_AbilityDef")
-                },
-
-            });
-
-            SetUnlockCondition(_partingShot, partingShot);
-
-
-            var neurolink = new DrillUnlockCondition();
-            neurolink.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
-            {
-                ProficiencyAbilities = new List<TacticalAbilityDef>()
-                {
-                    _commandOverlay
-                },
-               
-            });
-            SetUnlockCondition(_neuralLink, neurolink);
-
-            var bulletHell = new DrillUnlockCondition();
-            bulletHell.ClassLevelRequirements.Add(new DrillClassLevelRequirement { ClassTag = null, MinimumLevel = 5 });
-            bulletHell.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
-            {
-                ProficiencyAbilities = new List<TacticalAbilityDef>()
-                {
-                    DefCache.GetDef<ClassProficiencyAbilityDef>("Assault_ClassProficiency_AbilityDef"),
-                    DefCache.GetDef<PassiveModifierAbilityDef>("AssaultRiflesTalent_AbilityDef")
-                },
-               
-            });
-
-            SetUnlockCondition(_bulletHell, bulletHell);
-
-            var explosiveShoot = new DrillUnlockCondition();
-            explosiveShoot.ClassLevelRequirements.Add(new DrillClassLevelRequirement
-            {
-                ClassTag = null,
-                MinimumLevel = 5,
-               
-            });
-
-            explosiveShoot.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
-            {
-                ProficiencyAbilities = new List<TacticalAbilityDef>()
-                { DefCache.GetDef<ClassProficiencyAbilityDef>("Sniper_ClassProficiency_AbilityDef"),
-                    DefCache.GetDef<PassiveModifierAbilityDef>("SniperTalent_AbilityDef")
-
-                },
-            }
-          );
-
-            SetUnlockCondition(_explosiveShot, explosiveShoot);
-
-            var heavySharpshot = new DrillUnlockCondition();
-
-            heavySharpshot.ClassLevelRequirements.Add(new DrillClassLevelRequirement
-            {
-                ClassTag = null,
-                MinimumLevel = 4,
-              
-            });
-
-            heavySharpshot.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
-            {
-                ProficiencyAbilities = new List<TacticalAbilityDef>()
-            {
-            DefCache.GetDef<ClassProficiencyAbilityDef>("Heavy_ClassProficiency_AbilityDef"),
-                    DefCache.GetDef<PassiveModifierAbilityDef>("HeavyWeaponsTalent_AbilityDef")
-
-            }
-            });
-
-            SetUnlockCondition(_heavySharpshot, heavySharpshot);
-
-
-            var aksuSprint = new DrillUnlockCondition();
-            aksuSprint.ClassLevelRequirements.Add(new DrillClassLevelRequirement
-            {
-                ClassTag = DefCache.GetDef<ClassTagDef>("Berserker_ClassTagDef"),
-                MinimumLevel = 1,
-                
-            });
-
-            aksuSprint.RequiredResearchIds.Add("ANU_Berserker_ResearchDef");
-
-            SetUnlockCondition(_aksuSprint, aksuSprint);
-
-            var packLoyalty = new DrillUnlockCondition();
-            packLoyalty.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
-            {
-                ProficiencyAbilities = new List<TacticalAbilityDef>() { DefCache.GetDef<ApplyStatusAbilityDef>("PsychicWard_AbilityDef") },
-                
-
-            });
-
-            SetUnlockCondition(_packLoyalty, packLoyalty);
-
-            var viralGrip = new DrillUnlockCondition();
-            viralGrip.ClassLevelRequirements.Add(new DrillClassLevelRequirement
-            {
-                ClassTag = DefCache.GetDef<ClassTagDef>("Priest_ClassTagDef"),
-                MinimumLevel = 5,
-                
-            });
-            viralGrip.RequiredResearchIds.Add("ANU_AdvancedInfectionTech_ResearchDef");
-            SetUnlockCondition(_virulentGrip, viralGrip);
-
-            var viralPuppeteer = new DrillUnlockCondition();
-            viralPuppeteer.ClassLevelRequirements.Add(new DrillClassLevelRequirement
-            {
-                ClassTag = DefCache.GetDef<ClassTagDef>("Priest_ClassTagDef"),
-                MinimumLevel = 7,
-                
-            });
-            viralPuppeteer.RequiredResearchIds.Add("ANU_AdvancedInfectionTech_ResearchDef");
-
-            SetUnlockCondition(_viralPuppeteer, viralPuppeteer);
-
-
-            var ordnanceResupply = new DrillUnlockCondition();
-            ordnanceResupply.ClassLevelRequirements.Add(new DrillClassLevelRequirement
-            {
-                ClassTag = DefCache.GetDef<ClassTagDef>("Technician_ClassTagDef"),
-                MinimumLevel = 5,
-                
-            });
-            SetUnlockCondition(_ordnanceResupply, ordnanceResupply);
-
-
-            var toxicLink = new DrillUnlockCondition();
-            toxicLink.ClassLevelRequirements.Add(new DrillClassLevelRequirement
-            {
-                ClassTag = DefCache.GetDef<ClassTagDef>("Infiltrator_ClassTagDef"),
-                MinimumLevel = 7,
-                
-            });
-            toxicLink.RequiredResearchIds.Add("SYN_PoisonWeapons_ResearchDef");
-            SetUnlockCondition(_toxicLink, toxicLink);
-
-
-            var causticJamming = new DrillUnlockCondition();
-            causticJamming.ClassLevelRequirements.Add(new DrillClassLevelRequirement
-            {
-                ClassTag = DefCache.GetDef<ClassTagDef>("Infiltrator_ClassTagDef"),
-                MinimumLevel = 5,
-                
-            });
-            causticJamming.RequiredResearchIds.Add("SYN_PoisonWeapons_ResearchDef");
-            SetUnlockCondition(_causticJamming, causticJamming);
-
-            var mentorUnlock = new DrillUnlockCondition();
-            mentorUnlock.ClassLevelRequirements.Add(new DrillClassLevelRequirement
-            {
-                ClassTag = null,
-                MinimumLevel = 7,
-                
-            });
-            SetUnlockCondition(_mentorProtocol, mentorUnlock);
-
-            var pintpointToss = new DrillUnlockCondition();
-            pintpointToss.ClassLevelRequirements.Add(new DrillClassLevelRequirement
-            {
-                ClassTag = null,
-                MinimumLevel = 3,
-                
-            });
-            SetUnlockCondition(_pinpointToss, pintpointToss);
-
-            var oneHandedGrip = new DrillUnlockCondition();
-            oneHandedGrip.ClassLevelRequirements.Add(new DrillClassLevelRequirement
-            {
-                ClassTag = null,
-                MinimumLevel = 5,
-               
-            });
-            SetUnlockCondition(OneHandedGrip.OneHandedPenaltyAbilityManager.OneHandedGrip, oneHandedGrip);
-
-            var snapBrace = new DrillUnlockCondition();
-            snapBrace.RequiredResearchIds.Add("PX_RiotShield_ResearchDef");
-            SetUnlockCondition(_snapBrace, snapBrace);
-
-
-            var shieldedRiposte = new DrillUnlockCondition();
-            shieldedRiposte.RequiredResearchIds.Add("PX_RiotShield_ResearchDef");
-            shieldedRiposte.ClassLevelRequirements.Add(new DrillClassLevelRequirement
-            {
-                ClassTag = DefCache.GetDef<ClassTagDef>("Heavy_ClassTagDef"),
-                MinimumLevel = 2,
-               
-            });
-            SetUnlockCondition(_shieldedRiposte, shieldedRiposte);
-
-            var overRide = new DrillUnlockCondition();
-            overRide.ClassLevelRequirements.Add(new DrillClassLevelRequirement
-            {
-                ClassTag = DefCache.GetDef<ClassTagDef>("Technician_ClassTagDef"),
-                MinimumLevel = 6,
-
-            });
-
-            SetUnlockCondition(_override, overRide);
-        }
-
-
 
         public static void CreateDefs()
         {
@@ -854,8 +127,6 @@ namespace TFTV.TFTVDrills
                 MultiStatusDef multiStatusDef = Helper.CreateDefFromClone(
                      DefCache.GetDef<MultiStatusDef>("E_MultiStatus [RapidClearance_AbilityDef]"), "{CD46E75F-06CE-427F-B276-B54470FD054D}", $"{_remoteControlAbilityDef.name}");
 
-
-
                 DamageMultiplierStatusDef sourceStatus = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
                 DamageMultiplierStatusDef newStatus = Helper.CreateDefFromClone(sourceStatus, "{183F8A02-49FD-4AB5-B5B1-BAC8FCB729D2}", $"{_remoteControlAbilityDef.name}");
                 newStatus.Visuals = Helper.CreateDefFromClone(sourceStatus.Visuals, "{8E2F042B-BEDA-4121-BF63-9832965087BB}", $"{_remoteControlAbilityDef.name}");
@@ -863,18 +134,19 @@ namespace TFTV.TFTVDrills
                 newStatus.Visuals.SmallIcon = _remoteControlAbilityDef.ViewElementDef.SmallIcon;
                 newStatus.Visuals.LargeIcon = _remoteControlAbilityDef.ViewElementDef.LargeIcon;
                 newStatus.DamageTypeDefs = new DamageTypeBaseEffectDef[] { };
-                newStatus.DurationTurns = 1;
+                newStatus.DurationTurns = 0;
                 newStatus.EffectName = _remoteControlAbilityDef.name;
-
+                newStatus.ExpireOnEndOfTurn = false;
 
 
                 newStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.Hidden;
                 newStatus.VisibleOnPassiveBar = false;
                 newStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
 
-                multiStatusDef.Duration = 1;
+                multiStatusDef.Duration = 0;
                 multiStatusDef.EffectName = _remoteControlAbilityDef.name;
                 multiStatusDef.Statuses = new StatusDef[] { _remoteControlAbilityDef.StatusDef, newStatus };
+
 
                 ActorHasStatusEffectConditionDef effectConditionDef = Helper.CreateDefFromClone(DefCache.GetDef<ActorHasStatusEffectConditionDef>("Actor_HasImprovedMedkit_ApplicationCondition"),
                     "{1F48650D-C805-4A4C-8D32-1D5A107996F8}", $"{_remoteControlAbilityDef.name}");
@@ -894,9 +166,6 @@ namespace TFTV.TFTVDrills
             {
                 TFTVLogger.Error(e);
             }
-
-
-
         }
 
 
@@ -904,8 +173,6 @@ namespace TFTV.TFTVDrills
         {
             try
             {
-
-
                 _causticJamming = CreateDrillNominalAbility("causticjamming", "8d4e5f60-9192-122b-d4e5-f60718293a4b", "b5c6d7e8-9010-ab1c-2d3e-4f506172839a", "c5d6e7f8-0910-a1b2-c3d4-e5f60718293a"); //done
                 _mentorProtocol = CreateDrillNominalAbility("mentorprotocol", "a2b1f9c3-0c32-4d9f-9a7b-0c2d18ce6ab0", "9d2a3f7b-1a53-4a8c-a1ab-4b6d3e2f9a22", "7b1f8e9c-3d4a-4e8c-9b8a-2c5f7a9e0b31"); //done
                 _pinpointToss = CreateDrillNominalAbility("pinpointtoss", "b59a3b5a-0b6e-4abf-9c7f-1db713e0b7a0", "c0e37c4a-4b1f-4f3e-8c2a-5f4e6d7c8a91", "e7f1a0b2-6d38-4d1e-9c3b-7a1d9e0f2b64"); //done
@@ -954,7 +221,7 @@ namespace TFTV.TFTVDrills
                 _neuralLink = CreateNeuralLinkAbility();
                 _neuralLinkControlStatus = CreateNeuralLinkStatus();
 
-               CreateMightMakesRightAddStatusAbilityDef("mightmakesright", "d2a3b4c5-6e7f-4819-9a0b-1c2d3e4f5a60", "1e2f3a4b-5c6d-7081-92a3-b4c5d6e7f809", "2a3b4c5d-6e7f-8091-a2b3-c4d5e6f70819");
+                CreateMightMakesRightAddStatusAbilityDef("mightmakesright", "d2a3b4c5-6e7f-4819-9a0b-1c2d3e4f5a60", "1e2f3a4b-5c6d-7081-92a3-b4c5d6e7f809", "2a3b4c5d-6e7f-8091-a2b3-c4d5e6f70819");
 
                 Drills.Add(_mightMakesRight);
                 Drills.Add(_ordnanceResupply);
@@ -967,20 +234,19 @@ namespace TFTV.TFTVDrills
                 _explosiveShot = CreateExplosiveShot();
 
 
-                 CreateMarkedWatch();
+                CreateMarkedWatch();
                 _override = CreateOverride();
                 CreateAksuSprint();
                 CreateHeavyconditioning();
 
-                _heavySharpshot = CreateHeavySharpshotAbility(); 
+                _heavySharpshot = CreateHeavySharpshotAbility();
                 Drills.Add(_heavySharpshot);
 
                 CreatePartingShotAccuracyaMalusStatus();
                 CreatePartingShootAbility();
                 CreateBulletHellDrill();
-
-                EnsureDefaultUnlockConditions();
-                ConfigureUnlockConditions();
+                DrillsUnlock.EnsureDefaultUnlockConditions();
+                DrillsUnlock.ConfigureUnlockConditions();
 
             }
             catch (Exception e)
@@ -1419,7 +685,9 @@ namespace TFTV.TFTVDrills
                 newAbility.ViewElementDef.LargeIcon = icon;
                 newAbility.ViewElementDef.SmallIcon = icon;
 
-                newAbility.DisablingStatuses = new StatusDef[] { DefCache.GetDef<StatMultiplierStatusDef>("E AccuracyMultiplier [BC_QuickAim_AbilityDef]") };
+                newAbility.DisablingStatuses = new StatusDef[] { _quickAim.StatusDef };
+
+
 
                 TacStatsModifyStatusDef slowSource = DefCache.GetDef<TacStatsModifyStatusDef>("Slowed_StatusDef");
                 _bulletHellSlowStatus = Helper.CreateDefFromClone(
@@ -1489,6 +757,8 @@ namespace TFTV.TFTVDrills
                          TFTVLogger.Always("----------------------------------------------------", false);*/
                     }
                 }
+
+                _quickAim.DisablingStatuses = _quickAim.DisablingStatuses.Append(_bulletHellSlowStatus).ToArray();
 
             }
             catch (Exception e)
@@ -1626,7 +896,7 @@ namespace TFTV.TFTVDrills
                 newStatus.VisibleOnPassiveBar = false;
                 newStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.Hidden;
                 newStatus.DurationTurns = -1;
-               
+
                 newStatus.StatsModifiers = new StatsModifierPopup[]
                 {
                     new StatsModifierPopup
@@ -1667,7 +937,7 @@ namespace TFTV.TFTVDrills
                 newAbility.TargetApplicationConditions = new EffectConditionDef[] { };
 
                 newAbility.CharacterProgressionData.SkillPointCost = 10;
-                
+
                 _aksuSprint = newAbility;
 
                 Drills.Add(newAbility);
@@ -1839,7 +1109,7 @@ namespace TFTV.TFTVDrills
                 conditionalStunStatusDef.EffectDef = stunStatusDef.EffectDef;
                 conditionalStunStatusDef.ActionPointsReduction = 0.75f;
 
-                foreach(StunDamageEffectDef stunDamageEffectDef in Repo.GetAllDefs<StunDamageEffectDef>())
+                foreach (StunDamageEffectDef stunDamageEffectDef in Repo.GetAllDefs<StunDamageEffectDef>())
                 {
                     stunDamageEffectDef.StunStatusDef = conditionalStunStatusDef;
 
@@ -1865,11 +1135,11 @@ namespace TFTV.TFTVDrills
 
 
 
-              /*  StatusImmunityAbilityDef StunStatusImmunity_AbilityDef = DefCache.GetDef<StatusImmunityAbilityDef>("StunStatusImmunity_AbilityDef");
-                StunStatusImmunity_AbilityDef.StatusDef = conditionalStunStatusDef;
+                /*  StatusImmunityAbilityDef StunStatusImmunity_AbilityDef = DefCache.GetDef<StatusImmunityAbilityDef>("StunStatusImmunity_AbilityDef");
+                  StunStatusImmunity_AbilityDef.StatusDef = conditionalStunStatusDef;
 
-                StatusImmunityAbilityDef MutoidStunImmunity_AbilityDef = DefCache.GetDef<StatusImmunityAbilityDef>("MutoidStunImmunity_AbilityDef");
-                MutoidStunImmunity_AbilityDef.StatusDef = conditionalStunStatusDef;*/
+                  StatusImmunityAbilityDef MutoidStunImmunity_AbilityDef = DefCache.GetDef<StatusImmunityAbilityDef>("MutoidStunImmunity_AbilityDef");
+                  MutoidStunImmunity_AbilityDef.StatusDef = conditionalStunStatusDef;*/
 
 
 
@@ -2007,7 +1277,7 @@ namespace TFTV.TFTVDrills
                     guid3,
                     name);
 
-                
+
 
                 newAbility.CharacterProgressionData.RequiredStrength = 0;
                 newAbility.CharacterProgressionData.RequiredWill = 0;
@@ -2265,7 +1535,7 @@ namespace TFTV.TFTVDrills
 
                 Drills.Add(newTacticalAbility);
                 _markedwatchStatus = newStatus;
-
+              //  GetMarkedWatchAccuracyStatus();
 
 
             }
@@ -2274,6 +1544,41 @@ namespace TFTV.TFTVDrills
                 TFTVLogger.Error(e);
                 throw;
             }
+        }
+
+        private static StatMultiplierStatusDef GetMarkedWatchAccuracyStatus()
+        {
+
+                DefRepository defRepository = GameUtl.GameComponent<DefRepository>();
+                StatMultiplierStatusDef statMultiplierStatusDef = defRepository.GetAllDefs<StatMultiplierStatusDef>().FirstOrDefault((StatMultiplierStatusDef def) => def != null && def.StatsMultipliers != null && def.StatsMultipliers.Length != 0);
+            TFTVLogger.Always($"statMultiplierStatusDef: {statMultiplierStatusDef.name}");
+
+
+            StatMultiplierStatusDef statMultiplierStatusDef2 = defRepository.CreateRuntimeDef<StatMultiplierStatusDef>(statMultiplierStatusDef);
+                if (statMultiplierStatusDef2 == null)
+                {
+                    statMultiplierStatusDef2 = defRepository.CreateRuntimeDef<StatMultiplierStatusDef>();
+                }
+                statMultiplierStatusDef2.name = "MarkedWatch_AccuracyStatusDef";
+                statMultiplierStatusDef2.EffectName = "MarkedWatch_Accuracy";
+                statMultiplierStatusDef2.SingleInstance = false;
+                statMultiplierStatusDef2.StackMultipleStatusesAsSingleIcon = true;
+                statMultiplierStatusDef2.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.Hidden;
+                statMultiplierStatusDef2.VisibleOnStatusScreen = (TacStatusDef.StatusScreenVisibility)0;
+                statMultiplierStatusDef2.VisibleOnPassiveBar = false;
+                statMultiplierStatusDef2.ShowNotification = false;
+                statMultiplierStatusDef2.ExpireOnEndOfTurn = false;
+                statMultiplierStatusDef2.StatsMultipliers = new StatMultiplierStatusDef.StatMultiplier[]
+                {
+                                new StatMultiplierStatusDef.StatMultiplier
+                                {
+                                        StatName = "Accuracy",
+                                        Multiplier = 1.5f
+                                }
+                };
+                _markedWatchAccuracyStatusDef = statMultiplierStatusDef2;
+            
+            return _markedWatchAccuracyStatusDef;
         }
 
 

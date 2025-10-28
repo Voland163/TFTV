@@ -90,7 +90,7 @@ namespace TFTV
             /// </summary>
             public static void RegisterSuppressionEvent(TacticalActor actor, Weapon weapon, float weight = 1f)
             {
-                if (actor == null || !actor.IsAlive || weapon == null || weapon.WeaponDef == null|| !weapon.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("GunWeapon_TagDef")))
+                if (actor == null || !actor.IsAlive || weapon == null || weapon.WeaponDef == null || !weapon.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("GunWeapon_TagDef")))
                 {
                     return;
                 }
@@ -300,15 +300,24 @@ namespace TFTV
 
                 MaintainSuppressionPose(actor, state, desiredLevel);
 
-                if (state.DisplayedLevel == desiredLevel)
-                {
-                    return;
-                }
-
                 StatusComponent statusComponent = actor.Status;
                 if (statusComponent == null)
                 {
                     state.DisplayedLevel = SuppressionLevel.None;
+                    return;
+                }
+
+                if (state.DisplayedLevel != SuppressionLevel.None)
+                {
+                    TacStatusDef cachedDef = SuppressionStatuses.GetStatusDef(state.DisplayedLevel);
+                    if (cachedDef != null && !statusComponent.HasStatus(cachedDef))
+                    {
+                        state.DisplayedLevel = SuppressionLevel.None;
+                    }
+                }
+
+                if (state.DisplayedLevel == desiredLevel)
+                {
                     return;
                 }
 
@@ -479,8 +488,8 @@ namespace TFTV
                 {
                     private static void Postfix(ProjectileLogic __instance, CastHit hit)
                     {
-                        if (!IsSuppressionEnabled) return; 
-                      
+                        if (!IsSuppressionEnabled) return;
+
 
                         TryRegisterSuppressionNearMiss(__instance, hit);
                     }
@@ -645,7 +654,7 @@ namespace TFTV
 
             private static TacStatusDef CreateStatus(int level, string guid0, string guid1)
             {
-                
+
 
                 string name = $"TFTV_SUPPRESSION_STATUS";
                 string locKeyName = $"{name}_{level}_NAME";
@@ -691,17 +700,17 @@ namespace TFTV
 
                 float contribution = weight;
 
-              //  TFTVLogger.Always($"{actor?.name} {weapon?.DisplayName} {weight}");
+                //  TFTVLogger.Always($"{actor?.name} {weapon?.DisplayName} {weight}");
 
                 if (weapon != null)
                 {
-                  
+
 
                     WeaponDef weaponDef = weapon.WeaponDef;
                     if (weaponDef != null && weaponDef.DamagePayload.ProjectilesPerShot > 1)
                     {
-                        contribution = Mathf.Min(contribution/ weaponDef.DamagePayload.ProjectilesPerShot, 1f);
-                      //  TFTVLogger.Always($"{actor?.name} {weapon?.DisplayName} {contribution}");
+                        contribution = Mathf.Min(contribution / weaponDef.DamagePayload.ProjectilesPerShot, 1f);
+                        //  TFTVLogger.Always($"{actor?.name} {weapon?.DisplayName} {contribution}");
                     }
                 }
 

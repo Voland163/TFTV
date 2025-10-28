@@ -2,6 +2,7 @@
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Characters;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Entities;
@@ -10,6 +11,7 @@ using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Tactical.Entities.Equipments;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -369,6 +371,49 @@ namespace TFTV.TFTVHavenRecruitsUI
                 }
             }
 
+        }
+
+        internal static IEnumerable<ItemDef> GetVehicleOrMutogWeapons(GeoUnitDescriptor recruit)
+        {
+            if (recruit?.ArmorItems == null)
+            {
+               // TFTVLogger.Always($"{recruit.Identity?.Name} recruit.Equipment is null");
+                yield break;
+            }
+
+          //  TFTVLogger.Always($"{recruit.Identity?.Name} recruit.Equipment is not null");
+
+            foreach (var item in recruit.ArmorItems)
+            {
+                if (!LooksLikeWeapon(item))
+                {
+                    continue;
+                }
+              //  TFTVLogger.Always($"item= {item.name}");
+                yield return item;
+            }
+        }
+
+        private static bool LooksLikeWeapon(ItemDef item)
+        {
+            if (item == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                if (item is WeaponDef)
+                {
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+            }
+
+            return false;
         }
 
         internal static Dictionary<ResourceType, int> GetRecruitCost(GeoHaven haven, GeoPhoenixFaction phoenix)
