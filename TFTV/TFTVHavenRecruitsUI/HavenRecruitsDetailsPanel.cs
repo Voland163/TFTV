@@ -150,7 +150,7 @@ namespace TFTV
 
             if (showPlainFinalValue)
             {
-                return $"{nameSegment}: {baseSegment} {finalValue}";
+                return $"{nameSegment}: {finalValue}";
             }
 
             Color colorToUse = finalColor ?? DetailStatHighlightColor;
