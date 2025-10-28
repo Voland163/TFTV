@@ -138,7 +138,7 @@ namespace TFTV
             return $"<color=#{ColorUtility.ToHtmlStringRGBA(color)}>{text}</color>";
         }
 
-        private static string FormatStatLabel(string statName, string baseValue, string finalValue = null, Color? finalColor = null)
+        private static string FormatStatLabel(string statName, string baseValue, string finalValue = null, Color? finalColor = null, bool showPlainFinalValue = false)
         {
             string nameSegment = WrapWithColor(statName, Color.white);
             string baseSegment = WrapWithColor(baseValue, DetailStatHighlightColor);
@@ -146,6 +146,11 @@ namespace TFTV
             if (string.IsNullOrEmpty(finalValue))
             {
                 return $"{nameSegment}: {baseSegment}";
+            }
+
+            if (showPlainFinalValue)
+            {
+                return $"{nameSegment}: {baseSegment} {finalValue}";
             }
 
             Color colorToUse = finalColor ?? DetailStatHighlightColor;
@@ -867,6 +872,7 @@ namespace TFTV
                 string modifiersDescription = statsSummary.ModifiersDescription ?? string.Empty;
                 bool hasBaseStats = !((object)baseStats == null);
                 bool hasFinalStats = !((object)finalStats == null);
+                bool showPlainFinalValue = HavenRecruitsUtils.IsVehicleOrMutog(recruit.Recruit);
 
                 string FormatNumber(float value) => value.ToString("0.#");
                 string FormatPercent(float ratio) => Mathf.RoundToInt(ratio * 100f) + "%";
@@ -956,7 +962,7 @@ namespace TFTV
 
                     if (cell.Label != null)
                     {
-                        cell.Label.text = FormatStatLabel(statName, baseText, finalText, finalColor);
+                        cell.Label.text = FormatStatLabel(statName, baseText, finalText, finalColor, showPlainFinalValue);
                         cell.Label.color = Color.white;
                     }
 
@@ -1352,7 +1358,13 @@ namespace TFTV
 
                 if (_detailLevelNameLabel != null)
                 {
-                    _detailLevelNameLabel.text = $"{data.Recruit.Level.ToString()} {data.Recruit.GetName()}";
+                    int level = data.Recruit.Level;
+                    bool showLevel = !HavenRecruitsUtils.IsVehicleOrMutog(data.Recruit) && level > 0;
+                    string recruitName = data.Recruit.GetName();
+
+                    _detailLevelNameLabel.text = showLevel
+                        ? $"{level.ToString()} {recruitName}"
+                        : recruitName;
                 }
 
                 PopulateArmorSlots(data.Recruit);

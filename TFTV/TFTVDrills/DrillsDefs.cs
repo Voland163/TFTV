@@ -1839,14 +1839,39 @@ namespace TFTV.TFTVDrills
                 conditionalStunStatusDef.EffectDef = stunStatusDef.EffectDef;
                 conditionalStunStatusDef.ActionPointsReduction = 0.75f;
 
-                DefCache.GetDef<StunDamageEffectDef>("ConditionalStun_StunDamageEffectDef").StunStatusDef = conditionalStunStatusDef;
-                DefCache.GetDef<StunDamageKeywordDataDef>("Shock_DamageKeywordDataDef").StatusDef = conditionalStunStatusDef;
+                foreach(StunDamageEffectDef stunDamageEffectDef in Repo.GetAllDefs<StunDamageEffectDef>())
+                {
+                    stunDamageEffectDef.StunStatusDef = conditionalStunStatusDef;
 
-                StatusImmunityAbilityDef StunStatusImmunity_AbilityDef = DefCache.GetDef<StatusImmunityAbilityDef>("StunStatusImmunity_AbilityDef");
+                    TFTVLogger.Always($"{stunDamageEffectDef.name} {stunDamageEffectDef.StunStatusDef?.name}");
+                }
+
+                foreach (StunDamageKeywordDataDef stunDamageEffectDef in Repo.GetAllDefs<StunDamageKeywordDataDef>())
+                {
+                    stunDamageEffectDef.StatusDef = conditionalStunStatusDef;
+                    TFTVLogger.Always($"{stunDamageEffectDef.name} {stunDamageEffectDef.StatusDef?.name}");
+                }
+
+                foreach (StatusImmunityAbilityDef statusImmunityAbilityDef in Repo.GetAllDefs<StatusImmunityAbilityDef>().Where(siad => siad.StatusDef.name == "ActorStunned_StatusDef"))
+                {
+                    statusImmunityAbilityDef.StatusDef = conditionalStunStatusDef;
+                    TFTVLogger.Always($"{statusImmunityAbilityDef.name} {statusImmunityAbilityDef.StatusDef?.name}");
+                }
+
+                //  DefCache.GetDef<StunDamageEffectDef>("ConditionalStun_StunDamageEffectDef").StunStatusDef = conditionalStunStatusDef;
+                //  DefCache.GetDef<StunDamageKeywordDataDef>("Shock_DamageKeywordDataDef").StatusDef = conditionalStunStatusDef;
+                //  DefCache.GetDef<StunDamageKeywordDataDef>("SurpriseAttack_DamageKeywordDataDef").StatusDef = conditionalStunStatusDef;
+
+
+
+
+              /*  StatusImmunityAbilityDef StunStatusImmunity_AbilityDef = DefCache.GetDef<StatusImmunityAbilityDef>("StunStatusImmunity_AbilityDef");
                 StunStatusImmunity_AbilityDef.StatusDef = conditionalStunStatusDef;
 
                 StatusImmunityAbilityDef MutoidStunImmunity_AbilityDef = DefCache.GetDef<StatusImmunityAbilityDef>("MutoidStunImmunity_AbilityDef");
-                MutoidStunImmunity_AbilityDef.StatusDef = conditionalStunStatusDef;
+                MutoidStunImmunity_AbilityDef.StatusDef = conditionalStunStatusDef;*/
+
+
 
             }
             catch (Exception e)

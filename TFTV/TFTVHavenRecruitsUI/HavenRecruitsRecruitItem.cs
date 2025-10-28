@@ -181,8 +181,13 @@ namespace TFTV.TFTVHavenRecruitsUI
 
                 if (cardView.LevelLabel != null)
                 {
-                    cardView.LevelLabel.text = $"{data.Recruit?.Level ?? 0}";
+                    int level = data.Recruit?.Level ?? 0;
+                    bool showLevel = !IsVehicleOrMutog(data.Recruit) && level > 0;
+
+                    cardView.LevelLabel.text = showLevel ? level.ToString() : string.Empty;
                     cardView.LevelLabel.color = cardView.LevelDefaultColor;
+                    var levelLabelObject = cardView.LevelLabel.gameObject;
+                    levelLabelObject?.SetActive(showLevel);
                 }
 
                 if (cardView.NameLabel != null)
