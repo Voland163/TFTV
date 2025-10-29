@@ -670,11 +670,12 @@ namespace TFTV
                 newStatus.Visuals.SmallIcon = icon;
                 newStatus.DamageTypeDefs = new DamageTypeBaseEffectDef[] { };
                 newStatus.Multiplier = 1;
-                newStatus.DurationTurns = 1;
-                newStatus.EffectName = name;
+                newStatus.DurationTurns = 0;
+                newStatus.EffectName = $"{name}_{level}";
                 newStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.AlwaysVisible;
                 newStatus.VisibleOnPassiveBar = true;
                 newStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                newStatus.ExpireOnEndOfTurn = true;
 
                 return newStatus;
             }

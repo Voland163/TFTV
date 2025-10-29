@@ -1491,7 +1491,7 @@ namespace TFTV.TFTVDrills
                 string guid2 = "c90b0e5a-5e70-4bb8-96d0-8b7e8cc6d7f4";
                 string guid3 = "{A986E625-0E3A-4569-AAF6-9DF759ADFF6F}";
                 string guid4 = "{5E5D24F1-A230-45D8-9CBA-1C9C1D640468}";
-
+                string guid5 = "{0457F8F3-4F3C-45AD-A808-02710DBEA0A0}";
 
                 string locKeyName = $"TFTV_DRILL_{name}_NAME";
                 string locKeyDesc = $"TFTV_DRILL_{name}_DESC";
@@ -1520,6 +1520,10 @@ namespace TFTV.TFTVDrills
                     sourceAbility.ViewElementDef,
                     guid2,
                     name);
+
+                newTacticalAbility.TargetingDataDef = Helper.CreateDefFromClone(sourceAbility.TargetingDataDef, guid5, name);
+                newTacticalAbility.TargetingDataDef.Origin.LineOfSight = 0;
+
 
                 newTacticalAbility.CharacterProgressionData.SkillPointCost = 10;
 
