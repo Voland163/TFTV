@@ -201,25 +201,11 @@ namespace TFTV
                     return;
                 }
 
+                TFTVLogger.Always($"clearing suppression for {actor?.DisplayName}");
+
                 state.Tracker.Clear();
                 state.CurrentLevel = SuppressionLevel.None;
                 UpdateSuppressionStatus(actor, state);
-            }
-
-            /// <summary>
-            /// Clears suppression for all actors in the supplied faction.
-            /// </summary>
-            public static void ClearSuppressionForFaction(TacticalFaction faction)
-            {
-                if (faction == null)
-                {
-                    return;
-                }
-
-                foreach (TacticalActor tacticalActor in faction.TacticalActors)
-                {
-                    ClearSuppression(tacticalActor);
-                }
             }
 
             internal static void TryRegisterSuppressionNearMiss(ProjectileLogic logic, CastHit hit)
@@ -495,13 +481,13 @@ namespace TFTV
                     }
                 }
 
-                [HarmonyPatch(typeof(TacticalFaction), nameof(TacticalFaction.EndTurn))]
-                private static class TacticalFaction_EndTurn_Patch
+                [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.EndTurn))]
+                private static class TacticalActor_EndTurn_Patch
                 {
-                    private static void Postfix(TacticalFaction __instance)
+                    private static void Postfix(TacticalActor __instance)
                     {
                         if (!IsSuppressionEnabled) return;
-                        ClearSuppressionForFaction(__instance);
+                        ClearSuppression(__instance);
                     }
                 }
             }

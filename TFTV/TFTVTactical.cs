@@ -233,6 +233,8 @@ namespace TFTV
             TFTVAircraftReworkMain.Modules.Tactical.HeliosStatisChamber.ImplementVestBuff();
             TFTVAircraftReworkMain.Modules.Tactical.GroundAttackWeapon.ImplementGroundAttackWeaponModule(Controller);
 
+            TFTVDrills.DrillsHarmony.NeuralLink.RefreshNeuralLinkStatus();
+
             TFTVLogger.Always("Tactical start completed");
 
             TFTVNJQuestline.IntroMission.RunOnTacticalStart(Controller);

@@ -3127,7 +3127,7 @@ namespace TFTV
                         }
                     }
 
-                    internal static void RemoveGroundAttackWeaponModuleAbility(TacticalLevelController controller)
+                    internal static void RemoveGroundAttackWeaponModuleAbility()
                     {
                         try
                         {
@@ -3135,6 +3135,8 @@ namespace TFTV
                             {
                                 return;
                             }
+
+                            TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
                             foreach (TacticalActor tacticalActor in controller.GetFactionByCommandName("px").TacticalActors)
                             {

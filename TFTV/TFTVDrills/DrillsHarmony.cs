@@ -359,31 +359,6 @@ namespace TFTV.TFTVDrills
         {
             private const string PhoenixCommandName = "px";
 
-            [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
-            private static class TacticalLevelController_ActorEnteredPlay_CommandOverlayPatch
-            {
-                public static void Postfix(TacticalLevelController __instance)
-                {
-                    if (!TFTVNewGameOptions.IsReworkEnabled())
-                    {
-                        return;
-                    }
-
-
-
-                    try
-                    {
-                        RefreshNeuralLinkStatus();
-                    }
-                    catch (Exception ex)
-                    {
-                        TFTVLogger.Error(ex);
-                        throw;
-                    }
-                }
-            }
-
-
             [HarmonyPatch(typeof(StatusComponent), nameof(StatusComponent.ApplyStatus), typeof(Status))]
             private static class StatusComponent_ApplyStatus_CommandOverlayPatch
             {
@@ -398,6 +373,14 @@ namespace TFTV.TFTVDrills
 
                     try
                     {
+                        TacticalLevelController tacticalLevelController = GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>();
+
+
+                        if (tacticalLevelController == null || !tacticalLevelController.TurnIsPlaying)
+                        {
+                            return;
+                        }
+
                         if (status?.Def == _commandOverlayStatus)
                         {
                             RefreshNeuralLinkStatus();
@@ -423,8 +406,15 @@ namespace TFTV.TFTVDrills
                             return;
                         }
 
+                        TacticalLevelController tacticalLevelController = GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>();
 
-                        if (status?.Def == _commandOverlayStatus || status?.Def == _neuralLinkControlStatus)
+                        if (tacticalLevelController == null || !tacticalLevelController.TurnIsPlaying)
+                        {
+                            return;
+                        }
+
+
+                        if (status?.Def == _commandOverlayStatus)
                         {
                             RefreshNeuralLinkStatus();
                         }
@@ -437,10 +427,11 @@ namespace TFTV.TFTVDrills
                 }
             }
 
-            private static void RefreshNeuralLinkStatus()
+            internal static void RefreshNeuralLinkStatus()
             {
                 try
                 {
+                  
                     TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
                     if (controller == null || _neuralLink == null || _neuralLinkControlStatus == null || _commandOverlayStatus == null || _remoteControlAbilityDef == null)
@@ -478,15 +469,19 @@ namespace TFTV.TFTVDrills
                             && actor.Status.HasStatus(_commandOverlayStatus)
                             && actor.GetAbilityWithDef<TacticalAbility>(_remoteControlAbilityDef) == null;
 
+                       // TFTVLogger.Always($"{actor?.DisplayName} has {actor.Status.HasStatus(_commandOverlayStatus)}  {actor.GetAbilityWithDef<TacticalAbility>(_remoteControlAbilityDef) == null}");
+
                         if (shouldHave)
                         {
                             if (existingStatus == null)
                             {
+                               // TFTVLogger.Always($"{actor?.DisplayName} should get neuralLinkControlStatus");
                                 actor.Status.ApplyStatus(_neuralLinkControlStatus);
                             }
                         }
                         else if (existingStatus != null)
                         {
+                           // TFTVLogger.Always($"{actor?.DisplayName} should lose neuralLinkControlStatus");
                             actor.Status.UnapplyStatus(existingStatus);
                         }
                     }
@@ -496,6 +491,7 @@ namespace TFTV.TFTVDrills
                     TFTVLogger.Error(ex);
                     throw;
                 }
+                
             }
 
             private static bool HasNeuralLinkAbility(TacticalActor actor)
@@ -510,10 +506,7 @@ namespace TFTV.TFTVDrills
         internal class BulletHell
         {
             private static readonly GameTagDef AssaultRifleTag = DefCache.GetDef<GameTagDef>("AssaultRifleItem_TagDef");
-            private static readonly MethodInfo TacticalItemIsFunctionalGetter = AccessTools.PropertyGetter(typeof(TacticalItem), "IsFunctional");
-            private static readonly MethodInfo TacticalItemIsDisabledGetter = AccessTools.PropertyGetter(typeof(TacticalItem), "IsDisabled");
-            private static readonly PropertyInfo OwnerItemProperty = AccessTools.Property(typeof(TacticalItemAspectBase), "OwnerItem");
-            private static readonly HashSet<int> ProcessedItems = new HashSet<int>();
+
 
             [HarmonyPatch(typeof(TacticalActor), "ShouldChangeAspectStats")]
             public static class TacticalActor_ShouldChangeAspectStats_BulletHell_Patch
@@ -546,7 +539,11 @@ namespace TFTV.TFTVDrills
 
                         TacticalActor attacker = TacUtil.GetSourceTacticalActorBase(__instance.LastDamageSource) as TacticalActor;
 
-                        if (attacker == null)
+                        TacticalActor selectedActor = __instance?.TacticalLevel?.View?.SelectedActor;
+
+                        TFTVLogger.Always($"attacker?.DisplayName: {attacker?.DisplayName} selectedActor?.DisplayName: {selectedActor?.DisplayName}");
+
+                        if (attacker == null || selectedActor == null || attacker != selectedActor)
                         {
                             return;
                         }
@@ -706,22 +703,15 @@ namespace TFTV.TFTVDrills
                     Vector3 sourcePosition,
                     ref IEnumerable<TacticalAbilityTarget> __result)
                 {
-
-                    if (!TFTVNewGameOptions.IsReworkEnabled())
-                    {
-                        return;
-                    }
-
-
-                    if (__instance.ReloadAbilityDef != _ordnanceResupply)
+                    if (!TFTVNewGameOptions.IsReworkEnabled() || __instance.ReloadAbilityDef != _ordnanceResupply)
                     {
                         return;
                     }
 
                     List<TacticalAbilityTarget> results = (__result ?? Enumerable.Empty<TacticalAbilityTarget>()).ToList();
-                    HashSet<TacticalActorBase> actorsWithValidAmmo = results
-                        .Where(t => t?.Actor != null && t?.TacticalItem?.CommonItemData?.CurrentCharges > 0)
-                        .Select(t => t.Actor)
+                    HashSet<Weapon> weaponsWithValidAmmo = results
+                        .Select(t => t?.Equipment as Weapon)
+                        .Where(w => w != null && w.CommonItemData?.CurrentCharges > 0)
                         .ToHashSet();
 
                     List<TacticalAbilityTarget> candidateTargets = new List<TacticalAbilityTarget>();
@@ -753,32 +743,48 @@ namespace TFTV.TFTVDrills
                     foreach (TacticalAbilityTarget candidate in candidateTargets)
                     {
                         TacticalActorBase actor = candidate?.Actor ?? candidate?.GetTargetActor();
-                        if (actor == null || !actorsWithValidAmmo.Add(actor))
+                        if (actor == null)
                         {
                             continue;
                         }
 
-                        Weapon weapon = actor.AddonsManager?.RootAddon?.OfType<Weapon>()
-                            .FirstOrDefault(w => !w.InfiniteCharges && w.CommonItemData.CurrentCharges < w.ChargesMax);
-
-                        if (weapon == null)
+                        foreach (Weapon weapon in GetReloadableWeapons(actor))
                         {
-                            continue;
-                        }
+                            if (!weaponsWithValidAmmo.Add(weapon))
+                            {
+                                continue;
+                            }
 
-                        TacticalAbilityTarget syntheticTarget = new TacticalAbilityTarget(candidate)
-                        {
-                            Equipment = weapon,
-                            TacticalItem = CreateVirtualMagazine(weapon)
-                        };
+                            TacticalAbilityTarget syntheticTarget = new TacticalAbilityTarget(candidate)
+                            {
+                                Equipment = weapon,
+                                TacticalItem = CreateVirtualMagazine(weapon)
+                            };
 
-                        if (syntheticTarget.TacticalItem != null)
-                        {
-                            results.Add(syntheticTarget);
+                            if (syntheticTarget.TacticalItem != null)
+                            {
+                                results.Add(syntheticTarget);
+                            }
                         }
                     }
 
                     __result = results;
+                }
+
+                private static IEnumerable<Weapon> GetReloadableWeapons(TacticalActorBase actor)
+                {
+                    IEnumerable<Weapon> weapons = Enumerable.Empty<Weapon>();
+
+                    if (actor is TacticalActor tacticalActor && tacticalActor.Equipments != null)
+                    {
+                        weapons = tacticalActor.Equipments.Equipments.OfType<Weapon>();
+                    }
+                    else if (actor?.AddonsManager?.RootAddon != null)
+                    {
+                        weapons = actor.AddonsManager.RootAddon.OfType<Weapon>();
+                    }
+
+                    return weapons.Where(w => w != null && !w.InfiniteCharges && w.CommonItemData.CurrentCharges < w.ChargesMax);
                 }
 
                 private static IEnumerable<TacticalAbilityTarget> InvokeReloadOthersWeaponTargets(
@@ -832,17 +838,11 @@ namespace TFTV.TFTVDrills
                 [HarmonyPatch("Reload")]
                 [HarmonyPostfix]
                 private static void TopOffVirtualReloads(
-                    ReloadAbility __instance,
-                    Equipment equipment,
-                    TacticalItem ammoClip)
+                ReloadAbility __instance,
+                Equipment equipment,
+                TacticalItem ammoClip)
                 {
-                    if (!TFTVNewGameOptions.IsReworkEnabled())
-                    {
-                        return;
-                    }
-
-
-                    if (equipment == null || ammoClip == null)
+                    if (!TFTVNewGameOptions.IsReworkEnabled() || equipment == null || ammoClip == null)
                     {
                         return;
                     }
@@ -859,19 +859,39 @@ namespace TFTV.TFTVDrills
                     }
 
                     int missingCharges = equipment.ChargesMax - equipment.CommonItemData.CurrentCharges;
-                    if (missingCharges <= 0)
+                    if (missingCharges > 0)
+                    {
+                        ammo.ReloadCharges(missingCharges, canCreateMagazines: true);
+                    }
+
+                    TacticalActorBase owner = equipment.TacticalActorBase;
+                    if (owner == null || !owner.HasGameTag(owner.SharedData.SharedGameTags.VehicleTag))
                     {
                         return;
                     }
 
-                    ammo.ReloadCharges(missingCharges, canCreateMagazines: true);
-
-                    if (!equipment.TacticalActor.HasGameTag(OrdnanceResupplyTag))
+                    foreach (Weapon otherWeapon in GetReloadableWeapons(owner))
                     {
-                        equipment.TacticalActor.GameTags.Add(OrdnanceResupplyTag);
+                        if (otherWeapon == equipment)
+                        {
+                            continue;
+                        }
+
+                        AmmoManager otherAmmo = otherWeapon.CommonItemData?.Ammo;
+                        int otherMissingCharges = otherWeapon.ChargesMax - otherWeapon.CommonItemData.CurrentCharges;
+                        if (otherAmmo != null && otherMissingCharges > 0)
+                        {
+                            otherAmmo.ReloadCharges(otherMissingCharges, canCreateMagazines: true);
+                        }
+                    }
+
+                    if (!owner.GameTags.Contains(OrdnanceResupplyTag))
+                    {
+                        owner.GameTags.Add(OrdnanceResupplyTag);
                     }
                 }
-            }
+            
+        }
 
         }
         internal class DesperateShot

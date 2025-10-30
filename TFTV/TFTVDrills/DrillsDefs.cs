@@ -86,6 +86,7 @@ namespace TFTV.TFTVDrills
         internal static ChangeAbilitiesCostStatusDef _bulletHellAPCostReductionStatus;
         internal static TacStatsModifyStatusDef _pounceProtocolSpeedStatus;
 
+
         public static List<TacticalAbilityDef> Drills = new List<TacticalAbilityDef>();
 
         public static void CreateDefs()
@@ -759,7 +760,8 @@ namespace TFTV.TFTVDrills
                 }
 
                 _quickAim.DisablingStatuses = _quickAim.DisablingStatuses.Append(_bulletHellSlowStatus).ToArray();
-
+                ApplyStatusAbilityDef rapidClearance = DefCache.GetDef<ApplyStatusAbilityDef>("RapidClearance_AbilityDef");
+                rapidClearance.DisablingStatuses = rapidClearance.DisablingStatuses.Append(_bulletHellSlowStatus).ToArray();
             }
             catch (Exception e)
             {
@@ -1023,6 +1025,9 @@ namespace TFTV.TFTVDrills
                 newAbility.SceneViewElementDef = Helper.CreateDefFromClone(
                     sourceAbility.SceneViewElementDef, "{D72E4101-58C8-4D79-BE1F-F8C945AD528E}", name);
 
+                newAbility.SceneViewElementDef.MovementPositionMarker = PhoenixPoint.Tactical.View.GroundMarkerType.HealPosition;
+                newAbility.SceneViewElementDef.SelectedTargetMarker = PhoenixPoint.Tactical.View.GroundMarkerType.CharacterSelectionHover;
+
                 newAbility.ViewElementDef.DisplayName1.LocalizationKey = locKeyName;
                 newAbility.ViewElementDef.Description.LocalizationKey = locKeyDesc;
                 newAbility.ViewElementDef.SmallIcon = icon;
@@ -1046,7 +1051,7 @@ namespace TFTV.TFTVDrills
                 // newAbility.TargetingDataDef.Origin.TargetTags.Add(Shared.SharedGameTags.VehicleTag);
                 newAbility.TargetingDataDef.Origin.Range = 2;
                 newAbility.RequiredCharges = 0;
-                newAbility.ActionPointCost = 1f;
+                newAbility.ActionPointCost = 0.75f;
                 newAbility.TargetingDataDef.Origin.TargetResult = TargetResult.Actor;
 
                 GameTagDef resuppliedVehicleTag = Helper.CreateDefFromClone(DefCache.GetDef<GameTagDef>("Capturable_GameTagDef"), "{F1C2D3E4-5678-49A0-B1C2-D3E4F56789A0}", "ResuppliedVehicle_TagDef");
@@ -1229,7 +1234,7 @@ namespace TFTV.TFTVDrills
                 newAbility.TargetApplicationConditions = new EffectConditionDef[] { };
                 newAbility.CharacterProgressionData.SkillPointCost = 10;
 
-                Drills.Add(newAbility);
+             //   Drills.Add(newAbility);
                 _heavyConditioning = newAbility;
 
             }

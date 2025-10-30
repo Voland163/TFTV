@@ -180,6 +180,7 @@
     <Compile Include="TFTVNerdPerks.cs" />
     <Compile Include="TFTVNJQuestline.cs" />
     <Compile Include="TFTVSuppression.cs" />
+    <Compile Include="TFTVSupressionAI.cs" />
     <Compile Include="TFTVTauntsAndQuips.cs" />
     <Compile Include="TFTVTimeScaling.cs" />
     <Compile Include="TFTVVehicleFixes.cs" />

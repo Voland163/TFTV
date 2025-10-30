@@ -82,7 +82,10 @@ namespace TFTVVehicleRework.KaosBuggy
                 Minigun.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == keywords.ShreddingKeyword).Value = 2;
                 Minigun.DamagePayload.AutoFireShotCount = 10;
                 Minigun.SpreadDegrees = (40.99f/19f); //= 19 effective range; ER = 41/Spread
-                switch(Module)
+                Minigun.ManufactureTech = 10f;
+                Minigun.ManufactureMaterials = 200f;
+
+                switch (Module)
                 {
                     case KSWeapons.Fullstop:
                         BuggyGuns[Module].ViewElementDef.Description = new LocalizedTextBind("UI_JUNKER_GOOGUN");

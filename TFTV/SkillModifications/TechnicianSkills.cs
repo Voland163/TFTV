@@ -310,7 +310,7 @@ namespace PRMBetterClasses.SkillModifications
             commandOverlay.ViewElementDef.LargeIcon = icon;
             commandOverlay.ViewElementDef.SmallIcon = icon;
 
-            commandOverlay.TargetingDataDef.Origin.Range = 10f;
+            commandOverlay.TargetingDataDef.Origin.Range = 9.2f;
             commandOverlay.TargetingDataDef.Target.Range = 7.8f;
             commandOverlay.CharacterProgressionData.RequiredSpeed = 0;
             commandOverlay.CharacterProgressionData.RequiredStrength = 0;

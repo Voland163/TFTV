@@ -132,6 +132,8 @@ namespace TFTV.TFTVAircraftRework
                     yield return NextUpdate.Seconds(def.DelayBetweenStrikesSeconds);
                 }
             }
+
+            TFTVAircraftReworkMain.Modules.Tactical.GroundAttackWeapon.RemoveGroundAttackWeaponModuleAbility();
         }
 
         private List<Vector3> GenerateImpactPattern(Vector3 center)
