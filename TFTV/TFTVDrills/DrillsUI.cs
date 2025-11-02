@@ -8,9 +8,9 @@ namespace TFTV.TFTVDrills
     {
         private const int SwapSpCost = 10;
         private const float MenuMaxHeight = 950f;
-        private const float MenuWidth = 760f;
-        private const int GridColumns = 5;
-        private const int VisibleGridRows = 5;
+        private const float MenuWidth = 900f;
+        private const int GridColumns = 6;
+        private const int VisibleGridRows = 4;
         private const float GridCellWidth = 128f;
         private const float GridCellHeight = 140f;
         private const float GridSpacing = 12f;

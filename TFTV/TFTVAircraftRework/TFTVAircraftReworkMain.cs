@@ -91,6 +91,10 @@ namespace TFTV
 
         private static readonly GeoVehicleDef maskedManticore = DefCache.GetDef<GeoVehicleDef>("PP_MaskedManticore_Def");
 
+        private static readonly ResearchDef _aspidaResearchDef = DefCache.GetDef<ResearchDef>("SYN_Rover_ResearchDef");
+        private static readonly ResearchDef _heliosMoonMissionResearchDef = DefCache.GetDef<ResearchDef>("SYN_MoonMission_ResearchDef");
+        private static readonly ClassTagDef _aspidaClassTag = DefCache.GetDef<ClassTagDef>("Aspida_ClassTagDef");
+
         private static GeoScanComponentDef _basicScannerComponent = null;
         private static GeoScanComponentDef _thunderbirdScannerComponent = null;
         private static ScanAbilityDef _scanAbilityDef = null;
@@ -2208,6 +2212,51 @@ namespace TFTV
         }
         internal class Modules
         {
+
+            private static Research GetPhoenixResearch(GeoVehicle geoVehicle)
+            {
+                try
+                {
+                    GeoLevelController geoLevelController = geoVehicle?.GeoLevel;
+
+                    if (geoLevelController == null)
+                    {
+                        Level currentLevel = GameUtl.CurrentLevel();
+                        if (currentLevel != null)
+                        {
+                            geoLevelController = currentLevel.GetComponent<GeoLevelController>();
+                        }
+                    }
+
+                    return geoLevelController?.PhoenixFaction?.Research;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    return null;
+                }
+            }
+
+            internal static bool HasCompletedResearch(GeoVehicle geoVehicle, ResearchDef researchDef)
+            {
+                try
+                {
+                    if (researchDef == null)
+                    {
+                        return false;
+                    }
+
+                    Research phoenixResearch = GetPhoenixResearch(geoVehicle);
+                    return phoenixResearch != null && phoenixResearch.HasCompleted(researchDef.Id);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    return false;
+                }
+            }
+
+
             internal class Tiers
             {
                 internal static int GetBlimpSpeedTier()
@@ -4429,6 +4478,11 @@ namespace TFTV
                                 {
                                     maxSpace += 2;
                                 }
+
+                                if (geoVehicle.VehicleDef == helios && HasCompletedResearch(geoVehicle, _heliosMoonMissionResearchDef))
+                                {
+                                    maxSpace += 2;
+                                }
                             }
                             else
                             {
@@ -4453,6 +4507,11 @@ namespace TFTV
                             {
 
                                 if (geoVehicle.Modules.Any(m => m?.ModuleDef == _basicPassengerModule))
+                                {
+                                    aircraftInfo.MaxCrew += 2;
+                                }
+
+                                if (geoVehicle.VehicleDef == helios && HasCompletedResearch(geoVehicle, _heliosMoonMissionResearchDef))
                                 {
                                     aircraftInfo.MaxCrew += 2;
                                 }
@@ -4529,6 +4588,9 @@ namespace TFTV
                             bool hasMutogPen = geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _blimpMutogPenModule);
                             bool isThunderbird = geoVehicle.VehicleDef == thunderbird;
 
+                            bool isHelios = geoVehicle.VehicleDef == helios;
+                            bool aspidaResearchCompleted = HasCompletedResearch(geoVehicle, _aspidaResearchDef);
+
                             // TFTVLogger.Always($"{geoVehicle.Name} has {countVehicles} vehicles, {geoCharacter.DisplayName}, has harness: {hasHarness} is thunderbird {thunderbird}");
 
                             if (countVehicles > 1)
@@ -4582,28 +4644,17 @@ namespace TFTV
                             bool hasMutogPen = geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _blimpMutogPenModule);
                             bool isThunderbird = geoVehicle.VehicleDef == thunderbird;
 
+                            bool isHelios = geoVehicle.VehicleDef == helios;
+                            bool aspidaResearchCompleted = HasCompletedResearch(geoVehicle, _aspidaResearchDef);
+
                             List<GeoCharacter> geoCharacters = geoVehicle.Units.ToList();
 
                             int occupiedSpace = 0;
 
                             foreach (GeoCharacter geoCharacter in geoCharacters)
                             {
-                                if (geoCharacter.TemplateDef.Volume == 3 && hasHarness)
-                                {
-                                    occupiedSpace += 1;
-                                }
-                                else if (geoCharacter.TemplateDef.Volume == 2 && hasMutogPen)
-                                {
-                                    occupiedSpace += 1;
-                                }
-                                else if (geoCharacter.TemplateDef.Volume == 3 && isThunderbird)
-                                {
-                                    occupiedSpace += 2;
-                                }
-                                else
-                                {
-                                    occupiedSpace += geoCharacter.TemplateDef.Volume;
-                                }
+                                occupiedSpace += VehiclesAndMutogs.GetAdjustedCharacterSpace(geoCharacter, hasHarness, hasMutogPen,
+                                    isThunderbird, isHelios, aspidaResearchCompleted);
 
                             }
 
@@ -4612,29 +4663,8 @@ namespace TFTV
                                 List<GeoCharacter> list = new List<GeoCharacter>(from u in geoVehicle.Units orderby u.OccupingSpace descending select u);
                                 foreach (GeoCharacter character in list)
                                 {
-                                    if (occupiedSpace <= geoVehicle.MaxCharacterSpace)
-                                    {
-                                        break;
-                                    }
-                                    geoVehicle.RemoveCharacter(character);
-                                    geoVehicle.CurrentSite.AddCharacter(character);
-
-                                    if (character.TemplateDef.Volume == 3 && hasHarness)
-                                    {
-                                        occupiedSpace -= 1;
-                                    }
-                                    else if (character.TemplateDef.Volume == 2 && hasMutogPen)
-                                    {
-                                        occupiedSpace -= 1;
-                                    }
-                                    else if (character.TemplateDef.Volume == 3 && isThunderbird)
-                                    {
-                                        occupiedSpace -= 2;
-                                    }
-                                    else
-                                    {
-                                        occupiedSpace -= character.TemplateDef.Volume;
-                                    }
+                                    occupiedSpace -= VehiclesAndMutogs.GetAdjustedCharacterSpace(character, hasHarness, hasMutogPen,
+                                       isThunderbird, isHelios, aspidaResearchCompleted);
 
                                 }
 
@@ -5429,7 +5459,10 @@ namespace TFTV
                             bool hasMutogPen = geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _blimpMutogPenModule);
                             bool isThunderbird = geoVehicle.VehicleDef == thunderbird;
 
-                            if (!hasHarness && !hasMutogPen && !isThunderbird)
+                            bool isHelios = geoVehicle.VehicleDef == helios;
+                            bool aspidaResearchCompleted = HasCompletedResearch(geoVehicle, _aspidaResearchDef);
+
+                            if (!hasHarness && !hasMutogPen && !isThunderbird && !(isHelios && aspidaResearchCompleted))
                             {
                                 return occupancy;
                             }
@@ -5440,27 +5473,66 @@ namespace TFTV
 
                             foreach (GeoCharacter geoCharacter in geoCharacters)
                             {
-                                if (geoCharacter.TemplateDef.Volume == 3 && hasHarness)
-                                {
-                                    occupiedSpace += 1;
-                                }
-                                else if (geoCharacter.TemplateDef.Volume == 2 && hasMutogPen)
-                                {
-                                    occupiedSpace += 1;
-                                }
-                                else if (geoCharacter.TemplateDef.Volume == 3 && isThunderbird)
-                                {
-                                    occupiedSpace += 2;
-                                }
-                                else
-                                {
-                                    occupiedSpace += geoCharacter.TemplateDef.Volume;
-                                }
+                                occupiedSpace += GetAdjustedCharacterSpace(geoCharacter, hasHarness, hasMutogPen, isThunderbird,
+                                     isHelios, aspidaResearchCompleted);
 
                             }
 
                             return occupiedSpace;
 
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+
+                    internal static int GetAdjustedCharacterSpace(GeoCharacter geoCharacter, bool hasHarness, bool hasMutogPen,
+                       bool isThunderbird, bool isHelios, bool aspidaResearchCompleted)
+                    {
+                        try
+                        {
+                            if (geoCharacter?.TemplateDef == null)
+                            {
+                                return 0;
+                            }
+
+                            int volume = geoCharacter.TemplateDef.Volume;
+
+                            if (volume <= 0)
+                            {
+                                return volume;
+                            }
+
+                            bool isVehicle = geoCharacter.GameTags != null && geoCharacter.GameTags.Any(t => t == Shared.SharedGameTags.VehicleTag);
+                            bool isMutog = geoCharacter.GameTags != null && geoCharacter.GameTags.Any(t => t == Shared.SharedGameTags.MutogTag);
+
+                            if (isMutog)
+                            {
+                                if (hasMutogPen)
+                                {
+                                    return Math.Max(1, volume - 1);
+                                }
+                                return volume;
+                            }
+
+                            if (isVehicle)
+                            {
+                                int reducedVolume = volume;
+
+                                if (hasHarness)
+                                {
+                                    reducedVolume -= 1;
+                                }
+
+                                if (isHelios && aspidaResearchCompleted && geoCharacter.GameTags.Any(t => t == _aspidaClassTag))
+                                {
+                                    reducedVolume -= 2;
+                                }
+                                return Math.Max(0, reducedVolume);
+                            }
+                            return volume;
                         }
                         catch (Exception e)
                         {
@@ -5544,27 +5616,17 @@ namespace TFTV
                                     bool hasMutogPen = geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _blimpMutogPenModule);
                                     bool isThunderbird = geoVehicle.VehicleDef == thunderbird;
 
-                                    if (!hasHarness && !hasMutogPen && !isThunderbird)
+                                    bool isHelios = geoVehicle.VehicleDef == helios;
+                                    bool aspidaResearchCompleted = HasCompletedResearch(geoVehicle, _aspidaResearchDef);
+
+                                    if (!hasHarness && !hasMutogPen && !isThunderbird && !(isHelios && aspidaResearchCompleted))
                                     {
                                         return;
                                     }
 
-                                    if (__instance.TemplateDef.Volume == 3 && hasHarness)
-                                    {
-                                        __result = 1;
-                                    }
-                                    else if (__instance.TemplateDef.Volume == 2 && hasMutogPen)
-                                    {
-                                        __result = 1;
-                                    }
-                                    else if (__instance.TemplateDef.Volume == 3 && isThunderbird)
-                                    {
-                                        __result = 2;
-                                    }
-                                    else
-                                    {
-                                        __result = __instance.TemplateDef.Volume;
-                                    }
+                                    __result = GetAdjustedCharacterSpace(__instance, hasHarness, hasMutogPen, isThunderbird,
+                                       isHelios, aspidaResearchCompleted);
+
                                 }
                             }
                             catch (Exception e)
@@ -5627,6 +5689,8 @@ namespace TFTV
                                 bool hasHarness = false;
                                 bool hasMutogPen = false;
                                 bool isThunderbird = false;
+                                bool isHelios = false;
+                                bool aspidaResearchCompleted = false;
 
                                 if (AircraftReworkOn)
                                 {
@@ -5634,18 +5698,15 @@ namespace TFTV
                                     hasMutogPen = geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _blimpMutogPenModule);
                                     isThunderbird = geoVehicle.VehicleDef == thunderbird;
 
-                                    if (geoCharacter.TemplateDef.Volume == 3 && hasHarness)
+                                    isHelios = geoVehicle.VehicleDef == helios;
+                                    aspidaResearchCompleted = HasCompletedResearch(geoVehicle, _aspidaResearchDef);
+
+                                    if (!config.VehicleAndMutogSize1)
                                     {
-                                        occupyingSpace = 1;
+                                        occupyingSpace = GetAdjustedCharacterSpace(geoCharacter, hasHarness, hasMutogPen, isThunderbird,
+                                          isHelios, aspidaResearchCompleted);
                                     }
-                                    else if (geoCharacter.TemplateDef.Volume == 2 && hasMutogPen)
-                                    {
-                                        occupyingSpace = 1;
-                                    }
-                                    else if (geoCharacter.TemplateDef.Volume == 3 && isThunderbird)
-                                    {
-                                        occupyingSpace = 2;
-                                    }
+
                                 }
 
 
