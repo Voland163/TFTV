@@ -18,6 +18,7 @@ using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -289,16 +290,31 @@ namespace TFTV.TFTVDrills
                 newAbility.ViewElementDef.Description.LocalizationKey = locKeyDesc;
                 newAbility.ViewElementDef.LargeIcon = icon;
                 newAbility.ViewElementDef.SmallIcon = icon;
-
+               
                 newAbility.CharacterProgressionData.RequiredStrength = 0;
                 newAbility.CharacterProgressionData.RequiredSpeed = 0;
                 newAbility.CharacterProgressionData.RequiredWill = 0;
+
+                GameTagDef heavyTag = DefCache.GetDef<GameTagDef>("HeavyItem_TagDef");
+                GameTagDef GunWeapon_TagDef = DefCache.GetDef<GameTagDef>("GunWeapon_TagDef");
+
+                GameTagDef heavyGunWeaponTag = Helper.CreateDefFromClone(heavyTag, "{5FB8F11C-4E71-4249-83C5-E3F476B36D59}", name);
+
+                foreach(WeaponDef weaponDef in Repo.GetAllDefs<WeaponDef>().Where(w=>w.Tags.Contains(heavyTag) && w.Tags.Contains(GunWeapon_TagDef)))
+                {
+                    if (!weaponDef.Tags.Contains(heavyGunWeaponTag))
+                    {
+                        TFTVLogger.Always($"Weapon {weaponDef.name} adding heavy gun tag");
+                        weaponDef.Tags.Add(heavyGunWeaponTag);
+                    }
+                }
+
 
                 newAbility.ActionPointCost = 1f;
                 newAbility.WillPointCost = 2f;
                 newAbility.EquipmentTags = new GameTagDef[]
                 {
-                    DefCache.GetDef<GameTagDef>("HeavyItem_TagDef")
+                   heavyGunWeaponTag  
                 };
                 newAbility.ActorTags = Array.Empty<GameTagDef>();
                 newAbility.ProjectileSpreadMultiplier = 0.5f;
@@ -1118,36 +1134,20 @@ namespace TFTV.TFTVDrills
                 {
                     stunDamageEffectDef.StunStatusDef = conditionalStunStatusDef;
 
-                    TFTVLogger.Always($"{stunDamageEffectDef.name} {stunDamageEffectDef.StunStatusDef?.name}");
+                   // TFTVLogger.Always($"{stunDamageEffectDef.name} {stunDamageEffectDef.StunStatusDef?.name}");
                 }
 
                 foreach (StunDamageKeywordDataDef stunDamageEffectDef in Repo.GetAllDefs<StunDamageKeywordDataDef>())
                 {
                     stunDamageEffectDef.StatusDef = conditionalStunStatusDef;
-                    TFTVLogger.Always($"{stunDamageEffectDef.name} {stunDamageEffectDef.StatusDef?.name}");
+                  //  TFTVLogger.Always($"{stunDamageEffectDef.name} {stunDamageEffectDef.StatusDef?.name}");
                 }
 
                 foreach (StatusImmunityAbilityDef statusImmunityAbilityDef in Repo.GetAllDefs<StatusImmunityAbilityDef>().Where(siad => siad.StatusDef.name == "ActorStunned_StatusDef"))
                 {
                     statusImmunityAbilityDef.StatusDef = conditionalStunStatusDef;
-                    TFTVLogger.Always($"{statusImmunityAbilityDef.name} {statusImmunityAbilityDef.StatusDef?.name}");
+                 //   TFTVLogger.Always($"{statusImmunityAbilityDef.name} {statusImmunityAbilityDef.StatusDef?.name}");
                 }
-
-                //  DefCache.GetDef<StunDamageEffectDef>("ConditionalStun_StunDamageEffectDef").StunStatusDef = conditionalStunStatusDef;
-                //  DefCache.GetDef<StunDamageKeywordDataDef>("Shock_DamageKeywordDataDef").StatusDef = conditionalStunStatusDef;
-                //  DefCache.GetDef<StunDamageKeywordDataDef>("SurpriseAttack_DamageKeywordDataDef").StatusDef = conditionalStunStatusDef;
-
-
-
-
-                /*  StatusImmunityAbilityDef StunStatusImmunity_AbilityDef = DefCache.GetDef<StatusImmunityAbilityDef>("StunStatusImmunity_AbilityDef");
-                  StunStatusImmunity_AbilityDef.StatusDef = conditionalStunStatusDef;
-
-                  StatusImmunityAbilityDef MutoidStunImmunity_AbilityDef = DefCache.GetDef<StatusImmunityAbilityDef>("MutoidStunImmunity_AbilityDef");
-                  MutoidStunImmunity_AbilityDef.StatusDef = conditionalStunStatusDef;*/
-
-
-
             }
             catch (Exception e)
             {

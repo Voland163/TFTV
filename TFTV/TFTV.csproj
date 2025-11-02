@@ -176,6 +176,7 @@
     <Compile Include="TFTVHavenRecruitsUI\HavenRecruitsUtils.cs" />
     <Compile Include="TFTVHavenRecruitsUI\RecruitOverlayManagerHelpers.cs" />
     <Compile Include="TFTVHavenRecruitsUI\HavenRecruitsMain.cs" />
+    <Compile Include="TFTVLaserWeapons.cs" />
     <Compile Include="TFTVMeleeDamage.cs" />
     <Compile Include="TFTVNerdPerks.cs" />
     <Compile Include="TFTVNJQuestline.cs" />

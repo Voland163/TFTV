@@ -1,4 +1,5 @@
-﻿using Base.Core;
+﻿using Base;
+using Base.Core;
 using Base.Defs;
 using Base.Entities.Statuses;
 using Base.Utils.Maths;
@@ -8,6 +9,7 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical;
@@ -709,10 +711,11 @@ namespace TFTV.TFTVDrills
                     }
 
                     List<TacticalAbilityTarget> results = (__result ?? Enumerable.Empty<TacticalAbilityTarget>()).ToList();
-                    HashSet<Weapon> weaponsWithValidAmmo = results
-                        .Select(t => t?.Equipment as Weapon)
-                        .Where(w => w != null && w.CommonItemData?.CurrentCharges > 0)
-                        .ToHashSet();
+                    HashSet<Weapon> weaponsWithValidAmmo = new HashSet<Weapon>(
+     results
+         .Select(t => t?.Equipment as Weapon)
+         .Where(w => w != null && w.CommonItemData?.CurrentCharges > 0)
+ );
 
                     List<TacticalAbilityTarget> candidateTargets = new List<TacticalAbilityTarget>();
                     candidateTargets.AddRange(InvokeReloadOthersWeaponTargets(

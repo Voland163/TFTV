@@ -4593,7 +4593,16 @@ namespace TFTV
 
                             // TFTVLogger.Always($"{geoVehicle.Name} has {countVehicles} vehicles, {geoCharacter.DisplayName}, has harness: {hasHarness} is thunderbird {thunderbird}");
 
-                            if (countVehicles > 1)
+                            if (AircraftReworkOn && geoVehicle.VehicleDef == blimp && countVehicles > 0)
+                            {
+                                foreach (GeoCharacter vehicle in geoVehicle.Units.Where(c => c.GameTags.Any(t => t == Shared.SharedGameTags.VehicleTag)).ToList())
+                                {
+                                    geoVehicle.RemoveCharacter(vehicle);
+
+                                    geoVehicle.CurrentSite?.AddCharacter(vehicle);
+                                }
+                            }
+                            else if (countVehicles > 1)
                             {
                                 if (isThunderbird && hasHarness && countVehicles < 3)
                                 {
