@@ -7320,45 +7320,7 @@ namespace TFTV
             }
         }
         internal class AircraftMaintenance
-        {
-
-            /* private static bool CheckSpeedAdjustedForMaintenance(GeoVehicle geoVehicle)
-             {
-                 try
-                 {
-                     float baseSpeed = geoVehicle.VehicleDef.BaseStats.Speed.Value;
-                     float totalSpeed = baseSpeed;
-
-                     if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _basicSpeedModule))
-                     {
-                         totalSpeed += _basicSpeedModule.GeoVehicleModuleBonusValue;
-                     }
-
-                     if (geoVehicle.VehicleDef == helios)
-                     {
-                         totalSpeed += AircraftSpeed.GetHeliosSpeed();
-                     }
-
-                     if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _basicPassengerModule))
-                     {
-                         totalSpeed += _basicPassengerModule.GeoVehicleModuleBonusValue;
-                     }
-
-                     if (geoVehicle.Stats.HitPoints <= 50)
-                     {
-                         totalSpeed /= 2;
-                     }
-
-                     return geoVehicle.Speed.Value == totalSpeed;
-                 }
-                 catch (Exception e)
-                 {
-                     TFTVLogger.Error(e);
-                     throw;
-                 }
-             }*/
-
-
+        { 
             internal class Repairing
             {
                 [HarmonyPatch(typeof(GeoVehicle), "RepairAircraftHp")]

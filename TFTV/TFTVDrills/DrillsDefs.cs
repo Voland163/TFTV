@@ -476,9 +476,18 @@ namespace TFTV.TFTVDrills
                 damagePayloadEffectDef.DamagePayload.AoeRadius = 2.5f;
                 damagePayloadEffectDef.DamagePayload.ObjectToSpawnOnExplosion = DefCache.GetDef<ExplosionEffectDef>("E_ShrapnelExplosion [ExplodingBarrel_ExplosionEffectDef]").ObjectToSpawn;
 
-                abilityDef.TriggerItemTags.Add(DefCache.GetDef<GameTagDef>("ExplosiveWeapon_TagDef"));
+                GameTagDef explosiveTag = DefCache.GetDef<GameTagDef>("ExplosiveWeapon_TagDef");
+
+                abilityDef.TriggerItemTags.Add(explosiveTag);
                 abilityDef.TriggerItemTags.Add(DefCache.GetDef<GameTagDef>("FlamethrowerItem_TagDef"));
                 abilityDef.EquipmentTags = abilityDef.EquipmentTags.AddToArray(DefCache.GetDef<ItemTypeTagDef>("SniperRifleItem_TagDef"));
+
+
+                WeaponDef scyllaLeftArm = DefCache.GetDef<WeaponDef>("Queen_LeftArmGun_WeaponDef");
+                WeaponDef scyllaRightArm = DefCache.GetDef<WeaponDef>("Queen_RightArmGun_WeaponDef");
+
+                scyllaLeftArm.Tags.Add(explosiveTag);
+                scyllaRightArm.Tags.Add(explosiveTag);
 
                 Drills.Add(abilityDef);
                 return abilityDef;
@@ -1295,12 +1304,14 @@ namespace TFTV.TFTVDrills
                 newAbility.TargetApplicationConditions = new EffectConditionDef[] { source.TargetApplicationConditions[0], source.TargetApplicationConditions[2] };
                 newAbility.TargetingDataDef.Origin.TargetEnemies = true;
                 newAbility.TargetingDataDef.Origin.TargetFriendlies = false;
+                newAbility.TargetingDataDef.Origin.FactionVisibility = LineOfSightType.InSight;
                 newAbility.AnimType = 1;
 
 
                 TacActorSimpleAbilityAnimActionDef animActions = DefCache.GetDef<TacActorSimpleAbilityAnimActionDef>("E_ManualControl [Soldier_Utka_AnimActionsDef]");
                 animActions.AbilityDefs = animActions.AbilityDefs.AddToArray(newAbility);
 
+                MindControlStatusDef sourceMindControl = DefCache.GetDef<MindControlStatusDef>("MindControl_StatusDef");
 
 
                 newAbility.StatusDef = Helper.CreateDefFromClone(
@@ -1309,10 +1320,18 @@ namespace TFTV.TFTVDrills
                     name);
 
                 MindControlStatusDef newMindControlStatusDef = Helper.CreateDefFromClone(
-                    DefCache.GetDef<MindControlStatusDef>("MindControl_StatusDef"),
+                    sourceMindControl,
                     guid5,
                     name
                     );
+
+                ViewElementDef viewElementDef = Helper.CreateDefFromClone(
+                    sourceMindControl.Visuals,
+                    "{0739FC00-F39D-46CB-854E-2D5F10B98DEE}",
+                    name);
+
+                viewElementDef.DisplayName1.LocalizationKey = $"TFTV_DRILL_{name}_MINDCONTROL_STATUS_NAME";
+                viewElementDef.Description.LocalizationKey = $"TFTV_DRILL_{name}_MINDCONTROL_STATUS_DESC";
 
                 newMindControlStatusDef.ControlFactionDef = DefCache.GetDef<PPFactionDef>("Phoenix_FactionDef");
 
@@ -1507,6 +1526,7 @@ namespace TFTV.TFTVDrills
 
                 DamageMultiplierStatusDef newStatus = CreateDummyStatus(name, guid3, guid4);
                 newStatus.SingleInstance = false;
+                newStatus.Multiplier = 1;
 
                 ApplyStatusAbilityDef sourceAbility = DefCache.GetDef<ApplyStatusAbilityDef>("MarkedForDeath_AbilityDef");
 

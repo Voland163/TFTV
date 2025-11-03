@@ -2,6 +2,7 @@
 using Base.Core;
 using Base.Defs;
 using Base.Entities.Statuses;
+using Base.Utils;
 using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -2142,6 +2143,50 @@ namespace TFTV.TFTVDrills
                 }
             }
         }
+        
+        internal class Override 
+        {
+
+            [HarmonyPatch(typeof(MinionStatus), "HasMaster")]
+            public static class MinionStatus_HasMaster_Override_Patch
+            {
+                public static void Postfix(MinionStatus __instance, ref bool __result)
+                {
+                    try
+                    {
+                        if (!TFTVNewGameOptions.IsReworkEnabled())
+                        {
+                            return;
+                        }
+
+                        TacticalActor tacticalActor = __instance.TacticalActor;
+
+                      
+
+                        if (tacticalActor == null)
+                        {
+                            return;
+                        }
+
+                        TFTVLogger.Always($"looking at {tacticalActor?.DisplayName} tacticalActor.Status.HasStatus<MindControlStatus>(): {tacticalActor.HasStatus(_override.StatusDef)}");
+
+                        if (tacticalActor.HasStatus(_override.StatusDef))
+                        {
+                            __result = true;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        TFTVLogger.Error(ex);
+                    }
+                }
+            }
+
+            
+
+
+        }
+    
     }
 
 }

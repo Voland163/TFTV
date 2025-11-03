@@ -315,12 +315,21 @@ namespace TFTV
                     else if (research.ResearchID == "ALN_Citadel_ResearchDef")
                     {
                         research.Faction.GeoLevel.EventSystem.SetVariable("Pandorans_Researched_Citadel", 1);
-                        research.Faction.GeoLevel.AlienFaction.SpawnNewAlienBase();
+
+                        GeoAlienFaction aliens = research.Faction.GeoLevel.AlienFaction;
+                        var limitsField = AccessTools.Field(typeof(GeoAlienFaction), "_baseUpdatables");
+                        var limits = (List<GeoAlienBaseLimits>)limitsField.GetValue(aliens);
+
+                        GeoAlienBaseTypeDef citadelType = aliens.GeoLevel.SharedData.CitadelBaseTypeDef;
+                        GeoAlienBaseLimits citadelLimits = limits.Last(l => l.BaseLimitation.BaseType == citadelType);
+
+                        aliens.SpawnOrUpgradeAlienBase(citadelLimits);
+
                         GeoAlienBase citadel = research.Faction.GeoLevel.AlienFaction.Bases.FirstOrDefault(ab => ab.AlienBaseTypeDef.name == "Citadel_GeoAlienBaseTypeDef");
                         ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
-                        TacCharacterDef startingScylla = DefCache.GetDef<TacCharacterDef>("Scylla1_FrenzyMistSmasherAgileSpawner_AlienMutationVariationDef");
+                      //  TacCharacterDef startingScylla = DefCache.GetDef<TacCharacterDef>("Scylla1_FrenzyMistSmasherAgileSpawner_AlienMutationVariationDef");
 
-                        citadel.SpawnMonster(queenTag, startingScylla);
+                      //  citadel.SpawnMonster(queenTag, startingScylla);
 
                     }
                     else if (research.ResearchID == "PX_VirophageWeapons_ResearchDef" || research.ResearchID == "PX_TelepathicNodule_ResearchDef" || research.ResearchID == "PX_YuggothianReceptacle_ResearchDef")

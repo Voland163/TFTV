@@ -209,11 +209,6 @@ namespace TFTV
                   
 
                     eventSystem.SetVariable("ScyllaCounter", eventSystem.GetVariable("ScyllaCounter") + 1);
-
-                   
-
-                  
-
                     TFTVLogger.Always($"Scylla spawned! Count is now {eventSystem.GetVariable("ScyllaCounter")}");
 
                     return false;
@@ -271,7 +266,7 @@ namespace TFTV
                 DateTime myDate = new DateTime(1, 1, 1);
 
                 UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                int roll = UnityEngine.Random.Range(scyllasAlreadySpawned, scyllasAlreadySpawned + 1);
+                int roll = UnityEngine.Random.Range(scyllasAlreadySpawned, Mathf.Min(2,scyllasAlreadySpawned + 1));
                 if (roll > allScyllas.Count - 1)
                 {
                     int newRoll = UnityEngine.Random.Range(allScyllas.Count - 4, allScyllas.Count - 1);

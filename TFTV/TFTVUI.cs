@@ -45,7 +45,9 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
+using static Base.Audio.WwiseIDs.SWITCHES;
 using static PhoenixPoint.Tactical.View.ViewControllers.SoldierResultElement;
+using static TFTV.TFTVUI.EditScreen.Stats.TFTV_UIModuleCharacterProgression_RefreshStatPanel_patch;
 
 namespace TFTV
 {
@@ -160,7 +162,6 @@ namespace TFTV
         internal class EditScreen
         {
 
-
             internal class Stats
             {
                 //This changes display of Delirium bar in personnel edit screen to show current Delirium value vs max delirium value the character can have
@@ -249,11 +250,6 @@ namespace TFTV
                 [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
                 internal static class TFTV_UIModuleCharacterProgression_RefreshStatPanel_patch
                 {
-                 //   private const string HeavyConditioningLocKey = "TFTV_DRILL_heavyconditioning_NAME";
-                    private const string AksuSprintDrillLocKey = "TFTV_DRILL_aksusprintdrill_NAME";
-
-                   // private static readonly GameTagDef HeavyClassTag = DefCache.GetDef<GameTagDef>("Heavy_ClassTagDef");
-                    private static readonly GameTagDef BionicTag = DefCache.GetDef<GameTagDef>("Bionic_TagDef");
 
                     private static readonly HashSet<TacticalItemDef> AksuArmorPieces = new HashSet<TacticalItemDef>
     {
@@ -264,18 +260,7 @@ namespace TFTV
 
                     internal struct DrillBonuses
                     {
-                       // public float HeavyConditioningSpeedBonus;
-                      //  public float HeavyConditioningAccuracyBonus;
-                      //  public float HeavyConditioningPerceptionBonus;
-                      //  public float HeavyConditioningStealthBonus;
                         public float AksuSprintSpeedBonus;
-
-                      /*  public bool HasHeavyConditioningBonus =>
-                            !Mathf.Approximately(HeavyConditioningSpeedBonus, 0f) ||
-                            !Mathf.Approximately(HeavyConditioningAccuracyBonus, 0f) ||
-                            !Mathf.Approximately(HeavyConditioningPerceptionBonus, 0f) ||
-                            !Mathf.Approximately(HeavyConditioningStealthBonus, 0f);*/
-
                         public bool HasAksuSprintBonus => !Mathf.Approximately(AksuSprintSpeedBonus, 0f);
                     }
 
@@ -288,35 +273,18 @@ namespace TFTV
                             return bonuses;
                         }
 
-                      //  bool hasHeavyConditioning = false;
+
                         bool hasAksuSprint = false;
 
-                        if (character.Progression != null)
+                        if (character.Progression != null && character.Progression.Abilities.Any(a => a == TFTVDrills.DrillsDefs._aksuSprint))
                         {
-                            foreach (TacticalAbilityDef ability in character.Progression.Abilities)
-                            {
-                                string abilityLocKey = ability?.ViewElementDef?.DisplayName1?.LocalizationKey;
-                              /*  if (abilityLocKey == HeavyConditioningLocKey)
-                                {
-                                    hasHeavyConditioning = true;
-                                }
-                                else */if (abilityLocKey == AksuSprintDrillLocKey)
-                                {
-                                    hasAksuSprint = true;
-                                }
-                            }
+                            hasAksuSprint = true;
                         }
 
-                        if (!hasAksuSprint) //&&hasHeavyConditioning)
+                        if (!hasAksuSprint)
                         {
                             return bonuses;
                         }
-
-                       /* int heavyArmorPiecesEquipped = 0;
-                        float heavyArmorSpeedPenalty = 0f;
-                        float heavyArmorAccuracyPenalty = 0f;
-                        float heavyArmorPerceptionPenalty = 0f;
-                        float heavyArmorStealthPenalty = 0f;*/
 
                         int aksuArmorPiecesEquipped = 0;
                         float aksuArmorSpeedBonus = 0f;
@@ -340,31 +308,6 @@ namespace TFTV
                                 continue;
                             }
 
-                           /* if (hasHeavyConditioning && tacticalItemDef.Tags.Contains(HeavyClassTag) && !tacticalItemDef.Tags.Contains(BionicTag))
-                            {
-                                heavyArmorPiecesEquipped++;
-
-                                if (bodyPartAspectDef.Speed < 0f)
-                                {
-                                    heavyArmorSpeedPenalty += bodyPartAspectDef.Speed;
-                                }
-
-                                if (bodyPartAspectDef.Accuracy < 0f)
-                                {
-                                    heavyArmorAccuracyPenalty += bodyPartAspectDef.Accuracy;
-                                }
-
-                                if (bodyPartAspectDef.Perception < 0f)
-                                {
-                                    heavyArmorPerceptionPenalty += bodyPartAspectDef.Perception;
-                                }
-
-                                if (bodyPartAspectDef.Stealth < 0f)
-                                {
-                                    heavyArmorStealthPenalty += bodyPartAspectDef.Stealth;
-                                }
-                            }*/
-
                             if (hasAksuSprint && AksuArmorPieces.Contains(tacticalItemDef))
                             {
                                 aksuArmorPiecesEquipped++;
@@ -375,35 +318,6 @@ namespace TFTV
                             }
                         }
 
-                      /*  if (hasHeavyConditioning && heavyArmorPiecesEquipped >= 3)
-                        {
-                            if (heavyArmorSpeedPenalty < 0f)
-                            {
-                                float roundingUp = -heavyArmorSpeedPenalty / 2f;
-
-                                if(roundingUp>0 && roundingUp<1f)
-                                {
-                                    roundingUp = 1f;
-                                }
-
-                                bonuses.HeavyConditioningSpeedBonus = roundingUp;
-                            }
-
-                            if (heavyArmorAccuracyPenalty < 0f)
-                            {
-                                bonuses.HeavyConditioningAccuracyBonus = -heavyArmorAccuracyPenalty / 2f;
-                            }
-
-                            if (heavyArmorPerceptionPenalty < 0f)
-                            {
-                                bonuses.HeavyConditioningPerceptionBonus = -heavyArmorPerceptionPenalty / 2f;
-                            }
-
-                            if (heavyArmorStealthPenalty < 0f)
-                            {
-                                bonuses.HeavyConditioningStealthBonus = -heavyArmorStealthPenalty / 2f;
-                            }
-                        }*/
 
                         if (hasAksuSprint && aksuArmorPiecesEquipped >= 3 && aksuArmorSpeedBonus > 0f)
                         {
@@ -487,11 +401,6 @@ namespace TFTV
 
                             DrillBonuses drillBonuses = CalculateDrillBonuses(____character);
 
-                           /* if (drillBonuses.HasHeavyConditioningBonus)
-                            {
-                                bonusSpeed += drillBonuses.HeavyConditioningSpeedBonus;
-                            }*/
-
                             if (drillBonuses.HasAksuSprintBonus)
                             {
                                 bonusSpeed += drillBonuses.AksuSprintSpeedBonus;
@@ -561,8 +470,10 @@ namespace TFTV
                 }
 
 
+                //Not used because this was for heavyConditioning, which was removed
+                //To use again need corrections
 
-                [HarmonyPatch(typeof(UIModuleCharacterProgression), nameof(UIModuleCharacterProgression.RefreshStatusesPanel))]
+               /* [HarmonyPatch(typeof(UIModuleCharacterProgression), nameof(UIModuleCharacterProgression.RefreshStatusesPanel))]
                 private static class TFTV_UIModuleCharacterProgression_RefreshStatusesPanel_patch
                 {
                     private static readonly GameTagDef ArmorTag = Shared.SharedGameTags.ArmorTag;
@@ -581,14 +492,12 @@ namespace TFTV
                             if (!TFTVAircraftReworkMain.AircraftReworkOn)
                                 return true; // let original handle it
 
-                            bool hasHeavyConditioning = ____character.Progression?.Abilities?
-                                .Any(a => a != null && a.name != null && a.name.IndexOf("heavyconditioning", StringComparison.OrdinalIgnoreCase) >= 0) ?? false;
+                            bool hasAksuDrill = ____character.Progression != null && ____character.Progression.Abilities.Any(a => a == TFTVDrills.DrillsDefs._aksuSprint);
 
-                            if (!hasHeavyConditioning)
+                                if (!hasAksuDrill)
                                 return true; // let original handle it
 
-                            if (!armorItems.All(i => i.ItemDef.Tags.Contains(ArmorTag) && i.ItemDef.Tags.Contains(HeavyClassTag) && !i.ItemDef.Tags.Contains(BionicTag)))
-                                return true; // let original handle it
+                            DrillBonuses drillBonuses = CalculateDrillBonuses(____character);
 
                             float fPerception = 0f;
                             float fAccuracy = 0f;
@@ -732,7 +641,7 @@ namespace TFTV
                         }
                     }
 
-                }
+                }*/
 
                 [HarmonyPatch(typeof(GeoRosterStatisticsController))]
                 internal static class GeoRosterStatisticsControllerInitPatch
@@ -768,65 +677,74 @@ namespace TFTV
                         __instance.CorruptionText.text = $"{Mathf.RoundToInt(delirium)}/{Mathf.RoundToInt(__instance.CorruptionProgressBar.maxValue)}";
 
 
-                        if (!TFTVNewGameOptions.IsReworkEnabled()) 
+                        if (!TFTVNewGameOptions.IsReworkEnabled())
                         {
                             return;
                         }
 
-                       /* if (!data.Abilities.Any(ad => ad.Ability == TFTVDrills.DrillsDefs._heavyConditioning)) return;
+                        if (!data.Abilities.Any(ad => ad.Ability == TFTVDrills.DrillsDefs._aksuSprint)) return;
 
-                        if (!geoCharacter.ArmourItems.All(i => i.ItemDef.Tags.Contains(ArmorTag) && i.ItemDef.Tags.Contains(HeavyClassTag) && !i.ItemDef.Tags.Contains(BionicTag)))
-                            return;
-
-                        float fPerception = 0f;
-                        float fAccuracy = 0f;
-                        float fStealth = 0f;
-
-                        foreach (GeoItem item in geoCharacter.ArmourItems)
+                        DrillBonuses drillBonuses = CalculateDrillBonuses(geoCharacter);
+                        if (drillBonuses.HasAksuSprintBonus)
                         {
-                            if (item.ItemDef is TacticalItemDef tacticalItemDef && tacticalItemDef.BodyPartAspectDef != null)
-                            {
-                                if (tacticalItemDef.BodyPartAspectDef.Perception < 0)
-                                {
-                                    fPerception += tacticalItemDef.BodyPartAspectDef.Perception;
-                                }
-                                if (tacticalItemDef.BodyPartAspectDef.Accuracy < 0)
-                                {
-                                    fAccuracy += tacticalItemDef.BodyPartAspectDef.Accuracy;
-                                }
-                                if (tacticalItemDef.BodyPartAspectDef.Stealth < 0)
-                                {
-                                    fStealth += tacticalItemDef.BodyPartAspectDef.Stealth;
-                                }
-                            }
-                        }
-
-                        fPerception *= 100;
-                        fAccuracy *= 100;
-                        fStealth *= 100;
-
-
-                        //  PerceptionText.text = data.Perception.ToString();
-                        //  AccuracyText.text = $"{data.Accuracy}%";
-                        //  StealthText.text = $"{data.Stealth}%";
-
-
-                        if (fPerception < 0)
-                        {
-                            __instance.PerceptionText.text = $"{Mathf.RoundToInt(data.Perception - fPerception + fPerception / 2)}";
+                            __instance.SpeedText.text = $"{data.Speed + Mathf.RoundToInt(drillBonuses.AksuSprintSpeedBonus)}";
                         }
 
 
-                        if (fAccuracy < 0)
-                        {
-                            __instance.AccuracyText.text = $"{Mathf.RoundToInt(data.Accuracy - fAccuracy + fAccuracy / 2)}% ";
-                        }
+                        /*if (!data.Abilities.Any(ad => ad.Ability == TFTVDrills.DrillsDefs._heavyConditioning)) return;
+
+                         if (!geoCharacter.ArmourItems.All(i => i.ItemDef.Tags.Contains(ArmorTag) && i.ItemDef.Tags.Contains(HeavyClassTag) && !i.ItemDef.Tags.Contains(BionicTag)))
+                             return;
+
+                         float fPerception = 0f;
+                         float fAccuracy = 0f;
+                         float fStealth = 0f;
+
+                         foreach (GeoItem item in geoCharacter.ArmourItems)
+                         {
+                             if (item.ItemDef is TacticalItemDef tacticalItemDef && tacticalItemDef.BodyPartAspectDef != null)
+                             {
+                                 if (tacticalItemDef.BodyPartAspectDef.Perception < 0)
+                                 {
+                                     fPerception += tacticalItemDef.BodyPartAspectDef.Perception;
+                                 }
+                                 if (tacticalItemDef.BodyPartAspectDef.Accuracy < 0)
+                                 {
+                                     fAccuracy += tacticalItemDef.BodyPartAspectDef.Accuracy;
+                                 }
+                                 if (tacticalItemDef.BodyPartAspectDef.Stealth < 0)
+                                 {
+                                     fStealth += tacticalItemDef.BodyPartAspectDef.Stealth;
+                                 }
+                             }
+                         }
+
+                         fPerception *= 100;
+                         fAccuracy *= 100;
+                         fStealth *= 100;
 
 
-                        if (fStealth < 0)
-                        {
-                            __instance.StealthText.text = $"{Mathf.RoundToInt(data.Stealth - fStealth + fStealth / 2)}%";
-                        }*/
+                         //  PerceptionText.text = data.Perception.ToString();
+                         //  AccuracyText.text = $"{data.Accuracy}%";
+                         //  StealthText.text = $"{data.Stealth}%";
+
+
+                         if (fPerception < 0)
+                         {
+                             __instance.PerceptionText.text = $"{Mathf.RoundToInt(data.Perception - fPerception + fPerception / 2)}";
+                         }
+
+
+                         if (fAccuracy < 0)
+                         {
+                             __instance.AccuracyText.text = $"{Mathf.RoundToInt(data.Accuracy - fAccuracy + fAccuracy / 2)}% ";
+                         }
+
+
+                         if (fStealth < 0)
+                         {
+                             __instance.StealthText.text = $"{Mathf.RoundToInt(data.Stealth - fStealth + fStealth / 2)}%";
+                         }*/
                     }
                 }
 
