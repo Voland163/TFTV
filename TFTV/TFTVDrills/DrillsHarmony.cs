@@ -2168,12 +2168,14 @@ namespace TFTV.TFTVDrills
                             return;
                         }
 
-                        TFTVLogger.Always($"looking at {tacticalActor?.DisplayName} tacticalActor.Status.HasStatus<MindControlStatus>(): {tacticalActor.HasStatus(_override.StatusDef)}");
+                        
 
-                        if (tacticalActor.HasStatus(_override.StatusDef))
+                        if (!tacticalActor.IsFromViewerFaction)
                         {
                             __result = true;
                         }
+
+                        TFTVLogger.Always($"looking at {tacticalActor?.DisplayName} tacticalActor.IsFromViewerFaction: {tacticalActor.IsFromViewerFaction} __result: {__result}");
                     }
                     catch (Exception ex)
                     {
