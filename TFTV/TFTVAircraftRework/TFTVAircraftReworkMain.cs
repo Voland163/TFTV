@@ -5530,6 +5530,11 @@ namespace TFTV
                             {
                                 int reducedVolume = volume;
 
+                                if (isThunderbird)
+                                {
+                                    reducedVolume -= 2;
+                                }
+
                                 if (hasHarness)
                                 {
                                     reducedVolume -= 1;
