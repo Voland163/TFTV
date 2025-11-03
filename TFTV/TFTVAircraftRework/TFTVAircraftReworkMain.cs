@@ -143,6 +143,7 @@ namespace TFTV
         private static readonly float _healingHPBase = 10;
         private static readonly float _healingStaminaBase = 0.35f;
         private static readonly float _workshopBuffBionicRepairCostReduction = 0.333f;
+        private static readonly int _thunderbirdVehicleSpaceReduction = 2;
         /* private static readonly float _mutationLabHPRecuperationBase = 10;
          private static readonly float _mutationLabRecuperationBase = 0.35f;
          private static readonly float _mutationLabRecuperationBuffPerLevel = 2f;
@@ -5529,6 +5530,11 @@ namespace TFTV
                             if (isVehicle)
                             {
                                 int reducedVolume = volume;
+
+                                if (isThunderbird)
+                                {
+                                    reducedVolume -= _thunderbirdVehicleSpaceReduction;
+                                }
 
                                 if (hasHarness)
                                 {
