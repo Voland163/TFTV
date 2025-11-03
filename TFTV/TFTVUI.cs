@@ -38,6 +38,7 @@ using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.View.ViewControllers;
+using TMPro;
 using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
@@ -565,9 +566,14 @@ namespace TFTV
                 [HarmonyPatch(typeof(UIModuleCharacterProgression), nameof(UIModuleCharacterProgression.RefreshStatusesPanel))]
                 private static class TFTV_UIModuleCharacterProgression_RefreshStatusesPanel_patch
                 {
+                    private const string AksuSprintDrillLocKey = "TFTV_DRILL_aksusprintdrill_NAME";
                     private static readonly GameTagDef ArmorTag = Shared.SharedGameTags.ArmorTag;
-                    private static readonly GameTagDef HeavyClassTag = DefCache.GetDef<GameTagDef>("Heavy_ClassTagDef");
-                    private static readonly GameTagDef BionicTag = DefCache.GetDef<GameTagDef>("Bionic_TagDef");
+                    private static readonly HashSet<TacticalItemDef> AksuArmorPieces = new HashSet<TacticalItemDef>
+                    {
+                        DefCache.GetDef<TacticalItemDef>("AN_Berserker_Helmet_BodyPartDef"),
+                        DefCache.GetDef<TacticalItemDef>("AN_Berserker_Torso_BodyPartDef"),
+                        DefCache.GetDef<TacticalItemDef>("AN_Berserker_Legs_ItemDef"),
+                    };
 
                     private static bool Prefix(UIModuleCharacterProgression __instance, GeoCharacter ____character, List<ICommonItem> armorItems)
                     {
@@ -581,21 +587,26 @@ namespace TFTV
                             if (!TFTVAircraftReworkMain.AircraftReworkOn)
                                 return true; // let original handle it
 
-                            bool hasHeavyConditioning = ____character.Progression?.Abilities?
-                                .Any(a => a != null && a.name != null && a.name.IndexOf("heavyconditioning", StringComparison.OrdinalIgnoreCase) >= 0) ?? false;
+                            bool hasAksuSprint = ____character.Progression?.Abilities?
+                                .Any(a => string.Equals(a?.ViewElementDef?.DisplayName1?.LocalizationKey, AksuSprintDrillLocKey, StringComparison.Ordinal)) ?? false;
 
-                            if (!hasHeavyConditioning)
+                            if (!hasAksuSprint)
                                 return true; // let original handle it
 
-                            if (!armorItems.All(i => i.ItemDef.Tags.Contains(ArmorTag) && i.ItemDef.Tags.Contains(HeavyClassTag) && !i.ItemDef.Tags.Contains(BionicTag)))
+                            int aksuArmorPiecesEquipped = armorItems.Count(i => i.ItemDef is TacticalItemDef def && AksuArmorPieces.Contains(def));
+
+                            if (aksuArmorPiecesEquipped < 3)
                                 return true; // let original handle it
 
                             float fPerception = 0f;
                             float fAccuracy = 0f;
                             float fStealth = 0f;
+                            float fSpeed = 0f;
                             float fPerceptionMult = 1f;
                             float fAccuracyMult = 1f;
                             float fStealthMult = 1f;
+                            float fSpeedMult = 1f;
+                            float aksuArmorSpeedBonus = 0f;
 
                             PerceptionComponentDef componentDef = ____character.TemplateDef.ComponentSetDef.GetComponentDef<PerceptionComponentDef>();
                             if (componentDef != null)
@@ -608,30 +619,29 @@ namespace TFTV
                                 TacticalItemDef tacticalItemDef = armorItem.ItemDef as TacticalItemDef;
                                 if (!(tacticalItemDef == null) && !(tacticalItemDef.BodyPartAspectDef == null))
                                 {
-                                    if (tacticalItemDef.BodyPartAspectDef.Perception > 0)
+                                    if (tacticalItemDef.BodyPartAspectDef.Perception != 0)
                                     {
                                         fPerception += tacticalItemDef.BodyPartAspectDef.Perception;
                                     }
-                                    else
-                                    {
-                                        fPerception += tacticalItemDef.BodyPartAspectDef.Perception / 2;
-                                    }
 
-                                    if (tacticalItemDef.BodyPartAspectDef.Accuracy < 0)
-                                    {
-                                        fAccuracy += tacticalItemDef.BodyPartAspectDef.Accuracy / 2;
-                                    }
-                                    else
+                                    if (tacticalItemDef.BodyPartAspectDef.Accuracy != 0)
                                     {
                                         fAccuracy += tacticalItemDef.BodyPartAspectDef.Accuracy;
                                     }
-                                    if (tacticalItemDef.BodyPartAspectDef.Stealth < 0)
-                                    {
-                                        fStealth += tacticalItemDef.BodyPartAspectDef.Stealth / 2;
-                                    }
-                                    else
+
+                                    if (tacticalItemDef.BodyPartAspectDef.Stealth != 0)
                                     {
                                         fStealth += tacticalItemDef.BodyPartAspectDef.Stealth;
+                                    }
+
+                                    if (tacticalItemDef.BodyPartAspectDef.Speed != 0)
+                                    {
+                                        fSpeed += tacticalItemDef.BodyPartAspectDef.Speed;
+
+                                        if (AksuArmorPieces.Contains(tacticalItemDef) && tacticalItemDef.BodyPartAspectDef.Speed > 0f)
+                                        {
+                                            aksuArmorSpeedBonus += tacticalItemDef.BodyPartAspectDef.Speed;
+                                        }
                                     }
                                 }
                             }
@@ -648,7 +658,7 @@ namespace TFTV
                                         ItemStatModification[] statModifications = passiveModifierAbilityDef.StatModifications;
                                         foreach (ItemStatModification statModifier in statModifications)
                                         {
-                                            ApplyStatModification(statModifier, ref fPerception, ref fAccuracy, ref fStealth, ref fPerceptionMult, ref fAccuracyMult, ref fStealthMult);
+                                            ApplyStatModification(statModifier, ref fPerception, ref fAccuracy, ref fStealth, ref fSpeed, ref fPerceptionMult, ref fAccuracyMult, ref fStealthMult, ref fSpeedMult);
                                         }
                                     }
                                 }
@@ -659,8 +669,13 @@ namespace TFTV
                                 ItemStatModification[] statModifications = passiveModifier.StatModifications;
                                 foreach (ItemStatModification statModifier2 in statModifications)
                                 {
-                                    ApplyStatModification(statModifier2, ref fPerception, ref fAccuracy, ref fStealth, ref fPerceptionMult, ref fAccuracyMult, ref fStealthMult);
+                                    ApplyStatModification(statModifier2, ref fPerception, ref fAccuracy, ref fStealth, ref fSpeed, ref fPerceptionMult, ref fAccuracyMult, ref fStealthMult, ref fSpeedMult);
                                 }
+                            }
+
+                            if (aksuArmorSpeedBonus > 0f)
+                            {
+                                fSpeed += aksuArmorSpeedBonus;
                             }
 
                             int num = (int)(fPerception * fPerceptionMult);
@@ -683,6 +698,21 @@ namespace TFTV
                                 __instance.StealthStatText.text = UIUtil.PercentageStat(fStealth * fStealthMult, "{0}%");
                             }
 
+                            FieldInfo speedTextField = AccessTools.Field(typeof(UIModuleCharacterProgression), "SpeedStatText");
+                            TMP_Text speedStatText = speedTextField?.GetValue(__instance) as TMP_Text;
+                            if (speedStatText != null)
+                            {
+                                float totalSpeed = fSpeed * fSpeedMult;
+                                if (Mathf.Approximately(totalSpeed, 0f))
+                                {
+                                    speedStatText.text = "---";
+                                }
+                                else
+                                {
+                                    speedStatText.text = UIUtil.PercentageStat(totalSpeed, "{0}%");
+                                }
+                            }
+
                             return false; // skip original since we've updated the UI
                         }
                         catch (Exception e)
@@ -692,7 +722,7 @@ namespace TFTV
                         }
                     }
 
-                    private static void ApplyStatModification(ItemStatModification statModifier, ref float fPerception, ref float fAccuracy, ref float fStealth, ref float fPerceptionMult, ref float fAccuracyMult, ref float fStealthMult)
+                    private static void ApplyStatModification(ItemStatModification statModifier, ref float fPerception, ref float fAccuracy, ref float fStealth, ref float fSpeed, ref float fPerceptionMult, ref float fAccuracyMult, ref float fStealthMult, ref float fSpeedMult)
                     {
                         switch (statModifier.TargetStat)
                         {
@@ -726,6 +756,17 @@ namespace TFTV
                                 else if (statModifier.Modification == StatModificationType.Multiply)
                                 {
                                     fStealthMult += statModifier.Value;
+                                }
+
+                                break;
+                            case StatModificationTarget.Speed:
+                                if (statModifier.Modification == StatModificationType.Add)
+                                {
+                                    fSpeed += statModifier.Value;
+                                }
+                                else if (statModifier.Modification == StatModificationType.Multiply)
+                                {
+                                    fSpeedMult += statModifier.Value;
                                 }
 
                                 break;
