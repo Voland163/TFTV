@@ -282,7 +282,7 @@ namespace TFTV.TFTVDrills
                 newAbility.CharacterProgressionData.SkillPointCost = 10;
 
                 newAbility.ViewElementDef = Helper.CreateDefFromClone(
-                    source.ViewElementDef,
+                    DefCache.GetDef<ShootAbilityDef>("Gunslinger_AbilityDef").ViewElementDef,
                     viewGuid,
                     name);
 

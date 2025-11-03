@@ -249,10 +249,10 @@ namespace TFTV
                 [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
                 internal static class TFTV_UIModuleCharacterProgression_RefreshStatPanel_patch
                 {
-                    private const string HeavyConditioningLocKey = "TFTV_DRILL_heavyconditioning_NAME";
+                 //   private const string HeavyConditioningLocKey = "TFTV_DRILL_heavyconditioning_NAME";
                     private const string AksuSprintDrillLocKey = "TFTV_DRILL_aksusprintdrill_NAME";
 
-                    private static readonly GameTagDef HeavyClassTag = DefCache.GetDef<GameTagDef>("Heavy_ClassTagDef");
+                   // private static readonly GameTagDef HeavyClassTag = DefCache.GetDef<GameTagDef>("Heavy_ClassTagDef");
                     private static readonly GameTagDef BionicTag = DefCache.GetDef<GameTagDef>("Bionic_TagDef");
 
                     private static readonly HashSet<TacticalItemDef> AksuArmorPieces = new HashSet<TacticalItemDef>
@@ -264,17 +264,17 @@ namespace TFTV
 
                     internal struct DrillBonuses
                     {
-                        public float HeavyConditioningSpeedBonus;
-                        public float HeavyConditioningAccuracyBonus;
-                        public float HeavyConditioningPerceptionBonus;
-                        public float HeavyConditioningStealthBonus;
+                       // public float HeavyConditioningSpeedBonus;
+                      //  public float HeavyConditioningAccuracyBonus;
+                      //  public float HeavyConditioningPerceptionBonus;
+                      //  public float HeavyConditioningStealthBonus;
                         public float AksuSprintSpeedBonus;
 
-                        public bool HasHeavyConditioningBonus =>
+                      /*  public bool HasHeavyConditioningBonus =>
                             !Mathf.Approximately(HeavyConditioningSpeedBonus, 0f) ||
                             !Mathf.Approximately(HeavyConditioningAccuracyBonus, 0f) ||
                             !Mathf.Approximately(HeavyConditioningPerceptionBonus, 0f) ||
-                            !Mathf.Approximately(HeavyConditioningStealthBonus, 0f);
+                            !Mathf.Approximately(HeavyConditioningStealthBonus, 0f);*/
 
                         public bool HasAksuSprintBonus => !Mathf.Approximately(AksuSprintSpeedBonus, 0f);
                     }
@@ -288,7 +288,7 @@ namespace TFTV
                             return bonuses;
                         }
 
-                        bool hasHeavyConditioning = false;
+                      //  bool hasHeavyConditioning = false;
                         bool hasAksuSprint = false;
 
                         if (character.Progression != null)
@@ -296,27 +296,27 @@ namespace TFTV
                             foreach (TacticalAbilityDef ability in character.Progression.Abilities)
                             {
                                 string abilityLocKey = ability?.ViewElementDef?.DisplayName1?.LocalizationKey;
-                                if (abilityLocKey == HeavyConditioningLocKey)
+                              /*  if (abilityLocKey == HeavyConditioningLocKey)
                                 {
                                     hasHeavyConditioning = true;
                                 }
-                                else if (abilityLocKey == AksuSprintDrillLocKey)
+                                else */if (abilityLocKey == AksuSprintDrillLocKey)
                                 {
                                     hasAksuSprint = true;
                                 }
                             }
                         }
 
-                        if (!hasHeavyConditioning && !hasAksuSprint)
+                        if (!hasAksuSprint) //&&hasHeavyConditioning)
                         {
                             return bonuses;
                         }
 
-                        int heavyArmorPiecesEquipped = 0;
+                       /* int heavyArmorPiecesEquipped = 0;
                         float heavyArmorSpeedPenalty = 0f;
                         float heavyArmorAccuracyPenalty = 0f;
                         float heavyArmorPerceptionPenalty = 0f;
-                        float heavyArmorStealthPenalty = 0f;
+                        float heavyArmorStealthPenalty = 0f;*/
 
                         int aksuArmorPiecesEquipped = 0;
                         float aksuArmorSpeedBonus = 0f;
@@ -340,7 +340,7 @@ namespace TFTV
                                 continue;
                             }
 
-                            if (hasHeavyConditioning && tacticalItemDef.Tags.Contains(HeavyClassTag) && !tacticalItemDef.Tags.Contains(BionicTag))
+                           /* if (hasHeavyConditioning && tacticalItemDef.Tags.Contains(HeavyClassTag) && !tacticalItemDef.Tags.Contains(BionicTag))
                             {
                                 heavyArmorPiecesEquipped++;
 
@@ -363,7 +363,7 @@ namespace TFTV
                                 {
                                     heavyArmorStealthPenalty += bodyPartAspectDef.Stealth;
                                 }
-                            }
+                            }*/
 
                             if (hasAksuSprint && AksuArmorPieces.Contains(tacticalItemDef))
                             {
@@ -375,7 +375,7 @@ namespace TFTV
                             }
                         }
 
-                        if (hasHeavyConditioning && heavyArmorPiecesEquipped >= 3)
+                      /*  if (hasHeavyConditioning && heavyArmorPiecesEquipped >= 3)
                         {
                             if (heavyArmorSpeedPenalty < 0f)
                             {
@@ -403,7 +403,7 @@ namespace TFTV
                             {
                                 bonuses.HeavyConditioningStealthBonus = -heavyArmorStealthPenalty / 2f;
                             }
-                        }
+                        }*/
 
                         if (hasAksuSprint && aksuArmorPiecesEquipped >= 3 && aksuArmorSpeedBonus > 0f)
                         {
@@ -487,10 +487,10 @@ namespace TFTV
 
                             DrillBonuses drillBonuses = CalculateDrillBonuses(____character);
 
-                            if (drillBonuses.HasHeavyConditioningBonus)
+                           /* if (drillBonuses.HasHeavyConditioningBonus)
                             {
                                 bonusSpeed += drillBonuses.HeavyConditioningSpeedBonus;
-                            }
+                            }*/
 
                             if (drillBonuses.HasAksuSprintBonus)
                             {
@@ -773,7 +773,7 @@ namespace TFTV
                             return;
                         }
 
-                        if (!data.Abilities.Any(ad => ad.Ability == TFTVDrills.DrillsDefs._heavyConditioning)) return;
+                       /* if (!data.Abilities.Any(ad => ad.Ability == TFTVDrills.DrillsDefs._heavyConditioning)) return;
 
                         if (!geoCharacter.ArmourItems.All(i => i.ItemDef.Tags.Contains(ArmorTag) && i.ItemDef.Tags.Contains(HeavyClassTag) && !i.ItemDef.Tags.Contains(BionicTag)))
                             return;
@@ -826,7 +826,7 @@ namespace TFTV
                         if (fStealth < 0)
                         {
                             __instance.StealthText.text = $"{Mathf.RoundToInt(data.Stealth - fStealth + fStealth / 2)}%";
-                        }
+                        }*/
                     }
                 }
 

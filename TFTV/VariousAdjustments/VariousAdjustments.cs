@@ -319,16 +319,22 @@ namespace PRMBetterClasses.VariousAdjustments
             turret.APToUsePerc = turretAPToUsePerc;
             turret.Armor = turretArmor;
             turret.DamagePayload.AutoFireShotCount = turretAutoFireShotCount;
+            turret.ChargesMax = 40;
+            turret.CompatibleAmmunition[0].ChargesMax = 40;
 
             WeaponDef prcrTurret = DefCache.GetDef<WeaponDef>("NJ_PRCRTechTurretGun_WeaponDef");
             prcrTurret.APToUsePerc = turretAPToUsePerc;
             prcrTurret.Armor = turretArmor;
             prcrTurret.DamagePayload.AutoFireShotCount = turretAutoFireShotCount;
+            prcrTurret.ChargesMax = 48;
+            prcrTurret.CompatibleAmmunition[0].ChargesMax = 48;
 
             WeaponDef laserTurret = DefCache.GetDef<WeaponDef>("PX_LaserTechTurretGun_WeaponDef");
             laserTurret.APToUsePerc = turretAPToUsePerc;
             laserTurret.Armor = turretArmor;
             laserTurret.DamagePayload.AutoFireShotCount = turretAutoFireShotCount;
+            laserTurret.ChargesMax = 56;
+            laserTurret.CompatibleAmmunition[0].ChargesMax = 56;
         }
         public static void Change_Stomp(SharedData shared)
         {
