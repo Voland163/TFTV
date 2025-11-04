@@ -227,11 +227,11 @@ namespace TFTV
             if (TFTVAircraftReworkMain.AircraftReworkOn)
             {
                 TFTVLogger.Always($"# Aircraft modules in tactical: {TFTVAircraftReworkMain.InternalData.ModulesInTactical.Where(b => b > 0).Count()}\n" +
-                    $"{TFTVAircraftReworkMain.Modules.Tactical.ReportModulesPresent()}");
+                    $"{AircraftReworkTacticalModules.ReportModulesPresent()}");
             }
 
-            TFTVAircraftReworkMain.Modules.Tactical.HeliosStatisChamber.ImplementVestBuff();
-            TFTVAircraftReworkMain.Modules.Tactical.GroundAttackWeapon.ImplementGroundAttackWeaponModule(Controller);
+            AircraftReworkTacticalModules.HeliosStatisChamber.ImplementVestBuff();
+            AircraftReworkTacticalModules.GroundAttackWeapon.ImplementGroundAttackWeaponModule(Controller);
 
             TFTVDrills.DrillsHarmony.NeuralLink.RefreshNeuralLinkStatus();
 
@@ -370,7 +370,7 @@ namespace TFTV
                 if (TFTVAircraftReworkMain.AircraftReworkOn)
                 {
                     TFTVAircraftReworkMain.InternalData.ModulesInTactical = data.AircraftModulesInTactical;
-                    TFTVAircraftReworkMain.Modules.Tactical.LoadInternalDataForTactical();
+                    AircraftReworkTacticalModules.LoadInternalDataForTactical();
                 }
 
                 TurnZeroMethodsExecuted = data.TurnZeroMethodsExecuted;
@@ -391,7 +391,7 @@ namespace TFTV
 
             if (TFTVAircraftReworkMain.AircraftReworkOn)
             {
-                TFTVAircraftReworkMain.Modules.Tactical.SaveInternalDataForTactical();
+                AircraftReworkTacticalModules.SaveInternalDataForTactical();
             }
 
 
@@ -491,7 +491,7 @@ namespace TFTV
                         TFTVVoidOmens.VO5TurnHostileCivviesFriendly(Controller);
                         TFTVBaseDefenseTactical.Map.FirstTurnBaseDefenseDeployment(Controller);
                         TFTVNJQuestline.IntroMission.MissionStartChanges.TurnNeutralGruntsOverToNJAndApplyMCStatus(Controller);
-                        TFTVAircraftReworkMain.Modules.Tactical.FirstTurn.ImplementModuleEffectsOnFirstTurn(Controller);
+                        AircraftReworkTacticalModules.FirstTurn.ImplementModuleEffectsOnFirstTurn(Controller);
                         //  TFTVBaseDefenseTactical.ModifyObjectives(Controller.TacMission.MissionData.MissionType);
                         TurnZeroMethodsExecuted = true;
 

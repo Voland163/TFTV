@@ -1,8 +1,6 @@
-﻿using Base;
-using Base.Core;
+﻿using Base.Core;
 using Base.Defs;
 using Base.Entities.Statuses;
-using Base.Utils;
 using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -10,7 +8,6 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
-using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical;
@@ -434,7 +431,7 @@ namespace TFTV.TFTVDrills
             {
                 try
                 {
-                  
+
                     TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
                     if (controller == null || _neuralLink == null || _neuralLinkControlStatus == null || _commandOverlayStatus == null || _remoteControlAbilityDef == null)
@@ -472,19 +469,19 @@ namespace TFTV.TFTVDrills
                             && actor.Status.HasStatus(_commandOverlayStatus)
                             && actor.GetAbilityWithDef<TacticalAbility>(_remoteControlAbilityDef) == null;
 
-                       // TFTVLogger.Always($"{actor?.DisplayName} has {actor.Status.HasStatus(_commandOverlayStatus)}  {actor.GetAbilityWithDef<TacticalAbility>(_remoteControlAbilityDef) == null}");
+                        // TFTVLogger.Always($"{actor?.DisplayName} has {actor.Status.HasStatus(_commandOverlayStatus)}  {actor.GetAbilityWithDef<TacticalAbility>(_remoteControlAbilityDef) == null}");
 
                         if (shouldHave)
                         {
                             if (existingStatus == null)
                             {
-                               // TFTVLogger.Always($"{actor?.DisplayName} should get neuralLinkControlStatus");
+                                // TFTVLogger.Always($"{actor?.DisplayName} should get neuralLinkControlStatus");
                                 actor.Status.ApplyStatus(_neuralLinkControlStatus);
                             }
                         }
                         else if (existingStatus != null)
                         {
-                           // TFTVLogger.Always($"{actor?.DisplayName} should lose neuralLinkControlStatus");
+                            // TFTVLogger.Always($"{actor?.DisplayName} should lose neuralLinkControlStatus");
                             actor.Status.UnapplyStatus(existingStatus);
                         }
                     }
@@ -494,7 +491,7 @@ namespace TFTV.TFTVDrills
                     TFTVLogger.Error(ex);
                     throw;
                 }
-                
+
             }
 
             private static bool HasNeuralLinkAbility(TacticalActor actor)
@@ -894,8 +891,8 @@ namespace TFTV.TFTVDrills
                         owner.GameTags.Add(OrdnanceResupplyTag);
                     }
                 }
-            
-        }
+
+            }
 
         }
         internal class DesperateShot
@@ -2143,52 +2140,7 @@ namespace TFTV.TFTVDrills
                 }
             }
         }
-        
-        internal class Override 
-        {
 
-            [HarmonyPatch(typeof(MinionStatus), "HasMaster")]
-            public static class MinionStatus_HasMaster_Override_Patch
-            {
-                public static void Postfix(MinionStatus __instance, ref bool __result)
-                {
-                    try
-                    {
-                        if (!TFTVNewGameOptions.IsReworkEnabled())
-                        {
-                            return;
-                        }
-
-                        TacticalActor tacticalActor = __instance.TacticalActor;
-
-                      
-
-                        if (tacticalActor == null)
-                        {
-                            return;
-                        }
-
-                        
-
-                        if (!tacticalActor.IsFromViewerFaction)
-                        {
-                            __result = true;
-                        }
-
-                        TFTVLogger.Always($"looking at {tacticalActor?.DisplayName} tacticalActor.IsFromViewerFaction: {tacticalActor.IsFromViewerFaction} __result: {__result}");
-                    }
-                    catch (Exception ex)
-                    {
-                        TFTVLogger.Error(ex);
-                    }
-                }
-            }
-
-            
-
-
-        }
-    
     }
 
 }

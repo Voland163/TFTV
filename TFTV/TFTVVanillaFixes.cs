@@ -2,7 +2,6 @@
 using Base;
 using Base.AI;
 using Base.Audio;
-using Base.Collections;
 using Base.Core;
 using Base.Defs;
 using Base.Entities;
@@ -1237,7 +1236,7 @@ namespace TFTV
         internal class Tactical
         {
 
-            internal class SoftlockOnGetStatusesByName 
+            internal class SoftlockOnGetStatusesByName
             {
                 [HarmonyPatch(typeof(StatusComponent), nameof(StatusComponent.GetStatusesByName))]
                 internal static class StatusComponentGetStatusesByNamePatch
@@ -1280,7 +1279,7 @@ namespace TFTV
             }
 
 
-            internal class OverwatchFix 
+            internal class OverwatchFix
             {
                 [HarmonyPatch(typeof(TacticalLevelController), "ExecuteOverwatch")]
                 public static class TacticalLevelControllerExecuteOverwatchPatch
@@ -1499,7 +1498,7 @@ namespace TFTV
             }
 
 
-           /* internal static class ExtraLongDetoursAroundFire
+            internal static class ExtraLongDetoursAroundFire
             {
                 private const float ExtraDistanceAllowance = 3f;
                 private const float DetourMultiplier = 1.5f;
@@ -1736,10 +1735,10 @@ namespace TFTV
 
                     return allowed != null && allowed.IsFinite;
                 }
-            }*/
-        
+            }
 
-        internal class TacticalSavesAIBug
+
+            internal class TacticalSavesAIBug
             {
                 [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.StartTurn))]
                 internal static class TacticalActorStartTurnPatch
@@ -1759,11 +1758,11 @@ namespace TFTV
                                 return;
                             }
 
-                          //  TFTVLogger.Always($"Start Turn for TacticalActor {__instance?.DisplayName}");
+                            //  TFTVLogger.Always($"Start Turn for TacticalActor {__instance?.DisplayName}");
 
                             if (__instance.AbilityTraits.Contains(TacticalActor.DoNotResetThisTurnTrait))
                             {
-                              //  TFTVLogger.Always($"TacticalActor has DoNotResetThisTurnTrait");
+                                //  TFTVLogger.Always($"TacticalActor has DoNotResetThisTurnTrait");
 
                                 return;
                             }
@@ -1772,11 +1771,11 @@ namespace TFTV
 
                             if (!____currentlyDeserializing)
                             {
-                              //  TFTVLogger.Always($"TacticalActor is not deserializing");
+                                //  TFTVLogger.Always($"TacticalActor is not deserializing");
                                 return;
                             }
 
-                          //  TFTVLogger.Always($"AbilityUsesThisTurnField null? {AbilityUsesThisTurnField == null}");
+                            //  TFTVLogger.Always($"AbilityUsesThisTurnField null? {AbilityUsesThisTurnField == null}");
 
                             if (AbilityUsesThisTurnField.GetValue(__instance) is Dictionary<TacticalAbilityDef, int> abilityUses)
                             {
@@ -3962,6 +3961,11 @@ namespace TFTV
                         if (__instance.Tags.Contains(Shared.SharedGameTags.AmmoTag))
                         {
                             TacticalItemDef tacticalItemDef = __instance as TacticalItemDef;
+
+                            if (!AmmoWeaponDatabase.AmmoToWeaponDictionary.ContainsKey(tacticalItemDef)) 
+                            {
+                                return;
+                            }
 
                             WeaponDef weaponDef = (WeaponDef)AmmoWeaponDatabase.AmmoToWeaponDictionary[tacticalItemDef][0];
 

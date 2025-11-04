@@ -1245,7 +1245,7 @@ namespace TFTV
 
                             if (TFTVAircraftReworkMain.AircraftReworkOn)
                             {
-                                TFTVAircraftReworkMain.Modules.Geoscape.Scanning.CheckAircraftScannerAbility(geoVehicle);
+                                AircraftReworkGeoscape.Scanning.CheckAircraftScannerAbility(geoVehicle);
                                // TFTVLogger.Always($"scanner ability added to {geoVehicle.Name}");
                             }
                         }

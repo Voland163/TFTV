@@ -51,6 +51,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using TFTV.LaserWeapons;
 using UnityEngine;
 using static PhoenixPoint.Common.Entities.Addons.AddonDef;
 using static PhoenixPoint.Tactical.Entities.Abilities.HealAbilityDef;
@@ -222,7 +223,7 @@ namespace TFTV
 
                 ChangeRenderedPortraitsParam();
 
-                TFTVAircraftReworkMain.Defs.CreateAndModifyDefs();
+                AircraftReworkDefs.CreateAndModifyDefs();
 
                 TFTVMeleeDamage.AddMeleeDamageType();
 
@@ -235,6 +236,7 @@ namespace TFTV
                 //  ChangeScyllaSounds();
                 CreateSuppressionStatusDefs();
                 AddMissingViewElementDefs();
+                LaserWeaponsInit.Init();
 
 
             }

@@ -133,7 +133,7 @@ namespace TFTV.TFTVAircraftRework
                 }
             }
 
-            TFTVAircraftReworkMain.Modules.Tactical.GroundAttackWeapon.RemoveGroundAttackWeaponModuleAbility();
+            AircraftReworkTacticalModules.GroundAttackWeapon.RemoveGroundAttackWeaponModuleAbility();
         }
 
         private List<Vector3> GenerateImpactPattern(Vector3 center)

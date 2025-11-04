@@ -2759,7 +2759,7 @@ namespace TFTV
                         return 0.5f;
                     }
 
-                    return 0.5f * TFTVAircraftReworkMain.Modules.Geoscape.Healing.GetRepairBionicsCostFactor(geoCharacter);
+                    return 0.5f * AircraftReworkGeoscape.Healing.GetRepairBionicsCostFactor(geoCharacter);
 
                 }
                 catch (Exception e)

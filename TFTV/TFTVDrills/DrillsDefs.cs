@@ -143,7 +143,7 @@ namespace TFTV.TFTVDrills
 
                 newStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.Hidden;
                 newStatus.VisibleOnPassiveBar = false;
-                newStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.VisibleOnStatusesList;
+                newStatus.VisibleOnStatusScreen = 0;
 
                 multiStatusDef.Duration = 0;
                 multiStatusDef.EffectName = _remoteControlAbilityDef.name;
@@ -304,7 +304,7 @@ namespace TFTV.TFTVDrills
                 {
                     if (!weaponDef.Tags.Contains(heavyGunWeaponTag))
                     {
-                        TFTVLogger.Always($"Weapon {weaponDef.name} adding heavy gun tag");
+                       // TFTVLogger.Always($"Weapon {weaponDef.name} adding heavy gun tag");
                         weaponDef.Tags.Add(heavyGunWeaponTag);
                     }
                 }
@@ -754,6 +754,8 @@ namespace TFTV.TFTVDrills
                "E_AbilityCostModifier [BulletHell_AbilityDef]");
 
                 _bulletHellAPCostReductionStatus.AbilityCostModification.ActionPointMod = -0.5f;
+                _bulletHellAPCostReductionStatus.SingleInstance = true;
+                _bulletHellAttackBoostStatus.SingleInstance = true;
                 _bulletHellAttackBoostStatus.EffectName = "BulletHellAttackBoost";
 
                 _bulletHellAttackBoostStatus.AdditionalStatusesToApply = new TacStatusDef[]
@@ -775,12 +777,7 @@ namespace TFTV.TFTVDrills
                     if (animActionDef.AbilityDefs != null && animActionDef.AbilityDefs.Contains(animSource) && !animActionDef.AbilityDefs.Contains(newAbility))
                     {
                         animActionDef.AbilityDefs = animActionDef.AbilityDefs.Append(newAbility).ToArray();
-                        /* TFTVLogger.Always("Anim Action '" + animActionDef.name + "' set for abilities:");
-                         foreach (AbilityDef ad in animActionDef.AbilityDefs)
-                         {
-                             TFTVLogger.Always("  " + ad.name);
-                         }
-                         TFTVLogger.Always("----------------------------------------------------", false);*/
+                      
                     }
                 }
 
@@ -1094,12 +1091,7 @@ namespace TFTV.TFTVDrills
                     if (animActionDef.AbilityDefs != null && animActionDef.AbilityDefs.Contains(animSource) && !animActionDef.AbilityDefs.Contains(newAbility))
                     {
                         animActionDef.AbilityDefs = animActionDef.AbilityDefs.Append(newAbility).ToArray();
-                        TFTVLogger.Always("Anim Action '" + animActionDef.name + "' set for abilities:");
-                        foreach (AbilityDef ad in animActionDef.AbilityDefs)
-                        {
-                            TFTVLogger.Always("  " + ad.name);
-                        }
-                        TFTVLogger.Always("----------------------------------------------------", false);
+                      
                     }
                 }
 
@@ -1313,7 +1305,6 @@ namespace TFTV.TFTVDrills
 
                 MindControlStatusDef sourceMindControl = DefCache.GetDef<MindControlStatusDef>("MindControl_StatusDef");
 
-
                 newAbility.StatusDef = Helper.CreateDefFromClone(
                     source.StatusDef,
                     guid4,
@@ -1332,7 +1323,11 @@ namespace TFTV.TFTVDrills
 
                 viewElementDef.DisplayName1.LocalizationKey = $"TFTV_DRILL_{name}_MINDCONTROL_STATUS_NAME";
                 viewElementDef.Description.LocalizationKey = $"TFTV_DRILL_{name}_MINDCONTROL_STATUS_DESC";
+                viewElementDef.SmallIcon = icon;
+                viewElementDef.LargeIcon = icon;
 
+                newMindControlStatusDef.Visuals = viewElementDef;
+                
                 newMindControlStatusDef.ControlFactionDef = DefCache.GetDef<PPFactionDef>("Phoenix_FactionDef");
 
                 MultiStatusDef multiStatusDef = (MultiStatusDef)newAbility.StatusDef;
@@ -1340,6 +1335,8 @@ namespace TFTV.TFTVDrills
                 AddAttackBoostStatusDef addAttackBoostStatusDef = (AddAttackBoostStatusDef)Helper.CreateDefFromClone(multiStatusDef.Statuses[0], "{945A027E-6E85-4056-84CF-1DAD3DCED40A}", name);
                 addAttackBoostStatusDef.AdditionalStatusesToApply = addAttackBoostStatusDef.AdditionalStatusesToApply.AddToArray(newMindControlStatusDef);
                 multiStatusDef.Statuses[0] = addAttackBoostStatusDef;
+
+                addAttackBoostStatusDef.VisibleOnStatusScreen = 0;
 
                 Drills.Add(newAbility);
 
@@ -1465,12 +1462,7 @@ namespace TFTV.TFTVDrills
                     if (animActionDef.AbilityDefs != null && animActionDef.AbilityDefs.Contains(animSource) && !animActionDef.AbilityDefs.Contains(newAbility))
                     {
                         animActionDef.AbilityDefs = animActionDef.AbilityDefs.Append(newAbility).ToArray();
-                        TFTVLogger.Always("Anim Action '" + animActionDef.name + "' set for abilities:");
-                        foreach (AbilityDef ad in animActionDef.AbilityDefs)
-                        {
-                            TFTVLogger.Always("  " + ad.name);
-                        }
-                        TFTVLogger.Always("----------------------------------------------------", false);
+                       
                     }
                 }
 

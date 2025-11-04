@@ -1155,7 +1155,7 @@ namespace TFTV
                         else if (element.TrackedObject is GeoVehicle vehicle)
                         {
                             //  TFTVAircraftRework.TravellingThroughMist.IsAircraftInMist(vehicle);
-                            TFTVAircraftReworkMain.AircraftSpeed.AdjustAircraftSpeed(vehicle);
+                            AircraftReworkSpeed.AdjustAircraftSpeed(vehicle);
                             //   TFTVLogger.Always($"updateData called for {vehicle.Name}, is in Mist? {IsActorInMist(vehicle)}");
 
 

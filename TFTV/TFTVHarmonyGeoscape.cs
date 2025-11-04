@@ -15,6 +15,7 @@ using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Geoscape.View.DataObjects;
+using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
@@ -30,6 +31,27 @@ namespace TFTV
     internal class TFTVHarmonyGeoscape
     {
 
+        
+
+
+
+        [HarmonyPatch(typeof(VehicleSelectionAircraftElementController), "SetItem")]
+        internal static class VehicleSelectionAircraftElementController_SetItem_patch
+        {
+            public static void Postfix(VehicleSelectionAircraftElementController __instance, GeoVehicle vehicle)
+            {
+                try
+                {
+                  
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
 
         [HarmonyPatch(typeof(GeoVehicle), "get_MaxCharacterSpace")]
         internal static class BG_GeoVehicle_get_MaxCharacterSpace_patch
@@ -38,8 +60,8 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVAircraftReworkMain.Modules.Geoscape.PassengerModules.AdjustMaxCharacterSpacePassengerModules(__instance, ref __result);
-
+                    AircraftReworkGeoscape.PassengerModules.AdjustMaxCharacterSpacePassengerModules(__instance, ref __result);
+                  TFTVLogger.Always($"get_MaxCharacterSpace postfix executed for {__instance.Name} __result: {__result}");
                 }
                 catch (Exception e)
                 {
@@ -55,8 +77,8 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVAircraftReworkMain.Modules.Geoscape.Scanning.CheckAircraftScannerAbility(__instance);
-                    TFTVAircraftReworkMain.Modules.Geoscape.PassengerModules.CheckAircraftNewPassengerCapacity(__instance);
+                    AircraftReworkGeoscape.Scanning.CheckAircraftScannerAbility(__instance);
+                    AircraftReworkGeoscape.PassengerModules.CheckAircraftNewPassengerCapacity(__instance);
 
                 }
                 catch (Exception e)
@@ -76,8 +98,8 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVAircraftReworkMain.Modules.Geoscape.PassengerModules.AdjustAircraftInfoPassengerModules(__instance, ref __result);
-
+                    AircraftReworkGeoscape.PassengerModules.AdjustAircraftInfoPassengerModules(__instance, ref __result);
+                    TFTVLogger.Always($"GetAircraftInfo postfix executed for {__instance.Name} __result.CurrentCrew: {__result.CurrentCrew} __result.MaxCrew: {__result.MaxCrew}");
                 }
                 catch (Exception e)
                 {
@@ -122,7 +144,7 @@ namespace TFTV
                     TFTVCapturePandoransGeoscape.LimitedHarvestingHourlyActions(__instance.GeoLevel);
                     TFTVBaseDefenseGeoscape.InitAttack.ContainmentBreach.HourlyCheckContainmentBreachDuringBaseDefense(__instance.GeoLevel);
                     TFTVChangesToDLC4Events.SoldierReachesFiveDelirium(__instance.GeoLevel);
-                    TFTVAircraftReworkMain.AircraftMaintenance.MaintenanceToll(__instance.GeoLevel);
+                    AircraftReworkMaintenance.MaintenanceToll(__instance.GeoLevel);
                 }
                 catch (Exception e)
                 {
@@ -142,7 +164,7 @@ namespace TFTV
                 {
                     TFTVInfestation.StoryFirstInfestedHaven.InfestationStoryMission(__instance, squad);
                     TFTVNJQuestline.IntroMission.Geoscape.RecordHavenName(__instance);
-                    TFTVAircraftReworkMain.Modules.Tactical.CheckTacticallyRelevantModulesOnVehicle(__instance.GetLocalAircraft(squad), __instance);
+                    AircraftReworkTacticalModules.CheckTacticallyRelevantModulesOnVehicle(__instance.GetLocalAircraft(squad), __instance);
 
                 }
                 catch (Exception e)
