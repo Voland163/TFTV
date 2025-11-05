@@ -5,6 +5,7 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
@@ -52,7 +53,8 @@ namespace TFTV.LaserWeapons
                     WeaponDef = weaponDef,
                     OriginalAmmoDef = originalAmmoDef,
                     ReloadCost = reloadCost,
-                    MagazineSize = Mathf.Max(1, originalAmmoDef.ChargesMax)
+                    // IMPORTANT: base per-charge math on the weapon's current magazine size, not the original ammo def.
+                    MagazineSize = Mathf.Max(1, weaponDef.ChargesMax)
                 };
 
                 WeaponEntries[weaponDef] = entry;
@@ -239,6 +241,7 @@ namespace TFTV.LaserWeapons
                 int shotsToAdd = Math.Min(missing, chargesToSpend * perCharge);
                 Log($"Tactical reload '{weaponDef.name}': missing={missing}, available={available}, perCharge={perCharge}, chargesToSpend={chargesToSpend}, shotsToAdd={shotsToAdd}");
 
+                // Tactical: use a transient magazine object, safe in tactical layer
                 TacticalItem magazine = CreateMagazine(entry, shotsToAdd);
                 weaponData.Ammo.LoadMagazine(magazine);
 
@@ -297,9 +300,26 @@ namespace TFTV.LaserWeapons
                 int shotsToAdd = Math.Min(missing, chargesToSpend * perCharge);
                 Log($"Geoscape reload '{weaponDef.name}': missing={missing}, available={available}, perCharge={perCharge}, chargesToSpend={chargesToSpend}, shotsToAdd={shotsToAdd}");
 
-                TacticalItem magazine = CreateMagazine(entry, shotsToAdd);
-                weaponData.Ammo.LoadMagazine(magazine);
+                int before = weaponData.CurrentCharges;
+                var geoItem = item as GeoItem;
+                if (geoItem != null)
+                {
+                    // Let the engine reload if it can (empty mags, proper swap etc.)
+                    geoItem.ReloadForFree();
+                }
 
+                // Top up to the exact desired amount within magazine + budget
+                int desired = Mathf.Min(item.ItemDef.ChargesMax, before + shotsToAdd);
+                int current = weaponData.CurrentCharges;
+                int delta = desired - current;
+                if (delta > 0)
+                {
+                    weaponData.ModifyCharges(delta, false);
+                }
+
+                Log($"Geoscape reload '{weaponDef.name}' applied: before={before}, now={weaponData.CurrentCharges}, desired={desired}");
+
+                // Spend battery charges and cleanup UI
                 ammoData.ModifyCharges(-chargesToSpend, false);
                 if (ammoData.IsEmpty() && ammoSlot != null)
                 {
@@ -307,7 +327,6 @@ namespace TFTV.LaserWeapons
                 }
 
                 list.OnItemLoaded?.Invoke();
-
                 result = true;
                 return true;
             }
@@ -352,25 +371,5 @@ namespace TFTV.LaserWeapons
             }
         }
 
-       /* [HarmonyPatch(typeof(TFTVVanillaFixes.Geoscape.ItemDef_get_ScrapPrice_patch), nameof(TFTVVanillaFixes.Geoscape.ItemDef_get_ScrapPrice_patch.Postfix))]
-        private static class ScrapPriceSafetyPatch
-        {
-            private static bool Prefix(ItemDef __instance, ref ResourcePack __result, ResourcePack ____scrapPrice)
-            {
-                if (__instance == null || LaserAmmoShareHelper.BatteryPackDef == null)
-                {
-                    return true;
-                }
-
-                if (!ReferenceEquals(__instance, LaserAmmoShareHelper.BatteryPackDef))
-                {
-                    return true;
-                }
-
-                LaserAmmoShareHelper.Log($"Bypassing scrap price postfix for '{__instance.name}'");
-                __result = __instance.ScrapPrice ?? ____scrapPrice ?? new ResourcePack();
-                return false;
-            }
-        }*/
     }
 }

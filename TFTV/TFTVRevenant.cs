@@ -1050,14 +1050,19 @@ namespace TFTV
             }
 
             public static string RevenantResistanceDamageTypeGuid = null;
-
+            private const string SpecialResistanceToken = "TFTV_REVENANT_SPECIAL_RESISTANCE";
             public static DamageTypeBaseEffectDef GetPreferredDamageType(TacticalLevelController controller)
             {
                 try
                 {
 
-                    if (RevenantResistanceDamageTypeGuid != null && RevenantResistanceDamageTypeGuid != "")
+                    if (!string.IsNullOrEmpty(RevenantResistanceDamageTypeGuid))
                     {
+                        if (RevenantResistanceDamageTypeGuid == SpecialResistanceToken)
+                        {
+                            return null;
+                        }
+
                         return (DamageTypeBaseEffectDef)Repo.GetDef(RevenantResistanceDamageTypeGuid);
                     }
 
@@ -1229,6 +1234,8 @@ namespace TFTV
                             {
                                 RevenantResistanceDamageTypeGuid = damageTypeDef.Guid;
                             }
+
+                            RevenantResistanceDamageTypeGuid = damageTypeDef != null ? damageTypeDef.Guid : SpecialResistanceToken;
 
                             return damageTypeDef;
                         }
