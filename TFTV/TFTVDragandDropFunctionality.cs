@@ -293,9 +293,6 @@ namespace TFTV
 
 
         }
-
-
-
         internal class Manufacturing
         {
         
@@ -1000,6 +997,8 @@ namespace TFTV
 
 
 
+
+
             [HarmonyPatch(typeof(UIStateVehicleSelected), "OnInputEvent")]
             public static class UIStateVehicleSelected_OnInputEvent_patch
             {
@@ -1055,135 +1054,6 @@ namespace TFTV
                     }
                 }
             }
-
-          /*  [HarmonyPatch(typeof(GeoRosterItem), "UpdateLocations")]
-            public static class GeoRosterItem_UpdateLocations_patch
-            {
-
-                public static void Postfix(GeoRosterItem __instance, IGeoCharacterContainer ____container)
-                {
-                    try
-                    {
-                        //TFTVLogger.Always($"UpdateLocations Running");
-
-                        if (____container is GeoVehicle)
-                        {
-                            GeoVehicle geoVehicle = (GeoVehicle)____container;
-
-                            if (geoVehicle != null)
-                            {
-                                // TFTVLogger.Always($"looking at {geoVehicle.Name} {geoVehicle.VehicleID}");
-                                __instance.VehicleNumberText.text = (geoVehicle.VehicleID + 1).ToString();
-                            }
-                        }
-
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
-                }
-            }
-
-            [HarmonyPatch(typeof(FacilityRosterSlot), "UpdateLocation")]
-            public static class FacilityRosterSlot_UpdateLocations_patch
-            {
-
-                public static void Postfix(FacilityRosterSlot __instance, UseSoldiersFacilityComponent ____soldierComponent)
-                {
-                    try
-                    {
-                        // TFTVLogger.Always($"UpdateLocation Running");
-                        GeoPhoenixBase pxBase = ____soldierComponent.Context.Facility.PxBase;
-                        GeoVehicle geoVehicle = pxBase.VehiclesAtBase.FirstOrDefault((GeoVehicle p) => p.Units.Contains(__instance.Character));
-
-                        if (geoVehicle != null)
-                        {
-                            //   TFTVLogger.Always($"looking at {geoVehicle.Name} {geoVehicle.VehicleID}");
-                            Text text = __instance.ThirdLocationSpotText;
-                            text.text = (geoVehicle.VehicleID + 1).ToString();
-
-                        }
-
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
-                }
-            }
-
-            [HarmonyPatch(typeof(UIModuleActorCycle), "UpdateLocations")]
-            public static class UIModuleActorCycle_UpdateLocations_patch
-            {
-
-                public static void Postfix(UIModuleActorCycle __instance, UnitDisplayData ____currentUnit)
-                {
-                    try
-                    {
-                        GeoCharacter character = ____currentUnit.BaseObject as GeoCharacter;
-                        if (character == null)
-                        {
-                            return;
-                        }
-
-                        GeoPhoenixFaction phoenixFaction = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction;
-                        IGeoCharacterContainer geoCharacterContainer = phoenixFaction.Sites.Concat<IGeoCharacterContainer>(phoenixFaction.Vehicles).FirstOrDefault((IGeoCharacterContainer c) => c.GetAllCharacters().Contains(character));
-
-                        if (geoCharacterContainer == null)
-                        {
-                            return;
-                        }
-
-                        if (geoCharacterContainer is GeoVehicle geoVehicle)
-                        {
-                            if (geoVehicle != null)
-                            {
-                                __instance.VehicleNumberText.text = (geoVehicle.VehicleID + 1).ToString();
-
-                            }
-
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
-                }
-            }
-
-
-            [HarmonyPatch(typeof(GeoVehicle), "get_Name")]
-            public static class GeoVehicle_get_Name_patch
-            {
-
-                public static bool Prefix(GeoVehicle __instance, ref string __result, string ____vehicleName)
-                {
-                    try
-                    {
-                        //TFTVLogger.Always($"{__instance.VehicleDef.ViewElement.DisplayName1.Localize(null)} {__instance.VehicleID}");
-
-                        if (string.IsNullOrWhiteSpace(____vehicleName))
-                        {
-                            __result = string.Format(__instance.VehicleDef.ViewElement.DisplayName1.Localize(null), __instance.VehicleID + 1);
-                        }
-                        else
-                        {
-                            __result = ____vehicleName;
-                        }
-
-                        return false;
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
-                }
-            }*/
 
 
             public static List<int> PlayerVehicles = new List<int>();
@@ -1321,14 +1191,6 @@ namespace TFTV
                     }
                 }
 
-                private static void EnableRaycastTargets(GameObject obj)
-                {
-                    foreach (var graphic in obj.GetComponentsInChildren<Graphic>(true))
-                    {
-                        graphic.raycastTarget = true;
-                        Debug.Log($"Raycast target enabled for: {graphic.name}");
-                    }
-                }
 
                 private static List<VehicleItemDef> _vehicleDefs;
 
@@ -1357,6 +1219,72 @@ namespace TFTV
 
                 }
 
+
+                private static bool IsUnityAlive(UnityEngine.Object obj) => obj != null; // Unity's fake-null safe
+
+                private static bool IsScrapButtonUsableFor(UIModuleVehicleRoster roster)
+                {
+                    try
+                    {
+                        var btn = _scrapButton;
+                        if (!IsUnityAlive(btn)) return false;
+
+                        var go = btn.gameObject;
+                        if (!IsUnityAlive(go)) return false;
+
+                        if (!go.activeInHierarchy || !btn.isActiveAndEnabled) return false;
+
+                        var rt = btn.transform as RectTransform;
+                        if (!IsUnityAlive(rt)) return false;
+
+                        // Must belong to the current roster instance
+                        if (roster == null || !rt.IsChildOf(roster.transform)) return false;
+
+                        // Must be on an enabled canvas
+                        var canvas = btn.GetComponentInParent<Canvas>(true);
+                        if (!IsUnityAlive(canvas) || !canvas.enabled) return false;
+
+                        // CanvasGroup must allow interaction/raycast
+                        var cg = btn.GetComponentInParent<CanvasGroup>(true);
+                        if (cg != null && (!cg.interactable || !cg.blocksRaycasts || cg.alpha <= 0.001f)) return false;
+
+                        // Needs at least one raycastable graphic to be clickable
+                        var hasRaycastableGraphic = go.GetComponentsInChildren<Graphic>(true).Any(g => g.enabled && g.raycastTarget);
+                        if (!hasRaycastableGraphic) return false;
+
+                        // Non-zero rect (avoid collapsed/NaN layout)
+                        if (rt.rect.width <= 1f || rt.rect.height <= 1f) return false;
+
+                        return true;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        return false;
+                    }
+                }
+
+                private static void SafeDisposeScrapButton()
+                {
+                    try
+                    {
+                        if (_scrapButton != null)
+                        {
+                            var go = _scrapButton.gameObject;
+                            _scrapButton = null; // clear static first to avoid races
+                            if (go != null)
+                            {
+                                UnityEngine.Object.Destroy(go);
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+
                 private static PhoenixGeneralButton _scrapButton = null;
 
                 //taken & adjusted from Mad's Assorted Adjustments. All hail Mad! https://github.com/Mad-Mods-Phoenix-Point/AssortedAdjustments/blob/main/Source/AssortedAdjustments/Patches/EnableScrapAircraft.cs
@@ -1367,14 +1295,29 @@ namespace TFTV
                         PopulateInternalVehicleDefsList();
 
 
-                        if (_scrapButton != null)
+                        if (IsScrapButtonUsableFor(uIModuleVehicleRoster))
                         {
-
+                            // Make sure it’s visible if it got deactivated
+                            _scrapButton.gameObject.SetActive(true);
                         }
                         else
                         {
+                            // Clean any stale/orphaned instance and recreate
+                            SafeDisposeScrapButton();
 
-                            //   TFTVLogger.Always($"checking");
+                            var editUnitButtonsController = GameUtl.CurrentLevel().GetComponent<GeoLevelController>()
+                                .View.GeoscapeModules.ActorCycleModule.EditUnitButtonsController;
+
+                            if (editUnitButtonsController?.DismissButton == null)
+                            {
+                                // Template not ready yet; bail out quietly
+                                return;
+                            }
+
+                            PhoenixGeneralButton checkButton = UnityEngine.Object.Instantiate(
+                                editUnitButtonsController.DismissButton, uIModuleVehicleRoster.transform);
+
+
                             Resolution resolution = Screen.currentResolution;
 
                             // TFTVLogger.Always("Resolution is " + Screen.currentResolution.width);
@@ -1383,15 +1326,14 @@ namespace TFTV
                             float resolutionFactorHeight = (float)resolution.height / 1080f;
                             //   TFTVLogger.Always("ResolutionFactorHeight is " + resolutionFactorHeight);
 
-                            EditUnitButtonsController editUnitButtonsController = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ActorCycleModule.EditUnitButtonsController;
-                            PhoenixGeneralButton checkButton = UnityEngine.Object.Instantiate(editUnitButtonsController.DismissButton, uIModuleVehicleRoster.transform);
-                            checkButton.gameObject.AddComponent<UITooltipText>().TipText = TFTVCommonMethods.ConvertKeyToString("KEY_SCRAP_AIRCRAFT");// "Toggles helmet visibility on/off.";
-
                             checkButton.transform.position += new Vector3(90 * resolutionFactorWidth, 130 * resolutionFactorHeight);
+
+                            checkButton.gameObject.AddComponent<UITooltipText>().TipText =
+                                TFTVCommonMethods.ConvertKeyToString("KEY_SCRAP_AIRCRAFT");
                             checkButton.PointerClicked += () => OnScrapAircraftClick();
                             _scrapButton = checkButton;
                         }
-
+                      
                         void OnScrapAircraftClick()
                         {
                             GeoVehicle aircraftToScrap = uIModuleVehicleRoster.SelectedSlot.Vehicle.GetBaseObject<GeoVehicle>();

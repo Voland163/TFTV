@@ -241,7 +241,6 @@ namespace TFTV.LaserWeapons
                 int shotsToAdd = Math.Min(missing, chargesToSpend * perCharge);
                 Log($"Tactical reload '{weaponDef.name}': missing={missing}, available={available}, perCharge={perCharge}, chargesToSpend={chargesToSpend}, shotsToAdd={shotsToAdd}");
 
-                // Tactical: use a transient magazine object, safe in tactical layer
                 TacticalItem magazine = CreateMagazine(entry, shotsToAdd);
                 weaponData.Ammo.LoadMagazine(magazine);
 
@@ -301,35 +300,28 @@ namespace TFTV.LaserWeapons
                 Log($"Geoscape reload '{weaponDef.name}': missing={missing}, available={available}, perCharge={perCharge}, chargesToSpend={chargesToSpend}, shotsToAdd={shotsToAdd}");
 
                 int before = weaponData.CurrentCharges;
-                var geoItem = item as GeoItem;
-                if (geoItem != null)
+
+                ICommonItem magazine = item.Create(entry.OriginalAmmoDef);
+                if (magazine?.CommonItemData != null)
                 {
-                    // Let the engine reload if it can (empty mags, proper swap etc.)
-                    geoItem.ReloadForFree();
+                    magazine.CommonItemData.ModifyCharges(-magazine.CommonItemData.CurrentCharges, false);
+                    magazine.CommonItemData.ModifyCharges(shotsToAdd, false);
+                    weaponData.Ammo.LoadMagazine(magazine);
                 }
 
-                // Top up to the exact desired amount within magazine + budget
-                int desired = Mathf.Min(item.ItemDef.ChargesMax, before + shotsToAdd);
-                int current = weaponData.CurrentCharges;
-                int delta = desired - current;
-                if (delta > 0)
-                {
-                    weaponData.ModifyCharges(delta, false);
-                }
+                Log($"Geoscape reload '{weaponDef.name}' applied: before={before}, now={weaponData.CurrentCharges}, desired={Mathf.Min(item.ItemDef.ChargesMax, before + shotsToAdd)}");
 
-                Log($"Geoscape reload '{weaponDef.name}' applied: before={before}, now={weaponData.CurrentCharges}, desired={desired}");
-
-                // Spend battery charges and cleanup UI
                 ammoData.ModifyCharges(-chargesToSpend, false);
-                if (ammoData.IsEmpty() && ammoSlot != null)
+                if (ammoData.IsEmpty())
                 {
-                    ammoSlot.ParentList.RemoveItem(ammoItem, ammoSlot);
+                    list.RemoveItem(ammoItem, ammoSlot);
                 }
 
                 list.OnItemLoaded?.Invoke();
                 result = true;
                 return true;
             }
+
         }
 
         [HarmonyPatch(typeof(ReloadAbility), "Reload")]
@@ -368,6 +360,67 @@ namespace TFTV.LaserWeapons
                 }
 
                 return true;
+            }
+        }
+
+        [HarmonyPatch(typeof(AmmoManager), nameof(AmmoManager.UnloadMagazines))]
+        private static class AmmoManager_UnloadMagazines_Patch
+        {
+            private static void Postfix(AmmoManager __instance, ref List<ICommonItem> __result)
+            {
+                if (LaserAmmoShareHelper.BatteryPackDef == null || __instance?.ParentItem == null)
+                {
+                    return;
+                }
+
+                if (!(__instance.ParentItem.ItemDef is WeaponDef weaponDef) || !LaserAmmoShareHelper.TryGetEntry(weaponDef, out var entry))
+                {
+                    return;
+                }
+
+                int totalShots = 0;
+                foreach (ICommonItem magazine in __result)
+                {
+                    if (magazine?.CommonItemData == null)
+                    {
+                        continue;
+                    }
+
+                    if (magazine.ItemDef == entry.OriginalAmmoDef)
+                    {
+                        totalShots += Math.Max(0, magazine.CommonItemData.TotalCharges);
+                    }
+                    else if (magazine.ItemDef == LaserAmmoShareHelper.BatteryPackDef)
+                    {
+                        totalShots += Math.Max(0, magazine.CommonItemData.TotalCharges);
+                    }
+                }
+
+                if (totalShots <= 0)
+                {
+                    __result = new List<ICommonItem>();
+                    return;
+                }
+
+                int charges = Mathf.CeilToInt(totalShots / (float)entry.ShotsPerCharge);
+                var converted = new List<ICommonItem>();
+                int remaining = charges;
+                while (remaining > 0)
+                {
+                    int chunk = Math.Min(remaining, Mathf.Max(1, LaserAmmoShareHelper.BatteryPackDef.ChargesMax));
+                    ICommonItem battery = __instance.ParentItem.Create(LaserAmmoShareHelper.BatteryPackDef);
+                    if (battery?.CommonItemData == null)
+                    {
+                        continue;
+                    }
+
+                    battery.CommonItemData.ModifyCharges(-battery.CommonItemData.CurrentCharges, false);
+                    battery.CommonItemData.ModifyCharges(chunk, false);
+                    converted.Add(battery);
+                    remaining -= chunk;
+                }
+
+                __result = converted;
             }
         }
 

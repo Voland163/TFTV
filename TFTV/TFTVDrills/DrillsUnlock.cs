@@ -426,7 +426,7 @@ namespace TFTV.TFTVDrills
                 },
 
             });
-            DrillsUnlock.
+
                         SetUnlockCondition(_shockDrop, shockDrop);
 
             var pounceProtocol = new DrillUnlockCondition();
@@ -435,7 +435,7 @@ namespace TFTV.TFTVDrills
                 ClassTag = DefCache.GetDef<ClassTagDef>("Infiltrator_ClassTagDef"),
                 MinimumLevel = 5
             });
-            DrillsUnlock.
+
                         SetUnlockCondition(_pounceProtocol, pounceProtocol);
 
             var mightMakesRight = new DrillUnlockCondition();
@@ -450,13 +450,13 @@ namespace TFTV.TFTVDrills
             });
 
             mightMakesRight.ClassLevelRequirements.Add(new DrillClassLevelRequirement { ClassTag = null, MinimumLevel = 5 });
-            DrillsUnlock.
+       
                         SetUnlockCondition(_mightMakesRight, mightMakesRight);
 
             var heavyConditioning = new DrillUnlockCondition();
 
             heavyConditioning.ClassLevelRequirements.Add(new DrillClassLevelRequirement { ClassTag = DefCache.GetDef<ClassTagDef>("Heavy_ClassTagDef"), MinimumLevel = 4 });
-            DrillsUnlock.
+      
                         SetUnlockCondition(_heavyConditioning, heavyConditioning);
 
             var partingShot = new DrillUnlockCondition();
@@ -471,7 +471,7 @@ namespace TFTV.TFTVDrills
                 },
 
             });
-            DrillsUnlock.
+       
                         SetUnlockCondition(_partingShot, partingShot);
 
 
@@ -484,7 +484,7 @@ namespace TFTV.TFTVDrills
                 },
 
             });
-            DrillsUnlock.SetUnlockCondition(_neuralLink, neurolink);
+            SetUnlockCondition(_neuralLink, neurolink);
 
             var bulletHell = new DrillUnlockCondition();
             bulletHell.ClassLevelRequirements.Add(new DrillClassLevelRequirement { ClassTag = null, MinimumLevel = 5 });
@@ -497,7 +497,7 @@ namespace TFTV.TFTVDrills
                 },
 
             });
-            DrillsUnlock.
+         
                         SetUnlockCondition(_bulletHell, bulletHell);
 
             var explosiveShoot = new DrillUnlockCondition();
@@ -517,7 +517,7 @@ namespace TFTV.TFTVDrills
                 },
             }
           );
-            DrillsUnlock.
+    
                         SetUnlockCondition(_explosiveShot, explosiveShoot);
 
             var heavySharpshot = new DrillUnlockCondition();
@@ -538,7 +538,7 @@ namespace TFTV.TFTVDrills
 
             }
             });
-            DrillsUnlock.
+
                         SetUnlockCondition(_heavySharpshot, heavySharpshot);
 
 
@@ -551,7 +551,7 @@ namespace TFTV.TFTVDrills
             });
 
             aksuSprint.RequiredResearchIds.Add("ANU_Berserker_ResearchDef");
-            DrillsUnlock.
+
                         SetUnlockCondition(_aksuSprint, aksuSprint);
 
             var packLoyalty = new DrillUnlockCondition();
@@ -561,8 +561,7 @@ namespace TFTV.TFTVDrills
 
 
             });
-            DrillsUnlock.
-                        SetUnlockCondition(_packLoyalty, packLoyalty);
+            SetUnlockCondition(_packLoyalty, packLoyalty);
 
             var viralGrip = new DrillUnlockCondition();
             viralGrip.ClassLevelRequirements.Add(new DrillClassLevelRequirement
@@ -572,7 +571,7 @@ namespace TFTV.TFTVDrills
 
             });
             viralGrip.RequiredResearchIds.Add("ANU_AdvancedInfectionTech_ResearchDef");
-            DrillsUnlock.SetUnlockCondition(_virulentGrip, viralGrip);
+            SetUnlockCondition(_virulentGrip, viralGrip);
 
             var viralPuppeteer = new DrillUnlockCondition();
             viralPuppeteer.ClassLevelRequirements.Add(new DrillClassLevelRequirement
@@ -582,7 +581,7 @@ namespace TFTV.TFTVDrills
 
             });
             viralPuppeteer.RequiredResearchIds.Add("ANU_AdvancedInfectionTech_ResearchDef");
-            DrillsUnlock.
+    
                         SetUnlockCondition(_viralPuppeteer, viralPuppeteer);
 
 
@@ -593,7 +592,7 @@ namespace TFTV.TFTVDrills
                 MinimumLevel = 5,
 
             });
-            DrillsUnlock.SetUnlockCondition(_ordnanceResupply, ordnanceResupply);
+            SetUnlockCondition(_ordnanceResupply, ordnanceResupply);
 
 
             var toxicLink = new DrillUnlockCondition();
@@ -604,7 +603,7 @@ namespace TFTV.TFTVDrills
 
             });
             toxicLink.RequiredResearchIds.Add("SYN_PoisonWeapons_ResearchDef");
-            DrillsUnlock.SetUnlockCondition(_toxicLink, toxicLink);
+            SetUnlockCondition(_toxicLink, toxicLink);
 
 
             var causticJamming = new DrillUnlockCondition();
@@ -615,7 +614,7 @@ namespace TFTV.TFTVDrills
 
             });
             causticJamming.RequiredResearchIds.Add("SYN_PoisonWeapons_ResearchDef");
-            DrillsUnlock.SetUnlockCondition(_causticJamming, causticJamming);
+           SetUnlockCondition(_causticJamming, causticJamming);
 
             var mentorUnlock = new DrillUnlockCondition();
             mentorUnlock.ClassLevelRequirements.Add(new DrillClassLevelRequirement
@@ -624,7 +623,7 @@ namespace TFTV.TFTVDrills
                 MinimumLevel = 7,
 
             });
-            DrillsUnlock.SetUnlockCondition(_mentorProtocol, mentorUnlock);
+            SetUnlockCondition(_mentorProtocol, mentorUnlock);
 
             var pintpointToss = new DrillUnlockCondition();
             pintpointToss.ClassLevelRequirements.Add(new DrillClassLevelRequirement
@@ -633,7 +632,7 @@ namespace TFTV.TFTVDrills
                 MinimumLevel = 3,
 
             });
-            DrillsUnlock.SetUnlockCondition(_pinpointToss, pintpointToss);
+            SetUnlockCondition(_pinpointToss, pintpointToss);
 
             var oneHandedGrip = new DrillUnlockCondition();
             oneHandedGrip.ClassLevelRequirements.Add(new DrillClassLevelRequirement
@@ -646,7 +645,7 @@ namespace TFTV.TFTVDrills
 
             var snapBrace = new DrillUnlockCondition();
             snapBrace.RequiredResearchIds.Add("PX_RiotShield_ResearchDef");
-            DrillsUnlock.SetUnlockCondition(_snapBrace, snapBrace);
+            SetUnlockCondition(_snapBrace, snapBrace);
 
 
             var shieldedRiposte = new DrillUnlockCondition();
@@ -657,7 +656,7 @@ namespace TFTV.TFTVDrills
                 MinimumLevel = 2,
 
             });
-            DrillsUnlock.SetUnlockCondition(_shieldedRiposte, shieldedRiposte);
+            SetUnlockCondition(_shieldedRiposte, shieldedRiposte);
 
             var overRide = new DrillUnlockCondition();
             overRide.ClassLevelRequirements.Add(new DrillClassLevelRequirement
@@ -666,8 +665,7 @@ namespace TFTV.TFTVDrills
                 MinimumLevel = 6,
 
             });
-            DrillsUnlock.
-                        SetUnlockCondition(_override, overRide);
+            SetUnlockCondition(_override, overRide);
         }
 
         internal static void EnsureDefaultUnlockConditions()

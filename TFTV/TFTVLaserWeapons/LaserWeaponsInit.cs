@@ -80,6 +80,24 @@ namespace TFTV.LaserWeapons
 
         }
 
+        private static void AdjustWeaponMaxAmmo()
+        {
+            try 
+            {
+                DefCache.GetDef<WeaponDef>("SY_LaserPistol_WeaponDef").ChargesMax = 10;
+                DefCache.GetDef<WeaponDef>("SY_LaserAssaultRifle_WeaponDef").ChargesMax = 36;
+                DefCache.GetDef<WeaponDef>("PX_LaserPDW_WeaponDef").ChargesMax = 24;
+                DefCache.GetDef<WeaponDef>("SY_LaserSniperRifle_WeaponDef").ChargesMax = 8;
+                DefCache.GetDef<WeaponDef>("PX_LaserArrayPack_WeaponDef").ChargesMax = 9;
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+            }
+
+
+        }
+
         public static void Init()
         {
             try
@@ -116,9 +134,6 @@ namespace TFTV.LaserWeapons
                     {
                         OriginalLaserAmmo.Add(originalAmmo);
                     }
-
-
-                    weaponDef.ChargesMax /= 2;
 
                     setups.Add(new WeaponSetup
                     {
@@ -160,7 +175,7 @@ namespace TFTV.LaserWeapons
                     TFTVLogger.Always($"[LaserWeaponsInit] Updated compatible ammo for {setup.WeaponDef.name}");
                 }
 
-
+                AdjustWeaponMaxAmmo();
                 AdjustAllDefs();
             }
             catch (Exception ex)
@@ -190,8 +205,8 @@ namespace TFTV.LaserWeapons
             battery.DestroyWhenUsed = false;
             battery.DestroyAtZeroCharges = true;
             battery.Weight = 1;
-            battery.ManufactureMaterials = 25f;
-            battery.ManufactureTech = 5f;
+            battery.ManufactureMaterials = 40f;
+            battery.ManufactureTech = 10f;
             battery.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_LASER_BATTERY_NAME";
             battery.ViewElementDef.Description.LocalizationKey = "TFTV_LASER_BATTERY_DESC";
          
