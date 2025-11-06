@@ -1284,25 +1284,171 @@ namespace TFTV
                     }
                 }
 
+                private static void AddGamepadSupportToScrapButton(PhoenixGeneralButton scrapBtn, PhoenixGeneralButton templateBtn, UIModuleVehicleRoster roster, Action clickAction)
+                {
+                    try
+                    {
+                        if (scrapBtn == null) return;
+
+                        // 1. Ensure we are parented alongside other action buttons (use template's parent)
+                        if (templateBtn != null && scrapBtn.transform.parent != templateBtn.transform.parent)
+                        {
+                            scrapBtn.transform.SetParent(templateBtn.transform.parent, false);
+                        }
+
+                        // 2. Ensure underlying Unity Button receives Submit
+                        Button uButton = scrapBtn.GetComponent<Button>();
+                        if (uButton != null)
+                        {
+                            // Clear any stale listeners then add ours
+                            uButton.onClick.RemoveListener(() => { }); // harmless, just ensures no empty anonymous duplicates
+                            uButton.onClick.AddListener(() => clickAction());
+                        }
+
+                        // Also keep existing pointer event for mouse users
+                        scrapBtn.PointerClicked -= () => clickAction();
+                        scrapBtn.PointerClicked += () => clickAction();
+
+                        // 3. Copy navigation from template OR set explicit navigation
+                        if (templateBtn != null)
+                        {
+                            Button templateUnityBtn = templateBtn.GetComponent<Button>();
+                            if (templateUnityBtn != null)
+                            {
+                                uButton.navigation = templateUnityBtn.navigation;
+                            }
+                        }
+
+                        // Fallback explicit navigation wiring (simple vertical list)
+                        if (uButton != null)
+                        {
+                            var siblings = uButton.transform.parent.GetComponentsInChildren<Button>(true)
+                                .Where(b => b.isActiveAndEnabled && b.interactable).ToList();
+
+                            int idx = siblings.IndexOf(uButton);
+                            if (idx >= 0)
+                            {
+                                Navigation nav = uButton.navigation;
+                                if (nav.mode == Navigation.Mode.Automatic || nav.mode == Navigation.Mode.None)
+                                {
+                                    nav.mode = Navigation.Mode.Explicit;
+                                    nav.selectOnUp = idx > 0 ? siblings[idx - 1] : null;
+                                    nav.selectOnDown = idx < siblings.Count - 1 ? siblings[idx + 1] : null;
+                                    uButton.navigation = nav;
+                                }
+                            }
+                        }
+
+                        // 4. Try to register into any private action button list for focus cycling (reflection safe)
+                        try
+                        {
+                            FieldInfo fi = typeof(UIModuleVehicleRoster).GetField("_actionButtons", BindingFlags.NonPublic | BindingFlags.Instance);
+                            if (fi != null)
+                            {
+                                var listObj = fi.GetValue(roster);
+                                if (listObj is System.Collections.IList list && !list.Contains(scrapBtn))
+                                {
+                                    list.Add(scrapBtn);
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            TFTVLogger.Error(ex); // non-fatal
+                        }
+
+                        // 5. Make sure graphics are raycastable (some templates disable)
+                        foreach (Graphic g in scrapBtn.GetComponentsInChildren<Graphic>(true))
+                        {
+                            g.raycastTarget = true;
+                        }
+
+                        // 6. Ensure interactable & visible
+                        if (uButton != null) uButton.interactable = true;
+                        scrapBtn.gameObject.SetActive(true);
+
+                        // 7. Optional: initial selection if nothing selected (prevents "dead" focus state)
+                        if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject == null)
+                        {
+                            EventSystem.current.SetSelectedGameObject(scrapBtn.gameObject);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                // Add this helper inside the nested class: VehicleRoster.TFTVDragandDropFunctionality
+                private static void EnsureScrapButtonPlacement(UIModuleVehicleRoster roster)
+                {
+                    try
+                    {
+                        if (!IsUnityAlive(_scrapButton)) return;
+
+                        RectTransform btnRt = _scrapButton.GetComponent<RectTransform>();
+                        RectTransform rosterRt = roster != null ? roster.GetComponent<RectTransform>() : null;
+                        if (!IsUnityAlive(btnRt) || !IsUnityAlive(rosterRt)) return;
+
+                        // Ensure parent is the roster root and adopt local layout space
+                        if (btnRt.parent != rosterRt)
+                        {
+                            btnRt.SetParent(rosterRt, false);
+                        }
+
+                        // Make sure layout systems don't move/clip this button
+                        LayoutElement le = _scrapButton.GetComponent<LayoutElement>() ?? _scrapButton.gameObject.AddComponent<LayoutElement>();
+                        le.ignoreLayout = true;
+
+                        // Place at top-right of the roster, CanvasScaler will take care of DPI/resolution
+                        btnRt.anchorMin = new Vector2(1f, 1f);
+                        btnRt.anchorMax = new Vector2(1f, 1f);
+                        btnRt.pivot = new Vector2(1f, 1f);
+
+                        Resolution resolution = Screen.currentResolution;
+                        float resolutionFactorWidth = (float)resolution.width / 1920f;
+                        float resolutionFactorHeight = (float)resolution.height / 1080f;
+
+                        btnRt.anchoredPosition = new Vector2(500, -1500);
+
+                        // Ensure it's rendered on top within the roster hierarchy
+                        _scrapButton.transform.SetAsLastSibling();
+
+                        // Ensure button graphics receive raycasts
+                        foreach (Graphic g in _scrapButton.GetComponentsInChildren<Graphic>(true))
+                        {
+                            g.raycastTarget = true;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
 
                 private static PhoenixGeneralButton _scrapButton = null;
 
                 //taken & adjusted from Mad's Assorted Adjustments. All hail Mad! https://github.com/Mad-Mods-Phoenix-Point/AssortedAdjustments/blob/main/Source/AssortedAdjustments/Patches/EnableScrapAircraft.cs
+                // In ScrapeButtonFunctionality, replace the positioning logic and call EnsureScrapButtonPlacement in both branches.
+
                 private static void ScrapeButtonFunctionality(UIModuleVehicleRoster uIModuleVehicleRoster)
                 {
                     try
                     {
                         PopulateInternalVehicleDefsList();
 
-
                         if (IsScrapButtonUsableFor(uIModuleVehicleRoster))
                         {
-                            // Make sure it’s visible if it got deactivated
+                            TFTVLogger.Always($"scrap button should be active");
                             _scrapButton.gameObject.SetActive(true);
+
+                            // NEW: Ensure it's properly placed and visible even after UI transitions
+                            EnsureScrapButtonPlacement(uIModuleVehicleRoster);
                         }
                         else
                         {
-                            // Clean any stale/orphaned instance and recreate
+                            TFTVLogger.Always($"scrap button is not usable");
                             SafeDisposeScrapButton();
 
                             var editUnitButtonsController = GameUtl.CurrentLevel().GetComponent<GeoLevelController>()
@@ -1310,42 +1456,44 @@ namespace TFTV
 
                             if (editUnitButtonsController?.DismissButton == null)
                             {
-                                // Template not ready yet; bail out quietly
+                                TFTVLogger.Always($"dismissButton null, bailing out");
                                 return;
                             }
 
-                            PhoenixGeneralButton checkButton = UnityEngine.Object.Instantiate(
-                                editUnitButtonsController.DismissButton, uIModuleVehicleRoster.transform);
+                            PhoenixGeneralButton checkButton =
+                                UnityEngine.Object.Instantiate(editUnitButtonsController.DismissButton, uIModuleVehicleRoster.transform);
 
+                            checkButton.gameObject.SetActive(true);
 
-                            Resolution resolution = Screen.currentResolution;
-
-                            // TFTVLogger.Always("Resolution is " + Screen.currentResolution.width);
-                            float resolutionFactorWidth = (float)resolution.width / 1920f;
-                            //   TFTVLogger.Always("ResolutionFactorWidth is " + resolutionFactorWidth);
-                            float resolutionFactorHeight = (float)resolution.height / 1080f;
-                            //   TFTVLogger.Always("ResolutionFactorHeight is " + resolutionFactorHeight);
-
-                            checkButton.transform.position += new Vector3(90 * resolutionFactorWidth, 130 * resolutionFactorHeight);
+                            // REMOVED: Resolution-based world-space positioning (was brittle)
+                            // checkButton.transform.position += new Vector3(...);
 
                             checkButton.gameObject.AddComponent<UITooltipText>().TipText =
                                 TFTVCommonMethods.ConvertKeyToString("KEY_SCRAP_AIRCRAFT");
+
                             checkButton.PointerClicked += () => OnScrapAircraftClick();
                             _scrapButton = checkButton;
+
+                            AddGamepadSupportToScrapButton(
+                               _scrapButton,
+                               editUnitButtonsController.DismissButton,
+                               uIModuleVehicleRoster,
+                               OnScrapAircraftClick);
+
+                            // NEW: Place using anchored UI so it stays visible and unmasked
+                            EnsureScrapButtonPlacement(uIModuleVehicleRoster);
                         }
-                      
+
                         void OnScrapAircraftClick()
                         {
                             GeoVehicle aircraftToScrap = uIModuleVehicleRoster.SelectedSlot.Vehicle.GetBaseObject<GeoVehicle>();
-
-                            //   TFTVLogger.Always($"aircraftToScrap?.name: {aircraftToScrap?.name} vehicleDef {aircraftToScrap.VehicleDef.name} {aircraftToScrap.VehicleDef.ViewElement.name}"); 
-
-                            UIModuleGeoscapeScreenUtils uIModuleGeoscapeScreenUtils = aircraftToScrap.GeoLevel.View.GeoscapeModules.GeoscapeScreenUtilsModule;
+                            UIModuleGeoscapeScreenUtils uIModuleGeoscapeScreenUtils =
+                                aircraftToScrap.GeoLevel.View.GeoscapeModules.GeoscapeScreenUtilsModule;
 
                             string messageBoxText = uIModuleGeoscapeScreenUtils.DismissVehiclePrompt.Localize(null);
-                            VehicleItemDef aircraftItemDef = _vehicleDefs.Where(viDef => viDef.ViewElementDef == aircraftToScrap.VehicleDef.ViewElement).FirstOrDefault();
-
-                            //  TFTVLogger.Always($"aircraftItemDef?.name: {aircraftItemDef?.name}");
+                            VehicleItemDef aircraftItemDef = _vehicleDefs
+                                .Where(viDef => viDef.ViewElementDef == aircraftToScrap.VehicleDef.ViewElement)
+                                .FirstOrDefault();
 
                             if (aircraftItemDef != null && !aircraftItemDef.ScrapPrice.IsEmpty)
                             {
@@ -1364,8 +1512,6 @@ namespace TFTV
                                             case ResourceType.Materials:
                                                 resourcesInfo = uIModuleGeoscapeScreenUtils.ScrapMaterialsResources.Localize(null);
                                                 break;
-                                            case (ResourceType)3:
-                                                break;
                                             case ResourceType.Tech:
                                                 resourcesInfo = uIModuleGeoscapeScreenUtils.ScrapTechResources.Localize(null);
                                                 break;
@@ -1382,50 +1528,53 @@ namespace TFTV
                                 }
                             }
 
-
-                            // Safety check as the game's UI fails hard if there's NO GeoVehicle left at all
                             if (aircraftToScrap.Owner.Vehicles.Count() <= 1)
                             {
-                                GameUtl.GetMessageBox().ShowSimplePrompt(TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_LAST_AIRCRAFT"), MessageBoxIcon.Error, MessageBoxButtons.OK, new MessageBox.MessageBoxCallback(OnScrapAircraftImpossibleCallback), null, null);
+                                GameUtl.GetMessageBox().ShowSimplePrompt(
+                                    TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_LAST_AIRCRAFT"),
+                                    MessageBoxIcon.Error, MessageBoxButtons.OK,
+                                    new MessageBox.MessageBoxCallback(OnScrapAircraftImpossibleCallback), null, null);
                             }
                             else if (aircraftToScrap.Travelling)
                             {
-                                GameUtl.GetMessageBox().ShowSimplePrompt(TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_IN_TRANSIT_AIRCRAFT"), MessageBoxIcon.Error, MessageBoxButtons.OK, new MessageBox.MessageBoxCallback(OnScrapAircraftImpossibleCallback), null, null);
+                                GameUtl.GetMessageBox().ShowSimplePrompt(
+                                    TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_IN_TRANSIT_AIRCRAFT"),
+                                    MessageBoxIcon.Error, MessageBoxButtons.OK,
+                                    new MessageBox.MessageBoxCallback(OnScrapAircraftImpossibleCallback), null, null);
                             }
                             else
                             {
-                                GameUtl.GetMessageBox().ShowSimplePrompt(string.Format(messageBoxText, aircraftToScrap.Name), MessageBoxIcon.Warning, MessageBoxButtons.YesNo, new MessageBox.MessageBoxCallback(OnScrapAircraftCallback), null, aircraftToScrap);
+                                GameUtl.GetMessageBox().ShowSimplePrompt(
+                                    string.Format(messageBoxText, aircraftToScrap.Name),
+                                    MessageBoxIcon.Warning, MessageBoxButtons.YesNo,
+                                    new MessageBox.MessageBoxCallback(OnScrapAircraftCallback), null, aircraftToScrap);
                             }
                         }
 
-                        void OnScrapAircraftImpossibleCallback(MessageBoxCallbackResult msgResult)
-                        {
-                            // Nothing
-                        }
+                        void OnScrapAircraftImpossibleCallback(MessageBoxCallbackResult msgResult) { /* noop */ }
 
                         void OnScrapAircraftCallback(MessageBoxCallbackResult msgResult)
                         {
                             if (msgResult.DialogResult == MessageBoxResult.Yes)
                             {
-
                                 GeoVehicle aircraftToScrap = uIModuleVehicleRoster.SelectedSlot.Vehicle.GetBaseObject<GeoVehicle>();
 
                                 if (aircraftToScrap != null)
                                 {
-                                    // Unset vehicle.CurrentSite and trigger site.VehicleLeft
                                     aircraftToScrap.Travelling = true;
-
                                     RemoveEquipmentFromScrappedVehicle(aircraftToScrap);
                                     uIModuleVehicleRoster.UpdateSelectedVehicleEquipments();
 
-                                    // Away with it!
                                     aircraftToScrap.Destroy();
 
-                                    // Add resources
-                                    VehicleItemDef aircraftItemDef = _vehicleDefs.Where(viDef => viDef.ComponentSetDef.Components.Contains(aircraftToScrap.VehicleDef)).FirstOrDefault();
+                                    VehicleItemDef aircraftItemDef = _vehicleDefs
+                                        .Where(viDef => viDef.ComponentSetDef.Components.Contains(aircraftToScrap.VehicleDef))
+                                        .FirstOrDefault();
 
-                                    MethodInfo updateResourcInfoMethodInfo = typeof(UIModuleInfoBar).GetMethod("UpdateResourceInfo", BindingFlags.NonPublic | BindingFlags.Instance);
-                                    UIModuleInfoBar uIModuleInfoBar = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ResourcesModule;
+                                    MethodInfo updateResourcInfoMethodInfo =
+                                        typeof(UIModuleInfoBar).GetMethod("UpdateResourceInfo", BindingFlags.NonPublic | BindingFlags.Instance);
+                                    UIModuleInfoBar uIModuleInfoBar =
+                                        GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ResourcesModule;
 
                                     if (aircraftItemDef != null && !aircraftItemDef.ScrapPrice.IsEmpty)
                                     {
@@ -1445,18 +1594,11 @@ namespace TFTV
 
                                     uIModuleVehicleRoster.SetSelectSlot(vehicles.First(), true);
 
-                                    UIModuleVehicleCycle uIModuleVehicleCycle = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.VehicleCycleModule;
+                                    UIModuleVehicleCycle uIModuleVehicleCycle =
+                                        GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.VehicleCycleModule;
                                     uIModuleVehicleCycle.SelectVehicle(vehicles.FirstOrDefault());
                                 }
-
-
-
-                                /*uIModuleVehicleRoster.SelectedSlot.WeaponSlot01.ResetItem();
-                                uIModuleVehicleRoster.SelectedSlot.WeaponSlot02.ResetItem();
-                                uIModuleVehicleRoster.SelectedSlot.ModuleSlot.ResetItem();*/
-
                             }
-
                         }
                     }
                     catch (Exception e)

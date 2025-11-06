@@ -42,12 +42,12 @@ namespace PRMBetterClasses.SkillModifications
             // Amplify Pain: If your next attack deals special damage, double that damage (Bleeding, Paralysis, Viral, Poison, Fire, EMP, Sonic, Shock, Virophage)
             Create_AmplifyPain();
 
-            if (TFTVAircraftReworkMain.AircraftReworkOn)
-            {
+          //  if (TFTVAircraftReworkMain.AircraftReworkOn)
+          //  {
 
                 Create_CommandOverlay();
                 //  ApplyAircraftReworkSkillSwaps();
-            }
+           // }
         }
 
         private static void Fix_FieldMedic()

@@ -31,28 +31,6 @@ namespace TFTV
     internal class TFTVHarmonyGeoscape
     {
 
-        
-
-
-
-        [HarmonyPatch(typeof(VehicleSelectionAircraftElementController), "SetItem")]
-        internal static class VehicleSelectionAircraftElementController_SetItem_patch
-        {
-            public static void Postfix(VehicleSelectionAircraftElementController __instance, GeoVehicle vehicle)
-            {
-                try
-                {
-                  
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-
-
         [HarmonyPatch(typeof(GeoVehicle), "get_MaxCharacterSpace")]
         internal static class BG_GeoVehicle_get_MaxCharacterSpace_patch
         {
@@ -61,7 +39,7 @@ namespace TFTV
                 try
                 {
                     AircraftReworkGeoscape.PassengerModules.AdjustMaxCharacterSpacePassengerModules(__instance, ref __result);
-                  TFTVLogger.Always($"get_MaxCharacterSpace postfix executed for {__instance.Name} __result: {__result}");
+                 // TFTVLogger.Always($"get_MaxCharacterSpace postfix executed for {__instance.Name} __result: {__result}");
                 }
                 catch (Exception e)
                 {
@@ -99,7 +77,7 @@ namespace TFTV
                 try
                 {
                     AircraftReworkGeoscape.PassengerModules.AdjustAircraftInfoPassengerModules(__instance, ref __result);
-                    TFTVLogger.Always($"GetAircraftInfo postfix executed for {__instance.Name} __result.CurrentCrew: {__result.CurrentCrew} __result.MaxCrew: {__result.MaxCrew}");
+                  //  TFTVLogger.Always($"GetAircraftInfo postfix executed for {__instance.Name} __result.CurrentCrew: {__result.CurrentCrew} __result.MaxCrew: {__result.MaxCrew}");
                 }
                 catch (Exception e)
                 {

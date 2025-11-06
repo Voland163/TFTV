@@ -236,7 +236,7 @@ namespace TFTV
                 //  ChangeScyllaSounds();
                 CreateSuppressionStatusDefs();
                 AddMissingViewElementDefs();
-                LaserWeaponsInit.Init();
+              //  LaserWeaponsInit.Init();
 
 
             }

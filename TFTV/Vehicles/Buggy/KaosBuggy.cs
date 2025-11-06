@@ -191,6 +191,9 @@ namespace TFTVVehicleRework.KaosBuggy
             KaosBuggy.DataDef.HitPoints = 750f;
             KaosBuggy.DataDef.Capacity = 2f;
             KaosBuggy.DataDef.Armor = 28f;
+            KaosBuggy.ManufactureMaterials = 300f;
+            KaosBuggy.ManufactureTech = 20f;
+
 
             KaosBuggy.ViewElementDef.DisplayName1 = new LocalizedTextBind("UI_JUNKER_NAME");
         }
