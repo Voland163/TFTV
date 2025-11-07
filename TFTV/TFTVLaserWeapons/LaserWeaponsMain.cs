@@ -15,7 +15,7 @@ using UnityEngine;
 
 namespace TFTV.LaserWeapons
 {
-   /* internal static class LaserWeaponsMain
+    internal static class LaserWeaponsMain
     {
         internal static class LaserAmmoShareHelper
         {
@@ -424,5 +424,5 @@ namespace TFTV.LaserWeapons
             }
         }
 
-    }*/
+    }
 }

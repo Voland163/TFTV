@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TFTV;
 
-/*namespace TFTV.LaserWeapons
+namespace TFTV.LaserWeapons
 {
     internal static class LaserWeaponsInit
     {
@@ -214,4 +214,4 @@ using TFTV;
             return battery;
         }
     }
-}*/
+}

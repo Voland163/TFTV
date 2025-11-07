@@ -996,9 +996,6 @@ namespace TFTV
             public static bool AircraftHotkeysBindingsApplied = false;
 
 
-
-
-
             [HarmonyPatch(typeof(UIStateVehicleSelected), "OnInputEvent")]
             public static class UIStateVehicleSelected_OnInputEvent_patch
             {
@@ -1284,100 +1281,6 @@ namespace TFTV
                     }
                 }
 
-                private static void AddGamepadSupportToScrapButton(PhoenixGeneralButton scrapBtn, PhoenixGeneralButton templateBtn, UIModuleVehicleRoster roster, Action clickAction)
-                {
-                    try
-                    {
-                        if (scrapBtn == null) return;
-
-                        // 1. Ensure we are parented alongside other action buttons (use template's parent)
-                        if (templateBtn != null && scrapBtn.transform.parent != templateBtn.transform.parent)
-                        {
-                            scrapBtn.transform.SetParent(templateBtn.transform.parent, false);
-                        }
-
-                        // 2. Ensure underlying Unity Button receives Submit
-                        Button uButton = scrapBtn.GetComponent<Button>();
-                        if (uButton != null)
-                        {
-                            // Clear any stale listeners then add ours
-                            uButton.onClick.RemoveListener(() => { }); // harmless, just ensures no empty anonymous duplicates
-                            uButton.onClick.AddListener(() => clickAction());
-                        }
-
-                        // Also keep existing pointer event for mouse users
-                        scrapBtn.PointerClicked -= () => clickAction();
-                        scrapBtn.PointerClicked += () => clickAction();
-
-                        // 3. Copy navigation from template OR set explicit navigation
-                        if (templateBtn != null)
-                        {
-                            Button templateUnityBtn = templateBtn.GetComponent<Button>();
-                            if (templateUnityBtn != null)
-                            {
-                                uButton.navigation = templateUnityBtn.navigation;
-                            }
-                        }
-
-                        // Fallback explicit navigation wiring (simple vertical list)
-                        if (uButton != null)
-                        {
-                            var siblings = uButton.transform.parent.GetComponentsInChildren<Button>(true)
-                                .Where(b => b.isActiveAndEnabled && b.interactable).ToList();
-
-                            int idx = siblings.IndexOf(uButton);
-                            if (idx >= 0)
-                            {
-                                Navigation nav = uButton.navigation;
-                                if (nav.mode == Navigation.Mode.Automatic || nav.mode == Navigation.Mode.None)
-                                {
-                                    nav.mode = Navigation.Mode.Explicit;
-                                    nav.selectOnUp = idx > 0 ? siblings[idx - 1] : null;
-                                    nav.selectOnDown = idx < siblings.Count - 1 ? siblings[idx + 1] : null;
-                                    uButton.navigation = nav;
-                                }
-                            }
-                        }
-
-                        // 4. Try to register into any private action button list for focus cycling (reflection safe)
-                        try
-                        {
-                            FieldInfo fi = typeof(UIModuleVehicleRoster).GetField("_actionButtons", BindingFlags.NonPublic | BindingFlags.Instance);
-                            if (fi != null)
-                            {
-                                var listObj = fi.GetValue(roster);
-                                if (listObj is System.Collections.IList list && !list.Contains(scrapBtn))
-                                {
-                                    list.Add(scrapBtn);
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            TFTVLogger.Error(ex); // non-fatal
-                        }
-
-                        // 5. Make sure graphics are raycastable (some templates disable)
-                        foreach (Graphic g in scrapBtn.GetComponentsInChildren<Graphic>(true))
-                        {
-                            g.raycastTarget = true;
-                        }
-
-                        // 6. Ensure interactable & visible
-                        if (uButton != null) uButton.interactable = true;
-                        scrapBtn.gameObject.SetActive(true);
-
-                        // 7. Optional: initial selection if nothing selected (prevents "dead" focus state)
-                        if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject == null)
-                        {
-                            EventSystem.current.SetSelectedGameObject(scrapBtn.gameObject);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                }
 
                 // Add this helper inside the nested class: VehicleRoster.TFTVDragandDropFunctionality
                 private static void EnsureScrapButtonPlacement(UIModuleVehicleRoster roster)
@@ -1473,12 +1376,6 @@ namespace TFTV
 
                             checkButton.PointerClicked += () => OnScrapAircraftClick();
                             _scrapButton = checkButton;
-
-                            AddGamepadSupportToScrapButton(
-                               _scrapButton,
-                               editUnitButtonsController.DismissButton,
-                               uIModuleVehicleRoster,
-                               OnScrapAircraftClick);
 
                             // NEW: Place using anchored UI so it stays visible and unmasked
                             EnsureScrapButtonPlacement(uIModuleVehicleRoster);
