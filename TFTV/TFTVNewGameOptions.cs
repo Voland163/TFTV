@@ -8,7 +8,7 @@ namespace TFTV
 
         public static bool IsReworkEnabled()
         {
-            return TFTVAircraftReworkMain.AircraftReworkOn; //&& .NewTrainingFacilities;
+            return TFTVAircraftReworkMain.AircraftReworkOn;
         }
 
 

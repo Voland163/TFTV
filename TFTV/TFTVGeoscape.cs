@@ -2,6 +2,7 @@ using Base.Serialization.General;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
+using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Modding;
@@ -122,42 +123,19 @@ namespace TFTV
             TFTVODIandVoidOmenRoll.Calculate_ODI_Level(Controller);
             TFTVBetaSaveGamesFixes.CheckResearches(Controller);
             TFTVPassengerModules.ImplementFarMConfig(Controller);
-            //  TFTVBetaSaveGamesFixes.RemoveBadSlug(Controller);
             TFTVCustomPortraits.CharacterPortrait.PopulatePortraitFileList();
             TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
             TFTVUIGeoMap.UnpoweredFacilitiesInfo.CheckUnpoweredBasesOnGeoscapeStart();
             AircraftReworkSpeed.Init(Controller);
 
-            /* foreach(GeoFactionObjective geoFactionObjective in Controller.PhoenixFaction.Objectives) 
-              {
-                  TFTVLogger.Always($"{geoFactionObjective.Title?.Localize()} {geoFactionObjective.Description?.Localize()} ");
-              }*/
 
-            // TFTVAircraftRework.Modules.Geoscape.Scanning.CheckAllVehiclesForScannerAbility(Controller);
-            //  TFTVExperimental.PrintAvailableTemplates(Controller);
-            // TFTVExperimental.PrintInfoHavenRecruits(Controller);
+           /* foreach (GeoPhoenixBase phoenixBase in gsController.PhoenixFaction.Bases)
+            {
+                TFTVBaseDefenseGeoscape.GeoObjective.RemoveBaseDefenseObjective(phoenixBase.Site.LocalizedSiteName);
+            }
 
-            //   TFTVBetaSaveGamesFixes.SpecialFixInfestedHaven(Controller);
-            // TFTVDragandDropFunctionality.VehicleRoster.RestoreVehicleOrder(Controller);
+            TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Clear();*/
 
-            // TFTVBetaSaveGamesFixes.SpecialFixBeesGuy();
-            /* GeoSite geoSite = Controller.Map.AllSites.FirstOrDefault(s=>s.GetComponent<GeoPhoenixBase>()!=null && s.ActiveMission!=null);
-
-             geoSite.ActiveMission = null;
-             geoSite.ActivateSite();
-             TFTVBaseDefenseGeoscape.PhoenixBasesInfested.Remove(geoSite.SiteId);
-             GeoObjective.RemoveBaseDefenseObjective(geoSite.LocalizedSiteName);
-             //  geoMission.Level.PhoenixFaction.ActivatePhoenixBase(geoMission.Site, true);
-
-
-
-             FieldInfo basesField = AccessTools.Field(typeof(GeoPhoenixFaction), "_bases");
-             List<GeoPhoenixBase> bases = (List<GeoPhoenixBase>)basesField.GetValue(Controller.PhoenixFaction);
-             bases.Add(geoSite.GetComponent<GeoPhoenixBase>());
-             geoSite.RefreshVisuals();*/
-
-
-            // TFTVBetaSaveGamesFixes.Fix(Controller);
         }
         /// <summary>
         /// Called when Geoscape ends.

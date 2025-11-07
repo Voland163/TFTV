@@ -89,6 +89,12 @@ namespace TFTV
             {
                 try 
                 { 
+                    if(!TFTVAircraftReworkMain.AircraftReworkOn)
+                    {
+                        TFTVLogger.Always("New Training Facilities is disabled due to Aircraft Rework being inactive.");
+                        return;
+                    }
+
                     ModifyDefs(TFTVNewGameOptions.NewTrainingFacilities, _newTrainingFacilitiesImplemented);
                 }
                 catch (Exception e)
@@ -115,6 +121,8 @@ namespace TFTV
                         DefCache.GetDef<CorruptedHorizonsSettingsDef>("CorruptedHorizonsSettingsDef").MutoidMutagenCost = 500;
                         DefCache.GetDef<TacCharacterDef>("Mutoid_CharacterTemplateDef").Data.LevelProgression.Experience = 900;
                         _newTrainingFacilitiesImplemented = true;
+
+                       
                     }
                     else if (revert) 
                     {

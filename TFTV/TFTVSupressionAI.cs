@@ -85,7 +85,8 @@ namespace TFTV
                         }
                         if (!handled)
                         {
-                            Debug.LogError(string.Format("{0} can't execute {1}. Ability target is null", tacActor, GetAbilityName(attackAbility)));
+
+                           Debug.LogError(string.Format("{0} can't execute {1}. Ability target is null", tacActor, GetAbilityName(attackAbility)));
                             tacActor.ActivateAbility<EndTurnAbility>(null);
                         }
                     }
