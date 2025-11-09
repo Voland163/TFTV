@@ -1,3 +1,4 @@
+using Base.Core;
 using Base.Serialization.General;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Geoscape.Entities;
@@ -10,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using TFTV.TFTVBaseRework;
 
 namespace TFTV
 {
@@ -68,6 +70,7 @@ namespace TFTV
         public Dictionary<int, string> CharacterPortraits;
         public List<int> PlayerVehicles;
         public Dictionary<int, List<int>> AircraftScanningSites;
+        internal List<TrainingFacilityRework.TrainingSessionSave> TrainingFacilitySessions;
     }
 
 
@@ -223,6 +226,8 @@ namespace TFTV
                 PlayerVehicles = TFTVDragandDropFunctionality.VehicleRoster.PlayerVehicles,
                 AircraftScanningSites = AircraftReworkGeoscape.Scanning.AircraftScanningSites,
                 NewTrainingFacilities = TFTVNewGameOptions.NewTrainingFacilities,
+                TrainingFacilitySessions = TrainingFacilityRework.CreateSaveSnapshot()
+
                 //   Update35GeoscapeCheck = TFTVNewGameOptions.Update35Check,
 
             };
@@ -337,12 +342,14 @@ namespace TFTV
                 TFTVDefsWithConfigDependency.ImplementConfigChoices();
                 TFTVDragandDropFunctionality.VehicleRoster.RestoreVehicleOrder(Controller);
                 AircraftReworkGeoscape.Scanning.AircraftScanningSites = data.AircraftScanningSites;
+                TrainingFacilityRework.LoadFromSnapshot(GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>(), data.TrainingFacilitySessions);
+ 
                 //   TFTVBetaSaveGamesFixes.Fix(Controller);
 
-                // TFTVNewGameOptions.Update35Check = data.Update35GeoscapeCheck;
+                 // TFTVNewGameOptions.Update35Check = data.Update35GeoscapeCheck;
 
-                //  Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
-                Main.Logger.LogInfo("# Characters with broken limbs: " + TFTVStamina.charactersWithDisabledBodyParts.Count);
+                 //  Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
+                 Main.Logger.LogInfo("# Characters with broken limbs: " + TFTVStamina.charactersWithDisabledBodyParts.Count);
                 Main.Logger.LogInfo("# Behemoth targets for this emergence: " + TFTVBehemothAndRaids.targetsForBehemoth.Count);
                 //    Main.Logger.LogInfo("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);
                 Main.Logger.LogInfo("# Pandoran flyers that have visited havens on this emergence:  " + TFTVBehemothAndRaids.flyersAndHavens.Count);

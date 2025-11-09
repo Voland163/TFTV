@@ -23,6 +23,7 @@ using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Entities.RedeemableCodes;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
@@ -236,8 +237,8 @@ namespace TFTV
                 //  ChangeScyllaSounds();
                 CreateSuppressionStatusDefs();
                 AddMissingViewElementDefs();
-              //  LaserWeaponsInit.Init();
-
+                LaserWeaponsInit.Init();
+              //  TestUseWorkerComponent();
 
             }
             catch (Exception e)
@@ -245,6 +246,33 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+       /* private static void TestUseWorkerComponent()
+        {
+            try 
+            {
+                UseSoldiersFacilityComponentDef useSoldiersFacilityComponentDef = DefCache.GetDef<UseSoldiersFacilityComponentDef>("E_UseSoldier [TrainingFacility_PhoenixFacilityDef]");
+                useSoldiersFacilityComponentDef.WorkerSlots = 4;
+                useSoldiersFacilityComponentDef.UserSlots = 2;
+
+                PhoenixFacilityDef fab = DefCache.GetDef<PhoenixFacilityDef>("FabricationPlant_PhoenixFacilityDef");
+                PhoenixFacilityDef lab = DefCache.GetDef<PhoenixFacilityDef>("ResearchLab_PhoenixFacilityDef");
+
+                UseSoldiersFacilityComponentDef fabUseSoldiersComponent = (UseSoldiersFacilityComponentDef)fab.GeoFacilityComponentDefs[1];
+                fabUseSoldiersComponent.WorkerSlots = 2;
+                fabUseSoldiersComponent.UserSlots = 1;
+
+                UseSoldiersFacilityComponentDef labUseSoldiersComponent = (UseSoldiersFacilityComponentDef)lab.GeoFacilityComponentDefs[1];
+                labUseSoldiersComponent.WorkerSlots = 2;
+                labUseSoldiersComponent.UserSlots = 1;
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }*/
 
         private static void AddMissingViewElementDefs()
         {
