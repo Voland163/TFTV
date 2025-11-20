@@ -95,6 +95,13 @@ namespace TFTV
                     return;
                 }
 
+                TacticalActor shooter = weapon.TacticalActor;
+                if (shooter != null && shooter == actor)
+                {
+                    return;
+                }
+
+
                 ActorSuppressionState state = GetActorState(actor);
                 state.Tracker.RegisterEvent(actor, weapon, weight);
 

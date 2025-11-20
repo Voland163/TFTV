@@ -449,7 +449,7 @@ namespace TFTV.TFTVDrills
 
                     foreach (TacticalActor actor in phoenixFaction.TacticalActors)
                     {
-                        if (actor?.Status == null)
+                        if (actor?.Status == null || actor.TacticalActorDef != DefCache.GetDef<TacticalActorDef>("Soldier_ActorDef"))
                         {
                             continue;
                         }
