@@ -1,12 +1,10 @@
 ﻿using Base.Core;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities;
-using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
-using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.ViewModules;
@@ -14,15 +12,28 @@ using PhoenixPoint.Geoscape.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
-using static TFTV.TFTVBaseRework.TrainingFacilityRework;
 using static TFTV.TFTVBaseRework.Workers;
 using Object = UnityEngine.Object;
 
 namespace TFTV.TFTVBaseRework
 {
+    internal enum PersonnelAssignment
+    {
+        Unassigned,
+        Research,
+        Manufacturing,
+        Training
+    }
+
+    internal class PersonnelInfo
+    {
+        public GeoUnitDescriptor Descriptor { get; set; }
+        public PersonnelAssignment Assignment { get; set; }
+        public SpecializationDef TrainingSpec { get; set; }
+    }
+
     /// <summary>
     /// Replaces the vanilla base recruit tab with a personnel management screen.
     /// </summary>
@@ -40,6 +51,7 @@ namespace TFTV.TFTVBaseRework
         private static readonly List<GeoUnitDescriptor> _unassigned = new List<GeoUnitDescriptor>();
         private static int _lastGenerationDay = -1;
         private static readonly System.Random _rng = new System.Random();
+        private static GameObject _personnelPanel;
 
         internal static IReadOnlyList<GeoUnitDescriptor> Unassigned => _unassigned;
 
@@ -47,11 +59,7 @@ namespace TFTV.TFTVBaseRework
         {
             try
             {
-                if (level?.PhoenixFaction == null)
-                {
-                    return;
-                }
-
+                if (level?.PhoenixFaction == null) return;
                 int day = level.Timing.Now.TimeSpan.Days;
                 if (_lastGenerationDay < 0)
                 {
@@ -59,7 +67,6 @@ namespace TFTV.TFTVBaseRework
                     GenerateBatch(level);
                     return;
                 }
-
                 if (day - _lastGenerationDay >= DaysBetweenRefresh)
                 {
                     _lastGenerationDay = day;
@@ -82,10 +89,7 @@ namespace TFTV.TFTVBaseRework
                 for (int i = 0; i < count; i++)
                 {
                     GeoUnitDescriptor descriptor = GenerateDescriptor(level, phoenix);
-                    if (descriptor != null)
-                    {
-                        _unassigned.Add(descriptor);
-                    }
+                    if (descriptor != null) _unassigned.Add(descriptor);
                 }
             }
             catch (Exception e)
@@ -96,26 +100,17 @@ namespace TFTV.TFTVBaseRework
 
         private static void CleanupInvalid(GeoLevelController level)
         {
-            _unassigned.RemoveAll(d => d == null || level == null || level.PhoenixFaction == null);
+            _unassigned.RemoveAll(d => d == null || level?.PhoenixFaction == null);
         }
 
-        // Adjusted to match GeoPhoenixFaction.RegenerateNakedRecruits flow
         private static GeoUnitDescriptor GenerateDescriptor(GeoLevelController level, GeoPhoenixFaction phoenix)
         {
             try
             {
-                if (level == null || phoenix == null)
-                {
-                    return null;
-                }
-
+                if (level == null || phoenix == null) return null;
                 CharacterGenerationContext context = level.CharacterGenerator.GenerateCharacterGeneratorContext(phoenix);
                 GeoUnitDescriptor descriptor = level.CharacterGenerator.GenerateRandomUnit(context);
-                if (descriptor == null)
-                {
-                    return null;
-                }
-
+                if (descriptor == null) return null;
                 level.CharacterGenerator.ApplyRecruitDifficultyParameters(descriptor);
                 return descriptor;
             }
@@ -129,6 +124,7 @@ namespace TFTV.TFTVBaseRework
         internal static void RemoveDescriptor(GeoUnitDescriptor descriptor)
         {
             _unassigned.Remove(descriptor);
+
         }
 
         #region UI Patching
@@ -146,63 +142,7 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
-                    var level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
-                    var phoenix = level?.PhoenixFaction;
-                    if (level == null || phoenix == null)
-                    {
-                        TFTVLogger.Always("PersonnelManagementUI: Level or PhoenixFaction null, letting vanilla stand.");
-                        return;
-                    }
-
-                    EnsurePoolIsReady(level);
-
-                    var recruitsModule = level.View?.GeoscapeModules?.RecruitsListModule;
-                    if (recruitsModule == null)
-                    {
-                        TFTVLogger.Always("PersonnelManagementUI: recruitsModule null.");
-                        return;
-                    }
-
-                    var baseRoot = recruitsModule.RecruitsListRoot != null
-                        ? recruitsModule.RecruitsListRoot.transform
-                        : recruitsModule.transform;
-
-                    if (baseRoot == null)
-                    {
-                        TFTVLogger.Always("PersonnelManagementUI: baseRoot null.");
-                        return;
-                    }
-
-                    // Defer our build to LateUpdate so we run AFTER vanilla finishes populating the list this frame.
-                    var deferrer = baseRoot.gameObject.GetComponent<DeferredPersonnelBuilder>()
-                                   ?? baseRoot.gameObject.AddComponent<DeferredPersonnelBuilder>();
-
-                    deferrer.Build = () =>
-                    {
-                        try
-                        {
-                            // Hide vanilla cards/messages but keep controllers intact
-                            for (int i = 0; i < baseRoot.childCount; i++)
-                            {
-                                var child = baseRoot.GetChild(i);
-                                if (child != null) child.gameObject.SetActive(false);
-                            }
-
-                            var personnelRoot = EnsurePersonnelRoot(recruitsModule);
-                            if (personnelRoot == null)
-                            {
-                                TFTVLogger.Always("PersonnelManagementUI (deferred): personnelRoot null.");
-                                return;
-                            }
-
-                            PopulatePersonnelUI(__instance, level, personnelRoot);
-                            TFTVLogger.Always("PersonnelManagementUI (deferred): custom list populated.");
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                        }
-                    };
+                    CreatePersonnelPanel(__instance);
                 }
                 catch (Exception e)
                 {
@@ -214,38 +154,15 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(UIStateRosterRecruits), "ExitState")]
         internal static class UIStateRosterRecruits_ExitState_PersonnelManagement
         {
-            private static void Postfix(UIStateRosterRecruits __instance)
+            private static void Postfix()
             {
                 try
                 {
-                    var level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
-                    var recruitsModule = level?.View?.GeoscapeModules?.RecruitsListModule;
-                    if (recruitsModule == null) return;
-
-                    var baseRoot = recruitsModule.RecruitsListRoot != null
-                        ? recruitsModule.RecruitsListRoot.transform
-                        : recruitsModule.transform;
-
-                    if (baseRoot == null) return;
-
-                    // Remove our container (if any) and re-enable vanilla children
-                    var listContent = baseRoot.GetComponentInChildren<VerticalLayoutGroup>(true)?.transform ?? baseRoot;
-                    var personnelRoot = listContent?.Find(PersonnelContainerName);
-                    if (personnelRoot != null) Object.Destroy(personnelRoot.gameObject);
-
-                    for (int i = 0; i < baseRoot.childCount; i++)
+                    if (_personnelPanel != null)
                     {
-                        var child = baseRoot.GetChild(i);
-                        if (child != null) child.gameObject.SetActive(true);
+                        Object.Destroy(_personnelPanel);
+                        _personnelPanel = null;
                     }
-
-                    var def = baseRoot.gameObject.GetComponent<DeferredPersonnelBuilder>();
-                    if (def != null) Object.Destroy(def);
-
-                    if (baseRoot is RectTransform rt)
-                        LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
-
-                    TFTVLogger.Always("PersonnelManagementUI: cleanup done on ExitState.");
                 }
                 catch (Exception e)
                 {
@@ -254,226 +171,184 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
-        #endregion
+        [HarmonyPatch(typeof(UIModuleRecruitsList), nameof(UIModuleRecruitsList.SetRecruitsList))]
+        public static class PersonnelManagementPatch
+        {
 
-        // --- Helper Methods (previously referenced by the Prefix patch but missing) ---
+            public static void Postfix(UIModuleRecruitsList __instance)
+            {
+                if (__instance == null || __instance.RecruitsListRoot == null)
+                {
+                    return;
+                }
+
+                __instance.NoRecruitsMessage.SetActive(false);
+                __instance.NoRecruitsMessageTextBackground.SetActive(false);
+                __instance.SpecializationController.gameObject.SetActive(false);
+                __instance.InfoController.gameObject.SetActive(false);
+
+            }
+        }
+
+        #endregion
 
         private static void EnsurePoolIsReady(GeoLevelController level)
         {
-            try
+            if (level != null && _lastGenerationDay < 0)
             {
-                if (level == null) return;
-
-                if (_lastGenerationDay < 0)
-                {
-                    _lastGenerationDay = level.Timing.Now.TimeSpan.Days;
-                }
-
-                // If we have no entries (first open or cleared by load) create one batch.
-                if (Unassigned.Count == 0)
-                {
-                    GenerateBatch(level);
-                }
+                _lastGenerationDay = level.Timing.Now.TimeSpan.Days;
             }
-            catch (Exception e)
+            if (Unassigned.Count == 0)
             {
-                TFTVLogger.Error(e);
+                GenerateBatch(level);
             }
         }
 
-        private static void HideVanillaRecruitUI(UIModuleRecruitsList recruitsListModule)
+        private static void CreatePersonnelPanel(UIStateRosterRecruits state)
         {
-            try
-            {
-                if (recruitsListModule == null) return;
+            var level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+            var recruitsModule = level?.View?.GeoscapeModules?.RecruitsListModule;
+            if (recruitsModule == null) return;
 
-                if (recruitsListModule.NoRecruitsMessage != null)
-                    recruitsListModule.NoRecruitsMessage.SetActive(false);
+            _personnelPanel = new GameObject(PersonnelContainerName, typeof(RectTransform));
+            _personnelPanel.transform.SetParent(recruitsModule.transform, false);
 
-                if (recruitsListModule.NoRecruitsMessageTextBackground != null)
-                    recruitsListModule.NoRecruitsMessageTextBackground.SetActive(false);
+            var canvas = _personnelPanel.AddComponent<Canvas>();
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = 10;
+            _personnelPanel.AddComponent<GraphicRaycaster>();
 
-                if (recruitsListModule.SpecializationController != null)
-                    recruitsListModule.SpecializationController.enabled = false;
+            var rect = _personnelPanel.GetComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.05f, 0.05f);
+            rect.anchorMax = new Vector2(0.95f, 0.95f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.offsetMin = new Vector2(250, 50);
+            rect.offsetMax = new Vector2(-50, -50);
 
-                if (recruitsListModule.InfoController != null)
-                    recruitsListModule.InfoController.enabled = false;
+            var scrollView = new GameObject("PersonnelScrollView", typeof(RectTransform));
+            scrollView.transform.SetParent(_personnelPanel.transform, false);
+            var scrollRect = scrollView.AddComponent<ScrollRect>();
+            var scrollRectTransform = scrollView.GetComponent<RectTransform>();
+            scrollRectTransform.anchorMin = Vector2.zero;
+            scrollRectTransform.anchorMax = Vector2.one;
+            scrollRectTransform.offsetMin = Vector2.zero;
+            scrollRectTransform.offsetMax = Vector2.zero;
 
-                if (recruitsListModule.RecruitsListTabbingController != null)
-                    recruitsListModule.RecruitsListTabbingController.enabled = false;
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
+            var viewport = new GameObject("Viewport", typeof(RectTransform), typeof(Mask), typeof(Image));
+            viewport.transform.SetParent(scrollView.transform, false);
+            viewport.GetComponent<Mask>().showMaskGraphic = false;
+            viewport.GetComponent<Image>().color = new Color(0, 0, 0, 0.5f);
+            var viewportRect = viewport.GetComponent<RectTransform>();
+            viewportRect.anchorMin = Vector2.zero;
+            viewportRect.anchorMax = Vector2.one;
+            viewportRect.offsetMin = Vector2.zero;
+            viewportRect.offsetMax = Vector2.zero;
+
+            var content = new GameObject("Content", typeof(RectTransform));
+            content.transform.SetParent(viewport.transform, false);
+            var contentRect = content.GetComponent<RectTransform>();
+            contentRect.anchorMin = new Vector2(0, 1);
+            contentRect.anchorMax = new Vector2(1, 1);
+            contentRect.pivot = new Vector2(0.5f, 1);
+            contentRect.sizeDelta = Vector2.zero;
+
+            scrollRect.viewport = viewportRect;
+            scrollRect.content = contentRect;
+            scrollRect.horizontal = false;
+            scrollRect.vertical = true;
+            scrollRect.movementType = ScrollRect.MovementType.Clamped;
+
+            var layout = content.AddComponent<VerticalLayoutGroup>();
+            layout.spacing = 20f;
+            layout.padding = new RectOffset(20, 20, 20, 20);
+            layout.childControlWidth = true;
+            layout.childForceExpandWidth = true;
+
+            var fitter = content.AddComponent<ContentSizeFitter>();
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            PopulatePersonnelUI(state, level, content.transform);
         }
 
-        private static Transform EnsurePersonnelRoot(UIModuleRecruitsList recruitsListModule)
+        private static List<PersonnelInfo> GetCurrentPersonnelList(GeoLevelController level)
         {
-            Transform baseRoot = recruitsListModule?.RecruitsListRoot != null
-                ? recruitsListModule.RecruitsListRoot.transform
-                : recruitsListModule?.transform;
+            var list = new List<PersonnelInfo>();
+            list.AddRange(Unassigned.Select(u => new PersonnelInfo { Descriptor = u, Assignment = PersonnelAssignment.Unassigned }));
 
-            if (baseRoot == null) return null;
-
-            // Try to locate existing vertical content root (vanilla list container)
-            Transform listContent = baseRoot.GetComponentInChildren<VerticalLayoutGroup>(true)?.transform ?? baseRoot;
-
-            if (listContent == null) return null;
-
-            Transform personnelRoot = listContent.Find(PersonnelContainerName);
-            if (personnelRoot == null)
-            {
-                var container = new GameObject(PersonnelContainerName, typeof(RectTransform));
-                container.transform.SetParent(listContent, false);
-
-                var layout = container.AddComponent<VerticalLayoutGroup>();
-                layout.spacing = 10f;
-                layout.padding = new RectOffset(12, 12, 12, 12);
-                layout.childForceExpandWidth = true;
-                layout.childForceExpandHeight = false;
-
-                var fitter = container.AddComponent<ContentSizeFitter>();
-                fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-                var le = container.AddComponent<LayoutElement>();
-                le.flexibleWidth = 1f;
-
-                personnelRoot = container.transform;
-            }
-
-            personnelRoot.SetAsLastSibling();
-            personnelRoot.gameObject.SetActive(true);
-            return personnelRoot;
+            return list;
         }
 
         private static void PopulatePersonnelUI(UIStateRosterRecruits state, GeoLevelController level, Transform personnelRoot)
         {
             if (personnelRoot == null || level?.PhoenixFaction == null) return;
-
             ClearChildren(personnelRoot);
-
-            // Ensure pool not empty
             EnsurePoolIsReady(level);
 
-            AddSummaryHeader(state, personnelRoot, level.PhoenixFaction);
+            var allPersonnel = GetCurrentPersonnelList(level);
 
-            Action refresh = () => PopulatePersonnelUI(state, level, personnelRoot);
-
-            foreach (var proto in Unassigned.ToList())
+            Action refresh = () =>
             {
-                CreatePersonnelCard(personnelRoot, proto, level, level.PhoenixFaction, refresh);
-            }
-
-            if (personnelRoot is RectTransform rt)
-            {
-                LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
-                if (rt.parent is RectTransform prt)
+                if (_personnelPanel != null)
                 {
-                    LayoutRebuilder.ForceRebuildLayoutImmediate(prt);
+                    Object.Destroy(_personnelPanel);
+                    CreatePersonnelPanel(state);
                 }
+            };
+
+            foreach (var person in allPersonnel)
+            {
+                CreatePersonnelCard(personnelRoot, person, level, level.PhoenixFaction, refresh);
             }
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(personnelRoot.GetComponent<RectTransform>());
         }
 
         private static void ClearChildren(Transform root)
         {
             for (int i = root.childCount - 1; i >= 0; i--)
             {
-                var c = root.GetChild(i);
-                if (c != null)
-                {
-                    UnityEngine.Object.Destroy(c.gameObject);
-                }
+                Object.Destroy(root.GetChild(i).gameObject);
             }
         }
 
-        private static void AddSummaryHeader(UIStateRosterRecruits state, Transform parent, GeoPhoenixFaction phoenix)
+        private static void CreatePersonnelCard(Transform parent, PersonnelInfo person, GeoLevelController level, GeoPhoenixFaction phoenix, Action refresh)
         {
-            var go = new GameObject("TFTV_Personnel_Header", typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            var txt = go.AddComponent<Text>();
-            txt.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            txt.fontSize = 18;
-
-            var research = TrainingFacilityRework.GetWorkSlotUsage(phoenix, FacilitySlotType.Research);
-            var manuf = TrainingFacilityRework.GetWorkSlotUsage(phoenix, FacilitySlotType.Manufacturing);
-
-            txt.text =
-                $"Unassigned Personnel: {Unassigned.Count}\n" +
-                $"Research Workers: {research.used}/{research.provided}  Manufacturing Workers: {manuf.used}/{manuf.provided}";
-            txt.color = Color.cyan;
-        }
-
-        private static void CreatePersonnelCard(Transform parent, GeoUnitDescriptor proto, GeoLevelController level, GeoPhoenixFaction phoenix, Action refresh)
-        {
-            if (proto == null) return;
-
-            var card = new GameObject($"Personnel_{proto.GetName()}", typeof(RectTransform));
+            var card = new GameObject($"Personnel_{person.Descriptor.GetName()}", typeof(RectTransform));
             card.transform.SetParent(parent, false);
+            card.AddComponent<Image>().color = new Color(0.12f, 0.14f, 0.18f, 0.85f);
+            var vLayout = card.AddComponent<VerticalLayoutGroup>();
+            vLayout.padding = new RectOffset(20, 20, 20, 20);
+            vLayout.spacing = 10;
 
-            var bg = card.AddComponent<Image>();
-            bg.color = new Color(0.12f, 0.14f, 0.18f, 0.85f);
+            var mainRow = new GameObject("MainRow", typeof(RectTransform));
+            mainRow.transform.SetParent(card.transform, false);
+            var hLayout = mainRow.AddComponent<HorizontalLayoutGroup>();
+            hLayout.spacing = 20;
 
-            var layout = card.AddComponent<VerticalLayoutGroup>();
-            layout.spacing = 4;
-            layout.padding = new RectOffset(6, 6, 6, 6);
-            layout.childForceExpandWidth = true;
-            layout.childForceExpandHeight = false;
+            var infoCol = new GameObject("InfoCol", typeof(RectTransform));
+            infoCol.transform.SetParent(mainRow.transform, false);
+            var infoVLayout = infoCol.AddComponent<VerticalLayoutGroup>();
+            AddLabel(infoCol.transform, person.Descriptor.GetName(), 88, Color.white);
+            AddLabel(infoCol.transform, person.Assignment.ToString(), 72, Color.cyan);
+            infoCol.AddComponent<LayoutElement>().flexibleWidth = 1;
 
-            AddLabel(card.transform, proto.GetName(), 16, Color.white);
-            AddLabel(card.transform, $"Template Level: {proto.Level}", 12, Color.gray);
+            var actionsCol = new GameObject("ActionsCol", typeof(RectTransform));
+            actionsCol.transform.SetParent(mainRow.transform, false);
+            var gridLayout = actionsCol.AddComponent<GridLayoutGroup>();
+            gridLayout.cellSize = new Vector2(600, 140);
+            gridLayout.spacing = new Vector2(20, 20);
+            actionsCol.AddComponent<LayoutElement>().preferredWidth = 1220;
 
             var specs = ResolveAvailableMainSpecs(level);
-            if (specs.Count == 0)
-            {
-                AddLabel(card.transform, "No available classes", 12, Color.red);
-                return;
-            }
+            var currentSpec = person.TrainingSpec ?? (specs.Any() ? specs[_rng.Next(specs.Count)] : null);
 
-            var classRoot = new GameObject("ClassSelect", typeof(RectTransform));
-            classRoot.transform.SetParent(card.transform, false);
-            var classText = classRoot.AddComponent<Text>();
-            classText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            classText.fontSize = 12;
-            classText.color = Color.yellow;
-
-            int idx = _rng.Next(specs.Count);
-            var currentSpec = specs[idx];
-            classText.text = $"Chosen Class: {currentSpec?.name}";
-
-            AddActionButton(card.transform, "Make Operative", () =>
-            {
-                MakeOperative(proto, currentSpec, phoenix, level);
-                refresh();
-            });
-
-            AddActionButton(card.transform, "Assign Research", () =>
-            {
-                AssignWorker(proto, phoenix, FacilitySlotType.Research);
-                refresh();
-            });
-
-            AddActionButton(card.transform, "Assign Manufacturing", () =>
-            {
-                AssignWorker(proto, phoenix, FacilitySlotType.Manufacturing);
-                refresh();
-            });
-
-            AddActionButton(card.transform, "Start Training", () =>
-            {
-                AssignTraining(proto, currentSpec, level);
-                refresh();
-            });
-
-            AddActionButton(card.transform, "Cycle Class", () =>
-            {
-                idx = (idx + 1) % specs.Count;
-                currentSpec = specs[idx];
-                classText.text = $"Chosen Class: {currentSpec?.name}";
-            });
+            AddActionButton(actionsCol.transform, "Make Field Agent", () => { MakeOperative(person.Descriptor, currentSpec, phoenix, level); refresh(); });
+            AddActionButton(actionsCol.transform, "Assign to Research", () => { AssignWorker(person.Descriptor, phoenix, FacilitySlotType.Research); refresh(); });
+            AddActionButton(actionsCol.transform, "Assign to Manufacturing", () => { AssignWorker(person.Descriptor, phoenix, FacilitySlotType.Manufacturing); refresh(); });
+            AddActionButton(actionsCol.transform, "Assign to Training", () => { AssignTraining(person.Descriptor, currentSpec, level); refresh(); });
         }
 
-        private static void AddLabel(Transform parent, string text, int size, Color color)
+        private static Text AddLabel(Transform parent, string text, int size, Color color)
         {
             var go = new GameObject("Label", typeof(RectTransform));
             go.transform.SetParent(parent, false);
@@ -482,271 +357,82 @@ namespace TFTV.TFTVBaseRework
             t.text = text;
             t.fontSize = size;
             t.color = color;
+            return t;
         }
 
         private static void AddActionButton(Transform parent, string caption, Action onClick)
         {
             var go = new GameObject($"Btn_{caption}", typeof(RectTransform));
             go.transform.SetParent(parent, false);
-
-            var img = go.AddComponent<Image>();
-            img.color = new Color(0.25f, 0.35f, 0.55f, 0.9f);
-
+            go.AddComponent<Image>().color = new Color(0.25f, 0.35f, 0.55f, 0.9f);
             var btn = go.AddComponent<Button>();
             btn.onClick.AddListener(() => onClick?.Invoke());
 
-            var txtGO = new GameObject("Text", typeof(RectTransform));
-            txtGO.transform.SetParent(go.transform, false);
-            var txt = txtGO.AddComponent<Text>();
+            var txt = new GameObject("Text", typeof(RectTransform)).AddComponent<Text>();
+            txt.transform.SetParent(go.transform, false);
             txt.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
             txt.text = caption;
             txt.alignment = TextAnchor.MiddleCenter;
             txt.color = Color.white;
-            txt.fontSize = 12;
-
-            var le = go.AddComponent<LayoutElement>();
-            le.minHeight = 26;
-            le.minWidth = 140;
+            txt.fontSize = 64;
         }
 
         private static List<SpecializationDef> ResolveAvailableMainSpecs(GeoLevelController level)
         {
-            try
-            {
-                var cache = TFTVMain.Main.DefCache;
-                var names = new[]
-                {
-                    "AssaultSpecializationDef",
-                    "HeavySpecializationDef",
-                    "SniperSpecializationDef",
-                    "PriestSpecializationDef",
-                    "BerserkerSpecializationDef",
-                    "InfiltratorSpecializationDef",
-                    "TechnicianSpecializationDef"
-                };
-                var list = new List<SpecializationDef>();
-                foreach (var n in names)
-                {
-                    var spec = cache.GetDef<SpecializationDef>(n);
-                    if (spec != null) list.Add(spec);
-                }
-                return list;
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                return new List<SpecializationDef>();
-            }
+            var cache = TFTVMain.Main.DefCache;
+            var names = new[] { "AssaultSpecializationDef", "HeavySpecializationDef", "SniperSpecializationDef", "PriestSpecializationDef", "BerserkerSpecializationDef", "InfiltratorSpecializationDef", "TechnicianSpecializationDef" };
+            return names.Select(n => cache.GetDef<SpecializationDef>(n)).Where(s => s != null).ToList();
         }
 
         private static void MakeOperative(GeoUnitDescriptor proto, SpecializationDef spec, GeoPhoenixFaction faction, GeoLevelController level)
         {
-            try
+            if (proto == null || spec == null) return;
+            var baseToUse = faction.Bases.FirstOrDefault();
+            if (baseToUse == null) return;
+            if (TrainingFacilityRework.CreateOperativeFromDescriptor(level, proto, baseToUse, spec) != null)
             {
-                if (proto == null || spec == null) return;
-                var baseToUse = faction.Bases.FirstOrDefault();
-                if (baseToUse == null) return;
-                var character = TrainingFacilityRework.CreateOperativeFromDescriptor(level, proto, baseToUse, spec);
-                if (character != null) RemoveDescriptor(proto);
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
+                RemoveDescriptor(proto);
             }
         }
 
         private static void AssignWorker(GeoUnitDescriptor proto, GeoPhoenixFaction faction, FacilitySlotType slotType)
         {
-            try
+            if (proto == null) return;
+            // Unassign from other roles first
+            RemoveDescriptor(proto);
+            if (TrainingFacilityRework.TryAssignToWork(faction, slotType))
             {
-                if (proto == null) return;
-                if (TrainingFacilityRework.TryAssignToWork(faction, slotType))
-                    RemoveDescriptor(proto);
+                // Success
             }
-            catch (Exception e)
+            else
             {
-                TFTVLogger.Error(e);
+                // Failed, put back to unassigned
+                _unassigned.Add(proto);
             }
         }
 
         private static void AssignTraining(GeoUnitDescriptor proto, SpecializationDef spec, GeoLevelController level)
         {
-            try
+            if (proto == null || spec == null) return;
+            // Unassign from other roles first
+            RemoveDescriptor(proto);
+            var facility = FindAnyValidTrainingFacility(level.PhoenixFaction);
+            if (facility == null)
             {
-                if (proto == null || spec == null) return;
-                var phoenix = level.PhoenixFaction;
-                var facility = FindAnyValidTrainingFacility(phoenix);
-                if (facility == null)
-                {
-                    MakeOperative(proto, spec, phoenix, level);
-                    return;
-                }
-
-                if (TrainingFacilityRework.TryAssignDescriptorToTraining(level, proto, facility, spec))
-                    RemoveDescriptor(proto);
+                MakeOperative(proto, spec, level.PhoenixFaction, level);
+                return;
             }
-            catch (Exception e)
+            if (!TrainingFacilityRework.TryAssignDescriptorToTraining(level, proto, facility, spec))
             {
-                TFTVLogger.Error(e);
+                // Failed, put back to unassigned
+                _unassigned.Add(proto);
             }
         }
 
         private static GeoPhoenixFacility FindAnyValidTrainingFacility(GeoPhoenixFaction phoenix)
         {
-            foreach (var b in phoenix.Bases)
-            {
-                foreach (var f in b.Layout.Facilities)
-                {
-                    if (f != null &&
-                        f.GetComponent<ExperienceFacilityComponent>() != null &&
-                        f.IsPowered &&
-                        f.State == GeoPhoenixFacility.FacilityState.Functioning)
-                    {
-                        return f;
-                    }
-                }
-            }
-            return null;
-        }
-
-        private sealed class DeferredPersonnelBuilder : MonoBehaviour
-        {
-            public Action Build;
-
-            private void LateUpdate()
-            {
-                try
-                {
-                    var b = Build;
-                    Build = null;
-                    if (b != null) b();
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-                finally
-                {
-                    // Run once
-                    Destroy(this);
-                }
-            }
-        }
-
-        // ==================== RELIABLE HOOKS ====================
-        [HarmonyPatch(typeof(UIModuleRecruitsList), "SetRecruitsList")]
-        private static class UIModuleRecruitsList_MultiHooks
-        {
-            // Select all plausible methods that (re)build the list
-           
-
-            private static void Postfix(UIModuleRecruitsList __instance)
-            {
-                try
-                {
-                    // Build our overlay if not already present
-                    TryOverlay(__instance, "SetRecruitsList");
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-
-        // 3) Fallback when tab becomes visible
-        [HarmonyPatch(typeof(UIModuleRecruitsList), "OnEnable")]
-        private static class UIModuleRecruitsList_OnEnable_Overlay
-        {
-            private static void Postfix(UIModuleRecruitsList __instance)
-            {
-                try
-                {
-                    TryOverlay(__instance, "OnEnable");
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-
-    
-
-        // Build our overlay once per “build cycle”
-        private static void TryOverlay(UIModuleRecruitsList module, string source)
-        {
-            var level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
-            var phoenix = level?.PhoenixFaction;
-            if (level == null || phoenix == null) return;
-
-            EnsurePoolIsReady(level);
-
-            var baseRoot = module.RecruitsListRoot != null ? module.RecruitsListRoot.transform : module.transform;
-            if (baseRoot == null) return;
-
-            // Use the inner vertical layout content as card parent (do not disable it!)
-            var content = baseRoot.GetComponentInChildren<VerticalLayoutGroup>(true)?.transform;
-            if (content == null)
-            {
-                TFTVLogger.Always($"{LogPrefix} no VerticalLayoutGroup content found ({source}).");
-                return;
-            }
-
-            // If our container already exists, skip rebuilding
-            var existing = content.Find(PersonnelContainerName);
-            if (existing != null)
-            {
-                TFTVLogger.Always($"{LogPrefix} overlay already present ({source}).");
-                return;
-            }
-
-            // Hide only vanilla recruit card GameObjects, keep structural parents (ScrollRect, Mask, Viewport, Content)
-            int hidden = 0;
-            for (int i = 0; i < content.childCount; i++)
-            {
-                var child = content.GetChild(i);
-                if (child == null) continue;
-                if (child.name == PersonnelContainerName) continue;
-
-                // Heuristics: card objects usually have Image + LayoutElement and not ScrollRect/Mask
-                bool looksLikeCard =
-                    child.GetComponent<Button>() != null ||
-                    (child.GetComponent<Image>() != null && child.GetComponent<VerticalLayoutGroup>() == null && child.GetComponent<HorizontalLayoutGroup>() == null);
-
-                // If the game uses a specific card view type, detect it dynamically
-                bool hasCardType = child.GetComponents<Component>()
-                    .Any(c => c.GetType().Name.IndexOf("Recruit", StringComparison.OrdinalIgnoreCase) >= 0);
-
-                if (looksLikeCard || hasCardType)
-                {
-                    child.gameObject.SetActive(false);
-                    hidden++;
-                }
-            }
-
-            TFTVLogger.Always($"{LogPrefix} hidden vanilla cards={hidden} ({source}).");
-
-            // Create and populate our container under the active content
-            var personnelRoot = new GameObject(PersonnelContainerName, typeof(RectTransform)).transform;
-            personnelRoot.SetParent(content, false);
-
-            var layout = personnelRoot.gameObject.AddComponent<VerticalLayoutGroup>();
-            layout.spacing = 10f;
-            layout.padding = new RectOffset(12, 12, 12, 12);
-            layout.childForceExpandWidth = true;
-            layout.childForceExpandHeight = false;
-
-            var fitter = personnelRoot.gameObject.AddComponent<ContentSizeFitter>();
-            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-            var le = personnelRoot.gameObject.AddComponent<LayoutElement>();
-            le.flexibleWidth = 1f;
-
-            PopulatePersonnelUI(null, level, personnelRoot);
-            TFTVLogger.Always($"{LogPrefix} overlay populated ({source}), unassigned={Unassigned.Count}");
+            return phoenix.Bases.SelectMany(b => b.Layout.Facilities)
+                .FirstOrDefault(f => f != null && f.GetComponent<ExperienceFacilityComponent>() != null && f.IsWorking);
         }
     }
-
-    
 }
