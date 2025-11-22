@@ -122,6 +122,38 @@ namespace TFTV
             }
         }
 
+        [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruit")]
+        public static class GeoPhoenixFaction_AddRecruit_StatsFinalize_postfix
+        {
+            public static void Postfix(GeoPhoenixFaction __instance, GeoCharacter recruit, IGeoCharacterContainer toContainer)
+            {
+                try
+                {
+                    if (recruit == null) return;
+
+                    // Apply deferred stat gains for recruits finalized via UI path.
+                    var tfType = typeof(TFTV.TFTVBaseRework.TrainingFacilityRework);
+                    var pendingField = tfType.GetField("_pendingPostRecruitStatApply", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+                    var applyMethod = tfType.GetMethod("ApplyCumulativeLevelGains", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+
+                    if (pendingField != null && applyMethod != null)
+                    {
+                        var dict = pendingField.GetValue(null) as System.Collections.IDictionary;
+                        if (dict != null && dict.Contains(recruit.Id))
+                        {
+                            int level = (int)dict[recruit.Id];
+                            applyMethod.Invoke(null, new object[] { recruit, level });
+                            dict.Remove(recruit.Id);
+                            TFTVLogger.Always($"[Training] Post-AddRecruit stat gains applied to {recruit.DisplayName} (Level {level}).");
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
 
 

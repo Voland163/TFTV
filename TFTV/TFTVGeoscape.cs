@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using TFTV.TFTVBaseRework;
+using static TFTV.TFTVBaseRework.TrainingFacilityRework;
 
 namespace TFTV
 {
@@ -20,7 +21,6 @@ namespace TFTV
     /// Mod's custom save data for geoscape.
     /// </summary>
     [SerializeType(SerializeMembersByDefault = SerializeMembersType.SerializeAll)]
-
     public class TFTVGSInstanceData
     {
         public Dictionary<int, List<string>> charactersWithDisabledBodyParts = TFTVStamina.charactersWithDisabledBodyParts;
@@ -70,7 +70,11 @@ namespace TFTV
         public Dictionary<int, string> CharacterPortraits;
         public List<int> PlayerVehicles;
         public Dictionary<int, List<int>> AircraftScanningSites;
-        internal List<TrainingFacilityRework.TrainingSessionSave> TrainingFacilitySessions;
+
+        // Personnel management persistence (assignment metadata only; descriptors are in vanilla NakedRecruits)
+        public List<PersonnelManagementUI.PersonnelAssignmentSave> PersonnelPool;
+        public List<TrainingFacilityRework.RecruitTrainingSessionSave> RecruitTrainingSessions;
+        public int PersonnelLastGenerationDay;
     }
 
 
@@ -90,11 +94,18 @@ namespace TFTV
         public override void OnGeoscapeStart()
         {
             TFTVLogger.Always($"OnGeoscapeStart");
-
-
-            /// Geoscape level controller is accessible at any time.
             GeoLevelController gsController = Controller;
 
+            try
+            {
+                var phoenix = gsController?.PhoenixFaction;
+                if (phoenix != null && phoenix.NakedRecruits.Count == 0)
+                {
+                    phoenix.RegenerateNakedRecruits();
+                }
+                TFTV.TFTVBaseRework.PersonnelManagementUI.SyncFromNakedRecruits(phoenix);
+            }
+            catch (Exception e) { TFTVLogger.Error(e); }
 
             /// ModMain is accesible at any time
 
@@ -163,8 +174,7 @@ namespace TFTV
 
         /// <summary>
         /// Called when Geoscape save is going to be generated, giving mod option for custom save data.
-        /// </summary>
-        /// <returns>Object to serialize or null if not used.</returns>
+        /// /// <returns>Object to serialize or null if not used.</returns>
         public override object RecordGeoscapeInstanceData()
         {
             TFTVLogger.Always("Geoscape data will be saved");
@@ -226,12 +236,11 @@ namespace TFTV
                 PlayerVehicles = TFTVDragandDropFunctionality.VehicleRoster.PlayerVehicles,
                 AircraftScanningSites = AircraftReworkGeoscape.Scanning.AircraftScanningSites,
                 NewTrainingFacilities = TFTVNewGameOptions.NewTrainingFacilities,
-                TrainingFacilitySessions = TrainingFacilityRework.CreateSaveSnapshot()
 
-                //   Update35GeoscapeCheck = TFTVNewGameOptions.Update35Check,
-
+                // Personnel & training sessions snapshot
+                PersonnelPool = PersonnelManagementUI.CreateAssignmentsSnapshot(),
+                RecruitTrainingSessions = CreateRecruitSessionsSnapshot(),
             };
-
         }
         /// <summary>
         /// Called when Geoscape save is being process. At this point level is already created, but GeoscapeStart is not called.
@@ -329,6 +338,18 @@ namespace TFTV
 
                 TFTVCustomPortraits.CharacterPortrait.characterPics = data.CharacterPortraits;
 
+                // Restore training sessions first (they generate descriptors used by training-assigned personnel).
+                if (data.RecruitTrainingSessions != null && data.RecruitTrainingSessions.Count > 0)
+                {
+                    TrainingFacilityRework.LoadRecruitSessionsSnapshot(Controller, data.RecruitTrainingSessions);
+                }
+
+                // Restore personnel assignments (unassigned, research, manufacturing, training).
+                if (data.PersonnelPool != null)
+                {
+                    PersonnelManagementUI.LoadAssignmentsSnapshot(Controller, data.PersonnelPool);
+                }
+                TFTVLogger.Always($"[PersonnelPersistence] Restored Personnel={data.PersonnelPool?.Count ?? 0} TrainingSessions={data.RecruitTrainingSessions?.Count ?? 0}");
 
 
                 TFTVLogger.Always($"Config settings:" +
@@ -342,7 +363,7 @@ namespace TFTV
                 TFTVDefsWithConfigDependency.ImplementConfigChoices();
                 TFTVDragandDropFunctionality.VehicleRoster.RestoreVehicleOrder(Controller);
                 AircraftReworkGeoscape.Scanning.AircraftScanningSites = data.AircraftScanningSites;
-                TrainingFacilityRework.LoadFromSnapshot(GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>(), data.TrainingFacilitySessions);
+            
  
                 //   TFTVBetaSaveGamesFixes.Fix(Controller);
 
@@ -372,7 +393,7 @@ namespace TFTV
 
                 // Main.Logger.LogInfo($"New Difficulties implemented {NewDifficultiesImplemented}");
                 //    Main.Logger.LogInfo($"Items currently available in Aircraft inventory {TFTVUI.CurrentlyAvailableInv.Values.Count}");
-                //   Main.Logger.LogInfo($"Items currently hidden in Aircraft inventory {TFTVUI.CurrentlyAvailableInv.Values.Count}");
+                //   Main.Logger.LogInfo($"Items currently hidden in Aircraft inventory {TFTVUI.CurrentlyHiddenInv.Values.Count}");
                 //  
                 TFTVLogger.Always("# Characters with broken limbs: " + TFTVStamina.charactersWithDisabledBodyParts.Count);
                 TFTVLogger.Always("# Behemoth targets for this emergence: " + TFTVBehemothAndRaids.targetsForBehemoth.Count);

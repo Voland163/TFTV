@@ -235,16 +235,41 @@ namespace TFTV.TFTVBaseRework
 
         private static void TryUpdateInfoBar(GeoPhoenixFaction faction)
         {
-            if (faction == null)
+            if (faction == null) return;
+
+            GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+            if (level == null) return;
+
+            var view = level.View;
+            var modules = view?.GeoscapeModules;
+            var infoBar = modules?.ResourcesModule;
+
+            if (infoBar == null)
             {
+                // View not ready yet during load – skip UI update safely.
+                //                TFTVLogger.Always("[Workers] InfoBar not ready; skipping update.");
+                // Reduce log spam: only output once per load cycle.
+                if (!_pendingInfoBarLog)
+                {
+                    TFTVLogger.Always("[Workers] InfoBar not ready; skipping UpdateResourceInfo (first occurrence).");
+                    _pendingInfoBarLog = true;
+                }
                 return;
             }
+            _pendingInfoBarLog = false;
 
-            GeoLevelController level = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-            UIModuleInfoBar infoBar = level.View.GeoscapeModules.ResourcesModule;
-
-            var update = AccessTools.Method(typeof(UIModuleInfoBar), "UpdateResourceInfo");
-            update.Invoke(infoBar, new object[] { faction, false }); 
+            try
+            {
+                var update = AccessTools.Method(typeof(UIModuleInfoBar), "UpdateResourceInfo");
+                update.Invoke(infoBar, new object[] { faction, false });
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
+
+        // Track if we've logged the missing infobar once (avoid spamming each slot set).
+        private static bool _pendingInfoBarLog = false;
     }
 }
