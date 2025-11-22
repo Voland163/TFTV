@@ -651,7 +651,7 @@ namespace TFTV.TFTVBaseRework
                 EnsureSpecialization(character, mainClass);
 
                 // Add to base (same as hiring into a container)
-                phoenix.AddRecruit(character, (IGeoCharacterContainer)targetBase);
+                phoenix.AddRecruit(character, targetBase.Site);
                 return character;
             }
             catch (Exception e)

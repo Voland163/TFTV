@@ -48,12 +48,12 @@ namespace TFTV.TFTVBaseRework
         private const string PersonnelContainerName = "TFTV_PersonnelContainer";
         private const string LogPrefix = "[PersonnelUI]";
 
-        private static readonly List<GeoUnitDescriptor> _unassigned = new List<GeoUnitDescriptor>();
+        private static readonly List<PersonnelInfo> _personnel = new List<PersonnelInfo>();
         private static int _lastGenerationDay = -1;
         private static readonly System.Random _rng = new System.Random();
         private static GameObject _personnelPanel;
 
-        internal static IReadOnlyList<GeoUnitDescriptor> Unassigned => _unassigned;
+        internal static IReadOnlyList<PersonnelInfo> Personnel => _personnel;
 
         internal static void DailyTick(GeoLevelController level)
         {
@@ -89,7 +89,14 @@ namespace TFTV.TFTVBaseRework
                 for (int i = 0; i < count; i++)
                 {
                     GeoUnitDescriptor descriptor = GenerateDescriptor(level, phoenix);
-                    if (descriptor != null) _unassigned.Add(descriptor);
+                    if (descriptor != null)
+                    {
+                        _personnel.Add(new PersonnelInfo
+                        {
+                            Descriptor = descriptor,
+                            Assignment = PersonnelAssignment.Unassigned
+                        });
+                    }
                 }
             }
             catch (Exception e)
@@ -100,7 +107,7 @@ namespace TFTV.TFTVBaseRework
 
         private static void CleanupInvalid(GeoLevelController level)
         {
-            _unassigned.RemoveAll(d => d == null || level?.PhoenixFaction == null);
+            _personnel.RemoveAll(p => p?.Descriptor == null || level?.PhoenixFaction == null);
         }
 
         private static GeoUnitDescriptor GenerateDescriptor(GeoLevelController level, GeoPhoenixFaction phoenix)
@@ -123,7 +130,7 @@ namespace TFTV.TFTVBaseRework
 
         internal static void RemoveDescriptor(GeoUnitDescriptor descriptor)
         {
-            _unassigned.Remove(descriptor);
+            _personnel.RemoveAll(p => p?.Descriptor == descriptor);
 
         }
 
@@ -198,7 +205,7 @@ namespace TFTV.TFTVBaseRework
             {
                 _lastGenerationDay = level.Timing.Now.TimeSpan.Days;
             }
-            if (Unassigned.Count == 0)
+            if (Personnel.Count == 0)
             {
                 GenerateBatch(level);
             }
@@ -219,11 +226,11 @@ namespace TFTV.TFTVBaseRework
             _personnelPanel.AddComponent<GraphicRaycaster>();
 
             var rect = _personnelPanel.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0.05f, 0.05f);
-            rect.anchorMax = new Vector2(0.95f, 0.95f);
+            rect.anchorMin = new Vector2(0.0f, 0.1f);
+            rect.anchorMax = new Vector2(1.0f, 0.9f);
             rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.offsetMin = new Vector2(250, 50);
-            rect.offsetMax = new Vector2(-50, -50);
+            rect.offsetMin = new Vector2(125, 25);
+            rect.offsetMax = new Vector2(-25, -25);
 
             var scrollView = new GameObject("PersonnelScrollView", typeof(RectTransform));
             scrollView.transform.SetParent(_personnelPanel.transform, false);
@@ -259,8 +266,8 @@ namespace TFTV.TFTVBaseRework
             scrollRect.movementType = ScrollRect.MovementType.Clamped;
 
             var layout = content.AddComponent<VerticalLayoutGroup>();
-            layout.spacing = 20f;
-            layout.padding = new RectOffset(20, 20, 20, 20);
+            layout.spacing = 10f;
+            layout.padding = new RectOffset(10, 10, 10, 10);
             layout.childControlWidth = true;
             layout.childForceExpandWidth = true;
 
@@ -272,10 +279,7 @@ namespace TFTV.TFTVBaseRework
 
         private static List<PersonnelInfo> GetCurrentPersonnelList(GeoLevelController level)
         {
-            var list = new List<PersonnelInfo>();
-            list.AddRange(Unassigned.Select(u => new PersonnelInfo { Descriptor = u, Assignment = PersonnelAssignment.Unassigned }));
-
-            return list;
+            return new List<PersonnelInfo>(Personnel);
         }
 
         private static void PopulatePersonnelUI(UIStateRosterRecruits state, GeoLevelController level, Transform personnelRoot)
@@ -317,35 +321,35 @@ namespace TFTV.TFTVBaseRework
             card.transform.SetParent(parent, false);
             card.AddComponent<Image>().color = new Color(0.12f, 0.14f, 0.18f, 0.85f);
             var vLayout = card.AddComponent<VerticalLayoutGroup>();
-            vLayout.padding = new RectOffset(20, 20, 20, 20);
-            vLayout.spacing = 10;
+            vLayout.padding = new RectOffset(10, 10, 10, 10);
+            vLayout.spacing = 5;
 
             var mainRow = new GameObject("MainRow", typeof(RectTransform));
             mainRow.transform.SetParent(card.transform, false);
             var hLayout = mainRow.AddComponent<HorizontalLayoutGroup>();
-            hLayout.spacing = 20;
+            hLayout.spacing = 10;
 
             var infoCol = new GameObject("InfoCol", typeof(RectTransform));
             infoCol.transform.SetParent(mainRow.transform, false);
             var infoVLayout = infoCol.AddComponent<VerticalLayoutGroup>();
-            AddLabel(infoCol.transform, person.Descriptor.GetName(), 88, Color.white);
-            AddLabel(infoCol.transform, person.Assignment.ToString(), 72, Color.cyan);
+            AddLabel(infoCol.transform, person.Descriptor.GetName(), 44, Color.white);
+            AddLabel(infoCol.transform, person.Assignment.ToString(), 36, Color.cyan);
             infoCol.AddComponent<LayoutElement>().flexibleWidth = 1;
 
             var actionsCol = new GameObject("ActionsCol", typeof(RectTransform));
             actionsCol.transform.SetParent(mainRow.transform, false);
             var gridLayout = actionsCol.AddComponent<GridLayoutGroup>();
-            gridLayout.cellSize = new Vector2(600, 140);
-            gridLayout.spacing = new Vector2(20, 20);
-            actionsCol.AddComponent<LayoutElement>().preferredWidth = 1220;
+            gridLayout.cellSize = new Vector2(460, 70);
+            gridLayout.spacing = new Vector2(10, 10);
+            actionsCol.AddComponent<LayoutElement>().preferredWidth = 930;
 
             var specs = ResolveAvailableMainSpecs(level);
             var currentSpec = person.TrainingSpec ?? (specs.Any() ? specs[_rng.Next(specs.Count)] : null);
 
-            AddActionButton(actionsCol.transform, "Make Field Agent", () => { MakeOperative(person.Descriptor, currentSpec, phoenix, level); refresh(); });
-            AddActionButton(actionsCol.transform, "Assign to Research", () => { AssignWorker(person.Descriptor, phoenix, FacilitySlotType.Research); refresh(); });
-            AddActionButton(actionsCol.transform, "Assign to Manufacturing", () => { AssignWorker(person.Descriptor, phoenix, FacilitySlotType.Manufacturing); refresh(); });
-            AddActionButton(actionsCol.transform, "Assign to Training", () => { AssignTraining(person.Descriptor, currentSpec, level); refresh(); });
+            AddActionButton(actionsCol.transform, "Field Agent", () => { MakeOperative(person, currentSpec, phoenix, level); refresh(); });
+            AddActionButton(actionsCol.transform, "Research", () => { AssignWorker(person, phoenix, FacilitySlotType.Research); refresh(); });
+            AddActionButton(actionsCol.transform, "Manufacturing", () => { AssignWorker(person, phoenix, FacilitySlotType.Manufacturing); refresh(); });
+            AddActionButton(actionsCol.transform, "Training", () => { AssignTraining(person, currentSpec, level); refresh(); });
         }
 
         private static Text AddLabel(Transform parent, string text, int size, Color color)
@@ -374,7 +378,8 @@ namespace TFTV.TFTVBaseRework
             txt.text = caption;
             txt.alignment = TextAnchor.MiddleCenter;
             txt.color = Color.white;
-            txt.fontSize = 64;
+            txt.fontSize = 32;
+            txt.horizontalOverflow = HorizontalWrapMode.Overflow;
         }
 
         private static List<SpecializationDef> ResolveAvailableMainSpecs(GeoLevelController level)
@@ -384,48 +389,90 @@ namespace TFTV.TFTVBaseRework
             return names.Select(n => cache.GetDef<SpecializationDef>(n)).Where(s => s != null).ToList();
         }
 
-        private static void MakeOperative(GeoUnitDescriptor proto, SpecializationDef spec, GeoPhoenixFaction faction, GeoLevelController level)
+        private static void MakeOperative(PersonnelInfo person, SpecializationDef spec, GeoPhoenixFaction faction, GeoLevelController level)
         {
-            if (proto == null || spec == null) return;
+            if (person?.Descriptor == null || spec == null) return;
             var baseToUse = faction.Bases.FirstOrDefault();
             if (baseToUse == null) return;
-            if (TrainingFacilityRework.CreateOperativeFromDescriptor(level, proto, baseToUse, spec) != null)
+            if (TrainingFacilityRework.CreateOperativeFromDescriptor(level, person.Descriptor, baseToUse, spec) != null)
             {
-                RemoveDescriptor(proto);
+                RemoveDescriptor(person.Descriptor);
             }
         }
 
-        private static void AssignWorker(GeoUnitDescriptor proto, GeoPhoenixFaction faction, FacilitySlotType slotType)
+        private static void AssignWorker(PersonnelInfo person, GeoPhoenixFaction faction, FacilitySlotType slotType)
         {
-            if (proto == null) return;
-            // Unassign from other roles first
-            RemoveDescriptor(proto);
-            if (TrainingFacilityRework.TryAssignToWork(faction, slotType))
+            if (person?.Descriptor == null || faction == null) return;
+
+            // Ensure current facility slot capacities are up to date before assignment.
+            ResearchManufacturingSlotsManager.RecalculateSlots(faction);
+
+            PersonnelAssignment desired = slotType == FacilitySlotType.Research
+                ? PersonnelAssignment.Research
+                : PersonnelAssignment.Manufacturing;
+
+            if (person.Assignment == desired)
             {
-                // Success
+                return;
             }
-            else
+
+            PersonnelAssignment previous = person.Assignment;
+
+            // Attempt to claim a slot (new direct path).
+            bool slotAdded = ResearchManufacturingSlotsManager.IncrementUsedSlot(faction, slotType);
+
+            if (!slotAdded)
             {
-                // Failed, put back to unassigned
-                _unassigned.Add(proto);
+                TFTVLogger.Always($"[PersonnelUI] No free {slotType} slots available (used >= provided).");
+                return;
+            }
+
+            // If previously assigned to a work slot, release that slot.
+            ReleaseWorkSlotIfNeeded(faction, previous);
+
+            SetAssignment(person, desired, person.TrainingSpec);
+
+            // Refresh the top bar immediately (redundant safety).
+            // Recalculate already invokes TryUpdateInfoBar in Workers.cs.
+            // Explicit call only if needed for edge cases:
+            GeoLevelController level = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+            UIModuleInfoBar infoBar = level.View.GeoscapeModules.ResourcesModule;
+
+            var update = AccessTools.Method(typeof(UIModuleInfoBar), "UpdateResourceInfo");
+            update.Invoke(infoBar, new object[] { faction, false });
+        }
+
+        private static void ReleaseWorkSlotIfNeeded(GeoPhoenixFaction faction, PersonnelAssignment assignment)
+        {
+            if (faction == null) return;
+
+            switch (assignment)
+            {
+                case PersonnelAssignment.Research:
+                    ResearchManufacturingSlotsManager.DecrementUsedSlot(faction, FacilitySlotType.Research);
+                    break;
+                case PersonnelAssignment.Manufacturing:
+                    ResearchManufacturingSlotsManager.DecrementUsedSlot(faction, FacilitySlotType.Manufacturing);
+                    break;
             }
         }
 
-        private static void AssignTraining(GeoUnitDescriptor proto, SpecializationDef spec, GeoLevelController level)
+        private static void AssignTraining(PersonnelInfo person, SpecializationDef spec, GeoLevelController level)
         {
-            if (proto == null || spec == null) return;
-            // Unassign from other roles first
-            RemoveDescriptor(proto);
+
+
+            if (person?.Descriptor == null || spec == null) return;
             var facility = FindAnyValidTrainingFacility(level.PhoenixFaction);
             if (facility == null)
             {
-                MakeOperative(proto, spec, level.PhoenixFaction, level);
+                MakeOperative(person, spec, level.PhoenixFaction, level);
                 return;
             }
-            if (!TrainingFacilityRework.TryAssignDescriptorToTraining(level, proto, facility, spec))
+
+            if (TrainingFacilityRework.TryAssignDescriptorToTraining(level, person.Descriptor, facility, spec))
             {
-                // Failed, put back to unassigned
-                _unassigned.Add(proto);
+                ReleaseWorkSlotIfNeeded(level.PhoenixFaction, person.Assignment);
+                SetAssignment(person, PersonnelAssignment.Training, spec);
             }
         }
 
@@ -434,5 +481,18 @@ namespace TFTV.TFTVBaseRework
             return phoenix.Bases.SelectMany(b => b.Layout.Facilities)
                 .FirstOrDefault(f => f != null && f.GetComponent<ExperienceFacilityComponent>() != null && f.IsWorking);
         }
+
+
+        private static void SetAssignment(PersonnelInfo person, PersonnelAssignment assignment, SpecializationDef spec)
+        {
+            if (person == null)
+            {
+                return;
+            }
+
+            person.Assignment = assignment;
+            person.TrainingSpec = assignment == PersonnelAssignment.Training ? spec : person.TrainingSpec;
+        }
+
     }
 }
