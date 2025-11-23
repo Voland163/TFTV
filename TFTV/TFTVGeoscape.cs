@@ -190,6 +190,8 @@ namespace TFTV
             //  TFTVLogger.Always($"Items currently hidden in Aircraft inventory {TFTVUI.CurrentlyHiddenInv.Values.Count}");
             TFTVRevenant.RecordUpkeep.UpdateRevenantTimer(Controller);
             TFTVDragandDropFunctionality.VehicleRoster.RecordVehicleOrder(Controller);
+            PersonnelManagementUI.ResetDescriptorIdCache();
+
             return new TFTVGSInstanceData()
             {
 
@@ -338,16 +340,20 @@ namespace TFTV
 
                 TFTVCustomPortraits.CharacterPortrait.characterPics = data.CharacterPortraits;
 
+                var descriptorMap = data.PersonnelPool != null
+                  ? PersonnelManagementUI.RestoreNakedRecruitPool(Controller, data.PersonnelPool)
+                  : new Dictionary<Guid, GeoUnitDescriptor>();
+
                 // Restore training sessions first (they generate descriptors used by training-assigned personnel).
                 if (data.RecruitTrainingSessions != null && data.RecruitTrainingSessions.Count > 0)
                 {
-                    TrainingFacilityRework.LoadRecruitSessionsSnapshot(Controller, data.RecruitTrainingSessions);
+                    TrainingFacilityRework.LoadRecruitSessionsSnapshot(Controller, data.RecruitTrainingSessions, descriptorMap);
                 }
 
                 // Restore personnel assignments (unassigned, research, manufacturing, training).
                 if (data.PersonnelPool != null)
                 {
-                    PersonnelManagementUI.LoadAssignmentsSnapshot(Controller, data.PersonnelPool);
+                    PersonnelManagementUI.LoadAssignmentsSnapshot(Controller, data.PersonnelPool, descriptorMap);
                 }
                 TFTVLogger.Always($"[PersonnelPersistence] Restored Personnel={data.PersonnelPool?.Count ?? 0} TrainingSessions={data.RecruitTrainingSessions?.Count ?? 0}");
 

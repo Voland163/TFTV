@@ -623,6 +623,9 @@ namespace TFTV.TFTVBaseRework
         [SerializeType(SerializeMembersByDefault = SerializeMembersType.SerializeAll)]
         public sealed class RecruitTrainingSessionSave
         {
+            public Guid DescriptorId;
+            [NonSerialized]
+            public GeoUnitDescriptor Descriptor;
             public string DescriptorName;
             public string MainSpecName;
             public uint FacilityId;
@@ -645,6 +648,8 @@ namespace TFTV.TFTVBaseRework
                 {
                     list.Add(new RecruitTrainingSessionSave
                     {
+                        DescriptorId = PersonnelManagementUI.GetOrCreateDescriptorId(s.Descriptor),
+                        Descriptor = s.Descriptor,
                         DescriptorName = s.Descriptor.GetName(),
                         MainSpecName = s.TargetSpecialization?.name,
                         FacilityId = facility.FacilityId,
@@ -661,7 +666,7 @@ namespace TFTV.TFTVBaseRework
             return list;
         }
 
-        public static void LoadRecruitSessionsSnapshot(GeoLevelController level, IEnumerable<RecruitTrainingSessionSave> snapshot)
+        public static void LoadRecruitSessionsSnapshot(GeoLevelController level, IEnumerable<RecruitTrainingSessionSave> snapshot, IDictionary<Guid, GeoUnitDescriptor> descriptorMap = null)
         {
             if (level?.PhoenixFaction == null || snapshot == null) return;
 
@@ -669,14 +674,37 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
+                    GeoUnitDescriptor descriptor = null;
+                    if (descriptorMap != null && save.DescriptorId != Guid.Empty)
+                    {
+                        descriptorMap.TryGetValue(save.DescriptorId, out descriptor);
+                    }
+
+                    if (descriptor == null)
+                    {
+                        descriptor = level.PhoenixFaction.NakedRecruits.Keys.FirstOrDefault(d => d.GetName() == save.DescriptorName &&
+                                                                                               (d.Identity?.Name == save.IdentityName || string.IsNullOrEmpty(save.IdentityName)));
+                    }
+
                     var facility = level.PhoenixFaction.Bases
                         .SelectMany(b => b.Layout.Facilities)
                         .FirstOrDefault(f => f.FacilityId == save.FacilityId);
                     if (facility == null) continue;
 
-                    var context = level.CharacterGenerator.GenerateCharacterGeneratorContext(level.PhoenixFaction);
-                    var descriptor = level.CharacterGenerator.GenerateRandomUnit(context);
+                    if (descriptor == null)
+                    {
+                        descriptor = save.Descriptor;
+                    }
+
+                    if (descriptor == null)
+                    {
+                        var context = level.CharacterGenerator.GenerateCharacterGeneratorContext(level.PhoenixFaction);
+                        descriptor = level.CharacterGenerator.GenerateRandomUnit(context);
+                    }
+
                     if (descriptor == null) continue;
+
+                    PersonnelManagementUI.EnsureDescriptorInPool(level.PhoenixFaction, descriptor);
 
                     if (!string.IsNullOrEmpty(save.IdentityName))
                     {
