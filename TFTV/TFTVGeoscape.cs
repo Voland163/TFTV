@@ -340,6 +340,9 @@ namespace TFTV
 
                 TFTVCustomPortraits.CharacterPortrait.characterPics = data.CharacterPortraits;
 
+                PersonnelManagementUI.ClearAssignments();
+                ClearAllSessions();
+
                 var descriptorMap = data.PersonnelPool != null
                   ? PersonnelManagementUI.RestoreNakedRecruitPool(Controller, data.PersonnelPool)
                   : new Dictionary<Guid, GeoUnitDescriptor>();

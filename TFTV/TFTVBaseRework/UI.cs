@@ -63,6 +63,19 @@ namespace TFTV.TFTVBaseRework
             _descriptorIdCache.Clear();
         }
 
+        internal static void ClearAssignments()
+        {
+            try
+            {
+                _assignments.Clear();
+                ResetDescriptorIdCache();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
         internal static Guid GetOrCreateDescriptorId(GeoUnitDescriptor descriptor)
         {
             if (descriptor == null)
