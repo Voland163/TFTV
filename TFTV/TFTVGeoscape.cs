@@ -350,15 +350,23 @@ namespace TFTV
                 // Restore training sessions first (they generate descriptors used by training-assigned personnel).
                 if (data.RecruitTrainingSessions != null && data.RecruitTrainingSessions.Count > 0)
                 {
-                    TrainingFacilityRework.LoadRecruitSessionsSnapshot(Controller, data.RecruitTrainingSessions, descriptorMap);
+                    LoadRecruitSessionsSnapshot(Controller, data.RecruitTrainingSessions, descriptorMap);
                 }
 
                 // Restore personnel assignments (unassigned, research, manufacturing, training).
                 if (data.PersonnelPool != null)
                 {
                     PersonnelManagementUI.LoadAssignmentsSnapshot(Controller, data.PersonnelPool, descriptorMap);
+
+                    foreach (var personnel in data.PersonnelPool)
+                    {
+                        TFTVLogger.Always($"[PersonnelPersistence]   Personnel DescriptorId={personnel.DescriptorId} Name={personnel.IdentityName} Assignment={personnel.Assignment}");
+                    }
+
                 }
                 TFTVLogger.Always($"[PersonnelPersistence] Restored Personnel={data.PersonnelPool?.Count ?? 0} TrainingSessions={data.RecruitTrainingSessions?.Count ?? 0}");
+
+                
 
 
                 TFTVLogger.Always($"Config settings:" +

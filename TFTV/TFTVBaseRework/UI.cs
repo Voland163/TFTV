@@ -17,6 +17,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using static TFTV.TFTVBaseRework.Workers;
 using Object = UnityEngine.Object;
+using System.Security.Cryptography;            // ADDED (deterministic Guid)
+using System.Text;                             // ADDED
 
 namespace TFTV.TFTVBaseRework
 {
@@ -44,7 +46,6 @@ namespace TFTV.TFTVBaseRework
         private const string PersonnelContainerName = "TFTV_PersonnelContainer";
         private const string LogPrefix = "[PersonnelUI]";
 
-        // Mapping of naked recruit descriptors (vanilla) to our assignment metadata.
         private static readonly Dictionary<GeoUnitDescriptor, PersonnelInfo> _assignments = new Dictionary<GeoUnitDescriptor, PersonnelInfo>();
 
         private static GameObject _personnelPanel;
@@ -53,8 +54,12 @@ namespace TFTV.TFTVBaseRework
 
         private static readonly Dictionary<GeoUnitDescriptor, Guid> _descriptorIdCache = new Dictionary<GeoUnitDescriptor, Guid>();
 
-        // ADDED: prevent UI rebuild recursion while we build the panel
         private static bool _isBuildingUI;
+
+        // NEW: pending snapshots (Option A only needed if load ordering fails elsewhere)
+        private static List<PersonnelAssignmentSave> _pendingPersonnelSnapshot;
+        private static List<TrainingFacilityRework.RecruitTrainingSessionSave> _pendingTrainingSnapshot;
+        private static bool _pendingProcessArmed;
 
         internal static IEnumerable<PersonnelInfo> CurrentPersonnel => _assignments.Values;
 
@@ -69,6 +74,9 @@ namespace TFTV.TFTVBaseRework
             {
                 _assignments.Clear();
                 ResetDescriptorIdCache();
+                _pendingPersonnelSnapshot = null;
+                _pendingTrainingSnapshot = null;
+                _pendingProcessArmed = false;
             }
             catch (Exception e)
             {
@@ -76,19 +84,40 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
+        // Deterministic GUID based on descriptor name + identity (reduces mismatch on load)
+        private static Guid GetDeterministicDescriptorId(string displayName, string identityName)
+        {
+            try
+            {
+                string key = (displayName ?? "") + "|" + (identityName ?? "");
+                using (var md5 = MD5.Create())
+                {
+                    var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(key));
+                    // Ensure 16 bytes for Guid.
+                    return new Guid(hash.Take(16).ToArray());
+                }
+            }
+            catch
+            {
+                return Guid.NewGuid();
+            }
+        }
+
         internal static Guid GetOrCreateDescriptorId(GeoUnitDescriptor descriptor)
         {
-            if (descriptor == null)
-            {
-                return Guid.Empty;
-            }
+            if (descriptor == null) return Guid.Empty;
 
             if (!_descriptorIdCache.TryGetValue(descriptor, out Guid id))
             {
-                id = Guid.NewGuid();
+                // Use deterministic first, fall back to random if collision
+                var det = GetDeterministicDescriptorId(descriptor.GetName(), descriptor.Identity?.Name);
+                id = det;
+                if (_descriptorIdCache.Values.Contains(id))
+                {
+                    id = Guid.NewGuid();
+                }
                 _descriptorIdCache[descriptor] = id;
             }
-
             return id;
         }
 
@@ -99,10 +128,14 @@ namespace TFTV.TFTVBaseRework
             {
                 if (phoenix == null) return;
 
-                // Add new descriptors.
                 foreach (var kv in phoenix.NakedRecruits)
                 {
                     if (kv.Key == null) continue;
+
+                    TFTVLogger.Always($"{LogPrefix} Found naked recruit: {kv.Key.GetName()}");
+                    TFTVLogger.Always($"{LogPrefix} Personnel with same name exists: {_assignments.Keys.Any(d => d.GetName() == kv.Key.GetName())}");
+                    TFTVLogger.Always($"{LogPrefix} GeoDescriptor match? {_assignments.Keys.Any(d => d == kv.Key)}");
+
                     if (!_assignments.ContainsKey(kv.Key))
                     {
                         _assignments[kv.Key] = new PersonnelInfo
@@ -114,7 +147,6 @@ namespace TFTV.TFTVBaseRework
                     }
                 }
 
-                // Remove those no longer present.
                 var toRemove = _assignments.Keys.Where(d => !phoenix.NakedRecruits.ContainsKey(d)).ToList();
                 foreach (var d in toRemove)
                 {
@@ -122,7 +154,9 @@ namespace TFTV.TFTVBaseRework
                     TFTVLogger.Always($"{LogPrefix} Removed personnel mapping (descriptor no longer in NakedRecruits): {d.GetName()}");
                 }
 
-                // Rebuild panel if open, but only when not currently building it.
+                // If we have pending snapshots waiting for descriptors, process now
+                TryProcessPendingAfterSync(phoenix);
+
                 if (_personnelPanel != null && !_isBuildingUI)
                 {
                     if (GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()
@@ -138,7 +172,38 @@ namespace TFTV.TFTVBaseRework
         }
         #endregion
 
-        #region Daily Tick (training completion only)
+        #region Pending Processing (Option A helper)
+        private static void TryProcessPendingAfterSync(GeoPhoenixFaction phoenix)
+        {
+            if (!_pendingProcessArmed) return;
+            var level = phoenix?.GeoLevel;
+            if (level == null) return;
+
+            // Only process once we actually have recruits populated
+            if (_assignments.Count == 0) return;
+
+            if (_pendingPersonnelSnapshot != null)
+            {
+                TFTVLogger.Always($"{LogPrefix} Processing pending personnel snapshot count={_pendingPersonnelSnapshot.Count}");
+                // Build descriptor map (id->descriptor) from current pool
+                var map = _assignments.Keys.ToDictionary(d => GetOrCreateDescriptorId(d));
+                LoadAssignmentsSnapshot(level, _pendingPersonnelSnapshot, map);
+                _pendingPersonnelSnapshot = null;
+            }
+
+            if (_pendingTrainingSnapshot != null)
+            {
+                TFTVLogger.Always($"{LogPrefix} Processing pending training snapshot count={_pendingTrainingSnapshot.Count}");
+                var descriptorMap = _assignments.Keys.ToDictionary(d => GetOrCreateDescriptorId(d));
+                TrainingFacilityRework.LoadRecruitSessionsSnapshot(level, _pendingTrainingSnapshot, descriptorMap);
+                _pendingTrainingSnapshot = null;
+            }
+
+            _pendingProcessArmed = false;
+        }
+        #endregion
+
+        #region Daily Tick
         internal static void DailyTick(GeoLevelController level)
         {
             try
@@ -165,14 +230,13 @@ namespace TFTV.TFTVBaseRework
         }
         #endregion
 
-        #region Harmony Patches
+        #region Harmony
         [HarmonyPatch(typeof(GeoLevelController), "DailyUpdate")]
         internal static class GeoLevelController_DailyUpdate_PersonnelPool
         {
             private static void Postfix(GeoLevelController __instance) => DailyTick(__instance);
         }
 
-        // Sync whenever vanilla regenerates naked recruits.
         [HarmonyPatch(typeof(GeoPhoenixFaction), nameof(GeoPhoenixFaction.RegenerateNakedRecruits))]
         internal static class GeoPhoenixFaction_RegenerateNakedRecruits_PersonnelSync
         {
@@ -202,7 +266,6 @@ namespace TFTV.TFTVBaseRework
                 {
                     if (_personnelPanel != null) { Object.Destroy(_personnelPanel); _personnelPanel = null; }
                     CloseModal();
-                    // ADDED: ensure we don't keep this latched after leaving the screen
                     _deploymentUIActive = false;
                 }
                 catch (Exception e) { TFTVLogger.Error(e); }
@@ -304,7 +367,6 @@ namespace TFTV.TFTVBaseRework
             ClearChildren(personnelRoot);
 
             var phoenix = level.PhoenixFaction;
-            // Ensure sync in case UI opened before regeneration event patch executed.
             SyncFromNakedRecruits(phoenix);
 
             Action refresh = () =>
@@ -895,26 +957,16 @@ namespace TFTV.TFTVBaseRework
 
         private static GeoUnitDescriptor ResolveDescriptorFromSave(GeoLevelController level, PersonnelAssignmentSave save)
         {
-            if (save == null)
-            {
-                return null;
-            }
-
-            if (save.Descriptor != null)
-            {
-                return save.Descriptor;
-            }
+            if (save == null) return null;
+            if (save.Descriptor != null) return save.Descriptor;
 
             try
             {
+                // Avoid premature random descriptor generation when Option A sequencing already rebuilds pool.
                 var generator = level?.CharacterGenerator;
                 var phoenix = level?.PhoenixFaction;
                 var descriptor = generator?.GenerateRandomUnit(generator.GenerateCharacterGeneratorContext(phoenix));
-
-                if (descriptor == null)
-                {
-                    return null;
-                }
+                if (descriptor == null) return null;
 
                 if (!string.IsNullOrEmpty(save.IdentityName))
                 {
@@ -926,7 +978,6 @@ namespace TFTV.TFTVBaseRework
                 {
                     try { spec = TFTVMain.Main.DefCache.GetDef<SpecializationDef>(save.MainSpecName); } catch { }
                 }
-
                 if (spec != null)
                 {
                     TrainingFacilityRework.OverrideDescriptorMainSpec(descriptor, spec, rebuildPersonalAbilities: true);
@@ -941,56 +992,17 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
-        private static void TryAddDescriptorToPool(object nakedRecruits, GeoUnitDescriptor descriptor, Type valueType, Func<object> valueFactory)
-        {
-            try
-            {
-                if (nakedRecruits == null || descriptor == null || valueType == null)
-                {
-                    return;
-                }
-
-                var poolType = nakedRecruits.GetType();
-                var contains = poolType.GetMethod("ContainsKey", new[] { typeof(GeoUnitDescriptor) });
-                if (contains != null && (bool)contains.Invoke(nakedRecruits, new object[] { descriptor }))
-                {
-                    return;
-                }
-
-                object value = valueFactory();
-                var addMethod = poolType.GetMethod("Add", new[] { typeof(GeoUnitDescriptor), valueType });
-                if (addMethod != null)
-                {
-                    addMethod.Invoke(nakedRecruits, new object[] { descriptor, value });
-                }
-                else if (nakedRecruits is IDictionary dict)
-                {
-                    dict[descriptor] = value;
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
         internal static Dictionary<Guid, GeoUnitDescriptor> RestoreNakedRecruitPool(GeoLevelController level, IEnumerable<PersonnelAssignmentSave> snapshot)
         {
             var map = new Dictionary<Guid, GeoUnitDescriptor>();
 
             try
             {
-                if (level?.PhoenixFaction == null || snapshot == null)
-                {
-                    return map;
-                }
+                if (level?.PhoenixFaction == null || snapshot == null) return map;
 
                 var phoenix = level.PhoenixFaction;
                 var nakedRecruits = phoenix.NakedRecruits;
-                if (nakedRecruits == null)
-                {
-                    return map;
-                }
+                if (nakedRecruits == null) return map;
 
                 var poolType = nakedRecruits.GetType();
                 var genericArgs = poolType.GetGenericArguments();
@@ -1011,36 +1023,21 @@ namespace TFTV.TFTVBaseRework
                 {
                     foreach (object sample in sampleValues)
                     {
-                        if (sample == null)
-                        {
-                            continue;
-                        }
-
-                        try
-                        {
-                            return Activator.CreateInstance(sample.GetType());
-                        }
-                        catch
-                        {
-                            return sample;
-                        }
+                        if (sample == null) continue;
+                        try { return Activator.CreateInstance(sample.GetType()); }
+                        catch { return sample; }
                     }
-
                     if (valueType.IsValueType)
                     {
                         try { return Activator.CreateInstance(valueType); } catch { }
                     }
-
                     return null;
                 };
 
                 foreach (var save in snapshot)
                 {
                     var descriptor = ResolveDescriptorFromSave(level, save);
-                    if (descriptor == null)
-                    {
-                        continue;
-                    }
+                    if (descriptor == null) continue;
 
                     TryAddDescriptorToPool(nakedRecruits, descriptor, valueType, valueFactory);
 
@@ -1064,10 +1061,7 @@ namespace TFTV.TFTVBaseRework
         {
             try
             {
-                if (faction == null || descriptor == null)
-                {
-                    return;
-                }
+                if (faction == null || descriptor == null) return;
 
                 var nakedRecruits = faction.NakedRecruits;
                 var poolType = nakedRecruits.GetType();
@@ -1084,28 +1078,131 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
+        private static void TryAddDescriptorToPool(object nakedRecruits, GeoUnitDescriptor descriptor, Type valueType, Func<object> valueFactory)
+        {
+            try
+            {
+                if (nakedRecruits == null || descriptor == null || valueType == null)
+                {
+                    return;
+                }
+
+                var poolType = nakedRecruits.GetType();
+
+                // Already present?
+                var contains = poolType.GetMethod("ContainsKey", new[] { typeof(GeoUnitDescriptor) });
+                if (contains != null)
+                {
+                    bool exists = false;
+                    try { exists = (bool)contains.Invoke(nakedRecruits, new object[] { descriptor }); }
+                    catch { }
+                    if (exists)
+                    {
+                        return;
+                    }
+                }
+                else if (nakedRecruits is IDictionary rawDict && rawDict.Contains(descriptor))
+                {
+                    return;
+                }
+
+                object value = null;
+                try { value = valueFactory?.Invoke(); } catch { }
+                if (value == null && valueType.IsValueType)
+                {
+                    try { value = Activator.CreateInstance(valueType); } catch { }
+                }
+
+                // Preferred Add method
+                var addMethod = poolType.GetMethod("Add", new[] { typeof(GeoUnitDescriptor), valueType });
+                if (addMethod != null)
+                {
+                    addMethod.Invoke(nakedRecruits, new object[] { descriptor, value });
+                    return;
+                }
+
+                // Fallback IDictionary assignment
+                if (nakedRecruits is IDictionary dict)
+                {
+                    dict[descriptor] = value;
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        // Option A: unified restore entry point (call this AFTER you deserialize both snapshots)
+        internal static void RestoreAllPersonnelAndTraining(
+            GeoLevelController level,
+            List<PersonnelAssignmentSave> personnelSnapshot,
+            List<TrainingFacilityRework.RecruitTrainingSessionSave> trainingSnapshot)
+        {
+            try
+            {
+                if (level?.PhoenixFaction == null)
+                {
+                    TFTVLogger.Always($"{LogPrefix} RestoreAllPersonnelAndTraining aborted: level or faction null");
+                    return;
+                }
+
+                // Step 1: Rebuild naked recruits pool first (guarantees descriptors exist)
+                var descriptorMap = RestoreNakedRecruitPool(level, personnelSnapshot);
+
+                // Step 2: Load assignments using the map
+                LoadAssignmentsSnapshot(level, personnelSnapshot, descriptorMap);
+
+                // Step 3: Load training sessions with same map
+                TrainingFacilityRework.LoadRecruitSessionsSnapshot(level, trainingSnapshot, descriptorMap);
+
+                TFTVLogger.Always($"{LogPrefix} Unified restore completed: Personnel={_assignments.Count} TrainingSessions loaded.");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
         internal static void LoadAssignmentsSnapshot(GeoLevelController level, IEnumerable<PersonnelAssignmentSave> snapshot, IDictionary<Guid, GeoUnitDescriptor> descriptorMap = null)
         {
             try
             {
                 if (level?.PhoenixFaction == null || snapshot == null) return;
                 var phoenix = level.PhoenixFaction;
+
                 SyncFromNakedRecruits(phoenix);
 
                 foreach (var save in snapshot)
                 {
+                    TFTVLogger.Always($"{LogPrefix} Restoring assignment for {save?.IdentityName} {save?.Assignment} save?.Descriptor==null: {save?.Descriptor==null}");
+
                     GeoUnitDescriptor entry = null;
                     if (descriptorMap != null && save.DescriptorId != Guid.Empty)
                     {
                         descriptorMap.TryGetValue(save.DescriptorId, out entry);
                     }
 
+                    TFTVLogger.Always($"{LogPrefix} Resolved descriptor from map: {(entry != null ? entry.GetName() : "null")}");
+
                     if (entry == null)
                     {
-                        entry = _assignments.Keys.FirstOrDefault(d => d.GetName() == save.DescriptorName &&
-                                                                      (d.Identity?.Name == save.IdentityName || string.IsNullOrEmpty(save.IdentityName)));
+                        entry = _assignments.Keys.FirstOrDefault(d =>
+                            d.GetName() == save.DescriptorName &&
+                            (d.Identity?.Name == save.IdentityName || string.IsNullOrEmpty(save.IdentityName)));
                     }
-                    if (entry == null) continue;
+
+                    TFTVLogger.Always($"{LogPrefix} Second Attempt Resolved descriptor from map: {(entry != null ? entry.GetName() : "null")}");
+
+                    if (entry == null)
+                    {
+                        // If sequencing failed, stash to pending for later processing after sync
+                        if (_pendingPersonnelSnapshot == null) _pendingPersonnelSnapshot = new List<PersonnelAssignmentSave>();
+                        _pendingPersonnelSnapshot.Add(save);
+                        _pendingProcessArmed = true;
+                        continue;
+                    }
+
                     var info = _assignments[entry];
                     info.Assignment = save.Assignment;
                     info.TrainingCompleteNotDeployed = save.TrainingCompleteNotDeployed;
@@ -1119,7 +1216,7 @@ namespace TFTV.TFTVBaseRework
                             if (spec != null) info.TrainingSpec = spec;
                         }
                         catch { }
-                    } 
+                    }
                 }
 
                 ResearchManufacturingSlotsManager.RecalculateSlots(phoenix);
@@ -1127,7 +1224,6 @@ namespace TFTV.TFTVBaseRework
                     _assignments.Values.Count(pi => pi.Assignment == PersonnelAssignment.Research));
                 ResearchManufacturingSlotsManager.SetUsedSlots(phoenix, FacilitySlotType.Manufacturing,
                     _assignments.Values.Count(pi => pi.Assignment == PersonnelAssignment.Manufacturing));
-
             }
             catch (Exception e) { TFTVLogger.Error(e); }
         }
