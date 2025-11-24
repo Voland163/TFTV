@@ -641,8 +641,8 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
-                    var personnel = PersonnelData.EnsurePersonnelFromSave(save.PersonnelId, save.GeoUnitId, save.CharacterName, save.MainSpecName);
-                    GeoCharacter character = level.PhoenixFaction?.Soldiers?.FirstOrDefault(s => s.Id == personnel.UnitId);
+                    var personnel = PersonnelData.EnsurePersonnelFromSave(save.GeoUnitId, save.MainSpecName);
+                    GeoCharacter character = level.PhoenixFaction?.Soldiers?.FirstOrDefault(s => s.Id == personnel.Id);
 
                     SpecializationDef spec = null;
                     if (!string.IsNullOrEmpty(save.MainSpecName))
@@ -650,12 +650,10 @@ namespace TFTV.TFTVBaseRework
                         try { spec = TFTVMain.Main.DefCache.GetDef<SpecializationDef>(save.MainSpecName); } catch { }
                     }
                    
-
                     RecruitSessions.Add(new RecruitTrainingSession
                     {
-                        PersonnelId = personnel.Id,
                         Character = character,
-                        GeoUnitId = personnel.UnitId,
+                        GeoUnitId = personnel.Id,
                         TargetSpecialization = spec,
                         StartDay = save.StartDay,
                         DurationDays = save.DurationDays,
@@ -664,7 +662,7 @@ namespace TFTV.TFTVBaseRework
                         Completed = save.Completed
                     });
 
-                    TFTVLogger.Always($"[Training] Session restored: PersonnelId={personnel.Id} UnitId={personnel.UnitId} TargetLevel={save.TargetLevel} Completed={save.Completed}");
+                    TFTVLogger.Always($"[Training] Session restored: PersonnelId={personnel.Id} TargetLevel={save.TargetLevel} Completed={save.Completed}");
                 }
                 catch (Exception e) { TFTVLogger.Error(e); }
             }

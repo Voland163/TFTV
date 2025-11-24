@@ -351,7 +351,7 @@ namespace TFTV
 
                     foreach (var personnel in data.PersonnelPool)
                     {
-                        TFTVLogger.Always($"[PersonnelPersistence]   Personnel Id={personnel.PersonnelId} Name={personnel.CharacterName} Assignment={personnel.Assignment}");
+                        TFTVLogger.Always($"[PersonnelPersistence]   Personnel Id={personnel.GeoUnitId} Name={personnel.CharacterName} Assignment={personnel.Assignment}");
                     }
 
                 }

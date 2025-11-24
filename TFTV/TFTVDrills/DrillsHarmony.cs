@@ -1047,10 +1047,12 @@ namespace TFTV.TFTVDrills
                         return;
                     }
 
+#pragma warning disable CS0252 // Possible unintended reference comparison; left hand side needs cast
                     TacStatus markedStatus = targetActor.Status
                         .GetStatusesByName(MarkedWatchEffectName)
                         .OfType<TacStatus>()
                         .FirstOrDefault(status => status.Source == ability.TacticalActor);
+#pragma warning restore CS0252 // Possible unintended reference comparison; left hand side needs cast
 
                     if (markedStatus == null)
                     {
