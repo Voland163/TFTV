@@ -534,9 +534,9 @@ namespace TFTV.TFTVBaseRework
             AddModalHeader("Select Class");
             var content = CreateModalContentArea();
 
-            bool anyFacilityAvailable = level.PhoenixFaction.Bases
-                .SelectMany(b => b.Layout.Facilities)
-                .Any(f => TrainingFacilityRework.IsValidFacility(f));
+            int providedSlots = TrainingFacilityRework.GetProvidedTrainingSlots(level.PhoenixFaction);
+            int usedSlots = TrainingFacilityRework.GetUsedTrainingSlots();
+            bool anyFacilityAvailable = providedSlots > usedSlots;
 
             if (!anyFacilityAvailable)
             {
@@ -562,12 +562,7 @@ namespace TFTV.TFTVBaseRework
                         {
                             person.Assignment = PersonnelAssignment.Training;
                             person.TrainingSpec = spec;
-                            var session = TrainingFacilityRework.GetRecruitSession(person.Descriptor);
-                            if (session != null)
-                            {
-                                var facilityProp = session.GetType().GetProperty("Facility");
-                                person.TrainingFacility = (GeoPhoenixFacility)facilityProp?.GetValue(session);
-                            }
+                           
                         }
                         else
                         {

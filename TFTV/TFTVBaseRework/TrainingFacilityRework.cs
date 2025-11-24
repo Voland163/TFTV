@@ -42,7 +42,6 @@ namespace TFTV.TFTVBaseRework
             public int PersonnelId;
             public GeoUnitDescriptor Descriptor;
             public SpecializationDef TargetSpecialization;
-            public GeoPhoenixFacility Facility;
             public int StartDay;
             public int DurationDays;
             public int TargetLevel;
@@ -57,8 +56,7 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
-        private static readonly Dictionary<GeoPhoenixFacility, List<RecruitTrainingSession>> RecruitFacilitySessions
-            = new Dictionary<GeoPhoenixFacility, List<RecruitTrainingSession>>();
+        private static readonly List<RecruitTrainingSession> RecruitSessions = new List<RecruitTrainingSession>();
 
         // Tracks recruits whose stat gains must be applied AFTER AddRecruit (UI path).
         private static readonly Dictionary<int, int> _pendingPostRecruitStatApply = new Dictionary<int, int>();
@@ -68,16 +66,17 @@ namespace TFTV.TFTVBaseRework
         #endregion
 
         #region Public API (Recruit descriptor training)
-        public static bool QueueDescriptorTraining(GeoLevelController level, GeoUnitDescriptor descriptor, GeoPhoenixFacility facility, SpecializationDef spec)
+        public static bool QueueDescriptorTraining(GeoLevelController level, GeoUnitDescriptor descriptor, SpecializationDef spec)
         {
             try
             {
-                if (level == null || descriptor == null || facility == null || spec == null) return false;
-                if (!IsValidFacility(facility)) return false;
+                if (level == null || descriptor == null || spec == null) return false;
 
-                var sessions = GetOrCreateRecruitFacilityList(facility);
-                if (sessions.Count(s => !s.Completed) >= SlotsPerFacility) return false;
-                if (sessions.Any(s => s.Descriptor == descriptor)) return false;
+                if (RecruitSessions.Any(s => s.Descriptor == descriptor)) return false;
+
+                int providedSlots = CalculateProvidedTrainingSlots(level.PhoenixFaction);
+                int usedSlots = RecruitSessions.Count(s => !s.Completed);
+                if (usedSlots >= providedSlots) return false;
 
                 int currentDay = level.Timing.Now.TimeSpan.Days;
                 int targetLevel = DetermineTargetLevel(level.PhoenixFaction);
@@ -88,16 +87,15 @@ namespace TFTV.TFTVBaseRework
                     PersonnelId = PersonnelData.GetOrCreatePersonnelId(descriptor),
                     Descriptor = descriptor,
                     TargetSpecialization = spec,
-                    Facility = facility,
                     StartDay = currentDay,
                     DurationDays = effectiveDuration,
                     TargetLevel = targetLevel,
                     Completed = false,
                     VirtualLevelAchieved = 1
                 };
-                sessions.Add(recruitSession);
+                RecruitSessions.Add(recruitSession);
 
-                TFTVLogger.Always($"[Training] Queued recruit training: {descriptor.GetName()} Spec={spec.name} Facility={facility.PxBase.Site?.Name} StartDay={currentDay} Duration={effectiveDuration} TargetLevel={targetLevel}");
+                TFTVLogger.Always($"[Training] Queued recruit training: {descriptor.GetName()} Spec={spec.name} StartDay={currentDay} Duration={effectiveDuration} TargetLevel={targetLevel} Used/Provided={usedSlots + 1}/{providedSlots}");
                 return true;
             }
             catch (Exception e) { TFTVLogger.Error(e); return false; }
@@ -107,7 +105,7 @@ namespace TFTV.TFTVBaseRework
         {
             if (descriptor == null) return null;
             var id = PersonnelData.GetPersonnelByDescriptor(descriptor)?.Id ?? 0;
-            return RecruitFacilitySessions.Values.SelectMany(v => v).FirstOrDefault(s => s.PersonnelId == id || s.Descriptor == descriptor);
+            return RecruitSessions.FirstOrDefault(s => s.PersonnelId == id || s.Descriptor == descriptor);
         }
 
         public static int GetRecruitRemainingDays(GeoUnitDescriptor descriptor, GeoLevelController level)
@@ -173,18 +171,13 @@ namespace TFTV.TFTVBaseRework
             TFTVLogger.Always($"[Training] AdvanceAllTraining day={currentDay} delta={deltaDays}");
 
             // Recruit descriptor sessions only (operative sessions removed).
-            var recruitFacilities = RecruitFacilitySessions.Keys.ToList();
-            foreach (var facility in recruitFacilities)
+            foreach (var session in RecruitSessions.ToList())
             {
-                if (!RecruitFacilitySessions.TryGetValue(facility, out var rSessions) || rSessions.Count == 0) continue;
-                foreach (var rs in rSessions)
-                {
-                    if (rs.Completed) continue;
-                    ProcessRecruitSessionProgress(rs, currentDay);
-                }
-                RecruitFacilitySessions[facility] = rSessions.Where(s => s.Descriptor != null).ToList();
-                if (RecruitFacilitySessions[facility].Count == 0) RecruitFacilitySessions.Remove(facility);
+                if (session.Completed) continue;
+                ProcessRecruitSessionProgress(session, currentDay);
             }
+
+            RecruitSessions.RemoveAll(s => s.Descriptor == null);
         }
 
         private static void ProcessRecruitSessionProgress(RecruitTrainingSession session, int currentDay)
@@ -328,22 +321,24 @@ namespace TFTV.TFTVBaseRework
                    facility.IsPowered;
         }
 
-        private static List<RecruitTrainingSession> GetOrCreateRecruitFacilityList(GeoPhoenixFacility facility)
+        private static int CalculateProvidedTrainingSlots(GeoPhoenixFaction faction)
         {
-            if (!RecruitFacilitySessions.TryGetValue(facility, out var list))
-            {
-                list = new List<RecruitTrainingSession>();
-                RecruitFacilitySessions[facility] = list;
-            }
-            return list;
+            if (faction?.Bases == null) return 0;
+
+            int facilityCount = faction.Bases
+                .Where(b => b?.Layout != null)
+                .SelectMany(b => b.Layout.Facilities)
+                .Count(IsValidFacility);
+
+            return facilityCount * SlotsPerFacility;
         }
+
+        private static int CalculateUsedTrainingSlots() => RecruitSessions.Count(s => !s.Completed);
 
         private static void RemoveRecruitSession(RecruitTrainingSession session)
         {
-            if (session?.Facility == null) return;
-            if (!RecruitFacilitySessions.TryGetValue(session.Facility, out var list)) return;
-            list.Remove(session);
-            if (list.Count == 0) RecruitFacilitySessions.Remove(session.Facility);
+            if (session == null) return;
+            RecruitSessions.Remove(session);
         }
 
         internal static void EnsureSpecialization(GeoCharacter character, SpecializationDef specialization)
@@ -361,6 +356,10 @@ namespace TFTV.TFTVBaseRework
         #region Public Helper API
         public static int GetEffectiveDurationDays(GeoPhoenixFaction faction) => CalculateEffectiveDurationDays(faction);
         public static int GetTargetLevel(GeoPhoenixFaction faction) => DetermineTargetLevel(faction);
+
+        public static int GetProvidedTrainingSlots(GeoPhoenixFaction faction) => CalculateProvidedTrainingSlots(faction);
+        public static int GetUsedTrainingSlots() => CalculateUsedTrainingSlots();
+
         #endregion
 
         #region Cumulative Stat Gains
@@ -421,7 +420,7 @@ namespace TFTV.TFTVBaseRework
         #region Clear
         public static void ClearAllSessions()
         {
-            try { RecruitFacilitySessions.Clear(); }
+            try { RecruitSessions.Clear(); }
             catch (Exception e) { TFTVLogger.Error(e); }
         }
         #endregion
@@ -462,18 +461,7 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
-        [HarmonyPatch(typeof(GeoPhoenixFacility), "DestroyFacility")]
-        internal static class GeoPhoenixFacility_DestroyFacility_Training
-        {
-            private static void Prefix(GeoPhoenixFacility __instance)
-            {
-                try
-                {
-                    if (RecruitFacilitySessions.ContainsKey(__instance)) RecruitFacilitySessions.Remove(__instance);
-                }
-                catch (Exception e) { TFTVLogger.Error(e); }
-            }
-        }
+       
 
         [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruit")]
         internal static class GeoPhoenixFaction_AddRecruit_TrainingStats_Postfix
@@ -624,7 +612,6 @@ namespace TFTV.TFTVBaseRework
             public int PersonnelId;
             public string DescriptorName;
             public string MainSpecName;
-            public uint FacilityId;
             public int StartDay;
             public int DurationDays;
             public int TargetLevel;
@@ -637,28 +624,24 @@ namespace TFTV.TFTVBaseRework
         public static List<RecruitTrainingSessionSave> CreateRecruitSessionsSnapshot()
         {
             var list = new List<RecruitTrainingSessionSave>();
-            foreach (var kv in RecruitFacilitySessions)
+            foreach (var s in RecruitSessions)
             {
-                var facility = kv.Key;
-                foreach (var s in kv.Value)
-                {
-                    var personnelId = s.PersonnelId != 0 ? s.PersonnelId : PersonnelData.GetOrCreatePersonnelId(s.Descriptor);
 
-                    list.Add(new RecruitTrainingSessionSave
-                    {
-                        PersonnelId = personnelId,
-                        DescriptorName = s.Descriptor?.GetName(),
-                        MainSpecName = s.TargetSpecialization?.name,
-                        FacilityId = facility.FacilityId,
-                        StartDay = s.StartDay,
-                        DurationDays = s.DurationDays,
-                        TargetLevel = s.TargetLevel,
-                        VirtualLevelAchieved = s.VirtualLevelAchieved,
-                        Completed = s.Completed,
-                        IdentityName = s.Descriptor?.Identity?.Name,
-                        IdentitySex = s.Descriptor?.Identity?.Sex ?? GeoCharacterSex.None
-                    });
-                }
+                var personnelId = s.PersonnelId != 0 ? s.PersonnelId : PersonnelData.GetOrCreatePersonnelId(s.Descriptor);
+
+                list.Add(new RecruitTrainingSessionSave
+                {
+                    PersonnelId = personnelId,
+                    DescriptorName = s.Descriptor?.GetName(),
+                    MainSpecName = s.TargetSpecialization?.name,
+                    StartDay = s.StartDay,
+                    DurationDays = s.DurationDays,
+                    TargetLevel = s.TargetLevel,
+                    VirtualLevelAchieved = s.VirtualLevelAchieved,
+                    Completed = s.Completed,
+                    IdentityName = s.Descriptor?.Identity?.Name,
+                    IdentitySex = s.Descriptor?.Identity?.Sex ?? GeoCharacterSex.None
+                });
             }
             return list;
         }
@@ -675,14 +658,7 @@ namespace TFTV.TFTVBaseRework
                 {
                     GeoUnitDescriptor descriptor = PersonnelData.GetPersonnelById(save.PersonnelId)?.Descriptor;
 
-                    TFTVLogger.Always($"[Training] Restoring session PersonnelId={save.PersonnelId} DescriptorFound={(descriptor != null)} FacilityId={save.FacilityId} Completed={save.Completed}");
-
-                    var facility = level.PhoenixFaction.Bases
-                        .SelectMany(b => b.Layout.Facilities)
-                        .FirstOrDefault(f => f.FacilityId == save.FacilityId);
-                    if (facility == null) continue;
-
-                    TFTVLogger.Always($"[Training] Facility found: ({facility.FacilityId})");
+                    TFTVLogger.Always($"[Training] Restoring session PersonnelId={save.PersonnelId} DescriptorFound={(descriptor != null)} Completed={save.Completed}");
 
                     if (descriptor == null)
                     {
@@ -716,13 +692,11 @@ namespace TFTV.TFTVBaseRework
                         TFTVLogger.Always($"[Training] Restored main spec {spec.name} for {descriptor.GetName()}");
                     }
 
-                    var recruitSessionList = GetOrCreateRecruitFacilityList(facility);
-                    recruitSessionList.Add(new RecruitTrainingSession
+                    RecruitSessions.Add(new RecruitTrainingSession
                     {
                         PersonnelId = personnel.Id,
                         Descriptor = descriptor,
                         TargetSpecialization = spec,
-                        Facility = facility,
                         StartDay = save.StartDay,
                         DurationDays = save.DurationDays,
                         TargetLevel = save.TargetLevel,
@@ -813,42 +787,17 @@ namespace TFTV.TFTVBaseRework
                     return false;
                 }
 
-                // Find a functioning powered training facility with an open slot.
-                var phoenix = level.PhoenixFaction;
-                if (phoenix == null) return false;
 
-                GeoPhoenixFacility chosen = null;
-                int bestLoad = int.MaxValue;
-
-                foreach (var pxBase in phoenix.Bases)
-                {
-                    foreach (var fac in pxBase.Layout.Facilities)
-                    {
-                        if (!IsValidFacility(fac)) continue;
-
-                        var sessions = GetOrCreateRecruitFacilityList(fac);
-                        int occupied = sessions.Count(s => !s.Completed);
-                        if (occupied >= SlotsPerFacility) continue;
-
-                        // Prefer facility with least occupied slots.
-                        if (occupied < bestLoad)
-                        {
-                            bestLoad = occupied;
-                            chosen = fac;
-                            if (bestLoad == 0) break; // optimal
-                        }
-                    }
-                    if (chosen != null && bestLoad == 0) break;
-                }
-
-                if (chosen == null)
+                int providedSlots = CalculateProvidedTrainingSlots(level.PhoenixFaction);
+                int usedSlots = CalculateUsedTrainingSlots();
+                if (usedSlots >= providedSlots)
                 {
                     TFTVLogger.Always("[Training] No available training facility slot found.");
                     return false;
                 }
 
                 // Delegate to existing queue logic (with facility).
-                return QueueDescriptorTraining(level, descriptor, chosen, spec);
+                return QueueDescriptorTraining(level, descriptor, spec);
             }
             catch (Exception e)
             {

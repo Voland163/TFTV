@@ -155,6 +155,7 @@
     <Compile Include="TFTVBackgrounds.cs" />
     <Compile Include="TFTVBaseRework\Data.cs" />
     <Compile Include="TFTVBaseRework\FacilityLivingSpace.cs" />
+    <Compile Include="TFTVBaseRework\GeoCharacterFilter.cs" />
     <Compile Include="TFTVBaseRework\LivingQuarters.cs" />
     <Compile Include="TFTVBaseRework\TrainingFacilityRework.cs" />
     <Compile Include="TFTVBaseRework\UI.cs" />

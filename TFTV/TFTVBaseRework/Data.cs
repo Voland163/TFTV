@@ -30,7 +30,6 @@ namespace TFTV.TFTVBaseRework
         public PersonnelAssignment Assignment;
         public SpecializationDef TrainingSpec;
         public GeoCharacter CreatedCharacter;
-        public GeoPhoenixFacility TrainingFacility;
         public bool TrainingCompleteNotDeployed;
         public bool DeploymentUIOpened;
 
@@ -330,6 +329,7 @@ namespace TFTV.TFTVBaseRework
 
             TFTVLogger.Always($"[PersonnelData] After load: ResearchUsed={_personnel.Count(pi => pi.Assignment == PersonnelAssignment.Research)} ManufacturingUsed={_personnel.Count(pi => pi.Assignment == PersonnelAssignment.Manufacturing)} Total={_personnel.Count}");
 
+            FlushPendingInfoBarUpdate(level);
         }
     }
 }
