@@ -242,7 +242,7 @@ namespace TFTV.TFTVBaseRework
                 CreatePersonnelPanel(state);
             };
 
-            foreach (var info in CurrentPersonnel.OrderBy(p => p.Descriptor.GetName()))
+            foreach (var info in CurrentPersonnel.OrderBy(p => GetPersonnelName(p)))
             {
                 CreatePersonnelCard(personnelRoot, info, level, phoenix, refresh);
             }
@@ -255,7 +255,9 @@ namespace TFTV.TFTVBaseRework
         #region Card
         private static void CreatePersonnelCard(Transform parent, PersonnelInfo person, GeoLevelController level, GeoPhoenixFaction phoenix, Action refresh)
         {
-            var card = new GameObject($"Personnel_{person.Descriptor.GetName()}", typeof(RectTransform));
+            string personnelName = GetPersonnelName(person);
+
+            var card = new GameObject($"Personnel_{personnelName}", typeof(RectTransform));
             card.transform.SetParent(parent, false);
             card.AddComponent<Image>().color = new Color(0.12f, 0.14f, 0.18f, 0.85f);
 
@@ -266,7 +268,7 @@ namespace TFTV.TFTVBaseRework
             hLayout.childForceExpandHeight = false;
             hLayout.childForceExpandWidth = false;
 
-            var nameText = AddLabel(card.transform, person.Descriptor.GetName(), 40, Color.white);
+            var nameText = AddLabel(card.transform, personnelName, 40, Color.white);
             nameText.gameObject.AddComponent<LayoutElement>().minWidth = 260;
 
             var assignmentText = AddLabel(card.transform, GetAssignmentDisplay(person, level), 32, Color.cyan);
@@ -307,6 +309,11 @@ namespace TFTV.TFTVBaseRework
 
         private static string GetAssignmentDisplay(PersonnelInfo person, GeoLevelController level)
         {
+            if (person?.Descriptor == null)
+            {
+                return person?.Assignment.ToString() ?? "Unknown";
+            }
+
             switch (person.Assignment)
             {
                 case PersonnelAssignment.Training:
@@ -340,6 +347,14 @@ namespace TFTV.TFTVBaseRework
             t.horizontalOverflow = HorizontalWrapMode.Overflow;
             t.verticalOverflow = VerticalWrapMode.Truncate;
             return t;
+        }
+
+        private static string GetPersonnelName(PersonnelInfo person)
+        {
+            return person?.Descriptor?.GetName()
+                   ?? person?.SavedIdentityName
+                   ?? person?.SavedDescriptorName
+                   ?? $"Personnel {person?.Id}";
         }
 
         private static void AddActionButton(Transform parent, string caption, Action onClick)
