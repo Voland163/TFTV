@@ -254,12 +254,21 @@ namespace TFTV.TFTVBaseRework
                     TFTVLogger.Always("[Workers] InfoBar not ready; skipping UpdateResourceInfo (first occurrence).");
                     _pendingInfoBarLog = true;
                 }
+                TFTVLogger.Always($"[Workers] Queuing pending info bar update. Pending={_pendingInfoBarUpdate} Faction={faction?.Name}");
+                _pendingInfoBarUpdate = true;
+                _pendingFaction = faction;
+
                 return;
             }
             _pendingInfoBarLog = false;
+            _pendingInfoBarUpdate = false;
+            _pendingFaction = null;
 
             try
             {
+                FacilitySlotPools pools = ResearchManufacturingSlotsManager.GetOrCreatePools(faction);
+                TFTVLogger.Always($"[Workers] Updating info bar with Research Used/Provided={pools.Research.UsedSlots}/{pools.Research.ProvidedSlots} Manufacturing Used/Provided={pools.Manufacturing.UsedSlots}/{pools.Manufacturing.ProvidedSlots}");
+
                 var update = AccessTools.Method(typeof(UIModuleInfoBar), "UpdateResourceInfo");
                 update.Invoke(infoBar, new object[] { faction, false });
             }
@@ -269,7 +278,24 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
+        internal static void FlushPendingInfoBarUpdate(GeoLevelController level)
+        {
+            TFTVLogger.Always($"[Workers] FlushPendingInfoBarUpdate called. Pending={_pendingInfoBarUpdate} LevelReady={(level != null)}");
+            if (!_pendingInfoBarUpdate) return;
+
+            GeoPhoenixFaction faction = _pendingFaction ?? level?.PhoenixFaction;
+            if (faction == null)
+            {
+                TFTVLogger.Always("[Workers] Pending info bar update skipped: no faction available.");
+            }
+            if (faction == null) return;
+
+            TryUpdateInfoBar(faction);
+        }
+
         // Track if we've logged the missing infobar once (avoid spamming each slot set).
         private static bool _pendingInfoBarLog = false;
+        private static bool _pendingInfoBarUpdate = false;
+        private static GeoPhoenixFaction _pendingFaction;
     }
 }

@@ -667,19 +667,22 @@ namespace TFTV.TFTVBaseRework
         {
             if (level?.PhoenixFaction == null || snapshot == null) return;
 
+            TFTVLogger.Always($"[Training] Loading {snapshot.Count()} recruit sessions. Phoenix bases={level.PhoenixFaction.Bases.Count()}");
+
             foreach (var save in snapshot)
             {
                 try
                 {
                     GeoUnitDescriptor descriptor = PersonnelData.GetPersonnelById(save.PersonnelId)?.Descriptor;
 
+                    TFTVLogger.Always($"[Training] Restoring session PersonnelId={save.PersonnelId} DescriptorFound={(descriptor != null)} FacilityId={save.FacilityId} Completed={save.Completed}");
 
                     var facility = level.PhoenixFaction.Bases
                         .SelectMany(b => b.Layout.Facilities)
                         .FirstOrDefault(f => f.FacilityId == save.FacilityId);
                     if (facility == null) continue;
 
-                  
+                    TFTVLogger.Always($"[Training] Facility found: ({facility.FacilityId})");
 
                     if (descriptor == null)
                     {
@@ -698,6 +701,8 @@ namespace TFTV.TFTVBaseRework
                     if (!string.IsNullOrEmpty(save.IdentityName))
                     {
                         descriptor.Identity = new GeoUnitDescriptor.IdentityDescriptor(save.IdentityName, save.IdentitySex);
+                        TFTVLogger.Always($"[Training] Set descriptor identity to {save.IdentityName} ({save.IdentitySex})");
+
                     }
 
                     SpecializationDef spec = null;
@@ -708,6 +713,7 @@ namespace TFTV.TFTVBaseRework
                     if (spec != null)
                     {
                         OverrideDescriptorMainSpec(descriptor, spec, rebuildPersonalAbilities: true);
+                        TFTVLogger.Always($"[Training] Restored main spec {spec.name} for {descriptor.GetName()}");
                     }
 
                     var recruitSessionList = GetOrCreateRecruitFacilityList(facility);
@@ -723,6 +729,8 @@ namespace TFTV.TFTVBaseRework
                         VirtualLevelAchieved = save.VirtualLevelAchieved,
                         Completed = save.Completed
                     });
+
+                    TFTVLogger.Always($"[Training] Session restored: PersonnelId={personnel.Id} Descriptor={descriptor.GetName()} TargetLevel={save.TargetLevel} Completed={save.Completed}");
                 }
                 catch (Exception e) { TFTVLogger.Error(e); }
             }

@@ -105,6 +105,7 @@ namespace TFTV
                     phoenix.RegenerateNakedRecruits();
                 }
                 PersonnelData.SyncFromNakedRecruits(phoenix);
+                Workers.FlushPendingInfoBarUpdate(gsController);
             }
             catch (Exception e) { TFTVLogger.Error(e); }
 
@@ -344,12 +345,6 @@ namespace TFTV
                 PersonnelData.ClearAssignments();
                 ClearAllSessions();
 
-               
-                if (data.RecruitTrainingSessions != null && data.RecruitTrainingSessions.Count > 0)
-                {
-                    LoadRecruitSessionsSnapshot(Controller, data.RecruitTrainingSessions);
-                }
-
                 if (data.PersonnelPool != null)
                 {
                     PersonnelData.LoadAssignmentsSnapshot(Controller, data.PersonnelPool);
@@ -359,6 +354,11 @@ namespace TFTV
                         TFTVLogger.Always($"[PersonnelPersistence]   Personnel Id={personnel.PersonnelId} Name={personnel.IdentityName} Assignment={personnel.Assignment}");
                     }
 
+                }
+
+                if (data.RecruitTrainingSessions != null && data.RecruitTrainingSessions.Count > 0)
+                {
+                    LoadRecruitSessionsSnapshot(Controller, data.RecruitTrainingSessions);
                 }
 
                 TFTVLogger.Always($"[PersonnelPersistence] Restored Personnel={data.PersonnelPool?.Count ?? 0} TrainingSessions={data.RecruitTrainingSessions?.Count ?? 0}");

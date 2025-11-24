@@ -68,6 +68,7 @@ namespace TFTV.TFTVBaseRework
             _assignments.Clear();
             _personnel.Clear();
             _nextPersonnelId = 1;
+            TFTVLogger.Always("[PersonnelData] Cleared assignments and personnel pool.");
         }
 
         private static PersonnelInfo FindPersonnel(GeoUnitDescriptor descriptor)
@@ -204,6 +205,7 @@ namespace TFTV.TFTVBaseRework
                 {
                     _assignments.Remove(descriptor);
                     changed = true;
+                    TFTVLogger.Always($"[PersonnelData] Removed descriptor {descriptor.GetName()} no longer in naked recruits.");
                 }
             }
 
@@ -293,6 +295,8 @@ namespace TFTV.TFTVBaseRework
             if (level?.PhoenixFaction == null || snapshot == null) return;
             var phoenix = level.PhoenixFaction;
 
+            TFTVLogger.Always($"[PersonnelData] Loading assignments snapshot for {phoenix?.Bases.Count()} bases.");
+
             _assignments.Clear();
 
             foreach (var save in snapshot)
@@ -301,6 +305,9 @@ namespace TFTV.TFTVBaseRework
                 info.Assignment = save.Assignment;
                 info.TrainingCompleteNotDeployed = save.TrainingCompleteNotDeployed;
                 info.DeploymentUIOpened = save.DeploymentUIOpened;
+
+                TFTVLogger.Always($"[PersonnelData] Restoring personnel id={info.Id} name={save.IdentityName ?? save.DescriptorName} assignment={info.Assignment} descriptor present={(info.Descriptor != null)}");
+
 
                 if (!string.IsNullOrEmpty(save.MainSpecName))
                 {
@@ -320,6 +327,9 @@ namespace TFTV.TFTVBaseRework
                 _personnel.Count(pi => pi.Assignment == PersonnelAssignment.Research));
             ResearchManufacturingSlotsManager.SetUsedSlots(phoenix, FacilitySlotType.Manufacturing,
                 _personnel.Count(pi => pi.Assignment == PersonnelAssignment.Manufacturing));
+
+            TFTVLogger.Always($"[PersonnelData] After load: ResearchUsed={_personnel.Count(pi => pi.Assignment == PersonnelAssignment.Research)} ManufacturingUsed={_personnel.Count(pi => pi.Assignment == PersonnelAssignment.Manufacturing)} Total={_personnel.Count}");
+
         }
     }
 }
