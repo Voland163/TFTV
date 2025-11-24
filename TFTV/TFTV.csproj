@@ -153,6 +153,7 @@
     <Compile Include="TFTVAircraftRework\VehiclesAndMutogs.cs" />
     <Compile Include="TFTVAnniversaryCheats.cs" />
     <Compile Include="TFTVBackgrounds.cs" />
+    <Compile Include="TFTVBaseRework\Data.cs" />
     <Compile Include="TFTVBaseRework\FacilityLivingSpace.cs" />
     <Compile Include="TFTVBaseRework\LivingQuarters.cs" />
     <Compile Include="TFTVBaseRework\TrainingFacilityRework.cs" />

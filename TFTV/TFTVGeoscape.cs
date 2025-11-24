@@ -5,6 +5,7 @@ using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Modding;
 using System;
@@ -190,7 +191,7 @@ namespace TFTV
             //  TFTVLogger.Always($"Items currently hidden in Aircraft inventory {TFTVUI.CurrentlyHiddenInv.Values.Count}");
             TFTVRevenant.RecordUpkeep.UpdateRevenantTimer(Controller);
             TFTVDragandDropFunctionality.VehicleRoster.RecordVehicleOrder(Controller);
-            PersonnelManagementUI.ResetDescriptorIdCache();
+
 
             return new TFTVGSInstanceData()
             {
@@ -343,27 +344,23 @@ namespace TFTV
                 PersonnelManagementUI.ClearAssignments();
                 ClearAllSessions();
 
-                var descriptorMap = data.PersonnelPool != null
-                  ? PersonnelManagementUI.RestoreNakedRecruitPool(Controller, data.PersonnelPool)
-                  : new Dictionary<Guid, GeoUnitDescriptor>();
-
-                // Restore training sessions first (they generate descriptors used by training-assigned personnel).
+               
                 if (data.RecruitTrainingSessions != null && data.RecruitTrainingSessions.Count > 0)
                 {
-                    LoadRecruitSessionsSnapshot(Controller, data.RecruitTrainingSessions, descriptorMap);
+                    LoadRecruitSessionsSnapshot(Controller, data.RecruitTrainingSessions);
                 }
 
-                // Restore personnel assignments (unassigned, research, manufacturing, training).
                 if (data.PersonnelPool != null)
                 {
-                    PersonnelManagementUI.LoadAssignmentsSnapshot(Controller, data.PersonnelPool, descriptorMap);
+                    PersonnelManagementUI.LoadAssignmentsSnapshot(Controller, data.PersonnelPool);
 
                     foreach (var personnel in data.PersonnelPool)
                     {
-                        TFTVLogger.Always($"[PersonnelPersistence]   Personnel DescriptorId={personnel.DescriptorId} Name={personnel.IdentityName} Assignment={personnel.Assignment}");
+                        TFTVLogger.Always($"[PersonnelPersistence]   Personnel Id={personnel.PersonnelId} Name={personnel.IdentityName} Assignment={personnel.Assignment}");
                     }
 
                 }
+
                 TFTVLogger.Always($"[PersonnelPersistence] Restored Personnel={data.PersonnelPool?.Count ?? 0} TrainingSessions={data.RecruitTrainingSessions?.Count ?? 0}");
 
                 

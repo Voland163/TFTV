@@ -39,6 +39,7 @@ namespace TFTV.TFTVBaseRework
         #region Data Model (Recruit descriptor training ONLY)
         public sealed class RecruitTrainingSession
         {
+            public int PersonnelId;
             public GeoUnitDescriptor Descriptor;
             public SpecializationDef TargetSpecialization;
             public GeoPhoenixFacility Facility;
@@ -84,6 +85,7 @@ namespace TFTV.TFTVBaseRework
 
                 var recruitSession = new RecruitTrainingSession
                 {
+                    PersonnelId = PersonnelManagementUI.GetOrCreatePersonnelId(descriptor),
                     Descriptor = descriptor,
                     TargetSpecialization = spec,
                     Facility = facility,
@@ -104,12 +106,8 @@ namespace TFTV.TFTVBaseRework
         public static RecruitTrainingSession GetRecruitSession(GeoUnitDescriptor descriptor)
         {
             if (descriptor == null) return null;
-            foreach (var kv in RecruitFacilitySessions)
-            {
-                var s = kv.Value.FirstOrDefault(x => x.Descriptor == descriptor);
-                if (s != null) return s;
-            }
-            return null;
+            var id = PersonnelManagementUI.GetPersonnelByDescriptor(descriptor)?.Id ?? 0;
+            return RecruitFacilitySessions.Values.SelectMany(v => v).FirstOrDefault(s => s.PersonnelId == id || s.Descriptor == descriptor);
         }
 
         public static int GetRecruitRemainingDays(GeoUnitDescriptor descriptor, GeoLevelController level)
@@ -623,9 +621,7 @@ namespace TFTV.TFTVBaseRework
         [SerializeType(SerializeMembersByDefault = SerializeMembersType.SerializeAll)]
         public sealed class RecruitTrainingSessionSave
         {
-            public Guid DescriptorId;
-            [NonSerialized]
-            public GeoUnitDescriptor Descriptor;
+            public int PersonnelId;
             public string DescriptorName;
             public string MainSpecName;
             public uint FacilityId;
@@ -646,11 +642,12 @@ namespace TFTV.TFTVBaseRework
                 var facility = kv.Key;
                 foreach (var s in kv.Value)
                 {
+                    var personnelId = s.PersonnelId != 0 ? s.PersonnelId : PersonnelManagementUI.GetOrCreatePersonnelId(s.Descriptor);
+
                     list.Add(new RecruitTrainingSessionSave
                     {
-                        DescriptorId = PersonnelManagementUI.GetOrCreateDescriptorId(s.Descriptor),
-                        Descriptor = s.Descriptor,
-                        DescriptorName = s.Descriptor.GetName(),
+                        PersonnelId = personnelId,
+                        DescriptorName = s.Descriptor?.GetName(),
                         MainSpecName = s.TargetSpecialization?.name,
                         FacilityId = facility.FacilityId,
                         StartDay = s.StartDay,
@@ -658,15 +655,15 @@ namespace TFTV.TFTVBaseRework
                         TargetLevel = s.TargetLevel,
                         VirtualLevelAchieved = s.VirtualLevelAchieved,
                         Completed = s.Completed,
-                        IdentityName = s.Descriptor.Identity?.Name,
-                        IdentitySex = s.Descriptor.Identity?.Sex ?? GeoCharacterSex.None
+                        IdentityName = s.Descriptor?.Identity?.Name,
+                        IdentitySex = s.Descriptor?.Identity?.Sex ?? GeoCharacterSex.None
                     });
                 }
             }
             return list;
         }
 
-        public static void LoadRecruitSessionsSnapshot(GeoLevelController level, IEnumerable<RecruitTrainingSessionSave> snapshot, IDictionary<Guid, GeoUnitDescriptor> descriptorMap = null)
+        public static void LoadRecruitSessionsSnapshot(GeoLevelController level, IEnumerable<RecruitTrainingSessionSave> snapshot)
         {
             if (level?.PhoenixFaction == null || snapshot == null) return;
 
@@ -674,27 +671,14 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
-                    GeoUnitDescriptor descriptor = null;
-                    if (descriptorMap != null && save.DescriptorId != Guid.Empty)
-                    {
-                        descriptorMap.TryGetValue(save.DescriptorId, out descriptor);
-                    }
-
-                    if (descriptor == null)
-                    {
-                        descriptor = level.PhoenixFaction.NakedRecruits.Keys.FirstOrDefault(d => d.GetName() == save.DescriptorName &&
-                                                                                               (d.Identity?.Name == save.IdentityName || string.IsNullOrEmpty(save.IdentityName)));
-                    }
+                    GeoUnitDescriptor descriptor = PersonnelManagementUI.GetPersonnelById(save.PersonnelId)?.Descriptor;
 
                     var facility = level.PhoenixFaction.Bases
                         .SelectMany(b => b.Layout.Facilities)
                         .FirstOrDefault(f => f.FacilityId == save.FacilityId);
                     if (facility == null) continue;
 
-                    if (descriptor == null)
-                    {
-                        descriptor = save.Descriptor;
-                    }
+                  
 
                     if (descriptor == null)
                     {
@@ -703,6 +687,10 @@ namespace TFTV.TFTVBaseRework
                     }
 
                     if (descriptor == null) continue;
+
+                    var personnel = PersonnelManagementUI.EnsurePersonnelFromSave(save.PersonnelId, save.DescriptorName, save.IdentityName, save.IdentitySex, save.MainSpecName);
+                    personnel.Descriptor = descriptor;
+                    PersonnelManagementUI.SyncFromNakedRecruits(level.PhoenixFaction);
 
                     PersonnelManagementUI.EnsureDescriptorInPool(level.PhoenixFaction, descriptor);
 
@@ -724,6 +712,7 @@ namespace TFTV.TFTVBaseRework
                     var recruitSessionList = GetOrCreateRecruitFacilityList(facility);
                     recruitSessionList.Add(new RecruitTrainingSession
                     {
+                        PersonnelId = personnel.Id,
                         Descriptor = descriptor,
                         TargetSpecialization = spec,
                         Facility = facility,
