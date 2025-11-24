@@ -73,8 +73,7 @@ namespace TFTV
         public Dictionary<int, List<int>> AircraftScanningSites;
 
         // Personnel management persistence (assignment metadata only; descriptors are in vanilla NakedRecruits)
-        public List<PersonnelAssignmentSave> PersonnelPool;
-        public List<RecruitTrainingSessionSave> RecruitTrainingSessions;
+
         public int PersonnelLastGenerationDay;
     }
 
@@ -241,9 +240,6 @@ namespace TFTV
                 AircraftScanningSites = AircraftReworkGeoscape.Scanning.AircraftScanningSites,
                 NewTrainingFacilities = TFTVNewGameOptions.NewTrainingFacilities,
 
-                // Personnel & training sessions snapshot
-                PersonnelPool = PersonnelData.CreateAssignmentsSnapshot(),
-                RecruitTrainingSessions = CreateRecruitSessionsSnapshot(),
             };
         }
         /// <summary>
@@ -342,26 +338,7 @@ namespace TFTV
 
                 TFTVCustomPortraits.CharacterPortrait.characterPics = data.CharacterPortraits;
 
-                PersonnelData.ClearAssignments();
-                ClearAllSessions();
-
-                if (data.PersonnelPool != null)
-                {
-                    PersonnelData.LoadAssignmentsSnapshot(Controller, data.PersonnelPool);
-
-                    foreach (var personnel in data.PersonnelPool)
-                    {
-                        TFTVLogger.Always($"[PersonnelPersistence]   Personnel Id={personnel.PersonnelId} Name={personnel.IdentityName} Assignment={personnel.Assignment}");
-                    }
-
-                }
-
-                if (data.RecruitTrainingSessions != null && data.RecruitTrainingSessions.Count > 0)
-                {
-                    LoadRecruitSessionsSnapshot(Controller, data.RecruitTrainingSessions);
-                }
-
-                TFTVLogger.Always($"[PersonnelPersistence] Restored Personnel={data.PersonnelPool?.Count ?? 0} TrainingSessions={data.RecruitTrainingSessions?.Count ?? 0}");
+              
 
                 
 
@@ -852,3 +829,4 @@ namespace TFTV
         }
     }
 }
+

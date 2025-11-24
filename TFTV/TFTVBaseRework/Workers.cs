@@ -2,6 +2,7 @@
 using Base.Core;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Sites;
@@ -9,12 +10,13 @@ using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace TFTV.TFTVBaseRework
 {
-    internal class Workers
+    internal static class Workers
     {
         internal const float WorkerOutputPerSlot = 2.0f;
 
@@ -291,6 +293,15 @@ namespace TFTV.TFTVBaseRework
             if (faction == null) return;
 
             TryUpdateInfoBar(faction);
+        }
+
+        internal static void RecalculateAll(GeoPhoenixFaction faction)
+        {
+            ResearchManufacturingSlotsManager.RecalculateSlots(faction);
+            ResearchManufacturingSlotsManager.SetUsedSlots(faction, FacilitySlotType.Research,
+                HiddenPersonnelManager.Records.Count(r => r.Assignment == HiddenPersonnelAssignment.Research));
+            ResearchManufacturingSlotsManager.SetUsedSlots(faction, FacilitySlotType.Manufacturing,
+                HiddenPersonnelManager.Records.Count(r => r.Assignment == HiddenPersonnelAssignment.Manufacturing));
         }
 
         // Track if we've logged the missing infobar once (avoid spamming each slot set).
