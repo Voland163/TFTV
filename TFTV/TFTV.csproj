@@ -158,6 +158,7 @@
     <Compile Include="TFTVBaseRework\LivingQuarters.cs" />
     <Compile Include="TFTVBaseRework\TrainingFacilityRework.cs" />
     <Compile Include="TFTVBaseRework\UI.cs" />
+    <Compile Include="TFTVBaseRework\Utils.cs" />
     <Compile Include="TFTVBaseRework\Workers.cs" />
     <Compile Include="TFTVCrisis.cs" />
     <Compile Include="TFTVCustomPortraits.cs" />

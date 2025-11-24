@@ -15,187 +15,42 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using static TFTV.TFTVBaseRework.BaseReworkUtils;
+using static TFTV.TFTVBaseRework.PersonnelData;
 using static TFTV.TFTVBaseRework.Workers;
 using Object = UnityEngine.Object;
 
 namespace TFTV.TFTVBaseRework
 {
-    public enum PersonnelAssignment
-    {
-        Unassigned,
-        Research,
-        Manufacturing,
-        Training
-    }
-
-    internal class PersonnelInfo
-    {
-        public int Id;
-        public GeoUnitDescriptor Descriptor;
-        public PersonnelAssignment Assignment;
-        public SpecializationDef TrainingSpec;
-        public GeoCharacter CreatedCharacter;
-        public GeoPhoenixFacility TrainingFacility;
-        public bool TrainingCompleteNotDeployed;
-        public bool DeploymentUIOpened;
-
-        public string SavedDescriptorName;
-        public string SavedIdentityName;
-        public GeoCharacterSex SavedIdentitySex;
-        public string SavedMainSpecName;
-    }
+  
 
     public static class PersonnelManagementUI
     {
         private const string PersonnelContainerName = "TFTV_PersonnelContainer";
         private const string LogPrefix = "[PersonnelUI]";
 
-        private static readonly Dictionary<GeoUnitDescriptor, PersonnelInfo> _assignments = new Dictionary<GeoUnitDescriptor, PersonnelInfo>();
-        private static readonly List<PersonnelInfo> _personnel = new List<PersonnelInfo>();
-        private static int _nextPersonnelId = 1;
-
         private static GameObject _personnelPanel;
         private static GameObject _modalRoot;
         private static bool _deploymentUIActive;
 
-       
 
         private static bool _isBuildingUI;
 
-        internal static IEnumerable<PersonnelInfo> CurrentPersonnel => _personnel;
-
-        internal static void ClearAssignments()
+        private static void RefreshPersonnelPanel()
         {
-            try
+            if (_personnelPanel == null || _isBuildingUI) return;
+
+            if (GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()
+               ?.View?.CurrentViewState is UIStateRosterRecruits state)
             {
-                _assignments.Clear();
-                _personnel.Clear();
-                _nextPersonnelId = 1;
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
 
-        private static PersonnelInfo FindPersonnel(GeoUnitDescriptor descriptor)
-        {
-            if (descriptor == null) return null;
-            _assignments.TryGetValue(descriptor, out var info);
-            return info;
-        }
-
-        private static PersonnelInfo FindPersonnelByIdentity(GeoUnitDescriptor descriptor)
-        {
-            if (descriptor?.Identity == null) return null;
-            return _personnel.FirstOrDefault(p => string.Equals(p.SavedIdentityName, descriptor.Identity.Name, StringComparison.Ordinal)
-                                                  && p.SavedIdentitySex == descriptor.Identity.Sex);
-        }
-
-        private static PersonnelInfo CreatePersonnelRecord(GeoUnitDescriptor descriptor)
-        {
-            var info = new PersonnelInfo
-            {
-                Id = _nextPersonnelId++,
-                Descriptor = descriptor,
-                Assignment = PersonnelAssignment.Unassigned,
-                SavedDescriptorName = descriptor?.GetName(),
-                SavedIdentityName = descriptor?.Identity?.Name,
-                SavedIdentitySex = descriptor?.Identity?.Sex ?? GeoCharacterSex.None,
-                SavedMainSpecName = descriptor?.Progression?.MainSpecDef?.name
-            };
-
-            _personnel.Add(info);
-            if (descriptor != null && !_assignments.ContainsKey(descriptor))
-            {
-                _assignments[descriptor] = info;
-            }
-
-            return info;
-        }
-
-        private static void AttachDescriptor(GeoUnitDescriptor descriptor)
-        {
-            if (descriptor == null) return;
-
-            var info = FindPersonnel(descriptor) ?? FindPersonnelByIdentity(descriptor);
-            if (info == null)
-            {
-                info = CreatePersonnelRecord(descriptor);
-            }
-            else
-            {
-                info.Descriptor = descriptor;
-                info.SavedDescriptorName = descriptor.GetName();
-                info.SavedIdentityName = descriptor.Identity?.Name;
-                info.SavedIdentitySex = descriptor.Identity?.Sex ?? GeoCharacterSex.None;
-                if (!_assignments.ContainsKey(descriptor))
-                {
-                    _assignments[descriptor] = info;
-                }
-            }
-        }
-
-        internal static int GetOrCreatePersonnelId(GeoUnitDescriptor descriptor)
-        {
-            var info = FindPersonnel(descriptor) ?? CreatePersonnelRecord(descriptor);
-            return info.Id;
-        }
-
-        internal static PersonnelInfo GetPersonnelById(int id)
-        {
-            return _personnel.FirstOrDefault(p => p.Id == id);
-        }
-
-        internal static PersonnelInfo GetPersonnelByDescriptor(GeoUnitDescriptor descriptor)
-        {
-            return FindPersonnel(descriptor);
-        }
-
-        internal static PersonnelInfo EnsurePersonnelFromSave(int id, string descriptorName, string identityName, GeoCharacterSex identitySex, string mainSpec)
-        {
-            var info = GetPersonnelById(id);
-            if (info == null) 
-            {
-                info = new PersonnelInfo
-                {
-                    Id = id,
-                    Assignment = PersonnelAssignment.Unassigned,
-                    SavedDescriptorName = descriptorName,
-                    SavedIdentityName = identityName,
-                    SavedIdentitySex = identitySex,
-                    SavedMainSpecName = mainSpec
-                };
-                _personnel.Add(info);
-                _nextPersonnelId = Math.Max(_nextPersonnelId, id + 1);
-            }
-            return info;
-        }
-
-        internal static void EnsureDescriptorInPool(GeoPhoenixFaction faction, GeoUnitDescriptor descriptor)
-        {
-            try
-            {
-                if (faction == null || descriptor == null) return;
-
-                var nakedRecruits = faction.NakedRecruits;
-                if (nakedRecruits is IDictionary dict)
-                {
-                    if (!dict.Contains(descriptor))
-                    {
-                        dict[descriptor] = null;
-                    }
-                }
-                SyncFromNakedRecruits(faction);
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
+                Object.Destroy(_personnelPanel);
+                _personnelPanel = null;
+                CreatePersonnelPanel(state);
             }
         }
 
 
-    
         #region Sync From Vanilla Naked Recruits
         internal static void SyncFromNakedRecruits(GeoPhoenixFaction phoenix)
         {
@@ -203,33 +58,10 @@ namespace TFTV.TFTVBaseRework
             {
                 if (phoenix == null) return;
 
-                foreach (var kv in phoenix.NakedRecruits)
+                bool updated = PersonnelData.SyncFromNakedRecruits(phoenix);
+                if (updated)
                 {
-                    if (kv.Key == null) continue;
-                    AttachDescriptor(kv.Key);
-
-                }
-
-                var activeDescriptors = new HashSet<GeoUnitDescriptor>(phoenix.NakedRecruits.Keys);
-                var mappedDescriptors = _assignments.Keys.ToList();
-
-                foreach (var descriptor in mappedDescriptors)
-                {
-                    if (!activeDescriptors.Contains(descriptor))
-                    {
-                        _assignments.Remove(descriptor);
-                    }
-                }
-
-                if (_personnelPanel != null && !_isBuildingUI)
-                {
-                    if (GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()
-                        ?.View?.CurrentViewState is UIStateRosterRecruits state)
-                    {
-                        Object.Destroy(_personnelPanel);
-                        _personnelPanel = null;
-                        CreatePersonnelPanel(state);
-                    }
+                    RefreshPersonnelPanel();
                 }
             }
             catch (Exception e) { TFTVLogger.Error(e); }
@@ -247,7 +79,7 @@ namespace TFTV.TFTVBaseRework
 
                 if (!_deploymentUIActive)
                 {
-                    foreach (var p in _assignments.Values)
+                    foreach (var p in CurrentPersonnel)
                     {
                         if (p.Assignment == PersonnelAssignment.Training &&
                             p.Descriptor != null &&
@@ -399,10 +231,10 @@ namespace TFTV.TFTVBaseRework
         private static void PopulatePersonnelUI(UIStateRosterRecruits state, GeoLevelController level, Transform personnelRoot)
         {
             if (personnelRoot == null || level?.PhoenixFaction == null) return;
-            ClearChildren(personnelRoot);
+            ClearTransformChildren(personnelRoot);
 
             var phoenix = level.PhoenixFaction;
-            SyncFromNakedRecruits(phoenix);
+            PersonnelData.SyncFromNakedRecruits(phoenix);
 
             Action refresh = () =>
             {
@@ -417,13 +249,7 @@ namespace TFTV.TFTVBaseRework
             LayoutRebuilder.ForceRebuildLayoutImmediate(personnelRoot.GetComponent<RectTransform>());
         }
 
-        private static void ClearChildren(Transform root)
-        {
-            for (int i = root.childCount - 1; i >= 0; i--)
-            {
-                Object.Destroy(root.GetChild(i).gameObject);
-            }
-        }
+        
         #endregion
 
         #region Card
@@ -887,143 +713,6 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
-        private static void RemoveDescriptorFromNakedPool(GeoPhoenixFaction faction, GeoUnitDescriptor descriptor)
-        {
-            try
-            {
-                if (faction?.NakedRecruits.ContainsKey(descriptor) == true)
-                {
-                    faction.NakedRecruits.Remove(descriptor);
-                }
-                _assignments.Remove(descriptor);
-            }
-            catch (Exception e) { TFTVLogger.Error(e); }
-        }
-        #endregion
-
-        #region Logic Actions
-        private static List<SpecializationDef> ResolveAvailableMainSpecs(GeoLevelController level)
-        {
-            var faction = level?.PhoenixFaction;
-            if (faction == null) return new List<SpecializationDef>();
-            return TrainingFacilityRework.GetAvailableTrainingSpecializations(faction).ToList();
-        }
-
-        private static void AssignWorker(PersonnelInfo person, GeoPhoenixFaction faction, FacilitySlotType slotType)
-        {
-            if (person?.Descriptor == null || faction == null) return;
-            ResearchManufacturingSlotsManager.RecalculateSlots(faction);
-
-            PersonnelAssignment desired = slotType == FacilitySlotType.Research
-                ? PersonnelAssignment.Research
-                : PersonnelAssignment.Manufacturing;
-
-            if (person.Assignment == desired) return;
-            var previous = person.Assignment;
-
-            bool slotAdded = ResearchManufacturingSlotsManager.IncrementUsedSlot(faction, slotType);
-            if (!slotAdded)
-            {
-                TFTVLogger.Always($"{LogPrefix} No free {slotType} slots available (used >= provided).");
-                return;
-            }
-
-            ReleaseWorkSlotIfNeeded(faction, previous);
-            person.Assignment = desired;
-
-            GeoLevelController level = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-            UIModuleInfoBar infoBar = level.View.GeoscapeModules.ResourcesModule;
-            var update = AccessTools.Method(typeof(UIModuleInfoBar), "UpdateResourceInfo");
-            update.Invoke(infoBar, new object[] { faction, false });
-        }
-
-        private static void ReleaseWorkSlotIfNeeded(GeoPhoenixFaction faction, PersonnelAssignment assignment)
-        {
-            if (faction == null) return;
-            switch (assignment)
-            {
-                case PersonnelAssignment.Research:
-                    ResearchManufacturingSlotsManager.DecrementUsedSlot(faction, FacilitySlotType.Research);
-                    break;
-                case PersonnelAssignment.Manufacturing:
-                    ResearchManufacturingSlotsManager.DecrementUsedSlot(faction, FacilitySlotType.Manufacturing);
-                    break;
-            }
-        }
-        #endregion
-
-        #region Persistence (Assignments Only)
-        [SerializeType(SerializeMembersByDefault = SerializeMembersType.SerializeAll)]
-        public sealed class PersonnelAssignmentSave
-        {
-            public int PersonnelId;
-            public string DescriptorName;
-            public string IdentityName;
-            public GeoCharacterSex IdentitySex;
-            public string MainSpecName;
-            public PersonnelAssignment Assignment;
-            public bool TrainingCompleteNotDeployed;
-            public bool DeploymentUIOpened;
-        }
-
-        internal static List<PersonnelAssignmentSave> CreateAssignmentsSnapshot()
-        {
-            var list = new List<PersonnelAssignmentSave>();
-            foreach (var pi in _personnel)
-            {
-                
-                list.Add(new PersonnelAssignmentSave
-                {
-                    PersonnelId = pi.Id,
-                    DescriptorName = pi.Descriptor?.GetName() ?? pi.SavedDescriptorName,
-                    IdentityName = pi.Descriptor?.Identity?.Name ?? pi.SavedIdentityName,
-                    IdentitySex = pi.Descriptor?.Identity?.Sex ?? pi.SavedIdentitySex,
-                    MainSpecName = pi.TrainingSpec?.name ?? pi.Descriptor?.Progression?.MainSpecDef?.name ?? pi.SavedMainSpecName,
-                    Assignment = pi.Assignment,
-                    TrainingCompleteNotDeployed = pi.TrainingCompleteNotDeployed,
-                    DeploymentUIOpened = pi.DeploymentUIOpened
-                });
-            }
-            return list;
-        }
-
-        internal static void LoadAssignmentsSnapshot(GeoLevelController level, IEnumerable<PersonnelAssignmentSave> snapshot)
-        {
-            try
-            {
-                if (level?.PhoenixFaction == null || snapshot == null) return;
-                var phoenix = level.PhoenixFaction;
-
-                _assignments.Clear();
-
-                foreach (var save in snapshot)
-                {
-                    var info = EnsurePersonnelFromSave(save.PersonnelId, save.DescriptorName, save.IdentityName, save.IdentitySex, save.MainSpecName);
-                    info.Assignment = save.Assignment;
-                    info.TrainingCompleteNotDeployed = save.TrainingCompleteNotDeployed;
-                    info.DeploymentUIOpened = save.DeploymentUIOpened;
-
-                    if (!string.IsNullOrEmpty(save.MainSpecName))
-                    {
-                        try
-                        {
-                            var spec = TFTVMain.Main.DefCache.GetDef<SpecializationDef>(save.MainSpecName);
-                            if (spec != null) info.TrainingSpec = spec;
-                        }
-                        catch { }
-                    }
-                }
-
-                SyncFromNakedRecruits(phoenix);
-
-                ResearchManufacturingSlotsManager.RecalculateSlots(phoenix);
-                ResearchManufacturingSlotsManager.SetUsedSlots(phoenix, FacilitySlotType.Research,
-                    _personnel.Count(pi => pi.Assignment == PersonnelAssignment.Research));
-                ResearchManufacturingSlotsManager.SetUsedSlots(phoenix, FacilitySlotType.Manufacturing,
-                    _personnel.Count(pi => pi.Assignment == PersonnelAssignment.Manufacturing));
-            }
-            catch (Exception e) { TFTVLogger.Error(e); }
-        }
         #endregion
     }
 }

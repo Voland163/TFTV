@@ -73,8 +73,8 @@ namespace TFTV
         public Dictionary<int, List<int>> AircraftScanningSites;
 
         // Personnel management persistence (assignment metadata only; descriptors are in vanilla NakedRecruits)
-        public List<PersonnelManagementUI.PersonnelAssignmentSave> PersonnelPool;
-        public List<TrainingFacilityRework.RecruitTrainingSessionSave> RecruitTrainingSessions;
+        public List<PersonnelAssignmentSave> PersonnelPool;
+        public List<RecruitTrainingSessionSave> RecruitTrainingSessions;
         public int PersonnelLastGenerationDay;
     }
 
@@ -104,7 +104,7 @@ namespace TFTV
                 {
                     phoenix.RegenerateNakedRecruits();
                 }
-                TFTV.TFTVBaseRework.PersonnelManagementUI.SyncFromNakedRecruits(phoenix);
+                PersonnelData.SyncFromNakedRecruits(phoenix);
             }
             catch (Exception e) { TFTVLogger.Error(e); }
 
@@ -241,7 +241,7 @@ namespace TFTV
                 NewTrainingFacilities = TFTVNewGameOptions.NewTrainingFacilities,
 
                 // Personnel & training sessions snapshot
-                PersonnelPool = PersonnelManagementUI.CreateAssignmentsSnapshot(),
+                PersonnelPool = PersonnelData.CreateAssignmentsSnapshot(),
                 RecruitTrainingSessions = CreateRecruitSessionsSnapshot(),
             };
         }
@@ -341,7 +341,7 @@ namespace TFTV
 
                 TFTVCustomPortraits.CharacterPortrait.characterPics = data.CharacterPortraits;
 
-                PersonnelManagementUI.ClearAssignments();
+                PersonnelData.ClearAssignments();
                 ClearAllSessions();
 
                
@@ -352,7 +352,7 @@ namespace TFTV
 
                 if (data.PersonnelPool != null)
                 {
-                    PersonnelManagementUI.LoadAssignmentsSnapshot(Controller, data.PersonnelPool);
+                    PersonnelData.LoadAssignmentsSnapshot(Controller, data.PersonnelPool);
 
                     foreach (var personnel in data.PersonnelPool)
                     {

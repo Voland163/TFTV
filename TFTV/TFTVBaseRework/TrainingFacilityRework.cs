@@ -85,7 +85,7 @@ namespace TFTV.TFTVBaseRework
 
                 var recruitSession = new RecruitTrainingSession
                 {
-                    PersonnelId = PersonnelManagementUI.GetOrCreatePersonnelId(descriptor),
+                    PersonnelId = PersonnelData.GetOrCreatePersonnelId(descriptor),
                     Descriptor = descriptor,
                     TargetSpecialization = spec,
                     Facility = facility,
@@ -106,7 +106,7 @@ namespace TFTV.TFTVBaseRework
         public static RecruitTrainingSession GetRecruitSession(GeoUnitDescriptor descriptor)
         {
             if (descriptor == null) return null;
-            var id = PersonnelManagementUI.GetPersonnelByDescriptor(descriptor)?.Id ?? 0;
+            var id = PersonnelData.GetPersonnelByDescriptor(descriptor)?.Id ?? 0;
             return RecruitFacilitySessions.Values.SelectMany(v => v).FirstOrDefault(s => s.PersonnelId == id || s.Descriptor == descriptor);
         }
 
@@ -642,7 +642,7 @@ namespace TFTV.TFTVBaseRework
                 var facility = kv.Key;
                 foreach (var s in kv.Value)
                 {
-                    var personnelId = s.PersonnelId != 0 ? s.PersonnelId : PersonnelManagementUI.GetOrCreatePersonnelId(s.Descriptor);
+                    var personnelId = s.PersonnelId != 0 ? s.PersonnelId : PersonnelData.GetOrCreatePersonnelId(s.Descriptor);
 
                     list.Add(new RecruitTrainingSessionSave
                     {
@@ -671,7 +671,8 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
-                    GeoUnitDescriptor descriptor = PersonnelManagementUI.GetPersonnelById(save.PersonnelId)?.Descriptor;
+                    GeoUnitDescriptor descriptor = PersonnelData.GetPersonnelById(save.PersonnelId)?.Descriptor;
+
 
                     var facility = level.PhoenixFaction.Bases
                         .SelectMany(b => b.Layout.Facilities)
@@ -688,11 +689,11 @@ namespace TFTV.TFTVBaseRework
 
                     if (descriptor == null) continue;
 
-                    var personnel = PersonnelManagementUI.EnsurePersonnelFromSave(save.PersonnelId, save.DescriptorName, save.IdentityName, save.IdentitySex, save.MainSpecName);
+                    var personnel = PersonnelData.EnsurePersonnelFromSave(save.PersonnelId, save.DescriptorName, save.IdentityName, save.IdentitySex, save.MainSpecName);
                     personnel.Descriptor = descriptor;
-                    PersonnelManagementUI.SyncFromNakedRecruits(level.PhoenixFaction);
+                    PersonnelData.SyncFromNakedRecruits(level.PhoenixFaction);
 
-                    PersonnelManagementUI.EnsureDescriptorInPool(level.PhoenixFaction, descriptor);
+                    PersonnelData.EnsureDescriptorInPool(level.PhoenixFaction, descriptor);
 
                     if (!string.IsNullOrEmpty(save.IdentityName))
                     {
