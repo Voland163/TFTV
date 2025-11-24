@@ -295,15 +295,6 @@ namespace TFTV.TFTVBaseRework
             TryUpdateInfoBar(faction);
         }
 
-        internal static void RecalculateAll(GeoPhoenixFaction faction)
-        {
-            ResearchManufacturingSlotsManager.RecalculateSlots(faction);
-            ResearchManufacturingSlotsManager.SetUsedSlots(faction, FacilitySlotType.Research,
-                HiddenPersonnelManager.Records.Count(r => r.Assignment == HiddenPersonnelAssignment.Research));
-            ResearchManufacturingSlotsManager.SetUsedSlots(faction, FacilitySlotType.Manufacturing,
-                HiddenPersonnelManager.Records.Count(r => r.Assignment == HiddenPersonnelAssignment.Manufacturing));
-        }
-
         // Track if we've logged the missing infobar once (avoid spamming each slot set).
         private static bool _pendingInfoBarLog = false;
         private static bool _pendingInfoBarUpdate = false;

@@ -73,7 +73,8 @@ namespace TFTV
         public Dictionary<int, List<int>> AircraftScanningSites;
 
         // Personnel management persistence (assignment metadata only; descriptors are in vanilla NakedRecruits)
-
+        public List<PersonnelAssignmentSave> PersonnelPool;
+        public List<RecruitTrainingSessionSave> RecruitTrainingSessions;
         public int PersonnelLastGenerationDay;
     }
 
@@ -144,12 +145,12 @@ namespace TFTV
             AircraftReworkSpeed.Init(Controller);
 
 
-           /* foreach (GeoPhoenixBase phoenixBase in gsController.PhoenixFaction.Bases)
-            {
-                TFTVBaseDefenseGeoscape.GeoObjective.RemoveBaseDefenseObjective(phoenixBase.Site.LocalizedSiteName);
-            }
+            /* foreach (GeoPhoenixBase phoenixBase in gsController.PhoenixFaction.Bases)
+             {
+                 TFTVBaseDefenseGeoscape.GeoObjective.RemoveBaseDefenseObjective(phoenixBase.Site.LocalizedSiteName);
+             }
 
-            TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Clear();*/
+             TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Clear();*/
 
         }
         /// <summary>
@@ -240,6 +241,9 @@ namespace TFTV
                 AircraftScanningSites = AircraftReworkGeoscape.Scanning.AircraftScanningSites,
                 NewTrainingFacilities = TFTVNewGameOptions.NewTrainingFacilities,
 
+                // Personnel & training sessions snapshot
+                PersonnelPool = PersonnelData.CreateAssignmentsSnapshot(),
+                RecruitTrainingSessions = CreateRecruitSessionsSnapshot(),
             };
         }
         /// <summary>
@@ -338,9 +342,28 @@ namespace TFTV
 
                 TFTVCustomPortraits.CharacterPortrait.characterPics = data.CharacterPortraits;
 
-              
+                PersonnelData.ClearAssignments();
+                ClearAllSessions();
 
-                
+                if (data.PersonnelPool != null)
+                {
+                    PersonnelData.LoadAssignmentsSnapshot(Controller, data.PersonnelPool);
+
+                    foreach (var personnel in data.PersonnelPool)
+                    {
+                        TFTVLogger.Always($"[PersonnelPersistence]   Personnel Id={personnel.PersonnelId} Name={personnel.IdentityName} Assignment={personnel.Assignment}");
+                    }
+
+                }
+
+                if (data.RecruitTrainingSessions != null && data.RecruitTrainingSessions.Count > 0)
+                {
+                    LoadRecruitSessionsSnapshot(Controller, data.RecruitTrainingSessions);
+                }
+
+                TFTVLogger.Always($"[PersonnelPersistence] Restored Personnel={data.PersonnelPool?.Count ?? 0} TrainingSessions={data.RecruitTrainingSessions?.Count ?? 0}");
+
+
 
 
                 TFTVLogger.Always($"Config settings:" +
@@ -354,14 +377,14 @@ namespace TFTV
                 TFTVDefsWithConfigDependency.ImplementConfigChoices();
                 TFTVDragandDropFunctionality.VehicleRoster.RestoreVehicleOrder(Controller);
                 AircraftReworkGeoscape.Scanning.AircraftScanningSites = data.AircraftScanningSites;
-            
- 
+
+
                 //   TFTVBetaSaveGamesFixes.Fix(Controller);
 
-                 // TFTVNewGameOptions.Update35Check = data.Update35GeoscapeCheck;
+                // TFTVNewGameOptions.Update35Check = data.Update35GeoscapeCheck;
 
-                 //  Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
-                 Main.Logger.LogInfo("# Characters with broken limbs: " + TFTVStamina.charactersWithDisabledBodyParts.Count);
+                //  Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
+                Main.Logger.LogInfo("# Characters with broken limbs: " + TFTVStamina.charactersWithDisabledBodyParts.Count);
                 Main.Logger.LogInfo("# Behemoth targets for this emergence: " + TFTVBehemothAndRaids.targetsForBehemoth.Count);
                 //    Main.Logger.LogInfo("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);
                 Main.Logger.LogInfo("# Pandoran flyers that have visited havens on this emergence:  " + TFTVBehemothAndRaids.flyersAndHavens.Count);
@@ -374,7 +397,7 @@ namespace TFTV
                 Main.Logger.LogInfo("Project Osiris stats count " + TFTVRevenant.TFTVRevenantResearch.ProjectOsirisStats.Count);
                 //  Main.Logger.LogInfo("LOTAGlobalReworkCheck is " + TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck);
                 Main.Logger.LogInfo($"Bases under attack count {TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Count}");
-              
+
                 Main.Logger.LogInfo($"Infested Phoenix bases {TFTVBaseDefenseGeoscape.PhoenixBasesInfested.Count}");
                 Main.Logger.LogInfo($"Supplies from Pandas pending processing {TFTVCapturePandoransGeoscape.PandasForFoodProcessing}");
                 Main.Logger.LogInfo($"Toxins in food {TFTVCapturePandoransGeoscape.ToxinsInCirculation}");
@@ -517,13 +540,13 @@ namespace TFTV
                             siteInfo.SiteTags.Add("StartingPhoenixBase");
                         }
                     }
-                    else 
+                    else
                     {
                         if (siteInfo.SiteTags.Contains("StartingPhoenixBase"))
                         {
                             siteInfo.SiteTags.Remove("StartingPhoenixBase");
                         }
-                    }       
+                    }
                 }
 
 

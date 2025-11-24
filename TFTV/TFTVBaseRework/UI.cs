@@ -1,17 +1,22 @@
 ﻿using Base.Core;
+using Base.Serialization.General;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using static TFTV.TFTVBaseRework.BaseReworkUtils;
+using static TFTV.TFTVBaseRework.PersonnelData;
 using static TFTV.TFTVBaseRework.Workers;
 using Object = UnityEngine.Object;
 
@@ -225,27 +230,23 @@ namespace TFTV.TFTVBaseRework
 
         private static void PopulatePersonnelUI(UIStateRosterRecruits state, GeoLevelController level, Transform personnelRoot)
         {
-
             if (personnelRoot == null || level?.PhoenixFaction == null) return;
+            ClearTransformChildren(personnelRoot);
+
             var phoenix = level.PhoenixFaction;
-            foreach (Transform child in personnelRoot) UnityEngine.Object.Destroy(child.gameObject);
+            PersonnelData.SyncFromNakedRecruits(phoenix);
 
-            void Refresh()
+            Action refresh = () =>
             {
-                foreach (Transform child2 in personnelRoot) UnityEngine.Object.Destroy(child2.gameObject);
-                ReplacePersonnelUI(level, personnelRoot);
-            }
+                if (_personnelPanel != null) { Object.Destroy(_personnelPanel); _personnelPanel = null; }
+                CreatePersonnelPanel(state);
+            };
 
-            foreach (var rec in HiddenPersonnelManager.Records
-                         .Select(r => new { r, c = phoenix.Soldiers.FirstOrDefault(s => s.Id == r.Id) })
-                         .Where(x => x.c != null)
-                         .OrderBy(x => x.c.DisplayName))
+            foreach (var info in CurrentPersonnel.OrderBy(p => GetPersonnelName(p)))
             {
-                BuildCard(personnelRoot, rec.c, rec.r, phoenix, level, Refresh);
+                CreatePersonnelCard(personnelRoot, info, level, phoenix, refresh);
             }
-
-            UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(personnelRoot.GetComponent<RectTransform>());
-
+            LayoutRebuilder.ForceRebuildLayoutImmediate(personnelRoot.GetComponent<RectTransform>());
         }
 
 
