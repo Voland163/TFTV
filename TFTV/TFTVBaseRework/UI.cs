@@ -82,9 +82,9 @@ namespace TFTV.TFTVBaseRework
                     foreach (var p in CurrentPersonnel)
                     {
                         if (p.Assignment == PersonnelAssignment.Training &&
-                            p.Descriptor != null &&
+                            p.Character != null &&
                             !p.DeploymentUIOpened &&
-                            TrainingFacilityRework.IsRecruitTrainingComplete(p.Descriptor, level))
+                             TrainingFacilityRework.IsRecruitTrainingComplete(p.Character, level))
                         {
                             p.TrainingCompleteNotDeployed = true;
                             AutoOpenVanillaDeploymentUI(level, level.PhoenixFaction, p);
@@ -309,7 +309,7 @@ namespace TFTV.TFTVBaseRework
 
         private static string GetAssignmentDisplay(PersonnelInfo person, GeoLevelController level)
         {
-            if (person?.Descriptor == null)
+            if (person?.Character == null)
             {
                 return person?.Assignment.ToString() ?? "Unknown";
             }
@@ -317,10 +317,10 @@ namespace TFTV.TFTVBaseRework
             switch (person.Assignment)
             {
                 case PersonnelAssignment.Training:
-                    var session = TrainingFacilityRework.GetRecruitSession(person.Descriptor);
+                    var session = TrainingFacilityRework.GetRecruitSession(person.Character);
                     if (session == null) return "Training (queued)";
-                    bool complete = TrainingFacilityRework.IsRecruitTrainingComplete(person.Descriptor, level);
-                    int remaining = TrainingFacilityRework.GetRecruitRemainingDays(person.Descriptor, level);
+                    bool complete = TrainingFacilityRework.IsRecruitTrainingComplete(person.Character, level);
+                    int remaining = TrainingFacilityRework.GetRecruitRemainingDays(person.Character, level);
                     string specName = person.TrainingSpec?.ViewElementDef.DisplayName1.Localize() ?? person.TrainingSpec?.name ?? "Class";
                     if (complete)
                     {
@@ -351,9 +351,7 @@ namespace TFTV.TFTVBaseRework
 
         private static string GetPersonnelName(PersonnelInfo person)
         {
-            return person?.Descriptor?.GetName()
-                   ?? person?.SavedIdentityName
-                   ?? person?.SavedDescriptorName
+            return person?.Character?.DisplayName
                    ?? $"Personnel {person?.Id}";
         }
 
@@ -550,15 +548,7 @@ namespace TFTV.TFTVBaseRework
                     string label = $"{spec.ViewElementDef.DisplayName1.Localize()} ({duration}d)";
                     AddModalOptionButton(content, label, () =>
                     {
-                        if (!TrainingFacilityRework.OverrideDescriptorMainSpec(person.Descriptor, spec, rebuildPersonalAbilities: true))
-                        {
-                            TFTVLogger.Always($"{LogPrefix} Failed to override descriptor spec for training.");
-                            refresh();
-                            CloseModal();
-                            return;
-                        }
-
-                        if (TrainingFacilityRework.QueueDescriptorTrainingAutoFacility(level, person.Descriptor, spec))
+                        if (TrainingFacilityRework.QueueCharacterTrainingAutoFacility(level, person.Character, spec))
                         {
                             person.Assignment = PersonnelAssignment.Training;
                             person.TrainingSpec = spec;
@@ -581,7 +571,7 @@ namespace TFTV.TFTVBaseRework
             if (level == null || faction == null || person == null) return;
 
             bool isTraining = person.Assignment == PersonnelAssignment.Training;
-            bool trainingComplete = isTraining && TrainingFacilityRework.IsRecruitTrainingComplete(person.Descriptor, level);
+            bool trainingComplete = isTraining && TrainingFacilityRework.IsRecruitTrainingComplete(person.Character, level);
 
             CloseModal();
             _modalRoot = CreateModalRoot("DeploymentSelectionModal");
@@ -597,11 +587,10 @@ namespace TFTV.TFTVBaseRework
                     {
                         Action finalize = () =>
                         {
-                            var character = TrainingFacilityRework.FinalizeRecruitTraining(level, person.Descriptor, baseObj.GetComponent<GeoPhoenixBase>(), early: !trainingComplete);
+                            var character = TrainingFacilityRework.FinalizeRecruitTraining(level, person.Character, baseObj.GetComponent<GeoPhoenixBase>(), early: !trainingComplete);
                             if (character != null)
                             {
-                                person.CreatedCharacter = character;
-                                RemoveDescriptorFromNakedPool(faction, person.Descriptor);
+                                PersonnelData.RemovePersonnel(faction, person);
                             }
                             refresh();
                             CloseModal();
@@ -609,7 +598,7 @@ namespace TFTV.TFTVBaseRework
 
                         if (!trainingComplete)
                         {
-                            ShowConfirmation($"Training incomplete for {person.Descriptor.GetName()}.\nDeploy early?", finalize, () => CloseModal());
+                            ShowConfirmation($"Training incomplete for {person.Character?.DisplayName}.\nDeploy early?", finalize, () => CloseModal());
                         }
                         else
                         {
@@ -680,16 +669,11 @@ namespace TFTV.TFTVBaseRework
 
         private static void DeployNow(GeoLevelController level, PersonnelInfo person, GeoPhoenixBase baseObj, SpecializationDef spec, Action refresh)
         {
-            if (!TrainingFacilityRework.OverrideDescriptorMainSpec(person.Descriptor, spec, rebuildPersonalAbilities: true))
-            {
-                TFTVLogger.Always($"{LogPrefix} Override main spec failed before deploy.");
-            }
-            var character = TrainingFacilityRework.CreateOperativeFromDescriptor(level, person.Descriptor, baseObj, spec);
+            var character = TrainingFacilityRework.PromoteCivilianToOperative(level, person.Character, baseObj, spec);
             if (character != null)
             {
-                person.CreatedCharacter = character;
                 person.TrainingSpec = spec;
-                RemoveDescriptorFromNakedPool(level.PhoenixFaction, person.Descriptor);
+                PersonnelData.RemovePersonnel(level.PhoenixFaction, person);
             }
             else
             {
@@ -705,12 +689,11 @@ namespace TFTV.TFTVBaseRework
             {
                 if (level == null || faction == null || person == null || person.DeploymentUIOpened) return;
 
-                GeoCharacter character = TrainingFacilityRework.FinalizeRecruitTrainingForUI(level, person.Descriptor, early: false);
+                GeoCharacter character = TrainingFacilityRework.FinalizeRecruitTrainingForUI(level, person.Character, early: false);
                 if (character == null) return;
 
-                person.CreatedCharacter = character;
                 person.DeploymentUIOpened = true;
-                RemoveDescriptorFromNakedPool(faction, person.Descriptor);
+                PersonnelData.RemovePersonnel(faction, person);
 
                 CloseModal();
 

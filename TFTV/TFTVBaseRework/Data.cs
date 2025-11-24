@@ -4,6 +4,7 @@ using HarmonyLib;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
+using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.ViewModules;
@@ -26,26 +27,20 @@ namespace TFTV.TFTVBaseRework
     internal class PersonnelInfo
     {
         public int Id;
-        public GeoUnitDescriptor Descriptor;
+        public int UnitId;
+        public GeoCharacter Character;
         public PersonnelAssignment Assignment;
         public SpecializationDef TrainingSpec;
-        public GeoCharacter CreatedCharacter;
         public bool TrainingCompleteNotDeployed;
         public bool DeploymentUIOpened;
-
-        public string SavedDescriptorName;
-        public string SavedIdentityName;
-        public GeoCharacterSex SavedIdentitySex;
-        public string SavedMainSpecName;
     }
 
     [SerializeType(SerializeMembersByDefault = SerializeMembersType.SerializeAll)]
     public sealed class PersonnelAssignmentSave
     {
         public int PersonnelId;
-        public string DescriptorName;
-        public string IdentityName;
-        public GeoCharacterSex IdentitySex;
+        public int GeoUnitId;
+        public string CharacterName;
         public string MainSpecName;
         public PersonnelAssignment Assignment;
         public bool TrainingCompleteNotDeployed;
@@ -56,7 +51,7 @@ namespace TFTV.TFTVBaseRework
     {
         private const string LogPrefix = "[PersonnelData]";
 
-        private static readonly Dictionary<GeoUnitDescriptor, PersonnelInfo> _assignments = new Dictionary<GeoUnitDescriptor, PersonnelInfo>();
+        private static readonly Dictionary<int, PersonnelInfo> _assignments = new Dictionary<int, PersonnelInfo>();
         private static readonly List<PersonnelInfo> _personnel = new List<PersonnelInfo>();
         private static int _nextPersonnelId = 1;
 
@@ -70,67 +65,42 @@ namespace TFTV.TFTVBaseRework
             TFTVLogger.Always("[PersonnelData] Cleared assignments and personnel pool.");
         }
 
-        private static PersonnelInfo FindPersonnel(GeoUnitDescriptor descriptor)
+        private static PersonnelInfo FindPersonnel(GeoCharacter character)
         {
-            if (descriptor == null) return null;
-            _assignments.TryGetValue(descriptor, out var info);
+            if (character == null) return null;
+            _assignments.TryGetValue(character.Id, out var info);
             return info;
         }
 
-        private static PersonnelInfo FindPersonnelByIdentity(GeoUnitDescriptor descriptor)
+        private static PersonnelInfo FindPersonnel(int unitId)
         {
-            if (descriptor?.Identity == null) return null;
-            return _personnel.FirstOrDefault(p => string.Equals(p.SavedIdentityName, descriptor.Identity.Name, StringComparison.Ordinal)
-                                                  && p.SavedIdentitySex == descriptor.Identity.Sex);
+            if (unitId <= 0) return null;
+            _assignments.TryGetValue(unitId, out var info);
+            return info ?? _personnel.FirstOrDefault(p => p.UnitId == unitId);
         }
 
-        private static PersonnelInfo CreatePersonnelRecord(GeoUnitDescriptor descriptor)
+        private static PersonnelInfo CreatePersonnelRecord(GeoCharacter character)
         {
             var info = new PersonnelInfo
             {
                 Id = _nextPersonnelId++,
-                Descriptor = descriptor,
+                UnitId = character?.Id ?? 0,
+                Character = character,
                 Assignment = PersonnelAssignment.Unassigned,
-                SavedDescriptorName = descriptor?.GetName(),
-                SavedIdentityName = descriptor?.Identity?.Name,
-                SavedIdentitySex = descriptor?.Identity?.Sex ?? GeoCharacterSex.None,
-                SavedMainSpecName = descriptor?.Progression?.MainSpecDef?.name
             };
 
             _personnel.Add(info);
-            if (descriptor != null && !_assignments.ContainsKey(descriptor))
+            if (character != null && !_assignments.ContainsKey(character.Id))
             {
-                _assignments[descriptor] = info;
+                _assignments[character.Id] = info;
             }
 
             return info;
         }
 
-        private static void AttachDescriptor(GeoUnitDescriptor descriptor)
+        internal static int GetOrCreatePersonnelId(GeoCharacter character)
         {
-            if (descriptor == null) return;
-
-            var info = FindPersonnel(descriptor) ?? FindPersonnelByIdentity(descriptor);
-            if (info == null)
-            {
-                info = CreatePersonnelRecord(descriptor);
-            }
-            else
-            {
-                info.Descriptor = descriptor;
-                info.SavedDescriptorName = descriptor.GetName();
-                info.SavedIdentityName = descriptor.Identity?.Name;
-                info.SavedIdentitySex = descriptor.Identity?.Sex ?? GeoCharacterSex.None;
-                if (!_assignments.ContainsKey(descriptor))
-                {
-                    _assignments[descriptor] = info;
-                }
-            }
-        }
-
-        internal static int GetOrCreatePersonnelId(GeoUnitDescriptor descriptor)
-        {
-            var info = FindPersonnel(descriptor) ?? CreatePersonnelRecord(descriptor);
+            var info = FindPersonnel(character) ?? CreatePersonnelRecord(character);
             return info.Id;
         }
 
@@ -139,12 +109,12 @@ namespace TFTV.TFTVBaseRework
             return _personnel.FirstOrDefault(p => p.Id == id);
         }
 
-        internal static PersonnelInfo GetPersonnelByDescriptor(GeoUnitDescriptor descriptor)
+        internal static PersonnelInfo GetPersonnelByUnitId(int unitId)
         {
-            return FindPersonnel(descriptor);
+            return FindPersonnel(unitId);
         }
 
-        internal static PersonnelInfo EnsurePersonnelFromSave(int id, string descriptorName, string identityName, GeoCharacterSex identitySex, string mainSpec)
+        internal static PersonnelInfo EnsurePersonnelFromSave(int id, int unitId, string characterName, string mainSpec)
         {
             var info = GetPersonnelById(id);
             if (info == null)
@@ -152,32 +122,31 @@ namespace TFTV.TFTVBaseRework
                 info = new PersonnelInfo
                 {
                     Id = id,
+                    UnitId = unitId,
                     Assignment = PersonnelAssignment.Unassigned,
-                    SavedDescriptorName = descriptorName,
-                    SavedIdentityName = identityName,
-                    SavedIdentitySex = identitySex,
-                    SavedMainSpecName = mainSpec
+                    
                 };
                 _personnel.Add(info);
                 _nextPersonnelId = Math.Max(_nextPersonnelId, id + 1);
             }
-            return info;
-        }
 
-        internal static bool EnsureDescriptorInPool(GeoPhoenixFaction faction, GeoUnitDescriptor descriptor)
-        {
-            if (faction == null || descriptor == null) return false;
-
-            var nakedRecruits = faction.NakedRecruits;
-            if (nakedRecruits is IDictionary dict)
+            if (info.UnitId == 0 && unitId > 0)
             {
-                if (!dict.Contains(descriptor))
-                {
-                    dict[descriptor] = null;
-                }
+                info.UnitId = unitId;
             }
 
-            return SyncFromNakedRecruits(faction);
+
+            if (info.TrainingSpec == null && !string.IsNullOrEmpty(mainSpec))
+            {
+                try
+                {
+                    var spec = TFTVMain.Main.DefCache.GetDef<SpecializationDef>(mainSpec);
+                    if (spec != null) info.TrainingSpec = spec;
+                }
+                catch { }
+            }
+
+            return info;
         }
 
         internal static bool SyncFromNakedRecruits(GeoPhoenixFaction phoenix)
@@ -185,39 +154,93 @@ namespace TFTV.TFTVBaseRework
             if (phoenix == null) return false;
 
             bool changed = false;
-            foreach (var kv in phoenix.NakedRecruits)
+            GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+            if (level == null) return false;
+
+            foreach (var kv in phoenix.NakedRecruits.ToList())
             {
-                if (kv.Key == null) continue;
-                if (!_assignments.ContainsKey(kv.Key))
+
+                GeoUnitDescriptor descriptor = kv.Key;
+                if (descriptor == null) continue;
+
+                GeoCharacter character = CreateHiddenCharacterFromDescriptor(level, phoenix, descriptor);
+                if (character != null)
                 {
+                    AttachCharacter(character);
                     changed = true;
+                    phoenix.NakedRecruits.Remove(descriptor);
                 }
-                AttachDescriptor(kv.Key);
             }
 
-            var activeDescriptors = new HashSet<GeoUnitDescriptor>(phoenix.NakedRecruits.Keys);
-            var mappedDescriptors = _assignments.Keys.ToList();
-
-            foreach (var descriptor in mappedDescriptors)
+            foreach (var soldier in phoenix.Soldiers)
             {
-                if (!activeDescriptors.Contains(descriptor))
+                if (GeoCharacterFilter.HiddenOperativeTagFilter.ShouldHide(soldier))
                 {
-                    _assignments.Remove(descriptor);
-                    changed = true;
-                    TFTVLogger.Always($"[PersonnelData] Removed descriptor {descriptor.GetName()} no longer in naked recruits.");
+                    if (!_assignments.ContainsKey(soldier.Id))
+                    {
+                        AttachCharacter(soldier);
+                        changed = true;
+                    }
                 }
             }
 
             return changed;
         }
 
-        internal static void RemoveDescriptorFromNakedPool(GeoPhoenixFaction faction, GeoUnitDescriptor descriptor)
+        private static GeoCharacter CreateHiddenCharacterFromDescriptor(GeoLevelController level, GeoPhoenixFaction faction, GeoUnitDescriptor descriptor)
         {
-            if (faction?.NakedRecruits.ContainsKey(descriptor) == true)
+            try
             {
-                faction.NakedRecruits.Remove(descriptor);
+                GeoPhoenixBase targetBase = faction?.Bases?.FirstOrDefault();
+                GeoSite site = targetBase?.Site;
+                if (level == null || faction == null || descriptor == null || site == null)
+                {
+                    return null;
+                }
+
+                GeoCharacter character = level.CreateCharacterFromDescriptor(descriptor);
+                if (character == null)
+                {
+                    return null;
+                }
+
+                GeoCharacterFilter.HiddenOperativeTagFilter.ApplyHiddenTag(character);
+                character.LevelProgression?.SetLevel(1);
+                faction.AddRecruit(character, site);
+                return character;
             }
-            _assignments.Remove(descriptor);
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return null;
+            }
+           
+        }
+
+        private static void AttachCharacter(GeoCharacter character)
+        {
+            if (character == null) return;
+
+            var info = FindPersonnel(character) ?? FindPersonnel(character.Id) ?? CreatePersonnelRecord(character);
+            info.Character = character;
+            info.UnitId = character.Id;
+            if (!_assignments.ContainsKey(character.Id))
+            {
+                _assignments[character.Id] = info;
+            }
+        }
+
+        internal static void RemovePersonnel(GeoPhoenixFaction faction, PersonnelInfo person)
+        {
+            if (person == null) return;
+
+            if (person.Assignment == PersonnelAssignment.Research || person.Assignment == PersonnelAssignment.Manufacturing)
+            {
+                ReleaseWorkSlotIfNeeded(faction, person.Assignment);
+            }
+
+            _assignments.Remove(person.UnitId);
+            _personnel.Remove(person);
         }
 
         internal static List<SpecializationDef> ResolveAvailableMainSpecs(GeoLevelController level)
@@ -229,7 +252,7 @@ namespace TFTV.TFTVBaseRework
 
         internal static void AssignWorker(PersonnelInfo person, GeoPhoenixFaction faction, FacilitySlotType slotType)
         {
-            if (person?.Descriptor == null || faction == null) return;
+            if (person?.Character == null || faction == null) return;
             ResearchManufacturingSlotsManager.RecalculateSlots(faction);
 
             PersonnelAssignment desired = slotType == FacilitySlotType.Research
@@ -277,10 +300,9 @@ namespace TFTV.TFTVBaseRework
                 list.Add(new PersonnelAssignmentSave
                 {
                     PersonnelId = pi.Id,
-                    DescriptorName = pi.Descriptor?.GetName() ?? pi.SavedDescriptorName,
-                    IdentityName = pi.Descriptor?.Identity?.Name ?? pi.SavedIdentityName,
-                    IdentitySex = pi.Descriptor?.Identity?.Sex ?? pi.SavedIdentitySex,
-                    MainSpecName = pi.TrainingSpec?.name ?? pi.Descriptor?.Progression?.MainSpecDef?.name ?? pi.SavedMainSpecName,
+                    GeoUnitId = pi.UnitId,
+                    CharacterName = pi.Character?.DisplayName,
+                    MainSpecName = pi.TrainingSpec?.name ?? pi.Character?.Progression?.MainSpecDef?.name,
                     Assignment = pi.Assignment,
                     TrainingCompleteNotDeployed = pi.TrainingCompleteNotDeployed,
                     DeploymentUIOpened = pi.DeploymentUIOpened
@@ -300,23 +322,12 @@ namespace TFTV.TFTVBaseRework
 
             foreach (var save in snapshot)
             {
-                var info = EnsurePersonnelFromSave(save.PersonnelId, save.DescriptorName, save.IdentityName, save.IdentitySex, save.MainSpecName);
+                var info = EnsurePersonnelFromSave(save.PersonnelId, save.GeoUnitId, save.CharacterName, save.MainSpecName);
                 info.Assignment = save.Assignment;
                 info.TrainingCompleteNotDeployed = save.TrainingCompleteNotDeployed;
                 info.DeploymentUIOpened = save.DeploymentUIOpened;
 
-                TFTVLogger.Always($"[PersonnelData] Restoring personnel id={info.Id} name={save.IdentityName ?? save.DescriptorName} assignment={info.Assignment} descriptor present={(info.Descriptor != null)}");
-
-
-                if (!string.IsNullOrEmpty(save.MainSpecName))
-                {
-                    try
-                    {
-                        var spec = TFTVMain.Main.DefCache.GetDef<SpecializationDef>(save.MainSpecName);
-                        if (spec != null) info.TrainingSpec = spec;
-                    }
-                    catch { }
-                }
+                TFTVLogger.Always($"[PersonnelData] Restoring personnel id={info.Id} name={save.CharacterName} assignment={info.Assignment} unitId={save.GeoUnitId}");
             }
 
             SyncFromNakedRecruits(phoenix);

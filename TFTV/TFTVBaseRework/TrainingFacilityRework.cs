@@ -40,7 +40,8 @@ namespace TFTV.TFTVBaseRework
         public sealed class RecruitTrainingSession
         {
             public int PersonnelId;
-            public GeoUnitDescriptor Descriptor;
+            public GeoCharacter Character;
+            public int GeoUnitId;
             public SpecializationDef TargetSpecialization;
             public int StartDay;
             public int DurationDays;
@@ -66,13 +67,13 @@ namespace TFTV.TFTVBaseRework
         #endregion
 
         #region Public API (Recruit descriptor training)
-        public static bool QueueDescriptorTraining(GeoLevelController level, GeoUnitDescriptor descriptor, SpecializationDef spec)
+        public static bool QueueCharacterTraining(GeoLevelController level, GeoCharacter character, SpecializationDef spec)
         {
             try
             {
-                if (level == null || descriptor == null || spec == null) return false;
+                if (level == null || character == null || spec == null) return false;
 
-                if (RecruitSessions.Any(s => s.Descriptor == descriptor)) return false;
+                if (RecruitSessions.Any(s => s.GeoUnitId == character.Id)) return false;
 
                 int providedSlots = CalculateProvidedTrainingSlots(level.PhoenixFaction);
                 int usedSlots = RecruitSessions.Count(s => !s.Completed);
@@ -84,8 +85,9 @@ namespace TFTV.TFTVBaseRework
 
                 var recruitSession = new RecruitTrainingSession
                 {
-                    PersonnelId = PersonnelData.GetOrCreatePersonnelId(descriptor),
-                    Descriptor = descriptor,
+                    PersonnelId = PersonnelData.GetOrCreatePersonnelId(character),
+                    Character = character,
+                    GeoUnitId = character.Id,
                     TargetSpecialization = spec,
                     StartDay = currentDay,
                     DurationDays = effectiveDuration,
@@ -95,44 +97,44 @@ namespace TFTV.TFTVBaseRework
                 };
                 RecruitSessions.Add(recruitSession);
 
-                TFTVLogger.Always($"[Training] Queued recruit training: {descriptor.GetName()} Spec={spec.name} StartDay={currentDay} Duration={effectiveDuration} TargetLevel={targetLevel} Used/Provided={usedSlots + 1}/{providedSlots}");
+                TFTVLogger.Always($"[Training] Queued recruit training: {character.DisplayName} Spec={spec.name} StartDay={currentDay} Duration={effectiveDuration} TargetLevel={targetLevel} Used/Provided={usedSlots + 1}/{providedSlots}");
                 return true;
             }
             catch (Exception e) { TFTVLogger.Error(e); return false; }
         }
 
-        public static RecruitTrainingSession GetRecruitSession(GeoUnitDescriptor descriptor)
+        public static RecruitTrainingSession GetRecruitSession(GeoCharacter character)
         {
-            if (descriptor == null) return null;
-            var id = PersonnelData.GetPersonnelByDescriptor(descriptor)?.Id ?? 0;
-            return RecruitSessions.FirstOrDefault(s => s.PersonnelId == id || s.Descriptor == descriptor);
+            if (character == null) return null;
+            var id = PersonnelData.GetPersonnelByUnitId(character.Id)?.Id ?? 0;
+            return RecruitSessions.FirstOrDefault(s => s.PersonnelId == id || s.GeoUnitId == character.Id);
         }
 
-        public static int GetRecruitRemainingDays(GeoUnitDescriptor descriptor, GeoLevelController level)
+        public static int GetRecruitRemainingDays(GeoCharacter character, GeoLevelController level)
         {
-            var s = GetRecruitSession(descriptor);
+            var s = GetRecruitSession(character);
             if (s == null || level == null) return 0;
             int currentDay = level.Timing.Now.TimeSpan.Days;
             int remaining = (s.StartDay + s.DurationDays) - currentDay;
             return Math.Max(0, remaining);
         }
 
-        public static bool IsRecruitTrainingComplete(GeoUnitDescriptor descriptor, GeoLevelController level)
+        public static bool IsRecruitTrainingComplete(GeoCharacter character, GeoLevelController level)
         {
-            var s = GetRecruitSession(descriptor);
-            if (descriptor == null)
+            var s = GetRecruitSession(character);
+            if (character == null)
             {
                 TFTVLogger.Always("[Training] IsRecruitTrainingComplete called with null descriptor.");
                 return false;
             }
             if (s == null)
             {
-                TFTVLogger.Always($"[Training] IsRecruitTrainingComplete: No session found for {descriptor.GetName()}");
+                TFTVLogger.Always($"[Training] IsRecruitTrainingComplete: No session found for {character.DisplayName}");
                 return false;
             }
             if (level == null)
             {
-                TFTVLogger.Always($"[Training] IsRecruitTrainingComplete: level null for {descriptor.GetName()}");
+                TFTVLogger.Always($"[Training] IsRecruitTrainingComplete: level null for {character.DisplayName}");
                 return false;
             }
 
@@ -141,7 +143,7 @@ namespace TFTV.TFTVBaseRework
 
             bool complete = s.Completed || currentDay - s.StartDay >= s.DurationDays || s.VirtualLevelAchieved >= s.TargetLevel;
 
-            TFTVLogger.Always($"[Training] Completion check for {descriptor.GetName()}: Completed={s.Completed} AutoComplete={complete} Day={currentDay} StartDay={s.StartDay} Duration={s.DurationDays} VirtualLevel={s.VirtualLevelAchieved}/{s.TargetLevel}");
+            TFTVLogger.Always($"[Training] Completion check for {character.DisplayName}: Completed={s.Completed} AutoComplete={complete} Day={currentDay} StartDay={s.StartDay} Duration={s.DurationDays} VirtualLevel={s.VirtualLevelAchieved}/{s.TargetLevel}");
             return complete;
         }
 
@@ -156,7 +158,7 @@ namespace TFTV.TFTVBaseRework
                 ProcessRecruitSessionProgress(session, currentDay);
                 if (session.VirtualLevelAchieved != beforeLevel || session.Completed != beforeCompleted)
                 {
-                    TFTVLogger.Always($"[Training] Progress tick (inline) Session={session.Descriptor.GetName()} Level {beforeLevel}->{session.VirtualLevelAchieved} Completed={session.Completed}");
+                    TFTVLogger.Always($"[Training] Progress tick (inline) Session={session.Character?.DisplayName ?? "Unknown"} Level {beforeLevel}->{session.VirtualLevelAchieved} Completed={session.Completed}");
                 }
             }
             catch (Exception e) { TFTVLogger.Error(e); }
@@ -177,7 +179,7 @@ namespace TFTV.TFTVBaseRework
                 ProcessRecruitSessionProgress(session, currentDay);
             }
 
-            RecruitSessions.RemoveAll(s => s.Descriptor == null);
+            RecruitSessions.RemoveAll(s => s.Character == null);
         }
 
         private static void ProcessRecruitSessionProgress(RecruitTrainingSession session, int currentDay)
@@ -204,7 +206,7 @@ namespace TFTV.TFTVBaseRework
 
                 if (prevLevel != session.VirtualLevelAchieved || prevCompleted != session.Completed)
                 {
-                    TFTVLogger.Always($"[Training] Recruit progress: {session.Descriptor.GetName()} Level {prevLevel}->{session.VirtualLevelAchieved} Completed={session.Completed} Progress={progress:0.00}");
+                    TFTVLogger.Always($"[Training] Recruit progress: {session.Character?.DisplayName ?? "Unknown"} Level {prevLevel}->{session.VirtualLevelAchieved} Completed={session.Completed} Progress={progress:0.00}");
                 }
             }
             catch (Exception e) { TFTVLogger.Error(e); }
@@ -212,29 +214,23 @@ namespace TFTV.TFTVBaseRework
         #endregion
 
         #region Finalization
-        public static GeoCharacter FinalizeRecruitTraining(GeoLevelController level, GeoUnitDescriptor descriptor, GeoPhoenixBase targetBase, bool early = false)
+        public static GeoCharacter FinalizeRecruitTraining(GeoLevelController level, GeoCharacter character, GeoPhoenixBase targetBase, bool early = false)
         {
             try
             {
-                var session = GetRecruitSession(descriptor);
-                if (level == null || descriptor == null || targetBase == null || session == null) return null;
-                var phoenix = level.PhoenixFaction;
-                if (phoenix == null) return null;
+                var session = GetRecruitSession(character);
+                if (level == null || character == null || targetBase == null || session == null) return null;
 
                 int finalLevel = early ? session.VirtualLevelAchieved : session.TargetLevel;
-                if (descriptor.Progression != null)
+                if (session.TargetSpecialization != null)
                 {
-                    descriptor.Progression.Level = finalLevel;
-                    descriptor.Progression.LearnPrimaryAbilities = true;
+                    EnsureSpecialization(character, session.TargetSpecialization);
                 }
 
-                GeoCharacter character = level.CreateCharacterFromDescriptor(descriptor);
-                if (character == null) return null;
-
-                EnsureSpecialization(character, session.TargetSpecialization);
+               
                 character.LevelProgression?.SetLevel(finalLevel);
                 ApplyCumulativeLevelGains(character, finalLevel);
-                phoenix.AddRecruit(character, targetBase.Site);
+                GeoCharacterFilter.HiddenOperativeTagFilter.RemoveHiddenTag(character);
 
                 session.Completed = true;
                 RemoveRecruitSession(session);
@@ -245,41 +241,30 @@ namespace TFTV.TFTVBaseRework
             catch (Exception e) { TFTVLogger.Error(e); return null; }
         }
 
-        public static GeoCharacter FinalizeRecruitTrainingForUI(GeoLevelController level, GeoUnitDescriptor descriptor, bool early)
+        public static GeoCharacter FinalizeRecruitTrainingForUI(GeoLevelController level, GeoCharacter character, bool early)
         {
             try
             {
-                if (level == null || descriptor == null) return null;
-                var session = GetRecruitSession(descriptor);
+                if (level == null || character == null) return null;
+                var session = GetRecruitSession(character);
                 if (session == null)
                 {
-                    GeoCharacter cFallback = level.CreateCharacterFromDescriptor(descriptor);
-                    if (cFallback != null)
-                    {
-                        EnsureSpecialization(cFallback, descriptor.Progression?.MainSpecDef);
-                        ApplyCumulativeLevelGains(cFallback, cFallback.LevelProgression?.Level ?? 1);
-                        TFTVLogger.Always($"[Training] FinalizeForUI fallback spawn: {cFallback.DisplayName}");
-                    }
-                    return cFallback;
+                    ApplyCumulativeLevelGains(character, character.LevelProgression?.Level ?? 1);
+                    GeoCharacterFilter.HiddenOperativeTagFilter.RemoveHiddenTag(character);
+                    TFTVLogger.Always($"[Training] FinalizeForUI fallback use of existing character: {character.DisplayName}");
+                    return character;
                 }
 
                 int finalLevel = early ? session.VirtualLevelAchieved : session.TargetLevel;
                 var spec = session.TargetSpecialization;
 
-                if (descriptor.Progression != null)
-                {
-                    descriptor.Progression.Level = finalLevel;
-                    descriptor.Progression.LearnPrimaryAbilities = true;
-                }
+               
                 if (spec != null)
                 {
-                    OverrideDescriptorMainSpec(descriptor, spec, rebuildPersonalAbilities: false);
+                    EnsureSpecialization(character, spec);
                 }
 
-                GeoCharacter character = level.CreateCharacterFromDescriptor(descriptor);
-                if (character == null) return null;
-
-                if (spec != null) EnsureSpecialization(character, spec);
+              
                 character.LevelProgression?.SetLevel(finalLevel);
 
                 _pendingPostRecruitStatApply[character.Id] = finalLevel;
@@ -287,7 +272,9 @@ namespace TFTV.TFTVBaseRework
                 session.Completed = true;
                 RemoveRecruitSession(session);
 
-                TFTVLogger.Always($"[Training] FinalizeForUI created character (pending stat gains): {character.DisplayName} Level={finalLevel} Early={early}");
+                GeoCharacterFilter.HiddenOperativeTagFilter.RemoveHiddenTag(character);
+
+                TFTVLogger.Always($"[Training] FinalizeForUI prepared character (pending stat gains): {character.DisplayName} Level={finalLevel} Early={early}");
                 return character;
             }
             catch (Exception e) { TFTVLogger.Error(e); return null; }
@@ -426,24 +413,24 @@ namespace TFTV.TFTVBaseRework
         #endregion
 
         #region Personnel Management (Immediate hires)
-        public static GeoCharacter CreateOperativeFromDescriptor(
+        public static GeoCharacter PromoteCivilianToOperative(
             GeoLevelController level,
-            GeoUnitDescriptor descriptor,
+            GeoCharacter character,
             GeoPhoenixBase targetBase,
             SpecializationDef mainClass)
         {
             try
             {
-                if (level == null || descriptor == null || targetBase == null || mainClass == null) return null;
+                if (level == null || character == null || targetBase == null || mainClass == null) return null;
                 GeoPhoenixFaction phoenix = level.PhoenixFaction;
                 if (phoenix == null) return null;
 
-                GeoCharacter character = level.CreateCharacterFromDescriptor(descriptor);
-                if (character == null) return null;
+              
 
                 character.LevelProgression?.SetLevel(1);
                 EnsureSpecialization(character, mainClass);
-                phoenix.AddRecruit(character, targetBase.Site);
+                GeoCharacterFilter.HiddenOperativeTagFilter.RemoveHiddenTag(character);
+
                 return character;
             }
             catch (Exception e) { TFTVLogger.Error(e); return null; }
@@ -610,15 +597,14 @@ namespace TFTV.TFTVBaseRework
         public sealed class RecruitTrainingSessionSave
         {
             public int PersonnelId;
-            public string DescriptorName;
+            public int GeoUnitId;
+            public string CharacterName;
             public string MainSpecName;
             public int StartDay;
             public int DurationDays;
             public int TargetLevel;
             public int VirtualLevelAchieved;
             public bool Completed;
-            public string IdentityName;
-            public GeoCharacterSex IdentitySex;
         }
 
         public static List<RecruitTrainingSessionSave> CreateRecruitSessionsSnapshot()
@@ -627,20 +613,19 @@ namespace TFTV.TFTVBaseRework
             foreach (var s in RecruitSessions)
             {
 
-                var personnelId = s.PersonnelId != 0 ? s.PersonnelId : PersonnelData.GetOrCreatePersonnelId(s.Descriptor);
+                var personnelId = s.PersonnelId != 0 ? s.PersonnelId : PersonnelData.GetOrCreatePersonnelId(s.Character);
 
                 list.Add(new RecruitTrainingSessionSave
                 {
                     PersonnelId = personnelId,
-                    DescriptorName = s.Descriptor?.GetName(),
+                    GeoUnitId = s.GeoUnitId,
+                    CharacterName = s.Character?.DisplayName,
                     MainSpecName = s.TargetSpecialization?.name,
                     StartDay = s.StartDay,
                     DurationDays = s.DurationDays,
                     TargetLevel = s.TargetLevel,
                     VirtualLevelAchieved = s.VirtualLevelAchieved,
-                    Completed = s.Completed,
-                    IdentityName = s.Descriptor?.Identity?.Name,
-                    IdentitySex = s.Descriptor?.Identity?.Sex ?? GeoCharacterSex.None
+                    Completed = s.Completed
                 });
             }
             return list;
@@ -656,46 +641,21 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
-                    GeoUnitDescriptor descriptor = PersonnelData.GetPersonnelById(save.PersonnelId)?.Descriptor;
-
-                    TFTVLogger.Always($"[Training] Restoring session PersonnelId={save.PersonnelId} DescriptorFound={(descriptor != null)} Completed={save.Completed}");
-
-                    if (descriptor == null)
-                    {
-                        var context = level.CharacterGenerator.GenerateCharacterGeneratorContext(level.PhoenixFaction);
-                        descriptor = level.CharacterGenerator.GenerateRandomUnit(context);
-                    }
-
-                    if (descriptor == null) continue;
-
-                    var personnel = PersonnelData.EnsurePersonnelFromSave(save.PersonnelId, save.DescriptorName, save.IdentityName, save.IdentitySex, save.MainSpecName);
-                    personnel.Descriptor = descriptor;
-                    PersonnelData.SyncFromNakedRecruits(level.PhoenixFaction);
-
-                    PersonnelData.EnsureDescriptorInPool(level.PhoenixFaction, descriptor);
-
-                    if (!string.IsNullOrEmpty(save.IdentityName))
-                    {
-                        descriptor.Identity = new GeoUnitDescriptor.IdentityDescriptor(save.IdentityName, save.IdentitySex);
-                        TFTVLogger.Always($"[Training] Set descriptor identity to {save.IdentityName} ({save.IdentitySex})");
-
-                    }
+                    var personnel = PersonnelData.EnsurePersonnelFromSave(save.PersonnelId, save.GeoUnitId, save.CharacterName, save.MainSpecName);
+                    GeoCharacter character = level.PhoenixFaction?.Soldiers?.FirstOrDefault(s => s.Id == personnel.UnitId);
 
                     SpecializationDef spec = null;
                     if (!string.IsNullOrEmpty(save.MainSpecName))
                     {
                         try { spec = TFTVMain.Main.DefCache.GetDef<SpecializationDef>(save.MainSpecName); } catch { }
                     }
-                    if (spec != null)
-                    {
-                        OverrideDescriptorMainSpec(descriptor, spec, rebuildPersonalAbilities: true);
-                        TFTVLogger.Always($"[Training] Restored main spec {spec.name} for {descriptor.GetName()}");
-                    }
+                   
 
                     RecruitSessions.Add(new RecruitTrainingSession
                     {
                         PersonnelId = personnel.Id,
-                        Descriptor = descriptor,
+                        Character = character,
+                        GeoUnitId = personnel.UnitId,
                         TargetSpecialization = spec,
                         StartDay = save.StartDay,
                         DurationDays = save.DurationDays,
@@ -704,7 +664,7 @@ namespace TFTV.TFTVBaseRework
                         Completed = save.Completed
                     });
 
-                    TFTVLogger.Always($"[Training] Session restored: PersonnelId={personnel.Id} Descriptor={descriptor.GetName()} TargetLevel={save.TargetLevel} Completed={save.Completed}");
+                    TFTVLogger.Always($"[Training] Session restored: PersonnelId={personnel.Id} UnitId={personnel.UnitId} TargetLevel={save.TargetLevel} Completed={save.Completed}");
                 }
                 catch (Exception e) { TFTVLogger.Error(e); }
             }
@@ -773,11 +733,11 @@ namespace TFTV.TFTVBaseRework
         /// Queues training automatically picking a valid facility with a free slot; player supplies only class.
         /// Returns true on success.
         /// </summary>
-        public static bool QueueDescriptorTrainingAutoFacility(GeoLevelController level, GeoUnitDescriptor descriptor, SpecializationDef spec)
+        public static bool QueueCharacterTrainingAutoFacility(GeoLevelController level, GeoCharacter character, SpecializationDef spec)
         {
             try
             {
-                if (level == null || descriptor == null || spec == null) return false;
+                if (level == null || character == null || spec == null) return false;
 
                 // Validate specialization is currently allowed.
                 var allowed = GetAvailableTrainingSpecializations(level.PhoenixFaction);
@@ -797,7 +757,7 @@ namespace TFTV.TFTVBaseRework
                 }
 
                 // Delegate to existing queue logic (with facility).
-                return QueueDescriptorTraining(level, descriptor, spec);
+                return QueueCharacterTraining(level, character, spec);
             }
             catch (Exception e)
             {

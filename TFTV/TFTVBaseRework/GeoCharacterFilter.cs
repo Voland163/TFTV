@@ -39,6 +39,24 @@ namespace TFTV.TFTVBaseRework
                 return hiddenTag != null && character != null && character.GameTags.Contains(hiddenTag);
             }
 
+            internal static void ApplyHiddenTag(GeoCharacter character)
+            {
+                GameTagDef hiddenTag = EnsureHiddenTag();
+                if (hiddenTag != null && character != null && !character.GameTags.Contains(hiddenTag))
+                {
+                    character.GameTags.Add(hiddenTag);
+                }
+            }
+
+            internal static void RemoveHiddenTag(GeoCharacter character)
+            {
+                GameTagDef hiddenTag = EnsureHiddenTag();
+                if (hiddenTag != null && character != null && character.GameTags.Contains(hiddenTag))
+                {
+                    character.GameTags.Remove(hiddenTag);
+                }
+            }
+
             internal static IEnumerable<GeoCharacter> FilterCharacters(IEnumerable<GeoCharacter> characters)
             {
                 GameTagDef hiddenTag = EnsureHiddenTag();
