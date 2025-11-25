@@ -59,7 +59,7 @@ namespace TFTV.LaserWeapons
 
                 WeaponEntries[weaponDef] = entry;
 
-                Log($"Registered {weaponDef.name}: cost={reloadCost}, magazine={entry.MagazineSize}, perCharge={entry.ShotsPerCharge}");
+              //  Log($"Registered {weaponDef.name}: cost={reloadCost}, magazine={entry.MagazineSize}, perCharge={entry.ShotsPerCharge}");
             }
 
             internal static bool TryGetEntry(WeaponDef weaponDef, out WeaponEntry entry)

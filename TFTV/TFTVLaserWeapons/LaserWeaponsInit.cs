@@ -36,7 +36,7 @@ namespace TFTV.LaserWeapons
             {
                 if(tacCharacterDef.Data.EquipmentItems.Any(i=>i!=null && OriginalLaserAmmo.Contains(i)))
                 {
-                    TFTVLogger.Always($"[LaserWeaponsInit] {tacCharacterDef.name} has laser ammo in default equipment");
+                    //TFTVLogger.Always($"[LaserWeaponsInit] {tacCharacterDef.name} has laser ammo in default equipment");
                     tacCharacterDef.Data.EquipmentItems = tacCharacterDef.Data.EquipmentItems.Select(i =>
                     {
                         if (i != null && OriginalLaserAmmo.Contains(i))
@@ -50,7 +50,7 @@ namespace TFTV.LaserWeapons
 
                 if (tacCharacterDef.Data.InventoryItems.Any(i => i != null && OriginalLaserAmmo.Contains(i)))
                 {
-                    TFTVLogger.Always($"[LaserWeaponsInit] {tacCharacterDef.name} has laser ammo in default equipment");
+                    //TFTVLogger.Always($"[LaserWeaponsInit] {tacCharacterDef.name} has laser ammo in default equipment");
                     tacCharacterDef.Data.InventoryItems = tacCharacterDef.Data.InventoryItems.Select(i =>
                     {
                         if (i != null && OriginalLaserAmmo.Contains(i))
@@ -66,7 +66,7 @@ namespace TFTV.LaserWeapons
             {
                 if (manufactureResearchRewardDef.Items.Any(i => i != null && OriginalLaserAmmo.Contains(i)))
                 {
-                    TFTVLogger.Always($"[LaserWeaponsInit] {manufactureResearchRewardDef.name} has laser ammo in manufacture rewards");
+                    //TFTVLogger.Always($"[LaserWeaponsInit] {manufactureResearchRewardDef.name} has laser ammo in manufacture rewards");
                     manufactureResearchRewardDef.Items = manufactureResearchRewardDef.Items.Select(i =>
                     {
                         if (i != null && OriginalLaserAmmo.Contains(i))
@@ -118,7 +118,7 @@ namespace TFTV.LaserWeapons
                     WeaponDef weaponDef = DefCache.GetDef<WeaponDef>(kvp.Key);
                     if (weaponDef == null)
                     {
-                        TFTVLogger.Always($"[LaserWeaponsInit] Missing weapon def '{kvp.Key}'");
+                        //TFTVLogger.Always($"[LaserWeaponsInit] Missing weapon def '{kvp.Key}'");
                         continue;
                     }
 
@@ -126,7 +126,7 @@ namespace TFTV.LaserWeapons
                     TacticalItemDef originalAmmo = originalCompat.FirstOrDefault();
                     if (originalAmmo == null)
                     {
-                        TFTVLogger.Always($"[LaserWeaponsInit] '{weaponDef.name}' has no compatible ammo to clone");
+                        //TFTVLogger.Always($"[LaserWeaponsInit] '{weaponDef.name}' has no compatible ammo to clone");
                         continue;
                     }
 
@@ -146,7 +146,7 @@ namespace TFTV.LaserWeapons
 
                 if (setups.Count == 0)
                 {
-                    TFTVLogger.Always("[LaserWeaponsInit] No laser weapons registered");
+                    //TFTVLogger.Always("[LaserWeaponsInit] No laser weapons registered");
                     return;
                 }
 
@@ -156,7 +156,7 @@ namespace TFTV.LaserWeapons
                 manufactureResearchRewardDef.Items = manufactureResearchRewardDef.Items.AddToArray(LaserBatteryPackDef);
 
                 LaserWeaponsMain.LaserAmmoShareHelper.BatteryPackDef = LaserBatteryPackDef;
-                TFTVLogger.Always($"[LaserWeaponsInit] Battery pack def: {LaserBatteryPackDef?.name ?? "<null>"}");
+                //TFTVLogger.Always($"[LaserWeaponsInit] Battery pack def: {LaserBatteryPackDef?.name ?? "<null>"}");
 
                 foreach (WeaponSetup setup in setups)
                 {
@@ -172,7 +172,7 @@ namespace TFTV.LaserWeapons
                     }
 
                     setup.WeaponDef.CompatibleAmmunition = compatibility.ToArray();
-                    TFTVLogger.Always($"[LaserWeaponsInit] Updated compatible ammo for {setup.WeaponDef.name}");
+                    //TFTVLogger.Always($"[LaserWeaponsInit] Updated compatible ammo for {setup.WeaponDef.name}");
                 }
 
                 AdjustWeaponMaxAmmo();

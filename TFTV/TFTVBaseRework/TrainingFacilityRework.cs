@@ -504,99 +504,13 @@ namespace TFTV.TFTVBaseRework
         }
         #endregion
 
-        #region Override Descriptor Spec
-        public static bool OverrideDescriptorMainSpec(GeoUnitDescriptor descriptor, SpecializationDef newSpec, bool rebuildPersonalAbilities = true)
-        {
-            try
-            {
-                if (descriptor == null || newSpec == null) return false;
-
-                var oldProg = descriptor.Progression;
-                Dictionary<int, TacticalAbilityDef> personal = oldProg?.PersonalAbilities != null
-                    ? new Dictionary<int, TacticalAbilityDef>(oldProg.PersonalAbilities)
-                    : new Dictionary<int, TacticalAbilityDef>();
-
-                if (rebuildPersonalAbilities)
-                {
-                    personal.Clear();
-                    try
-                    {
-                        var settings = TFTVMain.Main.Settings;
-                        if (settings?.OrderOfPersonalPerks != null && settings.PersonalPerks != null)
-                        {
-                            string className = newSpec.ClassTag?.className;
-                            var order = settings.OrderOfPersonalPerks;
-                            var classSpecCfg = settings.ClassSpecializations.FirstOrDefault(cs => cs.ClassName == className);
-                            List<string> exclusion = classSpecCfg.MainSpec != null ? new List<string>(classSpecCfg.MainSpec) : new List<string>();
-
-                            for (int i = 0; i < order.Length; i++)
-                            {
-                                var perkKey = order[i];
-                                if (string.IsNullOrEmpty(perkKey)) continue;
-                                var perkDef = settings.PersonalPerks.FirstOrDefault(pp => pp.PerkKey == perkKey);
-
-                                string abilityName = null;
-                                int spCost = 0;
-
-                                var templateName = descriptor.UnitType?.TemplateDef?.Data?.Name;
-                                if (!string.IsNullOrEmpty(templateName) &&
-                                    settings.SpecialCharacterPersonalSkills.TryGetValue(templateName, out var specialMap) &&
-                                    specialMap != null &&
-                                    specialMap.TryGetValue(i, out var specialAbilityName))
-                                {
-                                    abilityName = specialAbilityName;
-                                }
-                                else
-                                {
-                                    (abilityName, spCost) = perkDef.GetPerk(settings, className, descriptor.Faction?.GetPPName(), exclusion);
-                                }
-
-                                if (string.IsNullOrEmpty(abilityName)) continue;
-
-                                TacticalAbilityDef abilityDef = null;
-                                try { abilityDef = TFTVMain.Main.DefCache.GetDef<TacticalAbilityDef>(abilityName); } catch { }
-                                if (abilityDef == null) continue;
-
-                                if (!personal.ContainsKey(i)) personal[i] = abilityDef;
-                            }
-                        }
-                    }
-                    catch (Exception e) { TFTVLogger.Error(e); }
-                }
-
-                var newProg = new GeoUnitDescriptor.ProgressionDescriptor(newSpec, personal);
-                if (oldProg != null)
-                {
-                    newProg.Level = oldProg.Level;
-                    newProg.SecondarySpecDef = oldProg.SecondarySpecDef;
-                    newProg.LearnPrimaryAbilities = oldProg.LearnPrimaryAbilities;
-                    newProg.ExtraAbilities.AddRange(oldProg.ExtraAbilities);
-                }
-
-                descriptor.Progression = newProg;
-
-                try
-                {
-                    var f = typeof(GeoUnitDescriptor).GetField("_personalAbilityTrack", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                    f?.SetValue(descriptor, null);
-                }
-                catch (Exception e) { TFTVLogger.Error(e); }
-
-                return true;
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                return false;
-            }
-        }
-        #endregion
+        
 
         #region Recruit Training Sessions - Save/Load
         [SerializeType(SerializeMembersByDefault = SerializeMembersType.SerializeAll)]
         public sealed class RecruitTrainingSessionSave
         {
-            public int PersonnelId;
+
             public int GeoUnitId;
             public string CharacterName;
             public string MainSpecName;
@@ -612,14 +526,9 @@ namespace TFTV.TFTVBaseRework
             var list = new List<RecruitTrainingSessionSave>();
             foreach (var s in RecruitSessions)
             {
-
-                var personnelId = s.PersonnelId != 0 ? s.PersonnelId : PersonnelData.GetOrCreatePersonnelId(s.Character);
-
                 list.Add(new RecruitTrainingSessionSave
                 {
-                    PersonnelId = personnelId,
                     GeoUnitId = s.GeoUnitId,
-                    CharacterName = s.Character?.DisplayName,
                     MainSpecName = s.TargetSpecialization?.name,
                     StartDay = s.StartDay,
                     DurationDays = s.DurationDays,
@@ -635,14 +544,13 @@ namespace TFTV.TFTVBaseRework
         {
             if (level?.PhoenixFaction == null || snapshot == null) return;
 
-            TFTVLogger.Always($"[Training] Loading {snapshot.Count()} recruit sessions. Phoenix bases={level.PhoenixFaction.Bases.Count()}");
+            TFTVLogger.Always($"[Training] Loading {snapshot.Count()} recruit sessions.");
 
             foreach (var save in snapshot)
             {
                 try
-                {
-                    var personnel = PersonnelData.EnsurePersonnelFromSave(save.GeoUnitId, save.MainSpecName);
-                    GeoCharacter character = level.PhoenixFaction?.Soldiers?.FirstOrDefault(s => s.Id == personnel.Id);
+                {    
+                    GeoCharacter character = level.PhoenixFaction?.Soldiers?.FirstOrDefault(s => s.Id == save.GeoUnitId);
 
                     SpecializationDef spec = null;
                     if (!string.IsNullOrEmpty(save.MainSpecName))
@@ -653,7 +561,7 @@ namespace TFTV.TFTVBaseRework
                     RecruitSessions.Add(new RecruitTrainingSession
                     {
                         Character = character,
-                        GeoUnitId = personnel.Id,
+                        GeoUnitId = character.Id,
                         TargetSpecialization = spec,
                         StartDay = save.StartDay,
                         DurationDays = save.DurationDays,
@@ -662,7 +570,7 @@ namespace TFTV.TFTVBaseRework
                         Completed = save.Completed
                     });
 
-                    TFTVLogger.Always($"[Training] Session restored: PersonnelId={personnel.Id} TargetLevel={save.TargetLevel} Completed={save.Completed}");
+                    TFTVLogger.Always($"[Training] Session restored: PersonnelId={character.Id} {character.DisplayName} TargetLevel={save.TargetLevel} Completed={save.Completed}");
                 }
                 catch (Exception e) { TFTVLogger.Error(e); }
             }

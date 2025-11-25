@@ -39,6 +39,7 @@ namespace TFTV.TFTVDrills
         private static readonly Color LockedFrameColor = new Color(0.15294118f, 0.15294118f, 0.15294118f, 1f);
         private static readonly Color StandardOutlineColor = new Color(0.30980393f, 0.30980393f, 0.30980393f, 1f);
         private static readonly Color OptionFillColor = new Color(0.2509804f, 0.11372549f, 0.0627451f, 1f);
+        private static readonly Color AcquireHoverFillColor = new Color(0.25098039f, 0.25098039f, 0.25098039f, 1f);
 
         private static Sprite _originalAvailableImage = null;
         private static DrillConfirmationContext _pendingDrillConfirmation;
@@ -58,8 +59,10 @@ namespace TFTV.TFTVDrills
             return ability != null && DrillsDefs.Drills != null && DrillsDefs.Drills.Contains(ability);
         }
 
-        private static Image CreateHeaderIcon(Transform parent, TacticalAbilityDef ability, Color iconColor, bool showFrame, bool isLocked)
+        private static Image CreateHeaderIcon(Transform parent, TacticalAbilityDef ability, Color iconColor, bool showFrame, bool isLocked, out Image backgroundImage)
         {
+            backgroundImage = null;
+
             if (parent == null || ability == null)
             {
                 return null;
@@ -100,11 +103,28 @@ namespace TFTV.TFTVDrills
                 frameBackgroundRect.offsetMin = new Vector2(HeaderFrameBorderThickness, HeaderFrameBorderThickness);
                 frameBackgroundRect.offsetMax = new Vector2(-HeaderFrameBorderThickness, -HeaderFrameBorderThickness);
 
-                var frameBackgroundImage = frameBackgroundRect.GetComponent<Image>();
-                frameBackgroundImage.color = Color.black;
-                frameBackgroundImage.raycastTarget = false;
+                backgroundImage = frameBackgroundRect.GetComponent<Image>();
+                backgroundImage.color = Color.black;
+                backgroundImage.raycastTarget = false;
 
                 iconParent = frameBackgroundRect;
+            }
+            else
+            {
+                var iconBackgroundRect = UIBuilder.CreateChildRectTransform(iconRootRect,
+                    "IconBackground",
+                    anchorMin: new Vector2(0.5f, 0.5f),
+                    anchorMax: new Vector2(0.5f, 0.5f),
+                    pivot: new Vector2(0.5f, 0.5f),
+                    anchoredPosition: Vector2.zero,
+                    sizeDelta: new Vector2(HeaderIconWidth, HeaderIconHeight),
+                    components: typeof(Image));
+
+                backgroundImage = iconBackgroundRect.GetComponent<Image>();
+                backgroundImage.color = Color.black;
+                backgroundImage.raycastTarget = false;
+
+                iconParent = iconBackgroundRect;
             }
 
             var iconRect = UIBuilder.CreateChildRectTransform(iconParent,

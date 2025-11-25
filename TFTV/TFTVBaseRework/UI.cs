@@ -36,40 +36,7 @@ namespace TFTV.TFTVBaseRework
 
         private static bool _isBuildingUI;
 
-        private static void RefreshPersonnelPanel()
-        {
-            if (_personnelPanel == null || _isBuildingUI) return;
-
-            if (GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()
-               ?.View?.CurrentViewState is UIStateRosterRecruits state)
-            {
-
-                Object.Destroy(_personnelPanel);
-                _personnelPanel = null;
-                CreatePersonnelPanel(state);
-            }
-        }
-
-
-        #region Sync From Vanilla Naked Recruits
-        internal static void SyncFromNakedRecruits(GeoPhoenixFaction phoenix)
-        {
-            try
-            {
-                if (phoenix == null) return;
-
-                bool updated = PersonnelData.SyncFromNakedRecruits(phoenix);
-                if (updated)
-                {
-                    RefreshPersonnelPanel();
-                }
-            }
-            catch (Exception e) { TFTVLogger.Error(e); }
-        }
-        #endregion
-
-
-
+      
         #region Daily Tick
         internal static void DailyTick(GeoLevelController level)
         {
@@ -79,14 +46,12 @@ namespace TFTV.TFTVBaseRework
 
                 if (!_deploymentUIActive)
                 {
-                    foreach (var p in CurrentPersonnel)
+                    foreach (var p in Assignments.Values)
                     {
                         if (p.Assignment == PersonnelAssignment.Training &&
                             p.Character != null &&
-                            !p.DeploymentUIOpened &&
                              TrainingFacilityRework.IsRecruitTrainingComplete(p.Character, level))
                         {
-                            p.TrainingCompleteNotDeployed = true;
                             AutoOpenVanillaDeploymentUI(level, level.PhoenixFaction, p);
                             break;
                         }
@@ -98,21 +63,7 @@ namespace TFTV.TFTVBaseRework
         #endregion
 
         #region Harmony
-        [HarmonyPatch(typeof(GeoLevelController), "DailyUpdate")]
-        internal static class GeoLevelController_DailyUpdate_PersonnelPool
-        {
-            private static void Postfix(GeoLevelController __instance) => DailyTick(__instance);
-        }
-
-        [HarmonyPatch(typeof(GeoPhoenixFaction), nameof(GeoPhoenixFaction.RegenerateNakedRecruits))]
-        internal static class GeoPhoenixFaction_RegenerateNakedRecruits_PersonnelSync
-        {
-            private static void Postfix(GeoPhoenixFaction __instance)
-            {
-                try { SyncFromNakedRecruits(__instance); }
-                catch (Exception e) { TFTVLogger.Error(e); }
-            }
-        }
+        
 
         [HarmonyPatch(typeof(UIStateRosterRecruits), "EnterState")]
         internal static class UIStateRosterRecruits_EnterState_PersonnelManagement
@@ -234,7 +185,6 @@ namespace TFTV.TFTVBaseRework
             ClearTransformChildren(personnelRoot);
 
             var phoenix = level.PhoenixFaction;
-            PersonnelData.SyncFromNakedRecruits(phoenix);
 
             Action refresh = () =>
             {
@@ -242,7 +192,7 @@ namespace TFTV.TFTVBaseRework
                 CreatePersonnelPanel(state);
             };
 
-            foreach (var info in CurrentPersonnel.OrderBy(p => GetPersonnelName(p)))
+            foreach (var info in Assignments.Values.OrderBy(p => GetPersonnelName(p)))
             {
                 CreatePersonnelCard(personnelRoot, info, level, phoenix, refresh);
             }
@@ -687,12 +637,11 @@ namespace TFTV.TFTVBaseRework
         {
             try
             {
-                if (level == null || faction == null || person == null || person.DeploymentUIOpened) return;
+                if (level == null || faction == null || person == null) return;
 
                 GeoCharacter character = TrainingFacilityRework.FinalizeRecruitTrainingForUI(level, person.Character, early: false);
                 if (character == null) return;
 
-                person.DeploymentUIOpened = true;
                 PersonnelData.RemovePersonnel(faction, person);
 
                 CloseModal();

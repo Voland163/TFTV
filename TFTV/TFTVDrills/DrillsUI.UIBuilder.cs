@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static TFTV.TFTVDrills.DrillsUI;
 
@@ -227,7 +228,12 @@ namespace TFTV.TFTVDrills
                 }
 
 
-                CreateHeaderIcon(buttonRect, original, iconColor, IsDrillAbility(original), isLocked);
+                CreateHeaderIcon(buttonRect, original, iconColor, IsDrillAbility(original), isLocked, out var headerBackground);
+
+                if (canPurchase)
+                {
+                    AddHoverFillBehaviour(button, headerBackground, AcquireHoverFillColor);
+                }
 
                 if (allowAcquire && tooltipParent != null && panelRect != null && canvas != null)
                 {
@@ -477,6 +483,11 @@ namespace TFTV.TFTVDrills
                 var tooltipTrigger = optionRect.gameObject.AddComponent<DrillTooltipTrigger>();
                 tooltipTrigger.Initialize(def, missingRequirements, isLocked, isAcquired, tooltipParent, panelRect, canvas, skillPointCost);
 
+                if (canSelect)
+                {
+                    AddHoverFillBehaviour(button, frameBackgroundImage, AcquireHoverFillColor);
+                }
+
                 return optionRect.gameObject;
             }
 
@@ -704,6 +715,59 @@ namespace TFTV.TFTVDrills
                 }
 
                 return _defaultFont;
+            }
+
+            private static void AddHoverFillBehaviour(Selectable selectable, Image targetImage, Color hoverColor)
+            {
+                if (selectable == null || targetImage == null)
+                {
+                    return;
+                }
+
+                var behaviour = selectable.gameObject.AddComponent<HoverFillBehaviour>();
+                behaviour.Initialize(selectable, targetImage, hoverColor);
+            }
+
+            private class HoverFillBehaviour : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+            {
+                private Color _originalColor;
+                private Color _hoverColor;
+                private Selectable _selectable;
+                private Image _targetImage;
+
+                internal void Initialize(Selectable selectable, Image targetImage, Color hoverColor)
+                {
+                    _selectable = selectable;
+                    _targetImage = targetImage;
+                    _hoverColor = hoverColor;
+                    _originalColor = targetImage != null ? targetImage.color : Color.white;
+                }
+
+                public void OnPointerEnter(PointerEventData eventData)
+                {
+                    if (_selectable != null && _selectable.IsInteractable() && _targetImage != null)
+                    {
+                        _targetImage.color = _hoverColor;
+                    }
+                }
+
+                public void OnPointerExit(PointerEventData eventData)
+                {
+                    ResetColor();
+                }
+
+                private void OnDisable()
+                {
+                    ResetColor();
+                }
+
+                private void ResetColor()
+                {
+                    if (_targetImage != null)
+                    {
+                        _targetImage.color = _originalColor;
+                    }
+                }
             }
         }
     }

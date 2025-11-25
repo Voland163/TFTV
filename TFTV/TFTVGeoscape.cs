@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using TFTV.TFTVBaseRework;
+using static TFTV.TFTVBaseRework.PersonnelData;
 using static TFTV.TFTVBaseRework.TrainingFacilityRework;
 
 namespace TFTV
@@ -72,7 +73,7 @@ namespace TFTV
         public List<int> PlayerVehicles;
         public Dictionary<int, List<int>> AircraftScanningSites;
 
-        // Personnel management persistence (assignment metadata only; descriptors are in vanilla NakedRecruits)
+
         public List<PersonnelAssignmentSave> PersonnelPool;
         public List<RecruitTrainingSessionSave> RecruitTrainingSessions;
         public int PersonnelLastGenerationDay;
@@ -96,18 +97,6 @@ namespace TFTV
         {
             TFTVLogger.Always($"OnGeoscapeStart");
             GeoLevelController gsController = Controller;
-
-            try
-            {
-                var phoenix = gsController?.PhoenixFaction;
-                if (phoenix != null && phoenix.NakedRecruits.Count == 0)
-                {
-                    phoenix.RegenerateNakedRecruits();
-                }
-                PersonnelData.SyncFromNakedRecruits(phoenix);
-                Workers.FlushPendingInfoBarUpdate(gsController);
-            }
-            catch (Exception e) { TFTVLogger.Error(e); }
 
             /// ModMain is accesible at any time
 
@@ -143,7 +132,7 @@ namespace TFTV
             TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
             TFTVUIGeoMap.UnpoweredFacilitiesInfo.CheckUnpoweredBasesOnGeoscapeStart();
             AircraftReworkSpeed.Init(Controller);
-
+            PersonnelData.RestoreAssignments(Controller);
 
             /* foreach (GeoPhoenixBase phoenixBase in gsController.PhoenixFaction.Bases)
              {
@@ -351,7 +340,7 @@ namespace TFTV
 
                     foreach (var personnel in data.PersonnelPool)
                     {
-                        TFTVLogger.Always($"[PersonnelPersistence]   Personnel Id={personnel.GeoUnitId} Name={personnel.CharacterName} Assignment={personnel.Assignment}");
+                        TFTVLogger.Always($"[PersonnelPersistence]   Personnel Id={personnel.GeoUnitId} Assignment={personnel.Assignment}");
                     }
 
                 }
