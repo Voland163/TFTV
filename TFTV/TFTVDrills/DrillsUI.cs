@@ -12,11 +12,13 @@ namespace TFTV.TFTVDrills
         private const int GridColumns = 6;
         private const int VisibleGridRows = 4;
         private const float GridCellWidth = 128f;
-        private const float GridCellHeight = 140f;
+        private const float GridCellHeight = GridCellWidth;
         private const float GridSpacing = 12f;
         private const float GridPadding = 18f;
         private const float HeaderIconFrameSize = 100f;
         private const float HeaderIconSize = 92f;
+        private const float OptionIconFrameSize = 92f;
+        private const float OptionIconSize = 80f;
         private const float HeaderIconFrameHeight = 100f;
         private const float HeaderIconFrameWidth = HeaderIconFrameHeight * 2f;
         private const float HeaderIconHeight = 92f;
@@ -35,6 +37,8 @@ namespace TFTV.TFTVDrills
         private static readonly Color DrillFrameColor = new Color(0.29803923f, 0.09019608f, 0f, 1f);
         private static readonly Color HeaderFrameBorderColor = new Color(0.6f, 0.6f, 0.6f, 1f);
         private static readonly Color LockedFrameColor = new Color(0.15294118f, 0.15294118f, 0.15294118f, 1f);
+        private static readonly Color StandardOutlineColor = new Color(0.30980393f, 0.30980393f, 0.30980393f, 1f);
+        private static readonly Color OptionFillColor = new Color(0.2509804f, 0.11372549f, 0.0627451f, 1f);
 
         private static Sprite _originalAvailableImage = null;
         private static DrillConfirmationContext _pendingDrillConfirmation;

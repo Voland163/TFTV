@@ -30,7 +30,7 @@ namespace TFTV.TFTVDrills
             private static readonly Color ButtonHighlightColor = new Color(0.2f, 0.0588f, 0f, 1f);
             private static readonly Color ButtonPressedColor = new Color(0.3137255f, 0.11764706f, 0.019607844f, 1f);
             private static readonly Color ButtonDisabledColor = new Color(0.1f, 0.1f, 0.1f, 0.4f);
-            private static readonly Color DrillFrameColor = new Color(0.29803923f, 0.09019608f, 0f, 1f);
+            
             private static readonly Color LockedFrameColor = new Color(0.15294118f, 0.15294118f, 0.15294118f, 1f);
             private static readonly Color FacilityRequirementTextColor = new Color(0.75f, 0.75f, 0.75f, 1f);
             private static Font _defaultFont;
@@ -179,6 +179,7 @@ namespace TFTV.TFTVDrills
                 var highlightColor = new Color(0.2f, 0.2f, 0.2f, 1f);
                 var pressedColor = new Color(0.1f, 0.1f, 0.1f, 1f);
                 var disabledColor = new Color(0.1f, 0.1f, 0.1f, 0.4f);
+                var canAcquireColor = new Color(0.2509804f, 0.2509804f, 0.2509804f, 1f);
                 buttonImage.color = normalColor;
 
                 var border = buttonRect.gameObject.AddComponent<Outline>();
@@ -200,6 +201,10 @@ namespace TFTV.TFTVDrills
 
                 if (canPurchase)
                 {
+                    border.effectColor = StandardOutlineColor;
+                    colors.highlightedColor = canAcquireColor;
+                    colors.selectedColor = canAcquireColor;
+                    button.colors = colors;
                     button.onClick.AddListener(() => onAcquire());
                 }
                 else
@@ -409,8 +414,8 @@ namespace TFTV.TFTVDrills
 
                 var layout = optionRect.gameObject.AddComponent<VerticalLayoutGroup>();
                 layout.padding = new RectOffset(8, 8, 8, 8);
-                layout.spacing = 6f;
-                layout.childAlignment = TextAnchor.UpperCenter;
+                layout.spacing = 0f;
+                layout.childAlignment = TextAnchor.MiddleCenter;
                 layout.childControlWidth = true;
                 layout.childForceExpandWidth = true;
                 layout.childForceExpandHeight = false;
@@ -421,17 +426,21 @@ namespace TFTV.TFTVDrills
                     anchorMax: new Vector2(0.5f, 0.5f),
                     pivot: new Vector2(0.5f, 0.5f),
                     anchoredPosition: Vector2.zero,
-                    sizeDelta: new Vector2(HeaderIconFrameSize, HeaderIconFrameSize));
+                     sizeDelta: new Vector2(OptionIconFrameSize, OptionIconFrameSize));
 
                 ConfigureLayoutElement(frameRect,
-                    minWidth: HeaderIconFrameSize,
-                    minHeight: HeaderIconFrameSize,
-                    preferredWidth: HeaderIconFrameSize,
-                    preferredHeight: HeaderIconFrameSize);
+                    minWidth: OptionIconFrameSize,
+                    minHeight: OptionIconFrameSize,
+                    preferredWidth: OptionIconFrameSize,
+                    preferredHeight: OptionIconFrameSize);
 
                 float borderThickness = HeaderFrameBorderThickness;
 
-                Color frameColor = isLocked ? LockedFrameColor : DrillFrameColor;
+                Color frameColor = isLocked ? LockedFrameColor : StandardOutlineColor;
+                if (isAcquired)
+                {
+                    frameColor = DrillPulseColor;
+                }
 
                 CreateFrameBorders(frameRect, frameColor, borderThickness);
 
@@ -446,7 +455,7 @@ namespace TFTV.TFTVDrills
                 frameBackgroundRect.offsetMax = new Vector2(-borderThickness, -borderThickness);
 
                 var frameBackgroundImage = frameBackgroundRect.GetComponent<Image>();
-                frameBackgroundImage.color = Color.black;
+                frameBackgroundImage.color = OptionFillColor;
                 frameBackgroundImage.raycastTarget = false;
 
                 var iconRect = CreateChildRectTransform(frameBackgroundRect,
@@ -455,7 +464,7 @@ namespace TFTV.TFTVDrills
                    anchorMax: new Vector2(0.5f, 0.5f),
                    pivot: new Vector2(0.5f, 0.5f),
                    anchoredPosition: Vector2.zero,
-                   sizeDelta: new Vector2(HeaderIconSize, HeaderIconSize),
+                   sizeDelta: new Vector2(OptionIconSize, OptionIconSize),
                    components: typeof(Image));
 
 
@@ -464,29 +473,6 @@ namespace TFTV.TFTVDrills
                 iconImage.preserveAspect = true;
                 iconImage.color = isLocked ? LockedIconTint : (isAcquired ? DrillPulseColor : Color.white);
                 iconImage.raycastTarget = false;
-
-                var labelRect = CreateChildRectTransform(optionRect,
-                    "Label",
-                    anchorMin: new Vector2(0f, 0f),
-                    anchorMax: new Vector2(1f, 0f),
-                    pivot: new Vector2(0.5f, 0.5f),
-                    anchoredPosition: Vector2.zero,
-                    sizeDelta: new Vector2(0f, 28f),
-                    components: typeof(Text));
-
-                var labelText = labelRect.GetComponent<Text>();
-                labelText.font = GetDefaultFont();
-                labelText.text = def.ViewElementDef?.DisplayName1?.Localize() ?? def.name ?? "Ability";
-                labelText.color = isLocked ? LockedLabelTint : (isAcquired ? DrillPulseColor : Color.white);
-                labelText.alignment = TextAnchor.MiddleCenter;
-                labelText.resizeTextForBestFit = true;
-                labelText.resizeTextMinSize = 12;
-                labelText.resizeTextMaxSize = 20;
-                labelText.raycastTarget = false;
-
-                ConfigureLayoutElement(labelRect,
-                   minHeight: 24f,
-                   preferredHeight: 24f);
 
                 var tooltipTrigger = optionRect.gameObject.AddComponent<DrillTooltipTrigger>();
                 tooltipTrigger.Initialize(def, missingRequirements, isLocked, isAcquired, tooltipParent, panelRect, canvas, skillPointCost);
