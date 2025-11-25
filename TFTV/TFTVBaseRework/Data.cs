@@ -237,6 +237,11 @@ namespace TFTV.TFTVBaseRework
                         Assignment = save.Assignment
                     };
 
+                    if (info.Character != null)
+                    {
+                        GeoCharacterFilter.HiddenOperativeTagFilter.ApplyHiddenTag(info.Character);
+                    }
+
                     if (save.MainSpecName != null && save.MainSpecName != "")
                     {
                         info.TrainingSpec = TFTVMain.Main.DefCache.GetDef<SpecializationDef>(save.MainSpecName);

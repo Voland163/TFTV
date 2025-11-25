@@ -2527,6 +2527,8 @@ namespace TFTV
                     }
                 }
 
+
+
                 private static void ToggleButtonClicked(PhoenixGeneralButton helmetToggleButton)
                 {
                     try
@@ -2999,7 +3001,6 @@ namespace TFTV
 
 
             [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruitToContainerFinal")]
-
             internal static class TFTV_GeoPhoenixFaction_AddRecruitToContainerFinal_patch
             {
                 public static void Prefix(ref GeoCharacter recruit)
