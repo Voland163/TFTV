@@ -31,6 +31,8 @@ namespace TFTV
                 GeoFactionDef anu = DefCache.GetDef<GeoFactionDef>("Anu_GeoFactionDef");
                 GeoFactionDef synedrion = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
 
+                TFTVLogger.Always("Starting ChangesToDLC3Events, got here 0");
+
                 //Festering Skies changes
                 // copy Augury chant from PROG_FS0 to PROG_FS9 and remove from PROG_FS0, because Augury doesn't happen and FS0 event will be used for a Sleeping Beauty Awakens
                 GeoscapeEventDef geoEventFS0 = DefCache.GetDef<GeoscapeEventDef>("PROG_FS0_GeoscapeEventDef");
@@ -66,6 +68,8 @@ namespace TFTV
                     TimerID = "PROG_FS1_MISS"
                 };
                 geoEventFS1.GeoscapeEventData.Choices[0].Outcome.ActivateTimers[0] = outcomeActivateTimer;
+
+                TFTVLogger.Always("Starting ChangesToDLC3Events, got here 1");
 
                 // Destroy Haven after mission
                 GeoscapeEventDef geoEventFS1WIN = DefCache.GetDef<GeoscapeEventDef>("PROG_FS1_WIN_GeoscapeEventDef");
@@ -103,7 +107,7 @@ namespace TFTV
 
                 DefCache.GetDef<GeoLevelConditionDef>("[PROG_FS3] Condition 2").Variable="TrappedInTheMistTriggered";
 
-          
+                TFTVLogger.Always("Starting ChangesToDLC3Events, got here 2");
 
                 //Remove CH2 miss 
                 GeoscapeEventDef CH2_Event = DefCache.GetDef<GeoscapeEventDef>("PROG_CH2_GeoscapeEventDef");

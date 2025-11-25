@@ -1055,7 +1055,7 @@ namespace TFTV.TFTVDrills
                 newAbility.ViewElementDef.SmallIcon = icon;
                 newAbility.ViewElementDef.LargeIcon = icon;
 
-                newAbility.ViewElementDef.ConfirmationButtonKey.LocalizationKey = "Testing";
+               // newAbility.ViewElementDef.ConfirmationButtonKey.LocalizationKey = "Testing";
 
                 newAbility.CharacterProgressionData = Helper.CreateDefFromClone(
                     _remoteControlAbilityDef.CharacterProgressionData,

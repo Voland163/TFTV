@@ -959,23 +959,35 @@ namespace TFTV
             {
                 try
                 {
-                    ShortActorInfoTooltipData shortActorInfoTooltipData = default;
+                    ShortActorInfoTooltipData data = default;
 
-                    shortActorInfoTooltipData.Entries = new List<ShortActorInfoTooltipDataEntry>();
-                    shortActorInfoTooltipData.TrackRoot = actor.gameObject;
+                    data.Entries = new List<ShortActorInfoTooltipDataEntry>();
+                    data.TrackRoot = actor?.gameObject;
 
-                    shortActorInfoTooltipData.Entries.Add(new ShortActorInfoTooltipDataEntry
+                    if (actor == null)
+                    {
+                        TFTVLogger.Always("[GenerateData] actor == null");
+                        data.Entries.Add(new ShortActorInfoTooltipDataEntry { TextContent = "UNKNOWN", ValueContent = string.Empty });
+                        return data;
+                    }
+                    if (uIModuleShortActorInfoTooltip == null)
+                    {
+                        TFTVLogger.Always($"[GenerateData] tooltip module == null for actor={actor.DisplayName}");
+                    }
+
+
+                    data.Entries.Add(new ShortActorInfoTooltipDataEntry
                     {
                         TextContent = actor.DisplayName.ToUpper(),
                         ValueContent = string.Empty
                     });
 
-                    shortActorInfoTooltipData.Entries.Add(new ShortActorInfoTooltipDataEntry
+                    data.Entries.Add(new ShortActorInfoTooltipDataEntry
                     {
                         TextContent = uIModuleShortActorInfoTooltip.HealthTextKey.Localize(null),
                         ValueContent = string.Format("{0}/{1}", actor.CharacterStats.Health.IntValue, actor.CharacterStats.Health.IntMax)
                     });
-                    shortActorInfoTooltipData.Entries.Add(new ShortActorInfoTooltipDataEntry
+                    data.Entries.Add(new ShortActorInfoTooltipDataEntry
                     {
                         TextContent = uIModuleShortActorInfoTooltip.WillpointsTextKey.Localize(null),
                         ValueContent = string.Format("{0}/{1}", actor.CharacterStats.WillPoints.IntValue, actor.CharacterStats.WillPoints.IntMax)
@@ -989,7 +1001,7 @@ namespace TFTV
                         value = string.Format("{0}/{1}", Mathf.Min(actor.CharacterStats.ActionPoints.IntValue, maxActionPoints), maxActionPoints);
                     }
 
-                    shortActorInfoTooltipData.Entries.Add(new ShortActorInfoTooltipDataEntry
+                    data.Entries.Add(new ShortActorInfoTooltipDataEntry
                     {
                         TextContent = TFTVCommonMethods.ConvertKeyToString("KEY_MOVEMENT"),
                         ValueContent = value
@@ -1024,11 +1036,14 @@ namespace TFTV
                         ValueContent = accuracyValue
                     };
 
-                    shortActorInfoTooltipData.Entries.Add(perception);
-                    shortActorInfoTooltipData.Entries.Add(stealth);
-                    shortActorInfoTooltipData.Entries.Add(accuracy);
+                    data.Entries.Add(perception);
+                    data.Entries.Add(stealth);
+                    data.Entries.Add(accuracy);
 
                     TacticalActor selectedActor = actor.TacticalLevel.View.SelectedActor;
+
+                    var view = actor.TacticalLevel?.View;
+                    TFTVLogger.Always($"[GenerateData] actor={actor.DisplayName}, view={(view != null)}, selectedActor={(selectedActor != null)}, actorView={(actor.TacticalActorView != null)}");
 
                     if (selectedActor != null && selectedActor.Status != null)
                     {
@@ -1058,7 +1073,7 @@ namespace TFTV
 
                                 //  TFTVLogger.Always($"adding vivisection status to {actor.name} from {damageMultiplierStatusVivisection.DamageMultiplierStatusDef.name}");
 
-                                shortActorInfoTooltipData.Entries.Add(new ShortActorInfoTooltipDataEntry
+                                data.Entries.Add(new ShortActorInfoTooltipDataEntry
                                 {
                                     Icon = _vivisectionIcon,
                                     IconColor = new Color(1, 1, 1, 1),
@@ -1076,7 +1091,7 @@ namespace TFTV
                                 _moonIcon = Helper.CreateSpriteFromImageFile("moon_icon.png");
                             }
 
-                            shortActorInfoTooltipData.Entries.Add(new ShortActorInfoTooltipDataEntry
+                            data.Entries.Add(new ShortActorInfoTooltipDataEntry
                             {
                                 Icon = _moonIcon,
                                 IconColor = new Color(1, 1, 1, 1),
@@ -1087,9 +1102,19 @@ namespace TFTV
 
                     }
 
-                    foreach (TacticalActorViewBase.StatusInfo statusInfo in actor.TacticalActorView.GetCharacterStatusActorStatuses())
+                    foreach (TacticalActorViewBase.StatusInfo statusInfo in SafeGetStatusInfos(actor, "GenerateData"))
                     {
 
+                        if (statusInfo == null)
+                        {
+                            TFTVLogger.Always($"[GenerateData] statusInfo == null (actor={actor.DisplayName})");
+                            continue;
+                        }
+                        if (statusInfo.Def == null)
+                        {
+                            TFTVLogger.Always($"[GenerateData] statusInfo.Def == null (actor={actor.DisplayName})");
+                            continue;
+                        }
 
                         if (statusInfo.Def.VisibleOnHealthbar != TacStatusDef.HealthBarVisibility.Hidden)
                         {
@@ -1111,7 +1136,7 @@ namespace TFTV
                                 {
                                     item.ValueContent = string.Format("{0}", statusInfo.Value);
                                 }
-                                shortActorInfoTooltipData.Entries.Add(item);
+                                data.Entries.Add(item);
                             }
                             else
                             {
@@ -1143,13 +1168,13 @@ namespace TFTV
                                     item.ValueContent = $"{description} {statusInfo.Value}";
                                 }
 
-                                shortActorInfoTooltipData.Entries.Add(item);
+                                data.Entries.Add(item);
 
                             }
                         }
                     }
 
-                    return shortActorInfoTooltipData;
+                    return data;
                 }
                 catch (Exception e)
                 {
@@ -1158,30 +1183,71 @@ namespace TFTV
                 }
             }
 
+            private static IEnumerable<TacticalActorViewBase.StatusInfo> SafeGetStatusInfos(TacticalActor actor, string callerTag)
+            {
+                try
+                {
+                    if (actor == null)
+                    {
+                        TFTVLogger.Always($"[StatusInfos:{callerTag}] actor == null");
+                        return Enumerable.Empty<TacticalActorViewBase.StatusInfo>();
+                    }
+                    if (actor.TacticalActorView == null)
+                    {
+                        TFTVLogger.Always($"[StatusInfos:{callerTag}] actor.TacticalActorView == null (actor={actor.DisplayName})");
+                        return Enumerable.Empty<TacticalActorViewBase.StatusInfo>();
+                    }
+
+                    var infos = actor.TacticalActorView.GetCharacterStatusActorStatuses();
+                    if (infos == null)
+                    {
+                        TFTVLogger.Always($"[StatusInfos:{callerTag}] GetCharacterStatusActorStatuses returned null (actor={actor.DisplayName})");
+                        return Enumerable.Empty<TacticalActorViewBase.StatusInfo>();
+                    }
+
+                    return infos;
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Always($"[StatusInfos:{callerTag}] Exception while fetching statuses for actor={actor?.DisplayName}: {ex}");
+                    return Enumerable.Empty<TacticalActorViewBase.StatusInfo>();
+                }
+            }
+
             [HarmonyPatch(typeof(UIModuleTacticalContextualMenu), "OnAbilityHover")]
             public static class UIModuleTacticalContextualMenu_OnAbilityHover_patch
             {
-
                 public static void Postfix(bool isHovered, TacticalContextualMenuItem menuItem, UIModuleTacticalContextualMenu __instance)
                 {
                     try
                     {
-                        if (menuItem.InfoButton && __instance.SelectionInfo.Actor is TacticalActor tacticalActor && tacticalActor.IsControlledByPlayer)
+                        var ctrl = GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>();
+                        var actor = __instance?.SelectionInfo.Actor as TacticalActor;
+                        TFTVLogger.Always($"[OnAbilityHover] hovered={isHovered}, infoButton={menuItem?.InfoButton ?? false}, ctrl={(ctrl != null)}, actor={(actor != null)}, actorView={(actor?.TacticalActorView != null)}");
+
+                        if (!isHovered || menuItem == null || !menuItem.InfoButton || ctrl == null || actor == null)
                         {
-                            TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
-                            TacticalActor selectedActor = controller.View.SelectedActor;
-
-                            if (selectedActor != null && selectedActor.TacticalFaction == controller.View.ViewerFaction)
-                            {
-                                ShowShortInfoTooltipSelectedActor(selectedActor, controller);
-                            }
-
+                            return;
                         }
+
+                        var view = ctrl.View;
+                        if (view == null || view.TacticalModules == null || view.SelectedActor == null)
+                        {
+                            TFTVLogger.Always($"[OnAbilityHover] view/modules/selectedActor not ready (view={(view != null)}, modules={(view?.TacticalModules != null)}, selectedActor={(view?.SelectedActor != null)})");
+                            return;
+                        }
+
+                        if (!actor.IsControlledByPlayer || view.ViewerFaction != actor.TacticalFaction)
+                        {
+                            TFTVLogger.Always($"[OnAbilityHover] actor not player-controlled or viewer mismatch (player={actor.IsControlledByPlayer}, viewerMatch={view.ViewerFaction == actor.TacticalFaction})");
+                            return;
+                        }
+
+                        ShowShortInfoTooltipSelectedActor(actor, ctrl);
                     }
                     catch (Exception e)
                     {
                         TFTVLogger.Error(e);
-                        throw;
                     }
                 }
             }
@@ -2641,7 +2707,7 @@ namespace TFTV
                                                         select p).ToList();
 
                             int mentorCount = list.Count(p => TFTVDrills.DrillsHarmony.MentorProtocol.CheckForMentorProtocolAbility(p));
-                            if (mentorCount > 0)
+                            if (mentorCount > 0 && __instance.State == TacFactionState.Won)
                             {
                                 num += mentorCount * 2;
                             }

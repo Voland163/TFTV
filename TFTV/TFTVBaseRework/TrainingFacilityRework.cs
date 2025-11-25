@@ -9,8 +9,10 @@ using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace TFTV.TFTVBaseRework
 {
@@ -504,7 +506,63 @@ namespace TFTV.TFTVBaseRework
         }
         #endregion
 
-        
+        [HarmonyPatch(typeof(PostmissionReplenishManager), "AddPreferredLoadout")]
+        internal static class TFTV_PostmissionReplenishManager_AddPreferredLoadout_Patch
+        {
+            private static readonly FieldInfo PreferredLoadoutsField = AccessTools.Field(typeof(PostmissionReplenishManager), "_preferredLoadouts");
+            private static readonly MethodInfo UpdatePreferredLoadoutMethod = AccessTools.Method(typeof(PostmissionReplenishManager), "UpdatePreferredLoadout");
+
+            public static bool Prefix(PostmissionReplenishManager __instance, GeoCharacter character)
+            {
+                try
+                {
+                    if (PreferredLoadoutsField?.GetValue(__instance) is IDictionary preferredLoadouts && character != null)
+                    {
+                        bool alreadyRegistered = preferredLoadouts.Keys.Cast<object>().Any(key =>
+                        {
+                            if (key == null)
+                            {
+                                return false;
+                            }
+
+                            if (ReferenceEquals(key, character))
+                            {
+                                return true;
+                            }
+
+                            if (key is GeoCharacter geoCharacter)
+                            {
+                                return ReferenceEquals(geoCharacter, character);
+                            }
+
+                            if (key is string stringKey)
+                            {
+                                return stringKey.Equals(character.Id.ToString(), StringComparison.OrdinalIgnoreCase);
+                            }
+
+                            return false;
+                        });
+
+                        if (alreadyRegistered)
+                        {
+                            if (UpdatePreferredLoadoutMethod != null && UpdatePreferredLoadoutMethod.GetParameters().Length == 1)
+                            {
+                                UpdatePreferredLoadoutMethod.Invoke(__instance, new object[] { character });
+                            }
+
+                            return false;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+                return true;
+            }
+        }
+
 
         #region Recruit Training Sessions - Save/Load
         [SerializeType(SerializeMembersByDefault = SerializeMembersType.SerializeAll)]

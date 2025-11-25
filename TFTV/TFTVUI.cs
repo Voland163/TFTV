@@ -3585,7 +3585,7 @@ namespace TFTV
                     try
                     {
                         TFTVConfig config = TFTVMain.Main.Config;
-                        TFTVLogger.Always($"UIStateTacticalCutscene EnterState called");
+                       // TFTVLogger.Always($"UIStateTacticalCutscene EnterState called");
 
                         if (config.SkipMovies)
                         {

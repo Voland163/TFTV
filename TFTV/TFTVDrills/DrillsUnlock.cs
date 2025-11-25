@@ -476,6 +476,7 @@ namespace TFTV.TFTVDrills
 
 
             var neurolink = new DrillUnlockCondition();
+            
             neurolink.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
             {
                 ProficiencyAbilities = new List<TacticalAbilityDef>()
@@ -484,6 +485,15 @@ namespace TFTV.TFTVDrills
                 },
 
             });
+            
+            neurolink.WeaponProficiencyRequirements.Add(new DrillWeaponProficiencyRequirement()
+            {
+                ProficiencyAbilities = new List<TacticalAbilityDef>()
+                {
+                   _remoteControlAbilityDef
+                },
+            });
+
             SetUnlockCondition(_neuralLink, neurolink);
 
             var bulletHell = new DrillUnlockCondition();

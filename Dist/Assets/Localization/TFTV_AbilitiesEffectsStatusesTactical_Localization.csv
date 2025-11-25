@@ -366,7 +366,7 @@ TFTV_DRILL_snapbrace_DESC,Text,,"If it is your last action, you can deploy your 
 TFTV_DRILL_partingshotpistol_NAME,Text,,PARTING SHOTS,,,,,,,,
 TFTV_DRILL_partingshotpistol_DESC,Text,,"When below 1AP, convert any remaning movement into 2 low-accuracy pistol shots.",,,,,,,,
 TFTV_DRILL_shieldedriposte_NAME,Text,,SHIELDED RIPOSTE,,,,,,,,
-TFTV_DRILL_shieldedriposte_DESC,Text,,Can Return Fire while the shield is lowered.,,,,,,,,
+TFTV_DRILL_shieldedriposte_DESC,Text,,Can Return Fire while the shield is deployed.,,,,,,,,
 TFTV_DRILL_causticjamming_NAME,Text,,CAUSTIC JAMMING,,,,,,,,
 TFTV_DRILL_causticjamming_DESC,Text,,Poisoned enemies always fumble their attacks within a Jamming Field.,,,,,,,,
 TFTV_DRILL_toxiclink_NAME,Text,,TOXIC LINK,,,,,,,,

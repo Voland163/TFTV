@@ -104,10 +104,7 @@ namespace TFTV
                 loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_46" });
                 loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_47" });
                 loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_48" });
-                loadingTipsRepositoryDef.GeoscapeLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_GEOSCAPE_49" });
                 loadingTipsRepositoryDef.TacticalLoadingTips.Add(new LocalizedTextBind() { LocalizationKey = "TFTV_TIP_TACTICAL_29" });
-
-
             }
             catch (Exception e)
             {
@@ -1094,12 +1091,10 @@ namespace TFTV
                 // Example of initializing the dictionary with the provided values
                 Dictionary<string, string> keyReplacements = new Dictionary<string, string>
                     {
-                        { "VOID_OMEN_TITLE_7", "VOID_OMEN_TITLE_7_ALT" },
-                       { "VOID_OMEN_DESCRIPTION_TEXT_7", "VOID_OMEN_DESCRIPTION_TEXT_7_ALT"},
-                        {"VOID_OMEN_REMOVAL_TEXT_7", "VOID_OMEN_REMOVAL_TEXT_7_ALT" }
+                        { "VOID_OMEN_TITLE_7", TFTVCommonMethods.ConvertKeyToString("VOID_OMEN_TITLE_7_ALT")},
+                       { "VOID_OMEN_DESCRIPTION_TEXT_7", TFTVCommonMethods.ConvertKeyToString("VOID_OMEN_DESCRIPTION_TEXT_7_ALT")},
+                        {"VOID_OMEN_REMOVAL_TEXT_7", TFTVCommonMethods.ConvertKeyToString("VOID_OMEN_REMOVAL_TEXT_7_ALT") }
                     };
-
-
 
                 // Get the TermData for the key
 

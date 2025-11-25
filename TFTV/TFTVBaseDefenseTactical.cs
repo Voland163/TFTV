@@ -34,6 +34,7 @@ using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.ActorDeployment;
 using PhoenixPoint.Tactical.Levels.Destruction;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
+using PhoenixPoint.Tactical.Levels.GameOverConditions;
 using PhoenixPoint.Tactical.Levels.Mist;
 using PhoenixPoint.Tactical.Prompts;
 using PhoenixPoint.Tactical.View;
@@ -44,6 +45,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using static Base.Audio.WwiseIDs.SWITCHES;
 using static TFTV.TFTVBaseDefenseTactical.StartingDeployment;
 
 namespace TFTV
@@ -741,6 +743,36 @@ namespace TFTV
                 }
             }
 
+
+            [HarmonyPatch(typeof(TacticalLevelController), "GameOver")]
+            public static class TacticalLevelController_GameOver_BaseDefense_Patch
+            {
+                public static void Postfix(TacticalLevelController __instance)
+                {
+                    try
+                    {
+                        if(!CheckIfBaseDefenseVsAliens(__instance))
+                        {
+                            return;
+                        }
+
+                        TacticalFaction playerFaction = __instance.Factions.FirstOrDefault((TacticalFaction f) => f.ParticipantKind == TacMissionParticipant.Player);
+                        
+                        if(playerFaction.State== TacFactionState.Playing)
+                        {
+                            TFTVLogger.Always($"{playerFaction.TacticalFactionDef.FactionDef.ShortName} faction game over check in base defense {playerFaction.State}");
+                            playerFaction.State = TacFactionState.Defeated;
+                        }
+
+                        TFTVLogger.Always($"Now {playerFaction.TacticalFactionDef.FactionDef.ShortName} faction game in base defense {playerFaction.State}");
+
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
 
             //Method to add objective tag on Pandorans for the Scatter Attackers objective
             //Doesn't activate if Pandoran faction not present
@@ -4156,6 +4188,8 @@ namespace TFTV
                 }
             }
         }
+
+       
 
     }
 }

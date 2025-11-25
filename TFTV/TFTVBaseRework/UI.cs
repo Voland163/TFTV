@@ -647,6 +647,9 @@ namespace TFTV.TFTVBaseRework
                 CloseModal();
 
                 _deploymentUIActive = true;
+
+                faction.RemoveCharacter(person.Character);
+
                 level.View.PrepareDeployAsset(faction, character, null, null, manufactured: false, spaceFull: false);
             }
             catch (Exception e)
