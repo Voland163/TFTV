@@ -32,35 +32,35 @@ namespace TFTV
 
 
 
-       /* [HarmonyPatch(typeof(UIModuleMutate), "OnNewCharacter")]//InitCharacterInfo")]
-        public static class UIModuleMutate_InitCharacterInfo_Patch
-        {
-            public static void Postfix(Dictionary<AddonSlotDef, UIModuleMutationSection> ____augmentSections, GeoCharacter newCharacter)
-            {
-                try
-                {
-                    if (newCharacter.TemplateDef != null && newCharacter.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag))
-                    {
-                        // TFTVLogger.Always($"current character is {newCharacter.DisplayName} and it has mercenary tag? {newCharacter.TemplateDef.GetGameTags().Contains(MercenaryTag)}");
+        /* [HarmonyPatch(typeof(UIModuleMutate), "OnNewCharacter")]//InitCharacterInfo")]
+         public static class UIModuleMutate_InitCharacterInfo_Patch
+         {
+             public static void Postfix(Dictionary<AddonSlotDef, UIModuleMutationSection> ____augmentSections, GeoCharacter newCharacter)
+             {
+                 try
+                 {
+                     if (newCharacter.TemplateDef != null && newCharacter.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag))
+                     {
+                         // TFTVLogger.Always($"current character is {newCharacter.DisplayName} and it has mercenary tag? {newCharacter.TemplateDef.GetGameTags().Contains(MercenaryTag)}");
 
-                        foreach (KeyValuePair<AddonSlotDef, UIModuleMutationSection> augmentSection in ____augmentSections)
-                        {
-                            augmentSection.Value.ResetContainer(AugumentSlotState.BlockedByPermenantAugument, "KEY_ABILITY_NOAUGMENTATONS");
-                        }
+                         foreach (KeyValuePair<AddonSlotDef, UIModuleMutationSection> augmentSection in ____augmentSections)
+                         {
+                             augmentSection.Value.ResetContainer(AugumentSlotState.BlockedByPermenantAugument, "KEY_ABILITY_NOAUGMENTATONS");
+                         }
 
-                    }
+                     }
 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }*/
+                 }
+                 catch (Exception e)
+                 {
+                     TFTVLogger.Error(e);
+                 }
+             }
+         }*/
 
-        
 
-        [HarmonyPatch(typeof(UIStateMutate), "EnterState")]//InitCharacterInfo")]
+
+        [HarmonyPatch(typeof(UIStateMutate), "EnterState")]//InitCharacterInfo")] //VERIFIED
         public static class UIStateMutate_EnterState_Patch
         {
             public static void Prefix(ref List<GeoCharacter> ____characters)
@@ -81,7 +81,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIStateBionics), "EnterState")]//InitCharacterInfo")]
+        [HarmonyPatch(typeof(UIStateBionics), "EnterState")]//InitCharacterInfo")] //VERIFIED
         public static class UIStateBionics_EnterState_Patch
         {
             public static void Prefix(ref List<GeoCharacter> ____characters)
@@ -102,11 +102,11 @@ namespace TFTV
             }
         }
 
-        
 
-        
 
-            
+
+
+
 
         /*[HarmonyPatch(typeof(UIModuleBionics), "OnNewCharacter")]//InitCharacterInfo")]
         public static class UIModuleBionics_InitCharacterInfo_Patch
@@ -202,7 +202,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(UIModuleBionics), "InitPossibleMutations")]
+        [HarmonyPatch(typeof(UIModuleBionics), "InitPossibleMutations")] //VERIFIED
         public static class UIModuleBionics_InitPossibleMutations_patch
         {
             public static bool Prefix(UIModuleBionics __instance, Dictionary<AddonSlotDef, UIModuleMutationSection> ____augmentSections)
@@ -256,7 +256,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(EditUnitButtonsController), "CheckIsBionicsIsAvailable")]
+        [HarmonyPatch(typeof(EditUnitButtonsController), "CheckIsBionicsIsAvailable")] //VERIFIED
         public static class EditUnitButtonsController_CheckIsBionicsIsAvailable_Bionics_patch
         {
             public static void Postfix(GeoPhoenixFaction phoenixFaction, ref bool ____bionicsAvailable,
@@ -303,7 +303,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(EditUnitButtonsController), "CheckIsMutationIsAvailable")]
+        [HarmonyPatch(typeof(EditUnitButtonsController), "CheckIsMutationIsAvailable")] //VERIFIED
         public static class EditUnitButtonsController_CheckIsMutationIsAvailable_Mutations_patch
         {
             public static void Postfix(GeoPhoenixFaction phoenixFaction, ref bool ____mutationAvailable, EditUnitButtonsController __instance, UIModuleActorCycle ____parentModule)
@@ -350,7 +350,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(GeoAlienFaction), "UpdateFactionDaily")]
+        [HarmonyPatch(typeof(GeoAlienFaction), nameof(GeoAlienFaction.UpdateFactionDaily))]
         public static class PhoenixStatisticsManager_UpdateGeoscapeStats_AnuPissedAtBionics_Patch
         {
             public static void Postfix(GeoAlienFaction __instance)
@@ -395,7 +395,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(GeoAlienFaction), "UpdateFactionDaily")]
+        [HarmonyPatch(typeof(GeoAlienFaction), nameof(GeoAlienFaction.UpdateFactionDaily))] 
         public static class PhoenixStatisticsManager_UpdateGeoscapeStats_NJPissedAtMutations_Patch
         {
             public static void Postfix(GeoAlienFaction __instance)
@@ -439,7 +439,7 @@ namespace TFTV
         }
 
         //Used for triggering NJ Pissed events 
-        [HarmonyPatch(typeof(UIModuleMutationSection), "ApplyMutation")]
+        [HarmonyPatch(typeof(UIModuleMutationSection), "ApplyMutation")] //VERIFIED
         public static class UIModuleMutationSection_ApplyMutation_PissedEvents_patch
         {
             private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
@@ -471,7 +471,7 @@ namespace TFTV
         }
 
         //Used for triggering Anu pissed events
-        [HarmonyPatch(typeof(UIModuleBionics), "OnAugmentApplied")]
+        [HarmonyPatch(typeof(UIModuleBionics), nameof(UIModuleBionics.OnAugmentApplied))]
         public static class UIModuleBionics_OnAugmentApplied_SetStaminaTo0_patch
         {
             public static void Postfix(UIModuleBionics __instance)

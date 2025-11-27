@@ -657,7 +657,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(KillActorFactionObjective), "GetTargets")]
+            [HarmonyPatch(typeof(KillActorFactionObjective), "GetTargets")] //VERIFIED
             public static class TFTV_KillActorFactionObjective_GetTargets_Patch
             {
                 public static void Postfix(FactionObjective __instance, ref IEnumerable<TacticalActorBase> __result)
@@ -717,7 +717,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(TacticalFaction), "HasUndeployedTacActors")]
+            [HarmonyPatch(typeof(TacticalFaction), nameof(TacticalFaction.HasUndeployedTacActors))]
             public static class SurviveTurnsFactionObjective_HasUndeployedTacActors_BaseDefense_Patch
             {
                 public static void Postfix(TacticalFaction __instance, ref bool __result)
@@ -744,7 +744,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(TacticalLevelController), "GameOver")]
+            [HarmonyPatch(typeof(TacticalLevelController), nameof(TacticalLevelController.GameOver))]
             public static class TacticalLevelController_GameOver_BaseDefense_Patch
             {
                 public static void Postfix(TacticalLevelController __instance)
@@ -1304,7 +1304,7 @@ namespace TFTV
                         }
                     }
 
-                    [HarmonyPatch(typeof(TacticalPrompt), "Show")]
+                    [HarmonyPatch(typeof(TacticalPrompt), nameof(TacticalPrompt.Show))]
                     public static class TacticalPrompt_AddStatus_patch
                     {
                         public static void Prefix(TacticalPrompt __instance)
@@ -1537,7 +1537,7 @@ namespace TFTV
 
                 }
 
-                [HarmonyPatch(typeof(Breakable), "Explode")]
+                [HarmonyPatch(typeof(Breakable), "Explode")] //VERIFIED
                 public static class Breakable_Explode_Experiment_patch
                 {
                     public static void Postfix(Breakable __instance)

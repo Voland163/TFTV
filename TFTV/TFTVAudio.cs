@@ -1045,7 +1045,7 @@ namespace TFTV
             }
         }
 */
-        [HarmonyPatch(typeof(HasTagsEventFilterDef), "ShouldPlayEvent")]
+        [HarmonyPatch(typeof(HasTagsEventFilterDef), nameof(HasTagsEventFilterDef.ShouldPlayEvent))]
         public static class HasTagsEventFilterDef_ShouldPlayEvent_patch
         {
             public static void Postfix(BaseEventContext context, ref bool __result)
@@ -1099,7 +1099,7 @@ namespace TFTV
                 DefCache.GetDef<GameTagDef>("Sofia_TacCharacterDef_GameTagDef"),
                  };
 
-        [HarmonyPatch(typeof(TacActorHeadMutationsFilterDef), "ShouldPlayEvent")]
+        [HarmonyPatch(typeof(TacActorHeadMutationsFilterDef), nameof(TacActorHeadMutationsFilterDef.ShouldPlayEvent))]
         public static class TacActorHeadMutationsFilterDef_ShouldPlayEvent_patch
         {
             public static void Postfix(BaseEventContext context, ref bool __result)

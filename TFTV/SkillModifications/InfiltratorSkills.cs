@@ -290,7 +290,7 @@ namespace PRMBetterClasses.SkillModifications
             }
         }
         //Patch to set any Umbra back to pandoran if he is spawned as wild (killed wild tar shadows will spawn wild umbras)
-        [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
+        [HarmonyPatch(typeof(TacticalLevelController), nameof(TacticalLevelController.ActorEnteredPlay))]
         public static class TacticalLevelController_ActorEnteredPlay_Patch
         {
             public static void Postfix(TacticalLevelController __instance, TacticalActorBase actor)
@@ -307,7 +307,7 @@ namespace PRMBetterClasses.SkillModifications
             }
         }
         //Patch to set a different health bar color for wild faction actors 
-        [HarmonyPatch(typeof(HealthbarUIActorElement), "GetMainColor")]
+        [HarmonyPatch(typeof(HealthbarUIActorElement), "GetMainColor")] //VERIFIED
         public static class HealthbarUIActorElement_GetMainColor_Patch
         {
             public static void Postfix(HealthbarUIActorElement __instance, ref Color __result)
@@ -320,7 +320,7 @@ namespace PRMBetterClasses.SkillModifications
             }
         }
         //Patch to prevent wild faction actors targetting them self, vanilla they are set to be enemies to them self, this will set them to be friends
-        [HarmonyPatch(typeof(TacMission), "SetDefaultFactionRelations")]
+        [HarmonyPatch(typeof(TacMission), "SetDefaultFactionRelations")] //VERIFIED
         public static class TacMission_SetDefaultFactionRelations_Patch
         {
             public static void Postfix(TacMission __instance)
@@ -450,7 +450,7 @@ namespace PRMBetterClasses.SkillModifications
             }
         }
         // Patch to apply the SurveillanceImmunity_GameTagDef from BC_PhantomProtocol_AbilityDef.ActorTags to the actors game tags, vanilla does not do that
-        [HarmonyPatch(typeof(PassiveModifierAbility), "AbilityAdded")]
+        [HarmonyPatch(typeof(PassiveModifierAbility), nameof(PassiveModifierAbility.AbilityAdded))]
         internal static class PassiveModifierAbility_AbilityAdded_Patch
         {
             public static void Postfix(PassiveModifierAbility __instance)
@@ -473,7 +473,7 @@ namespace PRMBetterClasses.SkillModifications
         // The immunity to surveillance with Phantom Protocol caused the mission to fail in the moment an actor to rescue is activated by an Infiltrator with this perk.
         // List for actors to rescue, will be cleared when objective is achieved and on each level start (see above)
         private static readonly List<TacticalActor> actorsToRescue = new List<TacticalActor>();
-        [HarmonyPatch(typeof(RescueSoldiersFactionObjective), "EvaluateObjective")]
+        [HarmonyPatch(typeof(RescueSoldiersFactionObjective), "EvaluateObjective")] //VERIFIED
         internal static class RescueSoldiersFactionObjective_EvaluateObjective_Patch
         {
             public static void Postfix(ref FactionObjectiveState __result, RescueSoldiersFactionObjective __instance)

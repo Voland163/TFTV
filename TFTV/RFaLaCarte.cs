@@ -2,6 +2,7 @@
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.UI;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Weapons;
@@ -34,7 +35,7 @@ namespace PRMBetterClasses
         // ******************************************************************************************************************
         // ******************************************************************************************************************
 
-        [HarmonyPatch(typeof(TacticalFaction), "PlayTurnCrt")]
+        [HarmonyPatch(typeof(TacticalFaction), nameof(TacticalFaction.PlayTurnCrt))]
         public static class TacticalFaction_PlayTurnCrt_Patch
         {
             public static void Prefix(TacticalFaction __instance)
@@ -46,7 +47,7 @@ namespace PRMBetterClasses
             }
         }
 
-        [HarmonyPatch(typeof(TacticalLevelController), "GetReturnFireAbilities")]
+        [HarmonyPatch(typeof(TacticalLevelController), nameof(TacticalLevelController.GetReturnFireAbilities))]
         public static class TacticalLevelController_GetReturnFireAbilities_Patch
         {
             public static bool Prefix(TacticalLevelController __instance, ref List<ReturnFireAbility> __result,
@@ -169,7 +170,7 @@ namespace PRMBetterClasses
             }
         }
 
-        [HarmonyPatch(typeof(TacticalLevelController), "FireWeaponAtTargetCrt")]
+        [HarmonyPatch(typeof(TacticalLevelController), nameof(TacticalLevelController.FireWeaponAtTargetCrt))]
         public static class TacticalLevelController_FireWeaponAtTargetCrt_Patch
         {
             public static void Prefix(Weapon weapon, TacticalAbilityTarget abilityTarget)

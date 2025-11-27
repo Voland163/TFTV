@@ -148,7 +148,7 @@ namespace TFTVVehicleRework.Scarab
         private static void Update_ResearchReqs(GroundVehicleModuleDef module)
         {
             // "PX_Alien_MistSentinel_ResearchDef"
-            ResearchDef MistSentinel = (ResearchDef)Repo.GetDef("93451a57-bd6b-d200-7823-3be981b2d694");
+            ResearchDef MistSentinel = (ResearchDef)Repo.GetDef("5cc87915-9118-a927-3a40-b626f29ef1ef");//93451a57-bd6b-d200-7823-3be981b2d694");
             
             //"NJ_VehicleTech_ResearchDef_ManufactureResearchRewardDef_1"
             ManufactureResearchRewardDef NJVehicleTech = (ManufactureResearchRewardDef)Repo.GetDef("d197bc9e-9a4d-a2d6-eabf-0bb7b6a0a9a7");

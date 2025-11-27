@@ -342,7 +342,7 @@ namespace TFTV
         }
 
         //Method to change how Acid damage is applied
-        [HarmonyPatch(typeof(AcidDamageEffect), "AddTarget")]
+        [HarmonyPatch(typeof(AcidDamageEffect), nameof(AcidDamageEffect.AddTarget))]
         public static class AcidDamageEffect_AddTarget_Patch
         {
             public static bool Prefix(AcidDamageEffect __instance, EffectTarget target, DamageAccumulation accum, IDamageReceiver recv, Vector3 damageOrigin, Vector3 impactForce, CastHit impactHit)

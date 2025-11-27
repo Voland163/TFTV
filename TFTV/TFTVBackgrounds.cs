@@ -62,7 +62,7 @@ namespace TFTV
 
         internal class ContainmentScreen
         {
-            [HarmonyPatch(typeof(UIStateRosterAliens), "OnActorCycled")]
+            [HarmonyPatch(typeof(UIStateRosterAliens), "OnActorCycled")] //VERIFIED
             public static class TFTV_UIStateRosterAliens_OnActorCycled_patch
             {
                 public static void Postfix(UIStateRosterAliens __instance)
@@ -79,7 +79,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(UIStateRosterAliens), "EnterState")]
+            [HarmonyPatch(typeof(UIStateRosterAliens), "EnterState")] //VERIFIED
             public static class TFTV_UIStateRosterAliens_EnterState_patch
             {
 
@@ -307,7 +307,7 @@ namespace TFTV
 
 
             [HarmonyPatch(typeof(GeoRosterItem))]
-            [HarmonyPatch("Init", typeof(GeoUnitDescriptor), typeof(IGeoCharacterContainer), typeof(GeoFaction))]
+            [HarmonyPatch("Init", typeof(GeoUnitDescriptor), typeof(IGeoCharacterContainer), typeof(GeoFaction))] //VERIFIED
             public static class GeoRosterItemPatch
             {
                 public static void Postfix(GeoRosterItem __instance, IGeoCharacterContainer characterContainer)
@@ -869,7 +869,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(CharacterClassWorldDisplay), "SetDisplay")]
+        [HarmonyPatch(typeof(CharacterClassWorldDisplay), nameof(CharacterClassWorldDisplay.SetDisplay))]
         public static class TFTV_CharacterClassWorldDisplay_SetDisplay_patch
         {
 
@@ -895,7 +895,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(UIStateRosterAliens), "PushState")]
+        [HarmonyPatch(typeof(UIStateRosterAliens), "PushState")] //VERIFIED
         public static class TFTV_UIStateRosterAliens_PushState_patch
         {
 
@@ -917,7 +917,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIStateEditSoldier), "EnterState")]
+        [HarmonyPatch(typeof(UIStateEditSoldier), "EnterState")] //VERIFIED
         public static class TFTV_UIStateEditSoldier_EnterState_patch
         {
 
@@ -938,7 +938,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIStateGeoCharacterStatus), "EnterState")]
+        [HarmonyPatch(typeof(UIStateGeoCharacterStatus), "EnterState")] //VERIFIED
         public static class TFTV_UIStateGeoCharacterStatus_EnterState_patch
         {
 
@@ -959,7 +959,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIStateGeoRoster), "EnterState")]
+        [HarmonyPatch(typeof(UIStateGeoRoster), "EnterState")] //VERIFIED
         public static class TFTV_UIStateGeoRoster_EnterState_patch
         {
 
@@ -980,7 +980,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIStateInitial), "EnterState")]
+        [HarmonyPatch(typeof(UIStateInitial), "EnterState")] //VERIFIED
         public static class TFTV_UIStateInitial_EnterState_patch
         {
 
@@ -1003,7 +1003,7 @@ namespace TFTV
 
         public static bool MemorialPushStateRunning = false;
 
-        [HarmonyPatch(typeof(UIStateMemorial), "PushState")]
+        [HarmonyPatch(typeof(UIStateMemorial), "PushState")] //VERIFIED
         public static class TFTV_UIStateMemorial_PushState_patch
         {
 
@@ -1031,7 +1031,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(UIStateEditVehicle), "PushState")]
+        [HarmonyPatch(typeof(UIStateEditVehicle), "PushState")] //VERIFIED
         public static class TFTV_UIStateEditVehicle_PushState_patch
         {
 
@@ -1052,7 +1052,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIStateMutate), "PushState")]
+        [HarmonyPatch(typeof(UIStateMutate), "PushState")] //VERIFIED
         public static class TFTV_UIStateMutate_PushState_patch
         {
 
@@ -1074,7 +1074,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(UIStateBuyMutoid), "PushState")]
+        [HarmonyPatch(typeof(UIStateBuyMutoid), "PushState")] //VERIFIED
         public static class TFTV_UIStateBuyMutoid_PushState_patch
         {
 
@@ -1095,7 +1095,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIStateBionics), "PushState")]
+        [HarmonyPatch(typeof(UIStateBionics), "PushState")] //VERIFIED
         public static class TFTV_UIStateBionics_PushState_patch
         {
 
@@ -1118,7 +1118,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(UIStateRosterDeployment), "EnterState")]
+        [HarmonyPatch(typeof(UIStateRosterDeployment), "EnterState")] //VERIFIED
         public static class TFTV_UIStateRosterDeployment_EnterState_patch
         {
 
@@ -1139,7 +1139,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIStateRosterRecruits), "PushState")]
+        [HarmonyPatch(typeof(UIStateRosterRecruits), "PushState")] //VERIFIED
         public static class TFTV_UIStateRosterRecruits_PushState_patch
         {
 
@@ -1159,7 +1159,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIStateSoldierCustomization), "EnterState")]
+        [HarmonyPatch(typeof(UIStateSoldierCustomization), "EnterState")] //VERIFIED
         public static class TFTV_UIStateSoldierCustomization_EnterState_patch
         {
 
@@ -1328,7 +1328,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(UIStateVehicleRoster), "EnterState")]
+        [HarmonyPatch(typeof(UIStateVehicleRoster), "EnterState")] //VERIFIED
         public static class TFTV_UIStateVehicleRoster_EnterState_patch
         {
 
@@ -1349,7 +1349,7 @@ namespace TFTV
 
         private static CharacterClassWorldDisplay _copyCharacterClassWorldDisplayVehicleRoster = null;
 
-        [HarmonyPatch(typeof(GeoSceneReferences), "ActivateScene")]
+        [HarmonyPatch(typeof(GeoSceneReferences), nameof(GeoSceneReferences.ActivateScene))]
         public static class TFTV_GeoSceneReferences_ActivateScene_patch
         {
             public static void Prefix(GeoSceneReferences __instance, ActiveSceneReference activeScene, Dictionary<ActiveSceneReference, Transform> ____scenes)

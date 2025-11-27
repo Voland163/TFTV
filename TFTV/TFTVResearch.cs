@@ -34,7 +34,7 @@ namespace TFTV
         internal class Vivisections
         {
 
-            [HarmonyPatch(typeof(UIStateRosterAliens), "OnDismantleForMutagens")]
+            [HarmonyPatch(typeof(UIStateRosterAliens), "OnDismantleForMutagens")] //VERIFIED
             public static class TFTV_UIStateRosterAliens_OnDismantleForMutagens_Patch
             {
                 public static bool Prefix(UIStateRosterAliens __instance)
@@ -75,7 +75,7 @@ namespace TFTV
            
 
 
-            [HarmonyPatch(typeof(UIStateRosterAliens), "OnSlotKillAlien")]
+            [HarmonyPatch(typeof(UIStateRosterAliens), "OnSlotKillAlien")] //VERIFIED
             public static class TFTV_UIStateRosterAliens_OnSlotKillAlien_Patch
             {
                
@@ -259,7 +259,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(Research), "CompleteResearch")]
+        [HarmonyPatch(typeof(Research), nameof(Research.CompleteResearch), typeof(ResearchElement))]
         public static class Research_CompleteResearch_TFTV_Patch
         {
             public static void Postfix(ResearchElement research)

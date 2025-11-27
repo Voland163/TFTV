@@ -22,7 +22,7 @@ namespace TFTV
     {
         private static readonly SharedData Shared = TFTVMain.Shared;
         //Patch to allow trading inventory with vehicle while inside vehicle
-        [HarmonyPatch(typeof(TacUtil), "CanTradeWith")]
+        [HarmonyPatch(typeof(TacUtil), nameof(TacUtil.CanTradeWith))]
         public static class TacUtil_EnterState_patch
         {
             public static bool Prefix(TacticalActor buyer, TacticalActor seller, ref bool __result)
@@ -82,7 +82,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(UIStateInventory), "EnterState")]
+        [HarmonyPatch(typeof(UIStateInventory), "EnterState")] //VERIFIED
         public static class UIStateInventory_EnterState_patch
         {
             public static void Postfix(UIStateInventory __instance, ref InventoryComponent ____groundInventory)
@@ -163,7 +163,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(UIStateInventory), "GetGroundItems")]
+        [HarmonyPatch(typeof(UIStateInventory), "GetGroundItems")] //VERIFIED
         public static class UIStateInventory_GetGroundItems_patch
         {
             public static bool Prefix(UIStateInventory __instance, IEnumerable<ItemContainer> itemContainers, ref HashSet<TacticalItem> __result)

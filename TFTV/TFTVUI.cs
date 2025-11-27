@@ -82,7 +82,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(SoldierResultElement), "SetStatus", new Type[] { typeof(SoldierStatus), typeof(object[]) })]
+        [HarmonyPatch(typeof(SoldierResultElement), "SetStatus", new Type[] { typeof(SoldierStatus), typeof(object[]) })] //VERIFIED
         public static class SoldierResultElement_SetStatus_patch
         {
 
@@ -106,7 +106,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(UIItemTooltip), "SetTacItemStats")]
+        [HarmonyPatch(typeof(UIItemTooltip), "SetTacItemStats")] //VERIFIED
         public static class UIItemTooltip_SetTacItemStats_patch
         {
 
@@ -166,7 +166,7 @@ namespace TFTV
             {
                 //This changes display of Delirium bar in personnel edit screen to show current Delirium value vs max delirium value the character can have
                 // taking into account ODI level and bionics
-                [HarmonyPatch(typeof(UIModuleCharacterProgression), "SetStatusesPanel")]
+                [HarmonyPatch(typeof(UIModuleCharacterProgression), nameof(UIModuleCharacterProgression.SetStatusesPanel))]
                 internal static class BG_UIModuleCharacterProgression_SetStatusesPanel_patch
                 {
 
@@ -246,7 +246,7 @@ namespace TFTV
 
 
                 //Patch to show correct stats in Personnel Edit screen
-                [HarmonyPatch(typeof(UIModuleCharacterProgression), "GetStarBarValuesDisplayString")]
+                [HarmonyPatch(typeof(UIModuleCharacterProgression), "GetStarBarValuesDisplayString")] //VERIFIED
                 [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
                 internal static class TFTV_UIModuleCharacterProgression_RefreshStatPanel_patch
                 {
@@ -750,7 +750,7 @@ namespace TFTV
 
 
 
-                [HarmonyPatch(typeof(UIModuleSoldierEquip), "GetPrimaryWeight")]
+                [HarmonyPatch(typeof(UIModuleSoldierEquip), "GetPrimaryWeight")] //VERIFIED
                 internal static class TFTV_UIModuleSoldierEquip_GetPrimaryWeight_Patch
                 {
 
@@ -793,7 +793,7 @@ namespace TFTV
                 }
 
                 //Patch to show correct encumbrance
-                [HarmonyPatch(typeof(UIModuleSoldierEquip), "RefreshWeightSlider")]
+                [HarmonyPatch(typeof(UIModuleSoldierEquip), "RefreshWeightSlider")] //VERIFIED
                 internal static class TFTV_UIModuleSoldierEquip_RefreshWeightSlider_Patch
                 {
                     private static readonly ApplyStatusAbilityDef derealization = DefCache.GetDef<ApplyStatusAbilityDef>("DerealizationIgnorePain_AbilityDef");
@@ -907,7 +907,7 @@ namespace TFTV
 
 
                 //Patch to keep characters animating in edit screen despite constant stat updates invoked by the other patches
-                [HarmonyPatch(typeof(UIStateEditSoldier), "RequestRefreshCharacterData")]
+                [HarmonyPatch(typeof(UIStateEditSoldier), "RequestRefreshCharacterData")] //VERIFIED
                 internal static class TFTV_UIStateEditSoldier_RequestRefreshCharacterData_Patch
                 {
 
@@ -1072,7 +1072,7 @@ namespace TFTV
                 }
 
 
-                [HarmonyPatch(typeof(EditUnitButtonsController), "SetEditUnitButtonsBasedOnType")]
+                [HarmonyPatch(typeof(EditUnitButtonsController), nameof(EditUnitButtonsController.SetEditUnitButtonsBasedOnType))]
                 internal static class TFTV_EditUnitButtonsController_SetEditUnitButtonsBasedOnType_ToggleHelmetButton_patch
                 {
                     public static void Prefix(EditUnitButtonsController __instance, UIModuleActorCycle ____parentModule)
@@ -1243,7 +1243,7 @@ namespace TFTV
                     }
                 }
 
-                [HarmonyPatch(typeof(EditUnitButtonsController), "Awake")]
+                [HarmonyPatch(typeof(EditUnitButtonsController), nameof(EditUnitButtonsController.Awake))]
                 internal static class TFTV_EditUnitButtonsController_Awake_ToggleHelmetButton_patch
                 {
 
@@ -1265,7 +1265,7 @@ namespace TFTV
 
                 private static bool _equipAllRunning = false;
 
-                [HarmonyPatch(typeof(UIInventoryList), "GetTotalUsedStorage")]
+                [HarmonyPatch(typeof(UIInventoryList), nameof(UIInventoryList.GetTotalUsedStorage))]
                 internal static class TFTV_UIInventoryList_GetTotalUsedStorage_patch
                 {
 
@@ -2658,7 +2658,7 @@ namespace TFTV
 
 
             ///Patches to show mission light conditions
-            [HarmonyPatch(typeof(UIStateRosterDeployment), "EnterState")]
+            [HarmonyPatch(typeof(UIStateRosterDeployment), "EnterState")] //VERIFIED
             public static class TFTV_UIStateRosterDeployment_EnterState_patch
             {
                 public static void Postfix(UIStateRosterDeployment __instance)
@@ -2723,7 +2723,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(UIStateRosterDeployment), "ExitState")]
+            [HarmonyPatch(typeof(UIStateRosterDeployment), "ExitState")] //VERIFIED
             public static class TFTV_UIStateRosterDeployment_ExitState_patch
             {
                 public static void Postfix(UIStateRosterDeployment __instance)
@@ -2774,7 +2774,7 @@ namespace TFTV
             /// <summary>
             /// Patches to fix repairing bionics
             /// </summary>
-            [HarmonyPatch(typeof(UIModuleMutationSection), "SelectMutation")]
+            [HarmonyPatch(typeof(UIModuleMutationSection), "SelectMutation")] //VERIFIED
 
             public static class TFTV_UIModuleMutationSection_SelectMutation_patch
             {
@@ -2802,7 +2802,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(UIModuleMutationSection), "RepairItem")]
+            [HarmonyPatch(typeof(UIModuleMutationSection), "RepairItem")] //VERIFIED
 
             public static class TFTV_UIModuleMutationSection_RepairItem_patch
             {
@@ -2888,7 +2888,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(GeoCharacter), "RepairItem", new Type[] { typeof(GeoItem), typeof(bool) })]
+            [HarmonyPatch(typeof(GeoCharacter), nameof(GeoCharacter.RepairItem), new Type[] { typeof(GeoItem), typeof(bool) })]
 
             public static class TFTV_GeoCharacter_RepairItem_GeoItem_patch
             {
@@ -2943,7 +2943,7 @@ namespace TFTV
             /// Patches to show class icons on Mutoids
             /// </summary>
 
-            [HarmonyPatch(typeof(GeoCharacter), "GetClassViewElementDefs")]
+            [HarmonyPatch(typeof(GeoCharacter), nameof(GeoCharacter.GetClassViewElementDefs))]
             internal static class TFTV_GeoCharacter_GetClassViewElementDefs_patch
             {
                 public static void Postfix(ref ICollection<ViewElementDef> __result, GeoCharacter __instance)
@@ -3000,7 +3000,7 @@ namespace TFTV
 
 
 
-            [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruitToContainerFinal")]
+            [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruitToContainerFinal")] //VERIFIED  
             internal static class TFTV_GeoPhoenixFaction_AddRecruitToContainerFinal_patch
             {
                 public static void Prefix(ref GeoCharacter recruit)
@@ -3058,7 +3058,7 @@ namespace TFTV
 
 
 
-            [HarmonyPatch(typeof(TacticalActorBase), "UpdateClassViewElementDefs")]
+            [HarmonyPatch(typeof(TacticalActorBase), "UpdateClassViewElementDefs")] //VERIFIED
 
             internal static class TFTV_TacticalActorBase_UpdateClassViewElementDefs_patch
             {
@@ -3135,7 +3135,7 @@ namespace TFTV
 
             //Patch to reduce Delirium visuals on faces of infected characters
 
-            [HarmonyPatch(typeof(UIModuleActorCycle), "SetupFaceCorruptionShader")]
+            [HarmonyPatch(typeof(UIModuleActorCycle), "SetupFaceCorruptionShader")] //VERIFIED
             class TFTV_UIoduleActorCycle_SetupFaceCorruptionShader_Hook_Patch
             {
                 private static void Prefix(UIModuleActorCycle __instance)
@@ -3173,7 +3173,7 @@ namespace TFTV
             public static TacticalActor HookCharacterStatsForDeliriumShader = null;
 
 
-            [HarmonyPatch(typeof(SquadMemberScrollerController), "SetupFaceCorruptionShader")]
+            [HarmonyPatch(typeof(SquadMemberScrollerController), "SetupFaceCorruptionShader")] //VERIFIED
 
             class TFTV_SquadMemberScrollerController_SetupFaceCorruptionShader
             {
@@ -3204,7 +3204,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(CharacterStats), "get_CorruptionProgressRel")]
+            [HarmonyPatch(typeof(CharacterStats), "get_CorruptionProgressRel")] //VERIFIED
             internal static class TFTV_UI_CharacterStats_DeliriumFace_patch
             {
                 private static void Postfix(ref float __result, CharacterStats __instance)
@@ -3271,7 +3271,7 @@ namespace TFTV
 
         internal class ShowWithoutHelmet
         {
-            [HarmonyPatch(typeof(UIModuleSoldierCustomization), "OnNewCharacter")]
+            [HarmonyPatch(typeof(UIModuleSoldierCustomization), nameof(uIModuleSoldierCustomization.OnNewCharacter))] 
 
             internal static class TFTV_UI_UIModuleSoldierCustomization_patch
             {
@@ -3346,7 +3346,7 @@ namespace TFTV
             public static UIModuleSoldierCustomization uIModuleSoldierCustomization = null;
 
 
-            [HarmonyPatch(typeof(UIStateSoldierCustomization), "UpdateHelmetShown")]
+            [HarmonyPatch(typeof(UIStateSoldierCustomization), "UpdateHelmetShown")] //VERIFIED
             internal static class TFTV_UIStateSoldierCustomization_UpdateHelmetShown_HelmetToggle_patch
             {
                 public static void Postfix()
@@ -3363,7 +3363,7 @@ namespace TFTV
                 }
 
             }
-            [HarmonyPatch(typeof(UIStateSoldierCustomization), "EnterState")]
+            [HarmonyPatch(typeof(UIStateSoldierCustomization), "EnterState")] //VERIFIED
             internal static class TFTV_UIStateSoldierCustomization_DisplaySoldier_HelmetToggle_patch
             {
                 private static readonly GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
@@ -3427,7 +3427,7 @@ namespace TFTV
 
 
 
-            [HarmonyPatch(typeof(UIModuleActorCycle), "DisplaySoldier", new Type[] { typeof(GeoCharacter), typeof(bool), typeof(bool), typeof(bool) })]
+            [HarmonyPatch(typeof(UIModuleActorCycle), nameof(UIModuleActorCycle.DisplaySoldier), new Type[] { typeof(GeoCharacter), typeof(bool), typeof(bool), typeof(bool) })]
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             internal static class BG_UIModuleActorCycle_DisplaySoldier_patch
             {
@@ -3518,7 +3518,7 @@ namespace TFTV
         internal class CutscenesAndSplashscreens
         {
             //Adapted from Mad's Assorted Adjustments, all hail the Great Mad!
-            [HarmonyPatch(typeof(PhoenixGame), "RunGameLevel")]
+            [HarmonyPatch(typeof(PhoenixGame), "RunGameLevel")] //VERIFIED
             public static class TFTV_PhoenixGame_RunGameLevel_SkipLogos_Patch
             {
                 public static bool Prefix(PhoenixGame __instance, LevelSceneBinding levelSceneBinding, ref IEnumerator<NextUpdate> __result)
@@ -3547,7 +3547,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(UIStateHomeScreenCutscene), "EnterState")]
+            [HarmonyPatch(typeof(UIStateHomeScreenCutscene), "EnterState")] //VERIFIED
             public static class TFTV_PhoenixGame_RunGameLevel_SkipIntro_Patch
             {
                 public static void Postfix(UIStateHomeScreenCutscene __instance, VideoPlaybackSourceDef ____sourcePlaybackDef)
@@ -3577,7 +3577,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(UIStateTacticalCutscene), "EnterState")]
+            [HarmonyPatch(typeof(UIStateTacticalCutscene), "EnterState")] //VERIFIED
             public static class TFTV_PhoenixGame_RunGameLevel_SkipLanding_Patch
             {
                 public static void Postfix(UIStateTacticalCutscene __instance, VideoPlaybackSourceDef ____sourcePlaybackDef)

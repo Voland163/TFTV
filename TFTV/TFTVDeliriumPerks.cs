@@ -125,7 +125,7 @@ namespace TFTV
 
       
 
-        [HarmonyPatch(typeof(TacticalActor), "OnAnotherActorDeath")]
+        [HarmonyPatch(typeof(TacticalActor), "OnAnotherActorDeath")] //VERIFIED
         public static class TacticalActor_OnAnotherActorDeath_Patch
         {
 
@@ -164,7 +164,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(TacticalActor), "TriggerHurt")]
+        [HarmonyPatch(typeof(TacticalActor), "TriggerHurt")] //VERIFIED
         public static class TacticalActor_TriggerHurt_Patch
         {
             public static void Postfix(TacticalActor __instance, DamageResult damageResult)

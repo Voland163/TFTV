@@ -24,7 +24,7 @@ namespace PRMBetterClasses
     internal class PersonalSpecModification
     {
         // Change personal abilities (3rd row skills) by configured settings
-        [HarmonyPatch(typeof(FactionCharacterGenerator), "GenerateUnit", new Type[] { typeof(GeoFaction), typeof(TacCharacterDef) })]
+        [HarmonyPatch(typeof(FactionCharacterGenerator), nameof(FactionCharacterGenerator.GenerateUnit), new Type[] { typeof(GeoFaction), typeof(TacCharacterDef) })]
         internal static class GenerateUnit_Patches
         {
             // Set by PREFIX call
@@ -169,7 +169,7 @@ namespace PRMBetterClasses
         }
 
         // Learn personal ability level 1 right by creation of the unit
-        [HarmonyPatch(typeof(GeoUnitDescriptor), "GenerateProgression")]
+        [HarmonyPatch(typeof(GeoUnitDescriptor), "GenerateProgression")] //VERIFIED
         internal static class GenerateProgression_Patches
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
@@ -210,7 +210,7 @@ namespace PRMBetterClasses
         }
 
         // Expand ability icon list in PX base recruit screen (vanilla fixed 3, we need 7)
-        [HarmonyPatch(typeof(RecruitsListElementController), "SetRecruitElement")]
+        [HarmonyPatch(typeof(RecruitsListElementController), nameof(RecruitsListElementController.SetRecruitElement))]
         public static class RecruitsListElementController_SetRecruitElement_Patch
         {
             public static bool Prefix(RecruitsListElementController __instance, RecruitsListEntryData entryData, List<RowIconTextController> ____abilityIcons)

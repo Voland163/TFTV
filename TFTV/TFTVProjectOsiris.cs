@@ -624,7 +624,7 @@ KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH
 
         }
 
-        [HarmonyPatch(typeof(GeoscapeEventSystem), "TriggerGeoscapeEvent")]
+        [HarmonyPatch(typeof(GeoscapeEventSystem), nameof(GeoscapeEventSystem.TriggerGeoscapeEvent))]
 
         public static class GeoscapeEventSystem_TriggerGeoscapeEvent_ProjectOsiris_patch
         {
@@ -740,7 +740,7 @@ KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH
             }
         }
 
-        [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruitToContainerFinal")]
+        [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruitToContainerFinal")] //VERIFIED
         public static class GeoPhoenixFaction_AddRecruitToContainerFinalt_patch
         {
             public static void Postfix(GeoPhoenixFaction __instance, GeoCharacter recruit)
@@ -845,7 +845,7 @@ KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH
 
         public static GeoTacUnitId NewBodyGeoID = new GeoTacUnitId();
 
-        [HarmonyPatch(typeof(GeoLevelController), "CreateCharacterFromDescriptor")]
+        [HarmonyPatch(typeof(GeoLevelController), nameof(GeoLevelController.CreateCharacterFromDescriptor))]
 
         public static class GeoLevelController_CreateCharacterFromDescriptor_ProjectOsiris_patch
         {

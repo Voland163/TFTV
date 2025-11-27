@@ -13,7 +13,7 @@ namespace TFTV
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
-        [HarmonyPatch(typeof(GeoHavenLeader), "CanRecruitWithFaction")]
+        [HarmonyPatch(typeof(GeoHavenLeader), nameof(GeoHavenLeader.CanRecruitWithFaction))]
 
         public static class TFTV_Experimental_GeoHavenLeader_CanRecruitWithFaction_EnableRecruitingWhenNotAtWar_patch
         {
@@ -34,7 +34,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(GeoHaven), "GetRecruitCost")]
+        [HarmonyPatch(typeof(GeoHaven), nameof(GeoHaven.GetRecruitCost))]
         public static class TFTV_Experimental_GeoHaven_GetRecruitCost_IncreaseCostDiplomacy_patch
         {
             public static void Postfix(GeoHaven __instance, ref ResourcePack __result, GeoFaction forFaction)
@@ -77,7 +77,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(GeoHaven), "CheckShouldSpawnRecruit")]
+        [HarmonyPatch(typeof(GeoHaven), nameof(GeoHaven.CheckShouldSpawnRecruit))]
         public static class TFTV_Experimental_GeoHaven_CheckShouldSpawnRecruit_IncreaseCostDiplomacy_patch
         {
             public static void Postfix(GeoHaven __instance, ref bool __result, float modifier)

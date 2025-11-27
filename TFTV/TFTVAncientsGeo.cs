@@ -12,6 +12,7 @@ using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
+using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
@@ -52,7 +53,7 @@ namespace TFTV
         public static ContextHelpHintDef AncientAutomataInfoHint = null;
 
 
-        [HarmonyPatch(typeof(AncientSiteBriefDataBind), "ModalShowHandler")]
+        [HarmonyPatch(typeof(AncientSiteBriefDataBind), "ModalShowHandler")] //VERIFIED
         public static class AncientSiteBriefDataBind_ModalShowHandler_DontCancelMission_patch
         {
             public static void Postfix(AncientSiteBriefDataBind __instance, UIModal ____modal)
@@ -82,7 +83,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(GeoMissionOutcomeVariant), "ModalShowHandler", new Type[] { typeof(UIModal) })]
+        [HarmonyPatch(typeof(GeoMissionOutcomeVariant), "ModalShowHandler", new Type[] { typeof(UIModal) })] //VERIFIED
         public static class TFTV_GeoMissionOutcomeVariant_ModalShowHandler
         {
             public static void Postfix(GeoMissionOutcomeVariant __instance, UIModal modal)
@@ -132,7 +133,7 @@ namespace TFTV
 
 
         //Patch giving access to Project Glory research when Player activates 3rd base
-        [HarmonyPatch(typeof(GeoPhoenixFaction), "ActivatePhoenixBase")]
+        [HarmonyPatch(typeof(GeoPhoenixFaction), nameof(GeoPhoenixFaction.ActivatePhoenixBase))]
         public static class GeoPhoenixFaction_ActivatePhoenixBase_GiveGlory_Patch
         {
             public static void Postfix(GeoPhoenixFaction __instance)
@@ -155,7 +156,7 @@ namespace TFTV
         internal class AncientSites
         {
             //set resource cost of excavation (now exploration)
-            [HarmonyPatch(typeof(ExcavateAbility), "GetResourceCost")]
+            [HarmonyPatch(typeof(ExcavateAbility), nameof(ExcavateAbility.GetResourceCost))]
 
             public static class TFTV_GeoAbility_GetResourceCost
             {
@@ -255,7 +256,7 @@ namespace TFTV
 
             //Patch preventing manufacturing of IW when all conditions are not fulfilled if LOTA rework active and nerf is on in the config.
             //Note that conditons vary depending on whether nerf is on, but even if off, some conditions are required.
-            [HarmonyPatch(typeof(ItemManufacturing), "CanManufacture")]
+            [HarmonyPatch(typeof(ItemManufacturing), nameof(ItemManufacturing.CanManufacture))]
             public static class GeoFaction_CanManufacture_Patch
             {
                 public static void Postfix(ManufacturableItem item, ref ManufactureFailureReason __result, GeoFaction ____faction)
@@ -346,7 +347,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(ItemDef), "OnManufacture")]
+            [HarmonyPatch(typeof(ItemDef), nameof(ItemDef.OnManufacture))]
             public static class TFTV_Ancients_ItemDef_OnManufacture
             {
                 public static void Postfix(ItemDef __instance)
@@ -650,7 +651,7 @@ namespace TFTV
             }
 
             //Adjusts exotic resources received as reward
-            [HarmonyPatch(typeof(RewardsController), "SetResources")]
+            [HarmonyPatch(typeof(RewardsController), nameof(RewardsController.SetResources))]
             public static class RewardsController_SetResources_Patch
             {
 
@@ -764,7 +765,7 @@ namespace TFTV
             }
 
             //Removes exotic resource harvesting from game
-            [HarmonyPatch(typeof(GeoVehicle), "get_CanHarvestFromSites")]
+            [HarmonyPatch(typeof(GeoVehicle), "get_CanHarvestFromSites")] //VERIFIED
             public static class GeoVehicle_get_CanHarvestFromSites_Patch
             {
 
@@ -784,7 +785,7 @@ namespace TFTV
             }
 
             //removes icon + text of resource requirement if resource is not required
-            [HarmonyPatch(typeof(SiteContextualMenuDescriptionController), "SetResourcesText")]
+            [HarmonyPatch(typeof(SiteContextualMenuDescriptionController), nameof(SiteContextualMenuDescriptionController.SetResourcesText))]
 
             public static class TFTV_ResourceDisplayController_SetDisplayedResource
             {
@@ -922,7 +923,7 @@ namespace TFTV
 
 
             //Prevents player from building Cyclops
-            [HarmonyPatch(typeof(AncientGuardianGuardAbility), "GetDisabledStateInternal")]
+            [HarmonyPatch(typeof(AncientGuardianGuardAbility), "GetDisabledStateInternal")] //VERIFIED
             public static class AncientGuardianGuardAbility_GetDisabledStateInternal_Patch
             {
 
@@ -950,7 +951,7 @@ namespace TFTV
             }
 
             //Prevents attacks on ancient sites, except for story mission
-            [HarmonyPatch(typeof(GeoFaction), "AttackAncientSite")]
+            [HarmonyPatch(typeof(GeoFaction), nameof(GeoFaction.AttackAncientSite))]
             public static class GeoFaction_AttackAncientSite_Patch
             {
                 public static bool Prefix(GeoSite ancientSite, GeoFaction __instance)
@@ -990,7 +991,7 @@ namespace TFTV
             }
 
             //If Player builds cyclops, schedules an Attack on the site
-            [HarmonyPatch(typeof(AncientGuardianGuardAbility), "ActivateInternal")]
+            [HarmonyPatch(typeof(AncientGuardianGuardAbility), "ActivateInternal")] //VERIFIED
             public static class AncientGuardianGuardAbility_ActivateInternal_Patch
             {
                 public static void Postfix(AncientGuardianGuardAbility __instance, GeoAbilityTarget target)

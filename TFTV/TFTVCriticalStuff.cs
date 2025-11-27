@@ -79,7 +79,7 @@ namespace TFTV
         /// </summary>
 
 
-        [HarmonyPatch(typeof(PhoenixGame), "FinishLevelAndLoadGame")]
+        [HarmonyPatch(typeof(PhoenixGame), nameof(PhoenixGame.FinishLevelAndLoadGame))]
         public static class PhoenixGame_FinishLevelAndLoadGame_patch
         {
 
@@ -108,7 +108,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(ModManager), "ProcessGeoscapeInstanceData")]
+        [HarmonyPatch(typeof(ModManager), nameof(ModManager.ProcessGeoscapeInstanceData))]
         public static class ModManager_ProcessGeoscapeInstanceData_patch
         {
 

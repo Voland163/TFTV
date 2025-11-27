@@ -431,7 +431,7 @@ namespace TFTV
             */
 
             // Store tracker and site labels to use them in tracker
-            [HarmonyPatch(typeof(UIStateVehicleSelected), "EnterState")]
+            [HarmonyPatch(typeof(UIStateVehicleSelected), "EnterState")] //VERIFIED
             public static class UIStateVehicleSelected_EnterState_Patch
             {
 
@@ -501,7 +501,7 @@ namespace TFTV
             // With this patch the assault WILL happen and there's no silent abort (because it feels like a bug)
 
 
-            [HarmonyPatch(typeof(GeoAlienFaction), "StartPhoenixBaseAssault")]
+            [HarmonyPatch(typeof(GeoAlienFaction), "StartPhoenixBaseAssault")] //VERIFIED
             public static class GeoAlienFaction_StartPhoenixBaseAssault_Patch
             {
 
@@ -532,7 +532,7 @@ namespace TFTV
             }
 
             // Disables the big dumb buttons for excavations and base defense
-            [HarmonyPatch(typeof(UIModuleStatusBarMessages), "Update")]
+            [HarmonyPatch(typeof(UIModuleStatusBarMessages), "Update")] //VERIFIED
             public static class UIModuleStatusBarMessages_Update_Patch
             {
                 public static void Postfix(UIModuleStatusBarMessages __instance)
@@ -551,7 +551,7 @@ namespace TFTV
 
 
             // Prefix the times with an "~"
-            [HarmonyPatch(typeof(UIFactionDataTrackerElement), "SetTime")]
+            [HarmonyPatch(typeof(UIFactionDataTrackerElement), "SetTime")] //VERIFIED
             public static class UIFactionDataTrackerElement_SetTime_Patch
             {
                 public static void Postfix(UIFactionDataTrackerElement __instance)
@@ -647,7 +647,7 @@ namespace TFTV
 
 
             // Displays expected durations of Move and Explore abilities to the context menu
-            [HarmonyPatch(typeof(UIModuleSiteContextualMenu), "SetMenuItems")]
+            [HarmonyPatch(typeof(UIModuleSiteContextualMenu), nameof(UIModuleSiteContextualMenu.SetMenuItems))]
             public static class UIModuleSiteContextualMenu_SetMenuItems_Patch
             {
 
@@ -689,7 +689,7 @@ namespace TFTV
             */
 
             // ADDs or UPDATEs excavations of the tracker
-            [HarmonyPatch(typeof(GeoscapeLog), "PhoenixFaction_OnExcavationStarted")]
+            [HarmonyPatch(typeof(GeoscapeLog), "PhoenixFaction_OnExcavationStarted")] //VERIFIED
             public static class GeoscapeLog_PhoenixFaction_OnExcavationStarted_Patch
             {
 
@@ -748,7 +748,7 @@ namespace TFTV
 
 
             // ADDs or UPDATEs site defenses of the tracker
-            [HarmonyPatch(typeof(GeoscapeLog), "ShowSiteDefenseTimer")]
+            [HarmonyPatch(typeof(GeoscapeLog), "ShowSiteDefenseTimer")] //VERIFIED
             public static class GeoscapeLog_ShowSiteDefenseTimer_Patch
             {
                 public static void Postfix(GeoFaction faction, SiteAttackSchedule target)
@@ -822,7 +822,7 @@ namespace TFTV
 
 
             // ADDs or UPDATEs vehicle related items of the tracker
-            [HarmonyPatch(typeof(UIStateVehicleSelected), "OnContextualItemSelected")]
+            [HarmonyPatch(typeof(UIStateVehicleSelected), "OnContextualItemSelected")] //VERIFIED
             public static class UIStateVehicleSelected_OnContextualItemSelected_Patch
             {
                 public static void Postfix(GeoAbility ability)
@@ -896,7 +896,7 @@ namespace TFTV
 
             // ADDs or UPDATEs vehicle related items of the tracker
             // NOTE that this is EXCLUSIVELY called from UIStateVehicleSelected.OnRightClickSelection()
-            [HarmonyPatch(typeof(UIStateVehicleSelected), "AddTravelSite")]
+            [HarmonyPatch(typeof(UIStateVehicleSelected), "AddTravelSite")] //VERIFIED
             public static class UIStateVehicleSelected_AddTravelSite_Patch
             {
                 public static void Postfix(UIStateVehicleSelected __instance, GeoSite site)
@@ -970,7 +970,7 @@ namespace TFTV
             */
 
             // REMOVES the related item when an ancient site is excavated
-            [HarmonyPatch(typeof(UIStateVehicleSelected), "OnVehicleSiteExcavated")]
+            [HarmonyPatch(typeof(UIStateVehicleSelected), "OnVehicleSiteExcavated")]  //VERIFIED
             public static class UIStateVehicleSelected_OnVehicleSiteExcavated_Patch
             {
                 public static void Postfix(GeoPhoenixFaction faction, SiteExcavationState excavation)
@@ -1011,7 +1011,7 @@ namespace TFTV
             }
 
             // REMOVES the vehicle related item when an aircraft reached its destination
-            [HarmonyPatch(typeof(UIStateVehicleSelected), "OnVehicleArrived")]
+            [HarmonyPatch(typeof(UIStateVehicleSelected), "OnVehicleArrived")] //VERIFIED
             public static class UIStateVehicleSelected_OnVehicleArrived_Patch
             {
                 public static void Postfix(GeoVehicle vehicle, bool justPassing)
@@ -1054,7 +1054,7 @@ namespace TFTV
             }
 
             // REMOVES the vehicle related item when an aircraft finished exploration of a site
-            [HarmonyPatch(typeof(UIStateVehicleSelected), "OnVehicleSiteExplored")]
+            [HarmonyPatch(typeof(UIStateVehicleSelected), "OnVehicleSiteExplored")] //VERIFIED
             public static class UIStateVehicleSelected_OnVehicleSiteExplored_Patch
             {
                 public static void Postfix(GeoVehicle vehicle)
@@ -1101,7 +1101,7 @@ namespace TFTV
 
             // Updates time left of the various tracker item types and adds mouse events.
             // NOTE that the tracker items get reused multiple times for different tracked objects and we NEED to reinitialize EVERYTHING ALWAYS
-            [HarmonyPatch(typeof(UIModuleFactionAgendaTracker), "UpdateData", new Type[] { typeof(UIFactionDataTrackerElement) })]
+            [HarmonyPatch(typeof(UIModuleFactionAgendaTracker), "UpdateData", new Type[] { typeof(UIFactionDataTrackerElement) })] //VERIFIED
             public static class UIModuleFactionAgendaTracker_UpdateData_Patch
             {
                 public static bool Prefix(ref bool __result, UIFactionDataTrackerElement element, GeoscapeViewContext ____context)
@@ -1320,7 +1320,7 @@ namespace TFTV
             }
 
             // A "de facto" INIT that is called on aircraft switching or (re-)entering UIStateVehicleSelected
-            [HarmonyPatch(typeof(UIModuleFactionAgendaTracker), "InitialSetup")]
+            [HarmonyPatch(typeof(UIModuleFactionAgendaTracker), "InitialSetup")] //VERIFIED
             public static class UIModuleFactionAgendaTracker_InitialSetup_Patch
             {
 
@@ -1483,7 +1483,7 @@ namespace TFTV
 
             // Visual adjustments of the tracker items
             // NOTE that for custom items (vehicles and excavations so far) the text gets overridden from passed parameter too
-            [HarmonyPatch(typeof(UIFactionDataTrackerElement), "Init")]
+            [HarmonyPatch(typeof(UIFactionDataTrackerElement), nameof(UIFactionDataTrackerElement.Init))]
             public static class UIFactionDataTrackerElement_Init_Patch
             {
 

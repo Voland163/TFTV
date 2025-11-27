@@ -92,7 +92,7 @@ namespace TFTV
 
             //Prevents targeting body parts with Destiny and similar of unrevealed characters.
 
-            [HarmonyPatch(typeof(ShootAbility), "GetShootTarget")]
+            [HarmonyPatch(typeof(ShootAbility), nameof(ShootAbility.GetShootTarget))]
             public static class ShootAbility_GetShootTarget_Patch
             {
                 public static void Postfix(ShootAbility __instance,
@@ -119,7 +119,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(TacticalAbility), "get_EquipmentWithTags")]
+            [HarmonyPatch(typeof(TacticalAbility), "get_EquipmentWithTags")] //VERIFIED
             public static class TFTV_TacticalAbility_get_EquipmentWithTags
             {
                 public static void Postfix(TacticalAbility __instance, ref Equipment __result)
@@ -143,7 +143,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(ShootAbility), "Activate")]
+            [HarmonyPatch(typeof(ShootAbility), nameof(ShootAbility.Activate))]
             public static class TFTV_ShootAbility_Activate
             {
                 public static void Prefix(ShootAbility __instance)
@@ -163,7 +163,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(Weapon), "IsAttackSilent")]
+            [HarmonyPatch(typeof(Weapon), nameof(Weapon.IsAttackSilent))]
             public static class TFTV_Weapon_IsAttackSilent
             {
                 public static void Postfix(Weapon __instance, ref bool __result)
@@ -185,7 +185,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(TacticalFactionVision), "LocateRandomEnemyIfNeeded")]
+            [HarmonyPatch(typeof(TacticalFactionVision), "LocateRandomEnemyIfNeeded")] //VERIFIED
             public static class TFTV_TacticalFactionVision_LocateRandomEnemyIfNeeded
             {
                 public static bool Prefix(TacticalFactionVision __instance)
@@ -238,7 +238,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(AIUtil), "GetAffectedTargetsByShooting")]
+            [HarmonyPatch(typeof(AIUtil), nameof(AIUtil.GetAffectedTargetsByShooting))]
             public static class TFTV_AIUtil_GetAffectedTargetsByShooting_patch
             {
                 private static IEnumerable<TacticalActorBase> Postfix(IEnumerable<TacticalActorBase> results, Vector3 shootPos, TacticalActor sourceActor, Weapon sourceWeapon, TacticalAbilityTarget target, ShootAbilityDef shootAbility = null)
@@ -294,7 +294,7 @@ namespace TFTV
 
 
             //Code provided by Codemite
-            [HarmonyPatch(typeof(UIInventorySlot), "UpdateItem")]
+            [HarmonyPatch(typeof(UIInventorySlot), nameof(UIInventorySlot.UpdateItem))]
             public static class UIInventorySlot_UpdateItem_patch
             {
                 public static void Postfix(UIInventorySlot __instance, ICommonItem ____item)
@@ -358,7 +358,7 @@ namespace TFTV
 
 
             //Fixes scanner showing colony detected for Palace
-            [HarmonyPatch(typeof(SiteSurroundingsScanner), "AlienBasesAvailableInRange")]
+            [HarmonyPatch(typeof(SiteSurroundingsScanner), nameof(SiteSurroundingsScanner.AlienBasesAvailableInRange))]
             public static class SiteSurroundingsScanner_AlienBasesAvailableInRange_patch
             {
 
@@ -565,7 +565,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(InputController), "GetDefaultAction", typeof(int))]
+            [HarmonyPatch(typeof(InputController), "GetDefaultAction", typeof(int))] //VERIFIED
             public static class InputController_GetDefaultAction_patch
             {
                 public static bool Prefix(InputController __instance, int hash, ref InputAction __result)
@@ -762,7 +762,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(TacticalGroundMarkers), "ClearGroundMarkers", new Type[] { typeof(GroundMarkerGroup) })]
+            [HarmonyPatch(typeof(TacticalGroundMarkers), nameof(TacticalGroundMarkers.ClearGroundMarkers), new Type[] { typeof(GroundMarkerGroup) })]
             public static class TacticalGroundMarkers_ClearGroundMarkers_patch
             {
 
@@ -811,7 +811,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(TacticalActor), "GetPossibleVisionRangeTowardsMe")]
+            [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.GetPossibleVisionRangeTowardsMe))]
             public static class TacticalActor_GetPossibleVisionRangeTowardsMe_patch
             {
 
@@ -869,7 +869,7 @@ namespace TFTV
 
 
 
-            [HarmonyPatch(typeof(UIStateCharacterStatus), "GetActionPoints")]
+            [HarmonyPatch(typeof(UIStateCharacterStatus), "GetActionPoints")] //VERIFIED
             public static class UIStateCharacterStatus_GetActionPoints_patch
             {
 
@@ -1214,7 +1214,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(UIModuleTacticalContextualMenu), "OnAbilityHover")]
+            [HarmonyPatch(typeof(UIModuleTacticalContextualMenu), "OnAbilityHover")] //VERIFIED
             public static class UIModuleTacticalContextualMenu_OnAbilityHover_patch
             {
                 public static void Postfix(bool isHovered, TacticalContextualMenuItem menuItem, UIModuleTacticalContextualMenu __instance)
@@ -1416,7 +1416,7 @@ namespace TFTV
                     }
                 }
 
-                [HarmonyPatch(typeof(DeployTurretAbility), "OnActorSpawned")]
+                [HarmonyPatch(typeof(DeployTurretAbility), "OnActorSpawned")] //VERIFIED
                 internal static class DeployTurretAbility_OnActorSpawned_Patch
                 {
                     public static void Postfix(DeployTurretAbility __instance, TacticalActor spawnedActor)
@@ -1440,7 +1440,7 @@ namespace TFTV
                     }
                 }
 
-                [HarmonyPatch(typeof(RetrieveDeployedItemAbility), "RetrieveTurretCrt")]
+                [HarmonyPatch(typeof(RetrieveDeployedItemAbility), "RetrieveTurretCrt")] //VERIFIED
                 private static class RetrieveTurretCrtPrefix
                 {
                     private static bool Prefix(RetrieveDeployedItemAbility __instance, PlayingAction action, ref IEnumerator<NextUpdate> __result)
@@ -1600,7 +1600,7 @@ namespace TFTV
             {
 
 
-                [HarmonyPatch(typeof(UIStateInventory), "InitListUpdateDictionary")]
+                [HarmonyPatch(typeof(UIStateInventory), "InitListUpdateDictionary")] //VERIFIED
                 private static class InitListUpdateDictionary_Patch
                 {
                     private static readonly AccessTools.FieldRef<UIStateInventory, Dictionary<UIInventoryList, Func<Item, InventoryComponent>>> RemoveMapRef =
@@ -1778,7 +1778,7 @@ namespace TFTV
 
             internal class OverwatchFix
             {
-                [HarmonyPatch(typeof(TacticalLevelController), "ExecuteOverwatch")]
+                [HarmonyPatch(typeof(TacticalLevelController), "ExecuteOverwatch")] //VERIFIED
                 public static class TacticalLevelControllerExecuteOverwatchPatch
                 {
                     private static readonly FieldInfo OverwatchExecutedEventField = AccessTools.Field(typeof(TacticalLevelController), nameof(TacticalLevelController.OverwatchExecutedEvent));
@@ -2295,7 +2295,7 @@ namespace TFTV
             {
 
 
-                [HarmonyPatch(typeof(StatusStat), "ApplyStatModification")]
+                [HarmonyPatch(typeof(StatusStat), "ApplyStatModification")] //VERIFIED
                 public static class StatusStat_ApplyStatModification_patch
                 {
                     public static void Prefix(StatusStat __instance, ref StatModification statMod)
@@ -2326,7 +2326,7 @@ namespace TFTV
 
 
 
-                [HarmonyPatch(typeof(StatusStat), "Set")]
+                [HarmonyPatch(typeof(StatusStat), nameof(StatusStat.Set))]
                 public static class StatusStat_Set_patch
                 {
                     public static void Prefix(StatusStat __instance, ref float f)
@@ -2359,7 +2359,7 @@ namespace TFTV
             {
                 private static bool _musicVolumeAncientMapAdjusted = false;
 
-                [HarmonyPatch(typeof(AudioManager), "PlayEvent")]
+                [HarmonyPatch(typeof(AudioManager), "PlayEvent")] //VERIFIED
                 public static class AudioManager_PlayEvent_patch
                 {
                     public static void Prefix(AudioManager __instance, AudioEventData eventData, BaseEventContext context)
@@ -2455,10 +2455,7 @@ namespace TFTV
                     }
                 }
 
-
-
-
-                [HarmonyPatch(typeof(TacticalActorBase), "Die")]
+                [HarmonyPatch(typeof(TacticalActorBase), "Die")] //VERIFIED
                 public static class TacticalActorBase_Die_patch
                 {
                     public static void Prefix(TacticalActorBase __instance)
@@ -2488,7 +2485,7 @@ namespace TFTV
             {
 
 
-                [HarmonyPatch(typeof(AIAttackPositionConsideration), "EvaluateWithAbility")]
+                [HarmonyPatch(typeof(AIAttackPositionConsideration), "EvaluateWithAbility")] //VERIFIED
                 public static class AIAttackPositionConsideration_EvaluateWithAbilityPatch
                 {
                     public static bool Prefix(AIAttackPositionConsideration __instance, IAIActor actor, IAITarget target, TacticalAbilityDef abilityDef, ref float __result)
@@ -2665,7 +2662,7 @@ namespace TFTV
                 }
 
 
-                [HarmonyPatch(typeof(TacticalFaction), "GiveExperienceForObjectives")]
+                [HarmonyPatch(typeof(TacticalFaction), nameof(TacticalFaction.GiveExperienceForObjectives))]
                 public static class TacticalFaction_GiveExperienceForObjectives_patch
                 {
                     public static bool Prefix(TacticalFaction __instance)
@@ -2944,7 +2941,7 @@ namespace TFTV
                 /// <summary>
                 /// Fixes inconsistency in paralysis damage application
                 /// </summary>
-                [HarmonyPatch(typeof(ParalysisDamageEffect), "AddTarget")]
+                [HarmonyPatch(typeof(ParalysisDamageEffect), nameof(ParalysisDamageEffect.AddTarget))]
                 public static class TFTV_ParalysisDamageEffect_AddTarget_Patch
                 {
 
@@ -3041,7 +3038,7 @@ namespace TFTV
 
             internal class MindControl
             {
-                [HarmonyPatch(typeof(MindControlStatus), "WillBreakControl")]
+                [HarmonyPatch(typeof(MindControlStatus), nameof(MindControlStatus.WillBreakControl))]
                 public static class MindControlStatus_WillBreakControl_patch
                 {
                     public static bool Prefix(MindControlStatus __instance, bool shouldApplyControlCost, float ____minUpkeepCost, ref bool __result)
@@ -3293,7 +3290,7 @@ namespace TFTV
                 }
 
 
-                [HarmonyPatch(typeof(SoldierPortraitUtil), "RenderSoldierNoCopy")]
+                [HarmonyPatch(typeof(SoldierPortraitUtil), nameof(SoldierPortraitUtil.RenderSoldierNoCopy))]
                 public static class SoldierPortraitUtil_RenderSoldierNoCopy_patch
                 {
 
@@ -3373,7 +3370,7 @@ namespace TFTV
                 /// <summary>
                 /// Removes the empty target icons from destroyed vehicles
                 /// </summary>
-                [HarmonyPatch(typeof(UIModuleSpottedEnemies), "SetAllEnemies")]
+                [HarmonyPatch(typeof(UIModuleSpottedEnemies), nameof(UIModuleSpottedEnemies.SetAllEnemies))]
                 public static class UIModuleSpottedEnemies_SetAllEnemies_patch
                 {
                     public static void Prefix(UIModuleSpottedEnemies __instance, ref IList<TacticalAbilityTarget> allSortedKnownTargets)
@@ -3412,7 +3409,7 @@ namespace TFTV
 
 
                 //Remove negative damage notices with very large numbers when character with elemental immunity hit by elemental damage
-                [HarmonyPatch(typeof(HealthbarUIActorElement), "AddNotificationMessage")]
+                [HarmonyPatch(typeof(HealthbarUIActorElement), nameof(HealthbarUIActorElement.AddNotificationMessage))]
                 public class HealthbarUIActorElement_AddNotificationMessage_VanillaBugFix_Patch
                 {
                     static bool Prefix(int? val = null)
@@ -3447,7 +3444,7 @@ namespace TFTV
                 /// The bugs resulted from not considering how damage multipliers / armor stack multipliers (in TFTV, the special revenant resistance, in Vanilla, the Orichalcum shielding)
                 /// reduced incoming damage to limbs.
                 /// </summary>
-                [HarmonyPatch(typeof(DamageAccumulation), "GenerateStandardDamageTargetData")]
+                [HarmonyPatch(typeof(DamageAccumulation), nameof(DamageAccumulation.GenerateStandardDamageTargetData))]
                 public static class TFTV_DamageAccumulation_GenerateStandardDamageTargetData
                 {
 
@@ -3569,7 +3566,7 @@ namespace TFTV
             }
 
             //Madskunky's replacement of a trig function to reduce AI processing time 
-            [HarmonyPatch(typeof(Weapon), "GetDamageModifierForDistance")]
+            [HarmonyPatch(typeof(Weapon), nameof(Weapon.GetDamageModifierForDistance))]
             public static class Weapon_GetDamageModifierForDistance_patch
             {
 
@@ -3607,7 +3604,7 @@ namespace TFTV
             /// Fix:
             /// The UI icon element of overwatch abilities does not take AP modifications for the default shooting ability into account.
             /// </summary>
-            [HarmonyPatch(typeof(TacticalAbility), "FractActionPointCost", MethodType.Getter)]
+            [HarmonyPatch(typeof(TacticalAbility), "FractActionPointCost", MethodType.Getter)] //VERIFIED
             internal class TacticalAbility_get_FractActionPointCost_OWFix
             {
                 public static bool Prefix(TacticalAbility __instance, ref float __result)
@@ -3708,7 +3705,7 @@ namespace TFTV
             /// Harmony patch that fixes the vanilla throw range calculation.
             /// The attenuation tag allows Harmony to find the targeted class/object method and apply the patch from the following class.
             /// </summary>
-            [HarmonyPatch(typeof(Weapon), "GetThrowingRange")]
+            [HarmonyPatch(typeof(Weapon), "GetThrowingRange")] //VERIFIED
             internal class Weapon_GetThrowingRange_Fix
             {
                 /// Using Postfix patch to be guaranteed to get executed.
@@ -3775,7 +3772,7 @@ namespace TFTV
             /// <summary>
             /// Codemite's solution to Acheron's junk transforms (part of the Acheron bad targeting problem). All hail Codemite!
             /// </summary>
-            [HarmonyPatch(typeof(TacticalItem), "SetupAimPoint")]
+            [HarmonyPatch(typeof(TacticalItem), "SetupAimPoint")] //VERIFIED
             public static class TFTV_TacticalItem_SetupAimPoint_patch
             {
                 public static bool Prefix(TacticalItem __instance, ref Transform ____aimPoint)
@@ -3848,7 +3845,7 @@ namespace TFTV
             /// Fixes not getting SP from Training Facilities
             /// </summary>
 
-            [HarmonyPatch(typeof(GeoLevelController), "DailyUpdate")]
+            [HarmonyPatch(typeof(GeoLevelController), "DailyUpdate")] //VERIFIED
             public static class GeoLevelControllerDailyUpdatePatch
             {
                 public static void Postfix(GeoLevelController __instance)
@@ -3871,7 +3868,7 @@ namespace TFTV
             /// <summary>
             /// Fixes losing modules when ground vehicle scrapped
             /// </summary>
-            [HarmonyPatch(typeof(GeoFaction), "KillCharacter")]
+            [HarmonyPatch(typeof(GeoFaction), nameof(GeoFaction.KillCharacter))]
             public static class GeoFaction_KillCharacter_Patch
             {
 
@@ -3991,7 +3988,7 @@ namespace TFTV
             /// <summary>
             /// Fixes softlock if game picks a turret deployed by a haven defender as a recruit
             /// </summary>
-            [HarmonyPatch(typeof(HavenMissionUtil), "GenerateHavenMissionRecruitmentReward")]
+            [HarmonyPatch(typeof(HavenMissionUtil), nameof(HavenMissionUtil.GenerateHavenMissionRecruitmentReward))]
             public static class GenerateHavenMissionRecruitmentRewardPatch
             {
                 static bool Prefix(GeoMission mission, ref GeoFactionReward __result)
@@ -4052,7 +4049,7 @@ namespace TFTV
 
 
             //Ensure facilities are working after repairing Power Generator
-            [HarmonyPatch(typeof(GeoPhoenixFacility), "SetFacilityFunctioning")]
+            [HarmonyPatch(typeof(GeoPhoenixFacility), "SetFacilityFunctioning")] //VERIFIED
             public static class GeoPhoenixFacility_SetFacilityFunctioning_AfterGenRepairedVanillaBugFix_Patch
             {
                 public static void Postfix(GeoPhoenixFacility __instance)
@@ -4080,7 +4077,7 @@ namespace TFTV
             }
 
             //Ensure facilities are working after repairing Power Generator
-            [HarmonyPatch(typeof(GeoPhoenixBase), "RoutePower")]
+            [HarmonyPatch(typeof(GeoPhoenixBase), nameof(GeoPhoenixBase.RoutePower))]
             public static class GeoPhoenixFacility_RoutePower_ForceStatsUpdate_Patch
             {
                 public static void Postfix(GeoPhoenixBase __instance)
@@ -4127,7 +4124,7 @@ namespace TFTV
             /// <summary>
             /// Fixes crash w weird interception screen 
             /// </summary>
-            [HarmonyPatch(typeof(InterceptionBriefDataBind), "ModalShowHandler")]
+            [HarmonyPatch(typeof(InterceptionBriefDataBind), nameof(InterceptionBriefDataBind.ModalShowHandler))]
             public static class InterceptionBriefDataBind_ModalShowHandler_patch
             {
                 public static bool Prefix(InterceptionBriefDataBind __instance, UIModal modal)
@@ -4158,7 +4155,7 @@ namespace TFTV
             /// <summary>
             /// Need to ensure that if ammo is less than full, it gets reloaded even if the difference is rounded down to 0
             /// </summary>
-            [HarmonyPatch(typeof(GeoItem), "ReloadForFree")]
+            [HarmonyPatch(typeof(GeoItem), nameof(GeoItem.ReloadForFree))]
             public static class TFTV_CharacterFatigue_ReloadForFree_patch
             {
 
@@ -4212,7 +4209,7 @@ namespace TFTV
 
 
 
-            [HarmonyPatch(typeof(GeoHaven), "get_RecruitCorruption")]
+            [HarmonyPatch(typeof(GeoHaven), "get_RecruitCorruption")] //VERIFIED
             public static class TFTV_GeoHaven_get_RecruitCorruption_VanillaBugBix_patch
             {
                 public static void Postfix(GeoHaven __instance, ref int __result)
@@ -4238,7 +4235,7 @@ namespace TFTV
 
             //Reduce population by 1 when recruiting at havens
 
-            [HarmonyPatch(typeof(GeoHaven), "TakeRecruit")]
+            [HarmonyPatch(typeof(GeoHaven), nameof(GeoHaven.TakeRecruit))]
 
             public static class TFTV_GeoHaven_TakeRecruit_VanillaBugBix_patch
             {
@@ -4321,7 +4318,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(TacMission), "PrepareMissionActivators")]
+            [HarmonyPatch(typeof(TacMission), nameof(TacMission.PrepareMissionActivators))]
 
             public static class TacMission_PrepareMissionActivators_Experiment_patch
             {
@@ -4349,7 +4346,7 @@ namespace TFTV
 
             private static List<string> _eventsRewardingNJCharacters = new List<string>() { "AN11", "EX7", "SY22" };
 
-            [HarmonyPatch(typeof(GeoEventChoiceOutcome), "GenerateFactionReward")]
+            [HarmonyPatch(typeof(GeoEventChoiceOutcome), nameof(GeoEventChoiceOutcome.GenerateFactionReward))]
             public static class GeoEventChoiceOutcome_GenerateFactionReward_patch
             {
 
@@ -4394,7 +4391,7 @@ namespace TFTV
             /// No try/catch because harmless error on buying item
             /// </summary>
 
-            [HarmonyPatch(typeof(UIModuleTheMarketplace), "UpdateList")]
+            [HarmonyPatch(typeof(UIModuleTheMarketplace), "UpdateList")] //VERIFIED
             public static class UIModuleTheMarketplace_UpdateList_patch
             {
                 public static bool Prefix(UIModuleTheMarketplace __instance, GeoscapeEvent geoEvent, bool ____isInit,
@@ -4447,7 +4444,7 @@ namespace TFTV
             /// This patch ensures that scrapping ammo is never profitable.
             /// </summary>
 
-            [HarmonyPatch(typeof(ItemDef), "get_ScrapPrice")]
+            [HarmonyPatch(typeof(ItemDef), "get_ScrapPrice")] //VERIFIED
             public static class ItemDef_get_ScrapPrice_patch
             {
                 public static void Postfix(ItemDef __instance, ref ResourcePack __result, ResourcePack ____scrapPrice)
@@ -4497,7 +4494,7 @@ namespace TFTV
 
 
             //Prevents ammo from disappearing on pressing replinish ammo if the class of the soldier is not proficient with the weapon and ALL filter is switched off 
-            [HarmonyPatch(typeof(UIStateEditSoldier), "SoldierSlotItemChangedHandler")]
+            [HarmonyPatch(typeof(UIStateEditSoldier), "SoldierSlotItemChangedHandler")] //VERIFIED
             public static class UIStateEditSoldier_SoldierSlotItemChangedHandler_patch
             {
 
@@ -4523,7 +4520,7 @@ namespace TFTV
             }
 
             //fixes events reducing health to 0 and killing soldiers
-            [HarmonyPatch(typeof(GeoFactionReward), "AddInjuriesToAllSoldiers")]
+            [HarmonyPatch(typeof(GeoFactionReward), "AddInjuriesToAllSoldiers")] //VERIFIED
             public static class TFTV_GeoFactionReward_AddInjuriesToAllSoldiers
             {
                 public static bool Prefix(GeoFactionReward __instance, GeoFaction faction)
@@ -4576,7 +4573,7 @@ namespace TFTV
             //Prevents multiple instancing of mission briefings when several aircraft arrive simultaneously at the mission site
             private static TimeUnit _arrivalTime;
 
-            [HarmonyPatch(typeof(UIStateVehicleSelected), "OnVehicleSiteVisited")]
+            [HarmonyPatch(typeof(UIStateVehicleSelected), "OnVehicleSiteVisited")] //VERIFIED
             public static class UIStateVehicleSelected_OnVehicleSiteVisitedt_patch
             {
                 public static bool Prefix(UIStateVehicleSelected __instance, GeoVehicle vehicle)
@@ -4609,7 +4606,7 @@ namespace TFTV
 
             //fixes requiring killing actor required for research even when it is already captured
 
-            [HarmonyPatch(typeof(ActorResearchRequirement), "OnMissionEnd")]
+            [HarmonyPatch(typeof(ActorResearchRequirement), "OnMissionEnd")] //VERIFIED
             public static class TFTV_ActorResearchRequirement_OnMissionEnd
             {
                 public static bool Prefix(ActorResearchRequirement __instance, GeoFaction faction, GeoMission mission, GeoSite site, GeoFaction ____faction)
@@ -4662,7 +4659,7 @@ namespace TFTV
             /// <summary>
             /// Fixes not recognizing required research tags
             /// </summary>
-            [HarmonyPatch(typeof(ActorResearchRequirementDef), "IsValidActor")]
+            [HarmonyPatch(typeof(ActorResearchRequirementDef), nameof(ActorResearchRequirementDef.IsValidActor))]
             public static class TFTV_ActorResearchRequirementDef_IsValidActor
             {
                 public static bool Prefix(ActorResearchRequirementDef __instance, GeoUnitDescriptor unit, TacticalActorDef actorRequirement, GameTagDef tagRequirement, ref bool __result)

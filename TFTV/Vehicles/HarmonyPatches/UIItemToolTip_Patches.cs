@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace TFTVVehicleRework.HarmonyPatches
 {
-    [HarmonyPatch(typeof(UIItemTooltip), "SetTacItemStats")]
+    [HarmonyPatch(typeof(UIItemTooltip), "SetTacItemStats")] // VERIFIED
     internal static class UIItemTooltip_SetModuleStats_Patch
     {
         public static LocalizedTextBind HealthText = new LocalizedTextBind("UI_HITPOINTS");

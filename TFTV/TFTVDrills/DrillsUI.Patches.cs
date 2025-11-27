@@ -93,7 +93,7 @@ namespace TFTV.TFTVDrills
             }
         }
 
-        [HarmonyPatch(typeof(AbilityTrackSkillEntryElement), "SetSkillState")]
+        [HarmonyPatch(typeof(AbilityTrackSkillEntryElement), "SetSkillState")] //VERIFIED
         public static class AbilityTrackSkillEntryElement_SetSkillState_Patch
         {
             public static void Postfix(AbilityTrackSkillEntryElement __instance, bool isAvailable, bool isBuyable)
@@ -284,7 +284,7 @@ namespace TFTV.TFTVDrills
             }
         }
 
-        [HarmonyPatch(typeof(AbilityTrackSkillEntryElement), "LateUpdate")]
+        [HarmonyPatch(typeof(AbilityTrackSkillEntryElement), "LateUpdate")] //VERIFIED
         public static class AbilityTrackSkillEntryElement_LateUpdate_Patch
         {
             public static bool Prefix(AbilityTrackSkillEntryElement __instance)

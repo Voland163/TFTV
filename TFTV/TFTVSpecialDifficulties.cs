@@ -38,7 +38,7 @@ namespace TFTV
 
         public static int CounterSpawned = 0;
 
-        [HarmonyPatch(typeof(GeoMission), "ApplyTacticalMissionResult")]
+        [HarmonyPatch(typeof(GeoMission), "ApplyTacticalMissionResult")] //VERIFIED
         public class ApplyTacticalMissionResult
         {
             static bool Prefix(GeoMission __instance, out GameDifficultyLevelDef __state)
@@ -90,7 +90,7 @@ namespace TFTV
 
         }
 
-        [HarmonyPatch(typeof(GeoMission), "PrepareTacticalGame")]
+        [HarmonyPatch(typeof(GeoMission), "PrepareTacticalGame")] //VERIFIED
         public class PrepareTacticalGame
         {
             static bool Prefix(GeoMission __instance, out GameDifficultyLevelDef __state)
@@ -286,7 +286,7 @@ namespace TFTV
         {
 
             //Adjust diplo and resource reward from events based on Special Difficulties and VO2 & VO8 
-            [HarmonyPatch(typeof(GeoEventChoiceOutcome), "GenerateFactionReward")]
+            [HarmonyPatch(typeof(GeoEventChoiceOutcome), nameof(GeoEventChoiceOutcome.GenerateFactionReward))]
 
             public static class TFTV_GeoEventChoiceOutcome_GenerateFactionReward_SpecialDifficultiesAndVO2AndVO8_patch
             {
@@ -504,7 +504,7 @@ namespace TFTV
 
             //These patches modify resource rewards on special difficulties and for haven defenses when the VO18 is in play
             //Also reduces to 25% Mutagen reward from infested havens on ETERMES
-            [HarmonyPatch(typeof(ResourceMissionOutcomeDef), "FillPotentialReward")]
+            [HarmonyPatch(typeof(ResourceMissionOutcomeDef), nameof(ResourceMissionOutcomeDef.FillPotentialReward))]
             public static class TFTV_ResourceMissionOutcomeDef_FillPotentialReward_SpecialDifficultiesAndVO18_Patch
 
             {
@@ -567,7 +567,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(ResourceMissionOutcomeDef), "ApplyOutcome")]
+            [HarmonyPatch(typeof(ResourceMissionOutcomeDef), nameof(ResourceMissionOutcomeDef.ApplyOutcome))]
             public static class TFTV_ResourceMissionOutcomeDef_ApplyOutcome_SpecialDifficultiesAndVO18_Patch
             {
                 public static void Postfix(GeoMission mission, ref MissionRewardDescription rewardDescription, ResourceMissionOutcomeDef __instance)
@@ -691,7 +691,7 @@ namespace TFTV
             }
 
             //Patches to modify diplo rewards based on special difficulties or VO#2
-            [HarmonyPatch(typeof(DiplomacyMissionOutcomeDef), "FillPotentialReward")]
+            [HarmonyPatch(typeof(DiplomacyMissionOutcomeDef), nameof(DiplomacyMissionOutcomeDef.FillPotentialReward))]
 
             public static class TFTV_DiplomacyMissionOutcomeDef_FillPotentialReward_SpecialDifficultiesAndVO2_Patch
 
@@ -741,7 +741,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(DiplomacyMissionOutcomeDef), "ApplyOutcome")]
+            [HarmonyPatch(typeof(DiplomacyMissionOutcomeDef), nameof(DiplomacyMissionOutcomeDef.ApplyOutcome))]
 
             public static class TFTV_DiplomacyMissionOutcomeDef_ApplyOutcome_SpecialDifficultiesAndVO2_Patch
 
@@ -813,7 +813,7 @@ namespace TFTV
             }
 
             //For air missions
-            [HarmonyPatch(typeof(GeoAirMission), "SetOutcomeAndReward")]
+            [HarmonyPatch(typeof(GeoAirMission), nameof(GeoAirMission.SetOutcomeAndReward))]
             public static class TFTV_GeoAirMission_SetOutcomeAndReward_SpecialDifficultiesAndVO2_Patch
             {
                 public static void Prefix(GeoFactionReward reward)
@@ -880,7 +880,7 @@ namespace TFTV
             /// <summary>
             /// Reinforcements will come with full AP on ETERMES!
             /// </summary>
-            [HarmonyPatch(typeof(TacParticipantSpawn), "AdjustSpawned")]
+            [HarmonyPatch(typeof(TacParticipantSpawn), nameof(TacParticipantSpawn.AdjustSpawned))]
             public static class TFTV_TacParticipantSpawn_AdjustSpawned_Patch
             {
                 public static bool Prefix(TacParticipantSpawn __instance, TacticalLevelController tacticalLevel)

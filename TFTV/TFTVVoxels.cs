@@ -29,7 +29,7 @@ namespace TFTV
         public static bool GooVoxelSpawnAlreadyChecked = false;
         public static bool FireVoxelSpawnAlreadyChecked = false;
 
-        [HarmonyPatch(typeof(TacticalVoxelMatrix), "VoxelSpawned")]
+        [HarmonyPatch(typeof(TacticalVoxelMatrix), nameof(TacticalVoxelMatrix.VoxelSpawned))]
         public static class TacticalVoxelMatrix_VoxelSpawned_patch
         {
             public static void Postfix(TacticalVoxelMatrix __instance, TacticalVoxel voxel)
@@ -311,7 +311,7 @@ namespace TFTV
 
 
 
-            [HarmonyPatch(typeof(GooVoxelManager), "StartTurn")]
+            [HarmonyPatch(typeof(GooVoxelManager), nameof(GooVoxelManager.StartTurn))]
             public static class GooVoxelManager_StartTurn_patch
             {
 
@@ -336,7 +336,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(GooVoxelManager), "OnSpawn")]
+            [HarmonyPatch(typeof(GooVoxelManager), nameof(GooVoxelManager.OnSpawn))]
             public static class GooVoxelManager_OnSpawn_patch
             {
 
@@ -466,7 +466,7 @@ namespace TFTV
 
 
 
-            [HarmonyPatch(typeof(TacticalVoxelMatrix), "UpdateGooedStatus")]
+            [HarmonyPatch(typeof(TacticalVoxelMatrix), nameof(TacticalVoxelMatrix.UpdateGooedStatus))]
             public static class TacticalVoxelMatrix_UpdateGooedStatus_patch
             {
                 public static bool Prefix()

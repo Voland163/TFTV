@@ -12,7 +12,7 @@ namespace TFTVVehicleRework.HarmonyPatches
     internal static class CostModHarmonies
     {
         [HarmonyPostfix]
-        [HarmonyPatch("CalcFractActionPointCost", new Type[] {typeof(float), typeof(TacticalAbility), typeof(IEnumerable<TacticalAbilityCostModification>)})]
+        [HarmonyPatch("CalcFractActionPointCost", new Type[] {typeof(float), typeof(TacticalAbility), typeof(IEnumerable<TacticalAbilityCostModification>)})] //VERIFIED
         public static void RemoveCostModSafeguard(ref float __result, float baseFract, TacticalAbility ability, IEnumerable<TacticalAbilityCostModification> costModifications)
         {
             if (!costModifications.Any<TacticalAbilityCostModification>() || !(ability.AbilityDef.Guid == SoldierMounting.get_ExitVehicleAbility().Guid))

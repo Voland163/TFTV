@@ -183,7 +183,7 @@ namespace TFTV.TFTVDrills
     internal class DrillCommandOverlay
     {
 
-        [HarmonyPatch(typeof(ApplyStatusAbility), "SetAuraStatusForActor")]
+        [HarmonyPatch(typeof(ApplyStatusAbility), "SetAuraStatusForActor")] //VERIFIED
         public static class ApplyStatusAbility_SetAuraStatusForActor_Patch
         {
             public static void Postfix(ApplyStatusAbility __instance)
@@ -192,7 +192,7 @@ namespace TFTV.TFTVDrills
             }
         }
 
-        [HarmonyPatch(typeof(ApplyStatusAbility), "ToggleStatusForAll")]
+        [HarmonyPatch(typeof(ApplyStatusAbility), "ToggleStatusForAll")] //VERIFIED
         public static class ApplyStatusAbility_ToggleStatusForAll_Patch
         {
             public static void Postfix(ApplyStatusAbility __instance)

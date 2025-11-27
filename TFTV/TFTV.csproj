@@ -103,6 +103,7 @@
     <Compile Include="ConfigHelpers.cs" />
     <Compile Include="ConsoleCommands.cs" />
     <Compile Include="DefCache.cs" />
+    <Compile Include="HarmonyPatchValidator.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="MainSpecModification.cs" />
     <Compile Include="PersonalSpecModification.cs" />
@@ -161,7 +162,6 @@
     <Compile Include="TFTVBaseRework\UI.cs" />
     <Compile Include="TFTVBaseRework\Utils.cs" />
     <Compile Include="TFTVBaseRework\Workers.cs" />
-    <Compile Include="TFTVCrisis.cs" />
     <Compile Include="TFTVCustomPortraits.cs" />
     <Compile Include="TFTVDrills\CanvasGroupExtensions.cs" />
     <Compile Include="TFTVDrills\DrillCommandOverlay.cs" />

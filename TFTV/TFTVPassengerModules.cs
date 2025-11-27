@@ -94,7 +94,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(GeoVehicle), "GetModuleBonusByType")]
+        [HarmonyPatch(typeof(GeoVehicle), "GetModuleBonusByType")] //VERIFIED
 
         public static class TFTV_Experimental_GeoVehicle_GetModuleBonusByType_AdjustFARMRecuperationModule_patch
         {
@@ -139,7 +139,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(GeoPhoenixFaction), "CreateInitialSquad")]
+        [HarmonyPatch(typeof(GeoPhoenixFaction), nameof(GeoPhoenixFaction.CreateInitialSquad))]
         internal static class BG_GeoPhoenixFaction_CreateInitialSquad_patch
         {
 
@@ -401,7 +401,7 @@ namespace TFTV
              }
          }*/
 
-        [HarmonyPatch(typeof(GeoLevelController), "RunInterceptionTutorial")]
+        [HarmonyPatch(typeof(GeoLevelController), nameof(GeoLevelController.RunInterceptionTutorial))]
         public static class GeoLevelController_DontDestroyAircraft_Gift
         {
 

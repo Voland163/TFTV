@@ -287,9 +287,9 @@ namespace TFTV
 
 
                     // Make CH0 Mission appear when Player completes Acheron Autopsy and Capture and Containment 
-                    GeoResearchEventFilterDef PP_ResearchConditionCH0_Miss = DefCache.GetDef<GeoResearchEventFilterDef>("E_PROG_CH0_ResearchCompleted [GeoResearchEventFilterDef]");
+                    GeoResearchEventFilterDef PP_ResearchConditionCH0_Miss = (GeoResearchEventFilterDef)Repo.GetDef("e01cec8c-2b65-058a-6443-6e08d7b776b0"); // DefCache.GetDef<GeoResearchEventFilterDef>("E_PROG_CH0_ResearchCompleted [GeoResearchEventFilterDef]");
 
-                    OrEventFilterDef triggerCH1 = DefCache.GetDef<OrEventFilterDef>("E_PROG_CH1_MultipleTriggers [OrEventFilterDef]");
+                    OrEventFilterDef triggerCH1 = (OrEventFilterDef)Repo.GetDef("6a8351c0-d3c6-c022-28fe-f182744fde75"); //DefCache.GetDef<OrEventFilterDef>("E_PROG_CH1_MultipleTriggers [OrEventFilterDef]");
                     triggerCH1.OR_Filters[1] = PP_ResearchConditionCH0_Miss;
                     GeoscapeEventDef CH0_Event = DefCache.GetDef<GeoscapeEventDef>("PROG_CH0_GeoscapeEventDef");
                     //      CH0Event.Filters[0] = triggerCH1;

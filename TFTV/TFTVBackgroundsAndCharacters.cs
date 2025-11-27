@@ -91,7 +91,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(GeoFactionObjective), "GetIcon")]
+        [HarmonyPatch(typeof(GeoFactionObjective), nameof(GeoFactionObjective.GetIcon))]
         internal static class BG_GeoFactionObjective_GetIcon_patch
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
@@ -188,7 +188,7 @@ namespace TFTV
         //This is a patch to trigger events that introduce lines from characters;
         //needs to be done this way because if TriggerEncounter is assigned to only Outcome, that event is triggered before the Outcome! 
 
-        [HarmonyPatch(typeof(GeoscapeEventSystem), "TriggerGeoscapeEvent")]
+        [HarmonyPatch(typeof(GeoscapeEventSystem), nameof(GeoscapeEventSystem.TriggerGeoscapeEvent))]
 
         public static class GeoscapeEventSystem_TriggerGeoscapeEvent_TriggerAdditionalEvent_patch
         {
@@ -377,7 +377,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(SiteEncountersArtCollectionDef), "GetEventArt")]
+        [HarmonyPatch(typeof(SiteEncountersArtCollectionDef), nameof(SiteEncountersArtCollectionDef.GetEventArt))]
         public static class SiteEncountersArtCollectionDef_GetEventArt_InjectArt_patch
         {
             public static void Postfix(ref EncounterEventArt __result, GeoscapeEvent geoEvent)

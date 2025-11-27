@@ -69,7 +69,7 @@ namespace TFTV
              }
          }*/
 
-        [HarmonyPatch(typeof(EvacuateMountedActorsAbility), "Activate")]
+        [HarmonyPatch(typeof(EvacuateMountedActorsAbility), nameof(EvacuateMountedActorsAbility.Activate))]
         public static class EvacuateMountedActorsAbility_Activate_patch
         {
             public static void Prefix(EvacuateMountedActorsAbility __instance)
@@ -90,7 +90,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(ExitMissionAbility), "Activate")]
+        [HarmonyPatch(typeof(ExitMissionAbility), nameof(ExitMissionAbility.Activate))]
         public static class ExitMissionAbility_Activate_patch
         {
             public static void Prefix(ExitMissionAbility __instance)
@@ -112,7 +112,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(TacticalVoxelMatrix), "StartTurn")]
+        [HarmonyPatch(typeof(TacticalVoxelMatrix), nameof(TacticalVoxelMatrix.StartTurn))]
         public static class TacticalVoxelMatrix_StartTurn_Patch
         {
             public static void Postfix(TacticalVoxelMatrix __instance, TacticalVoxel[] ____voxels)
@@ -133,7 +133,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(AddAttackBoostStatus), "AbilityExecutedHandler")]
+        [HarmonyPatch(typeof(AddAttackBoostStatus), "AbilityExecutedHandler")] //VERIFIED
         public static class TFTV_AddAttackBoostStatus_AbilityExecutedHandler
         {
             public static bool Prefix(AddAttackBoostStatus __instance, TacticalAbility ability, ref int ____attacksBoosted)
@@ -200,7 +200,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(TacticalActorViewBase), "DoCameraChase")]
+        [HarmonyPatch(typeof(TacticalActorViewBase), nameof(TacticalActorViewBase.DoCameraChase))]
         public static class TFTV_TacticalActorViewBase_DoCameraChase
         {
             public static bool Prefix(TacticalActorViewBase __instance, bool chaseTransform, bool lockInput, bool instant, bool chaseOnlyOutsideFrame)
@@ -285,7 +285,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(SpottedTargetsElement), "SetActorClassIcon")]
+        [HarmonyPatch(typeof(SpottedTargetsElement), "SetActorClassIcon")] //VERIFIED
         public static class SpottedTargetsElement_SetActorClassIcon_patch
         {
 
@@ -309,7 +309,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(UIModuleObjectives), "Init")]
+        [HarmonyPatch(typeof(UIModuleObjectives), nameof(UIModuleObjectives.Init))]
         public static class UIModuleObjectives_Init_patch
         {
 
@@ -332,7 +332,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(TacticalAbility), "GetTargetActors", new Type[] { typeof(TacticalTargetData), typeof(TacticalActorBase), typeof(Vector3) })]
+        [HarmonyPatch(typeof(TacticalAbility), "GetTargetActors", new Type[] { typeof(TacticalTargetData), typeof(TacticalActorBase), typeof(Vector3) })] //VERIFIED
         public static class TacticalAbility_GetTargetActors_Patch
         {
             public static void Postfix(TacticalAbility __instance, ref IEnumerable<TacticalAbilityTarget> __result, TacticalActorBase sourceActor,
@@ -351,7 +351,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(TacticalFaction), "RequestEndTurn")]
+        [HarmonyPatch(typeof(TacticalFaction), nameof(TacticalFaction.RequestEndTurn))]
         public static class TFTV_TacticalFactionn_RequestEndTurn_patch
         {
             public static void Postfix(TacticalFaction __instance)
@@ -372,7 +372,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(TacticalFaction), "GetSortedAIActors")]
+        [HarmonyPatch(typeof(TacticalFaction), nameof(TacticalFaction.GetSortedAIActors))]
 
         public static class TFTV_TacticalFactionn_GetSortedAIActors_patch
         {
@@ -400,7 +400,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(StatusComponent), "AddStatus")]
+        [HarmonyPatch(typeof(StatusComponent), "AddStatus")] //VERIFIED
         public static class TFTV_StatusComponent_AddStatus_patch
         {
             public static void Postfix(StatusComponent __instance, Status status)
@@ -427,7 +427,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
+        [HarmonyPatch(typeof(TacticalLevelController), nameof(TacticalLevelController.ActorEnteredPlay))]
         public static class TFTV_TacticalLevelController_ActorEnteredPlay_Patch
         {
 
@@ -456,7 +456,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(SquadMemberScrollerController), "SetupProperPortrait")]
+        [HarmonyPatch(typeof(SquadMemberScrollerController), "SetupProperPortrait")] //VERIFIED
         public static class TFTV_SquadMemberScrollerController_SetupProperPortrait_Patch
         {
             public static bool Prefix(TacticalActor actor, Dictionary<TacticalActor, PortraitSprites> ____soldierPortraits,
@@ -477,7 +477,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(TacticalFactionVision), "OnFactionStartTurn")]
+        [HarmonyPatch(typeof(TacticalFactionVision), nameof(TacticalFactionVision.OnFactionStartTurn))]
         public static class TFTV_TacticalFactionVision_OnFactionStartTurn_Patch
         {
             public static void Postfix(TacticalFactionVision __instance)
@@ -510,7 +510,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(TacticalActorBase), "ApplyDamage")]
+        [HarmonyPatch(typeof(TacticalActorBase), nameof(TacticalActorBase.ApplyDamage))]
         public static class TFTV_TacticalActorBase_ApplyDamage_Patch
         {
             public static void Postfix(TacticalActorBase __instance)
@@ -527,7 +527,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(TacticalLevelController), "ActorDamageDealt")]
+        [HarmonyPatch(typeof(TacticalLevelController), nameof(TacticalLevelController.ActorDamageDealt))]
         public static class TFTV_TacticalLevelController_ActorDamageDealt_Patch
         {
             public static void Prefix(TacticalActor actor, IDamageDealer damageDealer)
@@ -578,7 +578,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
+        [HarmonyPatch(typeof(TacticalLevelController), nameof(TacticalLevelController.ActorDied))]
         public static class TFTV_TacticalLevelController_ActorDied_Patch
         {
             public static void Prefix(DeathReport deathReport, TacticalLevelController __instance)
@@ -614,7 +614,7 @@ namespace TFTV
 
 
         //Adapted Lucus solution to avoid Ancient Automata receiving WP penalty on ally death/also used for Human Enemies
-        [HarmonyPatch(typeof(TacticalActor), "OnAnotherActorDeath")]
+        [HarmonyPatch(typeof(TacticalActor), "OnAnotherActorDeath")] //VERIFIED
         public static class TacticalActor_OnAnotherActorDeath_HumanEnemies_Patch
         {
             private static readonly ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
@@ -674,7 +674,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(TacParticipantSpawn), "GetEligibleDeployZones")]
+        [HarmonyPatch(typeof(TacParticipantSpawn), "GetEligibleDeployZones")] //VERIFIED
         public static class TFTV_TacParticipantSpawn_GetEligibleDeployZones_patch
         {
             public static IEnumerable<TacticalDeployZone> Postfix(IEnumerable<TacticalDeployZone> results, TacParticipantSpawn __instance, IEnumerable<TacticalDeployZone> zones, ActorDeployData deployData, int turnNumber, bool includeFutureTurns)
@@ -691,7 +691,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(TacMission), "InitDeployZones")]
+        [HarmonyPatch(typeof(TacMission), "InitDeployZones")] //VERIFIED
         public static class TFTV_TacMission_InitDeployZones_patch
         {
             public static void Postfix(TacMission __instance)
@@ -709,7 +709,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(TacticalActor), "OnAbilityExecuteFinished")]
+        [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.OnAbilityExecuteFinished))]
 
         public static class TFTV_TacticalActor_OnAbilityExecuteFinished_patch
         {
@@ -745,7 +745,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(TacticalPerceptionBase), "IsTouchingVoxel")]
+        [HarmonyPatch(typeof(TacticalPerceptionBase), nameof(TacticalPerceptionBase.IsTouchingVoxel))]
 
         public static class TFTV_TacticalPerceptionBase_IsTouchingVoxel_patch
         {
@@ -769,7 +769,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(DamageKeyword), "ProcessKeywordDataInternal")]
+        [HarmonyPatch(typeof(DamageKeyword), "ProcessKeywordDataInternal")] //VERIFIED
         internal static class TFTV_DamageKeyword_ProcessKeywordDataInternal_patch
         {
             public static void Postfix(ref DamageAccumulation.TargetData data)
@@ -786,7 +786,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(TacticalActorBase), "get_DisplayName")]
+        [HarmonyPatch(typeof(TacticalActorBase), "get_DisplayName")] //VERIFIED
         public static class TacticalActorBase_GetDisplayName_RevenantGenerator_Patch
         {
             public static void Postfix(TacticalActorBase __instance, ref string __result)
@@ -818,7 +818,7 @@ namespace TFTV
         /// <summary>
         /// Adapted from cfehunter old Modnix Mod. All hail cfehunter!
         /// </summary>
-        [HarmonyPatch(typeof(ShootAbilitySceneViewElement), "DrawHoverMarker")]
+        [HarmonyPatch(typeof(ShootAbilitySceneViewElement), nameof(ShootAbilitySceneViewElement.DrawHoverMarker))]
         private static class WeaponSpreadPatch_DrawHoverMarker_Scatter
         {
             static GroundMarker scatterMarker = null;

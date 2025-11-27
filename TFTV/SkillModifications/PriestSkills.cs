@@ -202,7 +202,7 @@ namespace PRMBetterClasses.SkillModifications
             }
         }
         // Harmony patch for LayWaste to inject check against willpower
-        [HarmonyPatch(typeof(ApplyEffectAbility), "TargetFilterPredicate")]
+        [HarmonyPatch(typeof(ApplyEffectAbility), "TargetFilterPredicate")] //VERIFIED
         internal static class LayWaste_ApplyEffectAbility_TargetFilterPredicate_patch
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
@@ -228,7 +228,7 @@ namespace PRMBetterClasses.SkillModifications
             }
         }
         // Harmony patch for LayWaste to inject the calculation for damage by WP difference
-        [HarmonyPatch(typeof(DamageEffect), "OnApply")]
+        [HarmonyPatch(typeof(DamageEffect), "OnApply")] //VERIFIED
         internal static class LayWaste_DamageEffect_OnApply_patch
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]

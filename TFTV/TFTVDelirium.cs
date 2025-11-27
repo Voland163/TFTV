@@ -58,7 +58,7 @@ namespace TFTV
 
 
 
-         [HarmonyPatch(typeof(CorruptionStatus), "GetMultiplier")]
+         [HarmonyPatch(typeof(CorruptionStatus), nameof(CorruptionStatus.GetMultiplier))]
         internal static class TFTV_CorruptionStatus_GetMultiplier_Mutations_patch
         {
 
@@ -321,7 +321,7 @@ namespace TFTV
         // Harmony patch to change the result of CorruptionStatus.CalculateValueIncrement() to be capped by ODI
         // When ODI is <25%, max corruption is 1/3, between 25 and 50% ODI, max corruption is 2/3, and ODI >50%, corruption can be 100%
         // Tell Harmony what original method in what class should get patched, the following class after this directive will be used to perform own code by injection
-        [HarmonyPatch(typeof(CorruptionStatus), "CalculateValueIncrement")]
+        [HarmonyPatch(typeof(CorruptionStatus), "CalculateValueIncrement")] //VERIFIED
 
         // The class that holds the code we want to inject, the name can be anything, but the more accurate the better it is for bug hunting
         internal static class BC_CorruptionStatus_CalculateValueIncrement_patch
@@ -484,7 +484,7 @@ namespace TFTV
         public static Dictionary<GeoTacUnitId, int> StaminaMap = new Dictionary<GeoTacUnitId, int>();
 
         // Harmony patch to save the characters geoscape stamina by acor ID, this mehtod is called in the deployment phase before switching to tactical mode
-        [HarmonyPatch(typeof(CharacterFatigue), "ApplyToTacticalInstance")]
+        [HarmonyPatch(typeof(CharacterFatigue), nameof(CharacterFatigue.ApplyToTacticalInstance))]
 
         internal static class BC_CharacterFatigue_ApplyToTacticalInstance_Patch
         {
@@ -515,7 +515,7 @@ namespace TFTV
 
         // Harmony patch to change the result of CorruptionStatus.GetStatModification() to take Stamina into account
         // Corruption application get reduced by 100% when Stamina is between 35-40, by 75% between 30-35, by 50% between 25-30.
-        [HarmonyPatch(typeof(CorruptionStatus), "GetStatModification")]
+        [HarmonyPatch(typeof(CorruptionStatus), "GetStatModification")] //VERIFIED
         internal static class BC_CorruptionStatus_GetStatModification_patch
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
@@ -636,7 +636,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(GeoCharacter), "CureCorruption")]
+        [HarmonyPatch(typeof(GeoCharacter), nameof(GeoCharacter.CureCorruption))]
         public static class GeoCharacter_CureCorruption_SetStaminaTo0_patch
         {
             private static readonly PassiveModifierAbilityDef InnerSight_AbilityDef = DefCache.GetDef<PassiveModifierAbilityDef>("InnerSight_AbilityDef");
@@ -735,7 +735,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(GeoMission), "ApplyMissionResults")]
+        [HarmonyPatch(typeof(GeoMission), "ApplyMissionResults")] //VERIFIED
         public static class GeoMission_ManageGear_RollToRemoveDeliriumPerks_patch
         {
             public static void Postfix(GeoMission __instance, TacMissionResult result, GeoSquad squad)
@@ -819,7 +819,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(EditUnitButtonsController), "SetEditUnitButtonsBasedOnType")]
+        [HarmonyPatch(typeof(EditUnitButtonsController), nameof(EditUnitButtonsController.SetEditUnitButtonsBasedOnType))]
         internal static class TFTV_EditUnitButtonsController_SetEditUnitButtonsBasedOnType_DeliriumPerksCured_patch
         {
             public static void Postfix(UIModuleActorCycle ____parentModule)
@@ -846,7 +846,7 @@ namespace TFTV
 
         //When getting an augment, each augment reduces corruption by a 1/3
         //And thanks to Mergele also Removes wolverine on installing a bionic torso
-        [HarmonyPatch(typeof(UIModuleBionics), "OnAugmentApplied")]
+        [HarmonyPatch(typeof(UIModuleBionics), nameof(UIModuleBionics.OnAugmentApplied))]
         public static class UIModuleBionics_OnAugmentApplied_SetStaminaTo0_patch
         {
             public static void Postfix(UIModuleBionics __instance, ItemDef augment)

@@ -309,7 +309,10 @@ namespace TFTV
                 {
                     try
                     {
-                        DefCache.GetDef<GeoResearchEventFilterDef>("E_PROG_PU5_ResearchCompleted [GeoResearchEventFilterDef]").ResearchID = "NJ_Bionics2_ResearchDef";
+                        GeoResearchEventFilterDef geoResearchEventFilterDef = (GeoResearchEventFilterDef)Repo.GetDef("e01cec8c-2b65-058a-6443-6e08d7b776b0");
+                        geoResearchEventFilterDef.ResearchID = "NJ_Bionics2_ResearchDef";
+
+                       // DefCache.GetDef<GeoResearchEventFilterDef>("E_PROG_PU5_ResearchCompleted [GeoResearchEventFilterDef]").ResearchID = "NJ_Bionics2_ResearchDef";
                     }
                     catch (Exception e)
                     {
@@ -320,7 +323,7 @@ namespace TFTV
                 {
                     try
                     {
-                        GeoResearchEventFilterDef prog_pu9ResFilter = DefCache.GetDef<GeoResearchEventFilterDef>("E_PROG_PU9_ResearchCompleted [GeoResearchEventFilterDef]");
+                        GeoResearchEventFilterDef prog_pu9ResFilter = (GeoResearchEventFilterDef)Repo.GetDef("78febbf7-0f6b-3ae9-bde8-f7d5f08caae6"); // DefCache.GetDef<GeoResearchEventFilterDef>("E_PROG_PU9_ResearchCompleted [GeoResearchEventFilterDef]");
                         prog_pu9ResFilter.ResearchedBy = DefCache.GetDef<GeoFactionDef>("Phoenix_GeoPhoenixFactionDef");
                     }
                     catch (Exception e)

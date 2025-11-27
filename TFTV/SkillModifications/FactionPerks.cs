@@ -787,7 +787,7 @@ namespace PRMBetterClasses.SkillModifications
             _socStatus = SocStatus;
         }
         // Sower of Chage: Patching OnActorDamageReceivedStatus.OnActorDamageReceived() to handle the trigger effect preventing errors and to much slow motion
-        [HarmonyPatch(typeof(OnActorDamageReceivedStatus), "OnActorDamageReceived")]
+        [HarmonyPatch(typeof(OnActorDamageReceivedStatus), "OnActorDamageReceived")] //VERIFIED
         internal static class SowerOfChange_OnActorDamageReceived_Patch
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]

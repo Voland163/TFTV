@@ -27,7 +27,7 @@ namespace TFTV
 
         
 
-        [HarmonyPatch(typeof(AmbushOutcomeDataBind), "ModalShowHandler")]
+        [HarmonyPatch(typeof(AmbushOutcomeDataBind), nameof(AmbushOutcomeDataBind.ModalShowHandler))]
         public static class TFTV_AmbushOutcomeDataBind_ModalShowHandler_patch
         {
 
@@ -62,7 +62,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(GeoscapeEventSystem), "SetEventForSite")]
+        [HarmonyPatch(typeof(GeoscapeEventSystem), nameof(GeoscapeEventSystem.SetEventForSite))]
         public static class GeoscapeEventSystem_SetEventForSite_patch
         {
 
@@ -107,7 +107,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(UIModuleSelectionInfoBox), "SetUnexploredSite")]
+        [HarmonyPatch(typeof(UIModuleSelectionInfoBox), "SetUnexploredSite")] //VERIFIED
         public static class UIModuleSelectionInfoBox_SetUnexploredSite_patch
         {
             public static void Postfix(UIModuleSelectionInfoBox __instance, GeoSite ____site)
@@ -157,7 +157,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(GeoSite), "RegisterMission")]
+        [HarmonyPatch(typeof(GeoSite), "RegisterMission")] //VERIFIED
         public static class GeoSite_RegisterMission_patch
         {
 
@@ -195,7 +195,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(GeoLevelController), "GetAllPossibleEnemyMissionParticipants")]
+        [HarmonyPatch(typeof(GeoLevelController), nameof(GeoLevelController.GetAllPossibleEnemyMissionParticipants))]
         public static class GeoLevelController_GetAllPossibleEnemyMissionParticipants_patch
         {
             public static bool Prefix(GeoLevelController __instance, ref List<Tuple<IGeoFactionMissionParticipant, int>> __result, GeoSite site)
@@ -515,8 +515,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(GeoscapeEventSystem), "OnLevelStart")]
-
+        [HarmonyPatch(typeof(GeoscapeEventSystem), nameof(GeoscapeEventSystem.OnLevelStart))]
         public static class GeoscapeEventSystem_PhoenixFaction_OnLevelStart_Patch
         {
             /*  public static bool Prepare()

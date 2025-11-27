@@ -4,7 +4,7 @@ using PhoenixPoint.Tactical.Entities.Abilities;
 
 namespace TFTVVehicleRework.HarmonyPatches
 {    
-    [HarmonyPatch(typeof(TacticalAbility), "get_ShouldDisplay")]
+    [HarmonyPatch(typeof(TacticalAbility), "get_ShouldDisplay")] //VERIFIED
     internal static class KNR_Patch
     {
         // [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]

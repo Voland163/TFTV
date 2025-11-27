@@ -290,7 +290,7 @@ namespace TFTV.TFTVBaseRework
             FlushPendingInfoBarUpdate(level);
         }
 
-        [HarmonyPatch(typeof(GeoLevelController), "DailyUpdate")]
+        [HarmonyPatch(typeof(GeoLevelController), "DailyUpdate")] //VERIFIED
         internal static class GeoLevelController_DailyUpdate_PersonnelPool
         {
             private static void Postfix(GeoLevelController __instance) => TFTVBaseRework.PersonnelManagementUI.DailyTick(__instance);

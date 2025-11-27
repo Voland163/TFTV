@@ -111,7 +111,7 @@ namespace TFTV.TFTVBaseRework
             return null;
         }
 
-        [HarmonyPatch(typeof(PhoenixBaseStats), "Update")]
+        [HarmonyPatch(typeof(PhoenixBaseStats), "Update")] //VERIFIED
         internal static class PhoenixBaseStats_Update_LivingSpace
         {
             private static void Postfix(PhoenixBaseStats __instance, GeoPhoenixBaseLayout ____layout)

@@ -32,7 +32,7 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         public static Dictionary<int, List<string>> charactersWithDisabledBodyParts = new Dictionary<int, List<string>>();
 
-        [HarmonyPatch(typeof(BodyPartAspect), "OnSetToEnable")]
+        [HarmonyPatch(typeof(BodyPartAspect), nameof(BodyPartAspect.OnSetToEnable))]
         internal static class BodyPartAspect_OnSetToEnable_patch
         {
             public static void Postfix(BodyPartAspect __instance)
@@ -72,7 +72,7 @@ namespace TFTV
 
 
         // This first patch is to "register" the injury in the above list
-        [HarmonyPatch(typeof(TacticalActor), "ShouldChangeAspectStats")]
+        [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.ShouldChangeAspectStats))]
         internal static class TacticalActor_ShouldChangeAspectStats_patch
         {
 
@@ -221,7 +221,7 @@ namespace TFTV
 
 
         //When getting a mutation, the character's Stamina is to 0
-        [HarmonyPatch(typeof(UIModuleMutationSection), "ApplyMutation")]
+        [HarmonyPatch(typeof(UIModuleMutationSection), "ApplyMutation")] //VERIFIED
         public static class UIModuleMutationSection_ApplyMutation_SetStaminaTo0_patch
         {
 
@@ -251,7 +251,7 @@ namespace TFTV
         }
 
         //When getting an augment, the character's Stamina is set to 0
-        [HarmonyPatch(typeof(UIModuleBionics), "OnAugmentApplied")]
+        [HarmonyPatch(typeof(UIModuleBionics), nameof(UIModuleBionics.OnAugmentApplied))]
         public static class UIModuleBionics_OnAugmentApplied_SetStaminaTo0_patch
         {
             /*    public static bool Prepare()

@@ -4,10 +4,13 @@ using Base.Entities.Statuses;
 using Code.PhoenixPoint.Tactical.Entities.Equipments;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.ContextHelp;
 using PhoenixPoint.Tactical.Entities;
@@ -15,6 +18,7 @@ using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
+using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -103,7 +107,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(AdaptiveWeaponStatus), "OnApply")]
+        [HarmonyPatch(typeof(AdaptiveWeaponStatus), nameof(AdaptiveWeaponStatus.OnApply))]
         public static class TFTV_AdaptiveWeaponStatus_OnApply
         {
             public static void Postfix(AdaptiveWeaponStatus __instance, StatusComponent statusComponent)
@@ -177,7 +181,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(TacticalActor), "GetDefaultShootAbility")]
+        [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.GetDefaultShootAbility))]
         public static class TFTV_TacticalActor_GetDefaultShootAbility
         {
             public static void Postfix(TacticalActor __instance, ref ShootAbility __result)
@@ -206,7 +210,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(TacContextHelpManager), "OnStatusApplied")]
+        [HarmonyPatch(typeof(TacContextHelpManager), "OnStatusApplied")] //VERIFIED
         public static class TFTV_TacContextHelpManager_OnApply
         {
             public static bool Prefix(TacContextHelpManager __instance, Status status)
@@ -231,7 +235,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(SlotStateStatus), "OnApply")]
+        [HarmonyPatch(typeof(SlotStateStatus), nameof(SlotStateStatus.OnApply))]
         public static class TFTV_SlotStateStatus_OnApply
         {
             public static bool Prefix(SlotStateStatus __instance, StatusComponent statusComponent)
@@ -263,7 +267,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(TacticalItem), "SetToDisabled")]
+        [HarmonyPatch(typeof(TacticalItem), nameof(TacticalItem.SetToDisabled))]
         public static class TFTV_TacticalItem_SetToDisabled
         {
             public static void Prefix(TacticalItem __instance)
@@ -297,7 +301,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(Addon), "Destroy")]
+        [HarmonyPatch(typeof(Addon), nameof(Addon.Destroy))]
         public static class TFTV_Addon_RemoveItem
         {
             public static bool Prefix(Addon __instance, ref List<Addon> __result)
@@ -322,7 +326,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(InventoryComponent), "RemoveItem", new Type[] { typeof(ItemDef) })]
+        [HarmonyPatch(typeof(InventoryComponent), "RemoveItem", new Type[] { typeof(ItemDef) })] //VERIFIED
         public static class TFTV_InventoryComponent_RemoveItem
         {
             public static bool Prefix(InventoryComponent __instance, ItemDef itemDef, ref Item __result)
@@ -354,7 +358,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch]
+        [HarmonyPatch] //VERIFIED
         public static class TFTV_PostmissionReplenishManager_RemoveExtra
         {
             static MethodBase TargetMethod()
@@ -387,7 +391,7 @@ namespace TFTV
 
 
 
-        /* [HarmonyPatch(typeof(GeoMission), "ManageGear")]
+        [HarmonyPatch(typeof(GeoMission), "ManageGear")] //VERIFIED
          public static class TFTV_GeoMission_ManageGear
          {
              public static bool Prefix(GeoMission __instance, TacMissionResult result, GeoSquad squad)
@@ -513,7 +517,7 @@ namespace TFTV
                      throw;
                  }
              }
-         }*/
+         }
 
 
 

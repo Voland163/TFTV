@@ -334,7 +334,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(YuggothShieldsAbility), "IsQueenWallDown")]
+            [HarmonyPatch(typeof(YuggothShieldsAbility), "IsQueenWallDown")] //VERIFIED
 
             public static class TFTV_YuggothShieldsAbility_IsQueenWallDown_patch
             {
@@ -607,7 +607,7 @@ namespace TFTV
             /// Prevent Scylla death lowering palace walls.
             /// </summary>
 
-            [HarmonyPatch(typeof(YuggothShieldsAbility), "OnSomeoneDied")]
+            [HarmonyPatch(typeof(YuggothShieldsAbility), nameof(YuggothShieldsAbility.OnSomeoneDied))]
 
             public static class TFTV_YuggothShieldsAbility_OnSomeoneDied_patch
             {

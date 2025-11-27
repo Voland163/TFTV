@@ -4,7 +4,7 @@ using PhoenixPoint.Tactical.Entities.Statuses;
 
 namespace TFTVVehicleRework.HarmonyPatches
 {    
-    [HarmonyPatch(typeof(SwitchStanceAbility), "get_ShouldDisplay")]
+    [HarmonyPatch(typeof(SwitchStanceAbility), "get_ShouldDisplay")] //VERIFIED
     internal static class SwitchStance_Patch
     {
         public static void Postfix(SwitchStanceAbility __instance, ref bool __result)

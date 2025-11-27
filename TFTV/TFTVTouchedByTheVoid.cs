@@ -300,7 +300,7 @@ namespace TFTV
                     }
                 }
 
-                [HarmonyPatch(typeof(TacticalActor), "OnEquipmentHealthChange")]
+                [HarmonyPatch(typeof(TacticalActor), "OnEquipmentHealthChange")] //VERIFIED
                 public static class TacticalActor_OnEquipmentHealthChange_TBTV_Patch
                 {
                     public static void Prefix(TacticalActor __instance)

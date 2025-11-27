@@ -61,7 +61,7 @@ namespace PRMBetterClasses.SkillModifications
             blView.Description.LocalizationKey = "PR_BC_BLOODLUST_DESC";
         }
 
-        [HarmonyPatch(typeof(BloodLustStatus), "ApplyModification")]
+        [HarmonyPatch(typeof(BloodLustStatus), "ApplyModification")] //VERIFIED
         internal static class BloodLustStatus_ApplyModification_Patch
         {
             public static bool Prefix(BloodLustStatus __instance, StatusStat healthStat)

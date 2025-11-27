@@ -13,7 +13,7 @@ namespace TFTV.TFTVHavenRecruitsUI
 {
     internal class HavenRecruitsButton
     {
-        [HarmonyPatch(typeof(UIModuleSiteManagement), "Awake")]
+        [HarmonyPatch(typeof(UIModuleSiteManagement), nameof(UIModuleSiteManagement.Awake))]
         public static class AddRecruitsButton_OnSiteManagementAwake
         {
             private const string RecruitsBtnName = "UIButton_Icon_Recruits";

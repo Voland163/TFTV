@@ -325,7 +325,7 @@ namespace TFTV
 
         }
 
-        [HarmonyPatch(typeof(UIModuleTacticalContextualMenu), "OnAbilitySelected")]
+        [HarmonyPatch(typeof(UIModuleTacticalContextualMenu), "OnAbilitySelected")] //VERIFIED
         public static class UIModuleTacticalContextualMenu_OnAbilitySelected_CapturePandorans_patch
         {
 
@@ -443,7 +443,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(UIModuleTacticalContextualMenu), "SetMenuItems")]
+        [HarmonyPatch(typeof(UIModuleTacticalContextualMenu), nameof(UIModuleTacticalContextualMenu.SetMenuItems))]
         public static class UIModuleTacticalContextualMenu_SetMenuItems_CapturePandorans_patch
         {
 
@@ -610,7 +610,7 @@ namespace TFTV
           }*/
 
 
-        [HarmonyPatch(typeof(GeoMission), "CaptureLiveAlien")]
+        [HarmonyPatch(typeof(GeoMission), "CaptureLiveAlien")] //VERIFIED
         public static class GeoMission_CaptureLiveAlien_patch
         {
 

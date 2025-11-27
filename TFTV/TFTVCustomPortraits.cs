@@ -49,7 +49,7 @@ namespace TFTV
             public static Dictionary<int, string> characterPics = new Dictionary<int, string>();
             private static List<string> _portraitFileList = new List<string>();
 
-            [HarmonyPatch(typeof(UIModuleUnitCustomization), "ChangeCustomization")]
+            [HarmonyPatch(typeof(UIModuleUnitCustomization), "ChangeCustomization")] //VERIFIED
             public static class UIModuleUnitCustomization_ChangeCustomization_patch
             {
 

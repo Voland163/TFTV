@@ -161,7 +161,7 @@ namespace TFTV
         internal class StepOutOfCoverFix
         {
 
-            [HarmonyPatch(typeof(AIActionMoveToPosition), "Execute")]
+            [HarmonyPatch(typeof(AIActionMoveToPosition), nameof(AIActionMoveToPosition.Execute))]
             public static class AIActionMoveToPosition_Execute_patch
             {
                 private static void Prefix(AIActionMoveToPosition __instance, ref AIScoredTarget aiTarget)
@@ -285,7 +285,7 @@ namespace TFTV
             private static int _autoFireShotCountInitial;
 
 
-            [HarmonyPatch(typeof(TacAIActor), "EndTurn")]
+            [HarmonyPatch(typeof(TacAIActor), nameof(TacAIActor.EndTurn))]
             public static class TacAIActor_EndTurn_patch
             {
                 public static void Postfix(TacAIActor __instance)
@@ -422,7 +422,7 @@ namespace TFTV
 
 
 
-            [HarmonyPatch(typeof(AIActionMoveAndAttack), "GetAttackTarget")]
+            [HarmonyPatch(typeof(AIActionMoveAndAttack), "GetAttackTarget")] //VERIFIED
             public static class AIActionMoveAndAttack_GetAttackTarget_patch
             {
                 public static bool Prefix(AIActionMoveAndAttack __instance, TacticalAbility ability, TacAITarget aiTarget, ref TacticalAbilityTarget __result)
@@ -545,7 +545,7 @@ namespace TFTV
         //Culls dash evaluation so that it is only considered when character has at least 3 AP
         internal class DashFix
         {
-            [HarmonyPatch(typeof(AIHasEnemiesInRangeConsideration), "Evaluate")]
+            [HarmonyPatch(typeof(AIHasEnemiesInRangeConsideration), nameof(AIHasEnemiesInRangeConsideration.Evaluate))]
             public static class AIHasEnemiesInRangeConsideration_Evaluate_patch
             {
                 public static void Postfix(AIHasEnemiesInRangeConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
@@ -585,7 +585,7 @@ namespace TFTV
         internal class JammingFieldReduceShootScore
         {
 
-            [HarmonyPatch(typeof(AIAttackPositionConsideration), "EvaluateWithShootAbility")]
+            [HarmonyPatch(typeof(AIAttackPositionConsideration), "EvaluateWithShootAbility")] //VERIFIED
             internal static class AIAttackPositionConsideration_EvaluateWithShootAbility_patch
             {
 
@@ -990,7 +990,7 @@ namespace TFTV
 
 
 
-            [HarmonyPatch(typeof(AISlowTargetsInConeConsideration), "Evaluate")]
+            [HarmonyPatch(typeof(AISlowTargetsInConeConsideration), nameof(AISlowTargetsInConeConsideration.Evaluate))]
             public static class AISlowTargetsInConeConsideration_GetMovementDataInRange_patch
             {
                 private static bool Prefix(AISlowTargetsInConeConsideration __instance, ref float __result, IAIActor actor, IAITarget target)
@@ -1105,7 +1105,7 @@ namespace TFTV
         //allows Scylla, Cyclops and Chiron to move more freely by adding navAreas from other large critters
         internal class SquashCrittersForScylllaCyclopsChiron
         {
-            [HarmonyPatch(typeof(CaterpillarMoveAbility), "AbilityAdded")]
+            [HarmonyPatch(typeof(CaterpillarMoveAbility), nameof(CaterpillarMoveAbility.AbilityAdded))]
             internal static class TFTV_CaterpillarMoveAbility_AbilityAdded_ScyllaCaterpillar_patch
             {
 
@@ -1161,7 +1161,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(CaterpillarMoveAbility), "Activate")]
+            [HarmonyPatch(typeof(CaterpillarMoveAbility), nameof(CaterpillarMoveAbility.Activate))]
             internal static class TFTV_CaterpillarMoveAbility_Activate_ScyllaCaterpillar_patch
             {
 
@@ -1188,7 +1188,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(TacticalActor), "OnFinishedMovingActor")]
+            [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.OnFinishedMovingActor))]
             public static class TacticalActor_OnFinishedMovingActor_Scylla_Experiment_patch
             {
                 public static void Postfix(TacticalActor __instance)
@@ -1228,7 +1228,7 @@ namespace TFTV
         //prevents facehugger explosion from killing the host and prevents Scylla caterpillar explosion from damaging Scylla
         internal class PreventDamageFromSomeExplosions
         {
-            [HarmonyPatch(typeof(DieAbility), "SpawnDeathEffect")]
+            [HarmonyPatch(typeof(DieAbility), "SpawnDeathEffect")] //VERIFIED
             internal static class TFTV_DieAbility_SpawnDeathEffect_patch
             {
 
@@ -1260,7 +1260,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(ApplyDamageEffectAbility), "GetCharactersToIgnore")]
+            [HarmonyPatch(typeof(ApplyDamageEffectAbility), "GetCharactersToIgnore")] //VERIFIED
             public static class ApplyDamageEffectAbility_Activate_Scylla_Caterpillar_patch
             {
                 public static void Postfix(ApplyDamageEffectAbility __instance, ref IEnumerable<TacticalActorBase> __result)
@@ -1304,7 +1304,7 @@ namespace TFTV
         internal class TargetCulling
         {
             
-            [HarmonyPatch(typeof(AIClosestEnemyConsideration), "Evaluate")]
+            [HarmonyPatch(typeof(AIClosestEnemyConsideration), nameof(AIClosestEnemyConsideration.Evaluate))]
             public static class AIClosestEnemyConsideration_Evaluate_patch
             {
 
@@ -1445,7 +1445,7 @@ namespace TFTV
                     }
                 }
 
-                [HarmonyPatch(typeof(AIVisibleEnemiesConsideration), "Evaluate")]
+                [HarmonyPatch(typeof(AIVisibleEnemiesConsideration), nameof(AIVisibleEnemiesConsideration.Evaluate))]
                 public static class AIVisibleEnemiesConsideration_Evaluate_patch
                 {
                     public static bool Prefix(AIVisibleEnemiesConsideration __instance, IAIActor actor, IAITarget target, object context, ref float __result)
@@ -1508,7 +1508,7 @@ namespace TFTV
             internal class Healing
             {
 
-                [HarmonyPatch(typeof(AIHealPositionConsideration), "Evaluate")]
+                [HarmonyPatch(typeof(AIHealPositionConsideration), nameof(AIHealPositionConsideration.Evaluate))]
                 public static class AIHealPositionConsideration_Evaluate_patch
                 {
                     private static bool CheckActorSuitability(TacticalActor targetActor, TacticalActor actor)
@@ -1607,7 +1607,7 @@ namespace TFTV
             internal class MindControl
             {
 
-                [HarmonyPatch(typeof(AIMindControlPickAvailableTargetConsideration), "Evaluate")]
+                [HarmonyPatch(typeof(AIMindControlPickAvailableTargetConsideration), nameof(AIMindControlPickAvailableTargetConsideration.Evaluate))]
                 public static class AIMindControlPickAvailableTargetConsideration_Evaluate_patch
                 {
 
@@ -1844,7 +1844,7 @@ namespace TFTV
 
 
                 //Patch to prevent Scylla from MELEE targeting tiny critters like worms and spider drones
-                [HarmonyPatch(typeof(TacticalAbility), "GetTargetActors", new Type[] { typeof(TacticalTargetData), typeof(TacticalActorBase), typeof(Vector3) })]
+                [HarmonyPatch(typeof(TacticalAbility), nameof(TacticalAbility.GetTargetActors), new Type[] { typeof(TacticalTargetData), typeof(TacticalActorBase), typeof(Vector3) })]
                 public static class TFTV_TacticalAbility_GetTargetActors_Scylla_Patch
                 {
                     public static IEnumerable<TacticalAbilityTarget> Postfix(IEnumerable<TacticalAbilityTarget> results, TacticalActorBase sourceActor, TacticalAbility __instance)
@@ -1981,7 +1981,7 @@ namespace TFTV
                 /// <summary>
                 /// Codemite's solution to Acheron targetting issues. All hail Codemite!
                 /// </summary>
-                [HarmonyPatch(typeof(Weapon), "GetShootTargets")]
+                [HarmonyPatch(typeof(Weapon), nameof(Weapon.GetShootTargets))]
                 public static class TFTV_Weapon_GetShootTargets2_Patch
                 {
                     public static IEnumerable<TacticalAbilityTarget> Postfix(IEnumerable<TacticalAbilityTarget> results, Weapon __instance, TacticalTargetData ____originData,

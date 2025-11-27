@@ -1,5 +1,6 @@
 ﻿using Base;
 using Base.Core;
+using Base.Defs;
 using Base.Entities;
 using Base.Entities.Abilities;
 using Base.Entities.Effects;
@@ -52,7 +53,7 @@ namespace TFTV
 
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
-        //private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefRepository Repo = TFTVMain.Repo;
 
         private static DamageMultiplierStatusDef _addAutoRepairStatus = null;
 
@@ -843,8 +844,10 @@ namespace TFTV
             {
                 try
                 {
+                    GeoResearchEventFilterDef geoResearchEventFilterDef = (GeoResearchEventFilterDef)Repo.GetDef("83f708cc-2f34-d672-86e8-3a12958a7b42");
+                    geoResearchEventFilterDef.ResearchID = "ExoticMaterialsResearch";
 
-                    DefCache.GetDef<GeoResearchEventFilterDef>("E_PROG_LE1_ResearchCompleted [GeoResearchEventFilterDef]").ResearchID = "ExoticMaterialsResearch";
+                   // DefCache.GetDef<GeoResearchEventFilterDef>("E_PROG_LE1_ResearchCompleted [GeoResearchEventFilterDef]").ResearchID = "ExoticMaterialsResearch";
 
                 }
 
@@ -1393,8 +1396,8 @@ namespace TFTV
                         throw;
                     }
                 }
-
-                [HarmonyPatch(typeof(MassShootTargetActorEffect), "OnApply")]
+                 
+                [HarmonyPatch(typeof(MassShootTargetActorEffect), "OnApply")] //VERIFIED
 
                 public static class MassShootTargetActorEffect_OnApply_GuardiansCrossBeams_Patch
                 {
@@ -1506,7 +1509,7 @@ namespace TFTV
 
                 public static Dictionary<TacticalActor, float> HopliteAPMassShoot = new Dictionary<TacticalActor, float>();
 
-                [HarmonyPatch(typeof(MassShootTargetActorEffect), "FaceAndShootAtTarget")]
+                [HarmonyPatch(typeof(MassShootTargetActorEffect), "FaceAndShootAtTarget")] //VERIFIED
 
                 public static class MassShootTargetActorEffect_FaceAndShootAtTarget_GuardiansCrossBeams_Patch
                 {

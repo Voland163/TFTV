@@ -443,6 +443,7 @@ namespace TFTV
                 RegisterSuppressionEvent(actor, weapon, 1f);
             }
 
+
             [HarmonyPatch]
             private static class Patches
             {
@@ -466,7 +467,7 @@ namespace TFTV
                     }
                 }
 
-                [HarmonyPatch(typeof(TacticalActor), "ApplyDamageInternal")]
+                [HarmonyPatch(typeof(TacticalActor), "ApplyDamageInternal")] //VERIFIED
                 private static class TacticalActor_ApplyDamageInternal_Patch
                 {
                     private static void Postfix(TacticalActor __instance, DamageResult damageResult)
@@ -476,7 +477,7 @@ namespace TFTV
                     }
                 }
 
-                [HarmonyPatch(typeof(ProjectileLogic), "AffectTarget")]
+                [HarmonyPatch(typeof(ProjectileLogic), "AffectTarget")] //VERIFIED
                 private static class ProjectileLogic_AffectTarget_Patch
                 {
                     private static void Postfix(ProjectileLogic __instance, CastHit hit)

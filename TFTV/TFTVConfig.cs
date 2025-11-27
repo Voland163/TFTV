@@ -125,7 +125,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(ModSettingController), "ApplyModification")]
+        [HarmonyPatch(typeof(ModSettingController), nameof(ModSettingController.ApplyModification))]
         public static class ModSettingController_ApplyModification_Patch
         {
             private static void Postfix(ModSettingController __instance)
@@ -183,7 +183,7 @@ namespace TFTV
             }
         }
 
-       [HarmonyPatch(typeof(ModSettingController), "Init")]
+       [HarmonyPatch(typeof(ModSettingController), nameof(ModSettingController.Init))]
         public static class ModSettingController_Init_Patch
         {
             private static void Postfix(ModSettingController __instance, string label, Type type)

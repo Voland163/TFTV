@@ -523,10 +523,19 @@ namespace TFTV
         {
             try
             {
-                DefCache.GetDef<WeaponDef>("Crabman_RightHand_Viral_EliteGun_WeaponDef").Tags.Add(DefCache.GetDef<ItemTypeTagDef>("ViralBodypart_TagDef"));
-                DefCache.GetDef<WeaponDef>("Crabman_RightHand_Viral_Gun_WeaponDef").Tags.Add(DefCache.GetDef<ItemTypeTagDef>("ViralBodypart_TagDef"));
+                WeaponDef crabmanViralEliteGun = DefCache.GetDef<WeaponDef>("Crabman_RightHand_Viral_EliteGun_WeaponDef");
 
+                if (!crabmanViralEliteGun.Tags.Contains(DefCache.GetDef<ItemTypeTagDef>("ViralBodypart_TagDef")))
+                {
+                    crabmanViralEliteGun.Tags.Add(DefCache.GetDef<ItemTypeTagDef>("ViralBodypart_TagDef"));
+                }
 
+                WeaponDef crabmanViralGun = DefCache.GetDef<WeaponDef>("Crabman_RightHand_Viral_Gun_WeaponDef");
+
+                if(!crabmanViralGun.Tags.Contains(DefCache.GetDef<ItemTypeTagDef>("ViralBodypart_TagDef")))
+                {
+                    crabmanViralGun.Tags.Add(DefCache.GetDef<ItemTypeTagDef>("ViralBodypart_TagDef"));
+                }
             }
             catch (Exception e)
             {
@@ -6828,8 +6837,8 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 AcidStatusDef acidStatus = DefCache.GetDef<AcidStatusDef>("Acid_StatusDef");
                 deliriumSprayConsideration.DamageTypeStatusDef = acidStatus;
 
-                //Removes exclusions to metallic and ancients targets
-                HasTagSuitabilityDef deliriumSprayExcludedTags = DefCache.GetDef<HasTagSuitabilityDef>("E_TargetSuitability [Acheron_CorruptionTagsTargetsSuitability_AIConsiderationDef]");
+                //Removes exclusions to metallic and ancients targets E_TargetSuitability [Acheron_CorruptionTagsTargetSuitability_AIConsiderationDef]
+                HasTagSuitabilityDef deliriumSprayExcludedTags = (HasTagSuitabilityDef)Repo.GetDef("b6864084-b9cf-2bed-8c09-16910de6c13c"); // DefCache.GetDef<HasTagSuitabilityDef>("E_TargetSuitability [Acheron_CorruptionTagsTargetsSuitability_AIConsiderationDef]");
                 List<GameTagDef> deliriumSprayCheckTargetsByTag = deliriumSprayExcludedTags.GameTagDefs.ToList();
                 deliriumSprayCheckTargetsByTag.Add(DefCache.GetDef<SubstanceTypeTagDef>("Organic_SubstanceTypeTagDef"));
                 deliriumSprayExcludedTags.GameTagDefs = deliriumSprayCheckTargetsByTag.ToArray();

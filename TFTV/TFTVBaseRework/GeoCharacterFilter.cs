@@ -119,7 +119,7 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
-        [HarmonyPatch(typeof(UIStateGeoRoster), "FilterCharacters")]
+        [HarmonyPatch(typeof(UIStateGeoRoster), "FilterCharacters")] //VERIFIED
         internal static class UIStateGeoRoster_FilterCharacters_Patch
         {
             private static readonly AccessTools.FieldRef<UIStateGeoRoster, List<GeoCharacter>> CharactersField = AccessTools.FieldRefAccess<UIStateGeoRoster, List<GeoCharacter>>("_characters");
@@ -166,7 +166,7 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
-        [HarmonyPatch(typeof(GeoMission), "GetDefaultDeploymentSetup", new Type[] { typeof(IEnumerable<GeoCharacter>) })]
+        [HarmonyPatch(typeof(GeoMission), nameof(GeoMission.GetDefaultDeploymentSetup), new Type[] { typeof(IEnumerable<GeoCharacter>) })]
         internal static class GeoMission_GetDefaultDeploymentSetup_FromEnumerable_Patch
         {
             private static void Postfix(ref IEnumerable<GeoCharacter> __result)
@@ -175,7 +175,7 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
-        [HarmonyPatch(typeof(GeoMission), "GetDefaultDeploymentSetup", new Type[] { typeof(GeoFaction), typeof(IGeoCharacterContainer) })]
+        [HarmonyPatch(typeof(GeoMission), nameof(GeoMission.GetDefaultDeploymentSetup), new Type[] { typeof(GeoFaction), typeof(IGeoCharacterContainer) })]
         internal static class GeoMission_GetDefaultDeploymentSetup_FromFaction_Patch
         {
             private static void Postfix(ref IEnumerable<GeoCharacter> __result)

@@ -45,7 +45,7 @@ namespace TFTV.TFTVDrills
 
         internal class Mutoids
         {
-            [HarmonyPatch(typeof(GeoLevelController), "CreateCharacterFromDescriptor")]
+            [HarmonyPatch(typeof(GeoLevelController), nameof(GeoLevelController.CreateCharacterFromDescriptor))]
             internal static class GeoLevelController_CreateCharacterFromDescriptor_Patch
             {
                 private static void Postfix(GeoLevelController __instance, GeoCharacter __result)
@@ -71,7 +71,7 @@ namespace TFTV.TFTVDrills
 
         internal static class ShockDrop
         {
-            [HarmonyPatch(typeof(AbilitySummaryData), "ProcessDamageTypeFlowPayload")]
+            [HarmonyPatch(typeof(AbilitySummaryData), "ProcessDamageTypeFlowPayload")] //VERIFIED
             public static class AbilitySummaryData_ProcessDamageTypeFlowPayload_Patch
             {
                 // Prefix replicates original implementation and prevents original from running.
@@ -508,7 +508,7 @@ namespace TFTV.TFTVDrills
             private static readonly GameTagDef AssaultRifleTag = DefCache.GetDef<GameTagDef>("AssaultRifleItem_TagDef");
 
 
-            [HarmonyPatch(typeof(TacticalActor), "ShouldChangeAspectStats")]
+            [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.ShouldChangeAspectStats))]
             public static class TacticalActor_ShouldChangeAspectStats_BulletHell_Patch
             {
                 public static void Postfix(TacticalActor __instance, TacticalItemAspectBase aspect)
@@ -659,7 +659,7 @@ namespace TFTV.TFTVDrills
             [HarmonyPatch(typeof(ReloadAbility))]
             internal static class ReloadAbilityPatches
             {
-                [HarmonyPatch("GetDisabledStateInternal")]
+                [HarmonyPatch("GetDisabledStateInternal")] //VERIFIED
                 [HarmonyPostfix]
                 private static void BlockReloadingWhenLocked(ReloadAbility __instance, ref AbilityDisabledState __result)
                 {
@@ -899,7 +899,7 @@ namespace TFTV.TFTVDrills
         {
 
             //Allow activation even with insufficient AP (when our status says OK)
-            [HarmonyPatch(typeof(TacticalAbility), "get_ActionPointRequirementSatisfied")]
+            [HarmonyPatch(typeof(TacticalAbility), "get_ActionPointRequirementSatisfied")] //VERIFIED
             static class TacticalAbility_CanActivate_Desperate_Patch
             {
 
@@ -984,7 +984,9 @@ namespace TFTV.TFTVDrills
 
         }
 
-        internal class MarkedWatch
+
+        //LOOKING FOR NULL
+       /* internal class MarkedWatch
         {
             [HarmonyPatch]
             internal static class MarkedWatchOverwatchAccuracyPatch
@@ -1196,7 +1198,7 @@ namespace TFTV.TFTVDrills
                     }
                 }
             }
-        }
+        }*/
         internal class DrawFire
         {
             private const float Multiplier = 100f;
@@ -1388,7 +1390,7 @@ namespace TFTV.TFTVDrills
             private const string PhoenixCommandName = "px";
 
 
-            [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")]
+            [HarmonyPatch(typeof(TacticalLevelController), "ActorEnteredPlay")] //VERIFIED
             private static class TacticalLevelController_ActorEnteredPlay_PounceProtocolPatch
             {
                 public static void Postfix(TacticalLevelController __instance)
@@ -1410,7 +1412,7 @@ namespace TFTV.TFTVDrills
                 }
             }
 
-            [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")]
+            [HarmonyPatch(typeof(TacticalLevelController), "ActorDied")] //VERIFIED
             private static class TacticalLevelController_ActorDied_PounceProtocolPatch
             {
                 public static void Postfix(TacticalLevelController __instance)
@@ -1510,7 +1512,7 @@ namespace TFTV.TFTVDrills
         {
 
 
-            [HarmonyPatch(typeof(TacticalAbility), "TargetFilterPredicate")]
+            [HarmonyPatch(typeof(TacticalAbility), "TargetFilterPredicate")] //VERIFIED
             internal static class TacticalAbility_TargetFilterPredicate_Postfix
             {
                 static void Postfix(
@@ -1725,7 +1727,7 @@ namespace TFTV.TFTVDrills
             }
 
 
-            [HarmonyPatch(typeof(DeployShieldAbility), "Activate")]
+            [HarmonyPatch(typeof(DeployShieldAbility), nameof(DeployShieldAbility.Activate))]
             public static class Patch_DeployShieldAbility_Activate
             {
                 public static void Postfix(DeployShieldAbility __instance)
@@ -1779,7 +1781,7 @@ namespace TFTV.TFTVDrills
                 }
             }
 
-            [HarmonyPatch(typeof(EquipmentComponent), "SetSelectedEquipment")]
+            [HarmonyPatch(typeof(EquipmentComponent), nameof(EquipmentComponent.SetSelectedEquipment))]
             public static class EquipmentComponent_SetSelectedEquipment_Patch
             {
                 static bool IsRiotShield(Equipment equipment) =>

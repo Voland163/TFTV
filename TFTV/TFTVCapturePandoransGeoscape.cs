@@ -194,7 +194,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(UIAnimatedResourceController), "RefreshResourceText")]
+        [HarmonyPatch(typeof(UIAnimatedResourceController), nameof(UIAnimatedResourceController.RefreshResourceText))]
         public static class UIAnimatedResourceController_RefreshResourceText_CapturePandorans_Patch
         {
 
@@ -249,7 +249,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(UIStateRosterAliens), "EnterState")]
+        [HarmonyPatch(typeof(UIStateRosterAliens), "EnterState")] //VERIFIED
         public static class UIStateRosterAliens_UpdateResourceInfo_CapturePandorans_Patch
         {
 
@@ -411,7 +411,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(GeoPhoenixFaction), "FinishHarvestingUnit")]
+        [HarmonyPatch(typeof(GeoPhoenixFaction), "FinishHarvestingUnit")] //VERIFIED
         public static class GeoPhoenixFaction_FinishHarvestingUnit_CapturePandorans_Patch
         {
 

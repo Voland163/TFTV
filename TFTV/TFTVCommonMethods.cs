@@ -302,7 +302,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(UIModulePauseScreen), "ShowModule")]
+        [HarmonyPatch(typeof(UIModulePauseScreen), "ShowModule")] //VERIFIED
         public static class TFTV_UIModulePauseScreen_ShowModule_patch
         {
             public static void Postfix(UIModulePauseScreen __instance)
@@ -329,7 +329,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(UIModulePauseScreen), "OnRestartConfirmed")]
+        [HarmonyPatch(typeof(UIModulePauseScreen), "OnRestartConfirmed")] //VERIFIED
         public static class TFTV_UIModulePauseScreen_OnRestartConfirmed_RestartMission_patch
         {
             public static void Postfix(MessageBoxCallbackResult res)
@@ -351,7 +351,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(PhoenixSaveManager), "LoadGame")]
+        [HarmonyPatch(typeof(PhoenixSaveManager), nameof(PhoenixSaveManager.LoadGame))]
         public static class BG_PhoenixSaveManager_ClearInternalData_patch
         {
             public static void Prefix()
@@ -409,7 +409,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(GeoFaction), "AddTag")]
+        [HarmonyPatch(typeof(GeoFaction), nameof(GeoFaction.AddTag))]
         public static class GeoPhoenix_AddTag_FavorForAFriend_Patch
         {
 

@@ -11,10 +11,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TFTV.TFTVBaseRework
+/*namespace TFTV.TFTVBaseRework
 {
     internal class LivingQuarters
     {
+        //LOOKING FOR NULL
+
         [HarmonyPatch]
         internal static class LivingQuartersReworkPatches
         {
@@ -158,4 +160,4 @@ namespace TFTV.TFTVBaseRework
             }
         }
     }
-}
+}*/

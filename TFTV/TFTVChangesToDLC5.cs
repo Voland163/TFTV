@@ -58,7 +58,7 @@ namespace TFTV
         /// Allows to buy in Marketplace without an aircraft at the site.
         /// </summary>
 
-        [HarmonyPatch(typeof(MarketplaceAbility), "GetTargetDisabledStateInternal")]
+        [HarmonyPatch(typeof(MarketplaceAbility), "GetTargetDisabledStateInternal")] //VERIFIED
         public static class MarketplaceAbility_GetTargetDisabledStateInternal_patch
         {
 
@@ -81,7 +81,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruit")]
+        [HarmonyPatch(typeof(GeoPhoenixFaction), nameof(GeoPhoenixFaction.AddRecruit))]
         public static class GeoPhoenixFaction_AddRecruit_patch
         {
             public static bool Prefix(GeoPhoenixFaction __instance, GeoCharacter recruit, IGeoCharacterContainer toContainer, IGeoCharacterContainer __result)
@@ -120,11 +120,7 @@ namespace TFTV
                     throw;
                 }
             }
-        }
-
-        [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruit")]
-        public static class GeoPhoenixFaction_AddRecruit_StatsFinalize_postfix
-        {
+        
             public static void Postfix(GeoPhoenixFaction __instance, GeoCharacter recruit, IGeoCharacterContainer toContainer)
             {
                 try
@@ -162,7 +158,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(UIStateEditSoldier), "OnSelectSecondaryClass")]
+        [HarmonyPatch(typeof(UIStateEditSoldier), "OnSelectSecondaryClass")] //VERIFIED
         public static class UIStateEditSoldier_OnSelectSecondaryClass_patch
         {
             static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
@@ -211,7 +207,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(UIStateEditSoldier), "InitFilters")]
+        [HarmonyPatch(typeof(UIStateEditSoldier), "InitFilters")] //VERIFIED
         public static class UIStateEditSoldier_InitFilters_patch
         {
             public static bool Prefix(UIStateEditSoldier __instance, GeoCharacter ____initCharacter)
@@ -1020,7 +1016,7 @@ namespace TFTV
             internal class GeoRecruitment
             {
 
-                [HarmonyPatch(typeof(GeoUnitDescriptor), "FinishInitCharacter")]
+                [HarmonyPatch(typeof(GeoUnitDescriptor), "FinishInitCharacter")] //VERIFIED
                 public static class GeoUnitDescriptor_FinishInitCharacter_patch
                 {
 
@@ -1382,7 +1378,7 @@ namespace TFTV
 
                 }
 
-                [HarmonyPatch(typeof(GeoMission), "ApplyMissionResults")]
+                [HarmonyPatch(typeof(GeoMission), "ApplyMissionResults")] //VERIFIED
                 public static class GeoMission_ApplyMissionResults_patch
                 {
                     public static void Prefix()
@@ -1481,7 +1477,7 @@ namespace TFTV
             internal static Dictionary<GeoMarketplaceItemOptionDef, GeoMarketplaceItemOptionDef> _kGWeaponsAndAmmo = new Dictionary<GeoMarketplaceItemOptionDef, GeoMarketplaceItemOptionDef>();
             internal static GameTagDef _kGTag;
 
-            [HarmonyPatch(typeof(GeoMission), "AddCratesToMissionData")]
+            [HarmonyPatch(typeof(GeoMission), "AddCratesToMissionData")] //VERIFIED
             public static class GeoMission_AddCratesToMissionData_patch
             {
 
@@ -1530,7 +1526,7 @@ namespace TFTV
 
             }
 
-            [HarmonyPatch(typeof(GeoLevelController), "GetAvailableFactionEquipment")]
+            [HarmonyPatch(typeof(GeoLevelController), nameof(GeoLevelController.GetAvailableFactionEquipment))]
             public static class GeoLevelController_GetAvailableFactionEquipment_patch
             {
 
@@ -1755,7 +1751,7 @@ namespace TFTV
             /// Can't hire mercenaries if Living Quarters are full and can't buy tech that has already been researched
             /// </summary>
 
-            [HarmonyPatch(typeof(GeoEventChoice), "PassRequirements")]
+            [HarmonyPatch(typeof(GeoEventChoice), nameof(GeoEventChoice.PassRequirements))]
             public static class GeoEventChoice_PassRequirements_patch
             {
                 public static void Postfix(GeoEventChoice __instance, GeoFaction faction, ref bool __result)
@@ -1926,7 +1922,7 @@ namespace TFTV
             /// </summary>
 
 
-            [HarmonyPatch(typeof(GeoMarketplace), "UpdateOptionsWithRespectToTime")]
+            [HarmonyPatch(typeof(GeoMarketplace), "UpdateOptionsWithRespectToTime")] //VERIFIED
             public static class GeoMarketplace_UpdateOptionsWithRespectToTime_patch
             {
                 public static bool Prefix(ref TimeUnit ____updateOptionsNextTime, GeoLevelController ____level, GeoMarketplace __instance)
@@ -1977,7 +1973,7 @@ namespace TFTV
             /// 
             /// </summary>
 
-            [HarmonyPatch(typeof(GeoMarketplace), "UpdateOptions", new Type[] { typeof(Timing) })]
+            [HarmonyPatch(typeof(GeoMarketplace), nameof(GeoMarketplace.UpdateOptions), new Type[] { typeof(Timing) })]
             public static class GeoMarketplace_UpdateOptionsTiming_patch
             {
                 public static bool Prefix(ref TimeUnit ____updateOptionsNextTime, GeoLevelController ____level, Timing timing, GeoMarketplace __instance, TheMarketplaceSettingsDef ____settings)
@@ -2028,7 +2024,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(GeoMarketplace), "UpdateOptions", new Type[] { })]
+            [HarmonyPatch(typeof(GeoMarketplace), nameof(GeoMarketplace.UpdateOptions), new Type[] { })]
 
             public static class GeoMarketplace_UpdateOptions_MarketPlace_patch
             {
@@ -2371,7 +2367,7 @@ namespace TFTV
 
             private static List<ResearchDef> _researchesAlreadyRolled = new List<ResearchDef>();
 
-            [HarmonyPatch(typeof(GeoMarketplaceResearchOptionDef), "GetRandomResearch")]
+            [HarmonyPatch(typeof(GeoMarketplaceResearchOptionDef), "GetRandomResearch")] //VERIFIED
             public static class GeoMarketplaceResearchOptionDef_GetRandomResearch_MarketPlace_patch
             {
                 public static bool Prefix(ref ResearchDef __result)
@@ -2452,7 +2448,7 @@ namespace TFTV
 
             }
 
-            [HarmonyPatch(typeof(GeoMarketplace), "AfterMissionComplete")]
+            [HarmonyPatch(typeof(GeoMarketplace), nameof(GeoMarketplace.AfterMissionComplete))]
             public static class GeoMarketplace_AfterMissionComplete_patch
             {
                 public static bool Prefix()
@@ -2539,7 +2535,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(UIModuleTheMarketplace), "SetupChoiceInfoBlock")]
+            [HarmonyPatch(typeof(UIModuleTheMarketplace), nameof(UIModuleTheMarketplace.SetupChoiceInfoBlock))]
             public static class UIModuleTheMarketplace_SetupChoiceInfoBlock_patch
             {
                 public static void Postfix(UIModuleTheMarketplace __instance, GeoEventChoice choice)
@@ -2558,7 +2554,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(UIModuleTheMarketplace), "UpdateVisuals")]
+            [HarmonyPatch(typeof(UIModuleTheMarketplace), nameof(UIModuleTheMarketplace.UpdateVisuals))]
             public static class UIModuleTheMarketplace_UpdateVisuals_patch
             {
                 public static void Postfix(UIModuleTheMarketplace __instance)
@@ -2602,7 +2598,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(UIModuleTheMarketplace), "OnChoiceSelected")]
+            [HarmonyPatch(typeof(UIModuleTheMarketplace), "OnChoiceSelected")] //VERIFIED
             public static class UIModuleTheMarketplace_OnChoiceSelected_patch
             {
 
@@ -2633,7 +2629,7 @@ namespace TFTV
             /// Internal stock record keeping
             /// Fixes money spent no purchase made at Marketplace if 2 or more aircraft at Marketplace
             /// </summary>
-            [HarmonyPatch(typeof(GeoscapeEvent), "CompleteMarketplaceEvent")]
+            [HarmonyPatch(typeof(GeoscapeEvent), nameof(GeoscapeEvent.CompleteMarketplaceEvent))]
             public static class GeoscapeEvent_CompleteMarketplaceEvent_patch
             {
 
@@ -2719,7 +2715,7 @@ namespace TFTV
              }*/
 
 
-            [HarmonyPatch(typeof(UIStateMarketplaceGeoscapeEvent), "ExitState")]
+            [HarmonyPatch(typeof(UIStateMarketplaceGeoscapeEvent), "ExitState")] //VERIFIED
             public static class UIStateMarketplaceGeoscapeEvent_ExitState_patch
             {
 
@@ -3212,7 +3208,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(GeoMarketplace), "OnSiteVisited")]
+        [HarmonyPatch(typeof(GeoMarketplace), "OnSiteVisited")] //VERIFIED
         public static class GeoMarketplace_OnSiteVisited_MarketPlace_patch
         {
             public static void Prefix(GeoMarketplace __instance, GeoLevelController ____level, TheMarketplaceSettingsDef ____settings)

@@ -199,7 +199,7 @@ namespace PRMBetterClasses.VariousAdjustments
         // Make Trembling status accessible for Harmony patches to avoid time critical Repo calls in them.
         public static StatMultiplierStatusDef trembling = DefCache.GetDef<StatMultiplierStatusDef>("Trembling_StatusDef");
         // Harmony patch for Poison DOT to additionally apply -50% accuracy (Trembling status) and -3 WP per turn
-        [HarmonyPatch(typeof(DamageOverTimeStatus), "ApplyEffect")]
+        [HarmonyPatch(typeof(DamageOverTimeStatus), nameof(DamageOverTimeStatus.ApplyEffect))]
         internal static class BC_DamageOverTimeStatus_ApplyEffect_Patch
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
@@ -231,7 +231,7 @@ namespace PRMBetterClasses.VariousAdjustments
             }
         }
         // Harmony patch to unapply trembling when poison status is unapplied
-        [HarmonyPatch(typeof(TacEffectStatus), "OnUnapply")]
+        [HarmonyPatch(typeof(TacEffectStatus), nameof(TacEffectStatus.OnUnapply))]
         internal static class BC_TacEffectStatus_OnUnapply_Patch
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
@@ -683,7 +683,7 @@ namespace PRMBetterClasses.VariousAdjustments
     /// If one group has more than 8 members in any row than the UI bugs out and does not show the button plus the flash does colorize another button orange.
     /// This patch sets the AbilitiesListMaxElements equal to AbilitiesBarMaxElements so there are defenitely enough elements in the precreated UI element to not bug out.
     /// </summary>
-    [HarmonyPatch(typeof(UIModuleAbilities), "Awake")]
+    [HarmonyPatch(typeof(UIModuleAbilities), nameof(UIModuleAbilities.Awake))]
     internal static class UIModuleAbilities_Awake_Patch
     {
         public static void Prefix(UIModuleAbilities __instance)

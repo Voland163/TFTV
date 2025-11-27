@@ -44,7 +44,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(TacTimeScaleRegulator), "UpdateCurrentTimeScale")]
+        [HarmonyPatch(typeof(TacTimeScaleRegulator), "UpdateCurrentTimeScale")] //VERIFIED
         public static class TacTimeScaleRegulator_UpdateCurrentTimeScale_patch
         {
             public static void Postfix(TacTimeScaleRegulator __instance)
@@ -71,7 +71,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(TacTimeScaleRegulator), "ApplyScaleToActor")]
+        [HarmonyPatch(typeof(TacTimeScaleRegulator), "ApplyScaleToActor")] //VERIFIED
         public static class TacTimeScaleRegulator_ApplyScaleToActor_patch
         {
             public static bool Prefix(TacTimeScaleRegulator __instance, TacticalActor tacActor)
@@ -102,7 +102,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(IdleAbility), "Activate")]
+        [HarmonyPatch(typeof(IdleAbility), nameof(IdleAbility.Activate))]
         public static class IdleAbility_Activate_patch
         {
             public static void Prefix(IdleAbility __instance)

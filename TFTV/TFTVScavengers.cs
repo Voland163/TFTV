@@ -59,7 +59,7 @@ namespace TFTV
         };
 
 
-        [HarmonyPatch(typeof(UnitTemplateResearchReward), "GiveReward")]
+        [HarmonyPatch(typeof(UnitTemplateResearchReward), nameof(UnitTemplateResearchReward.GiveReward))]
         public static class UnitTemplateResearchReward_GiveReward_patch
         {
             public static void Postfix(UnitTemplateResearchReward __instance, GeoFaction faction)

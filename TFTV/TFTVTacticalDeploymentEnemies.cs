@@ -322,7 +322,7 @@ namespace TFTV
           }*/
 
 
-        [HarmonyPatch(typeof(TacParticipantSpawn), "GetEligibleActorDeployments")]
+        [HarmonyPatch(typeof(TacParticipantSpawn), "GetEligibleActorDeployments")] //VERIFIED
         public static class TFTV_TacParticipantSpawn_GetEligibleActorDeployments
         {
             public static IEnumerable<ActorDeployData> Postfix(IEnumerable<ActorDeployData> results, TacParticipantSpawn __instance)

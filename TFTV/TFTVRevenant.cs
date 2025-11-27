@@ -1001,7 +1001,7 @@ namespace TFTV
             /// This removes the number from the armor stack for the Revenant Special Resistance
             /// </summary>
 
-            [HarmonyPatch(typeof(TacticalActorViewBase), "GetStatusesFiltered")]
+            [HarmonyPatch(typeof(TacticalActorViewBase), nameof(TacticalActorViewBase.GetStatusesFiltered))]
             public static class TacticalActorViewBase_GetStatusesFiltered_patch
             {
                 public static void Postfix(ref List<TacticalActorViewBase.StatusInfo> __result)
@@ -1030,7 +1030,7 @@ namespace TFTV
             }
 
             // Adopted from MadSkunky BetterClasses. Harmony Patch to calculate shred resistance, vanilla has no implementation for this
-            [HarmonyPatch(typeof(ShreddingDamageKeywordData), "ProcessKeywordDataInternal")]
+            [HarmonyPatch(typeof(ShreddingDamageKeywordData), "ProcessKeywordDataInternal")] //VERIFIED
             internal static class BC_ShreddingDamageKeywordData_ProcessKeywordDataInternal_ShredResistant_patch
             {
 
@@ -2370,7 +2370,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(TacticalAbility), "GetAbilityDescription")]
+            [HarmonyPatch(typeof(TacticalAbility), nameof(TacticalAbility.GetAbilityDescription))]
             public static class TacticalAbility_DisplayCategory_ChangeDescriptionRevenantSkill_patch
             {
                 public static void Postfix(TacticalAbility __instance, ref string __result)

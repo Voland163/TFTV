@@ -25,7 +25,7 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
-        [HarmonyPatch(typeof(PhoenixStatisticsManager), "ActorKilledInGeoscape")]
+        [HarmonyPatch(typeof(PhoenixStatisticsManager), "ActorKilledInGeoscape")] //VERIFIED
         internal static class PhoenixStatisticsManager_ActorKilledInGeoscape_Patch
         {
             private static readonly HashSet<CharacterDeathReason> MissionDeathReasons = new HashSet<CharacterDeathReason>
@@ -89,7 +89,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(TacticalContribution), "AddContribution")]
+        [HarmonyPatch(typeof(TacticalContribution), "AddContribution")] //VERIFIED
         public static class TFTV_TacticalContribution_AddContribution
         {
             public static void Postfix(TacticalContribution __instance, int cp, TacticalActorBase ____actor)

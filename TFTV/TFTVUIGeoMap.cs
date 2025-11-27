@@ -51,7 +51,7 @@ namespace TFTV
         {
 
 
-            [HarmonyPatch(typeof(GeoscapeLogEntryController), "SetEntry")]
+            [HarmonyPatch(typeof(GeoscapeLogEntryController), nameof(GeoscapeLogEntryController.SetEntry))]
             public static class GeoscapeLogEntryController_SetEntry_patch
             {
                 public static void Postfix(GeoscapeLogEntryController __instance, GeoscapeLogEntry logEntry)
@@ -182,7 +182,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(UIModuleCorruptionReport), "Init")]
+            [HarmonyPatch(typeof(UIModuleCorruptionReport), nameof(UIModuleCorruptionReport.Init))]
             public static class UIModuleCorruptionReport_Init_patch
             {
                 public static bool Prefix(UIModuleCorruptionReport __instance, GeoscapeViewContext context)
@@ -988,7 +988,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(UIModuleBaseLayout), "SetupBaseLayout")]
+            [HarmonyPatch(typeof(UIModuleBaseLayout), "SetupBaseLayout")] //VERIFIED
             public static class UIModuleBaseLayout_SetupBaseLayoutpatch
             {
                 public static void Postfix(UIModuleBaseLayout __instance, PhoenixFacilityController[] ____slots)
@@ -1020,7 +1020,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(PhoenixFacilityController), "InitEmptyBlock")]
+            [HarmonyPatch(typeof(PhoenixFacilityController), nameof(PhoenixFacilityController.InitEmptyBlock))]
             public static class PhoenixFacilityController_InitEmptyBlockpatch
             {
                 public static void Postfix(PhoenixFacilityController __instance)
@@ -1038,7 +1038,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(PhoenixFacilityController), "InitRockBlock")]
+            [HarmonyPatch(typeof(PhoenixFacilityController), nameof(PhoenixFacilityController.InitRockBlock))]
             public static class PhoenixFacilityController_UInitRockBlockpatch
             {
                 public static void Postfix(PhoenixFacilityController __instance)
@@ -1057,7 +1057,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(PhoenixFacilityController), "UpdatePowerState")]
+            [HarmonyPatch(typeof(PhoenixFacilityController), nameof(PhoenixFacilityController.UpdatePowerState))]
             public static class PhoenixFacilityController_UpdatePowerStatepatch
             {
                 public static void Postfix(PhoenixFacilityController __instance)
@@ -1075,7 +1075,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(PhoenixFacilityController), "RefreshFacilityState")]
+            [HarmonyPatch(typeof(PhoenixFacilityController), nameof(PhoenixFacilityController.RefreshFacilityState))]
             public static class PhoenixFacilityController_RefreshFacilityState_patch
             {
                 public static void Postfix(PhoenixFacilityController __instance)
@@ -1099,7 +1099,7 @@ namespace TFTV
         internal class TopInfoBar
         {
 
-            [HarmonyPatch(typeof(UIAnimatedResourceController), "DisplayValue")]
+            [HarmonyPatch(typeof(UIAnimatedResourceController), "DisplayValue")] //VERIFIED
             public static class UIAnimatedResourceController_DisplayValue_patch
             {
                 public static bool Prefix(UIAnimatedResourceController __instance, ref Text ____text)
@@ -1141,7 +1141,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(UIModuleInfoBar), "UpdateContainedAliensData")]
+            [HarmonyPatch(typeof(UIModuleInfoBar), "UpdateContainedAliensData")] //VERIFIED
             public static class UIModuleInfoBar_UpdateContainedAliensData_patch
             {
                 public static void Postfix(UIModuleInfoBar __instance, GeoscapeViewContext ____context, LayoutGroup ____layoutGroup)
@@ -1435,7 +1435,7 @@ namespace TFTV
 
 
             //Patch to ensure that patch above is only run once
-            [HarmonyPatch(typeof(PhoenixGame), "RunGameLevel")]
+            [HarmonyPatch(typeof(PhoenixGame), "RunGameLevel")] //VERIFIED
             public static class PhoenixGame_RunGameLevel_Patch
             {
                 public static void Prefix()
@@ -1445,7 +1445,7 @@ namespace TFTV
             }
 
             //Second patch to update Geoscape UI
-            [HarmonyPatch(typeof(UIModuleInfoBar), "UpdatePopulation")]
+            [HarmonyPatch(typeof(UIModuleInfoBar), "UpdatePopulation")] //VERIFIED
             public static class TFTV_ODI_meter_patch
             {
                 public static void Postfix(UIModuleInfoBar __instance, GeoscapeViewContext ____context, LayoutGroup ____layoutGroup)

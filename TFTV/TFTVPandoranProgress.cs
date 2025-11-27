@@ -65,10 +65,9 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(ShreddingDamageKeywordData), "ProcessKeywordDataInternal")]
+        [HarmonyPatch(typeof(ShreddingDamageKeywordData), "ProcessKeywordDataInternal")] //VERIFIED
         internal static class TFTV_ShreddingDamageKeywordData_ProcessKeywordDataInternal_ScyllaImmunity_patch
         {
-
             public static void Postfix(ref DamageAccumulation.TargetData data)
             {
                 try
@@ -99,7 +98,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(GeoAlienFaction), "UpdateFactionDaily")]
+        [HarmonyPatch(typeof(GeoAlienFaction), nameof(GeoAlienFaction.UpdateFactionDaily))]
         internal static class BC_GeoAlienFaction_UpdateFactionDaily_patch
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
@@ -160,7 +159,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(GeoAlienFaction), "ProgressEvolution")]
+        [HarmonyPatch(typeof(GeoAlienFaction), "ProgressEvolution")] //VERIFIED
         internal static class GameDifficultyLevelDef_get_evolutionProgress_patch
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
@@ -187,7 +186,7 @@ namespace TFTV
 
 
         //patch to modify what Scylla spawn
-        [HarmonyPatch(typeof(GeoAlienBase), "SpawnMonster")]
+        [HarmonyPatch(typeof(GeoAlienBase), nameof(GeoAlienBase.SpawnMonster))]
         internal static class TFTV_GeoAlienBase_SpawnMonster_patch
         {
             public static bool Prefix(GeoAlienBase __instance)

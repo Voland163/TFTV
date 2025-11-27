@@ -25,7 +25,7 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
 
-        [HarmonyPatch(typeof(UITooltip), "Init", new Type[] { typeof(string), typeof(int), typeof(float), typeof(float), typeof(float), typeof(Position), typeof(GameObject) })]
+        [HarmonyPatch(typeof(UITooltip), nameof(UITooltip.Init), new Type[] { typeof(string), typeof(int), typeof(float), typeof(float), typeof(float), typeof(Position), typeof(GameObject) })]
         public static class UITooltip_Init_patch
         {
             public static void Prefix(UITooltip __instance, string tipText, ref int maxWidth, float appearTime, float fadeInTime, float fadeOutTime, Position pos, GameObject parent,
@@ -49,7 +49,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(UIFacilityInfoPopup), "Show")]
+        [HarmonyPatch(typeof(UIFacilityInfoPopup), nameof(UIFacilityInfoPopup.Show))]
         public static class UIFacilityInfoPopup_Show_PreventBadDemolition_patch
         {
 
@@ -72,7 +72,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(UIModuleInfoBar), "Init")]
+        [HarmonyPatch(typeof(UIModuleInfoBar), nameof(UIModuleInfoBar.Init))]
         public static class TFTV_UIModuleInfoBar_Init_GeoscapeUI_Patch
         {
             public static void Prefix(UIModuleInfoBar __instance)
@@ -109,7 +109,7 @@ namespace TFTV
         /// Add an icon for *secondary* objectives of a faction without icon set (Environment, Inactive)
         /// </summary>
 
-        [HarmonyPatch(typeof(GeoObjectiveElementController), "SetObjective")]
+        [HarmonyPatch(typeof(GeoObjectiveElementController), nameof(GeoObjectiveElementController.SetObjective))]
         public static class GeoObjectiveElementController_SetObjective_Patch
         {
 
@@ -152,7 +152,7 @@ namespace TFTV
         /// Add marker for base with unpowered facilities
         /// </summary>
 
-        [HarmonyPatch(typeof(GeoSiteVisualsController), "RefreshSiteVisuals")]
+        [HarmonyPatch(typeof(GeoSiteVisualsController), "RefreshSiteVisuals")] //VERIFIED
         public static class GeoSiteVisualsController_RefreshSiteVisuals_Patch
         {
 
@@ -206,7 +206,7 @@ namespace TFTV
          
 
 
-        [HarmonyPatch(typeof(UIStateRosterDeployment), "SetUpInitialDeployment")]
+        [HarmonyPatch(typeof(UIStateRosterDeployment), "SetUpInitialDeployment")] //VERIFIED
         public static class TFTV_UIStateRosterDeployment_SetUpInitialDeployment_patch
         {
             public static void Postfix(UIStateRosterDeployment __instance, List<GeoRosterDeploymentItem> ____deploymentItems)
@@ -224,7 +224,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIStateRosterDeployment), "OnDeploySquad")]
+        [HarmonyPatch(typeof(UIStateRosterDeployment), "OnDeploySquad")] //VERIFIED
         public static class TFTV_UIStateRosterDeployment_OnDeploySquad_patch
         {
             public static void Postfix(UIStateRosterDeployment __instance, List<GeoRosterDeploymentItem> ____deploymentItems)
@@ -241,7 +241,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIInventoryList), "UpdateList")]
+        [HarmonyPatch(typeof(UIInventoryList), nameof(UIInventoryList.UpdateList))]
         public static class UIInventoryList_UpdateList_patch
         {
             public static bool Prefix(UIInventoryList __instance, TacticalActorBaseDef ____vehicle)
@@ -311,7 +311,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(UIInventoryList), "SetItems")]
+        [HarmonyPatch(typeof(UIInventoryList), nameof(UIInventoryList.SetItems))]
         public static class UIInventoryList_SetItems_patch
         {
             public static void Prefix(UIInventoryList __instance)

@@ -324,7 +324,7 @@ namespace TFTV.LaserWeapons
 
         }
 
-        [HarmonyPatch(typeof(ReloadAbility), "Reload")]
+        [HarmonyPatch(typeof(ReloadAbility), "Reload")] //VERIFIED
         private static class TacticalReloadPatch
         {
             private static bool Prefix(ReloadAbility __instance, Equipment equipment, TacticalItem ammoClip)

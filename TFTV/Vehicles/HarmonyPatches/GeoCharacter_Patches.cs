@@ -4,7 +4,7 @@ using PhoenixPoint.Geoscape.Entities;
 
 namespace TFTVVehicleRework.HarmonyPatches
 {
-    [HarmonyPatch(typeof(GeoCharacter), "CreateCharacter")]
+    [HarmonyPatch(typeof(GeoCharacter), nameof(GeoCharacter.CreateCharacter))]
     internal static class CreateCharacter_Patch
     {
         public static void Prefix(ref GeoUnitDescriptor unit)

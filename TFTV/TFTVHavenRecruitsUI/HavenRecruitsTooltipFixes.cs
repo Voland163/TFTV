@@ -30,7 +30,7 @@ namespace TFTV.TFTVHavenRecruitsUI
             return tooltip != null && ManagedTooltips.Contains(tooltip.GetInstanceID());
         }
 
-        [HarmonyPatch(typeof(UIGeoItemTooltip), "FadeInCrt")]
+        [HarmonyPatch(typeof(UIGeoItemTooltip), "FadeInCrt")] //VERIFIED
         private static class UIGeoItemTooltip_FadeInCrt_Patch
         {
             private static readonly AccessTools.FieldRef<UIGeoItemTooltip, Canvas> CanvasRef =

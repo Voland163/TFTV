@@ -14,6 +14,8 @@ using PhoenixPoint.Tactical.Entities.Weapons;
 using PRMBetterClasses;
 using System.Collections.Generic;
 using TFTVVehicleRework.Abilities;
+using TFTV;
+using Helper = PRMBetterClasses.Helper;
 
 namespace TFTVVehicleRework.Scarab
 {
@@ -106,7 +108,9 @@ namespace TFTVVehicleRework.Scarab
         private static void Apply_TaurusChanges()
         {
             //ER 17->20 and Ammunition 4->8;
-            GroundVehicleWeaponDef Taurus = (GroundVehicleWeaponDef)Repo.GetDef("d14af403-ec48-f954-48f3-7759a8fca9c2");
+            GroundVehicleWeaponDef Taurus = (GroundVehicleWeaponDef)Repo.GetDef("d14af403-ec48-f954-48f3-7759a8fca9c2"); //PX_Scarab_Taurus_GroundVehicleWeaponDef
+            TFTVLogger.Always($"Taurus null? {Taurus==null}");
+            
             Taurus.SpreadDegrees = (41f/20); //20 ER; ER = 41/Spread
             Taurus.ChargesMax = 18;
             Taurus.ManufactureTech = 30f;
@@ -114,6 +118,7 @@ namespace TFTVVehicleRework.Scarab
 
             //"PX_HeavyCannon_WeaponDef"
             WeaponDef Hell2 = (WeaponDef)Repo.GetDef("112a754d-413f-27f4-180c-b052cab71d70");
+
             Taurus.MainSwitch = Hell2.MainSwitch;
             Taurus.VisualEffects = Hell2.VisualEffects;
             Taurus.DamagePayload.ProjectileVisuals = Hell2.DamagePayload.ProjectileVisuals;
@@ -131,7 +136,7 @@ namespace TFTVVehicleRework.Scarab
             };
 
             //"PX_HelCannon_ResearchDef_ManufactureResearchRewardDef_0"
-            ManufactureResearchRewardDef HellCannonResearchReward = (ManufactureResearchRewardDef)Repo.GetDef("80d2b708-8ee3-228b-278e-acfa09815d64");
+            ManufactureResearchRewardDef HellCannonResearchReward = (ManufactureResearchRewardDef)Repo.GetDef("5aef5689-fca0-d523-a66f-91204af3f593"); //80d2b708-8ee3-228b-278e-acfa09815d64");
             HellCannonResearchReward.Items = HellCannonResearchReward.Items.AddToArray(Taurus);
         }
 
@@ -157,7 +162,7 @@ namespace TFTVVehicleRework.Scarab
             };
 
             //"PX_VirophageWeapons_ResearchDef_ManufactureResearchRewardDef_0"
-            ManufactureResearchRewardDef VirophageResearchReward = (ManufactureResearchRewardDef)Repo.GetDef("02502242-0b31-a2b3-6d1b-2e78db0465e4");
+            ManufactureResearchRewardDef VirophageResearchReward = (ManufactureResearchRewardDef)Repo.GetDef("477c5547-4e1a-47c1-686c-023df0411701");//02502242-0b31-a2b3-6d1b-2e78db0465e4");
             VirophageResearchReward.Items = VirophageResearchReward.Items.AddToArray(Scorpio);
         }
 

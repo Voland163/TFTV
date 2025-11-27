@@ -3296,7 +3296,7 @@ namespace TFTV
 
 
         //Patches to close deployment screen if no characters present
-        [HarmonyPatch(typeof(UIStateRosterDeployment), "EnterState")]
+        [HarmonyPatch(typeof(UIStateRosterDeployment), "EnterState")] //VERIFIED
         public static class TFTV_UIStateRosterDeployment_EnterState_BaseDefenseGeo_patch
         {
             public static bool Prefix(UIStateRosterDeployment __instance)
@@ -3364,7 +3364,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(GeoMission), "get_SkipDeploymentSelection")]
+        [HarmonyPatch(typeof(GeoMission), "get_SkipDeploymentSelection")] //VERIFIED
         public static class GeoMission_get_SkipDeploymentSelection_BaseDefenseProgressOne_patch
         {
             public static void Postfix(GeoMission __instance)
@@ -3406,7 +3406,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIModal), "Cancel")]
+        [HarmonyPatch(typeof(UIModal), nameof(UIModal.Cancel))]
         public static class UIModal_Cancel_BaseInfestation_patch
         {
             public static bool Prefix(UIModal __instance, DialogCallback ____handler)
@@ -3442,7 +3442,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(GeoMission), "Cancel")]
+        [HarmonyPatch(typeof(GeoMission), nameof(GeoMission.Cancel))]
         public static class GeoMission_Cancel_BaseInfestation_patch
         {
             public static bool Prefix(GeoMission __instance)
@@ -3472,7 +3472,7 @@ namespace TFTV
 
         //Patch not to remove base defense mission when it is canceled
 
-        [HarmonyPatch(typeof(GeoPhoenixBaseDefenseMission), "Cancel")]
+        [HarmonyPatch(typeof(GeoPhoenixBaseDefenseMission), nameof(GeoPhoenixBaseDefenseMission.Cancel))]
         public static class GeoPhoenixBaseDefenseMission_Cancel_Experiment_patch
         {
             public static bool Prefix(GeoPhoenixBaseDefenseMission __instance)
@@ -3508,7 +3508,7 @@ namespace TFTV
 
 
         //Patches to prevent recruiting to a base under attack
-        [HarmonyPatch(typeof(RecruitsBaseDeployElementController), "SetBaseElement")]
+        [HarmonyPatch(typeof(RecruitsBaseDeployElementController), nameof(RecruitsBaseDeployElementController.SetBaseElement))]
         public static class RecruitsBaseDeployElementController_SetBasesForDeployment_BaseDefense_patch
         {
             public static void Postfix(bool isBaseUnderAttack, RecruitsBaseDeployElementController __instance)
@@ -3534,7 +3534,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(RecruitsBaseDeployData), "get_IsOperational")]
+        [HarmonyPatch(typeof(RecruitsBaseDeployData), "get_IsOperational")] //VERIFIED
         public static class RecruitsBaseDeployData_SetBasesForDeployment_BaseDefense_patch
         {
             public static void Postfix(ref bool __result, RecruitsBaseDeployData __instance)
@@ -3563,7 +3563,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIModuleGeoAssetDeployment), "ShowDeployDialog")]
+        [HarmonyPatch(typeof(UIModuleGeoAssetDeployment), nameof(UIModuleGeoAssetDeployment.ShowDeployDialog))]
         public static class UIModuleGeoAssetDeployment_ShowDeployDialog_BaseDefense_patch
         {
 
@@ -3590,7 +3590,7 @@ namespace TFTV
 
         }
 
-        [HarmonyPatch(typeof(GeoSite), "VehicleArrived")]
+        [HarmonyPatch(typeof(GeoSite), nameof(GeoSite.VehicleArrived))]
         public static class GeoSite_VehicleArrived_patch
         {
             public static void Postfix(GeoSite __instance, GeoVehicle vehicle)
@@ -3627,7 +3627,7 @@ namespace TFTV
 
         //Patch to close mission briefings for missions not in play (the Vanilla double mission bug)
         //and also to close Deploy screen if there are no characters to deploy to mission
-        [HarmonyPatch(typeof(UIModal), "Show")]
+        [HarmonyPatch(typeof(UIModal), nameof(UIModal.Show))]
         public static class UIModal_Show_DoubleMissionVanillaFixAndBaseDefense_patch
         {
 
@@ -3705,7 +3705,7 @@ namespace TFTV
         }
 
         //Patch to create base defense mission even when no characters present at the base
-        [HarmonyPatch(typeof(GeoPhoenixBase), "get_CanCreateBaseDefense")]
+        [HarmonyPatch(typeof(GeoPhoenixBase), "get_CanCreateBaseDefense")] //VERIFIED
         public static class GeoPhoenixBase_get_CanCreateBaseDefense_Patch
         {
             public static void Postfix(GeoPhoenixBase __instance, ref bool __result)

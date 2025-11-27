@@ -69,7 +69,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(TacticalActor), "Die")]
+        [HarmonyPatch(typeof(TacticalActor), "Die")] //VERIFIED
         public static class TacticalActor_Die_patch
         {
             public static bool Prefix(TacticalActor __instance)
@@ -93,7 +93,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(ProjectileLogic), "OnProjectileHit")]
+        [HarmonyPatch(typeof(ProjectileLogic), "OnProjectileHit")] //VERIFIED
         public static class ProjectileLogic_OnProjectileHit_Umbra_Patch
         {
             private static readonly MethodInfo AffectTargetMethod =
@@ -240,7 +240,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(DieAbility), "Activate")]
+        [HarmonyPatch(typeof(DieAbility), nameof(DieAbility.Activate))]
         public static class DieAbility_Activate_Decoy_Patch
         {
             public static bool Prefix(DieAbility __instance)

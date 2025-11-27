@@ -24,6 +24,7 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
+using PhoenixPoint.Tactical.UI;
 using PhoenixPoint.Tactical.View;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewModules;
@@ -760,7 +761,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(UIModuleBattleSummary), "Initialize")]
+            [HarmonyPatch(typeof(UIModuleBattleSummary), nameof(UIModuleBattleSummary.Initialize))]
             public static class UIModuleBattleSummary_Initialize_patch
             {
                 public static void Prefix(UIModuleBattleSummary __instance)
@@ -792,7 +793,7 @@ namespace TFTV
 
 
 
-            [HarmonyPatch(typeof(ObjectiveElement), "SetObjective", new Type[] { typeof(FactionObjective) })]
+            [HarmonyPatch(typeof(ObjectiveElement), nameof(ObjectiveElement.SetObjective), new Type[] { typeof(FactionObjective) })]
             public static class ObjectiveElement_SetObjective_patch
             {
 
@@ -826,7 +827,7 @@ namespace TFTV
 
 
             //Adjusted for all haven defenses because parapsychosis bug. Check if necessary for other WipeEnemyFactionObjective missions
-            [HarmonyPatch(typeof(WipeEnemyFactionObjective), "EvaluateObjective")]
+            [HarmonyPatch(typeof(WipeEnemyFactionObjective), "EvaluateObjective")] //VERIFIED
             public static class TFTV_HavenDefendersHostileFactionObjective_EvaluateObjective_Patch
             {
                 public static bool Prefix(FactionObjective __instance, ref FactionObjectiveState __result,
@@ -2448,7 +2449,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(ActorHasStatusFactionObjective), "GetTargets")]
+            [HarmonyPatch(typeof(ActorHasStatusFactionObjective), "GetTargets")] //VERIFIED
             public static class ActorHasStatusFactionObjective_GetTargets_Patch
             {
                 public static bool Prefix(ActorHasStatusFactionObjective __instance, GameTagDef ____targetsGameTag, ref IEnumerable<TacticalActorBase> __result)
@@ -2670,7 +2671,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(ActorHasStatusFactionObjective), "EvaluateObjective")]
+            [HarmonyPatch(typeof(ActorHasStatusFactionObjective), "EvaluateObjective")] //VERIFIED
             public static class ActorHasStatusFactionObjective_EvaluateObjective_Patch
             {
                 public static void Postfix(ActorHasStatusFactionObjective __instance, ref FactionObjectiveState __result)
@@ -2698,7 +2699,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(FactionObjective), "Evaluate")]
+            [HarmonyPatch(typeof(FactionObjective), nameof(FactionObjective.Evaluate))]
             public static class FactionObjective_Evaluate_Patch
             {
                 public static bool Prefix(FactionObjective __instance, out FactionObjectiveState __state)
@@ -3021,7 +3022,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(UIModuleObjectives), "Init")]
+            [HarmonyPatch(typeof(UIModuleObjectives), nameof(UIModuleObjectives.Init))]
             public static class UIModuleObjectives_Init_Patch
             {
                 public static void Prefix(UIModuleObjectives __instance, TacticalViewContext Context)
@@ -3807,7 +3808,7 @@ namespace TFTV
 
 
 
-            [HarmonyPatch(typeof(HealthbarUIActorElement), "InitHealthbar")]
+            [HarmonyPatch(typeof(HealthbarUIActorElement), "InitHealthbar")] //VERIFIED
             public static class HealthbarUIActorElement_InitHealthbar_patch
             {
                 public static void Postfix(HealthbarUIActorElement __instance, TacticalActorBase ____tacActorBase)
@@ -6109,7 +6110,7 @@ namespace TFTV
         {
 
             //Patch to show correct damage prediction with mutations and Delirium 
-            [HarmonyPatch(typeof(PhoenixPoint.Tactical.UI.Utils), "GetDamageKeywordValue")]
+            [HarmonyPatch(typeof(PhoenixPoint.Tactical.UI.Utils), "GetDamageKeywordValue")] //VERIFIED
             public static class TFTV_Utils_GetDamageKeywordValue_DamagePredictionMutations_Patch
             {
                 public static void Postfix(DamagePayload payload, DamageKeywordDef damageKeyword, TacticalActor tacticalActor, ref float __result)
@@ -6193,7 +6194,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(UIStateShoot), "GetMinMaxPossibleDamage")]
+            [HarmonyPatch(typeof(UIStateShoot), "GetMinMaxPossibleDamage")] //VERIFIED
             public static class UIStateShoot_GetMinMaxPossibleDamage_patch
             {
                 public static bool Prefix(UIStateShoot __instance)

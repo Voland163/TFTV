@@ -141,7 +141,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(GeoPhoenixBaseTemplate), "CreateBaseLayout")]
+        [HarmonyPatch(typeof(GeoPhoenixBaseTemplate), nameof(GeoPhoenixBaseTemplate.CreateBaseLayout))]
         public static class TFTV_GeoPhoenixBaseTemplate_CreateBaseLayout_patch
         {
 

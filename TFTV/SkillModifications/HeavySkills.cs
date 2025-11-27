@@ -179,7 +179,7 @@ namespace PRMBetterClasses.SkillModifications
         }
         // Harmony patch for HunkerDown to prevent counting return fire for the attack boost
         // => don't check abilities that are executed in the enemy turn
-        [HarmonyPatch(typeof(AddAttackBoostStatus), "AbilityExecutedHandler")]
+        [HarmonyPatch(typeof(AddAttackBoostStatus), "AbilityExecutedHandler")] //VERIFIED
         internal static class HunkerDown_AddAttackBoostStatusDef_AbilityExecutedHandler_patch
         {
             public static bool Prefix(AddAttackBoostStatus __instance)
@@ -264,7 +264,7 @@ namespace PRMBetterClasses.SkillModifications
         }
         public static DynamicResistanceStatusDef skirmisherReactionStatus;
         // Harmony patch for Skirmisher where it checks if the ability should be monitored
-        [HarmonyPatch(typeof(DynamicResistanceStatus), "IsAbilityMonitored")]
+        [HarmonyPatch(typeof(DynamicResistanceStatus), "IsAbilityMonitored")] //VERIFIED
         internal static class Skirmisher_DynamicResistanceStatus_IsAbilityMonitored_patch
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]

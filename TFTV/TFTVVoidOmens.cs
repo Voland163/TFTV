@@ -1203,7 +1203,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(FactionObjective), "GetCompletion")]
+        [HarmonyPatch(typeof(FactionObjective), nameof(FactionObjective.GetCompletion))]
         public static class FactionObjective_GetCompletion_VO4_Patch
         {
             public static void Postfix(ref float __result)
@@ -1284,7 +1284,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(Research), "GetHourlyResearchProduction")]
+        [HarmonyPatch(typeof(Research), "GetHourlyResearchProduction")] //VERIFIED
         public static class TFTV_Research_GetHourlyResearchProductionVO6_Patch
         {
             public static void Postfix(ref float __result, Research __instance)
@@ -1311,7 +1311,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(TacticalAbility), "get_WillPointCost")]
+        [HarmonyPatch(typeof(TacticalAbility), "get_WillPointCost")] //VERIFIED
         public static class TacticalAbility_get_WillPointCost_VoidOmenExtraWPCost_Patch
         {
             public static void Postfix(ref float __result, TacticalAbility __instance)
@@ -1347,7 +1347,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(TacticalVoxelMatrix), "SpawnAndPropagateMist")]
+        [HarmonyPatch(typeof(TacticalVoxelMatrix), nameof(TacticalVoxelMatrix.SpawnAndPropagateMist))]
         public static class TacticalVoxelMatrix_SpawnAndPropagateMist_VoidOmenMoreMistOnTactical_Patch
         {
             public static void Prefix(TacticalVoxelMatrix __instance)
@@ -1416,7 +1416,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(UIStateRosterDeployment), "get__squadMaxDeployment")]
+        [HarmonyPatch(typeof(UIStateRosterDeployment), "get__squadMaxDeployment")] //VERIFIED
         public static class UIStateRosterDeployment_get_SquadMaxDeployment_VoidOmenLimitedDeployment_Patch
         {
             public static void Postfix(ref int __result, UIStateRosterDeployment __instance)
@@ -1501,7 +1501,7 @@ namespace TFTV
 
         }
 
-        [HarmonyPatch(typeof(GeoHavenDefenseMission), "GetDefenseDeployment")]
+        [HarmonyPatch(typeof(GeoHavenDefenseMission), "GetDefenseDeployment")] //VERIFIED
         public static class GeoHavenDefenseMission_GetDefenseDeployment_Mobilization_Patch
         {
             public static bool Prefix(GeoHaven haven, ref int __result)
@@ -1529,7 +1529,7 @@ namespace TFTV
 
         private static LocalizedTextBind _destroyedAlienBase = new LocalizedTextBind();
 
-        [HarmonyPatch(typeof(GeoAlienFaction), "AlienBaseDestroyed")]
+        [HarmonyPatch(typeof(GeoAlienFaction), "AlienBaseDestroyed")] //VERIFIED
         public static class GeoAlienFaction_AlienBaseDestroyed_RemoveVoidOmenDestroyedPC_patch
         {
             public static void Prefix(GeoAlienBase alienBase, GeoAlienFaction __instance)
@@ -1560,7 +1560,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(GeoscapeLog), "AddEntry")]
+        [HarmonyPatch(typeof(GeoscapeLog), "AddEntry")] //VERIFIED
         public static void Prefix(ref GeoscapeLogEntry entry, GeoActor actor, GeoscapeLogMessagesDef ____messagesDef, GeoscapeLog __instance)
         {
             try
@@ -1583,7 +1583,7 @@ namespace TFTV
 
 
         //VO2 apply penalty to diplo reward from sabotage missions
-        [HarmonyPatch(typeof(GeoSabotageZoneMission), "AddFactionRequestReward")]
+        [HarmonyPatch(typeof(GeoSabotageZoneMission), "AddFactionRequestReward")] //VERIFIED
         public static class TFTV_GeoSabotageZoneMission_AddFactionRequestReward
         {
             public static void Postfix(GeoSabotageZoneMission __instance, ref MissionRewardDescription reward)
@@ -1609,7 +1609,7 @@ namespace TFTV
 
 
         //VO5 increase chance to spawn weapons in crates
-        [HarmonyPatch(typeof(GeoMission), "PrepareTacticalGame")]
+        [HarmonyPatch(typeof(GeoMission), "PrepareTacticalGame")] //VERIFIED
         public static class TFTV_GeoMission_ModifyCratesVO5_Patch
         {
             public static void Prefix(GeoMission __instance, ref List<WeaponDef> __state)

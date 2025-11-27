@@ -1,4 +1,5 @@
 ﻿using AK.Wwise;
+using Base.Defs;
 using HarmonyLib;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
@@ -18,7 +19,7 @@ namespace TFTV
 {
     internal class TFTVChangesToDLC3Events
     {
-        // private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static Event AugeryChant = null;
 
@@ -30,8 +31,6 @@ namespace TFTV
                 GeoFactionDef newJericho = DefCache.GetDef<GeoFactionDef>("NewJericho_GeoFactionDef");
                 GeoFactionDef anu = DefCache.GetDef<GeoFactionDef>("Anu_GeoFactionDef");
                 GeoFactionDef synedrion = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
-
-                TFTVLogger.Always("Starting ChangesToDLC3Events, got here 0");
 
                 //Festering Skies changes
                 // copy Augury chant from PROG_FS0 to PROG_FS9 and remove from PROG_FS0, because Augury doesn't happen and FS0 event will be used for a Sleeping Beauty Awakens
@@ -46,10 +45,10 @@ namespace TFTV
                 geoEventFS9.GeoscapeEventData.Flavour = "";
                 geoEventFS9.GeoscapeEventData.Choices[0].Outcome.OutcomeText.General.LocalizationKey = "PROG_FS9_OUTCOME";
                 //set event timer for meteor arrival (Mount Egg)
-                GeoTimePassedEventFilterDef timePassedFS9 = DefCache.GetDef<GeoTimePassedEventFilterDef>("E_PROG_FS9_TimePassed [GeoTimePassedEventFilterDef]");
+                GeoTimePassedEventFilterDef timePassedFS9 = (GeoTimePassedEventFilterDef)Repo.GetDef("185e0d35-7af8-9374-c81a-e0630a82b9ff"); //DefCache.GetDef<GeoTimePassedEventFilterDef>("E_PROG_FS9_TimePassed [GeoTimePassedEventFilterDef]");
                 timePassedFS9.TimePassedHours = UnityEngine.Random.Range(48, 72);
                 // set event timer for former Augury, now A Sleeping Beauty Awakens
-                GeoTimePassedEventFilterDef timePassedFS0 = DefCache.GetDef<GeoTimePassedEventFilterDef>("E_PROG_FS0_TimePassed [GeoTimePassedEventFilterDef]");
+                GeoTimePassedEventFilterDef timePassedFS0 = (GeoTimePassedEventFilterDef)Repo.GetDef("4722d6c7-8c71-1983-3ac1-9c3c83744e75"); //DefCache.GetDef<GeoTimePassedEventFilterDef>("E_PROG_FS0_TimePassed [GeoTimePassedEventFilterDef]");
                 timePassedFS0.TimePassedHours = UnityEngine.Random.Range(200, 250);
                 // set background and leader images for A Sleeping Beauty Awakens and break the panel in 2
                 geoEventFS0.GeoscapeEventData.Flavour = "";
@@ -69,8 +68,6 @@ namespace TFTV
                 };
                 geoEventFS1.GeoscapeEventData.Choices[0].Outcome.ActivateTimers[0] = outcomeActivateTimer;
 
-                TFTVLogger.Always("Starting ChangesToDLC3Events, got here 1");
-
                 // Destroy Haven after mission
                 GeoscapeEventDef geoEventFS1WIN = DefCache.GetDef<GeoscapeEventDef>("PROG_FS1_WIN_GeoscapeEventDef");
                 // geoEventFS1WIN.GeoscapeEventData.Choices[0].Outcome.HavenPopulationChange = -20000;
@@ -79,11 +76,11 @@ namespace TFTV
                 storyFS1_CustomMissionTypeDef.SkipDeploymentSelection = false;
 
                 // set event timer for the former The Gift mission reveal, now The Hatching
-                GeoTimePassedEventFilterDef timePassedFS1 = DefCache.GetDef<GeoTimePassedEventFilterDef>("E_PROG_FS1_TimePassed [GeoTimePassedEventFilterDef]");
+                GeoTimePassedEventFilterDef timePassedFS1 = (GeoTimePassedEventFilterDef)Repo.GetDef("4722d6c7-8c71-1983-3ac1-9c3c83744e75"); //DefCache.GetDef<GeoTimePassedEventFilterDef>("E_PROG_FS1_TimePassed [GeoTimePassedEventFilterDef]");
                 timePassedFS1.TimePassedHours = UnityEngine.Random.Range(528, 600);
 
                 // set event timer for Behemoth Egg hatching without completing, The Hatching
-                GeoTimePassedEventFilterDef timePassedFS10 = DefCache.GetDef<GeoTimePassedEventFilterDef>("E_PROG_FS10_TimePassed [GeoTimePassedEventFilterDef]");
+                GeoTimePassedEventFilterDef timePassedFS10 = (GeoTimePassedEventFilterDef)Repo.GetDef("8bd54049-1ba3-9001-b457-6bf051e3ccfc"); // DefCache.GetDef<GeoTimePassedEventFilterDef>("E_PROG_FS10_TimePassed [GeoTimePassedEventFilterDef]");
                 timePassedFS10.TimePassedHours = UnityEngine.Random.Range(725, 755);
 
                 //change event FS10 to add an Outcome panel
@@ -102,12 +99,10 @@ namespace TFTV
                 // geoEventFS3.GeoscapeEventData.Mute = true;
                // geoEventFS3.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(TFTVCommonMethods.GenerateVariableChange("Mobilization", 1, true));
               //  geoEventFS3.GeoscapeEventData.Choices[0].Outcome.SetEvents.Clear();
-                GeoTimePassedEventFilterDef timePassedFS3 = DefCache.GetDef<GeoTimePassedEventFilterDef>("E_PROG_FS3_TimePassed [GeoTimePassedEventFilterDef]");
+                GeoTimePassedEventFilterDef timePassedFS3 = (GeoTimePassedEventFilterDef)Repo.GetDef("4618f998-5ee6-5c96-65ee-a63d14a65b30"); //DefCache.GetDef<GeoTimePassedEventFilterDef>("E_PROG_FS3_TimePassed [GeoTimePassedEventFilterDef]");
                 timePassedFS3.TimePassedHours = UnityEngine.Random.Range(950, 1100);
 
                 DefCache.GetDef<GeoLevelConditionDef>("[PROG_FS3] Condition 2").Variable="TrappedInTheMistTriggered";
-
-                TFTVLogger.Always("Starting ChangesToDLC3Events, got here 2");
 
                 //Remove CH2 miss 
                 GeoscapeEventDef CH2_Event = DefCache.GetDef<GeoscapeEventDef>("PROG_CH2_GeoscapeEventDef");

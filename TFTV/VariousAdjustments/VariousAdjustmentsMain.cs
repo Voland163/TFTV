@@ -53,7 +53,7 @@ namespace PRMBetterClasses.VariousAdjustments
 
         // -------------------------------------------------------------------------
         // Harmony patch to fix double reduction when resistances are present (mainly Nanotech)
-        [HarmonyPatch(typeof(DamageOverTimeStatus), "LowerDamageOverTimeLevel")]
+        [HarmonyPatch(typeof(DamageOverTimeStatus), nameof(DamageOverTimeStatus.LowerDamageOverTimeLevel))]
         internal static class BC_DamageOverTimeStatus_LowerDamageOverTimeLevel_Patch
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
@@ -78,7 +78,7 @@ namespace PRMBetterClasses.VariousAdjustments
 
         // -------------------------------------------------------------------------
         // Harmony patches to deactivate automatic standby and switch to another character in tactical missions
-        [HarmonyPatch(typeof(TacticalActor), "TrySetStandBy")]
+        [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.TrySetStandBy))]
         internal static class BC_TacticalActor_TryGetStandBy_Patch
         {
             public static bool Prepare()
@@ -92,7 +92,7 @@ namespace PRMBetterClasses.VariousAdjustments
                 return __instance.HasEndedTurn || (__result = false);
             }
         }
-        [HarmonyPatch(typeof(TacticalActorBase), "CanAct", new Type[0])]
+        [HarmonyPatch(typeof(TacticalActorBase), nameof(TacticalActorBase.CanAct), new Type[0])]
         internal static class BC_TacticalActorBase_CanAct_Patch
         {
             public static bool Prepare()

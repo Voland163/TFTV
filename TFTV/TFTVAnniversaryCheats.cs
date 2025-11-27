@@ -20,7 +20,7 @@ namespace TFTV
     class TFTVAnniversaryCheats
     {
 
-        [HarmonyPatch(typeof(UIModuleMutate), "InitCharacterInfo")]
+        [HarmonyPatch(typeof(UIModuleMutate), "InitCharacterInfo")] //VERIFIED
         static class UIModuleMutate_InitCharacterInfo_Patch
         {
             // reflect the private fields/properties we need
@@ -129,7 +129,7 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(UIModuleBionics), "InitCharacterInfo")]
+        [HarmonyPatch(typeof(UIModuleBionics), "InitCharacterInfo")] //VERIFIED
         static class UIModuleBionics_InitCharacterInfo_Patch
         {
             // Cache all the FieldInfos/PropertyInfos we'll need

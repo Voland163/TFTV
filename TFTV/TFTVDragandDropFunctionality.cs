@@ -51,7 +51,7 @@ namespace TFTV
                 // Patch the Start method to add drag-and-drop event handlers
 
                 [HarmonyPostfix]
-                [HarmonyPatch("Awake")]
+                [HarmonyPatch("Awake")] //VERIFIED
                 public static void Awake_Postfix(UIModuleResearch __instance)
                 {
                     try
@@ -66,7 +66,7 @@ namespace TFTV
 
 
                 [HarmonyPostfix]
-                [HarmonyPatch("Init")]
+                [HarmonyPatch("Init")] //VERIFIED
                 public static void Init_Postfix(UIModuleResearch __instance)
                 {
                     try
@@ -83,7 +83,7 @@ namespace TFTV
                 }
 
                 [HarmonyPostfix]
-                [HarmonyPatch("AddToQueue")]
+                [HarmonyPatch("AddToQueue")] //VERIFIED
                 public static void AddToQueue_Postfix(UIModuleResearch __instance)
                 {
                     try
@@ -102,7 +102,7 @@ namespace TFTV
 
                 // Patch the SetupQueue method to add drag-and-drop event handlers
                 [HarmonyPostfix]
-                [HarmonyPatch("SetupQueue")]
+                [HarmonyPatch("SetupQueue")] //VERIFIED
                 public static void SetupQueue_Postfix(UIModuleResearch __instance)
                 {
                     try
@@ -307,7 +307,7 @@ namespace TFTV
 
            // private static bool CheckedManufacturingForNewItems = false;
             
-            [HarmonyPatch(typeof(GeoPhoenixFaction), "OnNewManufacturableItemsAdded")]
+            [HarmonyPatch(typeof(GeoPhoenixFaction), "OnNewManufacturableItemsAdded")] //VERIFIED
             public static class GeoPhoenixFaction_OnNewManufacturableItemsAdded_Patch
             {
                 public static bool Prefix(GeoPhoenixFaction __instance, ManufacturableItem item)
@@ -609,7 +609,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(GeoManufactureItem), "Init",
+            [HarmonyPatch(typeof(GeoManufactureItem), nameof(GeoManufactureItem.Init),
                 typeof(ItemDef), typeof(GeoFaction), typeof(UIModuleManufacturing.UIMode), typeof(ItemStorage), typeof(VehicleEquipmentStorage), typeof(bool))]
             public static class GeoManufactureItem_Init_Patch
             {
@@ -628,7 +628,7 @@ namespace TFTV
 
             private static bool _scrapFromSoldierEquip = false;
 
-            [HarmonyPatch(typeof(UIModuleSoldierEquip), "AreaEndDragHandler")]
+            [HarmonyPatch(typeof(UIModuleSoldierEquip), "AreaEndDragHandler")] //VERIFIED
             public static class UIModuleSoldierEquip_AreaEndDragHandler_Patch
             {
                 public static void Prefix(UIModuleSoldierEquip __instance, UIInventorySlot sourceSlot, UIInventoryDropArea destinationArea)
@@ -654,7 +654,7 @@ namespace TFTV
             [HarmonyPatch(typeof(UIModuleManufacturing))]
             public static class UIModuleManufacturingPatch2
             {
-                [HarmonyPatch("RefreshItemList")]
+                [HarmonyPatch("RefreshItemList")] //VERIFIED
                 [HarmonyPrefix]
                 public static void RefreshItemListPrefix(UIModuleManufacturing __instance, ref IEnumerable<ItemDef> availableItemRecipes)
                 {
@@ -696,7 +696,7 @@ namespace TFTV
             {
                 // Patch the Start method to add drag-and-drop event handlers
                 [HarmonyPostfix]
-                [HarmonyPatch("Init")]
+                [HarmonyPatch("Init")] //VERIFIED
                 public static void Init_Postfix(UIModuleManufacturing __instance)
                 {
                     try
@@ -713,7 +713,7 @@ namespace TFTV
                 }
 
                 [HarmonyPostfix]
-                [HarmonyPatch("Start")]
+                [HarmonyPatch("Start")] //VERIFIED
                 public static void Start_Postfix(UIModuleManufacturing __instance)
                 {
                     try
@@ -732,7 +732,7 @@ namespace TFTV
 
                 // Patch the SetupQueue method to add drag-and-drop event handlers
                 [HarmonyPostfix]
-                [HarmonyPatch("SetupQueue")]
+                [HarmonyPatch("SetupQueue")] //VERIFIED
                 public static void SetupQueue_Postfix(UIModuleManufacturing __instance)
                 {
                     try
@@ -996,7 +996,7 @@ namespace TFTV
             public static bool AircraftHotkeysBindingsApplied = false;
 
 
-            [HarmonyPatch(typeof(UIStateVehicleSelected), "OnInputEvent")]
+            [HarmonyPatch(typeof(UIStateVehicleSelected), "OnInputEvent")] //VERIFIED
             public static class UIStateVehicleSelected_OnInputEvent_patch
             {
 
@@ -1145,7 +1145,7 @@ namespace TFTV
             [HarmonyPatch(typeof(UIModuleVehicleRoster))]
             public static class TFTVDragandDropFunctionality
             {
-                [HarmonyPatch("InitSlots")]
+                [HarmonyPatch("InitSlots")] //VERIFIED
                 [HarmonyPostfix]
                 public static void InitSlotsPostfix(UIModuleVehicleRoster __instance)
                 {
@@ -1683,13 +1683,6 @@ namespace TFTV
                         TFTVLogger.Error(e);
                     }
                 }
-
-
-
-
-
-
-
 
             }
         }

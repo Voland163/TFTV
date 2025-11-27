@@ -76,7 +76,7 @@ namespace TFTV
         internal class Hammerfall
         {
             //Hammerfall
-            [HarmonyPatch(typeof(GeoAlienFaction), "SpawnEgg", new Type[] { typeof(Vector3) })]
+            [HarmonyPatch(typeof(GeoAlienFaction), "SpawnEgg", new Type[] { typeof(Vector3) })] //VERIFIED
             public static class GeoAlienFaction_SpawnEgg_DestroyHavens_Patch
             {
 
@@ -229,7 +229,7 @@ namespace TFTV
                      }
                  }*/
 
-            [HarmonyPatch(typeof(AlienRaidManager), "RollForRaid")]
+            [HarmonyPatch(typeof(AlienRaidManager), "RollForRaid")] //VERIFIED
             public static class AlienRaidManager_RollForRaid_patch
             {
                 public static bool Prefix(AlienRaidManager __instance)
@@ -292,7 +292,7 @@ namespace TFTV
 
 
             //Trigger event on first Pandoran flyer
-            [HarmonyPatch(typeof(GeoFaction), "CreateVehicleAtPosition")]
+            [HarmonyPatch(typeof(GeoFaction), nameof(GeoFaction.CreateVehicleAtPosition))]
             public static class GeoFaction_CreateVehicleAtPosition_patch
             {
                 public static void Postfix(ComponentSetDef vehicleDef, GeoFaction __instance)
@@ -314,7 +314,7 @@ namespace TFTV
             }
 
             //patch to reveal havens under attack
-            [HarmonyPatch(typeof(GeoscapeRaid), "StartAttackEffect")]
+            [HarmonyPatch(typeof(GeoscapeRaid), nameof(GeoscapeRaid.StartAttackEffect))]
             public static class GeoscapeRaid_StartAttackEffect_patch
             {
                 public static void Postfix(GeoscapeRaid __instance)
@@ -332,7 +332,7 @@ namespace TFTV
             }
 
             //Controlling Pandoran flyers visiting havens
-            [HarmonyPatch(typeof(GeoVehicle), "OnArrivedAtDestination")]
+            [HarmonyPatch(typeof(GeoVehicle), "OnArrivedAtDestination")] //VERIFIED
             public static class GeoVehicle_OnArrivedAtDestination
             {
 
@@ -363,7 +363,7 @@ namespace TFTV
             }
 
             //Verifiying if flyer returning to Behemoth has visited a haven
-            [HarmonyPatch(typeof(GeoscapeRaid), "StopBehemothFollowing")]
+            [HarmonyPatch(typeof(GeoscapeRaid), "StopBehemothFollowing")] //VERIFIED
             public static class GeoscapeRaid_StopBehemothFollowing_patch
             {
 
@@ -425,7 +425,7 @@ namespace TFTV
 
                 internal static List <PhoenixGeneralButton> DeploymentButtonList = new List<PhoenixGeneralButton>();
 
-                [HarmonyPatch(typeof(LaunchBehemothMissionAbility), "ActivateInternal")]
+                [HarmonyPatch(typeof(LaunchBehemothMissionAbility), "ActivateInternal")] //VERIFIED
                 public static class TFTV_LaunchBehemothMissionAbility_ActivateInternal_patch
                 {
 
@@ -445,7 +445,7 @@ namespace TFTV
                 }
 
 
-                [HarmonyPatch(typeof(ItemManufacturing), "FinishManufactureItem")]
+                [HarmonyPatch(typeof(ItemManufacturing), "FinishManufactureItem")] //VERIFIED
                 public static class TFTV_ItemManufacturing_FinishManufactureItem
                 {
                     public static void Postfix(ItemManufacturing __instance, ManufactureQueueItem element)
@@ -471,7 +471,7 @@ namespace TFTV
                     }
                 }
 
-                [HarmonyPatch(typeof(LaunchBehemothMissionAbility), "GetDisabledStateInternal")]
+                [HarmonyPatch(typeof(LaunchBehemothMissionAbility), "GetDisabledStateInternal")] //VERIFIED
                 public static class TFTV_LaunchBehemothMissionAbility_GetDisabledStateInternal_patch
                 {
 
@@ -496,7 +496,7 @@ namespace TFTV
 
 
 
-                [HarmonyPatch(typeof(GeoAbilityView), "GetDisabledStateText", typeof(GeoAbilityTarget))]
+                [HarmonyPatch(typeof(GeoAbilityView), nameof(GeoAbilityView.GetDisabledStateText), typeof(GeoAbilityTarget))]
                 public static class TFTV_GeoAbilityView_GetDisabledStateText
                 {
                     public static void Postfix(GeoAbilityView __instance, ref string __result)
@@ -791,7 +791,7 @@ namespace TFTV
 
 
 
-            [HarmonyPatch(typeof(GeoBehemothActor), "TravelTo")]
+            [HarmonyPatch(typeof(GeoBehemothActor), nameof(GeoBehemothActor.TravelTo))]
             public static class GeoBehemothActor_TravelTo_Patch
             {
                 public static void Postfix(GeoBehemothActor __instance, GeoSite site, ref bool __result, ref List<GeoSite> ____destinationSites)
@@ -849,7 +849,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(GeoBehemothActor), "UpdateHourly")]
+            [HarmonyPatch(typeof(GeoBehemothActor),  nameof(GeoBehemothActor.UpdateHourly))]
             public static class GeoBehemothActor_UpdateHourly_Patch
             {
                 public static bool Prefix(GeoBehemothActor __instance, ref int ____disruptionThreshhold, int ____disruptionPoints, int ____nextActionHoursLeft)
@@ -1048,7 +1048,7 @@ namespace TFTV
             }
 
             //Clear lists of internal variables on Behemoth submerge + add Berith and Abbadon researches depending on number of roamings
-            [HarmonyPatch(typeof(GeoBehemothActor), "PickSubmergeLocation")]
+            [HarmonyPatch(typeof(GeoBehemothActor), "PickSubmergeLocation")] //VERIFIED
             public static class GeoBehemothActor_PickSubmergeLocation_patch
             {
                 public static void Postfix(GeoBehemothActor __instance)
@@ -1092,7 +1092,7 @@ namespace TFTV
             }
 
             //Patch to adjust disprution threshold
-            [HarmonyPatch(typeof(GeoBehemothActor), "CalculateDisruptionThreshhold")]
+            [HarmonyPatch(typeof(GeoBehemothActor), "CalculateDisruptionThreshhold")] //VERIFIED
             public static class GeoBehemothActor_CalculateDisruptionThreshhold_patch
             {
 
@@ -1141,7 +1141,7 @@ namespace TFTV
             }
 
             //Patch to ensure that Behemoth emerges near exploration sites, written with the help of my new best friend, chatgpt
-            [HarmonyPatch(typeof(GeoBehemothActor), "OnBehemothEmerged")]
+            [HarmonyPatch(typeof(GeoBehemothActor), "OnBehemothEmerged")] //VERIFIED
             class TFTV_OnBehemothEmerged_Patch
             {
 
@@ -1227,7 +1227,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(GeoBehemothActor), "DamageHavenOutcome")]
+            [HarmonyPatch(typeof(GeoBehemothActor), "DamageHavenOutcome")] //VERIFIED   
             public static class GeoBehemothActor_DamageHavenOutcome_Patch
             {
 
@@ -1260,7 +1260,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(GeoBehemothActor), "ChooseNextHavenTarget")]
+            [HarmonyPatch(typeof(GeoBehemothActor), "ChooseNextHavenTarget")] //VERIFIED
             public static class GeoBehemothActor_ChooseNextHavenTarget_Patch
             {
                 public static bool Prefix(GeoBehemothActor __instance)
@@ -1477,7 +1477,7 @@ namespace TFTV
         /// To ensure that mission critical sites do not get blocked by Behemoth targetting them.
         /// </summary>
 
-        [HarmonyPatch(typeof(GeoSite), "get_IsFreeForEncounter")]
+        [HarmonyPatch(typeof(GeoSite), "get_IsFreeForEncounter")] //VERIFIED
         public static class GeoSite_IsFreeForEncounter_TImeVaultBugHung_patch
         {
             public static void Postfix(GeoSite __instance, ref bool __result)
