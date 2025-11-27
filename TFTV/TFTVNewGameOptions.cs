@@ -74,6 +74,8 @@ namespace TFTV
         public static int EtermesResistanceAndVulnerability;
 
         public static bool NewTrainingFacilities = false;
+        public static bool BaseRework = false;
+
 
         public static int initialScavSites = 8; // 16 on Vanilla
 

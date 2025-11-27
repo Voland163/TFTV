@@ -25,6 +25,11 @@ namespace TFTV.TFTVBaseRework
         {
             private static void Postfix(GeoPhoenixFaction __instance)
             {
+                if (!BaseReworkUtils.BaseReworkEnabled)
+                {
+                    return;
+                }
+
                 ResearchManufacturingSlotsManager.RecalculateSlots(__instance);
             }
         }
@@ -34,6 +39,11 @@ namespace TFTV.TFTVBaseRework
         {
             private static void Postfix(GeoPhoenixFaction __instance)
             {
+                if (!BaseReworkUtils.BaseReworkEnabled)
+                {
+                    return;
+                }
+
                 ResearchManufacturingSlotsManager.RecalculateSlots(__instance);
                 TryUpdateInfoBar(__instance);
             }
@@ -44,6 +54,11 @@ namespace TFTV.TFTVBaseRework
         {
             private static void Postfix(UIModuleInfoBar __instance, GeoFaction faction)
             {
+                if (!BaseReworkUtils.BaseReworkEnabled)
+                {
+                    return;
+                }
+
                 if (!(faction is GeoPhoenixFaction phoenix))
                     return;
 

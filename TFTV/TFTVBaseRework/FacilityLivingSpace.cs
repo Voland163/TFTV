@@ -118,6 +118,11 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
+                    if (!BaseReworkUtils.BaseReworkEnabled)
+                    {
+                        return;
+                    }
+
                     LivingSpaceState state = Recalculate(____layout);
 
                     // Obtain GeoPhoenixBase using any facility since layout itself does not expose base.

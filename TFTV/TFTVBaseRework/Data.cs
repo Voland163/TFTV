@@ -163,6 +163,11 @@ namespace TFTV.TFTVBaseRework
 
         internal static void AssignWorker(PersonnelInfo person, GeoPhoenixFaction faction, FacilitySlotType slotType)
         {
+            if (!BaseReworkUtils.BaseReworkEnabled)
+            {
+                return;
+            }
+
             if (person?.Character == null || faction == null) return;
             ResearchManufacturingSlotsManager.RecalculateSlots(faction);
 
@@ -205,6 +210,12 @@ namespace TFTV.TFTVBaseRework
 
         internal static List<PersonnelAssignmentSave> CreateAssignmentsSnapshot()
         {
+            if (!BaseReworkUtils.BaseReworkEnabled)
+            {
+                return new List<PersonnelAssignmentSave>();
+            }
+
+
             var list = new List<PersonnelAssignmentSave>();
             foreach (var pi in _assignments.Values)
             {
@@ -221,6 +232,12 @@ namespace TFTV.TFTVBaseRework
 
         internal static void LoadAssignmentsSnapshot(GeoLevelController level, IEnumerable<PersonnelAssignmentSave> snapshot)
         {
+            if (!BaseReworkUtils.BaseReworkEnabled)
+            {
+                return;
+            }
+
+
             try
             {
                 if (level?.PhoenixFaction == null || snapshot == null) return;
@@ -261,6 +278,11 @@ namespace TFTV.TFTVBaseRework
 
         internal static void RestoreAssignments(GeoLevelController level)
         {
+            if (!BaseReworkUtils.BaseReworkEnabled)
+            {
+                return;
+            }
+
             try
             {
                 ResyncWorkSlots(level.PhoenixFaction);
@@ -293,7 +315,15 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoLevelController), "DailyUpdate")] //VERIFIED
         internal static class GeoLevelController_DailyUpdate_PersonnelPool
         {
-            private static void Postfix(GeoLevelController __instance) => TFTVBaseRework.PersonnelManagementUI.DailyTick(__instance);
+            private static void Postfix(GeoLevelController __instance)
+            {
+                if (!BaseReworkUtils.BaseReworkEnabled)
+                {
+                    return;
+                }
+
+                TFTVBaseRework.PersonnelManagementUI.DailyTick(__instance);
+            }
         }
 
 
@@ -302,6 +332,11 @@ namespace TFTV.TFTVBaseRework
         {
             private static void Postfix(GeoPhoenixFaction __instance, ref TimeUnit ____lastNakedRecruitRefresh)
             {
+
+                if (!BaseReworkUtils.BaseReworkEnabled)
+                {
+                    return;
+                }
 
                 TFTVLogger.Always($"GeoPhoenixFaction.RegenerateNakedRecruits running");
 

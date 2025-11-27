@@ -125,6 +125,11 @@ namespace TFTV
             {
                 try
                 {
+                    if (!TFTVNewGameOptions.BaseRework)
+                    {
+                        return;
+                    }
+
                     if (recruit == null) return;
 
                     // Apply deferred stat gains for recruits finalized via UI path.

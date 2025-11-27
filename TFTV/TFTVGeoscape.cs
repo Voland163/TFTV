@@ -61,7 +61,7 @@ namespace TFTV
         public bool NoSecondChances;
         public int EtermesVulnerabilityProtection = TFTVNewGameOptions.EtermesResistanceAndVulnerability;
         public bool NewTrainingFacilities;
-        // public bool Update35GeoscapeCheck;
+        public bool BaseRework;
 
         public List<int> PU_Hotspots;
         public List<int> FO_Hotspots;
@@ -132,7 +132,10 @@ namespace TFTV
             TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
             TFTVUIGeoMap.UnpoweredFacilitiesInfo.CheckUnpoweredBasesOnGeoscapeStart();
             AircraftReworkSpeed.Init(Controller);
-            PersonnelData.RestoreAssignments(Controller);
+            if (TFTVNewGameOptions.BaseRework)
+            {
+                RestoreAssignments(Controller);
+            }
 
             /* foreach (GeoPhoenixBase phoenixBase in gsController.PhoenixFaction.Bases)
              {
@@ -229,10 +232,10 @@ namespace TFTV
                 PlayerVehicles = TFTVDragandDropFunctionality.VehicleRoster.PlayerVehicles,
                 AircraftScanningSites = AircraftReworkGeoscape.Scanning.AircraftScanningSites,
                 NewTrainingFacilities = TFTVNewGameOptions.NewTrainingFacilities,
-
+                BaseRework = TFTVNewGameOptions.BaseRework,
                 // Personnel & training sessions snapshot
-                PersonnelPool = PersonnelData.CreateAssignmentsSnapshot(),
-                RecruitTrainingSessions = CreateRecruitSessionsSnapshot(),
+                PersonnelPool = TFTVNewGameOptions.BaseRework ? CreateAssignmentsSnapshot() : null,
+                RecruitTrainingSessions = TFTVNewGameOptions.BaseRework ? CreateRecruitSessionsSnapshot() : null,
             };
         }
         /// <summary>
@@ -274,6 +277,7 @@ namespace TFTV
                 TFTVAmbushes.AN_FallenOnes_Hotspots = data.FO_Hotspots;
                 TFTVAmbushes.NJ_Purists_Hotspots = data.PU_Hotspots;
                 TFTVNewGameOptions.NewTrainingFacilities = data.NewTrainingFacilities;
+                TFTVNewGameOptions.BaseRework = data.BaseRework;
 
                 if (data.PlayerVehicles != null)
                 {
@@ -334,7 +338,7 @@ namespace TFTV
                 PersonnelData.ClearAssignments();
                 ClearAllSessions();
 
-                if (data.PersonnelPool != null)
+                if (TFTVNewGameOptions.BaseRework && data.PersonnelPool != null)
                 {
                     PersonnelData.LoadAssignmentsSnapshot(Controller, data.PersonnelPool);
 
@@ -345,12 +349,15 @@ namespace TFTV
 
                 }
 
-                if (data.RecruitTrainingSessions != null && data.RecruitTrainingSessions.Count > 0)
+                if (TFTVNewGameOptions.BaseRework && data.RecruitTrainingSessions != null && data.RecruitTrainingSessions.Count > 0)
                 {
                     LoadRecruitSessionsSnapshot(Controller, data.RecruitTrainingSessions);
                 }
 
-                TFTVLogger.Always($"[PersonnelPersistence] Restored Personnel={data.PersonnelPool?.Count ?? 0} TrainingSessions={data.RecruitTrainingSessions?.Count ?? 0}");
+                if (TFTVNewGameOptions.BaseRework)
+                {
+                    TFTVLogger.Always($"[PersonnelPersistence] Restored Personnel={data.PersonnelPool?.Count ?? 0} TrainingSessions={data.RecruitTrainingSessions?.Count ?? 0}");
+                }
 
 
 

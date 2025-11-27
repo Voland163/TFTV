@@ -36,6 +36,12 @@ namespace TFTV.TFTVBaseRework
         #region Daily Tick
         internal static void DailyTick(GeoLevelController level)
         {
+            if (!BaseReworkEnabled)
+            {
+                return;
+            }
+
+
             try
             {
                 if (level?.PhoenixFaction == null) return;
@@ -66,6 +72,12 @@ namespace TFTV.TFTVBaseRework
         {
             private static void Postfix(UIStateRosterRecruits __instance)
             {
+                if (!BaseReworkEnabled)
+                {
+                    return;
+                }
+
+
                 try { CreatePersonnelPanel(__instance); }
                 catch (Exception e) { TFTVLogger.Error(e); }
             }
@@ -76,6 +88,12 @@ namespace TFTV.TFTVBaseRework
         {
             private static void Postfix()
             {
+                if (!BaseReworkEnabled)
+                {
+                    return;
+                }
+
+
                 try
                 {
                     if (_personnelPanel != null) { Object.Destroy(_personnelPanel); _personnelPanel = null; }
@@ -91,6 +109,12 @@ namespace TFTV.TFTVBaseRework
         {
             public static void Postfix(UIModuleRecruitsList __instance)
             {
+                if (!BaseReworkEnabled)
+                {
+                    return;
+                }
+
+
                 if (__instance == null || __instance.RecruitsListRoot == null) return;
                 __instance.NoRecruitsMessage.SetActive(false);
                 __instance.NoRecruitsMessageTextBackground.SetActive(false);
@@ -103,6 +127,13 @@ namespace TFTV.TFTVBaseRework
         #region Panel Construction
         private static void CreatePersonnelPanel(UIStateRosterRecruits state)
         {
+            if (!BaseReworkEnabled)
+            {
+                return;
+            }
+
+
+
             var level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
             var recruitsModule = level?.View?.GeoscapeModules?.RecruitsListModule;
             if (recruitsModule == null) return;
@@ -178,6 +209,12 @@ namespace TFTV.TFTVBaseRework
 
         private static void PopulatePersonnelUI(UIStateRosterRecruits state, GeoLevelController level, Transform personnelRoot)
         {
+            if (!BaseReworkEnabled)
+            {
+                return;
+            }
+
+
             if (personnelRoot == null || level?.PhoenixFaction == null) return;
             ClearTransformChildren(personnelRoot);
 

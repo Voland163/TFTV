@@ -290,7 +290,7 @@ namespace TFTV
         internal class UI
         {
             //Code provided by Codemite
-            [HarmonyPatch(typeof(UIInventorySlot), nameof(UIInventorySlot.UpdateItem))]
+          /*  [HarmonyPatch(typeof(UIInventorySlot), nameof(UIInventorySlot.UpdateItem))]
             public static class UIInventorySlot_UpdateItem_patch
             {
                 public static void Postfix(UIInventorySlot __instance, ICommonItem ____item)
@@ -349,7 +349,7 @@ namespace TFTV
                         throw;
                     }
                 }
-            }
+            }*/
 
 
 

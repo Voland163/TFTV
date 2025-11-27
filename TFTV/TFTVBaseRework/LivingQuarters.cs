@@ -11,11 +11,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-/*namespace TFTV.TFTVBaseRework
+namespace TFTV.TFTVBaseRework
 {
     internal class LivingQuarters
     {
-        //LOOKING FOR NULL
+        
 
         [HarmonyPatch]
         internal static class LivingQuartersReworkPatches
@@ -57,6 +57,11 @@ using System.Threading.Tasks;
             [HarmonyPatch(typeof(GeoPhoenixFaction), "UpdateStats")]
             private static void GeoPhoenixFaction_UpdateStats_Postfix(GeoPhoenixFaction __instance)
             {
+                if (!BaseReworkUtils.BaseReworkEnabled)
+                {
+                    return;
+                }
+
                 SoldierCapacityField(__instance) = int.MaxValue;
                 if (EvaluateSoldiersState != null)
                 {
@@ -72,6 +77,11 @@ using System.Threading.Tasks;
             [HarmonyPatch(typeof(PhoenixBaseStats), "Update")]
             private static void PhoenixBaseStats_Update_Postfix(PhoenixBaseStats __instance)
             {
+                if (!BaseReworkUtils.BaseReworkEnabled)
+                {
+                    return;
+                }
+
                 GeoPhoenixBaseLayout layout = LayoutField(__instance);
                 if (layout == null)
                 {
@@ -115,6 +125,11 @@ using System.Threading.Tasks;
             [HarmonyPatch(typeof(UIModuleInfoBar), "UpdateSoldierData")]
             private static void UIModuleInfoBar_UpdateSoldierData_Postfix(UIModuleInfoBar __instance)
             {
+                if (!BaseReworkUtils.BaseReworkEnabled)
+                {
+                    return;
+                }
+
                 GeoscapeViewContext context = InfoBarContextField(__instance);
                 if (context?.ViewerFaction is GeoPhoenixFaction geoPhoenixFaction && __instance.SoldiersLabel != null)
                 {
@@ -160,4 +175,4 @@ using System.Threading.Tasks;
             }
         }
     }
-}*/
+}

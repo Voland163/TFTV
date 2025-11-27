@@ -22,7 +22,7 @@ namespace TFTV.TFTVBaseRework
 {
     internal class GeoCharacterFilter
     {
-
+        private static bool Enabled => BaseReworkUtils.BaseReworkEnabled;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
@@ -35,12 +35,24 @@ namespace TFTV.TFTVBaseRework
          
             internal static bool ShouldHide(GeoCharacter character)
             {
+                if (!Enabled)
+                {
+                    return false;
+                }
+
+
                 GameTagDef hiddenTag = EnsureHiddenTag();
                 return hiddenTag != null && character != null && character.GameTags.Contains(hiddenTag);
             }
 
             internal static void ApplyHiddenTag(GeoCharacter character)
             {
+                if (!Enabled)
+                {
+                    return;
+                }
+
+
                 GameTagDef hiddenTag = EnsureHiddenTag();
                 if (hiddenTag != null && character != null && !character.GameTags.Contains(hiddenTag))
                 {
@@ -50,6 +62,11 @@ namespace TFTV.TFTVBaseRework
 
             internal static void RemoveHiddenTag(GeoCharacter character)
             {
+                if (!Enabled)
+                {
+                    return;
+                }
+
                 GameTagDef hiddenTag = EnsureHiddenTag();
                 if (hiddenTag != null && character != null && character.GameTags.Contains(hiddenTag))
                 {
@@ -59,6 +76,12 @@ namespace TFTV.TFTVBaseRework
 
             internal static IEnumerable<GeoCharacter> FilterCharacters(IEnumerable<GeoCharacter> characters)
             {
+                if (!Enabled)
+                {
+                    return characters ?? Enumerable.Empty<GeoCharacter>();
+                }
+
+
                 GameTagDef hiddenTag = EnsureHiddenTag();
                 if (hiddenTag == null)
                 {
@@ -70,6 +93,12 @@ namespace TFTV.TFTVBaseRework
 
             internal static void FilterList(List<GeoCharacter> characters)
             {
+                if (!Enabled)
+                {
+                    return;
+                }
+
+
                 GameTagDef hiddenTag = EnsureHiddenTag();
                 if (hiddenTag == null || characters == null)
                 {
@@ -81,6 +110,11 @@ namespace TFTV.TFTVBaseRework
 
             private static GameTagDef EnsureHiddenTag()
             {
+                if (!Enabled)
+                {
+                    return null;
+                }
+
                 if (_hiddenTag != null)
                 {
                     return _hiddenTag;
@@ -106,6 +140,11 @@ namespace TFTV.TFTVBaseRework
         {
             private static void Postfix(ref IEnumerable<GeoCharacter> __result)
             {
+                if (!Enabled)
+                {
+                    return;
+                }
+
                 __result = HiddenOperativeTagFilter.FilterCharacters(__result);
             }
         }
@@ -115,6 +154,11 @@ namespace TFTV.TFTVBaseRework
         {
             private static void Postfix(ref IEnumerable<GeoCharacter> __result)
             {
+                if (!Enabled)
+                {
+                    return;
+                }
+
                 __result = HiddenOperativeTagFilter.FilterCharacters(__result);
             }
         }
@@ -126,6 +170,11 @@ namespace TFTV.TFTVBaseRework
 
             private static void Postfix(UIStateGeoRoster __instance)
             {
+                if (!Enabled)
+                {
+                    return;
+                }
+
                 HiddenOperativeTagFilter.FilterList(CharactersField(__instance));
             }
         }
@@ -146,6 +195,11 @@ namespace TFTV.TFTVBaseRework
 
             private static void Postfix(UIModuleGeneralPersonelRoster __instance)
             {
+                if (!Enabled)
+                {
+                    return;
+                }
+
                 if (!(UnitContainersField.GetValue(__instance) is IList containerList))
                 {
                     return;
@@ -171,6 +225,11 @@ namespace TFTV.TFTVBaseRework
         {
             private static void Postfix(ref IEnumerable<GeoCharacter> __result)
             {
+                if (!Enabled)
+                {
+                    return;
+                }
+
                 __result = HiddenOperativeTagFilter.FilterCharacters(__result);
             }
         }
@@ -180,6 +239,11 @@ namespace TFTV.TFTVBaseRework
         {
             private static void Postfix(ref IEnumerable<GeoCharacter> __result)
             {
+                if (!Enabled)
+                {
+                    return;
+                }
+
                 __result = HiddenOperativeTagFilter.FilterCharacters(__result);
             }
         }
@@ -198,6 +262,11 @@ namespace TFTV.TFTVBaseRework
 
             private static void Postfix(UIStateRosterDeployment __instance)
             {
+                if (!Enabled)
+                {
+                    return;
+                }
+
                 List<GeoCharacter> selectedDeployment = SelectedDeploymentField(__instance);
                 HiddenOperativeTagFilter.FilterList(selectedDeployment);
 

@@ -188,11 +188,11 @@ namespace TFTV
 
                 GeoItem geoItem = new GeoItem(item);
                 slot.Item = geoItem;
-               
+
+                slot.AmmoInfoRoot.gameObject.SetActive(false);
                // slot.EmptyAmmoImageNode.gameObject.SetActive(false);
               //  slot.EmptyAmmoScaleNode.gameObject.SetActive(false);
-                slot.AmmoImageNode.gameObject.SetActive(false);
-               
+                slot.AmmoImageNode.gameObject.SetActive(false);          
             
                 ApplyOversizedIconOverlay(slot, icon, size, InventoryOverlayName);
 

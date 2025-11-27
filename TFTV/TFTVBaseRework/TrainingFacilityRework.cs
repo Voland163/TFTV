@@ -71,6 +71,11 @@ namespace TFTV.TFTVBaseRework
         #region Public API (Recruit descriptor training)
         public static bool QueueCharacterTraining(GeoLevelController level, GeoCharacter character, SpecializationDef spec)
         {
+            if (!BaseReworkUtils.BaseReworkEnabled)
+            {
+                return false;
+            }
+
             try
             {
                 if (level == null || character == null || spec == null) return false;
@@ -107,6 +112,11 @@ namespace TFTV.TFTVBaseRework
 
         public static RecruitTrainingSession GetRecruitSession(GeoCharacter character)
         {
+            if (!BaseReworkUtils.BaseReworkEnabled)
+            {
+                return null;
+            }
+
             if (character == null) return null;
             var id = PersonnelData.GetPersonnelByUnitId(character.Id)?.Id ?? 0;
             return RecruitSessions.FirstOrDefault(s => s.PersonnelId == id || s.GeoUnitId == character.Id);
@@ -114,6 +124,11 @@ namespace TFTV.TFTVBaseRework
 
         public static int GetRecruitRemainingDays(GeoCharacter character, GeoLevelController level)
         {
+            if (!BaseReworkUtils.BaseReworkEnabled)
+            {
+                return 0;
+            }
+
             var s = GetRecruitSession(character);
             if (s == null || level == null) return 0;
             int currentDay = level.Timing.Now.TimeSpan.Days;
@@ -123,6 +138,11 @@ namespace TFTV.TFTVBaseRework
 
         public static bool IsRecruitTrainingComplete(GeoCharacter character, GeoLevelController level)
         {
+            if (!BaseReworkUtils.BaseReworkEnabled)
+            {
+                return false;
+            }
+
             var s = GetRecruitSession(character);
             if (character == null)
             {
@@ -170,6 +190,12 @@ namespace TFTV.TFTVBaseRework
         #region Progression
         private static void AdvanceAllTraining(GeoLevelController geoLevel, int deltaDays)
         {
+            if (!BaseReworkUtils.BaseReworkEnabled)
+            {
+                return;
+            }
+
+
             if (geoLevel?.PhoenixFaction == null || deltaDays <= 0) return;
             int currentDay = geoLevel.Timing.Now.TimeSpan.Days;
             TFTVLogger.Always($"[Training] AdvanceAllTraining day={currentDay} delta={deltaDays}");
@@ -445,6 +471,11 @@ namespace TFTV.TFTVBaseRework
         {
             private static void Postfix(GeoLevelController __instance)
             {
+                if (!BaseReworkUtils.BaseReworkEnabled)
+                {
+                    return;
+                }
+
                 try { AdvanceAllTraining(__instance, 1); }
                 catch (Exception e) { TFTVLogger.Error(e); }
             }
@@ -457,6 +488,11 @@ namespace TFTV.TFTVBaseRework
         {
             private static void Postfix(GeoPhoenixFaction __instance, GeoCharacter recruit, IGeoCharacterContainer toContainer)
             {
+                if (!BaseReworkUtils.BaseReworkEnabled)
+                {
+                    return;
+                }
+
                 try { TryApplyDeferredTrainingStats(recruit); }
                 catch (Exception e) { TFTVLogger.Error(e); }
             }
@@ -467,6 +503,11 @@ namespace TFTV.TFTVBaseRework
         {
             private static void Postfix(GeoPhoenixFaction __instance, GeoCharacter recruit)
             {
+                if (!BaseReworkUtils.BaseReworkEnabled)
+                {
+                    return;
+                }
+
                 try { TryApplyDeferredTrainingStats(recruit); }
                 catch (Exception e) { TFTVLogger.Error(e); }
             }
@@ -491,6 +532,11 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
+                    if (!BaseReworkUtils.BaseReworkEnabled)
+                    {
+                        return;
+                    }
+
                     if (_pendingPostRecruitStatApply.Count == 0) return;
                     foreach (var soldier in __instance?.PhoenixFaction?.Soldiers ?? Enumerable.Empty<GeoCharacter>())
                     {
@@ -516,6 +562,11 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
+                    if (!BaseReworkUtils.BaseReworkEnabled)
+                    {
+                        return true;
+                    }
+
                     if (PreferredLoadoutsField?.GetValue(__instance) is IDictionary preferredLoadouts && character != null)
                     {
                         bool alreadyRegistered = preferredLoadouts.Keys.Cast<object>().Any(key =>
