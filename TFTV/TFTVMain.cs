@@ -154,8 +154,8 @@ namespace TFTV
                 Config.PopulateConfigFields();
                 //  Config.RetrieveConfigOptions();
 
-                HarmonyPatchValidator.ValidatePatchTargets();
-
+               // HarmonyPatchValidator.ValidatePatchTargets();
+             //   Harmony.DEBUG = true;
                 harmony.PatchAll();
                // TFTVAudio.ExternalAudioInjector.EnsureHooksOnExistingManagers();
                 TFTVVanillaFixes.UI.FixSurveillanceAbilityGroundMarker(harmony);

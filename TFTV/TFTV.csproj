@@ -44,7 +44,6 @@
     </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\ModSDK\Assembly-CSharp.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Newtonsoft.Json">
@@ -103,7 +102,6 @@
     <Compile Include="ConfigHelpers.cs" />
     <Compile Include="ConsoleCommands.cs" />
     <Compile Include="DefCache.cs" />
-    <Compile Include="HarmonyPatchValidator.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="MainSpecModification.cs" />
     <Compile Include="PersonalSpecModification.cs" />

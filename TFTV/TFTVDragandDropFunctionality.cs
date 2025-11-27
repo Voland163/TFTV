@@ -307,7 +307,7 @@ namespace TFTV
 
            // private static bool CheckedManufacturingForNewItems = false;
             
-            [HarmonyPatch(typeof(GeoPhoenixFaction), "OnNewManufacturableItemsAdded")] //VERIFIED
+           /* [HarmonyPatch(typeof(GeoPhoenixFaction), "OnNewManufacturableItemsAdded")] //VERIFIED
             public static class GeoPhoenixFaction_OnNewManufacturableItemsAdded_Patch
             {
                 public static bool Prefix(GeoPhoenixFaction __instance, ManufacturableItem item)
@@ -331,7 +331,7 @@ namespace TFTV
                         throw;
                     }
                 }
-            }
+            }*/
 
            
 
@@ -609,7 +609,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(GeoManufactureItem), nameof(GeoManufactureItem.Init),
+            /*[HarmonyPatch(typeof(GeoManufactureItem), nameof(GeoManufactureItem.Init),
                 typeof(ItemDef), typeof(GeoFaction), typeof(UIModuleManufacturing.UIMode), typeof(ItemStorage), typeof(VehicleEquipmentStorage), typeof(bool))]
             public static class GeoManufactureItem_Init_Patch
             {
@@ -624,7 +624,7 @@ namespace TFTV
                         TFTVLogger.Error(e);
                     }
                 }
-            }
+            }*/
 
             private static bool _scrapFromSoldierEquip = false;
 
@@ -651,7 +651,7 @@ namespace TFTV
             }
 
           
-            [HarmonyPatch(typeof(UIModuleManufacturing))]
+          /*  [HarmonyPatch(typeof(UIModuleManufacturing))]
             public static class UIModuleManufacturingPatch2
             {
                 [HarmonyPatch("RefreshItemList")] //VERIFIED
@@ -687,7 +687,7 @@ namespace TFTV
                         TFTVLogger.Error(e);
                     }
                 }
-            }
+            }*/
 
             
 

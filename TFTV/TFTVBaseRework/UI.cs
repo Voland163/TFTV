@@ -33,10 +33,6 @@ namespace TFTV.TFTVBaseRework
         private static GameObject _modalRoot;
         private static bool _deploymentUIActive;
 
-
-        private static bool _isBuildingUI;
-
-      
         #region Daily Tick
         internal static void DailyTick(GeoLevelController level)
         {
@@ -111,7 +107,7 @@ namespace TFTV.TFTVBaseRework
             var recruitsModule = level?.View?.GeoscapeModules?.RecruitsListModule;
             if (recruitsModule == null) return;
 
-            _isBuildingUI = true;
+
             try
             {
                 _personnelPanel = new GameObject(PersonnelContainerName, typeof(RectTransform));
@@ -173,10 +169,11 @@ namespace TFTV.TFTVBaseRework
 
                 PopulatePersonnelUI(state, level, content.transform);
             }
-            finally
+            catch (Exception e)
             {
-                _isBuildingUI = false;
+                TFTVLogger.Error(e);
             }
+
         }
 
         private static void PopulatePersonnelUI(UIStateRosterRecruits state, GeoLevelController level, Transform personnelRoot)

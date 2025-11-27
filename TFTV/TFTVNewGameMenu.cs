@@ -99,7 +99,7 @@ namespace TFTV
             }
 
 
-            [HarmonyPatch(typeof(HomeScreenView), "InitView")]
+            [HarmonyPatch(typeof(HomeScreenView), "InitView")] //VERIFIED
             public static class HomeScreenView_InitView_Patch
             {
                 private static void Postfix(HomeScreenView __instance)
@@ -147,7 +147,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(EditionVisualsController), "DetermineEdition")]
+            [HarmonyPatch(typeof(EditionVisualsController), nameof(EditionVisualsController.DetermineEdition))]
             public static class EditionVisualsController_DetermineEdition_Patch
             {
                 private static bool Prefix(EditionVisualsController __instance)
@@ -329,7 +329,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(GameOptionViewController), "OnClicked")]
+            [HarmonyPatch(typeof(GameOptionViewController), "OnClicked")] //VERIFIED
             public static class OptionListViewController_Element_PointerExit_Patch
             {
                 private static void Postfix(GameOptionViewController __instance)
@@ -729,7 +729,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(UIModuleGameSettings), "InitFullContent")]
+            [HarmonyPatch(typeof(UIModuleGameSettings), "InitFullContent")] //VERIFIED
             internal static class UIStateNewGeoscapeGameSettings_InitFullContent_patch
             {
                
@@ -1770,7 +1770,7 @@ namespace TFTV
                 }
             }*/
 
-        [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "EnterState")]
+        [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "EnterState")] //VERIFIED
         public static class UIStateNewGeoscapeGameSettings_EnterState_Patch
         {
             private static void Prefix(UIStateNewGeoscapeGameSettings __instance)
@@ -1859,7 +1859,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "BindSecondaryOptions")]
+        [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "BindSecondaryOptions")] //VERIFIED
         internal static class UIStateNewGeoscapeGameSettings_BindSecondaryOptions_patch
         {
             private static void Postfix(UIStateNewGeoscapeGameSettings __instance, GameOptionViewController element)
@@ -1904,7 +1904,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIModuleGameSettings), "GetActivatedEntitlements")]
+        [HarmonyPatch(typeof(UIModuleGameSettings), nameof(UIModuleGameSettings.GetActivatedEntitlements))] 
         public static class UIModuleGameSettings_GetActivatedEntitlements_Experiment_Patch
         {
             public static bool Prefix(UIModuleGameSettings __instance, ref List<EntitlementDef> __result, List<GameAdditionalContentEntry> ____gameEntitlementContentEntries)
@@ -1982,7 +1982,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIModuleGameSettings), "GetDeactivatedEntitlements")]
+        [HarmonyPatch(typeof(UIModuleGameSettings), nameof(UIModuleGameSettings.GetDeactivatedEntitlements))]
         public static class UIModuleGameSettings_GetDeactivatedEntitlements_Experiment_Patch
         {
             public static bool Prefix(UIModuleGameSettings __instance, ref List<EntitlementDef> __result, List<GameAdditionalContentEntry> ____gameEntitlementContentEntries)
@@ -2002,7 +2002,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "GameSettings_OnConfirm")]
+        [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "GameSettings_OnConfirm")] //VERIFIED
         public static class UIStateNewGeoscapeGameSettings_GameSettings_OnConfirm_patch
         {
             public static void Prefix(UIStateNewGeoscapeGameSettings __instance)
@@ -2022,7 +2022,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "ExitState")]
+        [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "ExitState")] //VERIFIED
         public static class UIStateNewGeoscapeGameSettings_ExitState_patch
         {
             public static void Postfix(UIStateNewGeoscapeGameSettings __instance)

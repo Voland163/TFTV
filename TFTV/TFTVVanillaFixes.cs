@@ -289,10 +289,6 @@ namespace TFTV
 
         internal class UI
         {
-
-
-
-
             //Code provided by Codemite
             [HarmonyPatch(typeof(UIInventorySlot), nameof(UIInventorySlot.UpdateItem))]
             public static class UIInventorySlot_UpdateItem_patch
@@ -2235,7 +2231,7 @@ namespace TFTV
             }*/
 
 
-            internal class TacticalSavesAIBug
+          /*  internal class TacticalSavesAIBug
             {
                 [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.StartTurn))]
                 internal static class TacticalActorStartTurnPatch
@@ -2289,7 +2285,7 @@ namespace TFTV
                         }
                     }
                 }
-            }
+            }*/
 
             internal class DecimalWillpoints
             {

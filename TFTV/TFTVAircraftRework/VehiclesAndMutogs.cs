@@ -44,7 +44,7 @@ namespace TFTV
                              isHelios, aspidaResearchCompleted);
 
                     }
-                    TFTVLogger.Always($"CheckIfCharacterSpaceCostReduced for {geoVehicle.Name} {occupiedSpace}");
+                   // TFTVLogger.Always($"CheckIfCharacterSpaceCostReduced for {geoVehicle.Name} {occupiedSpace}");
                     return occupiedSpace;
 
                 }

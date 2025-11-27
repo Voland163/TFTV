@@ -3,6 +3,7 @@ using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
@@ -337,7 +338,7 @@ namespace TFTV
 
                     int adjustedOccupiedSpace = GetAdjustedPassengerManifestAircraftRework(vehicle);
 
-                    TFTVLogger.Always($"{vehicle.Name} {__instance.SoldierCapacity.text}");
+                 //   TFTVLogger.Always($"{vehicle.Name} {__instance.SoldierCapacity.text}");
 
                     __instance.SoldierCapacity.text = $"{adjustedOccupiedSpace}/{vehicle.MaxCharacterSpace}";
 
@@ -430,6 +431,8 @@ namespace TFTV
             }
         }
 
+       
+
         [HarmonyPatch(typeof(UIAircraftEquipmentTooltip), "DisplayAllStats")]
         public static class Patch_UIAircraftEquipmentTooltip_DisplayAllStats
         {
@@ -446,26 +449,32 @@ namespace TFTV
                     var type = typeof(UIAircraftEquipmentTooltip);
 
                     // Icon
-                    var Icon = (Image)type.GetField("Icon").GetValue(__instance);
+                    var Icon = __instance.Icon;
+
+                    TFTVLogger.Always($"icon null? {Icon== null}");
+
                     // UISettings
 
                     // DisplayedData
-                    var DisplayedData = type.GetField("DisplayedData").GetValue(__instance);
+                    var DisplayedData = __instance.DisplayedData;
+
+                    TFTVLogger.Always($"DisplayedData null? {DisplayedData == null}");
 
                     // ItemNameLocComp, ItemDescriptionLocComp
-                    var ItemNameLocComp = (I2.Loc.Localize)type.GetField("ItemNameLocComp").GetValue(__instance);
-                    var ItemDescriptionLocComp = (I2.Loc.Localize)type.GetField("ItemDescriptionLocComp").GetValue(__instance);
-
-                    // ExpansionSettings
-                    // var ExpansionSettings = type.GetField("ExpansionSettings").GetValue(__instance);
-
-                    // Call: _ = Icon != null;
+                    var ItemNameLocComp = __instance.ItemNameLocComp;
+                    var ItemDescriptionLocComp = __instance.ItemDescriptionLocComp; 
+                   
                     _ = Icon != null;
+
+                    TFTVLogger.Always($"icon still null? {Icon == null}");
 
                     if (__instance.UISettings.ShowNameDescription)
                     {
+                        TFTVLogger.Always("Showing name and description");
                         type.GetMethod("DisplayNameDescription", BindingFlags.NonPublic | BindingFlags.Instance)
                              .Invoke(__instance, null);
+
+                        TFTVLogger.Always("Displayed name and description");
                     }
                     else
                     {
@@ -474,12 +483,16 @@ namespace TFTV
                     }
 
                     // GeoVehicleWeaponDef geoVehicleWeaponDef = DisplayedData.AircraftEquipmentDef as GeoVehicleWeaponDef;
-                    var AircraftEquipmentDef = DisplayedData.GetType().GetField("AircraftEquipmentDef").GetValue(DisplayedData);
+                    var AircraftEquipmentDef = DisplayedData.AircraftEquipmentDef; 
+
+                    TFTVLogger.Always($"AircraftEquipmentDef null? {AircraftEquipmentDef == null}");
 
                     var geoVehicleModuleDef = AircraftEquipmentDef as GeoVehicleModuleDef;
+
+
+
                     if (geoVehicleModuleDef != null)
                     {
-
                         type.GetMethod("DisplayGeoscapeBonus", BindingFlags.NonPublic | BindingFlags.Instance)
                         .Invoke(__instance, new object[] { geoVehicleModuleDef });
 
@@ -492,21 +505,7 @@ namespace TFTV
                             MethodInfo methodInfo = type.GetMethod("AddStatObject", BindingFlags.NonPublic | BindingFlags.Instance);
                             methodInfo.Invoke(__instance, new object[] { localizedTextBindTest2, null, tier.ToString() });
                         }
-                        //  
-                        //   type.GetMethod("DisplayCountermeasureType", BindingFlags.NonPublic | BindingFlags.Instance)
-                        //      .Invoke(__instance, new object[] { geoVehicleModuleDef });
-                        //   type.GetMethod("AddSeparator", BindingFlags.NonPublic | BindingFlags.Instance)
-                        //      .Invoke(__instance, null);
-                        //  type.GetMethod("DisplayCharges", BindingFlags.NonPublic | BindingFlags.Instance)
-                        //      .Invoke(__instance, new object[] { geoVehicleModuleDef });
-                        //  type.GetMethod("DisplayDuration", BindingFlags.NonPublic | BindingFlags.Instance)
-                        //  .Invoke(__instance, new object[] { geoVehicleModuleDef });
-                        //  type.GetMethod("DisplayPreparation", BindingFlags.NonPublic | BindingFlags.Instance)
-                        //    .Invoke(__instance, new object[] { geoVehicleModuleDef });
-                        //  type.GetMethod("AddSeparator", BindingFlags.NonPublic | BindingFlags.Instance)
-                        //  .Invoke(__instance, null);
-                        //  type.GetMethod("DisplayHitPoints", BindingFlags.NonPublic | BindingFlags.Instance)
-                        //    .Invoke(__instance, null);
+                        
                     }
 
 
@@ -517,12 +516,6 @@ namespace TFTV
                         // TFTVLogger.Always($"found text {text.text}");
                         text.verticalOverflow = VerticalWrapMode.Overflow;
                     }
-
-
-                    /* foreach (Component component in __instance.transform.GetComponentsInChildren<Component>()) 
-                     {
-                         TFTVLogger.Always($"{component.name} {component.GetType()}");                            
-                     }*/
 
 
                     return false;
