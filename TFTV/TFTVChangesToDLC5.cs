@@ -1383,39 +1383,8 @@ namespace TFTV
 
                 }
 
-                [HarmonyPatch(typeof(GeoMission), "ApplyMissionResults")] //VERIFIED
-                public static class GeoMission_ApplyMissionResults_patch
-                {
-                    public static void Prefix()
-                    {
-                        try
-                        {
-                            AdjustMercItemsToBeRecoverable(false);
 
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            throw;
-                        }
-                    }
-
-                    public static void Postfix()
-                    {
-                        try
-                        {
-                            AdjustMercItemsToBeRecoverable(true);
-
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            throw;
-                        }
-                    }
-                }
-
-                private static void AdjustMercItemsToBeRecoverable(bool revert)
+                public static void AdjustMercItemsToBeRecoverable(bool revert)
                 {
                     try
                     {

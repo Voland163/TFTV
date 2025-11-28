@@ -370,46 +370,48 @@ namespace TFTV
         internal class WorkshopModule
         {
 
-            [HarmonyPatch(typeof(DamageOverTimeStatus), "ApplyEffect")]
-            public static class DamageOverTimeStatus_ApplyEffect_Patch
+            public static void WorkshopModuleLowerAcidApplyAffectCheck(DamageOverTimeStatus damageOverTimeStatus)
             {
-                public static void Postfix(DamageOverTimeStatus __instance)
+                try 
                 {
-                    try
+
+                    TacticalActor tacticalActor = damageOverTimeStatus.TacticalActor;
+                    //   TFTVLogger.Always($"running ApplyEffect. ta null? {tacticalActor == null} {__instance.DamageOverTimeStatusDef.name}");
+
+                    if (!AircraftReworkOn || _thunderbirdWorkshopPresent < 2 || damageOverTimeStatus.TacticalActor == null || !tacticalActor.IsControlledByPlayer)
                     {
-                        TacticalActor tacticalActor = __instance.TacticalActor;
-                        //   TFTVLogger.Always($"running ApplyEffect. ta null? {tacticalActor == null} {__instance.DamageOverTimeStatusDef.name}");
-
-                        if (!AircraftReworkOn || _thunderbirdWorkshopPresent < 2 || __instance.TacticalActor == null || !tacticalActor.IsControlledByPlayer)
-                        {
-                            return;
-                        }
-
-                        ItemSlot itemSlot = __instance.Target as ItemSlot;
-
-                        if (itemSlot == null)
-                        {
-                            return;
-                        }
-
-
-                        if (itemSlot.GetAllDirectItems(false) != null && (itemSlot.GetAllDirectItems(false).
-                            Any(ti => ti.GameTags.Contains(Shared.SharedGameTags.BionicalTag) ||
-                            ti.GetTopMainAddon() != null && ti.GetTopMainAddon().GameTags.Contains(Shared.SharedGameTags.BionicalTag))
-                            || tacticalActor.HasGameTag(Shared.SharedGameTags.VehicleTag)))
-                        {
-                            TFTVLogger.Always($"Lowering acid status for {__instance.TacticalActor.DisplayName}.");
-
-                            __instance.LowerDamageOverTimeLevel(__instance.DamageOverTimeStatusDef.LowerLevelPerTurn);
-                        }
-
+                        return;
                     }
-                    catch (Exception e)
+
+                    ItemSlot itemSlot = damageOverTimeStatus.Target as ItemSlot;
+
+                    if (itemSlot == null)
                     {
-                        TFTVLogger.Error(e);
+                        return;
                     }
+
+
+                    if (itemSlot.GetAllDirectItems(false) != null && (itemSlot.GetAllDirectItems(false).
+                        Any(ti => ti.GameTags.Contains(Shared.SharedGameTags.BionicalTag) ||
+                        ti.GetTopMainAddon() != null && ti.GetTopMainAddon().GameTags.Contains(Shared.SharedGameTags.BionicalTag))
+                        || tacticalActor.HasGameTag(Shared.SharedGameTags.VehicleTag)))
+                    {
+                        TFTVLogger.Always($"Lowering acid status for {damageOverTimeStatus.TacticalActor.DisplayName}.");
+
+                        damageOverTimeStatus.LowerDamageOverTimeLevel(damageOverTimeStatus.DamageOverTimeStatusDef.LowerLevelPerTurn);
+                    }
+
                 }
-            }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+
+
+            } 
+
+
 
 
             /* [HarmonyPatch(typeof(DamageOverTimeStatus), "LowerDamageOverTimeLevelProportional")]

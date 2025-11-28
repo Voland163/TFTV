@@ -15,6 +15,7 @@ using UnityEngine;
 using Research = PhoenixPoint.Geoscape.Entities.Research.Research;
 using static TFTV.TFTVAircraftReworkMain;
 using static TFTV.AircraftReworkHelpers;
+using PhoenixPoint.Tactical.View.ViewStates;
 
 namespace TFTV
 {
@@ -218,38 +219,30 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(GeoMission), "ApplyMissionResults")]
-        public static class GeoMission_ApplyMissionResults_Patch
+
+        public static void AfterLosingAmbushGeoMissionApplyMissionResults(GeoMission geoMission, TacMissionResult result, GeoSquad squad)
         {
-            public static void Postfix(GeoMission __instance, TacMissionResult result, GeoSquad squad)
+            try
             {
-                try
+                if (!AircraftReworkOn)
                 {
-                    if (!AircraftReworkOn)
-                    {
-                        return;
-                    }
-
-                    bool ambushMission = __instance.MissionDef.Tags.Contains(Shared.SharedGameTags.AmbushMissionTag);
-                    bool phoenixLostMission = result.FactionResults.Any(fr => fr.FactionDef == __instance.Level.PhoenixFaction.FactionDef.PPFactionDef
-                        && fr.State == TacFactionState.Defeated);
-
-                    TFTVLogger.Always($"Mission results: {__instance.MissionDef.name} ambush? {ambushMission} lost? {phoenixLostMission}");
-
-                    if (ambushMission && phoenixLostMission)
-                    {
-                        __instance.GetLocalAircraft(squad).SetHitpoints(0);
-                    }
-
+                    return;
                 }
-                catch (Exception e)
+                bool ambushMission = geoMission.MissionDef.Tags.Contains(Shared.SharedGameTags.AmbushMissionTag);
+                bool phoenixLostMission = result.FactionResults.Any(fr => fr.FactionDef == geoMission.Level.PhoenixFaction.FactionDef.PPFactionDef
+                    && fr.State == TacFactionState.Defeated);
+                TFTVLogger.Always($"Mission results: {geoMission.MissionDef.name} ambush? {ambushMission} lost? {phoenixLostMission}");
+                if (ambushMission && phoenixLostMission)
                 {
-                    TFTVLogger.Error(e);
-                    throw;
+                    geoMission.GetLocalAircraft(squad).SetHitpoints(0);
                 }
             }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
         }
-
 
         [HarmonyPatch(typeof(GeoVehicle), "OnAircraftBreakingDown")]
         public static class GeoVehicle_OnAircraftBreakingDown_Patch

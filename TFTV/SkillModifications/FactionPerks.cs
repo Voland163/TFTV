@@ -431,52 +431,50 @@ namespace PRMBetterClasses.SkillModifications
             punisher.ViewElementDef.SmallIcon = punisherIcon;
         }
         // Harmony patch to check if an actor got killed by someone with the Punisher ability
-        [HarmonyPatch(typeof(TacticalActor), "OnAnotherActorDeath")]
-        public static class BC_TacticalActor_OnAnotherActorDeath_Patch
+        //consolidated in TFTVHarmonyTactical
+        public static void PunisherTacticalActorOnAnotherActorDeath(TacticalActor tacticalActor, DeathReport death)
         {
-            public static void Postfix(TacticalActor __instance, DeathReport death)
+            try
             {
-                try
+                // Copy from original OnAnotherActorDeath method to catch some exceptions when this patch should also do nothing
+                if (death.Actor == tacticalActor)
                 {
-                    // Copy from original OnAnotherActorDeath method to catch some exceptions when this patch should also do nothing
-                    if (death.Actor == __instance)
+                    return;
+                }
+                if (tacticalActor.Vehicle != null && tacticalActor.Vehicle.Passengers.Contains(death.Actor))
+                {
+                    MindControlStatusDef mindControlStatusDef = death.Actor.GetPreferredDieAbility().DieAbilityDef.StatusesToUnapplyFromMount.OfType<MindControlStatusDef>().FirstOrDefault();
+                    if (mindControlStatusDef != null && tacticalActor.Status.GetStatus<MindControlStatus>(mindControlStatusDef) != null)
                     {
                         return;
                     }
-                    if (__instance.Vehicle != null && __instance.Vehicle.Passengers.Contains(death.Actor))
-                    {
-                        MindControlStatusDef mindControlStatusDef = death.Actor.GetPreferredDieAbility().DieAbilityDef.StatusesToUnapplyFromMount.OfType<MindControlStatusDef>().FirstOrDefault();
-                        if (mindControlStatusDef != null && __instance.Status.GetStatus<MindControlStatus>(mindControlStatusDef) != null)
-                        {
-                            return;
-                        }
-                    }
-                    // end copy
-
-
-                    if (death.Actor.TacticalActorBaseDef.WillPointWorth == 0)
-                    {
-                        return;
-                    }
-                    TacticalAbilityDef punisherAbilityDef = DefCache.GetDef<TacticalAbilityDef>("Punisher_AbilityDef");
-                    if (death.Killer != null && death.Killer.GetAbilityWithDef<TacticalAbility>(punisherAbilityDef) != null)
-                    {
-                        TacticalFaction tacticalFaction = death.Actor.TacticalFaction;
-                        if (death.Actor.TacticalFaction == __instance.TacticalFaction && __instance.CharacterStats != null && __instance.CharacterStats.WillPoints > 0)
-                        {
-                            //TFTVLogger.Always($"Punisher -2 WP triggered for actor {__instance} from faction {__instance.TacticalFaction} because {death.Actor} from faction {death.Actor.TacticalFaction} got killed by {death.Killer}");
-                            __instance.CharacterStats.WillPoints.Subtract(2);
-                        }
-
-                    }
                 }
-                catch (Exception e)
+                // end copy
+
+
+                if (death.Actor.TacticalActorBaseDef.WillPointWorth == 0)
                 {
-                    PRMLogger.Error(e);
+                    return;
                 }
+                TacticalAbilityDef punisherAbilityDef = DefCache.GetDef<TacticalAbilityDef>("Punisher_AbilityDef");
+                if (death.Killer != null && death.Killer.GetAbilityWithDef<TacticalAbility>(punisherAbilityDef) != null)
+                {
+                    TacticalFaction tacticalFaction = death.Actor.TacticalFaction;
+                    if (death.Actor.TacticalFaction == tacticalActor.TacticalFaction && tacticalActor.CharacterStats != null && tacticalActor.CharacterStats.WillPoints > 0)
+                    {
+                        //TFTVLogger.Always($"Punisher -2 WP triggered for actor {__instance} from faction {__instance.TacticalFaction} because {death.Actor} from faction {death.Actor.TacticalFaction} got killed by {death.Killer}");
+                        tacticalActor.CharacterStats.WillPoints.Subtract(2);
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                PRMLogger.Error(e);
             }
         }
 
+     
         private static void Change_OWFocus()
         {
             OverwatchFocusAbilityDef overwatchFocus = DefCache.GetDef<OverwatchFocusAbilityDef>("OverwatchFocus_AbilityDef");

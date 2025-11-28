@@ -1,7 +1,10 @@
 ﻿using Base.Core;
+using Base.UI;
+using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
+using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Levels;
@@ -24,6 +27,25 @@ namespace TFTV
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
+        
+
+        [HarmonyPatch(typeof(EditUnitButtonsController), nameof(EditUnitButtonsController.SetEditUnitButtonsBasedOnType))]
+        internal static class TFTV_EditUnitButtonsController_SetEditUnitButtonsBasedOnType_DeliriumPerksCured_patch
+        {
+            public static void Postfix(UIModuleActorCycle ____parentModule)
+            {
+                try
+                {
+                    TFTVDelirium.DeliriumPerkRecoveryPrompt(____parentModule);
+                    TFTVUI.EditScreen.LoadoutsAndHelmetToggle.ShowAndHideHelmetAndLoadoutButtons(____parentModule);
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
         [HarmonyPatch(typeof(UITooltip), nameof(UITooltip.Init), new Type[] { typeof(string), typeof(int), typeof(float), typeof(float), typeof(float), typeof(Position), typeof(GameObject) })]
         public static class UITooltip_Init_patch

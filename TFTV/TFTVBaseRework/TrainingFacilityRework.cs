@@ -498,29 +498,28 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
-        [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruitToContainerFinal")]
-        internal static class GeoPhoenixFaction_AddRecruitToContainerFinal_TrainingStats_Postfix
+        
+        public static void TryApplyDeferredTrainingStats(GeoCharacter recruit)
         {
-            private static void Postfix(GeoPhoenixFaction __instance, GeoCharacter recruit)
+            try
             {
+
                 if (!BaseReworkUtils.BaseReworkEnabled)
                 {
                     return;
                 }
 
-                try { TryApplyDeferredTrainingStats(recruit); }
-                catch (Exception e) { TFTVLogger.Error(e); }
+                if (recruit == null) return;
+                if (_pendingPostRecruitStatApply.TryGetValue(recruit.Id, out int finalLevel))
+                {
+                    ApplyCumulativeLevelGains(recruit, finalLevel);
+                    _pendingPostRecruitStatApply.Remove(recruit.Id);
+                    TFTVLogger.Always($"[Training] Deferred stat gains applied to {recruit.DisplayName} (Level {finalLevel}) via {nameof(TryApplyDeferredTrainingStats)}.");
+                }
             }
-        }
-
-        private static void TryApplyDeferredTrainingStats(GeoCharacter recruit)
-        {
-            if (recruit == null) return;
-            if (_pendingPostRecruitStatApply.TryGetValue(recruit.Id, out int finalLevel))
+            catch (Exception e)
             {
-                ApplyCumulativeLevelGains(recruit, finalLevel);
-                _pendingPostRecruitStatApply.Remove(recruit.Id);
-                TFTVLogger.Always($"[Training] Deferred stat gains applied to {recruit.DisplayName} (Level {finalLevel}) via {nameof(TryApplyDeferredTrainingStats)}.");
+                TFTVLogger.Error(e);
             }
         }
 

@@ -1,7 +1,6 @@
 ﻿using Base;
 using Base.Core;
 using Base.Defs;
-using Base.Entities;
 using Base.Entities.Statuses;
 using Base.Levels;
 using Base.UI;
@@ -45,7 +44,6 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
-using static Base.Audio.WwiseIDs.SWITCHES;
 using static PhoenixPoint.Tactical.View.ViewControllers.SoldierResultElement;
 using static TFTV.TFTVUI.EditScreen.Stats.TFTV_UIModuleCharacterProgression_RefreshStatPanel_patch;
 
@@ -473,175 +471,175 @@ namespace TFTV
                 //Not used because this was for heavyConditioning, which was removed
                 //To use again need corrections
 
-               /* [HarmonyPatch(typeof(UIModuleCharacterProgression), nameof(UIModuleCharacterProgression.RefreshStatusesPanel))]
-                private static class TFTV_UIModuleCharacterProgression_RefreshStatusesPanel_patch
-                {
-                    private static readonly GameTagDef ArmorTag = Shared.SharedGameTags.ArmorTag;
-                    private static readonly GameTagDef HeavyClassTag = DefCache.GetDef<GameTagDef>("Heavy_ClassTagDef");
-                    private static readonly GameTagDef BionicTag = DefCache.GetDef<GameTagDef>("Bionic_TagDef");
+                /* [HarmonyPatch(typeof(UIModuleCharacterProgression), nameof(UIModuleCharacterProgression.RefreshStatusesPanel))]
+                 private static class TFTV_UIModuleCharacterProgression_RefreshStatusesPanel_patch
+                 {
+                     private static readonly GameTagDef ArmorTag = Shared.SharedGameTags.ArmorTag;
+                     private static readonly GameTagDef HeavyClassTag = DefCache.GetDef<GameTagDef>("Heavy_ClassTagDef");
+                     private static readonly GameTagDef BionicTag = DefCache.GetDef<GameTagDef>("Bionic_TagDef");
 
-                    private static bool Prefix(UIModuleCharacterProgression __instance, GeoCharacter ____character, List<ICommonItem> armorItems)
-                    {
-                        try
-                        {
-                            if (____character == null)
-                                return false;
+                     private static bool Prefix(UIModuleCharacterProgression __instance, GeoCharacter ____character, List<ICommonItem> armorItems)
+                     {
+                         try
+                         {
+                             if (____character == null)
+                                 return false;
 
-                            FixCarsWithDelirium(____character);
+                             FixCarsWithDelirium(____character);
 
-                            if (!TFTVAircraftReworkMain.AircraftReworkOn)
-                                return true; // let original handle it
+                             if (!TFTVAircraftReworkMain.AircraftReworkOn)
+                                 return true; // let original handle it
 
-                            bool hasAksuDrill = ____character.Progression != null && ____character.Progression.Abilities.Any(a => a == TFTVDrills.DrillsDefs._aksuSprint);
+                             bool hasAksuDrill = ____character.Progression != null && ____character.Progression.Abilities.Any(a => a == TFTVDrills.DrillsDefs._aksuSprint);
 
-                                if (!hasAksuDrill)
-                                return true; // let original handle it
+                                 if (!hasAksuDrill)
+                                 return true; // let original handle it
 
-                            DrillBonuses drillBonuses = CalculateDrillBonuses(____character);
+                             DrillBonuses drillBonuses = CalculateDrillBonuses(____character);
 
-                            float fPerception = 0f;
-                            float fAccuracy = 0f;
-                            float fStealth = 0f;
-                            float fPerceptionMult = 1f;
-                            float fAccuracyMult = 1f;
-                            float fStealthMult = 1f;
+                             float fPerception = 0f;
+                             float fAccuracy = 0f;
+                             float fStealth = 0f;
+                             float fPerceptionMult = 1f;
+                             float fAccuracyMult = 1f;
+                             float fStealthMult = 1f;
 
-                            PerceptionComponentDef componentDef = ____character.TemplateDef.ComponentSetDef.GetComponentDef<PerceptionComponentDef>();
-                            if (componentDef != null)
-                            {
-                                fPerception += componentDef.PerceptionRange;
-                            }
+                             PerceptionComponentDef componentDef = ____character.TemplateDef.ComponentSetDef.GetComponentDef<PerceptionComponentDef>();
+                             if (componentDef != null)
+                             {
+                                 fPerception += componentDef.PerceptionRange;
+                             }
 
-                            foreach (ICommonItem armorItem in armorItems)
-                            {
-                                TacticalItemDef tacticalItemDef = armorItem.ItemDef as TacticalItemDef;
-                                if (!(tacticalItemDef == null) && !(tacticalItemDef.BodyPartAspectDef == null))
-                                {
-                                    if (tacticalItemDef.BodyPartAspectDef.Perception > 0)
-                                    {
-                                        fPerception += tacticalItemDef.BodyPartAspectDef.Perception;
-                                    }
-                                    else
-                                    {
-                                        fPerception += tacticalItemDef.BodyPartAspectDef.Perception / 2;
-                                    }
+                             foreach (ICommonItem armorItem in armorItems)
+                             {
+                                 TacticalItemDef tacticalItemDef = armorItem.ItemDef as TacticalItemDef;
+                                 if (!(tacticalItemDef == null) && !(tacticalItemDef.BodyPartAspectDef == null))
+                                 {
+                                     if (tacticalItemDef.BodyPartAspectDef.Perception > 0)
+                                     {
+                                         fPerception += tacticalItemDef.BodyPartAspectDef.Perception;
+                                     }
+                                     else
+                                     {
+                                         fPerception += tacticalItemDef.BodyPartAspectDef.Perception / 2;
+                                     }
 
-                                    if (tacticalItemDef.BodyPartAspectDef.Accuracy < 0)
-                                    {
-                                        fAccuracy += tacticalItemDef.BodyPartAspectDef.Accuracy / 2;
-                                    }
-                                    else
-                                    {
-                                        fAccuracy += tacticalItemDef.BodyPartAspectDef.Accuracy;
-                                    }
-                                    if (tacticalItemDef.BodyPartAspectDef.Stealth < 0)
-                                    {
-                                        fStealth += tacticalItemDef.BodyPartAspectDef.Stealth / 2;
-                                    }
-                                    else
-                                    {
-                                        fStealth += tacticalItemDef.BodyPartAspectDef.Stealth;
-                                    }
-                                }
-                            }
+                                     if (tacticalItemDef.BodyPartAspectDef.Accuracy < 0)
+                                     {
+                                         fAccuracy += tacticalItemDef.BodyPartAspectDef.Accuracy / 2;
+                                     }
+                                     else
+                                     {
+                                         fAccuracy += tacticalItemDef.BodyPartAspectDef.Accuracy;
+                                     }
+                                     if (tacticalItemDef.BodyPartAspectDef.Stealth < 0)
+                                     {
+                                         fStealth += tacticalItemDef.BodyPartAspectDef.Stealth / 2;
+                                     }
+                                     else
+                                     {
+                                         fStealth += tacticalItemDef.BodyPartAspectDef.Stealth;
+                                     }
+                                 }
+                             }
 
-                            MethodInfo methodInfo = typeof(UIModuleCharacterProgression).GetMethod("ApplyStatModification", BindingFlags.NonPublic | BindingFlags.Static);
+                             MethodInfo methodInfo = typeof(UIModuleCharacterProgression).GetMethod("ApplyStatModification", BindingFlags.NonPublic | BindingFlags.Static);
 
-                            if (____character.Progression != null)
-                            {
-                                foreach (TacticalAbilityDef ability in ____character.Progression.Abilities)
-                                {
-                                    PassiveModifierAbilityDef passiveModifierAbilityDef = ability as PassiveModifierAbilityDef;
-                                    if (!(passiveModifierAbilityDef == null))
-                                    {
-                                        ItemStatModification[] statModifications = passiveModifierAbilityDef.StatModifications;
-                                        foreach (ItemStatModification statModifier in statModifications)
-                                        {
-                                            ApplyStatModification(statModifier, ref fPerception, ref fAccuracy, ref fStealth, ref fPerceptionMult, ref fAccuracyMult, ref fStealthMult);
-                                        }
-                                    }
-                                }
-                            }
+                             if (____character.Progression != null)
+                             {
+                                 foreach (TacticalAbilityDef ability in ____character.Progression.Abilities)
+                                 {
+                                     PassiveModifierAbilityDef passiveModifierAbilityDef = ability as PassiveModifierAbilityDef;
+                                     if (!(passiveModifierAbilityDef == null))
+                                     {
+                                         ItemStatModification[] statModifications = passiveModifierAbilityDef.StatModifications;
+                                         foreach (ItemStatModification statModifier in statModifications)
+                                         {
+                                             ApplyStatModification(statModifier, ref fPerception, ref fAccuracy, ref fStealth, ref fPerceptionMult, ref fAccuracyMult, ref fStealthMult);
+                                         }
+                                     }
+                                 }
+                             }
 
-                            foreach (PassiveModifierAbilityDef passiveModifier in ____character.PassiveModifiers)
-                            {
-                                ItemStatModification[] statModifications = passiveModifier.StatModifications;
-                                foreach (ItemStatModification statModifier2 in statModifications)
-                                {
-                                    ApplyStatModification(statModifier2, ref fPerception, ref fAccuracy, ref fStealth, ref fPerceptionMult, ref fAccuracyMult, ref fStealthMult);
-                                }
-                            }
+                             foreach (PassiveModifierAbilityDef passiveModifier in ____character.PassiveModifiers)
+                             {
+                                 ItemStatModification[] statModifications = passiveModifier.StatModifications;
+                                 foreach (ItemStatModification statModifier2 in statModifications)
+                                 {
+                                     ApplyStatModification(statModifier2, ref fPerception, ref fAccuracy, ref fStealth, ref fPerceptionMult, ref fAccuracyMult, ref fStealthMult);
+                                 }
+                             }
 
-                            int num = (int)(fPerception * fPerceptionMult);
-                            __instance.PerceptionStatText.text = $"+{num}";
-                            if (fAccuracy * fAccuracyMult == 0f)
-                            {
-                                __instance.AccuracyStatText.text = "---";
-                            }
-                            else
-                            {
-                                __instance.AccuracyStatText.text = UIUtil.PercentageStat(fAccuracy * fAccuracyMult, "{0}%");
-                            }
+                             int num = (int)(fPerception * fPerceptionMult);
+                             __instance.PerceptionStatText.text = $"+{num}";
+                             if (fAccuracy * fAccuracyMult == 0f)
+                             {
+                                 __instance.AccuracyStatText.text = "---";
+                             }
+                             else
+                             {
+                                 __instance.AccuracyStatText.text = UIUtil.PercentageStat(fAccuracy * fAccuracyMult, "{0}%");
+                             }
 
-                            if (fStealth * fStealthMult == 0f)
-                            {
-                                __instance.StealthStatText.text = "---";
-                            }
-                            else
-                            {
-                                __instance.StealthStatText.text = UIUtil.PercentageStat(fStealth * fStealthMult, "{0}%");
-                            }
+                             if (fStealth * fStealthMult == 0f)
+                             {
+                                 __instance.StealthStatText.text = "---";
+                             }
+                             else
+                             {
+                                 __instance.StealthStatText.text = UIUtil.PercentageStat(fStealth * fStealthMult, "{0}%");
+                             }
 
-                            return false; // skip original since we've updated the UI
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            return true; // on error, fall back to original
-                        }
-                    }
+                             return false; // skip original since we've updated the UI
+                         }
+                         catch (Exception e)
+                         {
+                             TFTVLogger.Error(e);
+                             return true; // on error, fall back to original
+                         }
+                     }
 
-                    private static void ApplyStatModification(ItemStatModification statModifier, ref float fPerception, ref float fAccuracy, ref float fStealth, ref float fPerceptionMult, ref float fAccuracyMult, ref float fStealthMult)
-                    {
-                        switch (statModifier.TargetStat)
-                        {
-                            case StatModificationTarget.Perception:
-                                if (statModifier.Modification == StatModificationType.Add)
-                                {
-                                    fPerception += statModifier.Value;
-                                }
-                                else if (statModifier.Modification == StatModificationType.Multiply)
-                                {
-                                    fPerceptionMult += statModifier.Value;
-                                }
+                     private static void ApplyStatModification(ItemStatModification statModifier, ref float fPerception, ref float fAccuracy, ref float fStealth, ref float fPerceptionMult, ref float fAccuracyMult, ref float fStealthMult)
+                     {
+                         switch (statModifier.TargetStat)
+                         {
+                             case StatModificationTarget.Perception:
+                                 if (statModifier.Modification == StatModificationType.Add)
+                                 {
+                                     fPerception += statModifier.Value;
+                                 }
+                                 else if (statModifier.Modification == StatModificationType.Multiply)
+                                 {
+                                     fPerceptionMult += statModifier.Value;
+                                 }
 
-                                break;
-                            case StatModificationTarget.Accuracy:
-                                if (statModifier.Modification == StatModificationType.Add)
-                                {
-                                    fAccuracy += statModifier.Value;
-                                }
-                                else if (statModifier.Modification == StatModificationType.Multiply)
-                                {
-                                    fAccuracyMult += statModifier.Value;
-                                }
+                                 break;
+                             case StatModificationTarget.Accuracy:
+                                 if (statModifier.Modification == StatModificationType.Add)
+                                 {
+                                     fAccuracy += statModifier.Value;
+                                 }
+                                 else if (statModifier.Modification == StatModificationType.Multiply)
+                                 {
+                                     fAccuracyMult += statModifier.Value;
+                                 }
 
-                                break;
-                            case StatModificationTarget.Stealth:
-                                if (statModifier.Modification == StatModificationType.Add)
-                                {
-                                    fStealth += statModifier.Value;
-                                }
-                                else if (statModifier.Modification == StatModificationType.Multiply)
-                                {
-                                    fStealthMult += statModifier.Value;
-                                }
+                                 break;
+                             case StatModificationTarget.Stealth:
+                                 if (statModifier.Modification == StatModificationType.Add)
+                                 {
+                                     fStealth += statModifier.Value;
+                                 }
+                                 else if (statModifier.Modification == StatModificationType.Multiply)
+                                 {
+                                     fStealthMult += statModifier.Value;
+                                 }
 
-                                break;
-                        }
-                    }
+                                 break;
+                         }
+                     }
 
-                }*/
+                 }*/
 
                 [HarmonyPatch(typeof(GeoRosterStatisticsController))]
                 internal static class GeoRosterStatisticsControllerInitPatch
@@ -1071,145 +1069,18 @@ namespace TFTV
 
                 }
 
-
-                [HarmonyPatch(typeof(EditUnitButtonsController), nameof(EditUnitButtonsController.SetEditUnitButtonsBasedOnType))]
-                internal static class TFTV_EditUnitButtonsController_SetEditUnitButtonsBasedOnType_ToggleHelmetButton_patch
+                public static void ShowAndHideHelmetAndLoadoutButtons(UIModuleActorCycle uIModuleActorCycle)
                 {
-                    public static void Prefix(EditUnitButtonsController __instance, UIModuleActorCycle ____parentModule)
+                    try
                     {
-                        try
+                        if (uIModuleActorCycle.CurrentUnit != null)
                         {
-                            if (____parentModule.CurrentUnit != null)
+                            //  TFTVLogger.Always($"Actually here; {____parentModule.CurrentState}");
+
+                            switch (uIModuleActorCycle.CurrentState)
                             {
-                                //  TFTVLogger.Always($"Actually here; {____parentModule.CurrentState}");
+                                case UIModuleActorCycle.ActorCycleState.RosterSection:
 
-                                switch (____parentModule.CurrentState)
-                                {
-                                    case UIModuleActorCycle.ActorCycleState.RosterSection:
-
-                                        if (HelmetToggle != null)
-                                        {
-                                            HelmetToggle.gameObject.SetActive(false);
-                                            HelmetToggle.ResetButtonAnimations();
-                                            UnequipAll.gameObject.SetActive(false);
-                                            UnequipAll.ResetButtonAnimations();
-                                            SaveLoadout.gameObject.SetActive(false);
-                                            SaveLoadout.ResetButtonAnimations();
-                                            LoadLoadout.gameObject.SetActive(false);
-                                            LoadLoadout.ResetButtonAnimations();
-                                        }
-
-                                        break;
-
-                                    case UIModuleActorCycle.ActorCycleState.EditSoldierSection:
-
-
-                                        //  HelmetToggle.gameObject.SetActive(true);
-                                        //  HelmetToggle.ResetButtonAnimations();
-                                        UnequipAll.gameObject.SetActive(true);
-                                        UnequipAll.ResetButtonAnimations();
-                                        SaveLoadout.gameObject.SetActive(true);
-                                        SaveLoadout.ResetButtonAnimations();
-                                        LoadLoadout.gameObject.SetActive(true);
-                                        LoadLoadout.ResetButtonAnimations();
-
-                                        bool hasAugmentedHead = false;
-                                        ItemSlotDef headSlot = DefCache.GetDef<ItemSlotDef>("Human_Head_SlotDef");
-                                        foreach (GeoItem bionic in ____parentModule?.CurrentCharacter?.ArmourItems)
-                                        {
-                                            if ((bionic.CommonItemData.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag) || bionic.CommonItemData.ItemDef.Tags.Contains(Shared.SharedGameTags.AnuMutationTag))
-                                            && bionic.CommonItemData.ItemDef.RequiredSlotBinds[0].RequiredSlot == headSlot)
-                                            {
-                                                hasAugmentedHead = true;
-                                            }
-                                        }
-
-                                        if (hasAugmentedHead)
-                                        {
-                                            HelmetToggle.gameObject.SetActive(false);
-                                            HelmetToggle.ResetButtonAnimations();
-                                        }
-                                        else
-                                        {
-                                            HelmetToggle.gameObject.SetActive(true);
-                                            HelmetToggle.ResetButtonAnimations();
-                                        }
-
-                                        ShadeMutationBionics(____parentModule);
-
-                                        break;
-                                    case UIModuleActorCycle.ActorCycleState.EditVehicleSection:
-                                        if (HelmetToggle != null)
-                                        {
-                                            HelmetToggle.gameObject.SetActive(false);
-                                            HelmetToggle.ResetButtonAnimations();
-                                            UnequipAll.gameObject.SetActive(false);
-                                            UnequipAll.ResetButtonAnimations();
-                                            SaveLoadout.gameObject.SetActive(false);
-                                            SaveLoadout.ResetButtonAnimations();
-                                            LoadLoadout.gameObject.SetActive(false);
-                                            LoadLoadout.ResetButtonAnimations();
-                                        }
-                                        break;
-                                    case UIModuleActorCycle.ActorCycleState.EditMutogSection:
-                                        if (HelmetToggle != null)
-                                        {
-                                            HelmetToggle.gameObject.SetActive(false);
-                                            HelmetToggle.ResetButtonAnimations();
-                                            UnequipAll.gameObject.SetActive(false);
-                                            UnequipAll.ResetButtonAnimations();
-                                            SaveLoadout.gameObject.SetActive(false);
-                                            SaveLoadout.ResetButtonAnimations();
-                                            LoadLoadout.gameObject.SetActive(false);
-                                            LoadLoadout.ResetButtonAnimations();
-                                        }
-                                        break;
-                                    case UIModuleActorCycle.ActorCycleState.CapturedAlienSection:
-                                        if (HelmetToggle != null)
-                                        {
-                                            HelmetToggle.gameObject.SetActive(false);
-                                            HelmetToggle.ResetButtonAnimations();
-                                            UnequipAll.gameObject.SetActive(false);
-                                            UnequipAll.ResetButtonAnimations();
-                                            SaveLoadout.gameObject.SetActive(false);
-                                            SaveLoadout.ResetButtonAnimations();
-                                            LoadLoadout.gameObject.SetActive(false);
-                                            LoadLoadout.ResetButtonAnimations();
-                                        }
-                                        break;
-                                    case UIModuleActorCycle.ActorCycleState.RecruitSection:
-                                        if (HelmetToggle != null)
-                                        {
-                                            HelmetToggle.gameObject.SetActive(false);
-                                            HelmetToggle.ResetButtonAnimations();
-                                            UnequipAll.gameObject.SetActive(false);
-                                            UnequipAll.ResetButtonAnimations();
-                                            SaveLoadout.gameObject.SetActive(false);
-                                            SaveLoadout.ResetButtonAnimations();
-                                            LoadLoadout.gameObject.SetActive(false);
-                                            LoadLoadout.ResetButtonAnimations();
-                                        }
-                                        break;
-                                    case UIModuleActorCycle.ActorCycleState.Memorial:
-                                        if (HelmetToggle != null)
-                                        {
-                                            HelmetToggle.gameObject.SetActive(false);
-                                            HelmetToggle.ResetButtonAnimations();
-                                            UnequipAll.gameObject.SetActive(false);
-                                            UnequipAll.ResetButtonAnimations();
-                                            SaveLoadout.gameObject.SetActive(false);
-                                            SaveLoadout.ResetButtonAnimations();
-                                            LoadLoadout.gameObject.SetActive(false);
-                                            LoadLoadout.ResetButtonAnimations();
-                                        }
-                                        break;
-
-                                }
-
-                                if (____parentModule.CurrentState == UIModuleActorCycle.ActorCycleState.SubmenuSection)//EditUnitButtonsController.CustomizeButton.gameObject.activeInHierarchy)
-                                {
-
-                                    // TFTVLogger.Always($"Customize button enabled is {____parentModule.EditUnitButtonsController.CustomizeButton.enabled}");
                                     if (HelmetToggle != null)
                                     {
                                         HelmetToggle.gameObject.SetActive(false);
@@ -1221,27 +1092,150 @@ namespace TFTV
                                         LoadLoadout.gameObject.SetActive(false);
                                         LoadLoadout.ResetButtonAnimations();
                                     }
-                                    // HelmetsOff = false;
-                                }
 
-                                if (____parentModule.CurrentCharacter != null && (CharacterLoadouts == null || CharacterLoadouts != null && !CharacterLoadouts.ContainsKey(____parentModule.CurrentCharacter.Id)))
-                                {
+                                    break;
+
+                                case UIModuleActorCycle.ActorCycleState.EditSoldierSection:
+
+
+                                    //  HelmetToggle.gameObject.SetActive(true);
+                                    //  HelmetToggle.ResetButtonAnimations();
+                                    UnequipAll.gameObject.SetActive(true);
+                                    UnequipAll.ResetButtonAnimations();
+                                    SaveLoadout.gameObject.SetActive(true);
+                                    SaveLoadout.ResetButtonAnimations();
+                                    LoadLoadout.gameObject.SetActive(true);
+                                    LoadLoadout.ResetButtonAnimations();
+
+                                    bool hasAugmentedHead = false;
+                                    ItemSlotDef headSlot = DefCache.GetDef<ItemSlotDef>("Human_Head_SlotDef");
+                                    foreach (GeoItem bionic in uIModuleActorCycle?.CurrentCharacter?.ArmourItems)
+                                    {
+                                        if ((bionic.CommonItemData.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag) || bionic.CommonItemData.ItemDef.Tags.Contains(Shared.SharedGameTags.AnuMutationTag))
+                                        && bionic.CommonItemData.ItemDef.RequiredSlotBinds[0].RequiredSlot == headSlot)
+                                        {
+                                            hasAugmentedHead = true;
+                                        }
+                                    }
+
+                                    if (hasAugmentedHead)
+                                    {
+                                        HelmetToggle.gameObject.SetActive(false);
+                                        HelmetToggle.ResetButtonAnimations();
+                                    }
+                                    else
+                                    {
+                                        HelmetToggle.gameObject.SetActive(true);
+                                        HelmetToggle.ResetButtonAnimations();
+                                    }
+
+                                    ShadeMutationBionics(uIModuleActorCycle);
+
+                                    break;
+                                case UIModuleActorCycle.ActorCycleState.EditVehicleSection:
                                     if (HelmetToggle != null)
                                     {
-
+                                        HelmetToggle.gameObject.SetActive(false);
+                                        HelmetToggle.ResetButtonAnimations();
+                                        UnequipAll.gameObject.SetActive(false);
+                                        UnequipAll.ResetButtonAnimations();
+                                        SaveLoadout.gameObject.SetActive(false);
+                                        SaveLoadout.ResetButtonAnimations();
                                         LoadLoadout.gameObject.SetActive(false);
                                         LoadLoadout.ResetButtonAnimations();
                                     }
-                                }
+                                    break;
+                                case UIModuleActorCycle.ActorCycleState.EditMutogSection:
+                                    if (HelmetToggle != null)
+                                    {
+                                        HelmetToggle.gameObject.SetActive(false);
+                                        HelmetToggle.ResetButtonAnimations();
+                                        UnequipAll.gameObject.SetActive(false);
+                                        UnequipAll.ResetButtonAnimations();
+                                        SaveLoadout.gameObject.SetActive(false);
+                                        SaveLoadout.ResetButtonAnimations();
+                                        LoadLoadout.gameObject.SetActive(false);
+                                        LoadLoadout.ResetButtonAnimations();
+                                    }
+                                    break;
+                                case UIModuleActorCycle.ActorCycleState.CapturedAlienSection:
+                                    if (HelmetToggle != null)
+                                    {
+                                        HelmetToggle.gameObject.SetActive(false);
+                                        HelmetToggle.ResetButtonAnimations();
+                                        UnequipAll.gameObject.SetActive(false);
+                                        UnequipAll.ResetButtonAnimations();
+                                        SaveLoadout.gameObject.SetActive(false);
+                                        SaveLoadout.ResetButtonAnimations();
+                                        LoadLoadout.gameObject.SetActive(false);
+                                        LoadLoadout.ResetButtonAnimations();
+                                    }
+                                    break;
+                                case UIModuleActorCycle.ActorCycleState.RecruitSection:
+                                    if (HelmetToggle != null)
+                                    {
+                                        HelmetToggle.gameObject.SetActive(false);
+                                        HelmetToggle.ResetButtonAnimations();
+                                        UnequipAll.gameObject.SetActive(false);
+                                        UnequipAll.ResetButtonAnimations();
+                                        SaveLoadout.gameObject.SetActive(false);
+                                        SaveLoadout.ResetButtonAnimations();
+                                        LoadLoadout.gameObject.SetActive(false);
+                                        LoadLoadout.ResetButtonAnimations();
+                                    }
+                                    break;
+                                case UIModuleActorCycle.ActorCycleState.Memorial:
+                                    if (HelmetToggle != null)
+                                    {
+                                        HelmetToggle.gameObject.SetActive(false);
+                                        HelmetToggle.ResetButtonAnimations();
+                                        UnequipAll.gameObject.SetActive(false);
+                                        UnequipAll.ResetButtonAnimations();
+                                        SaveLoadout.gameObject.SetActive(false);
+                                        SaveLoadout.ResetButtonAnimations();
+                                        LoadLoadout.gameObject.SetActive(false);
+                                        LoadLoadout.ResetButtonAnimations();
+                                    }
+                                    break;
+
                             }
 
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
+                            if (uIModuleActorCycle.CurrentState == UIModuleActorCycle.ActorCycleState.SubmenuSection)//EditUnitButtonsController.CustomizeButton.gameObject.activeInHierarchy)
+                            {
+
+                                // TFTVLogger.Always($"Customize button enabled is {____parentModule.EditUnitButtonsController.CustomizeButton.enabled}");
+                                if (HelmetToggle != null)
+                                {
+                                    HelmetToggle.gameObject.SetActive(false);
+                                    HelmetToggle.ResetButtonAnimations();
+                                    UnequipAll.gameObject.SetActive(false);
+                                    UnequipAll.ResetButtonAnimations();
+                                    SaveLoadout.gameObject.SetActive(false);
+                                    SaveLoadout.ResetButtonAnimations();
+                                    LoadLoadout.gameObject.SetActive(false);
+                                    LoadLoadout.ResetButtonAnimations();
+                                }
+                                // HelmetsOff = false;
+                            }
+
+                            if (uIModuleActorCycle.CurrentCharacter != null && (CharacterLoadouts == null || CharacterLoadouts != null && !CharacterLoadouts.ContainsKey(uIModuleActorCycle.CurrentCharacter.Id)))
+                            {
+                                if (HelmetToggle != null)
+                                {
+
+                                    LoadLoadout.gameObject.SetActive(false);
+                                    LoadLoadout.ResetButtonAnimations();
+                                }
+                            }
                         }
                     }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
                 }
+
+
 
                 [HarmonyPatch(typeof(EditUnitButtonsController), nameof(EditUnitButtonsController.Awake))]
                 internal static class TFTV_EditUnitButtonsController_Awake_ToggleHelmetButton_patch
@@ -2998,35 +2992,30 @@ namespace TFTV
                 }
             }
 
-
-
-            [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruitToContainerFinal")] //VERIFIED  
-            internal static class TFTV_GeoPhoenixFaction_AddRecruitToContainerFinal_patch
+            public static void AddMutoidToNewRecruitGeoPhoenixFactionAddRecruitToContainerFinal(ref GeoCharacter recruit) 
             {
-                public static void Prefix(ref GeoCharacter recruit)
+                try
                 {
-                    try
+                    if (recruit.IsMutoid)
                     {
-                        if (recruit.IsMutoid)
-                        {
 
-                            ClassTagDef assault = DefCache.GetDef<ClassTagDef>("Assault_ClassTagDef");
-                            ClassTagDef heavy = DefCache.GetDef<ClassTagDef>("Heavy_ClassTagDef");
-                            ClassTagDef sniper = DefCache.GetDef<ClassTagDef>("Sniper_ClassTagDef");
-                            ClassTagDef berserker = DefCache.GetDef<ClassTagDef>("Berserker_ClassTagDef");
-                            ClassTagDef priest = DefCache.GetDef<ClassTagDef>("Priest_ClassTagDef");
-                            ClassTagDef technician = DefCache.GetDef<ClassTagDef>("Technician_ClassTagDef");
-                            ClassTagDef infiltrator = DefCache.GetDef<ClassTagDef>("Infiltrator_ClassTagDef");
+                        ClassTagDef assault = DefCache.GetDef<ClassTagDef>("Assault_ClassTagDef");
+                        ClassTagDef heavy = DefCache.GetDef<ClassTagDef>("Heavy_ClassTagDef");
+                        ClassTagDef sniper = DefCache.GetDef<ClassTagDef>("Sniper_ClassTagDef");
+                        ClassTagDef berserker = DefCache.GetDef<ClassTagDef>("Berserker_ClassTagDef");
+                        ClassTagDef priest = DefCache.GetDef<ClassTagDef>("Priest_ClassTagDef");
+                        ClassTagDef technician = DefCache.GetDef<ClassTagDef>("Technician_ClassTagDef");
+                        ClassTagDef infiltrator = DefCache.GetDef<ClassTagDef>("Infiltrator_ClassTagDef");
 
-                            ViewElementDef assaultVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Assault_ClassProficiency_AbilityDef]");
-                            ViewElementDef heavyVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Heavy_ClassProficiency_AbilityDef]");
-                            ViewElementDef sniperVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Sniper_ClassProficiency_AbilityDef]");
-                            ViewElementDef berserkerVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Berserker_ClassProficiency_AbilityDef]");
-                            ViewElementDef priestVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Priest_ClassProficiency_AbilityDef]");
-                            ViewElementDef technicianVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Technician_ClassProficiency_AbilityDef]");
-                            ViewElementDef infiltratorVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Infiltrator_ClassProficiency_AbilityDef]");
+                        ViewElementDef assaultVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Assault_ClassProficiency_AbilityDef]");
+                        ViewElementDef heavyVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Heavy_ClassProficiency_AbilityDef]");
+                        ViewElementDef sniperVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Sniper_ClassProficiency_AbilityDef]");
+                        ViewElementDef berserkerVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Berserker_ClassProficiency_AbilityDef]");
+                        ViewElementDef priestVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Priest_ClassProficiency_AbilityDef]");
+                        ViewElementDef technicianVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Technician_ClassProficiency_AbilityDef]");
+                        ViewElementDef infiltratorVE = DefCache.GetDef<ViewElementDef>("E_ViewElement [Infiltrator_ClassProficiency_AbilityDef]");
 
-                            Dictionary<ClassTagDef, ViewElementDef> dictionary = new Dictionary<ClassTagDef, ViewElementDef>(){
+                        Dictionary<ClassTagDef, ViewElementDef> dictionary = new Dictionary<ClassTagDef, ViewElementDef>(){
                             { assault, assaultVE },
                             { heavy, heavyVE },
                             { sniper, sniperVE },
@@ -3036,26 +3025,20 @@ namespace TFTV
                             { infiltrator, infiltratorVE }
                         };
 
-                            foreach (ClassTagDef classTag in dictionary.Keys)
+                        foreach (ClassTagDef classTag in dictionary.Keys)
+                        {
+                            if (recruit.ClassTags.Contains(classTag))
                             {
-                                if (recruit.ClassTags.Contains(classTag))
-                                {
-                                    recruit.Identity.Name = $"{TFTVCommonMethods.ConvertKeyToString("KEY_MUTOID_CLASS")} {dictionary[classTag].DisplayName2.Localize()}";
-                                }
+                                recruit.Identity.Name = $"{TFTVCommonMethods.ConvertKeyToString("KEY_MUTOID_CLASS")} {dictionary[classTag].DisplayName2.Localize()}";
                             }
                         }
-
-
-
-
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
                     }
                 }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
             }
-
 
 
             [HarmonyPatch(typeof(TacticalActorBase), "UpdateClassViewElementDefs")] //VERIFIED
@@ -3271,7 +3254,7 @@ namespace TFTV
 
         internal class ShowWithoutHelmet
         {
-            [HarmonyPatch(typeof(UIModuleSoldierCustomization), nameof(uIModuleSoldierCustomization.OnNewCharacter))] 
+            [HarmonyPatch(typeof(UIModuleSoldierCustomization), nameof(uIModuleSoldierCustomization.OnNewCharacter))]
 
             internal static class TFTV_UI_UIModuleSoldierCustomization_patch
             {
@@ -3585,7 +3568,7 @@ namespace TFTV
                     try
                     {
                         TFTVConfig config = TFTVMain.Main.Config;
-                       // TFTVLogger.Always($"UIStateTacticalCutscene EnterState called");
+                        // TFTVLogger.Always($"UIStateTacticalCutscene EnterState called");
 
                         if (config.SkipMovies)
                         {

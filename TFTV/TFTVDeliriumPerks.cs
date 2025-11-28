@@ -124,45 +124,41 @@ namespace TFTV
         }
 
       
-
-        [HarmonyPatch(typeof(TacticalActor), "OnAnotherActorDeath")] //VERIFIED
-        public static class TacticalActor_OnAnotherActorDeath_Patch
+        public static void ApplyDeliriumPerksHyperAlgesiaFeralBloodThirstyTacticalActorOnAnotherActorDeath(TacticalActor tacticalActor, DeathReport death)
         {
-
-            public static void Postfix(TacticalActor __instance, DeathReport death)
+            try 
             {
+                TacticalAbility hyperAlgesia = tacticalActor.GetAbilityWithDef<TacticalAbility>(hyperalgesiaAbilityDef);
+                TacticalAbility feral = tacticalActor.GetAbilityWithDef<TacticalAbility>(feralAbilityDef);
+                TacticalAbility bloodthirsty = tacticalActor.GetAbilityWithDef<TacticalAbility>(bloodthirstyAbilityDef);
 
-                try
+                if (hyperAlgesia != null)
                 {
-
-                    TacticalAbility hyperAlgesia = __instance.GetAbilityWithDef<TacticalAbility>(hyperalgesiaAbilityDef);
-                    TacticalAbility feral = __instance.GetAbilityWithDef<TacticalAbility>(feralAbilityDef);
-                    TacticalAbility bloodthirsty = __instance.GetAbilityWithDef<TacticalAbility>(bloodthirstyAbilityDef);
-
-                    if (hyperAlgesia != null)
+                    TacticalFaction tacticalFaction = death.Actor.TacticalFaction;
+                    int willPointWorth = death.Actor.TacticalActorBaseDef.WillPointWorth;
+                    if (death.Actor.TacticalFaction == tacticalActor.TacticalFaction)
                     {
-                        TacticalFaction tacticalFaction = death.Actor.TacticalFaction;
-                        int willPointWorth = death.Actor.TacticalActorBaseDef.WillPointWorth;
-                        if (death.Actor.TacticalFaction == __instance.TacticalFaction)
-                        {
-                            __instance.CharacterStats.WillPoints.Add(willPointWorth);
-                        }
-                    }
-                    if (feral != null && __instance == death.Killer)
-                    {
-                        __instance.CharacterStats.ActionPoints.Add(__instance.CharacterStats.ActionPoints.Max / 4);
-                    }
-                    if (bloodthirsty != null && __instance == death.Killer)
-                    {
-                        __instance.CharacterStats.Health.AddRestrictedToMax(death.Actor.Health.Max / 2);
+                        tacticalActor.CharacterStats.WillPoints.Add(willPointWorth);
                     }
                 }
-                catch (Exception e)
+                if (feral != null && tacticalActor == death.Killer)
                 {
-                    TFTVLogger.Error(e);
+                    tacticalActor.CharacterStats.ActionPoints.Add(tacticalActor.CharacterStats.ActionPoints.Max / 4);
+                }
+                if (bloodthirsty != null && tacticalActor == death.Killer)
+                {
+                    tacticalActor.CharacterStats.Health.AddRestrictedToMax(death.Actor.Health.Max / 2);
                 }
             }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
         }
+
+       
+        
 
         [HarmonyPatch(typeof(TacticalActor), "TriggerHurt")] //VERIFIED
         public static class TacticalActor_TriggerHurt_Patch

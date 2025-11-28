@@ -2173,6 +2173,7 @@ namespace TFTV
                 scrollRect.content = contentRT;
                 scrollRect.vertical = true;
                 scrollRect.horizontal = false;
+                scrollRect.scrollSensitivity = 15f;
 
                 scrollRect.verticalScrollbar = scrollbar;
                 scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;

@@ -251,38 +251,27 @@ namespace TFTV
         }
 
         //When getting an augment, the character's Stamina is set to 0
-        [HarmonyPatch(typeof(UIModuleBionics), nameof(UIModuleBionics.OnAugmentApplied))]
-        public static class UIModuleBionics_OnAugmentApplied_SetStaminaTo0_patch
+        public static void SetStaminaToZeroOnBionicApplied(UIModuleBionics uIModuleBionics) 
         {
-            /*    public static bool Prepare()
-                {
-                    TFTVConfig config = TFTVMain.Main.Config;
-                    return config.StaminaPenaltyFromInjury;
-                }*/
-
-
-            public static void Postfix(UIModuleBionics __instance)
+            try
             {
-                try
-                {
-                    //   TFTVConfig config = TFTVMain.Main.Config;
-                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                //   TFTVConfig config = TFTVMain.Main.Config;
+                GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
-                    if (TFTVNewGameOptions.StaminaPenaltyFromInjurySetting)
-                    {
-                        //set Stamina to zero after installing a bionic
-                        __instance.CurrentCharacter.Fatigue.Stamina.SetToMin();
-                    }
-                }
-
-                catch (Exception e)
+                if (TFTVNewGameOptions.StaminaPenaltyFromInjurySetting)
                 {
-                    TFTVLogger.Error(e);
+                    //set Stamina to zero after installing a bionic
+                    uIModuleBionics.CurrentCharacter.Fatigue.Stamina.SetToMin();
                 }
             }
 
-
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
+
+      
 
     }
 }

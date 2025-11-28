@@ -12,7 +12,6 @@ using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Geoscape.View.ViewControllers.AugmentationScreen;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
@@ -349,94 +348,91 @@ namespace TFTV
         }
 
 
-
-        [HarmonyPatch(typeof(GeoAlienFaction), nameof(GeoAlienFaction.UpdateFactionDaily))]
-        public static class PhoenixStatisticsManager_UpdateGeoscapeStats_AnuPissedAtBionics_Patch
+        public static void AnuReactionToBionicsGeoAlienFactionUpdateFactionDaily(GeoAlienFaction geoAlienFaction)
         {
-            public static void Postfix(GeoAlienFaction __instance)
+            try
             {
-                try
-                {
-                    int bionics = 0;
-                    GeoLevelController geoLevelController = __instance.GeoLevel;
-                    GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(__instance, geoLevelController.ViewerFaction);
+                int bionics = 0;
+                GeoLevelController geoLevelController = geoAlienFaction.GeoLevel;
+                GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(geoAlienFaction, geoLevelController.ViewerFaction);
 
-                    //check number of bionics player has
-                    GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
-                    foreach (GeoCharacter geoCharacter in __instance.GeoLevel.PhoenixFaction.Soldiers)
+                //check number of bionics player has
+                GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
+                foreach (GeoCharacter geoCharacter in geoAlienFaction.GeoLevel.PhoenixFaction.Soldiers)
+                {
+                    foreach (GeoItem bionic in geoCharacter.ArmourItems)
                     {
-                        foreach (GeoItem bionic in geoCharacter.ArmourItems)
+                        if (bionic.ItemDef.Tags.Contains(bionicalTag) && !bionic.ItemDef.Tags.Contains(TFTVChangesToDLC5.MercenaryTag))
                         {
-                            if (bionic.ItemDef.Tags.Contains(bionicalTag) && !bionic.ItemDef.Tags.Contains(TFTVChangesToDLC5.MercenaryTag))
-                            {
-                                bionics += 1;
-                            }
+                            bionics += 1;
                         }
                     }
-                    if (bionics > 6 && geoLevelController.EventSystem.GetVariable("BG_Anu_Pissed_Over_Bionics") == 0
-                        && CheckForFacility(__instance.GeoLevel, "KEY_BASE_FACILITY_BIONICSLAB_NAME"))
-                    {
-                        geoLevelController.EventSystem.TriggerGeoscapeEvent("Anu_Pissed1", geoscapeEventContext);
-                        geoLevelController.EventSystem.SetVariable("BG_Anu_Pissed_Over_Bionics", 1);
-                    }
-
-                    if (geoLevelController.EventSystem.GetVariable("BG_Anu_Pissed_Broke_Promise") == 1
-                       && geoLevelController.EventSystem.GetVariable("BG_Anu_Really_Pissed_Over_Bionics") == 0)
-                    {
-                        geoLevelController.EventSystem.TriggerGeoscapeEvent("Anu_Pissed2", geoscapeEventContext);
-                        geoLevelController.EventSystem.SetVariable("BG_Anu_Really_Pissed_Over_Bionics", 1);
-                        DestroyFacilitiesOnPXBases("KEY_BASE_FACILITY_BIONICSLAB_NAME", __instance.GeoLevel);
-                    }
                 }
-                catch (Exception e)
+                if (bionics > 6 && geoLevelController.EventSystem.GetVariable("BG_Anu_Pissed_Over_Bionics") == 0
+                    && CheckForFacility(geoAlienFaction.GeoLevel, "KEY_BASE_FACILITY_BIONICSLAB_NAME"))
                 {
-                    TFTVLogger.Error(e);
+                    geoLevelController.EventSystem.TriggerGeoscapeEvent("Anu_Pissed1", geoscapeEventContext);
+                    geoLevelController.EventSystem.SetVariable("BG_Anu_Pissed_Over_Bionics", 1);
                 }
+
+                if (geoLevelController.EventSystem.GetVariable("BG_Anu_Pissed_Broke_Promise") == 1
+                   && geoLevelController.EventSystem.GetVariable("BG_Anu_Really_Pissed_Over_Bionics") == 0)
+                {
+                    geoLevelController.EventSystem.TriggerGeoscapeEvent("Anu_Pissed2", geoscapeEventContext);
+                    geoLevelController.EventSystem.SetVariable("BG_Anu_Really_Pissed_Over_Bionics", 1);
+                    DestroyFacilitiesOnPXBases("KEY_BASE_FACILITY_BIONICSLAB_NAME", geoAlienFaction.GeoLevel);
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
 
-        [HarmonyPatch(typeof(GeoAlienFaction), nameof(GeoAlienFaction.UpdateFactionDaily))] 
-        public static class PhoenixStatisticsManager_UpdateGeoscapeStats_NJPissedAtMutations_Patch
+
+
+        public static void NJReactionToMutationsGeoAlienFactionUpdateFactionDaily(GeoAlienFaction geoAlienFaction)
         {
-            public static void Postfix(GeoAlienFaction __instance)
+            try
             {
-                try
-                {
-                    int mutations = 0;
-                    GeoLevelController geoLevelController = __instance.GeoLevel;
-                    GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(__instance, geoLevelController.ViewerFaction);
+                int mutations = 0;
+                GeoLevelController geoLevelController = geoAlienFaction.GeoLevel;
+                GeoscapeEventContext geoscapeEventContext = new GeoscapeEventContext(geoAlienFaction, geoLevelController.ViewerFaction);
 
-                    //check number of mutations player has
-                    GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
-                    foreach (GeoCharacter geoCharacter in __instance.GeoLevel.PhoenixFaction.Soldiers)
-                    {
-                        foreach (GeoItem mutation in geoCharacter.ArmourItems)
-                        {
-                            if (mutation.ItemDef.Tags.Contains(mutationTag) && !mutation.ItemDef.name.Contains("Mutoid"))
-                                mutations += 1;
-                        }
-                    }
-                    if (mutations > 6 && geoLevelController.EventSystem.GetVariable("BG_NJ_Pissed_Over_Mutations") == 0
-                        && CheckForFacility(__instance.GeoLevel, "KEY_BASE_FACILITY_MUTATION_LAB_NAME"))
-                    {
-                        geoLevelController.EventSystem.TriggerGeoscapeEvent("NJ_Pissed1", geoscapeEventContext);
-                        geoLevelController.EventSystem.SetVariable("BG_NJ_Pissed_Over_Mutations", 1);
-                    }
-                    if (geoLevelController.EventSystem.GetVariable("BG_NJ_Pissed_Broke_Promise") == 1
-                       && geoLevelController.EventSystem.GetVariable("BG_NJ_Really_Pissed_Over_Mutations") == 0)
-                    {
-                        geoLevelController.EventSystem.TriggerGeoscapeEvent("NJ_Pissed2", geoscapeEventContext);
-                        geoLevelController.EventSystem.SetVariable("BG_NJ_Really_Pissed_Over_Mutations", 1);
-                        DestroyFacilitiesOnPXBases("KEY_BASE_FACILITY_MUTATION_LAB_NAME", __instance.GeoLevel);
-                    }
-
-                }
-                catch (Exception e)
+                //check number of mutations player has
+                GameTagDef mutationTag = GameUtl.GameComponent<SharedData>().SharedGameTags.AnuMutationTag;
+                foreach (GeoCharacter geoCharacter in geoAlienFaction.GeoLevel.PhoenixFaction.Soldiers)
                 {
-                    TFTVLogger.Error(e);
+                    foreach (GeoItem mutation in geoCharacter.ArmourItems)
+                    {
+                        if (mutation.ItemDef.Tags.Contains(mutationTag) && !mutation.ItemDef.name.Contains("Mutoid"))
+                            mutations += 1;
+                    }
                 }
+                if (mutations > 6 && geoLevelController.EventSystem.GetVariable("BG_NJ_Pissed_Over_Mutations") == 0
+                    && CheckForFacility(geoAlienFaction.GeoLevel, "KEY_BASE_FACILITY_MUTATION_LAB_NAME"))
+                {
+                    geoLevelController.EventSystem.TriggerGeoscapeEvent("NJ_Pissed1", geoscapeEventContext);
+                    geoLevelController.EventSystem.SetVariable("BG_NJ_Pissed_Over_Mutations", 1);
+                }
+                if (geoLevelController.EventSystem.GetVariable("BG_NJ_Pissed_Broke_Promise") == 1
+                   && geoLevelController.EventSystem.GetVariable("BG_NJ_Really_Pissed_Over_Mutations") == 0)
+                {
+                    geoLevelController.EventSystem.TriggerGeoscapeEvent("NJ_Pissed2", geoscapeEventContext);
+                    geoLevelController.EventSystem.SetVariable("BG_NJ_Really_Pissed_Over_Mutations", 1);
+                    DestroyFacilitiesOnPXBases("KEY_BASE_FACILITY_MUTATION_LAB_NAME", geoAlienFaction.GeoLevel);
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
+
+
+
+
 
         //Used for triggering NJ Pissed events 
         [HarmonyPatch(typeof(UIModuleMutationSection), "ApplyMutation")] //VERIFIED
@@ -470,27 +466,25 @@ namespace TFTV
             }
         }
 
-        //Used for triggering Anu pissed events
-        [HarmonyPatch(typeof(UIModuleBionics), nameof(UIModuleBionics.OnAugmentApplied))]
-        public static class UIModuleBionics_OnAugmentApplied_SetStaminaTo0_patch
-        {
-            public static void Postfix(UIModuleBionics __instance)
-            {
-                try
-                {
-                    //check if player made promise to Anu not to apply more bionics
-                    if (__instance.Context.Level.EventSystem.GetVariable("BG_Anu_Pissed_Made_Promise") == 1)
-                    {
-                        __instance.Context.Level.EventSystem.SetVariable("BG_Anu_Pissed_Broke_Promise", 1);
-                    }
-                }
 
-                catch (Exception e)
+        public static void CheckAnuPissedBionicsBrokenPromise(UIModuleBionics uIModuleBionics)
+        {
+            try
+            {
+                //check if player made promise to Anu not to apply more bionics
+                if (uIModuleBionics.Context.Level.EventSystem.GetVariable("BG_Anu_Pissed_Made_Promise") == 1)
                 {
-                    TFTVLogger.Error(e);
+                    uIModuleBionics.Context.Level.EventSystem.SetVariable("BG_Anu_Pissed_Broke_Promise", 1);
                 }
             }
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
+
+       
 
         public static bool CheckForFacility(GeoLevelController level, string facilityName)
         {

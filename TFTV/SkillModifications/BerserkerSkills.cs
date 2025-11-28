@@ -10,10 +10,12 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
 using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -241,6 +243,58 @@ namespace PRMBetterClasses.SkillModifications
             //}
         }
 
+        public static bool KillerInstinctAbilityExecutedHandlerCheck(AddAttackBoostStatus addAttackBoostStatus, TacticalAbility ability, ref int ____attacksBoosted)
+        {
+            ApplyStatusAbilityDef killerInstinctAbilityDef = DefCache.GetDef<ApplyStatusAbilityDef>("KillerInstinct_AbiltyDef");
+
+            //  TFTVLogger.Always($"got here for {__instance.AddAttackBoostStatusDef.name}, tactical ability: {ability.TacticalAbilityDef.name}");
+
+            if (addAttackBoostStatus.AddAttackBoostStatusDef != killerInstinctAbilityDef.StatusDef)
+            {
+                return true;
+            }
+
+            SkillTagDef attackAbilityTag = DefCache.GetDef<SkillTagDef>("AttackAbility_SkillTagDef");
+            if (!(ability is IAttackAbility) &&
+                !(ability is IDamageDealer) &&
+                !(ability.TacticalAbilityDef.SkillTags.Contains(attackAbilityTag)))
+            {
+                return false;
+            }
+
+            SkillTagDef[] skillTagCullFilter = addAttackBoostStatus.AddAttackBoostStatusDef.SkillTagCullFilter;
+            foreach (SkillTagDef value in skillTagCullFilter)
+            {
+                if (ability.TacticalAbilityDef.SkillTags.Contains(value))
+                {
+                    return false;
+                }
+            }
+
+            if (addAttackBoostStatus.AddAttackBoostStatusDef.NumberOfAttacks < 0)
+            {
+                return false;
+            }
+
+            ____attacksBoosted++;
+            if (____attacksBoosted < addAttackBoostStatus.AddAttackBoostStatusDef.NumberOfAttacks)
+            {
+                return false;
+            }
+
+            addAttackBoostStatus.RequestUnapply(addAttackBoostStatus.TacticalActor.Status);
+            TacStatusDef[] additionalStatusesToApply = addAttackBoostStatus.AddAttackBoostStatusDef.AdditionalStatusesToApply;
+            foreach (TacStatusDef def in additionalStatusesToApply)
+            {
+                TacStatus status = addAttackBoostStatus.TacticalActor.Status.GetStatus<TacStatus>(def);
+                if (status != null && addAttackBoostStatus.AddAttackBoostStatusDef == status.Source as AddAttackBoostStatusDef)
+                {
+                    status.RequestUnapply(addAttackBoostStatus.TacticalActor.Status);
+                }
+            }
+
+            return false;
+        }
         private static void Create_KillerInstinct()
         {
             string skillname = "KillerInstinct_AbiltyDef";

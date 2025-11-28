@@ -740,29 +740,28 @@ KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH
             }
         }
 
-        [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruitToContainerFinal")] //VERIFIED
-        public static class GeoPhoenixFaction_AddRecruitToContainerFinalt_patch
+        public static void AddProjectOsirisRecruitGeoPhoenixFactionAddRecruitToContainerFinal(GeoPhoenixFaction geoPhoenixFaction, GeoCharacter recruit) 
         {
-            public static void Postfix(GeoPhoenixFaction __instance, GeoCharacter recruit)
+
+            try
             {
-                try
-                {
-                    TFTVLogger.Always($"{recruit.DisplayName} AddRecruitToContainerFinal is run");
+               // TFTVLogger.Always($"{recruit.DisplayName} AddRecruitToContainerFinal is run");
 
-                    if (recruit.GameTags.Contains(OCPProductTag))
-                    {
-                        TFTVLogger.Always($"{recruit.DisplayName} from Project Osiris is being recruited. Will adjust stats and cleanup");
-                        ProjectOsirisStats(__instance.GeoLevel);
-                    }
-
-                }
-                catch (Exception e)
+                if (recruit.GameTags.Contains(OCPProductTag))
                 {
-                    TFTVLogger.Error(e);
-                    throw;
+                    TFTVLogger.Always($"{recruit.DisplayName} from Project Osiris is being recruited. Will adjust stats and cleanup");
+                    ProjectOsirisStats(geoPhoenixFaction.GeoLevel);
                 }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
             }
         }
+
+
 
 
         private static void ProjectOsirisStats(GeoLevelController controller)

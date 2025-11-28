@@ -95,69 +95,65 @@ namespace TFTV
         }
 
 
-
-
-
-        [HarmonyPatch(typeof(GeoAlienFaction), nameof(GeoAlienFaction.UpdateFactionDaily))]
-        internal static class BC_GeoAlienFaction_UpdateFactionDaily_patch
+        public static void AddPandoranEvolutionPointsGeoAlienFactionUpdateFactionDaily(GeoAlienFaction geoAlienFaction)
         {
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
-            private static void Postfix(GeoAlienFaction __instance)//, List<GeoAlienBase> ____bases)
+            try
             {
-                try
+                List<GeoAlienBase> listOfAlienBases = geoAlienFaction.Bases.ToList();
+
+                int nests = 0;
+                int lairs = 0;
+                int citadels = 0;
+                int palace = 0;
+
+                foreach (GeoAlienBase alienBase in listOfAlienBases)
                 {
-                    List<GeoAlienBase> listOfAlienBases = __instance.Bases.ToList();
-
-                    int nests = 0;
-                    int lairs = 0;
-                    int citadels = 0;
-                    int palace = 0;
-
-                    foreach (GeoAlienBase alienBase in listOfAlienBases)
+                    if (alienBase.AlienBaseTypeDef.Equals(nestType))
                     {
-                        if (alienBase.AlienBaseTypeDef.Equals(nestType))
-                        {
-                            nests++;
-                        }
-                        else if (alienBase.AlienBaseTypeDef.Equals(lairType))
-                        {
-                            lairs++;
-                        }
-                        else if (alienBase.AlienBaseTypeDef.Equals(citadelType))
-                        {
-                            citadels++;
-                        }
-                        else if (alienBase.AlienBaseTypeDef.Equals(palaceType))
-                        {
-                            palace++;
-                        }
+                        nests++;
                     }
-                   // int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(__instance.GeoLevel.CurrentDifficultyLevel.Order);
-                    if (__instance.GeoLevel.EventSystem.GetVariable("Pandorans_Researched_Citadel") == 1)
+                    else if (alienBase.AlienBaseTypeDef.Equals(lairType))
                     {
-                        __instance.AddEvolutionProgress(nests * 5 + lairs * 10 + citadels * 15);
-                        __instance.AddEvolutionProgress(__instance.GeoLevel.EventSystem.GetVariable(TFTVInfestation.InfestedHavensVariable) * 10);
-                        TFTVLogger.Always("There are " + nests + " nests, " + lairs + " lairs and " + citadels + " citadels on " + __instance.GeoLevel.ElaspedTime);
-                        TFTVLogger.Always("The evolution points per day from Pandoran Colonies are " + (nests * 5 + lairs * 10 + citadels * 15)
-                            + " And from Infested Havens " + __instance.GeoLevel.EventSystem.GetVariable(TFTVInfestation.InfestedHavensVariable) * 10);
+                        lairs++;
                     }
-                    else
+                    else if (alienBase.AlienBaseTypeDef.Equals(citadelType))
                     {
-                        __instance.AddEvolutionProgress(nests * 10 + lairs * 20 + citadels * 30);
-                        __instance.AddEvolutionProgress(__instance.GeoLevel.EventSystem.GetVariable(TFTVInfestation.InfestedHavensVariable) * 20);
-                        TFTVLogger.Always("There are " + nests + " nests, " + lairs + " lairs and " + citadels + " citadels on " + __instance.GeoLevel.ElaspedTime);
-                        TFTVLogger.Always("The evolution points per day from Pandoran Colonies are " + (nests * 10 + lairs * 20 + citadels * 30)
-                            + " And from Infested Havens " + __instance.GeoLevel.EventSystem.GetVariable(TFTVInfestation.InfestedHavensVariable) * 20);
+                        citadels++;
+                    }
+                    else if (alienBase.AlienBaseTypeDef.Equals(palaceType))
+                    {
+                        palace++;
                     }
                 }
-
-
-                catch (Exception e)
+                // int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(__instance.GeoLevel.CurrentDifficultyLevel.Order);
+                if (geoAlienFaction.GeoLevel.EventSystem.GetVariable("Pandorans_Researched_Citadel") == 1)
                 {
-                    TFTVLogger.Error(e);
+                    geoAlienFaction.AddEvolutionProgress(nests * 5 + lairs * 10 + citadels * 15);
+                    geoAlienFaction.AddEvolutionProgress(geoAlienFaction.GeoLevel.EventSystem.GetVariable(TFTVInfestation.InfestedHavensVariable) * 10);
+                    TFTVLogger.Always("There are " + nests + " nests, " + lairs + " lairs and " + citadels + " citadels on " + geoAlienFaction.GeoLevel.ElaspedTime);
+                    TFTVLogger.Always("The evolution points per day from Pandoran Colonies are " + (nests * 5 + lairs * 10 + citadels * 15)
+                        + " And from Infested Havens " + geoAlienFaction.GeoLevel.EventSystem.GetVariable(TFTVInfestation.InfestedHavensVariable) * 10);
+                }
+                else
+                {
+                    geoAlienFaction.AddEvolutionProgress(nests * 10 + lairs * 20 + citadels * 30);
+                    geoAlienFaction.AddEvolutionProgress(geoAlienFaction.GeoLevel.EventSystem.GetVariable(TFTVInfestation.InfestedHavensVariable) * 20);
+                    TFTVLogger.Always("There are " + nests + " nests, " + lairs + " lairs and " + citadels + " citadels on " + geoAlienFaction.GeoLevel.ElaspedTime);
+                    TFTVLogger.Always("The evolution points per day from Pandoran Colonies are " + (nests * 10 + lairs * 20 + citadels * 30)
+                        + " And from Infested Havens " + geoAlienFaction.GeoLevel.EventSystem.GetVariable(TFTVInfestation.InfestedHavensVariable) * 20);
                 }
             }
+
+
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
+
+
+
+     
 
         [HarmonyPatch(typeof(GeoAlienFaction), "ProgressEvolution")] //VERIFIED
         internal static class GameDifficultyLevelDef_get_evolutionProgress_patch

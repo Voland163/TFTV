@@ -17,7 +17,9 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
-        public static TacticalActor mutoidReceivingHealing = null;
+
+        //Removing as now in base game
+       /* public static TacticalActor mutoidReceivingHealing = null;
 
         [HarmonyPatch(typeof(HealAbility), "HealTargetCrt")]
 
@@ -68,7 +70,7 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
-        }
+        }*/
 
 
         [HarmonyPatch(typeof(HealAbility), "ShouldReturnTarget")]

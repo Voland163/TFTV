@@ -206,14 +206,14 @@ namespace TFTV.TFTVBaseRework
             }
 
         }
-
+        
         private static void PopulatePersonnelUI(UIStateRosterRecruits state, GeoLevelController level, Transform personnelRoot)
         {
             if (!BaseReworkEnabled)
             {
                 return;
             }
-
+            
 
             if (personnelRoot == null || level?.PhoenixFaction == null) return;
             ClearTransformChildren(personnelRoot);

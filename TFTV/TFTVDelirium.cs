@@ -3,6 +3,7 @@ using Base.Core;
 using Base.Entities.Statuses;
 using Base.UI;
 using Base.UI.MessageBox;
+using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
@@ -735,31 +736,23 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(GeoMission), "ApplyMissionResults")] //VERIFIED
-        public static class GeoMission_ManageGear_RollToRemoveDeliriumPerks_patch
+        public static void RemoveDeliriumPerksGeoMissionApplyMissionResults(GeoMission geoMission, TacMissionResult result, GeoSquad squad)
         {
-            public static void Postfix(GeoMission __instance, TacMissionResult result, GeoSquad squad)
+            try
             {
-                try
+                if (result.FactionResults.Find(r => r.FactionDef == Shared.PhoenixFactionDef).State == PhoenixPoint.Tactical.Levels.TacFactionState.Won)
                 {
-                    // TFTVLogger.Always($" {result.FactionResults.Find(r => r.FactionDef == Shared.PhoenixFactionDef).State}");
-
-                    if (result.FactionResults.Find(r => r.FactionDef == Shared.PhoenixFactionDef).State == PhoenixPoint.Tactical.Levels.TacFactionState.Won)
-                    {
-                        //  TFTVLogger.Always($" passed the if");
-                        RemoveDeliriumPerks(__instance.Site.GeoLevel, squad);
-                    }
-
+                    //  TFTVLogger.Always($" passed the if");
+                    RemoveDeliriumPerks(geoMission.Site.GeoLevel, squad);
                 }
-
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
 
-        public static void RemoveDeliriumPerks(GeoLevelController controller, GeoSquad squad)
+        private static void RemoveDeliriumPerks(GeoLevelController controller, GeoSquad squad)
         {
             try
             {
@@ -819,71 +812,62 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(EditUnitButtonsController), nameof(EditUnitButtonsController.SetEditUnitButtonsBasedOnType))]
-        internal static class TFTV_EditUnitButtonsController_SetEditUnitButtonsBasedOnType_DeliriumPerksCured_patch
+        public static void DeliriumPerkRecoveryPrompt(UIModuleActorCycle uIModuleActorCycle)
         {
-            public static void Postfix(UIModuleActorCycle ____parentModule)
+            try
             {
-                try
+                if (CharactersDeliriumPerksAndMissions != null && uIModuleActorCycle.CurrentCharacter != null && uIModuleActorCycle.CurrentCharacter.Id != null && CharactersDeliriumPerksAndMissions.ContainsKey(uIModuleActorCycle.CurrentCharacter.Id) &&
+                    CharactersDeliriumPerksAndMissions[uIModuleActorCycle.CurrentCharacter.Id] == -1)
                 {
-                    if (CharactersDeliriumPerksAndMissions != null && ____parentModule.CurrentCharacter != null && ____parentModule.CurrentCharacter.Id != null && CharactersDeliriumPerksAndMissions.ContainsKey(____parentModule.CurrentCharacter.Id) &&
-                        CharactersDeliriumPerksAndMissions[____parentModule.CurrentCharacter.Id] == -1)
-                    {
-                        string messagePrompt = new LocalizedTextBind() { LocalizationKey = "KEY_DELIRIUM_PERK_RECOVERY" }.Localize();
-
-                        GameUtl.GetMessageBox().ShowSimplePrompt($"{____parentModule.CurrentCharacter.GetName()} {messagePrompt}", MessageBoxIcon.None, MessageBoxButtons.OK, null);
-                        CharactersDeliriumPerksAndMissions.Remove(____parentModule.CurrentCharacter.Id);
-                    }
-
+                    string messagePrompt = new LocalizedTextBind() { LocalizationKey = "KEY_DELIRIUM_PERK_RECOVERY" }.Localize();
+                    GameUtl.GetMessageBox().ShowSimplePrompt($"{uIModuleActorCycle.CurrentCharacter.GetName()} {messagePrompt}", MessageBoxIcon.None, MessageBoxButtons.OK, null);
+                    CharactersDeliriumPerksAndMissions.Remove(uIModuleActorCycle.CurrentCharacter.Id);
                 }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
 
 
         //When getting an augment, each augment reduces corruption by a 1/3
         //And thanks to Mergele also Removes wolverine on installing a bionic torso
-        [HarmonyPatch(typeof(UIModuleBionics), nameof(UIModuleBionics.OnAugmentApplied))]
-        public static class UIModuleBionics_OnAugmentApplied_SetStaminaTo0_patch
+
+        public static void ReduceDeliriumOnAugmentApplied(UIModuleBionics uIModuleBionics, ItemDef augment) 
         {
-            public static void Postfix(UIModuleBionics __instance, ItemDef augment)
+            try
             {
-                try
+                if (uIModuleBionics.CurrentCharacter.CharacterStats.Corruption - uIModuleBionics.CurrentCharacter.CharacterStats.Willpower * 0.33 >= 0)
                 {
-                    if (__instance.CurrentCharacter.CharacterStats.Corruption - __instance.CurrentCharacter.CharacterStats.Willpower * 0.33 >= 0)
-                    {
-                        __instance.CurrentCharacter.CharacterStats.Corruption.Set((float)(__instance.CurrentCharacter.CharacterStats.Corruption - __instance.CurrentCharacter.CharacterStats.Willpower * 0.33));
-                    }
-                    else
-                    {
-                        __instance.CurrentCharacter.CharacterStats.Corruption.Set(0);
-                    }
-
-                    if (augment.RequiredSlotBinds[0].RequiredSlot == DefCache.GetDef<ItemSlotDef>("Human_Torso_SlotDef"))
-                    {
-
-                        List<TacticalAbilityDef> abilities = Traverse.Create(__instance.CurrentCharacter.Progression).Field("_abilities").GetValue<List<TacticalAbilityDef>>();
-
-                        if (abilities.Contains(wolverineCuredDef))
-                        {
-                            abilities.Remove(wolverineCuredDef);
-
-                        }
-                        else if (abilities.Contains(wolverineDef))
-                        {
-                            abilities.Remove(wolverineDef);
-                        }
-
-                    }
+                    uIModuleBionics.CurrentCharacter.CharacterStats.Corruption.Set((float)(uIModuleBionics.CurrentCharacter.CharacterStats.Corruption - uIModuleBionics.CurrentCharacter.CharacterStats.Willpower * 0.33));
                 }
-                catch (Exception e)
+                else
                 {
-                    TFTVLogger.Error(e);
+                    uIModuleBionics.CurrentCharacter.CharacterStats.Corruption.Set(0);
+                }
+
+                if (augment.RequiredSlotBinds[0].RequiredSlot == DefCache.GetDef<ItemSlotDef>("Human_Torso_SlotDef"))
+                {
+
+                    List<TacticalAbilityDef> abilities = Traverse.Create(uIModuleBionics.CurrentCharacter.Progression).Field("_abilities").GetValue<List<TacticalAbilityDef>>();
+
+                    if (abilities.Contains(wolverineCuredDef))
+                    {
+                        abilities.Remove(wolverineCuredDef);
+
+                    }
+                    else if (abilities.Contains(wolverineDef))
+                    {
+                        abilities.Remove(wolverineDef);
+                    }
                 }
             }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
+
     }
 }

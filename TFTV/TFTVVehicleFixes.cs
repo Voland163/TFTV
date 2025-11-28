@@ -4,13 +4,9 @@ using Base.Entities.Statuses;
 using Code.PhoenixPoint.Tactical.Entities.Equipments;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.ContextHelp;
 using PhoenixPoint.Tactical.Entities;
@@ -18,7 +14,6 @@ using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
-using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -357,8 +352,8 @@ namespace TFTV
 
 
 
-
-        [HarmonyPatch] //VERIFIED
+        //Removed because now in base game
+        /*[HarmonyPatch] //VERIFIED
         public static class TFTV_PostmissionReplenishManager_RemoveExtra
         {
             static MethodBase TargetMethod()
@@ -385,139 +380,139 @@ namespace TFTV
                     throw;
                 }
             }
-        }
+        }*/
 
 
 
+        //Was just for logging?
+
+        /* [HarmonyPatch(typeof(GeoMission), "ManageGear")] //VERIFIED
+          public static class TFTV_GeoMission_ManageGear
+          {
+              public static bool Prefix(GeoMission __instance, TacMissionResult result, GeoSquad squad)
+              {
+                  try
+                  {
+                      MethodInfo methodInfoReloadItem = typeof(GeoMission).GetMethod("TryReloadItem", BindingFlags.NonPublic | BindingFlags.Instance);
+                      MethodInfo methodInfoGetDeployedTurretItems = typeof(GeoMission).GetMethod("GetDeployedTurretItems", BindingFlags.NonPublic | BindingFlags.Instance);
+                      MethodInfo methodInfoGetItemsOnTheGround = typeof(GeoMission).GetMethod("GetItemsOnTheGround", BindingFlags.NonPublic | BindingFlags.Instance);
+                      MethodInfo methodInfoGetDeadSquadMembersArmour = typeof(GeoMission).GetMethod("GetDeadSquadMembersArmour", BindingFlags.NonPublic | BindingFlags.Instance);
+                      MethodInfo methodInfoManageFreeReloads = typeof(GeoMission).GetMethod("ManageFreeReloads", BindingFlags.NonPublic | BindingFlags.Instance);
+                      MethodInfo methodInfoManageAutosellItems = typeof(GeoMission).GetMethod("ManageAutosellItems", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                      TFTVLogger.Always($"methodInfoReloadItem {methodInfoReloadItem == null}\nmethodInfoGetDeployedTurretItems {methodInfoGetDeployedTurretItems == null}\n" +
+                          $"methodInfoGetItemsOnTheGround {methodInfoGetItemsOnTheGround == null}\n methodInfoGetDeadSquadMembersArmour {methodInfoGetDeadSquadMembersArmour == null}\n" +
+                          $"methodInfoGetDeadSquadMembersArmour {methodInfoGetDeadSquadMembersArmour == null}\n methodInfoManageFreeReloads {methodInfoManageFreeReloads == null}" +
+                          $"methodInfoManageAutosellItems {methodInfoManageAutosellItems == null}");
 
 
-        [HarmonyPatch(typeof(GeoMission), "ManageGear")] //VERIFIED
-         public static class TFTV_GeoMission_ManageGear
-         {
-             public static bool Prefix(GeoMission __instance, TacMissionResult result, GeoSquad squad)
-             {
-                 try
-                 {
-                     MethodInfo methodInfoReloadItem = typeof(GeoMission).GetMethod("TryReloadItem", BindingFlags.NonPublic | BindingFlags.Instance);
-                     MethodInfo methodInfoGetDeployedTurretItems = typeof(GeoMission).GetMethod("GetDeployedTurretItems", BindingFlags.NonPublic | BindingFlags.Instance);
-                     MethodInfo methodInfoGetItemsOnTheGround = typeof(GeoMission).GetMethod("GetItemsOnTheGround", BindingFlags.NonPublic | BindingFlags.Instance);
-                     MethodInfo methodInfoGetDeadSquadMembersArmour = typeof(GeoMission).GetMethod("GetDeadSquadMembersArmour", BindingFlags.NonPublic | BindingFlags.Instance);
-                     MethodInfo methodInfoManageFreeReloads = typeof(GeoMission).GetMethod("ManageFreeReloads", BindingFlags.NonPublic | BindingFlags.Instance);
-                     MethodInfo methodInfoManageAutosellItems = typeof(GeoMission).GetMethod("ManageAutosellItems", BindingFlags.NonPublic | BindingFlags.Instance);
+                      GeoFaction viewerFaction = __instance.Site.GeoLevel.ViewerFaction;
+                      FactionResult resultByFacionDef = result.GetResultByFacionDef(viewerFaction.Def.PPFactionDef);
+                      bool num = resultByFacionDef.State == TacFactionState.Won;
+                      IEnumerable<GeoCharacter> enumerable = squad.Units.Where((GeoCharacter s) => !s.IsAlive);
+                      if (num)
+                      {
+                          foreach (GeoItem deployedTurretItem in (IEnumerable<GeoItem>)methodInfoGetDeployedTurretItems.Invoke(__instance, new object[] { resultByFacionDef }))
+                          {
+                              TFTVLogger.Always($"adding turret {deployedTurretItem.ItemDef.name}");
+                              __instance.Reward.Items.AddItem(deployedTurretItem);
+                          }
 
-                     TFTVLogger.Always($"methodInfoReloadItem {methodInfoReloadItem == null}\nmethodInfoGetDeployedTurretItems {methodInfoGetDeployedTurretItems == null}\n" +
-                         $"methodInfoGetItemsOnTheGround {methodInfoGetItemsOnTheGround == null}\n methodInfoGetDeadSquadMembersArmour {methodInfoGetDeadSquadMembersArmour == null}\n" +
-                         $"methodInfoGetDeadSquadMembersArmour {methodInfoGetDeadSquadMembersArmour == null}\n methodInfoManageFreeReloads {methodInfoManageFreeReloads == null}" +
-                         $"methodInfoManageAutosellItems {methodInfoManageAutosellItems == null}");
+                          if (!__instance.MissionDef.DontRecoverItems)
+                          {
+                              foreach (GeoItem item in (IEnumerable<GeoItem>)methodInfoGetItemsOnTheGround.Invoke(__instance, new object[] { result }))
+                              {
+                                  TFTVLogger.Always($"adding item from the ground {item.ItemDef.name}");
 
+                                  __instance.Reward.Items.AddItem(item);
+                              }
 
-                     GeoFaction viewerFaction = __instance.Site.GeoLevel.ViewerFaction;
-                     FactionResult resultByFacionDef = result.GetResultByFacionDef(viewerFaction.Def.PPFactionDef);
-                     bool num = resultByFacionDef.State == TacFactionState.Won;
-                     IEnumerable<GeoCharacter> enumerable = squad.Units.Where((GeoCharacter s) => !s.IsAlive);
-                     if (num)
-                     {
-                         foreach (GeoItem deployedTurretItem in (IEnumerable<GeoItem>)methodInfoGetDeployedTurretItems.Invoke(__instance, new object[] { resultByFacionDef }))
-                         {
-                             TFTVLogger.Always($"adding turret {deployedTurretItem.ItemDef.name}");
-                             __instance.Reward.Items.AddItem(deployedTurretItem);
-                         }
+                              foreach (GeoItem item2 in (IEnumerable<GeoItem>)methodInfoGetDeadSquadMembersArmour.Invoke(__instance, new object[] { result, squad }))
+                              {
+                                  TFTVLogger.Always($"adding armor from dead soldier {item2.ItemDef.name}");
+                                  __instance.Reward.Items.AddItem(item2);
+                              }
 
-                         if (!__instance.MissionDef.DontRecoverItems)
-                         {
-                             foreach (GeoItem item in (IEnumerable<GeoItem>)methodInfoGetItemsOnTheGround.Invoke(__instance, new object[] { result }))
-                             {
-                                 TFTVLogger.Always($"adding item from the ground {item.ItemDef.name}");
+                              foreach (GeoCharacter item3 in enumerable)
+                              {
+                                  if (!item3.TemplateDef.IsVehicle)
+                                  {
+                                      foreach (GeoItem equipmentItem in item3.EquipmentItems)
+                                      {
+                                          TFTVLogger.Always($"adding equipmentItem from dead soldier {item3?.DisplayName} {equipmentItem.ItemDef.name}");
+                                          __instance.Reward.Items.AddItem(equipmentItem);
+                                      }
+                                  }
 
-                                 __instance.Reward.Items.AddItem(item);
-                             }
+                                  foreach (GeoItem inventoryItem in item3.InventoryItems)
+                                  {
+                                      TFTVLogger.Always($"adding inventoryItem from dead unit {item3?.DisplayName} {inventoryItem.ItemDef.name}");
+                                      __instance.Reward.Items.AddItem(inventoryItem);
+                                  }
+                              }
+                          }
+                      }
 
-                             foreach (GeoItem item2 in (IEnumerable<GeoItem>)methodInfoGetDeadSquadMembersArmour.Invoke(__instance, new object[] { result, squad }))
-                             {
-                                 TFTVLogger.Always($"adding armor from dead soldier {item2.ItemDef.name}");
-                                 __instance.Reward.Items.AddItem(item2);
-                             }
+                      if (viewerFaction is GeoPhoenixFaction geoPhoenixFaction)
+                      {
+                          geoPhoenixFaction.PostmissionReplenish(squad.Units, ref __instance.Reward.Items);
+                      }
 
-                             foreach (GeoCharacter item3 in enumerable)
-                             {
-                                 if (!item3.TemplateDef.IsVehicle)
-                                 {
-                                     foreach (GeoItem equipmentItem in item3.EquipmentItems)
-                                     {
-                                         TFTVLogger.Always($"adding equipmentItem from dead soldier {item3?.DisplayName} {equipmentItem.ItemDef.name}");
-                                         __instance.Reward.Items.AddItem(equipmentItem);
-                                     }
-                                 }
+                      ItemStorage itemStorage = viewerFaction.GetItemStorage(__instance.Site);
+                      foreach (GeoCharacter unit in squad.Units)
+                      {
+                          if (!unit.IsAlive)
+                          {
+                              continue;
+                          }
 
-                                 foreach (GeoItem inventoryItem in item3.InventoryItems)
-                                 {
-                                     TFTVLogger.Always($"adding inventoryItem from dead unit {item3?.DisplayName} {inventoryItem.ItemDef.name}");
-                                     __instance.Reward.Items.AddItem(inventoryItem);
-                                 }
-                             }
-                         }
-                     }
+                          foreach (GeoItem equipmentItem2 in unit.EquipmentItems)
+                          {
+                              TFTVLogger.Always($"{unit.DisplayName} reloading {equipmentItem2.ItemDef.name}");
 
-                     if (viewerFaction is GeoPhoenixFaction geoPhoenixFaction)
-                     {
-                         geoPhoenixFaction.PostmissionReplenish(squad.Units, ref __instance.Reward.Items);
-                     }
+                              if (!(bool)methodInfoReloadItem.Invoke(__instance, new object[] { equipmentItem2, __instance.Reward.Items, "mission items" }))
+                              {
+                                  methodInfoReloadItem.Invoke(__instance, new object[] { equipmentItem2, itemStorage, "faction storage" });
+                              }
+                          }
 
-                     ItemStorage itemStorage = viewerFaction.GetItemStorage(__instance.Site);
-                     foreach (GeoCharacter unit in squad.Units)
-                     {
-                         if (!unit.IsAlive)
-                         {
-                             continue;
-                         }
+                          foreach (GeoItem inventoryItem2 in unit.InventoryItems)
+                          {
+                              TFTVLogger.Always($"{unit.DisplayName} reloading {inventoryItem2.ItemDef.name}");
 
-                         foreach (GeoItem equipmentItem2 in unit.EquipmentItems)
-                         {
-                             TFTVLogger.Always($"{unit.DisplayName} reloading {equipmentItem2.ItemDef.name}");
+                              if (!(bool)methodInfoReloadItem.Invoke(__instance, new object[] { inventoryItem2, __instance.Reward.Items, "mission items" }))
+                              {
+                                  methodInfoReloadItem.Invoke(__instance, new object[] { inventoryItem2, itemStorage, "faction storage" });
+                              }
 
-                             if (!(bool)methodInfoReloadItem.Invoke(__instance, new object[] { equipmentItem2, __instance.Reward.Items, "mission items" }))
-                             {
-                                 methodInfoReloadItem.Invoke(__instance, new object[] { equipmentItem2, itemStorage, "faction storage" });
-                             }
-                         }
+                          }
 
-                         foreach (GeoItem inventoryItem2 in unit.InventoryItems)
-                         {
-                             TFTVLogger.Always($"{unit.DisplayName} reloading {inventoryItem2.ItemDef.name}");
+                          foreach (GeoItem armourItem in unit.ArmourItems)
+                          {
+                              TFTVLogger.Always($"{unit.DisplayName} reloading {armourItem.ItemDef.name}");
 
-                             if (!(bool)methodInfoReloadItem.Invoke(__instance, new object[] { inventoryItem2, __instance.Reward.Items, "mission items" }))
-                             {
-                                 methodInfoReloadItem.Invoke(__instance, new object[] { inventoryItem2, itemStorage, "faction storage" });
-                             }
+                              if (!(bool)methodInfoReloadItem.Invoke(__instance, new object[] { armourItem, __instance.Reward.Items, "mission items" }))
+                              {
+                                  methodInfoReloadItem.Invoke(__instance, new object[] { armourItem, itemStorage, "faction storage" });
+                              }
 
-                         }
+                          }
+                      }
 
-                         foreach (GeoItem armourItem in unit.ArmourItems)
-                         {
-                             TFTVLogger.Always($"{unit.DisplayName} reloading {armourItem.ItemDef.name}");
-
-                             if (!(bool)methodInfoReloadItem.Invoke(__instance, new object[] { armourItem, __instance.Reward.Items, "mission items" }))
-                             {
-                                 methodInfoReloadItem.Invoke(__instance, new object[] { armourItem, itemStorage, "faction storage" });
-                             }
-
-                         }
-                     }
-
-                     methodInfoManageFreeReloads.Invoke(__instance, new object[] { result });
-                     methodInfoManageAutosellItems.Invoke(__instance, new object[] { });
+                      methodInfoManageFreeReloads.Invoke(__instance, new object[] { result });
+                      methodInfoManageAutosellItems.Invoke(__instance, new object[] { });
 
 
-                     return false;
+                      return false;
 
-                 }
-                 catch (Exception e)
-                 {
-                     TFTVLogger.Error(e);
-                     throw;
-                 }
-             }
-         }
+                  }
+                  catch (Exception e)
+                  {
+                      TFTVLogger.Error(e);
+                      throw;
+                  }
+              }
+          }*/
 
 
 

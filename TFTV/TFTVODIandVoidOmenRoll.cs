@@ -250,18 +250,10 @@ namespace TFTV
     "SDI_20",
         };
 
-        [HarmonyPatch(typeof(GeoAlienFaction), "UpdateFactionDaily")]
-        internal static class BC_GeoAlienFaction_UpdateFactionDaily_patch
-        {
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
-            private static void Postfix(GeoAlienFaction __instance, int ____evolutionProgress)
-            {
-                if (!__instance.GeoLevel.Tutorial.InProgress)
-                {
-                    ApplyNewODI(__instance, ____evolutionProgress);
-                }
-            }
-        }
+
+
+
+      
 
         public static List<int> GetPossibleVoidOmens(GeoLevelController controller)
         {
@@ -359,10 +351,11 @@ namespace TFTV
         }
 
 
-        internal static void ApplyNewODI(GeoAlienFaction geoAlienFaction, int evolutionProgress)
+        internal static void ApplyNewODIGeoAlienFactionFactionDailyUpdate(GeoAlienFaction geoAlienFaction, int evolutionProgress)
         {
             try
             {
+                if (geoAlienFaction.GeoLevel.Tutorial.InProgress) return;
 
                 // Index of last element of the ODI event ID array is Length - 1
                 int ODI_EventIDs_LastIndex = ODI_EventIDs.Length - 1;
@@ -499,13 +492,13 @@ namespace TFTV
                                     // so that it sets the Void Omen variable
                                     // Modified this on 30/12, to remove ODI events as conduits for Void Omen implementation.
                                     // This way we can avoid having an ODI when they run out.
-                                    
-                                 /*   oDIEventToTrigger.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(new OutcomeVariableChange
-                                    {
-                                        VariableName = voidOmen + (difficulty - t),
-                                        Value = { Min = voidOmenRoll, Max = voidOmenRoll },
-                                        IsSetOperation = true,
-                                    });*/
+
+                                    /*   oDIEventToTrigger.GeoscapeEventData.Choices[0].Outcome.VariablesChange.Add(new OutcomeVariableChange
+                                       {
+                                           VariableName = voidOmen + (difficulty - t),
+                                           Value = { Min = voidOmenRoll, Max = voidOmenRoll },
+                                           IsSetOperation = true,
+                                       });*/
                                     // This records which ODI event triggered which Void Omen
                                     int variableRolledVoidOmen = geoAlienFaction.EvolutionProgress / 470;
                                     geoLevelController.EventSystem.SetVariable(triggeredVoidOmens + variableRolledVoidOmen, voidOmenRoll);
@@ -544,16 +537,16 @@ namespace TFTV
 
                         string newVoidOmen = voidOmenTitleFormat + voidOmenRoll;
                         string newVoidOmenDescription = voidOmenDescriptionFormat + voidOmenRoll;
-                        
+
                         string oDIEventTextToDisplay = $"<i>{TFTVCommonMethods.ConvertKeyToString("KEY_EXCREPT")} {TFTVCommonMethods.ConvertKeyToString("KEY_ODPIA_TEXT")} {reportData}</i>\n\n***\n\n{TFTVCommonMethods.ConvertKeyToString(originalODIEventKey)}";
 
                         oDIEventToTrigger.GeoscapeEventData.Description[0].General = new LocalizedTextBind(oDIEventTextToDisplay, true);
                         geoLevelController.EventSystem.TriggerGeoscapeEvent(oDIEventToTrigger.EventID, geoscapeEventContext);
                     }
-                    else 
+                    else
                     {
-                        TFTVLogger.Always($"SDI_20! so not triggered"); 
-                    } 
+                        TFTVLogger.Always($"SDI_20! so not triggered");
+                    }
 
                     geoLevelController.EventSystem.SetVariable("BC_SDI", CurrentODI_Level);
 
@@ -623,7 +616,7 @@ namespace TFTV
                         voidOmenEventTextToDisplay += $"\n\n{TFTVCommonMethods.ConvertKeyToString("VOID_OMEN_DESCRIPTION_TEXT_EXTRA_HELENA_" + voidOmenRoll)}";
                     }
 
-                    TFTVVoidOmens.CreateVoidOmenObjective(voidOmenTitleFormat + voidOmenRoll, voidOmenDescriptionFormat + voidOmenRoll, geoLevelController);                   
+                    TFTVVoidOmens.CreateVoidOmenObjective(voidOmenTitleFormat + voidOmenRoll, voidOmenDescriptionFormat + voidOmenRoll, geoLevelController);
                 }
 
 

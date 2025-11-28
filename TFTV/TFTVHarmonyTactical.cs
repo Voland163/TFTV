@@ -4,7 +4,9 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Levels.ActorDeployment;
+using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -20,11 +22,15 @@ using PhoenixPoint.Tactical.View;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewModules;
 using PRMBetterClasses.SkillModifications;
+using PRMBetterClasses.VariousAdjustments;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static PhoenixPoint.Tactical.View.ViewControllers.SquadMemberScrollerController;
+
+
+//8. **TacticalActor.ShouldChangeAspectStats** – patches in `TFTV/TFTVStamina.cs` and `TFTV/TFTVDrills/DrillsHarmony.cs`.
 
 
 
@@ -36,38 +42,45 @@ namespace TFTV
         //   private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
+        [HarmonyPatch(typeof(UIModuleBionics), nameof(UIModuleBionics.OnAugmentApplied))]
+        public static class UIModuleBionics_OnAugmentApplied_SetStaminaTo0_patch
+        {
+            public static void Postfix(UIModuleBionics __instance, ItemDef augment)
+            {
+                try
+                {
+                    TFTVAugmentations.CheckAnuPissedBionicsBrokenPromise(__instance);
+                    TFTVStamina.SetStaminaToZeroOnBionicApplied(__instance);
+                    TFTVDelirium.ReduceDeliriumOnAugmentApplied(__instance, augment);
+                }
 
-        // Patch the method that reacts when any actor enters play
-        /* [HarmonyPatch(typeof(TacticalFactionVision), "OnActorEnteredPlay")]
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
-         public static class TacticalFactionVision_OnActorEnteredPlay_Patch
-         {
-             public static bool Prefix(TacticalActorBase tacticalActorBase)
-             {
-                 // If it's one of our spawned StructuralTargets, bail out.
-                 if (tacticalActorBase is StructuralTarget)
-                 {
-                     TFTVLogger.Always($"TacticalFactionVision.OnActorEnteredPlay for {tacticalActorBase.name} - skipping vision update");
-                     return false;  // skip the original OnActorEnteredPlay altogether
-                 }
-                 return true;       // otherwise let the vanilla vision code run
-             }
-         }
 
-         // And also when an actor moves (just in case movement triggers the same NRE later)
-         [HarmonyPatch(typeof(TacticalFactionVision), "OnActorMoved", typeof(TacticalActorBase))]
-         public static class TacticalFactionVision_OnActorMoved_Patch
-         {
-             public static bool Prefix(TacticalActorBase movedActor)
-             {
-                 if (movedActor is StructuralTarget)
-                 {
-                     TFTVLogger.Always($"TacticalFactionVision.OnActorMoved for {movedActor.name} - skipping vision update");
-                     return false;
-                 }
-                 return true;
-             }
-         }*/
+
+        [HarmonyPatch(typeof(DamageOverTimeStatus), "ApplyEffect")]
+        public static class DamageOverTimeStatus_ApplyEffect_Patch
+        {
+            public static void Postfix(DamageOverTimeStatus __instance)
+            {
+                try
+                {
+                    AircraftReworkTacticalModules.WorkshopModule.WorkshopModuleLowerAcidApplyAffectCheck(__instance);
+                    VariousAdjustments.TremblingStatusDamageOverTimeStatusCheck(__instance);
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
 
         [HarmonyPatch(typeof(EvacuateMountedActorsAbility), nameof(EvacuateMountedActorsAbility.Activate))]
         public static class EvacuateMountedActorsAbility_Activate_patch
@@ -140,55 +153,13 @@ namespace TFTV
             {
                 try
                 {
-                    ApplyStatusAbilityDef killerInstinctAbilityDef = DefCache.GetDef<ApplyStatusAbilityDef>("KillerInstinct_AbiltyDef");
-
-                    //  TFTVLogger.Always($"got here for {__instance.AddAttackBoostStatusDef.name}, tactical ability: {ability.TacticalAbilityDef.name}");
-
-                    if (__instance.AddAttackBoostStatusDef != killerInstinctAbilityDef.StatusDef)
-                    {
-                        return true;
-                    }
-
-                    SkillTagDef attackAbilityTag = DefCache.GetDef<SkillTagDef>("AttackAbility_SkillTagDef");
-                    if (!(ability is IAttackAbility) &&
-                        !(ability is IDamageDealer) &&
-                        !(ability.TacticalAbilityDef.SkillTags.Contains(attackAbilityTag)))
-                    {
+                    if (!HeavySkills.HunkerDownReturnFireAbilityExecutedHandlerCheck(__instance)) 
+                    { 
                         return false;
                     }
 
-                    SkillTagDef[] skillTagCullFilter = __instance.AddAttackBoostStatusDef.SkillTagCullFilter;
-                    foreach (SkillTagDef value in skillTagCullFilter)
-                    {
-                        if (ability.TacticalAbilityDef.SkillTags.Contains(value))
-                        {
-                            return false;
-                        }
-                    }
+                    return BerserkerSkills.KillerInstinctAbilityExecutedHandlerCheck(__instance, ability, ref ____attacksBoosted);
 
-                    if (__instance.AddAttackBoostStatusDef.NumberOfAttacks < 0)
-                    {
-                        return false;
-                    }
-
-                    ____attacksBoosted++;
-                    if (____attacksBoosted < __instance.AddAttackBoostStatusDef.NumberOfAttacks)
-                    {
-                        return false;
-                    }
-
-                    __instance.RequestUnapply(__instance.TacticalActor.Status);
-                    TacStatusDef[] additionalStatusesToApply = __instance.AddAttackBoostStatusDef.AdditionalStatusesToApply;
-                    foreach (TacStatusDef def in additionalStatusesToApply)
-                    {
-                        TacStatus status = __instance.TacticalActor.Status.GetStatus<TacStatus>(def);
-                        if (status != null && __instance.AddAttackBoostStatusDef == status.Source as AddAttackBoostStatusDef)
-                        {
-                            status.RequestUnapply(__instance.TacticalActor.Status);
-                        }
-                    }
-
-                    return false;
                 }
 
                 catch (Exception e)
@@ -224,42 +195,6 @@ namespace TFTV
                 }
             }
         }
-
-
-        /* [HarmonyPatch(typeof(CorruptionStatus), "OnApply")]
-         public static class CorruptionStatusPatch
-         {
-             // Postfix patch – after the original ActivateAbility runs.
-             static bool Prefix(CorruptionStatus __instance, StatusComponent statusComponent)
-             {
-                 try
-                 {
-                     TacticalActor tacticalActor = __instance.TacticalActor;
-
-                     if (tacticalActor == null)
-                     {
-                         return true;
-                     }
-
-                     if (tacticalActor.BodyState.GetArmourItems().All(a => a.GameTags.Contains(Shared.SharedGameTags.BionicalTag)))
-                     {
-                         TFTVLogger.Always($"not applying Delirium to {tacticalActor.DisplayName} because fully bionic");
-                         return false; 
-                     }
-
-
-                     return true;
-                 }
-                 catch (Exception e)
-                 {
-                     TFTVLogger.Error(e);
-                     throw;
-                 }
-             }
-         }*/
-
-
-
 
         [HarmonyPatch(typeof(IdleAbility), "OnPlayingActionEnd")]
         public static class IdleAbility_OnPlayingActionEnd_patch
@@ -312,7 +247,19 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleObjectives), nameof(UIModuleObjectives.Init))]
         public static class UIModuleObjectives_Init_patch
         {
+            public static void Prefix(UIModuleObjectives __instance, TacticalViewContext Context)
+            {
+                try
+                {
+                    TFTVUITactical.SecondaryObjectivesTactical.VerifyObjectiveListUIPrefix(__instance, Context);
 
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
             public static void Postfix(UIModuleObjectives __instance, TacticalViewContext Context)
             {
                 try
@@ -321,6 +268,7 @@ namespace TFTV
                     TFTVUITactical.ODITactical.CreateODITacticalWidget(__instance);
                     TFTVUITactical.CaptureTacticalWidget.CreateCaptureTacticalWidget(__instance);
                     TFTVUITactical.Enemies.ActivateOrAdjustLeaderWidgets();
+                    TFTVUITactical.SecondaryObjectivesTactical.InitObjectivesTFTV(__instance);
                     //  MissionQuips.RunPhoenixOverlayQuip(Context.LevelController.GetFactionByCommandName("PX").TacticalActors.FirstOrDefault(), "oBJECTIVes Module Inited!");
                 }
                 catch (Exception e)
@@ -612,7 +560,6 @@ namespace TFTV
             }
         }
 
-
         //Adapted Lucus solution to avoid Ancient Automata receiving WP penalty on ally death/also used for Human Enemies
         [HarmonyPatch(typeof(TacticalActor), "OnAnotherActorDeath")] //VERIFIED
         public static class TacticalActor_OnAnotherActorDeath_HumanEnemies_Patch
@@ -670,6 +617,8 @@ namespace TFTV
                     death.Actor.TacticalActorBaseDef.WillPointWorth = __state;
                 }
 
+                TFTVDeliriumPerks.ApplyDeliriumPerksHyperAlgesiaFeralBloodThirstyTacticalActorOnAnotherActorDeath(__instance, death);
+                FactionPerks.PunisherTacticalActorOnAnotherActorDeath(__instance, death);
             }
         }
 

@@ -22,6 +22,7 @@ using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewModules;
+using PhoenixPoint.Tactical.View.ViewStates;
 using System.Collections.Generic;
 using System.Linq;
 using TFTV;
@@ -196,10 +197,48 @@ namespace PRMBetterClasses.VariousAdjustments
             DamageOverTimeStatusDef poisonDOT = DefCache.GetDef<DamageOverTimeStatusDef>("Poison_DamageOverTimeStatusDef");
             poisonDOT.Visuals.Description.LocalizationKey = "PR_BC_POISON_STATUS_DESC";
         }
+
+
         // Make Trembling status accessible for Harmony patches to avoid time critical Repo calls in them.
         public static StatMultiplierStatusDef trembling = DefCache.GetDef<StatMultiplierStatusDef>("Trembling_StatusDef");
         // Harmony patch for Poison DOT to additionally apply -50% accuracy (Trembling status) and -3 WP per turn
-        [HarmonyPatch(typeof(DamageOverTimeStatus), nameof(DamageOverTimeStatus.ApplyEffect))]
+        public static void TremblingStatusDamageOverTimeStatusCheck(DamageOverTimeStatus damageOverTimeStatus)
+        {
+            try 
+            {
+                if (damageOverTimeStatus.DamageOverTimeStatusDef.name.Equals("Poison_DamageOverTimeStatusDef"))
+                {
+                    //TacticalActor base_TacticalActor = (TacticalActor)AccessTools.Property(typeof(TacStatus), "TacticalActor").GetValue(__instance, null);
+                    //StatusComponent statusComponent = (StatusComponent)AccessTools.Property(typeof(TacStatus), "StatusComponent").GetValue(__instance, null);
+                    //StatMultiplierStatusDef trembling = Repo.GetAllDefs<StatMultiplierStatusDef>().FirstOrDefault(sms => sms.name.Equals("Trembling_StatusDef"));
+
+                    if (damageOverTimeStatus.IntValue <= 0 && damageOverTimeStatus.TacticalActor != null && damageOverTimeStatus.TacticalActor.Status.HasStatus(trembling))
+                    {
+                        StatMultiplierStatus status = damageOverTimeStatus.TacticalActor.Status.GetStatus<StatMultiplierStatus>(trembling);
+                        status.RequestUnapply(status.StatusComponent);
+                        return;
+                    }
+
+                    if (damageOverTimeStatus.IntValue > 0 && damageOverTimeStatus.TacticalActor != null && damageOverTimeStatus.TacticalActor.CharacterStats != null)
+                    {
+                        if (!damageOverTimeStatus.TacticalActor.Status.HasStatus(trembling))
+                        {
+                            _ = damageOverTimeStatus.TacticalActor.Status.ApplyStatus(trembling);
+                        }
+                        float newWP = Mathf.Max(damageOverTimeStatus.TacticalActor.CharacterStats.WillPoints.Min, damageOverTimeStatus.TacticalActor.CharacterStats.WillPoints - 3.0f);
+                        damageOverTimeStatus.TacticalActor.CharacterStats.WillPoints.Set(newWP);
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        
+       //commented out to consolidate Patch in TFTVHarmonyTactical
+      /*  [HarmonyPatch(typeof(DamageOverTimeStatus), nameof(DamageOverTimeStatus.ApplyEffect))]
         internal static class BC_DamageOverTimeStatus_ApplyEffect_Patch
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
@@ -229,7 +268,8 @@ namespace PRMBetterClasses.VariousAdjustments
                     }
                 }
             }
-        }
+        }*/
+
         // Harmony patch to unapply trembling when poison status is unapplied
         [HarmonyPatch(typeof(TacEffectStatus), nameof(TacEffectStatus.OnUnapply))]
         internal static class BC_TacEffectStatus_OnUnapply_Patch

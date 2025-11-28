@@ -1,10 +1,11 @@
 ﻿using Base.Core;
 using Base.UI.MessageBox;
-using EnviroSamples;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Core;
@@ -15,7 +16,6 @@ using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Geoscape.View.DataObjects;
-using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
@@ -31,6 +31,98 @@ namespace TFTV
     internal class TFTVHarmonyGeoscape
     {
 
+        [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruitToContainerFinal")] //VERIFIED  
+        internal static class TFTV_GeoPhoenixFaction_AddRecruitToContainerFinal_patch
+        {
+            public static void Prefix(ref GeoCharacter recruit)
+            {
+                try
+                {
+                   TFTVUI.Mutoids.AddMutoidToNewRecruitGeoPhoenixFactionAddRecruitToContainerFinal(ref recruit);
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            public static void Postfix(GeoPhoenixFaction __instance, GeoCharacter recruit)
+            {
+                try
+                {
+                    TFTVProjectOsiris.AddProjectOsirisRecruitGeoPhoenixFactionAddRecruitToContainerFinal(__instance, recruit);
+                    TFTVBaseRework.TrainingFacilityRework.TryApplyDeferredTrainingStats(recruit);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+
+        }
+
+
+
+        [HarmonyPatch(typeof(GeoMission), "ApplyMissionResults")] //VERIFIED
+        public static class GeoMission_ApplyMissionResults_patch
+        {
+            public static void Prefix()
+            {
+                try
+                {
+                    TFTVChangesToDLC5.TFTVMercenaries.Tactical.AdjustMercItemsToBeRecoverable(false);
+
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            public static void Postfix(GeoMission __instance, TacMissionResult result, GeoSquad squad)
+            {
+                try
+                {
+                    TFTVChangesToDLC5.TFTVMercenaries.Tactical.AdjustMercItemsToBeRecoverable(true);
+                    TFTVDelirium.RemoveDeliriumPerksGeoMissionApplyMissionResults(__instance, result, squad);
+                    AircraftReworkMaintenance.AfterLosingAmbushGeoMissionApplyMissionResults(__instance, result, squad);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+        [HarmonyPatch(typeof(GeoAlienFaction), nameof(GeoAlienFaction.UpdateFactionDaily))]
+        public static class PhoenixStatisticsManager_UpdateGeoscapeStats_AnuPissedAtBionics_Patch
+        {
+            public static void Postfix(GeoAlienFaction __instance, int ____evolutionProgress)
+            {
+                try
+                {
+                    TFTVAugmentations.AnuReactionToBionicsGeoAlienFactionUpdateFactionDaily(__instance);
+                    TFTVAugmentations.NJReactionToMutationsGeoAlienFactionUpdateFactionDaily(__instance);
+                    TFTVODIandVoidOmenRoll.ApplyNewODIGeoAlienFactionFactionDailyUpdate(__instance, ____evolutionProgress);
+                    TFTVPandoranProgress.AddPandoranEvolutionPointsGeoAlienFactionUpdateFactionDaily(__instance);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+
         [HarmonyPatch(typeof(GeoVehicle), "get_MaxCharacterSpace")]
         internal static class BG_GeoVehicle_get_MaxCharacterSpace_patch
         {
@@ -39,7 +131,7 @@ namespace TFTV
                 try
                 {
                     AircraftReworkGeoscape.PassengerModules.AdjustMaxCharacterSpacePassengerModules(__instance, ref __result);
-                 // TFTVLogger.Always($"get_MaxCharacterSpace postfix executed for {__instance.Name} __result: {__result}");
+                    // TFTVLogger.Always($"get_MaxCharacterSpace postfix executed for {__instance.Name} __result: {__result}");
                 }
                 catch (Exception e)
                 {
@@ -77,7 +169,7 @@ namespace TFTV
                 try
                 {
                     AircraftReworkGeoscape.PassengerModules.AdjustAircraftInfoPassengerModules(__instance, ref __result);
-                  //  TFTVLogger.Always($"GetAircraftInfo postfix executed for {__instance.Name} __result.CurrentCrew: {__result.CurrentCrew} __result.MaxCrew: {__result.MaxCrew}");
+                    //  TFTVLogger.Always($"GetAircraftInfo postfix executed for {__instance.Name} __result.CurrentCrew: {__result.CurrentCrew} __result.MaxCrew: {__result.MaxCrew}");
                 }
                 catch (Exception e)
                 {
@@ -117,7 +209,7 @@ namespace TFTV
             {
                 try
                 {
-                  //  TFTVLogger.Always($"running UpdateFactionHourly {__instance.GeoLevel.Timing.Now}");
+                    //  TFTVLogger.Always($"running UpdateFactionHourly {__instance.GeoLevel.Timing.Now}");
 
                     TFTVCapturePandoransGeoscape.LimitedHarvestingHourlyActions(__instance.GeoLevel);
                     TFTVBaseDefenseGeoscape.InitAttack.ContainmentBreach.HourlyCheckContainmentBreachDuringBaseDefense(__instance.GeoLevel);
@@ -169,7 +261,7 @@ namespace TFTV
                     TFTVBaseDefenseTactical.Objectives.ModifyBaseDefenseTacticalObjectives(missionData.MissionType);
                     TFTVUITactical.SecondaryObjectivesTactical.PopulateAvailableObjectives(__instance.Site.GeoLevel);
                     TFTVUITactical.SecondaryObjectivesTactical.AddAllAvailableSecondaryObjectivesToMission(missionData.MissionType);
-                    
+
                     // __instance.GameController.SaveManager.IsSaveEnabled = true;
                 }
                 catch (Exception e)
@@ -209,7 +301,7 @@ namespace TFTV
             {
                 try
                 {
-                  
+
                     TFTVDiplomacyPenalties.ImplementDiplomaticPenalties(null, __instance);
                 }
 
@@ -228,8 +320,8 @@ namespace TFTV
             public static void Prefix(GeoscapeEventData @event, GeoscapeEventSystem __instance)// @event)
             {
                 try
-                {                   
-                    TFTVDiplomacyPenalties.ImplementDiplomaticPenalties(@event, null);   
+                {
+                    TFTVDiplomacyPenalties.ImplementDiplomaticPenalties(@event, null);
                 }
 
                 catch (Exception e)
@@ -238,7 +330,7 @@ namespace TFTV
                     throw;
                 }
             }
-       
+
         }
 
         [HarmonyPatch(typeof(GeoscapeEvent), "CompleteEvent")]

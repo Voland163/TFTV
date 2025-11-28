@@ -34,6 +34,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting.Contexts;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -2897,7 +2898,7 @@ namespace TFTV
 
             }
 
-            private static void InitObjectivesTFTV(UIModuleObjectives __instance)
+            public static void InitObjectivesTFTV(UIModuleObjectives __instance)
             {
                 try
                 {
@@ -3022,54 +3023,36 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(UIModuleObjectives), nameof(UIModuleObjectives.Init))]
-            public static class UIModuleObjectives_Init_Patch
+
+            public static void VerifyObjectiveListUIPrefix(UIModuleObjectives uIModulesObjectives, TacticalViewContext Context)
             {
-                public static void Prefix(UIModuleObjectives __instance, TacticalViewContext Context)
+                try
                 {
-                    try
+                    ObjectivesManager objectives = Context.LevelController.CurrentFaction.Objectives;
+
+                    List<FactionObjective> objectivesToRemove = new List<FactionObjective>();
+
+                    foreach (FactionObjective factionObjective in objectives)
                     {
-                        ObjectivesManager objectives = Context.LevelController.CurrentFaction.Objectives;
-
-                        List<FactionObjective> objectivesToRemove = new List<FactionObjective>();
-
-                        foreach (FactionObjective factionObjective in objectives)
+                        if (IsSecondaryObjective(factionObjective) && IsNeverRelevantObjective(factionObjective))
                         {
-                            if (IsSecondaryObjective(factionObjective) && IsNeverRelevantObjective(factionObjective))
-                            {
-                                objectivesToRemove.Add(factionObjective);
-                            }
-                        }
-
-                        foreach (FactionObjective factionObjective1 in objectivesToRemove)
-                        {
-                            objectives.Remove(factionObjective1);
-
+                            objectivesToRemove.Add(factionObjective);
                         }
                     }
-                    catch (Exception e)
+
+                    foreach (FactionObjective factionObjective1 in objectivesToRemove)
                     {
-                        TFTVLogger.Error(e);
-                        throw;
+                        objectives.Remove(factionObjective1);
+
                     }
                 }
-
-
-                public static void Postfix(UIModuleObjectives __instance)
+                catch (Exception e)
                 {
-                    try
-                    {
-                        InitObjectivesTFTV(__instance);
-
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
-
+                    TFTVLogger.Error(e);
+                    throw;
                 }
             }
+
         }
 
         internal class Enemies

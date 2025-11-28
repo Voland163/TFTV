@@ -48,10 +48,13 @@ using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Eventus;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
+using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.NetworkInformation;
+using System.Security.AccessControl;
 using TFTV.LaserWeapons;
 using UnityEngine;
 using static PhoenixPoint.Common.Entities.Addons.AddonDef;
@@ -238,13 +241,30 @@ namespace TFTV
                 CreateSuppressionStatusDefs();
                 AddMissingViewElementDefs();
                 LaserWeaponsInit.Init();
-              //  TestUseWorkerComponent();
+                EnsureTFTVFunctionalityAfterNewPatch();
+                //  TestUseWorkerComponent();
 
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        private static void EnsureTFTVFunctionalityAfterNewPatch()
+        {
+            try 
+            {
+
+                GeoscapeSettingsDef geoscapeSettingsDef = DefCache.GetDef<GeoscapeSettingsDef>("GeoscapeSettingsDef");
+                geoscapeSettingsDef.DamagedBodypartsDrainsAllStamina = false;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
         }
 
        /* private static void TestUseWorkerComponent()
@@ -1244,7 +1264,7 @@ namespace TFTV
                 FixMindControlImmunityNotRestoredWhenHeadReenabled();
                 FixChironStompIgnoringFriendlies();
                 FixMindWard();
-                FixAcheronAiming();
+                //  Removed because now in base game FixAcheronAiming();
                 FixInstilFrenzySound();
                 FixMutoidDazeImmunity();
                 FixMutagenCostBadAcidWorm();
@@ -1416,8 +1436,10 @@ namespace TFTV
         {
             try
             {
-                TacticalPerceptionDef tacticalPerceptionDef = DefCache.GetDef<TacticalPerceptionDef>("Acheron_PerceptionDef");
-                tacticalPerceptionDef.DefaultAimSlot = DefCache.GetDef<ItemSlotDef>("Acheron_Husk_SlotDef");
+
+              
+              TacticalPerceptionDef tacticalPerceptionDef = DefCache.GetDef<TacticalPerceptionDef>("Acheron_PerceptionDef");
+              tacticalPerceptionDef.DefaultAimSlot = DefCache.GetDef<ItemSlotDef>("Acheron_Husk_SlotDef");
 
                 List<TacticalItemDef> tacticalItemDefs = new List<TacticalItemDef>()
                 {
@@ -7056,9 +7078,10 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 achlysHuskAbilities.Remove(confusionCloud);
                 achlysChampionHusk.Abilities = achlysHuskAbilities.ToArray();
 
-                //Adjust Acheron leap so it can only be used once per turn and doesn't cost any AP
-                JetJumpAbilityDef acheronLeap = DefCache.GetDef<JetJumpAbilityDef>("Acheron_Leap_AbilityDef");
-                acheronLeap.UsesPerTurn = 1;
+                //Removed as now in base game
+                //Adjust Acheron leap so it can only be used once per turn 
+               //   JetJumpAbilityDef acheronLeap = DefCache.GetDef<JetJumpAbilityDef>("Acheron_Leap_AbilityDef");
+               // acheronLeap.UsesPerTurn = 1;
                 //acheronLeap.ActionPointCost = 0;
 
                 //Removing Resurrect and Delirium Clouds from Asclepius Husks
@@ -7086,30 +7109,36 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
 
                 WeaponDef spitArmsAcheronAchlysChampion = DefCache.GetDef<WeaponDef>("AcheronAchlysChampion_Arms_WeaponDef");
                 spitArmsAcheronAchlysChampion.DamagePayload.DamageKeywords[1].DamageKeywordDef = blast;
-                spitArmsAcheronAchlysChampion.DamagePayload.DamageKeywords[1].Value = 30;
+
+                //now in base game
+                /* spitArmsAcheronAchlysChampion.DamagePayload.DamageKeywords[1].Value = 30;
                 spitArmsAcheronAchlysChampion.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
                 {
                     DamageKeywordDef = poison,
                     Value = 30
-                });
+                });*/
+
+               // spitArmsAcheronAchlysChampion.DamagePayload.DamageKeywords.RemoveAt(2); //removing goo added to base game or was it already there? can't remember
+
                 spitArmsAcheronAchlysChampion.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
                 {
                     DamageKeywordDef = acid,
                     Value = 20
                 });
+                
                 spitArmsAcheronAchlysChampion.DamagePayload.DamageType = blastDamage;
                 spitArmsAcheronAchlysChampion.DamagePayload.AoeRadius = 2f;
                 spitArmsAcheronAchlysChampion.DamagePayload.DamageDeliveryType = DamageDeliveryType.Cone;
-                spitArmsAcheronAchlysChampion.HandsToUse = 2;
+               // spitArmsAcheronAchlysChampion.HandsToUse = 2;
 
 
                 WeaponDef spitArmsAcheronAsclepiusChampion = DefCache.GetDef<WeaponDef>("AcheronAsclepiusChampion_Arms_WeaponDef");
 
-                spitArmsAcheronAsclepiusChampion.HandsToUse = 2;
+              //  spitArmsAcheronAsclepiusChampion.HandsToUse = 2;
 
                 WeaponDef achlysArms = DefCache.GetDef<WeaponDef>("AcheronAchlys_Arms_WeaponDef");
 
-                achlysArms.HandsToUse = 2;
+               // achlysArms.HandsToUse = 2;
 
                 //   string guid = "2B294E66-1BE9-425B-B088-F5A9075167A6";
                 WeaponDef neuroArmsCopy = new WeaponDef();//Repo.CreateDef<WeaponDef>(guid);
@@ -7117,13 +7146,14 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 ReflectionHelper.CopyFields(spitArmsAcheronAchlysChampion, achlysArms);
                 ReflectionHelper.CopyFields(neuroArmsCopy, spitArmsAcheronAsclepiusChampion);
 
-                DamageKeywordDef mistDamageKeyword = DefCache.GetDef<DamageKeywordDef>("Mist_DamageKeywordEffectorDef");
-                SpawnVoxelDamageTypeEffectDef mistDamageTypeEffect = DefCache.GetDef<SpawnVoxelDamageTypeEffectDef>("Mist_SpawnVoxelDamageTypeEffectDef");
+               // DamageKeywordDef mistDamageKeyword = DefCache.GetDef<DamageKeywordDef>("Mist_DamageKeywordEffectorDef");
+               // SpawnVoxelDamageTypeEffectDef mistDamageTypeEffect = DefCache.GetDef<SpawnVoxelDamageTypeEffectDef>("Mist_SpawnVoxelDamageTypeEffectDef");
 
                 // Change_AcheronCorruptiveSpray();
                 //Add acid and mist, increase range
-                WeaponDef acheronArms = DefCache.GetDef<WeaponDef>("Acheron_Arms_WeaponDef");
-                acheronArms.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
+               // WeaponDef acheronArms = DefCache.GetDef<WeaponDef>("Acheron_Arms_WeaponDef");
+                //Now in base game
+              /*  acheronArms.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
                 {
                     DamageKeywordDef = acid,
                     Value = 10
@@ -7139,12 +7169,14 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 acheronArms.DamagePayload.AoeRadius = 5;
                 acheronArms.DamagePayload.Range = 30;
                 acheronArms.DamagePayload.DamageDeliveryType = DamageDeliveryType.Cone;
-                acheronArms.HandsToUse = 2;
+                acheronArms.HandsToUse = 2;*/
                 //   acheronArms.Abilities[0] = DefCache.GetDef<ShootAbilityDef>("MistLaunch_ShootAbilityDef"); 
 
 
-                WeaponDef acheronPrimeArms = DefCache.GetDef<WeaponDef>("AcheronPrime_Arms_WeaponDef");
-                acheronPrimeArms.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
+             //   WeaponDef acheronPrimeArms = DefCache.GetDef<WeaponDef>("AcheronPrime_Arms_WeaponDef");
+              
+                //Now in base game
+                /* acheronPrimeArms.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
                 {
                     DamageKeywordDef = acid,
                     Value = 20
@@ -7160,17 +7192,19 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 acheronPrimeArms.DamagePayload.AoeRadius = 5;
                 acheronPrimeArms.DamagePayload.Range = 30;
                 acheronPrimeArms.DamagePayload.DamageDeliveryType = DamageDeliveryType.Cone;
-                acheronPrimeArms.HandsToUse = 2;
+                acheronPrimeArms.HandsToUse = 2;*/
 
+                //Keeping, as in base game usesperturn higher 3/infinite/3
                 DefCache.GetDef<ShootAbilityDef>("Acheron_GooSpray_ShootAbilityDef").UsesPerTurn = 2;
                 DefCache.GetDef<ShootAbilityDef>("Acheron_CorruptiveSpray_AbilityDef").UsesPerTurn = 2;
                 DefCache.GetDef<ShootAbilityDef>("Acheron_ParalyticSpray_AbilityDef").UsesPerTurn = 2;
 
-                ItemSlotDef frontLeftLegSlot = (ItemSlotDef)Repo.GetDef("fdbaba54-5dd8-69f4-d85a-02cb6e17d1ea"); //Acheron_FrontLeftLeg_SlotDef
-                ItemSlotDef frontRightLegSlot = (ItemSlotDef)Repo.GetDef("2f4339a5-b4e3-c184-f841-efe653dac7b2"); //Acheron_FrontRightLeg_SlotDef
+                //Now in base game
+              //  ItemSlotDef frontLeftLegSlot = (ItemSlotDef)Repo.GetDef("fdbaba54-5dd8-69f4-d85a-02cb6e17d1ea"); //Acheron_FrontLeftLeg_SlotDef
+              //  ItemSlotDef frontRightLegSlot = (ItemSlotDef)Repo.GetDef("2f4339a5-b4e3-c184-f841-efe653dac7b2"); //Acheron_FrontRightLeg_SlotDef
 
-                frontLeftLegSlot.ProvidesHand = false;
-                frontRightLegSlot.ProvidesHand = false;
+              //  frontLeftLegSlot.ProvidesHand = false;
+              //  frontRightLegSlot.ProvidesHand = false;
 
             }
             catch (Exception e)

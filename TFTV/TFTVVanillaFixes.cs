@@ -288,7 +288,9 @@ namespace TFTV
         }
 
         internal class UI
-        {
+        { 
+
+            //Removed as now in base game
             //Code provided by Codemite
           /*  [HarmonyPatch(typeof(UIInventorySlot), nameof(UIInventorySlot.UpdateItem))]
             public static class UIInventorySlot_UpdateItem_patch
@@ -3766,9 +3768,10 @@ namespace TFTV
             }
 
             /// <summary>
+            /// Removed as now in base game
             /// Codemite's solution to Acheron's junk transforms (part of the Acheron bad targeting problem). All hail Codemite!
             /// </summary>
-            [HarmonyPatch(typeof(TacticalItem), "SetupAimPoint")] //VERIFIED
+           /* [HarmonyPatch(typeof(TacticalItem), "SetupAimPoint")] //VERIFIED
             public static class TFTV_TacticalItem_SetupAimPoint_patch
             {
                 public static bool Prefix(TacticalItem __instance, ref Transform ____aimPoint)
@@ -3808,12 +3811,7 @@ namespace TFTV
                                     ____aimPoint = tempPoint;
                                 }
                             }
-                            /* else
-                             {
-
-                                 TFTVLogger.Always($"NOT Junk Acheron part: {____aimPoint.name} {____aimPoint.parent.name} {____aimPoint.position}");
-
-                             }*/
+                           
                         }
                         if (____aimPoint == null)
                         {
@@ -3829,7 +3827,7 @@ namespace TFTV
                         throw;
                     }
                 }
-            }
+            }*/
 
 
 
@@ -3850,8 +3848,7 @@ namespace TFTV
                     {
                         if (geoFaction != null && geoFaction.Def != null && geoFaction.Def.UpdateFaction)
                         {
-                            GeoPhoenixFaction geoPhoenixFaction = geoFaction as GeoPhoenixFaction;
-                            if (geoPhoenixFaction != null)
+                            if (geoFaction is GeoPhoenixFaction geoPhoenixFaction)
                             {
                                 geoPhoenixFaction.UpdateBasesDaily();
                             }
