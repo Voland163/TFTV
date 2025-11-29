@@ -508,70 +508,67 @@ namespace TFTV.TFTVDrills
             private static readonly GameTagDef AssaultRifleTag = DefCache.GetDef<GameTagDef>("AssaultRifleItem_TagDef");
 
 
-            [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.ShouldChangeAspectStats))]
-            public static class TacticalActor_ShouldChangeAspectStats_BulletHell_Patch
+            public static void CheckForBulletHellDrillAplicationOnDisabledLimb(TacticalActor tacticalActor, TacticalItemAspectBase aspect) 
             {
-                public static void Postfix(TacticalActor __instance, TacticalItemAspectBase aspect)
+
+                try
                 {
-                    try
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
-                        if (!TFTVNewGameOptions.IsReworkEnabled())
-                        {
-                            return;
-                        }
-
-
-                        if (_bulletHell == null || aspect == null)
-                        {
-                            return;
-                        }
-
-                        if (!(aspect is BodyPartAspect))
-                        {
-                            return;
-                        }
-
-                        TacticalItem tacticalItem = aspect.OwnerItem;
-                        if (tacticalItem == null)
-                        {
-                            return;
-                        }
-
-                        TacticalActor attacker = TacUtil.GetSourceTacticalActorBase(__instance.LastDamageSource) as TacticalActor;
-
-                        TacticalActor selectedActor = __instance?.TacticalLevel?.View?.SelectedActor;
-
-                        TFTVLogger.Always($"attacker?.DisplayName: {attacker?.DisplayName} selectedActor?.DisplayName: {selectedActor?.DisplayName}");
-
-                        if (attacker == null || selectedActor == null || attacker != selectedActor)
-                        {
-                            return;
-                        }
-
-                        if (attacker.Status == null || !attacker.Status.HasStatus(_bulletHellSlowStatus))
-                        {
-                            return;
-                        }
-
-
-                        Weapon weapon = attacker.Equipments?.SelectedWeapon;
-
-
-                        if (weapon?.WeaponDef == null || !weapon.WeaponDef.Tags.Contains(AssaultRifleTag))
-                        {
-                            return;
-                        }
-
-                        ApplyEffects(attacker);
+                        return;
                     }
-                    catch (Exception e)
+
+
+                    if (_bulletHell == null || aspect == null)
                     {
-                        TFTVLogger.Error(e);
+                        return;
                     }
+
+                    if (!(aspect is BodyPartAspect))
+                    {
+                        return;
+                    }
+
+                    TacticalItem tacticalItem = aspect.OwnerItem;
+                    if (tacticalItem == null)
+                    {
+                        return;
+                    }
+
+                    TacticalActor attacker = TacUtil.GetSourceTacticalActorBase(tacticalActor.LastDamageSource) as TacticalActor;
+
+                    TacticalActor selectedActor = tacticalActor?.TacticalLevel?.View?.SelectedActor;
+
+                    TFTVLogger.Always($"attacker?.DisplayName: {attacker?.DisplayName} selectedActor?.DisplayName: {selectedActor?.DisplayName}");
+
+                    if (attacker == null || selectedActor == null || attacker != selectedActor)
+                    {
+                        return;
+                    }
+
+                    if (attacker.Status == null || !attacker.Status.HasStatus(_bulletHellSlowStatus))
+                    {
+                        return;
+                    }
+
+
+                    Weapon weapon = attacker.Equipments?.SelectedWeapon;
+
+
+                    if (weapon?.WeaponDef == null || !weapon.WeaponDef.Tags.Contains(AssaultRifleTag))
+                    {
+                        return;
+                    }
+
+                    ApplyEffects(attacker);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
                 }
             }
 
-
+           
 
             private static void ApplyEffects(TacticalActor attacker)
             {

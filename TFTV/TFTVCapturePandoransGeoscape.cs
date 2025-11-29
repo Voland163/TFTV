@@ -249,12 +249,8 @@ namespace TFTV
         }
 
 
-        [HarmonyPatch(typeof(UIStateRosterAliens), "EnterState")] //VERIFIED
-        public static class UIStateRosterAliens_UpdateResourceInfo_CapturePandorans_Patch
+        internal static void UpdateResourceInfo(UIStateRosterAliens uIStateRosterAliens)
         {
-
-            public static void Postfix(UIStateRosterAliens __instance)
-            {
                 try
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
@@ -298,7 +294,7 @@ namespace TFTV
                     TFTVLogger.Error(e);
                 }
             }
-        }
+        
 
         public static float PandasForFoodProcessing = 0;
 

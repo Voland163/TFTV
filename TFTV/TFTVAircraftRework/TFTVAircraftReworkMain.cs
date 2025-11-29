@@ -196,11 +196,8 @@ namespace TFTV
 
 
 
-            [HarmonyPatch(typeof(GeoEventChoiceOutcome), "GenerateFactionReward")]
-            public static class GeoEventChoiceOutcome_GenerateFactionReward_Patch
+            internal static void ApplyGenerateFactionReward(GeoEventChoiceOutcome __instance, GeoFaction faction)
             {
-                public static void Postfix(GeoEventChoiceOutcome __instance, GeoscapeEventContext context, string eventID, GeoFaction faction)
-                {
                     try
                     {
                         if (!AircraftReworkOn)
@@ -228,7 +225,7 @@ namespace TFTV
                     }
                 }
             }
-        }
+        
 
 
 

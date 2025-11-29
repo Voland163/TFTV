@@ -31,6 +31,42 @@ namespace TFTV
     internal class TFTVHarmonyGeoscape
     {
 
+        [HarmonyPatch(typeof(GeoEventChoiceOutcome), nameof(GeoEventChoiceOutcome.GenerateFactionReward))]
+        public static class GeoEventChoiceOutcome_GenerateFactionReward_Postfix
+        {           
+            public static void Postfix(GeoEventChoiceOutcome __instance, GeoscapeEventContext context, string eventID, GeoFaction faction, ref GeoFactionReward __result, in ResourcePack __state)
+            {
+                TFTVVanillaFixes.Geoscape.ApplyGenerateFactionReward(__instance, eventID, ref __result);
+                TFTVAircraftReworkMain.MarketPlace.ApplyGenerateFactionReward(__instance, faction);
+            }
+        }
+
+        [HarmonyPatch(typeof(UIStateRosterAliens), "EnterState")]
+        public static class UIStateRosterAliens_EnterState_Postfix
+        {
+            public static void Postfix(UIStateRosterAliens __instance)
+            {
+                TFTVBackgrounds.ContainmentScreen.GetInfoAboutAlien();
+                TFTVCapturePandoransGeoscape.UpdateResourceInfo(__instance);
+            }
+        }
+
+
+        [HarmonyPatch(typeof(GeoLevelController), "DailyUpdate")]
+        public static class GeoLevelController_DailyUpdate_Postfix
+        {
+            public static void Postfix(GeoLevelController __instance)
+            {
+                TFTVVanillaFixes.Geoscape.ApplyDailyUpdate(__instance);
+                TFTVBaseRework.PersonnelData.DailyUpdatePersonnelPool(__instance);
+                TFTVBaseRework.TrainingFacilityRework.DailyUpdateTraining(__instance);
+                TFTVBaseRework.TrainingFacilityRework.DailyUpdateTrainingDeferredFallback(__instance);
+            }
+        }
+
+
+
+
         [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruitToContainerFinal")] //VERIFIED  
         internal static class TFTV_GeoPhoenixFaction_AddRecruitToContainerFinal_patch
         {

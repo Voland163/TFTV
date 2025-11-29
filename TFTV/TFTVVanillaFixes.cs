@@ -10,8 +10,6 @@ using Base.Entities.Statuses;
 using Base.Eventus;
 using Base.Input;
 using Base.Levels;
-using Base.Levels.Nav;
-using Base.Levels.Nav.Tiled;
 using Base.Rendering.ObjectRendering;
 using Base.Utils.Maths;
 using HarmonyLib;
@@ -288,70 +286,70 @@ namespace TFTV
         }
 
         internal class UI
-        { 
+        {
 
             //Removed as now in base game
             //Code provided by Codemite
-          /*  [HarmonyPatch(typeof(UIInventorySlot), nameof(UIInventorySlot.UpdateItem))]
-            public static class UIInventorySlot_UpdateItem_patch
-            {
-                public static void Postfix(UIInventorySlot __instance, ICommonItem ____item)
-                {
-                    try
-                    {
-                        if (____item == null || ____item.CommonItemData.Count == 1 && (____item.CommonItemData.CurrentCharges == ____item.ItemDef.ChargesMax || ____item.CommonItemData.CurrentCharges == 0))
-                        {
-                            __instance.NumericBackground.gameObject.SetActive(false);
-                        }
-                        else
-                        {
-                            __instance.NumericBackground.gameObject.SetActive(true);
+            /*  [HarmonyPatch(typeof(UIInventorySlot), nameof(UIInventorySlot.UpdateItem))]
+              public static class UIInventorySlot_UpdateItem_patch
+              {
+                  public static void Postfix(UIInventorySlot __instance, ICommonItem ____item)
+                  {
+                      try
+                      {
+                          if (____item == null || ____item.CommonItemData.Count == 1 && (____item.CommonItemData.CurrentCharges == ____item.ItemDef.ChargesMax || ____item.CommonItemData.CurrentCharges == 0))
+                          {
+                              __instance.NumericBackground.gameObject.SetActive(false);
+                          }
+                          else
+                          {
+                              __instance.NumericBackground.gameObject.SetActive(true);
 
-                            if (____item.CommonItemData.CurrentCharges == ____item.ItemDef.ChargesMax)
-                            {
-                                __instance.NumericField.text = ____item.CommonItemData.Count.ToString();
-                            }
-                            else
-                            {
-                                string ammoCount = $"{____item.CommonItemData.CurrentCharges}/{____item.ItemDef.ChargesMax}";
-                                string textToShow;
-                                string greyColor = "<color=#b6b6b6>";
+                              if (____item.CommonItemData.CurrentCharges == ____item.ItemDef.ChargesMax)
+                              {
+                                  __instance.NumericField.text = ____item.CommonItemData.Count.ToString();
+                              }
+                              else
+                              {
+                                  string ammoCount = $"{____item.CommonItemData.CurrentCharges}/{____item.ItemDef.ChargesMax}";
+                                  string textToShow;
+                                  string greyColor = "<color=#b6b6b6>";
 
-                                if (____item.CommonItemData.Count - 1 == 0)
-                                {
-                                    if (____item.ItemDef.Tags.Contains(Shared.SharedGameTags.AmmoTag))
-                                    {
-                                        textToShow = $"{greyColor}(1) {ammoCount}</color>";
-                                    }
-                                    else
-                                    {
-                                        textToShow = $"{greyColor} {ammoCount}</color>";
-                                    }
-                                }
-                                else if (____item.ItemDef is WeaponDef weaponDef)
-                                {
-                                    textToShow = ____item.CommonItemData.Count.ToString();
-                                }
-                                else
-                                {
+                                  if (____item.CommonItemData.Count - 1 == 0)
+                                  {
+                                      if (____item.ItemDef.Tags.Contains(Shared.SharedGameTags.AmmoTag))
+                                      {
+                                          textToShow = $"{greyColor}(1) {ammoCount}</color>";
+                                      }
+                                      else
+                                      {
+                                          textToShow = $"{greyColor} {ammoCount}</color>";
+                                      }
+                                  }
+                                  else if (____item.ItemDef is WeaponDef weaponDef)
+                                  {
+                                      textToShow = ____item.CommonItemData.Count.ToString();
+                                  }
+                                  else
+                                  {
 
-                                    textToShow = $"{____item.CommonItemData.Count - 1} {greyColor}+ {____item.CommonItemData.CurrentCharges}/{____item.ItemDef.ChargesMax}</color>";
-                                }
+                                      textToShow = $"{____item.CommonItemData.Count - 1} {greyColor}+ {____item.CommonItemData.CurrentCharges}/{____item.ItemDef.ChargesMax}</color>";
+                                  }
 
-                                __instance.NumericField.text = textToShow;
-                                __instance.NumericField.alignment = TextAnchor.MiddleLeft;
-                            }
-                        }
+                                  __instance.NumericField.text = textToShow;
+                                  __instance.NumericField.alignment = TextAnchor.MiddleLeft;
+                              }
+                          }
 
-                        // return false;
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
-                }
-            }*/
+                          // return false;
+                      }
+                      catch (Exception e)
+                      {
+                          TFTVLogger.Error(e);
+                          throw;
+                      }
+                  }
+              }*/
 
 
 
@@ -1594,7 +1592,7 @@ namespace TFTV
             }
 
 
-            internal class DupeFix 
+            internal class DupeFix
             {
 
 
@@ -1993,301 +1991,301 @@ namespace TFTV
             }
 
 
-           /* internal static class ExtraLongDetoursAroundFire
-            {
-                private const float ExtraDistanceAllowance = 3f;
-                private const float DetourMultiplier = 1.5f;
+            /* internal static class ExtraLongDetoursAroundFire
+             {
+                 private const float ExtraDistanceAllowance = 3f;
+                 private const float DetourMultiplier = 1.5f;
 
-                private static readonly FieldInfo ActorField = AccessTools.Field(typeof(TacticalNavCostFactorFuncs), "_actor");
+                 private static readonly FieldInfo ActorField = AccessTools.Field(typeof(TacticalNavCostFactorFuncs), "_actor");
 
-                private static readonly ConditionalWeakTable<NodePathSourceData, AllowedDistanceInfo> AllowedDistances = new ConditionalWeakTable<NodePathSourceData, AllowedDistanceInfo>();
+                 private static readonly ConditionalWeakTable<NodePathSourceData, AllowedDistanceInfo> AllowedDistances = new ConditionalWeakTable<NodePathSourceData, AllowedDistanceInfo>();
 
-                private const float DistanceTolerance = 0.01f;
+                 private const float DistanceTolerance = 0.01f;
 
-                [HarmonyPatch(typeof(NodePathSourceData))]
-                private static class NodePathSourceDataPatch
-                {
-                    [HarmonyPatch(
-                        nameof(NodePathSourceData.Set),
-                        new[]
-                        {
-                    typeof(NodeGraph),
-                    typeof(Vector3),
-                    typeof(NodeAreas),
-                    typeof(NodeObstacle),
-                    typeof(float),
-                    typeof(INavCostFactorFuncs)
-                        })]
-                    [HarmonyPrefix]
-                    private static void CaptureAllowedDistance(NodePathSourceData __instance, INavCostFactorFuncs navCosts)
-                    {
-                        AllowedDistances.Remove(__instance);
-                        if (navCosts == null || ActorField == null)
-                        {
-                            return;
-                        }
+                 [HarmonyPatch(typeof(NodePathSourceData))]
+                 private static class NodePathSourceDataPatch
+                 {
+                     [HarmonyPatch(
+                         nameof(NodePathSourceData.Set),
+                         new[]
+                         {
+                     typeof(NodeGraph),
+                     typeof(Vector3),
+                     typeof(NodeAreas),
+                     typeof(NodeObstacle),
+                     typeof(float),
+                     typeof(INavCostFactorFuncs)
+                         })]
+                     [HarmonyPrefix]
+                     private static void CaptureAllowedDistance(NodePathSourceData __instance, INavCostFactorFuncs navCosts)
+                     {
+                         AllowedDistances.Remove(__instance);
+                         if (navCosts == null || ActorField == null)
+                         {
+                             return;
+                         }
 
-                        if (!(navCosts is TacticalNavCostFactorFuncs tacticalFuncs))
-                        {
-                            return;
-                        }
+                         if (!(navCosts is TacticalNavCostFactorFuncs tacticalFuncs))
+                         {
+                             return;
+                         }
 
-                        if (!(ActorField.GetValue(tacticalFuncs) is TacticalActor actor))
-                        {
-                            return;
-                        }
+                         if (!(ActorField.GetValue(tacticalFuncs) is TacticalActor actor))
+                         {
+                             return;
+                         }
 
-                        float moveRange = Mathf.Max(0f, actor.MaxMoveRange);
-                        if (moveRange <= 0f)
-                        {
-                            return;
-                        }
+                         float moveRange = Mathf.Max(0f, actor.MaxMoveRange);
+                         if (moveRange <= 0f)
+                         {
+                             return;
+                         }
 
-                        float allowed = Mathf.Max(moveRange + ExtraDistanceAllowance, moveRange * DetourMultiplier);
-                        if (float.IsNaN(allowed) || float.IsInfinity(allowed) || allowed <= 0f)
-                        {
-                            return;
-                        }
+                         float allowed = Mathf.Max(moveRange + ExtraDistanceAllowance, moveRange * DetourMultiplier);
+                         if (float.IsNaN(allowed) || float.IsInfinity(allowed) || allowed <= 0f)
+                         {
+                             return;
+                         }
 
-                        AllowedDistances.Add(__instance, new AllowedDistanceInfo(allowed));
-                    }
+                         AllowedDistances.Add(__instance, new AllowedDistanceInfo(allowed));
+                     }
 
-                    [HarmonyPatch(nameof(NodePathSourceData.Clear))]
-                    [HarmonyPostfix]
-                    private static void RemoveAllowedDistance(NodePathSourceData __instance)
-                    {
-                        AllowedDistances.Remove(__instance);
-                    }
-                }
+                     [HarmonyPatch(nameof(NodePathSourceData.Clear))]
+                     [HarmonyPostfix]
+                     private static void RemoveAllowedDistance(NodePathSourceData __instance)
+                     {
+                         AllowedDistances.Remove(__instance);
+                     }
+                 }
 
-                [HarmonyPatch(typeof(Pathfinder<GraphNode>))]
-                private static class PathfinderPatches
-                {
-                    [HarmonyPatch("InitQuery_Dijkstra")]
-                    [HarmonyPostfix]
-                    private static void InitializeDijkstra(Pathfinder<GraphNode> __instance, GraphNode startNode)
-                    {
-                        RegisterStartNodeDistance(__instance, __instance.GetVisitedNodeInfos_Dijkstra(), startNode);
-                    }
+                 [HarmonyPatch(typeof(Pathfinder<GraphNode>))]
+                 private static class PathfinderPatches
+                 {
+                     [HarmonyPatch("InitQuery_Dijkstra")]
+                     [HarmonyPostfix]
+                     private static void InitializeDijkstra(Pathfinder<GraphNode> __instance, GraphNode startNode)
+                     {
+                         RegisterStartNodeDistance(__instance, __instance.GetVisitedNodeInfos_Dijkstra(), startNode);
+                     }
 
-                    [HarmonyPatch("InitQuery_AStar")]
-                    [HarmonyPostfix]
-                    private static void InitializeAStar(Pathfinder<GraphNode> __instance, GraphNode startNode, float startNodeHeuristicScore)
-                    {
-                        RegisterStartNodeDistance(__instance, __instance.GetVisitedNodeInfos_AStar(), startNode);
-                    }
+                     [HarmonyPatch("InitQuery_AStar")]
+                     [HarmonyPostfix]
+                     private static void InitializeAStar(Pathfinder<GraphNode> __instance, GraphNode startNode, float startNodeHeuristicScore)
+                     {
+                         RegisterStartNodeDistance(__instance, __instance.GetVisitedNodeInfos_AStar(), startNode);
+                     }
 
-                    [HarmonyPatch(typeof(Pathfinder<GraphNode>), "UpdateQuery")]
-                    private static class UpdateQueryPatch
-                    {
-                        [HarmonyPrefix]
-                        private static bool LimitByActualDistance(Pathfinder<GraphNode> __instance, GraphNode currentNode, Pathfinder<GraphNode>.NodeInfo currentNodeInfo, GraphNode neighbour)
-                        {
-                            NodePath nodePath = __instance as NodePath;
-                            if (nodePath?.SourceData == null)
-                            {
-                                return true;
-                            }
+                     [HarmonyPatch(typeof(Pathfinder<GraphNode>), "UpdateQuery")]
+                     private static class UpdateQueryPatch
+                     {
+                         [HarmonyPrefix]
+                         private static bool LimitByActualDistance(Pathfinder<GraphNode> __instance, GraphNode currentNode, Pathfinder<GraphNode>.NodeInfo currentNodeInfo, GraphNode neighbour)
+                         {
+                             NodePath nodePath = __instance as NodePath;
+                             if (nodePath?.SourceData == null)
+                             {
+                                 return true;
+                             }
 
-                            if (!TryGetAllowedInfo(nodePath, out AllowedDistanceInfo allowed))
-                            {
-                                return true;
-                            }
+                             if (!TryGetAllowedInfo(nodePath, out AllowedDistanceInfo allowed))
+                             {
+                                 return true;
+                             }
 
-                            if (!TryCalculateCandidateDistance(nodePath, currentNode, neighbour, allowed, out float candidateDistance))
-                            {
-                                return true;
-                            }
+                             if (!TryCalculateCandidateDistance(nodePath, currentNode, neighbour, allowed, out float candidateDistance))
+                             {
+                                 return true;
+                             }
 
-                            return !(candidateDistance > allowed.MaxDistance + DistanceTolerance);
-                        }
+                             return !(candidateDistance > allowed.MaxDistance + DistanceTolerance);
+                         }
 
-                        [HarmonyPostfix]
-                        private static void TrackActualDistance(
-                            Pathfinder<GraphNode> __instance,
-                            GraphNode currentNode,
-                            Pathfinder<GraphNode>.NodeInfo currentNodeInfo,
-                            GraphNode neighbour,
-                            [HarmonyArgument(4)] Dictionary<GraphNode, Pathfinder<GraphNode>.NodeInfo> visitedNodeInfos)
-                        {
-                            NodePath nodePath = __instance as NodePath;
-                            if (nodePath?.SourceData == null || visitedNodeInfos == null)
-                            {
-                                return;
-                            }
+                         [HarmonyPostfix]
+                         private static void TrackActualDistance(
+                             Pathfinder<GraphNode> __instance,
+                             GraphNode currentNode,
+                             Pathfinder<GraphNode>.NodeInfo currentNodeInfo,
+                             GraphNode neighbour,
+                             [HarmonyArgument(4)] Dictionary<GraphNode, Pathfinder<GraphNode>.NodeInfo> visitedNodeInfos)
+                         {
+                             NodePath nodePath = __instance as NodePath;
+                             if (nodePath?.SourceData == null || visitedNodeInfos == null)
+                             {
+                                 return;
+                             }
 
-                            if (!TryGetAllowedInfo(nodePath, out AllowedDistanceInfo allowed))
-                            {
-                                return;
-                            }
+                             if (!TryGetAllowedInfo(nodePath, out AllowedDistanceInfo allowed))
+                             {
+                                 return;
+                             }
 
-                            if (!TryCalculateCandidateDistance(nodePath, currentNode, neighbour, allowed, out float candidateDistance))
-                            {
-                                return;
-                            }
+                             if (!TryCalculateCandidateDistance(nodePath, currentNode, neighbour, allowed, out float candidateDistance))
+                             {
+                                 return;
+                             }
 
-                            if (!visitedNodeInfos.TryGetValue(neighbour, out Pathfinder<GraphNode>.NodeInfo neighbourInfo))
-                            {
-                                return;
-                            }
+                             if (!visitedNodeInfos.TryGetValue(neighbour, out Pathfinder<GraphNode>.NodeInfo neighbourInfo))
+                             {
+                                 return;
+                             }
 
-                            if (neighbourInfo == null || neighbourInfo.CameFromNodeInfo != currentNodeInfo)
-                            {
-                                return;
-                            }
+                             if (neighbourInfo == null || neighbourInfo.CameFromNodeInfo != currentNodeInfo)
+                             {
+                                 return;
+                             }
 
-                            allowed.SetActualDistance(neighbour, candidateDistance);
-                        }
-                    }
+                             allowed.SetActualDistance(neighbour, candidateDistance);
+                         }
+                     }
 
-                    private static void RegisterStartNodeDistance(Pathfinder<GraphNode> pathfinder, Dictionary<GraphNode, Pathfinder<GraphNode>.NodeInfo> visitedInfos, GraphNode startNode)
-                    {
-                        if (!(pathfinder is NodePath nodePath) || nodePath.SourceData == null || visitedInfos == null || startNode == null)
-                        {
-                            return;
-                        }
+                     private static void RegisterStartNodeDistance(Pathfinder<GraphNode> pathfinder, Dictionary<GraphNode, Pathfinder<GraphNode>.NodeInfo> visitedInfos, GraphNode startNode)
+                     {
+                         if (!(pathfinder is NodePath nodePath) || nodePath.SourceData == null || visitedInfos == null || startNode == null)
+                         {
+                             return;
+                         }
 
-                        if (!AllowedDistances.TryGetValue(nodePath.SourceData, out AllowedDistanceInfo allowed) || !allowed.IsFinite)
-                        {
-                            return;
-                        }
+                         if (!AllowedDistances.TryGetValue(nodePath.SourceData, out AllowedDistanceInfo allowed) || !allowed.IsFinite)
+                         {
+                             return;
+                         }
 
-                        allowed.SetActualDistance(startNode, 0f);
-                    }
+                         allowed.SetActualDistance(startNode, 0f);
+                     }
 
-                    private static bool TryCalculateCandidateDistance(NodePath nodePath, GraphNode currentNode, GraphNode neighbour, AllowedDistanceInfo allowed, out float distance)
-                    {
-                        distance = -1f;
+                     private static bool TryCalculateCandidateDistance(NodePath nodePath, GraphNode currentNode, GraphNode neighbour, AllowedDistanceInfo allowed, out float distance)
+                     {
+                         distance = -1f;
 
-                        if (nodePath?.SourceData == null || currentNode == null || neighbour == null)
-                        {
-                            return false;
-                        }
+                         if (nodePath?.SourceData == null || currentNode == null || neighbour == null)
+                         {
+                             return false;
+                         }
 
-                        if (!allowed.TryGetActualDistance(currentNode, out float currentDistance))
-                        {
-                            return false;
-                        }
+                         if (!allowed.TryGetActualDistance(currentNode, out float currentDistance))
+                         {
+                             return false;
+                         }
 
-                        float step = currentNode.GetDistance(neighbour, nodePath.SourceData.Areas, GraphNode.AreasType.Effective, nodePath.SourceData.ObstacleToIgnore);
-                        if (float.IsNaN(step) || float.IsInfinity(step) || step <= 0f)
-                        {
-                            return false;
-                        }
+                         float step = currentNode.GetDistance(neighbour, nodePath.SourceData.Areas, GraphNode.AreasType.Effective, nodePath.SourceData.ObstacleToIgnore);
+                         if (float.IsNaN(step) || float.IsInfinity(step) || step <= 0f)
+                         {
+                             return false;
+                         }
 
-                        distance = currentDistance + step;
-                        return distance > 0f && !float.IsNaN(distance) && !float.IsInfinity(distance);
-                    }
-                }
+                         distance = currentDistance + step;
+                         return distance > 0f && !float.IsNaN(distance) && !float.IsInfinity(distance);
+                     }
+                 }
 
-                private sealed class AllowedDistanceInfo
-                {
-                    public AllowedDistanceInfo(float maxDistance)
-                    {
-                        MaxDistance = maxDistance;
-                    }
+                 private sealed class AllowedDistanceInfo
+                 {
+                     public AllowedDistanceInfo(float maxDistance)
+                     {
+                         MaxDistance = maxDistance;
+                     }
 
-                    public float MaxDistance { get; }
+                     public float MaxDistance { get; }
 
-                    public bool IsFinite => MaxDistance > 0f && !float.IsInfinity(MaxDistance) && !float.IsNaN(MaxDistance);
+                     public bool IsFinite => MaxDistance > 0f && !float.IsInfinity(MaxDistance) && !float.IsNaN(MaxDistance);
 
-                    public bool TryGetActualDistance(GraphNode node, out float distance)
-                    {
-                        if (node == null)
-                        {
-                            distance = 0f;
-                            return false;
-                        }
+                     public bool TryGetActualDistance(GraphNode node, out float distance)
+                     {
+                         if (node == null)
+                         {
+                             distance = 0f;
+                             return false;
+                         }
 
-                        return _actualDistances.TryGetValue(node, out distance);
-                    }
+                         return _actualDistances.TryGetValue(node, out distance);
+                     }
 
-                    public void SetActualDistance(GraphNode node, float distance)
-                    {
-                        if (node == null || float.IsNaN(distance) || float.IsInfinity(distance) || distance < 0f)
-                        {
-                            return;
-                        }
+                     public void SetActualDistance(GraphNode node, float distance)
+                     {
+                         if (node == null || float.IsNaN(distance) || float.IsInfinity(distance) || distance < 0f)
+                         {
+                             return;
+                         }
 
-                        _actualDistances[node] = distance;
-                    }
+                         _actualDistances[node] = distance;
+                     }
 
-                    private readonly Dictionary<GraphNode, float> _actualDistances = new Dictionary<GraphNode, float>();
-                }
+                     private readonly Dictionary<GraphNode, float> _actualDistances = new Dictionary<GraphNode, float>();
+                 }
 
-                private static bool TryGetAllowedInfo(NodePath nodePath, out AllowedDistanceInfo allowed)
-                {
-                    allowed = null;
-                    if (nodePath?.SourceData == null)
-                    {
-                        return false;
-                    }
+                 private static bool TryGetAllowedInfo(NodePath nodePath, out AllowedDistanceInfo allowed)
+                 {
+                     allowed = null;
+                     if (nodePath?.SourceData == null)
+                     {
+                         return false;
+                     }
 
-                    if (!AllowedDistances.TryGetValue(nodePath.SourceData, out allowed))
-                    {
-                        return false;
-                    }
+                     if (!AllowedDistances.TryGetValue(nodePath.SourceData, out allowed))
+                     {
+                         return false;
+                     }
 
-                    return allowed != null && allowed.IsFinite;
-                }
-            }*/
-
-
-          /*  internal class TacticalSavesAIBug
-            {
-                [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.StartTurn))]
-                internal static class TacticalActorStartTurnPatch
-                {
-                    private static readonly FieldInfo AbilityUsesThisTurnField = AccessTools.Field(typeof(TacticalActor), "__abilityUsesThisTurn");
+                     return allowed != null && allowed.IsFinite;
+                 }
+             }*/
 
 
-                    public static void Prefix(TacticalActor __instance, bool ____currentlyDeserializing)
-                    {
-                        try
-                        {
+            /*  internal class TacticalSavesAIBug
+              {
+                  [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.StartTurn))]
+                  internal static class TacticalActorStartTurnPatch
+                  {
+                      private static readonly FieldInfo AbilityUsesThisTurnField = AccessTools.Field(typeof(TacticalActor), "__abilityUsesThisTurn");
 
 
-
-                            if (__instance == null)
-                            {
-                                return;
-                            }
-
-                            //  TFTVLogger.Always($"Start Turn for TacticalActor {__instance?.DisplayName}");
-
-                            if (__instance.AbilityTraits.Contains(TacticalActor.DoNotResetThisTurnTrait))
-                            {
-                                //  TFTVLogger.Always($"TacticalActor has DoNotResetThisTurnTrait");
-
-                                return;
-                            }
+                      public static void Prefix(TacticalActor __instance, bool ____currentlyDeserializing)
+                      {
+                          try
+                          {
 
 
 
-                            if (!____currentlyDeserializing)
-                            {
-                                //  TFTVLogger.Always($"TacticalActor is not deserializing");
-                                return;
-                            }
+                              if (__instance == null)
+                              {
+                                  return;
+                              }
 
-                            //  TFTVLogger.Always($"AbilityUsesThisTurnField null? {AbilityUsesThisTurnField == null}");
+                              //  TFTVLogger.Always($"Start Turn for TacticalActor {__instance?.DisplayName}");
 
-                            if (AbilityUsesThisTurnField.GetValue(__instance) is Dictionary<TacticalAbilityDef, int> abilityUses)
-                            {
-                                abilityUses.Clear();
-                            }
+                              if (__instance.AbilityTraits.Contains(TacticalActor.DoNotResetThisTurnTrait))
+                              {
+                                  //  TFTVLogger.Always($"TacticalActor has DoNotResetThisTurnTrait");
+
+                                  return;
+                              }
 
 
-                            return;
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            throw;
-                        }
-                    }
-                }
-            }*/
+
+                              if (!____currentlyDeserializing)
+                              {
+                                  //  TFTVLogger.Always($"TacticalActor is not deserializing");
+                                  return;
+                              }
+
+                              //  TFTVLogger.Always($"AbilityUsesThisTurnField null? {AbilityUsesThisTurnField == null}");
+
+                              if (AbilityUsesThisTurnField.GetValue(__instance) is Dictionary<TacticalAbilityDef, int> abilityUses)
+                              {
+                                  abilityUses.Clear();
+                              }
+
+
+                              return;
+                          }
+                          catch (Exception e)
+                          {
+                              TFTVLogger.Error(e);
+                              throw;
+                          }
+                      }
+                  }
+              }*/
 
             internal class DecimalWillpoints
             {
@@ -3839,12 +3837,11 @@ namespace TFTV
             /// Fixes not getting SP from Training Facilities
             /// </summary>
 
-            [HarmonyPatch(typeof(GeoLevelController), "DailyUpdate")] //VERIFIED
-            public static class GeoLevelControllerDailyUpdatePatch
+            internal static void ApplyDailyUpdate(GeoLevelController level)
             {
-                public static void Postfix(GeoLevelController __instance)
+                try
                 {
-                    foreach (GeoFaction geoFaction in __instance.Factions)
+                    foreach (GeoFaction geoFaction in level.Factions)
                     {
                         if (geoFaction != null && geoFaction.Def != null && geoFaction.Def.UpdateFaction)
                         {
@@ -3854,6 +3851,10 @@ namespace TFTV
                             }
                         }
                     }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
                 }
             }
 
@@ -4339,44 +4340,40 @@ namespace TFTV
 
             private static List<string> _eventsRewardingNJCharacters = new List<string>() { "AN11", "EX7", "SY22" };
 
-            [HarmonyPatch(typeof(GeoEventChoiceOutcome), nameof(GeoEventChoiceOutcome.GenerateFactionReward))]
-            public static class GeoEventChoiceOutcome_GenerateFactionReward_patch
+            internal static void ApplyGenerateFactionReward(GeoEventChoiceOutcome __instance, string eventID, ref GeoFactionReward __result)
             {
-
-                public static void Postfix(GeoEventChoiceOutcome __instance, string eventID, ref GeoFactionReward __result)
+                try
                 {
-                    try
+                    GeoLevelController level = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                    if (eventID == "PROG_PU4_WIN" && __result.Units.Count > 0)
                     {
-                        GeoLevelController level = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-
-                        if (eventID == "PROG_PU4_WIN" && __result.Units.Count > 0)
-                        {
-                            __result.Units.Clear();
-                            GeoFaction faction2 = level.AnuFaction;
-                            GeoUnitDescriptor geoUnitDescriptor = level.CharacterGenerator.GenerateUnit(faction2, __instance.Units[0]);
-                            level.CharacterGenerator.ApplyRecruitDifficultyParameters(geoUnitDescriptor);
-                            GeoCharacter item2 = geoUnitDescriptor.SpawnAsCharacter();
-                            __result.Units.Add(item2);
-
-                        }
-                        else if (_eventsRewardingNJCharacters.Contains(eventID) && __result.Units.Count > 0)
-                        {
-                            __result.Units.Clear();
-                            GeoFaction faction2 = level.NewJerichoFaction;
-                            GeoUnitDescriptor geoUnitDescriptor = level.CharacterGenerator.GenerateUnit(faction2, __instance.Units[0]);
-                            level.CharacterGenerator.ApplyRecruitDifficultyParameters(geoUnitDescriptor);
-                            GeoCharacter item2 = geoUnitDescriptor.SpawnAsCharacter();
-                            __result.Units.Add(item2);
-                        }
+                        __result.Units.Clear();
+                        GeoFaction faction2 = level.AnuFaction;
+                        GeoUnitDescriptor geoUnitDescriptor = level.CharacterGenerator.GenerateUnit(faction2, __instance.Units[0]);
+                        level.CharacterGenerator.ApplyRecruitDifficultyParameters(geoUnitDescriptor);
+                        GeoCharacter item2 = geoUnitDescriptor.SpawnAsCharacter();
+                        __result.Units.Add(item2);
 
                     }
-                    catch (Exception e)
+                    else if (_eventsRewardingNJCharacters.Contains(eventID) && __result.Units.Count > 0)
                     {
-                        TFTVLogger.Error(e);
-                        throw;
+                        __result.Units.Clear();
+                        GeoFaction faction2 = level.NewJerichoFaction;
+                        GeoUnitDescriptor geoUnitDescriptor = level.CharacterGenerator.GenerateUnit(faction2, __instance.Units[0]);
+                        level.CharacterGenerator.ApplyRecruitDifficultyParameters(geoUnitDescriptor);
+                        GeoCharacter item2 = geoUnitDescriptor.SpawnAsCharacter();
+                        __result.Units.Add(item2);
                     }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
                 }
             }
+
 
 
             /// <summary>
@@ -4449,7 +4446,7 @@ namespace TFTV
                         {
                             TacticalItemDef tacticalItemDef = __instance as TacticalItemDef;
 
-                            if (!AmmoWeaponDatabase.AmmoToWeaponDictionary.ContainsKey(tacticalItemDef)) 
+                            if (!AmmoWeaponDatabase.AmmoToWeaponDictionary.ContainsKey(tacticalItemDef))
                             {
                                 return;
                             }

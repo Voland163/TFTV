@@ -10,6 +10,7 @@ using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
+using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.StructuralTargets;
 using PhoenixPoint.Tactical.Entities.Weapons;
@@ -30,10 +31,6 @@ using UnityEngine;
 using static PhoenixPoint.Tactical.View.ViewControllers.SquadMemberScrollerController;
 
 
-//8. **TacticalActor.ShouldChangeAspectStats** – patches in `TFTV/TFTVStamina.cs` and `TFTV/TFTVDrills/DrillsHarmony.cs`.
-
-
-
 namespace TFTV
 {
     internal class TFTVHarmonyTactical
@@ -41,6 +38,28 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         //   private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
+
+
+        [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.ShouldChangeAspectStats))]
+        internal static class TacticalActor_ShouldChangeAspectStats_patch
+        {
+
+            public static void Postfix(TacticalActor __instance, TacticalItemAspectBase aspect)
+            {
+                try
+                { 
+                    TFTVStamina.RegisterInjuryForStaminaLossBionicsRepairMutantArmShooter(__instance, aspect);
+                    TFTVDrills.DrillsHarmony.BulletHell.CheckForBulletHellDrillAplicationOnDisabledLimb(__instance, aspect);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+
+
 
         [HarmonyPatch(typeof(UIModuleBionics), nameof(UIModuleBionics.OnAugmentApplied))]
         public static class UIModuleBionics_OnAugmentApplied_SetStaminaTo0_patch

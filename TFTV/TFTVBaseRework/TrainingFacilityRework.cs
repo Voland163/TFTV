@@ -7,7 +7,6 @@ using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Tactical.Entities.Abilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -255,7 +254,7 @@ namespace TFTV.TFTVBaseRework
                     EnsureSpecialization(character, session.TargetSpecialization);
                 }
 
-               
+
                 character.LevelProgression?.SetLevel(finalLevel);
                 ApplyCumulativeLevelGains(character, finalLevel);
                 GeoCharacterFilter.HiddenOperativeTagFilter.RemoveHiddenTag(character);
@@ -286,13 +285,13 @@ namespace TFTV.TFTVBaseRework
                 int finalLevel = early ? session.VirtualLevelAchieved : session.TargetLevel;
                 var spec = session.TargetSpecialization;
 
-               
+
                 if (spec != null)
                 {
                     EnsureSpecialization(character, spec);
                 }
 
-              
+
                 character.LevelProgression?.SetLevel(finalLevel);
 
                 _pendingPostRecruitStatApply[character.Id] = finalLevel;
@@ -453,7 +452,7 @@ namespace TFTV.TFTVBaseRework
                 GeoPhoenixFaction phoenix = level.PhoenixFaction;
                 if (phoenix == null) return null;
 
-              
+
 
                 character.LevelProgression?.SetLevel(1);
                 EnsureSpecialization(character, mainClass);
@@ -466,21 +465,17 @@ namespace TFTV.TFTVBaseRework
         #endregion
 
         #region Harmony Patches
-        [HarmonyPatch(typeof(GeoLevelController), "DailyUpdate")]
-        internal static class GeoLevelController_DailyUpdate_Training
+
+        internal static void DailyUpdateTraining(GeoLevelController level)
         {
-            private static void Postfix(GeoLevelController __instance)
+            if (!BaseReworkUtils.BaseReworkEnabled)
             {
-                if (!BaseReworkUtils.BaseReworkEnabled)
-                {
-                    return;
-                }
-
-                try { AdvanceAllTraining(__instance, 1); }
-                catch (Exception e) { TFTVLogger.Error(e); }
+                return;
             }
-        }
 
+            try { AdvanceAllTraining(level, 1); }
+            catch (Exception e) { TFTVLogger.Error(e); }
+        }
 
 
         [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruit")]
@@ -498,7 +493,7 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
-        
+
         public static void TryApplyDeferredTrainingStats(GeoCharacter recruit)
         {
             try
@@ -523,32 +518,32 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
-        // Optional fallback after daily update
-        [HarmonyPatch(typeof(GeoLevelController), "DailyUpdate")]
-        internal static class GeoLevelController_DailyUpdate_TrainingDeferredFallback
-        {
-            private static void Postfix(GeoLevelController __instance)
-            {
-                try
-                {
-                    if (!BaseReworkUtils.BaseReworkEnabled)
-                    {
-                        return;
-                    }
 
-                    if (_pendingPostRecruitStatApply.Count == 0) return;
-                    foreach (var soldier in __instance?.PhoenixFaction?.Soldiers ?? Enumerable.Empty<GeoCharacter>())
+
+        // Optional fallback after daily update
+
+        internal static void DailyUpdateTrainingDeferredFallback(GeoLevelController level)
+        {
+            try
+            {
+                if (!BaseReworkUtils.BaseReworkEnabled)
+                {
+                    return;
+                }
+
+                if (_pendingPostRecruitStatApply.Count == 0) return;
+                foreach (var soldier in level?.PhoenixFaction?.Soldiers ?? Enumerable.Empty<GeoCharacter>())
+                {
+                    if (_pendingPostRecruitStatApply.ContainsKey(soldier.Id))
                     {
-                        if (_pendingPostRecruitStatApply.ContainsKey(soldier.Id))
-                        {
-                            TFTVLogger.Always($"[Training] Fallback daily scan applying deferred stats to {soldier.DisplayName}.");
-                            TryApplyDeferredTrainingStats(soldier);
-                        }
+                        TFTVLogger.Always($"[Training] Fallback daily scan applying deferred stats to {soldier.DisplayName}.");
+                        TryApplyDeferredTrainingStats(soldier);
                     }
                 }
-                catch (Exception e) { TFTVLogger.Error(e); }
             }
+            catch (Exception e) { TFTVLogger.Error(e); }
         }
+
         #endregion
 
         [HarmonyPatch(typeof(PostmissionReplenishManager), "AddPreferredLoadout")]
@@ -657,7 +652,7 @@ namespace TFTV.TFTVBaseRework
             foreach (var save in snapshot)
             {
                 try
-                {    
+                {
                     GeoCharacter character = level.PhoenixFaction?.Soldiers?.FirstOrDefault(s => s.Id == save.GeoUnitId);
 
                     SpecializationDef spec = null;
@@ -665,7 +660,7 @@ namespace TFTV.TFTVBaseRework
                     {
                         try { spec = TFTVMain.Main.DefCache.GetDef<SpecializationDef>(save.MainSpecName); } catch { }
                     }
-                   
+
                     RecruitSessions.Add(new RecruitTrainingSession
                     {
                         Character = character,

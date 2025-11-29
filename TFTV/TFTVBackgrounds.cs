@@ -79,24 +79,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(UIStateRosterAliens), "EnterState")] //VERIFIED
-            public static class TFTV_UIStateRosterAliens_EnterState_patch
-            {
-
-                public static void Postfix(UIStateRosterAliens __instance)
-                {
-                    try
-                    {
-                        GetInfoAboutAlien();
-                    }
-
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
-                }
-            }
+                
 
             private static Font _cachedFont = null;
 
@@ -213,7 +196,7 @@ namespace TFTV
                 }
             }
 
-            private static void GetInfoAboutAlien()
+            public static void GetInfoAboutAlien()
             {
                 try
                 {

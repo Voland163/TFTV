@@ -72,77 +72,70 @@ namespace TFTV
 
 
         // This first patch is to "register" the injury in the above list
-        [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.ShouldChangeAspectStats))]
-        internal static class TacticalActor_ShouldChangeAspectStats_patch
+
+        public static void RegisterInjuryForStaminaLossBionicsRepairMutantArmShooter(TacticalActor tacticalActor, TacticalItemAspectBase aspect) 
         {
-
-            public static void Postfix(TacticalActor __instance, TacticalItemAspectBase aspect)
+            try
             {
-                try
+
+                //   TFTVLogger.Always($"{__instance.DisplayName} ShouldChangeAspectStats called!");
+
+                TacticalItem tacticalItem = aspect.OwnerItem;
+
+                //  FreezeAspectStatsStatus
+                if (TFTVNewGameOptions.StaminaPenaltyFromInjurySetting)
                 {
+                    int unitId = tacticalActor.GeoUnitId;
 
-                    //   TFTVLogger.Always($"{__instance.DisplayName} ShouldChangeAspectStats called!");
+                    ItemSlotDef itemSlotDef = tacticalItem.ItemDef.RequiredSlotBinds[0].RequiredSlot as ItemSlotDef;
 
- 
+                    string bodyPart = itemSlotDef.SlotName;
 
-                    TacticalItem tacticalItem = aspect.OwnerItem;
-
-                    TacticalActor tacticalActor = __instance;
-                    
-                    //  FreezeAspectStatsStatus
-                    if (TFTVNewGameOptions.StaminaPenaltyFromInjurySetting)
-                    {                      
-                        int unitId = tacticalActor.GeoUnitId;
-
-                        ItemSlotDef itemSlotDef = tacticalItem.ItemDef.RequiredSlotBinds[0].RequiredSlot as ItemSlotDef;
-
-                        string bodyPart = itemSlotDef.SlotName;
-
-                        if (tacticalActor.IsAlive && !tacticalActor.HasGameTag(Shared.SharedGameTags.VehicleTag))
-                        {
-                            if (!charactersWithDisabledBodyParts.ContainsKey(unitId))
-                            {
-                                charactersWithDisabledBodyParts.Add(unitId, new List<string> { bodyPart });
-                                TFTVLogger.Always($"{tacticalActor.DisplayName} has a disabled {bodyPart}");
-                            }
-                            else if (charactersWithDisabledBodyParts.ContainsKey(unitId) && !charactersWithDisabledBodyParts[unitId].Contains(bodyPart) && bodyPart != null)
-                            {
-                                charactersWithDisabledBodyParts[unitId].Add(bodyPart);
-                                TFTVLogger.Always($"{tacticalActor.DisplayName} has a disabled {bodyPart}");
-                            }
-                        }
-                    }
-
-
-                    if (tacticalItem.BodyPartAspect!=null && tacticalItem.BodyPartAspect.BodyPartAspectDef.name.Equals("E_BodyPartAspect [AN_Berserker_Shooter_LeftArm_WeaponDef]"))
+                    if (tacticalActor.IsAlive && !tacticalActor.HasGameTag(Shared.SharedGameTags.VehicleTag))
                     {
-                        if (tacticalActor.HasStatus(DefCache.GetDef<FreezeAspectStatsStatusDef>("IgnorePain_StatusDef")))
+                        if (!charactersWithDisabledBodyParts.ContainsKey(unitId))
                         {
-                            return;
+                            charactersWithDisabledBodyParts.Add(unitId, new List<string> { bodyPart });
+                            TFTVLogger.Always($"{tacticalActor.DisplayName} has a disabled {bodyPart}");
                         }
-
-                        UnusableHandStatusDef unUsableLeftHandStatus = DefCache.GetDef<UnusableHandStatusDef>("UnusableLeftHand_StatusDef");
-
-                        if (!tacticalActor.HasStatus(BrokenSpikeShooterStatus))
+                        else if (charactersWithDisabledBodyParts.ContainsKey(unitId) && !charactersWithDisabledBodyParts[unitId].Contains(bodyPart) && bodyPart != null)
                         {
-                            TFTVLogger.Always($"adding {BrokenSpikeShooterStatus.name} to {tacticalActor.name}, because {tacticalItem.BodyPartAspect.BodyPartAspectDef.name} is disabled");
-                            tacticalActor.Status.ApplyStatus(BrokenSpikeShooterStatus);
-                        }
-
-                        if (tacticalActor.HasStatus(unUsableLeftHandStatus))
-                        {
-                            TFTVLogger.Always($"Removing {unUsableLeftHandStatus.name}");
-                            tacticalActor.Status.UnapplyStatus(tacticalActor.Status.GetStatusByName(unUsableLeftHandStatus.EffectName));
+                            charactersWithDisabledBodyParts[unitId].Add(bodyPart);
+                            TFTVLogger.Always($"{tacticalActor.DisplayName} has a disabled {bodyPart}");
                         }
                     }
                 }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
 
+
+                if (tacticalItem.BodyPartAspect != null && tacticalItem.BodyPartAspect.BodyPartAspectDef.name.Equals("E_BodyPartAspect [AN_Berserker_Shooter_LeftArm_WeaponDef]"))
+                {
+                    if (tacticalActor.HasStatus(DefCache.GetDef<FreezeAspectStatsStatusDef>("IgnorePain_StatusDef")))
+                    {
+                        return;
+                    }
+
+                    UnusableHandStatusDef unUsableLeftHandStatus = DefCache.GetDef<UnusableHandStatusDef>("UnusableLeftHand_StatusDef");
+
+                    if (!tacticalActor.HasStatus(BrokenSpikeShooterStatus))
+                    {
+                        TFTVLogger.Always($"adding {BrokenSpikeShooterStatus.name} to {tacticalActor.name}, because {tacticalItem.BodyPartAspect.BodyPartAspectDef.name} is disabled");
+                        tacticalActor.Status.ApplyStatus(BrokenSpikeShooterStatus);
+                    }
+
+                    if (tacticalActor.HasStatus(unUsableLeftHandStatus))
+                    {
+                        TFTVLogger.Always($"Removing {unUsableLeftHandStatus.name}");
+                        tacticalActor.Status.UnapplyStatus(tacticalActor.Status.GetStatusByName(unUsableLeftHandStatus.EffectName));
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
+
+      
 
         public static void CheckBrokenLimbs(List<GeoCharacter> geoCharacters, GeoLevelController controller)
         {

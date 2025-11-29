@@ -311,21 +311,22 @@ namespace TFTV.TFTVBaseRework
         {
             FlushPendingInfoBarUpdate(level);
         }
-
-        [HarmonyPatch(typeof(GeoLevelController), "DailyUpdate")] //VERIFIED
-        internal static class GeoLevelController_DailyUpdate_PersonnelPool
+        internal static void DailyUpdatePersonnelPool(GeoLevelController level)
         {
-            private static void Postfix(GeoLevelController __instance)
+            if (!BaseReworkUtils.BaseReworkEnabled)
             {
-                if (!BaseReworkUtils.BaseReworkEnabled)
-                {
-                    return;
-                }
+                return;
 
-                TFTVBaseRework.PersonnelManagementUI.DailyTick(__instance);
+            }
+            try
+            {
+                PersonnelManagementUI.DailyTick(level);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
-
 
         [HarmonyPatch(typeof(GeoPhoenixFaction), nameof(GeoPhoenixFaction.RegenerateNakedRecruits))]
         internal static class GeoPhoenixFaction_RegenerateNakedRecruits_PersonnelSync
