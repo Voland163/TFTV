@@ -422,8 +422,8 @@ namespace TFTV.TFTVDrills
                 layout.padding = new RectOffset(8, 8, 8, 8);
                 layout.spacing = 0f;
                 layout.childAlignment = TextAnchor.MiddleCenter;
-                layout.childControlWidth = true;
-                layout.childForceExpandWidth = true;
+                layout.childControlWidth = false;
+                layout.childForceExpandWidth = false;
                 layout.childForceExpandHeight = false;
 
                 var frameRect = CreateChildRectTransform(optionRect,

@@ -216,6 +216,22 @@ namespace TFTV
 
                         }
                     }
+
+                    if (geoVehicle.FreeCharacterSpace < 0)
+                    {
+                        List<GeoCharacter> list = new List<GeoCharacter>(from u in geoVehicle.Units orderby u.OccupingSpace descending select u);
+
+                        foreach (GeoCharacter character in list)
+                        {
+                            if (geoVehicle.FreeCharacterSpace >= 0)
+                            {
+                                break;
+                            }
+
+                            geoVehicle.RemoveCharacter(character);
+                            geoVehicle.CurrentSite?.AddCharacter(character);
+                        }
+                    }
                 }
                 catch (Exception e)
                 {
