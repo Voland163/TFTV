@@ -228,7 +228,9 @@ namespace TFTV.TFTVDrills
                 }
 
 
-                CreateHeaderIcon(buttonRect, original, iconColor, IsDrillAbility(original), isLocked, out var headerBackground);
+                bool showHeaderFrame = IsDrillAbility(original) || !baseAbilityLearned;
+
+                CreateHeaderIcon(buttonRect, original, iconColor, showHeaderFrame, isLocked, out var headerBackground);
 
                 if (canPurchase)
                 {
