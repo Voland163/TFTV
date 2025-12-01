@@ -38,7 +38,7 @@ namespace TFTV.TFTVDrills
         private static readonly Color HeaderFrameBorderColor = new Color(0.6f, 0.6f, 0.6f, 1f);
         private static readonly Color LockedFrameColor = new Color(0.15294118f, 0.15294118f, 0.15294118f, 1f);
         private static readonly Color StandardOutlineColor = new Color(0.30980393f, 0.30980393f, 0.30980393f, 1f);
-        private static readonly Color OptionFillColor = new Color(0.2509804f, 0.11372549f, 0.0627451f, 1f);
+        private static readonly Color DrillOptionHoverFillColor = new Color(0.2509804f, 0.11372549f, 0.0627451f, 1f);
         private static readonly Color AcquireHoverFillColor = new Color(0.25098039f, 0.25098039f, 0.25098039f, 1f);
 
         private static Sprite _originalAvailableImage = null;

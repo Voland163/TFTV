@@ -421,7 +421,7 @@ namespace TFTV
                         new ItemStatModification() {
                     Modification = StatModificationType.Add,
                     TargetStat = StatModificationTarget.Accuracy,
-                    Value = 25
+                    Value = 0.25f
                     },
 
                     };

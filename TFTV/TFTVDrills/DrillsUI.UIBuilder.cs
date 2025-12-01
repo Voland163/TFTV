@@ -463,7 +463,7 @@ namespace TFTV.TFTVDrills
                 frameBackgroundRect.offsetMax = new Vector2(-borderThickness, -borderThickness);
 
                 var frameBackgroundImage = frameBackgroundRect.GetComponent<Image>();
-                frameBackgroundImage.color = OptionFillColor;
+                frameBackgroundImage.color = canSelect ? Color.clear : ButtonDisabledColor;
                 frameBackgroundImage.raycastTarget = false;
 
                 var iconRect = CreateChildRectTransform(frameBackgroundRect,
@@ -487,7 +487,7 @@ namespace TFTV.TFTVDrills
 
                 if (canSelect)
                 {
-                    AddHoverFillBehaviour(button, frameBackgroundImage, AcquireHoverFillColor);
+                    AddHoverFillBehaviour(button, frameBackgroundImage, DrillOptionHoverFillColor);
                 }
 
                 return optionRect.gameObject;
