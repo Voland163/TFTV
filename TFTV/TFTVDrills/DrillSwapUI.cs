@@ -250,7 +250,7 @@ namespace TFTV.TFTVDrills
                     }
                 }
 
-                ordered.RemoveAll(def => def == null || def == original);
+                ordered.RemoveAll(def => def == null);
                 ordered = ordered
                     .Distinct()
                     .OrderBy(def =>
@@ -344,6 +344,8 @@ namespace TFTV.TFTVDrills
                 int currentStr = Reflection.GetPrivate<int>(ui, "_currentStrengthStat");
                 int currentWill = Reflection.GetPrivate<int>(ui, "_currentWillStat");
                 int currentSpeed = Reflection.GetPrivate<int>(ui, "_currentSpeedStat");
+                bool drillAcquired = DrillsUnlock.CharacterHasDrill(character, original);
+
 
                 bool slotUnlocked = abilityLevel <= 0 || (character?.Progression?.LevelProgression?.Level ?? 0) >= abilityLevel;
                 bool canLearn = baseAbilityLearned || (character?.Progression?.CanLearnAbility(slot, currentStr, currentWill, currentSpeed) ?? false);
@@ -385,7 +387,8 @@ namespace TFTV.TFTVDrills
                     EntryElement = entry,
                     Slot = slot,
                     Ui = ui,
-                    Ability = original
+                    Ability = original,
+                    DrillAcquired = drillAcquired
                 };
             }
 

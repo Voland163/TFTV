@@ -40,7 +40,7 @@ namespace TFTV.TFTVDrills
             public AbilityTrackSlot Slot;
             public UIModuleCharacterProgression Ui;
             public TacticalAbilityDef Ability;
-
+            public bool DrillAcquired;
             public bool CanPurchaseBaseAbility => BaseAbilityLearned || (SlotUnlocked && CanLearnBaseAbility && CanAffordBaseAbility);
         }
 

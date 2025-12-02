@@ -199,6 +199,8 @@ namespace TFTV.TFTVDrills
 
                 bool allowAcquire = context != null && !context.BaseAbilityLearned && onAcquire != null;
                 bool canPurchase = allowAcquire && context.CanPurchaseBaseAbility;
+                bool drillAcquired = context?.DrillAcquired ?? false;
+                bool isDrill = IsDrillAbility(context?.Ability);
 
                 if (canPurchase)
                 {
@@ -218,17 +220,21 @@ namespace TFTV.TFTVDrills
 
                 bool baseAbilityLearned = context?.BaseAbilityLearned ?? false;
                 Color iconColor;
-                if (baseAbilityLearned)
-                {
-                    iconColor = context?.EntryElement != null ? context.EntryElement.KnownSkillColor : Color.white;
-                }
-                else
+                if (!baseAbilityLearned)
                 {
                     iconColor = isLocked ? LockedIconTint : Color.white;
                 }
+                else
+                {
+                    iconColor = context?.EntryElement != null ? context.EntryElement.KnownSkillColor : Color.white;         
+                }
 
+                if (drillAcquired && isDrill)
+                {
+                    iconColor = DrillPulseColor;
+                }
 
-                bool showHeaderFrame = IsDrillAbility(original) || !baseAbilityLearned;
+                bool showHeaderFrame = IsDrillAbility(original) || !baseAbilityLearned || drillAcquired;
 
                 CreateHeaderIcon(buttonRect, original, iconColor, showHeaderFrame, isLocked, out var headerBackground);
 
@@ -237,10 +243,13 @@ namespace TFTV.TFTVDrills
                     AddHoverFillBehaviour(button, headerBackground, AcquireHoverFillColor);
                 }
 
-                if (allowAcquire && tooltipParent != null && panelRect != null && canvas != null)
+                bool allowTooltip = tooltipParent != null && panelRect != null && canvas != null && context?.Ability != null;
+
+                if (allowTooltip)
                 {
                     var tooltipTrigger = buttonRect.gameObject.AddComponent<DrillTooltipTrigger>();
-                    tooltipTrigger.Initialize(original, context.MissingRequirements, !context.CanPurchaseBaseAbility, false, tooltipParent, panelRect, canvas, context.BaseAbilityCost);
+                    bool tooltipLocked = allowAcquire && !context.CanPurchaseBaseAbility;
+                    tooltipTrigger.Initialize(context.Ability, context.MissingRequirements, tooltipLocked, drillAcquired, tooltipParent, panelRect, canvas, context.BaseAbilityCost);
                 }
             }
            
