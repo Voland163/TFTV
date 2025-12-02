@@ -1,5 +1,6 @@
 using Base.Core;
 using Base.Entities.Abilities;
+using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Characters;
@@ -240,6 +241,34 @@ namespace TFTV.TFTVDrills
                     TFTVLogger.Always($"[TFTV Drills] Attempted to swap to locked drill {replacement?.name}; aborting swap.");
                     return;
                 }
+
+                if (DrillsUnlock.WouldBreakWeaponProficiencyRequirement(character, original, out var blockingDrills))
+                {
+                    string abilityName = original?.ViewElementDef?.DisplayName1?.Localize() ?? original?.name ?? "the selected ability";
+                    string drillNames = string.Join(", ", blockingDrills.Distinct().Where(name => !string.IsNullOrEmpty(name)));
+                    string message = string.IsNullOrEmpty(drillNames)
+                        ? $"Cannot replace {abilityName} because it is required for an acquired drill."
+                        : $"Cannot replace {abilityName} because it is required for: {drillNames}.";
+
+                    GameUtl.GetMessageBox()?.ShowSimplePrompt(message, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                    Reflection.CallPrivate(ui, "RefreshAbilityTracks");
+                    ui.RefreshStatPanel();
+                    return;
+                }
+
+                if (DrillsUnlock.TargetDrillLosesWeaponProficiencyRequirement(character, replacement, original, out var targetDrillName))
+                {
+                    string abilityName = original?.ViewElementDef?.DisplayName1?.Localize() ?? original?.name ?? "the selected ability";
+                    string message = string.IsNullOrEmpty(targetDrillName)
+                        ? $"Cannot replace {abilityName} because it is required for the selected drill."
+                        : $"Cannot replace {abilityName} because it is required for: {targetDrillName}.";
+
+                    GameUtl.GetMessageBox()?.ShowSimplePrompt(message, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                    Reflection.CallPrivate(ui, "RefreshAbilityTracks");
+                    ui.RefreshStatPanel();
+                    return;
+                }
+
 
                 if (skillPointCost > 0)
                 {

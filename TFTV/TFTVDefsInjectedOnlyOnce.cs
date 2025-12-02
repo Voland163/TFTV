@@ -20,6 +20,7 @@ using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.Entities.Items.SkinData;
 using PhoenixPoint.Common.Entities.RedeemableCodes;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
@@ -243,12 +244,28 @@ namespace TFTV
                 LaserWeaponsInit.Init();
                 EnsureTFTVFunctionalityAfterNewPatch();
                 //  TestUseWorkerComponent();
+               // Test0();
 
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        private static void Test0()
+        {
+            try 
+            {
+                SimpleSkinDataDef pxAssaultRifleSkinData = DefCache.GetDef<SimpleSkinDataDef>("E_SkinData [PX_AssaultRifle_WeaponDef]");
+                pxAssaultRifleSkinData.DefaultPrefab = new UnityEngine.AddressableAssets.AssetReferenceGameObject("20fa6043bae9c7143a3e275c1d2a198a");
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
         }
 
         private static void EnsureTFTVFunctionalityAfterNewPatch()

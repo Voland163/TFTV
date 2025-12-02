@@ -151,6 +151,93 @@ namespace TFTV.TFTVDrills
             return soldier.Progression.Abilities.Contains(drill);
         }
 
+
+        internal static bool WouldBreakWeaponProficiencyRequirement(GeoCharacter soldier, TacticalAbilityDef abilityToRemove, out List<string> blockingDrills)
+        {
+            blockingDrills = new List<string>();
+
+            if (soldier?.Progression?.Abilities == null || abilityToRemove == null)
+            {
+                return false;
+            }
+
+            var soldierAbilities = soldier.Progression.Abilities;
+
+            foreach (var drill in Drills ?? Enumerable.Empty<TacticalAbilityDef>())
+            {
+                if (drill == null || !soldierAbilities.Contains(drill))
+                {
+                    continue;
+                }
+
+                if (!DrillUnlockConditions.TryGetValue(drill, out var condition) || condition?.WeaponProficiencyRequirements == null)
+                {
+                    continue;
+                }
+
+                foreach (var requirement in condition.WeaponProficiencyRequirements)
+                {
+                    if (requirement?.ProficiencyAbilities == null || requirement.ProficiencyAbilities.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    if (!requirement.ProficiencyAbilities.Contains(abilityToRemove))
+                    {
+                        continue;
+                    }
+
+                    bool stillSatisfied = SoldierHasWeaponProficiencyExcludingAbility(soldierAbilities, requirement.ProficiencyAbilities, abilityToRemove);
+                    if (!stillSatisfied)
+                    {
+                        blockingDrills.Add(drill.ViewElementDef?.DisplayName1?.Localize() ?? drill.name);
+                        break;
+                    }
+                }
+            }
+
+            return blockingDrills.Count > 0;
+        }
+
+        internal static bool TargetDrillLosesWeaponProficiencyRequirement(GeoCharacter soldier, TacticalAbilityDef targetDrill, TacticalAbilityDef abilityToRemove, out string blockingDrill)
+        {
+            blockingDrill = null;
+
+            if (soldier?.Progression?.Abilities == null || targetDrill == null || abilityToRemove == null)
+            {
+                return false;
+            }
+
+            if (!DrillUnlockConditions.TryGetValue(targetDrill, out var condition) || condition?.WeaponProficiencyRequirements == null)
+            {
+                return false;
+            }
+
+            var soldierAbilities = soldier.Progression.Abilities;
+
+            foreach (var requirement in condition.WeaponProficiencyRequirements)
+            {
+                if (requirement?.ProficiencyAbilities == null || requirement.ProficiencyAbilities.Count == 0)
+                {
+                    continue;
+                }
+
+                if (!requirement.ProficiencyAbilities.Contains(abilityToRemove))
+                {
+                    continue;
+                }
+
+                bool stillSatisfied = SoldierHasWeaponProficiencyExcludingAbility(soldierAbilities, requirement.ProficiencyAbilities, abilityToRemove);
+                if (!stillSatisfied)
+                {
+                    blockingDrill = targetDrill.ViewElementDef?.DisplayName1?.Localize() ?? targetDrill.name;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         internal static IEnumerable<string> GetMissingRequirementDescriptions(GeoPhoenixFaction faction, GeoCharacter viewer, TacticalAbilityDef ability)
         {
             if (ability == null)
@@ -716,6 +803,30 @@ namespace TFTV.TFTVDrills
 
             return false;
         }
+
+        private static bool SoldierHasWeaponProficiencyExcludingAbility(IEnumerable<TacticalAbilityDef> soldierAbilities, IEnumerable<TacticalAbilityDef> proficiencyAbilities, TacticalAbilityDef excludedAbility)
+        {
+            if (soldierAbilities == null || proficiencyAbilities == null)
+            {
+                return false;
+            }
+
+            foreach (var ability in proficiencyAbilities)
+            {
+                if (ability == null || ability == excludedAbility)
+                {
+                    continue;
+                }
+
+                if (soldierAbilities.Contains(ability))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private static string TryGetResearchName(string researchId)
         {
             try
