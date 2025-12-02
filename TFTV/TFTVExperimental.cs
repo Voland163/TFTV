@@ -2,16 +2,22 @@
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Characters;
+using PhoenixPoint.Geoscape.Cameras;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View;
+using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Geoscape.View.ViewStates;
+using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PRMBetterClasses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 
 
@@ -25,110 +31,179 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
-
-
-      /* [HarmonyPatch(typeof(FactionCharacterGenerator), "GeneratePersonalAbilities")]
-          internal static class Debug_GenerateUnit_Patches
-          {
-              // Called before 'GenerateUnit' -> PREFIX.
-              [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
-              private static void Prefix(FactionCharacterGenerator __instance, int abilitiesCount, LevelProgressionDef levelDef, List<TacticalAbilityDef> ____personalAbilityPool)
-              {
-                  try
-                  {
-                      TFTVLogger.Always($"GeneratePersonalAbilities {abilitiesCount} {levelDef?.name} ____personalAbilityPool==null: {____personalAbilityPool==null}");
-
-                    foreach (var ability in ____personalAbilityPool)
-                    {
-                        TFTVLogger.Always($"ability null? {ability==null} {ability?.name}");
-
-
-                    }
-
-                  }
-                  catch (Exception e)
-                  {
-                      PRMLogger.Error(e);
-
-                  }
-              }
-          }*/
-
-        
-/*
-        [HarmonyPatch(typeof(UnitTemplateResearchReward), "GiveReward")]
-        internal static class UnitTemplateResearchReward_GiveReward_Patch
+      /*  [HarmonyPatch(typeof(UIStateVehicleSelected), "OnSelect")]
+        internal static class UIStateVehicleSelected_OnSelect_Patch
         {
-            private static void Prefix(UnitTemplateResearchReward __instance, GeoFaction faction)
+            private static readonly AccessTools.FieldRef<UIStateVehicleSelected, bool> SuppressGamepadSelectEventRef = AccessTools.FieldRefAccess<UIStateVehicleSelected, bool>("_suppressGamepadSelectEvent");
+
+            private static readonly AccessTools.FieldRef<UIStateVehicleSelected, UIModuleActionsBar> ActionsBarModuleRef = AccessTools.FieldRefAccess<UIStateVehicleSelected, UIModuleActionsBar>("_actionsBarModule");
+
+            private static readonly AccessTools.FieldRef<UIStateVehicleSelected, UIModuleSiteContextualMenu> ContextualMenuModuleRef = AccessTools.FieldRefAccess<UIStateVehicleSelected, UIModuleSiteContextualMenu>("_contextualMenuModule");
+
+            private static readonly AccessTools.FieldRef<UIStateVehicleSelected, GeoscapeCamera> GeoscapeCameraRef = AccessTools.FieldRefAccess<UIStateVehicleSelected, GeoscapeCamera>("_geoscapeCamera");
+
+            private static readonly MethodInfo SelectedVehicleGetter = AccessTools.PropertyGetter(typeof(UIStateVehicleSelected), "SelectedVehicle");
+
+            private static readonly MethodInfo SelectVehicleMethod = AccessTools.Method(typeof(UIStateVehicleSelected), "SelectVehicle", new[] { typeof(GeoVehicle), typeof(bool) });
+
+            private static readonly MethodInfo ContextGetter = AccessTools.PropertyGetter(typeof(GeoscapeViewState), "Context");
+
+            private static readonly MethodInfo CursorOverGuiGetter = AccessTools.PropertyGetter(typeof(GeoscapeViewState), "CursorOverGui");
+
+            public static void Postfix(UIStateVehicleSelected __instance)
             {
-                try
+                GeoscapeViewContext context = (GeoscapeViewContext)ContextGetter.Invoke(__instance, null);
+                if (context == null || context.Input.InputType != Base.Input.InputType.Joystick)
                 {
-                    if (faction == faction.GeoLevel.NewJerichoFaction && __instance.RewardDef.Template.Data.LevelProgression.Level == 1) 
-                    {
-                        TFTVLogger.Always($"PREFIX {__instance.RewardDef.name} : {__instance.RewardDef.Template.name} add: {__instance.RewardDef.Add} already unlocked: {faction.UnlockedUnitTemplates.Contains(__instance.RewardDef.Template)}"); 
-                    }                   
+                    return;
                 }
-                catch (Exception e)
+
+                if ((bool)CursorOverGuiGetter.Invoke(__instance, null))
                 {
-                    TFTVLogger.Error(e);
-
+                    return;
                 }
-            }
 
-            private static void Postfix(UnitTemplateResearchReward __instance, GeoFaction faction)
-            {
-                try
+                GeoscapeCamera geoscapeCamera = GeoscapeCameraRef(__instance);
+                if (geoscapeCamera != null && geoscapeCamera.IsCursorOverGUI)
                 {
-                    if (faction == faction.GeoLevel.NewJerichoFaction && __instance.RewardDef.Template.Data.LevelProgression.Level == 1)
-                    {
-                        TFTVLogger.Always($"POSTFIX {__instance.RewardDef.name} : {__instance.RewardDef.Template.name} add: {__instance.RewardDef.Add} already unlocked: {faction.UnlockedUnitTemplates.Contains(__instance.RewardDef.Template)}");
-                    }
+                    return;
                 }
-                catch (Exception e)
+
+                if (SuppressGamepadSelectEventRef(__instance))
                 {
-                    TFTVLogger.Error(e);
-
+                    SuppressGamepadSelectEventRef(__instance) = false;
+                    return;
                 }
-            }
-        }
 
-        [HarmonyPatch(typeof(UnitTemplateResearchReward), "RemoveReward")]
-        internal static class UnitTemplateResearchReward_RemoveReward_Patch
-        {
-            private static void Prefix(UnitTemplateResearchReward __instance, GeoFaction faction)
-            {
-                try
+                UIModuleActionsBar actionsBarModule = ActionsBarModuleRef(__instance);
+                if (actionsBarModule != null && actionsBarModule.GamepadAbilityScrolling)
                 {
-                    if (faction == faction.GeoLevel.NewJerichoFaction && __instance.RewardDef.Template.Data.LevelProgression.Level == 1)
-                    {
-                        TFTVLogger.Always($"PREFIX {__instance.RewardDef.name} : {__instance.RewardDef.Template.name} add: {__instance.RewardDef.Add} already unlocked {faction.UnlockedUnitTemplates.Contains(__instance.RewardDef.Template)}");
-                    }
-
-
+                    return;
                 }
-                catch (Exception e)
+
+                GeoscapeSelectionInfo geoscapeSelectionInfo = context.View.SelectAtCursor(true);
+                GeoVehicle geoVehicle = geoscapeSelectionInfo.Actor as GeoVehicle;
+                if (geoVehicle == null)
                 {
-                    TFTVLogger.Error(e);
-
+                    return;
                 }
-            }
 
-            private static void Postfix(UnitTemplateResearchReward __instance, GeoFaction faction)
-            {
-                try
+                GeoVehicle selectedVehicle = (GeoVehicle)SelectedVehicleGetter.Invoke(__instance, null);
+                if (selectedVehicle != null)
                 {
-                    if (faction == faction.GeoLevel.NewJerichoFaction && __instance.RewardDef.Template.Data.LevelProgression.Level == 1)
-                    {
-                        TFTVLogger.Always($"POSTFIX {__instance.RewardDef.name} : {__instance.RewardDef.Template.name} add: {__instance.RewardDef.Add} already unlocked: {faction.UnlockedUnitTemplates.Contains(__instance.RewardDef.Template)}");
-                    }
+                    selectedVehicle.Animator.SetBool("IsSelected", false);
                 }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
 
-                }
+                SelectVehicleMethod.Invoke(__instance, new object[] { geoVehicle, false });
+
+                UIModuleSiteContextualMenu contextualMenuModule = ContextualMenuModuleRef(__instance);
+                contextualMenuModule?.HideContextualMenu();
             }
         }*/
+
+       
+        /* [HarmonyPatch(typeof(FactionCharacterGenerator), "GeneratePersonalAbilities")]
+            internal static class Debug_GenerateUnit_Patches
+            {
+                // Called before 'GenerateUnit' -> PREFIX.
+                [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+                private static void Prefix(FactionCharacterGenerator __instance, int abilitiesCount, LevelProgressionDef levelDef, List<TacticalAbilityDef> ____personalAbilityPool)
+                {
+                    try
+                    {
+                        TFTVLogger.Always($"GeneratePersonalAbilities {abilitiesCount} {levelDef?.name} ____personalAbilityPool==null: {____personalAbilityPool==null}");
+
+                      foreach (var ability in ____personalAbilityPool)
+                      {
+                          TFTVLogger.Always($"ability null? {ability==null} {ability?.name}");
+
+
+                      }
+
+                    }
+                    catch (Exception e)
+                    {
+                        PRMLogger.Error(e);
+
+                    }
+                }
+            }*/
+
+
+        /*
+                [HarmonyPatch(typeof(UnitTemplateResearchReward), "GiveReward")]
+                internal static class UnitTemplateResearchReward_GiveReward_Patch
+                {
+                    private static void Prefix(UnitTemplateResearchReward __instance, GeoFaction faction)
+                    {
+                        try
+                        {
+                            if (faction == faction.GeoLevel.NewJerichoFaction && __instance.RewardDef.Template.Data.LevelProgression.Level == 1) 
+                            {
+                                TFTVLogger.Always($"PREFIX {__instance.RewardDef.name} : {__instance.RewardDef.Template.name} add: {__instance.RewardDef.Add} already unlocked: {faction.UnlockedUnitTemplates.Contains(__instance.RewardDef.Template)}"); 
+                            }                   
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+
+                        }
+                    }
+
+                    private static void Postfix(UnitTemplateResearchReward __instance, GeoFaction faction)
+                    {
+                        try
+                        {
+                            if (faction == faction.GeoLevel.NewJerichoFaction && __instance.RewardDef.Template.Data.LevelProgression.Level == 1)
+                            {
+                                TFTVLogger.Always($"POSTFIX {__instance.RewardDef.name} : {__instance.RewardDef.Template.name} add: {__instance.RewardDef.Add} already unlocked: {faction.UnlockedUnitTemplates.Contains(__instance.RewardDef.Template)}");
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+
+                        }
+                    }
+                }
+
+                [HarmonyPatch(typeof(UnitTemplateResearchReward), "RemoveReward")]
+                internal static class UnitTemplateResearchReward_RemoveReward_Patch
+                {
+                    private static void Prefix(UnitTemplateResearchReward __instance, GeoFaction faction)
+                    {
+                        try
+                        {
+                            if (faction == faction.GeoLevel.NewJerichoFaction && __instance.RewardDef.Template.Data.LevelProgression.Level == 1)
+                            {
+                                TFTVLogger.Always($"PREFIX {__instance.RewardDef.name} : {__instance.RewardDef.Template.name} add: {__instance.RewardDef.Add} already unlocked {faction.UnlockedUnitTemplates.Contains(__instance.RewardDef.Template)}");
+                            }
+
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+
+                        }
+                    }
+
+                    private static void Postfix(UnitTemplateResearchReward __instance, GeoFaction faction)
+                    {
+                        try
+                        {
+                            if (faction == faction.GeoLevel.NewJerichoFaction && __instance.RewardDef.Template.Data.LevelProgression.Level == 1)
+                            {
+                                TFTVLogger.Always($"POSTFIX {__instance.RewardDef.name} : {__instance.RewardDef.Template.name} add: {__instance.RewardDef.Add} already unlocked: {faction.UnlockedUnitTemplates.Contains(__instance.RewardDef.Template)}");
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+
+                        }
+                    }
+                }*/
 
         //increase level of recruits
         //level 2: +4 +4 +1 

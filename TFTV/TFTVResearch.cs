@@ -312,7 +312,8 @@ namespace TFTV
 
                     }
                     //To trigger change of rate in Pandoran Evolution
-                    else if (research.ResearchID == "ALN_Citadel_ResearchDef")
+                    //Removing as now in base game
+                  /*  else if (research.ResearchID == "ALN_Citadel_ResearchDef")
                     {
                         research.Faction.GeoLevel.EventSystem.SetVariable("Pandorans_Researched_Citadel", 1);
 
@@ -331,7 +332,7 @@ namespace TFTV
 
                       //  citadel.SpawnMonster(queenTag, startingScylla);
 
-                    }
+                    }*/
                     else if (research.ResearchID == "PX_VirophageWeapons_ResearchDef" || research.ResearchID == "PX_TelepathicNodule_ResearchDef" || research.ResearchID == "PX_YuggothianReceptacle_ResearchDef")
                     {
                         if (controller.EventSystem.GetVariable("SymesAlternativeCompleted") == 1 && CheckTriggerHelenaVirophageEvent(research))

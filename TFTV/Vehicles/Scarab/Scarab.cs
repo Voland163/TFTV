@@ -23,6 +23,7 @@ namespace TFTVVehicleRework.Scarab
     {
         internal static readonly DefRepository Repo = VehiclesMain.Repo;
         private static readonly SharedDamageKeywordsDataDef keywords = VehiclesMain.keywords;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         public enum HullModules {Front, Back, Left, Right, LFT, RFT, LBT, RBT}
 
@@ -136,7 +137,7 @@ namespace TFTVVehicleRework.Scarab
             };
 
             //"PX_HelCannon_ResearchDef_ManufactureResearchRewardDef_0"
-            ManufactureResearchRewardDef HellCannonResearchReward = (ManufactureResearchRewardDef)Repo.GetDef("5aef5689-fca0-d523-a66f-91204af3f593"); //80d2b708-8ee3-228b-278e-acfa09815d64");
+            ManufactureResearchRewardDef HellCannonResearchReward = DefCache.GetDef<ManufactureResearchRewardDef>("PX_HelCannon_ResearchDef_ManufactureResearchRewardDef_0"); //(ManufactureResearchRewardDef)Repo.GetDef("5a342568-bd31-b827-471c-4a20dbb2f1fe"); //80d2b708-8ee3-228b-278e-acfa09815d64");
             HellCannonResearchReward.Items = HellCannonResearchReward.Items.AddToArray(Taurus);
         }
 
@@ -162,7 +163,7 @@ namespace TFTVVehicleRework.Scarab
             };
 
             //"PX_VirophageWeapons_ResearchDef_ManufactureResearchRewardDef_0"
-            ManufactureResearchRewardDef VirophageResearchReward = (ManufactureResearchRewardDef)Repo.GetDef("477c5547-4e1a-47c1-686c-023df0411701");//02502242-0b31-a2b3-6d1b-2e78db0465e4");
+            ManufactureResearchRewardDef VirophageResearchReward = DefCache.GetDef<ManufactureResearchRewardDef>("PX_VirophageWeapons_ResearchDef_ManufactureResearchRewardDef_0"); // (ManufactureResearchRewardDef)Repo.GetDef("ba3b57ac-d741-abbf-836e-45c0abd869ed");//02502242-0b31-a2b3-6d1b-2e78db0465e4");
             VirophageResearchReward.Items = VirophageResearchReward.Items.AddToArray(Scorpio);
         }
 

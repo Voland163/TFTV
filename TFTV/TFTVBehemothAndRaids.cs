@@ -1,7 +1,6 @@
 ﻿using Base;
 using Base.Core;
 using Base.UI;
-using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
@@ -34,15 +33,15 @@ namespace TFTV
     {
 
         // private static readonly DefRepository Repo = TFTVMain.Repo;
-        public static Dictionary<int, List<int>> flyersAndHavens = new Dictionary<int, List<int>>();
-        public static List<int> targetsForBehemoth = new List<int>();
+      //  public static Dictionary<int, List<int>> flyersAndHavens = new Dictionary<int, List<int>>();
+      //  public static List<int> targetsForBehemoth = new List<int>();
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
         //  public static List<int> targetsVisitedByBehemoth = new List<int>();
 
-        public static List<int> behemothScenicRoute = new List<int>();
-        public static int behemothTarget = 0;
-        public static int behemothWaitHours = 12;
+      //  public static List<int> behemothScenicRoute = new List<int>();
+      //  public static int behemothTarget = 0;
+      //  public static int behemothWaitHours = 12;
         // public static int roaming = 0;
         //public static bool firstPandoranFlyerSpawned = false;
 
@@ -56,12 +55,12 @@ namespace TFTV
             {
                 try
                 {
-                    targetsForBehemoth = new List<int>();
-                    flyersAndHavens = new Dictionary<int, List<int>>();
+                   // targetsForBehemoth = new List<int>();
+                  //  flyersAndHavens = new Dictionary<int, List<int>>();
                     checkHammerfall = false;
-                    behemothScenicRoute = new List<int>();
-                    behemothTarget = 0;
-                    behemothWaitHours = 12;
+                  //  behemothScenicRoute = new List<int>();
+                  //  behemothTarget = 0;
+                  //  behemothWaitHours = 12;
                     Behemoth.BehemothMission.DeploymentButtonList.Clear();
 
                 }
@@ -162,7 +161,7 @@ namespace TFTV
                 {
                     TFTVConfig config = TFTVMain.Main.Config;
 
-                    if(config.EasyAirCombat)
+                    if (config.EasyAirCombat)
                     {
                         GeoLoadoutManager geoLoadoutManager = controller.AlienFaction.GeoLoadoutManager;
                         FieldInfo fieldInfo = typeof(GeoLoadoutManager).GetField("_geoVehicleLoadouts", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -170,8 +169,6 @@ namespace TFTV
                         geoVehicleLoadouts.RemoveAll(x => x.name == "AL_Small4_VehicleLoadout" || x.name == "AL_Small5_VehicleLoadout");
                         fieldInfo.SetValue(geoLoadoutManager, geoVehicleLoadouts);
                     }
-
-
 
                     int difficulty = controller.CurrentDifficultyLevel.Order;
                     int numberOfRoamings = controller.EventSystem.GetVariable(BehemothRoamings);
@@ -229,7 +226,8 @@ namespace TFTV
                      }
                  }*/
 
-            [HarmonyPatch(typeof(AlienRaidManager), "RollForRaid")] //VERIFIED
+            //Removing for TESTING
+          /*  [HarmonyPatch(typeof(AlienRaidManager), "RollForRaid")] //VERIFIED
             public static class AlienRaidManager_RollForRaid_patch
             {
                 public static bool Prefix(AlienRaidManager __instance)
@@ -285,7 +283,7 @@ namespace TFTV
                         throw;
                     }
                 }
-            }
+            }*/
 
 
 
@@ -332,7 +330,7 @@ namespace TFTV
             }
 
             //Controlling Pandoran flyers visiting havens
-            [HarmonyPatch(typeof(GeoVehicle), "OnArrivedAtDestination")] //VERIFIED
+         /*   [HarmonyPatch(typeof(GeoVehicle), "OnArrivedAtDestination")] //VERIFIED
             public static class GeoVehicle_OnArrivedAtDestination
             {
 
@@ -360,10 +358,10 @@ namespace TFTV
                         TFTVLogger.Error(e);
                     }
                 }
-            }
+            }*/
 
             //Verifiying if flyer returning to Behemoth has visited a haven
-            [HarmonyPatch(typeof(GeoscapeRaid), "StopBehemothFollowing")] //VERIFIED
+          /*  [HarmonyPatch(typeof(GeoscapeRaid), "StopBehemothFollowing")] //VERIFIED
             public static class GeoscapeRaid_StopBehemothFollowing_patch
             {
 
@@ -406,13 +404,14 @@ namespace TFTV
                         TFTVLogger.Error(e);
                     }
                 }
-            }
+            }*/
 
         }
 
         internal class Behemoth
         {
 
+            //Should not change with Patch
             internal class BehemothMission
             {
 
@@ -423,7 +422,7 @@ namespace TFTV
                 internal static List<int> listTeamA = new List<int>();
                 internal static List<int> listTeamB = new List<int>();
 
-                internal static List <PhoenixGeneralButton> DeploymentButtonList = new List<PhoenixGeneralButton>();
+                internal static List<PhoenixGeneralButton> DeploymentButtonList = new List<PhoenixGeneralButton>();
 
                 [HarmonyPatch(typeof(LaunchBehemothMissionAbility), "ActivateInternal")] //VERIFIED
                 public static class TFTV_LaunchBehemothMissionAbility_ActivateInternal_patch
@@ -650,10 +649,10 @@ namespace TFTV
                             return;
                         }
 
-                        foreach(PhoenixGeneralButton button in DeploymentButtonList) 
+                        foreach (PhoenixGeneralButton button in DeploymentButtonList)
                         {
                             button?.gameObject?.SetActive(false);
-                        
+
                         }
 
                         listTeamA.Clear();
@@ -790,58 +789,87 @@ namespace TFTV
             }
 
 
+            //Shouldn't be necessary anymore
+            /*  [HarmonyPatch(typeof(GeoBehemothActor), nameof(GeoBehemothActor.TravelTo))]
+              public static class GeoBehemothActor_TravelTo_Patch
+              {
+                  public static void Postfix(GeoBehemothActor __instance, GeoSite site, ref bool __result, ref List<GeoSite> ____destinationSites)
+                  {
+                      try
+                      {
+                          if (!__result)
+                          {
+                              TFTVLogger.Always($"Behemoth fails to travel somewhere, let's see if it can be fixed");
 
-            [HarmonyPatch(typeof(GeoBehemothActor), nameof(GeoBehemothActor.TravelTo))]
-            public static class GeoBehemothActor_TravelTo_Patch
+                              __instance.Navigation.Init(__instance);
+
+                              if (__instance.Travelling)
+                              {
+                                  Vector3 src = ((__instance.CurrentSite == null) ? __instance.WorldPosition : __instance.CurrentSite.WorldPosition);
+                                  ____destinationSites.Clear();
+                                  bool foundPath;
+                                  IList<SitePathNode> source = __instance.Navigation.FindPath(src, site.WorldPosition, out foundPath);
+                                  if (foundPath)
+                                  {
+                                      __instance.StartTravel(from pn in source
+                                                             where pn.Site != null && pn.Site != __instance.CurrentSite
+                                                             select pn.Site);
+                                  }
+                                  else
+                                  {
+                                      TFTVLogger.Always("Path between sites " + __instance.CurrentSite.name + " and " + site.name + " still not found with TFTV failsafe!");
+                                  }
+
+                                  __result = foundPath;
+                              }
+
+                              Vector3 src2 = ((__instance.CurrentSite != null) ? __instance.CurrentSite.WorldPosition : __instance.WorldPosition);
+                              bool foundPath2;
+                              IList<SitePathNode> source2 = __instance.Navigation.FindPath(src2, site.WorldPosition, out foundPath2);
+                              if (foundPath2)
+                              {
+                                  __instance.StartTravel(from pn in source2
+                                                         where pn.Site != null && pn.Site != __instance.CurrentSite
+                                                         select pn.Site);
+                              }
+                              else
+                              {
+                                  TFTVLogger.Always("Path between sites " + __instance.CurrentSite.name + " and " + site.name + " still not found with TFTV failsafe!");
+                              }
+
+                          }
+
+
+                      }
+                      catch (Exception e)
+                      {
+                          TFTVLogger.Error(e);
+                      }
+                  }
+              }*/
+
+            //Should only keep this for the cheat option
+            [HarmonyPatch(typeof(GeoBehemothActor), nameof(GeoBehemothActor.UpdateHourly))]
+            public static class GeoBehemothActor_UpdateHourly_Patch
             {
-                public static void Postfix(GeoBehemothActor __instance, GeoSite site, ref bool __result, ref List<GeoSite> ____destinationSites)
+                public static void Prefix(GeoBehemothActor __instance)
                 {
                     try
                     {
-                        if (!__result)
+                        if (__instance.CurrentBehemothStatus == BehemothStatus.Dormant)//first check
                         {
-                            TFTVLogger.Always($"Behemoth fails to travel somewhere, let's see if it can be fixed");
 
-                            __instance.Navigation.Init(__instance);
+                            TFTVConfig config = TFTVMain.Main.Config;
 
-                            if (__instance.Travelling)
+                            if (config.BehemothSubmergesForever)
                             {
-                                Vector3 src = ((__instance.CurrentSite == null) ? __instance.WorldPosition : __instance.CurrentSite.WorldPosition);
-                                ____destinationSites.Clear();
-                                bool foundPath;
-                                IList<SitePathNode> source = __instance.Navigation.FindPath(src, site.WorldPosition, out foundPath);
-                                if (foundPath)
-                                {
-                                    __instance.StartTravel(from pn in source
-                                                           where pn.Site != null && pn.Site != __instance.CurrentSite
-                                                           select pn.Site);
-                                }
-                                else
-                                {
-                                    TFTVLogger.Always("Path between sites " + __instance.CurrentSite.name + " and " + site.name + " still not found with TFTV failsafe!");
-                                }
-
-                                __result = foundPath;
-                            }
-
-                            Vector3 src2 = ((__instance.CurrentSite != null) ? __instance.CurrentSite.WorldPosition : __instance.WorldPosition);
-                            bool foundPath2;
-                            IList<SitePathNode> source2 = __instance.Navigation.FindPath(src2, site.WorldPosition, out foundPath2);
-                            if (foundPath2)
-                            {
-                                __instance.StartTravel(from pn in source2
-                                                       where pn.Site != null && pn.Site != __instance.CurrentSite
-                                                       select pn.Site);
-                            }
-                            else
-                            {
-                                TFTVLogger.Always("Path between sites " + __instance.CurrentSite.name + " and " + site.name + " still not found with TFTV failsafe!");
+                                __instance.GeoLevel.AlienFaction.RemoveBehemoth();
                             }
 
                         }
 
-
                     }
+
                     catch (Exception e)
                     {
                         TFTVLogger.Error(e);
@@ -849,7 +877,7 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(GeoBehemothActor),  nameof(GeoBehemothActor.UpdateHourly))]
+            /*[HarmonyPatch(typeof(GeoBehemothActor),  nameof(GeoBehemothActor.UpdateHourly))]
             public static class GeoBehemothActor_UpdateHourly_Patch
             {
                 public static bool Prefix(GeoBehemothActor __instance, ref int ____disruptionThreshhold, int ____disruptionPoints, int ____nextActionHoursLeft)
@@ -888,12 +916,7 @@ namespace TFTV
                             behemothTarget = 0;
                         }
 
-                        /*  foreach(int targetId in targetsForBehemoth) 
-                          {
-                              TFTVLogger.Always($"{targetId}");
-
-                          }*/
-
+                     
                         if (targetsForBehemoth.Count > 1000)
                         {
                             TFTVLogger.Always($"Somehow Behemoth Targets were at more than 1k, setting them to 0");
@@ -907,10 +930,6 @@ namespace TFTV
                         }
                        
 
-                        /*  if (__instance.GeoLevel.EventSystem.GetVariable("ThirdActStarted") == 1)
-                          {
-                              ____disruptionThreshhold = 200;
-                          }*/
 
                         //   if (____disruptionThreshhold <= 0)
                         //   {
@@ -1045,9 +1064,10 @@ namespace TFTV
                     }
                     return true;
                 }
-            }
+            }*/
 
             //Clear lists of internal variables on Behemoth submerge + add Berith and Abbadon researches depending on number of roamings
+            //Can get rid of the internal variables now
             [HarmonyPatch(typeof(GeoBehemothActor), "PickSubmergeLocation")] //VERIFIED
             public static class GeoBehemothActor_PickSubmergeLocation_patch
             {
@@ -1057,9 +1077,9 @@ namespace TFTV
                     {
                         TFTVLogger.Always("Behemoth submerging");
                         //  BehemothSubmerging = true;
-                        flyersAndHavens.Clear();
-                        targetsForBehemoth.Clear();
-                        behemothScenicRoute.Clear();
+                        /*   flyersAndHavens.Clear();
+                           targetsForBehemoth.Clear();
+                           behemothScenicRoute.Clear();*/
 
                         //  BehemothSubmerging = true;
                         if (__instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings) < 1)//4 - __instance.GeoLevel.CurrentDifficultyLevel.Order <= roaming) 
@@ -1092,6 +1112,7 @@ namespace TFTV
             }
 
             //Patch to adjust disprution threshold
+            //Still necessary for the VO at least
             [HarmonyPatch(typeof(GeoBehemothActor), "CalculateDisruptionThreshhold")] //VERIFIED
             public static class GeoBehemothActor_CalculateDisruptionThreshhold_patch
             {
@@ -1116,7 +1137,7 @@ namespace TFTV
                         int[] voidOmensInEffect = TFTVVoidOmens.CheckFordVoidOmensInPlay(__instance.GeoLevel);
                         if (voidOmensInEffect.Contains(11) && !__instance.IsSubmerging)
                         {
-                            num += 3 * Math.Max(currentDifficultyLevel.Order-1,1);
+                            num += 3 * Math.Max(currentDifficultyLevel.Order - 1, 1);
                             //TFTVLogger.Always($"And with VO# 11 in effect, total is now {num}");
                         }
 
@@ -1140,8 +1161,41 @@ namespace TFTV
                 }
             }
 
-            //Patch to ensure that Behemoth emerges near exploration sites, written with the help of my new best friend, chatgpt
+
+            //Should only keep this for story events
             [HarmonyPatch(typeof(GeoBehemothActor), "OnBehemothEmerged")] //VERIFIED
+            class TFTV_OnBehemothEmerged_Patch
+            {
+
+                public static void Prefix(GeoBehemothActor __instance)
+                {
+                    try
+                    {
+                        GeoLevelController controller = __instance.GeoLevel;
+
+                        __instance.GeoLevel.EventSystem.SetVariable(BehemothRoamings, __instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings) + 1);
+
+                        TFTVLogger.Always($"Behemoth emerging, this is romaing # {__instance.GeoLevel.EventSystem.GetVariable(BehemothRoamings)}");
+
+                        if (__instance.GeoLevel.PhoenixFaction.Research.HasCompleted("PX_YuggothianEntity_ResearchDef")
+                            && __instance.GeoLevel.PhoenixFaction.Research.HasCompleted("PX_Alien_Citadel_ResearchDef")
+                            && __instance.GeoLevel.EventSystem.GetVariable("BehemothPatternEventTriggered") != 1)
+                        {
+                            GeoscapeEventContext context = new GeoscapeEventContext(__instance.GeoLevel.AlienFaction, __instance.GeoLevel.PhoenixFaction);
+                            __instance.GeoLevel.EventSystem.TriggerGeoscapeEvent("OlenaOnBehemothPattern", context);
+                            __instance.GeoLevel.EventSystem.SetVariable("BehemothPatternEventTriggered", 1);
+                            TFTVLogger.Always("Event on Behemoth pattern should trigger");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+            }
+
+            /*[HarmonyPatch(typeof(GeoBehemothActor), "OnBehemothEmerged")] //VERIFIED
             class TFTV_OnBehemothEmerged_Patch
             {
 
@@ -1225,7 +1279,7 @@ namespace TFTV
                     }
                     return true;
                 }
-            }
+            }*/
 
             [HarmonyPatch(typeof(GeoBehemothActor), "DamageHavenOutcome")] //VERIFIED   
             public static class GeoBehemothActor_DamageHavenOutcome_Patch
@@ -1246,7 +1300,7 @@ namespace TFTV
                         }
 
 
-                        behemothTarget = 0;
+                        // behemothTarget = 0;
                         ____disruptionPoints += 4; //increase on 28/12 from 1 
                         TFTVLogger.Always("The DP are " + ____disruptionPoints);
                         // TFTVLogger.Always("DamageHavenOutcome method invoked and Behemoth target is now " + behemothTarget);
@@ -1260,31 +1314,31 @@ namespace TFTV
                 }
             }
 
-            [HarmonyPatch(typeof(GeoBehemothActor), "ChooseNextHavenTarget")] //VERIFIED
-            public static class GeoBehemothActor_ChooseNextHavenTarget_Patch
-            {
-                public static bool Prefix(GeoBehemothActor __instance)
-                {
-                    try
-                    {
-                        if (targetsForBehemoth.Count == 0 && behemothTarget == 0)
-                        {
-                            GeoSite site = GetSiteForBehemothToMoveTo(__instance);
-                            typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { site });
-                        }
+            /*  [HarmonyPatch(typeof(GeoBehemothActor), "ChooseNextHavenTarget")] //VERIFIED
+              public static class GeoBehemothActor_ChooseNextHavenTarget_Patch
+              {
+                  public static bool Prefix(GeoBehemothActor __instance)
+                  {
+                      try
+                      {
+                          if (targetsForBehemoth.Count == 0 && behemothTarget == 0)
+                          {
+                              GeoSite site = GetSiteForBehemothToMoveTo(__instance);
+                              typeof(GeoBehemothActor).GetMethod("TargetHaven", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, new object[] { site });
+                          }
 
-                        return false;
+                          return false;
 
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                    return false;
-                }
-            }
+                      }
+                      catch (Exception e)
+                      {
+                          TFTVLogger.Error(e);
+                      }
+                      return false;
+                  }
+              }*/
 
-            private static void CullTargetList(GeoLevelController controller)
+         /*   private static void CullTargetList(GeoLevelController controller)
             {
                 try
                 {
@@ -1445,7 +1499,7 @@ namespace TFTV
                     //  TFTVLogger.Error(e);
                 }
                 throw new InvalidOperationException();
-            }
+            }*/
         }
 
         public static void SetBehemothOnRampageMod(GeoLevelController geoLevel)

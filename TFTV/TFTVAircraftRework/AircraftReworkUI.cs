@@ -926,7 +926,7 @@ namespace TFTV
 
 
 
-        [HarmonyPatch(typeof(AircraftInfoController))]
+      /*  [HarmonyPatch(typeof(AircraftInfoController))]
         public static class AircraftInfoControllerPatch
         {
             [HarmonyPatch(nameof(AircraftInfoController.SetInfo))]
@@ -967,14 +967,7 @@ namespace TFTV
 
                     __instance.AircraftHitPoints.text = $"{maintenancePercentage}%";
 
-                    /*  if (aircraftInfoData.MaxHitPoints != aircraftInfoData.CurrentHitPoints)
-                      {
-                          __instance.AircraftHitPoints.text = $"{aircraftInfoData.CurrentHitPoints}/{aircraftInfoData.MaxHitPoints}";
-                      }
-                      else
-                      {
-                          __instance.AircraftHitPoints.text = aircraftInfoData.MaxHitPoints.ToString();
-                      }*/
+                  
 
 
 
@@ -1055,10 +1048,7 @@ namespace TFTV
                     {
                         // TFTVLogger.Always($"Modules count: {modules.Count}");
 
-                        /*  foreach (GeoVehicleEquipmentUIData module in modules)
-                          {
-                              TFTVLogger.Always($"Module: {module?.AircraftEquipmentDef.name}");
-                          }*/
+                       
 
 
                         if (modules.Count >= 1)
@@ -1098,7 +1088,7 @@ namespace TFTV
                     throw;
                 }
             }
-        }
+        }*/
 
 
 

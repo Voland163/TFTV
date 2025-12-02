@@ -15,6 +15,8 @@ using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PRMBetterClasses;
+using TFTV;
+using Helper = PRMBetterClasses.Helper;
 
 namespace TFTVVehicleRework.Scarab
 {
@@ -23,6 +25,8 @@ namespace TFTVVehicleRework.Scarab
         private static readonly DefRepository Repo = ScarabMain.Repo;
         private static readonly RepositionAbilityDef VanishAbility = (RepositionAbilityDef)Repo.GetDef("36c30c9d-c1ae-3a74-d987-1b3dc9d3412a");
         private static readonly ApplyStatusAbilityDef StealthAbility = (ApplyStatusAbilityDef)Repo.GetDef("49aecd44-d46e-b314-1815-f373056bb822"); //"Stealth_AbilityDef"
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
         public static void Change()
         {
             GroundVehicleModuleDef FiberPlating = (GroundVehicleModuleDef)Repo.GetDef("983eb90b-29bf-15e4-fa76-d7f731069bd1"); //"PX_Scarab_Fiber_Plating_GroundVehicleModuleDef"
@@ -148,7 +152,7 @@ namespace TFTVVehicleRework.Scarab
         private static void Update_ResearchReqs(GroundVehicleModuleDef module)
         {
             // "PX_Alien_MistSentinel_ResearchDef"
-            ResearchDef MistSentinel = (ResearchDef)Repo.GetDef("5cc87915-9118-a927-3a40-b626f29ef1ef");//93451a57-bd6b-d200-7823-3be981b2d694");
+            ResearchDef MistSentinel = DefCache.GetDef<ResearchDef>("PX_Alien_MistSentinel_ResearchDef");//  (ResearchDef)Repo.GetDef("5cc87915-9118-a927-3a40-b626f29ef1ef");//93451a57-bd6b-d200-7823-3be981b2d694");
             
             //"NJ_VehicleTech_ResearchDef_ManufactureResearchRewardDef_1"
             ManufactureResearchRewardDef NJVehicleTech = (ManufactureResearchRewardDef)Repo.GetDef("d197bc9e-9a4d-a2d6-eabf-0bb7b6a0a9a7");

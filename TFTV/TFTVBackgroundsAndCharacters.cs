@@ -252,9 +252,9 @@ namespace TFTV
                         TFTVVoidOmens.RemoveAllVoidOmens(context.Level);
                         __instance.TriggerGeoscapeEvent("AlistairRoads", new GeoscapeEventContext(context.Level.PhoenixFaction, context.Level.PhoenixFaction));
                         TFTVDelirium.RemoveDeliriumFromAllCharactersWithoutMutations(context.Level);
-                        TFTVBehemothAndRaids.behemothScenicRoute.Clear();
-                        TFTVBehemothAndRaids.targetsForBehemoth.Clear();
-                        TFTVBehemothAndRaids.flyersAndHavens.Clear();
+                      //  TFTVBehemothAndRaids.behemothScenicRoute.Clear();
+                      //  TFTVBehemothAndRaids.targetsForBehemoth.Clear();
+                      //  TFTVBehemothAndRaids.flyersAndHavens.Clear();
                     }
                     else if (eventId == "Helena_Oneiromancy")
                     {

@@ -118,6 +118,10 @@ namespace TFTV
                 // DefCache.Initialize();
                 TFTVLogger.Always(version);
 
+                TFTVDefsInjectedOnlyOnce.Print();
+                TFTVRevertSGPatchBalance.RevertSGPatchBalanceChanges();
+
+
                 PRMBetterClasses.Helper.Initialize();
                 // Initialize Helper
                 Helper.Initialize();

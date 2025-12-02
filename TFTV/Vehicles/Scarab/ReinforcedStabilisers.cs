@@ -9,12 +9,14 @@ using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using TFTV;
 
 namespace TFTVVehicleRework.Scarab
 {
     public static class ReinforcedStabilisers
     {
         private static readonly DefRepository Repo = ScarabMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         //"Chiron_EnterStabilityStance_AbilityDef"
         internal static SwitchStanceAbilityDef Chiron_EnterStabilityStance = (SwitchStanceAbilityDef)Repo.GetDef("a23b9478-8821-6e14-d876-d9be712baf68");
@@ -105,7 +107,7 @@ namespace TFTVVehicleRework.Scarab
         private static void Update_ManufactureRequirements()
         {
             //"PX_HelCannon_ResearchDef_ManufactureResearchRewardDef_0"
-            ManufactureResearchRewardDef HelCannonReward = (ManufactureResearchRewardDef)Repo.GetDef("5aef5689-fca0-d523-a66f-91204af3f593");//80d2b708-8ee3-228b-278e-acfa09815d64");
+            ManufactureResearchRewardDef HelCannonReward = DefCache.GetDef<ManufactureResearchRewardDef>("PX_HelCannon_ResearchDef_ManufactureResearchRewardDef_0"); // (ManufactureResearchRewardDef)Repo.GetDef("5aef5689-fca0-d523-a66f-91204af3f593");//80d2b708-8ee3-228b-278e-acfa09815d64");
             ManufactureResearchRewardDef SwarmerRewardDef = (ManufactureResearchRewardDef)Repo.CreateDef("d6d85211-62ab-45fe-86db-bf94e5477ad1", HelCannonReward);
             SwarmerRewardDef.name = "PX_Alien_Swarmer_ResearchDef_ManufactureResearchRewardDef";
             SwarmerRewardDef.Items = new ItemDef[]
@@ -113,7 +115,7 @@ namespace TFTVVehicleRework.Scarab
                 CaterpillarTracks
             };
 
-            ResearchDef SwarmerResearch = (ResearchDef)Repo.GetDef("dcf703a9-438a-90fc-863a-89a6604c2ad6");//8e495706-5872-b7ea-296e-37f498573cf1"); //"PX_Alien_Swarmer_ResearchDef"
+            ResearchDef SwarmerResearch = DefCache.GetDef<ResearchDef>("PX_Alien_Swarmer_ResearchDef"); // (ResearchDef)Repo.GetDef("dcf703a9-438a-90fc-863a-89a6604c2ad6");//8e495706-5872-b7ea-296e-37f498573cf1"); //"PX_Alien_Swarmer_ResearchDef"
             SwarmerResearch.Unlocks = new ResearchRewardDef[]
             {
                 SwarmerRewardDef

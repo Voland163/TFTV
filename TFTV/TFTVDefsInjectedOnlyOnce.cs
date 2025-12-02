@@ -107,16 +107,33 @@ namespace TFTV
         }
 
 
+      
+
         internal static void Print()
         {
             try
             {
-                foreach (WeaponDef weaponDef in Repo.GetAllDefs<WeaponDef>().Where(w => w.Tags.Contains(DefCache.GetDef<GameTagDef>("GunWeapon_TagDef"))))
+                foreach (PhoenixFacilityDef phoenixFacilityDef in Repo.GetAllDefs<PhoenixFacilityDef>())
                 {
-                    TFTVLogger.Always($"WeaponDef has GunWeapon_TagDef {weaponDef.name}");
+                    TFTVLogger.Always($"[FacilityCost] {phoenixFacilityDef.name} cost in construction days: {phoenixFacilityDef.ConstructionTimeDays}", false);
+
+                    foreach(ResourceUnit resourceUnit in phoenixFacilityDef.ResourceCost)
+                    {
+                        TFTVLogger.Always($"[FacilityCost] {phoenixFacilityDef.name} cost in {resourceUnit.Type} {resourceUnit.Value}", false);
+                    }
                 }
 
+                foreach (TacticalItemDef tacticalItemDef in Repo.GetAllDefs<TacticalItemDef>().Where(tid=>tid.Tags.Any(t=>t.name.Equals("AmmoItem_TagDef"))))
+                {
+                   
+                        TFTVLogger.Always($"[AmmoCost]{tacticalItemDef.name} mat cost {tacticalItemDef.ManufactureMaterials} tech cost {tacticalItemDef.ManufactureTech}", false);  
+                }
 
+                foreach (ResearchDef researchDef in Repo.GetAllDefs<ResearchDef>())
+                {
+                    TFTVLogger.Always($"[ResearchCost]{researchDef.name} cost in research points: {researchDef.ResearchCost}", false);
+                  
+                }
             }
             catch (Exception e)
             {
@@ -156,7 +173,7 @@ namespace TFTV
         {
             try
             {
-
+              //  Print();
 
                 CreateAlwaysDeployTag();
 
@@ -236,7 +253,7 @@ namespace TFTV
 
                 // Experimental();
 
-                //   Print();
+                
 
                 //  ChangeScyllaSounds();
                 CreateSuppressionStatusDefs();
@@ -244,7 +261,9 @@ namespace TFTV
                 LaserWeaponsInit.Init();
                 EnsureTFTVFunctionalityAfterNewPatch();
                 //  TestUseWorkerComponent();
-               // Test0();
+                // Test0();
+
+                Print();
 
             }
             catch (Exception e)

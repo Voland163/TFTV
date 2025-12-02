@@ -2416,7 +2416,7 @@ namespace TFTV
 
             }
 
-            internal class UmbraFire
+           /* internal class UmbraFire
             {
                 /// <summary>
                 /// Fixes Umbra appearing when host had fire status
@@ -2475,7 +2475,7 @@ namespace TFTV
                     }
                 }
 
-            }
+            }*/
 
             internal class AI
             {

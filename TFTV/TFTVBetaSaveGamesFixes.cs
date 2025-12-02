@@ -36,41 +36,10 @@ namespace TFTV
 
         //   private static readonly SharedData Shared = TFTVMain.Shared;
 
-        public static void Fix(GeoLevelController controller)
-        {
-            try
-            {
-                TFTVBehemothAndRaids.behemothScenicRoute.Clear();
-
-                /*   FieldInfo basesField = AccessTools.Field(typeof(GeoPhoenixFaction), "_bases");
-                   List<GeoPhoenixBase> bases = (List<GeoPhoenixBase>)basesField.GetValue(controller.PhoenixFaction);
-                   bases.Add(geoPhoenixBase.GetComponent<GeoPhoenixBase>());
-                   geoPhoenixBase.RefreshVisuals();
-                   TFTVVanillaFixes.CheckFacilitesNotWorking(geoPhoenixBase.GetComponent<GeoPhoenixBase>());*/
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
+       
 
 
-        public static void SpecialFixBeesGuy()
-        {
-            try
-            {
-                TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = true;
-                TFTVNewGameOptions.StaminaPenaltyFromInjurySetting = true;
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-
-        }
+      
 
         public static void SpecialFixInfestedHaven(GeoLevelController controller)
         {

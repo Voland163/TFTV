@@ -1,5 +1,6 @@
 ﻿using Base.Core;
 using Base.Serialization.General;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events.Conditions;
@@ -55,6 +56,7 @@ namespace TFTV.TFTVIncidents
         [SerializeType(SerializeMembersByDefault = SerializeMembersType.SerializeAll, Embedded = true)]
         public class GeoIncidentEligibilityCondition
         {
+            // Token: 0x06005F59 RID: 24409 RVA: 0x00166D00 File Offset: 0x00164F00
             public bool IsEligible(GeoHaven haven, GeoFaction visitingFaction)
             {
                 if (haven == null)
@@ -94,9 +96,14 @@ namespace TFTV.TFTVIncidents
                 {
                     return false;
                 }
+                if (this.NearbyHavenRange > EarthUnits.Zero && !this.HasNearbyEligibleHaven(haven, visitingFaction))
+                {
+                    return false;
+                }
                 return true;
             }
 
+            // Token: 0x06005F5A RID: 24410 RVA: 0x00166E00 File Offset: 0x00165000
             private bool HasZoneWithKeyword(GeoHaven haven, string keyword)
             {
                 foreach (GeoHavenZone geoHavenZone in haven.Zones)
@@ -109,19 +116,60 @@ namespace TFTV.TFTVIncidents
                 return false;
             }
 
+            // Token: 0x06005F5B RID: 24411 RVA: 0x00166E70 File Offset: 0x00165070
+            private bool HasNearbyEligibleHaven(GeoHaven haven, GeoFaction visitingFaction)
+            {
+                GeoSite site = haven.Site;
+                GeoLevelController geoLevelController = (site != null) ? site.GeoLevel : null;
+                if (geoLevelController == null)
+                {
+                    return false;
+                }
+                IEnumerable<GeoIncidentEligibilityCondition> nearbyHavenConditions = this.NearbyHavenConditions;
+                foreach (GeoSite geoSite in geoLevelController.Map.SitesByType[GeoSiteType.Haven])
+                {
+                    if (!(geoSite == site))
+                    {
+                        GeoHaven component = geoSite.GetComponent<GeoHaven>();
+                        if (component != null)
+                        {
+                            bool flag = nearbyHavenConditions == null || nearbyHavenConditions.All((GeoIncidentEligibilityCondition c) => c.IsEligible(component, visitingFaction));
+                            if (flag && GeoMap.Distance(site, geoSite) <= this.NearbyHavenRange)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+
+            // Token: 0x04003DB2 RID: 15810
             public GeoEventVariationConditionDef.ComparisonOperator PopulationComparison;
 
+            // Token: 0x04003DB3 RID: 15811
             public int PopulationThreshold;
 
+            // Token: 0x04003DB4 RID: 15812
             public GeoEventVariationConditionDef.ComparisonOperator LeaderRelationComparison;
 
+            // Token: 0x04003DB5 RID: 15813
             public int LeaderRelationThreshold;
 
+            // Token: 0x04003DB6 RID: 15814
             public string RequiredZoneKeyword;
-         
+
+            // Token: 0x04003DB7 RID: 15815
             public string ForbiddenZoneKeyword;
 
+            // Token: 0x04003DB8 RID: 15816
             public GeoFactionDef RequiredFaction;
+
+            // Token: 0x04003DB9 RID: 15817
+            public EarthUnits NearbyHavenRange;
+
+            // Token: 0x04003DBA RID: 15818
+            public List<GeoIncidentEligibilityCondition> NearbyHavenConditions = new List<GeoIncidentEligibilityCondition>();
         }
 
     }

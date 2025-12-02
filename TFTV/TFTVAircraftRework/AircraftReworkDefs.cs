@@ -801,45 +801,45 @@ namespace TFTV
                     charun4.EquippedItems[1] = spikes;
 
                     berith1.EquippedItems[0] = acidSpit;
-                    berith1.EquippedItems[1] = acidSpit;
+                    berith1.EquippedItems[1] = ram;
                     berith1.EquippedItems[2] = spikes;
-                    berith1.EquippedItems[3] = ram;
+                 //   berith1.EquippedItems[3] = ;
 
                     berith2.EquippedItems[0] = tick;
                     berith2.EquippedItems[1] = ram;
-                    berith2.EquippedItems[2] = ram;
-                    berith2.EquippedItems[3] = spikes;
+                    berith2.EquippedItems[2] = spikes;
+                    //  berith2.EquippedItems[3] = 
 
                     berith3.EquippedItems[0] = napalmBreath;
                     berith3.EquippedItems[1] = spikes;
-                    berith3.EquippedItems[2] = spikes;
-                    berith3.EquippedItems[3] = ram;
+                    berith3.EquippedItems[2] = ram;
+                 //   berith3.EquippedItems[3] = 
 
                     berith4.EquippedItems[0] = voidChamber;
                     berith4.EquippedItems[1] = napalmBreath;
                     berith4.EquippedItems[2] = ram;
-                    berith4.EquippedItems[3] = ram;
+                 //   berith4.EquippedItems[3] = ram;
 
                     abbadon1.EquippedItems[0] = acidSpit;
                     abbadon1.EquippedItems[1] = acidSpit;
                     abbadon1.EquippedItems[2] = acidSpit;
                     abbadon1.EquippedItems[3] = spikes;
-                    abbadon1.EquippedItems[4] = spikes;
-                    abbadon1.EquippedItems[5] = spikes;
+                //    abbadon1.EquippedItems[4] = spikes;
+                 //   abbadon1.EquippedItems[5] = spikes;
 
                     abbadon2.EquippedItems[0] = voidChamber;
                     abbadon2.EquippedItems[1] = napalmBreath;
                     abbadon2.EquippedItems[2] = ram;
                     abbadon2.EquippedItems[3] = ram;
-                    abbadon2.EquippedItems[4] = ram;
-                    abbadon2.EquippedItems[5] = ram;
+                //    abbadon2.EquippedItems[4] = ram;
+                //    abbadon2.EquippedItems[5] = ram;
 
                     abbadon3.EquippedItems[0] = voidChamber;
                     abbadon3.EquippedItems[1] = voidChamber;
                     abbadon3.EquippedItems[2] = ram;
                     abbadon3.EquippedItems[3] = ram;
-                    abbadon3.EquippedItems[4] = spikes;
-                    abbadon3.EquippedItems[5] = spikes;
+               //     abbadon3.EquippedItems[4] = spikes;
+               //     abbadon3.EquippedItems[5] = spikes;
 
 
 
