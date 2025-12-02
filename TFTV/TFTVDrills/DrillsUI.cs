@@ -17,12 +17,9 @@ namespace TFTV.TFTVDrills
         private const float GridPadding = 18f;
         private const float HeaderIconFrameSize = 100f;
         private const float HeaderIconSize = 92f;
-        private const float OptionIconFrameSize = 92f;
+        private const float OptionIconFrameSize = GridCellWidth; // 92f;
         private const float OptionIconSize = 80f;
-        private const float HeaderIconFrameHeight = 100f;
-        private const float HeaderIconFrameWidth = HeaderIconFrameHeight * 2f;
-        private const float HeaderIconHeight = 92f;
-        private const float HeaderIconWidth = HeaderIconHeight * 2f;
+
 
         private const float HeaderFrameBorderThickness = 4f;
         private const float HeaderSectionHeight = 120f;
@@ -30,6 +27,13 @@ namespace TFTV.TFTVDrills
         private const float ContentSpacing = 20f;
         private const float FacilityOverlayOpacity = 0.75f;
         private const float FacilityIconSize = 72f;
+
+        private const float HeaderIconFrameHeight = HeaderSectionHeight;// 100f;
+        private const float HeaderIconFrameWidth = HeaderIconFrameHeight * 2f;
+        private const float HeaderIconHeight = HeaderIconFrameHeight;// 92f;
+        private const float HeaderIconWidth = HeaderIconFrameHeight * 2f;// HeaderIconHeight * 2f;
+
+       
 
         private static readonly Color LockedIconTint = new Color(0.2f, 0.2f, 0.2f, 1f);
         private static readonly Color LockedLabelTint = new Color(0.82f, 0.82f, 0.82f, 1f);
