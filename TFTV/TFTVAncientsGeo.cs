@@ -12,6 +12,7 @@ using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
+using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
@@ -153,6 +154,37 @@ namespace TFTV
                 }
             }
         }
+
+        //necessary because Patch creates ancient mission on visiting ancient site
+        [HarmonyPatch(typeof(GeoPhoenixFaction), "OnVehicleVisitedSite")]
+        public static class GeoPhoenixFaction_OnVehicleVisitedSite_Patch
+        {
+            public static bool Prefix(GeoPhoenixFaction __instance, GeoVehicle vehicle)
+            {
+                try
+                {
+                 
+                    if (vehicle.CurrentSite.Type == GeoSiteType.PhoenixBase
+                        && vehicle.CurrentSite.State == GeoSiteState.Functioning
+                        && vehicle.CurrentSite.Owner == __instance
+                        && vehicle.ReloadAllEquipments())
+                    {
+
+                        var fi = AccessTools.Field(typeof(GeoPhoenixFaction), "OnVehicleReloaded");
+                        var handler = (Action<GeoVehicle>)fi.GetValue(__instance);
+                        handler?.Invoke(vehicle);
+                    }
+
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
         internal class AncientSites
         {
             //set resource cost of excavation (now exploration)

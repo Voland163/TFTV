@@ -817,9 +817,6 @@ namespace TFTV
             {
                 try
                 {
-
-
-
                     DefCache.GetDef<ExcavateAbilityDef>("ExcavateAbilityDef").Cost.Values = new List<ResourceUnit>() { new ResourceUnit(ResourceType.Materials, value: 20), new ResourceUnit(ResourceType.Tech, value: 5) };
                     AncientGuardianGuardAbilityDef AncientGuardianGuardAbilityDef = DefCache.GetDef<AncientGuardianGuardAbilityDef>("AncientGuardianGuardAbilityDef");
                     AncientGuardianGuardAbilityDef.Cost.Values.Add(new ResourceUnit { Type = ResourceType.Tech, Value = 25 });
@@ -832,7 +829,7 @@ namespace TFTV
                     archeologySettingsDef.MaxExcavationProbeCostReductionPerPercentage = 0;
                     archeologySettingsDef.MaxProbeCostReductionPerPercentage = 0;
                     archeologySettingsDef.ProbeCostReductionPerFacilityPercentage = 0;
-
+                    archeologySettingsDef.ExcavationTimeHours = 8;
                 }
                 catch (Exception e)
                 {

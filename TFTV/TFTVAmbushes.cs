@@ -2,6 +2,7 @@
 using Base.Core;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Missions;
@@ -10,6 +11,8 @@ using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.Levels.FactionObjectives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -514,15 +517,63 @@ namespace TFTV
             }
         }
 
+        [HarmonyPatch(typeof(GeoscapeEventSystem), "PhoenixFaction_OnSiteFirstTimeVisited")]
+        public static class PhoenixFaction_OnSiteFirstTimeVisited_ScaledAmbushChance_Postfix
+        {
+            public static void Postfix(GeoscapeEventSystem __instance, GeoFaction controller, GeoSite site, ref int ____ambushProtection)
+            {
+                try
+                {
+                    // Only apply our logic if vanilla did not spawn anything
+                    if (site == null
+                        || site.Type != GeoSiteType.Exploration
+                        || site.ActiveMission != null
+                        || site.EncounterID != null)
+                    {
+                        return;
+                    }
+                
+                    // Base chance from vanilla field
+                    int baseChance = __instance.ExplorationAmbushChance;
+
+                    // multiplier = min(1.0, (11 - protection) * 0.1)
+                    float multiplier = Mathf.Min(1f, (11 - Mathf.Max(0, ____ambushProtection)) * 0.1f);
+
+                    // Void Omen #1 doubles multiplier, cap at 1.0
+                    if (TFTVVoidOmens.VoidOmensCheck[1])
+                    {
+                        multiplier = Mathf.Min(1f, multiplier * 2f);
+                    }
+
+                    float effectiveChance = Mathf.Clamp(baseChance * multiplier, 0f, 100f);
+                    int roll = UnityEngine.Random.Range(0, 100);
+
+                    if (roll < effectiveChance)
+                    {
+                        site.CreateAmbushMission();
+                        // Reset protection to cooldown after an ambush (same as vanilla)
+                        ____ambushProtection = __instance.AmbushExploredSitesProtection;
+
+                        TFTVLogger.Always($"[TFTV] Ambush triggered (prot={____ambushProtection}, mult={multiplier:F2}, base={baseChance}, eff={effectiveChance:F2}, roll={roll})");
+                    }
+                    else
+                    {
+                        TFTVLogger.Always($"[TFTV] Ambush NOT triggered (prot={____ambushProtection}, mult={multiplier:F2}, base={baseChance}, eff={effectiveChance:F2}, roll={roll})");
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
 
         [HarmonyPatch(typeof(GeoscapeEventSystem), nameof(GeoscapeEventSystem.OnLevelStart))]
         public static class GeoscapeEventSystem_PhoenixFaction_OnLevelStart_Patch
         {
-            /*  public static bool Prepare()
-              {
-                  TFTVConfig config = TFTVMain.Main.Config;
-                  return config.MoreAmbushes;
-              }*/
+
 
             public static void Prefix(GeoscapeEventSystem __instance)
             {
@@ -533,8 +584,8 @@ namespace TFTV
 
                     if (TFTVNewGameOptions.MoreAmbushesSetting)
                     {
-                        __instance.AmbushExploredSitesProtection = 0;
-                        __instance.StartingAmbushProtection = 0;
+                       // __instance.AmbushExploredSitesProtection = 0;
+                       // __instance.StartingAmbushProtection = 0;
                         if (TFTVVoidOmens.VoidOmensCheck[1])
                         {
                             __instance.ExplorationAmbushChance = 100;
@@ -550,7 +601,6 @@ namespace TFTV
                         if (TFTVVoidOmens.VoidOmensCheck[1])
                         {
                             __instance.ExplorationAmbushChance = 100;
-
                         }
                     }
 
@@ -561,6 +611,51 @@ namespace TFTV
                 }
             }
         }
+
+
+        [HarmonyPatch(typeof(EvacuateFactionObjectiveDef), "GenerateObjective")]
+        public static class EvacuateSkillPointRewardPatch
+        {
+            private const int RewardMultiplier = 4;
+
+          
+            public static void Postfix(EvacuateFactionObjectiveDef __instance, TacticalLevelController level, ref FactionObjective __result)
+            {
+                try
+                {
+                    if (__instance == null || __result == null || level == null)
+                    {
+                        return;
+                    }
+
+                    if (__instance != DefCache.GetDef<EvacuateFactionObjectiveDef>("EvacuateAll_Ambush"))
+                    {
+                        return;
+                    }
+
+                    GameDifficultyLevelDef difficulty = level.Difficulty;
+                    if (difficulty == null)
+                    {
+                        return;
+                    }
+
+                    int reward = difficulty.SoldierSkillPointsPerMission * RewardMultiplier;
+                    __result.BaseSkillPointsReward = reward;
+
+                    MissionObjectiveData missionObjectiveData = __instance.MissionObjectiveData;
+                    if (missionObjectiveData != null)
+                    {
+                        missionObjectiveData.SkillPointsReward = reward;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
     }
 
 }

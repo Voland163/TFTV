@@ -8,11 +8,9 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
-using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
@@ -22,7 +20,6 @@ using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using PhoenixPoint.Tactical.View.ViewModules;
-using PhoenixPoint.Tactical.View.ViewStates;
 using System.Collections.Generic;
 using System.Linq;
 using TFTV;
@@ -204,7 +201,7 @@ namespace PRMBetterClasses.VariousAdjustments
         // Harmony patch for Poison DOT to additionally apply -50% accuracy (Trembling status) and -3 WP per turn
         public static void TremblingStatusDamageOverTimeStatusCheck(DamageOverTimeStatus damageOverTimeStatus)
         {
-            try 
+            try
             {
                 if (damageOverTimeStatus.DamageOverTimeStatusDef.name.Equals("Poison_DamageOverTimeStatusDef"))
                 {
@@ -236,39 +233,39 @@ namespace PRMBetterClasses.VariousAdjustments
             }
         }
 
-        
-       //commented out to consolidate Patch in TFTVHarmonyTactical
-      /*  [HarmonyPatch(typeof(DamageOverTimeStatus), nameof(DamageOverTimeStatus.ApplyEffect))]
-        internal static class BC_DamageOverTimeStatus_ApplyEffect_Patch
-        {
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
-            private static void Postfix(DamageOverTimeStatus __instance)
-            {
-                if (__instance.DamageOverTimeStatusDef.name.Equals("Poison_DamageOverTimeStatusDef"))
-                {
-                    //TacticalActor base_TacticalActor = (TacticalActor)AccessTools.Property(typeof(TacStatus), "TacticalActor").GetValue(__instance, null);
-                    //StatusComponent statusComponent = (StatusComponent)AccessTools.Property(typeof(TacStatus), "StatusComponent").GetValue(__instance, null);
-                    //StatMultiplierStatusDef trembling = Repo.GetAllDefs<StatMultiplierStatusDef>().FirstOrDefault(sms => sms.name.Equals("Trembling_StatusDef"));
 
-                    if (__instance.IntValue <= 0 && __instance.TacticalActor != null && __instance.TacticalActor.Status.HasStatus(trembling))
-                    {
-                        StatMultiplierStatus status = __instance.TacticalActor.Status.GetStatus<StatMultiplierStatus>(trembling);
-                        status.RequestUnapply(status.StatusComponent);
-                        return;
-                    }
+        //commented out to consolidate Patch in TFTVHarmonyTactical
+        /*  [HarmonyPatch(typeof(DamageOverTimeStatus), nameof(DamageOverTimeStatus.ApplyEffect))]
+          internal static class BC_DamageOverTimeStatus_ApplyEffect_Patch
+          {
+              [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
+              private static void Postfix(DamageOverTimeStatus __instance)
+              {
+                  if (__instance.DamageOverTimeStatusDef.name.Equals("Poison_DamageOverTimeStatusDef"))
+                  {
+                      //TacticalActor base_TacticalActor = (TacticalActor)AccessTools.Property(typeof(TacStatus), "TacticalActor").GetValue(__instance, null);
+                      //StatusComponent statusComponent = (StatusComponent)AccessTools.Property(typeof(TacStatus), "StatusComponent").GetValue(__instance, null);
+                      //StatMultiplierStatusDef trembling = Repo.GetAllDefs<StatMultiplierStatusDef>().FirstOrDefault(sms => sms.name.Equals("Trembling_StatusDef"));
 
-                    if (__instance.IntValue > 0 && __instance.TacticalActor != null && __instance.TacticalActor.CharacterStats != null)
-                    {
-                        if (!__instance.TacticalActor.Status.HasStatus(trembling))
-                        {
-                            _ = __instance.TacticalActor.Status.ApplyStatus(trembling);
-                        }
-                        float newWP = Mathf.Max(__instance.TacticalActor.CharacterStats.WillPoints.Min, __instance.TacticalActor.CharacterStats.WillPoints - 3.0f);
-                        __instance.TacticalActor.CharacterStats.WillPoints.Set(newWP);
-                    }
-                }
-            }
-        }*/
+                      if (__instance.IntValue <= 0 && __instance.TacticalActor != null && __instance.TacticalActor.Status.HasStatus(trembling))
+                      {
+                          StatMultiplierStatus status = __instance.TacticalActor.Status.GetStatus<StatMultiplierStatus>(trembling);
+                          status.RequestUnapply(status.StatusComponent);
+                          return;
+                      }
+
+                      if (__instance.IntValue > 0 && __instance.TacticalActor != null && __instance.TacticalActor.CharacterStats != null)
+                      {
+                          if (!__instance.TacticalActor.Status.HasStatus(trembling))
+                          {
+                              _ = __instance.TacticalActor.Status.ApplyStatus(trembling);
+                          }
+                          float newWP = Mathf.Max(__instance.TacticalActor.CharacterStats.WillPoints.Min, __instance.TacticalActor.CharacterStats.WillPoints - 3.0f);
+                          __instance.TacticalActor.CharacterStats.WillPoints.Set(newWP);
+                      }
+                  }
+              }
+          }*/
 
         // Harmony patch to unapply trembling when poison status is unapplied
         [HarmonyPatch(typeof(TacEffectStatus), nameof(TacEffectStatus.OnUnapply))]
@@ -443,11 +440,11 @@ namespace PRMBetterClasses.VariousAdjustments
                 // All hand thrown grenades (only these weapon defs ends with "Grenade_WeaponDef" <- checked by tag)
                 if (weaponDef.Tags.Contains(grenadeTag)) // weaponDef.name.EndsWith("Grenade_WeaponDef") && 
                 {
-                    
+
                     // Manufature intantly
                     weaponDef.ManufacturePointsCost = 0;
 
-                  
+
                 }
                 // Mutoids gain Pistol and Assault Rifle proficiency -> adding Mutoid_ClassTagDef ("cd38a996-0565-1694-bb91-b4479a65950e") to their weapon tags
                 if ((weaponDef.Tags.Contains(pistolTag) || weaponDef.Tags.Contains(assaultRifleTag)) && !weaponDef.Tags.Contains(mutoidClassTag))
@@ -485,7 +482,7 @@ namespace PRMBetterClasses.VariousAdjustments
 
                     // Danchev MG
                     case "434c4004-580f-10a4-995a-c5a64e6998dc": // PX_PoisonMachineGun_WeaponDef
-                        weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShreddingKeyword, Value = 3 });
+                                                                 //added in Patch  weaponDef.DamagePayload.DamageKeywords.Add(new DamageKeywordPair { DamageKeywordDef = damageKeywords.ShreddingKeyword, Value = 3 });
                         weaponDef.SpreadDegrees = 40.99f / 17;
                         break;
                     // Danchev AR
@@ -635,7 +632,7 @@ namespace PRMBetterClasses.VariousAdjustments
 
             ShootAbilityDef Weapon_Shoot = (ShootAbilityDef)Repo.GetDef("d3e8b389-069f-04c4-8aca-fb204c74fd37"); //"Weapon_ShootAbilityDef"
             string abilityName = "EchoHead_ShootAbilityDef";
-            
+
             ShootAbilityDef EchoHeadShoot = Helper.CreateDefFromClone(Weapon_Shoot, "e216c327-5e98-43ce-8fcd-e41cae4f0c57", abilityName);
             EchoHeadShoot.UsesPerTurn = 1;
             EchoHeadShoot.InputAction = "";

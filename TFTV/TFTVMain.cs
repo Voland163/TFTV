@@ -118,7 +118,7 @@ namespace TFTV
                 // DefCache.Initialize();
                 TFTVLogger.Always(version);
 
-                TFTVDefsInjectedOnlyOnce.Print();
+              //  TFTVDefsInjectedOnlyOnce.Print();
                 TFTVRevertSGPatchBalance.RevertSGPatchBalanceChanges();
 
 
@@ -162,7 +162,7 @@ namespace TFTV
              //   Harmony.DEBUG = true;
                 harmony.PatchAll();
                // TFTVAudio.ExternalAudioInjector.EnsureHooksOnExistingManagers();
-                TFTVVanillaFixes.UI.FixSurveillanceAbilityGroundMarker(harmony);
+                TFTVVanillaFixes.UI.PatchInternalClassUIStateCharacterSelecter(harmony);
 
 
                 if (GameUtl.CurrentLevel() != null && GameUtl.CurrentLevel().GetComponent<HomeScreenView>() != null)
@@ -374,7 +374,7 @@ namespace TFTV
                 Harmony harmony = (Harmony)HarmonyInstance;
                 harmony.UnpatchAll(harmony.Id);
                 harmony.PatchAll();
-                TFTVVanillaFixes.UI.FixSurveillanceAbilityGroundMarker(harmony);
+                TFTVVanillaFixes.UI.PatchInternalClassUIStateCharacterSelecter(harmony);
             }
         }
 

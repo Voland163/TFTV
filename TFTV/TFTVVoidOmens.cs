@@ -308,7 +308,8 @@ namespace TFTV
 
                     foreach (CustomMissionTypeDef ambushMission in _ambushMissions)
                     {
-
+                        ambushMission.ParticipantsData[0].ReinforcementsDeploymentPart.Max = 0.2f;
+                        ambushMission.ParticipantsData[0].ReinforcementsDeploymentPart.Min = 0.2f;
                         ambushMission.ParticipantsData[0].ReinforcementsTurns.Max = 1;
                         ambushMission.ParticipantsData[0].ReinforcementsTurns.Min = 1;
                         ambushMission.CratesDeploymentPointsRange.Min = 50;
@@ -322,8 +323,10 @@ namespace TFTV
 
                     foreach (CustomMissionTypeDef ambushMission in _ambushMissions)
                     {
-                        ambushMission.ParticipantsData[0].ReinforcementsTurns.Max = 2;
-                        ambushMission.ParticipantsData[0].ReinforcementsTurns.Min = 2;
+                        ambushMission.ParticipantsData[0].ReinforcementsDeploymentPart.Max = 0.3f;
+                        ambushMission.ParticipantsData[0].ReinforcementsDeploymentPart.Min = 0.3f;
+                        ambushMission.ParticipantsData[0].ReinforcementsTurns.Max = 3;
+                        ambushMission.ParticipantsData[0].ReinforcementsTurns.Min = 3;
                         ambushMission.CratesDeploymentPointsRange.Min = 30;
                         ambushMission.CratesDeploymentPointsRange.Max = 50;
                     }

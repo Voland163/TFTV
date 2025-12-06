@@ -379,9 +379,9 @@ namespace TFTV
 
             private static MethodInfo _drawAllEnemyVisionMarkersMethodInfo = null;
 
-
+            
             //Fixes size of ground marker for eggs/sentinels etc.
-            public static void FixSurveillanceAbilityGroundMarker(Harmony harmony)
+            public static void PatchInternalClassUIStateCharacterSelecter(Harmony harmony)
             {
                 try
                 {
@@ -968,7 +968,7 @@ namespace TFTV
                     }
                     if (uIModuleShortActorInfoTooltip == null)
                     {
-                        TFTVLogger.Always($"[GenerateData] tooltip module == null for actor={actor.DisplayName}");
+                      //  TFTVLogger.Always($"[GenerateData] tooltip module == null for actor={actor.DisplayName}");
                     }
 
 
@@ -1039,7 +1039,7 @@ namespace TFTV
                     TacticalActor selectedActor = actor.TacticalLevel.View.SelectedActor;
 
                     var view = actor.TacticalLevel?.View;
-                    TFTVLogger.Always($"[GenerateData] actor={actor.DisplayName}, view={(view != null)}, selectedActor={(selectedActor != null)}, actorView={(actor.TacticalActorView != null)}");
+                   // TFTVLogger.Always($"[GenerateData] actor={actor.DisplayName}, view={(view != null)}, selectedActor={(selectedActor != null)}, actorView={(actor.TacticalActorView != null)}");
 
                     if (selectedActor != null && selectedActor.Status != null)
                     {
@@ -1103,7 +1103,7 @@ namespace TFTV
 
                         if (statusInfo == null)
                         {
-                            TFTVLogger.Always($"[GenerateData] statusInfo == null (actor={actor.DisplayName})");
+                           TFTVLogger.Always($"[GenerateData] statusInfo == null (actor={actor.DisplayName})");
                             continue;
                         }
                         if (statusInfo.Def == null)
@@ -1219,7 +1219,7 @@ namespace TFTV
                     {
                         var ctrl = GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>();
                         var actor = __instance?.SelectionInfo.Actor as TacticalActor;
-                        TFTVLogger.Always($"[OnAbilityHover] hovered={isHovered}, infoButton={menuItem?.InfoButton ?? false}, ctrl={(ctrl != null)}, actor={(actor != null)}, actorView={(actor?.TacticalActorView != null)}");
+                       // TFTVLogger.Always($"[OnAbilityHover] hovered={isHovered}, infoButton={menuItem?.InfoButton ?? false}, ctrl={(ctrl != null)}, actor={(actor != null)}, actorView={(actor?.TacticalActorView != null)}");
 
                         if (!isHovered || menuItem == null || !menuItem.InfoButton || ctrl == null || actor == null)
                         {
@@ -1229,13 +1229,13 @@ namespace TFTV
                         var view = ctrl.View;
                         if (view == null || view.TacticalModules == null || view.SelectedActor == null)
                         {
-                            TFTVLogger.Always($"[OnAbilityHover] view/modules/selectedActor not ready (view={(view != null)}, modules={(view?.TacticalModules != null)}, selectedActor={(view?.SelectedActor != null)})");
+                         //   TFTVLogger.Always($"[OnAbilityHover] view/modules/selectedActor not ready (view={(view != null)}, modules={(view?.TacticalModules != null)}, selectedActor={(view?.SelectedActor != null)})");
                             return;
                         }
 
                         if (!actor.IsControlledByPlayer || view.ViewerFaction != actor.TacticalFaction)
                         {
-                            TFTVLogger.Always($"[OnAbilityHover] actor not player-controlled or viewer mismatch (player={actor.IsControlledByPlayer}, viewerMatch={view.ViewerFaction == actor.TacticalFaction})");
+                           // TFTVLogger.Always($"[OnAbilityHover] actor not player-controlled or viewer mismatch (player={actor.IsControlledByPlayer}, viewerMatch={view.ViewerFaction == actor.TacticalFaction})");
                             return;
                         }
 

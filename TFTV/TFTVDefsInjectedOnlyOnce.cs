@@ -263,7 +263,7 @@ namespace TFTV
                 //  TestUseWorkerComponent();
                 // Test0();
 
-                Print();
+              //  Print();
 
             }
             catch (Exception e)
@@ -1301,7 +1301,7 @@ namespace TFTV
                 FixChironStompIgnoringFriendlies();
                 FixMindWard();
                 //  Removed because now in base game FixAcheronAiming();
-                FixInstilFrenzySound();
+                //  Removed because now in base game FixInstilFrenzySound();
                 FixMutoidDazeImmunity();
                 FixMutagenCostBadAcidWorm();
                 FixNotCapturableFaceHuggers();
@@ -7369,6 +7369,9 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
                 SurviveTurnsFactionObjectiveDef surviveAmbush_CustomMissionObjective = DefCache.GetDef<SurviveTurnsFactionObjectiveDef>("SurviveAmbush_CustomMissionObjective");
                 surviveAmbush_CustomMissionObjective.MissionObjectiveData.ExperienceReward = 100;
 
+               // DefCache.GetDef<EvacuateFactionObjectiveDef>("EvacuateAll_Ambush")
+
+                
             }
             catch (Exception e)
             {

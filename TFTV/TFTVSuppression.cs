@@ -208,7 +208,7 @@ namespace TFTV
                     return;
                 }
 
-                TFTVLogger.Always($"clearing suppression for {actor?.DisplayName}");
+              //  TFTVLogger.Always($"clearing suppression for {actor?.DisplayName}");
 
                 state.Tracker.Clear();
                 state.CurrentLevel = SuppressionLevel.None;

@@ -539,7 +539,7 @@ namespace TFTV.TFTVDrills
 
                     TacticalActor selectedActor = tacticalActor?.TacticalLevel?.View?.SelectedActor;
 
-                    TFTVLogger.Always($"attacker?.DisplayName: {attacker?.DisplayName} selectedActor?.DisplayName: {selectedActor?.DisplayName}");
+                 //   TFTVLogger.Always($"attacker?.DisplayName: {attacker?.DisplayName} selectedActor?.DisplayName: {selectedActor?.DisplayName}");
 
                     if (attacker == null || selectedActor == null || attacker != selectedActor)
                     {

@@ -1,7 +1,5 @@
 ﻿using Base.Defs;
 using HarmonyLib;
-using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Equipments;
@@ -9,7 +7,6 @@ using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TFTV;
 
 namespace TFTV.LaserWeapons
 {
@@ -32,9 +29,9 @@ namespace TFTV.LaserWeapons
 
         private static void AdjustAllDefs()
         {
-            foreach(TacCharacterDef tacCharacterDef in Repo.GetAllDefs<TacCharacterDef>())
+            foreach (TacCharacterDef tacCharacterDef in Repo.GetAllDefs<TacCharacterDef>())
             {
-                if(tacCharacterDef.Data.EquipmentItems.Any(i=>i!=null && OriginalLaserAmmo.Contains(i)))
+                if (tacCharacterDef.Data.EquipmentItems.Any(i => i != null && OriginalLaserAmmo.Contains(i)))
                 {
                     //TFTVLogger.Always($"[LaserWeaponsInit] {tacCharacterDef.name} has laser ammo in default equipment");
                     tacCharacterDef.Data.EquipmentItems = tacCharacterDef.Data.EquipmentItems.Select(i =>
@@ -45,7 +42,7 @@ namespace TFTV.LaserWeapons
                         }
                         return i;
                     }).ToArray();
-                 
+
                 }
 
                 if (tacCharacterDef.Data.InventoryItems.Any(i => i != null && OriginalLaserAmmo.Contains(i)))
@@ -82,13 +79,15 @@ namespace TFTV.LaserWeapons
 
         private static void AdjustWeaponMaxAmmo()
         {
-            try 
+            try
             {
                 DefCache.GetDef<WeaponDef>("SY_LaserPistol_WeaponDef").ChargesMax = 10;
                 DefCache.GetDef<WeaponDef>("SY_LaserAssaultRifle_WeaponDef").ChargesMax = 36;
                 DefCache.GetDef<WeaponDef>("PX_LaserPDW_WeaponDef").ChargesMax = 24;
                 DefCache.GetDef<WeaponDef>("SY_LaserSniperRifle_WeaponDef").ChargesMax = 8;
                 DefCache.GetDef<WeaponDef>("PX_LaserArrayPack_WeaponDef").ChargesMax = 9;
+                DefCache.GetDef<WeaponDef>("SY_LaserAssaultRifle_Neon_WeaponDef").ChargesMax = 36;
+                DefCache.GetDef<WeaponDef>("SY_LaserAssaultRifle_WhiteNeon_WeaponDef").ChargesMax = 36;
             }
             catch (Exception ex)
             {
@@ -106,6 +105,8 @@ namespace TFTV.LaserWeapons
                 {
                     { "SY_LaserPistol_WeaponDef", 1 },
                     { "SY_LaserAssaultRifle_WeaponDef", 2 },
+                    {"SY_LaserAssaultRifle_Neon_WeaponDef", 2 },
+                    {"SY_LaserAssaultRifle_WhiteNeon_WeaponDef", 2 },
                     { "PX_LaserPDW_WeaponDef", 2 },
                     { "SY_LaserSniperRifle_WeaponDef", 3 },
                     { "PX_LaserArrayPack_WeaponDef", 3 }
@@ -209,7 +210,7 @@ namespace TFTV.LaserWeapons
             battery.ManufactureTech = 10f;
             battery.ViewElementDef.DisplayName1.LocalizationKey = "TFTV_LASER_BATTERY_NAME";
             battery.ViewElementDef.Description.LocalizationKey = "TFTV_LASER_BATTERY_DESC";
-         
+
 
             return battery;
         }

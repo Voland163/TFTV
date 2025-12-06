@@ -3,7 +3,6 @@ using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.UI;
-using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
@@ -23,7 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using TFTV;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.UI;
 using static TFTV.AircraftReworkHelpers;
@@ -338,7 +337,7 @@ namespace TFTV
 
                     int adjustedOccupiedSpace = GetAdjustedPassengerManifestAircraftRework(vehicle);
 
-                 //   TFTVLogger.Always($"{vehicle.Name} {__instance.SoldierCapacity.text}");
+                    //   TFTVLogger.Always($"{vehicle.Name} {__instance.SoldierCapacity.text}");
 
                     __instance.SoldierCapacity.text = $"{adjustedOccupiedSpace}/{vehicle.MaxCharacterSpace}";
 
@@ -351,13 +350,6 @@ namespace TFTV
                 }
             }
         }
-
-
-       
-
-
-       
-
 
 
         [HarmonyPatch(typeof(ShortEquipmentInfoButton), "SetEquipment")]
@@ -431,7 +423,7 @@ namespace TFTV
             }
         }
 
-       
+
 
         [HarmonyPatch(typeof(UIAircraftEquipmentTooltip), "DisplayAllStats")]
         public static class Patch_UIAircraftEquipmentTooltip_DisplayAllStats
@@ -451,7 +443,7 @@ namespace TFTV
                     // Icon
                     var Icon = __instance.Icon;
 
-                    TFTVLogger.Always($"icon null? {Icon== null}");
+                    TFTVLogger.Always($"icon null? {Icon == null}");
 
                     // UISettings
 
@@ -462,8 +454,8 @@ namespace TFTV
 
                     // ItemNameLocComp, ItemDescriptionLocComp
                     var ItemNameLocComp = __instance.ItemNameLocComp;
-                    var ItemDescriptionLocComp = __instance.ItemDescriptionLocComp; 
-                   
+                    var ItemDescriptionLocComp = __instance.ItemDescriptionLocComp;
+
                     _ = Icon != null;
 
                     TFTVLogger.Always($"icon still null? {Icon == null}");
@@ -483,7 +475,7 @@ namespace TFTV
                     }
 
                     // GeoVehicleWeaponDef geoVehicleWeaponDef = DisplayedData.AircraftEquipmentDef as GeoVehicleWeaponDef;
-                    var AircraftEquipmentDef = DisplayedData.AircraftEquipmentDef; 
+                    var AircraftEquipmentDef = DisplayedData.AircraftEquipmentDef;
 
                     TFTVLogger.Always($"AircraftEquipmentDef null? {AircraftEquipmentDef == null}");
 
@@ -505,7 +497,7 @@ namespace TFTV
                             MethodInfo methodInfo = type.GetMethod("AddStatObject", BindingFlags.NonPublic | BindingFlags.Instance);
                             methodInfo.Invoke(__instance, new object[] { localizedTextBindTest2, null, tier.ToString() });
                         }
-                        
+
                     }
 
 
@@ -840,7 +832,102 @@ namespace TFTV
         }
 
 
+        [HarmonyPatch(typeof(UIModuleVehicleSelection), "RefreshVehicleBars")]
+        public static class UIModuleVehicleSelection_RefreshVehicleBars_Patch
+        {
+            public static void Postfix(UIModuleVehicleSelection __instance)
+            {
+                try
+                {
+                    if (!AircraftReworkOn)
+                    {
+                        return;
+                    }
 
+                    Slider slider = __instance.VehicleHPBar;
+
+                    // Try to get the fill image
+                    var fill = slider.fillRect?.GetComponent<Image>();
+                    if (fill == null) return;
+
+                    // TFTVLogger.Always($"got here");
+
+                    // Choose color based on value
+                    Color color;
+                    if (slider.value > 0.5f)
+                        color = Color.green;
+                    else if (slider.value > 0.25f)
+                        color = Color.yellow;
+                    else
+                        color = Color.red;
+
+                    fill.color = color;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(UIModuleActionsBar), "Awake")]
+        public static class UIModuleActionsBar_Awake_Patch
+        {
+            public static void Postfix(UIModuleActionsBar __instance, ref List<ShortEquipmentInfoButton> ____shortEquipmentInfoButtons)
+            {
+                try
+                {
+                    if (!AircraftReworkOn)
+                    {
+                        return;
+                    }
+
+                    ____shortEquipmentInfoButtons.Last().gameObject.SetActive(false);
+
+
+                    /*  foreach (Transform item in __instance.EquipmentsRoot.transform)
+                      {
+                          UnityEngine.Object.Destroy(item.gameObject);
+                          break;
+                      }*/
+
+
+                    // ____shortEquipmentInfoButtons.RemoveAt(____shortEquipmentInfoButtons.Count - 1);
+
+                    /*  for (int i = 0; i < ____shortEquipmentInfoButtons.Count; i++)
+                      {
+                          ShortEquipmentInfoButton button = ____shortEquipmentInfoButtons[i];
+                          if (button != null)
+                          {
+                              FieldInfo fieldInfo = typeof(ShortEquipmentInfoButton).GetField("_equipment", BindingFlags.NonPublic | BindingFlags.Instance);
+
+
+                              if(fieldInfo != null)
+                              {
+                                  GeoVehicleEquipment equipment = fieldInfo.GetValue(button) as GeoVehicleEquipment;
+
+                                  TFTVLogger.Always($"{i} equipment null? {equipment==null}");
+                                  if(equipment!= null)
+                                  {
+                                      TFTVLogger.Always($"{i} equipment def? {equipment.EquipmentDef?.name}");
+                                  }
+                              }
+
+                             // UnityEngine.Object.Destroy(button.gameObject);
+                          }
+                      }*/
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
 
         [HarmonyPatch(typeof(UIModuleActionsBar), "SetEquipment")]
@@ -882,12 +969,10 @@ namespace TFTV
             }
         }
 
-
-
-        [HarmonyPatch(typeof(UIModuleVehicleSelection), "RefreshVehicleBars")]
-        public static class UIModuleVehicleSelection_RefreshVehicleBars_Patch
+        [HarmonyPatch(typeof(UIModuleVehicleSelection), "Init")]
+        public static class UIModuleVehicleSelection_Init_Patch
         {
-            public static void Postfix(UIModuleVehicleSelection __instance)
+            public static void Prefix(UIModuleVehicleSelection __instance, GeoscapeViewContext context)
             {
                 try
                 {
@@ -896,24 +981,34 @@ namespace TFTV
                         return;
                     }
 
-                    Slider slider = __instance.VehicleHPBar;
+                    context.View.SelectOnlyOwnedAircraft = true;
+                   
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
-                    // Try to get the fill image
-                    var fill = slider.fillRect?.GetComponent<Image>();
-                    if (fill == null) return;
+        [HarmonyPatch(typeof(UIModuleVehicleSelection), "SetActiveAircraftListTab")]
+        public static class UIModuleVehicleSelection_SetActiveAircraftListTab_Patch
+        {
+            public static bool Prefix(UIModuleVehicleSelection __instance)
+            {
+                try
+                {
+                    if (!AircraftReworkOn)
+                    {
+                        return true;
+                    }
 
-                    // TFTVLogger.Always($"got here");
+                    __instance.AircraftPanelBackground.gameObject.SetActive(false);
 
-                    // Choose color based on value
-                    Color color;
-                    if (slider.value > 0.5f)
-                        color = Color.green;
-                    else if (slider.value > 0.25f)
-                        color = Color.yellow;
-                    else
-                        color = Color.red;
+                    return false;
 
-                    fill.color = color;
+
                 }
                 catch (Exception e)
                 {
@@ -925,37 +1020,99 @@ namespace TFTV
 
 
 
+        private static List<GeoVehicleEquipmentUIData> _modules = new List<GeoVehicleEquipmentUIData>();
 
-      /*  [HarmonyPatch(typeof(AircraftInfoController))]
-        public static class AircraftInfoControllerPatch
+        [HarmonyPatch(typeof(AircraftInfoController), "SetInfo")]
+        public static class AircraftInfoController_SetInfo_Patch
         {
-            [HarmonyPatch(nameof(AircraftInfoController.SetInfo))]
-            [HarmonyPrefix]
-            public static bool SetInfoPrefix(AircraftInfoController __instance, AircraftInfoData aircraftInfoData, List<GeoCharacter> crew, string description, bool armorFieldEnabled, List<GeoVehicleEquipmentUIData> weapons, List<GeoVehicleEquipmentUIData> modules)
+            public static void Prefix(AircraftInfoController __instance, List<GeoVehicleEquipmentUIData> modules)
             {
                 try
                 {
                     if (!AircraftReworkOn)
                     {
-                        return true;
+                        return;
                     }
 
-                    //  TFTVLogger.Always($"AircraftInfoController Set Info running for aircraft {aircraftInfoData.DisplayName}");
+                    _modules = modules;
+                    
 
-                    // Set the aircraft info as usual
-                    if (__instance.AircraftArt != null)
+                }
+
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+            public static void Postfix(AircraftInfoController __instance, ref GeoVehicleRosterEquipmentSlot[] ____equipmentSlots)
+            {
+
+                try
+                {
+                    if (!AircraftReworkOn || _modules == null)
                     {
-                        __instance.AircraftArt.sprite = aircraftInfoData.DisplayImage;
+                        return;
                     }
 
-                    if (__instance.AircraftName != null)
+
+                    __instance.WeaponSlot02.gameObject.SetActive(false);
+
+                    // Add three module slots
+                    if (_modules != null)
                     {
-                        __instance.AircraftName.text = aircraftInfoData.DisplayName;
+                        // TFTVLogger.Always($"Modules count: {modules.Count}");
+
+                        if (_modules.Count >= 1)
+                        {
+                            __instance.WeaponSlot01.SetItem(_modules[0]);
+                        }
+                        else
+                        {
+                            __instance.WeaponSlot01.ResetItem();
+                        }
+
+                        if (_modules.Count >= 2)
+                        {
+                            __instance.ModuleSlot.SetItem(_modules[1]);
+                        }
+                        else
+                        {
+                            __instance.ModuleSlot.ResetItem();
+                        }
+
+                        if (_modules.Count >= 3)
+                        {
+                            // Assuming you have added a second and third module slot in the AircraftInfoController class
+                            __instance.ModuleSlot2.SetItem(_modules[2]);
+                        }
+                        else
+                        {
+                            __instance.ModuleSlot2.ResetItem();
+                        }
                     }
 
-                    if (__instance.AircraftDescription != null)
+                    _modules.Clear();   
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+       [HarmonyPatch(typeof(AircraftStatsController), "SetInfo")]
+        public static class AircraftStatsController_SetInfo_Patch
+        {
+            public static void Postfix(AircraftStatsController __instance, AircraftInfoData aircraftInfoData)
+            {
+                try
+                {
+                    if (!AircraftReworkOn)
                     {
-                        __instance.AircraftDescription.text = description;
+                        return;
                     }
 
 
@@ -967,17 +1124,12 @@ namespace TFTV
 
                     __instance.AircraftHitPoints.text = $"{maintenancePercentage}%";
 
-                  
-
-
-
                     Transform parent = __instance.AircraftArmor.transform.parent;
 
                     //  TFTVLogger.Always($"parent is {parent.name}");
 
                     foreach (Component component in parent.GetComponentsInChildren<Component>())
                     {
-
                         if (component is Image image)
                         {
                             // TFTVLogger.Always($"image: {component.name} {component.GetType()}");
@@ -999,17 +1151,18 @@ namespace TFTV
 
                     List<GeoVehicleModuleDef> aircraftEquipmentDefs = new List<GeoVehicleModuleDef>();
 
-                    if (modules != null)
+                    if (_modules != null)
                     {
-                        foreach (GeoVehicleEquipmentUIData module in modules)
+                        foreach (GeoVehicleEquipmentUIData module in _modules)
                         {
-                            if (module != null && module.AircraftEquipmentDef is GeoVehicleModuleDef moduleDef)
+                            if (module != null && module.AircraftEquipmentDef != null && module.AircraftEquipmentDef is GeoVehicleModuleDef moduleDef)
                             {
                                 aircraftEquipmentDefs.Add(moduleDef);
                             }
                         }
                     }
 
+                    // TFTVLogger.Always($"modules count: {aircraftEquipmentDefs?.Count}");
 
                     float maintenanceFactor = AircraftReworkMaintenance.GetMaintenanceFactor(aircraftEquipmentDefs);
                     float currentHitPoints = aircraftInfoData.CurrentHitPoints;
@@ -1031,56 +1184,6 @@ namespace TFTV
                         __instance.AircraftArmor.gameObject.SetActive(true);
                     }
 
-                    __instance.AircraftCapacity.text = aircraftInfoData.MaxCrew.ToString();
-                    __instance.AircraftSpeed.text = aircraftInfoData.Speed.ToString();
-                    __instance.AircraftRange.text = aircraftInfoData.Range.ToString();
-                    __instance.AircraftCrewController.SetCrew(crew, aircraftInfoData.MaxCrew);
-
-                    // TFTVLogger.Always($"__instance.showEquipments: {__instance.showEquipments}");
-
-                    if (!__instance.showEquipments)
-                    {
-                        return false;
-                    }
-
-                    // Add three module slots
-                    if (modules != null)
-                    {
-                        // TFTVLogger.Always($"Modules count: {modules.Count}");
-
-                       
-
-
-                        if (modules.Count >= 1)
-                        {
-                            __instance.WeaponSlot01.SetItem(modules[0]);
-                        }
-                        else
-                        {
-                            __instance.WeaponSlot01.ResetItem();
-                        }
-
-                        if (modules.Count >= 2)
-                        {
-                            __instance.WeaponSlot02.SetItem(modules[1]);
-                        }
-                        else
-                        {
-                            __instance.WeaponSlot02.ResetItem();
-                        }
-
-                        if (modules.Count >= 3)
-                        {
-                            // Assuming you have added a second and third module slot in the AircraftInfoController class
-                            __instance.ModuleSlot.SetItem(modules[2]);
-                        }
-                        else
-                        {
-                            __instance.ModuleSlot.ResetItem();
-                        }
-                    }
-
-                    return false; // Skip the original method
                 }
                 catch (Exception e)
                 {
@@ -1088,7 +1191,7 @@ namespace TFTV
                     throw;
                 }
             }
-        }*/
+        }
 
 
 
@@ -1216,6 +1319,7 @@ namespace TFTV
                     // Identify the module list. Adjust the condition as needed.
                     if (__instance.gameObject.name.Contains("Module"))
                     {
+
                         // Set the fixed slot count to 3.
                         __instance.FixedCount = 3;
 
@@ -1248,6 +1352,7 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleVehicleEquip), "UpdateData")]
         public static class UIModuleVehicleEquip_UpdateData_Patch
         {
+
             static void Postfix(UIModuleVehicleEquip __instance, IEnumerable<GeoVehicleEquipmentUIData> modules, bool ____inPhoenixBase)
             {
                 try
