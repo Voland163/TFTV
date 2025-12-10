@@ -589,8 +589,11 @@ namespace TFTV
                                             {
                                                 TFTVLogger.Always("This Arthron here " + actor + ", got past the TBTV check!");
                                                 actor.Status.ApplyStatus(hiddenTBTVAddAbilityStatus);
-                                                actor.GameTags.Add(voidTouchedTag);
-                                                actor.AddAbility(oilcrabDeathBelcherAbility, actor);
+                                                if (!actor.GameTags.Contains(voidTouchedTag))
+                                                {
+                                                    actor.GameTags.Add(voidTouchedTag);
+                                                }
+                                                    actor.AddAbility(oilcrabDeathBelcherAbility, actor);
                                             }
                                         }
 

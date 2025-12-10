@@ -143,10 +143,24 @@ namespace TFTV
 
                 GameTagDef manufactureTag = Shared.SharedGameTags.ManufacturableTag;
 
+                if (!foodPack.Tags.Contains(manufactureTag))            
+                { 
                 foodPack.Tags.Add(manufactureTag);
-                techPack.Tags.Add(manufactureTag);
-                matPack.Tags.Add(manufactureTag);
-                mutagenPack.Tags.Add(manufactureTag);
+                }
+
+                if (!techPack.Tags.Contains(manufactureTag))              
+                { 
+                 techPack.Tags.Add(manufactureTag);
+                }
+                if (!matPack.Tags.Contains(manufactureTag))
+                {
+                    matPack.Tags.Add(manufactureTag);
+                }
+                if (!mutagenPack.Tags.Contains(manufactureTag))
+                {
+                    mutagenPack.Tags.Add(manufactureTag);
+                }
+                
 
             }
             catch (Exception e)

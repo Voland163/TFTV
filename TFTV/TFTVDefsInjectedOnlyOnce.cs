@@ -113,7 +113,12 @@ namespace TFTV
         {
             try
             {
-                foreach (PhoenixFacilityDef phoenixFacilityDef in Repo.GetAllDefs<PhoenixFacilityDef>())
+
+                WeaponDef weaponDef = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(w => w.CompatibleAmmunition.Count()>0 && w.CompatibleAmmunition[0] ==DefCache.GetDef<TacticalItemDef>("PX_PDW_AmmoClip_ItemDef"));
+                TFTVLogger.Always($"weaponDef?.name: {weaponDef?.name}");
+
+
+                /*foreach (PhoenixFacilityDef phoenixFacilityDef in Repo.GetAllDefs<PhoenixFacilityDef>())
                 {
                     TFTVLogger.Always($"[FacilityCost] {phoenixFacilityDef.name} cost in construction days: {phoenixFacilityDef.ConstructionTimeDays}", false);
 
@@ -133,7 +138,7 @@ namespace TFTV
                 {
                     TFTVLogger.Always($"[ResearchCost]{researchDef.name} cost in research points: {researchDef.ResearchCost}", false);
                   
-                }
+                }*/
             }
             catch (Exception e)
             {
@@ -258,12 +263,12 @@ namespace TFTV
                 //  ChangeScyllaSounds();
                 CreateSuppressionStatusDefs();
                 AddMissingViewElementDefs();
-                LaserWeaponsInit.Init();
+               // LaserWeaponsInit.Init();
                 EnsureTFTVFunctionalityAfterNewPatch();
                 //  TestUseWorkerComponent();
                 // Test0();
 
-              //  Print();
+               // Print();
 
             }
             catch (Exception e)

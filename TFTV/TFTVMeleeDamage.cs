@@ -531,8 +531,11 @@ namespace TFTV
 
                 //"Mutog_HeadRamming_BodyPartDef"
                 WeaponDef RammingHead = (WeaponDef)Repo.GetDef("c29d4fc0-cb86-0e54-383c-513f8926e6c1");
-                RammingHead.Tags.Add(DefCache.GetDef<GameTagDef>("MeleeWeapon_TagDef"));
 
+                if (!RammingHead.Tags.Contains(DefCache.GetDef<GameTagDef>("MeleeWeapon_TagDef")))
+                {
+                    RammingHead.Tags.Add(DefCache.GetDef<GameTagDef>("MeleeWeapon_TagDef"));
+                }
 
                 foreach (WeaponDef weaponDef in Repo.GetAllDefs<WeaponDef>())
                 {

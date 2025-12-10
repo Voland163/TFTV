@@ -563,7 +563,10 @@ namespace PRMBetterClasses.VariousAdjustments
             }
 
             // Add GunWeapon tag for ... idk ;-)
-            poisonSpikeWeapon.Tags.Add(DefCache.GetDef<GameTagDef>("GunWeapon_TagDef"));
+            if (!poisonSpikeWeapon.Tags.Contains(DefCache.GetDef<GameTagDef>("GunWeapon_TagDef")))
+            {
+                poisonSpikeWeapon.Tags.Add(DefCache.GetDef<GameTagDef>("GunWeapon_TagDef"));
+            }
             // Set range to infinity (As all other direct line weapons), vanilla is set to 12.0
             poisonSpikeWeapon.DamagePayload.Range = float.PositiveInfinity;
             // Set ammo to unlimited (ChargesMax = 0)

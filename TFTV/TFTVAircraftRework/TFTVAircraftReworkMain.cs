@@ -1,6 +1,5 @@
 ﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
 using Base.Defs;
-using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
@@ -21,7 +20,7 @@ namespace TFTV
 {
     internal class TFTVAircraftReworkMain
     {
-        public static bool AircraftReworkOn = true;
+        public static bool AircraftReworkOn = false;
         internal static readonly float _mistSpeedMalus = 0.2f;
         //  internal static readonly float _mistSpeedBuff = 0.5f;
         internal static readonly float _mistSpeedModuleBuff = 150;
@@ -60,7 +59,7 @@ namespace TFTV
         internal static GeoVehicleModuleDef _blimpMutationLabModule = null; //implemented v2 (pending adding research benefits)
         internal static GeoVehicleModuleDef _blimpMutogPenModule = null; //implemented v2
         internal static GeoVehicleModuleDef _blimpMistModule = null; //implemented v2
-                                                                    // internal static GeoVehicleModuleDef _heliosSpeedModule = null; removed in v2
+                                                                     // internal static GeoVehicleModuleDef _heliosSpeedModule = null; removed in v2
         internal static GeoVehicleModuleDef _heliosMistRepellerModule = null; //implemented v2
         internal static GeoVehicleModuleDef _heliosPanaceaModule = null; //implemented v2 
         internal static GeoVehicleModuleDef _heliosStealthModule = null; //implemented v2 
@@ -198,34 +197,34 @@ namespace TFTV
 
             internal static void ApplyGenerateFactionReward(GeoEventChoiceOutcome __instance, GeoFaction faction)
             {
-                    try
+                try
+                {
+                    if (!AircraftReworkOn)
                     {
-                        if (!AircraftReworkOn)
-                        {
-                            return;
-                        }
-
-                        // TFTVLogger.Always($"{eventID} __instance.Items.Count(): {__instance.Items?.Count()}");
-
-                        foreach (ItemUnit item in __instance?.Items)
-                        {
-                            // TFTVLogger.Always($"{eventID} item.ItemDef: {item.ItemDef?.name} item.ItemDef is GeoVehicleEquipmentDef: {item.ItemDef is GeoVehicleEquipmentDef}");
-
-                            if (item.ItemDef != null && item.ItemDef is GeoVehicleEquipmentDef)
-                            {
-                                GeoVehicleEquipment geoVehicleEquipment = new GeoVehicleEquipment(item.ItemDef as GeoVehicleEquipmentDef);
-                                faction.AircraftItemStorage.AddItem(geoVehicleEquipment);
-                            }
-                        }
+                        return;
                     }
-                    catch (Exception e)
+
+                    // TFTVLogger.Always($"{eventID} __instance.Items.Count(): {__instance.Items?.Count()}");
+
+                    foreach (ItemUnit item in __instance?.Items)
                     {
-                        TFTVLogger.Error(e);
-                        throw;
+                        // TFTVLogger.Always($"{eventID} item.ItemDef: {item.ItemDef?.name} item.ItemDef is GeoVehicleEquipmentDef: {item.ItemDef is GeoVehicleEquipmentDef}");
+
+                        if (item.ItemDef != null && item.ItemDef is GeoVehicleEquipmentDef)
+                        {
+                            GeoVehicleEquipment geoVehicleEquipment = new GeoVehicleEquipment(item.ItemDef as GeoVehicleEquipmentDef);
+                            faction.AircraftItemStorage.AddItem(geoVehicleEquipment);
+                        }
                     }
                 }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
             }
-        
+        }
+
 
 
 
