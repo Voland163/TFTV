@@ -7,6 +7,7 @@ using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Events;
+using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
@@ -517,56 +518,84 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(GeoscapeEventSystem), "PhoenixFaction_OnSiteFirstTimeVisited")]
+       /* [HarmonyPatch(typeof(GeoscapeEventSystem), "PhoenixFaction_OnSiteFirstTimeVisited")]
         public static class PhoenixFaction_OnSiteFirstTimeVisited_ScaledAmbushChance_Postfix
         {
-            public static void Postfix(GeoscapeEventSystem __instance, GeoFaction controller, GeoSite site, ref int ____ambushProtection)
+            public static bool Prefix(GeoscapeEventSystem __instance, GeoFaction controller, GeoSite site, 
+                ref int ____ambushProtection, ref List<GeoscapeEventDef> ____remainingPriorityEvents, ref List<GeoscapeEventDef> ____scratchEventsList)
             {
                 try
                 {
-                    // Only apply our logic if vanilla did not spawn anything
-                    if (site == null
-                        || site.Type != GeoSiteType.Exploration
-                        || site.ActiveMission != null
-                        || site.EncounterID != null)
-                    {
-                        return;
-                    }
-                
-                    // Base chance from vanilla field
-                    int baseChance = __instance.ExplorationAmbushChance;
 
-                    // multiplier = min(1.0, (11 - protection) * 0.1)
-                    float multiplier = Mathf.Min(1f, (11 - Mathf.Max(0, ____ambushProtection)) * 0.1f);
-
-                    // Void Omen #1 doubles multiplier, cap at 1.0
-                    if (TFTVVoidOmens.VoidOmensCheck[1])
+                    if (____ambushProtection > 0)
                     {
-                        multiplier = Mathf.Min(1f, multiplier * 2f);
+                        ____ambushProtection--;
+                        TFTVLogger.Always($"Ambush Protection: {____ambushProtection}");
                     }
 
-                    float effectiveChance = Mathf.Clamp(baseChance * multiplier, 0f, 100f);
-                    int roll = UnityEngine.Random.Range(0, 100);
-
-                    if (roll < effectiveChance)
+                    if ((site.Type == GeoSiteType.Exploration && site.SiteTags.Count > 0) || site.EncounterID != null)
                     {
-                        site.CreateAmbushMission();
-                        // Reset protection to cooldown after an ambush (same as vanilla)
-                        ____ambushProtection = __instance.AmbushExploredSitesProtection;
+                        return false;
+                    }
 
-                        TFTVLogger.Always($"[TFTV] Ambush triggered (prot={____ambushProtection}, mult={multiplier:F2}, base={baseChance}, eff={effectiveChance:F2}, roll={roll})");
+                    GeoscapeEventDef priorityEventForSite = __instance.GetPriorityEventForSite(site, controller);
+                    if (priorityEventForSite != null)
+                    {
+                        site.EncounterID = priorityEventForSite.EventID;
+                        ____remainingPriorityEvents.Remove(priorityEventForSite);
+                        TFTVLogger.Always($"[PhoenixFaction_OnSiteFirstTimeVisited] Assigned priority event {priorityEventForSite.EventID}");
                     }
                     else
                     {
-                        TFTVLogger.Always($"[TFTV] Ambush NOT triggered (prot={____ambushProtection}, mult={multiplier:F2}, base={baseChance}, eff={effectiveChance:F2}, roll={roll})");
+                        int roll = UnityEngine.Random.Range(0, 100);
+                        int num2 = ((site.Type == GeoSiteType.Exploration) ? __instance.ExplorationSiteEncounterChance : __instance.SiteEncounterChance);
+
+                        TFTVLogger.Always($"[PhoenixFaction_OnSiteFirstTimeVisited] Rolling for event." +
+                            $" 1d100 roll: {roll} ExplorationSiteEncounterChance: {__instance.ExplorationSiteEncounterChance} SiteEncounterChance: {__instance.SiteEncounterChance} ");
+
+                        if (roll < num2)
+                        {
+                            ____scratchEventsList.Clear();
+                            __instance.GetValidEventsForSite(site, controller, ____scratchEventsList, onlyAssignable: true);
+                            if (____scratchEventsList.Count > 0)
+                            {
+                                site.EncounterID = ____scratchEventsList.GetRandomElement().EventID;
+                                TFTVLogger.Always($"[PhoenixFaction_OnSiteFirstTimeVisited] Assigned random event {site.EncounterID}");
+                            }
+                        }
                     }
+
+                    if (site.EncounterID == null && site.Type == GeoSiteType.Exploration && site.ActiveMission == null)
+                    {
+                        bool ambushCreated = false;
+
+                        TFTVLogger.Always($"[PhoenixFaction_OnSiteFirstTimeVisited] No random event assigned, rolling for ambush. ExplorationAmbushChance: {__instance.ExplorationAmbushChance} ");
+
+                        if (____ambushProtection <= 0 && UnityEngine.Random.Range(0, 100) < __instance.ExplorationAmbushChance)
+                        {
+                            site.CreateAmbushMission();
+                            ____ambushProtection = __instance.AmbushExploredSitesProtection;
+                            ambushCreated = true;
+                            TFTVLogger.Always($"[PhoenixFaction_OnSiteFirstTimeVisited] Ambush created! New AmbushProtection: {____ambushProtection}");
+                        }
+
+                        if (!ambushCreated && site.EncounterID == null)
+                        {
+                            string randomElement = __instance.EmptyExplorationEventIds.GetRandomElement();
+                            __instance.SetEventForSite(site, randomElement);
+                            TFTVLogger.Always($"[PhoenixFaction_OnSiteFirstTimeVisited] Assigned empty exploration event {site.EncounterID}");
+                        }
+                    }
+
+                    return false;
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
+                    throw;
                 }
             }
-        }
+        }*/
 
 
 
@@ -575,7 +604,7 @@ namespace TFTV
         {
 
 
-            public static void Prefix(GeoscapeEventSystem __instance)
+            public static void Postfix(GeoscapeEventSystem __instance, ref int ____ambushProtection)
             {
                 try
                 {
@@ -584,24 +613,16 @@ namespace TFTV
 
                     if (TFTVNewGameOptions.MoreAmbushesSetting)
                     {
-                       // __instance.AmbushExploredSitesProtection = 0;
-                       // __instance.StartingAmbushProtection = 0;
-                        if (TFTVVoidOmens.VoidOmensCheck[1])
-                        {
-                            __instance.ExplorationAmbushChance = 100;
-
-                        }
-                        else
-                        {
-                            __instance.ExplorationAmbushChance = 70;
-                        }
+                       __instance.AmbushExploredSitesProtection = 0;
+                       __instance.StartingAmbushProtection = 0;
+                       __instance.ExplorationAmbushChance = 70;       
+                      ____ambushProtection = 0;
                     }
-                    else
+                 
+
+                    if (TFTVVoidOmens.VoidOmensCheck[1])
                     {
-                        if (TFTVVoidOmens.VoidOmensCheck[1])
-                        {
-                            __instance.ExplorationAmbushChance = 100;
-                        }
+                        __instance.ExplorationAmbushChance = 100;
                     }
 
                 }
