@@ -47,8 +47,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Policy;
 using UnityEngine;
 using UnityEngine.UI;
+using static Base.Utils.TopologicalSorter;
 
 namespace TFTV
 {
@@ -1284,6 +1286,7 @@ namespace TFTV
                 }
             }
 
+            
 
             //Patch to add base to TFTV schedule
             [HarmonyPatch(typeof(SiteAttackSchedule), "StartAttack")]
@@ -1293,9 +1296,62 @@ namespace TFTV
                 {
                     try
                     {
-                        TFTVLogger.Always($"StartAttack invoked for {__instance.Site.LocalizedSiteName}");
-                        GeoSite phoenixBase = __instance.Site;
+
+                        /*   var prop = typeof(GeoSite).GetProperty(
+                      "State",
+                      BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+
+                           if (prop == null)
+                           {
+                               throw new MissingMemberException("GeoSite.State property was not found.");
+                           }
+
+                           var setter = prop.GetSetMethod(nonPublic: true);
+                           if (setter == null)
+                           {
+                               throw new MissingMethodException("GeoSite.State setter was not found or not accessible.");
+                           }
+
+
+                           if (__instance.Site.Type == GeoSiteType.AncientRefinery)
+                           {
+
+                               // Invoke the private setter so GeoSite's internal event logic executes
+                               setter.Invoke(__instance.Site, new object[] { GeoSiteState.Functioning });
+                           }*/
+
+                           TFTVLogger.Always($"StartAttack invoked for {__instance.Site.LocalizedSiteName} " +
+                               $"__instance.Site.Type: {__instance.Site.Type} __instance.Site.Owner.PPFactionDef.name:  {__instance.Site?.Owner?.PPFactionDef?.name}" +
+                               $"__instance.Site.State: {__instance.Site.State} excavated: {__instance.Site.IsExcavated()}, site id {__instance.Site.SiteId}");
+
+
+
+
+
+                          /* foreach(GeoSite geoSite in controller.Map.AllSites.Where(s=>s.Type==GeoSiteType.AncientHarvest || s.Type == GeoSiteType.AncientRefinery))
+                           {
+                               TFTVLogger.Always($"Site: {geoSite.LocalizedSiteName} Type: {geoSite.Type} Owner: {geoSite?.Owner?.PPFactionDef?.name} State: {geoSite.State} IsExcavated: {geoSite.IsExcavated()}");
+                               if (geoSite.State == GeoSiteState.Destroyed && geoSite.IsExcavated()) 
+                               {
+                                   setter.Invoke(geoSite, new object[] { GeoSiteState.Functioning });
+
+                                   if (geoSite.ActiveMission == null)
+                                   {
+                                       IGeoFactionMissionParticipant factionMissionParticipant = controller.GetFactionMissionParticipant(controller.ArcheologySettings.AncientsFactionDef);
+                                       geoSite.CreateAncientSiteMission(factionMissionParticipant, false);
+                                   }
+                               }
+
+                           }*/
+
+                        /*controller.EventSystem.SetVariable("CyclopsBuiltVariable", 0);
+                         TFTVLogger.Always($"Player failed the Cyclops mission, need to clean up");
+                         __instance.Site.Owner = controller.PhoenixFaction;
+                         __instance.Site.ActiveMission = null;*/
+
                         GeoLevelController controller = __instance.Site.GeoLevel;
+                        GeoSite phoenixBase = __instance.Site;
+                       
                         PPFactionDef factionDef = __instance.Attacker;
 
                         if (factionDef == Shared.AlienFactionDef)

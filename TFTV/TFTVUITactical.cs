@@ -3515,37 +3515,44 @@ namespace TFTV
 
                     bool shootState = actorClassIconElement.MainClassIcon.rectTransform.sizeDelta.x > 100;
 
-
                     RankIconCreator rankIconCreator = new RankIconCreator();
                     rankIconCreator.RemoveRankTriangles(actorClassIconElement.MainClassIcon.gameObject);
 
                     int rank = GetAncientsChargeLevelFromWP(tacticalActor);
 
-
                     if (rank > 0)
                     {
-                        rankIconCreator.SetIconWithRank(actorClassIconElement.MainClassIcon.gameObject,
-                               actorClassIconElement.MainClassIcon.sprite, rank, true, hasNoLos, shootState);
+                        rankIconCreator.SetIconWithRank(
+                            actorClassIconElement.MainClassIcon.gameObject,
+                            actorClassIconElement.MainClassIcon.sprite,
+                            rank,
+                            true,
+                            hasNoLos,
+                            shootState,
+                            friendly: !IsReallyEnemy(tacticalActorBase));
                     }
 
+                    // Color selection:
+                    // - No LOS: gray
+                    // - Friendly (player-owned): WhiteColor
+                    // - Rank 4 (max charge): LeaderColor
+                    // - Otherwise: NegativeColor (enemy warning)
                     if (hasNoLos)
                     {
                         actorClassIconElement.MainClassIcon.color = _regularNoLOSColor;
                     }
+                    else if (!IsReallyEnemy(tacticalActorBase))
+                    {
+                        actorClassIconElement.MainClassIcon.color = WhiteColor;
+                    }
+                    else if (rank == 4)
+                    {
+                        actorClassIconElement.MainClassIcon.color = LeaderColor;
+                    }
                     else
                     {
-
-                        if (rank == 4)
-                        {
-                            actorClassIconElement.MainClassIcon.color = LeaderColor;
-                        }
-                        else
-                        {
-                            actorClassIconElement.MainClassIcon.color = NegativeColor;
-
-                        }
+                        actorClassIconElement.MainClassIcon.color = NegativeColor;
                     }
-
                 }
                 catch (Exception e)
                 {

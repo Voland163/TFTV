@@ -11,6 +11,7 @@ using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using System.Collections.Generic;
+using TFTV;
 
 namespace TFTVVehicleRework.Armadillo
 {
@@ -42,8 +43,10 @@ namespace TFTVVehicleRework.Armadillo
             Meph.ChargesMax = 10;
             Meph.DamagePayload.ConeRadius = 3.5f;
             Meph.APToUsePerc = 25;
-          //  Meph.VisibilityType = PhoenixPoint.Tactical.Entities.Equipments.ModelVisibilityType.VisibleWhenActive;
-          //  Meph.HolsterSlotDef = null;
+            Meph.WeakAddon = true;
+
+            // Meph.VisibilityType = PhoenixPoint.Tactical.Entities.Equipments.ModelVisibilityType.VisibleWhenActive;
+            //  Meph.HolsterSlotDef = null;
         }
 
         private static ApplyStatusAbilityDef AdaptiveWeapon()
@@ -112,6 +115,9 @@ namespace TFTVVehicleRework.Armadillo
                 {
                     ObliteratorShoot()
                 };
+
+              //  MephClone.WeakAddon = true;
+
             }
             return MephClone;
         }

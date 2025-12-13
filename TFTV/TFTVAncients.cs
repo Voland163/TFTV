@@ -13,6 +13,7 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.Levels.MapGeneration;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers;
@@ -537,6 +538,11 @@ namespace TFTV
                         customMissionType.SkipDeploymentSelection = true;
                         customMissionType.MaxPlayerUnits = 0;
 
+                        
+                      
+
+                       
+
                         foreach (MissionDeployParams deployParams in customMissionType.ParticipantsData[0].ActorDeployParams)
                         {
                             if (deployParams.Limit.ActorTag == facehuggerTag)
@@ -551,6 +557,12 @@ namespace TFTV
                         customMissionType.ParticipantsData[0].UniqueUnits = uniqueUnits.ToArray();
 
                     }
+
+                    MissionTagDef refineryMissionTag = DefCache.GetDef<MissionTagDef>("MissionAncientRefinery_MissionTagDef");
+
+                    DefCache.GetDef<MapPlotDef>("DLC02_PRT_PLT_MutaneGasRefinery_64x64_A_PlotDef").MissionTags.Add(refineryMissionTag);
+                    DefCache.GetDef<MapPlotDef>("DLC02_PRT_PLT_Lapidary_64x64_A_PlotDef").MissionTags.Add(refineryMissionTag);
+                    DefCache.GetDef<MapPlotDef>("DLC02_PRT_PLT_OrichalcumSmelter_64x64_A_PlotDef").MissionTags.Add(refineryMissionTag);
 
 
                 }

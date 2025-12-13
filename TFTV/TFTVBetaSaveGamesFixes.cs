@@ -1,8 +1,10 @@
 ﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
 using Base;
 using Base.Core;
+using Base.Defs;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Game;
@@ -15,6 +17,7 @@ using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.Levels.Factions.Archeology;
 using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
@@ -37,9 +40,177 @@ namespace TFTV
         //   private static readonly SharedData Shared = TFTVMain.Shared;
 
        
+        public static void FirebirdGeoFixMissingHarvestingComponentConvertedSites(GeoLevelController controller) 
+        {
+            try 
+            {
+
+                if (!controller.Map.AllSites.Any(s=>s.Type==GeoSiteType.AncientHarvest && s.GetComponent<GeoHarvestingSite>() == null))  
+                {
+                    TFTVLogger.Always($"[FirebirdGeoFixes] No Ancient Harvest Sites without GeoHarvestingSite component found, all good");
+                    return;
+                }
+            
+                foreach (var site in controller.Map.AllSites.Where(s => s.Type == GeoSiteType.AncientHarvest && s.GetComponent<GeoHarvestingSite>() == null))
+                {
+                    TFTVLogger.Always($"[FirebirdGeoFixes] Found Ancient Harvest Site without GeoHarvestingSite component: {site.LocalizedSiteName}, adding component");
+
+                    InitializeHarvestingComponent(site);
+                }
 
 
-      
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        private static void InitializeHarvestingComponent(GeoSite geoSite)
+        {
+            try
+            {
+                ResourceType resourceType = ResourceType.None;
+                foreach (GameTagDef tag in geoSite.ProvideOwnerTags)
+                {
+                    resourceType = geoSite.GeoLevel.ArcheologySettings.GetResourceTypeByTag(tag);
+                    if (resourceType != ResourceType.None)
+                    {
+                        break;
+                    }
+                }
+                GeoHarvestingSite component = geoSite.GetComponent<GeoHarvestingSite>();
+                if (component == null)
+                {
+                    ComponentSetDef componentSetDef = GeoSiteTypeMappingDef.Instance.GetSiteTemplate(GeoSiteType.AncientHarvest);
+                    if (componentSetDef != null)
+                    {
+                        GeoHarvestingSiteDef componentDef = componentSetDef.GetComponentDef<GeoHarvestingSiteDef>();
+                        if (componentDef != null)
+                        {
+                            component = GameUtl.GameComponent<DefRepository>().Instantiate<GeoHarvestingSite>(componentDef, geoSite.gameObject, null, null, false);
+                            component.OnActorInitialized(geoSite);
+                        }
+                    }
+                }
+
+                if (component != null && resourceType != ResourceType.None && !component.ResourceTypeOutput.Contains(resourceType))
+                {
+                    component.ResourceTypeOutput.Clear();
+                    component.ResourceTypeOutput.Add(resourceType);
+                }
+
+                geoSite.RefreshVisuals();
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        private static void RemoveObjectiveToControlAncientSiteAlreadyUnderControl(GeoLevelController controller)
+        {
+            try 
+            {
+                foreach (GeoSite geoSite in from x in controller.Map.AllSites
+                                            where x.Type == GeoSiteType.AncientHarvest
+                                            select x)
+                {
+
+                    if (geoSite.Owner == controller.PhoenixFaction && controller.PhoenixFaction.Objectives.Any(o => o.GetRelatedActors() != null && o.GetRelatedActors().Contains(geoSite)))
+                    {
+                        GeoFactionObjective geoFactionObjective = controller.PhoenixFaction.Objectives.FirstOrDefault(o => o.GetRelatedActors() != null && o.GetRelatedActors().Contains(geoSite));
+
+                        if (geoFactionObjective != null)
+                        {
+                            controller.PhoenixFaction.RemoveObjective(geoFactionObjective);
+                            TFTVLogger.Always($"[FirebirdGeoFixes] Removed objective related to an Ancient Site, as already under Phoenix Point control");
+                        }
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        public static void ConvertAncientRefinerySitesToHarvestSites(GeoLevelController controller)
+        {
+            try
+            {
+                RemoveObjectiveToControlAncientSiteAlreadyUnderControl(controller);
+
+                if (!controller.Map.AllSites.Any(s => s.Type == GeoSiteType.AncientRefinery))
+                {
+                    TFTVLogger.Always($"[FirebirdGeoFixes] No Ancient Refineries found, skipping converting them to Harvesting Sites");
+                    return;
+                }
+
+                var propState = typeof(GeoSite).GetProperty(
+                          "State",
+                          BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+
+                var setterState = propState.GetSetMethod(nonPublic: true);
+
+                FieldInfo fieldInfoExcavatingSites = typeof(GeoPhoenixFaction).GetField(
+                         "_excavatingSites",
+                         BindingFlags.Instance | BindingFlags.NonPublic);
+
+                List<SiteExcavationState> excavatingSites = (List<SiteExcavationState>)fieldInfoExcavatingSites.GetValue(controller.PhoenixFaction);
+
+                
+
+                foreach (GeoSite geoSite in from x in controller.Map.AllSites
+                                            where x.Type == GeoSiteType.AncientRefinery
+                                            select x)
+                {
+                   TFTVLogger.Always($"[FirebirdGeoFixes] Converting Ancient Refinery Site to Ancient Harvest Site: {geoSite.SiteId}. " +
+                       $"site excavated? {geoSite.IsExcavated()} controlled by: {geoSite.Owner} visited by player? {geoSite.GetVisited(controller.PhoenixFaction)}" +
+                       $"inspected by player? {geoSite.GetInspected(controller.PhoenixFaction)}");
+
+                    InitializeHarvestingComponent(geoSite);
+
+                    geoSite.Type = GeoSiteType.AncientHarvest;
+
+                    setterState.Invoke(geoSite, new object[] { GeoSiteState.Functioning });
+
+                    if (geoSite.ActiveMission == null && geoSite.Owner != controller.PhoenixFaction && controller.PhoenixFaction.Objectives.Any(o => o.GetRelatedActors() != null && o.GetRelatedActors().Contains(geoSite)))
+                    {
+
+                        // Create and initialize an excavation state for this site
+                        var state = new SiteExcavationState(geoSite);
+                        state.Init(controller);
+
+                        // Track it in the Phoenix faction's excavating list (if required elsewhere)
+                        excavatingSites.Add(state);
+                        fieldInfoExcavatingSites.SetValue(controller.PhoenixFaction, excavatingSites);
+
+                        // geoSite.Type = GeoSiteType.AncientRefinery;
+                        // Complete the excavation using the public API; zero duration completes immediately
+                        state.StartExcavation(TimeUnit.Zero);
+                        geoSite.RefreshVisuals();
+                        /*  geoSite.Type = GeoSiteType.AncientHarvest;
+                          IGeoFactionMissionParticipant factionMissionParticipant = controller.GetFactionMissionParticipant(controller.ArcheologySettings.AncientsFactionDef);
+                          geoSite.CreateAncientSiteMission(factionMissionParticipant);*/
+
+                    }
+
+                  
+
+                }
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
         public static void SpecialFixInfestedHaven(GeoLevelController controller)
         {

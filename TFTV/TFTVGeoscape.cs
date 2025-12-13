@@ -1,7 +1,11 @@
 using Base.Core;
+using Base.Defs;
 using Base.Serialization.General;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
@@ -13,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using TFTV.TFTVBaseRework;
 using static TFTV.TFTVBaseRework.PersonnelData;
 using static TFTV.TFTVBaseRework.TrainingFacilityRework;
@@ -137,7 +142,12 @@ namespace TFTV
             {
                 RestoreAssignments(Controller);
             }
-          
+
+            TFTVBetaSaveGamesFixes.ConvertAncientRefinerySitesToHarvestSites(Controller);
+
+
+
+
             /* foreach (GeoPhoenixBase phoenixBase in gsController.PhoenixFaction.Bases)
              {
                  TFTVBaseDefenseGeoscape.GeoObjective.RemoveBaseDefenseObjective(phoenixBase.Site.LocalizedSiteName);
@@ -146,6 +156,8 @@ namespace TFTV
              TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Clear();*/
 
         }
+
+        
         /// <summary>
         /// Called when Geoscape ends.
         /// </summary>
@@ -374,7 +386,7 @@ namespace TFTV
                 TFTVDefsWithConfigDependency.ImplementConfigChoices();
                 TFTVDragandDropFunctionality.VehicleRoster.RestoreVehicleOrder(Controller);
                 AircraftReworkGeoscape.Scanning.AircraftScanningSites = data.AircraftScanningSites;
-
+                TFTVBetaSaveGamesFixes.FirebirdGeoFixMissingHarvestingComponentConvertedSites(Controller);
 
                 //   TFTVBetaSaveGamesFixes.Fix(Controller);
 
@@ -773,9 +785,13 @@ namespace TFTV
                 // Generate only one LOTA site of each kind
                 foreach (GeoInitialWorldSetup.ArcheologyHasvestingConfiguration archeologyHasvestingConfiguration in setup.ArcheologyHasvestingSitesDistribution)
                 {
-                    archeologyHasvestingConfiguration.AmountToGenerate = 1;
+                    archeologyHasvestingConfiguration.AmountToGenerate = 2;
                 }
 
+                foreach (GeoInitialWorldSetup.ArcheologyRefineryConfiguration archeologyHasvestingConfiguration in setup.ArcheologyRefineriesSitesDistribution)
+                {
+                    archeologyHasvestingConfiguration.AmountToGenerate = 0;
+                }
 
                 // ScavengingSitesDistribution is an array with the weights for scav, rescue soldier and vehicle
                 foreach (GeoInitialWorldSetup.ScavengingSiteConfiguration scavSiteConf in setup.ScavengingSitesDistribution)

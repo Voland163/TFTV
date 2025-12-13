@@ -793,6 +793,11 @@ namespace TFTV
                         HealAbilityDef technicianHealSource = DefCache.GetDef<HealAbilityDef>("TechnicianHeal_AbilityDef"); 
                         HealAbilityDef technicianRepairSource = DefCache.GetDef<HealAbilityDef>("TechnicianRepair_AbilityDef");
 
+                        technicianRepairSource.SuppressHealingOnTargetTags.Add(Shared.SharedGameTags.HumanTag);
+
+                        /* technicianRepairSource.TargetingDataDef.Origin.Range = 100;
+                         technicianRepairSource.TargetingDataDef.Origin.LineOfSight = 0;
+                         technicianRepairSource.TargetingDataDef.Origin.FactionVisibility = 0;*/
 
                         List<AbilityDef> slugArmsAbilities = slugMechArms.Abilities.ToList();
 

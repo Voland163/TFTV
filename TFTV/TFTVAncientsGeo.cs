@@ -1,4 +1,5 @@
 ﻿using Base.Core;
+using Base.Defs;
 using Base.Entities.Abilities;
 using Base.UI;
 using HarmonyLib;
@@ -12,12 +13,12 @@ using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
-using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.Levels.Objectives;
+using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewModules;
@@ -163,7 +164,7 @@ namespace TFTV
             {
                 try
                 {
-                 
+
                     if (vehicle.CurrentSite.Type == GeoSiteType.PhoenixBase
                         && vehicle.CurrentSite.State == GeoSiteState.Functioning
                         && vehicle.CurrentSite.Owner == __instance
@@ -187,6 +188,129 @@ namespace TFTV
 
         internal class AncientSites
         {
+          
+            // Logs detailed context when refreshing visuals for Ancient Harvest sites to help track the NRE
+           /* [HarmonyPatch(typeof(GeoSiteVisualsController), "RefreshSiteVisuals")]
+            internal static class TFTV_GeoSiteVisualsController_RefreshSiteVisuals_LogAncientHarvest
+            {
+                public static bool Prefix(GeoSiteVisualsController __instance, GeoSite site)
+                {
+                    try
+                    {
+                        if (site == null)
+                        {
+                            TFTVLogger.Always("[AncientHarvest/Refresh] site is NULL");
+                            return true; // continue to original (will likely fail elsewhere, but we logged)
+                        }
+
+                        if (site.Type != GeoSiteType.AncientHarvest)
+                        {
+                            return true; // only log AncientHarvest; let others flow
+                        }
+
+                        // Basic site info
+                        string siteName = Safe(() => site.LocalizedSiteName, "<no name>");
+                        TFTVLogger.Always($"[AncientHarvest/Refresh] BEGIN " +
+                                          $"Id={site.SiteId}, Name={siteName}, Type={site.Type}, State={site.State}, " +
+                                          $"WorldPos=({site.WorldPosition.x:F3},{site.WorldPosition.y:F3},{site.WorldPosition.z:F3})");
+
+                        // Viewer (for visibility/inspection branches earlier)
+                        var viewerFaction = Safe(() => __instance.Viewer);
+                        TFTVLogger.Always($"[AncientHarvest/Refresh] ViewerFactionNull? {viewerFaction == null}, " +
+                                          $"Viewer={viewerFaction?.Name?.Localize()}");
+
+                        // Owner info (Owner can be null -> potential NRE when code calls site.Owner.IsEnvironmentFaction)
+                        var owner = Safe(() => site.Owner);
+                        TFTVLogger.Always($"[AncientHarvest/Refresh] OwnerNull? {owner == null}, " +
+                                          $"OwnerName={owner?.Name?.Localize()}, OwnerPP={owner?.PPFactionDef?.name}, " +
+                                          $"IsEnvironmentFaction? {Safe(() => owner.IsEnvironmentFaction, false)}");
+
+                        // Excavation status (used by visuals selection for environment faction)
+                        bool isExcavated = false;
+                        try { isExcavated = site.IsExcavated(); } catch (Exception ex) { TFTVLogger.Error(ex); }
+                        TFTVLogger.Always($"[AncientHarvest/Refresh] IsExcavated={isExcavated}");
+
+                        // GeoHarvestingSite component and its data (most likely source of exceptions)
+                        GeoHarvestingSite harvesting = null;
+                        try { harvesting = site.GetComponent<GeoHarvestingSite>(); } catch (Exception ex) { TFTVLogger.Error(ex); }
+                        bool hasHarvesting = harvesting != null;
+                        TFTVLogger.Always($"[AncientHarvest/Refresh] GeoHarvestingSite null? {harvesting == null}");
+
+                        if (hasHarvesting)
+                        {
+                            int outCount = 0;
+                            string outputs = "";
+                            try
+                            {
+                                outCount = harvesting.ResourceTypeOutput?.Count ?? -1;
+                                outputs = harvesting.ResourceTypeOutput != null
+                                    ? string.Join(",", harvesting.ResourceTypeOutput.Select(r => r.ToString()))
+                                    : "<null>";
+                            }
+                            catch (Exception ex)
+                            {
+                                TFTVLogger.Error(ex);
+                            }
+
+                            TFTVLogger.Always($"[AncientHarvest/Refresh] HarvestingForce={harvesting.HarvestingForce}, " +
+                                              $"ResourceTypeOutput.Count={outCount}, Values=[{outputs}]");
+
+                            // This is exactly what the game code does and where it can crash if empty/null
+                            bool willFirstThrow = false;
+                            try
+                            {
+                                // If ResourceTypeOutput is null or empty, First() will either NRE or InvalidOperationException
+                                willFirstThrow = harvesting.ResourceTypeOutput == null || !harvesting.ResourceTypeOutput.Any();
+                            }
+                            catch (Exception ex)
+                            {
+                                TFTVLogger.Error(ex);
+                            }
+                            TFTVLogger.Always($"[AncientHarvest/Refresh] Will ResourceTypeOutput.First() throw? {willFirstThrow}");
+                        }
+
+                        // GeoLevel / ArcheologySettings
+                        var geoLevel = Safe(() => site.GeoLevel);
+                        var arch = Safe(() => geoLevel?.ArcheologySettings);
+                        TFTVLogger.Always($"[AncientHarvest/Refresh] GeoLevelNull? {geoLevel == null}, ArcheologySettingsNull? {arch == null}");
+
+                        // Visuals defs (null here would also cause problems)
+                        var defsInstance = Safe(() => GeoSiteVisualsDefs.Instance);
+                        TFTVLogger.Always($"[AncientHarvest/Refresh] GeoSiteVisualsDefs.Instance null? {defsInstance == null}");
+
+                        // Components present on the site (helps identify missing comps)
+                        try
+                        {
+                            var compNames = site.GetComponents<UnityEngine.Component>()?
+                                .Select(c => c != null ? c.GetType().Name : "<null>").ToArray();
+                            if (compNames != null)
+                            {
+                                TFTVLogger.Always($"[AncientHarvest/Refresh] Site components: [{string.Join(", ", compNames)}]");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            TFTVLogger.Error(ex);
+                        }
+
+                        TFTVLogger.Always("[AncientHarvest/Refresh] END (original method will now execute)");
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+
+                    return true; // allow original RefreshSiteVisuals to run
+                }
+
+                private static T Safe<T>(Func<T> getter, T fallback = default(T))
+                {
+                    try { return getter(); } catch { return fallback; }
+                }
+            }*/
+
+
+
             //set resource cost of excavation (now exploration)
             [HarmonyPatch(typeof(ExcavateAbility), nameof(ExcavateAbility.GetResourceCost))]
 
@@ -217,11 +341,9 @@ namespace TFTV
                     GeoLevelController controller = geoMission.Level;
                     GeoSite geoSite = geoMission.Site;
 
-
                     MissionTypeTagDef ancientSiteDefense = DefCache.GetDef<MissionTypeTagDef>("MissionTypeAncientSiteDefense_MissionTagDef");
                     if (geoMission.MissionDef.SaveDefaultName == "AncientRuin" && !geoMission.MissionDef.Tags.Contains(ancientSiteDefense))
                     {
-
                         controller.EventSystem.SetVariable(AncientsEncounterVariableName, controller.EventSystem.GetVariable(AncientsEncounterVariableName) + 1);
                         TFTVLogger.Always(AncientsEncounterVariableName + " is now " + controller.EventSystem.GetVariable(AncientsEncounterVariableName));
 
@@ -229,7 +351,6 @@ namespace TFTV
                         foreach (GeoVehicle vehicle in geoVehicles)
                         {
                             vehicle.EndCollectingFromCurrentSite();
-
                         }
                     }
                 }
@@ -461,7 +582,7 @@ namespace TFTV
             {
                 try
                 {
-                    if (controller.EventSystem.GetEventRecord("Cyclops_Dreams")!=null && controller.EventSystem.GetEventRecord("Cyclops_Dreams").Completed && controller.EventSystem.GetVariable("SymesAlternativeCompleted") == 0)
+                    if (controller.EventSystem.GetEventRecord("Cyclops_Dreams") != null && controller.EventSystem.GetEventRecord("Cyclops_Dreams").Completed && controller.EventSystem.GetVariable("SymesAlternativeCompleted") == 0)
                     {
                         TFTVLogger.Always($"SymesAlternativeCompleted setting to 1");
                         controller.EventSystem.SetVariable("SymesAlternativeCompleted", 1);
@@ -542,9 +663,9 @@ namespace TFTV
                     List<AbilityDef> abilitiesToRemove = new List<AbilityDef>() { poisonResistance };
                     List<AbilityDef> abilitiesToAdd = new List<AbilityDef>() { poisonImmunity, paralysisImmunity, fireImmunity };
 
-                    if(controller != null) 
+                    if (controller != null)
                     {
-                        AncientsEncounterCounter = controller.EventSystem.GetVariable(AncientsEncounterVariableName);       
+                        AncientsEncounterCounter = controller.EventSystem.GetVariable(AncientsEncounterVariableName);
                     }
 
                     if (controller != null && controller.PhoenixFaction.Research.HasCompleted("AncientAutomataResearch"))
@@ -620,7 +741,7 @@ namespace TFTV
                     cyclopsActorDef.Abilities = cyclopsAbilites.ToArray();
                     TFTVLogger.Always($"Tactical: Automata researched is {AutomataResearched}");
 
-                  //  TFTVAncients.AutomataResearched = AutomataResearched;
+                    //  TFTVAncients.AutomataResearched = AutomataResearched;
 
                     if (controller == null)
                     {
@@ -630,7 +751,7 @@ namespace TFTV
                     ContextHelpHintDbDef contextHelpHintDbDef = DefCache.GetDef<ContextHelpHintDbDef>("AlwaysDisplayedTacticalHintsDbDef");
 
                     if (AutomataResearched)
-                    {     
+                    {
                         if (!contextHelpHintDbDef.Hints.Contains(AncientAutomataInfoHint))
                         {
                             contextHelpHintDbDef.Hints.Add(AncientAutomataInfoHint);
@@ -671,7 +792,6 @@ namespace TFTV
                     foreach (GeoVehicle vehicle in geoVehicles)
                     {
                         vehicle.EndCollectingFromCurrentSite();
-
                     }
 
 
@@ -1049,10 +1169,10 @@ namespace TFTV
                 }
             }
 
-        }       
+        }
     }
 
-   
+
 
 
 

@@ -9,7 +9,6 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace TFTV
 {
@@ -22,6 +21,7 @@ namespace TFTV
 
         public static void RevertSGPatchBalanceChanges()
         {
+            TemporaryFixes();
             IncreaseAmmoCost();
             IncreaseConstructionCosts();
             DecreaseManticoresRange();
@@ -30,18 +30,30 @@ namespace TFTV
             RestoreExcavateAbilityToGeoVehicles();
         }
 
+        private static void TemporaryFixes()
+        {
+            try
+            {
+                DefCache.GetDef<TacticalItemDef>("AN_Priest_Legs_ItemDef").Tags.Add(Shared.SharedGameTags.ManufacturableTag);
+                DefCache.GetDef<TacticalItemDef>("AN_Priest_Torso_BodyPartDef").Tags.Add(Shared.SharedGameTags.ManufacturableTag);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
         private static void RestoreExcavateAbilityToGeoVehicles()
         {
             try
             {
-               // DefCache.GetDef<GeoSiteDef>("AncientSite_GeoSiteDef").ExplorationTimeHours = 8;
+                // DefCache.GetDef<GeoSiteDef>("AncientSite_GeoSiteDef").ExplorationTimeHours = 8;
 
                 List<GeoVehicleDef> geoVehicleDefs = new List<GeoVehicleDef>()
 
                 {
-                    DefCache.GetDef<GeoVehicleDef>("PP_Manticore_Def"), 
-                    DefCache.GetDef<GeoVehicleDef>("SYN_Helios_Def"), 
+                    DefCache.GetDef<GeoVehicleDef>("PP_Manticore_Def"),
+                    DefCache.GetDef<GeoVehicleDef>("SYN_Helios_Def"),
                     DefCache.GetDef<GeoVehicleDef>("NJ_Thunderbird_Def"),
                     DefCache.GetDef<GeoVehicleDef>("ANU_Blimp_Def"),
                     DefCache.GetDef<GeoVehicleDef>("PP_MaskedManticore_Def")
@@ -52,9 +64,9 @@ namespace TFTV
                 foreach (GeoVehicleDef geoVehicleDef in geoVehicleDefs)
                 {
                     geoVehicleDef.Abilities = geoVehicleDef.Abilities.AddToArray(excavateAbilityDef);
-                   // TFTVLogger.Always($"[RestoreAncientSiteExcavationTime] Added ExcavateAbilityDef to {geoVehicleDef.name}", false);
+                    // TFTVLogger.Always($"[RestoreAncientSiteExcavationTime] Added ExcavateAbilityDef to {geoVehicleDef.name}", false);
                 }
-                
+
             }
             catch (Exception e)
             {
@@ -71,25 +83,25 @@ namespace TFTV
                 // AN
                 DefCache.GetDef<TacticalItemDef>("AN_AcidHandGun_AmmoClip_ItemDef").ManufactureMaterials = 11;
                 DefCache.GetDef<TacticalItemDef>("AN_AcidHandGun_AmmoClip_ItemDef").ManufactureTech = 2;
-              
+
 
                 DefCache.GetDef<TacticalItemDef>("AN_HandCannon_AmmoClip_ItemDef").ManufactureMaterials = 22;
                 DefCache.GetDef<TacticalItemDef>("AN_HandCannon_AmmoClip_ItemDef").ManufactureTech = 1;
-              
+
 
                 DefCache.GetDef<TacticalItemDef>("AN_Redemptor_AmmoClip_ItemDef").ManufactureMaterials = 8;
                 DefCache.GetDef<TacticalItemDef>("AN_Redemptor_AmmoClip_ItemDef").ManufactureTech = 2;
-               
+
                 DefCache.GetDef<TacticalItemDef>("AN_Shotgun_AmmoClip_ItemDef").ManufactureMaterials = 32;
                 DefCache.GetDef<TacticalItemDef>("AN_Shotgun_AmmoClip_ItemDef").ManufactureTech = 2;
-               
+
                 DefCache.GetDef<TacticalItemDef>("AN_ShreddingShotgun_AmmoClip_ItemDef").ManufactureMaterials = 33;
                 DefCache.GetDef<TacticalItemDef>("AN_ShreddingShotgun_AmmoClip_ItemDef").ManufactureTech = 4;
-               
+
 
                 DefCache.GetDef<TacticalItemDef>("AN_Subjector_AmmoClip_ItemDef").ManufactureMaterials = 14;
                 DefCache.GetDef<TacticalItemDef>("AN_Subjector_AmmoClip_ItemDef").ManufactureTech = 3;
-                
+
                 // FS
                 DefCache.GetDef<TacticalItemDef>("FS_AssaultGrenadeLauncher_AmmoClip_ItemDef").ManufactureMaterials = 34;
                 DefCache.GetDef<TacticalItemDef>("FS_AssaultGrenadeLauncher_AmmoClip_ItemDef").ManufactureTech = 4;
@@ -166,104 +178,104 @@ namespace TFTV
 
                 DefCache.GetDef<TacticalItemDef>("NJ_PRCR_PDW_AmmoClip_ItemDef").ManufactureMaterials = 10;
                 DefCache.GetDef<TacticalItemDef>("NJ_PRCR_PDW_AmmoClip_ItemDef").ManufactureTech = 3;
-               
+
 
                 DefCache.GetDef<TacticalItemDef>("NJ_PRCR_SniperRifle_AmmoClip_ItemDef").ManufactureMaterials = 16;
                 DefCache.GetDef<TacticalItemDef>("NJ_PRCR_SniperRifle_AmmoClip_ItemDef").ManufactureTech = 5;
-            
+
 
                 DefCache.GetDef<TacticalItemDef>("NJ_PRCRTechTurretGun_AmmoClip_ItemDef").ManufactureMaterials = 46;
                 DefCache.GetDef<TacticalItemDef>("NJ_PRCRTechTurretGun_AmmoClip_ItemDef").ManufactureTech = 15;
-             
+
 
                 DefCache.GetDef<TacticalItemDef>("NJ_RocketLauncher_AmmoClip_ItemDef").ManufactureMaterials = 24;
                 DefCache.GetDef<TacticalItemDef>("NJ_RocketLauncher_AmmoClip_ItemDef").ManufactureTech = 8;
-    
+
 
                 DefCache.GetDef<TacticalItemDef>("NJ_TechTurretGun_AmmoClip_ItemDef").ManufactureMaterials = 44;
                 DefCache.GetDef<TacticalItemDef>("NJ_TechTurretGun_AmmoClip_ItemDef").ManufactureTech = 15;
-         
+
 
                 // PX
                 DefCache.GetDef<TacticalItemDef>("PX_AcidCannon_AmmoClip_ItemDef").ManufactureMaterials = 43;
                 DefCache.GetDef<TacticalItemDef>("PX_AcidCannon_AmmoClip_ItemDef").ManufactureTech = 14;
- 
+
 
                 DefCache.GetDef<TacticalItemDef>("PX_AssaultRifle_AmmoClip_ItemDef").ManufactureMaterials = 21;
                 DefCache.GetDef<TacticalItemDef>("PX_AssaultRifle_AmmoClip_ItemDef").ManufactureTech = 1;
- 
+
 
                 DefCache.GetDef<TacticalItemDef>("PX_GrenadeLauncher_AmmoClip_ItemDef").ManufactureMaterials = 110;
                 DefCache.GetDef<TacticalItemDef>("PX_GrenadeLauncher_AmmoClip_ItemDef").ManufactureTech = 14;
-          
+
 
                 DefCache.GetDef<TacticalItemDef>("PX_HeavyCannon_AmmoClip_ItemDef").ManufactureMaterials = 29;
                 DefCache.GetDef<TacticalItemDef>("PX_HeavyCannon_AmmoClip_ItemDef").ManufactureTech = 4;
-          
+
 
                 DefCache.GetDef<TacticalItemDef>("PX_LaserArray_AmmoClip_ItemDef").ManufactureMaterials = 17;
                 DefCache.GetDef<TacticalItemDef>("PX_LaserArray_AmmoClip_ItemDef").ManufactureTech = 9;
-         
+
 
                 DefCache.GetDef<TacticalItemDef>("PX_LaserPDW_AmmoClip_ItemDef").ManufactureMaterials = 19;
                 DefCache.GetDef<TacticalItemDef>("PX_LaserPDW_AmmoClip_ItemDef").ManufactureTech = 10;
-          
+
 
                 DefCache.GetDef<TacticalItemDef>("PX_LaserTechTurretGun_AmmoClip_ItemDef").ManufactureMaterials = 90;
                 DefCache.GetDef<TacticalItemDef>("PX_LaserTechTurretGun_AmmoClip_ItemDef").ManufactureTech = 48;
-  
+
 
                 DefCache.GetDef<TacticalItemDef>("PX_Pistol_AmmoClip_ItemDef").ManufactureMaterials = 7;
                 DefCache.GetDef<TacticalItemDef>("PX_Pistol_AmmoClip_ItemDef").ManufactureTech = 0;
 
                 DefCache.GetDef<TacticalItemDef>("PX_ShotgunRifle_AmmoClip_ItemDef").ManufactureMaterials = 31;
                 DefCache.GetDef<TacticalItemDef>("PX_ShotgunRifle_AmmoClip_ItemDef").ManufactureTech = 2;
-       
+
 
                 DefCache.GetDef<TacticalItemDef>("PX_ShredingMissileLauncher_AmmoClip_ItemDef").ManufactureMaterials = 62;
                 DefCache.GetDef<TacticalItemDef>("PX_ShredingMissileLauncher_AmmoClip_ItemDef").ManufactureTech = 24;
-       
+
 
                 DefCache.GetDef<TacticalItemDef>("PX_SniperRifle_AmmoClip_ItemDef").ManufactureMaterials = 16;
                 DefCache.GetDef<TacticalItemDef>("PX_SniperRifle_AmmoClip_ItemDef").ManufactureTech = 1;
-  
+
 
                 DefCache.GetDef<TacticalItemDef>("PX_VirophageSniperRifle_AmmoClip_ItemDef").ManufactureMaterials = 19;
                 DefCache.GetDef<TacticalItemDef>("PX_VirophageSniperRifle_AmmoClip_ItemDef").ManufactureTech = 10;
-   
+
 
                 // SY
                 DefCache.GetDef<TacticalItemDef>("SY_Crossbow_AmmoClip_ItemDef").ManufactureMaterials = 7;
                 DefCache.GetDef<TacticalItemDef>("SY_Crossbow_AmmoClip_ItemDef").ManufactureTech = 0;
-                
+
 
                 DefCache.GetDef<TacticalItemDef>("SY_LaserAssaultRifle_AmmoClip_ItemDef").ManufactureMaterials = 19;
                 DefCache.GetDef<TacticalItemDef>("SY_LaserAssaultRifle_AmmoClip_ItemDef").ManufactureTech = 10;
-       
+
 
                 DefCache.GetDef<TacticalItemDef>("SY_LaserPistol_AmmoClip_ItemDef").ManufactureMaterials = 11;
                 DefCache.GetDef<TacticalItemDef>("SY_LaserPistol_AmmoClip_ItemDef").ManufactureTech = 6;
-          
+
 
                 DefCache.GetDef<TacticalItemDef>("SY_LaserSniperRifle_AmmoClip_ItemDef").ManufactureMaterials = 18;
                 DefCache.GetDef<TacticalItemDef>("SY_LaserSniperRifle_AmmoClip_ItemDef").ManufactureTech = 9;
-     
+
 
                 DefCache.GetDef<TacticalItemDef>("SY_NeuralPistol_AmmoClip_ItemDef").ManufactureMaterials = 5;
                 DefCache.GetDef<TacticalItemDef>("SY_NeuralPistol_AmmoClip_ItemDef").ManufactureTech = 2;
-       
+
 
                 DefCache.GetDef<TacticalItemDef>("SY_NeuralSniperRifle_AmmoClip_ItemDef").ManufactureMaterials = 19;
                 DefCache.GetDef<TacticalItemDef>("SY_NeuralSniperRifle_AmmoClip_ItemDef").ManufactureTech = 9;
-          
+
 
                 DefCache.GetDef<TacticalItemDef>("SY_SpiderDroneLauncher_AmmoClip_ItemDef").ManufactureMaterials = 20;
                 DefCache.GetDef<TacticalItemDef>("SY_SpiderDroneLauncher_AmmoClip_ItemDef").ManufactureTech = 10;
-               
+
 
                 DefCache.GetDef<TacticalItemDef>("SY_Venombolt_AmmoClip_ItemDef").ManufactureMaterials = 9;
                 DefCache.GetDef<TacticalItemDef>("SY_Venombolt_AmmoClip_ItemDef").ManufactureTech = 5;
-      
+
 
             }
             catch (Exception e)
@@ -335,9 +347,27 @@ namespace TFTV
                     {
                         ResourceUnit unit = facility.ResourceCost[i];
                         unit.Value *= increaseCostFactor;
+                        
+                        if (defName == "LivingQuarters_PhoenixFacilityDef" && i == 1)
+                        {
+                            unit.Value = 10; // Tech cost 10 instead of 12.5
+                        }
+                        else if (defName == "FoodProduction_PhoenixFacilityDef" && i == 1)
+                        {
+                            unit.Value = 40; // Tech cost 40 instead of 37.5
+                        }
+                        else if (defName == "MistRepeller_PhoenixFacilityDef" && i == 1)
+                        {
+                            unit.Value = 80; // Tech cost 80 instead of 81.5
+                        }
+
                         facility.ResourceCost[i] = unit;
+                        
                     }
                 }
+
+
+
             }
             catch (Exception e)
             {
@@ -350,13 +380,13 @@ namespace TFTV
             try
             {
                 float increaseTimeFactor = 1.25f;
-                
+
                 ResearchDbDef researchDbDef = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
 
                 foreach (ResearchDef researchDef in researchDbDef.Researches)
                 {
                     float newDuration = researchDef.ResearchCost * increaseTimeFactor;
-                    researchDef.ResearchCost = (int)newDuration;                    
+                    researchDef.ResearchCost = (int)newDuration;
                 }
 
             }
@@ -368,7 +398,7 @@ namespace TFTV
 
         private static void ReBuffBlastChirons()
         {
-            try 
+            try
             {
                 DefCache.GetDef<WeaponDef>("Chiron_Abdomen_Mortar_WeaponDef").DamagePayload.Range = 40;
 

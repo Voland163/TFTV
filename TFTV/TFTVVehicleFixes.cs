@@ -7,6 +7,7 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.ContextHelp;
 using PhoenixPoint.Tactical.Entities;
@@ -109,6 +110,8 @@ namespace TFTV
             {
                 try
                 {
+                   // TFTVLogger.Always($"{__instance.AdaptiveWeaponStatusDef.name} OnApply to {__instance.TacticalActor?.DisplayName}");
+
                     if (__instance.AdaptiveWeaponStatusDef.Guid.Equals("c63d61b2-4afd-4809-ba29-fbf85bd3f270"))
                     {
                         TFTVLogger.Always($"{__instance.AdaptiveWeaponStatusDef.name} OnApply to {__instance.TacticalActor?.DisplayName}");
@@ -353,7 +356,7 @@ namespace TFTV
 
 
         //Removed because now in base game
-        /*[HarmonyPatch] //VERIFIED
+        [HarmonyPatch] //VERIFIED
         public static class TFTV_PostmissionReplenishManager_RemoveExtra
         {
             static MethodBase TargetMethod()
@@ -380,9 +383,139 @@ namespace TFTV
                     throw;
                 }
             }
+        }
+
+       /* [HarmonyPatch]
+        public static class AttachmentFailureDiagnostics
+        {
+            private const string TargetWeaponDefName = "NJ_Armadillo_Mephistopheles_GroundVehicleWeaponDef(Clone)";
+
+            private static bool ShouldLog(Addon addon)
+            {
+                return addon?.AddonDef?.name == TargetWeaponDefName;
+            }
+
+            [HarmonyPatch(typeof(Addon.AddonSlotImpl), nameof(Addon.AddonSlotImpl.CanAttachDirectly))]
+            private static class AddonSlotImpl_CanAttachDirectly_Patch
+            {
+                private static void Postfix(Addon.AddonSlotImpl __instance, Addon addon, bool __result)
+                {
+                    if (__result || !ShouldLog(addon))
+                    {
+                        return;
+                    }
+
+                    string reason = BuildSlotFailureReason(__instance, addon);
+                    Debug.LogWarning($"[AttachmentDiagnostics] {addon.AddonDef?.name} rejected by slot {__instance.SlotDef?.name} on {__instance.Owner?.AddonDef?.name}: {reason}");
+                }
+            }
+
+            [HarmonyPatch(typeof(Addon), nameof(Addon.CanAttachFullyTo))]
+            private static class Addon_CanAttachFullyTo_Patch
+            {
+                private static void Postfix(Addon __instance, Addon parentAddon, bool __result)
+                {
+                    if (__result || !ShouldLog(__instance))
+                    {
+                        return;
+                    }
+
+                    string reason = EvaluateFullAttachmentFailure(__instance, parentAddon);
+                    Debug.LogWarning($"[AttachmentDiagnostics] {__instance.AddonDef?.name} cannot attach to {parentAddon?.AddonDef?.name}: {reason}");
+                }
+            }
+
+            private static string EvaluateFullAttachmentFailure(Addon addon, Addon parentAddon)
+            {
+                if (addon == parentAddon)
+                {
+                    return "Addon cannot be attached to itself.";
+                }
+
+                List<string> slotReasons = new List<string>();
+                foreach (Addon candidateParent in parentAddon)
+                {
+                    foreach (Addon.AddonSlotImpl slot in candidateParent.ProvidedSlots)
+                    {
+                        if (slot.Owner?.AddonDef == null)
+                        {
+                            continue;
+                        }
+
+                        bool compatible = slot.Owner.AddonDef.ProvidesCompatibleSlotFor(slot.SlotDef, addon.AddonDef);
+                        bool strongConflict = !addon.AddonDef.WeakAddon && slot.StrongAddon != null;
+                        bool weakDuplicate = addon.AddonDef.WeakAddon && slot._weakAddons.Contains(addon);
+
+                        if (compatible && !strongConflict && !weakDuplicate)
+                        {
+                            return "No failure; slot compatibility check succeeded but another rule prevented attachment.";
+                        }
+
+                        slotReasons.Add(BuildSlotFailureReason(slot, addon));
+                    }
+                }
+
+                if (slotReasons.Count > 0)
+                {
+                    return string.Join(" | ", slotReasons.Distinct());
+                }
+
+                Addon rootAddon = parentAddon.GetRootAddon();
+                foreach (Addon subAddon in addon.SubAddons)
+                {
+                    if (!subAddon.CanAttachFullyTo(addon) && !subAddon.CanAttachFullyTo(rootAddon))
+                    {
+                        return $"Sub-addon {subAddon.AddonDef?.name} cannot attach to either {addon.AddonDef?.name} or root {rootAddon?.AddonDef?.name}.";
+                    }
+                }
+
+                return "No compatible slots available.";
+            }
+
+            private static string BuildSlotFailureReason(Addon.AddonSlotImpl slot, Addon addon)
+            {
+                if (slot.Owner?.AddonDef == null || addon?.AddonDef == null)
+                {
+                    return "Missing addon or slot definition details.";
+                }
+
+                AddonDef ownerDef = slot.Owner.AddonDef;
+                AddonDef addonDef = addon.AddonDef;
+
+                if (!ownerDef.ProvidesCompatibleSlotFor(slot.SlotDef, addonDef))
+                {
+                    string required = DescribeRequiredSlots(addonDef);
+                    return $"Slot {slot.SlotDef?.name ?? "<null>"} is incompatible. Required: {required}.";
+                }
+
+                if (!addonDef.WeakAddon && slot.StrongAddon != null)
+                {
+                    return $"Strong slot already occupied by {slot.StrongAddon.AddonDef?.name}.";
+                }
+
+                if (addonDef.WeakAddon && slot._weakAddons.Contains(addon))
+                {
+                    return "Weak addon instance is already attached to this slot.";
+                }
+
+                return "Unknown rejection condition.";
+            }
+
+            private static string DescribeRequiredSlots(AddonDef addonDef)
+            {
+                AddonDef.RequiredSlotBind[] requiredSlotBinds = addonDef.RequiredSlotBinds ?? Array.Empty<AddonDef.RequiredSlotBind>();
+                if (requiredSlotBinds.Length == 0)
+                {
+                    return "<no required slots>";
+                }
+
+                return string.Join(", ", requiredSlotBinds.Select(rb =>
+                {
+                    string slotName = rb.RequiredSlot != null ? rb.RequiredSlot.name : "<null>";
+                    return rb.GameTagFilter != null ? $"{slotName} (tag {rb.GameTagFilter.name})" : slotName;
+                }));
+            }
         }*/
-
-
 
         //Was just for logging?
 

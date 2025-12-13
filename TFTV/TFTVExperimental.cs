@@ -1,4 +1,5 @@
 ﻿using Base.Core;
+using Base.Entities.Effects.ApplicationConditions;
 using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -14,6 +15,7 @@ using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Levels;
 using PRMBetterClasses;
 using System;
@@ -35,150 +37,130 @@ namespace TFTV
 
 
 
-[HarmonyPatch(typeof(TacticalAbility), "TargetFilterPredicate")]
-    internal static class TechnicianRepairTargetingLogger
-    {
-        private const string TargetAbilityName = "TechnicianRepair_AbilityDef";
-
-        static void Postfix(
-            TacticalTargetData targetData,
-            TacticalActorBase sourceActor,
-            Vector3 sourcePosition,
-            TacticalActorBase targetActor,
-            Vector3 targetPosition,
-            TacticalAbility __instance,
-            bool __result)
+      /*  [HarmonyPatch(typeof(HealAbility), "ShouldReturnTarget")]
+        internal static class TechnicianRepairTargetLoggingPatch
         {
-               
-            if (__instance?.TacticalAbilityDef?.name != TargetAbilityName || __result || targetActor == null)
+            private const string TechnicianRepairAbilityName = "TechnicianRepair_AbilityDef";
+            private const string TargetDisplayName = "JUNKER";
+
+            private static void Postfix(HealAbility __instance, TacticalActor healer, TacticalActor targetActor, ref bool __result)
             {
-                return;
-            }
-
-            string reason = GetFailureReason(targetData, sourceActor, sourcePosition, targetActor, targetPosition, __instance);
-            Debug.Log($"[{TargetAbilityName}] filtered out {targetActor.DisplayName}: {reason}");
-        }
-
-        private static string GetFailureReason(
-            TacticalTargetData targetData,
-            TacticalActorBase sourceActor,
-            Vector3 sourcePosition,
-            TacticalActorBase targetActor,
-            Vector3 targetPosition,
-            TacticalAbility ability)
-        {
-
-                Debug.Log($"[{TargetAbilityName}] {sourceActor.DisplayName} at pos {sourceActor.Pos} sourcePosition {sourcePosition} targetActor {targetActor.DisplayName} targetPostion {targetPosition} targetactor position {targetActor.Pos} ");
-
-                if (!ability.TacticalAbilityDef.UsableOnNonInteractableActor && !targetActor.Interactable)
-            {
-                return "target not interactable";
-            }
-
-            if (targetData.CullTargetTags.Any() && targetActor.HasGameTags(targetData.CullTargetTags, false))
-            {
-                return $"target has cull tags ({string.Join(", ", targetData.CullTargetTags.Select(t => t.name))})";
-            }
-
-            bool isSelf = sourceActor == targetActor;
-            if (!targetData.TargetSelf && isSelf)
-            {
-                return "self-targeting disabled";
-            }
-
-            if (targetData.TargetTags.Any() && !targetActor.HasGameTags(targetData.TargetTags, false))
-            {
-                return $"missing required tags ({string.Join(", ", targetData.TargetTags.Select(t => t.name))})";
-            }
-
-            float maxRange = Mathf.Max(
-                TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(targetData.Range, sourceActor),
-                TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(targetData.Range, targetActor));
-            float distance = Vector3.Distance(sourcePosition, targetPosition);
-            if (distance < targetData.MinRange)
-            {
-                return $"inside min range ({distance:F2} < {targetData.MinRange:F2})";
-            }
-
-            bool inRange = distance <= maxRange;
-            if (!inRange && targetData.HorizontalRangeOnly)
-            {
-                inRange = Vector3.Distance(sourcePosition.SetY(targetPosition.y), targetPosition) <= maxRange;
-            }
-            if (!inRange)
-            {
-                return $"outside range ({distance:F2} > {maxRange:F2})";
-            }
-
-            switch (sourceActor.RelationTo(targetActor))
-            {
-                case FactionRelation.Friend when !targetData.TargetFriendlies:
-                    return "friendlies not allowed";
-                case FactionRelation.Neutral when !targetData.TargetNeutrals:
-                    return "neutrals not allowed";
-                case FactionRelation.Enemy when !targetData.TargetEnemies:
-                    return "enemies not allowed";
-            }
-
-            if (targetData.FactionVisibility != LineOfSightType.Ignore &&
-                !LineOfSightOk(targetData.FactionVisibility, sourceActor.TacticalFaction.Vision.IsRevealed(targetActor)))
-            {
-                return "fails faction visibility check";
-            }
-
-         /*   if (targetData.LineOfSight != LineOfSightType.Ignore &&
-                !HasLineOfSight(targetData, sourceActor, sourcePosition, targetActor))
-            {
-                return "fails line-of-sight check";
-            }*/
-
-            return "rejected by derived ability override";
-        }
-
-        private static bool LineOfSightOk(LineOfSightType type, bool inSight) =>
-            (type == LineOfSightType.InSight && inSight) ||
-            (type == LineOfSightType.NotInSight && !inSight);
-
-      /*  private static bool HasLineOfSight(
-            TacticalTargetData targetData,
-            TacticalActorBase sourceActor,
-            Vector3 sourcePosition,
-            TacticalActorBase targetActor)
-        {
-            if (sourceActor.CheckVisibleLineBetweenActors(sourcePosition, targetActor, true))
-            {
-                return true;
-            }
-
-            if (!targetData.CanPeekFromEdge)
-            {
-                return false;
-            }
-
-            var floorCast = sourceActor.GetFloorCast();
-            floorCast.Ray.direction = Vector3.down;
-            floorCast.MaxDistance = 1f;
-
-            float agentRadius = sourceActor.NavigationComponent.AgentNavSettings.AgentRadius;
-            foreach (Vector3 peekPos in TacticalMap.GetPositionsInRange(sourcePosition, agentRadius, agentRadius + 1f))
-            {
-                Vector3 dir = (peekPos - sourcePosition).normalized;
-                if (sourceActor.Map.GetCoverInfoInDirection(sourcePosition, dir, sourceActor.TacticalPerceptionBase.VisionHeight).CoverType != CoverType.None)
+                if (__result || __instance?.HealAbilityDef == null || targetActor == null)
                 {
-                    continue;
+                    return;
                 }
 
-                floorCast.Ray.origin = peekPos + Vector3.up * 0.05f;
-                if (!floorCast.Cast() &&
-                    sourceActor.CheckVisibleLineBetweenActors(peekPos, targetActor, false))
+                if (!string.Equals(__instance.HealAbilityDef.name, TechnicianRepairAbilityName, StringComparison.Ordinal))
                 {
-                    return true;
+                    return;
                 }
+
+                if (!string.Equals(targetActor.DisplayName, TargetDisplayName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                HealAbilityDef healAbilityDef = __instance.HealAbilityDef;
+                bool suppressedHealing = targetActor.HasGameTags(healAbilityDef.SuppressHealingOnTargetTags, false);
+                bool needsGeneralHeal = __instance.GeneralHealAmount > 0f && targetActor.Health.Value < targetActor.Health.Max;
+                bool hasHealableBodyParts = healAbilityDef.HealBodyParts && targetActor.BodyState.GetHealthSlots().Any((ItemSlot slot) => HasHealableBodyPart(healAbilityDef, slot));
+                bool repairsArmor = healAbilityDef.RestoresArmour;
+                bool hasDamagedArmor = repairsArmor && targetActor.BodyState.GetHealthSlots().Any((ItemSlot slot) => slot.GetArmor().Value < slot.GetArmor().Max);
+                bool conditionalEffectMet = healAbilityDef.HealEffects != null && healAbilityDef.HealEffects.Any((HealAbilityDef.ConditionalHealEffect effect) => ConditionalEffectApplies(effect, healer, targetActor));
+
+                string reason;
+                if (suppressedHealing && !conditionalEffectMet)
+                {
+                    reason = "healing is suppressed on the target and no conditional heal effect matched.";
+                }
+                else if (!needsGeneralHeal && !hasHealableBodyParts && (!repairsArmor || !hasDamagedArmor) && !conditionalEffectMet)
+                {
+                    reason = "nothing to heal or repair and conditional heal effects did not match.";
+                }
+                else
+                {
+                    reason = "failed an unspecified heal targeting requirement.";
+                }
+
+                Debug.LogWarning($"[TechnicianRepair diagnostics] Ability '{healAbilityDef.name}' skipped target '{targetActor.DisplayName}': suppressed={suppressedHealing}, needsGeneralHeal={needsGeneralHeal}, healableBodyParts={hasHealableBodyParts}, armourDamaged={hasDamagedArmor}, conditionalEffectMet={conditionalEffectMet}. Reason: {reason}");
             }
 
-            return false;
+            private static bool ConditionalEffectApplies(HealAbilityDef.ConditionalHealEffect healEffect, TacticalActor healer, TacticalActor targetActor)
+            {
+                if (healEffect == null)
+                {
+                    return false;
+                }
+
+                return !(healEffect.HealerConditions?.Any((EffectConditionDef condition) => condition != null && !condition.ConditionMet(healer)) ?? false) && !(healEffect.TargetGenerationConditions?.Any((EffectConditionDef condition) => condition != null && !condition.ConditionMet(targetActor)) ?? false);
+            }
+
+            private static bool HasHealableBodyPart(HealAbilityDef healAbilityDef, ItemSlot slot)
+            {
+                if (slot == null)
+                {
+                    return false;
+                }
+
+                if (!healAbilityDef.IgnoreDisabledSlots && !slot.Enabled)
+                {
+                    return false;
+                }
+
+                if (healAbilityDef.BlockedBodypartsTagDef != null && slot.HasDirectGameTag(healAbilityDef.BlockedBodypartsTagDef, true))
+                {
+                    return false;
+                }
+
+                if (healAbilityDef.ExclusiveBodypartsTagDef != null && !slot.HasDirectGameTag(healAbilityDef.ExclusiveBodypartsTagDef, true))
+                {
+                    return false;
+                }
+
+                return slot.GetHealth().Value < slot.GetHealth().Max;
+            }
         }*/
-}
+
+            /*  private static bool HasLineOfSight(
+                  TacticalTargetData targetData,
+                  TacticalActorBase sourceActor,
+                  Vector3 sourcePosition,
+                  TacticalActorBase targetActor)
+              {
+                  if (sourceActor.CheckVisibleLineBetweenActors(sourcePosition, targetActor, true))
+                  {
+                      return true;
+                  }
+
+                  if (!targetData.CanPeekFromEdge)
+                  {
+                      return false;
+                  }
+
+                  var floorCast = sourceActor.GetFloorCast();
+                  floorCast.Ray.direction = Vector3.down;
+                  floorCast.MaxDistance = 1f;
+
+                  float agentRadius = sourceActor.NavigationComponent.AgentNavSettings.AgentRadius;
+                  foreach (Vector3 peekPos in TacticalMap.GetPositionsInRange(sourcePosition, agentRadius, agentRadius + 1f))
+                  {
+                      Vector3 dir = (peekPos - sourcePosition).normalized;
+                      if (sourceActor.Map.GetCoverInfoInDirection(sourcePosition, dir, sourceActor.TacticalPerceptionBase.VisionHeight).CoverType != CoverType.None)
+                      {
+                          continue;
+                      }
+
+                      floorCast.Ray.origin = peekPos + Vector3.up * 0.05f;
+                      if (!floorCast.Cast() &&
+                          sourceActor.CheckVisibleLineBetweenActors(peekPos, targetActor, false))
+                      {
+                          return true;
+                      }
+                  }
+
+                  return false;
+              }*/
+        
 
 
         /*  [HarmonyPatch(typeof(UIStateVehicleSelected), "OnSelect")]

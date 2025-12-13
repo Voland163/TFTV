@@ -110,7 +110,7 @@ namespace TFTVVehicleRework.Scarab
         {
             //ER 17->20 and Ammunition 4->8;
             GroundVehicleWeaponDef Taurus = (GroundVehicleWeaponDef)Repo.GetDef("d14af403-ec48-f954-48f3-7759a8fca9c2"); //PX_Scarab_Taurus_GroundVehicleWeaponDef
-            TFTVLogger.Always($"Taurus null? {Taurus==null}");
+          //  TFTVLogger.Always($"Taurus null? {Taurus==null}");
             
             Taurus.SpreadDegrees = (41f/20); //20 ER; ER = 41/Spread
             Taurus.ChargesMax = 18;

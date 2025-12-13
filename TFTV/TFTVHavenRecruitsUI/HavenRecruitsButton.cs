@@ -359,7 +359,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                         pgb.BaseButton.onClick.RemoveAllListeners(); // cloned button shouldn't open Bases
                         pgb.BaseButton.onClick.AddListener(() =>
                         {
-                            HavenRecruitsMain.RecruitOverlayManager.ToggleOverlay();
+                            HavenRecruitsMain.RecruitOverlayManager.ToggleOverlay();                 
                         });
                     }
                     else
