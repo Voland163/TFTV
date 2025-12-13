@@ -1,4 +1,5 @@
 ﻿using Base.Core;
+using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Characters;
@@ -13,6 +14,7 @@ using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Levels;
 using PRMBetterClasses;
 using System;
 using System.Collections.Generic;
@@ -31,77 +33,227 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
-      /*  [HarmonyPatch(typeof(UIStateVehicleSelected), "OnSelect")]
-        internal static class UIStateVehicleSelected_OnSelect_Patch
+
+
+[HarmonyPatch(typeof(TacticalAbility), "TargetFilterPredicate")]
+    internal static class TechnicianRepairTargetingLogger
+    {
+        private const string TargetAbilityName = "TechnicianRepair_AbilityDef";
+
+        static void Postfix(
+            TacticalTargetData targetData,
+            TacticalActorBase sourceActor,
+            Vector3 sourcePosition,
+            TacticalActorBase targetActor,
+            Vector3 targetPosition,
+            TacticalAbility __instance,
+            bool __result)
         {
-            private static readonly AccessTools.FieldRef<UIStateVehicleSelected, bool> SuppressGamepadSelectEventRef = AccessTools.FieldRefAccess<UIStateVehicleSelected, bool>("_suppressGamepadSelectEvent");
-
-            private static readonly AccessTools.FieldRef<UIStateVehicleSelected, UIModuleActionsBar> ActionsBarModuleRef = AccessTools.FieldRefAccess<UIStateVehicleSelected, UIModuleActionsBar>("_actionsBarModule");
-
-            private static readonly AccessTools.FieldRef<UIStateVehicleSelected, UIModuleSiteContextualMenu> ContextualMenuModuleRef = AccessTools.FieldRefAccess<UIStateVehicleSelected, UIModuleSiteContextualMenu>("_contextualMenuModule");
-
-            private static readonly AccessTools.FieldRef<UIStateVehicleSelected, GeoscapeCamera> GeoscapeCameraRef = AccessTools.FieldRefAccess<UIStateVehicleSelected, GeoscapeCamera>("_geoscapeCamera");
-
-            private static readonly MethodInfo SelectedVehicleGetter = AccessTools.PropertyGetter(typeof(UIStateVehicleSelected), "SelectedVehicle");
-
-            private static readonly MethodInfo SelectVehicleMethod = AccessTools.Method(typeof(UIStateVehicleSelected), "SelectVehicle", new[] { typeof(GeoVehicle), typeof(bool) });
-
-            private static readonly MethodInfo ContextGetter = AccessTools.PropertyGetter(typeof(GeoscapeViewState), "Context");
-
-            private static readonly MethodInfo CursorOverGuiGetter = AccessTools.PropertyGetter(typeof(GeoscapeViewState), "CursorOverGui");
-
-            public static void Postfix(UIStateVehicleSelected __instance)
+               
+            if (__instance?.TacticalAbilityDef?.name != TargetAbilityName || __result || targetActor == null)
             {
-                GeoscapeViewContext context = (GeoscapeViewContext)ContextGetter.Invoke(__instance, null);
-                if (context == null || context.Input.InputType != Base.Input.InputType.Joystick)
-                {
-                    return;
-                }
-
-                if ((bool)CursorOverGuiGetter.Invoke(__instance, null))
-                {
-                    return;
-                }
-
-                GeoscapeCamera geoscapeCamera = GeoscapeCameraRef(__instance);
-                if (geoscapeCamera != null && geoscapeCamera.IsCursorOverGUI)
-                {
-                    return;
-                }
-
-                if (SuppressGamepadSelectEventRef(__instance))
-                {
-                    SuppressGamepadSelectEventRef(__instance) = false;
-                    return;
-                }
-
-                UIModuleActionsBar actionsBarModule = ActionsBarModuleRef(__instance);
-                if (actionsBarModule != null && actionsBarModule.GamepadAbilityScrolling)
-                {
-                    return;
-                }
-
-                GeoscapeSelectionInfo geoscapeSelectionInfo = context.View.SelectAtCursor(true);
-                GeoVehicle geoVehicle = geoscapeSelectionInfo.Actor as GeoVehicle;
-                if (geoVehicle == null)
-                {
-                    return;
-                }
-
-                GeoVehicle selectedVehicle = (GeoVehicle)SelectedVehicleGetter.Invoke(__instance, null);
-                if (selectedVehicle != null)
-                {
-                    selectedVehicle.Animator.SetBool("IsSelected", false);
-                }
-
-                SelectVehicleMethod.Invoke(__instance, new object[] { geoVehicle, false });
-
-                UIModuleSiteContextualMenu contextualMenuModule = ContextualMenuModuleRef(__instance);
-                contextualMenuModule?.HideContextualMenu();
+                return;
             }
+
+            string reason = GetFailureReason(targetData, sourceActor, sourcePosition, targetActor, targetPosition, __instance);
+            Debug.Log($"[{TargetAbilityName}] filtered out {targetActor.DisplayName}: {reason}");
+        }
+
+        private static string GetFailureReason(
+            TacticalTargetData targetData,
+            TacticalActorBase sourceActor,
+            Vector3 sourcePosition,
+            TacticalActorBase targetActor,
+            Vector3 targetPosition,
+            TacticalAbility ability)
+        {
+
+                Debug.Log($"[{TargetAbilityName}] {sourceActor.DisplayName} at pos {sourceActor.Pos} sourcePosition {sourcePosition} targetActor {targetActor.DisplayName} targetPostion {targetPosition} targetactor position {targetActor.Pos} ");
+
+                if (!ability.TacticalAbilityDef.UsableOnNonInteractableActor && !targetActor.Interactable)
+            {
+                return "target not interactable";
+            }
+
+            if (targetData.CullTargetTags.Any() && targetActor.HasGameTags(targetData.CullTargetTags, false))
+            {
+                return $"target has cull tags ({string.Join(", ", targetData.CullTargetTags.Select(t => t.name))})";
+            }
+
+            bool isSelf = sourceActor == targetActor;
+            if (!targetData.TargetSelf && isSelf)
+            {
+                return "self-targeting disabled";
+            }
+
+            if (targetData.TargetTags.Any() && !targetActor.HasGameTags(targetData.TargetTags, false))
+            {
+                return $"missing required tags ({string.Join(", ", targetData.TargetTags.Select(t => t.name))})";
+            }
+
+            float maxRange = Mathf.Max(
+                TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(targetData.Range, sourceActor),
+                TacticalNavigationComponent.ExtendRangeWithNavAgentRadius(targetData.Range, targetActor));
+            float distance = Vector3.Distance(sourcePosition, targetPosition);
+            if (distance < targetData.MinRange)
+            {
+                return $"inside min range ({distance:F2} < {targetData.MinRange:F2})";
+            }
+
+            bool inRange = distance <= maxRange;
+            if (!inRange && targetData.HorizontalRangeOnly)
+            {
+                inRange = Vector3.Distance(sourcePosition.SetY(targetPosition.y), targetPosition) <= maxRange;
+            }
+            if (!inRange)
+            {
+                return $"outside range ({distance:F2} > {maxRange:F2})";
+            }
+
+            switch (sourceActor.RelationTo(targetActor))
+            {
+                case FactionRelation.Friend when !targetData.TargetFriendlies:
+                    return "friendlies not allowed";
+                case FactionRelation.Neutral when !targetData.TargetNeutrals:
+                    return "neutrals not allowed";
+                case FactionRelation.Enemy when !targetData.TargetEnemies:
+                    return "enemies not allowed";
+            }
+
+            if (targetData.FactionVisibility != LineOfSightType.Ignore &&
+                !LineOfSightOk(targetData.FactionVisibility, sourceActor.TacticalFaction.Vision.IsRevealed(targetActor)))
+            {
+                return "fails faction visibility check";
+            }
+
+         /*   if (targetData.LineOfSight != LineOfSightType.Ignore &&
+                !HasLineOfSight(targetData, sourceActor, sourcePosition, targetActor))
+            {
+                return "fails line-of-sight check";
+            }*/
+
+            return "rejected by derived ability override";
+        }
+
+        private static bool LineOfSightOk(LineOfSightType type, bool inSight) =>
+            (type == LineOfSightType.InSight && inSight) ||
+            (type == LineOfSightType.NotInSight && !inSight);
+
+      /*  private static bool HasLineOfSight(
+            TacticalTargetData targetData,
+            TacticalActorBase sourceActor,
+            Vector3 sourcePosition,
+            TacticalActorBase targetActor)
+        {
+            if (sourceActor.CheckVisibleLineBetweenActors(sourcePosition, targetActor, true))
+            {
+                return true;
+            }
+
+            if (!targetData.CanPeekFromEdge)
+            {
+                return false;
+            }
+
+            var floorCast = sourceActor.GetFloorCast();
+            floorCast.Ray.direction = Vector3.down;
+            floorCast.MaxDistance = 1f;
+
+            float agentRadius = sourceActor.NavigationComponent.AgentNavSettings.AgentRadius;
+            foreach (Vector3 peekPos in TacticalMap.GetPositionsInRange(sourcePosition, agentRadius, agentRadius + 1f))
+            {
+                Vector3 dir = (peekPos - sourcePosition).normalized;
+                if (sourceActor.Map.GetCoverInfoInDirection(sourcePosition, dir, sourceActor.TacticalPerceptionBase.VisionHeight).CoverType != CoverType.None)
+                {
+                    continue;
+                }
+
+                floorCast.Ray.origin = peekPos + Vector3.up * 0.05f;
+                if (!floorCast.Cast() &&
+                    sourceActor.CheckVisibleLineBetweenActors(peekPos, targetActor, false))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }*/
+}
+
+
+        /*  [HarmonyPatch(typeof(UIStateVehicleSelected), "OnSelect")]
+          internal static class UIStateVehicleSelected_OnSelect_Patch
+          {
+              private static readonly AccessTools.FieldRef<UIStateVehicleSelected, bool> SuppressGamepadSelectEventRef = AccessTools.FieldRefAccess<UIStateVehicleSelected, bool>("_suppressGamepadSelectEvent");
+
+              private static readonly AccessTools.FieldRef<UIStateVehicleSelected, UIModuleActionsBar> ActionsBarModuleRef = AccessTools.FieldRefAccess<UIStateVehicleSelected, UIModuleActionsBar>("_actionsBarModule");
+
+              private static readonly AccessTools.FieldRef<UIStateVehicleSelected, UIModuleSiteContextualMenu> ContextualMenuModuleRef = AccessTools.FieldRefAccess<UIStateVehicleSelected, UIModuleSiteContextualMenu>("_contextualMenuModule");
+
+              private static readonly AccessTools.FieldRef<UIStateVehicleSelected, GeoscapeCamera> GeoscapeCameraRef = AccessTools.FieldRefAccess<UIStateVehicleSelected, GeoscapeCamera>("_geoscapeCamera");
+
+              private static readonly MethodInfo SelectedVehicleGetter = AccessTools.PropertyGetter(typeof(UIStateVehicleSelected), "SelectedVehicle");
+
+              private static readonly MethodInfo SelectVehicleMethod = AccessTools.Method(typeof(UIStateVehicleSelected), "SelectVehicle", new[] { typeof(GeoVehicle), typeof(bool) });
+
+              private static readonly MethodInfo ContextGetter = AccessTools.PropertyGetter(typeof(GeoscapeViewState), "Context");
+
+              private static readonly MethodInfo CursorOverGuiGetter = AccessTools.PropertyGetter(typeof(GeoscapeViewState), "CursorOverGui");
+
+              public static void Postfix(UIStateVehicleSelected __instance)
+              {
+                  GeoscapeViewContext context = (GeoscapeViewContext)ContextGetter.Invoke(__instance, null);
+                  if (context == null || context.Input.InputType != Base.Input.InputType.Joystick)
+                  {
+                      return;
+                  }
+
+                  if ((bool)CursorOverGuiGetter.Invoke(__instance, null))
+                  {
+                      return;
+                  }
+
+                  GeoscapeCamera geoscapeCamera = GeoscapeCameraRef(__instance);
+                  if (geoscapeCamera != null && geoscapeCamera.IsCursorOverGUI)
+                  {
+                      return;
+                  }
+
+                  if (SuppressGamepadSelectEventRef(__instance))
+                  {
+                      SuppressGamepadSelectEventRef(__instance) = false;
+                      return;
+                  }
+
+                  UIModuleActionsBar actionsBarModule = ActionsBarModuleRef(__instance);
+                  if (actionsBarModule != null && actionsBarModule.GamepadAbilityScrolling)
+                  {
+                      return;
+                  }
+
+                  GeoscapeSelectionInfo geoscapeSelectionInfo = context.View.SelectAtCursor(true);
+                  GeoVehicle geoVehicle = geoscapeSelectionInfo.Actor as GeoVehicle;
+                  if (geoVehicle == null)
+                  {
+                      return;
+                  }
+
+                  GeoVehicle selectedVehicle = (GeoVehicle)SelectedVehicleGetter.Invoke(__instance, null);
+                  if (selectedVehicle != null)
+                  {
+                      selectedVehicle.Animator.SetBool("IsSelected", false);
+                  }
+
+                  SelectVehicleMethod.Invoke(__instance, new object[] { geoVehicle, false });
+
+                  UIModuleSiteContextualMenu contextualMenuModule = ContextualMenuModuleRef(__instance);
+                  contextualMenuModule?.HideContextualMenu();
+              }
+          }*/
+
 
        
+
         /* [HarmonyPatch(typeof(FactionCharacterGenerator), "GeneratePersonalAbilities")]
             internal static class Debug_GenerateUnit_Patches
             {

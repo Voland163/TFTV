@@ -790,8 +790,9 @@ namespace TFTV
 
                         NewTechnicianHealAndRepairForSlug();
 
-                        HealAbilityDef technicianHealSource = DefCache.GetDef<HealAbilityDef>("TechnicianHeal_AbilityDef");
+                        HealAbilityDef technicianHealSource = DefCache.GetDef<HealAbilityDef>("TechnicianHeal_AbilityDef"); 
                         HealAbilityDef technicianRepairSource = DefCache.GetDef<HealAbilityDef>("TechnicianRepair_AbilityDef");
+
 
                         List<AbilityDef> slugArmsAbilities = slugMechArms.Abilities.ToList();
 
