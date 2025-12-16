@@ -317,6 +317,7 @@ namespace TFTV
             {
                 try
                 {
+
                     TFTVAncientsGeo.AncientSites.OnTakingAncientSiteFromAncients(__instance);
                     TFTVAncientsGeo.DefendCyclopsStoryMission.OnCompletingDefendCyclopsMission(__instance, viewerFactionResult);
                     TFTVEconomyExploitsFixes.ClearTimerNoSecondChances(__instance);

@@ -24,6 +24,7 @@ using PhoenixPoint.Common.Entities.Items.SkinData;
 using PhoenixPoint.Common.Entities.RedeemableCodes;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
@@ -178,7 +179,9 @@ namespace TFTV
         {
             try
             {
-              //  Print();
+                //  Print();
+
+               
 
                 CreateAlwaysDeployTag();
 
@@ -264,7 +267,7 @@ namespace TFTV
                 CreateSuppressionStatusDefs();
                 AddMissingViewElementDefs();
                 LaserWeaponsInit.Init();
-                EnsureTFTVFunctionalityAfterNewPatch();
+                
                 //  TestUseWorkerComponent();
                 // Test0();
 
@@ -292,7 +295,7 @@ namespace TFTV
 
         }
 
-        private static void EnsureTFTVFunctionalityAfterNewPatch()
+        internal static void EnsureTFTVFunctionalityAfterNewPatch()
         {
             try 
             {

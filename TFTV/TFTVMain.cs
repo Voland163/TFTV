@@ -95,7 +95,7 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                string version = $"TFTV 1.0, Hotfix 1 for Patch 22 20251213 release #1  v{MetaData.Version}";
+                string version = $"TFTV 1.0, Hotfix 2 for Patch 22 20251217 AIRCRAFT REWORK LASER WEAPONS release #1  v{MetaData.Version}";
 
                 //Patch 21 20251107 release #1 
 
@@ -164,6 +164,7 @@ namespace TFTV
                // TFTVAudio.ExternalAudioInjector.EnsureHooksOnExistingManagers();
                 TFTVVanillaFixes.UI.PatchInternalClassUIStateCharacterSelecter(harmony);
 
+               
 
                 if (GameUtl.CurrentLevel() != null && GameUtl.CurrentLevel().GetComponent<HomeScreenView>() != null)
                 {

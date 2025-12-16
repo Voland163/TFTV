@@ -158,6 +158,7 @@ namespace TFTV
 
                         if (TFTVNewGameOptions.StaminaPenaltyFromInjurySetting)
                         {
+                            TFTVLogger.Always($"Setting {geoCharacter.DisplayName} Stamina to Zero on broken limb");
                             TFTVCommonMethods.SetStaminaToZero(geoCharacter);
                         }
                     }

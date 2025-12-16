@@ -6,6 +6,7 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Game;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
@@ -41,13 +42,23 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoMission), "ApplyTacticalMissionResult")] //VERIFIED
         public class ApplyTacticalMissionResult
         {
-            static bool Prefix(GeoMission __instance, out GameDifficultyLevelDef __state)
+            static bool Prefix(GeoMission __instance, GeoSquad squad, out GameDifficultyLevelDef __state)
             {
                 try
                 {
+       
                     TFTVConfig config = TFTVMain.Main.Config;
                     GeoLevelController controller = __instance.Level;
+
+                    controller.SettingsDef.DamagedBodypartsDrainsAllStamina = false;
+
                     __state = controller.CurrentDifficultyLevel;
+
+                   /* foreach (GeoCharacter geoCharacter in squad.Soldiers)
+                    {
+                        TFTVLogger.Always($"After mission prefix, Stamina of {geoCharacter?.DisplayName} {geoCharacter.Fatigue?.Stamina?.Value}");
+                    }*/
+
 
                     if (config.TacticalDifficulty != TFTVConfig.DifficultyOnTactical.GEOSCAPE)
                     {
@@ -68,7 +79,7 @@ namespace TFTV
 
             }
 
-            static void Postfix(GeoMission __instance, GameDifficultyLevelDef __state)
+            static void Postfix(GeoMission __instance, GeoSquad squad, GameDifficultyLevelDef __state)
 
             {
                 try
@@ -76,6 +87,13 @@ namespace TFTV
                     GeoLevelController controller = __instance.Level;
                     controller.CurrentDifficultyLevel = __state;
                     TFTVPureAndForsaken.CheckMissionVSPure(__instance);
+
+                   /* TFTVLogger.Always($"Postfix controller.SettingsDef.DamagedBodypartsDrainsAllStamina: {controller.SettingsDef.DamagedBodypartsDrainsAllStamina}");
+
+                    foreach (GeoCharacter geoCharacter in squad.Soldiers)
+                    {
+                        TFTVLogger.Always($"After mission, Stamina of {geoCharacter?.DisplayName} {geoCharacter.Fatigue?.Stamina?.Value}");
+                    }*/
 
                 }
                 catch (Exception e)

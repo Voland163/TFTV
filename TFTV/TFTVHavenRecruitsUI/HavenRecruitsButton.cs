@@ -13,6 +13,8 @@ namespace TFTV.TFTVHavenRecruitsUI
 {
     internal class HavenRecruitsButton
     {
+        private static Image _recruitButtonIcon;
+
         [HarmonyPatch(typeof(UIModuleSiteManagement), nameof(UIModuleSiteManagement.Awake))]
         public static class AddRecruitsButton_OnSiteManagementAwake
         {
@@ -44,6 +46,8 @@ namespace TFTV.TFTVHavenRecruitsUI
                     if (existingButton != null)
                     {
                         TFTVLogger.Always("[RecruitsBtn] Recruits button already present; skipping.");
+
+                        CacheButtonIcon(existingButton.gameObject);
 
                         EnsureVisibilityController(__instance, existingButton.gameObject);
                         return;
@@ -298,6 +302,8 @@ namespace TFTV.TFTVHavenRecruitsUI
                             {
                                 iconTr.SetSiblingIndex(Mathf.Min(1, labelParent.childCount - 1));
                             }
+
+                            _recruitButtonIcon = iconImg;
                         }
                       
                     }
@@ -386,10 +392,49 @@ namespace TFTV.TFTVHavenRecruitsUI
                     }
 
                     EnsureVisibilityController(__instance, cloneGO);
+                    CacheButtonIcon(cloneGO);
                 }
                 catch (Exception ex) { TFTVLogger.Error(ex); }
             }
         }
+
+        internal static void ResetButtonIconColor()
+        {
+            try
+            {
+                if (_recruitButtonIcon == null)
+                {
+                    return;
+                }
+
+                _recruitButtonIcon.color = Color.white;
+                _recruitButtonIcon.canvasRenderer.SetAlpha(1f);
+            }
+            catch (Exception ex) { TFTVLogger.Error(ex); }
+        }
+
+        private static void CacheButtonIcon(GameObject button)
+        {
+            try
+            {
+                if (button == null)
+                {
+                    return;
+                }
+
+                var iconTransform = button.transform.Find("Group/TFTV_ContentStack/Image_Icon")
+                                   ?? button.transform.Find("Group/TFTV_VerticalStack/Image_Icon")
+                                   ?? button.transform.Find("Group/Image_Icon");
+
+                var iconImage = iconTransform ? iconTransform.GetComponent<Image>() : null;
+                if (iconImage != null)
+                {
+                    _recruitButtonIcon = iconImage;
+                }
+            }
+            catch (Exception ex) { TFTVLogger.Error(ex); }
+        }
+
 
         private static void EnsureVisibilityController(UIModuleSiteManagement module, GameObject button)
         {

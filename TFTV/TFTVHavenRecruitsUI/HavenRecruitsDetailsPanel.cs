@@ -979,7 +979,7 @@ namespace TFTV
         }
         private static void PopulateDeliriumRow(int deliriumValue)
         {
-            TFTVLogger.Always($"_detailDeliriumRow == null: {_detailDeliriumRow == null}");
+           // TFTVLogger.Always($"_detailDeliriumRow == null: {_detailDeliriumRow == null}");
 
             if (_detailDeliriumRow == null)
             {

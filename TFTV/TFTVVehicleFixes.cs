@@ -277,14 +277,22 @@ namespace TFTV
                     GroundVehicleWeaponDef meph = (GroundVehicleWeaponDef)Repo.GetDef("49723d28-b373-3bc4-7918-21e87a72c585");
                     GroundVehicleWeaponDef obliterator = (GroundVehicleWeaponDef)Repo.GetDef("ffb34012-b1fd-4b24-8236-ba2eb23db0b7");
 
-                    if (__instance.ItemDef == obliterator && tacActor != null)
-                    {
-                        TFTVLogger.Always($"it's the obliterator");
+                    TFTVLogger.Always($"disabling {__instance?.ItemDef?.name}");
 
-                        if (tacActor.Equipments.Equipments.Any(e => e.ItemDef == meph && e.Enabled))
+                    if ((__instance.ItemDef == obliterator || __instance.ItemDef == meph) && tacActor != null)
+                    {
+                        TFTVLogger.Always($"it's {__instance.ItemDef.name}");
+
+                        if (tacActor.Equipments.Equipments.Any(e => e.ItemDef == meph)) //&& e.Enabled))
                         {
                             TFTVLogger.Always($"Obliterator destroyed, removing meph");
                             tacActor.Equipments.RemoveItem(meph).Destroy();
+                            TFTVLogger.Always($"should be destroyed");
+                        }
+                        else if (tacActor.Equipments.Equipments.Any(e => e.ItemDef == obliterator)) //&& e.Enabled))
+                        {
+                            TFTVLogger.Always($"Meph destroyed, removing obliterator");
+                            tacActor.Equipments.RemoveItem(obliterator).Destroy();
                             TFTVLogger.Always($"should be destroyed");
                         }
                     }

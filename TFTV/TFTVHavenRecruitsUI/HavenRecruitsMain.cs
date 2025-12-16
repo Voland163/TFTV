@@ -596,6 +596,11 @@ namespace TFTV
 
                     _isOverlayVisible = show;
 
+                    if (!show)
+                    {
+                        HavenRecruitsButton.ResetButtonIconColor();
+                    }
+
                     if (_overlayAnimator != null)
                     {
                         _overlayAnimator.Play(show, () =>

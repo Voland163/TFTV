@@ -105,6 +105,12 @@ namespace TFTV
             {
                 try
                 {
+                    // Guard against hits without a valid collider (e.g., some voxel / acid splash cases)
+                    if (hit.Collider == null || hit.Collider.gameObject == null)
+                    {
+                        return true; // let vanilla handle or no-op
+                    }
+
                     Vector3 pos = hit.Point;
                     Quaternion rot = Quaternion.LookRotation(dir);
                     IDamageReceiver receiver = GetDamageReceiver(__instance.Predictor, hit.Collider.gameObject, pos, rot);

@@ -658,6 +658,7 @@ namespace TFTV
             {
                 try
                 {
+
                     List<TacticalAbilityDef> abilityList = new List<TacticalAbilityDef>
                     { Wolverine_AbilityDef, InnerSight_AbilityDef, newAnxietyDef, Hyperalgesia_AbilityDef, FasterSynapses_AbilityDef, Terror_AbilityDef,  newDerealization_AbilityDef,
                     OneOfThem_AbilityDef, bloodthirsty_AbilityDef, feralDeliriumPerk
