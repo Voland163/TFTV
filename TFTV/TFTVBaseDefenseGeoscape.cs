@@ -714,7 +714,12 @@ namespace TFTV
                     {
                         // TFTVLogger.Always($"CheckOnCaptiveDestroyed running for {geoUnitDescriptor.GetName()}");
 
-                        if (PandoransThatCanEscape.Keys.Count == 0)
+                        if (geoUnitDescriptor == null || geoUnitDescriptor.UnitType == null || geoUnitDescriptor.UnitType.TemplateDef == null)
+                        {
+                            return;
+                        }
+
+                        if (PandoransThatCanEscape == null || PandoransThatCanEscape.Count == 0)
                         {
                             return;
                         }
@@ -724,15 +729,32 @@ namespace TFTV
                             return;
                         }
 
-                        int baseId = 0;
-                        string itemToRemove = "";
+                        int baseId = -1;
+                        string itemToRemove = null;
 
-
-                        foreach (int phoenixBase in PandoransThatCanEscape.Keys)
+                        foreach (KeyValuePair<int, List<string>> entry in PandoransThatCanEscape)
                         {
-                            foreach (string item in PandoransThatCanEscape[phoenixBase])
+                            int phoenixBase = entry.Key;
+                            List<string> items = entry.Value;
+
+                            if (items == null || items.Count == 0)
                             {
-                                TacCharacterDef tacCharacterDef = (TacCharacterDef)Repo.GetDef(item);
+                                continue;
+                            }
+
+                            for (int i = 0; i < items.Count; i++)
+                            {
+                                string item = items[i];
+                                if (string.IsNullOrEmpty(item))
+                                {
+                                    continue;
+                                }
+
+                                TacCharacterDef tacCharacterDef = Repo.GetDef(item) as TacCharacterDef;
+                                if (tacCharacterDef == null)
+                                {
+                                    continue;
+                                }
 
                                 if (tacCharacterDef == geoUnitDescriptor.UnitType.TemplateDef)
                                 {
@@ -741,15 +763,30 @@ namespace TFTV
                                     break;
                                 }
                             }
+
+                            if (baseId != -1)
+                            {
+                                break;
+                            }
                         }
 
-                        PandoransThatCanEscape[baseId].Remove(itemToRemove);
-                        if (PandoransThatCanEscape[baseId].Count == 0)
+                        if (baseId == -1 || string.IsNullOrEmpty(itemToRemove))
                         {
-                            PandoransThatCanEscape.Remove(baseId);
+                            // Captive isn't tracked for escape; nothing to do.
                             return;
                         }
 
+                        if (!PandoransThatCanEscape.TryGetValue(baseId, out List<string> escapeList) || escapeList == null)
+                        {
+                            return;
+                        }
+
+                        escapeList.Remove(itemToRemove);
+
+                        if (escapeList.Count == 0)
+                        {
+                            PandoransThatCanEscape.Remove(baseId);
+                        }
                     }
                     catch (Exception e)
                     {

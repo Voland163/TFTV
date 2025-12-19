@@ -700,6 +700,8 @@ namespace TFTV
                         slugTechnicianRepair.ConsumedCharges = 0;
                         slugTechnicianRepair.RequiredCharges = 0;
 
+                        slugTechnicianRepair.SuppressHealingOnTargetTags.Add(Shared.SharedGameTags.HumanTag);
+
                         SlugTechnicianRepair = slugTechnicianRepair;
 
                         HealAbilityDef technicianRestoreSource = DefCache.GetDef<HealAbilityDef>("TechnicianRestoreBodyPart_AbilityDef");

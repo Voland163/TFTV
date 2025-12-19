@@ -1093,6 +1093,28 @@ namespace TFTV
 
                         FactionActorCache<GeoVehicle> factionActorCache = (FactionActorCache<GeoVehicle>)fieldInfo.GetValue(phoenixFaction.GeoLevel.Map);
 
+                        if (factionActorCache == null)
+                        {
+                            TFTVLogger.Always($"factionActorCache was null! aborting");
+                            return;
+                        }
+
+
+                        if (factionActorCache.Cache.ContainsKey(phoenixFaction))
+                        {
+                            TFTVLogger.Always($"PhoenixFaction not in factionActorCache.Cache! aborting");
+                            return;
+                        }
+
+                        GeoMap geoMap = phoenixFaction.GeoLevel.Map;
+
+                        if (geoMap == null)
+                        {
+                            TFTVLogger.Always($"geoMap was null! aborting");
+                            return;
+                        }
+
+
                         List<GeoVehicle> vehicles = new List<GeoVehicle>();
 
                       /*  if(phoenixFaction.Vehicles.Any(vehicle => vehicle.VehicleID == 0)) 
@@ -1105,10 +1127,11 @@ namespace TFTV
 
                         for (int x = 1; x<= PlayerVehicles.Count; x++)
                         {
+                            TFTVLogger.Always($"Restoring...");
                             GeoVehicle geoVehicle = phoenixFaction.Vehicles.FirstOrDefault(vehicle => vehicle.VehicleID == PlayerVehicles[x-1] && !vehicles.Contains(vehicle));
                             geoVehicle.VehicleID = x;
                             vehicles.Add(geoVehicle);
-                            TFTVLogger.Always($"Restoring {geoVehicle.Name} {geoVehicle.VehicleID}");
+                            TFTVLogger.Always($"{geoVehicle.Name} {geoVehicle.VehicleID}");
 
                             if (TFTVAircraftReworkMain.AircraftReworkOn)
                             {
@@ -1117,8 +1140,10 @@ namespace TFTV
                             }
                         }
 
+                       
+
                         factionActorCache.Cache[phoenixFaction] = vehicles;
-                        fieldInfo.SetValue(phoenixFaction.GeoLevel.Map, factionActorCache);
+                        fieldInfo.SetValue(geoMap, factionActorCache);
 
                         //  TFTVLogger.Always($"got here");
 

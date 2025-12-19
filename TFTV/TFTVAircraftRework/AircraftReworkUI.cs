@@ -443,14 +443,14 @@ namespace TFTV
                     // Icon
                     var Icon = __instance.Icon;
 
-                    TFTVLogger.Always($"icon null? {Icon == null}");
+               //     TFTVLogger.Always($"icon null? {Icon == null}");
 
                     // UISettings
 
                     // DisplayedData
                     var DisplayedData = __instance.DisplayedData;
 
-                    TFTVLogger.Always($"DisplayedData null? {DisplayedData == null}");
+                 //   TFTVLogger.Always($"DisplayedData null? {DisplayedData == null}");
 
                     // ItemNameLocComp, ItemDescriptionLocComp
                     var ItemNameLocComp = __instance.ItemNameLocComp;
@@ -458,15 +458,15 @@ namespace TFTV
 
                     _ = Icon != null;
 
-                    TFTVLogger.Always($"icon still null? {Icon == null}");
+                  //  TFTVLogger.Always($"icon still null? {Icon == null}");
 
                     if (__instance.UISettings.ShowNameDescription)
                     {
-                        TFTVLogger.Always("Showing name and description");
+                    //    TFTVLogger.Always("Showing name and description");
                         type.GetMethod("DisplayNameDescription", BindingFlags.NonPublic | BindingFlags.Instance)
                              .Invoke(__instance, null);
 
-                        TFTVLogger.Always("Displayed name and description");
+                      //  TFTVLogger.Always("Displayed name and description");
                     }
                     else
                     {
@@ -477,7 +477,7 @@ namespace TFTV
                     // GeoVehicleWeaponDef geoVehicleWeaponDef = DisplayedData.AircraftEquipmentDef as GeoVehicleWeaponDef;
                     var AircraftEquipmentDef = DisplayedData.AircraftEquipmentDef;
 
-                    TFTVLogger.Always($"AircraftEquipmentDef null? {AircraftEquipmentDef == null}");
+//                    TFTVLogger.Always($"AircraftEquipmentDef null? {AircraftEquipmentDef == null}");
 
                     var geoVehicleModuleDef = AircraftEquipmentDef as GeoVehicleModuleDef;
 
@@ -1004,7 +1004,7 @@ namespace TFTV
                         return true;
                     }
 
-                    __instance.AircraftPanelBackground.gameObject.SetActive(false);
+                    __instance?.AircraftPanelBackground?.gameObject?.SetActive(false);
 
                     return false;
 

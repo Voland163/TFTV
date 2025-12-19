@@ -17,7 +17,7 @@ namespace TFTV.TFTVIncidents
     internal class Objects
     {
 
-        //Key structure: TFTV_INCIDENT_[ID]
+        //Key structure: TFTV_INCIDENT_[ID]_[FACTION]_
 
         //Approaches: 
         /*
@@ -29,10 +29,10 @@ namespace TFTV.TFTVIncidents
         Compute: C
         */
 
-        //Title structure: TFTV_INCIDENT_[ID]_TITLE
-        //Description structure: TFTV_INCIDENT_[ID]_DESC
-        //Choice structure TFTV_INCIDENT_[ID]_CHOICE_[A/B]_[APPROACH1_APPROACH2]/TFTV_INCIDENT_[ID]_CHOICE_C (Cancel)
-        //Outcome structure: TFTV_INCIDENT_[ID]_OUTCOME_[A/B]_[SUCCESS/FAILURE]_[APPROACHA_APPROACHB] /TFTV_INCIDENT_[ID]_OUTCOME_C (Cancel)
+        //Title structure: TFTV_INCIDENT_[ID]_[FACTION]_TITLE
+        //Description structure: TFTV_INCIDENT_[ID]_[FACTION]_DESC
+        //Choice structure TFTV_INCIDENT_[ID]_[FACTION]_CHOICE_[0/1]_[APPROACH1_APPROACH2]/TFTV_INCIDENT_[ID]_[FACTION]_CHOICE_2 (Cancel)
+        //Outcome structure: TFTV_INCIDENT_[ID]_[FACTION]_OUTCOME_[0/1]_[S/F]_[APPROACHA_APPROACHB] /TFTV_INCIDENT_[ID]_[FACTION]_OUTCOME_C (Cancel)
 
         [SerializeType(SerializeMembersByDefault = SerializeMembersType.SerializeAll, Embedded = true)]
 public class GeoIncidentDefinition

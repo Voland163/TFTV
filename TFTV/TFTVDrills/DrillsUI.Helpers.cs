@@ -269,36 +269,21 @@ namespace TFTV.TFTVDrills
                     return;
                 }
 
+                int currSP = Reflection.GetPrivate<int>(ui, "_currentSkillPoints");
+                int currFP = Reflection.GetPrivate<int>(ui, "_currentFactionPoints");
+                int originalCurrSP = currSP;
+                int originalCurrFP = currFP;
 
-                if (skillPointCost > 0)
+                if (skillPointCost > 0 && (currSP + currFP) < skillPointCost)
                 {
-                    var currSP = Reflection.GetPrivate<int>(ui, "_currentSkillPoints");
-                    var currFP = Reflection.GetPrivate<int>(ui, "_currentFactionPoints");
-                    int remaining = skillPointCost;
-
-                    if (currSP >= remaining)
-                    {
-                        Reflection.SetPrivate(ui, "_currentSkillPoints", currSP - remaining);
-                    }
-                    else
-                    {
-                        remaining -= currSP;
-                        Reflection.SetPrivate(ui, "_currentSkillPoints", 0);
-                        if (currFP >= remaining)
-                        {
-                            Reflection.SetPrivate(ui, "_currentFactionPoints", currFP - remaining);
-                        }
-                        else
-                        {
-                            Debug.LogWarning("[TFTV] Not enough SP/FS for swap; aborting.");
-                            Reflection.CallPrivate(ui, "RefreshAbilityTracks");
-                            return;
-                        }
-                    }
+                    Debug.LogWarning("[TFTV] Not enough SP/FS for swap; aborting.");
+                    GameUtl.GetMessageBox()?.ShowSimplePrompt("Not enough Skill Points.", MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                    Reflection.CallPrivate(ui, "RefreshAbilityTracks");
+                    ui.RefreshStatPanel();
+                    return;
                 }
 
                 List<TacticalAbilityDef> abilities = Traverse.Create(character.Progression).Field("_abilities").GetValue<List<TacticalAbilityDef>>();
-
                 bool replacedExisting = abilities.Contains(original);
 
                 if (replacedExisting)
@@ -308,9 +293,52 @@ namespace TFTV.TFTVDrills
 
                 slot.Ability = replacement;
 
+                bool learnedNow = false;
                 if (!character.Progression.Abilities.Contains(replacement))
                 {
                     character.Progression.LearnAbility(slot);
+                    learnedNow = character.Progression.Abilities.Contains(replacement);
+                }
+                else
+                {
+                    learnedNow = true;
+                }
+
+                if (!learnedNow)
+                {
+                    if (replacedExisting)
+                    {
+                        abilities.Add(original);
+                    }
+
+                    slot.Ability = original;
+
+                    Reflection.SetPrivate(ui, "_currentSkillPoints", originalCurrSP);
+                    Reflection.SetPrivate(ui, "_currentFactionPoints", originalCurrFP);
+
+                    Debug.LogWarning("[TFTV] Swap failed (ability not learned); aborting without charging.");
+                    Reflection.CallPrivate(ui, "RefreshAbilityTracks");
+                    ui.RefreshStatPanel();
+                    return;
+                }
+
+                if (skillPointCost > 0)
+                {
+                    int remaining = skillPointCost;
+                    if (currSP >= remaining)
+                    {
+                        currSP -= remaining;
+                        remaining = 0;
+                    }
+                    else
+                    {
+                        remaining -= currSP;
+                        currSP = 0;
+                        currFP = Math.Max(0, currFP - remaining);
+                    }
+
+                    Reflection.SetPrivate(ui, "_currentSkillPoints", currSP);
+                    Reflection.SetPrivate(ui, "_currentFactionPoints", currFP);
                 }
 
                 if (replacedExisting && TFTVNewGameOptions.StaminaPenaltyFromInjurySetting)

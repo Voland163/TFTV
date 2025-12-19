@@ -652,10 +652,15 @@ namespace TFTV
 
                 setup.InitialScavengingSiteCount = (uint)TFTVNewGameOptions.initialScavSites;
 
-                // Generate only one LOTA site of each kind
+                // Generate 2 Harvesting LOTA sites of each kind; post 1.3 processing site tactical maps are mixed into harvesting sites pool
                 foreach (GeoInitialWorldSetup.ArcheologyHasvestingConfiguration archeologyHasvestingConfiguration in setup.ArcheologyHasvestingSitesDistribution)
                 {
-                    archeologyHasvestingConfiguration.AmountToGenerate = 1;
+                    archeologyHasvestingConfiguration.AmountToGenerate = 2;
+                }
+
+                foreach (GeoInitialWorldSetup.ArcheologyRefineryConfiguration archeologyHasvestingConfiguration in setup.ArcheologyRefineriesSitesDistribution)
+                {
+                    archeologyHasvestingConfiguration.AmountToGenerate = 0;
                 }
 
                 // ScavengingSitesDistribution is an array with the weights for scav, rescue soldier and vehicle
@@ -782,7 +787,7 @@ namespace TFTV
 
                 setup.InitialScavengingSiteCount = (uint)TFTVNewGameOptions.initialScavSites;
 
-                // Generate only one LOTA site of each kind
+                // Generate 2 Harvesting LOTA sites of each kind; post 1.3 processing site tactical maps are mixed into harvesting sites pool
                 foreach (GeoInitialWorldSetup.ArcheologyHasvestingConfiguration archeologyHasvestingConfiguration in setup.ArcheologyHasvestingSitesDistribution)
                 {
                     archeologyHasvestingConfiguration.AmountToGenerate = 2;

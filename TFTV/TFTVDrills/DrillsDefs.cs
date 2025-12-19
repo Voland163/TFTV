@@ -392,26 +392,27 @@ namespace TFTV.TFTVDrills
 
                 AddAbilityStatusDef sourceStatus = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");
 
-                AddAbilityStatusDef statusDef = Helper.CreateDefFromClone(
+                AddAbilityStatusDef addAbilityStatusDef = Helper.CreateDefFromClone(
                     sourceStatus,
                     statusGuid,
                     "TFTV_NeuralLink_AddAbilityStatusDef");
 
-                statusDef.AbilityDef = _remoteControlAbilityDef;
-                statusDef.ApplicationConditions = new EffectConditionDef[] { };
-                statusDef.Visuals = Helper.CreateDefFromClone(
+                addAbilityStatusDef.AbilityDef = _remoteControlAbilityDef;
+                addAbilityStatusDef.ApplicationConditions = new EffectConditionDef[] { };
+                addAbilityStatusDef.Visuals = Helper.CreateDefFromClone(
                     _commandOverlayStatus.Visuals,
                     visualsGuid,
                     "TFTV_NeuralLink_AddAbilityStatus_View");
-                statusDef.Visuals.DisplayName1.LocalizationKey = "TFTV_DRILL_neurallink_NAME";
-                statusDef.Visuals.Description.LocalizationKey = "TFTV_DRILL_neurallink_DESC";
+                addAbilityStatusDef.Visuals.DisplayName1.LocalizationKey = "TFTV_DRILL_neurallink_NAME";
+                addAbilityStatusDef.Visuals.Description.LocalizationKey = "TFTV_DRILL_neurallink_DESC";
 
 
-                statusDef.Visuals.LargeIcon = _neuralLink.ViewElementDef.LargeIcon;
-                statusDef.Visuals.SmallIcon = _neuralLink.ViewElementDef.SmallIcon;
+                addAbilityStatusDef.Visuals.LargeIcon = _neuralLink.ViewElementDef.LargeIcon;
+                addAbilityStatusDef.Visuals.SmallIcon = _neuralLink.ViewElementDef.SmallIcon;
 
+                addAbilityStatusDef.ParticleEffectPrefab = null;
 
-                return statusDef;
+                return addAbilityStatusDef;
             }
             catch (Exception e)
             {

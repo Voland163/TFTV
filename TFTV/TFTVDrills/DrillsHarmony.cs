@@ -466,14 +466,13 @@ namespace TFTV.TFTVDrills
                         }
 
                         bool shouldHave = hasCommandOverlay
-                            && actor.Status.HasStatus(_commandOverlayStatus)
-                            && actor.GetAbilityWithDef<TacticalAbility>(_remoteControlAbilityDef) == null;
+                            && actor.Status.HasStatus(_commandOverlayStatus);
 
                         // TFTVLogger.Always($"{actor?.DisplayName} has {actor.Status.HasStatus(_commandOverlayStatus)}  {actor.GetAbilityWithDef<TacticalAbility>(_remoteControlAbilityDef) == null}");
 
                         if (shouldHave)
                         {
-                            if (existingStatus == null)
+                            if (existingStatus == null && actor.GetAbilityWithDef<TacticalAbility>(_remoteControlAbilityDef) == null)
                             {
                                 // TFTVLogger.Always($"{actor?.DisplayName} should get neuralLinkControlStatus");
                                 actor.Status.ApplyStatus(_neuralLinkControlStatus);

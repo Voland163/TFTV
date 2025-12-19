@@ -21,21 +21,59 @@ namespace TFTV
 
         public static void RevertSGPatchBalanceChanges()
         {
-            TemporaryFixes();
+            
             IncreaseAmmoCost();
             IncreaseConstructionCosts();
             DecreaseManticoresRange();
             IncreasePXResearchTimes();
             ReBuffBlastChirons();
             RestoreExcavateAbilityToGeoVehicles();
+            FixPriestTorsoAndLegsArmor();
+            FixMyrmidonsNotBleeding();
         }
 
-        private static void TemporaryFixes()
+        private static void FixMyrmidonsNotBleeding()
+        {
+            try 
+            {
+                DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [Swarmer_LeftWing_BodyPartDef]").BleedValue = 10;
+                DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [Swarmer_RightWing_BodyPartDef]").BleedValue = 10;
+                DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [Swarmer_Torso_BodyPartDef]").BleedValue = 10;
+
+                DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [VenomousSwarmer_LeftWing_BodyPartDef]").BleedValue = 10;
+                DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [VenomousSwarmer_RightWing_BodyPartDef]").BleedValue = 10;
+                DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [VenomousSwarmer_Torso_BodyPartDef]").BleedValue = 10;
+
+                DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [AcidSwarmer_LeftWing_BodyPartDef]").BleedValue = 10;
+                DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [AcidSwarmer_RightWing_BodyPartDef]").BleedValue = 10;
+                DefCache.GetDef<BodyPartAspectDef>("E_BodyPartAspect [AcidSwarmer_Torso_BodyPartDef]").BleedValue = 10;
+
+               
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+        }
+
+        private static void FixPriestTorsoAndLegsArmor()
         {
             try
             {
-                DefCache.GetDef<TacticalItemDef>("AN_Priest_Legs_ItemDef").Tags.Add(Shared.SharedGameTags.ManufacturableTag);
-                DefCache.GetDef<TacticalItemDef>("AN_Priest_Torso_BodyPartDef").Tags.Add(Shared.SharedGameTags.ManufacturableTag);
+                TacticalItemDef priestLegs = DefCache.GetDef<TacticalItemDef>("AN_Priest_Legs_ItemDef");
+
+                priestLegs.Tags.Add(Shared.SharedGameTags.ManufacturableTag);
+                priestLegs.ManufactureMaterials = 85;
+                priestLegs.ManufactureTech = 11;
+                priestLegs.ManufacturePointsCost = 64;
+
+                TacticalItemDef priestTorso = DefCache.GetDef<TacticalItemDef>("AN_Priest_Torso_BodyPartDef");
+
+                priestTorso.Tags.Add(Shared.SharedGameTags.ManufacturableTag);
+                priestTorso.ManufactureMaterials = 130;
+                priestTorso.ManufactureTech = 16;
+                priestTorso.ManufacturePointsCost = 92;
             }
             catch (Exception e)
             {

@@ -74,13 +74,10 @@ namespace TFTV
 
         internal class Defs
         {
-
-
             public static void CreateProjectOsirisDefs()
             {
                 CreateProjectOsirisEvents();
                 CreateOsirisTag();
-
             }
 
             private static void CreateOsirisTag()
@@ -94,7 +91,6 @@ namespace TFTV
                 {
                     TFTVLogger.Error(e);
                 }
-
             }
 
             public static void CreateProjectOsirisEvents()
@@ -113,17 +109,13 @@ namespace TFTV
                     TFTVCommonMethods.CreateNewEvent(HeavyMutantDeliveryEvent, "FULL_MUTANT_TITLE", "HEAVY_MUTANT_DELIVERY_TEXT", null);
                     TFTVCommonMethods.CreateNewEvent(WatcherMutantDeliveryEvent, "FULL_MUTANT_TITLE", "WATCHER_MUTANT_DELIVERY_TEXT", null);
                     TFTVCommonMethods.CreateNewEvent(ShooterMutantDeliveryEvent, "FULL_MUTANT_TITLE", "SHOOTER_MUTANT_DELIVERY_TEXT", null);
-
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
-
             }
         }
-
-
 
         public static bool[] CheckLabs(GeoLevelController controller)
         {
@@ -135,26 +127,20 @@ namespace TFTV
 
                 if (TFTVAugmentations.CheckForFacility(controller, "KEY_BASE_FACILITY_BIONICSLAB_NAME"))
                 {
-
                     labTypes[0] = true;
-
                 };
 
                 if (TFTVAugmentations.CheckForFacility(controller, "KEY_BASE_FACILITY_MUTATION_LAB_NAME"))
                 {
-
                     labTypes[1] = true;
-
                 };
                 return labTypes;
-
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
             throw new InvalidOperationException();
-
         }
 
         public static void CheckCompletedBionicsAndMutationResearches(GeoLevelController controller)
@@ -186,37 +172,23 @@ namespace TFTV
                 {
                     TFTVCommonMethods.GenerateGeoEventChoice(fullMutantEvent, "WATCHER_MUTANT_DELIVERY_CHOICE", null);
                     fullMutantEvent.GeoscapeEventData.Choices[1].Outcome.TriggerEncounterID = WatcherMutantDeliveryEvent;
-
                 }
                 if (controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech3_ResearchDef") && fullMutantEvent.GeoscapeEventData.Choices.Count == 2)
                 {
                     TFTVCommonMethods.GenerateGeoEventChoice(fullMutantEvent, "SHOOTER_MUTANT_DELIVERY_CHOICE", null);
                     fullMutantEvent.GeoscapeEventData.Choices[2].Outcome.TriggerEncounterID = ShooterMutantDeliveryEvent;
                 }
-
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
-
         }
 
         public static string CreateDescriptionForEvent(GeoLevelController controller, GeoUnitDescriptor deadSoldierDescriptor)
         {
             try
             {
-
-                /*KEY_GRAMMAR_PRONOUNS_SHE
-KEY_GRAMMAR_PRONOUNS_HER
-KEY_GRAMMAR_PRONOUNS_HE
-KEY_GRAMMAR_PRONOUNS_HIM
-KEY_GRAMMAR_PRONOUNS_THEY
-KEY_GRAMMAR_PRONOUNS_THEM
-KEY_GRAMMAR_PLURAL_SUFFIX
-KEY_GRAMMAR_SINGLE_SUFFIX*/
-
-
                 string name = deadSoldierDescriptor.Identity.Name;
                 string pronoun = "";
                 string possesivePronoun = "";
@@ -249,38 +221,17 @@ KEY_GRAMMAR_SINGLE_SUFFIX*/
                 {
                     typeOfBodyAvailable = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_ONLY_TITANIUM"); // "made of titanium";
                     increaseOptionsKeyString += "_MUTATION_LAB";
-                    //buildAdditionalLab = $" {TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_BUILD_MUTA_LAB")} "; //" build a mutation lab ";
                 }
                 else if (!CheckLabs(controller)[0] && CheckLabs(controller)[1])
                 {
                     typeOfBodyAvailable = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_ONLY_MUTAGEN");// "made of mutagen flesh";
-                    //buildAdditionalLab = $" {TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_BUILD_BIO_LAB")}"; //" build a bionics lab ";
                     increaseOptionsKeyString += "_BIONICS_LAB";
                 }
-
-                /*
-                 * 
-                 * KEY_OSIRIS_MORE_MUTATION_LAB
-KEY_OSIRIS_MORE_BIONICS_LAB
-KEY_OSIRIS_MORE_MUTATION_LAB_MUTATION_RESEARCH
-KEY_OSIRIS_MORE_MUTATION_LAB_BIONICS_RESEARCH
-KEY_OSIRIS_MORE_MUTATION_LAB_MUTATION_BIONICS_RESEARCH
-KEY_OSIRIS_MORE_BIONICS_LAB_BIONICS_RESEARCH
-KEY_OSIRIS_MORE_BIONICS_LAB_MUTATION_RESEARCH
-KEY_OSIRIS_MORE_BIONICS_LAB_MUTATION_RESEARCH_BIONICS_RESEARCH
-KEY_OSIRIS_MORE_MUTATION_RESEARCH
-KEY_OSIRIS_MORE_BIONICS_RESEARCH
-KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH
-                KEY_OSIRIS_MORE_MUTATION_RESEARCH_BIONICS_RESEARCH
-                 * 
-                 * 
-                 */
 
                 if (!controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech2_ResearchDef") || !controller.PhoenixFaction.Research.HasCompleted("ANU_MutationTech3_ResearchDef"))
                 {
                     increaseOptionsKeyString += "_MUTATION_RESEARCH";
                 }
-
 
                 if (!controller.PhoenixFaction.Research.HasCompleted("NJ_Bionics2_ResearchDef") || !controller.PhoenixFaction.Research.HasCompleted("SYN_Bionics3_ResearchDef"))
                 {
@@ -474,13 +425,10 @@ KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH
                         return;
                     }
 
-                    // PhoenixStatisticsManager statisticsManager = (PhoenixStatisticsManager)UnityEngine.Object.FindObjectOfType(typeof(PhoenixStatisticsManager));
-
                     Dictionary<GeoTacUnitId, int> allProjectOsirisCandidates = new Dictionary<GeoTacUnitId, int>();
 
                     foreach (GeoTacUnitId geoTacUnitId in phoenixStatisticsManager.CurrentGameStats.DeadSoldiers.Keys)
                     {
-
                         foreach (int id in TFTVRevenant.TFTVRevenantResearch.ProjectOsirisStats.Keys)
                         {
                             if (geoTacUnitId == id)
@@ -526,10 +474,12 @@ KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH
                                 }
                             }
 
+                            // This death will be undone -> cancel any deferred-SP refund for the chosen candidate.
+                            TFTVExperienceDistribution.CancelPendingRefund(IdProjectOsirisCandidate, "Chosen for Project Osiris.");
+
                             string name = controller.DeadSoldiers[IdProjectOsirisCandidate].Identity.Name;
                             LocalizedTextBind projectOsirisDescription = new LocalizedTextBind(CreateDescriptionForEvent(controller, controller.DeadSoldiers[IdProjectOsirisCandidate]), true);
 
-                            GeoscapeEventDef deliveryEvent = controller.EventSystem.GetEventByID(RoboCopDeliveryEvent);
                             GeoSite phoenixBase = controller.PhoenixFaction.Bases.First().Site;
                             GeoscapeEventContext context = new GeoscapeEventContext(phoenixBase, controller.PhoenixFaction);
                             GeoscapeEventDef projectOsirisEvent = controller.EventSystem.GetEventByID(ProjectOsirisEvent);
@@ -603,20 +553,25 @@ KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH
                                 }
                             }
                         }
-                        else//this is in case the roll is not made, so that list is cleared for when Project Osiris is run again 
+                        else
                         {
+                            // Osiris did not trigger -> pay out deferred refunds now.
+                            TFTVExperienceDistribution.PayPendingDeathRefunds(controller.PhoenixFaction, "Project Osiris roll failed.");
+
                             TFTVRevenant.TFTVRevenantResearch.ProjectOsirisStats.Clear();
                             TFTVRevenant.TFTVRevenantResearch.SlugOGStrength.Clear();
                         }
                     }
-                    else //this is in case a GeoTacUnitId is present in the stats list, but is not actually dead, because savescumming 
+                    else
                     {
+                        // No valid candidates -> pay out deferred refunds now.
+                        TFTVExperienceDistribution.PayPendingDeathRefunds(controller.PhoenixFaction, "No valid Project Osiris candidates.");
+
                         TFTVRevenant.TFTVRevenantResearch.ProjectOsirisStats.Clear();
                         TFTVRevenant.TFTVRevenantResearch.SlugOGStrength.Clear();
                     }
                 }
             }
-
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
@@ -775,9 +730,9 @@ KEY_OSIRIS_MORE_MUTATION_BIONICS_RESEARCH
 
                 GeoCharacter returned = controller.PhoenixFaction.Soldiers.FirstOrDefault(s => s.Id.Equals(NewBodyGeoID));
 
-                TFTVLogger.Always($"The returned is {returned?.DisplayName}");
+                TFTVLogger.Always($"The returned is {returned?.DisplayName} and in Identity: {_geoCharacterCloneFromDead.Identity.Name}");
 
-                returned.Identity.CopyFrom(_geoCharacterCloneFromDead.Identity, PhoenixPoint.Common.Entities.Characters.CharacterIdentity.EmptyReplaceOperation.Default);
+                returned.Identity.CopyFrom(returned.Identity, PhoenixPoint.Common.Entities.Characters.CharacterIdentity.EmptyReplaceOperation.Default);
                 returned.LevelProgression.SetLevel(level);
                 returned.Progression.SkillPoints = 0;
                 returned.Fatigue.Stamina.SetToMin();

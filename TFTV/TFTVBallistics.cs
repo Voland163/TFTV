@@ -39,15 +39,15 @@ namespace TFTV
         public static Dictionary<Projectile, List<TacticalActor>> ProjectileActor = new Dictionary<Projectile, List<TacticalActor>>();
 
         // Use HashSet for fast lookup
-        public static Dictionary<Projectile, HashSet<string>> ProjectileSlotName = new Dictionary<Projectile, HashSet<string>>();
+        public static Dictionary<Projectile, HashSet<ActorSlotKey>> ProjectileSlotName = new Dictionary<Projectile, HashSet<ActorSlotKey>>();
 
         // Prediction-time de-dupe keyed by DamageAccumulation when available
-        private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<DamageAccumulation, HashSet<string>> PredictorScorpionSlots
-            = new System.Runtime.CompilerServices.ConditionalWeakTable<DamageAccumulation, HashSet<string>>();
+        private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<DamageAccumulation, HashSet<ActorSlotKey>> PredictorScorpionSlots
+            = new System.Runtime.CompilerServices.ConditionalWeakTable<DamageAccumulation, HashSet<ActorSlotKey>>();
 
         // Fallback prediction-time de-dupe when ____damageAccum is null: scope by the current ProjectileLogic
-        private static readonly Dictionary<ProjectileLogic, HashSet<string>> PredictorScorpionSlotsByLogic
-            = new Dictionary<ProjectileLogic, HashSet<string>>();
+        private static readonly Dictionary<ProjectileLogic, HashSet<ActorSlotKey>> PredictorScorpionSlotsByLogic
+            = new Dictionary<ProjectileLogic, HashSet<ActorSlotKey>>();
 
         internal static void ClearPredictionDedup()
         {
@@ -66,6 +66,36 @@ namespace TFTV
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
+            }
+        }
+
+        public readonly struct ActorSlotKey : IEquatable<ActorSlotKey>
+        {
+            private readonly int _actorId;
+            private readonly int _slotHash;
+
+            public ActorSlotKey(TacticalActor actor, string slotName)
+            {
+                _actorId = actor != null ? actor.GetHashCode() : 0;
+                _slotHash = !string.IsNullOrEmpty(slotName) ? slotName.GetHashCode() : 0;
+            }
+
+            public bool Equals(ActorSlotKey other)
+            {
+                return _actorId == other._actorId && _slotHash == other._slotHash;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is ActorSlotKey other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    return (_actorId * 397) ^ _slotHash;
+                }
             }
         }
 
@@ -100,45 +130,45 @@ namespace TFTV
                 typeof(ProjectileLogic).GetMethod("AffectTarget", BindingFlags.Instance | BindingFlags.NonPublic);
 
             private static readonly WeaponDef ScorpionDef = DefCache.GetDef<WeaponDef>("AC_Scorpion_WeaponDef");
+            private static readonly ClassTagDef UmbraClassTag = DefCache.GetDef<ClassTagDef>("Umbra_ClassTagDef");
+            private static readonly SpawnedActorTagDef DecoyTag = DefCache.GetDef<SpawnedActorTagDef>("Decoy_SpawnedActorTagDef");
+
+            [ThreadStatic]
+            private static object[] _affectTargetArgs;
+
+            private static void InvokeAffectTarget(ProjectileLogic instance, CastHit hit, Vector3 dir)
+            {
+                object[] args = _affectTargetArgs;
+                if (args == null)
+                {
+                    args = new object[2];
+                    _affectTargetArgs = args;
+                }
+
+                args[0] = hit;
+                args[1] = dir;
+                AffectTargetMethod.Invoke(instance, args);
+            }
 
             public static bool Prefix(ProjectileLogic __instance, ref bool __result, DamageAccumulation ____damageAccum, CastHit hit, Vector3 dir)
             {
                 try
                 {
-                    // Guard against hits without a valid collider (e.g., some voxel / acid splash cases)
                     if (hit.Collider == null || hit.Collider.gameObject == null)
                     {
-                        return true; // let vanilla handle or no-op
+                        return true;
                     }
 
                     Vector3 pos = hit.Point;
                     Quaternion rot = Quaternion.LookRotation(dir);
                     IDamageReceiver receiver = GetDamageReceiver(__instance.Predictor, hit.Collider.gameObject, pos, rot);
 
-                    ClassTagDef umbraClassTag = DefCache.GetDef<ClassTagDef>("Umbra_ClassTagDef");
-                    SpawnedActorTagDef decoy = DefCache.GetDef<SpawnedActorTagDef>("Decoy_SpawnedActorTagDef");
-
-                    if (__instance.Predictor != null)
-                    {
-                        receiver = __instance.Predictor.GetPredictingReceiver(receiver);
-                    }
-
                     TacticalActor hitActor = receiver?.GetActor() as TacticalActor ?? receiver?.GetParent() as TacticalActor;
                     string slotName = receiver?.GetSlotName();
 
-                    // Normalize the key to be per-actor and per-slot
-                    string SlotKey(TacticalActor actor, string slot)
-                    {
-                        // fallbacks to avoid null/empty mismatches
-                        string actorKey = actor != null ? actor.GetHashCode().ToString() : "null_actor";
-                        string sKey = string.IsNullOrEmpty(slot) ? "no_slot" : slot;
-                        return actorKey + ":" + sKey;
-                    }
-
                     if (hitActor != null)
                     {
-                        // Umbra/Decoy passthrough as before
-                        if (__instance.Projectile != null && (hitActor.HasGameTag(umbraClassTag) || hitActor.HasGameTag(decoy)))
+                        if (__instance.Projectile != null && (hitActor.HasGameTag(UmbraClassTag) || hitActor.HasGameTag(DecoyTag)))
                         {
                             __result = false;
 
@@ -150,22 +180,22 @@ namespace TFTV
                             else
                             {
                                 __instance.Projectile.OnProjectileHit(hit);
-                                AffectTargetMethod.Invoke(__instance, new object[] { hit, dir });
+                                InvokeAffectTarget(__instance, hit, dir);
                                 ____damageAccum?.ResetToInitalAmount();
 
-                                if (ProjectileActor.ContainsKey(__instance.Projectile))
+                                if (ProjectileActor.TryGetValue(__instance.Projectile, out var existing) && existing != null)
                                 {
-                                    ProjectileActor[__instance.Projectile].Add(hitActor);
+                                    existing.Add(hitActor);
                                 }
                                 else
                                 {
-                                    ProjectileActor.Add(__instance.Projectile, new List<TacticalActor> { hitActor });
+                                    ProjectileActor[__instance.Projectile] = new List<TacticalActor> { hitActor };
                                 }
                             }
+
                             return false;
                         }
 
-                        // Scorpion: prevent multiple hits to the same limb
                         bool isScorpionRuntime = __instance.Projectile != null
                             && __instance.Projectile.TryGetWeapon().WeaponDef == ScorpionDef;
 
@@ -174,13 +204,13 @@ namespace TFTV
                         if ((isScorpionRuntime || isScorpionPredict) && !string.IsNullOrEmpty(slotName))
                         {
                             __result = false;
-                            string key = SlotKey(hitActor, slotName);
+                            ActorSlotKey key = new ActorSlotKey(hitActor, slotName);
 
                             if (isScorpionRuntime)
                             {
                                 if (!ProjectileSlotName.TryGetValue(__instance.Projectile, out var set) || set == null)
                                 {
-                                    set = new HashSet<string>();
+                                    set = new HashSet<ActorSlotKey>();
                                     ProjectileSlotName[__instance.Projectile] = set;
                                 }
 
@@ -192,21 +222,20 @@ namespace TFTV
                                 else
                                 {
                                     __instance.Projectile.OnProjectileHit(hit);
-                                    AffectTargetMethod.Invoke(__instance, new object[] { hit, dir });
+                                    InvokeAffectTarget(__instance, hit, dir);
                                     ____damageAccum?.ResetToInitalAmount();
                                     set.Add(key);
                                 }
                             }
                             else
                             {
-                                // Prediction path: prefer DamageAccumulation if available, else fall back to per-logic set
-                                HashSet<string> set = null;
+                                HashSet<ActorSlotKey> set = null;
 
                                 if (____damageAccum != null)
                                 {
                                     if (!PredictorScorpionSlots.TryGetValue(____damageAccum, out set))
                                     {
-                                        set = new HashSet<string>();
+                                        set = new HashSet<ActorSlotKey>();
                                         PredictorScorpionSlots.Add(____damageAccum, set);
                                     }
                                 }
@@ -214,19 +243,18 @@ namespace TFTV
                                 {
                                     if (!PredictorScorpionSlotsByLogic.TryGetValue(__instance, out set) || set == null)
                                     {
-                                        set = new HashSet<string>();
+                                        set = new HashSet<ActorSlotKey>();
                                         PredictorScorpionSlotsByLogic[__instance] = set;
                                     }
                                 }
 
                                 if (set.Contains(key))
                                 {
-                                    // Already counted for preview
                                     ____damageAccum?.ResetToInitalAmount();
                                 }
                                 else
                                 {
-                                    AffectTargetMethod.Invoke(__instance, new object[] { hit, dir });
+                                    InvokeAffectTarget(__instance, hit, dir);
                                     ____damageAccum?.ResetToInitalAmount();
                                     set.Add(key);
                                 }
@@ -270,15 +298,12 @@ namespace TFTV
             }
         }
 
-        //D-Coy patch to remove if attacked by "smart" enemy
         public static void RemoveDCoy(TacticalActor actor, IDamageDealer damageDealer)
         {
-
             try
             {
                 if (damageDealer != null)
                 {
-
                     TacticalActorDef dcoy = DefCache.GetDef<TacticalActorDef>("Decoy_ActorDef");
                     ClassTagDef sirenTag = DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
                     ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
@@ -289,12 +314,7 @@ namespace TFTV
 
                     GameTagDef humanTag = DefCache.GetDef<GameTagDef>("Human_TagDef");
 
-                    /* TFTVLogger.Always($"actor is null? {actor == null}");
-                     TFTVLogger.Always($"actor is {actor.name}");
-                     TFTVLogger.Always($"damagedealer null? {damageDealer == null}");
-                     TFTVLogger.Always($"damagePayload null? {damageDealer.GetDamagePayload() == null}");*/
-
-                    if (damageDealer.GetDamagePayload() == null || actor == null) //|| damageDealer.GetDamagePayload().DamageKeywords.Count==0) 
+                    if (damageDealer.GetDamagePayload() == null || actor == null)
                     {
                         return;
                     }
@@ -302,10 +322,7 @@ namespace TFTV
                     if (damageDealer.GetDamagePayload().DamageKeywords.Count() == 0)
                     {
                         return;
-
                     }
-
-                    //TFTVLogger.Always($"running ActorDamageDealt damage: {damageDealer.GetDamagePayload()?.DamageKeywords?.First()?.DamageKeywordDef.name}");
 
                     if (actor.IsAlive)
                     {
@@ -316,24 +333,18 @@ namespace TFTV
 
                             if (!attacker.IsControlledByPlayer)
                             {
-                                //Decoy despawned if attacked by Siren or Scylla
                                 if (attacker.GameTags.Contains(sirenTag) || attacker.GameTags.Contains(queenTag)
                                     || attacker.GameTags.Contains(hopliteTag) || attacker.GameTags.Contains(cyclopsTag))
                                 {
                                     actor.ApplyDamage(new DamageResult() { HealthDamage = actor.Health });
-                                    //  TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
-                                    //  tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorHurt, actor, actor);
                                     TFTVHints.TacticalHints.ShowStoryPanel(actor.TacticalLevel, "HintDecoyDiscovered");
                                 }
-                                //Decoy despawned if attacked within 5 tiles by human, triton or acheron
                                 else if ((attacker.GameTags.Contains(tritonTag)
                                     || attacker.GameTags.Contains(humanTag)
                                     || attacker.GameTags.Contains(acheronTag))
                                     && (actor.Pos - attacker.Pos).magnitude <= 5)
                                 {
                                     actor.ApplyDamage(new DamageResult() { HealthDamage = actor.Health });
-                                    //  TacContextHelpManager tacContextHelpManager = (TacContextHelpManager)UnityEngine.Object.FindObjectOfType(typeof(TacContextHelpManager));
-                                    //  tacContextHelpManager.EventTypeTriggered(HintTrigger.ActorHurt, actor, actor);
                                 }
                             }
                         }
