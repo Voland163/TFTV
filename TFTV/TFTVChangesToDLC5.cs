@@ -2095,7 +2095,7 @@ namespace TFTV
 
                     if (TFTVAircraftReworkMain.AircraftReworkOn) //&& controller.EventSystem.GetVariable(_marketPlaceStockRotated) > 3)
                     {
-                        TFTVAircraftReworkMain.MarketPlace.GenerateMarketPlaceModules(geoMarketPlace);
+                        TFTVAircraftReworkMain.MarketPlace.GenerateMarketPlaceModules(geoMarketPlace, voPriceMultiplier);
                     }
 
                 }

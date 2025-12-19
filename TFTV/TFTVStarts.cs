@@ -29,7 +29,7 @@ namespace TFTV
                 string factionStartIntroText2 = TFTVCommonMethods.ConvertKeyToString("KEY_FACTION_START_INTROTEXT2");
 
                 string factionName = geoFaction.Name.Localize();
-                string factionNameWithArticle = $"{a} {factionName}";
+                string factionNameWithArticle = $"{a}{factionName}";
 
                 if (a == "") 
                 { 

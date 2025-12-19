@@ -20,7 +20,7 @@ namespace TFTV
 {
     internal class TFTVAircraftReworkMain
     {
-        public static bool AircraftReworkOn = true;
+        public static bool AircraftReworkOn = false; // 
         internal static readonly float _mistSpeedMalus = 0.2f;
         //  internal static readonly float _mistSpeedBuff = 0.5f;
         internal static readonly float _mistSpeedModuleBuff = 150;
@@ -172,13 +172,13 @@ namespace TFTV
             /// Will be available immediately.
             /// </summary>
             /// <param name="geoMarketplace"></param>
-            public static void GenerateMarketPlaceModules(GeoMarketplace geoMarketplace)
+            public static void GenerateMarketPlaceModules(GeoMarketplace geoMarketplace, float priceModifier = 1f)
             {
                 try
                 {
                     foreach (GeoMarketplaceItemOptionDef geoMarketplaceItemOptionDef in _listOfModulesSoldInMarketplace)
                     {
-                        int price = (int)(UnityEngine.Random.Range(geoMarketplaceItemOptionDef.MinPrice, geoMarketplaceItemOptionDef.MaxPrice));
+                        int price = (int)(UnityEngine.Random.Range(geoMarketplaceItemOptionDef.MinPrice, geoMarketplaceItemOptionDef.MaxPrice) * priceModifier);
 
                         GeoEventChoice item = TFTVChangesToDLC5.TFTVMarketPlaceGenerateOffers.GenerateItemChoice(geoMarketplaceItemOptionDef.ItemDef, price);
 

@@ -784,6 +784,14 @@ namespace TFTV.TFTVDrills
                 _quickAim.DisablingStatuses = _quickAim.DisablingStatuses.Append(_bulletHellSlowStatus).ToArray();
                 ApplyStatusAbilityDef rapidClearance = DefCache.GetDef<ApplyStatusAbilityDef>("RapidClearance_AbilityDef");
                 rapidClearance.DisablingStatuses = rapidClearance.DisablingStatuses.Append(_bulletHellSlowStatus).ToArray();
+
+                ShootAbilityDef aimedBurst = DefCache.GetDef<ShootAbilityDef>("AimedBurst_AbilityDef");
+                if (aimedBurst != null)
+                {
+                    StatusDef[] disabling = aimedBurst.DisablingStatuses ?? Array.Empty<StatusDef>();
+                    aimedBurst.DisablingStatuses = disabling.Append(_bulletHellSlowStatus).ToArray();
+                }
+
             }
             catch (Exception e)
             {
@@ -1148,6 +1156,20 @@ namespace TFTV.TFTVDrills
                 {
                     statusImmunityAbilityDef.StatusDef = conditionalStunStatusDef;
                  //   TFTVLogger.Always($"{statusImmunityAbilityDef.name} {statusImmunityAbilityDef.StatusDef?.name}");
+                }
+
+                foreach (TacticalAbilityDef tacticalAbilityDef in Repo.GetAllDefs<TacticalAbilityDef>())
+                {
+                    if (tacticalAbilityDef.DisablingStatuses != null && tacticalAbilityDef.DisablingStatuses.Contains(stunStatusDef))
+                    {
+                        List<StatusDef> disablingStatus = tacticalAbilityDef.DisablingStatuses.ToList(); 
+                        disablingStatus.Remove(stunStatusDef);
+                        disablingStatus.Add(conditionalStunStatusDef);
+                        tacticalAbilityDef.DisablingStatuses = disablingStatus.ToArray();
+
+                          
+                       // TFTVLogger.Always($"{tacticalAbilityDef.name} has disabling status");
+                    }
                 }
             }
             catch (Exception e)

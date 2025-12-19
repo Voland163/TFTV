@@ -879,7 +879,7 @@ namespace TFTV
                             }
                             else if (resourceUnit.Type == ResourceType.Orichalcum)
                             {
-                                TFTVLogger.Always("Orichalcum, ");
+                             
                                 UIModuleInfoBar uIModuleInfoBar = (UIModuleInfoBar)UnityEngine.Object.FindObjectOfType(typeof(UIModuleInfoBar));
 
                                 Resolution resolution = Screen.currentResolution;
