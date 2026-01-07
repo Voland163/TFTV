@@ -2,6 +2,7 @@
 using Base.Defs;
 using Base.Entities.Statuses;
 using Base.Utils.Maths;
+using com.ootii.Helpers;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
@@ -71,10 +72,12 @@ namespace TFTV.TFTVDrills
 
         internal static class ShockDrop
         {
+           private static readonly BashAbilityDef takedownBashDef = DefCache.GetDef<BashAbilityDef>("Takedown_Bash_AbilityDef");
+
             [HarmonyPatch(typeof(AbilitySummaryData), "ProcessDamageTypeFlowPayload")] //VERIFIED
             public static class AbilitySummaryData_ProcessDamageTypeFlowPayload_Patch
             {
-                // Prefix replicates original implementation and prevents original from running.
+                
                 [HarmonyPrefix]
                 public static bool Prefix(AbilitySummaryData __instance, TacticalActor tacticalActor, DamagePayload payload, int numActions)
                 {
@@ -83,16 +86,19 @@ namespace TFTV.TFTVDrills
                         return true;
                     }
 
-
-
                     if (payload == null)
                     {
                         return false; // nothing to do, skip original
                     }
 
-                    if (tacticalActor.GetAbilityWithDef<BashAbility>(_shockDropBash) == null)
+                    
+
+                    bool hasShockDropBash = tacticalActor.GetAbilityWithDef<BashAbility>(_shockDropBash) != null;
+                   // bool hasTakedownBash = tacticalActor.GetAbilityWithDef<BashAbility>(takedownBashDef) != null && tacticalActor.Status.HasStatus(_shockDropStatus);
+
+                    if (!hasShockDropBash) //&& !hasTakedownBash)
                     {
-                        return true; // not our special bash, let original run
+                        return true; // not a bash we care about, let original run
                     }
 
                     DamageEffectDef damageEffectDef = payload.TryGetDamageEffectDef();
@@ -106,6 +112,8 @@ namespace TFTV.TFTVDrills
                         };
                         __instance.Keywords.Add(keywordData);
 
+                       
+
                         if (damageEffectDef is MeleeBashDamageEffectDef meleeBashDamageEffectDef)
                         {
                             // Recalculate bash damage value using actor and equipment
@@ -117,6 +125,7 @@ namespace TFTV.TFTVDrills
                                     meleeBashDamageEffectDef.EnduranceToDamageCoefficient,
                                     meleeBashDamageEffectDef.MeleeWeaponTagDef
                                 );
+
                             }
                             catch
                             {
@@ -129,6 +138,9 @@ namespace TFTV.TFTVDrills
                                 Value = keywordData.Value + _shockDropStatus.DamageKeywordPairs[0].Value,
                                 NumActions = numActions
                             };
+
+
+
                             __instance.Keywords.Add(item);
                         }
                     }
@@ -138,28 +150,41 @@ namespace TFTV.TFTVDrills
                 }
             }
 
+
+            
+
+
             [HarmonyPatch(typeof(BashAbility), nameof(BashAbility.GetDamage))]
             internal static class BashAbilityShockPatch
             {
                 private static readonly BashAbilityDef SpecialBashAbilityDef = _shockDropBash;
 
-                private static void Postfix(
-                    BashAbility __instance,
-                    ref float __result)
+                private static void Postfix(BashAbility __instance, ref float __result)
                 {
                     if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return;
                     }
 
-
-
-                    if (__instance.BashAbilityDef == SpecialBashAbilityDef)
+                    TacticalActor actor = __instance?.TacticalActor;
+                    if (actor == null)
                     {
-                        __result += _shockDropStatus.DamageKeywordPairs[0].Value;
+                        return;
                     }
-                }
 
+                    BashAbilityDef bashDef = __instance.BashAbilityDef;
+                    if (bashDef != SpecialBashAbilityDef) //&& bashDef != takedownBashDef)
+                    {
+                        return;
+                    }
+
+                    float shock = _shockDropStatus.DamageKeywordPairs[0].Value;
+                    float original = __result;
+                    __result += shock;
+
+                    //TFTVLogger.Always(
+                    //    $"ShockDrop bonus applied to {bashDef.name} for {actor.DisplayName}: {original} -> {__result} (+{shock})");
+                }
             }
 
 
@@ -2144,6 +2169,24 @@ namespace TFTV.TFTVDrills
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

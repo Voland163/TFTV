@@ -2722,8 +2722,15 @@ namespace TFTV
 
                                 bool hasActiveTrainingFacility = __instance.Facilities.Any(facility =>
                                     facility.Def == trainingFacilityDef &&
-                                    facility.State == GeoPhoenixFacility.FacilityState.Functioning &&
-                                    facility.IsPowered);
+                                    facility.State == GeoPhoenixFacility.FacilityState.Functioning);
+
+                                bool anyPoweredTrainingFacility = __instance.Facilities.Any(facility =>
+                                    facility.Def == trainingFacilityDef && facility.IsPowered);
+
+                                bool anyFunctioningTrainingFacility = __instance.Facilities.Any(facility =>
+                                   facility.Def == trainingFacilityDef && facility.State == GeoPhoenixFacility.FacilityState.Functioning);
+
+                               TFTVLogger.Always($"anyFunctioningTrainingFacility: {anyFunctioningTrainingFacility} anyPoweredTrainingFacility: {anyPoweredTrainingFacility}");
 
                                 bool hasActiveSecurityStation = __instance.Facilities.Any(facility =>
                                     facility.Def == securityStationDef &&

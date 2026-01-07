@@ -41,6 +41,30 @@ namespace TFTV
         private static GameObject infoPanel;
         private static Text infoText;
 
+        private static string _vivisectedText = "VIVISECTED";
+        private static string _autopsiedText = "AUTOPSIED";
+
+        private static bool _localizedStringPopulated = false;
+
+        private static void PopulateLocalizedStrings()
+        {
+            try 
+            { 
+                if(!_localizedStringPopulated)
+                {
+                    _vivisectedText = TFTVCommonMethods.ConvertKeyToString("TFTV_VIVISECTED");
+                    _autopsiedText = TFTVCommonMethods.ConvertKeyToString("TFTV_AUTOPSIED");
+                    _localizedStringPopulated = true;
+                }
+            
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
         public static void RemoveContainmentInfoPanel()
         {
             try
@@ -89,6 +113,8 @@ namespace TFTV
             {
                 try
                 {
+                    PopulateLocalizedStrings();
+
                     if (infoPanel != null) return;
 
                     float offset = 0;
@@ -251,8 +277,8 @@ namespace TFTV
                         }
                     }
 
-                    string info = $"{current.GetName()}, {description}\n volume: {volume}, mutagens per day: {mutagenPerDay}, vivisected: {vivisected}, autopsied {autopsied}";
-                    TFTVLogger.Always(info);
+                 //   string info = $"{current.GetName()}, {description}\n volume: {volume}, mutagens per day: {mutagenPerDay}, vivisected: {vivisected}, autopsied {autopsied}";
+                 //   TFTVLogger.Always(info);
 
                     // Initialize and update the info panel
                     InitializeInfoPanel();
@@ -269,11 +295,11 @@ namespace TFTV
                     string status = "";
                     if (autopsied && !vivisected)
                     {
-                        status = "AUTOPSIED";
+                        status = _autopsiedText;
                     }
                     else if (vivisected)
                     {
-                        status = "VIVISECTED";
+                        status = _vivisectedText;
                     }
                     infoPanel.transform.Find("Background").Find("StatusText").GetComponent<Text>().text = status;
 

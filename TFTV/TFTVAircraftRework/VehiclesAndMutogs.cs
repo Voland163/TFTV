@@ -334,6 +334,12 @@ namespace TFTV
             {
                 try
                 {
+                    bool isVehicle = geoCharacter.GameTags.Any(t => t == Shared.SharedGameTags.VehicleTag);
+                    if (isVehicle && geoVehicle.VehicleDef == blimp)
+                    {
+                        return false;
+                    }
+
                     int countVehicles = geoVehicle.Units.Where(c => c.GameTags.Any(t => t == Shared.SharedGameTags.VehicleTag)).Count();
                     int countMutogs = geoVehicle.Units.Where(c => c.GameTags.Any(t => t == Shared.SharedGameTags.MutogTag)).Count();
 
@@ -359,7 +365,6 @@ namespace TFTV
                     }
 
                     return true;
-
                 }
                 catch (Exception e)
                 {

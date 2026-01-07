@@ -32,8 +32,9 @@ namespace TFTV.TFTVDrills
         public class ShockDropStatusDef : AddAttackBoostStatusDef
         {
             public BashAbilityDef DefaultBashAbility;
-
-            public BashAbilityDef ReplacementBashAbility;
+            public BashAbilityDef TakeDownBashAbility;
+            public BashAbilityDef ReplacementDefaultBashAbility;
+            public BashAbilityDef ReplacementTakedownAbility;
         }
 
         [SerializeType(InheritCustomCreateFrom = typeof(AddAttackBoostStatus))]
@@ -42,8 +43,8 @@ namespace TFTV.TFTVDrills
             private TacticalAbility _pendingAttack;
 
             private bool _bashAbilityReplaced;
-
             private bool _removedDefaultBash;
+            private bool _removedTakedownBash;
 
             private ShockDropStatusDef ShockDropDef => BaseDef as ShockDropStatusDef;
 
@@ -169,24 +170,38 @@ namespace TFTV.TFTVDrills
                 }
 
                 ShockDropStatusDef statusDef = ShockDropDef;
-                if (statusDef?.ReplacementBashAbility == null)
+                if (statusDef == null)
                 {
                     return;
                 }
 
-                if (statusDef.DefaultBashAbility != null &&
-                    TacticalActor.GetAbilityWithDef<BashAbility>(statusDef.DefaultBashAbility) != null)
+                bool replacedAnything = false;
+
+                // Prefer Takedown replacement if the actor has it.
+                if (statusDef.TakeDownBashAbility != null &&
+                    statusDef.ReplacementTakedownAbility != null &&
+                    TacticalActor.GetAbilityWithDef<BashAbility>(statusDef.TakeDownBashAbility) != null)
+                {
+                    TacticalActor.RemoveAbility(statusDef.TakeDownBashAbility);
+                    _removedTakedownBash = true;
+
+                    TacticalActor.AddAbility(statusDef.ReplacementTakedownAbility, TacticalActor);
+
+                    replacedAnything = true;
+                }
+                else if (statusDef.DefaultBashAbility != null &&
+                         statusDef.ReplacementDefaultBashAbility != null &&
+                         TacticalActor.GetAbilityWithDef<BashAbility>(statusDef.DefaultBashAbility) != null)
                 {
                     TacticalActor.RemoveAbility(statusDef.DefaultBashAbility);
                     _removedDefaultBash = true;
+
+                    TacticalActor.AddAbility(statusDef.ReplacementDefaultBashAbility, TacticalActor);
+
+                    replacedAnything = true;
                 }
 
-                if (TacticalActor.GetAbilityWithDef<BashAbility>(statusDef.ReplacementBashAbility) == null)
-                {
-                    TacticalActor.AddAbility(statusDef.ReplacementBashAbility, TacticalActor);
-                }
-
-                _bashAbilityReplaced = true;
+                _bashAbilityReplaced = replacedAnything;
             }
 
             private void RestoreBashAbility()
@@ -202,19 +217,36 @@ namespace TFTV.TFTVDrills
                     return;
                 }
 
-                if (statusDef.ReplacementBashAbility != null &&
-                    TacticalActor.GetAbilityWithDef<BashAbility>(statusDef.ReplacementBashAbility) != null)
+                // Remove replacements (if present)
+                if (statusDef.ReplacementDefaultBashAbility != null &&
+                    TacticalActor.GetAbilityWithDef<BashAbility>(statusDef.ReplacementDefaultBashAbility) != null)
                 {
-                    TacticalActor.RemoveAbility(statusDef.ReplacementBashAbility);
+                    TacticalActor.RemoveAbility(statusDef.ReplacementDefaultBashAbility);
                 }
 
-                if (_removedDefaultBash && statusDef.DefaultBashAbility != null &&
+                if (statusDef.ReplacementTakedownAbility != null &&
+                    TacticalActor.GetAbilityWithDef<BashAbility>(statusDef.ReplacementTakedownAbility) != null)
+                {
+                    TacticalActor.RemoveAbility(statusDef.ReplacementTakedownAbility);
+                }
+
+                // Restore originals if we removed them
+                if (_removedDefaultBash &&
+                    statusDef.DefaultBashAbility != null &&
                     TacticalActor.GetAbilityWithDef<BashAbility>(statusDef.DefaultBashAbility) == null)
                 {
                     TacticalActor.AddAbility(statusDef.DefaultBashAbility, TacticalActor);
                 }
 
+                if (_removedTakedownBash &&
+                    statusDef.TakeDownBashAbility != null &&
+                    TacticalActor.GetAbilityWithDef<BashAbility>(statusDef.TakeDownBashAbility) == null)
+                {
+                    TacticalActor.AddAbility(statusDef.TakeDownBashAbility, TacticalActor);
+                }
+
                 _removedDefaultBash = false;
+                _removedTakedownBash = false;
                 _bashAbilityReplaced = false;
             }
         }
@@ -475,10 +507,10 @@ namespace TFTV.TFTVDrills
                     actionPoints.Set(clamped);
                 }
 
-                if (StatusComponent != null)
+               /* if (StatusComponent != null)
                 {
                     RequestUnapply(StatusComponent);
-                }
+                }*/
             }
         }
 

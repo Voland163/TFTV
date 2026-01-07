@@ -1,0 +1,1053 @@
+Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
+KEY_PHOENIXPEDIA_GUIDE_ACID_DESC,Text,,"A weapon with Acid Damage will add the damage value to the acid level of the hit body part. Acid can accumulate on body parts, if they are hit multiple times with acid damage.
+
+At the start of a character's turn, acid will eat away at the body part. First, the body part's armor is affected, and reduced by the Acid value. If there is no armor left on the body part then the damage is applied to Body Part Hit Points and to General Hit Points. After all acid damage is resolved, the acid value on each body part will reduce by 10.","具有酸蚀伤害的武器会将伤害值增加至被击中身体部位的酸蚀等级。如果身体部位多次受到酸蚀伤害，酸蚀等级也会累积。
+
+当受到影响的角色回合开始时，酸蚀会逐渐侵蚀身体部位。首先，身体部位的护甲会受到影响，减少 10 点。如果身体部位没有剩余护甲，则会对身体部位和总生命值造成 10 点伤害。所有酸蚀伤害结算完毕后，每个身体部位的酸蚀值将会减少 10 点。","Une arme infligeant des dégâts caustiques augmentera la valeur de dégâts caustiques de la partie du corps touchée. L'acide peut s'accumuler sur une partie du corps si elle est touchée plusieurs fois par des armes infligeant des dégâts caustiques.
+
+Au début du tour du personnage, l'acide dévorera la partie du corps affectée. Tout d'abord, l'armure sera affectée et réduite de 10. S'il n'y a plus d'armure sur une partie du corps affectée, alors 10 points de dégâts seront soustraits aux points de vie de la partie du corps et à ses points de vie globaux. Après la résolution de tous les dégâts caustiques, la valeur de l'acide de chaque partie du corps baisse de dix points.","Eine Waffe mit Säureschaden addiert ihren Schadenswert zur Säurestufe des getroffenen Körperteils. Säure kann sich auf Körperteilen ansammeln, wenn sie mehrfach von Säureangriffen getroffen wurden.
+
+Zu Beginn des Zugs frisst sich die Säure in den betroffenen Körperteil. Dies hat zuerst Einfluss auf die Rüstung, deren Wert um den Säurewert verringert wird. Wenn keine Rüstung mehr auf dem Körperteil vorhanden ist, wird der Schaden von den Trefferpunkten des Körperteils und von den allgemeinen Trefferpunkten abgezogen. Sobald alle Säureschäden abgezogen wurden, verringert sich der Säurewert jedes Körperteils um 10.","Un'arma che infligge danni acidi aggiunge il valore di danni al livello acidi della parte del corpo colpita. L'acido può accumularsi sulle parti del corpo, se queste vengono colpite ripetutamente da danni acidi.
+
+All'inizio del turno del personaggio l'acido inizia a corrodere la parte del corpo. Per prima cosa, viene colpita l'armatura della parte, venendo ridotta di 10. Se sulla parte del corpo non rimane armatura, viene quindi inflitto un valore 10 di danni ai punti ferita della parte del corpo e ai punti ferita generali. Una volta esauriti totalmente i danni acidi, il valore di danni acidi su ogni parte del corpo viene ridotto di 10.","Broń umożliwiająca zadawanie obrażeń od kwasu spowoduje dodanie wartości obrażeń do poziomu kwasu w trafionej części ciała. Kwas może kumulować się w częściach ciała, jeżeli zostaną kilkukrotnie narażone na obrażenia od kwasu.
+
+Na początku tury danej postaci, kwas trawi daną część ciała. Najpierw dotyka to pancerza, od którego wartości odejmuje się 10 punktów. Jeżeli na danej części ciała nie ma już pancerza, wówczas 10 punktów obrażeń odejmuje się od punktów życia części ciała i ogólnej liczby punktów życia. Po zadaniu wszystkich obrażeń od kwasu wartość kwasu w każdej części ciała spada o 10 punktów.","Оружие с кислотным уроном добавит значение урона к уровню кислоты пораженной части тела. При повторных атаках кислотой, она может накапливаться на частях тела.
+
+В начале хода персонажа кислота начинает разъедать часть тела. Сначала страдает броня. Ее значение уменьшается на 10 очков. Если брони не осталось, то урон в 10 очков вычитается из очков здоровья части тела и общих очков здоровья. После того, как все кислотные повреждения устранены, значение кислоты на каждой части тела уменьшится на 10 очков.","Las armas con daño ácido añaden el valor del daño al nivel de ácido de la parte del cuerpo impactada. El ácido se acumulará en las partes del cuerpo si reciben constantemente ataques de daño ácido.
+
+Al principio del turno del personaje, el ácido carcome la parte del cuerpo. Primero, afecta a la armadura de la parte del cuerpo y se reduce en 10. Si no queda armadura en la parte del cuerpo, se aplica 10 de daño a los puntos de salud de la parte del cuerpo y a los puntos de salud generales. Cuando se haya resuelto todo el daño ácido, el valor del ácido en cada parte del cuerpo se reduce en 10.","Une arme infligeant des dégâts caustiques augmentera la valeur de dégâts caustiques de la partie du corps touchée. L'acide peut s'accumuler sur une partie du corps si elle est touchée plusieurs fois par des armes infligeant des dégâts caustiques.
+
+Au début du tour du personnage, l'acide dévorera la partie du corps affectée. Tout d'abord, l'armure sera affectée et réduite de 10. S'il n'y a plus d'armure sur une partie du corps affectée, alors 10 points de dégâts seront soustraits aux points de vie de la partie du corps et à ses points de vie globaux. Après la résolution de tous les dégâts caustiques, la valeur de l'acide de chaque partie du corps baisse de dix points."
+KEY_PHOENIXPEDIA_GUIDE_ACID_NAME,Text,,Acid Damage,酸蚀伤害,Dégâts caustiques,Säureschaden,Danni acidi,Obrażenia od kwasu,Урон от кислоты,Daño ácido,Obrażenia od kwasu
+KEY_PHOENIXPEDIA_GUIDE_ATTRIBUTES_DESCRIPTION,Text,,"All operatives have six main attributes that determine their performance in combat. These are divided into Main attributes (which can be modified through Training) and Support attributes.
+
+<color=#f7bc20>MAIN ATTRIBUTES</color>
+Main attributes are linked to the operative and can be increased by spending Skill Points (SP) in the PERSONNEL tab. Equipment and armor can occasionally further modify these attributes.
+
+ • <color=#ffffff>STRENGTH</color>: Determines Hit Points (HP), encumbrance limit, throwing distance, and bash damage.
+
+ • <color=#ffffff>SPEED</color>: The maximum distance the operative can move in one turn, using all Action Points.
+
+ • <color=#ffffff>WILLPOWER</color>: Represents the operative's mental focus and is a requirement for advanced actions. Determines the amount of Will Points (WP) the operative starts a battle with, and the maximum that can be restored through the Recover ability.
+
+
+<color=#f7bc20>SUPPORT ATTRIBUTES</color>
+Support attributes cannot be increased through Training, but are affected by armor and equipment worn by the unit. Additionally, certain skills and status effects could also modify them on a permanent or temporary basis.
+
+ • <color=#ffffff>PERCEPTION</color>: The distance, in tiles, that the operative can spot a human-sized target in daylight. Perception is modified by lighting conditions, the size of the target, and its stealth value.
+
+ • <color=#ffffff>ACCURACY</color>: Primarily dependent on the weapon type, but an operative may have an accuracy modifier derived from armor or specific skills.
+
+ • <color=#ffffff>STEALTH</color>: Determines how difficult it is for enemies to spot the operative. The stealth factor is determined by armor and special abilities, and modifies the perception range of enemy characters.","所有角色拥有六个主属性，用来决定他们在战斗中的表现。属性根据特点可分为核心属性（可通过训练调整）和支援属性。
+
+核心属性
+核心属性与角色直接关联，可在“人员”选项卡中的“训练”分区花费技能点数来提升。装备与护甲偶尔能够进一步调整核心属性。
+
+力量：单位的通用属性。决定单位的生命值、负重限制、投掷距离和猛击伤害
+
+速度：角色在一个回合中使用所有行动点数可移动的最大距离。
+
+意志力：角色施展高级行动所需的专注力。决定角色在战斗开始时拥有的意志力点数以及通过“恢复”技能可以恢复的最大点数。
+
+
+支援属性
+支援技能不可通过训练来提升，但会受到单位的护甲和装备影响。此外，某些技能和状态效果可以永久或暂时改变这些技能的效果。
+
+感知：角色在白天光线下能够发现人类大小目标的方格距离。感知会根据光照条件、目标的大小以及目标的潜行数值而改变。
+
+准度：准度取决于武器的类型，不过角色的某些护甲或特定技能也会影响准度。
+
+潜行：角色的潜行能力取决于穿戴的护甲和特殊技能。潜行能力会影响敌方角色的感知能力，降低被发现的可能。","Tous les personnages disposent de six attributs principaux pour déterminer leur performance au combat. Basés sur leurs caractéristiques, les attributs sont divisés en attributs de base (pouvant être modifiés par le biais de l'entraînement) et attributs de soutien.
+
+ATTRIBUTS DE BASE
+Les attributs de base sont liés au personnage et peuvent être augmentés en dépensant des points de compétence dans la section entraînement (onglet PERSONNEL). L'équipement et l'armure peuvent parfois augmenter davantage les attributs de base.
+
+PUISSANCE : la puissance générale de l'unité. Détermine ses points de vie, sa charge maximale, sa distance de lancer et les dégâts de ses coups.
+
+VITESSE : la distance maximale de déplacement d'un personnage en un tour, en utilisant tous ses points d'action.
+
+VOLONTÉ : la concentration mentale et sa capacité à effectuer des actions avancées.
+Détermine le nombre de points de volonté d'un personnage au début du combat, et le nombre maximal pouvant être récupéré grâce à certaines capacités.
+
+ATTRIBUTS DE SOUTIEN
+Les attributs de soutien ne peuvent pas être améliorés par l'entraînement, mais sont affectés par l'armure et l'équipement portés par l'unité. De plus, certaines capacités et effets d'états peuvent également les affecter de façon temporaire ou permanente.
+
+PERCEPTION : la distance, en nombre de cases, où le personnage peut repérer une cible de la taille d'un humanoïde en plein jour. La perception peut être affectée par les conditions d'éclairage, la taille de la cible et sa valeur de discrétion.
+
+PRÉCISION : la précision dépend du type d'arme, mais il se peut également que le personnage possède un modificateur de précision grâce à son armure ou des capacités bien précises.
+
+DISCRÉTION : le facteur de discrétion d'un personnage est déterminé par l'armure qu'il porte et ses capacités spéciales. Le facteur de discrétion modifie la perception des personnages ennemis lors des tentatives de détection.","Alle Agenten verfügen über sechs Hauptattribute, die ihre Leistung im Kampf bestimmen. Diese werden in Hauptattribute (die durch Training verbessert werden können) und Unterstützungsattribute unterteilt.
+
+
+<color=#f7bc20>HAUPTATTRIBUTE</color>
+Hauptattribute sind fest mit dem Agenten verknüpft und können im Tab „PERSONAL“ durch den Einsatz von Fertigkeitspunkten gesteigert werden. Ausrüstung und Rüstung können diese Werte gelegentlich modifizieren.
+
+ • <color=#ffffff>STÄRKE</color>: Bestimmt Trefferpunkte (TP), Traglast, Wurfweite und den Schaden von Nahkampfangriffen mit Waffen.
+
+ • <color=#ffffff>GESCHWINDIGKEIT</color>: Die maximale Distanz, die ein Agent pro Zug mit allen Aktionspunkten zurücklegen kann. 
+
+ • <color=#ffffff>WILLENSKRAFT</color>: Repräsentiert den mentalen Fokus des Agenten und ist Voraussetzung für fortgeschrittene Aktionen. Sie bestimmt die Anzahl der Willenskraftpunkte (WP) zu Kampfbeginn sowie das Maximum, das durch die Fähigkeit „Erholen“ regeneriert werden kann.
+
+
+<color=#f7bc20>UNTERSTÜTZUNGSATTRIBUTE</color>
+Unterstützungsattribute können nicht durch Training gesteigert werden, sondern hängen von der getragenen Rüstung und Ausrüstung ab. Zudem können bestimmte Fertigkeiten und Statuseffekte diese Werte dauerhaft oder vorübergehend verändern.
+
+ • <color=#ffffff>WAHRNEHMUNG</color>: Die Entfernung (in Feldern), über die ein Agent ein menschengroßes Ziel bei Tageslicht entdecken kann. Die Wahrnehmung wird durch die Lichtverhältnisse, die Größe des Ziels und dessen Tarnwert beeinflusst.
+ 
+• <color=#ffffff>GENAUIGKEIT</color>: Hängt primär vom Waffentyp ab. Ein Agent kann jedoch zusätzliche Genauigkeitsmodifikatoren durch getragene Rüstung oder spezielle Fertigkeiten erhalten.
+
+ • <color=#ffffff>TARNUNG</color>: Bestimmt, wie schwer ein Agent für Gegner zu entdecken ist. Der Tarnwert wird durch die Rüstung und Spezialfertigkeiten definiert und modifiziert die Wahrnehmungsreichweite feindlicher Einheiten.","Tutti i personaggi hanno sei attributi principali che determinano le loro prestazioni in combattimento. In base alle loro caratteristiche, gli attributi sono divisi in principali (che possono essere modificati con l'addestramento) e secondari.
+
+ATTRIBUTI PRINCIPALI
+Gli attributi principali sono collegati al personaggio e possono essere incrementati usando punti abilità nella sezione addestramento (nella scheda del PERSONALE). L'equipaggiamento e l'armatura talvolta possono modificare ulteriormente gli attributi principali.
+
+FORZA: la forza totale di un'unità. Determina i punti ferita, il limite della capacità di trasporto, la distanza di lancio e il danno contundente
+
+VELOCITÀ: la distanza massima che il personaggio può percorrere in un turno, usando tutti i punti azione.
+
+VOLONTÀ: il grado di concentrazione del personaggio e la sua abilità nell'eseguire azioni avanzate. Determina la quantità di punti volontà con cui il personaggio entra in battaglia e la quantità massima che può essere ripristinata con l'abilità Recupero.
+
+
+ATTRIBUTI SECONDARI
+Gli attributi secondari non possono essere incrementati con l'addestramento, ma sono influenzati dall'armatura e dall'equipaggiamento indossati dall'unità. In più, alcune abilità ed effetti di stato possono anche modificarli in modo definitivo o temporaneo.
+
+PERCEZIONE: la distanza, in caselle, da cui il personaggio riesce a individuare un bersaglio di dimensioni umane in condizioni di luce. La percezione può essere modificata dalla luce, dalla grandezza del bersaglio e dal suo valore furtività.
+
+PRECISIONE: la precisione dipende dal tipo di arma, ma potrebbe essere modificata dall'armatura o dalle abilità speciali del personaggio.
+
+FURTIVITÀ: il fattore furtività di un personaggio è determinato dall'armatura indossata e dalle abilità speciali. Il fattore furtività modifica la percezione del nemico nell'individuazione.","Wszystkie postaci charakteryzują się sześcioma głównymi cechami, które determinują ich działania podczas walki. W zależności od ich specyfiki cechy dzielą się na podstawowe (które można modyfikować poprzez szkolenia) oraz pomocnicze.
+
+CECHY PODSTAWOWE
+Cechy podstawowe są powiązane z postacią i można je rozbudowywać poprzez wydawanie punktów umiejętności w sekcji Szkolenie (na karcie PERSONEL). Niekiedy cechy podstawowe można dodatkowo zmieniać za pomocą sprzętu i pancerza.
+
+SIŁA: ogólna siła jednostki. Warunkuje liczbę punktów życia, limit obciążenia, odległość rzutu i obrażenia w walce wręcz.
+
+SZYBKOŚĆ: maksymalny dystans, na jaki postać może się przemieścić w jednej turze, jeżeli wykorzysta wszystkie punkty akcji.
+
+SIŁA WOLI: koncentracja postaci i jej umiejętność podejmowania zaawansowanych działań. Warunkuje liczbę punktów woli, z którą postać rozpoczyna bitwę, oraz maksymalną wartość, którą można odzyskać, jeżeli skorzysta się z umiejętności Odpoczynek.
+
+
+CECHY POMOCNICZE
+Cech pomocniczych nie można rozwijać poprzez szkolenia. Mają na nie jednak wpływ pancerz i sprzęt, który nosi jednostka. Ponadto niektóre umiejętności i efekty stanu mogą również zmieniać jednostki w sposób trwały lub tymczasowy.
+
+ZASIĘG WIDZENIA: odległość w polach, w jakiej postać w świetle dziennym może zauważyć cel wielkości człowieka. Zasięg widzenia może się zmieniać w zależności od warunków oświetleniowych, wielkości celu i jego umiejętności w zakresie skradania się.
+
+CELNOŚĆ: celność zależy od typu broni, ale postać może też charakteryzować się współczynnikiem celności zależnym od noszonego pancerza i określonych umiejętności.
+
+SKRADANIE SIĘ: czynnik skradania się postaci zależy od noszonego pancerza i umiejętności specjalnych. Modyfikuje on zasięg widzenia wrogich postaci i ich możliwość wykrycia zbliżającego się przeciwnika.","Все персонажи имеют шесть основных параметров, которые определяют их эффективность в бою. По своим характеристикам параметры делятся на основные (которые можно изменить с помощью обучения) и вспомогательные.
+
+ОСНОВНЫЕ ПАРАМЕТРЫ
+Основные параметры связаны с персонажем и могут быть увеличены за счет расходования очков навыков в разделе «Подготовка» (на вкладке «СОСТАВ»). Экипировка и броня могут иногда дополнительно изменять основные параметры.
+
+СИЛА: общая сила солдата. Определяет количество очков жизни, максимальный груз, расстояние броска и урон от удара
+
+СКОРОСТЬ: максимальное расстояние, которое персонаж может пройти за один ход, используя все очки действия.
+
+ВОЛЯ: умственные способности персонажа и умение выполнять сложные действия. Определяет количество очков воли, с которыми персонаж начинает сражение, и максимальное количество, которое можно восстановить с помощью способности «Восстановление».
+
+
+ВСПОМОГАТЕЛЬНЫЕ ПАРАМЕТРЫ
+Не могут быть улучшены посредством подготовки, однако на них может повлиять броня или снаряжение персонажа. Кроме того, определенные навыки и состояния могут также изменять их на постоянной или временной основе.
+
+ВОСПРИЯТИЕ: расстояние в клетках, на котором персонаж может разглядеть цель размером с человека в дневном свете. Восприятие может быть изменено в зависимости от условий освещения, размера цели и значения скрытности цели.
+
+ТОЧНОСТЬ: зависит от типа оружия, однако персонаж может иметь модификатор точности, полученный от брони или определенных навыков.
+
+СКРЫТНОСТЬ: фактор скрытности персонажа определяется броней и особыми способностями. Фактор скрытности изменяет восприятие вражеских персонажей при обнаружении.","Los personajes tiene seis atributos principales que determinan sus capacidades en combate. Los atributos están divididos en atributos base (solo se pueden modificar mediante el entrenamiento) y de apoyo según sus características.
+
+ATRIBUTOS BASE
+Los atributos base están vinculados al personaje y se pueden aumentar con los puntos de habilidad en la sección de entrenamiento (en la pestaña de PERSONAL). El equipo y la armadura pueden mejorar los atributos base.
+
+FUERZA: La fuerza general de la unidad. Determina los puntos de salud, el límite de carga, la distancia de lanzamiento y el daño de golpe.
+
+VELOCIDAD: La distancia máxima que se puede mover un personaje en su turno si usa todos los puntos de acción.
+
+FUERZA DE VOLUNTAD: La concentración mental del personaje y su capacidad para realizar acciones avanzadas. Determina la cantidad de puntos de voluntad con los que empieza la batalla y el máximo que se restauran con la habilidad de Recuperación.
+
+
+ATRIBUTOS DE APOYO
+Las habilidades de apoyo no se pueden mejorar con el entrenamiento, pero se ven afectadas por la armadura y el equipo que lleva la unidad. Además, algunas habilidades y efectos de estado pueden alterarlas de manera permanente o temporal.
+
+PERCEPCIÓN: La distancia en casillas a la que un personaje puede avistar a un objetivo de tamaño humano de día. La percepción se ve alterada por la luz, el tamaño del objetivo y el valor de sigilo del objetivo.
+
+PRECISIÓN: La precisión depende del tipo de arma, pero un personaje puede tener un modificador a la precisión que obtiene de una armadura o habilidad.
+
+SIGILO: El sigilo de un personaje depende de la armadura que lleva y sus habilidades especiales. El sigilo modifica la percepción de los personajes enemigos en pruebas de avistamiento.","Tous les personnages disposent de six attributs principaux pour déterminer leur performance au combat. Basés sur leurs caractéristiques, les attributs sont divisés en attributs de base (pouvant être modifiés par le biais de l'entraînement) et attributs de soutien.
+
+ATTRIBUTS DE BASE
+Les attributs de base sont liés au personnage et peuvent être augmentés en dépensant des points de compétence dans la section entraînement (onglet PERSONNEL). L'équipement et l'armure peuvent parfois augmenter davantage les attributs de base.
+
+PUISSANCE : la puissance générale de l'unité. Détermine ses points de vie, sa charge maximale, sa distance de lancer et les dégâts de ses coups.
+
+VITESSE : la distance maximale de déplacement d'un personnage en un tour, en utilisant tous ses points d'action.
+
+VOLONTÉ : la concentration mentale et sa capacité à effectuer des actions avancées.
+Détermine le nombre de points de volonté d'un personnage au début du combat, et le nombre maximal pouvant être récupéré grâce à certaines capacités.
+
+ATTRIBUTS DE SOUTIEN
+Les attributs de soutien ne peuvent pas être améliorés par l'entraînement, mais sont affectés par l'armure et l'équipement portés par l'unité. De plus, certaines capacités et effets d'états peuvent également les affecter de façon temporaire ou permanente.
+
+PERCEPTION : la distance, en nombre de cases, où le personnage peut repérer une cible de la taille d'un humanoïde en plein jour. La perception peut être affectée par les conditions d'éclairage, la taille de la cible et sa valeur de discrétion.
+
+PRÉCISION : la précision dépend du type d'arme, mais il se peut également que le personnage possède un modificateur de précision grâce à son armure ou des capacités bien précises.
+
+DISCRÉTION : le facteur de discrétion d'un personnage est déterminé par l'armure qu'il porte et ses capacités spéciales. Le facteur de discrétion modifie la perception des personnages ennemis lors des tentatives de détection."
+KEY_PHOENIXPEDIA_GUIDE_ATTRIBUTES_NAME,Text,,Character Attributes,角色属性,Attributs de personnage,Agentenattribute,Attributi dei personaggi,Cechy postaci,Атрибуты персонажа,Atributos de personaje,Attributi dei personaggi
+KEY_PHOENIXPEDIA_GUIDE_BLAST_DESC,Text,,"Explosive munitions with blast damage apply their damage value to every body part caught within the explosive radius of the blast. The highest damage suffered by any individual body part is then applied to the general Hit Points of the target.
+
+Explosives can be particularly devastating due to the fact they can damage multiple body parts in one attack. Explosives will normally have some shredding effect, reducing the armor value of every body part hit by the blast.","具有爆炸伤害的爆炸弹药会将其伤害值散布至爆炸范围内的每个身体部位。随后，任何一个身体部位受到的最大伤害都将影响目标的总生命值。
+
+爆炸物可以通过单次攻击损坏多个身体部位，因此具有格外强大的破坏力。爆炸物通常还会具有撕裂效果，能够降低被爆炸击中的每个身体部位的护甲值。","Les munitions explosives avec des dégâts d'explosion appliquent leur valeur de dégâts à chaque partie du corps touchée par l'explosion. Les dégâts les plus élevés à l'une des parties du corps individuelles sont appliquées aux points de vie globaux de la cible.
+
+Les explosifs, peuvent être particulièrement efficaces car ils peuvent causer des dégâts à plusieurs parties du corps en une seule attaque. De plus, les explosifs auront une bonne chance d'infliger des dégâts de déchiquetage, réduisant la valeur d'armure à chaque partie du corps touchée par l'explosion.","Der Schadenswert von explosiver Munition, die Stoßschaden zufügt, gilt für jeden Körperteil im Radius der Explosion. Der höchste Schaden, den ein einzelnes Körperteil erlitten hat, wird dann von den allgemeinen Trefferpunkten des Ziels abgezogen.
+
+Sprengstoff kann besonders verheerend sein, da er mehrere Körperteile bei einem Angriff beschädigt. Sprengstoffe haben normalerweise eine gewisse Zerfetzwirkung, wodurch der Rüstungswert jedes Körperteils, der von der Explosion getroffen wird, verringert wird.","Le munizioni esplosive capaci di danni da esplosione infliggono il loro valore di danni a ogni parte del corpo coinvolta nel raggio dell'esplosione. Il valore più alto di danni subito da ogni parte del corpo viene quindi applicato ai punti ferita generali del bersaglio.
+
+Gli esplosivi possono risultare particolarmente devastanti, poiché in grado di danneggiare più parti del corpo in un singolo attacco. Gli esplosivi, di norma, hanno qualche effetto di lacerazione, e riducono il valore armatura di tutte le parti del corpo colpite dall'esplosione.","Amunicja wybuchowa umożliwiająca zadawanie obrażeń od wybuchu powoduje obrażenia każdej części ciała znajdującej się w zasięgu wybuchu. Najwyższe obrażenia odniesione przez części ciała postaci są wówczas odejmowane od ogólnej liczby punktów życia danego celu.
+
+Materiały wybuchowe mogą mieć szczególnie niszczycielski efekt ze względu na to, że umożliwiają zadanie obrażeń wielu częściom ciała w jednym ataku. Zazwyczaj powodują one też uszkodzenia pancerza. Wartość pancerza zmniejsza się w przypadku każdej części ciała narażonej na wybuch.","Взрывные боеприпасы наносят урон каждой части тела, находящейся в радиусе взрыва. Наибольший урон, нанесенный какой-либо отдельной части тела, затем применяется вычитается из общих очков здоровья цели.
+
+Взрывчатые вещества могут быть особенно разрушительными, поскольку могут повредить сразу несколько частей тела. Взрывчатка обычно имеет некоторый бронебойный эффект, что уменьшает значение брони каждой части тела, пораженной взрывом.","Las municiones explosivas con daño de estallido aplican su valor de daño a las partes del cuerpo que estén en el radio del impacto de la explosión. El valor más alto de daño recibido por una de las partes del cuerpo se aplica a los puntos de salud generales del objetivo.
+
+Los explosivos pueden ser devastadores, ya que pueden dañar a muchas partes del cuerpo con un solo ataque. Los explosivos tienen un efecto de rotura, lo que reduce el valor de armadura de las partes del cuerpo impactadas.","Les munitions explosives avec des dégâts d'explosion appliquent leur valeur de dégâts à chaque partie du corps touchée par l'explosion. Les dégâts les plus élevés à l'une des parties du corps individuelles sont appliquées aux points de vie globaux de la cible.
+
+Les explosifs, peuvent être particulièrement efficaces car ils peuvent causer des dégâts à plusieurs parties du corps en une seule attaque. De plus, les explosifs auront une bonne chance d'infliger des dégâts de déchiquetage, réduisant la valeur d'armure à chaque partie du corps touchée par l'explosion."
+KEY_PHOENIXPEDIA_GUIDE_BLAST_NAME,Text,,Blast Damage,爆炸伤害,Dégâts d'explosion,Stoßschaden,Danni da esplosione,Obrażenia od wybuchu,Урон от взрыва,Daño de estallido,Obrażenia od wybuchu
+KEY_PHOENIXPEDIA_GUIDE_DAMAGE_SYSTEM_DESCRIPTION,Text,,"When an individual round, or weapon strike hits a target it applies a damage value.
+
+The armor value of the body part hit is subtracted from the damage value. The resultant damage is then applied to both the Body Part Hit Points and the character's General Hit Points.
+
+If the General Hit Points are reduced to zero, the target dies. If the Body Part Hit Points are reduced to zero, the body part is disabled and any Strength, Speed, Willpower or abilities given by that body part are lost. Additionally, a bleed value may be applied to the character base on the body part's bleed value.
+
+Special damage values - from poison, virus, paralysis - are only applied to the target if at least some standard damage is inflicted.
+
+<color=#f7bc20>TACTICAL RECOMMENDATIONS</color>
+ • <color=#ffffff>Targeted Disabling</color>: Use Free Aim mode to disable arms. An enemy with only one functional arm can no longer use two-handed weapons (such as rifles or shields). Disabled legs severely restrict movement range.
+ • <color=#ffffff>Breaking Willpower</color>: Headshots cause the loss of Will Points and disable special abilities.
+ • <color=#ffffff>Field Medicine</color>: If an operative's body part has been disabled, use a medkit immediately. Although it does not restore the body part's function, it stops bleeding and stabilizes hit points for continued deployment.
+ • <color=#ffffff>Armor Penetration</color>: Special effects like Poison or Virus only take effect if the damage pierces the armor. Against heavily armored enemies, you must first destroy the armor or use weapons with high armor penetration.","当一发子弹或一次武器攻击命中目标时，就会产生一个伤害值。
+
+伤害值会减去被击中的身体部位拥有的护甲值。由此产生的伤害同时作用于身体部位的生命值和角色的总生命值。
+
+目标总生命值降为零时将会死亡。如果某个身体部位的生命值降为零，该部位就会损坏，而且角色会失去该部位给予的所有力量、速度、意志力和技能。此外，还可能会基于该身体部位的流血值，对角色造成流血伤害。
+
+例如中毒、病毒和麻痹一类的特殊伤害，只有在至少造成一些标准伤害的情况下，才可对目标产生影响。
+","Lors de tirs individuels, ou lorsqu'une attaque touche une cible, elle applique une valeur de dégâts.
+
+La valeur d'armure de la partie du corps touchée est soustraite à la celle de dégâts. Les dégâts finaux sont appliqués à la fois aux points de vie de la partie du corps concernée et aux points de vie globaux du personnage.
+
+Si les points de vie globaux atteignent zéro, la cible meurt. Si les points de vie de la partie du corps touchée atteignent zéro, la partie du corps est désactivée et toute puissance, volonté ou capacités octroyées par cette partie du corps sont perdues. De plus, une valeur de saignement peut être appliquée en fonction de la valeur de saignement de la partie du corps concernée.
+
+Les valeurs de dégâts spéciaux, comme le poison, virus ou la paralysie sont appliqués à la cible si des dégâts normaux ont également été infligés.","Wenn ein Projektil oder ein anderer Angriff ein Ziel trifft, verursacht dies einen Schadenswert.
+
+Der Rüstungswert des getroffenen Körperteils wird vom Schadenswert abgezogen. Der verbleibende Schaden wird dann sowohl von den Körperteil-Trefferpunkten als auch von den Gesamt-Trefferpunkten (TP) des Charakters abgezogen.
+
+Sinken die Gesamt-Trefferpunkte auf Null, stirbt das Ziel. Sinken die Körperteil-Trefferpunkte auf Null, wird das Körperteil deaktiviert. Alle Boni auf Stärke, Geschwindigkeit, Willenskraft oder Fähigkeiten, die dieses Körperteil gewährt hat, gehen verloren. Zusätzlich kann ein Blutungswert verursacht werden, der von den Eigenschaften des Körperteils abhängt.
+
+Spezielle Schadenswerte – wie Gift, Virus oder Lähmung – werden nur dann auf das Ziel angewendet, wenn ein gewisser Standardschaden zugefügt wurde.
+
+
+<color=#f7bc20>TAKTISCHE EMPFEHLUNGEN</color>
+ • <color=#ffffff>Gezielte Ausschaltung</color>: Nutze den Freien Zielmodus, um Arme zu deaktivieren. Ein Gegner mit nur einem funktionsfähigen Arm kann keine Zweihandwaffen (wie Gewehre oder Schilde) mehr einsetzen. Deaktivierte Beine schränken die Bewegungsweite massiv ein.
+ • <color=#ffffff>Willenskraft brechen</color>: Kopfschüsse verursachen den Verlust von Willenspunkten und schalten Spezialfähigkeiten aus.
+ • <color=#ffffff>Feldmedizin</color>: Wenn ein Körperteil eines Agenten deaktiviert wurde, nutze sofort ein Medkit. Es stellt zwar die Funktion des Körperteils nicht wieder her, stoppt aber die Blutung und stabilisiert die Trefferpunkte für den weiteren Einsatz.
+ • <color=#ffffff>Rüstungsdurchschlag</color>: Spezialeffekte wie Gift oder Virus wirken nur, wenn der Schaden die Rüstung durchbricht. Bei schwer gepanzerten Gegnern musst du die Rüstung erst zerstören oder Waffen mit hohem Rüstungsdurchschlag nutzen.","Viene applicato un valore di danni ogni volta che un proiettile o colpo dell'arma raggiunge un bersaglio.
+
+Il valore armatura della parte del corpo colpita viene sottratto dal valore di danni. I danni risultanti vengono quindi applicati sia alla parte del corpo colpita che ai punti ferita generali del personaggio.
+
+Se i punti ferita generali vengono ridotti a zero, il bersaglio muore. Se i punti ferita della parte del corpo vengono ridotti a zero, la parte del corpo viene messa fuori uso e viene persa qualsiasi forza, velocità, volontà o altra abilità assegnata a quella parte del corpo.
+
+Valori speciali di danni, causati da veleno, virus, paralisi, vengono applicati al bersaglio soltanto se vengono contestualmente vengono inflitti dei danni standard.
+","Trafienie pojedynczym pociskiem lub uderzenie bronią w cel powoduje naliczenie punktów obrażeń.
+
+Wartość pancerza noszonego na danej części ciała jest odejmowana od punktów obrażeń. Uzyskane w ten sposób obrażenia są następnie odliczane od punktów życia danej części ciała i ogólnej liczby punktów życia postaci.
+
+Jeżeli ogólna liczba punktów życia spadnie do zera, cel umiera. Jeżeli liczba punktów życia danej części ciała spadnie do zera, dana część ciała jest kontuzjowana, a postać traci wszelkie atrybuty siły, szybkości, siły woli lub umiejętności uzyskiwane dzięki tej części ciała. Ponadto postać może tracić punkty za krwawienie odpowiadające wartości krwawienia danej części ciała.
+
+Specjalne wartości obrażeń – wynikające z zatrucia, infekcji wirusowej, paraliżu – mają zastosowanie do celu tylko wtedy, gdy postaci udało się zadać jakiekolwiek obrażenia standardowe.
+","Когда отдельный снаряд или удар оружия поражает цель, она получает урон.
+
+Значение брони той части тела, в которую попал снаряд, вычитается из значения урона. Полученное таким образом значение урона затем вычитается из очков здоровья раненной части тела и общих очков здоровья персонажа.
+
+Если значение общих очков здоровья опускается до нуля, то цель умирает. Если значение очков здоровья части тела опускается до нуля, то данная часть тела считается поврежденной и утрачивает все закрепленные за ней способности и значения силы, скорости и силы воли. Кроме того, персонаж может получить кровотечение.
+
+Специальные значения урона (например от яда, вирус и паралича) применяются к цели только в случае нанесения хотя бы некоторого обычного урона.
+","Cuando una sola bala o un golpe de arma impacta al objetivo, se aplica un valor de daño.
+
+El valor de la armadura de la parte del cuerpo se resta del valor del daño. El daño resultante se aplica a los puntos de salud de la parte del cuerpo y a los puntos de salud generales del personaje.
+
+Si los puntos de salud generales se reducen a cero, el objetivo muere. Si los puntos de salud de una parte del cuerpo se reducen a cero, la parte del cuerpo queda inhabilitada y la fuerza, la velocidad, la fuerza de voluntad y las habilidades que ofrece se pierden. Además, el valor de sangrado puede aplicarse al personaje dependiendo del valor de sangrado de la parte del cuerpo.
+
+Los valores de daño especial (veneno, vírico y parálisis) solo se aplican al objetivo si se inflige daño estándar.","Trafienie pojedynczym pociskiem lub uderzenie bronią w cel powoduje naliczenie punktów obrażeń.
+
+Wartość pancerza noszonego na danej części ciała jest odejmowana od punktów obrażeń. Uzyskane w ten sposób obrażenia są następnie odliczane od punktów życia danej części ciała i ogólnej liczby punktów życia postaci.
+
+Jeżeli ogólna liczba punktów życia spadnie do zera, cel umiera. Jeżeli liczba punktów życia danej części ciała spadnie do zera, dana część ciała jest kontuzjowana, a postać traci wszelkie atrybuty siły, szybkości, siły woli lub umiejętności uzyskiwane dzięki tej części ciała. Ponadto postać może tracić punkty za krwawienie odpowiadające wartości krwawienia danej części ciała.
+
+Specjalne wartości obrażeń – wynikające z zatrucia, infekcji wirusowej, paraliżu – mają zastosowanie do celu tylko wtedy, gdy postaci udało się zadać jakiekolwiek obrażenia standardowe.
+"
+KEY_PHOENIXPEDIA_GUIDE_DAMAGE_SYSTEM_NAME,Text,,Standard Damage & Tactics,标准伤害,Dégâts normaux,Standardschaden & Taktik,Danni standard,Obrażenia standardowe,Обычный урон,Daño estándar,Obrażenia standardowe
+KEY_PHOENIXPEDIA_GUIDE_FACTIONS_DESCRIPTION,Text,,"Other than the Phoenix Project, three main factions remain in the world: New Jericho, Synedrion, and the Disciples of Anu. Each of them exerts substantial control over the majority of Havens that remain in the world.
+
+In the course of the game, each faction will offer series of Diplomacy missions. Completing these missions will allow you to improve relations with them. Important diplomacy missions are given at the highest point of relationship levels Friendly (24), Supportive (49) and Aligned (74).
+
+<color=#f7bc20>RELATIONSHIP LEVELS</color>
+ • <color=#ffffff>Allied: (attitude 75+)</color> The Phoenix Project can research all the allied faction's research projects. Attacking allied faction Havens puts you immediately At War.
+ • <color=#ffffff>Aligned: (attitude 50 - 74)</color> The faction shares significant research projects with the Phoenix Project.
+ • <color=#ffffff>Supportive: (attitude 25 - 49)</color> When the Phoenix Project discovers a Haven, belonging to the faction, it will be revealed instantly without exploration.
+ • <color=#ffffff>Friendly: (attitude 1 - 24)</color> Standard relations.
+ • <color=#ffffff>Unfriendly: (attitude -25  - 0)</color> Cannot Trade or Recruit from Haven Leaders with such an attitude.
+ • <color=#ffffff>Hostile: (attitude -25 - -49)</color> No special effect.
+ • <color=#ffffff>Aggressive: (attitude -50 - 74)</color> No special effect.
+ • <color=#ffffff>At War: (attitude -75)</color> The faction will attempt to attack your bases. Relations cannot improve from this point.","除了凤凰计划之外，世界上还有三个主要派系：新耶利哥、平衡议会，以及安努门徒教会。世界上现存的大部分避难所都由这三个派系所控制着。
+
+在游戏过程中，每个派系都会提供一系列外交任务。完成这些任务可提升你与这些派系之间的关系。在达到关系等级的最高点时（友好为 24 点，支持为 49 点，一致为 74 点）会触发重要的外交任务。
+
+关系等级
+结盟：（态度 75+）凤凰计划可以研究盟友派系的研究项目。攻击结盟派系的避难所会使你立刻进入开战状态。
+一致：（态度 50 - 74）该派系会与凤凰计划共享所有重要的研究项目。
+支持：（态度 25 - 49）当凤凰计划发现属于该派系的一个避难所时，它会立即显示位置。
+友好：（态度 1 - 24）标准关系。
+不友好：（态度 -25 - 0）不能与避难所领袖交易或进行招募。
+敌对：（态度 -25 - -49）无特殊效果。
+侵略：（态度 -50 - -74）无特殊效果。
+开战：（态度 -75）该派系将试图攻击你的基地。从这时起，关系将无法得到改善。","En plus du Projet Phoenix, il reste trois factions principales encore en activité dans le monde : la Nouvelle-Jéricho, le Synédrion et les Disciples d'Anu, chacune d'entre elles exerce un certain contrôle sur la majorité des refuges encore en activité.
+
+Au cours du jeu, chaque faction offrira une série de missions diplomatiques. Terminer ces missions vous permettra d'améliorer vos relations avec eux. D'importantes missions diplomatiques seront proposées à des niveaux de relation élevés : bienveillant (24), favorable (49), et aligné (74)
+
+NIVEAUX DE RELATION
+Allié : (75 points d'attitude et +) Le Projet Phoenix peut rechercher tous les projets de recherche d'une faction alliée. Attaquer les refuges d'une faction alliée équivaut à leur déclarer la guerre.
+Aligné : (de 50 à 74 points d'attitude) La faction partage ses projets de recherche importants avec le Projet Phoenix.
+Favorable : (de 25 à 49 points d'attitude) Lorsque le Projet Phoenix découvre un refuge qui appartient à la faction, celui-ci est immédiatement révélé sans exploration.
+Bienveillant : (de 1 à 24 points d'attitude) Relations normales.
+Froid : (de 0 à -25 points d'attitude) Impossible de commercer ou de recruter auprès des chefs de refuge avec pareille attitude.
+Hostile : (de -25 à -49 points d'attitude) Aucun effet spécial supplémentaire.
+Agressif : (de -50 à -74 points d'attitude) Aucun effet spécial supplémentaire.
+En guerre : (-75 points d'attitude et plus) La faction tentera d'attaquer vos bases. Les relations ne pourront plus s'améliorer à ce stade.","Neben dem Phoenix-Projekt gibt es drei weitere, wichtige Fraktionen auf der Welt: Neu-Jericho, Synedrion und die Jünger von Anu. Sie alle üben eine erhebliche Kontrolle über die Mehrheit der Zufluchten aus, die es noch auf der Welt gibt.
+
+Im Laufe des Spiels wird jede Fraktion eine Reihe von Diplomatie-Missionen anbieten. Wenn du diese Missionen erfüllst, kannst du die Beziehungen zu ihnen verbessern. Wichtige diplomatische Missionen werden auf dem höchsten Punkt der Beziehungsebene Freundlich (24), Unterstützend (49) und Wohlwollend (74) gegeben.
+
+<color=#f7bc20>BEZIEHUNGSEBENEN</color>
+ • <color=#ffffff>Verbündete: (Haltung 75+)</color> Das Phoenix-Projekt kann die Forschungsprojekte aller verbündeten Fraktionen erforschen. Der Angriff auf Zufluchten verbündeter Fraktionen bezieht dich sofort in den Krieg mit ein.
+ • <color=#ffffff>Wohlwollend: (Haltung 50 - 74)</color> Die Fraktion teilt wichtige Forschungsprojekte mit dem Phoenix-Projekt.
+ • <color=#ffffff>Unterstützend: (Haltung 25 - 49)</color> Wenn das Phoenix-Projekt eine Zuflucht entdeckt, die zu der Fraktion gehört, wird sie sofort und ohne Erkundung enthüllt.
+ • <color=#ffffff>Freundlich: (Haltung 1 - 24)</color> Standardbeziehungen.
+ • <color=#ffffff>Unfreundlich: (Haltung -25 - 0)</color> Handeln ist nicht möglich und Rekrutierung von Zufluchtsanführern mit dieser Haltung auch nicht.
+ • <color=#ffffff>Feindlich: (Haltung -25 - -49)</color> Kein Spezialeffekt.
+ • <color=#ffffff>Aggressiv: (Haltung -50 - -74)</color> Kein Spezialeffekt.
+ • <color=#ffffff>Im Krieg: (Haltung -75)</color> Die Fraktion wird versuchen, deine Basen anzugreifen. Die Beziehungen können sich von diesem Punkt an nicht mehr verbessern.","Oltre al Progetto Phoenix, nel mondo restano tre fazioni principali: Nuova Gerico, Synedrion e i Discepoli di Anu. Esse nel complesso esercitano il sostanziale controllo della maggior parte dei rifugi superstiti sulla terra.
+
+Nel corso del gioco, ogni fazione offrirà una serie di missioni di Diplomazia. Le tue relazioni con loro miglioreranno portando a termine tali missioni. Le missioni diplomatiche più importanti vengono affidate in corrispondenza dei punti più alti delle relazioni Amichevole (24), Cooperante (49) e Allineata (74).
+
+LIVELLI DI RELAZIONE
+Alleata: (disposizione 75+) Il Progetto Phoenix può fare ricerca su tutti i progetti di ricerca della fazione alleata. Se si attaccano rifugi della fazione alleata si entra immediatamente In guerra.
+Allineata: (disposizione 50 - 74) La fazione condivide progetti di ricerca importanti con il Progetto Phoenix.
+Cooperante: (disposizione 25 - 49) Quando il Progetto Phoenix scopre un rifugio che appartiene alla fazione, verrà svelato immediatamente, senza che debba essere esplorato.
+Amichevole: (disposizione 1 - 24) Relazioni standard.
+Fredda: (disposizione -25 - 0) Impossibile fare scambi o reclutare leader del rifugio con tale disposizione.
+Ostile: (disposizione -25 - -49) Nessun effetto particolare.
+Aggressiva: (disposizione -50 - -74) Nessun effetto particolare.
+In guerra: (disposizione -75) La fazione proverà ad attaccare le tue basi. Da questo punto, le relazioni non possono migliorare.","Poza Projektem Phoenix na świecie funkcjonują trzy główne frakcje: Nowe Jerycho, Synedrion i Akolici Anu. Każda z nich utrzymuje kontrolę nad znaczną liczbą ocalałych bastionów.
+
+W trakcie gry każda frakcja zaoferuje Ci serię misji dyplomatycznych. Ich zrealizowanie umożliwi Ci poprawę stosunków z daną frakcją. Ważne misje dyplomatyczne otrzymasz po osiągnięciu najwyższych poziomów dyplomacji: Przyjaźnie nastawieni (24), Okazują wsparcie (49) i Sprzymierzeńcy (74).
+
+POZIOMY STOSUNKÓW
+Sojusznicy: (nastawienie powyżej 75) Projekt Phoenix może prowadzić badania nad wszystkimi projektami badawczymi sojuszniczej frakcji. Zaatakowanie bastionów sojuszniczej frakcji automatycznie powoduje przejście w stan wojny.
+Sprzymierzeńcy (nastawienie od poziomu 50 do 74) Frakcja dzieli się z Projektem Phoenix wynikami istotnych projektów badawczych.
+Okazują wsparcie: (nastawienie od poziomu 25 do 49) Gdy Projekt Phoenix odkryje bastion należący do frakcji, jest on natychmiast ujawniany bez eksploracji.
+Przyjaźnie nastawieni: (nastawienie od poziomu 1 do 24) standardowe stosunki.
+Nieprzyjaźnie nastawieni: (nastawienie od poziomu -25 do 0) prowadzenie handlu i rekrutowanie w tym bastionie nie jest możliwe.
+Wrogo nastawieni: (nastawienie od poziomu -49 do -25) brak specjalnych efektów.
+Agresywni: (nastawienie od poziomu -74 do -50) brak specjalnych efektów.
+W stanie wojny: (nastawienie poniżej -75) frakcja będzie próbować atakować Twoje bazy. Stosunków nie można poprawić.","Помимо Проекта Феникс, в мире остаются три основные фракции: Новый Иерихон, Синедрион и Последователи Ану. Под контролем каждой из них находится существенное количество убежищ.
+
+В ходе игры каждая фракция предложит вам ряд дипломатических миссий. Проходите их, чтобы улучшить отношения с этим фракциями. Важные дипломатические миссии выдаются на самом высоком уровне отношений: Дружественность (24), Сторонник (49) и Попутчик (74).
+
+УРОВНИ ОТНОШЕНИЙ
+Союзник: (отношения от 75 и выше) Проект Феникс может изучать все исследовательские проекты союзнической фракции. Нападение на убежище союзной фракции немедленно приведет к войне.
+Попутчик: (отношения от 50 до 74) Фракция делится значительными исследованиями с Проектом Феникс.
+Сторонник: (отношения от 25 до 49) Если Проект Феникс обнаруживает убежище фракции, оно будет сразу же раскрыто без необходимости проведения разведки.
+Дружественность: (отношения от 1 до 24) Стандартные отношения.
+Недружественность: (отношения от -25 до 0) Такие отношения не позволят вам торговать с убежищем или вербовать солдат у его лидера.
+Враждебность: (отношения от -25 до -49) Нет особого эффекта
+Агрессия: (отношения от -50 до -74) Нет особого эффекта
+Война: (отношения -75) Фракция будет пытаться атаковать ваши базы. На этом этапе отношения уже не могут быть улучшены.","Además del Proyecto Fénix, quedan tres facciones principales restantes en el mundo: Nueva Jericó, Synedrion y los Discípulos de Anu. Ejercen un control importante sobre la mayoría de los refugios que existen en el mundo.
+
+A lo largo del juego, las ofrecen una serie de misiones diplomáticas. Completar estas misiones te permite mejorar las relaciones con ellos. Las misiones diplomáticas importantes aparecen cuando alcanzas el punto más alto en cada nivel de relación: Amistoso (24), Apoyo (49) y Alineado (74).
+
+NIVELES DE RELACIÓN
+Aliado: (postura 75+) El Proyecto Fénix puede investigar todos los proyectos de investigación de la facción aliada. Atacar a refugios de la facción aliada empieza una guerra.
+Alienado: (postura 50 - 74) La facción comparte una gran cantidad de proyectos de investigación con el Proyecto Fénix.
+Apoyo: (postura 25 - 49) Cuando el Proyecto Fénix descubre un refugio que pertenece a una facción, se mostrará al instante sin haberlo explorado.
+Amistoso: (postura 1 - 24) Relaciones estándar.
+Inamistoso: (postura -25 - 0) No se puede comerciar con los líderes de refugios con esta postura ni reclutar.
+Hostil: (postura -25 - -49) Sin efectos especiales.
+Agresivo: (postura -50 - -74) Sin efectos especiales.
+En guerra: (postura -75) La facción intentará atacar tus bases. Las relaciones no pueden mejorar llegado este punto.",
+KEY_PHOENIXPEDIA_GUIDE_FACTIONS_NAME,Text,,Factions and Diplomacy,高级：派系和外交,Avancé : factions et diplomatie,Fraktionen und Diplomatie,Avanzato: Fazioni e diplomazia,Zaawansowane: frakcje i dyplomacja,Дополнительно: фракции и дипломатия,Avanzado: Facciones y diplomacia,Fortgeschritten: Fraktionen und Diplomatie
+KEY_PHOENIXPEDIA_GUIDE_FIRE_DESC,Text,,"A weapon with Fire Damage adds 40 fire intensity to the target. At the start of the victim's turn, fire damage is applied to each body part, minus the armor value. The fire value then reduces by 10. The duration of the effect depends on the intensity (e.g., 40 fire corresponds to a duration of 4 turns).
+
+Fire damage cannot exceed 40, even with multiple strikes.
+
+A character standing on a burning tile suffers the tile's fire damage (between 10 and 40).","具有火焰伤害的武器将为目标增加 40 点火焰伤害值。受到火焰影响的角色在回合开始时，减去护甲值后的火焰伤害数值将对每个身体部位产生影响。随后，火焰伤害值将会减少 10 点。
+
+火焰伤害值不会超过 40 点，即使多次攻击也不行。
+
+站在着火的方格上的角色将承受方格的火焰伤害值。该数值介于 10 点到 40 点之间。","Une arme infligeant des dégâts de feu ajoutera 40 points de dégâts de feu à la cible. Au début du tour de la victime, le feu est appliqué à chaque partie de son corps, moins sa valeur d'armure. Les dégâts de feu baisseront ensuite de 10 points.
+
+Les dégâts de feu ne peuvent pas dépasser les 40 points, même en cas d'attaques multiples.
+
+Un personnage situé sur une case en feu subira la valeur de dégâts de feu de cette case. Elle sera comprise entre 10 et 40.","Eine Waffe mit Feuerschaden fügt dem Ziel 40 Feuerschaden hinzu. Zu Beginn des Zuges des Opfers wird der Feuerschaden auf jedes Körperteil abzüglich des Rüstungswertes angewendet. Dann verringert sich der Feuerschadenswert um 10. Die Dauer des brennenden Effekts hängt von der Intensität ab (z. B. entsprechen 40 Feuer einer Dauer von 4 Runden).
+
+Der Wert des Feuerschadens darf 40 nicht übersteigen, selbst nach mehreren Treffern.
+
+Ein Charakter, der auf einem Feld steht, das brennt, erleidet den Feuerschaden des Felds. Dieser kann zwischen 10 und 40 Punkte betragen.","Un'arma che infligge danni da fuoco aggiunge un valore danni di 40 al bersaglio. All'inizio del turno della vittima, il valore di danni viene applicato su tutte le parti del corpo, ridotto del valore armatura. In seguito il valore di danni si riduce di 10.
+
+Il valore di danni da fuoco non può superare 40, anche sommando più attacchi.
+
+Un personaggio posizionato su una casella incendiata subisce il valore di danni da fuoco della casella. Il valore è compreso tra 10 e 40.","Broń umożliwiająca zadanie obrażeń od ognia spowoduje zadanie celowi 40 punktów obrażeń od ognia. Na początku tury ofiary wartość obrażeń od ognia jest odliczana od punktów życia każdej części ciała po odliczeniu wartości pancerza. Następnie wartość obrażeń od ognia spada o 10 punktów.
+
+Wartość obrażeń od ognia nie może być wyższa niż 40 punktów nawet po kilku atakach.
+
+Postać stojąca na polu, na którym płonie ogień, odniesie obrażenia od ognia przypisane do danego pola, tzn. od 10 do 40 punktów.","Оружие с уроном от огня добавит цели 40 очков урона. В начале хода жертвы урон от огня применяется к каждой части тела за вычетом значения брони. После чего значение урона уменьшится на 10 очков.
+
+Значение урона от огня не может превысить 40, даже при нескольких атаках подряд.
+
+Если персонаж стоит на охваченной огнем клетке, то он получит урон от огня. Значение урона в этом случае составит от 10 до 40 очков.","Las armas con daño de fuego añaden 40 al valor de daño de fuego al objetivo. Al principio del turno de la víctima, el valor del daño de fuego se aplica a cada parte del cuerpo y se reduce dependiendo del valor de la armadura. Después, el valor del daño de fuego se reduce en 10.
+
+El valor del daño de fuego no puede superar 40, independientemente de la cantidad de impactos.
+
+Un personaje en una casilla ardiendo recibe el valor del daño de fuego de la casilla que es de 11 a 40.","Broń umożliwiająca zadanie obrażeń od ognia spowoduje zadanie celowi 40 punktów obrażeń od ognia. Na początku tury ofiary wartość obrażeń od ognia jest odliczana od punktów życia każdej części ciała po odliczeniu wartości pancerza. Następnie wartość obrażeń od ognia spada o 10 punktów.
+
+Wartość obrażeń od ognia nie może być wyższa niż 40 punktów nawet po kilku atakach.
+
+Postać stojąca na polu, na którym płonie ogień, odniesie obrażenia od ognia przypisane do danego pola, tzn. od 10 do 40 punktów."
+KEY_PHOENIXPEDIA_GUIDE_FIRE_NAME,Text,,Fire Damage,火焰伤害,Dégâts de feu,Feuerschaden,Danni da fuoco,Obrażenia od ognia,Урон от огня,Daño de fuego,Obrażenia od ognia
+KEY_PHOENIXPEDIA_GUIDE_HAVENS_DESCRIPTION,Text,,"Havens represent the only remaining human settlements in the world, outside of Phoenix Bases. Each Haven is controlled by a Leader who determines  its affiliation and attitude to all factions, including the Phoenix Project. If the attitude is below zero (Unfriendly or worse), Phoenix squads will not be allowed to recruit or trade at the haven.
+
+Havens are divided into zones that focus on a specific aspect of the Haven’s development. Each zone could be a target of attack (by Pandorans or enemy factions), sabotage, or allow additional mission options. Production zones, such as Factories and Food Production zones, allow the exchange of one type of resource for another. 
+
+If a zone is damaged it can no longer perform its main function, and must be repaired by the Haven before it can do so. If the population of a Haven is annihilated the Haven is destroyed and removed off the map.
+
+Each haven has an influence range, determined by faction type and population size. Havens can contribute food, production, and military strength to other havens of the same faction within its influence range.
+
+<color=#f7bc20>HAVEN ZONES</color>
+ • <color=#ffffff>Energy Generation</color> - ensures that factories, food production plants, and other zones in the Haven function
+ • <color=#ffffff>Residential District</color> - holds the common populace of the Haven
+ • <color=#ffffff>Elite Residences</color> - only present in large settlements, the zone holds the Haven elite
+ • <color=#ffffff>Food Production</color> - provide food to the haven preventing starvation. Allows other resources to be traded for food within the Haven.
+ • <color=#ffffff>Factory</color> - constructs and repairs other Haven zones. Allows other resources to be traded for materials within the Haven.
+ • <color=#ffffff>Research Center</color> - contributes to the overall research the Haven is aligned to. Allows trade for Tech resources.
+ • <color=#ffffff>Training Center</color> - improves the military power of the haven
+ • <color=#ffffff>Elite Training Center</color> - significantly improves the military power of the haven, and provides elite soldier classes","除了凤凰基地外，避难所是这个星球上仅存的人类定居点。每个避难所都由一位领袖掌管，负责决定避难所的归属以及对各个派系的态度（包括凤凰计划）。如果态度低于零（不友好或更低），避难所将拒绝凤凰小队的招募或交易请求。
+
+避难所被划分为不同的区域，分别侧重发展不同的特定方面。每个区域都可能成为攻击（潘多拉体和敌对派系）、破坏或其他可选任务的目标。像工厂和食品生产厂之类的生产区域可以用一种资源交换另一种资源。
+
+区域遭到破坏便无法再发挥主要功能，必须先由避难所进行修复。如果某个避难所的人口被全部消灭，该避难所将会被摧毁并从地图上移除。
+
+每个避难所都具有一定的影响力范围，由派系类型和人口规模决定。避难所可以在其影响范围内为同一派系的其他避难所捐献食物、生产和军事力量。
+
+避难所区域
+能量生成 - 确保工厂和食品生产厂等避难所区域运转正常
+居住区 - 普通民众在避难所中的居住地
+精英住宅 - 这个区域只存在于大型避难所中，里面居住着避难所的精英
+食品生产厂 - 为避难所提供食物，防止饥荒。可以在避难所内用其他资源交换食物。
+工厂 - 建设并修理其他避难所区域。可以在避难所内用其他资源交换材料。
+研究中心 - 推动避难所的整体研究。可交换科技资源。
+训练中心 - 提高避难所的军事力量
+精英训练中心 - 显著提高避难所的军事力量，并提供精英兵种","Les refuges représentent les dernières colonies humaines dans le monde en plus des bases Phoenix. Chaque refuge est contrôlé par un chef qui décide de son affiliation et de son attitude envers toutes les factions, y-compris le Projet Phoenix. Si son attitude est négative (niveau froid ou inférieur), les escouades Phoenix ne pourront pas y recruter ou y faire de commerce.
+
+Les refuges sont divisés en zones qui se concentrent sur certains aspect du développement du refuge.
+Chaque zone pourrait devenir la cible d'une attaque (par les pandoriens ou les factions ennemies), victimes de sabotage ou autoriser des choix de missions supplémentaires. Les zones de production, comme les usines ou les zones de production alimentaire, permettent l'échange d'un type de ressources contre un autre.
+
+Une zone endommagée devient incapable d'assurer sa fonction principale et doit être réparée par le refuge avant de pouvoir reprendre ses activités. Si la population d'un refuge est anéantie, le refuge est détruit, puis retiré de la carte.
+
+Chaque refuge dispose d'une zone d'influence, déterminée par sa faction et la taille de sa population. Les refuges peuvent permettre l'approvisionnement en nourriture, produire et fournir des forces militaires aux autres refuges d'une faction similaire dans sa zone d'influence.
+
+ZONES DE REFUGES
+Production d'énergie - permet le bon fonctionnement des usines, des installations de production alimentaire et d'autres zones au sein du refuge.
+District résidentiel - accueille la plupart des habitants du refuge.
+Résidences d'élite - uniquement présentes dans les colonies les plus peuplées, ces zones accueillent l'élite d'un refuge.
+Production alimentaire - fournit de la nourriture et empêche la population de mourir de faim. Permet l'échange de nourriture contre d'autres ressources à l'intérieur du refuge.
+Usine - permet de construire et de réparer d'autres zones du refuge. Permet l'échange de matériaux contre d'autres ressources à l'intérieur du refuge.
+Centre de recherche - contribue aux recherches générales en fonction de ses allégeances. Permet l'échange de ressources technologiques.
+Centre d'entraînement - augmente la puissance militaire du refuge.
+Centre d'entraînement d'élite - augmente considérablement la puissance militaire du refuge et fournit des soldats de classes d'élite.","Zufluchten sind die einzigen verbleibenden, menschlichen Siedlungen der Welt, die sich außerhalb der Phoenix-Basen befinden. Jede Zuflucht wird von einem Anführer kontrolliert, der ihre Zugehörigkeit und ihre Haltung gegenüber allen Fraktionen bestimmt, einschließlich des Phoenix-Projekts. Wenn die Haltung unter 0 liegt (nicht freundlich oder schlechter), darf Phoenix in dieser Zuflucht niemanden rekrutieren und auch keinen Handel treiben.
+
+Die Zufluchten sind in Zonen unterteilt, die sich auf einen bestimmten Aspekt der Entwicklung der Zuflucht konzentrieren. Jede Zone könnte ein Angriffsziel (von Pandoranern oder feindlichen Fraktionen) sein, kann sabotiert werden oder zusätzliche Missionsoptionen bieten. Produktionszonen, wie z. B. Fabriken und Lebensmittelproduktion, ermöglichen den Tausch einer Art von Ressource gegen eine andere. 
+
+Wenn eine Zone beschädigt ist, kann sie ihre Hauptfunktion nicht mehr ausführen und muss von der Zuflucht repariert werden, bevor sie wieder funktionsfähig ist. Wenn die Bevölkerung einer Zuflucht vernichtet wird, gilt die Zuflucht als zerstört und wird von der Landkarte getilgt.
+
+Jede Zuflucht hat einen Einflussbereich, der durch Fraktionstyp und Bevölkerungsgröße bestimmt wird. Zufluchten können anderen Zufluchten derselben Fraktion innerhalb ihres Einflussbereichs Nahrungsmittel, Produktionsmittel und Militär zur Verfügung stellen.
+
+<color=#f7bc20>ZONEN EINER ZUFLUCHT</color>
+ • <color=#ffffff>Energieerzeugung</color>: Stellt sicher, dass Fabriken, Lebensmittelproduktion und andere Zonen funktionstüchtig sind.
+ • <color=#ffffff>Wohnviertel</color>: Dort wohnt die Bevölkerung der Zuflucht.
+ • <color=#ffffff>Elitewohnbereiche</color>: Nur in großen Zufluchten vorhanden. Hier wohnt die Elite der Zuflucht.
+ • <color=#ffffff>Nahrungsproduktion</color>: Liefert Lebensmittel für die Zuflucht, um Hunger zu verhindern. Ermöglicht den Handel mit anderen Ressourcen für Lebensmittel innerhalb der Zuflucht.
+ • <color=#ffffff>Fabrik</color>: Baut und repariert Zonen der Zuflucht. Ermöglicht den Tausch von Ressourcen gegen Materialien.
+ • <color=#ffffff>Forschungszentrum</color> Trägt zur spezialisierten Fraktionsforschung bei. Ermöglicht den Handel mit Technik-Ressourcen.
+ • <color=#ffffff>Trainingszentrum</color>: Verbessert die militärische Macht der Zuflucht
+ • <color=#ffffff>Elitetrainingszentrum</color>: Verbessert das Militär der Zuflucht erheblich. Hier werden Elitesoldaten ausgebildet.","I rifugi rappresentano gli unici insediamenti umani restanti sulla Terra, al di fuori delle basi Phoenix. Ogni rifugio è controllato da un leader che decide le sue alleanze e la sua disposizione verso tutte le fazioni, compreso il Progetto Phoenix. Se la disposizione è inferiore allo zero (fredda, o peggio), alle squadre Phoenix non sarà permesso di reclutare o fare scambi presso il rifugio.
+
+I rifugi sono divisi in zone dedicate a specifici aspetti del loro sviluppo. Qualsiasi zona può essere oggetto di attacco (da parte dei Pandora o di fazioni nemiche) o sabotaggio, e permette altre possibili missioni. Le fabbriche e le zone di produzione di cibo permettono lo scambio di un tipo di risorsa con un altro. 
+
+Se una zona viene danneggiata, essa non può più assolvere alla sua funzione principale e deve essere ripristinata dal rifugio prima che possa riprendere a farlo. Se la popolazione di un rifugio viene annientata, il rifugio viene distrutto e rimosso dalla mappa.
+
+Ogni rifugio ha un raggio di influenza, determinato dal tipo di fazione e dalla popolazione. I rifugi possono fornire cibo, produzione e potenza militare ad altri rifugi della stessa fazione, purché all'interno del loro raggio di influenza.
+
+ZONE DEI RIFUGI
+Generazione di energia: garantiscono il funzionamento di fabbriche, produzione di cibo e altre zone del rifugio.
+Distretto residenziale: contiene la popolazione comune del rifugio.
+Residenze d'élite: presenti solo in insediamenti grandi, queste zone ospitano l'élite del rifugio.
+Produzione di cibo: fornisce il cibo al rifugio e previene la fame. Permette che all'interno del rifugio si scambino altre risorse con il cibo.
+Impianto di fabbricazione: costruisce e ripara le altre zone del rifugio. Permette che all'interno del rifugio si scambino altre risorse con i materiali.
+Centro di ricerca: dà il contributo alle ricerche ben viste dal rifugio. Permette lo scambio con risorse di tecnologia.
+Centro di addestramento: migliora la potenza militare del rifugio.
+Centro di addestramento d'élite: migliora sensibilmente la potenza militare del rifugio e produce soldati di classe élite.","Bastiony to poza bazami Phoenix ostatnie ocalałe ludzkie osady na świecie. Nad każdym bastionem kontrolę sprawuje przywódca, który określa jej powiązania z każdą frakcją, w tym Projektem Phoenix, oraz nastawienie do nich. Jeżeli nastawienie jest mniejsze od zera (jest nieprzyjazne lub gorsze), oddziały Projektu Phoenix nie będą mogły rekrutować żołnierzy ani dokonywać wymiany handlowej w bastionie.
+
+Bastiony są podzielone na strefy, które są odpowiedzialne za określony aspekt rozwoju bastionu. Każda strefa może stać się celem ataku (Pandoran lub wrogich frakcji), sabotażu lub może być przedmiotem misji. Strefy produkcyjne takie jak fabryki i strefy produkcji żywności umożliwiają wymianę jednego typu zasobu na drugi.
+
+Jeżeli strefa zostanie uszkodzona, nie może już realizować swojej głównej funkcji i musi zostać naprawiona przez władze bastionu, zanim ponownie zacznie działać. Jeżeli mieszkańcy bastionu zostaną zabici, bastion zostaje zniszczony i usunięty z mapy.
+
+Każdy bastion ma własną strefę wpływu, której zasięg warunkuje przynależność do frakcji i wielkość populacji. Bastiony mogą przekazywać jedzenie, produkty i siły wojskowe innym bastionom tej samej frakcji znajdującym się w obrębie ich strefy wpływu.
+
+STREFY BASTIONU
+Wytwarzanie energii: ta strefa umożliwia funkcjonowanie fabryk, zakładów produkcji żywności i innych stref w bastionie.
+Dzielnica mieszkaniowa: to w niej mieszkają zwykli obywatele bastionu.
+Rezydencje elit: znajdują się tylko w dużych osadach. W tej strefie zamieszkuje elita bastionu.
+Produkcja żywności: zapewnia żywność mieszkańcom bastionu, dzięki czemu nie głodują. Umożliwia wymianę innych zasobów na jedzenie w obrębie danego bastionu.
+Fabryka: to w niej buduje się i naprawia inne strefy bastionu. Umożliwia wymianę innych zasobów na materiały w obrębie danego bastionu.
+Centrum badawcze: przyczynia się do ogólnego postępu badawczego frakcji, z którą bastion jest stowarzyszony. Umożliwia handel zasobami technologicznymi.
+Centrum szkoleniowe: zwiększa siłę militarną bastionu.
+Elitarne centrum szkoleniowe: znacząco zwiększa siłę militarną bastionu i umożliwia szkolenie elitarnych klas żołnierzy.","Убежища представляют собой единственные оставшиеся человеческие поселения в мире, за пределами баз Феникса. Каждое убежище контролируется лидером, который определяет принадлежность убежища и отношение ко всем фракциям, включая Проект Феникс. Если отношение ниже нуля (недружественное или хуже), то отряды Феникса не смогут вербовать солдат или торговать в этом убежище.
+
+Убежища разделены на зоны, которые отвечают за конкретный аспект развития убежища. Каждая зона может быть целью атаки или саботажа (со стороны пандоранов или вражеских фракций), либо может выдавать дополнительные задания. Производственные зоны, такие как заводы и пищевые комбинаты, позволяют обменивать один тип ресурса на другой. 
+
+Если зона повреждена, она больше не может выполнять свою основную функцию и должна быть отремонтирована. Если население убежища уничтожено, то убежище убирается с карты.
+
+Каждое убежище имеет радиус влияния, определяемый типом фракции и численностью населения. Убежища могут делиться провиантом, производственными мощностями и военными силами с другими убежищами той же фракции в пределах своего радиуса влияния.
+
+ЗОНЫ УБЕЖИЩА
+Электростанция — обеспечивает работу заводов, пищевых комбинатов и других зон в убежище.
+Жилой район — здесь располагается население убежища.
+Элитный жилой район — можно встретить только в крупных поселениях, здесь живут элиты убежища.
+Пищевой комбинат — обеспечивает убежище провиантом и позволяет избежать голода. Позволяет обменивать провиант на другие ресурсы.
+Завод — строит и ремонтирует другие районы убежища. Позволяет обменивать материалы на другие ресурсы.
+Исследовательский центр — отвечает за научные исследования в убежище. Позволяет обменивать технологические ресурсы на другие.
+Центры подготовки — повышают военную мощь убежища.
+Элитный центры подготовки — значительно повышает военную мощь убежища и готовит элитные классы солдат.","Los refugios son los últimos asentamientos humanos en el mundo, excluyendo a las bases Fénix. Los refugios los dirige un líder que determina la afiliación y el interés del refugio hacia las facciones, incluyendo al Proyecto Fénix. Si el interés es inferior a cero (inamistoso o peor), los pelotones Fénix no podrán reclutar a miembros del refugio ni comerciar ahí.
+
+Los refugios están divididos en zonas que se centran en aspectos específicos del desarrollo del refugio. Estas zonas pueden sufrir ataques (ya sean por parte de los pandorianos o de las facciones enemigas), sabotearse u ofrecer opciones de misiones adicionales. Las zonas de producción, como las fábricas o las zonas de producción de comida, permiten cambiar un tipo de recurso por otro.
+
+Si la zona sufre daños, dejará de realizar su actividad principal y el refugio tendrá que repararla para que pueda continuar con las operaciones. En caso de que se aniquile a la población de un refugio, este se destruye y se elimina del mapa.
+
+Los refugios tienen un alcance de influencia que depende de su facción y población. Los refugios pueden contribuir comida, producción y fuerzas militares a otros refugios de la misma facción que estén dentro del alcance de influencia.
+
+ZONAS DEL REFUGIO
+Generación de energía: se asegura de que las fábricas y las plantas de producción de comida, así como otras zonas del refugio, operen.
+Distrito residencial: alberga a la población común del refugio.
+Residencias de élite: solo existen en asentamientos grandes y alberga a la élite del refugio.
+Producción de comida: aporta alimento al refugio y evita la inanición. Permite el comercio de otros recursos por comida en el refugio.
+Fábrica: construye y repara las demás zonas del refugio. Permite el comercio de otros recursos por materiales en el refugio.
+Centro de investigación: contribuye a la investigación del refugio con el que está alineado. Permite el comercio de recursos tecnológicos.
+Centro de entrenamiento: mejora la fuerza militar del refugio.
+Centro de entrenamiento de élite: mejora considerablemente la fuerza militar del refugio y ofrece clases de soldado de élite.","Zufluchten sind die einzigen verbleibenden, menschlichen Siedlungen der Welt, die sich außerhalb der Phoenix-Basen befinden. Jede Zuflucht wird von einem Anführer kontrolliert, der ihre Zugehörigkeit und ihre Haltung gegenünber allen Fraktionen bestimmt, einschließlich des Phoenix-Projekts. Wenn die Haltung unter 0 liegt (nicht freundlich oder schlechter), dürfen Phoenix-Kader in dieser Zuflucht niemanden rekrutieren und auch keinen Handel treiben.
+
+Die Zufluchten sind in Zonen unterteilt, die sich auf einen bestimmten Aspekt der Entwicklung der Zuflucht konzentrieren. Jede Zone könnte ein Angriffsziel (von Pandoranern oder feindlichen Fraktionen) sein, kann sabotiert werden oder zusätzliche Missionsoptionen bieten. Produktionszonen, wie z. B. Fabriken und Lebensmittelproduktion, ermöglichen den Tausch einer Art von Ressource gegen eine andere. 
+
+Wenn eine Zone beschädigt ist, kann sie ihre Hauptfunktion nicht mehr ausführen und muss von der Zuflucht repariert werden, bevor sie wieder funktionsfähig ist. Wenn die Bevölkerung einer Zuflucht vernichtet wird, gilt die Zuflucht als zerstört und wird von der Landkarte getilgt.
+
+Jede Zuflucht hat einen Einflussbereich, der durch Fraktionstyp und Bevölkerungsgröße bestimmt wird. Zufluchten können anderen Zufluchten derselben Fraktion innerhalb ihres Einflussbereichs Nahrungsmittel, Produktionsmittel und Militär zur Verfügung stellen.
+
+ZONEN EINER ZUFLUCHT
+Energieerzeugung – stellt sicher, dass Fabriken, Lebensmittelproduktionsanlagen und andere Zonen in der Zuflucht funktionstüchtig sind
+Wohnviertel – dort wohnt die Bevölkerung der Zuflucht
+Elitewohnbereiche – nur in großen Zufluchten vorhanden. Hier wohnt die Elite der Zuflucht
+Nahrungsproduktion – liefert Lebensmittel für die Zuflucht, um Hunger zu verhindern. Ermöglicht den Handel mit anderen Ressourcen für Lebensmittel innerhalb der Zuflucht.
+Fabrik – baut und repariert andere Zonen der Zuflucht. Ermöglicht den Handel mit anderen Ressourcen für Materialien innerhalb der Zuflucht.
+Forschungszentrum – trägt zur allgemeinen Forschung bei, auf die sich die Zuflucht spezialisiert hat. Ermöglicht den Handel mit Tech-Ressourcen.
+Trainingszentrum – verbessert die militärische Macht der Zuflucht
+Elitetrainingszentrum - verbessert die militärische Macht der Zuflucht erheblich. Hier werden Elitesoldaten ausgebildet. "
+KEY_PHOENIXPEDIA_GUIDE_HAVENS_NAME,Text,,Havens,高级：避难所,Avancé : refuges,Zufluchten,Avanzato: Rifugi,Zaawansowane: bastiony,Дополнительно: убежища,Avanzado: Refugios,Fortgeschritten: Zufluchten
+KEY_PHOENIXPEDIA_GUIDE_PARALYSE_DESC,Text,,"If a weapon inflicts at least some Standard Damage, then the Paralyze Damage value of the weapon is added to the target's paralysis value. Paralysis value can accumulate in a target from multiple attacks.
+
+The target will lose Action Points based on the proportion of paralysis to the character's strength. For example, if the character has a paralysis value of 10 and a strength of 20, it will lose half its Action Points, leaving 2 APs per turn. If the paralysis value exceeds the victim's Strength, then it will be completely paralyzed and unable to do anything.
+
+Paralyze value decreases by 1 per turn, and victims will slowly recover their Action Points. Improved Medkits, Technicians, and Aspidas remove 50% Paralysis when healing.
+
+You will need to paralyze Pandorans in order to capture them for live research.","如果某武器至少造成了一些标准伤害，那么就可以将其麻痹伤害数值增加至目标的麻痹值。多次攻击目标可累积麻痹值。
+
+ 目标将根据角色的麻痹值与力量值的比例失去行动点数。例如，如果角色的麻痹值是 10 点，力量值是 20 点，那么角色将失去一半的行动点数，因此每回合只拥有 2 点行动点数。如果目标的麻痹值超过了力量值，目标就会被完全麻痹，不能做任何事情。
+
+ 麻痹值每回合会减少 1 点，受害者的行动点数也将慢慢恢复。改进医疗包、技术兵和悬浮车在治疗时能够移除 50% 的麻痹值。
+ 
+ 你需要先麻痹潘多拉体，然后才能将其捕获以进行研究。","Lorsqu'une arme inflige des dégâts normaux, la valeur de dégâts paralysants s'ajoute à la valeur de paralysie de la cible. Plusieurs attaques peuvent augmenter la valeur de paralysie d'une cible.
+ 
+ La cible perdra des points d'action en fonction de la différence de la paralysie proportionnellement à la puissance du personnage. Par exemple, si un personnage a une valeur de paralysie de 10 et une puissance de 20, elle perdra la moitié de ses points d'action, laissant seulement 2 points par tour. Si la valeur de paralysie dépasse la puissance de la victime, elle sera complètement paralysée et incapable de faire quoi que ce soit.
+ 
+ La valeur de paralysie baisse d'un point par tour, et les victimes récupèrent progressivement leurs points d'action. Les médikits, les techniciens et les Aspidas améliorés retirent 50 % de la paralysie en restaurant les points de vie.
+ 
+ Vous devrez paralyser les Pandoriens si vous voulez les capturer vivants pour mener des expériences.","Wenn eine Waffe Standardschaden verursacht, wird der Lähmungsschaden der Waffe dem Lähmungswert des Ziels hinzugezählt. Der Wert der Lähmung kann sich über mehrere Angriffe hinweg addieren.
+ 
+Lähmung reduziert die Aktionspunkte (AP) im Verhältnis des Lähmungswertes zur Stärke der Einheit. Wenn der Charakter beispielsweise einen Lähmungswert von 10 und eine Stärke von 20 hat, verliert er die Hälfte seiner Aktionspunkte, sodass 2 AP pro Runde übrig bleiben. Wenn der Lähmungswert höher als die Stärke des Opfers ist, dann ist es vollständig gelähmt und kann nichts mehr tun.
+ 
+Der Lähmungswert sinkt um 1 Punkt pro Zug, und das Opfer regeneriert langsam seine Aktionspunkte. Verbesserte Medkits, Techniker und Aspidas entfernen 50 % Lähmung beim Heilen.
+ 
+Du musst Pandoraner lähmen, um sie lebendig für die Forschung einzufangen.","Se un'arma infligge almeno un minimo di danni standard, il valore di danni paralizzanti dell'arma viene aggiunto al valore di paralisi del bersaglio. Il valore di paralisi può accumularsi su un bersaglio nel corso di diversi attacchi.
+ 
+ Il bersaglio perderà punti azione in base al rapporto tra paralisi e forza del personaggio. Per esempio, se il personaggio ha un valore paralisi di 10 e forza 20, questo perderà metà dei suoi punti azione, al ritmo di 2 PA per turno. Se il valore di paralisi è maggiore della forza della vittima, questa verrà completamente paralizzata e resa incapace di fare qualsiasi cosa.
+ 
+ Il valore di paralisi cala di 1 a ogni turno, e le vittime recuperano lentamente i propri punti azione. Kit medici, tecnici e Aspidi migliorati rimuovono il 50% di paralisi durante la cura.
+ 
+ Se vuoi catturare dei Pandora vivi, dovrai paralizzarli.","Jeżeli broń zada przynajmniej niewielkie obrażenia standardowe, wówczas wartość obrażeń od paraliżu zadawanych przez broń jest dodawana do bieżącej wartości paraliżu trafionego celu. Wartość paraliżu może się kumulować na skutek kolejnych ataków.
+ 
+ Cel straci tyle punktów akcji, ile wynika ze stosunku wartości paraliżu do siły postaci. Na przykład jeżeli wartość paraliżu wynosi 10, a siła 20, postać straci połowę punktów akcji, więc zostaną jej dwa PA na turę. Jeżeli wartość paraliżu przekracza siłę ofiary, wówczas zostanie ona całkowicie sparaliżowana i nie będzie mogła zrobić nic.
+ 
+ Wartość paraliżu spada o jeden punkt z każdą turą, a ofiary stopniowo odzyskują swoje punkty akcji. Ulepszone apteczki, technicy i Aspidy usuwają 50% wartości paraliżu podczas leczenia.
+ 
+ Aby schwytać Pandoran w celu przeprowadzenia badań na żywych osobnikach, musisz ich sparaliżować.","Если оружие наносит хотя бы некоторое количество обычного урона, то значение урона от паралича добавляется к текущему значению паралича цели. Значение паралича может накапливаться у цели от нескольких атак.
+ 
+ Цель потеряет очки действия исходя из соотношения паралича к силе персонажа. Например, если значение паралича составляет 10, а сила персонажа составляет 20, то он потеряет половину очков действия, после чего останется лишь 2 ОД на ход. Если значение паралича превысит силу жертвы, то она будет полностью парализована и не сможет ничего сделать.
+ 
+ Значение паралича уменьшается на 1 за ход, а жертвы будут медленно восстанавливать свои очки действия. Улучшенные аптечки, техники и аспиды снимают 50% паралича при лечении.
+ 
+ Если вы хотите проводить исследования с живыми пандоранами, то вам нужно парализовать их.","Si el arma inflige daño estándar, el valor del daño paralizante del arma se añade al valor de parálisis del objetivo. El valor de parálisis se puede acumular en el objetivo como resultado de diferentes ataques.
+
+ El objetivo pierde puntos de acción dependiendo de la cantidad de parálisis que tenga en relación a la fuerza del personaje. Por ejemplo, si un personaje tiene un valor de parálisis de 10 y una fuerza de 20, pierde la mitad de sus puntos de acción; se queda con 2 puntos de acción por turno. Si el valor de parálisis es superior a la fuerza de la víctima, esta queda completamente paralizada y no puede hacer nada.
+ 
+ El valor de parálisis se reduce en 1 por turno y las víctimas recuperan poco a poco los puntos de acción. Los botiquines, técnicos y aspidas mejorados eliminan el 50 % de la parálisis al sanar.
+ 
+ Tendrás que paralizar a los pandorianos para poder capturarlos y realizar estudios en especímenes vivos.","Lorsqu'une arme inflige des dégâts normaux, la valeur de dégâts paralysants s'ajoute à la valeur de paralysie de la cible. Plusieurs attaques peuvent augmenter la valeur de paralysie d'une cible.
+
+La cible perdra des points d'action en fonction de la différence de la paralysie proportionnellement à la puissance du personnage. Par exemple, si un personnage a une valeur de paralysie de 10 et une puissance de 20,  elle perdra la moitié de ses points d'action, laissant seulement 2 points par tour. Si la valeur de paralysie dépasse la puissance de la victime, elle sera complètement paralysée et incapable de faire quoi que ce soit.
+
+La valeur de paralysie baisse d'un point par tour, et les victimes récupèrent progressivement leurs points d'action.
+
+Vous devrez paralyser les pandoriens si vous voulez les capturer vivants pour mener des expériences."
+KEY_PHOENIXPEDIA_GUIDE_PARALYSE_NAME,Text,,Paralyze Damage,麻痹伤害,Dégâts de paralysie,Lähmungsschaden,Danni paralizzanti,Obrażenia od paraliżu,Урон от паралича,Daño paralizante,Obrażenia od paraliżu
+KEY_PHOENIXPEDIA_GUIDE_PIERCE_DESC,Text,,"A weapon with a Pierce Value ignores a portion of the enemy's armor before Standard Damage is calculated.
+
+Pierce does not permanently destroy armor. This value has no effect against targets without any armor.
+
+<color=#f7bc20>EXAMPLE</color>
+ • A gun with 50 damage against a target with 30 armor would normally only deal 20 damage. However, if the weapon has a Pierce Value of 20, the effective armor for that shot is reduced to 10 (30 armor minus 20 pierce). The target thus suffers 40 damage.",具有穿透值的武器在造成标准伤害前会无视一定数量的护甲，最高等同于穿透值。比如，如果一把武器对一个具有 30 点护甲的目标造成了 50 点伤害，那么在常规情况下，此次攻击会造成 20 点伤害。如果该武器拥有 20 点穿透值，那么护甲的效力将降低至 10 点，因此目标将遭受 40 点伤害。穿透对没有护甲值的目标没有任何效果。,"Une arme avec une valeur de perforation ignorera la valeur d'armure avant d'appliquer des dégâts normaux. Par exemple, un fusil infligeant 50 points de dégâts contre une armure de 30 infligerait 20 points de dégâts en temps normal. Mais s'il avait une valeur de perforation de 20, alors, l'efficacité de l'armure serait réduite à 10 points et la cible subirait 40 points de dégâts. La perforation n'a aucun effet sur les cibles sans valeur d'armure.","Waffen mit einem Rüstungsdurchschlag (Pierce) ignorieren einen Teil der gegnerischen Rüstung, bevor der Standardschaden berechnet wird.
+
+Der Rüstungsdurchschlag zerstört die Rüstung nicht dauerhaft. Gegen Ziele ohne Rüstung hat dieser Wert keinen Effekt.
+
+<color=#f7bc20>BEISPIEL</color>
+ • Ein Gewehr mit 50 Schaden gegen ein Ziel mit 30 Rüstung würde normalerweise nur 20 Schaden verursachen. Hat die Waffe jedoch einen Rüstungsdurchschlag von 20, wird die effektive Rüstung für diesen Schuss auf 10 reduziert (30 Rüstung minus 20 Durchschlag). Das Ziel erleidet somit 40 Schaden.","Un'arma dotata di valore di perforazione ignora l'armatura fino al livello di perforazione prima di infliggere i danni standard. Per esempio, una pistola con valore danni 50 contro un bersaglio con armatura 30 infliggerebbe, di norma, 20 danni. Se avesse un valore di perforazione pari a 20, allora l'efficacia dell'armatura verrebbe ridotta a 10, e il bersaglio subirebbe 40 danni. La perforazione non ha effetti su bersagli privi di valore armatura.","Broń z wartością przebicia powoduje pominięcie wartości pancerza do wysokości wartości przebicia przy naliczaniu obrażeń standardowych. Na przykład pistolet zadający obrażenia o wartości 50 punktów, którym trafiono w cel pokryty pancerzem o wartości 30 punktów, zazwyczaj spowodowałby obrażenia na poziomie 20 punktów. Jeżeli miałby dodatkowo wartość przebicia 20, wówczas skuteczność pancerza spadłaby do 10 punktów, a cel odniósłby obrażenia o wartości 40 punktów. Przebicie nie ma wpływu na cele, które nie noszą pancerza.","Оружие с пронзающим уроном будет игнорировать соответствующую часть брони, прежде чем нанести обычный уроню Например, если урон оружия против бронированных целей составляет 50 очков, а цель имеет 30 очков брони, то такое оружие нанесет 20 очков урона. Однако, если бы оно наносило 20 очков пронзающего урона, то эффективность брони снизилась бы до 10 очков, а цель в итоге получила бы 40 очков урона. Пронзающий урон не оказывает никакого эффекта на цели без брони.","Las armas con un valor de perforación ignoran la armadura según el valor de perforación antes de aplicar el daño estándar. Por ejemplo, una pistola con un daño de 50 contra un objetivo con una armadura de 30 inflige 20 de daño. Si tuviera un valor de perforación de 20, la efectividad de la armadura se reduciría a 10 y el objetivo recibiría 40 de daño. La perforación no tiene efecto alguno contra objetivos sin valor de armadura.","Broń z wartością przebicia powoduje pominięcie wartości pancerza do wysokości wartości przebicia przy naliczaniu obrażeń standardowych. Na przykład pistolet zadający obrażenia o wartości 50 punktów, którym trafiono w cel pokryty pancerzem o wartości 30 punktów, zazwyczaj spowodowałby obrażenia na poziomie 20 punktów. Jeżeli miałby dodatkowo wartość przebicia 20, wówczas skuteczność pancerza spadłaby do 10 punktów, a cel odniósłby obrażenia o wartości 40 punktów. Przebicie nie ma wpływu na cele, które nie noszą pancerza."
+KEY_PHOENIXPEDIA_GUIDE_PIERCE_NAME,Text,,Pierce Value,穿透值,Valeur de perforation,Rüstungsdurchschlag,Valore di perforazione,Wartość przebicia,Значение пронзающего урона,Valor de perforación,Значение пронзающего урона
+KEY_PHOENIXPEDIA_GUIDE_POISON_DESC,Text,,"If a weapon inflicts at least some Standard Damage, the weapon's Poison value is added to the target's current poison level. Poison accumulates from multiple attacks. At the start of the affected character's turn, the poison value is subtracted from General Hit Points, while simultaneously reducing Willpower (WP) and decreasing Accuracy. The poison level then drops by 10. The victim may die if Hit Points reach zero before the poison level falls to zero.
+
+Medkits will remove all poison from a character that is healed.","如果某武器造成了标准伤害，那么其中毒伤害值就会增加至目标当前的中毒等级。
+
+中毒可因多次攻击而累积。受到中毒效果影响的角色在回合开始时，总生命值将会被扣除中毒数值。随后，中毒等级将会减少 10 点。多个回合后，中毒等级将会降至零点，但如果受害者的生命值先降至零，受害者将会死亡。
+
+医疗包能够清除被治疗角色身上的所有中毒状态。","Si une arme inflige des dégâts normaux, alors la valeur de dégâts toxiques de l'arme sera ajoutée au niveau de poison actuel de la cible.
+
+Le poison peut être accumulé par le biais de plusieurs attaques. Au début du tour du personnage affecté, sa valeur de poison est soustraite à ses points de vie globaux. Ensuite, le niveau de poison baisse de 10. Même si le niveau de poison passe à zéro après quelques tours, la victime peut mourir si son total de points de vie atteint zéro avant.
+
+Les médikits retireront tout le poison d'un personnage soigné.","Wenn eine Waffe mindestens einen gewissen Standardschaden verursacht, wird der Giftwert der Waffe zur aktuellen Giftstufe des Ziels addiert. Gift kann sich durch mehrere Angriffe ansammeln. Zu Beginn des Zugs des betroffenen Charakters wird der Giftwert von den allgemeinen Trefferpunkten abgezogen, während gleichzeitig die Willenskraft (WP) gesenkt und die Genauigkeit verringert wird. Danach sinkt die Giftstufe um 10. Über mehrere Züge fällt die Giftstufe auf Null zurück, aber das Opfer kann sterben, wenn die Trefferpunkte vorher Null erreichen. 
+
+Wird ein Charakter mit einem Medkit geheilt, wird auch das gesamte Gift entfernt.","Se un'arma infligge dei danni standard, anche minimi, allora il valore di danni da veleno viene sommato al livello corrente di veleno del bersaglio.
+
+Il veleno può accumularsi nel corso di attacchi multipli. All'inizio del turno del personaggio colpito, il suo valore di veleno viene sottratto dai punti ferita generali. Il livello di veleno si riduce poi di 10. Con il passare dei turni il livello di veleno scenderà a zero, ma la vittima potrebbe morire nel caso siano i punti ferita a scendere per primi a zero.
+
+Il kit medico rimuove completamente il veleno dal personaggio curato.","Jeżeli bron zada jakiekolwiek obrażenia standardowe, wówczas wartość obrażeń od trucizny jest dodawana do bieżącego poziomu zatrucia celu.
+
+Zatrucie może się kumulować na skutek kolejnych ataków. Wartość zatrucia odejmuje się od ogólnej liczby punktów życia zatrutej postaci na początku jej tury. Następnie poziom zatrucia spada o 10 punktów. W kolejnych turach poziom zatrucia spadnie do zera, ale ofiara może też umrzeć, jeżeli to jej liczba punktów życia wcześniej spadnie do zera.
+
+Zastosowanie apteczki spowoduje usunięcie wszelkich efektów działania trucizny z organizmu wyleczonej postaci.","Если оружие наносит хотя бы некоторое количество обычного урона, то значение урона от яда добавляется к текущему уровню отравления цели.
+
+Яд может накапливаться от нескольких атак. В начале хода пострадавшего персонажа его значение яда вычитается из общих очков здоровья. После чего уровень яда снижается на 10 очков. За несколько ходов уровень яда упадет до нуля, однако жертва может умереть, если количество очков жизни достигнет нуля раньше.
+
+Аптечки позволяют полностью убрать отравление ядом.","Si el arma inflige daño estándar, el valor del daño de veneno del arma se añade al nivel de veneno actual del objetivo.
+
+El veneno se acumula con diferentes ataques. Al principio del turno del objetivo afectado, el valor del veneno se resta de los puntos de salud generales. Después, el nivel de veneno se reduce en 10. Tras varios turnos, el nivel de veneno se reduce a cero, pero la víctima puede morir antes si sus puntos de salud se reducen a cero primero.
+
+Los botiquines eliminan el veneno de un personaje sanado.","Jeżeli bron zada jakiekolwiek obrażenia standardowe, wówczas wartość obrażeń od trucizny jest dodawana do bieżącego poziomu zatrucia celu.
+
+Zatrucie może się kumulować na skutek kolejnych ataków. Wartość zatrucia odejmuje się od ogólnej liczby punktów życia zatrutej postaci na początku jej tury. Następnie poziom zatrucia spada o 10 punktów. W kolejnych turach poziom zatrucia spadnie do zera, ale ofiara może też umrzeć, jeżeli to jej liczba punktów życia wcześniej spadnie do zera.
+
+Zastosowanie apteczki spowoduje usunięcie wszelkich efektów działania trucizny z organizmu wyleczonej postaci."
+KEY_PHOENIXPEDIA_GUIDE_POISON_NAME,Text,,Poison Damage,中毒伤害,Dégâts toxiques,Giftschaden,Danni da veleno,Obrażenia od trucizny,Урон от яда,Daño de veneno,Obrażenia od trucizny
+KEY_PHOENIXPEDIA_GUIDE_PSYCHIC_DESC,Text,,A psychic damage attack is usually an area effect attack that directly reduces the Will Points of targets according to the Psychic Damage value. This can cause characters to panic.,灵能伤害攻击是一种根据灵能伤害数值直接降低目标意志力点数的范围效果攻击。这能够使角色陷入恐慌。,Une attaque psychique est généralement une attaque de zone réduisant les points de volonté des cibles affectées en fonction de sa valeur de dégâts psychiques. Elle peut provoquer la panique chez les personnages touchés.,"Ein Angriff mit psychischem Schäden ist normalerweise ein Flächenangriff, der die Willenskraftpunkte der Ziele in Höhe des psychischen Schadenswerts verringert. Dies kann dazu führen, dass Charaktere in Panik geraten.",Un attacco con danni psichici consiste solitamente in un attacco ad area che riduce direttamente i punti volontà dei bersagli in base al valore di danni psichici. Questo può indurre il panico nei personaggi.,"Atak umożliwiający zadanie obrażeń telepatycznych jest zazwyczaj atakiem obszarowym, który bezpośrednio zmniejsza liczbę punktów woli celów zgodnie z wartością obrażeń telepatycznych. Skutkiem może być wpadnięcie postaci w panikę.",Атака с использованием психического урона обычно наносит урон по области и непосредственно уменьшает очки воли цели. Это может привести к панике персонажа.,Los ataques de daño psíquico suelen ser ataques con efectos de área que reducen los puntos de voluntad de los objetivos según el valor del daño psíquico. Esto puede aterrorizar a los personajes.,"Atak umożliwiający zadanie obrażeń telepatycznych jest zazwyczaj atakiem obszarowym, który bezpośrednio zmniejsza liczbę punktów woli celów zgodnie z wartością obrażeń telepatycznych. Skutkiem może być wpadnięcie postaci w panikę."
+KEY_PHOENIXPEDIA_GUIDE_PSYCHIC_NAME,Text,,Psychic Damage,灵能伤害,Dégâts psychiques,Psychischer Schaden,Danni psichici,Obrażenia telepatyczne,Психический урон,Daño psíquico,Obrażenia telepatyczne
+KEY_PHOENIXPEDIA_GUIDE_SEARCH,Text,,Type here to search,在此处输入搜索,Entrez ici votre recherche.,Zum Suchen hier eingeben,Scrivi qui per cercare,Wpisz wyszukiwane hasło tutaj,Введите поисковый запрос,Escribe aquí para buscar,Wpisz wyszukiwane hasło tutaj
+KEY_PHOENIXPEDIA_GUIDE_SHOCK_DESC,Text,,"Weapons that inflict shock damage can cause a target to become Dazed. The armor of the hit body part is subtracted from the Shock Damage value, and if this is higher than the target's current General Hit Points, then the target is Dazed.
+
+Dazed characters will have 1 AP for their next turn, and their accuracy will be halved. Additionally, abilities requiring Will Points cannot be used. They will lose their Dazed status at the end of their turn. Dazed status does not stack, so Shock Damage on an already Dazed character has no further effect.","造成冲击伤害的武器能够使目标眩晕。用冲击伤害的数值减去被击中的身体部位护甲，得到的结果如果高于目标当前总生命值，那么目标将被眩晕。
+
+ 被眩晕的角色在下一回合只有 1 点行动点数，准度减半，并且无法使用意志力点数技能。回合结束时，眩晕状态将会解除。眩晕状态不会叠加，因此对已经眩晕的角色造成冲击伤害不会有进一步效果。","Les armes infligeant des dégâts électriques à une cible peuvent également l'étourdir. L'armure de la partie du corps touchée est soustraite aux dégâts électriques, et si les dégâts électriques dépassent les points de vie actuels de la cible, la cible est étourdie.
+
+ Les personnages étourdis disposeront d'un point d'action jusqu'à la fin de leur prochain tour, et leur précision sera réduite de moitié. De plus, les capacités qui nécessitent des points de volonté seront inutilisables. Ils perdront l'état « étourdi » à la fin de leur tour. Cet état n'est pas cumulable, aussi infliger des dégâts électriques sur un personnage déjà étourdi n'aura aucun effet supplémentaire.","Waffen, die Schockschaden verursachen, können ein Ziel verwirren. Die Rüstung des getroffenen Körperteils wird vom Schockschaden subtrahiert, und wenn dieser höher ist als die aktuellen allgemeinen Trefferpunkte des Ziels, ist das Ziel verwirrt.
+ 
+Verwirrten Charakteren steht im nächsten Zug nur 1 AP zur Verfügung und ihre Genauigkeit ist halbiert. Darüber hinaus können keine Fähigkeiten eingesetzt werden, die Willenskraftpunkte benötigen. Sie verlieren den Status „Verwirrt“ am Ende ihres Zugs wieder. „Verwirrung“ wird nicht gestapelt, sodass weiterer Schockschaden bei bereits verwirrten Charakteren keine weitere Wirkung zeigt.","Le armi che infliggono danni da shock possono stordire un bersaglio. L'armatura della parte del corpo colpita viene sottratta dal valore dei danni da shock, e se questo è più alto dei punti ferita generali attuali del bersaglio, allora il bersaglio viene stordito.
+ 
+ I personaggi storditi avranno 1 PA per il loro prossimo turno e la loro precisione sarà dimezzata. Inoltre, le abilità che richiedono punti volontà non potranno essere usate. Perderanno lo stato Stordimento alla fine del loro turno. Lo stato Stordimento non è cumulativo, perciò i danni da shock su un personaggio già stordito non hanno effetto aggiuntivo.","Broń, która umożliwia zadanie obrażeń od wstrząsu, może spowodować, że cel zostanie oszołomiony. Wartość pancerza trafionej części ciała jest odejmowana od wartości obrażeń od wstrząsu. Jeżeli jest wyższa od bieżącej ogólnej liczby punktów życia danego celu, wówczas zostaje on oszołomiony.
+ 
+ Oszołomione postacie w kolejnej turze mają tylko 1 PA, a ich celność zostaje zmniejszona o połowę. Ponadto nie mogą używać zdolności wymagających punktów woli. Stan oszołomienia minie pod koniec ich tury. Ten stan nie kumuluje się, więc obrażenia od wstrząsu zadane oszołomionej postaci nie powodują dalszych efektów.","Оружие, наносящее оглушающий урон, может вызвать оглушение цели. Значение брони пораженной части тела вычитается из значения оглушающего урона, и если оно выше, чем общее количество очков здоровья цели, то это приводит к оглушению цели.
+
+ Оглушенные персонажи получают 1 ОД на следующий ход, а их меткость уменьшается вдвое. Кроме того, невозможно использовать способности, требующие силы воли. Оглушение снимается в конце хода. Оглушение не складывается, поэтому оглушающий урон не будет иметь эффекта, если персонаж уже оглушен.","Las armas que infligen daño de choque pueden aturdir al objetivo. La armadura de la parte del cuerpo impactada se resta del valor del daño de choque y, si es mayor que los puntos de salud generales actuales, el objetivo queda aturdido.
+ 
+ Los personajes aturdidos tienen 1 PA en el siguiente turno y su precisión se reduce a la mitad. Además, no se podrán usar las habilidades que necesitan puntos de voluntad. Pierden el estado de aturdido al final del turno. Los estados de aturdido no se acumulan, por lo que el daño de choque en un objetivo aturdido no tiene más efectos.",
+KEY_PHOENIXPEDIA_GUIDE_SHOCK_NAME,Text,,Shock Damage,冲击伤害,Dégâts électriques,Schockschaden,Danni da shock,Obrażenia od wstrząsu,Оглушающий урон,Daño eléctrico,Obrażenia od wstrząsu
+KEY_PHOENIXPEDIA_GUIDE_SHRED_DESC,Text,,A weapon with Shred Damage will deduct the Shred value from the hit body part's armor. Shred Damage is applied for each projectile that hits. Blast weapons with Shred Damage will shred every body part affected by the blast. Shred Damage has no affect on body parts without armor.,具有粉碎伤害的武器会从被击中的身体部位护甲值中扣除粉碎值。每一发命中的炮弹都会造成粉碎伤害。具有粉碎伤害的爆炸武器将会撕裂被爆炸影响的每一个身体部位。粉碎伤害对没有护甲的身体部位没有任何效果。,Les dégâts de déchiquetage réduiront de la valeur de déchiquetage l'armure de la partie du corps atteinte. Les dégâts de déchiquetage sont appliqués pour chaque projectile atteignant la cible. Les armes explosives avec des dégâts de déchiquetage déchiquèteront chaque partie du corps affectée par l'explosion. Les dégâts de déchiquetage n'ont aucun effet sur les parties du corps sans armure.,"Eine Waffe mit Zerfetzungsschaden sorgt dafür, dass von der Rüstung des getroffenen Körperteils Zerfetzungsschaden abgezogen wird. Für jede Kugel, die trifft, wird Zerfetzungsschaden angewendet. Stoßwaffen mit Zerfetzungsschaden fügen allen Körperteilen Schaden zu, die von der Explosion getroffen werden. Zerfetzungsschaden hat keinen Einfluss auf Körperteile ohne Rüstung.",Un'arma che infligge danni da lacerazione sottrae il valore di lacerazione dall'armatura della parte del corpo colpita. I danni da lacerazione vengono inflitti per ogni proiettile che va a segno. Le armi esplosive con danni da lacerazione lacerano tutte le parti del corpo coinvolte nell'esplosione. I danni da lacerazione non hanno effetti sulle parti del corpo prive di armatura.,Trafienie bronią umożliwiającą zadanie obrażeń od szatkowania spowoduje odjęcie wartości szatkowania od punktów pancerza założonego na trafioną część ciała. Obrażenia od szatkowania są naliczane za każdy celny pocisk. Broń wybuchowa umożliwiająca zadanie obrażeń od szatkowania spowoduje poszatkowanie każdej części ciała dotkniętej wybuchem. Obrażenia od szatkowania nie mają wpływu na części ciała nieosłonięte pancerzem.,"При использовании оружия, наносящего рваные раны, значение урона вычитается из брони пораженной части тела. Урон от рваных ран применяется к каждому снаряду, попавшему в цель. Взрывное оружие наносит урон от рваных ран всем частям тела в радиусе взрыва. Урон от рваных ран не влияет на не защищенные броней части тела.",Las armas con daño de desgarro reducen el valor de rotura de la armadura de la parte del cuerpo impactada. El daño de desgarro se aplica por cada proyectil que impacta. Las armas de estallido con daño de desgarro aplican los efectos a cada parte del cuerpo dentro del radio de la explosión. El daño de desgarro no tiene efecto alguno en las partes del cuerpo sin armadura.,Trafienie bronią umożliwiającą zadanie obrażeń od szatkowania spowoduje odjęcie wartości szatkowania od punktów pancerza założonego na trafioną część ciała. Obrażenia od szatkowania są naliczane za każdy celny pocisk. Broń wybuchowa umożliwiająca zadanie obrażeń od szatkowania spowoduje poszatkowanie każdej części ciała dotkniętej wybuchem. Obrażenia od szatkowania nie mają wpływu na części ciała nieosłonięte pancerzem.
+KEY_PHOENIXPEDIA_GUIDE_SHRED_NAME,Text,,Shred Damage,粉碎伤害,Dégâts de déchiquetage,Zerfetzungsschaden,Danni da lacerazione,Obrażenia od szatkowania,Урон от рваных ран,Daño de rotura,Obrażenia od szatkowania
+KEY_PHOENIXPEDIA_GUIDE_STATUS_EFFECTS_DESCRIPTION,Text,,"Status effects can apply to the entire character or only to a specific body part. Status effects are shown above the health bar, while body part statuses are visible under INFO.
+
+<color=#f7bc20>DAMAGE OVER TIME</color>
+ • <color=#ffffff>ACID</color>: Corrodes armor. Without armor, the body part takes damage. Value decreases by 10 per turn.
+ • <color=#ffffff>BLEEDING</color>: Direct loss of Hit Points (HP) at the start of each turn.
+ • <color=#ffffff>BURNING</color>: Fire damage to all body parts (armor is subtracted).
+ • <color=#ffffff>POISON</color>: Deals damage, reduces Willpower (WP), and decreases Accuracy. Value decreases by 10 per turn.
+ • <color=#ffffff>VIRUS</color>: Subtracts Will Points (WP) at the start of the turn. Value decreases by 1 per turn.
+
+<color=#f7bc20>MOVEMENT & ACTION</color>
+ • <color=#ffffff>PARALYSIS</color>: Action Points (AP) decrease relative to the ratio of paralysis to Strength. 100% causes incapacitation.
+ • <color=#ffffff>DAZED</color>: Action Points reduced to 1, accuracy halved. Willpower abilities are locked.
+ • <color=#ffffff>TREMBLING</color>: The unit suffers a penalty to Accuracy.
+ • <color=#ffffff>PANICKED</color>: Operative cannot move for one turn and recovers Will Points.
+ • <color=#ffffff>OVERWATCH</color>: Operative automatically attacks enemies entering the target cone.
+ • <color=#ffffff>SLOWED</color>: Movement speed is reduced to 25%.
+ • <color=#ffffff>GOOED</color>: Slows characters by 75% on direct hit, until the Goo decays or is removed. Passing through Goo fields does not apply any penalty.
+
+<color=#f7bc20>STAMINA & PSYCHE</color>
+ • <color=#ffffff>FRENZIED</color>: Speed +50% and immunity to panic.
+ • <color=#ffffff>TIRED / EXHAUSTED</color>: Permanently reduces available Action Points by -1 or -2 per turn.
+ • <color=#ffffff>SONIC</color>: Dazes the target if damage exceeds current Will Points.
+
+<color=#f7bc20>SPECIAL FORMS</color>
+ • <color=#ffffff>MUTOGS</color>: <b>FRENZIED</b> (+50% damage and speed).
+ • <color=#ffffff>MUTOGS</color>: 10% chance per round to switch from <b>FRENZIED</b> to <b>BERSERK</b> (attacks everything).
+ • <color=#ffffff>PREPARING</color>: Pandoran Sentinels/Eggs show this before using special abilities.
+ • <color=#ffffff>ALERTED</color>: The enemy is aware of your presence.","状态效果可以施加于整个角色，也可以只施加于特定的身体部位。
+
+ 单位的状态效果可以在角色头部上方的健康指示器上查看，而身体部位的状态只能在角色信息界面上显示。不过，当某个身体部位受伤或损坏时，健康指示器左侧的伤害显示将会予以表明。
+
+ 状态效果概览
+ 酸蚀：酸蚀每回合腐蚀 10 点护甲。如果没有护甲，伤害将直接作用于身体部位。酸蚀值每回合降低 10 点。
+ 流血：每回合失去等同于流血数值的生命值。
+燃烧：回合开始时，将减去护甲之后的火焰伤害作用于所有身体部位。
+疯狂：速度增加 50% 并且免疫恐慌。
+粘住：在粘液消散或被移除前无法移动。
+病毒感染：回合开始时，意志力点数扣除病毒值，随后病毒值减少 1 点。
+ 恐慌：恢复意志力点数时的一回合内无法移动。
+中毒：回合开始时，生命值扣除毒性值，随后毒性值减少 10 点。
+ 准备中：（仅潘多拉哨兵和卵）准备在下一回合激活特殊技能。
+狂暴：（仅变异犬）变异犬陷入狂暴，不分敌我发动攻击。
+暴怒：（仅变异犬）造成的伤害和速度增加 50％。变异犬在每回合开始时有 10％ 几率变得“狂暴”。
+ 警觉：（仅敌人）。敌人察觉到了你的存在。
+疲劳：（由进入战斗时耐力较低而造成）每回合 -1 点行动点数。
+ 筋疲力尽：（由进入战斗时耐力较低而造成）每回合 -2 点行动点数。
+ 麻痹：不能移动，也不能执行任何行动。
+麻痹：按照麻痹值与力量值的比例减少行动点数。
+眩晕：行动点数减少至 1 点且准度减半，无法使用意志力点数技能。
+警戒：进入锥形警戒区的敌人将触发一次攻击。","Les effets d'état peuvent toucher un personnage entier ou une partie du corps spécifique.
+ 
+ Les effets d'état d'une unité sont visibles sur l'indicateur de santé au-dessus de la tête du personnage, mais les états affectant les parties du corps ne sont visibles que depuis l'écran d'infos du personnage. Les seules exceptions sont les cas où une partie du corps est blessée ou désactivée, indiqués sur l'écran des dégâts à gauche de l'indicateur de santé.
+ 
+ RÉSUMÉ DES EFFETS D'ÉTAT :
+ ACIDE : L'acide corrode des points d'armure équivalents à la valeur de l'acide (par tour). S'il n'y a pas d'armure, les dégâts sont appliqués au corps. La valeur de l'acide baisse de 10 points par tour.
+ SAIGNEMENT : Le saignement fait perdre à la cible des points de santé équivalents à sa valeur de saignement à chaque tour.
+BRÛLURE : des dégâts de feu sont appliqués à chaque partie du corps en début de tour, retirant des points d'armure.
+ FRÉNÉTIQUE : Vitesse augmentée de 50 % et immunité contre la panique.
+ EN GELÉE : déplacements impossibles jusqu'à ce que la gelée disparaisse ou soit retirée.
+ INFECTION VIRALE : Au début du tour, la virulence du virus retire des points de volonté, puis sa valeur baisse de 1 point.
+PANIQUÉ : Déplacements impossibles pendant un tour, l'unité récupère des points de volonté.
+ EMPOISONNÉ : Au début du tour le poison retire des points de vie, puis sa valeur baisse de 10 points.
+ PRÉPARATION : (sentinelles et œufs pandoriens uniquement) L'unité se prépare à activer une capacité spéciale au prochain tour.
+ DÉCHAÎNÉ : (Mutog uniquement) Le Mutog devient fou, attaquant amis comme ennemis.
+ENRAGÉ : (Mutog uniquement) Les dégâts infligés et la vitesse augmentent de 50 %. Il y a 10 % de chance que le Mutog soit déchaîné au début de chaque tour.
+ ALERTÉ : (ennemi uniquement) L'ennemi est conscient de votre présence.
+ FATIGUÉ : (causé par une endurance basse en début de combat) -1 point d'action à chaque tour.
+ ÉPUISÉ : (causé par une endurance basse en début de combat) -2 points d'action à chaque tour.
+ PARALYSÉ : Déplacements ou actions impossibles.
+PARALYSIE : Les points d'action sont réduits proportionnellement à la valeur de paralysie appliquée à la puissance.
+ ÉTOURDI : Points d'action réduits à 1 et précision réduite de moitié. Les capacités nécessitant des points de volonté ne peuvent pas être utilisées.
+VIGILANCE : Les ennemis qui entrent dans la zone de vigilance provoquent une attaque.","Statuseffekte betreffen Agenten oder Körperteile. Effekte stehen über der Gesundheit, Körperteil-Status unter INFO.
+
+<color=#f7bc20>SCHADEN ÜBER ZEIT</color>
+ • <color=#ffffff>SÄURE</color>: Zerfrisst Rüstung. Ohne Rüstung nimmt das Körperteil Schaden. Wert sinkt pro Zug um 10.
+ • <color=#ffffff>BLUTEN</color>: Direkter Verlust von Trefferpunkten (TP) zu Beginn jedes Zuges.
+ • <color=#ffffff>BRENNEN</color>: Feuerschaden auf alle Körperteile (Rüstung wird abgezogen).
+ • <color=#ffffff>VIRUS</color>: Entzieht Willenspunkte (WP) zu Beginn des Zuges. Der Wert sinkt pro Zug um 1.
+ • <color=#ffffff>GIFT</color>: Verursacht Schaden, entzieht Willenspunkte (WP) und verringert die Genauigkeit. Der Wert sinkt pro Zug um 10.
+
+<color=#f7bc20>BEWEGUNG & HANDLUNG</color>
+ • <color=#ffffff>LÄHMUNG</color>: Aktionspunkte sinken im Verhältnis Lähmung zu Stärke. 100% macht handlungsunfähig.
+ • <color=#ffffff>VERWIRRT</color>: Aktionspunkte auf 1 reduziert, Genauigkeit halbiert. Willenspunkte-Fähigkeiten sind gesperrt.
+ • <color=#ffffff>ZITTERND</color>: Die Einheit erleidet einen Malus auf die Genauigkeit.
+ • <color=#ffffff>IN PANIK</color>: Agent kann sich einen Zug lang nicht bewegen und regeneriert dabei Willenspunkte.
+ • <color=#ffffff>ÜBERWACHUNG</color>: Agent greift Gegner automatisch an, die den Zielkegel betreten.
+ • <color=#ffffff>VERLANGSAMT</color>: Die Bewegungsgeschwindigkeit ist auf 25 % reduziert.
+ • <color=#ffffff>GESCHLEIMT</color>: Verlangsamt Charaktere bei direktem Treffer um 75%, bis der Schleim zerfällt oder entfernt wird. Das Passieren von Schleimfeldern verursacht keinen Malus.
+
+<color=#f7bc20>AUSDAUER & PSYCHE</color>
+ • <color=#ffffff>WUTRAUSCH</color>: Geschwindigkeit +50% und Immunität gegen Panik.
+ • <color=#ffffff>MÜDE / ERSCHÖPFT</color>: Reduziert verfügbare Aktionspunkte pro Zug dauerhaft um -1 bzw. -2.
+ • <color=#ffffff>SCHALL</color>: Versetzt Ziel in „Verwirrt“, wenn Schaden die aktuellen Willenspunkte übersteigt.
+
+<color=#f7bc20>SPEZIALFORMEN</color>
+ • <color=#ffffff>MUTOGS</color>: <b>WUTRAUSCH</b> (+50% Schaden und Tempo).
+ • <color=#ffffff>MUTOGS</color>: 10% Chance je Runde, von <b>WUTRAUSCH</b> auf <b>BERSERKER</b> (greift alles an) zu wechseln.
+ • <color=#ffffff>VORBEREITEN</color>: Pandoraner-Wächter/Eier zeigen dies vor Spezialfähigkeiten an.
+ • <color=#ffffff>ALARMIERT</color>: Der Feind ist sich deiner Anwesenheit bewusst.","Gli effetti di stato possono essere applicati al personaggio intero o a una sua parte del corpo specifica.
+ 
+ Gli effetti di stato di un'unità possono essere visualizzati sull'indicatore salute sopra la testa del personaggio, mentre lo stato delle parti del corpo sono visibili soltanto nella schermata Info personaggio. Fanno eccezione solo i casi in cui una parte del corpo è ferita o fuori uso, in questo caso essi vengono visualizzati sulla visuale danni a sinistra dell'indicatore salute.
+ 
+ EFFETTI DI STATO IN SINTESI
+ACIDO: l'acido corrode l'armatura di tanti punti quanto il valore dell'acido (ogni turno). Se non c'è armatura, i danni vengono inflitti sulla parte del corpo. Il valore si riduce quindi di 10 per turno.
+ SANGUINAMENTO: a ogni turno, perdi una quantità di punti ferita pari al valore di sanguinamento.
+FUOCO: i danni da fuoco vengono inflitti su ogni parte del corpo all'inizio del turno, riducendo l'armatura.
+ FRENESIA: velocità incrementata del 50% e immunità al panico.
+ INTRALCIO: impossibile muoversi finché la melma non si esaurisce o viene rimossa.
+ INFEZIONE VIRALE: all'inizio del turno, il virus è sottratto dai punti volontà, quindi il valore del virus è ridotto di 1.
+ NEL PANICO: impossibile muoversi per un turno mentre si recuperano punti volontà.
+ AVVELENAMENTO: all'inizio del turno, il veleno è sottratto dai punti ferita, quindi il valore del veleno è ridotto di 10.
+ IN PREPARAZIONE: (soltanto sentinella e uovo Pandora) preparati ad attivare un'abilità speciale per il turno successivo.
+ BERSERK: (soltanto Mutog) il Mutog impazzisce e attacca tutti senza distinzione.
+ FURIA: (soltanto Mutog) i danni inflitti e la velocità aumentano del 50%. C'è una possibilità del 10% che il Mutog scateni la sua furia all'inizio di ogni turno.
+ IN ALLERTA: (soltanto nemico) il nemico è consapevole della tua presenza.
+STANCHEZZA: (provocato dall'entrata in battaglia con resistenza bassa) -1 punto azione a ogni turno.
+ ESAURIMENTO: (provocato dall'entrata in battaglia con resistenza bassa) -2 punti azione a ogni turno.
+ PARALIZZATO: impossibile muoversi o compiere azioni.
+ PARALISI: i punti azione sono ridotti di un numero pari al rapporto tra valore della paralisi e forza.
+ STORDIMENTO: punti azione ridotti a 1 e precisione dimezzata. Impossibile usare le abilità che richiedono punti volontà.
+ GUARDIA: I nemici provocano un attacco se entrano nel cono di guardia.","Efekty stanu mogą mieć zastosowanie do całej postaci lub tylko do określonej części ciała.
+ 
+ Podczas gdy efekty stanu doświadczane przez jednostkę można zobaczyć na wskaźniku zdrowia nad głową postaci, stany poszczególnych części ciała są widoczne tylko na ekranie informacji o postaci. Jedynymi wyjątkami od tej zasady są przypadki zranienia lub kontuzji części ciała, które są zaznaczone na podglądzie obrażeń po lewej stronie wskaźnika zdrowia.
+
+ ZESTAWIENIE EFEKTÓW STANU
+ KWAS: kwas powoduje korodowanie pancerza o wartość kwasu (w każdej turze). W przypadku braku pancerza obrażenia są zadawane danej części ciała. Wartość obrażeń od kwasu zmniejsza się o 10 punktów z każdą turą.
+ KRWAWIENIE: z każdą turą postać traci liczbę punktów życia równą wartości krwawienia.
+ PŁONIE: obrażenia od ognia są zadawane każdej części ciała na początku tury. Odejmuje się od nich wartość pancerza.
+ATAK SZAŁU: szybkość zwiększa się o 50%, a postać staje się odporna na panikę.
+ W MAZI: postać nie może się ruszyć, zanim maź się nie rozłoży lub nie zostanie usunięta.
+ INFEKCJA WIRUSOWA: na początku tury wartość zarażenia jest odejmowana od punktów woli, a następnie zmniejsza się o 1 punkt.
+ ATAK PANIKI: postać nie może się ruszyć przez jedną turę, podczas której odzyskuje punkty woli.
+ ZATRUCIE: na początku tury wartość zatrucia jest odejmowana od punktów życia, a następnie zmniejsza się o 10 punktów.
+ PRZYGOTOWYWANIE: (dotyczy tylko pandorańskiego strażnika i jaja) Przygotowanie do aktywacji specjalnej umiejętności w następnej turze.
+ ZDZICZAŁY: (dotyczy tylko mutoga) Mutog dziczeje i atakuje zarówno nieprzyjaciół, jak i sprzymierzeńców.
+ WŚCIEKŁY: (dotyczy tylko mutoga) Zadawane obrażenia i szybkość zwiększają się o 50%. Szanse na zdziczenie mutoga na początku każdej tury wynoszą 10%.
+ ZAALARMOWANY: (dotyczy tylko przeciwników) Przeciwnik zdaje sobie sprawę z Twojej obecności.
+ ZMĘCZENIE: (spowodowane włączeniem się do bitwy mimo niskiego poziomu kondycji) -1 punkt akcji w każdej turze.
+ WYCIEŃCZENIE: (spowodowane włączeniem się do bitwy mimo niskiego poziomu kondycji) -2 punkty akcji w każdej turze.
+SPARALIŻOWANO: postać nie może się ruszyć ani wykonywać żadnych działań.
+ PARALIŻ: liczba punktów akcji zostaje zmniejszona o wartość odpowiadającą stosunkowi wartości paraliżu do siły.
+ OSZOŁOMIONO: liczba punktów akcji zostaje zmniejszona o 1, a celność o połowę. Nie można używać umiejętności wymagających punktów woli.
+ OBSERWACJA: przeciwnicy wkraczający do obserwowanej strefy zostaną zaatakowani.","Состояния могут применяться ко всему персонажу или только к определенной части тела.
+ 
+ В то время как состояния персонажа можно увидеть на индикаторе здоровья над персонажем, состояния, влияющие на определенные части тела, можно найти только на информационной панели персонажа. Единственными исключениями являются случаи, когда часть тела ранена или повреждена, что указывается на индикаторе повреждения слева от индикатора состояния здоровья.
+
+ СВОДКА СОСТОЯНИЙ
+КИСЛОТА: Броня получает урон от кислоты каждый ход. Если брони нет, урон применяется к части тела. Урон от кислоты снижается на 10 очков за ход.
+КРОВОТЕЧЕНИЕ: Каждый ход теряются очки здоровья, равные значению кровотечения.
+ОЖОГ: В начале хода урон от огня применяется к каждой части тела за вычетом значения брони.
+БЕШЕНСТВО: Скорость увеличивается на 50% и появляется невосприимчивость к панике.
+ СЛИЗЬ: Неспособность двигаться, пока слизь не будет уничтожена или ее действие не пройдет.
+ ВИРУСНАЯ ИНФЕКЦИЯ: В начале хода урон от вируса вычитается из очков воли, а затем значение вируса уменьшается на 1 очко.
+ ПАНИКА: Невозможно двигаться в течение хода, пока не восстановятся очки воли.
+ ОТРАВЛЕНИЕ: В начале хода урон от яда вычитается из очков здоровья, а затем значение яда уменьшается на 10 очков.
+ ПОДГОТОВКА: (Только стражи и яйца пандоранов) Подготовка к активации особой способности для следующего хода.
+ БЕРСЕРК: (Только мутог) Мутог нападает на всех, кто встанет у него на пути: друзей и врагов.
+ ЯРОСТЬ: (Только мутог) Причиняемый урон и скорость увеличиваются на 50%. Вероятность 10% того, что мутог войдет в режим берсерка в начале каждого хода.
+ НАСТОРОЖЕ: (Только враг). Враг знает о вашем присутствии.
+УСТАЛОСТЬ: (вызывается участием в сражении при низкой выносливости) -1 очко действия в каждом ходе.
+ ИСТОЩЕНИЕ: (вызывается участием в сражении при низкой выносливости) -2 очка действия в каждом ходе.
+ ПАРАЛИЧ: Невозможно перемещаться или выполнять какие-либо действия.
+ПАРАЛИЧ: Число очков действия уменьшается пропорционально значению паралича по отношению к силе.
+ ОЦЕПЕНЕНИЕ: Число очков действия уменьшается до 1, а меткость — вдвое. Невозможно использовать способности, требующие силы воли.
+ НАБЛЮДЕНИЕ: Враги, которые заходят в область наблюдения, провоцируют атаку.","Los efectos de estado se pueden aplicar a todo el personaje o a una parte del cuerpo en concreto.
+ 
+ Los efectos de estado de una unidad se pueden ver en el indicador de salud sobre la unidad, pero los estados de una parte del cuerpo solo aparecen en la pantalla de información del personaje. Las únicas excepciones son las partes del cuerpo dañadas e inhabilitadas, que aparecen en la pantalla de daño a la izquierda del indicador de salud.
+
+ RESUMEN DE LOS EFECTOS DE ESTADO
+ ÁCIDO: El ácido corroe la armadura dependiendo de su valor (por turno). Si no hay armadura, el daño se aplica a la parte del cuerpo. El valor del ácido se reduce en 50 por turno.
+SANGRANDO: Cada turno, pierde puntos de salud igual al valor del sangrado.
+QUEMADO: Se aplica daño de fuego a cada parte del cuerpo al principio del turno, reducido por la armadura.
+ FRENÉTICO: Velocidad aumentada un 1 % e inmune al efecto de aterrorizar.
+ VISCOSO: Incapaz de moverse hasta que la viscosidad desaparezca o se elimine.
+ INFECTADO POR VIRUS: Al principio del turno, el virus reduce los puntos de voluntad y su valor se reduce en 10.
+ ATERRORIZADO: Incapaz de moverse durante un turno mientras recupera puntos de voluntad.
+ ENVENENADO: Al principio del turno, el veneno reduce los puntos de salud y su valor se reduce en 50.
+ EN PREPARACIÓN: (Solo los centinelas y huevos pandorianos) Preparándose para activar una habilidad especial en el siguiente turno.
+ RABIOSO: (Solo mutog) El mutog se vuelve salvaje y ataca a amigos y enemigos.
+ ENFURECIDO: (Solo mutog) Aumenta el daño infligido y la velocidad un 10 %. Hay un 1 % de probabilidad de que el mutog se vuelva rabioso al principio de cada turno.
+ EN ALERTA: (Solo enemigos) El enemigo ha detectado tu presencia.
+ CANSADO: (Resultado de ir a la batalla con aguante bajo) -1 punto de acción cada turno.
+ EXHAUSTO: (Resultado de ir a la batalla con aguante bajo) -2 puntos de acción cada turno
+ PARALIZADO: Incapaz de moverse y realizar acciones.
+ PARÁLISIS: Los puntos de acción se reducen según el valor de la parálisis y de la fuerza.
+ ATURDIDO: Puntos de acción reducidos a 1 y precisión reducida a la mitad. No se pueden usar las habilidades que requieren puntos de voluntad.
+ SUPERVISIÓN: Los enemigos que entren en el cono de supervisión provocan un ataque.","Efekty stanu mogą mieć zastosowanie do całej postaci lub tylko do określonej części ciała.
+ 
+ Podczas gdy efekty stanu doświadczane przez jednostkę można zobaczyć na wskaźniku zdrowia nad głową postaci, stany poszczególnych części ciała są widoczne tylko na ekranie informacji o postaci. Jedynymi wyjątkami od tej zasady są przypadki zranienia lub kontuzji części ciała, które są zaznaczone na podglądzie obrażeń po lewej stronie wskaźnika zdrowia.
+
+ ZESTAWIENIE EFEKTÓW STANU
+ KWAS: kwas powoduje korodowanie pancerza o wartość kwasu (w każdej turze). W przypadku braku pancerza obrażenia są zadawane danej części ciała. Wartość obrażeń od kwasu zmniejsza się o 10 punktów z każdą turą.
+ KRWAWIENIE: z każdą turą postać traci liczbę punktów życia równą wartości krwawienia.
+ PŁONIE: obrażenia od ognia są zadawane każdej części ciała na początku tury. Odejmuje się od nich wartość pancerza.
+ATAK SZAŁU: szybkość zwiększa się o 50%, a postać staje się odporna na panikę.
+ W MAZI: postać nie może się ruszyć, zanim maź się nie rozłoży lub nie zostanie usunięta.
+ INFEKCJA WIRUSOWA: na początku tury wartość zarażenia jest odejmowana od punktów woli, a następnie zmniejsza się o 1 punkt.
+ ATAK PANIKI: postać nie może się ruszyć przez jedną turę, podczas której odzyskuje punkty woli.
+ ZATRUCIE: na początku tury wartość zatrucia jest odejmowana od punktów życia, a następnie zmniejsza się o 10 punktów.
+ PRZYGOTOWYWANIE: (dotyczy tylko pandorańskiego strażnika i jaja) Przygotowanie do aktywacji specjalnej umiejętności w następnej turze.
+ ZDZICZAŁY: (dotyczy tylko mutoga) Mutog dziczeje i atakuje zarówno nieprzyjaciół, jak i sprzymierzeńców.
+ WŚCIEKŁY: (dotyczy tylko mutoga) Zadawane obrażenia i szybkość zwiększają się o 50%. Szanse na zdziczenie mutoga na początku każdej tury wynoszą 10%.
+ ZAALARMOWANY: (dotyczy tylko przeciwników) Przeciwnik zdaje sobie sprawę z Twojej obecności.
+ ZMĘCZENIE: (spowodowane włączeniem się do bitwy mimo niskiego poziomu kondycji) -1 punkt akcji w każdej turze.
+ WYCIEŃCZENIE: (spowodowane włączeniem się do bitwy mimo niskiego poziomu kondycji) -2 punkty akcji w każdej turze.
+SPARALIŻOWANO: postać nie może się ruszyć ani wykonywać żadnych działań.
+ PARALIŻ: liczba punktów akcji zostaje zmniejszona o wartość odpowiadającą stosunkowi wartości paraliżu do siły.
+ OSZOŁOMIONO: liczba punktów akcji zostaje zmniejszona o 1, a celność o połowę. Nie można używać umiejętności wymagających punktów woli.
+ OBSERWACJA: przeciwnicy wkraczający do obserwowanej strefy zostaną zaatakowani."
+KEY_PHOENIXPEDIA_GUIDE_STATUS_EFFECTS_NAME,Text,,Status Effects,状态效果,Effets d'état,Statuseffekte,Effetti di stato,Efekty stanu,Состояния,Efectos de estado,Efectos de estado
+KEY_PHOENIXPEDIA_GUIDE_VIRUS_DESC,Text,,"If a weapon inflicts at least some Standard Damage, then the Virus Damage value of the weapon is added to the target's virus value.
+
+Virus damage can accumulate from multiple attacks. At the start of the affected character's turn, its virus value is subtracted from Will Points. Then the virus level reduces by 1. Over multiple turns the virus level will fall to zero, but the victim will panic if his Will Points fall to zero.
+
+Standard Medkits have no effect on Virus damage.","如果某武器造成了标准伤害，那么其病毒伤害值就会增加至目标当前的病毒数值。
+
+病毒伤害可因多次攻击而累积。受到病毒效果影响的角色在回合开始时，意志力点数将会被扣除病毒数值。随后，病毒等级将会减少 1 点。多个回合后，中毒等级将会降至零点，但如果受害者的意志力点数先降至零，则受害者将会陷入恐慌。
+
+标准医疗包对病毒伤害无效。","Si une arme inflige des dégâts normaux, alors la valeur de dégâts de virus de l'arme sera ajoutée au niveau de virus actuel de la cible.
+
+Les dégâts de virus peuvent être accumulés par le biais de plusieurs attaques. Au début du tour du personnage affecté, sa valeur de virus est soustraite à ses points de vie globaux. Ensuite, le niveau de virus baisse de 1. Même si le niveau de virus passe à zéro après quelques tours, la victime peut mourir si son total de points de vie atteint zéro avant.
+
+Les médikits normaux n'ont aucun effet sur les dégâts de virus.","Wenn eine Waffe Standardschaden verursacht, wird der Wert des Virusschadens der Waffe zum aktuellen Viruswert des Ziels addiert.
+
+Virusschaden kann sich durch mehrere Angriffe ansammeln. Zu Beginn des Zuges des betroffenen Charakters wird der Viruswert von Willenskraftpunkten abgezogen. Dann verringert sich die Virusstufe um 1. Nach einigen Zügen sinkt die Virusstufe auf Null. Wenn das Opfer jedoch 0 Willenspunkte erreicht, verfällt es in Panik.
+
+Normale Medkits wirken bei Virusschaden nicht.","Se un'arma infligge dei danni standard, anche minimi, allora il valore danni virali viene sommato al livello di virus del bersaglio.
+
+I danni virali possono accumularsi nel corso di attacchi multipli. All'avvio del turno del personaggio colpito, il suo valore di virus viene sottratto dai punti volontà. Il livello virale si riduce quindi di 1. Con il passare dei turni il livello di virus scenderà a zero, ma la vittima potrebbe andare in panico se i suoi i punti volontà raggiungono lo zero.
+
+Il kit medico standard non ha effetto sui danni virali.","Jeżeli bron zada jakiekolwiek obrażenia standardowe, wówczas wartość obrażeń od wirusa jest dodawana do bieżącej wartości zarażenia danego celu.
+
+Obrażenia od wirusa mogą kumulować się na skutek kolejnych ataków. Wartość zarażenia odejmuje się od punktów woli zarażonej postaci na początku tury. Następnie poziom zarażenia jest zmniejszany o jeden punkt. Po kilku turach poziom zarażenia spada do zera, ale jeżeli to punkty woli ofiary szybciej spadną do zera, wpadnie ona w panikę.
+
+Standardowe apteczki nie działają na obrażenia od wirusa.","Если оружие наносит хотя бы некоторое количество обычного урона, то значение урона от вируса добавляется к текущему значению поражения вирусом цели.
+
+Урон от вируса может накапливаться от нескольких атак. В начале хода пострадавшего персонажа его значение поражения вирусом вычитается из очков воли. После чего уровень поражения вирусом снижается на 1 очко. За несколько ходов уровень поражения вирусом упадет до нуля, однако жертва может запаниковать, если количество очков воли достигнет нуля.
+
+Обычные аптечки не могут излечить солдата от вируса.","Si el arma inflige daño estándar, el valor del daño vírico del arma se añade al nivel vírico actual del objetivo.
+
+El daño vírico se acumula con diferentes ataques. Al principio del turno del objetivo afectado, el valor vírico se resta de los puntos de voluntad. Después, el nivel vírico se reduce en 1. Tras varios turnos, el nivel vírico se reduce a cero, pero la víctima queda aterrorizada si sus puntos de voluntad se reducen a cero.
+
+Los botiquines estándares no tienen efecto alguno en el daño vírico.","Si une arme inflige des dégâts normaux, alors la valeur de dégâts de virus de l'arme sera ajoutée au niveau de virus actuel de la cible.
+
+Les dégâts de virus peuvent être accumulés par le biais de plusieurs attaques. Au début du tour du personnage affecté, sa valeur de virus est soustraite à ses points de vie globaux. Ensuite, le niveau de virus baisse de 1. Même si le niveau de virus passe à zéro après quelques tours, la victime peut mourir si son total de points de vie atteint zéro avant.
+
+Les médikits normaux n'ont aucun effet sur les dégâts de virus."
+KEY_PHOENIXPEDIA_GUIDE_VIRUS_NAME,Text,,Virus Damage,病毒伤害,Dégâts viraux,Virusschaden,Danni virali,Obrażenia od wirusa,Урон от вируса,Daño vírico,Obrażenia od wirusa
+KEY_PHOENIXPEDIA_GUIDE_XP_DESCRIPTION,Text,,"<color=#f7bc20>EXPERIENCE POINTS (XP)</color>
+At the end of missions, XP is distributed to all surviving operatives based on their combat contribution.
+
+ • <color=#ffffff>Combat Contribution</color>: Calculated from actions in the field (e.g., damage dealt, healing). 
+<i>Note: Vehicles, drones, turrets, and NPCs do not receive XP themselves. Their combat contribution is instead fully distributed among all participating operatives.</i>
+ • <color=#ffffff>Teamwork</color>: The total combat contribution in the mission counts more than individual kills!
+
+
+<color=#f7bc20>SKILL POINTS (SP)</color>
+Operatives earn Skill Points (SP) in several ways:
+
+ • <color=#ffffff>Level Up</color>: Individual SP awarded upon reaching a new level.
+ • <color=#ffffff>Mission Reward</color>: Depending on difficulty level, operatives earn individual SP after each successful mission.
+ • <color=#ffffff>Phoenix SP</color>: These are awarded for the entire organization and go into the shared pool.
+
+
+<color=#f7bc20>MENTOR PROTOCOL & SECONDARY CLASSES</color>
+Level 7 operatives normally continue to claim their share of XP even though they no longer progress. The 'Mentor Protocol' ability prevents this loss:
+
+ • <color=#ffffff>Function</color>: A level 7 operative with this skill no longer receives XP from missions.
+ • <color=#ffffff>Redistribution</color>: Their share is instead fully distributed among all teammates under level 7.
+ • <color=#ffffff>Bonus SP</color>: A mentor with the Mentor Protocol generates an additional 2 SP for the shared pool after each mission.
+ • <color=#ffffff>Training Effect</color>: Mentor shares are distributed, ensuring no experience is lost.
+
+At Level 4, you can choose a secondary class for an operative. This significantly expands your tactical options: abilities that require specific weapon proficiencies can be used with weapons from either class after specialization.
+
+
+<color=#f7bc20><i>TIP FOR NEW DIRECTORS</i></color>
+<i>Use the <b>Mentor Protocol</b> strategically: it not only serves to quickly bring young operatives to Level 7, but is also a reliable source of SP in the <b>shared pool</b>. These points are essential for specializing your veteran operatives with additional cross-class abilities.</i>","完成任务目标可获得经验点数 (XP)。在战斗中存活的士兵会根据战斗贡献分配经验点数。
+
+ 当士兵达到下一等级的经验阈值时将会自动升级。士兵升级后将获得技能点 (SP)，可用于习得新的技能或提高核心属性：力量、意志力和速度。
+
+ 每场战斗会根据完成的目标奖励一些凤凰技能点。
+
+ 士兵达到 4 级后可训练掌握另一兵种的技能。需要武器精通的兵种技能可以与其他兵种精通的武器一起使用。","Les points d'expérience (EXP) sont obtenus en accomplissant des objectifs de missions. Les EXP sont répartis entre les soldats survivants en fonction de leur contribution lors du combat.
+ 
+ Les soldats gagneront automatiquement un niveau lorsqu'ils franchissent le palier d'EXP du niveau suivant. À chaque montée de niveau, un soldat gagnera des points de compétence (PC) à dépenser dans de nouvelles capacités ou pour augmenter les attributs de base (puissance, volonté et vitesse). 
+ 
+ Vous gagnerez quelques points Phoenix après chaque bataille, en fonction des objectifs atteints.
+ 
+ Au niveau 4, les soldats peuvent obtenir une nouvelle classe. Les capacités d'une classe nécessitant une maîtrise d'arme peuvent être utilisées sur des armes maîtrisées par l'autre classe.","<color=#f7bc20>ERFAHRUNGSPUNKTE (XP)</color>
+Am Ende von Missionen werden XP basierend auf dem Kampfbeitrag auf alle überlebenden Agenten verteilt.
+
+ • <color=#ffffff>Kampfbeitrag</color>: Berechnet sich aus den Aktionen im Einsatz (z.B. verursachter Schaden, Heilung).
+<i>Hinweis: Fahrzeuge, Drohnen, Geschütze und NPCs erhalten selbst keine XP. Ihr Kampfbeitrag wird stattdessen vollständig auf alle teilnehmenden Agenten verteilt</i>
+ • <color=#ffffff>Teamwork</color>: Der gesamte Kampfbeitrag im Einsatz zählt mehr als ein einzelner Abschuss!
+
+
+<color=#f7bc20>FERTIGKEITSPUNKTE (FP)</color>
+Agenten erhalten Fertigkeitspunkte (FP) auf mehrere Arten:
+
+ • <color=#ffffff>Stufenaufstieg</color>: Beim Erreichen einer neuen Stufe erhält ein Agent individuelle FP.
+ • <color=#ffffff>Missionsbelohnung</color>:  Je nach Schwierigkeitsgrad verdienen Agenten nach jedem erfolgreichen Einsatz individuelle FP.
+ • <color=#ffffff>Phoenix-FP</color>: Diese werden für die gesamte Organisation vergeben und landen im Gemeinschaftspool.
+
+
+<color=#f7bc20>MENTORPROTOKOLL & ZWEITKLASSEN</color>
+Agenten auf Stufe 7 beanspruchen normalerweise weiterhin ihren XP-Anteil, obwohl sie keine weiteren Fortschritte machen. Die Fähigkeit „Mentorprotokoll“ verhindert diesen Verlust:
+
+ • <color=#ffffff>Funktionsweise</color>: Ein Agent auf Stufe 7 mit dieser Fähigkeit erhält keine XP mehr aus Missionen.
+ • <color=#ffffff>Umverteilung</color>: Sein Anteil wird stattdessen vollständig auf alle Teammitglieder unter Stufe 7 aufgeteilt.
+ • <color=#ffffff>Bonus-FP</color>: Ein Agent mit dem Mentorprotokoll generiert nach jeder Mission zusätzlich 2 FP für den Gemeinschaftspool.
+ • <color=#ffffff>Trainingseffekt</color>: Mentorenanteile werden mit verteilt, wodurch keine Erfahrung verloren geht.
+
+Ab Stufe 4 kannst du für einen Agenten eine zweite Klasse wählen. Dies erweitert dein taktisches Spektrum erheblich: Fähigkeiten, die eine bestimmte Waffenfertigkeit voraussetzen, können nach der Spezialisierung auch mit den Waffen der jeweils anderen Klasse genutzt werden.
+
+
+<color=#f7bc20><i>TIPP FÜR NEUE DIREKTOREN</i></color>
+<i>Nutze das <b>Mentorprotokoll</b> strategisch: Es dient nicht nur dazu, junge Agenten schnell auf Stufe 7 zu bringen, sondern ist auch eine verlässliche Quelle für FP im <b>Gemeinschaftspool</b>. Diese Punkte sind essenziell, um deine erfahrenen Agenten mit zusätzlichen klassenübergreifenden Fähigkeiten zu spezialisieren.</i>","I punti esperienza (PE) sono ottenuti raggiungendo gli obiettivi durante le missioni. I PE vengono distribuiti tra i soldati sopravvissuti in base al loro contributo in battaglia.
+ 
+ I soldati aumenteranno di livello automaticamente al raggiungimento della soglia PE del livello successivo. Aumentando di livello, i soldati vengono premiati con punti abilità (PA) che possono essere spesi per nuove abilità o per migliorare gli attributi principali: forza, volontà e velocità.
+ 
+ Dopo ogni battaglia si ottengono alcuni PA Phoenix, in base agli obiettivi completati.
+ 
+ Raggiunto il livello 4, i soldati possono essere addestrati in un'altra classe. Le abilità di una classe che richiedono padronanza delle armi possono essere usate anche per le armi che vengono padroneggiate dall'altra classe.","Punkty doświadczenia (PD) zdobywa się poprzez realizację celów w ramach misji. PD są następnie rozdzielane pomiędzy ocalałych żołnierzy w zależności od ich zaangażowania w trakcie bitwy.
+ 
+ Żołnierze automatycznie przejdą na wyższy poziom po zdobyciu odpowiedniej liczby punktów doświadczenia. Po awansowaniu na wyższy poziom żołnierz otrzymuje punkty umiejętności (PU), które może wydać na nowe umiejętności lub poprawę parametrów podstawowych – siły, siły woli i szybkości.
+
+ W zależności od zrealizowanych celów po każdej bitwie otrzymasz kilka punktów umiejętności Projektu Phoenix.
+ 
+Po osiągnięciu poziomu 4 żołnierze będą mogli przeszkolić się w innej klasie. Umiejętności klasy, w której wymagana jest biegłość w obsłudze broni, można wykorzystać w przypadku broni biegle obsługiwanej przez inną klasę.","Очки опыта (ОП) зарабатываются достижением целей в миссиях. Затем очки опыта распределяются между выжившими солдатами в зависимости от их вклада в битву.
+
+ Уровень солдат автоматически повышается, когда они достигают порога очков опыта для следующего уровня. При повышении уровня солдат получает очки умений (ОУ), которые можно потратить на новые способности или на повышение ключевых характеристик – силы, силы воли и скорости.
+ 
+ В зависимости от выполненных вами заданий, вы можете заработать некоторое количество ОУ Феникса после каждого сражения.
+
+ По достижении 4 уровня солдат может выбрать другой класс. Способности класса, который требует владения оружием, могут использоваться с оружием, которым владеет другой класс.","Los puntos de experiencia se consiguen al lograr objetivos en misiones. Se reparten entre los soldados supervivientes según la contribución en combate.
+ 
+ Los soldados suben de nivel automáticamente cuando alcanzan la experiencia necesaria para subir al siguiente nivel. Cuando un soldado sube de nivel, consigue puntos de habilidad que puede invertir en nuevas habilidades o en subir sus atributos base (fuerza, fuerza de voluntad y velocidad).
+
+ Consigues puntos de habilidad Fénix en las batallas, dependiendo de los objetivos completados.
+ 
+ Cuando los soldados alcanzan el nivel 4, pueden entrenarse en otra clase. Las habilidades de una clase que requieran competencia con armas se pueden usar con las armas con las que la otra clase tenga competencia.","Punkty doświadczenia (PD) zdobywa się poprzez realizację celów w ramach misji. PD są następnie rozdzielane pomiędzy ocalałych żołnierzy w zależności od ich zaangażowania w trakcie bitwy.
+
+Żołnierze automatycznie przejdą na wyższy poziom, gdy osiągną odpowiedni poziom punktów doświadczenia. Po awansowaniu na wyższy poziom żołnierz otrzymuje punkty umiejętności (PU), które może wydać na nowe umiejętności lub poprawę parametrów podstawowych – siły, siły woli i szybkości. 
+
+W zależności od zrealizowanych celów po każdej bitwie otrzymasz kilka punktów umiejętności Projektu Phoenix.
+
+Po osiągnięciu poziomu czwartego żołnierze będą mogli przeszkolić się w innej klasie. Umiejętności klasy, w której wymagana jest biegłość w obsłudze broni, można wykorzystać w przypadku broni biegle obsługiwanej przez inną klasę."
+KEY_PHOENIXPEDIA_GUIDE_XP_NAME,Text,,Experience and Skill Points,经验与技能点,Points d'expérience et de compétence,Erfahrung und Fertigkeitspunkte,Punti esperienza e punti abilità,Doświadczenie i punkty umiejętności,Опыт и очки умений,Experiencia y puntos de habilidad,Points d'expérience et de compétence
+KEY_PHOENIXPEDIA_SECTION_ARMOR,Text,,ARMOR,护甲,ARMURES,RÜSTUNG,ARMATURA,PANCERZ,БРОНЯ,ARMADURA,ARMATURA
+KEY_PHOENIXPEDIA_SECTION_EQUIPMENT,Text,,EQUIPMENT,装备,ÉQUIPEMENT,AUSRÜSTUNG,EQUIPAGGIAMENTO,SPRZĘT,СНАРЯЖЕНИЕ,EQUIPO,EQUIPAGGIAMENTO
+KEY_PHOENIXPEDIA_SECTION_GUIDE,Text,,GUIDE,指南,GUIDE,ANLEITUNG,GUIDA,PRZEWODNIK,РУКОВОДСТВО,GUÍA,РУКОВОДСТВО
+KEY_PHOENIXPEDIA_SECTION_LORE,Text,,LORE,知识,HISTOIRE,ÜBERLIEFERUNGEN,STORIA,WIEDZA,ЗНАНИЯ,HISTORIA,ÜBERLIEFERUNGEN
+KEY_PHOENIXPEDIA_SECTION_PANDORANS,Text,,PANDORANS,潘多拉体,PANDORIENS,PANDORANER,PANDORA,PANDORANIE,ПАНДОРАНЫ,PANDORIANOS,PANDORIANOS
+KEY_PHOENIXPEDIA_SECTION_RESEARCH,Text,,RESEARCH,研究,RECHERCHE,FORSCHUNG,RICERCA,BADANIA,ИССЛЕДОВАНИЯ,INVESTIGACIÓN,INVESTIGACIÓN
+KEY_PHOENIXPEDIA_SECTION_VEHICLES,Text,,VEHICLES,载具,VÉHICULES,FAHRZEUGE,VEICOLI,POJAZDY,МАШИНЫ,VEHÍCULOS,VÉHICULES
+KEY_PHOENIXPEDIA_SECTION_WEAPONS,Text,,WEAPONS,武器,ARMES,WAFFEN,ARMI,BROŃ,ОРУЖИЕ,ARMAS,WEAPONS

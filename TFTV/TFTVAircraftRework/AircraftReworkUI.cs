@@ -34,6 +34,7 @@ namespace TFTV
 
     internal class AircraftReworkUI
     {
+
         [HarmonyPatch(typeof(AircraftCrewController), nameof(AircraftCrewController.SetCrew))]
         internal static class AircraftCrewController_SetCrew_ZeroSpacePatch
         {
@@ -44,8 +45,10 @@ namespace TFTV
             private static readonly MethodInfo OnCharInfoSlotClickedMethod = AccessTools.Method(typeof(AircraftCrewController), "OnCharInfoSlotClicked", new Type[] { typeof(int) });
             private static readonly HashSet<int> ExtraSlotIds = new HashSet<int>();
 
-            static void Postfix(AircraftCrewController __instance)
+            static void Postfix(AircraftCrewController __instance, int maxSpace)
             {
+                
+
                 if (__instance == null)
                 {
                     return;
@@ -63,6 +66,8 @@ namespace TFTV
                 {
                     return;
                 }
+
+               
 
                 bool applied = false;
                 int baseSlotCount = slots.Count;
@@ -1025,7 +1030,7 @@ namespace TFTV
         [HarmonyPatch(typeof(AircraftInfoController), "SetInfo")]
         public static class AircraftInfoController_SetInfo_Patch
         {
-            public static void Prefix(AircraftInfoController __instance, List<GeoVehicleEquipmentUIData> modules)
+            public static void Prefix(AircraftInfoController __instance, List<GeoVehicleEquipmentUIData> modules, AircraftInfoData aircraftInfoData)
             {
                 try
                 {
@@ -1035,7 +1040,8 @@ namespace TFTV
                     }
 
                     _modules = modules;
-                    
+
+                   // TFTVLogger.Always($"AircraftInfoController.SetInfo: {aircraftInfoData.DisplayName} {aircraftInfoData.MaxCrew}");
 
                 }
 
@@ -1393,6 +1399,11 @@ namespace TFTV
                         }
                         else if (vehicleDef == blimp)
                         {
+                            if (moduleDef == _vehicleHarnessModule)
+                            {
+                                return false;
+                            }
+
                             if (_blimpModules.Contains(moduleDef) || _basicModules.Contains(moduleDef))
                             {
                                 return true;

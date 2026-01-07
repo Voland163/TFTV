@@ -5,7 +5,6 @@ using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
-using SoftMasking.Samples;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -28,6 +27,58 @@ namespace TFTV
     class HavenRecruitsMain
     {
         internal const string HavenRecruitsResearchId = "PX_HavenRecruits_ResearchDef";
+        internal static string UiEmptyListText = "No recruits discovered.";
+        internal static string UiSortLabelText = "Sort:";
+        internal static string UiSortLevelText = "Level";
+        internal static string UiSortClassText = "Class";
+        internal static string UiSortClosestAircraftText = "Closest to Phoenix Aircraft";
+        internal static string UiHeaderTitleTextHavenRecruits = "HAVEN RECRUITS";
+        internal static string UiButtonTopTextHaven = "HAVEN";
+        internal static string UiButtonBottomTextRecruits = "RECRUITS";
+
+        private static bool _localizedStringsInitialized;
+
+        internal static void EnsureLocalizedStrings()
+        {
+            if (_localizedStringsInitialized)
+            {
+                return;
+            }
+
+            try
+            {
+
+                string KeyHavenRecruitsEmptyList = "KEY_TFTV_HAVEN_RECRUITS_EMPTY_LIST";
+                string KeyHavenRecruitsSortLabel = "KEY_TFTV_HAVEN_RECRUITS_SORT_LABEL";
+                string KeyHavenRecruitsSortLevel = "KEY_LEVEL_NAME";
+                string KeyHavenRecruitsSortClass = "KEY_TFTV_HAVEN_RECRUITS_SORT_CLASS";
+                string KeyHavenRecruitsSortClosestAircraft = "KEY_TFTV_HAVEN_RECRUITS_SORT_CLOSEST_AIRCRAFT";
+                string KeyHavenRecruitsHeaderTitle = "KEY_TFTV_HAVEN_RECRUITS_HEADER_TITLE";
+                string KeyHavenRecruitsHaven = "KEY_MISSION_HAVEN";
+                string KeyHavenRecruitsRecruits = "KEY_BASE_RECRUITS_ROSTER_NAME";
+
+
+                UiEmptyListText = TFTVCommonMethods.ConvertKeyToString(KeyHavenRecruitsEmptyList);
+                UiSortLabelText = TFTVCommonMethods.ConvertKeyToString(KeyHavenRecruitsSortLabel);
+                UiSortLevelText = TFTVCommonMethods.ConvertKeyToString(KeyHavenRecruitsSortLevel);
+                UiSortClassText = TFTVCommonMethods.ConvertKeyToString(KeyHavenRecruitsSortClass);
+                UiSortClosestAircraftText = TFTVCommonMethods.ConvertKeyToString(KeyHavenRecruitsSortClosestAircraft);
+                UiButtonTopTextHaven = TFTVCommonMethods.ConvertKeyToString(KeyHavenRecruitsHaven);
+                UiButtonBottomTextRecruits = TFTVCommonMethods.ConvertKeyToString(KeyHavenRecruitsRecruits);
+                UiHeaderTitleTextHavenRecruits = $"{UiButtonTopTextHaven} {UiButtonBottomTextRecruits}";
+
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+            }
+            finally
+            {
+                _localizedStringsInitialized = true;
+            }
+        }
+
+
         public static void ClearInternalData()
         {
             try
@@ -529,6 +580,8 @@ namespace TFTV
             {
                 try
                 {
+                    EnsureLocalizedStrings();
+
                     if (!isInitialized)
                     {
                         CreateOverlay();
@@ -650,6 +703,8 @@ namespace TFTV
             {
                 try
                 {
+                    EnsureLocalizedStrings();
+
                     if (PuristaSemibold == null)
                     {
                         PuristaSemibold = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.PhoenixpediaModule.EntryTitle.font;
@@ -1834,7 +1889,7 @@ namespace TFTV
 
                     if (recruits.Count == 0)
                     {
-                        HavenRecruitsRecruitItem.CreateEmptyLabel(_recruitListRoot, "No recruits discovered.");
+                        HavenRecruitsRecruitItem.CreateEmptyLabel(_recruitListRoot, UiEmptyListText);
                         return;
                     }
 
@@ -1880,7 +1935,7 @@ namespace TFTV
                 lbl.font = PuristaSemibold ? PuristaSemibold : Resources.GetBuiltinResource<Font>("Arial.ttf");
                 lbl.fontSize = TextFontSize;
                 lbl.color = Color.white;
-                lbl.text = "Sort:";
+                lbl.text = UiSortLabelText;
                 lbl.alignment = TextAnchor.MiddleLeft;
                 var lblLE = lblGO.AddComponent<LayoutElement>();
                 lblLE.flexibleWidth = 0;
@@ -1892,9 +1947,9 @@ namespace TFTV
                 _sortToggles.Clear();
 
                 // Create the 3 checkboxes
-                AddSortToggle(bar.transform, "Level", SortMode.Level, isOn: true);
-                AddSortToggle(bar.transform, "Class", SortMode.Class);
-                AddSortToggle(bar.transform, "Closest to Phoenix Aircraft", SortMode.Distance);
+                AddSortToggle(bar.transform, UiSortLevelText, SortMode.Level, isOn: true);
+                AddSortToggle(bar.transform, UiSortClassText, SortMode.Class);
+                AddSortToggle(bar.transform, UiSortClosestAircraftText, SortMode.Distance);
 
                 ApplySortMode(SortMode.Level, refresh: false);
 
@@ -2097,7 +2152,7 @@ namespace TFTV
                 title.fontSize = TextFontSize + 2;
                 title.color = Color.white;
                 title.alignment = TextAnchor.MiddleLeft;
-                title.text = "HAVEN RECRUITS";
+                title.text = UiHeaderTitleTextHavenRecruits;
 
                 var (spacer, _) = RecruitOverlayManagerHelpers.NewUI("Spacer", header.transform);
                 var spacerElement = spacer.AddComponent<LayoutElement>();

@@ -107,6 +107,7 @@ namespace TFTV
                     if (AircraftReworkOn)
                     {
                         aircraftInfo.CurrentCrew = GetAdjustedPassengerManifestAircraftRework(geoVehicle);
+                        aircraftInfo.MaxCrew = geoVehicle.MaxCharacterSpace;
                     }
                     else
                     {
@@ -134,7 +135,6 @@ namespace TFTV
                             if (AircraftReworkOn)
                             {
                                 RemoveExtraVehicleOrMutog(geoVehicle);
-
                             }
                             else
                             {

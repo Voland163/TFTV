@@ -54,6 +54,7 @@ namespace TFTV.PortedAATweaks.UIEnhancements
                     {
                         string className = recruit.Progression.MainSpecDef.ViewElementDef.DisplayName1.Localize();
                         string level = recruit.Level.ToString();
+                        string levelKey = TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_LEVEL");
                         IEnumerable<ViewElementDef> abilityViews = recruit.GetPersonalAbilityTrack().AbilitiesByLevel?.Select(a => a?.Ability?.ViewElementDef).Where(e => e != null);
                         string abilities = abilityViews?.Select(v => v.DisplayName1.Localize()).Join(null, "\n");
 
@@ -63,7 +64,7 @@ namespace TFTV.PortedAATweaks.UIEnhancements
                         }
                         __instance.RecruitAvailableText.fontSize = 24;
                         __instance.RecruitAvailableText.horizontalOverflow = HorizontalWrapMode.Overflow;
-                        __instance.RecruitAvailableText.text = $"<size=30>{recruitAvailableText} <color=#f4a22c>{className}</color> (Level {level})</size>\n<color=#ecba62>{abilities}</color>";
+                        __instance.RecruitAvailableText.text = $"<size=30>{recruitAvailableText} <color=#f4a22c>{className}</color> ({levelKey} {level})</size>\n<color=#ecba62>{abilities}</color>";
                     }
                     else
                     {
@@ -144,7 +145,9 @@ namespace TFTV.PortedAATweaks.UIEnhancements
 
                     if (resourcesAvailable?.Count > 0 && textAnchor != null && ____site.GeoLevel.PhoenixFaction.Research.HasCompleted("PX_HavenTrade_ResearchDef"))
                     {
-                        string format = "<size=26>Exchange {0} for {1} ({2})</size>\n";
+                        string exchangeFor = TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_EXCHANGE_FOR_TRADE");
+
+                        string format = $"<size=26>{exchangeFor}</size>\n";
 
                         textAnchor.horizontalOverflow = HorizontalWrapMode.Overflow;
                         textAnchor.lineSpacing = 0.8f;
@@ -242,7 +245,10 @@ namespace TFTV.PortedAATweaks.UIEnhancements
                     __instance.SiteAttackedByText.horizontalOverflow = HorizontalWrapMode.Overflow;
 
                     string battleInfo = "\n";
-                    battleInfo += $"<size=30>{attackedZone} UNDER ATTACK</size>\n";
+
+                    string underAttack = TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_UNDER_ATTACK_HAVEN_ZONE");
+
+                    battleInfo += $"<size=30>{attackedZone} {underAttack}</size>\n";
                     battleInfo += $"{defender}  vs  {attacker} \n";
                     battleInfo += $"{defenderStrength}{new string(' ', 15)}{attackerStrength}";
 
@@ -283,18 +289,19 @@ namespace TFTV.PortedAATweaks.UIEnhancements
                         return;
                     }
 
-                    string alertnessLabel = "Alertness";
+                    string alertnessLabel = TFTVCommonMethods.ConvertKeyToString("KEY_MISSION_HAVEN_ALERT"); 
                     string alertnessLevel;
+
                     switch (haven.AlertLevel)
                     {
                         case GeoHaven.HavenAlertLevel.Alert:
-                            alertnessLevel = "High";
+                            alertnessLevel = TFTVCommonMethods.ConvertKeyToString("KEY_MISSION_THREAT_LEVEL_HIGH");
                             break;
                         case GeoHaven.HavenAlertLevel.HighAlert:
-                            alertnessLevel = "Extreme";
+                            alertnessLevel = TFTVCommonMethods.ConvertKeyToString("KEY_MISSION_THREAT_LEVEL_EXTREME");
                             break;
                         default:
-                            alertnessLevel = "Normal";
+                            alertnessLevel = TFTVCommonMethods.ConvertKeyToString("KEY_MISSION_THREAT_LEVEL_MEDIUM");
                             break;
                     }
                     string alertnessText = "\n";

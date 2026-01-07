@@ -242,6 +242,7 @@
     <Compile Include="TFTVResearch.cs" />
     <Compile Include="TFTVScavengers.cs" />
     <Compile Include="TFTVTacticalDeploymentEnemies.cs" />
+    <Compile Include="TFTVVests.cs" />
     <Compile Include="TFTVVoxels.cs" />
     <Compile Include="TFTVHarmonyGeoscape.cs" />
     <Compile Include="TFTVHarmonyGeoscapeUI.cs" />

@@ -211,7 +211,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                         }
                         label.canvasRenderer.SetAlpha(1f);
                         label.gameObject.name = "Label_Top";
-                        label.text = "HAVEN";
+                        label.text = HavenRecruitsMain.UiButtonTopTextHaven;
                         label.color = Color.white;
                         label.enabled = true;
                         label.gameObject.SetActive(true);
@@ -323,7 +323,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                                 bottomLabel.color = new Color(bottomColor.r, bottomColor.g, bottomColor.b, 1f);
                             }
                             bottomLabel.canvasRenderer.SetAlpha(1f);
-                            bottomLabel.text = "RECRUITS";
+                            bottomLabel.text = HavenRecruitsMain.UiButtonBottomTextRecruits;
                             bottomLabel.alignment = TextAnchor.MiddleCenter;
                             var bottomRT = bottomLabel.rectTransform;
                             bottomRT.anchorMin = new Vector2(0f, 0.5f);

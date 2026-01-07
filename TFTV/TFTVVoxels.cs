@@ -320,7 +320,7 @@ namespace TFTV
                     try
                     {
 
-                        __instance.TurnNumberSpawned = __instance.TurnNumber;
+                        //  __instance.TurnNumberSpawned = __instance.TurnNumber; this breaks goo turn counting
 
                         foreach (TacticalActor actor in ____voxel.Matrix.TacticalLevel.Map.GetActors<TacticalActor>())
                         {
@@ -383,6 +383,7 @@ namespace TFTV
                         if (status == null)
                         {
                             actor.Status.ApplyStatus(slowedStatus);
+                            TFTVLogger.Always($"applying Slowed status to {actor.DisplayName} for touching goo at pos {pos}");
                         }
                     }
                 }

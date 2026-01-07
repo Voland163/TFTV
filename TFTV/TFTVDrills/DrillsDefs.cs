@@ -513,32 +513,84 @@ namespace TFTV.TFTVDrills
 
                 Sprite icon = Helper.CreateSpriteFromImageFile($"Drill_{name}.png");
 
-                const float shockValue = 150f;
+                const float extraShockValue = 150f;
 
                 AddAttackBoostStatusDef referenceStatus = DefCache.GetDef<AddAttackBoostStatusDef>("E_Status [QuickAim_AbilityDef]");
+
                 BashAbilityDef defaultBashAbility = DefCache.GetDef<BashAbilityDef>("Bash_WithWhateverYouCan_AbilityDef");
-                BashAbilityDef shockDropBashAbility = Helper.CreateDefFromClone(
+                BashAbilityDef takedownBashAbility = DefCache.GetDef<BashAbilityDef>("Takedown_Bash_AbilityDef");
+
+                // Replacement for DEFAULT bash (no payload edits needed; ShockDropStatus still applies actor keyword pairs for melee attacks,
+                // but we keep the replacement bash for consistency and for any bash-specific pipeline).
+                BashAbilityDef replacementDefaultBashAbility = Helper.CreateDefFromClone(
                     defaultBashAbility,
                     "6c810f3f-0e71-4f30-b63c-7b11345f06c4",
                     "TFTV_ShockDrop_Bash_AbilityDef");
 
-                shockDropBashAbility.ViewElementDef = Helper.CreateDefFromClone(
+                replacementDefaultBashAbility.ViewElementDef = Helper.CreateDefFromClone(
                     defaultBashAbility.ViewElementDef,
                     "d3b4c5d6-e7f8-9010-ab1c-2d3e4f506172",
                     "TFTV_ShockDrop_Bash_View");
 
-
-                _shockDropBash = shockDropBashAbility;
-
-                foreach (TacActorAimingAbilityAnimActionDef animActionDef in Repo.GetAllDefs<TacActorAimingAbilityAnimActionDef>().Where(aad => aad.name.Contains("Soldier_Utka_AnimActionsDef")))
+                // Replacement for TAKEDOWN bash: clone takedown and add +150 shock to its payload.
+                // (This is what makes Takedown reliably benefit from ShockDrop.)
+                BashAbilityDef replacementTakedownBashAbility = null;
+                if (takedownBashAbility != null)
                 {
-                    if (animActionDef.AbilityDefs != null && animActionDef.AbilityDefs.Contains(defaultBashAbility) && !animActionDef.AbilityDefs.Contains(shockDropBashAbility))
+                    replacementTakedownBashAbility = Helper.CreateDefFromClone(
+                        takedownBashAbility,
+                        "b44b11a7-2db3-4d3c-8d9b-2feab9f1a1a1",
+                        "TFTV_ShockDrop_Takedown_Bash_AbilityDef");
+
+                    replacementTakedownBashAbility.ViewElementDef = Helper.CreateDefFromClone(
+                        takedownBashAbility.ViewElementDef,
+                        "c2f38a18-46d7-4c2a-8dd0-7a0c1b2d3e4f",
+                        "TFTV_ShockDrop_Takedown_Bash_View");
+
+                    if (replacementTakedownBashAbility.DamagePayload?.DamageKeywords != null)
                     {
-                        animActionDef.AbilityDefs = animActionDef.AbilityDefs.Append(shockDropBashAbility).ToArray();
+                        DamageKeywordPair shockPair = replacementTakedownBashAbility.DamagePayload.DamageKeywords
+                            .FirstOrDefault(dkp => dkp?.DamageKeywordDef == Shared.SharedDamageKeywords.ShockKeyword);
+
+                        if (shockPair.DamageKeywordDef != null)
+                        {
+                            shockPair.Value += extraShockValue;
+                        }
+                        else
+                        {
+                            replacementTakedownBashAbility.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
+                            {
+                                DamageKeywordDef = Shared.SharedDamageKeywords.ShockKeyword,
+                                Value = extraShockValue
+                            });
+                        }
                     }
                 }
 
+                // Ensure animations exist for replacement abilities
+                foreach (TacActorAimingAbilityAnimActionDef animActionDef in Repo.GetAllDefs<TacActorAimingAbilityAnimActionDef>()
+                             .Where(aad => aad.name.Contains("Soldier_Utka_AnimActionsDef")))
+                {
+                    if (animActionDef.AbilityDefs == null)
+                    {
+                        continue;
+                    }
 
+                    if (animActionDef.AbilityDefs.Contains(defaultBashAbility) && !animActionDef.AbilityDefs.Contains(replacementDefaultBashAbility))
+                    {
+                        animActionDef.AbilityDefs = animActionDef.AbilityDefs.Append(replacementDefaultBashAbility).ToArray();
+                    }
+
+                    if (takedownBashAbility != null &&
+                        replacementTakedownBashAbility != null &&
+                        animActionDef.AbilityDefs.Contains(takedownBashAbility) &&
+                        !animActionDef.AbilityDefs.Contains(replacementTakedownBashAbility))
+                    {
+                        animActionDef.AbilityDefs = animActionDef.AbilityDefs.Append(replacementTakedownBashAbility).ToArray();
+                    }
+                }
+
+                _shockDropBash = replacementDefaultBashAbility;
 
                 ShockDropStatusDef statusDef = Helper.CreateDefFromClone<ShockDropStatusDef>(
                     null,
@@ -547,15 +599,15 @@ namespace TFTV.TFTVDrills
 
                 PRMBetterClasses.Helper.CopyFieldsByReflection(referenceStatus, statusDef);
 
-                statusDef.EffectName = name;
+                statusDef.EffectName = "ShockDrop";
                 statusDef.name = "TFTV_ShockDrop_StatusDef";
+
                 statusDef.Visuals = Helper.CreateDefFromClone(referenceStatus.Visuals, visualsGuid, "TFTV_ShockDrop_Status_View");
                 statusDef.Visuals.DisplayName1.LocalizationKey = locKeyName;
                 statusDef.Visuals.Description.LocalizationKey = locKeyDesc;
                 statusDef.Visuals.LargeIcon = icon;
                 statusDef.Visuals.SmallIcon = icon;
 
-                statusDef.EffectName = "ShockDrop";
                 statusDef.ApplicationConditions = Array.Empty<EffectConditionDef>();
                 statusDef.DurationTurns = -1;
                 statusDef.DisablesActor = false;
@@ -569,19 +621,22 @@ namespace TFTV.TFTVDrills
                 statusDef.SkillTagCullFilter = Array.Empty<SkillTagDef>();
                 statusDef.AdditionalStatusesToApply = Array.Empty<TacStatusDef>();
                 statusDef.NumberOfAttacks = 1;
+
+                // Keep actor keyword pairs (used for melee attacks generally)
                 statusDef.DamageKeywordPairs = new[]
                 {
-                    new DamageKeywordPair
-                    {
-                        DamageKeywordDef = Shared.SharedDamageKeywords.ShockKeyword,
-                        Value = shockValue
-                    },
+            new DamageKeywordPair
+            {
+                DamageKeywordDef = Shared.SharedDamageKeywords.ShockKeyword,
+                Value = extraShockValue
+            }
+        };
 
-                };
-
-
+                // Wire bash swap map
                 statusDef.DefaultBashAbility = defaultBashAbility;
-                statusDef.ReplacementBashAbility = shockDropBashAbility;
+                statusDef.TakeDownBashAbility = takedownBashAbility;
+                statusDef.ReplacementDefaultBashAbility = replacementDefaultBashAbility;
+                statusDef.ReplacementTakedownAbility = replacementTakedownBashAbility;
 
                 return statusDef;
             }
@@ -1199,7 +1254,7 @@ namespace TFTV.TFTVDrills
                 light.Visuals.Description.LocalizationKey = locKeyDesc;
 
                 light.ActionPointsReduction = 0.5f;
-
+                light.ApplyOnTurnStart = true;
                 light.EffectName = "ReducedStun";
                 light.ApplicationConditions = new EffectConditionDef[0];
                 light.SingleInstance = true;

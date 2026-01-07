@@ -3063,6 +3063,38 @@ namespace TFTV
 
             private static Dictionary<string, OpposingLeaderWidget> _leaderWidgets = new Dictionary<string, OpposingLeaderWidget>();
 
+            [HarmonyPatch(typeof(MindControlStatus), nameof(MindControlStatus.OnUnapply))]
+            internal static class TFTV_MindControlStatus_OnUnapply_RefreshIcons_Patch
+            {
+                public static void Postfix(MindControlStatus __instance)
+                {
+                    try
+                    {
+                        TacticalActor actor = __instance.TacticalActor;
+                        if (actor?.TacticalActorViewBase?.UIActorElement == null)
+                        {
+                            return;
+                        }
+
+                        HealthbarUIActorElement hb = actor.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>();
+                        if (hb?.ActorClassIconElement == null)
+                        {
+                            return;
+                        }
+
+                        TFTVUITactical.Enemies.ChangeHealthBarIcon(hb.ActorClassIconElement, actor);
+
+                        // Optional: if your spotted-enemy list caches colors too, you need to refresh it as well.
+                        // Most robust approach is to let the existing SetActorClassIcon patch run again (rebuild/refresh list),
+                        // but that depends on how your spotted UI is updated in your mod.
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+
             public static void SetUmbraIcons()
             {
                 try
@@ -3409,7 +3441,8 @@ namespace TFTV
                     {
                         TacticalFaction originalFaction = tacticalActorBase.TacticalLevel.GetFactionByCommandName(mindControlStatus.OriginalFaction.FactionDef.ShortName);
 
-                        if (originalFaction.GetRelationTo(tacticalActorBase.TacticalLevel.GetFactionByCommandName("px")) == FactionRelation.Enemy)
+                        if (originalFaction.GetRelationTo(tacticalActorBase.TacticalLevel.GetFactionByCommandName("px")) == FactionRelation.Enemy 
+                            && !tacticalActorBase.GameTags.Any(t=>t is ClassTagDef classTagDef && classTagDef.name.Contains("Mindfragged")))
                         {
                             return true;
                         }
@@ -3420,7 +3453,8 @@ namespace TFTV
                     }
                     else
                     {
-                        if (tacticalActorBase.TacticalFaction.GetRelationTo(tacticalActorBase.TacticalLevel.GetFactionByCommandName("px")) == FactionRelation.Enemy)
+                        if (tacticalActorBase.TacticalFaction.GetRelationTo(tacticalActorBase.TacticalLevel.GetFactionByCommandName("px")) == FactionRelation.Enemy 
+                            && !tacticalActorBase.GameTags.Any(t => t is ClassTagDef classTagDef && classTagDef.name.Contains("Mindfragged")))
                         {
                             return true;
                         }

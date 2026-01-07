@@ -24,8 +24,6 @@ using PhoenixPoint.Common.Entities.Items.SkinData;
 using PhoenixPoint.Common.Entities.RedeemableCodes;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
-using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
@@ -50,13 +48,10 @@ using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Eventus;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
-using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.NetworkInformation;
-using System.Security.AccessControl;
 using TFTV.LaserWeapons;
 using UnityEngine;
 using static PhoenixPoint.Common.Entities.Addons.AddonDef;
@@ -70,8 +65,6 @@ namespace TFTV
     internal class TFTVDefsInjectedOnlyOnce
     {
 
-
-        //  private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
@@ -108,16 +101,17 @@ namespace TFTV
         }
 
 
-      
+
 
         internal static void Print()
         {
             try
             {
 
-                WeaponDef weaponDef = Repo.GetAllDefs<WeaponDef>().FirstOrDefault(w => w.CompatibleAmmunition.Count()>0 && w.CompatibleAmmunition[0] ==DefCache.GetDef<TacticalItemDef>("PX_PDW_AmmoClip_ItemDef"));
-                TFTVLogger.Always($"weaponDef?.name: {weaponDef?.name}");
-
+                foreach (InventoryAbilityDef inventoryAbilityDef in Repo.GetAllDefs<InventoryAbilityDef>())
+                {
+                    TFTVLogger.Always($"[InventoryAbilityDef] {inventoryAbilityDef.name}", false);
+                }
 
                 /*foreach (PhoenixFacilityDef phoenixFacilityDef in Repo.GetAllDefs<PhoenixFacilityDef>())
                 {
@@ -181,7 +175,7 @@ namespace TFTV
             {
                 //  Print();
 
-               
+
 
                 CreateAlwaysDeployTag();
 
@@ -261,17 +255,17 @@ namespace TFTV
 
                 // Experimental();
 
-                
+
 
                 //  ChangeScyllaSounds();
                 CreateSuppressionStatusDefs();
                 AddMissingViewElementDefs();
                 LaserWeaponsInit.Init();
-                
+
                 //  TestUseWorkerComponent();
                 // Test0();
 
-               // Print();
+                //  Print();
 
             }
             catch (Exception e)
@@ -282,7 +276,7 @@ namespace TFTV
 
         private static void Test0()
         {
-            try 
+            try
             {
                 SimpleSkinDataDef pxAssaultRifleSkinData = DefCache.GetDef<SimpleSkinDataDef>("E_SkinData [PX_AssaultRifle_WeaponDef]");
                 pxAssaultRifleSkinData.DefaultPrefab = new UnityEngine.AddressableAssets.AssetReferenceGameObject("20fa6043bae9c7143a3e275c1d2a198a");
@@ -297,7 +291,7 @@ namespace TFTV
 
         internal static void EnsureTFTVFunctionalityAfterNewPatch()
         {
-            try 
+            try
             {
 
                 GeoscapeSettingsDef geoscapeSettingsDef = DefCache.GetDef<GeoscapeSettingsDef>("GeoscapeSettingsDef");
@@ -311,32 +305,32 @@ namespace TFTV
 
         }
 
-       /* private static void TestUseWorkerComponent()
-        {
-            try 
-            {
-                UseSoldiersFacilityComponentDef useSoldiersFacilityComponentDef = DefCache.GetDef<UseSoldiersFacilityComponentDef>("E_UseSoldier [TrainingFacility_PhoenixFacilityDef]");
-                useSoldiersFacilityComponentDef.WorkerSlots = 4;
-                useSoldiersFacilityComponentDef.UserSlots = 2;
+        /* private static void TestUseWorkerComponent()
+         {
+             try 
+             {
+                 UseSoldiersFacilityComponentDef useSoldiersFacilityComponentDef = DefCache.GetDef<UseSoldiersFacilityComponentDef>("E_UseSoldier [TrainingFacility_PhoenixFacilityDef]");
+                 useSoldiersFacilityComponentDef.WorkerSlots = 4;
+                 useSoldiersFacilityComponentDef.UserSlots = 2;
 
-                PhoenixFacilityDef fab = DefCache.GetDef<PhoenixFacilityDef>("FabricationPlant_PhoenixFacilityDef");
-                PhoenixFacilityDef lab = DefCache.GetDef<PhoenixFacilityDef>("ResearchLab_PhoenixFacilityDef");
+                 PhoenixFacilityDef fab = DefCache.GetDef<PhoenixFacilityDef>("FabricationPlant_PhoenixFacilityDef");
+                 PhoenixFacilityDef lab = DefCache.GetDef<PhoenixFacilityDef>("ResearchLab_PhoenixFacilityDef");
 
-                UseSoldiersFacilityComponentDef fabUseSoldiersComponent = (UseSoldiersFacilityComponentDef)fab.GeoFacilityComponentDefs[1];
-                fabUseSoldiersComponent.WorkerSlots = 2;
-                fabUseSoldiersComponent.UserSlots = 1;
+                 UseSoldiersFacilityComponentDef fabUseSoldiersComponent = (UseSoldiersFacilityComponentDef)fab.GeoFacilityComponentDefs[1];
+                 fabUseSoldiersComponent.WorkerSlots = 2;
+                 fabUseSoldiersComponent.UserSlots = 1;
 
-                UseSoldiersFacilityComponentDef labUseSoldiersComponent = (UseSoldiersFacilityComponentDef)lab.GeoFacilityComponentDefs[1];
-                labUseSoldiersComponent.WorkerSlots = 2;
-                labUseSoldiersComponent.UserSlots = 1;
+                 UseSoldiersFacilityComponentDef labUseSoldiersComponent = (UseSoldiersFacilityComponentDef)lab.GeoFacilityComponentDefs[1];
+                 labUseSoldiersComponent.WorkerSlots = 2;
+                 labUseSoldiersComponent.UserSlots = 1;
 
 
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }*/
+             }
+             catch (Exception e)
+             {
+                 TFTVLogger.Error(e);
+             }
+         }*/
 
         private static void AddMissingViewElementDefs()
         {
@@ -359,7 +353,7 @@ namespace TFTV
                 mutogAgileLegs.ViewElementDef.DisplayName1.LocalizationKey = "MUTOG_AGILE_LEGS_NAME";
                 mutogRegenerativeLegs.ViewElementDef.DisplayName1.LocalizationKey = "MUTOG_REGENERATIVE_LEGS_NAME";
 
-                foreach(ViewElementDef viewElementDef in viewElementDefs) 
+                foreach (ViewElementDef viewElementDef in viewElementDefs)
                 {
                     viewElementDef.SmallIcon = null;
                     viewElementDef.LargeIcon = null;
@@ -596,7 +590,7 @@ namespace TFTV
 
                 WeaponDef crabmanViralGun = DefCache.GetDef<WeaponDef>("Crabman_RightHand_Viral_Gun_WeaponDef");
 
-                if(!crabmanViralGun.Tags.Contains(DefCache.GetDef<ItemTypeTagDef>("ViralBodypart_TagDef")))
+                if (!crabmanViralGun.Tags.Contains(DefCache.GetDef<ItemTypeTagDef>("ViralBodypart_TagDef")))
                 {
                     crabmanViralGun.Tags.Add(DefCache.GetDef<ItemTypeTagDef>("ViralBodypart_TagDef"));
                 }
@@ -1131,6 +1125,8 @@ namespace TFTV
                 Create_StarvedAbility();
                 TFTVUITactical.SecondaryObjectivesTactical.Defs.CreateDefs();
                 AdjustColorDefs();
+                ReduceMyrmidonDeploymentCost();
+                ChangeArchaelogyLab();
 
 
                 //  ChangeBuilderViewParams();
@@ -1139,6 +1135,22 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        private static void ReduceMyrmidonDeploymentCost()
+        {
+            try
+            {
+                DefCache.GetDef<TacCharacterDef>("AcidSwarmer_TacCharacterDef").DeploymentCost = 105;
+                DefCache.GetDef<TacCharacterDef>("VenomousSwarmer_TacCharacterDef").DeploymentCost = 95;
+                DefCache.GetDef<TacCharacterDef>("Swarmer_TacCharacterDef").DeploymentCost = 65;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
         }
 
         private static void Create_StarvedAbility()
@@ -1315,6 +1327,7 @@ namespace TFTV
                 FixNotCapturableFaceHuggers();
                 FixFactionLevel1Templates();
                 FixByzantiumAutoRecover();
+                FixCrateContentsNotVisibleDueToFailedPerceptionCheck();
 
                 // FixUmbraFire(); doesn't work because status removed before check - implemented differently elsewhere
             }
@@ -1322,6 +1335,24 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        private static void FixCrateContentsNotVisibleDueToFailedPerceptionCheck()
+        {
+            try
+            {
+                TacticalTargetingDataDef inventoryTargeting = DefCache.GetDef<TacticalTargetingDataDef>("E_TargetingData [Inventory_AbilityDef]");
+
+                inventoryTargeting.Origin.LineOfSight = LineOfSightType.Ignore;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+
         }
 
         private static void FixByzantiumAutoRecover()
@@ -1481,9 +1512,9 @@ namespace TFTV
             try
             {
 
-              
-              TacticalPerceptionDef tacticalPerceptionDef = DefCache.GetDef<TacticalPerceptionDef>("Acheron_PerceptionDef");
-              tacticalPerceptionDef.DefaultAimSlot = DefCache.GetDef<ItemSlotDef>("Acheron_Husk_SlotDef");
+
+                TacticalPerceptionDef tacticalPerceptionDef = DefCache.GetDef<TacticalPerceptionDef>("Acheron_PerceptionDef");
+                tacticalPerceptionDef.DefaultAimSlot = DefCache.GetDef<ItemSlotDef>("Acheron_Husk_SlotDef");
 
                 List<TacticalItemDef> tacticalItemDefs = new List<TacticalItemDef>()
                 {
@@ -4218,98 +4249,21 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
             }
         }
 
-        internal static void MakeVestsOnlyForOrganicMeatbags()
-        {
-            try
-            {
-
-
-                GameTagDef organicMeatbagTorsoTag = TFTVCommonMethods.CreateNewTag("MeatBagTorso", "{8D13AAD6-BA65-4907-B3C8-C977B819BF48}");
-
-                GameTagDef rocketMountTorsoTag = TFTVCommonMethods.CreateNewTag("RocketMountTorso", "{04ABD5E5-6666-4E8E-AF19-EF958315CDE1}");
-
-                foreach (TacticalItemDef item in Repo.GetAllDefs<TacticalItemDef>()
-
-                    .Where(ti => ti.name.Contains("Torso"))
-
-                    .Where(ti => ti.name.StartsWith("AN_") || ti.name.StartsWith("SY_") || ti.name.StartsWith("NJ_")
-                    || ti.name.StartsWith("NEU") || ti.name.StartsWith("PX_") || ti.name.StartsWith("IN_")))
-
-                {
-                    if (!item.Tags.Contains(organicMeatbagTorsoTag) && !item.name.Contains("BIO"))
-                    {
-                        item.Tags.Add(organicMeatbagTorsoTag);
-                        //  TFTVLogger.Always($"adding organicMeatbagTorsoTag to {item.name}");
-                    }
-
-                    if (!item.Tags.Contains(rocketMountTorsoTag) &&
-                        item.Tags.Contains(DefCache.GetDef<GameTagDef>("Heavy_ClassTagDef"))
-                        && !item.name.StartsWith("IN_"))
-                    {
-                        item.Tags.Add(rocketMountTorsoTag);
-                        //  TFTVLogger.Always($"adding rocketMountTorsoTag to {item.name}");
-                    }
-                }
-
-                WeaponDef fury = DefCache.GetDef<WeaponDef>("NJ_RocketLauncherPack_WeaponDef");
-                WeaponDef thor = DefCache.GetDef<WeaponDef>("NJ_GuidedMissileLauncherPack_WeaponDef");
-                WeaponDef destiny = DefCache.GetDef<WeaponDef>("PX_LaserArrayPack_WeaponDef");
-                WeaponDef ragnarok = DefCache.GetDef<WeaponDef>("PX_ShredingMissileLauncherPack_WeaponDef");
-
-                fury.RequiredSlotBinds[0].GameTagFilter = rocketMountTorsoTag;
-                thor.RequiredSlotBinds[0].GameTagFilter = rocketMountTorsoTag;
-                destiny.RequiredSlotBinds[0].GameTagFilter = rocketMountTorsoTag;
-                ragnarok.RequiredSlotBinds[0].GameTagFilter = rocketMountTorsoTag;
-
-                TacticalItemDef fireVest = DefCache.GetDef<TacticalItemDef>("NJ_FireResistanceVest_Attachment_ItemDef");
-                TacticalItemDef poisonVest = DefCache.GetDef<TacticalItemDef>("SY_PoisonResistanceVest_Attachment_ItemDef");
-                TacticalItemDef blastVest = DefCache.GetDef<TacticalItemDef>("PX_BlastResistanceVest_Attachment_ItemDef");
-                TacticalItemDef nanoVest = DefCache.GetDef<TacticalItemDef>("NanotechVest");
-
-                blastVest.RequiredSlotBinds[0].GameTagFilter = organicMeatbagTorsoTag;
-                poisonVest.RequiredSlotBinds[0].GameTagFilter = organicMeatbagTorsoTag;
-                fireVest.RequiredSlotBinds[0].GameTagFilter = organicMeatbagTorsoTag;
-                nanoVest.RequiredSlotBinds[0].GameTagFilter = organicMeatbagTorsoTag;
-
-                TacticalItemDef indepHeavyArmor = DefCache.GetDef<TacticalItemDef>("IN_Heavy_Torso_BodyPartDef");
-                TacticalItemDef njHeavyArmor = DefCache.GetDef<TacticalItemDef>("NJ_Heavy_Torso_BodyPartDef");
-                indepHeavyArmor.ProvidedSlots = new ProvidedSlotBind[] { indepHeavyArmor.ProvidedSlots[0], njHeavyArmor.ProvidedSlots[0] };
-
-
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
+     
 
 
         internal static void ChangesModulesAndAcid()
         {
             try
             {
-
-
                 ChangeModulePictures();
                 RemoveAcidAsVulnerability();
-                CreateNanoVestAbilityAndStatus();
-                CreateHealingMultiplierAbility();
-                CreateParalysisDamageResistance();
-                ModifyPoisonResVest();
-                ModifyBlastAndFireResVests();
-                ChangeVestsNJTemplates();
-                CreateAcidResistantVest();
-                CreateNanotechVest();
-                AdjustResearches();
                 RemoveRepairKitFromPure();
                 AdjustAcidDamage();
-                MakeVestsOnlyForOrganicMeatbags();
                 MakeMistRepellerLegModule();
                 CreateNanotechFieldkit();
                 CreateAcidDisabledStatus();
-                ChangeArchaelogyLab();
+                TFTVVests.Defs.CreateDefs();
             }
 
 
@@ -4382,10 +4336,6 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 TFTVLogger.Error(e);
                 throw;
             }
-
-
-
-
         }
 
         private static void MakeMistRepellerLegModule()
@@ -4421,13 +4371,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                     itemDefs.Add(grenade);
                     tacCharacterDef.Data.EquipmentItems = itemDefs.ToArray();
                     //  TFTVLogger.Always($"removed {repairKit.name} and gave {grenade.name} to {tacCharacterDef.name}");
-
                 }
-
-
-
-
-
             }
             catch (Exception e)
             {
@@ -4437,203 +4381,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
         }
 
 
-        private static void CreateNanoVestAbilityAndStatus()
-        {
-            string skillName = "NanoVest_AbilityDef";
-            ApplyStatusAbilityDef source = DefCache.GetDef<ApplyStatusAbilityDef>("CloseQuarters_AbilityDef");
-            ApplyStatusAbilityDef nanoVestAbility = Helper.CreateDefFromClone(
-                source,
-                "{FEF02379-A90F-4670-8FD7-574CDCB5753F}",
-                skillName);
-            nanoVestAbility.CharacterProgressionData = Helper.CreateDefFromClone(
-                source.CharacterProgressionData,
-                "{15458996-77C2-4F9B-8E31-0DD1A6D77571}",
-                skillName);
-            nanoVestAbility.TargetingDataDef = DefCache.GetDef<ApplyStatusAbilityDef>("QuickAim_AbilityDef").TargetingDataDef;
-            nanoVestAbility.ViewElementDef = Helper.CreateDefFromClone(
-                source.ViewElementDef,
-                "{8959A8C5-0405-4D46-8632-0CCA9EF029DB}",
-                skillName);
-            nanoVestAbility.ViewElementDef.ShowInInventoryItemTooltip = true;
-
-            nanoVestAbility.ViewElementDef.DisplayName1.LocalizationKey = "NANOVEST_ABILITY_NAME";
-            nanoVestAbility.ViewElementDef.Description.LocalizationKey = "NANOVEST_ABILITY_DESCRIPTION";
-            nanoVestAbility.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("module_nanovest_ability.png");
-            nanoVestAbility.ViewElementDef.SmallIcon = nanoVestAbility.ViewElementDef.LargeIcon;
-
-            string statusName = "NanoVest_StatusDef";
-            ItemSlotStatsModifyStatusDef nanoVestBuffStatus = Helper.CreateDefFromClone(
-                DefCache.GetDef<ItemSlotStatsModifyStatusDef>("E_Status [ElectricReinforcement_AbilityDef]"),
-                "{57E033FC-FECD-4A9E-8AE6-CC17FB5116A9}",
-                statusName);
-            nanoVestBuffStatus.Visuals = Helper.CreateDefFromClone(
-                nanoVestAbility.ViewElementDef,
-                "{8F111A9C-020C-4166-9444-1211CF517884}",
-                statusName);
-
-            nanoVestBuffStatus.Duration = -1;
-
-            nanoVestBuffStatus.Visuals.DisplayName1.LocalizationKey = "NANOVEST_ABILITY_NAME";
-            nanoVestBuffStatus.Visuals.Description.LocalizationKey = "NANOVEST_ABILITY_DESCRIPTION";
-            nanoVestBuffStatus.Visuals.LargeIcon = nanoVestAbility.ViewElementDef.LargeIcon;
-            nanoVestBuffStatus.Visuals.SmallIcon = nanoVestAbility.ViewElementDef.LargeIcon;
-            nanoVestBuffStatus.StatsModifications = new ItemSlotModification[]
-            {
-        new ItemSlotModification()
-        {
-            Type = StatType.Health,
-            ModificationType = StatModificationType.AddMax,
-            Value = 10f,
-            ShowsNotification = false,
-            NotifyOnce = false
-        },
-        new ItemSlotModification()
-        {
-            Type = StatType.Health,
-            ModificationType = StatModificationType.AddRestrictedToBounds,
-            Value = 10f,
-            ShowsNotification = true,
-            NotifyOnce = true
-        }
-            };
-
-            nanoVestAbility.StatusDef = nanoVestBuffStatus;
-            TFTVAircraftReworkMain.NanoVestStatusDef = nanoVestBuffStatus;
-        }
-
-        internal static void ModifyBlastAndFireResVests()
-        {
-            try
-            {
-
-
-                TacticalItemDef blastVest = DefCache.GetDef<TacticalItemDef>("PX_BlastResistanceVest_Attachment_ItemDef");
-                TacticalItemDef fireVest = DefCache.GetDef<TacticalItemDef>("NJ_FireResistanceVest_Attachment_ItemDef");
-                blastVest.Abilities = new AbilityDef[] { fireVest.Abilities[0], blastVest.Abilities[0] };
-                blastVest.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("modules_blastresvest.png");
-                blastVest.ViewElementDef.InventoryIcon = blastVest.ViewElementDef.LargeIcon;
-                // TFTVAircraftRework.BlastVestResistance = (DamageMultiplierAbilityDef)blastVest.Abilities[0];
-                // TFTVAircraftRework.FireVestResistance = (DamageMultiplierAbilityDef)fireVest.Abilities[0];
-                TFTVAircraftReworkMain.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)blastVest.Abilities[0]);
-                TFTVAircraftReworkMain.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)fireVest.Abilities[0]);
-
-
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
-
-        private static void ChangeVestsNJTemplates()
-        {
-            try
-            {
-
-                TacticalItemDef blastVest = DefCache.GetDef<TacticalItemDef>("PX_BlastResistanceVest_Attachment_ItemDef");
-                TacticalItemDef fireVest = DefCache.GetDef<TacticalItemDef>("NJ_FireResistanceVest_Attachment_ItemDef");
-
-
-                List<TacCharacterDef> tacCharacterDefs = new List<TacCharacterDef>()
-                {
-                    DefCache.GetDef<TacCharacterDef>("NJ_Assault6_CharacterTemplateDef"),
-                    DefCache.GetDef<TacCharacterDef>("NJ_Assault7_CharacterTemplateDef"),
-                    DefCache.GetDef<TacCharacterDef>("NJ_Assault7_recruitable_CharacterTemplateDef"),
-                    DefCache.GetDef<TacCharacterDef>("NJ_Sniper6_CharacterTemplateDef"),
-                    DefCache.GetDef<TacCharacterDef>("NJ_Sniper7_CharacterTemplateDef"),
-
-
-
-                };
-
-
-                foreach (TacCharacterDef tacCharacterDef in tacCharacterDefs)
-                {
-                    // TFTVLogger.Always($"{tacCharacterDef.name} has fireVest");
-
-                    List<ItemDef> bodypartItems = tacCharacterDef.Data.BodypartItems.ToList();
-                    bodypartItems.Remove(fireVest);
-                    bodypartItems.Add(blastVest);
-                }
-
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-
-        }
-
-
-        internal static void CreateNanotechVest()
-        {
-            try
-            {
-
-                TacticalItemDef fireVest = DefCache.GetDef<TacticalItemDef>("NJ_FireResistanceVest_Attachment_ItemDef");
-
-                FactionTagDef nJTag = DefCache.GetDef<FactionTagDef>("NewJerico_FactionTagDef");
-                FactionTagDef pXTag = DefCache.GetDef<FactionTagDef>("PhoenixPoint_FactionTagDef");
-
-
-                if (fireVest.Tags.Contains(nJTag))
-                {
-                    fireVest.Tags.Remove(nJTag);
-
-                }
-
-                if (!fireVest.Tags.Contains(pXTag))
-                {
-                    fireVest.Tags.Add(pXTag);
-
-                }
-
-                TacticalItemDef newNanoVest = Helper.CreateDefFromClone(fireVest, "{D07B639A-E1F4-46F4-91BB-1CCDCCCE8EC1}", "NanotechVest");
-                newNanoVest.ViewElementDef = Helper.CreateDefFromClone(fireVest.ViewElementDef, "{0F1BD9BA-1895-46C7-90AF-26FB92D702F6}", "Nanotech_ViewElement");
-
-
-                newNanoVest.Abilities = new AbilityDef[] { DefCache.GetDef<ApplyStatusAbilityDef>("NanoVest_AbilityDef") };
-                newNanoVest.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("modules_nanovest.png");
-                newNanoVest.ViewElementDef.DisplayName1.LocalizationKey = "NANOVEST_NAME";
-                newNanoVest.ViewElementDef.DisplayName2.LocalizationKey = "NANOVEST_NAME";
-                newNanoVest.ViewElementDef.Description.LocalizationKey = "NANOVEST_DESCRIPTION";
-                newNanoVest.ViewElementDef.InventoryIcon = newNanoVest.ViewElementDef.LargeIcon;
-
-                newNanoVest.ManufactureTech = 20;
-                newNanoVest.ManufactureMaterials = 30;
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-
-        }
-
-        internal static void CreateAcidResistantVest()
-        {
-            try
-            {
-                TacticalItemDef fireVest = DefCache.GetDef<TacticalItemDef>("NJ_FireResistanceVest_Attachment_ItemDef");
-                fireVest.Abilities = new AbilityDef[] { DefCache.GetDef<DamageMultiplierAbilityDef>("AcidResistant_DamageMultiplierAbilityDef") };
-                fireVest.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("modules_fireresvest.png");
-                fireVest.ViewElementDef.InventoryIcon = fireVest.ViewElementDef.LargeIcon;
-                TFTVAircraftReworkMain.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)fireVest.Abilities[0]);
-
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-
-        }
+      
 
         internal static void CreateNanotechFieldkit()
         {
@@ -4739,7 +4487,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
             }
         }
 
-        internal static void CreateHealingMultiplierAbility()
+       /* internal static void CreateHealingMultiplierAbility()
         {
             try
             {
@@ -4760,51 +4508,11 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 TFTVLogger.Error(e);
             }
 
-        }
+        }*/
 
-        internal static void CreateParalysisDamageResistance()
-        {
-            try
-            {
-                DamageMultiplierAbilityDef damageMultiplierAbilityDefSource = DefCache.GetDef<DamageMultiplierAbilityDef>("EMPResistant_DamageMultiplierAbilityDef");
-                DamageMultiplierAbilityDef ParalysisNotShcokResistance = Helper.CreateDefFromClone(damageMultiplierAbilityDefSource, "{A044047F-A462-46FC-B06A-191181B67800}", "ParalysisNotShockImmunityResistance_DamageMultiplierAbilityDef");
-                ParalysisNotShcokResistance.DamageTypeDef = DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Paralysis_DamageOverTimeDamageTypeEffectDef");
-                ParalysisNotShcokResistance.Multiplier = 0.5f;
-                ParalysisNotShcokResistance.ViewElementDef = Helper.CreateDefFromClone(damageMultiplierAbilityDefSource.ViewElementDef, "{F157A5A2-16A0-491A-ABE8-6CF88DEBE1DF}", "ParalysisNotShockImmunityResistance_ViewElementDef");
-                ParalysisNotShcokResistance.ViewElementDef.DisplayName1.LocalizationKey = "RESISTANCE_TO_PARALYSIS_NAME";
-                ParalysisNotShcokResistance.ViewElementDef.Description.LocalizationKey = "RESISTANCE_TO_PARALYSIS_DESCRIPTION";
-                ParalysisNotShcokResistance.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("ParalysisImmunity.png");
-                ParalysisNotShcokResistance.ViewElementDef.SmallIcon = Helper.CreateSpriteFromImageFile("ParalysisImmunity.png");
-                // TFTVAircraftRework.ParalysysVestResistance = ParalysisNotShcokResistance;
-                TFTVAircraftReworkMain.VestResistanceMultiplierAbilities.Add(ParalysisNotShcokResistance);
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
+       
 
-        }
-
-        internal static void ModifyPoisonResVest()
-        {
-            try
-            {
-                TacticalItemDef poisonVest = DefCache.GetDef<TacticalItemDef>("SY_PoisonResistanceVest_Attachment_ItemDef");
-                DamageMultiplierAbilityDef ParalysisNotShcokResistance = DefCache.GetDef<DamageMultiplierAbilityDef>("ParalysisNotShockImmunityResistance_DamageMultiplierAbilityDef");
-
-                //Not working correctly
-                //DamageMultiplierAbilityDef ExtraHealing = DefCache.GetDef<DamageMultiplierAbilityDef>("ExtraHealing_DamageMultiplierAbilityDef");
-
-                poisonVest.Abilities = new AbilityDef[] { poisonVest.Abilities[0], ParalysisNotShcokResistance };
-                // TFTVAircraftRework.PoisonVestResistance = (DamageMultiplierAbilityDef)poisonVest.Abilities[0];
-                TFTVAircraftReworkMain.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)poisonVest.Abilities[0]);
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
+        
 
         internal static void RemoveAcidAsVulnerability()
         {
@@ -4826,93 +4534,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
 
         }
 
-        internal static void AdjustResearches()
-        {
-            try
-            {
-                ResearchDef terrorSentinelResearch = DefCache.GetDef<ResearchDef>("PX_Alien_TerrorSentinel_ResearchDef");
-                ManufactureResearchRewardDef advNanotechRewards = DefCache.GetDef<ManufactureResearchRewardDef>("SYN_NanoTech_ResearchDef_ManufactureResearchRewardDef_0");
-                ManufactureResearchRewardDef newRewardsForTerrorSentinel = Helper.CreateDefFromClone(advNanotechRewards, "{41636380-9889-4D4A-8E0A-8D32A9196DD1}", terrorSentinelResearch.name + "ManuReward");
-
-                ResearchDef reverseEngineeringMVS = DefCache.GetDef<ResearchDef>("PX_SY_MultiVisualSensor_Attachment_ItemDef_ResearchDef");
-
-                ResearchDef reverseEngineeringMotionDetector = DefCache.GetDef<ResearchDef>("PX_SY_MotionDetector_Attachment_ItemDef_ResearchDef");
-
-                ResearchDef reverseEngineeringAcidVest = DefCache.GetDef<ResearchDef>("PX_NJ_FireResistanceVest_Attachment_ItemDef_ResearchDef");
-
-                ResearchDbDef pxResearch = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
-
-                if (pxResearch.Researches.Contains(reverseEngineeringMVS))
-                {
-                    pxResearch.Researches.Remove(reverseEngineeringMVS);
-                }
-
-                if (pxResearch.Researches.Contains(reverseEngineeringMotionDetector))
-                {
-                    pxResearch.Researches.Remove(reverseEngineeringMotionDetector);
-                }
-
-                if (pxResearch.Researches.Contains(reverseEngineeringAcidVest))
-                {
-                    pxResearch.Researches.Remove(reverseEngineeringAcidVest);
-                }
-
-                //Moving Motion Detection Module to Terror Sentinel Autopsy               
-                terrorSentinelResearch.Unlocks = new ResearchRewardDef[] { terrorSentinelResearch.Unlocks[0], newRewardsForTerrorSentinel };
-
-                //Remove adv nanotech buff and add Repair Kit to manufacturing reward
-
-                ResearchDef advNanotechRes = DefCache.GetDef<ResearchDef>("SYN_NanoTech_ResearchDef");
-                //  advNanotechRes.ViewElementDef.BenefitsText = new LocalizedTextBind() { }; // DefCache.GetDef<ResearchViewElementDef>("PX_ShardGun_ViewElementDef").BenefitsText;
-                advNanotechRes.Unlocks = new ResearchRewardDef[] { advNanotechRes.Unlocks[0] };
-
-                EquipmentDef repairKit = DefCache.GetDef<EquipmentDef>("FieldRepairKit_EquipmentDef");
-
-
-                //removing nanokit from Bionic Reserach
-                ManufactureResearchRewardDef bionicsReward = DefCache.GetDef<ManufactureResearchRewardDef>("NJ_Bionics1_ResearchDef_ManufactureResearchRewardDef_0");
-                bionicsReward.Items = new ItemDef[] { bionicsReward.Items[0], bionicsReward.Items[1], bionicsReward.Items[2] };
-
-
-                TacticalItemDef newNanoVest = DefCache.GetDef<TacticalItemDef>("NanotechVest");
-
-                List<ItemDef> manuRewards = new List<ItemDef>() { repairKit, newNanoVest };
-                advNanotechRewards.Items = manuRewards.ToArray();
-
-                TacticalItemDef blastVest = DefCache.GetDef<TacticalItemDef>("PX_BlastResistanceVest_Attachment_ItemDef");
-                ManufactureResearchRewardDef njFireReward = DefCache.GetDef<ManufactureResearchRewardDef>("NJ_PurificationTech_ResearchDef_ManufactureResearchRewardDef_0");
-                List<ItemDef> itemDefs = new List<ItemDef>(njFireReward.Items) { blastVest };
-                njFireReward.Items = itemDefs.ToArray();
-                //remove NJ Fire Resistance tech, folding it into fire tech
-
-                ResearchDef fireTech = DefCache.GetDef<ResearchDef>("NJ_PurificationTech_ResearchDef");
-
-                /* List<ResearchRewardDef> fireTechRewards = fireTech.Unlocks.ToList();
-                 fireTechRewards.Add(njFireResReward);
-                 fireTech.Unlocks = fireTechRewards.ToArray();*/
-
-                ResearchDbDef njResearch = DefCache.GetDef<ResearchDbDef>("nj_ResearchDB");
-                njResearch.Researches.Remove(DefCache.GetDef<ResearchDef>("NJ_FireResistanceTech_ResearchDef"));
-
-                //Fireworm unlocks Vidar
-                DefCache.GetDef<ExistingResearchRequirementDef>("PX_AGL_ResearchDef_ExistingResearchRequirementDef_0").ResearchID = "PX_Alien_Fireworm_ResearchDef";
-
-                //Blast res research changed to acid res, because blast vest moved to NJ Fire Tech research
-                //Acidworm unlocks BlastResTech, which is now AcidResTech
-                TacticalItemDef acidVest = DefCache.GetDef<TacticalItemDef>("NJ_FireResistanceVest_Attachment_ItemDef");
-                ManufactureResearchRewardDef pxBlastResReward = DefCache.GetDef<ManufactureResearchRewardDef>("PX_BlastResistanceVest_ResearchDef_ManufactureResearchRewardDef_0");
-                pxBlastResReward.Items = new ItemDef[] { acidVest };
-                DefCache.GetDef<ExistingResearchRequirementDef>("PX_BlastResistanceVest_ResearchDef_ExistingResearchRequirementDef_0").ResearchID = "PX_Alien_Acidworm_ResearchDef";
-
-                DefCache.GetDef<ResearchDef>("PX_Alien_Acidworm_ResearchDef").ViewElementDef.BenefitsText.LocalizationKey = "PX_ALIEN_ACIDWORM_RESEARCHDEF_BENEFITS";
-
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
+      
 
 
 
@@ -7108,24 +6730,35 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 //Removing Restore Armor from Acheron Prime
                 DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef").Abilities = new AbilityDef[] { pepperCloud };
 
+                //Replacing Confusion cloud with Pepper cloud on Acheron
+                DefCache.GetDef<TacticalItemDef>("Acheron_Husk_BodyPartDef").Abilities = new AbilityDef[] { pepperCloud };
+
                 ApplyDamageEffectAbilityDef corrosiveCloud = DefCache.GetDef<ApplyDamageEffectAbilityDef>("Acheron_CorrosiveCloud_AbilityDef");
 
                 //Removes CorrosiveCloud from AchlysChampion
                 TacticalItemDef achlysChampionHusk = DefCache.GetDef<TacticalItemDef>("AcheronAchlysChampion_Husk_BodyPartDef");
                 List<AbilityDef> achlysChampionHuskAbilities = achlysChampionHusk.Abilities.ToList();
+
                 achlysChampionHuskAbilities.Remove(corrosiveCloud);
+                achlysChampionHuskAbilities.Remove(pepperCloud);
+                achlysChampionHuskAbilities.Add(confusionCloud);
+
                 achlysChampionHusk.Abilities = achlysChampionHuskAbilities.ToArray();
 
                 //Remove Confusion cloud from Acheron Achlys
                 TacticalItemDef achlysHusk = DefCache.GetDef<TacticalItemDef>("AcheronAchlys_Husk_BodyPartDef");
                 List<AbilityDef> achlysHuskAbilities = achlysChampionHusk.Abilities.ToList();
+
                 achlysHuskAbilities.Remove(confusionCloud);
-                achlysChampionHusk.Abilities = achlysHuskAbilities.ToArray();
+                achlysHuskAbilities.Remove(pepperCloud);
+                achlysHuskAbilities.Add(deliriumCloud);
+
+                achlysHusk.Abilities = achlysHuskAbilities.ToArray();
 
                 //Removed as now in base game
                 //Adjust Acheron leap so it can only be used once per turn 
-               //   JetJumpAbilityDef acheronLeap = DefCache.GetDef<JetJumpAbilityDef>("Acheron_Leap_AbilityDef");
-               // acheronLeap.UsesPerTurn = 1;
+                //   JetJumpAbilityDef acheronLeap = DefCache.GetDef<JetJumpAbilityDef>("Acheron_Leap_AbilityDef");
+                // acheronLeap.UsesPerTurn = 1;
                 //acheronLeap.ActionPointCost = 0;
 
                 //Removing Resurrect and Delirium Clouds from Asclepius Husks
@@ -7147,12 +6780,80 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 DamageKeywordDef poison = DefCache.GetDef<DamageKeywordDef>("Poisonous_DamageKeywordDataDef");
                 DamageKeywordDef acid = DefCache.GetDef<DamageKeywordDef>("Acid_DamageKeywordDataDef");
                 DamageKeywordDef standard = DefCache.GetDef<DamageKeywordDef>("Damage_DamageKeywordDataDef");
+                DamageKeywordDef goo = DefCache.GetDef<DamageKeywordDef>("Goo_DamageKeywordEffectorDef");
 
                 DamageKeywordDef blast = DefCache.GetDef<DamageKeywordDef>("Blast_DamageKeywordDataDef");
                 StandardDamageTypeEffectDef blastDamage = DefCache.GetDef<StandardDamageTypeEffectDef>("Blast_StandardDamageTypeEffectDef");
 
+                WeaponDef achlysArms = DefCache.GetDef<WeaponDef>("AcheronAchlys_Arms_WeaponDef");
+
+                achlysArms.DamagePayload.DamageKeywords = new List<DamageKeywordPair>
+                    {
+
+                     new DamageKeywordPair
+                        {
+                            DamageKeywordDef = goo,
+                            Value = 4
+                        },
+                        new DamageKeywordPair
+                        {
+                            DamageKeywordDef = blast,
+                            Value = 30
+                        },
+
+                        new DamageKeywordPair
+                        {
+                            DamageKeywordDef = poison,
+                            Value = 20
+                        },
+                        new DamageKeywordPair
+                        {
+                            DamageKeywordDef = acid,
+                            Value = 10
+                        }
+                };
+
+                achlysArms.DamagePayload.AoeRadius = 2;
+                achlysArms.DamagePayload.DamageType = blastDamage;
+                achlysArms.DamagePayload.DamageDeliveryType = DamageDeliveryType.Cone;
+
                 WeaponDef spitArmsAcheronAchlysChampion = DefCache.GetDef<WeaponDef>("AcheronAchlysChampion_Arms_WeaponDef");
-                spitArmsAcheronAchlysChampion.DamagePayload.DamageKeywords[1].DamageKeywordDef = blast;
+
+                spitArmsAcheronAchlysChampion.DamagePayload.DamageKeywords = new List<DamageKeywordPair>
+                    {
+                    new DamageKeywordPair
+                        {
+                            DamageKeywordDef = goo,
+                            Value = 7
+                        },
+
+                        new DamageKeywordPair
+                        {
+                            DamageKeywordDef = blast,
+                            Value = 30
+                        },
+
+                        new DamageKeywordPair
+                        {
+                            DamageKeywordDef = poison,
+                            Value = 30
+                        },
+                        new DamageKeywordPair
+                        {
+                            DamageKeywordDef = acid,
+                            Value = 20
+                        }
+
+                };
+
+                spitArmsAcheronAchlysChampion.DamagePayload.AoeRadius = 2;
+                spitArmsAcheronAchlysChampion.DamagePayload.DamageType = blastDamage;
+                spitArmsAcheronAchlysChampion.DamagePayload.DamageDeliveryType = DamageDeliveryType.Cone;
+
+                //  spitArmsAcheronAchlysChampion.DamagePayload.DamageKeywords[1].DamageKeywordDef = blast;
+
+
+
 
                 //now in base game
                 /* spitArmsAcheronAchlysChampion.DamagePayload.DamageKeywords[1].Value = 30;
@@ -7162,63 +6863,79 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                     Value = 30
                 });*/
 
-               // spitArmsAcheronAchlysChampion.DamagePayload.DamageKeywords.RemoveAt(2); //removing goo added to base game or was it already there? can't remember
+                // spitArmsAcheronAchlysChampion.DamagePayload.DamageKeywords.RemoveAt(2); //removing goo added to base game or was it already there? can't remember
 
-                spitArmsAcheronAchlysChampion.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
-                {
-                    DamageKeywordDef = acid,
-                    Value = 20
-                });
-                
-                spitArmsAcheronAchlysChampion.DamagePayload.DamageType = blastDamage;
-                spitArmsAcheronAchlysChampion.DamagePayload.AoeRadius = 2f;
-                spitArmsAcheronAchlysChampion.DamagePayload.DamageDeliveryType = DamageDeliveryType.Cone;
-               // spitArmsAcheronAchlysChampion.HandsToUse = 2;
+                /* spitArmsAcheronAchlysChampion.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
+                 {
+                     DamageKeywordDef = acid,
+                     Value = 20
+                 });
 
+                 spitArmsAcheronAchlysChampion.DamagePayload.DamageType = blastDamage;
+                 spitArmsAcheronAchlysChampion.DamagePayload.AoeRadius = 2f;
+                 spitArmsAcheronAchlysChampion.DamagePayload.DamageDeliveryType = DamageDeliveryType.Cone;
+                 // spitArmsAcheronAchlysChampion.HandsToUse = 2;
+                */
 
                 WeaponDef spitArmsAcheronAsclepiusChampion = DefCache.GetDef<WeaponDef>("AcheronAsclepiusChampion_Arms_WeaponDef");
 
-              //  spitArmsAcheronAsclepiusChampion.HandsToUse = 2;
+                spitArmsAcheronAsclepiusChampion.DamagePayload.DamageKeywords = new List<DamageKeywordPair>
+                    {
+                        new DamageKeywordPair
+                        {
+                            DamageKeywordDef = DefCache.GetDef<AddStatusDamageKeywordDataDef>("Strained_DamageKeywordDataDef"),
+                            Value = 1
+                        },
+                        new DamageKeywordPair
+                        {
+                            DamageKeywordDef = DefCache.GetDef<AddStatusDamageKeywordDataDef>("Corruption_DamageKeywordDataDef"),
+                            Value = 1
+                        },
 
-                WeaponDef achlysArms = DefCache.GetDef<WeaponDef>("AcheronAchlys_Arms_WeaponDef");
+                    };
 
-               // achlysArms.HandsToUse = 2;
+
+                spitArmsAcheronAsclepiusChampion.DamagePayload.ProjectileVisuals = DefCache.GetDef<ProjectileDef>("E_ProjectileVisuals [AcheronAsclepiusChampion_Arms_WeaponDef]");
+
+
+
+                // achlysArms.HandsToUse = 2;
 
                 //   string guid = "2B294E66-1BE9-425B-B088-F5A9075167A6";
-                WeaponDef neuroArmsCopy = new WeaponDef();//Repo.CreateDef<WeaponDef>(guid);
-                ReflectionHelper.CopyFields(achlysArms, neuroArmsCopy);
-                ReflectionHelper.CopyFields(spitArmsAcheronAchlysChampion, achlysArms);
-                ReflectionHelper.CopyFields(neuroArmsCopy, spitArmsAcheronAsclepiusChampion);
+                /*  WeaponDef neuroArmsCopy = new WeaponDef();//Repo.CreateDef<WeaponDef>(guid);
+                  ReflectionHelper.CopyFields(achlysArms, neuroArmsCopy);
+                  ReflectionHelper.CopyFields(spitArmsAcheronAchlysChampion, achlysArms);
+                  ReflectionHelper.CopyFields(neuroArmsCopy, spitArmsAcheronAsclepiusChampion);*/
 
-               // DamageKeywordDef mistDamageKeyword = DefCache.GetDef<DamageKeywordDef>("Mist_DamageKeywordEffectorDef");
-               // SpawnVoxelDamageTypeEffectDef mistDamageTypeEffect = DefCache.GetDef<SpawnVoxelDamageTypeEffectDef>("Mist_SpawnVoxelDamageTypeEffectDef");
+                // DamageKeywordDef mistDamageKeyword = DefCache.GetDef<DamageKeywordDef>("Mist_DamageKeywordEffectorDef");
+                // SpawnVoxelDamageTypeEffectDef mistDamageTypeEffect = DefCache.GetDef<SpawnVoxelDamageTypeEffectDef>("Mist_SpawnVoxelDamageTypeEffectDef");
 
                 // Change_AcheronCorruptiveSpray();
                 //Add acid and mist, increase range
-               // WeaponDef acheronArms = DefCache.GetDef<WeaponDef>("Acheron_Arms_WeaponDef");
+                // WeaponDef acheronArms = DefCache.GetDef<WeaponDef>("Acheron_Arms_WeaponDef");
                 //Now in base game
-              /*  acheronArms.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
-                {
-                    DamageKeywordDef = acid,
-                    Value = 10
-                });
-                acheronArms.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
-                {
-                    DamageKeywordDef = mistDamageKeyword,
-                    Value = 1
+                /*  acheronArms.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
+                  {
+                      DamageKeywordDef = acid,
+                      Value = 10
+                  });
+                  acheronArms.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
+                  {
+                      DamageKeywordDef = mistDamageKeyword,
+                      Value = 1
 
-                });
+                  });
 
-                acheronArms.DamagePayload.DamageType = mistDamageTypeEffect;
-                acheronArms.DamagePayload.AoeRadius = 5;
-                acheronArms.DamagePayload.Range = 30;
-                acheronArms.DamagePayload.DamageDeliveryType = DamageDeliveryType.Cone;
-                acheronArms.HandsToUse = 2;*/
+                  acheronArms.DamagePayload.DamageType = mistDamageTypeEffect;
+                  acheronArms.DamagePayload.AoeRadius = 5;
+                  acheronArms.DamagePayload.Range = 30;
+                  acheronArms.DamagePayload.DamageDeliveryType = DamageDeliveryType.Cone;
+                  acheronArms.HandsToUse = 2;*/
                 //   acheronArms.Abilities[0] = DefCache.GetDef<ShootAbilityDef>("MistLaunch_ShootAbilityDef"); 
 
 
-             //   WeaponDef acheronPrimeArms = DefCache.GetDef<WeaponDef>("AcheronPrime_Arms_WeaponDef");
-              
+                //   WeaponDef acheronPrimeArms = DefCache.GetDef<WeaponDef>("AcheronPrime_Arms_WeaponDef");
+
                 //Now in base game
                 /* acheronPrimeArms.DamagePayload.DamageKeywords.Add(new DamageKeywordPair
                 {
@@ -7244,11 +6961,11 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 DefCache.GetDef<ShootAbilityDef>("Acheron_ParalyticSpray_AbilityDef").UsesPerTurn = 2;
 
                 //Now in base game
-              //  ItemSlotDef frontLeftLegSlot = (ItemSlotDef)Repo.GetDef("fdbaba54-5dd8-69f4-d85a-02cb6e17d1ea"); //Acheron_FrontLeftLeg_SlotDef
-              //  ItemSlotDef frontRightLegSlot = (ItemSlotDef)Repo.GetDef("2f4339a5-b4e3-c184-f841-efe653dac7b2"); //Acheron_FrontRightLeg_SlotDef
+                //  ItemSlotDef frontLeftLegSlot = (ItemSlotDef)Repo.GetDef("fdbaba54-5dd8-69f4-d85a-02cb6e17d1ea"); //Acheron_FrontLeftLeg_SlotDef
+                //  ItemSlotDef frontRightLegSlot = (ItemSlotDef)Repo.GetDef("2f4339a5-b4e3-c184-f841-efe653dac7b2"); //Acheron_FrontRightLeg_SlotDef
 
-              //  frontLeftLegSlot.ProvidesHand = false;
-              //  frontRightLegSlot.ProvidesHand = false;
+                //  frontLeftLegSlot.ProvidesHand = false;
+                //  frontRightLegSlot.ProvidesHand = false;
 
             }
             catch (Exception e)
@@ -7340,8 +7057,6 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 CustomMissionTypeDef AmbushALN = DefCache.GetDef<CustomMissionTypeDef>("AmbushAlien_CustomMissionTypeDef");
                 CustomMissionTypeDef sourceScavCratesALN = DefCache.GetDef<CustomMissionTypeDef>("ScavCratesALN_CustomMissionTypeDef");
 
-
-
                 // FactionObjectiveDef pickResourceCratesObjective = DefCache.GetDef<FactionObjectiveDef>("PickResourceItems_CustomMissionObjective");
 
                 List<CustomMissionTypeDef> ambushMissions = new List<CustomMissionTypeDef>()
@@ -7377,9 +7092,9 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
                 SurviveTurnsFactionObjectiveDef surviveAmbush_CustomMissionObjective = DefCache.GetDef<SurviveTurnsFactionObjectiveDef>("SurviveAmbush_CustomMissionObjective");
                 surviveAmbush_CustomMissionObjective.MissionObjectiveData.ExperienceReward = 100;
 
-               // DefCache.GetDef<EvacuateFactionObjectiveDef>("EvacuateAll_Ambush")
+                // DefCache.GetDef<EvacuateFactionObjectiveDef>("EvacuateAll_Ambush")
 
-                
+
             }
             catch (Exception e)
             {
