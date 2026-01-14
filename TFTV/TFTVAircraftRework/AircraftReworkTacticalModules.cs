@@ -22,9 +22,10 @@ using System.Linq;
 using System.Reflection;
 using TFTV.TFTVAircraftRework;
 using UnityEngine;
+using static PhoenixPoint.Tactical.Entities.Statuses.ItemSlotStatsModifyStatusDef;
+using static TFTV.AircraftReworkHelpers;
 using static TFTV.TFTVAircraftReworkMain;
 using Research = PhoenixPoint.Geoscape.Entities.Research.Research;
-using static TFTV.AircraftReworkHelpers;
 
 namespace TFTV
 {
@@ -1542,6 +1543,13 @@ namespace TFTV
         internal class HeliosStatisChamber
         {
 
+            private static bool _vestBuffApplied;
+            private static float _ablativeResistanceBase = -1f;
+            private static float _hazmatResistanceBase = -1f;
+            private static float _ablativeHealthBase = -1f;
+            private static float _hazmatArmorBase = -1f;
+
+
             internal static void ImplementPanaceaNanotechTactical(TacticalLevelController controller)
             {
                 try
@@ -1572,7 +1580,20 @@ namespace TFTV
             {
                 try
                 {
-                    
+                    if (!_vestBuffApplied)
+                    {
+                        return;
+                    }
+
+                    CacheVestBaseValuesIfNeeded();
+
+                    UpdateResistanceMultiplier(TFTVVests.AblativeResistancesDef, _ablativeResistanceBase);
+                    UpdateResistanceMultiplier(TFTVVests.HazmatResistancesDef, _hazmatResistanceBase);
+                    UpdateSlotStatModifier(TFTVVests.HealthBuffStatusDef, StatType.Health, _ablativeHealthBase);
+                    UpdateSlotStatModifier(TFTVVests.ArmorBuffStatusDef, StatType.Armour, _hazmatArmorBase);
+
+                    _vestBuffApplied = false;
+
 
                 }
                 catch (Exception e)
@@ -1586,7 +1607,14 @@ namespace TFTV
             {
                 try
                 {
-                   
+                    CacheVestBaseValuesIfNeeded();
+
+                    UpdateResistanceMultiplier(TFTVVests.AblativeResistancesDef, _ablativeResistanceBase * 1.5f);
+                    UpdateResistanceMultiplier(TFTVVests.HazmatResistancesDef, _hazmatResistanceBase * 1.5f);
+                    UpdateSlotStatModifier(TFTVVests.HealthBuffStatusDef, StatType.Health, _ablativeHealthBase * 1.5f);
+                    UpdateSlotStatModifier(TFTVVests.ArmorBuffStatusDef, StatType.Armour, _hazmatArmorBase * 1.5f);
+
+                    _vestBuffApplied = true;
                 }
                 catch (Exception e)
                 {
@@ -1595,6 +1623,72 @@ namespace TFTV
                 }
             }
 
+            private static void CacheVestBaseValuesIfNeeded()
+            {
+                if (_ablativeResistanceBase < 0f && TFTVVests.AblativeResistancesDef != null)
+                {
+                    _ablativeResistanceBase = TFTVVests.AblativeResistancesDef.Multiplier;
+                }
+
+                if (_hazmatResistanceBase < 0f && TFTVVests.HazmatResistancesDef != null)
+                {
+                    _hazmatResistanceBase = TFTVVests.HazmatResistancesDef.Multiplier;
+                }
+
+                if (_ablativeHealthBase < 0f)
+                {
+                    _ablativeHealthBase = ReadSlotStatModifierValue(TFTVVests.HealthBuffStatusDef, StatType.Health);
+                }
+
+                if (_hazmatArmorBase < 0f)
+                {
+                    _hazmatArmorBase = ReadSlotStatModifierValue(TFTVVests.ArmorBuffStatusDef, StatType.Armour);
+                }
+            }
+
+            private static void UpdateResistanceMultiplier(DamageMultiplierStatusDef statusDef, float multiplier)
+            {
+                if (statusDef == null || multiplier < 0f)
+                {
+                    return;
+                }
+
+                statusDef.Multiplier = multiplier;
+            }
+
+            private static void UpdateSlotStatModifier(ItemSlotStatsModifyStatusDef statusDef, StatType statType, float value)
+            {
+                if (statusDef == null || value < 0f)
+                {
+                    return;
+                }
+
+                foreach (ItemSlotModification modification in statusDef.StatsModifications)
+                {
+                    if (modification.Type == statType)
+                    {
+                        modification.Value = value;
+                    }
+                }
+            }
+
+            private static float ReadSlotStatModifierValue(ItemSlotStatsModifyStatusDef statusDef, StatType statType)
+            {
+                if (statusDef == null || statusDef.StatsModifications == null)
+                {
+                    return -1f;
+                }
+
+                foreach (ItemSlotModification modification in statusDef.StatsModifications)
+                {
+                    if (modification.Type == statType)
+                    {
+                        return modification.Value;
+                    }
+                }
+
+                return -1f;
+            }
 
 
             internal static void ImplementVestBuff()
