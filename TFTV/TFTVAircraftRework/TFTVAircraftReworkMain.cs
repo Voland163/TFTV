@@ -114,14 +114,14 @@ namespace TFTV
         internal static GroundAttackWeaponAbilityDef _groundAttackAbility = null;
         internal static List<DelayedEffectDef> _groundAttackWeaponExplosions = new List<DelayedEffectDef>();
 
-        public static ItemSlotStatsModifyStatusDef NanoVestStatusDef = null;
+        //public static ItemSlotStatsModifyStatusDef NanoVestStatusDef = null;
         // public static DamageMultiplierAbilityDef BlastVestResistance = null; //"BlastResistant_DamageMultiplierAbilityDef"
         // public static DamageMultiplierAbilityDef FireVestResistance = null; //"FireResistant_DamageMultiplierAbilityDef"
         // public static DamageMultiplierAbilityDef AcidVestResistance = null;  //AcidResistant_DamageMultiplierAbilityDef
         // public static DamageMultiplierAbilityDef ParalysysVestResistance = null;
         // public static DamageMultiplierAbilityDef PoisonVestResistance = null; //PoisonResistant_DamageMultiplierAbilityDef
 
-        public static List<DamageMultiplierAbilityDef> VestResistanceMultiplierAbilities = new List<DamageMultiplierAbilityDef>();
+        //public static List<DamageMultiplierAbilityDef> VestResistanceMultiplierAbilities = new List<DamageMultiplierAbilityDef>();
 
         //make all basic modules available in the Marketplace
 

@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static DynamicBoneColliderBase;
 using static PhoenixPoint.Common.Entities.Addons.AddonDef;
 using static PhoenixPoint.Tactical.Entities.Statuses.ItemSlotStatsModifyStatusDef;
 
@@ -45,6 +46,8 @@ namespace TFTV
         // Constants: names are part of the requirements.
         private const string AblativeVestDefName = "TFTV_AblativeVest_Attachment_ItemDef";
         private const string HazmatVestDefName = "TFTV_HazmatVest_Attachment_ItemDef";
+       
+
 
         [HarmonyPatch(typeof(ApplyStatusAbility), "GetStatusTarget")]
         public static class ApplyStatusAbilityDamageMultiplierPatch
@@ -96,7 +99,7 @@ namespace TFTV
                     // Add new vests to PX_Alien_EvolvedAliens_ResearchDef unlocks (requested)
                     AddNewVestsToEvolvedAliensResearch();
 
-                    ChangeVestsNJTemplates();
+                    GetLegacyVestTemplates();
                 }
                 catch (Exception e)
                 {
@@ -529,7 +532,7 @@ namespace TFTV
 
                     poisonVest.Abilities = new AbilityDef[] { poisonVest.Abilities[0], ParalysisNotShockResistance };
                     // TFTVAircraftRework.PoisonVestResistance = (DamageMultiplierAbilityDef)poisonVest.Abilities[0];
-                    TFTVAircraftReworkMain.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)poisonVest.Abilities[0]);
+                   // TFTVAircraftReworkMain.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)poisonVest.Abilities[0]);
                 }
                 catch (Exception e)
                 {
@@ -602,8 +605,7 @@ namespace TFTV
                     };
 
                     nanoVestAbility.StatusDef = nanoVestBuffStatus;
-                    TFTVAircraftReworkMain.NanoVestStatusDef = nanoVestBuffStatus;
-                    HealthBuffStatusDef = nanoVestBuffStatus;
+
                 }
                 catch (Exception e)
                 {
@@ -625,8 +627,8 @@ namespace TFTV
                     blastVest.ViewElementDef.InventoryIcon = blastVest.ViewElementDef.LargeIcon;
                     // TFTVAircraftRework.BlastVestResistance = (DamageMultiplierAbilityDef)blastVest.Abilities[0];
                     // TFTVAircraftRework.FireVestResistance = (DamageMultiplierAbilityDef)fireVest.Abilities[0];
-                    TFTVAircraftReworkMain.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)blastVest.Abilities[0]);
-                    TFTVAircraftReworkMain.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)fireVest.Abilities[0]);
+                  //  TFTVAircraftReworkMain.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)blastVest.Abilities[0]);
+                  //  TFTVAircraftReworkMain.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)fireVest.Abilities[0]);
 
 
 
@@ -638,43 +640,57 @@ namespace TFTV
                 }
             }
 
-            private static void ChangeVestsNJTemplates()
+            
+
+            private static void GetLegacyVestTemplates()
             {
-                try
-                {
 
-                    TacticalItemDef blastVest = DefCache.GetDef<TacticalItemDef>("PX_BlastResistanceVest_Attachment_ItemDef");
-                    TacticalItemDef fireVest = DefCache.GetDef<TacticalItemDef>("NJ_FireResistanceVest_Attachment_ItemDef");
+            string BlastVestDefName = "PX_BlastResistanceVest_Attachment_ItemDef";
+            string FireVestDefName = "NJ_FireResistanceVest_Attachment_ItemDef";
+            string PoisonVestDefName = "SY_PoisonResistanceVest_Attachment_ItemDef";
+            string NanoVestDefName = "NanotechVest";
 
+                List<TacticalItemDef> legacyVests = new List<TacticalItemDef>()
+            {
+            DefCache.GetDef<TacticalItemDef>(BlastVestDefName),
+            DefCache.GetDef<TacticalItemDef>(FireVestDefName),
+            DefCache.GetDef<TacticalItemDef>(PoisonVestDefName),
+            DefCache.GetDef<TacticalItemDef>(NanoVestDefName)
 
-                    List<TacCharacterDef> tacCharacterDefs = new List<TacCharacterDef>()
+            };
+
+                
+
+                List<TacCharacterDef> tacCharacterDefs = new List<TacCharacterDef>()
                 {
                     DefCache.GetDef<TacCharacterDef>("NJ_Assault6_CharacterTemplateDef"),
                     DefCache.GetDef<TacCharacterDef>("NJ_Assault7_CharacterTemplateDef"),
-                    DefCache.GetDef<TacCharacterDef>("NJ_Assault7_recruitable_CharacterTemplateDef"),
+                    DefCache.GetDef<TacCharacterDef>("NJ_Assault7_recruitable_CharacterTemplateDef"),       
                     DefCache.GetDef<TacCharacterDef>("NJ_Sniper6_CharacterTemplateDef"),
                     DefCache.GetDef<TacCharacterDef>("NJ_Sniper7_CharacterTemplateDef"),
+                    DefCache.GetDef<TacCharacterDef>("SY_Assault6_CharacterTemplateDef"),
+                    DefCache.GetDef<TacCharacterDef>("SY_Assault7_CharacterTemplateDef"),
+                    DefCache.GetDef<TacCharacterDef>("SY_Infiltrator6_CharacterTemplateDef"),
+                    DefCache.GetDef<TacCharacterDef>("SY_Infiltrator7_CharacterTemplateDef"),
+
+                    DefCache.GetDef<TacCharacterDef>("SY_Sniper6_CharacterTemplateDef"),
+                    DefCache.GetDef<TacCharacterDef>("SY_Sniper6_P_CharacterTemplateDef"),
+                    DefCache.GetDef<TacCharacterDef>("SY_Sniper7_CharacterTemplateDef"),
+                    DefCache.GetDef<TacCharacterDef>("SY_Sniper7_P_CharacterTemplateDef"),
+
                 };
 
-
-                    foreach (TacCharacterDef tacCharacterDef in tacCharacterDefs)
-                    {
-                        // TFTVLogger.Always($"{tacCharacterDef.name} has fireVest");
-
-                        List<ItemDef> bodypartItems = tacCharacterDef.Data.BodypartItems.ToList();
-                        bodypartItems.Remove(fireVest);
-                        bodypartItems.Add(blastVest);
-                    }
-
-
-                }
-                catch (Exception e)
+                foreach (TacCharacterDef tacCharacterDef in tacCharacterDefs)
                 {
-                    TFTVLogger.Error(e);
-                    throw;
+                    List <ItemDef> itemDefs = tacCharacterDef.Data.BodypartItems.ToList();
+                    itemDefs.RemoveAll(item => legacyVests.Contains(item));
+                    tacCharacterDef.Data.BodypartItems = itemDefs.ToArray();
+
                 }
+
 
             }
+
 
 
             private static void CreateNanotechVest()
@@ -731,7 +747,7 @@ namespace TFTV
                     fireVest.Abilities = new AbilityDef[] { DefCache.GetDef<DamageMultiplierAbilityDef>("AcidResistant_DamageMultiplierAbilityDef") };
                     fireVest.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("modules_fireresvest.png");
                     fireVest.ViewElementDef.InventoryIcon = fireVest.ViewElementDef.LargeIcon;
-                    TFTVAircraftReworkMain.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)fireVest.Abilities[0]);
+                   // TFTVAircraftReworkMain.VestResistanceMultiplierAbilities.Add((DamageMultiplierAbilityDef)fireVest.Abilities[0]);
 
                 }
 
@@ -758,7 +774,7 @@ namespace TFTV
                     ParalysisNotShockResistance.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("ParalysisImmunity.png");
                     ParalysisNotShockResistance.ViewElementDef.SmallIcon = Helper.CreateSpriteFromImageFile("ParalysisImmunity.png");
                     // TFTVAircraftRework.ParalysysVestResistance = ParalysisNotShcokResistance;
-                    TFTVAircraftReworkMain.VestResistanceMultiplierAbilities.Add(ParalysisNotShockResistance);
+                   // TFTVAircraftReworkMain.VestResistanceMultiplierAbilities.Add(ParalysisNotShockResistance);
                 }
                 catch (Exception e)
                 {
@@ -836,12 +852,21 @@ namespace TFTV
 
             }
 
+           
+
+          
+
             private static void AdjustResearches()
             {
                 try
                 {
+                    //nanovest removed
+                    //blastvest removed
+                    //acidvest removed
+                    //poisonvest removed
+
                     ResearchDef terrorSentinelResearch = DefCache.GetDef<ResearchDef>("PX_Alien_TerrorSentinel_ResearchDef");
-                    ManufactureResearchRewardDef advNanotechRewards = DefCache.GetDef<ManufactureResearchRewardDef>("SYN_NanoTech_ResearchDef_ManufactureResearchRewardDef_0");
+                    ManufactureResearchRewardDef advNanotechRewards = DefCache.GetDef<ManufactureResearchRewardDef>("SYN_NanoTech_ResearchDef_ManufactureResearchRewardDef_0"); //Motion detector
                     ManufactureResearchRewardDef newRewardsForTerrorSentinel = Helper.CreateDefFromClone(advNanotechRewards, "{41636380-9889-4D4A-8E0A-8D32A9196DD1}", terrorSentinelResearch.name + "ManuReward");
 
                     ResearchDef reverseEngineeringMVS = DefCache.GetDef<ResearchDef>("PX_SY_MultiVisualSensor_Attachment_ItemDef_ResearchDef");
@@ -886,20 +911,16 @@ namespace TFTV
 
                     TacticalItemDef newNanoVest = DefCache.GetDef<TacticalItemDef>("NanotechVest");
 
-                    List<ItemDef> manuRewards = new List<ItemDef>() { repairKit, newNanoVest };
+                    List<ItemDef> manuRewards = new List<ItemDef>() { repairKit };//, newNanoVest }; removing Nanovest from manufacturing
                     advNanotechRewards.Items = manuRewards.ToArray();
 
-                    TacticalItemDef blastVest = DefCache.GetDef<TacticalItemDef>("PX_BlastResistanceVest_Attachment_ItemDef");
+                 /*   TacticalItemDef blastVest = DefCache.GetDef<TacticalItemDef>("PX_BlastResistanceVest_Attachment_ItemDef");
                     ManufactureResearchRewardDef njFireReward = DefCache.GetDef<ManufactureResearchRewardDef>("NJ_PurificationTech_ResearchDef_ManufactureResearchRewardDef_0");
                     List<ItemDef> itemDefs = new List<ItemDef>(njFireReward.Items) { blastVest };
-                    njFireReward.Items = itemDefs.ToArray();
-                    //remove NJ Fire Resistance tech, folding it into fire tech
+                    njFireReward.Items = itemDefs.ToArray();*/
+                    //remove NJ Fire Resistance tech, folding it into fire tech, and removed the blastVest 
 
-                    ResearchDef fireTech = DefCache.GetDef<ResearchDef>("NJ_PurificationTech_ResearchDef");
-
-                    /* List<ResearchRewardDef> fireTechRewards = fireTech.Unlocks.ToList();
-                     fireTechRewards.Add(njFireResReward);
-                     fireTech.Unlocks = fireTechRewards.ToArray();*/
+                
 
                     ResearchDbDef njResearch = DefCache.GetDef<ResearchDbDef>("nj_ResearchDB");
                     njResearch.Researches.Remove(DefCache.GetDef<ResearchDef>("NJ_FireResistanceTech_ResearchDef"));
@@ -909,12 +930,18 @@ namespace TFTV
 
                     //Blast res research changed to acid res, because blast vest moved to NJ Fire Tech research
                     //Acidworm unlocks BlastResTech, which is now AcidResTech
-                    TacticalItemDef acidVest = DefCache.GetDef<TacticalItemDef>("NJ_FireResistanceVest_Attachment_ItemDef");
-                    ManufactureResearchRewardDef pxBlastResReward = DefCache.GetDef<ManufactureResearchRewardDef>("PX_BlastResistanceVest_ResearchDef_ManufactureResearchRewardDef_0");
-                    pxBlastResReward.Items = new ItemDef[] { acidVest };
-                    DefCache.GetDef<ExistingResearchRequirementDef>("PX_BlastResistanceVest_ResearchDef_ExistingResearchRequirementDef_0").ResearchID = "PX_Alien_Acidworm_ResearchDef";
 
-                    DefCache.GetDef<ResearchDef>("PX_Alien_Acidworm_ResearchDef").ViewElementDef.BenefitsText.LocalizationKey = "PX_ALIEN_ACIDWORM_RESEARCHDEF_BENEFITS";
+                    //removing acid vest research
+                    /* TacticalItemDef acidVest = DefCache.GetDef<TacticalItemDef>("NJ_FireResistanceVest_Attachment_ItemDef");
+                     ManufactureResearchRewardDef pxBlastResReward = DefCache.GetDef<ManufactureResearchRewardDef>("PX_BlastResistanceVest_ResearchDef_ManufactureResearchRewardDef_0");
+                     pxBlastResReward.Items = new ItemDef[] { acidVest };
+                     DefCache.GetDef<ExistingResearchRequirementDef>("PX_BlastResistanceVest_ResearchDef_ExistingResearchRequirementDef_0").ResearchID = "PX_Alien_Acidworm_ResearchDef";
+
+                     DefCache.GetDef<ResearchDef>("PX_Alien_Acidworm_ResearchDef").ViewElementDef.BenefitsText.LocalizationKey = "PX_ALIEN_ACIDWORM_RESEARCHDEF_BENEFITS";*/
+
+                    pxResearch.Researches.Remove(DefCache.GetDef<ResearchDef>("PX_BlastResistanceVest_ResearchDef"));
+                    ResearchDbDef synResearch = DefCache.GetDef<ResearchDbDef>("syn_ResearchDB");
+                    synResearch.Researches.Remove(DefCache.GetDef<ResearchDef>("SYN_PoisonResistance_ResearchDef"));
 
                 }
 

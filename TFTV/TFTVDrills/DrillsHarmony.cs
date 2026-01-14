@@ -10,6 +10,7 @@ using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical;
 using PhoenixPoint.Tactical.AI;
@@ -43,6 +44,36 @@ namespace TFTV.TFTVDrills
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
+        internal class TrainingFacilitiesSPs 
+        {
+            [HarmonyPatch(typeof(ExperienceFacilityComponent), "get_SkillpointsOutput")]
+            internal static class ExperienceFacilityComponent_CreateCharacterFromDescriptor_Patch
+            {
+                private static void Postfix(ExperienceFacilityComponent __instance, ref int __result)
+                {
+                    try
+                    {
+                        if (TFTVNewGameOptions.IsReworkEnabled())
+                        {
+                            GeoLevelController controller = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                            if (controller != null)
+                            {
+                                if (TFTVNewGameOptions.NewTrainingFacilities)
+                                {
+                                    __result = 7 - controller.CurrentDifficultyLevel.Order;
+                                    TFTVLogger.Always($"ExperienceFacilityComponent get_SkillpointsOutput modified to {__result}");
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+        }
 
         internal class Mutoids
         {

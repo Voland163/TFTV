@@ -1572,13 +1572,7 @@ namespace TFTV
             {
                 try
                 {
-                    NanoVestStatusDef.StatsModifications[0].Value = 10;
-                    NanoVestStatusDef.StatsModifications[1].Value = 10;
-
-                    foreach (DamageMultiplierAbilityDef damageMultiplierAbilityDef in VestResistanceMultiplierAbilities)
-                    {
-                        damageMultiplierAbilityDef.Multiplier = 0.5f;
-                    }
+                    
 
                 }
                 catch (Exception e)
@@ -1592,14 +1586,7 @@ namespace TFTV
             {
                 try
                 {
-                    NanoVestStatusDef.StatsModifications[0].Value = 15;
-                    NanoVestStatusDef.StatsModifications[1].Value = 15;
-                    foreach (DamageMultiplierAbilityDef damageMultiplierAbilityDef in VestResistanceMultiplierAbilities)
-                    {
-                        damageMultiplierAbilityDef.Multiplier = 0.25f;
-                        TFTVLogger.Always($"Setting {damageMultiplierAbilityDef.name} multiplier to {damageMultiplierAbilityDef.Multiplier} for Helios vest buff");
-                    }
-                    TFTVLogger.Always($"NanoVest buffs: {NanoVestStatusDef.StatsModifications[0].Value}, {NanoVestStatusDef.StatsModifications[1].Value}");
+                   
                 }
                 catch (Exception e)
                 {

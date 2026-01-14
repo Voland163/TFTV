@@ -611,7 +611,7 @@ namespace TFTV
 
                 ResearchDef agileGLRes = DefCache.GetDef<ResearchDef>("PX_AGL_ResearchDef");
 
-                if (controller.PhoenixFaction.Research.HasCompleted("PX_Alien_Acidworm_ResearchDef") &&
+              /*  if (controller.PhoenixFaction.Research.HasCompleted("PX_Alien_Acidworm_ResearchDef") &&
                     (!controller.PhoenixFaction.Research.HasCompleted(acidRes.name) &&
                     !controller.PhoenixFaction.Research.Researchable.Any(re => re.ResearchDef == acidRes)))
                 {
@@ -620,7 +620,7 @@ namespace TFTV
                     researchElement.State = ResearchState.Unlocked;
                     TFTVLogger.Always($"{acidRes.name} available to PX? {researchElement.IsAvailableToFaction(controller.PhoenixFaction)}");
 
-                }
+                }*/
 
                 if (controller.PhoenixFaction.Research.HasCompleted("PX_Alien_Fireworm_ResearchDef") &&
                    (!controller.PhoenixFaction.Research.HasCompleted(agileGLRes.name) &&
@@ -692,7 +692,8 @@ namespace TFTV
                 CheckSaveGameEventChoices(controller);
                 CheckUmbraResearchVariable(controller);
                 AddInteranlDifficultyCheckSaveData(controller);
-               // SetMarketPlaceRotations(controller);
+                ReplaceLegacyVestsInSave(controller);
+                // SetMarketPlaceRotations(controller);
                 //  FixReactivateCyclopsMission(controller);
                 //  SetStrongerPandoransOn();
             }
@@ -700,9 +701,161 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
-
-
         }
+
+        private static readonly string[] LegacyVestDefNames =
+      {
+            "PX_BlastResistanceVest_Attachment_ItemDef",
+            "NJ_FireResistanceVest_Attachment_ItemDef",
+            "SY_PoisonResistanceVest_Attachment_ItemDef",
+            "NanotechVest"
+        };
+
+        private static void ReplaceLegacyVestsInSave(GeoLevelController controller)
+        {
+            try
+            {
+                GeoPhoenixFaction phoenixFaction = controller.PhoenixFaction;
+                if (phoenixFaction == null)
+                {
+                    return;
+                }
+
+                ItemDef ablativeVest = DefCache.GetDef<ItemDef>("TFTV_AblativeVest_Attachment_ItemDef");
+                ItemDef hazmatVest = DefCache.GetDef<ItemDef>("TFTV_HazmatVest_Attachment_ItemDef");
+
+                ItemDef blastVest = DefCache.GetDef<ItemDef>(LegacyVestDefNames[0]);
+                ItemDef fireVest = DefCache.GetDef<ItemDef>(LegacyVestDefNames[1]);
+                ItemDef poisonVest = DefCache.GetDef<ItemDef>(LegacyVestDefNames[2]);
+                ItemDef nanoVest = DefCache.GetDef<ItemDef>(LegacyVestDefNames[3]);
+
+                Dictionary<ItemDef, ItemDef> replacements = new Dictionary<ItemDef, ItemDef>
+                {
+                    { blastVest, ablativeVest },
+                    { fireVest, hazmatVest },
+                    { poisonVest, hazmatVest },
+                    { nanoVest, hazmatVest }
+                };
+
+                ReplaceLegacyVestsInStorage(phoenixFaction.ItemStorage, replacements);
+            
+                foreach (GeoCharacter geoCharacter in phoenixFaction.Soldiers)
+                {
+                    ReplaceLegacyVestsOnCharacter(geoCharacter, replacements);
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        private static void ReplaceLegacyVestsInStorage(ItemStorage storage, Dictionary<ItemDef, ItemDef> replacements)
+        {
+            if (storage?.Items == null || replacements == null || replacements.Count == 0)
+            {
+                return;
+            }
+
+            foreach (KeyValuePair<ItemDef, ItemDef> replacement in replacements)
+            {
+                if (replacement.Key == null || replacement.Value == null)
+                {
+                    continue;
+                }
+
+                if (!storage.Items.TryGetValue(replacement.Key, out GeoItem legacyItem) || legacyItem == null)
+                {
+                    continue;
+                }
+
+                int quantity = GetGeoItemQuantity(legacyItem);
+                storage.RemoveItem(legacyItem);
+                storage.AddItem(CreateGeoItem(replacement.Value, quantity));
+            }
+        }
+
+        private static void ReplaceLegacyVestsOnCharacter(GeoCharacter character, Dictionary<ItemDef, ItemDef> replacements)
+        {
+            if (character == null || replacements == null || replacements.Count == 0)
+            {
+                return;
+            }
+
+            bool updated = false;
+            List<GeoItem> armourItems = ReplaceLegacyVestsInGeoItems(character.ArmourItems, replacements, ref updated);
+            List<GeoItem> equipmentItems = ReplaceLegacyVestsInGeoItems(character.EquipmentItems, replacements, ref updated);
+            List<GeoItem> inventoryItems = ReplaceLegacyVestsInGeoItems(character.InventoryItems, replacements, ref updated);
+
+            if (updated)
+            {
+                TFTVLogger.Always($"{character.DisplayName} getting a new vest!");
+                character.SetItems(armourItems, equipmentItems, inventoryItems, false);
+            }
+        }
+
+        private static List<GeoItem> ReplaceLegacyVestsInGeoItems(IEnumerable<GeoItem> items, Dictionary<ItemDef, ItemDef> replacements, ref bool updated)
+        {
+            List<GeoItem> results = new List<GeoItem>();
+
+            foreach (GeoItem item in items ?? Enumerable.Empty<GeoItem>())
+            {
+                if (item?.ItemDef != null && replacements.TryGetValue(item.ItemDef, out ItemDef replacementDef))
+                {
+                    results.Add(CreateGeoItem(replacementDef, GetGeoItemQuantity(item)));
+                    updated = true;
+                }
+                else
+                {
+                    results.Add(item);
+                }
+            }
+
+            return results;
+        }
+
+        private static GeoItem CreateGeoItem(ItemDef itemDef, int quantity)
+        {
+            ItemUnit itemUnit = new ItemUnit
+            {
+                ItemDef = itemDef,
+                Quantity = Math.Max(1, quantity)
+            };
+
+            return new GeoItem(itemUnit);
+        }
+
+        private static int GetGeoItemQuantity(GeoItem geoItem)
+        {
+            if (geoItem == null)
+            {
+                return 0;
+            }
+
+            PropertyInfo geoItemAmountProperty = AccessTools.Property(typeof(GeoItem), "Amount")
+                                             ?? AccessTools.Property(typeof(GeoItem), "Quantity");
+            if (geoItemAmountProperty != null)
+            {
+                return (int)geoItemAmountProperty.GetValue(geoItem);
+            }
+
+            object commonItemData = geoItem.CommonItemData;
+            if (commonItemData != null)
+            {
+                PropertyInfo commonAmountProperty = AccessTools.Property(commonItemData.GetType(), "Amount")
+                                                 ?? AccessTools.Property(commonItemData.GetType(), "Quantity");
+                if (commonAmountProperty != null)
+                {
+                    return (int)commonAmountProperty.GetValue(commonItemData);
+                }
+            }
+
+            return 1;
+        }
+
+
+
 
         private static void SetStrongerPandoransOn()
         {
