@@ -73,6 +73,8 @@ namespace TFTV
         public List<string> HumanEnemiesGangNames;
         public string RevenantResistanceDamageTypeGuid;
         public int[] AircraftModulesInTactical;
+        public int AblativeVestTierIndex;
+        public int HazmatVestTierIndex;
     }
 
     /// <summary>
@@ -372,7 +374,9 @@ namespace TFTV
                     TFTVAircraftReworkMain.InternalData.ModulesInTactical = data.AircraftModulesInTactical;
                     AircraftReworkTacticalModules.LoadInternalDataForTactical();
                 }
-
+                TFTVVests.Tiers.VestTierUpgradesPatch.ApplyTierUpgradesFromIndexes(
+                    data.AblativeVestTierIndex,
+                    data.HazmatVestTierIndex);
                 TurnZeroMethodsExecuted = data.TurnZeroMethodsExecuted;
 
             }
@@ -447,7 +451,10 @@ namespace TFTV
 
                 internalDifficultyCheck = Controller.Difficulty.Order,
 
-                TurnZeroMethodsExecuted = TurnZeroMethodsExecuted
+                TurnZeroMethodsExecuted = TurnZeroMethodsExecuted,
+                AblativeVestTierIndex = TFTVVests.Tiers.VestTierUpgradesPatch.CurrentAblativeTierIndex,
+                HazmatVestTierIndex = TFTVVests.Tiers.VestTierUpgradesPatch.CurrentHazmatTierIndex
+
 
             };
         }
