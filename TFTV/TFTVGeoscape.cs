@@ -3,6 +3,7 @@ using Base.Defs;
 using Base.Serialization.General;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Missions;
@@ -13,6 +14,7 @@ using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Modding;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -136,7 +138,7 @@ namespace TFTV
             TFTVPassengerModules.ImplementFarMConfig(Controller);
             TFTVCustomPortraits.CharacterPortrait.PopulatePortraitFileList();
             TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
-            TFTVUIGeoMap.UnpoweredFacilitiesInfo.CheckUnpoweredBasesOnGeoscapeStart();
+            TFTVUI.Geoscape.Facilities.CheckUnpoweredBasesOnGeoscapeStart();
             AircraftReworkSpeed.Init(Controller);
             if (TFTVNewGameOptions.BaseRework)
             {
@@ -145,7 +147,7 @@ namespace TFTV
 
             TFTVBetaSaveGamesFixes.ConvertAncientRefinerySitesToHarvestSites(Controller);
 
-
+          
 
 
             /* foreach (GeoPhoenixBase phoenixBase in gsController.PhoenixFaction.Bases)
@@ -219,7 +221,7 @@ namespace TFTV
                 PhoenixBasesContainmentBreach = TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttackSchedule,
                 InfestedPhoenixBases = TFTVBaseDefenseGeoscape.PhoenixBasesInfested,
                 SpawnedScyllas = TFTVPandoranProgress.ScyllaCount,
-                CharacterLoadouts = TFTVUI.EditScreen.LoadoutsAndHelmetToggle.CharacterLoadouts,
+                CharacterLoadouts = TFTVUI.Personnel.Loadouts.CharacterLoadouts,
                 CharactersDeliriumPerksAndMissions = TFTVDelirium.CharactersDeliriumPerksAndMissions,
                 SuppliesFromProcessedPandas = TFTVCapturePandoransGeoscape.PandasForFoodProcessing,
                 ToxinsInFood = TFTVCapturePandoransGeoscape.ToxinsInCirculation,
@@ -282,7 +284,7 @@ namespace TFTV
                 TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttackSchedule = data.PhoenixBasesContainmentBreach;
                 TFTVBaseDefenseGeoscape.PhoenixBasesInfested = data.InfestedPhoenixBases;
                 TFTVPandoranProgress.ScyllaCount = data.SpawnedScyllas;
-                TFTVUI.EditScreen.LoadoutsAndHelmetToggle.CharacterLoadouts = data.CharacterLoadouts;
+                TFTVUI.Personnel.Loadouts.CharacterLoadouts = data.CharacterLoadouts;
                 TFTVDelirium.CharactersDeliriumPerksAndMissions = data.CharactersDeliriumPerksAndMissions;
                 TFTVCapturePandoransGeoscape.PandasForFoodProcessing = data.SuppliesFromProcessedPandas;
                 TFTVCapturePandoransGeoscape.ToxinsInCirculation = data.ToxinsInFood;

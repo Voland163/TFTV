@@ -2623,7 +2623,7 @@ namespace TFTV
                                     //  SpreadResistance(__instance);
                                     tacticalActorBase.UpdateStats();
                                     PermaKillRevenant(theChosen);
-                                    TFTVUITactical.Enemies.ChangeHealthBarIcon(actorClassIconElement, tacticalActorBase);
+                                    TFTVUI.Tactical.TargetIcons.ChangeHealthBarIcon(actorClassIconElement, tacticalActorBase);
                                     //  TFTVLogger.Always("Crab's name has been changed to " + actor.GetDisplayName());
                                     // revenantCanSpawn = false;
                                 }

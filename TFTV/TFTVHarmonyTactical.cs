@@ -226,7 +226,7 @@ namespace TFTV
                 {
 
                     TFTVTimeScaling.EnsureStandardTimeScaleForIdleActor(__instance);
-                    TFTVUITactical.ODITactical.HideODITooltipFailSafe();
+                    TFTVUI.Tactical.DeliriumWidget.HideODITooltipFailSafe();
                     // MissionQuips.RunPhoenixOverlayQuip(__instance.TacticalActor, "IdleAbilityActionEnd, I finished doing nothing!");
                 }
                 catch (Exception e)
@@ -248,8 +248,8 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVUITactical.ODITactical.ManageTBTVIconToSpottedEnemies(__instance, obj, target);
-                    TFTVUITactical.Enemies.ManageRankIconToSpottedEnemies(__instance, obj, target);
+                    TFTVUI.Tactical.DeliriumWidget.ManageTBTVIconToSpottedEnemies(__instance, obj, target);
+                    TFTVUI.Tactical.TargetIcons.ManageRankIconToSpottedEnemies(__instance, obj, target);
                 }
                 catch (Exception e)
                 {
@@ -270,7 +270,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVUITactical.SecondaryObjectivesTactical.VerifyObjectiveListUIPrefix(__instance, Context);
+                    TFTVUI.Tactical.SecondaryObjectivesTactical.VerifyObjectiveListUIPrefix(__instance, Context);
 
                 }
                 catch (Exception e)
@@ -283,11 +283,11 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVUITactical.CachePuristaSemiboldFont(__instance);
-                    TFTVUITactical.ODITactical.CreateODITacticalWidget(__instance);
-                    TFTVUITactical.CaptureTacticalWidget.CreateCaptureTacticalWidget(__instance);
-                    TFTVUITactical.Enemies.ActivateOrAdjustLeaderWidgets();
-                    TFTVUITactical.SecondaryObjectivesTactical.InitObjectivesTFTV(__instance);
+                    TFTVUI.Tactical.Data.CachePuristaSemiboldFont(__instance);
+                    TFTVUI.Tactical.DeliriumWidget.CreateODITacticalWidget(__instance);
+                    TFTVUI.Tactical.CaptureTacticalWidget.CreateCaptureTacticalWidget(__instance);
+                    TFTVUI.Tactical.OpposingHumanoidForceWidget.ActivateOrAdjustLeaderWidgets();
+                    TFTVUI.Tactical.SecondaryObjectivesTactical.InitObjectivesTFTV(__instance);
                     //  MissionQuips.RunPhoenixOverlayQuip(Context.LevelController.GetFactionByCommandName("PX").TacticalActors.FirstOrDefault(), "oBJECTIVes Module Inited!");
                 }
                 catch (Exception e)

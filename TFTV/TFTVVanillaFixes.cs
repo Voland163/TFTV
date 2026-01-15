@@ -3856,7 +3856,7 @@ namespace TFTV
                 try
                 {
                     phoenixBase.RoutePower();
-                    TFTVUIGeoMap.UnpoweredFacilitiesInfo.CheckUnpoweredBasesOnGeoscapeStart();
+                    TFTVUI.Geoscape.Facilities.CheckUnpoweredBasesOnGeoscapeStart();
 
                     /*   foreach (GeoPhoenixFacility baseFacility in phoenixBase.Layout.Facilities)
                        {

@@ -37,7 +37,7 @@ namespace TFTV
                 try
                 {
                     TFTVDelirium.DeliriumPerkRecoveryPrompt(____parentModule);
-                    TFTVUI.EditScreen.LoadoutsAndHelmetToggle.ShowAndHideHelmetAndLoadoutButtons(____parentModule);
+                    TFTVUI.Personnel.Loadouts.ShowAndHideHelmetAndLoadoutButtons(____parentModule);
 
                 }
                 catch (Exception e)
@@ -58,7 +58,7 @@ namespace TFTV
                 {
                     if (GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>() != null)
                     {
-                        TFTVUIGeoMap.UnpoweredFacilitiesInfo.CheckTopBarTooltip(__instance, parent);
+                        TFTVUI.Geoscape.Facilities.CheckTopBarTooltip(__instance, parent);
                     }
 
                 }
@@ -101,7 +101,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVUIGeoMap.TopInfoBar.AdjustInfoBarGeoscape(__instance);
+                    TFTVUI.Geoscape.TopInfoBar.AdjustInfoBarGeoscape(__instance);
 
 
 
@@ -183,7 +183,7 @@ namespace TFTV
                 try
                 {
                     TFTVAAAgendaTracker.ExtendedAgendaTracker.RecolorTimerBaseAndAncientSiteAttacks(__instance, site);
-                    TFTVUIGeoMap.UnpoweredFacilitiesInfo.AddBlinkingPowerMarkerGeoMap(__instance, site);
+                    TFTVUI.Geoscape.Facilities.AddBlinkingPowerMarkerGeoMap(__instance, site);
                     TFTVBaseDefenseGeoscape.Visuals.RefreshBaseDefenseVisuals(__instance, site);
                 }
                 catch (Exception e)

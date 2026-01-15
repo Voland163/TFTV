@@ -390,7 +390,8 @@ PX_ACHERON_DISSECTION_RESEARCHDEF_UNLOCK,Text,,"Specimen: ACHERON
 Acherons are large sized creatures that focus more on affecting living creatures in a specific area than attacking directly. They are the only known Pandoran capable of spreading the new strain of Pandoravirus that is slowly driving the remnants of humanity insane.",,"Spécimen : ACHERON
 Les Acherons sont des créatures de grande taille qui se concentrent davantage sur les effets sur les créatures vivantes dans une zone spécifique que sur les attaques directes. Ils sont les seuls Pandoriens connus capables de propager la nouvelle souche de Pandoravirus qui rend lentement fous les restes de l'humanité.",,,,"Образец: АХЕРОН. 
 Ахероны - крупные существа, созданные нападать, скорее, на определенную область с людьми, чем на отдельного человека. Они - единственные из известных Пандоранов, способные распространять новый штамм Пандоравируса, который медленно сводит с ума остатки человечества.",,
-PX_ALIEN_LIVEACHERON_RESEARCHDEF_BENEFITS,Text,,Damage inflicted on Acherons is increased by 10%.,,Les dégâts infligés aux Acherons sont augmentés de 10%.,,,,"Урон, наносимый по Ахеронам, увеличивается на 10%.",,
+PX_ALIEN_LIVEACHERON_RESEARCHDEF_BENEFITS,Text,,"Damage inflicted on Acherons is increased by 10%.
+Improves Hazmat vest, +15% Resistance vs special damages and +2 Armor.",,Les dégâts infligés aux Acherons sont augmentés de 10%.,,,,"Урон, наносимый по Ахеронам, увеличивается на 10%.",,
 PX_ALIEN_LIVEACHERON_RESEARCHDEF_COMPLETE,Text,,"Summary: The creature produces and disperses biochemicals that stimulate diverse reactions in the exposed subjects; these stimulants seem to act as ""keys"" that ""unlock"" pre-existing potentialities in the subjects. The almost supernatural powers that the Acherons manifest in the field must result from their ability to somehow harness the Oneiric Delirium, and we suspect that they are a clue to gaining a further understanding of this phenomenon. Could it be that the Oneiric Delirium is not the result of an infection, but rather of some sort of signal?
  
 Language: The specimen appears to retain some understanding of human speech, but is unable or unwilling to speak. Careful experimentation has shown that communications with other Pandorans take place via release of pheromones, which appear to convey instructions and information with uncanny precision. 
@@ -590,3 +591,14 @@ We have developed a therapy that employs Pandoran mutagens synthesized into a co
 PX_PROJECT_OD_TREATMENT_UNLOCK,Text,,"Now that we can generate Mist in a controlled environment, we should commence experiments immediately to understand its connection to Oneiric Delirium.",,,,,,"Теперь, когда мы можем генерировать Туман в управляемом режиме, мы должны немедленно начать эксперименты, чтобы понять его связь с Сонным Безумием.",,
 PX_PROJECT_OD_TREATMENT_BENEFITS,Text,,Experimental Oneiric Delirium Treatment becomes available,,,,,,Доступно экспериментальное лечение Сонного Безумия,,
 PX_PROJECT_OD_TREATMENT_GEO_OBJECTIVE ,Text,,Capture a Pandoran capable of emitting Mist,,,,,,"Захватите Пандорана, умеющего испускать Туман",,
+PX_ALIEN_LIVECHIRON_RESEARCHDEF_BENEFITS,Text,,"Damage inflicted on Chirons is increased by 10%.
+Improves Ablative vest, +10% Resistance vs blast and shock and +5 HP to each bodypart.",,,,,,,,
+PX_ALIEN_EVOLVEDALIENS_RESEARCHDEF_BENEFITS,Text,,"Unlocks Hazmat vest: extra armor and resistance vs special damages. Can be upgraded with certain vivisections.
+Unlocks Ablative vest: extra HP on bodyparts and resistance vs blast and shock damage. Can be upgraded with certain vivisections.",,,,,,,,
+PX_ALIEN_LIVESWARMER_RESEARCHDEF_BENEFITS,Text,,"Damage inflicted on Myrmidons is increased by 10%.
+Improves Hazmat vest, +15% Resistance vs special damages and +2 Armor",,,,,,,,
+PX_ALIEN_LIVEACIDWORM_RESEARCHDEF_BENEFITS,Text,,"Damage inflicted on Acidworms is increased by 10%.
+Improves Ablative vest, +10% Resistance vs blast and shock and +5 HP to each bodypart (only once for any worm vivisection).",,,,,,,,
+PX_ALIEN_LIVEFIREWORM_RESEARCHDEF_BENEFITS,Text,,"Damage inflicted on Fireworms is increased by 10%.
+Improves Ablative vest, +10% Resistance vs blast and shock and +5 HP to each bodypart (only once for any worm vivisection).",,,,,,,,
+PX_ALIEN_LIVEPOISONWORM_RESEARCHDEF_BENEFITS,Text,,"Damage inflicted on Poisonworms is increased by 10%. Improves Ablative vest, +10% Resistance vs blast and shock and +5 HP to each bodypart (only once for any worm vivisection).",,,,,,,,

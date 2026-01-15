@@ -983,7 +983,7 @@ namespace TFTV
                                             TFTVLogger.Always("Found civvy");
                                             tacticalActor.SetFaction(environment, TacMissionParticipant.Environment);
                                             ActorClassIconElement actorClassIconElement = tacticalActor.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
-                                            TFTVUITactical.Enemies.ChangeHealthBarIcon(actorClassIconElement, tacticalActor);
+                                            TFTVUI.Tactical.TargetIcons.ChangeHealthBarIcon(actorClassIconElement, tacticalActor);
 
                                         }
                                     }

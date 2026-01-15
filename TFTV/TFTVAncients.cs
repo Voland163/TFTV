@@ -1283,7 +1283,7 @@ namespace TFTV
 
                 TacticalActor cyclops = controller.GetFactionByCommandName("anc").TacticalActors.FirstOrDefault(a => a.HasGameTag(cyclopsTag));
 
-                TFTVUITactical.Ancients.ActivateOrAdjustAncientsWidget(Mathf.CeilToInt((1 - CyclopsDefenseStatus.Multiplier) * 100), cyclops);
+                TFTVUI.Tactical.Ancients.ActivateOrAdjustAncientsWidget(Mathf.CeilToInt((1 - CyclopsDefenseStatus.Multiplier) * 100), cyclops);
             }
 
             catch (Exception e)
@@ -1991,7 +1991,7 @@ namespace TFTV
                                     actorAlly.CharacterStats.WillPoints.AddRestrictedToMax(5);
 
                                     ActorClassIconElement actorClassIconElement = actorAlly.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
-                                    TFTVUITactical.Enemies.ImplementAncientsChargeLevel(actorClassIconElement, actorAlly);
+                                    TFTVUI.Tactical.TargetIcons.ImplementAncientsChargeLevel(actorClassIconElement, actorAlly);
 
                                     if ((CheckGuardianBodyParts(actorAlly)[0] == null
                                     || CheckGuardianBodyParts(actorAlly)[1] == null
@@ -2173,7 +2173,7 @@ namespace TFTV
                             tacticalActor.Status.Statuses.Remove(status);
 
                             ActorClassIconElement actorClassIconElement = tacticalActor.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
-                            TFTVUITactical.Enemies.ImplementAncientsChargeLevel(actorClassIconElement, tacticalActor);
+                            TFTVUI.Tactical.TargetIcons.ImplementAncientsChargeLevel(actorClassIconElement, tacticalActor);
                         }
                     }
                 }
@@ -2429,7 +2429,7 @@ namespace TFTV
 
 
                         ActorClassIconElement actorClassIconElement = tacticalActor.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
-                        TFTVUITactical.Enemies.ImplementAncientsChargeLevel(actorClassIconElement, tacticalActor);
+                        TFTVUI.Tactical.TargetIcons.ImplementAncientsChargeLevel(actorClassIconElement, tacticalActor);
 
                     }
                 }
@@ -2562,7 +2562,7 @@ namespace TFTV
                         }
 
                         ActorClassIconElement actorClassIconElement = tacticalActor.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
-                        TFTVUITactical.Enemies.ImplementAncientsChargeLevel(actorClassIconElement, tacticalActor);
+                        TFTVUI.Tactical.TargetIcons.ImplementAncientsChargeLevel(actorClassIconElement, tacticalActor);
 
                     }
 

@@ -175,6 +175,10 @@ namespace TFTV.TFTVDrills
                    
                 }
 
+                radius *= 1.5f; // +50% radius
+                damage *= 2f;   // 2x damage
+
+
                 explosionEffect.DamagePayload.AoeRadius = radius;
                 explosionEffect.DamagePayload.DamageKeywords[0].Value = damage;
 

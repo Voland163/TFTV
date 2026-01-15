@@ -74,7 +74,7 @@ namespace TFTV
             {
                 try
                 {
-                   TFTVUI.Mutoids.AddMutoidToNewRecruitGeoPhoenixFactionAddRecruitToContainerFinal(ref recruit);
+                   TFTVUI.Personnel.Mutoids.AddMutoidToNewRecruitGeoPhoenixFactionAddRecruitToContainerFinal(ref recruit);
 
                 }
                 catch (Exception e)
@@ -295,8 +295,8 @@ namespace TFTV
                     TFTVCapturePandorans.CheckCaptureCapability(__instance);
                     TFTVBaseDefenseGeoscape.Deployment.ModifyMissionDataBaseDefense(__instance, missionData);
                     TFTVBaseDefenseTactical.Objectives.ModifyBaseDefenseTacticalObjectives(missionData.MissionType);
-                    TFTVUITactical.SecondaryObjectivesTactical.PopulateAvailableObjectives(__instance.Site.GeoLevel);
-                    TFTVUITactical.SecondaryObjectivesTactical.AddAllAvailableSecondaryObjectivesToMission(missionData.MissionType);
+                    TFTVUI.Tactical.SecondaryObjectivesTactical.PopulateAvailableObjectives(__instance.Site.GeoLevel);
+                    TFTVUI.Tactical.SecondaryObjectivesTactical.AddAllAvailableSecondaryObjectivesToMission(missionData.MissionType);
 
                     // __instance.GameController.SaveManager.IsSaveEnabled = true;
                 }

@@ -53,7 +53,6 @@ namespace TFTV
                 string KeyHavenRecruitsSortLevel = "KEY_LEVEL_NAME";
                 string KeyHavenRecruitsSortClass = "KEY_TFTV_HAVEN_RECRUITS_SORT_CLASS";
                 string KeyHavenRecruitsSortClosestAircraft = "KEY_TFTV_HAVEN_RECRUITS_SORT_CLOSEST_AIRCRAFT";
-                string KeyHavenRecruitsHeaderTitle = "KEY_TFTV_HAVEN_RECRUITS_HEADER_TITLE";
                 string KeyHavenRecruitsHaven = "KEY_MISSION_HAVEN";
                 string KeyHavenRecruitsRecruits = "KEY_BASE_RECRUITS_ROSTER_NAME";
 

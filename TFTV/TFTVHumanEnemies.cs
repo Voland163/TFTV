@@ -676,7 +676,7 @@ namespace TFTV
                 AdjustStatsAndSkills(tacticalActor);
 
                 ActorClassIconElement actorClassIconElement = tacticalActor.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
-                TFTVUITactical.Enemies.ChangeHealthBarIcon(actorClassIconElement, tacticalActor);
+                TFTVUI.Tactical.TargetIcons.ChangeHealthBarIcon(actorClassIconElement, tacticalActor);
             }
             catch (Exception e)
             {
@@ -958,7 +958,7 @@ namespace TFTV
 
                     TacticalActor tacticalActor = typeof(UIStateCharacterStatus).GetField("_character", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(uIStateCharacterStatus) as TacticalActor;
 
-                    bool enemy = TFTVUITactical.Enemies.IsReallyEnemy(tacticalActor);
+                    bool enemy = TFTVUI.Tactical.TargetIcons.IsReallyEnemy(tacticalActor);
 
                     // TFTVLogger.Always($"SetData: tacticalActor null? {tacticalActor==null}");
 
@@ -973,11 +973,11 @@ namespace TFTV
                     {
                         if (tacticalActor.HasGameTag(TFTVRevenant.AnyRevenantGameTag))
                         {
-                            actorClassIconElement.MainClassIcon.color = TFTVUITactical.LeaderColor;
+                            actorClassIconElement.MainClassIcon.color = TFTVUI.Tactical.Data.LeaderColor;
                         }
                         else
                         {
-                            actorClassIconElement.MainClassIcon.color = TFTVUITactical.NegativeColor;
+                            actorClassIconElement.MainClassIcon.color = TFTVUI.Tactical.Data.NegativeColor;
                         }
                     }
                     else
@@ -988,7 +988,7 @@ namespace TFTV
                     //  __instance.ClassIcon.MainClassIcon.color = _regularIconColor;
 
                     GameTagDef[] factionAndTier = GetFactionTierAndClassTags(data.Tags.ToList());
-                    TFTVUITactical.Enemies.RemoveRankFromInfoPanel(actorClassIconElement);
+                    TFTVUI.Tactical.TargetIcons.RemoveRankFromInfoPanel(actorClassIconElement);
 
                     if (factionAndTier[0] != null)
                     {
@@ -999,7 +999,7 @@ namespace TFTV
                         ____abilitiesList.AddRow<CharacterStatusAbilityRowController>
                                 (__instance.AbilitiesListAbilityPrototype).SetData(ApplyTextChanges(factionAndTier[0], factionAndTier[1]));
 
-                        TFTVUITactical.Enemies.AdjustIconInfoPanel(actorClassIconElement, factionAndTier[1], friendly);
+                        TFTVUI.Tactical.TargetIcons.AdjustIconInfoPanel(actorClassIconElement, factionAndTier[1], friendly);
 
                         if (factionAndTier[1] == HumanEnemyTier1GameTag)
                         {
@@ -1655,7 +1655,7 @@ namespace TFTV
                                 AdjustStatsAndSkills(tacticalActor);
 
                                 ActorClassIconElement actorClassIconElement = actor.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
-                                TFTVUITactical.Enemies.ChangeHealthBarIcon(actorClassIconElement, actor);
+                                TFTVUI.Tactical.TargetIcons.ChangeHealthBarIcon(actorClassIconElement, actor);
 
                             }
 
@@ -1721,7 +1721,7 @@ namespace TFTV
 
                 if (HumanEnemiesAndTactics.Keys.Count > 0)
                 {
-                    TFTVUITactical.Enemies.ActivateOrAdjustLeaderWidgets();
+                    TFTVUI.Tactical.OpposingHumanoidForceWidget.ActivateOrAdjustLeaderWidgets();
                 }
 
                 foreach (string faction in HumanEnemiesAndTactics.Keys)
@@ -1814,7 +1814,7 @@ namespace TFTV
 
                 if (HumanEnemiesAndTactics.Keys.Count > 0)
                 {
-                    TFTVUITactical.Enemies.ActivateOrAdjustLeaderWidgets();
+                    TFTVUI.Tactical.OpposingHumanoidForceWidget.ActivateOrAdjustLeaderWidgets();
                 }
             }
             catch (Exception e)
@@ -2352,7 +2352,7 @@ namespace TFTV
 
                 if (HumanEnemiesAndTactics.Keys.Count > 0)
                 {
-                    TFTVUITactical.Enemies.ActivateOrAdjustLeaderWidgets();
+                    TFTVUI.Tactical.OpposingHumanoidForceWidget.ActivateOrAdjustLeaderWidgets();
                 }
 
             }

@@ -1633,7 +1633,7 @@ namespace TFTV
 
                         ActorClassIconElement actorClassIconElement = actor.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
 
-                        TFTVUITactical.Enemies.ChangeHealthBarIcon(actorClassIconElement, actor);
+                        TFTVUI.Tactical.TargetIcons.ChangeHealthBarIcon(actorClassIconElement, actor);
 
                         //  TFTVLogger.Always("Crab's name has been changed to " + actor.GetDisplayName());
                         // revenantCanSpawn = false;

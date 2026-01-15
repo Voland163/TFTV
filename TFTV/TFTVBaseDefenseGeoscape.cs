@@ -48,6 +48,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Security.Policy;
+using TFTV.TFTVUI.Geoscape;
 using UnityEngine;
 using UnityEngine.UI;
 using static Base.Utils.TopologicalSorter;
@@ -2797,7 +2798,7 @@ namespace TFTV
                         {
                             // TFTVLogger.Always($"Facility unpowered: {facility.Def.name}");
                             facility.SetPowered(false);
-                            TFTVUIGeoMap.UnpoweredFacilitiesInfo.RemoveFacilityFromList(facility);
+                            Facilities.RemoveFacilityFromList(facility);
                         }
                     }
                 }
@@ -2973,7 +2974,7 @@ namespace TFTV
 
                                     foreach (GeoPhoenixFacility facility in geoMission.Site.GetComponent<GeoPhoenixBase>().Layout.Facilities)
                                     {
-                                        TFTVUIGeoMap.UnpoweredFacilitiesInfo.RemoveFacilityFromList(facility);
+                                        Facilities.RemoveFacilityFromList(facility);
                                     }
 
                                     if (geoMission.Site.CharactersCount > 0)

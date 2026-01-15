@@ -521,7 +521,7 @@ namespace TFTV.TFTVDrills
         public class LightStunStatusDef : TacEffectStatusDef
         {
             [Range(0f, 1f)]
-            public float ActionPointsReduction = 0.5f;
+            public float ActionPointsReduction = 0.25f;
         }
 
 

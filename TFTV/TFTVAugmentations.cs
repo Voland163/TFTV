@@ -5,6 +5,7 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
@@ -12,7 +13,9 @@ using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers.AugmentationScreen;
+using PhoenixPoint.Geoscape.View.ViewControllers.Manufacturing;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
 using System;
@@ -29,6 +32,185 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
+        internal class RepairingBionics
+        {
+            private static float GetRepairCostMultiplier(GeoCharacter geoCharacter)
+            {
+                try
+                {
+                    if (!TFTVAircraftReworkMain.AircraftReworkOn)
+                    {
+                        return 0.5f;
+                    }
+
+                    return 0.5f * AircraftReworkGeoscape.Healing.GetRepairBionicsCostFactor(geoCharacter);
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            /// <summary>
+            /// Patches to fix repairing bionics
+            /// </summary>
+            [HarmonyPatch(typeof(UIModuleMutationSection), "SelectMutation")] //VERIFIED
+
+            public static class TFTV_UIModuleMutationSection_SelectMutation_patch
+            {
+                public static void Postfix(UIModuleMutationSection __instance, IAugmentationUIModule ____parentModule)
+                {
+                    try
+                    {
+                        if (__instance.RepairButton.isActiveAndEnabled)
+                        {
+                            float equippedItemHealth = ____parentModule.CurrentCharacter.GetEquippedItemHealth(__instance.MutationUsed);
+                            ResourcePack resourcePack = __instance.MutationUsed.ManufacturePrice * (1f - equippedItemHealth) * GetRepairCostMultiplier(____parentModule.CurrentCharacter);
+
+                            bool interactable = ____parentModule.Context.ViewerFaction.Wallet.HasResources(resourcePack);
+                            __instance.RepairButtonCost.Init(resourcePack);
+                            __instance.RepairButton.SetEnabled(interactable);
+                            __instance.RepairButton.SetInteractable(interactable);
+                        }
+                    }
+
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+
+
+            [HarmonyPatch(typeof(UIModuleMutationSection), "RepairItem")] //VERIFIED
+
+            public static class TFTV_UIModuleMutationSection_RepairItem_patch
+            {
+
+                public static void Postfix(UIModuleMutationSection __instance, IAugmentationUIModule ____parentModule)
+                {
+                    try
+                    {
+                        // TFTVLogger.Always("RepairItem invoked");
+
+                        if (!(____parentModule.CurrentCharacter.GetEquippedItemHealth(__instance.MutationUsed) >= 1f) && ____parentModule.CurrentCharacter.RepairItem(__instance.MutationUsed))
+                        {
+                            ____parentModule.RequestViewRefresh();
+
+                            typeof(UIModuleMutationSection).GetMethod("RefreshContainerSlots", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, null);
+
+                            __instance.RepairButton.gameObject.SetActive(value: false);
+                            __instance.MutateButton.gameObject.SetActive(value: false);
+
+                            UIModuleActorCycle controller = (UIModuleActorCycle)UnityEngine.Object.FindObjectOfType(typeof(UIModuleActorCycle));
+
+                            controller.DisplaySoldier(____parentModule.CurrentCharacter, true);
+
+
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+
+
+            [HarmonyPatch(typeof(UIModuleReplenish), "AddRepairableItem")]
+
+            public static class TFTV_UIModuleReplenish_AddRepairableItem_patch
+            {
+
+                public static bool Prefix(UIModuleReplenish __instance, GeoCharacter character, ItemDef itemDef, ref int materialsCost, ref int techCost, ref bool __result)
+                {
+                    try
+                    {
+                        GeoFaction faction = character.Faction;
+
+
+                        MethodInfo onEnterSlotMethodInfo = typeof(UIModuleReplenish).GetMethod("OnEnterSlot", BindingFlags.Instance | BindingFlags.NonPublic);
+                        MethodInfo onExitSlotMethodInfo = typeof(UIModuleReplenish).GetMethod("OnExitSlot", BindingFlags.Instance | BindingFlags.NonPublic);
+                        Delegate onEnterSlotDelegate = Delegate.CreateDelegate(typeof(InteractHandler), __instance, onEnterSlotMethodInfo);
+                        Delegate onExitSlotDelegate = Delegate.CreateDelegate(typeof(InteractHandler), __instance, onExitSlotMethodInfo);
+
+                        MethodInfo singleItemRepairMethodInfo = typeof(UIModuleReplenish).GetMethod("SingleItemRepair", BindingFlags.Instance | BindingFlags.NonPublic);
+                        Delegate singleItemRepairDelegate = Delegate.CreateDelegate(typeof(Action<GeoManufactureItem>), __instance, singleItemRepairMethodInfo);
+
+                        float equippedItemHealth = character.GetEquippedItemHealth(itemDef);
+                        ResourcePack resourcePack = itemDef.ManufacturePrice * (1f - equippedItemHealth) * GetRepairCostMultiplier(character);
+                        materialsCost += resourcePack.ByResourceType(ResourceType.Materials).RoundedValue;
+                        techCost += resourcePack.ByResourceType(ResourceType.Tech).RoundedValue;
+                        GeoManufactureItem geoManufactureItem = UnityEngine.Object.Instantiate(__instance.ItemListPrefab, __instance.ItemListContainer);
+                        ReplenishmentElementController.CreateAndAdd(geoManufactureItem.gameObject, ReplenishmentType.Repair, character, geoManufactureItem.ItemDef);
+                        geoManufactureItem.OnEnter = (InteractHandler)Delegate.Combine(geoManufactureItem.OnEnter, onEnterSlotDelegate);
+                        geoManufactureItem.OnExit = (InteractHandler)Delegate.Combine(geoManufactureItem.OnExit, onExitSlotDelegate);
+
+
+                        geoManufactureItem.OnSelected = (Action<GeoManufactureItem>)Delegate.Combine(geoManufactureItem.OnSelected, singleItemRepairDelegate);
+                        geoManufactureItem.Init(itemDef, faction, resourcePack, repairMode: true);
+                        PhoenixGeneralButton component = geoManufactureItem.AddToQueueButton.GetComponent<PhoenixGeneralButton>();
+                        if (component != null && equippedItemHealth == 1f)
+                        {
+                            component.SetEnabled(isEnabled: false);
+                        }
+
+                        __instance.RepairableItems.Add(geoManufactureItem);
+                        __result = faction.Wallet.HasResources(resourcePack);
+                        return false;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+
+            [HarmonyPatch(typeof(GeoCharacter), nameof(GeoCharacter.RepairItem), new Type[] { typeof(GeoItem), typeof(bool) })]
+
+            public static class TFTV_GeoCharacter_RepairItem_GeoItem_patch
+            {
+
+                public static bool Prefix(GeoCharacter __instance, ref bool __result, GeoItem item, bool payCost = true)
+                {
+                    try
+                    {
+                        _ = item.ItemDef;
+                        float equippedItemHealth = __instance.GetEquippedItemHealth(item);
+                        if (equippedItemHealth >= 1f)
+                        {
+                            __result = false;
+                            return false;
+                        }
+
+                        ResourcePack pack = item.ItemDef.ManufacturePrice * (1f - equippedItemHealth) * GetRepairCostMultiplier(__instance);
+                        if (!__instance.Faction.Wallet.HasResources(pack) && payCost)
+                        {
+                            __result = false;
+                            return false;
+                        }
+
+                        if (payCost)
+                        {
+                            __instance.Faction.Wallet.Take(pack, OperationReason.ItemRepair);
+                        }
+
+                        __instance.RestoreBodyPart(item);
+                        __result = true;
+                        return false;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+        }
 
 
         /* [HarmonyPatch(typeof(UIModuleMutate), "OnNewCharacter")]//InitCharacterInfo")]

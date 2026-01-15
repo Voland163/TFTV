@@ -125,7 +125,8 @@ namespace TFTV
                 float multiplier,
                 List<DamageTypeBaseEffectDef> damageTypes,
                 string displayNameKey,
-                string descriptionKey)
+                string descriptionKey,
+                Sprite icon)
             {
                 // Idempotency on def-name.
                 ApplyStatusAbilityDef existingAbility = DefCache.GetDef<ApplyStatusAbilityDef>(abilityDefName);
@@ -146,6 +147,8 @@ namespace TFTV
                 newAbility.ViewElementDef = Helper.CreateDefFromClone(abilitySource.ViewElementDef, vedGuid, vedName);
                 newAbility.ViewElementDef.DisplayName1 = new LocalizedTextBind() { LocalizationKey = displayNameKey };
                 newAbility.ViewElementDef.Description = new LocalizedTextBind() { LocalizationKey = descriptionKey };
+                newAbility.ViewElementDef.SmallIcon = icon;
+                newAbility.ViewElementDef.LargeIcon = icon;
                 newAbility.ViewElementDef.ShowInInventoryItemTooltip = true;
 
                 // Ensure this is a passive "always-on" status, like bionics.
@@ -210,7 +213,8 @@ namespace TFTV
                         DefCache.GetDef<StandardDamageTypeEffectDef>("Bash_StandardDamageTypeEffectDef")
                         },
                         displayNameKey: "TFTV_ABLATIVEVEST_RES_NAME",
-                        descriptionKey: "TFTV_ABLATIVEVEST_RES_DESC");
+                        descriptionKey: "TFTV_ABLATIVEVEST_RES_DESC",
+                        icon: Helper.CreateSpriteFromImageFile("vest_ablative_res.png"));
 
                     // +HP to each bodypart: ItemSlotStatsModifyStatusDef attached via a dedicated ApplyStatusAbilityDef
                     const string ablativeHealthAbilityName = "TFTV_AblativeVest_Health_AbilityDef";
@@ -241,6 +245,11 @@ namespace TFTV
                         ablativeHealthAbility.ViewElementDef.ShowInInventoryItemTooltip = true;
                         ablativeHealthAbility.ViewElementDef.DisplayName1 = new LocalizedTextBind() { LocalizationKey = "NANOVEST_ABILITY_NAME" };
                         ablativeHealthAbility.ViewElementDef.Description = new LocalizedTextBind() { LocalizationKey = "NANOVEST_ABILITY_DESCRIPTION" };
+
+                        Sprite healthBuffIcon = Helper.CreateSpriteFromImageFile("module_nanovest_ability.png");
+
+                        ablativeHealthAbility.ViewElementDef.SmallIcon = healthBuffIcon;
+                        ablativeHealthAbility.ViewElementDef.LargeIcon = healthBuffIcon;
 
                         ItemSlotStatsModifyStatusDef sourceStatus = DefCache.GetDef<ItemSlotStatsModifyStatusDef>("E_Status [ElectricReinforcement_AbilityDef]");
 
@@ -355,7 +364,8 @@ namespace TFTV
                         DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Virus_DamageOverTimeDamageTypeEffectDef"),
                         },
                         displayNameKey: "TFTV_HAZMATVEST_RES_NAME",
-                        descriptionKey: "TFTV_HAZMATVEST_RES_DESC");
+                        descriptionKey: "TFTV_HAZMATVEST_RES_DESC",
+                        icon: Helper.CreateSpriteFromImageFile("vest_hazmat_res.png"));
 
 
 
@@ -383,6 +393,11 @@ namespace TFTV
                     hazmatArmorAbility.ViewElementDef.ShowInInventoryItemTooltip = true;
                     hazmatArmorAbility.ViewElementDef.DisplayName1 = new LocalizedTextBind() { LocalizationKey = "TFTV_HAZMATVEST_ARMOR_NAME" };
                     hazmatArmorAbility.ViewElementDef.Description = new LocalizedTextBind() { LocalizationKey = "TFTV_HAZMATVEST_ARMOR_DESC" };
+                    
+                    Sprite iconArmorBuff = Helper.CreateSpriteFromImageFile("vest_armorbuff.png");
+
+                    hazmatArmorAbility.ViewElementDef.SmallIcon = iconArmorBuff;
+                    hazmatArmorAbility.ViewElementDef.LargeIcon = iconArmorBuff;
 
                     ItemSlotStatsModifyStatusDef sourceStatus = DefCache.GetDef<ItemSlotStatsModifyStatusDef>("E_Status [ElectricReinforcement_AbilityDef]");
 
@@ -942,6 +957,7 @@ namespace TFTV
                     ResearchDbDef synResearch = DefCache.GetDef<ResearchDbDef>("syn_ResearchDB");
                     synResearch.Researches.Remove(DefCache.GetDef<ResearchDef>("SYN_PoisonResistance_ResearchDef"));
 
+                    DefCache.GetDef<ResearchViewElementDef>("PX_Alien_EvolvedAliens_ViewElementDef").BenefitsText.LocalizationKey = "PX_ALIEN_EVOLVEDALIENS_RESEARCHDEF_BENEFITS";
                 }
 
                 catch (Exception e)

@@ -231,7 +231,7 @@ namespace TFTV
 
                 TFTVBackgrounds.LoadTFTVBackgrounds();
 
-                TFTVUITactical.Enemies.PopulateFactionViewElementDictionary();
+                TFTVUI.Tactical.OpposingHumanoidForceWidget.PopulateFactionViewElementDictionary();
 
                 CreateHotkeys();
 
@@ -763,8 +763,8 @@ namespace TFTV
         {
             try
             {
-                Color voidColor = TFTVUITactical.VoidColor;
-                Color negativeColor = TFTVUITactical.NegativeColor;
+                Color voidColor = TFTVUI.Tactical.Data.VoidColor;
+                Color negativeColor = TFTVUI.Tactical.Data.NegativeColor;
 
                 DefCache.GetDef<UIColorDef>("UIColorDef_Corruption").Color = voidColor;
 
@@ -1123,7 +1123,7 @@ namespace TFTV
                 RemoveOrganicConditionForSlowedStatusAndMakeSingleApplication();
                 AdjustMistSentinelDetection();
                 Create_StarvedAbility();
-                TFTVUITactical.SecondaryObjectivesTactical.Defs.CreateDefs();
+                TFTVUI.Tactical.SecondaryObjectivesTactical.Defs.CreateDefs();
                 AdjustColorDefs();
                 ReduceMyrmidonDeploymentCost();
                 ChangeArchaelogyLab();
@@ -7522,7 +7522,7 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
         {
             try
             {
-                TFTVUITactical.Enemies.SetUmbraIcons();
+                TFTVUI.Tactical.TargetIcons.SetUmbraIcons();
 
 
                 ViewElementDef umbraFishViewElement = DefCache.GetDef<ViewElementDef>("ViewElement [Oilfish_ViewElementDef]");
@@ -7530,8 +7530,8 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
 
 
 
-                Sprite umbraArthronIcon = TFTVUITactical.Enemies.GetUmbraArthronIcon();
-                Sprite umbraTritonIcon = TFTVUITactical.Enemies.GetUmbraTritonIcon();
+                Sprite umbraArthronIcon = TFTVUI.Tactical.TargetIcons.GetUmbraArthronIcon();
+                Sprite umbraTritonIcon = TFTVUI.Tactical.TargetIcons.GetUmbraTritonIcon();
 
                 umbraCrabViewElement.SmallIcon = umbraArthronIcon;
                 umbraCrabViewElement.LargeIcon = umbraArthronIcon;

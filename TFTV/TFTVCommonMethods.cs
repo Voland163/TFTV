@@ -144,15 +144,14 @@ namespace TFTV
                 
                 TFTVInfestation.InfestationMissionWon = false;
 
-                TFTVUI.ShowWithoutHelmet.uIModuleSoldierCustomization = null;
+                TFTVUI.Data.ClearInternalDataOnLoad();
+
                 TFTVTactical.TurnZeroMethodsExecuted = false;
 
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
                 TFTVAncientsGeo.AutomataResearched = false;
                 TFTVAncients.AlertedHoplites.Clear();
-
-                TFTVUI.EditScreen.LoadoutsAndHelmetToggle.CharacterLoadouts?.Clear();
-             
+       
                 TFTVCapturePandoransGeoscape.ToxinsInCirculation = 0;
                 TFTVCapturePandoransGeoscape.PandasForFoodProcessing = 0;
                 TFTVCapturePandorans.ContainmentFacilityPresent = false;
@@ -174,9 +173,7 @@ namespace TFTV
                 ClearHints();
                 TFTVCustomPortraits.CharacterPortrait.ClearPortraitData();
 
-                TFTVUIGeoMap.UnpoweredFacilitiesInfo.ClearInternalDataForUIGeo();
-
-                TFTVUITactical.ClearDataOnLoadAndStateChange();
+                TFTVUI.Tactical.Data.ClearDataOnLoadAndStateChange();
 
                 TFTVEvacAll.ClearData();
 
@@ -285,7 +282,7 @@ namespace TFTV
 
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
                 TFTVAncients.AlertedHoplites.Clear();
-                TFTVUITactical.ClearDataOnMissionRestart();
+                TFTVUI.Tactical.Data.ClearDataOnMissionRestart();
 
                 TFTVEvacAll.ClearData();
                 TFTVTacticalDeploymentEnemies.UndesirablesSpawned.Clear();

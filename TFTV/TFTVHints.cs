@@ -1213,7 +1213,7 @@ namespace TFTV
                                     alwaysDisplayedTacticalHintsDbDef.Hints.Remove(hintDef);
                                     _hintDefSpriteFileNameDictionary.Remove(hintDef);
                                     TFTVHumanEnemies.TacticsHint.Remove(hintDef);
-                                    TFTVUITactical.Enemies.ActivateOrAdjustLeaderWidgets(true);
+                                    TFTVUI.Tactical.OpposingHumanoidForceWidget.ActivateOrAdjustLeaderWidgets(true);
                                     break;
                                 }
                             }

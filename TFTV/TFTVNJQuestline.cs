@@ -283,7 +283,7 @@ namespace TFTV
                         string descLocKey = "TFTV_KEY_NJ_INTRO_MISS_OBJECTIVE_INFILTRATOR";
                         int expReward = 200;
 
-                        _killInfiltratorObjective = TFTVUITactical.SecondaryObjectivesTactical.Defs.CreateSecondaryObjectiveKill(name, guid, tag, descLocKey, expReward, true);
+                        _killInfiltratorObjective = TFTVUI.Tactical.SecondaryObjectivesTactical.Defs.CreateSecondaryObjectiveKill(name, guid, tag, descLocKey, expReward, true);
 
                     }
                     catch (Exception e)
@@ -451,7 +451,7 @@ namespace TFTV
                 {
                     try
                     {
-                        TFTVUITactical.SecondaryObjectivesTactical.AddAdditionalSecondaryObjective(_killInfiltratorObjective);
+                        TFTVUI.Tactical.SecondaryObjectivesTactical.AddAdditionalSecondaryObjective(_killInfiltratorObjective);
                     }
 
                     catch (Exception e)
@@ -1230,7 +1230,7 @@ namespace TFTV
 
                         UsedQuips.Add(_priestSeenFirstKey);
 
-                        FloatingTextManager.ShowFloatingText(priest, quip, TFTVUITactical.WhiteColor);
+                        FloatingTextManager.ShowFloatingText(priest, quip, TFTVUI.Tactical.Data.WhiteColor);
 
                         RunPhoenixConversation(listener, "TFTV_KEY_NJ_INTRO_MISS_BANTER_PHOENIX_PRIEST_0", "TFTV_KEY_NJ_INTRO_MISS_BANTER_PHOENIX_PRIEST_1", "");
 
@@ -1325,7 +1325,7 @@ namespace TFTV
                             {
                                 string quip = eligibleQuips.GetRandomElement();
 
-                                FloatingTextManager.ShowFloatingText(tacticalActor, quip, TFTVUITactical.WhiteColor);
+                                FloatingTextManager.ShowFloatingText(tacticalActor, quip, TFTVUI.Tactical.Data.WhiteColor);
                                 // NJQuips.quipShown = true;
 
                                 if (_mindControlledQuips.Contains(quip))

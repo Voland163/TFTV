@@ -1,6 +1,10 @@
-﻿using PhoenixPoint.Geoscape.Entities;
+﻿using HarmonyLib;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
+using PhoenixPoint.Geoscape.View;
 using System;
+using System.Linq;
+using System.Reflection;
 
 namespace TFTV
 {
@@ -36,6 +40,28 @@ namespace TFTV
             }
 
         }
+
+        [HarmonyPatch(typeof(GeoscapeView), "SetSelectedActor")]
+        internal static class GeoscapeViewSelectionPatch
+        {
+            private static readonly FieldInfo ContextField = AccessTools.Field(typeof(GeoscapeView), "_context");
+
+            private static void Prefix(GeoscapeView __instance, ref GeoActor actor)
+            {
+                if (!TFTVAircraftReworkMain.AircraftReworkOn) 
+                {
+                    return;
+                }
+
+                if (actor is GeoVehicle geoVehicle && !geoVehicle.IsOwnedByViewer)
+                {
+                    GeoscapeViewContext context = ContextField?.GetValue(__instance) as GeoscapeViewContext;
+                    GeoVehicle fallbackVehicle = context?.ViewerFaction?.Vehicles?.FirstOrDefault();
+                    actor = fallbackVehicle;
+                }
+            }
+        }
+
     }
 }
 

@@ -196,7 +196,7 @@ namespace TFTV
                 Text quipText = textGO.AddComponent<Text>();
                 quipText.text = text;
                 // Use a built‑in font (e.g., Arial)
-                quipText.font = TFTVUITactical.PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                quipText.font = TFTVUI.Tactical.Data.PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                 // Set the font size to 60% of the previous 72 → approx 43.
                 quipText.fontSize = 43;
                 quipText.color = Color.white;
@@ -955,7 +955,7 @@ namespace TFTV
 
                     // Add and configure the Text component
                     Text textComponent = textObj.AddComponent<Text>();
-                    textComponent.font = TFTVUITactical.PuristaSemiboldFontCache ?? UnityEngine.Resources.GetBuiltinResource<Font>("Arial.ttf");
+                    textComponent.font = TFTVUI.Tactical.Data.PuristaSemiboldFontCache ?? UnityEngine.Resources.GetBuiltinResource<Font>("Arial.ttf");
                     textComponent.fontSize = 7;
                     textComponent.alignment = TextAnchor.MiddleCenter;
                     textComponent.color = Color.white; // Ensure text color is visible
@@ -1000,11 +1000,11 @@ namespace TFTV
 
 
                     Text textComponent = textObj.AddComponent<Text>();
-                    textComponent.font = TFTVUITactical.PuristaSemiboldFontCache ?? UnityEngine.Resources.GetBuiltinResource<Font>("Arial.ttf");
+                    textComponent.font = TFTVUI.Tactical.Data.PuristaSemiboldFontCache ?? UnityEngine.Resources.GetBuiltinResource<Font>("Arial.ttf");
                     textComponent.fontSize = 76;
                     textComponent.alignment = TextAnchor.UpperCenter;
                     textComponent.verticalOverflow = VerticalWrapMode.Overflow;
-                    textComponent.color = TFTVUITactical.WhiteColor; // Ensure text color is visible
+                    textComponent.color = TFTVUI.Tactical.Data.WhiteColor; // Ensure text color is visible
 
                     /* Outline outline = textObj.AddComponent<Outline>();
                      outline.effectColor = Color.black;

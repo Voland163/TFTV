@@ -43,6 +43,8 @@ namespace TFTV
 
         private static string _vivisectedText = "VIVISECTED";
         private static string _autopsiedText = "AUTOPSIED";
+        private static string _perDayText = "per day:";
+        private static string _containmentSlotsText = "Containment slots occupied:";
 
         private static bool _localizedStringPopulated = false;
 
@@ -54,6 +56,8 @@ namespace TFTV
                 {
                     _vivisectedText = TFTVCommonMethods.ConvertKeyToString("TFTV_VIVISECTED");
                     _autopsiedText = TFTVCommonMethods.ConvertKeyToString("TFTV_AUTOPSIED");
+                    _perDayText = TFTVCommonMethods.ConvertKeyToString("TFTV_PER_DAY");
+                    _containmentSlotsText = TFTVCommonMethods.ConvertKeyToString("TFTV_CONTAINMENT_SLOTS_OCCUPIED");
                     _localizedStringPopulated = true;
                 }
             
@@ -288,8 +292,8 @@ namespace TFTV
 
                     // Update the text components
                     infoPanel.transform.Find("Background").Find("DescriptionText").GetComponent<Text>().text = description;
-                    infoPanel.transform.Find("Background").Find("VolumeText").GetComponent<Text>().text = $"Containment slots occupied: {volume}";
-                    infoPanel.transform.Find("Background").Find("MutagenText").GetComponent<Text>().text = $"per day: {mutagenPerDay}";
+                    infoPanel.transform.Find("Background").Find("VolumeText").GetComponent<Text>().text = $"{_containmentSlotsText} {volume}";
+                    infoPanel.transform.Find("Background").Find("MutagenText").GetComponent<Text>().text = $"{_perDayText} {mutagenPerDay}";
 
                     // Update the status text
                     string status = "";

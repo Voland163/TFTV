@@ -181,22 +181,26 @@
     <Compile Include="TFTVEvacAll.cs" />
     <Compile Include="TFTVExperienceDistribution.cs" />
     <Compile Include="TFTVDragandDropFunctionality.cs" />
-    <Compile Include="TFTVHavenRecruitsUI\HavenRecruitAbilityIconView.cs" />
-    <Compile Include="TFTVHavenRecruitsUI\HavenRecruitAbilityTooltipTrigger.cs" />
-    <Compile Include="TFTVHavenRecruitsUI\HavenRecruitResourceChipView.cs" />
-    <Compile Include="TFTVHavenRecruitsUI\HavenRecruitsButton.cs" />
-    <Compile Include="TFTVHavenRecruitsUI\HavenRecruitsDetailsPanel.cs" />
-    <Compile Include="TFTVHavenRecruitsUI\HavenRecruitsGeoscapeInteractions.cs" />
-    <Compile Include="TFTVHavenRecruitsUI\HavenRecruitsOverlayAnimator.cs" />
-    <Compile Include="TFTVHavenRecruitsUI\HavenRecruitsOverlayObjectivesHider.cs" />
-    <Compile Include="TFTVHavenRecruitsUI\HavenRecruitsPrice.cs" />
-    <Compile Include="TFTVHavenRecruitsUI\HavenRecruitsRecruitItem.cs" />
-    <Compile Include="TFTVHavenRecruitsUI\HavenRecruitStatCalculator.cs" />
-    <Compile Include="TFTVHavenRecruitsUI\HavenRecruitStatTootipTrigger.cs" />
-    <Compile Include="TFTVHavenRecruitsUI\HavenRecruitsTooltipFixes.cs" />
-    <Compile Include="TFTVHavenRecruitsUI\HavenRecruitsUtils.cs" />
-    <Compile Include="TFTVHavenRecruitsUI\RecruitOverlayManagerHelpers.cs" />
-    <Compile Include="TFTVHavenRecruitsUI\HavenRecruitsMain.cs" />
+    <Compile Include="TFTVUI\Common\Various.cs" />
+    <Compile Include="TFTVUI\Data.cs" />
+    <Compile Include="TFTVUI\Geoscape\Facilities.cs" />
+    <Compile Include="TFTVUI\Geoscape\MissionDeployment.cs" />
+    <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitAbilityIconView.cs" />
+    <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitAbilityTooltipTrigger.cs" />
+    <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitResourceChipView.cs" />
+    <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitsButton.cs" />
+    <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitsDetailsPanel.cs" />
+    <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitsGeoscapeInteractions.cs" />
+    <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitsOverlayAnimator.cs" />
+    <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitsOverlayObjectivesHider.cs" />
+    <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitsPrice.cs" />
+    <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitsRecruitItem.cs" />
+    <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitStatCalculator.cs" />
+    <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitStatTootipTrigger.cs" />
+    <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitsTooltipFixes.cs" />
+    <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitsUtils.cs" />
+    <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\RecruitOverlayManagerHelpers.cs" />
+    <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitsMain.cs" />
     <Compile Include="TFTVIncidents\Objects.cs" />
     <Compile Include="TFTVLaserWeapons\LaserWeaponsInit.cs" />
     <Compile Include="TFTVLaserWeapons\LaserWeaponsMain.cs" />
@@ -208,6 +212,21 @@
     <Compile Include="TFTVSupressionAI.cs" />
     <Compile Include="TFTVTauntsAndQuips.cs" />
     <Compile Include="TFTVTimeScaling.cs" />
+    <Compile Include="TFTVUI\Geoscape\TopInforBar.cs" />
+    <Compile Include="TFTVUI\Personnel\DeliriumFaceShader.cs" />
+    <Compile Include="TFTVUI\Personnel\EditScreenMain.cs" />
+    <Compile Include="TFTVUI\Personnel\Loadouts.cs" />
+    <Compile Include="TFTVUI\Personnel\Mutoids.cs" />
+    <Compile Include="TFTVUI\Personnel\ShowWithoutHelmet.cs" />
+    <Compile Include="TFTVUI\Tactical\Ancients.cs" />
+    <Compile Include="TFTVUI\Tactical\BaseDefense.cs" />
+    <Compile Include="TFTVUI\Tactical\CaptureTacticalWidget.cs" />
+    <Compile Include="TFTVUI\Tactical\DamagePrediction.cs" />
+    <Compile Include="TFTVUI\Tactical\DeliriumWidget.cs" />
+    <Compile Include="TFTVUI\Tactical\OpposingHumanoidForceWidget.cs" />
+    <Compile Include="TFTVUI\Tactical\SecondaryObjectives.cs" />
+    <Compile Include="TFTVUI\Tactical\TargetIcons.cs" />
+    <Compile Include="TFTVUI\Tactical\Various.cs" />
     <Compile Include="TFTVVehicleFixes.cs" />
     <Compile Include="TFTVBehemothAndRaids.cs" />
     <Compile Include="TFTVAmbushes.cs" />
@@ -277,9 +296,9 @@
     <Compile Include="TFTVTacticalUtils.cs" />
     <Compile Include="TFTVTradingRecruiting.cs" />
     <Compile Include="TFTVHints.cs" />
-    <Compile Include="TFTVUI.cs" />
-    <Compile Include="TFTVUIGeoMap.cs" />
-    <Compile Include="TFTVUITactical.cs" />
+    <Compile Include="TFTVUI\Personnel\Stats.cs" />
+    <Compile Include="TFTVUI\Geoscape\Various.cs" />
+    <Compile Include="TFTVUI\Tactical\Data.cs" />
     <Compile Include="TFTVTouchedByTheVoid.cs" />
     <Compile Include="TFTVVanillaFixes.cs" />
     <Compile Include="TFTVVehicleInventory.cs" />
@@ -651,6 +670,7 @@
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>RMDIR /S /Q "%25USERPROFILE%25\AppData\LocalLow\Snapshot Games Inc\Phoenix Point\Steam\WorkshopTool\TestMod"

@@ -339,7 +339,7 @@ namespace TFTV
                 TFTVLogger.Always($"generatorHP: {generatorHP}, consoles: {consoles}");
 
 
-                TFTVUITactical.BaseDefenseUI.ActivateOrAdjustBaseDefenseWidget
+                TFTVUI.Tactical.BaseDefenseUI.ActivateOrAdjustBaseDefenseWidget
                            (title, description, generatorHP, consoles, chaseTarget);
 
             }
@@ -2107,7 +2107,7 @@ namespace TFTV
                                 tacticalActor.Status.ApplyStatus(DefCache.GetDef<MindControlStatusDef>("UnderPhoenixControl_StatusDef"));
                                 tacticalActor.ForceRestartTurn();
                                 ActorClassIconElement actorClassIconElement = tacticalActor.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>().ActorClassIconElement;
-                                TFTVUITactical.Enemies.ChangeHealthBarIcon(actorClassIconElement, tacticalActor);
+                                TFTVUI.Tactical.TargetIcons.ChangeHealthBarIcon(actorClassIconElement, tacticalActor);
                             }
 
                             controller.SituationCache.Invalidate();

@@ -414,7 +414,7 @@ namespace TFTV
 
                                 TacticalContextualMenuItem tacticalContextualMenuItem = ____menuItems.Where(tcm => tcm.Ability == ability).FirstOrDefault();
                                 tacticalContextualMenuItem.gameObject.SetActive(value: false);
-                                TFTVUITactical.CaptureTacticalWidget.UpdateCaptureUI();
+                                TFTVUI.Tactical.CaptureTacticalWidget.UpdateCaptureUI();
                             }
                         }
                         else if (__state == 2)
@@ -424,7 +424,7 @@ namespace TFTV
 
                                 TacticalContextualMenuItem tacticalContextualMenuItem = ____menuItems.Where(tcm => tcm.Ability == ability).FirstOrDefault();
                                 tacticalContextualMenuItem.gameObject.SetActive(value: false);
-                                TFTVUITactical.CaptureTacticalWidget.UpdateCaptureUI();
+                                TFTVUI.Tactical.CaptureTacticalWidget.UpdateCaptureUI();
 
                             }
 

@@ -145,7 +145,7 @@ namespace TFTV
                 TFTVHumanEnemies.RollCount = 0;
                 TFTVSpecialDifficulties.DefModifying.CheckForSpecialDifficulties();
                 TFTVRevenant.Resistance.CheckIfRevenantPresent(controller);
-                TFTVUITactical.DamagePrediction.RemoveDamagePredictionBar();
+                TFTVUI.Tactical.DamagePrediction.RemoveDamagePredictionBar();
             }
 
             catch (Exception e)
@@ -316,11 +316,11 @@ namespace TFTV
                 TFTVNewGameOptions.InternalDifficultyCheckTactical = data.internalDifficultyCheck;
                 TFTVBaseDefenseTactical.Map.DeploymentZones.SecondaryStrikeForceVector = data.SecondaryStrikeForceCoordinates;
                 TFTVRevenant.TFTVRevenantResearch.RevenantPoints = data.RevenantPoints;
-                TFTVUITactical.SecondaryObjectivesTactical.AvailableSecondaryObjectivesTactical = data.AvailableSecondaryObjectives;
+                TFTVUI.Tactical.SecondaryObjectivesTactical.AvailableSecondaryObjectivesTactical = data.AvailableSecondaryObjectives;
 
                 //  TFTVLogger.Always($"TFTVUITactical.SecondaryObjectivesTactical.AvailableSecondaryObjectivesTactical.Count: {TFTVUITactical.SecondaryObjectivesTactical.AvailableSecondaryObjectivesTactical.Count}");
 
-                TFTVUITactical.SecondaryObjectivesTactical.AddAllAvailableSecondaryObjectivesToMission(Controller.TacMission.MissionData.MissionType);
+                TFTVUI.Tactical.SecondaryObjectivesTactical.AddAllAvailableSecondaryObjectivesToMission(Controller.TacMission.MissionData.MissionType);
 
                 TFTVDefsWithConfigDependency.ImplementConfigChoicesForTactical();
 
@@ -445,7 +445,7 @@ namespace TFTV
                 EtermesVulnerabilityResistanceTactical = TFTVNewGameOptions.EtermesResistanceAndVulnerability,
                 UnDesirablesActorsSpawned = TFTVTacticalDeploymentEnemies.UndesirablesSpawned,
                 OperativesPortraits = TFTVCustomPortraits.CharacterPortrait.characterPics,
-                AvailableSecondaryObjectives = TFTVUITactical.SecondaryObjectivesTactical.AvailableSecondaryObjectivesTactical,
+                AvailableSecondaryObjectives = TFTVUI.Tactical.SecondaryObjectivesTactical.AvailableSecondaryObjectivesTactical,
                 AccumulatedRevenantPoints = TFTVRevenant.TFTVRevenantResearch.PreviousRevenantPoints,
                 AircraftModulesInTactical = TFTVAircraftReworkMain.InternalData.ModulesInTactical,
 
