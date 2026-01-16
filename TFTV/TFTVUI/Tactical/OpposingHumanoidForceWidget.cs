@@ -1,5 +1,6 @@
 ﻿using Base.Core;
 using Base.Defs;
+using Epic.OnlineServices.AntiCheatCommon;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewModules;
@@ -22,8 +23,18 @@ namespace TFTV.TFTVUI.Tactical
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
+        private const float ReferenceWidth = 1920f;
+        private const float ReferenceHeight = 1080f;
 
         private static Dictionary<string, OpposingLeaderWidget> _leaderWidgets = new Dictionary<string, OpposingLeaderWidget>();
+
+        private static float GetResolutionScale()
+        {
+            Resolution resolution = Screen.currentResolution;
+            float scaleWidth = resolution.width / ReferenceWidth;
+            float scaleHeight = resolution.height / ReferenceHeight;
+            return Mathf.Max(1f, Mathf.Max(scaleWidth, scaleHeight));
+        }
 
 
         public static void ClearData()
@@ -57,9 +68,7 @@ namespace TFTV.TFTVUI.Tactical
             {
                 try
                 {
-                    Resolution resolution = Screen.currentResolution;
-                    float resolutionFactorWidth = Mathf.Max((float)resolution.width / 1920f, 1);
-                    float resolutionFactorHeight = Mathf.Max((float)resolution.height / 1080f, 1);
+                   
 
                     // Create the root object for the tooltip
                     GameObject tooltip = new GameObject("Tooltip", typeof(RectTransform), typeof(Image)); //typeof(CanvasRenderer), 
@@ -149,14 +158,12 @@ namespace TFTV.TFTVUI.Tactical
                     {
                         tooltipInstance = CreateTooltipPanel(parent);
 
-                        Resolution resolution = Screen.currentResolution;
-                        float resolutionFactorWidth = Mathf.Max((float)resolution.width / 1920f, 1);
-                        float resolutionFactorHeight = Mathf.Max((float)resolution.height / 1080f, 1);
-
-
-
                         RectTransform tooltipRect = tooltipInstance.GetComponent<RectTransform>();
                         tooltipRect.sizeDelta = new Vector2(300, 300);
+
+                        float resFactor = GetResolutionScale();
+
+                        tooltipRect.localScale = Vector3.one * resFactor;
 
                         float xPositionOffest = tooltipRect.sizeDelta.x / 2;
                         float yPositionOffset = tooltipRect.sizeDelta.y / 2;
@@ -194,7 +201,9 @@ namespace TFTV.TFTVUI.Tactical
                         _classIcon.GetComponent<RectTransform>().anchoredPosition = new Vector2(-80, yPositionOffset - 55);
 
                         _leaderName = UnityEngine.Object.Instantiate(leaderName, tooltipRect);
-                        _leaderName.GetComponent<RectTransform>().anchoredPosition = new Vector2(94, yPositionOffset - 52.5f);
+                        RectTransform leaderNameRect = _leaderName.GetComponent<RectTransform>();
+                        leaderNameRect.anchoredPosition = new Vector2(94, yPositionOffset - 52.5f);
+                        leaderNameRect.localScale = new Vector3(0.5f, 0.5f, 0.5f);
 
                         _squadName = new GameObject("SquadName", typeof(RectTransform), typeof(Text));
                         //      textObj.GetComponent<RectTransform>().localScale = new Vector3(0.5f, 0.5f, 0.5f);
@@ -241,7 +250,9 @@ namespace TFTV.TFTVUI.Tactical
                         factionNameText.alignment = TextAnchor.MiddleLeft;
 
                         _tacticName = UnityEngine.Object.Instantiate(tacticName, tooltipRect);
-                        _tacticName.GetComponent<RectTransform>().anchoredPosition = new Vector2(-7, yPositionOffset - 140);
+                        RectTransform tacticNameRect = _tacticName.GetComponent<RectTransform>();
+                        tacticNameRect.anchoredPosition = new Vector2(-7, yPositionOffset - 140);
+                        tacticNameRect.localScale = new Vector3(0.5f, 0.5f, 0.5f);
 
 
                         _tacticDescription = new GameObject("TacticDescription", typeof(RectTransform), typeof(Text));
@@ -318,9 +329,12 @@ namespace TFTV.TFTVUI.Tactical
             {
                 try
                 {
+
                     Resolution resolution = Screen.currentResolution;
                     float resolutionFactorWidth = (float)resolution.width / 1920f;
                     float resolutionFactorHeight = (float)resolution.height / 1080f;
+
+                    float resolutionScale = GetResolutionScale();
 
                     // Access UIModuleNavigation and set widgetContainer as its transform
                     TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
@@ -328,13 +342,18 @@ namespace TFTV.TFTVUI.Tactical
 
                     widgetContainer = uIModuleNavigation.transform;
 
+                    
+
                     // Dynamically create the leaderWidgetPrefab structure
                     leaderWidgetPrefab = new GameObject("LeaderWidget");
                     RectTransform rectTransform = leaderWidgetPrefab.AddComponent<RectTransform>();
-
+                    rectTransform.SetParent(widgetContainer);
                     rectTransform.sizeDelta = new Vector2(255, 180);
-                    rectTransform.position = new Vector2(170 * resolutionFactorWidth, 600 * resolutionFactorHeight + (100 * (_leaderWidgets.Count - 1) * resolutionFactorHeight)); // Left margin of 20, 1/3 height down
+                    rectTransform.position = new Vector2
+                        (170 * resolutionFactorWidth, 
+                        600 * resolutionFactorHeight + (100 * (_leaderWidgets.Count - 1) * resolutionFactorHeight)); // Left margin of 20, 1/3 height down
 
+                    rectTransform.localScale = Vector3.one * resolutionScale;
 
                     //Header
                     GameObject headerObject = new GameObject("Header", typeof(RectTransform), typeof(Image));
@@ -401,7 +420,7 @@ namespace TFTV.TFTVUI.Tactical
                     nameText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                     RectTransform rectNameText = nameText.GetComponent<RectTransform>();
                     rectNameText.sizeDelta = new Vector2(600, 60);
-                    rectNameText.localScale = new Vector2(0.5f, 0.5f);
+                    rectNameText.localScale = new Vector3(0.5f, 0.5f, 0.5f);
                     rectNameText.anchoredPosition = Vector2.zero + new Vector2(110, 0f); //Vector2.zero + new Vector2(20, 40);
                     _nameOfLeader = nameText;
 
@@ -435,15 +454,14 @@ namespace TFTV.TFTVUI.Tactical
                     tacticNameText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                     RectTransform recttacticNameText = tacticNameText.GetComponent<RectTransform>();
                     recttacticNameText.sizeDelta = titleBackgroundRect.sizeDelta * 2;
-                    recttacticNameText.localScale = new Vector2(0.5f, 0.5f);
+                    recttacticNameText.localScale = new Vector3(0.5f, 0.5f, 0.5f);
                     recttacticNameText.anchoredPosition = Vector2.zero + new Vector2(10, 0);
 
                     _titleOfTactic = tacticNameText;
 
                     /* UITooltipText uITooltipText = leaderWidgetPrefab.AddComponent<UITooltipText>();
                      uITooltipText.TipText = $"<b>{tacticName.ToUpper()}</b>\n{tacticDescription}";*/
-
-                    leaderWidgetPrefab.transform.SetParent(widgetContainer);
+                    
                     leaderWidgetPrefab.SetActive(true);
 
                     if (leader != null)
