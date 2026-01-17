@@ -1,5 +1,6 @@
 ﻿using Base.Defs;
 using HarmonyLib;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Equipments;
@@ -88,6 +89,7 @@ namespace TFTV.LaserWeapons
                 DefCache.GetDef<WeaponDef>("PX_LaserArrayPack_WeaponDef").ChargesMax = 9;
                 DefCache.GetDef<WeaponDef>("SY_LaserAssaultRifle_Neon_WeaponDef").ChargesMax = 36;
                 DefCache.GetDef<WeaponDef>("SY_LaserAssaultRifle_WhiteNeon_WeaponDef").ChargesMax = 36;
+                DefCache.GetDef<WeaponDef>("SY_Aspida_Apollo_GroundVehicleWeaponDef").ChargesMax = 12;
             }
             catch (Exception ex)
             {
@@ -101,15 +103,24 @@ namespace TFTV.LaserWeapons
         {
             try
             {
+                if (!TFTVAircraftReworkMain.AircraftReworkOn)
+                {
+                    TFTVLogger.Always("[LaserWeaponsInit] Aircraft rework is disabled, skipping LaserWeaponsInit.");
+                    return;
+                }
+
                 var weaponDefs = new Dictionary<string, int>
                 {
                     { "SY_LaserPistol_WeaponDef", 1 },
                     { "SY_LaserAssaultRifle_WeaponDef", 2 },
-                    {"SY_LaserAssaultRifle_Neon_WeaponDef", 2 },
-                    {"SY_LaserAssaultRifle_WhiteNeon_WeaponDef", 2 },
+                    { "SY_LaserAssaultRifle_Neon_WeaponDef", 2 },
+                    { "SY_LaserAssaultRifle_WhiteNeon_WeaponDef", 2 },
                     { "PX_LaserPDW_WeaponDef", 2 },
                     { "SY_LaserSniperRifle_WeaponDef", 3 },
-                    { "PX_LaserArrayPack_WeaponDef", 3 }
+                    { "PX_LaserArrayPack_WeaponDef", 3 },
+
+                    // Aspida Apollo (vehicle weapon) uses TFTV laser battery: full reload costs 6 charges.
+                    { "SY_Aspida_Apollo_GroundVehicleWeaponDef", 6 },
                 };
 
                 var setups = new List<WeaponSetup>();
@@ -119,7 +130,6 @@ namespace TFTV.LaserWeapons
                     WeaponDef weaponDef = DefCache.GetDef<WeaponDef>(kvp.Key);
                     if (weaponDef == null)
                     {
-                        //TFTVLogger.Always($"[LaserWeaponsInit] Missing weapon def '{kvp.Key}'");
                         continue;
                     }
 
@@ -127,7 +137,6 @@ namespace TFTV.LaserWeapons
                     TacticalItemDef originalAmmo = originalCompat.FirstOrDefault();
                     if (originalAmmo == null)
                     {
-                        //TFTVLogger.Always($"[LaserWeaponsInit] '{weaponDef.name}' has no compatible ammo to clone");
                         continue;
                     }
 
@@ -135,6 +144,8 @@ namespace TFTV.LaserWeapons
                     {
                         OriginalLaserAmmo.Add(originalAmmo);
                     }
+
+                    weaponDef.FreeReloadOnMissionEnd = false;
 
                     setups.Add(new WeaponSetup
                     {
@@ -147,7 +158,6 @@ namespace TFTV.LaserWeapons
 
                 if (setups.Count == 0)
                 {
-                    //TFTVLogger.Always("[LaserWeaponsInit] No laser weapons registered");
                     return;
                 }
 
@@ -157,7 +167,6 @@ namespace TFTV.LaserWeapons
                 manufactureResearchRewardDef.Items = manufactureResearchRewardDef.Items.AddToArray(LaserBatteryPackDef);
 
                 LaserWeaponsMain.LaserAmmoShareHelper.BatteryPackDef = LaserBatteryPackDef;
-                //TFTVLogger.Always($"[LaserWeaponsInit] Battery pack def: {LaserBatteryPackDef?.name ?? "<null>"}");
 
                 foreach (WeaponSetup setup in setups)
                 {
@@ -173,15 +182,48 @@ namespace TFTV.LaserWeapons
                     }
 
                     setup.WeaponDef.CompatibleAmmunition = compatibility.ToArray();
-                    //TFTVLogger.Always($"[LaserWeaponsInit] Updated compatible ammo for {setup.WeaponDef.name}");
                 }
 
+                RegisterBatteryPackAmmoMappings(setups);
                 AdjustWeaponMaxAmmo();
                 AdjustAllDefs();
             }
             catch (Exception ex)
             {
                 TFTVLogger.Error(ex);
+            }
+        }
+
+        private static void RegisterBatteryPackAmmoMappings(IEnumerable<WeaponSetup> setups)
+        {
+            if (LaserBatteryPackDef == null)
+            {
+                return;
+            }
+
+            Dictionary<TacticalItemDef, List<TacticalItemDef>> ammoMap = AmmoWeaponDatabase.AmmoToWeaponDictionary;
+            if (ammoMap == null)
+            {
+                return;
+            }
+
+            if (!ammoMap.TryGetValue(LaserBatteryPackDef, out List<TacticalItemDef> weapons))
+            {
+                weapons = new List<TacticalItemDef>();
+                ammoMap[LaserBatteryPackDef] = weapons;
+            }
+
+            foreach (WeaponSetup setup in setups)
+            {
+                if (setup?.WeaponDef == null)
+                {
+                    continue;
+                }
+
+                if (!weapons.Contains(setup.WeaponDef))
+                {
+                    weapons.Add(setup.WeaponDef);
+                }
             }
         }
 
@@ -214,5 +256,6 @@ namespace TFTV.LaserWeapons
 
             return battery;
         }
+
     }
 }

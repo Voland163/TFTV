@@ -13,7 +13,8 @@ VOID_OMEN_TITLE_6,Text,,"Pandorans evolve as they lose missions and colonies, bu
 Позитив: скорость исследований Проекта Феникс увеличена на 50%",,
 VOID_OMEN_TITLE_7,Text,,"More Mist in missions, can deploy one more operative on standard missions",,Plus de brume dans les missions,,,,"Негатив: больше Тумана во всех миссиях.
 Позитив: +1 боец к лимиту (до 9) в стандартных миссиях",,
-VOID_OMEN_TITLE_7_ALT,Text,,"More Mist in missions, but easier to see through",,Plus de brume dans les missions,,,,,,
+VOID_OMEN_TITLE_7_ALT,Text,,"More Mist in missions, but easier to see through",,Plus de brume dans les missions,,,,"Негатив: больше Тумана во всех миссиях.
+Позитив: но он более прозрачен, чем обычно.",,
 VOID_OMEN_TITLE_8,Text,,"Diplomatic penalties among factions +50%, but research by factions doubled",,"Pénalités diplomatiques entre factions +50%, mais recherche de factions doublée",,,,"Негатив: дипломатические штрафы фракций +50%.
 Позитив: удвоена скорость исследований во фракциях",,
 VOID_OMEN_TITLE_9,Text,,Attacks on havens twice as frequent,,Des attaques deux fois plus fréquentes contre les refuges,,,,Негатив: нападения на убежища стали чаще в два раза,,
@@ -49,7 +50,9 @@ VOID_OMEN_DESCRIPTION_TEXT_7,Text,,"The repurposed weather satellites we have be
 <i> ""Это не имеет никакого отношения к метеорологии. Мы ничего не знаем о Тумане: почему он движется, куда направляется, почему его вдруг стало так много. Да, как «Эксперт по Туману», я признаю, что я не всеведущ."" </i>",,
 VOID_OMEN_DESCRIPTION_TEXT_7_ALT,Text,,"The repurposed weather satellites we have been using to monitor the Mist are detecting significantly expanded coverage in affected areas, though the Mist itself appears to be less densely concentrated.
 
-<i> ""It has nothing to do with meteorology. We know nothing about the Mist: why it moves, where to, why there is so much more of it all of a sudden. Yes, as a ""Mist Expert"" I admit I'm a fraud."" </i>",,,,,,,,
+<i> ""It has nothing to do with meteorology. We know nothing about the Mist: why it moves, where to, why there is so much more of it all of a sudden. Yes, as a ""Mist Expert"" I admit I'm a fraud."" </i>",,,,,,"Перепрофилированные метеорологические спутники, которые мы использовали для мониторинга Тумана, показывают значительное расширение зоны покрытия в пострадавших районах, хотя сам Туман, по-видимому, менее плотный.
+
+<i> ""Это не имеет никакого отношения к метеорологии. Мы ничего не знаем о Тумане: почему он движется, куда направляется, почему его вдруг стало так много. Да, как «Эксперт по Туману», я признаю, что я не всеведущ."" </i>",,
 VOID_OMEN_DESCRIPTION_TEXT_8,Text,,"Reports from our sources in New Jericho indicate that the faction is implementing enhanced security protocols and increased scrutiny of outside contacts. Surprisingly, our intelligence shows that this behavior is being mirrored by the Disciples of Anu and Synedrion.
 
 <i> ""Them and us, we can't help but see the world that way. Odd how sometimes that peaks and we forget that we are all part of the same species. A species that is currently facing extinction.""</i>",,"<i>""Eux et nous, on ne peut s'empêcher de voir le monde de cette façon. C'est étrange comme parfois cela culmine et nous oublions que nous faisons tous partie de la même espèce. Une espèce qui est actuellement en voie d'extinction.""</i> ",,,,"Наши источники в Новом Иерихоне сообщают, что фракция внедряет дополнительные протоколы безопасности и усиливает контроль внешних контактов. Удивительно, но наша разведка докладывает, что тоже самое делают Последователи Ану и Синедрион.
@@ -82,9 +85,7 @@ VOID_OMEN_DESCRIPTION_TEXT_16,Text,,We are receiving reports of psycho-paranorma
 VOID_OMEN_DESCRIPTION_TEXT_17,Text,,"Exploration of havens destroyed by Pandorans typically conform to a scenario of complete destruction of the haven facilities and the physical extermination or kidnapping of all its inhabitants. However, we are receiving reports that havens in areas covered by Mist are suffering a different fate.",,<i>Et si c'était leur but ultime ? Faire de nous tous les marionnettes d'une intelligence extraterrestre ?</i>,,,,"Исследование убежищ, разрушенных Пандоранами, обычно соответствует сценарию полного уничтожения объектов убежища и физического истребления или похищения всех его обитателей. Однако мы получаем сообщения о том, что убежища в районах, покрытых Туманом, постигает иная участь.",,
 VOID_OMEN_DESCRIPTION_TEXT_18,Text,,"Our intelligence sources within the factions report that they are mobilizing additional personnel to enhance the havens defense capabilities and reduce their dependence on outside help, most notably the Phoenix Project. We have to look for other sources of resource procurement for the time being.
 
-<i>""To keep the Synedrion dream alive, we must keep our people alive. Join the volunteer militia today! Service guarantees basic alimentary allocation."" </i> - Notice on a public Synedrion feed",,"<i>"" To keep the Synedrion dream alive, we must keep our people alive. Join the volunteer militia today ! Service guarantees basic alimentary allocation."" </i>
-
-- Public notice on a Synedrion feed",,,,"Наши разведчики во фракциях сообщают, что там мобилизуют дополнительный персонал для усиления обороноспособности убежищ и уменьшения их зависимости от внешней помощи, в первую очередь - от Проекта Феникс. В настоящее время мы вынуждены искать другие источники закупки ресурсов.
+<i>""To keep the Synedrion dream alive, we must keep our people alive. Join the volunteer militia today! Service guarantees basic alimentary allocation."" </i> - Notice on a public Synedrion feed",,,,,,"Наши разведчики во фракциях сообщают, что там мобилизуют дополнительный персонал для усиления обороноспособности убежищ и уменьшения их зависимости от внешней помощи, в первую очередь - от Проекта Феникс. В настоящее время мы вынуждены искать другие источники закупки ресурсов.
 
 <i>""Чтобы сохранить мечту Синедриона, мы должны сохранить жизнь нашим людям. Присоединяйтесь к добровольческому ополчению сегодня! Служба - это гарантия получение продуктового пайка!"" </i>
 

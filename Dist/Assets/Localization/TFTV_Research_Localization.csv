@@ -35,7 +35,9 @@ Frustratingly, we are missing the know-how to produce certain critical component
 
 In addition, requires completing Living Crystal and Protean Mutane researches.",,,,,,"Конечная цель Скорпиона - сделать все виды брони устаревшими. Удивительно, но похоже, что работа мистера Антонасова послужила основой для множества технологий, имеющих практическое применение, разрабатываемых сначала корпорацией «Ванадий», а затем Новым Иерихоном. 
 
-Требуется завершить исследования «Живой Кристалл» и «Белковый Мутаген».
+К сожалению, нам не хватает ноу-хау для производства некоторых критически важных компонентов, необходимых для создания прототипа Скорпиона. Возможно, Новый Иерихон проводит исследования в этом направлении для разработки новой машины.
+
+В дополнение, требуется завершить исследования «Живой Кристалл» и «Белковый Мутаген».
 ",,
 TFTV_NJ_VEHICLETECH_RESEARCHDEF_BENEFITS,Text,,The breakthrough we have been waiting for! We can now manufacture the Scorpion Impossible Weapon.,,,,,,"Прорыв, которого мы так долго ждали! Теперь мы можем производить Скорпиона (Супер-оружие).
 ",,
@@ -59,7 +61,9 @@ Unfortunately, elemental safety concerns prevent us from manufacturing the Scyth
 
 In addition, requires completing Living Crystal and Protean Mutane researches.",,,,,,"Согласно найденным записям, Джулс Годфри создал Косилку после неудачного выступления на каком-то корпоративном кибер-спортивном соревновании под названием «Ежегодный турнир Возрождение Хаоса 2022». Психологически, это выражение яростного гнева, направленного на все живое и неживое, хотя его практическое военное применение в реальном мире было сомнительным до появления Пандоранских чудовищ. 
 
-Требуется завершить исследования «Живой Кристалл» и «Белковый Мутаген».
+К сожалению, соображения элементарной безопасности не позволяют нам изготовить Косилку - холодное оружие с большой площадью поражения. Для этого оружия требуются очень точные датчики, которые могут изменять балансировку оружия во время его использования, чтобы избежать нанесения вреда его владельцу. Время срабатывания, требуемое от этих датчиков, выходит за рамки того, что может обеспечить наша собственная технология, но Проект Чистых в Новом Иерихоне продвигался в нужном направлении. Возможно, дальнейшее развитие бионических технологий даст нам необходимое решение. До тех пор Косилка остается мечтой.
+
+В дополнение, требуется завершить исследования «Живой Кристалл» и «Белковый Мутаген».
 ",,
 PX_SCYTHER_RESEARCHDEF_COMPLETE,Text,,"According to the notes accompanying the recovered data, Jules Godfry designed the Scyther after his disappointing performance in some sort of corporate ludic e-competition called ""Chaos Reborn 2022 Annual Tournament"". In psychological terms it is the expression of unfathomable anger directed at all things, living and inanimate, though its practical military applications in the real world were doubtful until the appearance of the Pandoran monstrosities.
 
@@ -79,7 +83,9 @@ A crucial aspect of this weapon's design is that the shards must deliver a nerve
 
 In addition, requires completing Living Crystal and Protean Mutane researches.",,,,,,"Осколочное орудие, пожалуй, наименее обоснованная в теоретическом плане разработка филиала «Оружейные Системы Нового Поколения». Но неубедительность математического аппарата оно сполна компенсирует своей эффективностью. По словам его создателя, Эммануэля Эриксона, «...это будет *** дробовик, который *** вас на кусочки, лезущие куда не надо *** дети!» (Стримы мистера Эриксона отличались ненормативной лексикой. Они трагически закончились в начале Первого Тумана, когда Тритон заполз на пляж Малибу и отобедал там Эммануэлем, по иронии судьбы, подкрепив чаяния стимера о необходимости разработки оружия самозащиты нового поколения). 
 
-Требуется завершить исследования «Живой Кристалл» и «Белковый Мутаген».
+Важнейшим аспектом конструкции этого оружия является то, что шрапнель должна содержать психо-активное вещество, которое при попадании деморализует цель. Несомненно, Последователи Ану работают над какой-то передовой технологией для своих бойцов класса «Жрец», которой мы сможем воспользоваться, чтобы, наконец, воплотить Осколочное орудие в реальность.
+
+В дополнение, требуется завершить исследования «Живой Кристалл» и «Белковый Мутаген».
 ",,
 PX_SHARDGUN_RESEARCHDEF_COMPLETE,Text,,"The Shard Gun is perhaps the less theoretically impressive of the NG+ Weapon Systems designs. But what it lacks in mathematical panache, it compensates in sheer effectiveness; in the words of its promoter, Emmanuel ""SG"" Erickson, ""it will be a bad*** shotgun that will **** you up, you trespassing ***********"" (Mr. Erickson's streams were notable for their profanity. They tragically ended at the beginning of the First Mist, when a Triton invaded Emmanuel's Malibu beachfront, ironically vindicating the streamer's plea for a next generation home defense weapon).
 

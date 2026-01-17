@@ -147,15 +147,6 @@ namespace TFTV
 
             TFTVBetaSaveGamesFixes.ConvertAncientRefinerySitesToHarvestSites(Controller);
 
-          
-
-
-            /* foreach (GeoPhoenixBase phoenixBase in gsController.PhoenixFaction.Bases)
-             {
-                 TFTVBaseDefenseGeoscape.GeoObjective.RemoveBaseDefenseObjective(phoenixBase.Site.LocalizedSiteName);
-             }
-
-             TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Clear();*/
 
         }
 
@@ -199,6 +190,7 @@ namespace TFTV
             //  TFTVLogger.Always($"Items currently hidden in Aircraft inventory {TFTVUI.CurrentlyHiddenInv.Values.Count}");
             TFTVRevenant.RecordUpkeep.UpdateRevenantTimer(Controller);
             TFTVDragandDropFunctionality.VehicleRoster.RecordVehicleOrder(Controller);
+            TFTVBehemothAndRaids.InternalData.JustInCaseBehemothScenicRouteAndTargetClear();
 
 
             return new TFTVGSInstanceData()

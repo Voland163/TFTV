@@ -57,6 +57,7 @@ namespace TFTV
         public bool Update35TacticalCheck;
         public bool StrongerPandoransTactical;
         public bool NerfAncientsWeaponsTactical;
+        public bool StaminaSetToZeroAfterInjury;
         public int ODILevel;
         public int internalDifficultyCheck;
         public Dictionary<string, int> PandoransInContainment;
@@ -313,6 +314,7 @@ namespace TFTV
                 TFTVNewGameOptions.Update35Check = data.Update35TacticalCheck;
                 TFTVNewGameOptions.StrongerPandoransSetting = data.StrongerPandoransTactical;
                 TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = data.NerfAncientsWeaponsTactical;
+                TFTVNewGameOptions.StaminaPenaltyFromInjurySetting = data.StaminaSetToZeroAfterInjury;
                 TFTVNewGameOptions.InternalDifficultyCheckTactical = data.internalDifficultyCheck;
                 TFTVBaseDefenseTactical.Map.DeploymentZones.SecondaryStrikeForceVector = data.SecondaryStrikeForceCoordinates;
                 TFTVRevenant.TFTVRevenantResearch.RevenantPoints = data.RevenantPoints;
@@ -361,7 +363,8 @@ namespace TFTV
                 TFTVBaseDefenseTactical.ScyllaLoose = data.ScyllaLoose;
 
                 TFTVLogger.Always($"Config settings:" +
-                    $"\nStrongerPandoransSetting {TFTVNewGameOptions.StrongerPandoransSetting}\nImpossibleWeaponsAdjustmentsSetting: {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}");
+                    $"\nStrongerPandoransSetting {TFTVNewGameOptions.StrongerPandoransSetting}\nImpossibleWeaponsAdjustmentsSetting: {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}" +
+                    $"\nStaminaLossAfterInjurySetting: {TFTVNewGameOptions.StaminaPenaltyFromInjurySetting}");
 
                 if (data.OperativesPortraits != null)
                 {
@@ -435,6 +438,7 @@ namespace TFTV
                 Update35TacticalCheck = TFTVNewGameOptions.Update35Check,
                 NerfAncientsWeaponsTactical = TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting,
                 StrongerPandoransTactical = TFTVNewGameOptions.StrongerPandoransSetting,
+                StaminaSetToZeroAfterInjury = TFTVNewGameOptions.StaminaPenaltyFromInjurySetting,
                 ODILevel = TFTVODIandVoidOmenRoll.CurrentODI_Level,
                 PandoransInContainment = TFTVBaseDefenseTactical.PandoransInContainment,
                 PandoransInContainmentEscaped = TFTVBaseDefenseTactical.PandoransInContainmentThatEscaoed,

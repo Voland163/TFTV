@@ -47,7 +47,7 @@ namespace TFTV.TFTVDrills
         internal static DamageMultiplierStatusDef _markedwatchStatus;
         internal static StatMultiplierStatusDef _markedWatchAccuracyStatusDef;
         internal static ApplyStatusAbilityDef _markedWatch;
-        internal static GameTagDef OrdnanceResupplyTag;
+      //  internal static GameTagDef OrdnanceResupplyTag;
 
         internal static PassiveModifierAbilityDef _causticJamming;
         internal static PassiveModifierAbilityDef _mentorProtocol;
@@ -1137,14 +1137,14 @@ namespace TFTV.TFTVDrills
                 // newAbility.TargetingDataDef.Origin.TargetTags.Add(Shared.SharedGameTags.VehicleTag);
                 newAbility.TargetingDataDef.Origin.Range = 2;
                 newAbility.RequiredCharges = 0;
-                newAbility.ActionPointCost = 0.75f;
+                newAbility.ActionPointCost = 0.5f;
                 newAbility.TargetingDataDef.Origin.TargetResult = TargetResult.Actor;
 
-                GameTagDef resuppliedVehicleTag = Helper.CreateDefFromClone(DefCache.GetDef<GameTagDef>("Capturable_GameTagDef"), "{F1C2D3E4-5678-49A0-B1C2-D3E4F56789A0}", "ResuppliedVehicle_TagDef");
+               // GameTagDef resuppliedVehicleTag = Helper.CreateDefFromClone(DefCache.GetDef<GameTagDef>("Capturable_GameTagDef"), "{F1C2D3E4-5678-49A0-B1C2-D3E4F56789A0}", "ResuppliedVehicle_TagDef");
 
-                newAbility.TargetingDataDef.Origin.CullTargetTags.Add(resuppliedVehicleTag);
+              //  newAbility.TargetingDataDef.Origin.CullTargetTags.Add(resuppliedVehicleTag);
 
-                OrdnanceResupplyTag = resuppliedVehicleTag;
+              //  OrdnanceResupplyTag = resuppliedVehicleTag;
 
                 //TFTVLogger.Always($"Created ability {newAbility.name} tags count {newAbility.TargetingDataDef.Origin.TargetTags.Count}, {newAbility.TargetingDataDef.Origin.TargetTags.First()?.name} ");
 

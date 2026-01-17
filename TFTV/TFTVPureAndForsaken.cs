@@ -109,6 +109,7 @@ namespace TFTV
                         AddOptionsUndefendable();
                         AddOptionsSubject24Intro();
                         DestroyingPureRemovesGuidedByWhispersAndFlavorEvent();
+                        DisablePU9PU10PU121AfterPU13();
                     }
                     catch (Exception e)
                     {
@@ -116,6 +117,48 @@ namespace TFTV
                     }
                 }
 
+
+                private static void DisablePU9PU10PU121AfterPU13()
+                {
+                    try
+                    {
+                        // Source is a known-good "variable compare" condition we can safely clone.
+                        GeoLevelConditionDef conditionSource = DefCache.GetDef<GeoLevelConditionDef>("[PROG_PU10] Condition 1");
+
+                        GeoLevelConditionDef pu13LessThan9 = Helper.CreateDefFromClone(
+                            conditionSource,
+                            "{8B2B9B7E-0B10-4E1A-9CF2-6F4B3BC2C2A8}",
+                            "PU13_LessThan9_Condition");
+
+                        pu13LessThan9.Variable = "PU13";
+                        pu13LessThan9.VariableCompareOperator = GeoEventVariationConditionDef.ComparisonOperator.Less;
+                        pu13LessThan9.VariableCompareToNumber = 9;
+
+                        foreach (string eventDefName in new[]
+                        {
+            "PROG_PU9_GeoscapeEventDef",
+            "PROG_PU10_GeoscapeEventDef",
+            "PROG_PU121_GeoscapeEventDef"
+        })
+                        {
+                            GeoscapeEventDef ev = DefCache.GetDef<GeoscapeEventDef>(eventDefName);
+
+                            if (ev.GeoscapeEventData.Conditions == null)
+                            {
+                                ev.GeoscapeEventData.Conditions = new List<GeoEventVariationConditionDef>();
+                            }
+
+                            if (!ev.GeoscapeEventData.Conditions.Contains(pu13LessThan9))
+                            {
+                                ev.GeoscapeEventData.Conditions.Add(pu13LessThan9);
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
                 private static void DestroyingPureRemovesGuidedByWhispersAndFlavorEvent()
                 {
                     try

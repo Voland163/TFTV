@@ -5,7 +5,6 @@ using Base.Input;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers;
@@ -13,17 +12,13 @@ using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
-using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
-using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Geoscape.View.ViewControllers.Manufacturing;
-using PhoenixPoint.Geoscape.View.ViewControllers.PhoenixBase;
 using PhoenixPoint.Geoscape.View.ViewControllers.Research;
-using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewControllers.VehicleRoster;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
@@ -295,7 +290,7 @@ namespace TFTV
         }
         internal class Manufacturing
         {
-        
+
             private static readonly string _amountInInventoryTextObject = "AmountInInventory";
             private static readonly string _techCostTextObject = "TextContainerTechCost";
             private static readonly string _matsCostTextObject = "TextContainerMatsCost";
@@ -305,37 +300,37 @@ namespace TFTV
             private static readonly ViewElementDef _matsViewDef = DefCache.GetDef<ViewElementDef>("Materials_ResourceDef");
             private static readonly ViewElementDef _techViewDef = DefCache.GetDef<ViewElementDef>("Tech_ResourceDef");
 
-           // private static bool CheckedManufacturingForNewItems = false;
-            
-           /* [HarmonyPatch(typeof(GeoPhoenixFaction), "OnNewManufacturableItemsAdded")] //VERIFIED
-            public static class GeoPhoenixFaction_OnNewManufacturableItemsAdded_Patch
-            {
-                public static bool Prefix(GeoPhoenixFaction __instance, ManufacturableItem item)
-                {
-                    try
-                    {
-                        if (item.Tags.Contains(DefCache.GetDef<GameTagDef>("AmmoItem_TagDef"))) 
-                        {
-                         //   TFTVLogger.Always($"New manufacturable Ammo item: {item.Name.Localize()}");
-                            return false;
-                        }
+            // private static bool CheckedManufacturingForNewItems = false;
 
-                       // CheckedManufacturingForNewItems = false;
+            /* [HarmonyPatch(typeof(GeoPhoenixFaction), "OnNewManufacturableItemsAdded")] //VERIFIED
+             public static class GeoPhoenixFaction_OnNewManufacturableItemsAdded_Patch
+             {
+                 public static bool Prefix(GeoPhoenixFaction __instance, ManufacturableItem item)
+                 {
+                     try
+                     {
+                         if (item.Tags.Contains(DefCache.GetDef<GameTagDef>("AmmoItem_TagDef"))) 
+                         {
+                          //   TFTVLogger.Always($"New manufacturable Ammo item: {item.Name.Localize()}");
+                             return false;
+                         }
 
-                       // TFTVLogger.Always($"New manufacturable item: {item.Name.Localize()}");
-                        return true;
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
-                }
-            }*/
+                        // CheckedManufacturingForNewItems = false;
 
-           
+                        // TFTVLogger.Always($"New manufacturable item: {item.Name.Localize()}");
+                         return true;
+                     }
+                     catch (Exception e)
+                     {
+                         TFTVLogger.Error(e);
+                         throw;
+                     }
+                 }
+             }*/
 
-           
+
+
+
 
 
 
@@ -363,7 +358,7 @@ namespace TFTV
 
                     manufactureAmmoButton.GetComponent<HorizontalLayoutGroup>().enabled = false;
                     manufactureAmmoButton.GetComponent<ContentSizeFitter>().enabled = false;
-                  //  manufactureAmmoButton.GetComponent<UITooltipText>().UpdateText("MANUFACTURE AMMO OR CHARGES FOR THIS ITEM");
+                    //  manufactureAmmoButton.GetComponent<UITooltipText>().UpdateText("MANUFACTURE AMMO OR CHARGES FOR THIS ITEM");
 
                     GameObject textAmountInventoryObject = new GameObject(_amountInInventoryTextObject, typeof(Text), typeof(RectTransform));
                     Text textInventoryAmount = textAmountInventoryObject.GetComponent<Text>();
@@ -393,7 +388,7 @@ namespace TFTV
                     //  textTechRect.sizeDelta = new Vector2(40, 40);
 
                     if (enoughTech)
-                    {   
+                    {
                         textTech.color = _techViewDef.Color;
                     }
                     else
@@ -408,7 +403,7 @@ namespace TFTV
                     textContainerTech.transform.SetParent(rectTransform, false);
 
                     GameObject iconMatsContainer = new GameObject(_matsIconObject, typeof(Image), typeof(RectTransform));
-                    Image imageMats = iconMatsContainer.GetComponent<Image>(); 
+                    Image imageMats = iconMatsContainer.GetComponent<Image>();
                     imageMats.sprite = _matsViewDef.SmallIcon;
                     imageMats.color = _matsViewDef.Color;
 
@@ -432,7 +427,7 @@ namespace TFTV
 
                     if (enoughMats)
                     {
-                       
+
                         textMats.color = _matsViewDef.Color;
                     }
                     else
@@ -448,7 +443,7 @@ namespace TFTV
                     actionIcon.SetNativeSize();
                     actionIcon.sprite = ammoItemDef.ViewElementDef.InventoryIcon; // Set to a different sprite
 
-                
+
                     return manufactureAmmoButton;
 
                 }
@@ -499,7 +494,7 @@ namespace TFTV
                     Text amountInventory = manufactureAmmoButton.transform.Find(_amountInInventoryTextObject).GetComponent<Text>();
                     amountInventory.text = ammoItemDef.GetQuantity(faction, true).ToString();
 
-                  //  geoManufactureItem.NewElementMarker.GetComponent<RectTransform>().anchoredPosition = new Vector2(-100, 0);
+                    //  geoManufactureItem.NewElementMarker.GetComponent<RectTransform>().anchoredPosition = new Vector2(-100, 0);
                 }
                 catch (Exception e)
                 {
@@ -511,7 +506,7 @@ namespace TFTV
 
 
             private static Vector2 _ogPositionNewItemElement = new Vector2(0, 0);
-            private static Vector2 _newPositionNewItemElement = new Vector2(_ogPositionNewItemElement.x-275, -5);
+            private static Vector2 _newPositionNewItemElement = new Vector2(_ogPositionNewItemElement.x - 275, -5);
 
 
             private static void AddorUpdateAmmoButton(GeoManufactureItem geoManufactureItem, GeoFaction faction)
@@ -520,24 +515,24 @@ namespace TFTV
                 {
                     //   TFTVLogger.Always($"looking at item {__instance.ItemName.text}");
 
-                    if(_ogPositionNewItemElement == Vector2.zero) 
+                    if (_ogPositionNewItemElement == Vector2.zero)
                     {
 
                         _ogPositionNewItemElement = geoManufactureItem.NewElementMarker.GetComponent<RectTransform>().anchoredPosition;
-                       // TFTVLogger.Always($"_ogPositionNewItemElement: {_ogPositionNewItemElement}");
+                        // TFTVLogger.Always($"_ogPositionNewItemElement: {_ogPositionNewItemElement}");
                     }
 
                     Transform transform = geoManufactureItem.CurrentlyOwnedQuantityText.transform;
                     GameObject manufactureAmmoButton = transform.Find("ManufactureAmmoButton")?.gameObject;
 
-                    if (geoManufactureItem.ItemDef.CompatibleAmmunition == null 
-                        || geoManufactureItem.ItemDef.CompatibleAmmunition.Count() == 0 
-                        || geoManufactureItem.ItemDef.CompatibleAmmunition.Count()>0 && geoManufactureItem.ItemDef.CompatibleAmmunition[0] == DefCache.GetDef<ItemDef>("SharedFreeReload_AmmoClip_ItemDef"))
+                    if (geoManufactureItem.ItemDef.CompatibleAmmunition == null
+                        || geoManufactureItem.ItemDef.CompatibleAmmunition.Count() == 0
+                        || geoManufactureItem.ItemDef.CompatibleAmmunition.Count() > 0 && geoManufactureItem.ItemDef.CompatibleAmmunition[0] == DefCache.GetDef<ItemDef>("SharedFreeReload_AmmoClip_ItemDef"))
                     {
                         if (manufactureAmmoButton != null)
                         {
                             manufactureAmmoButton?.SetActive(false);
-                            
+
                             geoManufactureItem.NewElementMarker.GetComponent<RectTransform>().anchoredPosition = _ogPositionNewItemElement;
                         }
                         return;
@@ -545,14 +540,14 @@ namespace TFTV
 
                     UIModuleManufacturing uIModuleManufacturing = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ManufacturingModule;
 
-                    if(uIModuleManufacturing.Mode != UIModuleManufacturing.UIMode.Manufacture) 
+                    if (uIModuleManufacturing.Mode != UIModuleManufacturing.UIMode.Manufacture)
                     {
                         manufactureAmmoButton?.SetActive(false);
                         return;
                     }
 
                     ItemDef ammoItemDef = geoManufactureItem.ItemDef.CompatibleAmmunition[0];
-                    
+
                     if (manufactureAmmoButton == null)
                     {
                         manufactureAmmoButton = AddManufactureAmmoButton(geoManufactureItem, faction, ammoItemDef);
@@ -578,7 +573,7 @@ namespace TFTV
                             bool enoughMats = faction.Wallet.HasResources(cost.FirstOrDefault(ru => ru.Type == ResourceType.Materials));
                             bool enoughTech = faction.Wallet.HasResources(cost.FirstOrDefault(ru => ru.Type == ResourceType.Tech));
 
-                            if (enoughMats && enoughTech && faction.ItemStorage.GetStorageUsed()+ammoItemDef.Weight<faction.GetTotalAvailableStorage())
+                            if (enoughMats && enoughTech && faction.ItemStorage.GetStorageUsed() + ammoItemDef.Weight < faction.GetTotalAvailableStorage())
                             {
                                 // UIModuleManufacturing uIModuleManufacturing = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ManufacturingModule;
                                 GeoItem geoItem = new GeoItem(ammoItemDef);
@@ -591,7 +586,7 @@ namespace TFTV
 
                                 // Define what happens when the cloned button is clicked
                             }
-                           // TFTVLogger.Always("Cloned button clicked!");
+                            // TFTVLogger.Always("Cloned button clicked!");
                         }
                         catch (Exception e)
                         {
@@ -641,7 +636,7 @@ namespace TFTV
                             _scrapFromSoldierEquip = true;
                         }
 
-                      
+
                     }
                     catch (Exception e)
                     {
@@ -650,46 +645,46 @@ namespace TFTV
                 }
             }
 
-          
-          /*  [HarmonyPatch(typeof(UIModuleManufacturing))]
-            public static class UIModuleManufacturingPatch2
-            {
-                [HarmonyPatch("RefreshItemList")] //VERIFIED
-                [HarmonyPrefix]
-                public static void RefreshItemListPrefix(UIModuleManufacturing __instance, ref IEnumerable<ItemDef> availableItemRecipes)
-                {
-                    try
-                    {
-                        if (__instance.Mode == UIModuleManufacturing.UIMode.Manufacture && !_scrapFromSoldierEquip)
-                        {
 
-                            List<ItemDef> itemDefs = new List<ItemDef>();
+            /*  [HarmonyPatch(typeof(UIModuleManufacturing))]
+              public static class UIModuleManufacturingPatch2
+              {
+                  [HarmonyPatch("RefreshItemList")] //VERIFIED
+                  [HarmonyPrefix]
+                  public static void RefreshItemListPrefix(UIModuleManufacturing __instance, ref IEnumerable<ItemDef> availableItemRecipes)
+                  {
+                      try
+                      {
+                          if (__instance.Mode == UIModuleManufacturing.UIMode.Manufacture && !_scrapFromSoldierEquip)
+                          {
 
-                            foreach (ItemDef itemDef in availableItemRecipes)
-                            {
-                                if (!itemDef.Tags.Contains(DefCache.GetDef<GameTagDef>("AmmoItem_TagDef")))
-                                {
-                                    itemDefs.Add(itemDef);
-                                }
-                            }
+                              List<ItemDef> itemDefs = new List<ItemDef>();
 
-                            availableItemRecipes = itemDefs.ToArray();
-                        }
+                              foreach (ItemDef itemDef in availableItemRecipes)
+                              {
+                                  if (!itemDef.Tags.Contains(DefCache.GetDef<GameTagDef>("AmmoItem_TagDef")))
+                                  {
+                                      itemDefs.Add(itemDef);
+                                  }
+                              }
 
-                        if (_scrapFromSoldierEquip) 
-                        {
-                            TFTVLogger.Always($"setting _scrapFromSoldierEquip to false");
-                           _scrapFromSoldierEquip = false;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                }
-            }*/
+                              availableItemRecipes = itemDefs.ToArray();
+                          }
 
-            
+                          if (_scrapFromSoldierEquip) 
+                          {
+                              TFTVLogger.Always($"setting _scrapFromSoldierEquip to false");
+                             _scrapFromSoldierEquip = false;
+                          }
+                      }
+                      catch (Exception e)
+                      {
+                          TFTVLogger.Error(e);
+                      }
+                  }
+              }*/
+
+
 
             [HarmonyPatch(typeof(UIModuleManufacturing))]
             public static class UIModuleManufacturingPatch
@@ -1066,11 +1061,11 @@ namespace TFTV
                     List<GeoVehicle> vehicles = factionActorCache.Cache[phoenixFaction];
                     for (int x = 0; x < vehicles.Count; x++)
                     {
-                        vehicles[x].VehicleID = x+1;
+                        vehicles[x].VehicleID = x + 1;
                         PlayerVehicles.Add(vehicles[x].VehicleID);
                         TFTVLogger.Always($"Recording {vehicles[x].Name} {vehicles[x].VehicleID}");
                     }
-                    
+
                 }
                 catch (Exception e)
                 {
@@ -1084,7 +1079,7 @@ namespace TFTV
             {
                 try
                 {
-                   
+
 
                     if (PlayerVehicles != null && PlayerVehicles.Count > 0)
                     {
@@ -1117,18 +1112,18 @@ namespace TFTV
 
                         List<GeoVehicle> vehicles = new List<GeoVehicle>();
 
-                      /*  if(phoenixFaction.Vehicles.Any(vehicle => vehicle.VehicleID == 0)) 
-                        {
-                            foreach (GeoVehicle geoVehicle in phoenixFaction.Vehicles)
-                            {
-                                geoVehicle.VehicleID += 1;
-                            }
-                        }*/
+                        /*  if(phoenixFaction.Vehicles.Any(vehicle => vehicle.VehicleID == 0)) 
+                          {
+                              foreach (GeoVehicle geoVehicle in phoenixFaction.Vehicles)
+                              {
+                                  geoVehicle.VehicleID += 1;
+                              }
+                          }*/
 
-                        for (int x = 1; x<= PlayerVehicles.Count; x++)
+                        for (int x = 1; x <= PlayerVehicles.Count; x++)
                         {
                             TFTVLogger.Always($"Restoring...");
-                            GeoVehicle geoVehicle = phoenixFaction.Vehicles.FirstOrDefault(vehicle => vehicle.VehicleID == PlayerVehicles[x-1] && !vehicles.Contains(vehicle));
+                            GeoVehicle geoVehicle = phoenixFaction.Vehicles.FirstOrDefault(vehicle => vehicle.VehicleID == PlayerVehicles[x - 1] && !vehicles.Contains(vehicle));
                             geoVehicle.VehicleID = x;
                             vehicles.Add(geoVehicle);
                             TFTVLogger.Always($"{geoVehicle.Name} {geoVehicle.VehicleID}");
@@ -1136,11 +1131,11 @@ namespace TFTV
                             if (TFTVAircraftReworkMain.AircraftReworkOn)
                             {
                                 AircraftReworkGeoscape.Scanning.CheckAircraftScannerAbility(geoVehicle);
-                               // TFTVLogger.Always($"scanner ability added to {geoVehicle.Name}");
+                                // TFTVLogger.Always($"scanner ability added to {geoVehicle.Name}");
                             }
                         }
 
-                       
+
 
                         factionActorCache.Cache[phoenixFaction] = vehicles;
                         fieldInfo.SetValue(geoMap, factionActorCache);
@@ -1153,7 +1148,7 @@ namespace TFTV
                           phoenixFaction.GeoLevel.View.GeoscapeModules.VehicleSelectionModule.Init(context);*/
                     }
 
-                
+
 
                 }
                 catch (Exception e)

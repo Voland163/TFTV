@@ -376,7 +376,12 @@ namespace TFTV
                 {
                     //  TFTVLogger.Always($"the status is {status.Def.name}");
 
-                    TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+                    TacticalLevelController controller = GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>();
+
+                    if(controller == null)
+                    {
+                        return;
+                    }
 
                     TFTVBaseDefenseTactical.Map.Consoles.ActivateConsole.BaseDefenseConsoleActivated(__instance, status, controller);
                     TFTVPalaceMission.Consoles.PalaceConsoleActivated(__instance, status, controller);

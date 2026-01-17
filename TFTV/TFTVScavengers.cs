@@ -75,7 +75,7 @@ namespace TFTV
                             GeoFaction geoFaction = faction.GeoLevel.Factions.FirstOrDefault(f => f.PPFactionDef.ShortNames.Contains(factionName)) ?? faction.GeoLevel.NeutralFaction;
                             if (!geoFaction.UnlockedUnitTemplates.Contains(template))
                             {
-                                TFTVLogger.Always($"Adding {template.name} to {geoFaction.PPFactionDef.name} for {__instance.RewardDef.name}");
+                              //  TFTVLogger.Always($"Adding {template.name} to {geoFaction.PPFactionDef.name} for {__instance.RewardDef.name}");
                                 geoFaction.UnlockedUnitTemplates.Add(template);
                             }
                         }
@@ -682,8 +682,18 @@ namespace TFTV
 
                     };
 
+                        List<UnitTemplateResearchRewardDef> researches = new List<UnitTemplateResearchRewardDef>()
+                    {
+                    DefCache.GetDef<UnitTemplateResearchRewardDef>("ALN_FishmanSniper_ResearchDef_UnitTemplateResearchRewardDef_0"),
+                    DefCache.GetDef<UnitTemplateResearchRewardDef>("ALN_BasicSwarmer_ResearchDef_UnitTemplateResearchRewardDef_0"),
+                    DefCache.GetDef<UnitTemplateResearchRewardDef>("ALN_VenomousSwarmer_ResearchDef_UnitTemplateResearchRewardDef_0"),
+                    DefCache.GetDef<UnitTemplateResearchRewardDef>("ALN_VenomousSwarmer_ResearchDef_UnitTemplateResearchRewardDef_0"),
+                    DefCache.GetDef<UnitTemplateResearchRewardDef>("ALN_AcidSwarmer_ResearchDef_UnitTemplateResearchRewardDef_0"),
+                    DefCache.GetDef<UnitTemplateResearchRewardDef>("ALN_FishmanPiercerSniper_ResearchDef_UnitTemplateResearchRewardDef_0"),
 
-                        CreateRaiderTemplateSet(armors, weapons, _heavyRaiderTag, gUIDS);
+                    };
+
+                        CreateRaiderTemplateSet(armors, weapons, _heavyRaiderTag, gUIDS, researches);
 
                     }
                     catch (Exception e)
@@ -1081,6 +1091,7 @@ namespace TFTV
                         {
                             GeoFactionDef neutralFaction = DefCache.GetDef<GeoFactionDef>("Neutral_GeoFactionDef");
                             neutralFaction.StartingUnits = neutralFaction.StartingUnits.AddToArray(newCharacter);
+                            //TFTVLogger.Always($"[SCAVENGERS] {newCharacter.name} added to initial deployment");
                         }
                         else
                         {
@@ -1092,6 +1103,7 @@ namespace TFTV
                             {
                                 _banditTemplatesTiedToPandoranUnlocks.Add(unitTemplateResearchRewardDef, new List<TacCharacterDef>() { newCharacter });
                             }
+                           // TFTVLogger.Always($"[SCAVENGERS] {newCharacter.name} added to {unitTemplateResearchRewardDef.name}");
                         }
                         // TFTVLogger.Always($"{newCharacter.name} is now in the neutral faction, deployment cost is {newCharacter.DeploymentCost}");
 
@@ -1572,12 +1584,12 @@ ab2858c7-fb8a-4dd4-aa6c-378f6323422d
 
                     };
 
-                    TacMissionTypeParticipantData.UniqueChatarcterBind thief2 = new TacMissionTypeParticipantData.UniqueChatarcterBind()
+                   /* TacMissionTypeParticipantData.UniqueChatarcterBind thief2 = new TacMissionTypeParticipantData.UniqueChatarcterBind()
                     {
                         Amount = new RangeDataInt() { Max = 1, Min = 1 },
                         Character = DefCache.GetDef<TacCharacterDef>("S_IN_Thief_TacCharacterDef")
 
-                    };
+                    };*/
 
                     TacMissionTypeParticipantData.UniqueChatarcterBind spyMaster1 = new TacMissionTypeParticipantData.UniqueChatarcterBind()
                     {
@@ -1590,7 +1602,7 @@ ab2858c7-fb8a-4dd4-aa6c-378f6323422d
 
                     synIntro.ParticipantsData[1].UniqueUnits = new TacMissionTypeParticipantData.UniqueChatarcterBind[]
                     {
-                        assaultBandit1, assaultBandit2, scummer1, scummer2, thief1, thief2, sniper1, spyMaster1
+                        assaultBandit1, assaultBandit2, scummer1, scummer2, thief1, sniper1, spyMaster1 //thief2, 
                     };
 
 

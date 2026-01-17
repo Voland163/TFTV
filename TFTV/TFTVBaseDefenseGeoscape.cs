@@ -2114,7 +2114,7 @@ namespace TFTV
 
                     GeoPhoenixBase phoenixBase = geoMission.Site.GetComponent<GeoPhoenixBase>();
                     TacCharacterDef mfSecurityGuardTemplate = TFTVBaseDefenseTactical.Defs.MFedSecurityGuard;
-                    int securityStations = phoenixBase.Layout.Facilities.Count(f => f.Def.name.Equals("SecurityStation_PhoenixFacilityDef")); //&& !f.IsDamaged); TESTING
+                    int securityStations = phoenixBase.Layout.Facilities.Count(f => f.Def.name.Equals("SecurityStation_PhoenixFacilityDef")) - TFTVBaseDefenseTactical.StartingDeployment.SecurityStationsUnderConstruction; 
 
                     ClassTagDef securityGuardTag = TFTVBaseDefenseTactical.Defs.MFSecurityGuardClassTag;
 
@@ -2636,6 +2636,8 @@ namespace TFTV
                 {
                     try
                     {
+                        TFTVBaseDefenseTactical.StartingDeployment.SecurityStationsUnderConstruction = 0;
+
                         List<GeoPhoenixFacility> geoPhoenixFacilities = layout.Facilities.Where(f => f.State == GeoPhoenixFacility.FacilityState.UnderContstruction || f.State == GeoPhoenixFacility.FacilityState.Damaged).ToList();
 
                         List<GeoPhoenixFacility> facilitiesUnderConstruction = new List<GeoPhoenixFacility>();

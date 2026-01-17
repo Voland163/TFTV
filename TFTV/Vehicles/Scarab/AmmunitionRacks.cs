@@ -6,8 +6,8 @@ using PhoenixPoint.Common.Entities.Equipments;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
-using PRMBetterClasses;
 using System.Collections.Generic;
+using TFTV;
 using TFTVVehicleRework.Abilities;
 
 namespace TFTVVehicleRework.Scarab
@@ -15,6 +15,7 @@ namespace TFTVVehicleRework.Scarab
     public static class AmmunitionRacks
     {
         private static readonly DefRepository Repo = ScarabMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         public static readonly Dictionary<ScarabMain.HullModules, TacticalItemDef> DefaultHull = ScarabMain.DefaultHull;
         public static void Change()
@@ -22,15 +23,29 @@ namespace TFTVVehicleRework.Scarab
             //"PX_Scarab_Reinforced_Cargo_Racks_GroundVehicleModuleDef"
             GroundVehicleModuleDef CargoRacks = (GroundVehicleModuleDef)Repo.GetDef("038388bd-e3cf-2f54-5a5e-77a8351c1ec9");
             CargoRacks.ViewElementDef.DisplayName1 = new LocalizedTextBind("PX_AMMUNITION_NAME");
-            CargoRacks.Armor = -10; //For Geo/Marketplace UI
-            CargoRacks.BodyPartAspectDef.StatModifications = new ItemStatModification[]{}; //Resets vanilla inventory slot bonus
-            CargoRacks.SubAddons = CargoRacks.SubAddons.AddRangeToArray(NewArmours());
-            CargoRacks.Abilities = new TacticalAbilityDef[]
+
+
+
+            if (TFTVAircraftReworkMain.AircraftReworkOn)
             {
-                ScarabReload()
+                CargoRacks.Abilities = new TacticalAbilityDef[]
+                {
+                DefCache.GetDef<ReloadAbilityDef>("Reload_AbilityDef")
             };
+            }
+            else
+            {
+                CargoRacks.Armor = -10; //For Geo/Marketplace UI
+                CargoRacks.Abilities = new TacticalAbilityDef[]
+                    {
+                ScarabReload()
+                    };
+                CargoRacks.BodyPartAspectDef.StatModifications = new ItemStatModification[] { }; //Resets vanilla inventory slot bonus
+                CargoRacks.SubAddons = CargoRacks.SubAddons.AddRangeToArray(NewArmours());
+            }
         }
-        
+
+
         internal static AddonDef.SubaddonBind[] NewArmours()
         {
             //Clone default armours
@@ -58,11 +73,11 @@ namespace TFTVVehicleRework.Scarab
             AmmoRack_Back_Armour.Armor = 10;
             AmmoRack_Left_Armour.Armor = AmmoRack_Right_Armour.Armor = 20;
             AmmoRack_LFT.Armor = AmmoRack_LBT.Armor = AmmoRack_RFT.Armor = AmmoRack_RBT.Armor = 10;
-            
+
             //New armours need to set WeakAddons to false to avoid Softlocking when used with Stability Module. Likely due to Stability Module not hiding subaddons.
             AmmoRack_Front_Armour.WeakAddon = AmmoRack_Back_Armour.WeakAddon = AmmoRack_Left_Armour.WeakAddon = AmmoRack_Right_Armour.WeakAddon = false;
             AmmoRack_LFT.WeakAddon = AmmoRack_RFT.WeakAddon = AmmoRack_LBT.WeakAddon = AmmoRack_RBT.WeakAddon = false;
-            
+
             //Need to clone the bodypartaspectdef of these parts and reduce Endurance to 0 on these clones:
             AmmoRack_Front_Armour.BodyPartAspectDef = (BodyPartAspectDef)Repo.CreateDef("5b54fd09-522d-475c-9c04-0d9fd410e2e6", DefaultHull[ScarabMain.HullModules.Front].BodyPartAspectDef);
             AmmoRack_Back_Armour.BodyPartAspectDef = (BodyPartAspectDef)Repo.CreateDef("aa7971fa-99d6-4fe4-b9f7-97ef99d2093f", DefaultHull[ScarabMain.HullModules.Back].BodyPartAspectDef);
@@ -86,7 +101,7 @@ namespace TFTVVehicleRework.Scarab
             //Notes: 
             // - No need to change required slots or provided subaddon slots for the armours. 
             // - Possibly doesn't need to change any of the "Weakaddons" settings either.
-            
+
             //Adding new armours to the module's Subaddons
             AddonDef.SubaddonBind[] AmmoRack_Armours = new AddonDef.SubaddonBind[]
             {
@@ -105,14 +120,13 @@ namespace TFTVVehicleRework.Scarab
         internal static FreeReloadAbilityDef ScarabReload()
         {
             ReloadAbilityDef Reload = (ReloadAbilityDef)Repo.GetDef("3d6a71c7-c27b-5374-5a51-0ba31db93d41");
-    
+
             FreeReloadAbilityDef ScarabReload = Repo.CreateDef<FreeReloadAbilityDef>("9461314d-7d6e-48c8-8298-9752e39d0f0e");
-            Helper.CopyFieldsByReflection(Reload, ScarabReload);
+            PRMBetterClasses.Helper.CopyFieldsByReflection(Reload, ScarabReload);
             ScarabReload.name = "ScarabFreeReload_AbilityDef";
             ScarabReload.ResourcePath = "Defs/Tactical/Actors/_Common/Abilities/FreeReload_AbilityDef";
             ScarabReload.InputAction = "";
             ScarabReload.ActionPointCost = 0.5f;
-
             ScarabReload.ViewElementDef = (TacticalAbilityViewElementDef)Repo.CreateDef("e91bdf96-62c5-4f5d-b85b-b21ac077fef2", Reload.ViewElementDef);
             ScarabReload.ViewElementDef.name = "E_View [ScarabFreeReload_AbilityDef]";
             ScarabReload.ViewElementDef.Description = new LocalizedTextBind("UI_RELOAD_DESC");

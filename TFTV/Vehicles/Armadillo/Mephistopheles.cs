@@ -8,6 +8,7 @@ using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
+using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using System.Collections.Generic;
@@ -18,6 +19,7 @@ namespace TFTVVehicleRework.Armadillo
     public static class Mephistopheles
     {
         private static readonly DefRepository Repo = ArmadilloMain.Repo;
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         internal static SharedDamageKeywordsDataDef keywords = VehiclesMain.keywords;
         // "NJ_Armadillo_Mephistopheles_GroundVehicleWeaponDef"
         internal static readonly GroundVehicleWeaponDef Meph = (GroundVehicleWeaponDef)Repo.GetDef("49723d28-b373-3bc4-7918-21e87a72c585");
@@ -35,15 +37,51 @@ namespace TFTVVehicleRework.Armadillo
             Meph.MainSwitch = Flamethrower.MainSwitch;
             //"FlameThrower_ShootAbilityDef"
             ShootAbilityDef FlamethrowerShoot = (ShootAbilityDef)Repo.GetDef("9cb530ee-14ad-11d4-2a31-312a93f799e9");
-            Meph.Abilities = new AbilityDef[]
+
+
+            if (!TFTVAircraftReworkMain.AircraftReworkOn)
+            {
+                Meph.Abilities = new AbilityDef[]
             {
                 FlamethrowerShoot,
                 AdaptiveWeapon()
             };
+                Meph.WeakAddon = true;
+            }
+            else
+            {
+                Meph.Abilities = new AbilityDef[]
+                {
+                FlamethrowerShoot,
+                    //  AdaptiveWeapon()
+                };
+
+                Meph.DamagePayload.DamageKeywords = new List<DamageKeywordPair>
+        {
+            new DamageKeywordPair
+            {
+                DamageKeywordDef = keywords.DamageKeyword,
+                Value = 80f
+            },
+
+           new DamageKeywordPair
+            {
+                DamageKeywordDef = keywords.BurningKeyword,
+                Value = 50f
+            },
+        };
+                DamageEffectDef fireDamageEffect = (DamageEffectDef)Repo.GetDef("e6d685ab-7d63-dae4-490d-d2070923ce29"); //Fire_DamageEffectDef
+                fireDamageEffect.MaximumDamage = 50f;
+                fireDamageEffect.MinimumDamage = 50f;
+            }
+
             Meph.ChargesMax = 10;
             Meph.DamagePayload.ConeRadius = 3.5f;
             Meph.APToUsePerc = 25;
-            Meph.WeakAddon = true;
+
+
+
+
 
             // Meph.VisibilityType = PhoenixPoint.Tactical.Entities.Equipments.ModelVisibilityType.VisibleWhenActive;
             //  Meph.HolsterSlotDef = null;

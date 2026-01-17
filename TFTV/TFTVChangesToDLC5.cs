@@ -4,6 +4,7 @@ using Base.Core;
 using Base.Defs;
 using Base.Entities.Abilities;
 using Base.UI;
+using Code.PhoenixPoint.Tactical.Entities.Equipments;
 using com.ootii.Collections;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -28,15 +29,18 @@ using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
+using SoftMasking.Samples;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using TFTV.Vehicles.Ammo;
 using UnityEngine;
 using UnityEngine.UI;
 using static PhoenixPoint.Geoscape.Entities.GeoUnitDescriptor;
+using static TFTV.TFTVInfestation;
 
 namespace TFTV
 {
@@ -1633,9 +1637,6 @@ namespace TFTV
                 {
                     TFTVLogger.Error(e);
                 }
-
-
-
             }
 
             public static void CreateKaosWeaponAmmo()
@@ -2198,14 +2199,17 @@ namespace TFTV
                 }
             }
 
-            private static List<GeoEventChoice> GenerateVehicleChoices(List<GeoMarketplaceOptionDef> availableOptions,
+            private static void GenerateVehicleChoices(List<GeoMarketplaceOptionDef> availableOptions,
                 int numberToGenerate, GeoMarketplace geoMarketplace, float priceModifier)
             {
                 try
                 {
-                    List<GeoEventChoice> list = new List<GeoEventChoice>();
+                   // TFTVLogger.Always($"[GenerateVehicleChoices] Generating {numberToGenerate}");
 
                     List<GeoMarketplaceOptionDef> vehicleItemsAvailable = GetOptionsByType(availableOptions, _vehicle_ClassTagDef);
+
+                  //  TFTVLogger.Always($"[GenerateVehicleChoices] available options {vehicleItemsAvailable}");
+
 
                     for (int x = 0; x < numberToGenerate; x++)
                     {
@@ -2226,6 +2230,8 @@ namespace TFTV
                             vehicleItemToOffer = (GeoMarketplaceItemOptionDef)vehicleItemsAvailable.GetRandomElement();
                         }
 
+                       // TFTVLogger.Always($"[GenerateVehicleChoices] vehicleItemToOffer is {vehicleItemToOffer.name}");
+
                         vehicleItemsAvailable.Remove(vehicleItemToOffer);
 
                         int price = (int)(UnityEngine.Random.Range(vehicleItemToOffer.MinPrice, vehicleItemToOffer.MaxPrice) * priceModifier);
@@ -2234,10 +2240,40 @@ namespace TFTV
 
                         geoMarketplace.MarketplaceChoices.Add(item);
 
+                        if (TFTVAircraftReworkMain.AircraftReworkOn)
+                        {
+                            List <GeoMarketplaceItemOptionDef> ammoOffers = new List<GeoMarketplaceItemOptionDef>();
+
+                            if (VehiclesAmmoMain.MarketplaceWeaponsAndAmmo.ContainsKey(vehicleItemToOffer.ItemDef))
+                            {
+                                ammoOffers.Add(VehiclesAmmoMain.MarketplaceWeaponsAndAmmo[vehicleItemToOffer.ItemDef]);
+                            }
+                            else if (vehicleItemToOffer == DefCache.GetDef<GeoMarketplaceItemOptionDef>("KasoBuggy_MarketplaceItemOptionDef")) 
+                            {
+                                ammoOffers.Add(VehiclesAmmoMain.MarketplaceWeaponsAndAmmo[DefCache.GetDef<WeaponDef>("KS_Buggy_Minigun_Vishnu_WeaponDef")]);
+                                ammoOffers.Add(VehiclesAmmoMain.MarketplaceWeaponsAndAmmo[DefCache.GetDef<WeaponDef>("KS_Buggy_The_Vishnu_Gun_Cannon_WeaponDef")]);
+                            }
+                          
+                            if(ammoOffers == null)
+                            {
+                                continue;
+                            }
+
+                            foreach(GeoMarketplaceItemOptionDef ammoOffer in ammoOffers)
+                            {
+                                int ammoPrice = (int)(UnityEngine.Random.Range(ammoOffer.MinPrice, ammoOffer.MaxPrice) * priceModifier);
+                                List<GeoEventChoice> ammo = new List<GeoEventChoice>()
+                             {
+                                 GenerateItemChoice(ammoOffer.ItemDef, ammoPrice),
+                                 GenerateItemChoice(ammoOffer.ItemDef, ammoPrice),
+                                // GenerateItemChoice(ammoOffer.ItemDef, ammoPrice)
+                             };
+                                geoMarketplace.MarketplaceChoices.AddRange(ammo);
+                            }
+                        }
+                    
                         // TFTVLogger.Always($"should have added {vehicleItemToOffer.name}");
                     }
-
-                    return list;
 
                 }
                 catch (Exception e)
@@ -2848,8 +2884,18 @@ namespace TFTV
                 try
                 {
 
-                    if (choice.Outcome.Items.Count > 0 && choice.Outcome.Items[0].ItemDef.name.Contains("GroundVehicle")
-                        || choice.Outcome.Units.Count > 0 && choice.Outcome.Units[0].name.Contains("KS_Kaos_Buggy")) //&& choice.Outcome.Units[0].name.Contains("KS_Kaos_Buggy")))
+                    GeoEventChoiceOutcome outcome = choice.Outcome;
+
+                    if (outcome.Items.Count > 0) 
+                    {
+                        TFTVLogger.Always($"Checking if Market choice is vehicle: {outcome.Items[0].ItemDef.name}; {outcome.Items[0].ItemDef.Tags.Contains(VehiclesAmmoMain.MarketplaceGroundVehicleWeapon)}");
+                    }
+
+                       
+
+                    if (outcome.Items.Count > 0 && (outcome.Items[0].ItemDef.name.Contains("GroundVehicle")
+                        || VehiclesAmmoMain.MarketplaceWeaponsAndAmmo.Keys.Any(k => k.CompatibleAmmunition[0]== outcome.Items[0].ItemDef))
+                        || outcome.Units.Count > 0 && outcome.Units[0].name.Contains("KS_Kaos_Buggy")) //&& choice.Outcome.Units[0].name.Contains("KS_Kaos_Buggy")))
                     {
                         return true;
                     }
@@ -2871,7 +2917,7 @@ namespace TFTV
                     if (choice.Outcome != null && choice.Outcome.Items != null
                                         && choice.Outcome.Items.Count > 0 && choice.Outcome.Items[0].ItemDef != null
                                         && (choice.Outcome.Items[0].ItemDef.name.Contains("WeaponDef") || choice.Outcome.Items[0].ItemDef.name.Contains("AmmoClip"))
-                                        && !choice.Outcome.Items[0].ItemDef.name.Contains("GroundVehicle"))
+                                        && !CheckIfMarketChoiceVehicle(choice))//!choice.Outcome.Items[0].ItemDef.name.Contains("GroundVehicle"))
                     {
 
                         return true;

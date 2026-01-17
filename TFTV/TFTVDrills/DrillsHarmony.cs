@@ -9,6 +9,7 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Levels;
@@ -733,8 +734,6 @@ namespace TFTV.TFTVDrills
 
         internal class OrdenanceResupply
         {
-
-
             [HarmonyPatch(typeof(ReloadAbility))]
             internal static class ReloadOthersReloadAbilityPatch
             {
@@ -743,8 +742,6 @@ namespace TFTV.TFTVDrills
                         typeof(ReloadAbility),
                         "GetReloadOthersWeaponTargets",
                         new[] { typeof(TacticalTargetData), typeof(TacticalActorBase), typeof(Vector3) });
-
-                private static readonly HashSet<TacticalItem> VirtualMagazines = new HashSet<TacticalItem>();
 
                 [HarmonyPatch(nameof(ReloadAbility.GetTargets))]
                 [HarmonyPostfix]
@@ -761,23 +758,16 @@ namespace TFTV.TFTVDrills
                     }
 
                     List<TacticalAbilityTarget> results = (__result ?? Enumerable.Empty<TacticalAbilityTarget>()).ToList();
+
                     HashSet<Weapon> weaponsWithValidAmmo = new HashSet<Weapon>(
-     results
-         .Select(t => t?.Equipment as Weapon)
-         .Where(w => w != null && w.CommonItemData?.CurrentCharges > 0)
- );
+                        results
+                            .Select(t => t?.Equipment as Weapon)
+                            .Where(w => w != null && w.CommonItemData?.CurrentCharges > 0));
 
                     List<TacticalAbilityTarget> candidateTargets = new List<TacticalAbilityTarget>();
-                    candidateTargets.AddRange(InvokeReloadOthersWeaponTargets(
-                        __instance,
-                        targetData,
-                        sourceActor,
-                        sourcePosition));
+                    candidateTargets.AddRange(InvokeReloadOthersWeaponTargets(__instance, targetData, sourceActor, sourcePosition));
 
-                    foreach (TacticalAbilityTarget fallbackTarget in __instance.GetTargetActors(
-                                 targetData,
-                                 sourceActor,
-                                 sourcePosition))
+                    foreach (TacticalAbilityTarget fallbackTarget in __instance.GetTargetActors(targetData, sourceActor, sourcePosition))
                     {
                         TacticalActorBase fallbackActor = fallbackTarget?.Actor ?? fallbackTarget?.GetTargetActor();
                         if (fallbackActor == null)
@@ -801,6 +791,12 @@ namespace TFTV.TFTVDrills
                             continue;
                         }
 
+                        InventoryComponent targetInventory = actor.Inventory;
+                        if (targetInventory == null)
+                        {
+                            continue;
+                        }
+
                         foreach (Weapon weapon in GetReloadableWeapons(actor))
                         {
                             if (!weaponsWithValidAmmo.Add(weapon))
@@ -808,20 +804,102 @@ namespace TFTV.TFTVDrills
                                 continue;
                             }
 
+                            TacticalItem ammoFromVehicleInventory = FindAmmoInInventoryForWeapon(weapon, targetInventory);
+                            if (ammoFromVehicleInventory == null)
+                            {
+                                continue;
+                            }
+
                             TacticalAbilityTarget syntheticTarget = new TacticalAbilityTarget(candidate)
                             {
                                 Equipment = weapon,
-                                TacticalItem = CreateVirtualMagazine(weapon)
+                                TacticalItem = ammoFromVehicleInventory
                             };
 
-                            if (syntheticTarget.TacticalItem != null)
-                            {
-                                results.Add(syntheticTarget);
-                            }
+                            results.Add(syntheticTarget);
                         }
                     }
 
+                    // IMPORTANT: for TargetResult.Actor, vanilla will pick FirstOrDefault(x => x.Actor == clickedActor).
+                    // Reorder targets so the vehicle's currently selected weapon is first for that actor.
+                    PreferSelectedVehicleWeaponFirst(results);
+
                     __result = results;
+                }
+
+                private static void PreferSelectedVehicleWeaponFirst(List<TacticalAbilityTarget> results)
+                {
+                    if (results == null || results.Count == 0)
+                    {
+                        return;
+                    }
+
+                    // Grouping while preserving "all targets", but for each actor put selected-weapon target first.
+                    Dictionary<TacticalActorBase, Weapon> preferredWeaponByActor = new Dictionary<TacticalActorBase, Weapon>();
+
+                    foreach (TacticalAbilityTarget t in results)
+                    {
+                        TacticalActorBase actor = t?.Actor ?? t?.GetTargetActor();
+                        if (actor == null)
+                        {
+                            continue;
+                        }
+
+                        // Only applies to vehicles where "selected weapon" exists.
+                        TacticalActor tacticalActor = actor as TacticalActor;
+                        Weapon selectedWeapon = tacticalActor?.Equipments?.SelectedWeapon;
+                        if (selectedWeapon == null)
+                        {
+                            continue;
+                        }
+
+                        if (!preferredWeaponByActor.ContainsKey(actor))
+                        {
+                            preferredWeaponByActor.Add(actor, selectedWeapon);
+                        }
+                    }
+
+                    if (preferredWeaponByActor.Count == 0)
+                    {
+                        return;
+                    }
+
+                    results.Sort((a, b) =>
+                    {
+                        TacticalActorBase actorA = a?.Actor ?? a?.GetTargetActor();
+                        TacticalActorBase actorB = b?.Actor ?? b?.GetTargetActor();
+
+                        if (actorA == null || actorB == null)
+                        {
+                            return 0;
+                        }
+
+                        // Keep different actors in their existing relative order (stable-ish):
+                        // only influence ordering *within* the same actor.
+                        if (!ReferenceEquals(actorA, actorB))
+                        {
+                            return 0;
+                        }
+
+                        Weapon preferred;
+                        if (!preferredWeaponByActor.TryGetValue(actorA, out preferred) || preferred == null)
+                        {
+                            return 0;
+                        }
+
+                        Weapon weaponA = a.Equipment as Weapon;
+                        Weapon weaponB = b.Equipment as Weapon;
+
+                        bool isPreferredA = (weaponA != null && ReferenceEquals(weaponA, preferred));
+                        bool isPreferredB = (weaponB != null && ReferenceEquals(weaponB, preferred));
+
+                        if (isPreferredA == isPreferredB)
+                        {
+                            return 0;
+                        }
+
+                        return isPreferredA ? -1 : 1;
+                    });
                 }
 
                 private static IEnumerable<Weapon> GetReloadableWeapons(TacticalActorBase actor)
@@ -838,6 +916,22 @@ namespace TFTV.TFTVDrills
                     }
 
                     return weapons.Where(w => w != null && !w.InfiniteCharges && w.CommonItemData.CurrentCharges < w.ChargesMax);
+                }
+
+                private static TacticalItem FindAmmoInInventoryForWeapon(Weapon weapon, InventoryComponent inventory)
+                {
+                    if (weapon?.WeaponDef?.CompatibleAmmunition == null || inventory?.Items == null)
+                    {
+                        return null;
+                    }
+
+                    return inventory.Items
+                        .OfType<TacticalItem>()
+                        .FirstOrDefault(i =>
+                            i != null
+                            && i.CommonItemData != null
+                            && i.CommonItemData.CurrentCharges > 0
+                            && weapon.WeaponDef.CompatibleAmmunition.Contains(i.ItemDef));
                 }
 
                 private static IEnumerable<TacticalAbilityTarget> InvokeReloadOthersWeaponTargets(
@@ -858,20 +952,6 @@ namespace TFTV.TFTVDrills
                     return invocation as IEnumerable<TacticalAbilityTarget> ?? Enumerable.Empty<TacticalAbilityTarget>();
                 }
 
-                private static TacticalItem CreateVirtualMagazine(Weapon weapon)
-                {
-                    TacticalItemDef ammoDef = weapon?.WeaponDef?.CompatibleAmmunition?.FirstOrDefault();
-                    if (ammoDef == null)
-                    {
-                        return null;
-                    }
-
-                    TacticalItem virtualClip = new TacticalItem();
-                    virtualClip.Init(ammoDef, null);
-                    VirtualMagazines.Add(virtualClip);
-                    return virtualClip;
-                }
-
                 [HarmonyPatch(nameof(ReloadAbility.FractActionPointCost), MethodType.Getter)]
                 [HarmonyPostfix]
                 private static void EnsureActionPointCost(ReloadAbility __instance, ref float __result)
@@ -881,71 +961,12 @@ namespace TFTV.TFTVDrills
                         return;
                     }
 
-
                     if (__instance?.ReloadAbilityDef?.TargetingDataDef?.Origin?.TargetResult == TargetResult.Actor)
                     {
                         __result = __instance.ReloadAbilityDef.ActionPointCost;
                     }
                 }
-
-                [HarmonyPatch("Reload")]
-                [HarmonyPostfix]
-                private static void TopOffVirtualReloads(
-                ReloadAbility __instance,
-                Equipment equipment,
-                TacticalItem ammoClip)
-                {
-                    if (!TFTVNewGameOptions.IsReworkEnabled() || equipment == null || ammoClip == null)
-                    {
-                        return;
-                    }
-
-                    if (!VirtualMagazines.Remove(ammoClip))
-                    {
-                        return;
-                    }
-
-                    AmmoManager ammo = equipment.CommonItemData?.Ammo;
-                    if (ammo == null)
-                    {
-                        return;
-                    }
-
-                    int missingCharges = equipment.ChargesMax - equipment.CommonItemData.CurrentCharges;
-                    if (missingCharges > 0)
-                    {
-                        ammo.ReloadCharges(missingCharges, canCreateMagazines: true);
-                    }
-
-                    TacticalActorBase owner = equipment.TacticalActorBase;
-                    if (owner == null || !owner.HasGameTag(owner.SharedData.SharedGameTags.VehicleTag))
-                    {
-                        return;
-                    }
-
-                    foreach (Weapon otherWeapon in GetReloadableWeapons(owner))
-                    {
-                        if (otherWeapon == equipment)
-                        {
-                            continue;
-                        }
-
-                        AmmoManager otherAmmo = otherWeapon.CommonItemData?.Ammo;
-                        int otherMissingCharges = otherWeapon.ChargesMax - otherWeapon.CommonItemData.CurrentCharges;
-                        if (otherAmmo != null && otherMissingCharges > 0)
-                        {
-                            otherAmmo.ReloadCharges(otherMissingCharges, canCreateMagazines: true);
-                        }
-                    }
-
-                    if (!owner.GameTags.Contains(OrdnanceResupplyTag))
-                    {
-                        owner.GameTags.Add(OrdnanceResupplyTag);
-                    }
-                }
-
             }
-
         }
         internal class DesperateShot
         {
@@ -1559,7 +1580,6 @@ namespace TFTV.TFTVDrills
             }
 
         }
-
         internal class ViralPuppeteerToxicLink
         {
 
@@ -1686,7 +1706,6 @@ namespace TFTV.TFTVDrills
             }
 
         }
-
         internal class VirulentGrip
         {
             public static bool CheckForVirulentGripAbility(TacticalActor controllerActor, TacticalActor controlledActor)
@@ -1710,7 +1729,6 @@ namespace TFTV.TFTVDrills
             }
 
         }
-
         internal class ShieldedRiposte
         {
 
@@ -1917,7 +1935,6 @@ namespace TFTV.TFTVDrills
 
 
         }
-
         internal class PackLoyalty
         {
             private static readonly Dictionary<TacticalActor, HashSet<DamageMultiplierStatus>> _activeMindWardLinks = new Dictionary<TacticalActor, HashSet<DamageMultiplierStatus>>();

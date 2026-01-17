@@ -353,7 +353,7 @@ namespace TFTV.TFTVUI.Tactical
                         (170 * resolutionFactorWidth, 
                         600 * resolutionFactorHeight + (100 * (_leaderWidgets.Count - 1) * resolutionFactorHeight)); // Left margin of 20, 1/3 height down
 
-                    rectTransform.localScale = Vector3.one * resolutionScale;
+                   // rectTransform.localScale = Vector3.one * resolutionScale;
 
                     //Header
                     GameObject headerObject = new GameObject("Header", typeof(RectTransform), typeof(Image));
@@ -420,7 +420,7 @@ namespace TFTV.TFTVUI.Tactical
                     nameText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                     RectTransform rectNameText = nameText.GetComponent<RectTransform>();
                     rectNameText.sizeDelta = new Vector2(600, 60);
-                    rectNameText.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+                    rectNameText.localScale = new Vector3(0.5f, 0.5f);
                     rectNameText.anchoredPosition = Vector2.zero + new Vector2(110, 0f); //Vector2.zero + new Vector2(20, 40);
                     _nameOfLeader = nameText;
 
@@ -454,7 +454,7 @@ namespace TFTV.TFTVUI.Tactical
                     tacticNameText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                     RectTransform recttacticNameText = tacticNameText.GetComponent<RectTransform>();
                     recttacticNameText.sizeDelta = titleBackgroundRect.sizeDelta * 2;
-                    recttacticNameText.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+                    recttacticNameText.localScale = new Vector2(0.5f, 0.5f);
                     recttacticNameText.anchoredPosition = Vector2.zero + new Vector2(10, 0);
 
                     _titleOfTactic = tacticNameText;

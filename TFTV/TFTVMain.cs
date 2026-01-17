@@ -146,10 +146,12 @@ namespace TFTV
 
                 Logger.LogInfo("Loading Vehicle Rework");
                 TFTVVehicleRework.VehiclesMain.ReworkVehicles();
+                Vehicles.Ammo.VehiclesAmmoMain.Defs.CreateDefs();
                 Logger.LogInfo("Vehicle Rework Loaded");
 
                 TFTVRevenant.TFTVRevenantResearch.CreateRevenantRewardsDefs();
                 TFTVProjectOsiris.Defs.CreateProjectOsirisDefs();
+                
                 //  NoSecondChances.ImplementNoSecondChances();
                 //  TFTVAncients.CheckResearchesRequiringThings();
 

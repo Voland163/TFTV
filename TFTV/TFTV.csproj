@@ -321,6 +321,8 @@
     <Compile Include="Vehicles\Abilities\HealPassengersStatusDef.cs" />
     <Compile Include="Vehicles\Abilities\InvertedDamageMultiplierStatus.cs" />
     <Compile Include="Vehicles\Abilities\InvertedDamageMultiplierStatusDef.cs" />
+    <Compile Include="Vehicles\Ammo\HarmonyPatches.cs" />
+    <Compile Include="Vehicles\Ammo\VehiclesAmmoMain.cs" />
     <Compile Include="Vehicles\Armadillo\Armadillo.cs" />
     <Compile Include="Vehicles\Armadillo\GasTanks.cs" />
     <Compile Include="Vehicles\Armadillo\GaussTurret.cs" />

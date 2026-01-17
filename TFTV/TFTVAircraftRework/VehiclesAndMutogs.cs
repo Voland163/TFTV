@@ -304,7 +304,7 @@ namespace TFTV
                                 interactable = false;
                             }
                         }
-                        else if (targetItem.Character.TemplateDef.Volume == 3)
+                        else if (!config.MultipleVehiclesInAircraftAllowed && targetItem.Character.TemplateDef.Volume == 3)
                         {
                             foreach (GeoCharacter allCharacter in targetContainer.GetAllCharacters())
                             {

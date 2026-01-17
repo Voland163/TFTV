@@ -71,6 +71,34 @@ namespace TFTV
                     throw;
                 }
             }
+
+            public static void JustInCaseBehemothScenicRouteAndTargetClear()
+            {
+                try
+                {
+                    if (TFTVAircraftReworkMain.AircraftReworkOn) 
+                    {
+                        return;
+                    }
+
+                    if (targetsForBehemoth.Count > 1000)
+                    {
+                        TFTVLogger.Always($"Somehow Behemoth Targets were at more than 1k, setting them to 0");
+                        targetsForBehemoth.Clear();
+                    }
+
+                    if (behemothScenicRoute.Count > 1000)
+                    {
+                        TFTVLogger.Always($"Somehow Behemoth scenic route were at more than 1k, setting them to 0");
+                        behemothScenicRoute.Clear();
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
         }
 
         internal class Hammerfall
@@ -894,17 +922,7 @@ namespace TFTV
 
                           }*/
 
-                        if (targetsForBehemoth.Count > 1000)
-                        {
-                            TFTVLogger.Always($"Somehow Behemoth Targets were at more than 1k, setting them to 0");
-                            targetsForBehemoth.Clear();
-                        }
-
-                        if (behemothScenicRoute.Count > 1000)
-                        {
-                            TFTVLogger.Always($"Somehow Behemoth scenic route were at more than 1k, setting them to 0");
-                            behemothScenicRoute.Clear();
-                        }
+                        InternalData.JustInCaseBehemothScenicRouteAndTargetClear();
 
 
                         /*  if (__instance.GeoLevel.EventSystem.GetVariable("ThirdActStarted") == 1)

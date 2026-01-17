@@ -29,7 +29,7 @@ namespace TFTV
             ReBuffBlastChirons();
             RestoreExcavateAbilityToGeoVehicles();
             FixPriestTorsoAndLegsArmor();
-            FixMyrmidonsNotBleeding();
+          //  FixMyrmidonsNotBleeding();
         }
 
         private static void FixMyrmidonsNotBleeding()
@@ -63,14 +63,14 @@ namespace TFTV
             {
                 TacticalItemDef priestLegs = DefCache.GetDef<TacticalItemDef>("AN_Priest_Legs_ItemDef");
 
-                priestLegs.Tags.Add(Shared.SharedGameTags.ManufacturableTag);
+             //   priestLegs.Tags.Add(Shared.SharedGameTags.ManufacturableTag);
                 priestLegs.ManufactureMaterials = 85;
                 priestLegs.ManufactureTech = 11;
                 priestLegs.ManufacturePointsCost = 64;
 
                 TacticalItemDef priestTorso = DefCache.GetDef<TacticalItemDef>("AN_Priest_Torso_BodyPartDef");
 
-                priestTorso.Tags.Add(Shared.SharedGameTags.ManufacturableTag);
+               // priestTorso.Tags.Add(Shared.SharedGameTags.ManufacturableTag);
                 priestTorso.ManufactureMaterials = 130;
                 priestTorso.ManufactureTech = 16;
                 priestTorso.ManufacturePointsCost = 92;
@@ -419,12 +419,21 @@ namespace TFTV
             {
                 float increaseTimeFactor = 1.25f;
 
-                ResearchDbDef researchDbDef = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
-
-                foreach (ResearchDef researchDef in researchDbDef.Researches)
+                List<ResearchDbDef> researchDbDefs = new List<ResearchDbDef>()
                 {
-                    float newDuration = researchDef.ResearchCost * increaseTimeFactor;
-                    researchDef.ResearchCost = (int)newDuration;
+                    DefCache.GetDef<ResearchDbDef>("anu_ResearchDB"),
+                    DefCache.GetDef<ResearchDbDef>("nj_ResearchDB"),
+                    DefCache.GetDef<ResearchDbDef>("syn_ResearchDB"),
+                    DefCache.GetDef<ResearchDbDef>("pp_ResearchDB")
+                };
+
+                foreach (ResearchDbDef researchDbDef in researchDbDefs)
+                {
+                    foreach (ResearchDef researchDef in researchDbDef.Researches)
+                    {
+                        float newDuration = researchDef.ResearchCost * increaseTimeFactor;
+                        researchDef.ResearchCost = (int)newDuration;
+                    }
                 }
 
             }

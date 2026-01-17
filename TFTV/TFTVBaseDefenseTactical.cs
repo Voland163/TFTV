@@ -34,7 +34,6 @@ using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.ActorDeployment;
 using PhoenixPoint.Tactical.Levels.Destruction;
 using PhoenixPoint.Tactical.Levels.FactionObjectives;
-using PhoenixPoint.Tactical.Levels.GameOverConditions;
 using PhoenixPoint.Tactical.Levels.Mist;
 using PhoenixPoint.Tactical.Prompts;
 using PhoenixPoint.Tactical.View;
@@ -45,7 +44,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using static Base.Audio.WwiseIDs.SWITCHES;
 using static TFTV.TFTVBaseDefenseTactical.StartingDeployment;
 
 namespace TFTV
@@ -751,14 +749,14 @@ namespace TFTV
                 {
                     try
                     {
-                        if(!CheckIfBaseDefenseVsAliens(__instance))
+                        if (!CheckIfBaseDefenseVsAliens(__instance))
                         {
                             return;
                         }
 
                         TacticalFaction playerFaction = __instance.Factions.FirstOrDefault((TacticalFaction f) => f.ParticipantKind == TacMissionParticipant.Player);
-                        
-                        if(playerFaction.State== TacFactionState.Playing)
+
+                        if (playerFaction.State == TacFactionState.Playing)
                         {
                             TFTVLogger.Always($"{playerFaction.TacticalFactionDef.FactionDef.ShortName} faction game over check in base defense {playerFaction.State}");
                             playerFaction.State = TacFactionState.Defeated;
@@ -1612,7 +1610,7 @@ namespace TFTV
                     }
                 }
 
-               
+
 
                 private static void SetPlayerSpawnAccessLift(TacticalLevelController controller)
                 {
@@ -2094,7 +2092,7 @@ namespace TFTV
 
                         void onLoadingCompletedForRegularSecurityGuard()
                         {
-                           
+
                             ActorDeployData actorDeployData = securityGuardTemplate.GenerateActorDeployData();
 
                             actorDeployData.InitializeInstanceData();
@@ -2137,6 +2135,8 @@ namespace TFTV
                 try
                 {
                     TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
+
 
                     _numGuardsUnderPXControl = 0;
                     _securityStationSpawnPositions.Clear();
@@ -2183,8 +2183,24 @@ namespace TFTV
                         }
                         TFTVLogger.Always($"Phase I Gold Shift Setup; PX: {_numGuardsUnderPXControl}");
                     }
-                    else
+                    else if (TimeLeft > 6 && TimeLeft < 12)
                     {
+
+                        foreach (Breakable station in security)
+                        {
+                            _numGuardsUnderPXControl += 2;
+                            List<Vector3> spawnPositions = new List<Vector3>()
+                              {
+                            station.transform.position + new Vector3(-3, 0, 0),
+                            station.transform.position + new Vector3(0, 0, -3),
+                              };
+                            _securityStationSpawnPositions.AddRange(spawnPositions);
+                        }
+                        TFTVLogger.Always($"Phase II Gold Shift Setup; PX: {_numGuardsUnderPXControl}");
+                    }
+                    else if (TimeLeft <= 6)
+                    {
+
                         foreach (Breakable station in security)
                         {
                             _numGuardsUnderPXControl += 1;
@@ -2196,7 +2212,7 @@ namespace TFTV
 
                             _securityStationSpawnPositions.AddRange(spawnPositions);
                         }
-                        TFTVLogger.Always($"Phase II / III Gold Shift Setup; PX: {_numGuardsUnderPXControl}");
+                        TFTVLogger.Always($"Phase III Gold Shift Setup; PX: {_numGuardsUnderPXControl}");
                     }
 
                     SpawnPXSecurityGuards(security.First(), controller);
@@ -3339,6 +3355,8 @@ namespace TFTV
                 {
                     List<int> availableStrats = new List<int>();
 
+                    int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order);
+
                     for (int x = 0; x < UsedStrats.Count(); x++)
                     {
                         TFTVLogger.Always($"strat {x + 1} recorded as used? {UsedStrats[x] == true}");
@@ -3363,8 +3381,11 @@ namespace TFTV
                     }
                     else //this will give one turn pause, and then reset all strats, making them available again
                     {
-                        UsedStrats = new bool[5];
-                        Map.DeploymentZones.SecondaryStrikeForceSpawn = null;
+                        if (difficulty >= 4)
+                        {
+                            UsedStrats = new bool[5];
+                            Map.DeploymentZones.SecondaryStrikeForceSpawn = null;
+                        }
                     }
                 }
                 catch (Exception e)
@@ -3386,6 +3407,14 @@ namespace TFTV
 
                         ObjectivesManager phoenixObjectives = controller.GetFactionByCommandName("Px").Objectives;
                         int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order);
+                        if (controller.TurnNumber >= 5 - difficulty)
+                        {
+
+                        }
+                        else
+                        {
+                            return;
+                        }
 
                         foreach (FactionObjective objective in phoenixObjectives)
                         {
@@ -3395,7 +3424,7 @@ namespace TFTV
                             if (objective.Description.LocalizationKey == "BASEDEFENSE_SURVIVE5_OBJECTIVE" && objective.GetCompletion() == 0)
                             {
                                 TFTVLogger.Always($"the objective is {objective.GetDescription()}; completion is at {objective.GetCompletion()}");
-                                if (controller.TurnNumber >= 5 - difficulty && controller.TurnNumber < 5)
+                                if (controller.TurnNumber < 5)
                                 {
                                     PickStrat(controller, objective);
                                 }
@@ -3417,7 +3446,7 @@ namespace TFTV
                                     TFTVLogger.Always($"roll was {roll}, which is below 7! phew!");
                                     if (TimeLeft < 6)
                                     {
-                                        StartingDeployment.PandoranDeployment.SpawnAdditionalEggs(controller);
+                                        PandoranDeployment.SpawnAdditionalEggs(controller);
                                         TFTVLogger.Always("But some more eggs should have spawned instead!");
                                     }
                                 }
@@ -3604,7 +3633,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always("Umbra strat deploying");
+                    TFTVLogger.Always($"[UmbraStrat] deploying");
 
                     TacCharacterDef crabUmbra = DefCache.GetDef<TacCharacterDef>("Oilcrab_TacCharacterDef");
                     TacCharacterDef fishUmbra = DefCache.GetDef<TacCharacterDef>("Oilfish_TacCharacterDef");
@@ -3651,9 +3680,11 @@ namespace TFTV
                         }
                     }
 
-                    int maxUmbra = Math.Max(TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order), 3);
+                    int maxUmbra = TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order);
                     TacticalVoxelMatrix tacticalVoxelMatrix = controller.VoxelMatrix;
                     int deployments = 0;
+
+                    TFTVLogger.Always($"[UmbraStrat] Max Umbra: {maxUmbra}");
 
                     foreach (KeyValuePair<TacticalActor, TacticalDeployZone> operativeTarget in targetablePhoenixOperatives)
                     {
@@ -3730,7 +3761,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always("Myrmidon Assault Strat deploying");
+                    TFTVLogger.Always("[MyrmidonAssaultStrat] Myrmidon Assault Strat deploying");
 
                     ClassTagDef myrmidonTag = DefCache.GetDef<ClassTagDef>("Swarmer_ClassTagDef");
                     List<TacticalDeployZone> tacticalDeployZones = Map.DeploymentZones.FindHangarTopsideDeployZones(controller);
@@ -3751,31 +3782,29 @@ namespace TFTV
                     List<TacCharacterDef> myrmidons =
                         new List<TacCharacterDef>(controller.TacMission.MissionData.UnlockedAlienTacCharacterDefs.Where(ua => ua.ClassTags.Contains(myrmidonTag)));
 
-                    foreach (TacticalDeployZone tacticalDeployZone in tacticalDeployZones)
+                    int myrmidonsToDeploy = UnityEngine.Random.Range(1, 3) + TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order);
+
+                    TFTVLogger.Always($"[MyrmidonAssaultStrat] will deploy {myrmidonsToDeploy} Myrmidons");
+
+                    for (int x = 0; x < myrmidonsToDeploy; x++)
                     {
-                        int rollCap = TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order) - 1;
+                        TacCharacterDef chosenMyrmidon = myrmidons.GetRandomElement(new System.Random((int)Stopwatch.GetTimestamp()));
 
-                        UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                        int myrmidonsToDeploy = UnityEngine.Random.Range(1, rollCap);
+                        TacticalDeployZone tacticalDeployZone = tacticalDeployZones.GetRandomElement(new System.Random((int)Stopwatch.GetTimestamp()));
 
-                        for (int x = 0; x < myrmidonsToDeploy; x++)
+                        tacticalDeployZone.SetFaction(controller.GetFactionByCommandName("AlN"), TacMissionParticipant.Intruder);
+                        //  TFTVLogger.Always($"Found topside deployzone position and deploying " + chosenMyrmidon.name + $"; Position is y={tacticalDeployZone.Pos.y} x={tacticalDeployZone.Pos.x} z={tacticalDeployZone.Pos.z}");
+                        ActorDeployData actorDeployData = chosenMyrmidon.GenerateActorDeployData();
+
+                        actorDeployData.InitializeInstanceData();
+
+                        TacticalActorBase tacticalActorBase = tacticalDeployZone.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, tacticalDeployZone);
+
+                        TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
+
+                        if (x == 0 && tacticalActor != null)
                         {
-                            TacCharacterDef chosenMyrmidon = myrmidons.GetRandomElement(new System.Random((int)Stopwatch.GetTimestamp()));
-
-                            tacticalDeployZone.SetFaction(controller.GetFactionByCommandName("AlN"), TacMissionParticipant.Intruder);
-                            //  TFTVLogger.Always($"Found topside deployzone position and deploying " + chosenMyrmidon.name + $"; Position is y={tacticalDeployZone.Pos.y} x={tacticalDeployZone.Pos.x} z={tacticalDeployZone.Pos.z}");
-                            ActorDeployData actorDeployData = chosenMyrmidon.GenerateActorDeployData();
-
-                            actorDeployData.InitializeInstanceData();
-
-                            TacticalActorBase tacticalActorBase = tacticalDeployZone.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, tacticalDeployZone);
-
-                            TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
-
-                            if (x == 0 && tacticalActor != null)
-                            {
-                                tacticalActor.TacticalActorView.DoCameraChase();
-                            }
+                            tacticalActor.TacticalActorView.DoCameraChase();
                         }
                     }
                 }
@@ -3790,7 +3819,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always("WormDropStrat deploying");
+                    TFTVLogger.Always("[WormDropStrat] deploying");
 
                     ClassTagDef wormTag = DefCache.GetDef<ClassTagDef>("Worm_ClassTagDef");
                     List<TacticalDeployZone> tacticalDeployZones = Map.DeploymentZones.FindHangarTopsideDeployZones(controller);
@@ -3799,32 +3828,33 @@ namespace TFTV
                     List<TacCharacterDef> worms =
                         new List<TacCharacterDef>(controller.TacMission.MissionData.UnlockedAlienTacCharacterDefs.Where(ua => ua.ClassTags.Contains(wormTag)));
 
-                    foreach (TacticalDeployZone tacticalDeployZone in tacticalDeployZones)
-                    {
-                        int rollCap = TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order) - 1;
+                    int wormsToDeploy = UnityEngine.Random.Range(3, 7) + TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order);
 
-                        UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                        int wormsToDeploy = UnityEngine.Random.Range(1, rollCap);
+                    TFTVLogger.Always($"[WormDropStrat] deploying {wormsToDeploy} worms");
+
+                    for (int x = 0; x < wormsToDeploy; x++)
+                    {
+
                         TacCharacterDef chosenWormType = worms.GetRandomElement(new System.Random((int)Stopwatch.GetTimestamp()));
 
-                        for (int x = 0; x < wormsToDeploy; x++)
+                        TacticalDeployZone tacticalDeployZone = tacticalDeployZones.GetRandomElement(new System.Random((int)Stopwatch.GetTimestamp()));
+
+                        tacticalDeployZone.SetFaction(controller.GetFactionByCommandName("Aln"), TacMissionParticipant.Intruder);
+                        //  TFTVLogger.Always($"Found center deployzone position and deploying " + chosenWormType.name + $"; Position is y={tacticalDeployZone.Pos.y} x={tacticalDeployZone.Pos.x} z={tacticalDeployZone.Pos.z}");
+                        ActorDeployData actorDeployData = chosenWormType.GenerateActorDeployData();
+
+                        actorDeployData.InitializeInstanceData();
+
+                        TacticalActorBase tacticalActorBase = tacticalDeployZone.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, tacticalDeployZone);
+
+                        TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
+
+                        if (x == 0 && tacticalActor != null)
                         {
-                            tacticalDeployZone.SetFaction(controller.GetFactionByCommandName("AlN"), TacMissionParticipant.Intruder);
-                            //  TFTVLogger.Always($"Found center deployzone position and deploying " + chosenWormType.name + $"; Position is y={tacticalDeployZone.Pos.y} x={tacticalDeployZone.Pos.x} z={tacticalDeployZone.Pos.z}");
-                            ActorDeployData actorDeployData = chosenWormType.GenerateActorDeployData();
-
-                            actorDeployData.InitializeInstanceData();
-
-                            TacticalActorBase tacticalActorBase = tacticalDeployZone.SpawnActor(actorDeployData.ComponentSetDef, actorDeployData.InstanceData, actorDeployData.DeploymentTags, null, true, tacticalDeployZone);
-
-                            TacticalActor tacticalActor = tacticalActorBase as TacticalActor;
-
-                            if (x == 0 && tacticalActor != null)
-                            {
-                                tacticalActor.TacticalActorView.DoCameraChase();
-                            }
+                            tacticalActor.TacticalActorView.DoCameraChase();
                         }
                     }
+
                 }
 
                 catch (Exception e)
@@ -4057,7 +4087,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always("Generating Triton Infiltration Team Force");
+                    TFTVLogger.Always("[GenerateTritonInfiltrationForce] Generating Triton Infiltration Team Force");
 
                     ClassTagDef fishmanTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
 
@@ -4066,6 +4096,8 @@ namespace TFTV
                     Dictionary<TacCharacterDef, int> infiltrationTeam = new Dictionary<TacCharacterDef, int>();
 
                     int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order);
+
+                    int count = Math.Max(difficulty, 2);
 
                     List<TacCharacterDef> unlockedTritons = controller.TacMission.MissionData.UnlockedAlienTacCharacterDefs.Where(tcd => tcd.ClassTag == fishmanTag).ToList();
 
@@ -4077,7 +4109,9 @@ namespace TFTV
                         }
                     }
 
-                    for (int x = 0; x < Math.Max(difficulty, 2); x++)
+                    TFTVLogger.Always($"[GenerateTritonInfiltrationForce] will deploy {count}");
+
+                    for (int x = 0; x < count; x++)
                     {
                         TacCharacterDef tritonTypeToAdd = researchedTritons.GetRandomElement(new System.Random((int)Stopwatch.GetTimestamp()));
 
@@ -4104,20 +4138,23 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always("Generating Secondary Force");
+                    TFTVLogger.Always($"[GenerateSecondaryForce] Generating Secondary Force");
                     TacCharacterDef mindFragger = DefCache.GetDef<TacCharacterDef>("Facehugger_AlienMutationVariationDef");
-                    int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order);
+                    int difficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order); //Rookie and Story 1, Veteran 2, Heroic 3, Legend 4, Etermes 5
 
                     // UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                     //  int coinToss = UnityEngine.Random.Range(0, 2);
 
+                    int crabs = Mathf.Max(difficulty - 1, 0);
+                    int sirens = Mathf.Max(difficulty - 3, 0);
+
                     Dictionary<ClassTagDef, int> reinforcements = new Dictionary<ClassTagDef, int>
                     {
-                        { crabTag, 3 },
-                        { sirenTag, 1 }
+                        { crabTag, crabs },
+                        { sirenTag, sirens}
+
                     };
 
-                    // TFTVLogger.Always("2");
                     Dictionary<TacCharacterDef, int> secondaryForce = new Dictionary<TacCharacterDef, int>() { { mindFragger, difficulty } };
 
                     /*   if (coinToss == 0)
@@ -4131,6 +4168,7 @@ namespace TFTV
                            secondaryForce.Add(Defs.ChironDigger, 1);
                            secondaryForce.Add(mindFragger, 2);
                        }*/
+                    TFTVLogger.Always($"[GenerateSecondaryForce] Will have {difficulty} Mindfraggers, {crabs} crabs {sirens} Sirens");
 
                     List<TacCharacterDef> availableTemplatesOrdered = new List<TacCharacterDef>(controller.TacMission.MissionData.UnlockedAlienTacCharacterDefs.Shuffle());
 
@@ -4189,7 +4227,7 @@ namespace TFTV
             }
         }
 
-       
+
 
     }
 }

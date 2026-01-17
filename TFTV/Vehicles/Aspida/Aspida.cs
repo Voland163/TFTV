@@ -13,8 +13,9 @@ using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
-using PRMBetterClasses;
+using TFTV;
 using TFTVVehicleRework.Abilities;
+using Helper = PRMBetterClasses.Helper;
 
 namespace TFTVVehicleRework.Aspida
 {
@@ -22,11 +23,11 @@ namespace TFTVVehicleRework.Aspida
     {
         internal static readonly DefRepository Repo = VehiclesMain.Repo;
         private static readonly SharedDamageKeywordsDataDef keywords = VehiclesMain.keywords;
-
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly TacticalActorDef Aspida_ActorDef = (TacticalActorDef)Repo.GetDef("16cd2345-36a9-a6c4-1afa-104e9c72833b");
 
         //"SYN_Rover_ResearchDef_ManufactureResearchRewardDef_1"
-        private static readonly ManufactureResearchRewardDef Rover = (ManufactureResearchRewardDef)Repo.GetDef("7590a85d-b8e1-5157-ffd6-20a635d0b29e");    
+        private static ManufactureResearchRewardDef Rover = null; //(ManufactureResearchRewardDef)Repo.GetDef("7590a85d-b8e1-5157-ffd6-20a635d0b29e");    
 
         public static void Change()
         {
@@ -41,13 +42,13 @@ namespace TFTVVehicleRework.Aspida
             HermesX1.Change();
             ClericX2.Change();
         }
-        
+
         private static void Rebalance_Weapons()
         {
             // "SY_Aspida_Arms_GroundVehicleWeaponDef"
             GroundVehicleWeaponDef Arms = (GroundVehicleWeaponDef)Repo.GetDef("e29f25fa-96cb-dac4-7983-88072fd2ab76");
             Arms.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == keywords.ParalysingKeyword).Value = 12f;
-            
+
             // "SY_Aspida_Themis_GroundVehicleWeaponDef"
             GroundVehicleWeaponDef Themis = (GroundVehicleWeaponDef)Repo.GetDef("544551d2-6de2-7304-9af1-870037ec8e82");
             Themis.DamagePayload.DamageKeywords.Find(dkp => dkp.DamageKeywordDef == keywords.ParalysingKeyword).Value = 10f;
@@ -63,11 +64,15 @@ namespace TFTVVehicleRework.Aspida
 
             // "SY_Aspida_Apollo_GroundVehicleWeaponDef"
             GroundVehicleWeaponDef Apollo = (GroundVehicleWeaponDef)Repo.GetDef("f2032edf-1890-7784-a974-6718e2000b16");
-            Apollo.ChargesMax = 20;
-            Apollo.Abilities = new AbilityDef[]
+            if (!TFTVAircraftReworkMain.AircraftReworkOn)
             {
+                Apollo.ChargesMax = 20;
+            }
+
+            Apollo.Abilities = new AbilityDef[]
+        {
                 AspidaShootAbility()
-            };
+        };
         }
 
         private static void Rebalance_Bodyparts()
@@ -77,11 +82,11 @@ namespace TFTVVehicleRework.Aspida
             foreach (AddonDef.SubaddonBind addon in AspidaChassis.SubAddons)
             {
                 TacticalItemDef BodyPart = (TacticalItemDef)addon.SubAddon;
-                if(BodyPart.name == "SY_Aspida_Hull_BodyPartDef")
+                if (BodyPart.name == "SY_Aspida_Hull_BodyPartDef")
                 {
                     continue;
                 }
-                if(BodyPart.name == "SY_Aspida_Body_BodyPartDef")
+                if (BodyPart.name == "SY_Aspida_Body_BodyPartDef")
                 {
                     BodyPart.Armor = 40f;
                 }
@@ -103,7 +108,7 @@ namespace TFTVVehicleRework.Aspida
         private static void Give_LeapByDefault()
         {
             JetJumpAbilityDef Aspida_Leap = (JetJumpAbilityDef)Repo.GetDef("d8651e61-ac45-0394-0bd5-f2e165446ae1");
-            Aspida_Leap.AbilitiesRequired = new TacticalAbilityDef[] {};
+            Aspida_Leap.AbilitiesRequired = new TacticalAbilityDef[] { };
             Aspida_Leap.ActionPointCost = 0.5f;
             Aspida_Leap.UsesPerTurn = 1;
 
@@ -119,7 +124,7 @@ namespace TFTVVehicleRework.Aspida
             ItemSlotDef LeftArm = (ItemSlotDef)Repo.GetDef("369946eb-fc4a-ec84-28f7-509a4d2213e3");
             LeftArm.DamageHandler = DamageHandler.AttachedItem;
         }
-        
+
         private static void Give_InverseCQE()
         {
             //"CloseQuarters_AbilityDef"
@@ -135,7 +140,7 @@ namespace TFTVVehicleRework.Aspida
             LongDR.EffectName = "Aspida_PassiveDR";
             LongDR.Visuals = DR_VED(CloseQuarters.ViewElementDef);
             LongDR.DamageTypeDefs = LongDR.DamageTypeDefs.AddToArray(keywords.ShreddingKeyword.DamageTypeDef);
-            
+
             LongQuarters.StatusDef = LongDR;
             Aspida_ActorDef.Abilities = Aspida_ActorDef.Abilities.AddToArray(LongQuarters);
         }
@@ -151,19 +156,31 @@ namespace TFTVVehicleRework.Aspida
                 VED.Description = new LocalizedTextBind("SY_KINETIC_DESC");
                 VED.Name = "Kinetic Shield";
                 //"E_View [DeployShield_Bionic_AbilityDef]"
-                VED.SmallIcon = VED.LargeIcon = ((TacticalAbilityViewElementDef)Repo.GetDef("ab24dcf1-a1b5-8a2c-84a3-05b16fed3750")).SmallIcon; 
+                VED.SmallIcon = VED.LargeIcon = ((TacticalAbilityViewElementDef)Repo.GetDef("ab24dcf1-a1b5-8a2c-84a3-05b16fed3750")).SmallIcon;
             }
             return VED;
         }
 
         internal static void Update_Requirements(GroundVehicleModuleDef VehicleModule)
         {
+            if (Rover == null)
+            {
+                Rover = DefCache.GetDef<ManufactureResearchRewardDef>("SYN_Rover_ResearchDef_ManufactureResearchRewardDef_1");
+            }
+
             Rover.Items = Rover.Items.AddToArray(VehicleModule);
         }
 
         internal static void Update_Requirements(GroundVehicleWeaponDef VehicleWeapon)
         {
-            Rover.Items = Rover.Items.AddToArray(VehicleWeapon);
+            if (Rover == null)
+            {
+                Rover = DefCache.GetDef<ManufactureResearchRewardDef>("SYN_Rover_ResearchDef_ManufactureResearchRewardDef_1");
+            }
+            if (!TFTVAircraftReworkMain.AircraftReworkOn)
+            {
+                Rover.Items = Rover.Items.AddToArray(VehicleWeapon);
+            }
         }
 
         internal static AreaOfEffectAbilitySceneViewDef AspidaSceneView()
@@ -172,7 +189,7 @@ namespace TFTVVehicleRework.Aspida
             if (SceneView == null)
             {
                 //"_Generic_FriendlyAreaOfEffectSceneViewElementDef"
-                AreaOfEffectAbilitySceneViewDef FriendlyAOE = (AreaOfEffectAbilitySceneViewDef)Repo.GetDef("a6df7e16-a178-69d4-cad5-9c517518150f"); 
+                AreaOfEffectAbilitySceneViewDef FriendlyAOE = (AreaOfEffectAbilitySceneViewDef)Repo.GetDef("a6df7e16-a178-69d4-cad5-9c517518150f");
                 SceneView = Repo.CreateDef<AreaOfEffectAbilitySceneViewDef>("23218419-bd47-4dca-b344-75710a40cefc", FriendlyAOE);
                 SceneView.name = "Aspida_FriendlyAreaOfEffect_SceneViewElementDef";
                 // SceneView.TargetRadiusMarker = PhoenixPoint.Tactical.View.GroundMarkerType.AreaOfEffectAura;
@@ -189,7 +206,7 @@ namespace TFTVVehicleRework.Aspida
             {
                 // "LaserArray_ShootAbilityDef"
                 ShootAbilityDef LaserArrayShoot = (ShootAbilityDef)Repo.GetDef("17d71e44-c07c-3e04-e977-1ff7eeb23a43");
-                
+
                 AspidaShoot = Repo.CreateDef<ShootAbilityDef>("3d138af1-1420-44e8-bfc8-44fff8f4e416", LaserArrayShoot);
                 // AspidaShoot.CanShootOnEnemyBodyParts = true;
                 // AspidaShoot.SnapToBodyparts = false;

@@ -21,18 +21,19 @@ namespace TFTV
 
         public static GameTagDef AlwaysDeployTag;
 
-        private static Dictionary<string, EnemyLimit> _undesirablesLimits = new Dictionary<string, EnemyLimit>();
+        private static readonly Dictionary<string, List<EnemyLimit>> _undesirablesLimits = new Dictionary<string, List<EnemyLimit>>();
         public static Dictionary<string, int> UndesirablesSpawned = new Dictionary<string, int>();
 
         /// <summary>
-        /// Difficulty level considers scaling, so Story Mode and Rookie ==1, Etermes == 5
+        /// Difficulty level considers scaling, so Story Mode and Rookie == 1, Etermes == 5.
+        /// DifficultyLevel in EnemyLimit means: this limit applies on difficulties <= DifficultyLevel.
+        /// Use -1 to apply on all difficulties.
         /// </summary>
-
         public class EnemyLimit
         {
             public int InitialMax { get; set; }
             public int SimultaneousMax { get; set; }
-            public int DifficultyLevel { get; set; } 
+            public int DifficultyLevel { get; set; }
 
             public EnemyLimit(int initialMax, int simultaneousMax, int difficultyLevel)
             {
@@ -42,16 +43,76 @@ namespace TFTV
             }
         }
 
+        private static void AddUndesirableLimit(string objectGuid, EnemyLimit limit)
+        {
+            if (!_undesirablesLimits.TryGetValue(objectGuid, out List<EnemyLimit> limits))
+            {
+                limits = new List<EnemyLimit>();
+                _undesirablesLimits.Add(objectGuid, limits);
+            }
+
+            limits.Add(limit);
+        }
+
+        private static EnemyLimit GetApplicableLimit(string objectGuid, TacticalFaction tacticalFaction)
+        {
+            int currentDifficulty = TFTVSpecialDifficulties.DifficultyOrderConverter(tacticalFaction.TacticalLevel.Difficulty.Order);
+
+            if (!_undesirablesLimits.TryGetValue(objectGuid, out List<EnemyLimit> limits) || limits.Count == 0)
+            {
+                return null;
+            }
+
+            // Applies if -1 (all) OR currentDifficulty <= DifficultyLevel.
+            // Choose the most specific matching limit: smallest DifficultyLevel that still matches,
+            // with -1 treated as "least specific".
+            EnemyLimit best = null;
+
+            foreach (EnemyLimit candidate in limits)
+            {
+                bool applies = candidate.DifficultyLevel == -1 || currentDifficulty <= candidate.DifficultyLevel;
+                if (!applies)
+                {
+                    continue;
+                }
+
+                if (best == null)
+                {
+                    best = candidate;
+                    continue;
+                }
+
+                int bestKey = best.DifficultyLevel == -1 ? int.MaxValue : best.DifficultyLevel;
+                int candidateKey = candidate.DifficultyLevel == -1 ? int.MaxValue : candidate.DifficultyLevel;
+
+                if (candidateKey < bestKey)
+                {
+                    best = candidate;
+                }
+            }
+
+            return best;
+        }
+
         public static void PopulateLimitsForUndesirables()
         {
             try
             {
-                _undesirablesLimits.Add("0b8be047-fa18-3ec4-3be6-7dc3462fb07d", new EnemyLimit(1, -1, -1)); //AN_Berserker_Shooter_Torso_BodyPartDef
-                _undesirablesLimits.Add("9ac7ada0-bdec-a9b4-d982-1debc04d8fff", new EnemyLimit(3, -1, -1)); //Acheron_ClassTagDef
-                _undesirablesLimits.Add("4eab7f81-c27d-eef4-6a80-300960fb5160", new EnemyLimit(3, -1, -1)); //Chiron_ClassTagDef
-                _undesirablesLimits.Add("9ed5b03f-120b-d0c4-0ac4-4b30b5312af8", new EnemyLimit(2, 2, 2)); //NEU_Heavy_Torso_BodyPartDef raiders with grenades
-                _undesirablesLimits.Add("5ea5ff74-8494-4554-6a31-73bc06dc8fab", new EnemyLimit(2, 2, 2)); //Sniper_ClassTagDef
-                _undesirablesLimits.Add("c8629efc-4f67-b664-eaf7-d338a5b5b3a3", new EnemyLimit(2, 2, 2)); //Heavy_ClassTagDef
+                AddUndesirableLimit("0b8be047-fa18-3ec4-3be6-7dc3462fb07d", new EnemyLimit(1, -1, -1)); //AN_Berserker_Shooter_Torso_BodyPartDef
+                AddUndesirableLimit("9ac7ada0-bdec-a9b4-d982-1debc04d8fff", new EnemyLimit(3, -1, -1)); //Acheron_ClassTagDef
+                AddUndesirableLimit("4eab7f81-c27d-eef4-6a80-300960fb5160", new EnemyLimit(3, -1, -1)); //Chiron_ClassTagDef
+
+                // Raiders with grenades: global cap 2, but cap 1 on difficulties <= 2.
+                AddUndesirableLimit("9ed5b03f-120b-d0c4-0ac4-4b30b5312af8", new EnemyLimit(2, 2, -1));
+                AddUndesirableLimit("9ed5b03f-120b-d0c4-0ac4-4b30b5312af8", new EnemyLimit(1, 1, 2));
+
+                // Snipers: global cap 2, but cap 1 on difficulties <= 2.
+                AddUndesirableLimit("5ea5ff74-8494-4554-6a31-73bc06dc8fab", new EnemyLimit(2, 2, -1));
+                AddUndesirableLimit("5ea5ff74-8494-4554-6a31-73bc06dc8fab", new EnemyLimit(1, 1, 2));
+
+                // Heavies: global cap 2, but cap 1 on difficulties <= 2.
+                AddUndesirableLimit("c8629efc-4f67-b664-eaf7-d338a5b5b3a3", new EnemyLimit(2, 2, -1));
+                AddUndesirableLimit("c8629efc-4f67-b664-eaf7-d338a5b5b3a3", new EnemyLimit(1, 1, 2));
             }
             catch (Exception e)
             {
@@ -86,7 +147,7 @@ namespace TFTV
             }
         }
 
-        private static int CountUndesirables(string objectGuid, TacticalFaction tacticalFaction, int turnNumber = 0)
+        private static int CountUndesirables(string objectGuid, TacticalFaction tacticalFaction, int turnNumber = 0, EnemyLimit limit = null)
         {
             try
             {
@@ -97,7 +158,7 @@ namespace TFTV
                     count = UndesirablesSpawned[objectGuid];
                 }
 
-                if (_undesirablesLimits[objectGuid].SimultaneousMax != -1 && turnNumber > 0)
+                if (limit != null && limit.SimultaneousMax != -1 && turnNumber > 0)
                 {
                     var def = Repo.GetDef(objectGuid);
 
@@ -120,18 +181,21 @@ namespace TFTV
             }
         }
 
-        private static int GetLimitForUndesirable(string objectGUID, TacticalLevelController controller, int turnNumber = 0)
+        private static int GetLimitForUndesirable(EnemyLimit limit, int turnNumber = 0)
         {
             try
             {
+                if (limit == null)
+                {
+                    return int.MaxValue;
+                }
+
                 if (turnNumber == 0)
                 {
-                    return _undesirablesLimits[objectGUID].InitialMax;
+                    return limit.InitialMax;
                 }
-                else
-                {
-                    return _undesirablesLimits[objectGUID].SimultaneousMax;
-                }
+
+                return limit.SimultaneousMax;
             }
             catch (Exception e)
             {
@@ -139,7 +203,6 @@ namespace TFTV
                 throw;
             }
         }
-
 
         private static bool UnDesirableActorCheck(TacCharacterDef tacCharacterDef, TacticalFaction tacticalFaction, int turnNumber = 0, bool spawned = false)
         {
@@ -150,63 +213,67 @@ namespace TFTV
                     return false;
                 }
 
-                string undesirableObjectGuid = "";
-                bool undesirableActor = false;
+                string undesirableObjectGuid = null;
+                EnemyLimit applicableLimit = null;
 
-                foreach (string objectGuid in _undesirablesLimits.Keys.Where
-                    (k => _undesirablesLimits[k].DifficultyLevel ==-1 
-                    || _undesirablesLimits[k].DifficultyLevel>=TFTVSpecialDifficulties.DifficultyOrderConverter(tacticalFaction.TacticalLevel.Difficulty.Order)))
+                foreach (string objectGuid in _undesirablesLimits.Keys)
                 {
-
-
                     var def = Repo.GetDef(objectGuid);
 
+                    bool isMatch = false;
                     if (def is ItemDef itemDef)
                     {
-                        undesirableActor = CheckCharacterDefForItemDef(tacCharacterDef, itemDef);
-                        // TFTVLogger.Always($"{itemDef.name}");
+                        isMatch = CheckCharacterDefForItemDef(tacCharacterDef, itemDef);
                     }
                     else if (def is GameTagDef gameTagDef)
                     {
-                        undesirableActor = CheckCharacterDefForGameTagDef(tacCharacterDef, gameTagDef);
-                        // TFTVLogger.Always($"{gameTagDef.name}");
+                        isMatch = CheckCharacterDefForGameTagDef(tacCharacterDef, gameTagDef);
                     }
 
-                    if (undesirableActor)
+                    if (!isMatch)
                     {
-                        undesirableObjectGuid = objectGuid;
-                        break;
+                        continue;
                     }
+
+                    EnemyLimit limit = GetApplicableLimit(objectGuid, tacticalFaction);
+                    if (limit == null)
+                    {
+                        // No limit applies at this difficulty -> treat as not undesirable for limiting purposes.
+                        // (Actor remains eligible.)
+                        return false;
+                    }
+
+                    undesirableObjectGuid = objectGuid;
+                    applicableLimit = limit;
+                    break;
                 }
 
-                if (undesirableActor)
+                if (undesirableObjectGuid == null)
                 {
-                    if (spawned)
-                    {
-                        if (UndesirablesSpawned.ContainsKey(undesirableObjectGuid))
-                        {
-                            UndesirablesSpawned[undesirableObjectGuid] += 1;
-                        }
-                        else
-                        {
-                            UndesirablesSpawned.Add(undesirableObjectGuid, 1);
-                        }
-                    }
-
-                    int count = CountUndesirables(undesirableObjectGuid, tacticalFaction, turnNumber);
-
-                    int limit = GetLimitForUndesirable(undesirableObjectGuid, tacticalFaction.TacticalLevel, turnNumber);
-
-                    if (count >= limit)
-                    {
-                        TFTVLogger.Always($"{tacCharacterDef.name} reached limit of allowed spawns!");
-                    }
-
-                    return count >= limit;
+                    return false;
                 }
 
-                return false;
+                if (spawned)
+                {
+                    if (UndesirablesSpawned.ContainsKey(undesirableObjectGuid))
+                    {
+                        UndesirablesSpawned[undesirableObjectGuid] += 1;
+                    }
+                    else
+                    {
+                        UndesirablesSpawned.Add(undesirableObjectGuid, 1);
+                    }
+                }
 
+                int count = CountUndesirables(undesirableObjectGuid, tacticalFaction, turnNumber, applicableLimit);
+                int limitValue = GetLimitForUndesirable(applicableLimit, turnNumber);
+
+                if (count >= limitValue)
+                {
+                    TFTVLogger.Always($"{tacCharacterDef.name} reached limit of allowed spawns!");
+                }
+
+                return count >= limitValue;
             }
             catch (Exception e)
             {
@@ -260,81 +327,16 @@ namespace TFTV
                 throw;
             }
         }
-        /*  private static bool DesirableActorCheck(TacActorDef tacActorDef, TacticalFaction tacticalFaction)
-          {
-              try
-              {
-
-
-                  if (tacActorDef != null && Repo.GetDef(tacActorDef.Guid) is TacCharacterDef tacCharacterDef)
-                  {
-                      TFTVLogger.Always($"{tacCharacterDef?.name}");
-
-                      foreach (string itemDefGuid in _undesirablesLimits.Keys)
-                      {
-                          ItemDef itemDef = (ItemDef)Repo.GetDef(itemDefGuid);
-                          TFTVLogger.Always($"{itemDef}");
-                          if (tacCharacterDef.Data.EquipmentItems.Contains(itemDef) || tacCharacterDef.Data.BodypartItems.Contains(itemDef))
-                          {
-                              int limit = _undesirablesLimits[itemDef.Guid];
-
-                              int count = 0;
-
-                              if (tacticalFaction.TacticalLevel.CurrentFaction == tacticalFaction)
-                              {
-                                  TFTVLogger.Always($"current faction: {tacticalFaction.TacticalLevel.CurrentFaction} so must be reinforcements");
-                                  count = CountUndesirableActorsAlive(itemDef, tacticalFaction);
-                              }
-                              else
-                              {
-                                  if (_undesirablesSpawned.ContainsKey(itemDef.Guid))
-                                  {
-                                      count = _undesirablesSpawned[itemDef.Guid];
-                                  }
-                              }
-
-                              if (count >= limit)
-                              {
-                                  TFTVLogger.Always($"{tacCharacterDef?.name} removed from list of possible deployments");
-                                  return false;
-                              }
-
-                              if (_undesirablesSpawned.ContainsKey(itemDef.Guid))
-                              {
-                                  _undesirablesSpawned[itemDef.Guid] += 1;
-                              }
-                              else
-                              {
-                                  _undesirablesSpawned.Add(itemDef.Guid, 1);
-                              }
-                          }
-                      }
-                  }
-
-                  return true;
-
-              }
-              catch (Exception e)
-              {
-                  TFTVLogger.Error(e);
-                  throw;
-              }
-          }*/
-
 
         [HarmonyPatch(typeof(TacParticipantSpawn), "GetEligibleActorDeployments")] //VERIFIED
         public static class TFTV_TacParticipantSpawn_GetEligibleActorDeployments
         {
             public static IEnumerable<ActorDeployData> Postfix(IEnumerable<ActorDeployData> results, TacParticipantSpawn __instance)
             {
-
                 foreach (ActorDeployData actorDeployData in results)
                 {
-                    //TFTVLogger.Always($"{actorDeployData?.GetName()}");
-
                     if (actorDeployData.InstanceData != null)
                     {
-
                         TacticalFaction tacticalFaction = __instance.TacticalFaction;
 
                         if (actorDeployData.InstanceDef is TacCharacterDef tacCharacterDef)
@@ -343,24 +345,17 @@ namespace TFTV
                             {
                                 yield return actorDeployData;
                             }
-                            else
-                            {
-                              //  TFTVLogger.Always($"{actorDeployData.InstanceDef.name} excluded from eligible actors for deployment!");
-                            }
                         }
                         else
                         {
                             yield return actorDeployData;
-
                         }
                     }
                     else
                     {
                         yield return actorDeployData;
-
                     }
                 }
-
             }
         }
 
@@ -378,7 +373,6 @@ namespace TFTV
                         UnDesirableActorCheck(tacCharacterDef, __instance.TacticalFaction, turnNumber, true);
                     }
                 }
-
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);

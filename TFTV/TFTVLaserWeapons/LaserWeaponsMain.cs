@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using HarmonyLib;
-using PhoenixPoint.Common.Core;
+﻿using HarmonyLib;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
-using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
-using TFTV;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace TFTV.LaserWeapons
@@ -59,7 +56,7 @@ namespace TFTV.LaserWeapons
 
                 WeaponEntries[weaponDef] = entry;
 
-              //  Log($"Registered {weaponDef.name}: cost={reloadCost}, magazine={entry.MagazineSize}, perCharge={entry.ShotsPerCharge}");
+                //  Log($"Registered {weaponDef.name}: cost={reloadCost}, magazine={entry.MagazineSize}, perCharge={entry.ShotsPerCharge}");
             }
 
             internal static bool TryGetEntry(WeaponDef weaponDef, out WeaponEntry entry)
@@ -323,6 +320,22 @@ namespace TFTV.LaserWeapons
             }
 
         }
+        
+        [HarmonyPatch(typeof(CommonItemData), nameof(CommonItemData.GetFullMagazinesCount))]
+        private static class CommonItemData_GetFullMagazinesCount_Patch
+        {
+            private static bool Prefix(CommonItemData __instance, ref int __result)
+            {
+                if (__instance?.ItemDef is WeaponDef weaponDef && LaserAmmoShareHelper.TryGetEntry(weaponDef, out _))
+                {
+                    int count = __instance.Count;
+                    __result = count > 1 ? count : 0;
+                    return false;
+                }
+
+                return true;
+            }
+        }
 
         [HarmonyPatch(typeof(ReloadAbility), "Reload")] //VERIFIED
         private static class TacticalReloadPatch
@@ -421,6 +434,24 @@ namespace TFTV.LaserWeapons
                 }
 
                 __result = converted;
+            }
+        }
+
+        [HarmonyPatch(typeof(UIInventorySlot), nameof(UIInventorySlot.UpdateItem))]
+        private static class UIInventorySlot_UpdateItem_Patch
+        {
+            private static void Postfix(UIInventorySlot __instance)
+            {
+                if (LaserAmmoShareHelper.BatteryPackDef == null)
+                {
+                    return;
+                }
+
+                ICommonItem item = __instance?.Item;
+                if (item?.ItemDef == LaserAmmoShareHelper.BatteryPackDef)
+                {
+                    __instance.AmmoImageNode.gameObject.SetActive(false);
+                }
             }
         }
 

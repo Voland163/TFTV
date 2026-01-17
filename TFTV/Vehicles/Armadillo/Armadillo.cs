@@ -8,15 +8,16 @@ using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
+using TFTV;
 
 namespace TFTVVehicleRework.Armadillo
 {
-    public static class ArmadilloMain 
+    public static class ArmadilloMain
     {
         internal static readonly DefRepository Repo = VehiclesMain.Repo;
-
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         //"NJ_VehicleTech_ResearchDef_ManufactureResearchRewardDef_1"
-        private static readonly ManufactureResearchRewardDef ResearchReward = (ManufactureResearchRewardDef)Repo.GetDef("d197bc9e-9a4d-a2d6-eabf-0bb7b6a0a9a7");
+        private static ManufactureResearchRewardDef ResearchReward = null;//(ManufactureResearchRewardDef)Repo.GetDef("d197bc9e-9a4d-a2d6-eabf-0bb7b6a0a9a7");
         public static void Change()
         {
             Adjust_Speed();
@@ -39,11 +40,11 @@ namespace TFTVVehicleRework.Armadillo
             foreach (AddonDef.SubaddonBind addon in Chassis.SubAddons)
             {
                 TacticalItemDef BodyPart = (TacticalItemDef)addon.SubAddon;
-                if(BodyPart.name.Contains("FrontTyre"))
+                if (BodyPart.name.Contains("FrontTyre"))
                 {
                     BodyPart.BodyPartAspectDef.Speed = 5f;
                 }
-                else if(BodyPart.name.Contains("BackTyre"))
+                else if (BodyPart.name.Contains("BackTyre"))
                 {
                     BodyPart.BodyPartAspectDef.Speed = 6f;
                 }
@@ -68,7 +69,7 @@ namespace TFTVVehicleRework.Armadillo
         private static void Give_VehicleEntity()
         {
             // NJ_Armadillo_ActorDef
-            TacticalActorDef ArmadilloActorDef = (TacticalActorDef)Repo.GetDef("fc5539b5-5390-8324-5bf6-9d53a7ec092c"); 
+            TacticalActorDef ArmadilloActorDef = (TacticalActorDef)Repo.GetDef("fc5539b5-5390-8324-5bf6-9d53a7ec092c");
             // MachineEntity_ClassProficiencyAbilityDef
             ClassProficiencyAbilityDef MachineEntityProficiency = (ClassProficiencyAbilityDef)Repo.GetDef("8a02e039-e442-7774-8846-c497e257f25f");
             ArmadilloActorDef.Abilities = ArmadilloActorDef.Abilities.AddToArray(MachineEntityProficiency);
@@ -76,12 +77,29 @@ namespace TFTVVehicleRework.Armadillo
 
         internal static void Update_Requirements(GroundVehicleModuleDef VehicleModule)
         {
-           ResearchReward.Items = ResearchReward.Items.AddToArray(VehicleModule);
+            if (ResearchReward == null)
+            {
+                ResearchReward = DefCache.GetDef<ManufactureResearchRewardDef>("NJ_VehicleTech_ResearchDef_ManufactureResearchRewardDef_1");
+            }
+
+            ResearchReward.Items = ResearchReward.Items.AddToArray(VehicleModule);
         }
 
         internal static void Update_Requirements(GroundVehicleWeaponDef VehicleWeapon)
         {
-           ResearchReward.Items = ResearchReward.Items.AddToArray(VehicleWeapon);
+           
+            
+
+            if (ResearchReward == null)
+            {
+                ResearchReward = DefCache.GetDef<ManufactureResearchRewardDef>("NJ_VehicleTech_ResearchDef_ManufactureResearchRewardDef_1");
+            }
+
+            if (!TFTVAircraftReworkMain.AircraftReworkOn)
+            {
+                ResearchReward.Items = ResearchReward.Items.AddToArray(VehicleWeapon);
+            }
+
         }
 
     }

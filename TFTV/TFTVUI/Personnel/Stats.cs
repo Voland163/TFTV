@@ -1,5 +1,6 @@
 ﻿using Base.Core;
 using Base.Defs;
+using Base.Entities;
 using Base.Entities.Statuses;
 using Base.UI;
 using HarmonyLib;
@@ -21,6 +22,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using static Base.Audio.WwiseIDs.SWITCHES;
+using static PhoenixPoint.Common.Entities.Characters.CharacterProgression;
 
 namespace TFTV
 {
@@ -623,5 +626,6 @@ namespace TFTV
                 }
             }
         }
+       
     }
 }

@@ -36,6 +36,7 @@ using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Geoscape.View.ViewControllers.HavenDetails;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
@@ -82,7 +83,40 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
+        //temporary fix for 1.30 locate phoenix base function
+        [HarmonyPatch(typeof(UIStatePhoenixBaseLayout), "ShowBaseOnGeoscape")]
+        internal static class LocatePhoenixBaseFocusPatch
+        {
+            private static bool Prefix(UIStatePhoenixBaseLayout __instance, GeoPhoenixBase ____base)
+            {
+                GeoLevelController geoLevelController = ____base.Site.GeoLevel;
+             
+                GeoscapeView view = geoLevelController.View;
 
+                GeoVehicle currentVehicle = view.SelectedActor as GeoVehicle;
+                
+                if (currentVehicle == null || !currentVehicle.IsOwnedByViewer)
+                {
+                    currentVehicle = geoLevelController.PhoenixFaction.Vehicles.FirstOrDefault<GeoVehicle>();
+                }
+                if (currentVehicle == null)
+                {
+                    view.ChaseTarget(____base.Site, false);
+                    return false;
+                }
+                List<GeoVehicle> visibleVehicles = view.VisibleVehicles.ToList();
+                int currentVehicleIndex = visibleVehicles.IndexOf(currentVehicle);
+                if (currentVehicleIndex >= 0)
+                {
+                    AccessTools.Field(typeof(GeoscapeView), "_lastSelectedVehicle").SetValue(view, currentVehicleIndex);
+                }
+                view.SelectActorAndVehicle(____base.Site, false);
+                return false;
+            }
+        }
+
+
+    
 
         internal class Stealth
         {
@@ -287,6 +321,60 @@ namespace TFTV
 
         internal class UI
         {
+
+            //Patch to fix Vanilla perception multipliers application
+            [HarmonyPatch(typeof(UIModuleCharacterProgression), "ApplyStatModification")]
+            public static class Patch_ApplyStatModification_MultiplyFix
+            {
+                public static bool Prefix(
+                    ItemStatModification statModifier,
+                    ref float fPerception,
+                    ref float fAccuracy,
+                    ref float fStealth,
+                    ref float fPerceptionMult,
+                    ref float fAccuracyMult,
+                    ref float fStealthMult)
+                {
+                    switch (statModifier.TargetStat)
+                    {
+                        case StatModificationTarget.Perception:
+                            if (statModifier.Modification == StatModificationType.Add)
+                            {
+                                fPerception += statModifier.Value;
+                            }
+                            else if (statModifier.Modification == StatModificationType.Multiply)
+                            {
+                                fPerceptionMult *= statModifier.Value; // Option A
+                            }
+                            break;
+
+                        case StatModificationTarget.Accuracy:
+                            if (statModifier.Modification == StatModificationType.Add)
+                            {
+                                fAccuracy += statModifier.Value;
+                            }
+                            else if (statModifier.Modification == StatModificationType.Multiply)
+                            {
+                                fAccuracyMult *= statModifier.Value; // Option A
+                            }
+                            break;
+
+                        case StatModificationTarget.Stealth:
+                            if (statModifier.Modification == StatModificationType.Add)
+                            {
+                                fStealth += statModifier.Value;
+                            }
+                            else if (statModifier.Modification == StatModificationType.Multiply)
+                            {
+                                fStealthMult *= statModifier.Value; // Option A
+                            }
+                            break;
+                    }
+
+                    // Skip original ApplyStatModification
+                    return false;
+                }
+            }
 
             //Removed as now in base game
             //Code provided by Codemite
@@ -2513,10 +2601,10 @@ namespace TFTV
                                     continue;
                                 }
 
-                                if (award.Key.LevelProgression.Level >= 7)
+                            /*    if (award.Key.LevelProgression.Level >= 7)
                                 {
                                     continue;
-                                }
+                                }*/
 
                                 award.Key.LevelProgression.AddExperience(award.Value);
                             }
@@ -3653,7 +3741,7 @@ namespace TFTV
                     }
                     catch (Exception ex)
                     {
-                        Debug.LogError($"GroundVehicleScrapFix encountered an error while handling ground vehicle scrap: {ex}");
+                        TFTVLogger.Always($"GroundVehicleScrapFix encountered an error while handling ground vehicle scrap: {ex}");
                     }
                 }
 
