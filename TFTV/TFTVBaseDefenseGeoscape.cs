@@ -675,7 +675,11 @@ namespace TFTV
                 {
                     try
                     {
-                        if (PandoransThatCanEscape == null || PandoransThatCanEscape.Count() == 0 || !PandoransThatCanEscape.ContainsKey(geoSite.SiteId))
+                        if (PandoransThatCanEscape == null
+                            || geoSite == null
+                            || PandoransThatCanEscape.Count() == 0 
+                            || !PandoransThatCanEscape.ContainsKey(geoSite.SiteId)
+                             || ContainmentBreachSchedule.ContainsKey(geoSite.SiteId))
                         {
                             return;
                         }
@@ -826,7 +830,7 @@ namespace TFTV
                 {
                     try
                     {
-                        if (phoenixBase.Layout.Facilities.Any(f => f.GetComponent<PrisonFacilityComponent>() != null && !f.IsWorking))
+                        if (phoenixBase.Layout.Facilities.Any(f => f.GetComponent<PrisonFacilityComponent>() != null && f.IsWorking))
                         {
                             return true;
                         }

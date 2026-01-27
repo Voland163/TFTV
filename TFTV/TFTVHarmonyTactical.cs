@@ -12,7 +12,6 @@ using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
-using PhoenixPoint.Tactical.Entities.StructuralTargets;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.Levels.ActorDeployment;
@@ -26,7 +25,6 @@ using PRMBetterClasses.SkillModifications;
 using PRMBetterClasses.VariousAdjustments;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using static PhoenixPoint.Tactical.View.ViewControllers.SquadMemberScrollerController;
 
@@ -47,7 +45,7 @@ namespace TFTV
             public static void Postfix(TacticalActor __instance, TacticalItemAspectBase aspect)
             {
                 try
-                { 
+                {
                     TFTVStamina.RegisterInjuryForStaminaLossBionicsRepairMutantArmShooter(__instance, aspect);
                     TFTVDrills.DrillsHarmony.BulletHell.CheckForBulletHellDrillAplicationOnDisabledLimb(__instance, aspect);
                 }
@@ -111,7 +109,7 @@ namespace TFTV
                     // TFTVLogger.Always($"running activate exit mission ability for {__instance.TacticalActor.DisplayName}, {__instance.TacticalActor.TacticalFaction.Faction.FactionDef.name} {__instance.TacticalActor.Status?.HasStatus<MindControlStatus>()}");
 
                     TFTVVanillaFixes.Tactical.XP.FixRescueMissionEvac(__instance.TacticalActor);
-                   
+
 
                 }
                 catch (Exception e)
@@ -172,8 +170,8 @@ namespace TFTV
             {
                 try
                 {
-                    if (!HeavySkills.HunkerDownReturnFireAbilityExecutedHandlerCheck(__instance)) 
-                    { 
+                    if (!HeavySkills.HunkerDownReturnFireAbilityExecutedHandlerCheck(__instance))
+                    {
                         return false;
                     }
 
@@ -378,7 +376,7 @@ namespace TFTV
 
                     TacticalLevelController controller = GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>();
 
-                    if(controller == null)
+                    if (controller == null)
                     {
                         return;
                     }
@@ -701,7 +699,7 @@ namespace TFTV
                     TFTVChangesToDLC5.TFTVMercenaries.Tactical.SlugHealTraumaEffect(ability, __instance);
                     TFTVArtOfCrab.GetBestWeaponForOWRF(__instance);
                     TFTVVehicleFixes.CheckSquashing(ability, __instance);
-                   
+
                     //Not used once goo doesn't take additional movement
                     //TFTVVoxels.TFTVGoo.ClearActorGooPositions();
 
@@ -730,7 +728,7 @@ namespace TFTV
 
 
                     // removing penalty for crossing goo
-                  //  TFTVVoxels.TFTVGoo.CheckActorTouchingGoo(__instance); 
+                    //  TFTVVoxels.TFTVGoo.CheckActorTouchingGoo(__instance); 
                 }
 
                 catch (Exception e)

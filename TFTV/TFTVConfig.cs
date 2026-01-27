@@ -147,12 +147,12 @@ namespace TFTV
 
                     ModConfigField fieldToChange = modConfigFields.FirstOrDefault(x => x.GetText() == __instance.Label.text);
 
-                    if(fieldToChange!=null && fieldToChange.ID == "DisableTacSaves" && !__instance.ToggleField.isOn) 
+                   /* if(fieldToChange!=null && fieldToChange.ID == "DisableTacSaves" && !__instance.ToggleField.isOn) 
                     {
                         string warning = TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_TACTICAL_SAVING_WARNING");
 
                         GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
-                    }
+                    }*/
 
                     if (fieldToChange != null &&
     (

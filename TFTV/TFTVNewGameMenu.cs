@@ -4,6 +4,7 @@ using Base.Defs;
 using Base.Platforms;
 using Base.UI;
 using Base.UI.MessageBox;
+using Base.UI.MessageBox.PromptControllers;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.View.ViewControllers;
@@ -48,6 +49,107 @@ namespace TFTV
         private static ArrowPickerController _exoticResources = null;
         private static ArrowPickerController _eventResources = null;
 
+        // Eldritch warning gate (hardest difficulty confirmation)
+        private static bool _eldritchWarningInProgress = false;
+        private static bool _eldritchWarningAccepted = false;
+        private static bool _suppressNextOnConfirm = false;
+
+        private static bool IsHardestDifficultySelected()
+        {
+            // In this menu SelectedDifficulty is 1..6 (see ConvertDifficultyToIndex* and EnterState logic)
+            return SelectedDifficulty == 6;
+        }
+
+        
+
+        private static readonly MethodInfo _gameSettingsOnConfirmMethod =
+            typeof(UIStateNewGeoscapeGameSettings).GetMethod("GameSettings_OnConfirm", BindingFlags.Instance | BindingFlags.NonPublic);
+       
+
+        private static void StartEldritchWarningsThenConfirm(UIStateNewGeoscapeGameSettings state)
+        {
+            try
+            {
+                if (_eldritchWarningInProgress || _eldritchWarningAccepted)
+                {
+                    return;
+                }
+
+                _eldritchWarningInProgress = true;
+
+                ShowStep(0);
+
+                void ShowStep(int step)
+                {
+                    string key = step == 0
+                        ? "KEY_ELDRITCH_WARNING_0"
+                        : step == 1
+                            ? "KEY_ELDRITCH_WARNING_1"
+                            : "KEY_ELDRITCH_WARNING_2";
+
+                    string text = TFTVCommonMethods.ConvertKeyToString(key);
+
+                    MessageBox mb = GameUtl.GetMessageBox();
+
+                    mb.ShowSimplePrompt(text, MessageBoxIcon.Warning, MessageBoxButtons.OKCancel, res =>
+                    {
+                        try
+                        {
+                            if (res.DialogResult != MessageBoxResult.OK && res.DialogResult != MessageBoxResult.Yes)
+                            {
+                                _eldritchWarningInProgress = false;
+                                return;
+                            }
+
+                            if (step < 2)
+                            {
+                                ShowStep(step + 1);
+                                return;
+                            }
+
+                            _eldritchWarningAccepted = true;
+                            _eldritchWarningInProgress = false;
+
+                            _suppressNextOnConfirm = true;
+                            if (_gameSettingsOnConfirmMethod == null)
+                            {
+                                TFTVLogger.Error(new InvalidOperationException("Failed to resolve UIStateNewGeoscapeGameSettings.GameSettings_OnConfirm via reflection."));
+                                return;
+                            }
+
+                            _gameSettingsOnConfirmMethod.Invoke(state, null);
+                        }
+                        catch (Exception e)
+                        {
+                            _eldritchWarningInProgress = false;
+                            TFTVLogger.Error(e);
+                        }
+                    });
+
+                  
+                    Image background = mb.GetComponentInChildren<Image>();
+
+                    background.color = Color.black;
+
+                 /*   foreach (Component component in mb.GetComponentsInChildren<Component>())
+                    {
+                        TFTVLogger.Always($"MessageBox component in children {component.name}: {component.GetType()}");
+
+                        if(component is Image image) 
+                        {
+                            image.color = Color.black;
+                        }
+
+                    }*/
+
+                }
+            }
+            catch (Exception e)
+            {
+                _eldritchWarningInProgress = false;
+                TFTVLogger.Error(e);
+            }
+        }
 
         internal class TitleScreen
         {
@@ -647,9 +749,9 @@ namespace TFTV
                 }
 
                 private static void AdjustArrowPickerPositionAndScale(
-        ArrowPickerController arrowPickerController,
-        ModSettingController modSettingController,
-        float lengthScale)
+     ArrowPickerController arrowPickerController,
+     ModSettingController modSettingController,
+     float lengthScale)
                 {
                     try
                     {
@@ -669,15 +771,22 @@ namespace TFTV
                         else
                         {
                             int additionalFactor = 2;
-                            arrowPickerController.transform.position += new Vector3(370 * resolutionFactorWidth / additionalFactor, 0, 0);
+
+                            // Small UW-only "pull back" to prevent right arrow from being clipped by the viewport.
+                            // Tune 35f -> 25-60 depending on how aggressive the clip is.
+                            float uwSafeInset = 35f * resolutionFactorWidth;
+
+                            arrowPickerController.transform.position += new Vector3((370 * resolutionFactorWidth / additionalFactor) - uwSafeInset, 0, 0);
+
                             if (lengthScale <= 0.5f)
                             {
-                                arrowPickerController.transform.position += new Vector3(300 * resolutionFactorWidth / additionalFactor * lengthScale, 0, 0);
+                                arrowPickerController.transform.position += new Vector3((300 * resolutionFactorWidth / additionalFactor * lengthScale) - uwSafeInset, 0, 0);
                             }
                             else
                             {
-                                arrowPickerController.transform.position += new Vector3(130 * resolutionFactorWidth / additionalFactor * lengthScale, 0, 0);
+                                arrowPickerController.transform.position += new Vector3((130 * resolutionFactorWidth / additionalFactor * lengthScale) - uwSafeInset, 0, 0);
                             }
+
                             modSettingController.Label.rectTransform.Translate(new Vector3(-370 * resolutionFactorWidth / additionalFactor, 0, 0), arrowPickerController.transform);
                         }
 
@@ -1122,7 +1231,7 @@ namespace TFTV
                 {
                     try
                     {
-                        if (newValue == 1 && !ShowedTacticalSavesWarning)
+                       /* if (newValue == 1 && !ShowedTacticalSavesWarning)
                         {
                            
 
@@ -1131,7 +1240,7 @@ namespace TFTV
                             GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
 
                             ShowedTacticalSavesWarning = true;
-                        }
+                        }*/
 
                         bool option = newValue == 0;
 
@@ -1777,6 +1886,10 @@ namespace TFTV
             {
                 try
                 {
+                    _eldritchWarningInProgress = false;
+                    _eldritchWarningAccepted = false;
+                    _suppressNextOnConfirm = false;
+
                     GameDifficultyLevelDef[] difficultyLevels = GameUtl.GameComponent<SharedData>().DifficultyLevels;
                     HomeScreenView homescreenview = GameUtl.CurrentLevel().GetComponent<HomeScreenView>();
                     UIModuleGameSettings gameSettings = homescreenview.HomeScreenModules.GameSettings;
@@ -2005,19 +2118,34 @@ namespace TFTV
         [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "GameSettings_OnConfirm")] //VERIFIED
         public static class UIStateNewGeoscapeGameSettings_GameSettings_OnConfirm_patch
         {
-            public static void Prefix(UIStateNewGeoscapeGameSettings __instance)
+            public static bool Prefix(UIStateNewGeoscapeGameSettings __instance)
             {
                 try
                 {
+                    // If we're re-invoking confirm after accepting warnings, let it proceed.
+                    if (_suppressNextOnConfirm)
+                    {
+                        _suppressNextOnConfirm = false;
+                        return true;
+                    }
+
+                    // Only gate when pressing Start Game AND hardest difficulty is selected.
+                    if (IsHardestDifficultySelected() && !_eldritchWarningAccepted)
+                    {
+                        StartEldritchWarningsThenConfirm(__instance);
+                        return false; // block starting until warnings accepted
+                    }
+
                     TFTVStarts.RevertIntroToNormalStart();
                     TFTVLogger.Always($"selected option: {GameUtl.CurrentLevel().GetComponent<HomeScreenView>().HomeScreenModules.GameSettings?.MainOptions?.Selected?.First()?.OptionIndex}");
                     EnterStateRun = false;
 
-
+                    return true;
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
+                    return true;
                 }
             }
         }

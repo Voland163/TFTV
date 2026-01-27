@@ -329,7 +329,7 @@ namespace TFTV.LaserWeapons
                 if (__instance?.ItemDef is WeaponDef weaponDef && LaserAmmoShareHelper.TryGetEntry(weaponDef, out _))
                 {
                     int count = __instance.Count;
-                    __result = count > 1 ? count : 0;
+                    __result = Math.Max(0, count - 1);
                     return false;
                 }
 

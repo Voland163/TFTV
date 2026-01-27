@@ -22,7 +22,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.UI;
 using static TFTV.AircraftReworkHelpers;
@@ -47,7 +46,7 @@ namespace TFTV
 
             static void Postfix(AircraftCrewController __instance, int maxSpace)
             {
-                
+
 
                 if (__instance == null)
                 {
@@ -67,7 +66,7 @@ namespace TFTV
                     return;
                 }
 
-               
+
 
                 bool applied = false;
                 int baseSlotCount = slots.Count;
@@ -448,14 +447,14 @@ namespace TFTV
                     // Icon
                     var Icon = __instance.Icon;
 
-               //     TFTVLogger.Always($"icon null? {Icon == null}");
+                    //     TFTVLogger.Always($"icon null? {Icon == null}");
 
                     // UISettings
 
                     // DisplayedData
                     var DisplayedData = __instance.DisplayedData;
 
-                 //   TFTVLogger.Always($"DisplayedData null? {DisplayedData == null}");
+                    //   TFTVLogger.Always($"DisplayedData null? {DisplayedData == null}");
 
                     // ItemNameLocComp, ItemDescriptionLocComp
                     var ItemNameLocComp = __instance.ItemNameLocComp;
@@ -463,15 +462,15 @@ namespace TFTV
 
                     _ = Icon != null;
 
-                  //  TFTVLogger.Always($"icon still null? {Icon == null}");
+                    //  TFTVLogger.Always($"icon still null? {Icon == null}");
 
                     if (__instance.UISettings.ShowNameDescription)
                     {
-                    //    TFTVLogger.Always("Showing name and description");
+                        //    TFTVLogger.Always("Showing name and description");
                         type.GetMethod("DisplayNameDescription", BindingFlags.NonPublic | BindingFlags.Instance)
                              .Invoke(__instance, null);
 
-                      //  TFTVLogger.Always("Displayed name and description");
+                        //  TFTVLogger.Always("Displayed name and description");
                     }
                     else
                     {
@@ -482,7 +481,7 @@ namespace TFTV
                     // GeoVehicleWeaponDef geoVehicleWeaponDef = DisplayedData.AircraftEquipmentDef as GeoVehicleWeaponDef;
                     var AircraftEquipmentDef = DisplayedData.AircraftEquipmentDef;
 
-//                    TFTVLogger.Always($"AircraftEquipmentDef null? {AircraftEquipmentDef == null}");
+                    //                    TFTVLogger.Always($"AircraftEquipmentDef null? {AircraftEquipmentDef == null}");
 
                     var geoVehicleModuleDef = AircraftEquipmentDef as GeoVehicleModuleDef;
 
@@ -892,38 +891,6 @@ namespace TFTV
                     ____shortEquipmentInfoButtons.Last().gameObject.SetActive(false);
 
 
-                    /*  foreach (Transform item in __instance.EquipmentsRoot.transform)
-                      {
-                          UnityEngine.Object.Destroy(item.gameObject);
-                          break;
-                      }*/
-
-
-                    // ____shortEquipmentInfoButtons.RemoveAt(____shortEquipmentInfoButtons.Count - 1);
-
-                    /*  for (int i = 0; i < ____shortEquipmentInfoButtons.Count; i++)
-                      {
-                          ShortEquipmentInfoButton button = ____shortEquipmentInfoButtons[i];
-                          if (button != null)
-                          {
-                              FieldInfo fieldInfo = typeof(ShortEquipmentInfoButton).GetField("_equipment", BindingFlags.NonPublic | BindingFlags.Instance);
-
-
-                              if(fieldInfo != null)
-                              {
-                                  GeoVehicleEquipment equipment = fieldInfo.GetValue(button) as GeoVehicleEquipment;
-
-                                  TFTVLogger.Always($"{i} equipment null? {equipment==null}");
-                                  if(equipment!= null)
-                                  {
-                                      TFTVLogger.Always($"{i} equipment def? {equipment.EquipmentDef?.name}");
-                                  }
-                              }
-
-                             // UnityEngine.Object.Destroy(button.gameObject);
-                          }
-                      }*/
-
 
                 }
                 catch (Exception e)
@@ -987,7 +954,7 @@ namespace TFTV
                     }
 
                     context.View.SelectOnlyOwnedAircraft = true;
-                   
+
                 }
                 catch (Exception e)
                 {
@@ -1041,7 +1008,7 @@ namespace TFTV
 
                     _modules = modules;
 
-                   // TFTVLogger.Always($"AircraftInfoController.SetInfo: {aircraftInfoData.DisplayName} {aircraftInfoData.MaxCrew}");
+                    // TFTVLogger.Always($"AircraftInfoController.SetInfo: {aircraftInfoData.DisplayName} {aircraftInfoData.MaxCrew}");
 
                 }
 
@@ -1098,7 +1065,7 @@ namespace TFTV
                         }
                     }
 
-                    _modules.Clear();   
+                    _modules.Clear();
 
                 }
                 catch (Exception e)
@@ -1109,7 +1076,7 @@ namespace TFTV
             }
         }
 
-       [HarmonyPatch(typeof(AircraftStatsController), "SetInfo")]
+        [HarmonyPatch(typeof(AircraftStatsController), "SetInfo")]
         public static class AircraftStatsController_SetInfo_Patch
         {
             public static void Postfix(AircraftStatsController __instance, AircraftInfoData aircraftInfoData)
@@ -1353,6 +1320,36 @@ namespace TFTV
 
 
 
+       
+
+
+   /*     [HarmonyPatch(typeof(GeoVehicle), "GetAircraftInfo")]
+        public static class GeoVehicle_GetAircraftInfo_Patch
+        {
+            static void Prefix(GeoVehicle __instance, AircraftInfoData __result)
+            {
+
+                try
+                {
+                    if (!AircraftReworkOn)
+                    {
+                        return;
+                    }
+
+                    AircraftReworkSpeed.AdjustAircraftSpeed(__instance, true);
+
+                   // TFTVLogger.Always($"[GeoVehicle.GetAircraftInfo]{__instance?.Name} speed {__result.Speed}");
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }*/
+
+
 
 
         [HarmonyPatch(typeof(UIModuleVehicleEquip), "UpdateData")]
@@ -1451,6 +1448,8 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleVehicleEquip), "AttemptSlotSwap")]
         public static class PreventDuplicateModule_DragDrop_Patch
         {
+
+
             static bool Prefix(UIModuleVehicleEquip __instance, UIVehicleEquipmentInventorySlot sourceSlot, UIVehicleEquipmentInventorySlot destinationSlot, ref bool __result)
             {
                 try
@@ -1474,6 +1473,8 @@ namespace TFTV
                             return false; // Skip original method.
                         }
                     }
+
+
                     // Otherwise, let the original method run.
                     return true;
                 }
@@ -1483,6 +1484,7 @@ namespace TFTV
                     throw;
                 }
             }
+
         }
 
 

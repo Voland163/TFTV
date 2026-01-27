@@ -1,7 +1,9 @@
 ﻿using Base.Core;
+using HarmonyLib;
 using PhoenixPoint.Geoscape;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
+using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using System;
 using System.Collections.Generic;
@@ -9,9 +11,9 @@ using System.Linq;
 using System.Reflection;
 using Unity.Collections;
 using UnityEngine;
-using Research = PhoenixPoint.Geoscape.Entities.Research.Research;
-using static TFTV.TFTVAircraftReworkMain;
 using static TFTV.AircraftReworkHelpers;
+using static TFTV.TFTVAircraftReworkMain;
+using Research = PhoenixPoint.Geoscape.Entities.Research.Research;
 
 namespace TFTV
 {
@@ -32,6 +34,34 @@ namespace TFTV
                 throw;
             }
         }
+
+
+        [HarmonyPatch(typeof(GeoVehicle), "UpdateVehicleStats")]
+        public static class GeoVehicle_UpdateVehicleStats_Patch
+        {
+            static void Postfix(GeoVehicle __instance)
+            {
+
+                try
+                {
+                    if (!AircraftReworkOn && __instance != null)
+                    {
+                        return;
+                    }
+
+                    AircraftReworkSpeed.AdjustAircraftSpeed(__instance, true);
+                    TFTVLogger.Always($"[GeoVehicleStatModifier.UpdateBaseVehicleStats] new speed: {__instance?.Stats?.Speed}");
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+
+            }
+        }
+
+
 
         internal static void Init(GeoLevelController controller)
         {
@@ -103,14 +133,17 @@ namespace TFTV
         {
             try
             {
-                Research phoenixResearch = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction.Research;
+                Research phoenixResearch = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()?.PhoenixFaction?.Research;
                 float speedBuff = 0;
 
-                foreach (ResearchDef researchDef in _heliosSpeedBuffResearchDefs)
+                if (phoenixResearch != null)
                 {
-                    if (phoenixResearch.HasCompleted(researchDef.Id))
+                    foreach (ResearchDef researchDef in _heliosSpeedBuffResearchDefs)
                     {
-                        speedBuff += _heliosSpeedBuffPerLevel;
+                        if (phoenixResearch.HasCompleted(researchDef.Id))
+                        {
+                            speedBuff += _heliosSpeedBuffPerLevel;
+                        }
                     }
                 }
                 return speedBuff;
@@ -155,8 +188,6 @@ namespace TFTV
 
                 if (IsAircraftInMist(geoVehicle))
                 {
-
-
                     if (CheckRightSpeedForMist(geoVehicle))
                     {
                         return;
@@ -165,8 +196,6 @@ namespace TFTV
                     {
                         ResetSpeed(geoVehicle, true);
                     }
-
-
                 }
                 else if (!CheckRightSpeedForOutsideMist(geoVehicle))
                 {
@@ -309,7 +338,6 @@ namespace TFTV
             }
         }
 
-
         private static void ResetSpeed(GeoVehicle geoVehicle, bool inMist = false)
         {
             try
@@ -337,6 +365,7 @@ namespace TFTV
                     List<Vector3> path = _destinationSites.Select((GeoSite d) => d.WorldPosition).ToList();
                     geoVehicle.Navigation.Navigate(path);
                 }
+                
             }
             catch (Exception e)
             {
@@ -352,6 +381,15 @@ namespace TFTV
                 GeoLevelController controller = aircraft.GeoLevel;
                 MistRendererSystem mistRendererSystem = controller.MistRenderComponent;
 
+                if (aircraft.CurrentSite!=null && aircraft.CurrentSite.GetComponent<GeoPhoenixBase>()!=null)
+                {
+                    GeoSite site = aircraft.CurrentSite;
+
+                    if (site.IsInMist && !site.IsInMistRepeller) 
+                    {
+                        return true;
+                    }
+                }
 
 
                 if (mistRendererSystem == null)

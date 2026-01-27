@@ -168,7 +168,7 @@ namespace TFTV.TFTVHavenRecruitsUI
 
                 if (abilitySlotForLevel.Ability is PassiveModifierAbilityDef passiveAbilityDef)
                 {
-                    TFTVLogger.Always($"passiveAbilityDef: {passiveAbilityDef.name}");
+                  //  TFTVLogger.Always($"passiveAbilityDef: {passiveAbilityDef.name}");
                     passiveAbilities.Add(passiveAbilityDef);   
                 }
 

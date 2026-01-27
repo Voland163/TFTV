@@ -181,6 +181,8 @@
     <Compile Include="TFTVEvacAll.cs" />
     <Compile Include="TFTVExperienceDistribution.cs" />
     <Compile Include="TFTVDragandDropFunctionality.cs" />
+    <Compile Include="TFTVLaserWeapons\LaserWeaponsBatteryTooltip.cs" />
+    <Compile Include="TFTVLaserWeapons\LaserWeaponsReplenishPatches.cs" />
     <Compile Include="TFTVUI\Common\Various.cs" />
     <Compile Include="TFTVUI\Data.cs" />
     <Compile Include="TFTVUI\Geoscape\Facilities.cs" />

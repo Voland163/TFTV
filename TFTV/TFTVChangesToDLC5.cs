@@ -2886,10 +2886,10 @@ namespace TFTV
 
                     GeoEventChoiceOutcome outcome = choice.Outcome;
 
-                    if (outcome.Items.Count > 0) 
+                   /* if (outcome.Items.Count > 0) 
                     {
                         TFTVLogger.Always($"Checking if Market choice is vehicle: {outcome.Items[0].ItemDef.name}; {outcome.Items[0].ItemDef.Tags.Contains(VehiclesAmmoMain.MarketplaceGroundVehicleWeapon)}");
-                    }
+                    }*/
 
                        
 
