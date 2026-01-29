@@ -11,7 +11,6 @@ using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
-using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
@@ -393,6 +392,27 @@ namespace TFTV
             }
         }
 
+        internal static void ResetGroundAttackWeaponUsage()
+        {
+            try
+            {
+                if (!AircraftReworkOn)
+                {
+                    return;
+                }
+
+                if (_thunderbirdGroundAttackWeaponPresent < 0)
+                {
+                    _thunderbirdGroundAttackWeaponPresent *= -1;
+                    InternalData.ModulesInTactical[7] = _thunderbirdGroundAttackWeaponPresent;
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
         public static void CheckTacticallyRelevantModulesOnVehicle(GeoVehicle geoVehicle, GeoMission geoMission = null)
         {
             try
@@ -544,7 +564,7 @@ namespace TFTV
 
             public static void WorkshopModuleLowerAcidApplyAffectCheck(DamageOverTimeStatus damageOverTimeStatus)
             {
-                try 
+                try
                 {
 
                     TacticalActor tacticalActor = damageOverTimeStatus.TacticalActor;
@@ -581,7 +601,7 @@ namespace TFTV
 
 
 
-            } 
+            }
 
 
 
@@ -943,7 +963,7 @@ namespace TFTV
             {
                 try
                 {
-                    if (_thunderbirdGroundAttackWeaponPresent == 0)
+                    if (_thunderbirdGroundAttackWeaponPresent <= 0)
                     {
                         return;
                     }
@@ -993,7 +1013,11 @@ namespace TFTV
                         }
                     }
 
-                    _thunderbirdGroundAttackWeaponPresent = 0;
+                    if (_thunderbirdGroundAttackWeaponPresent > 0)
+                    {
+                        _thunderbirdGroundAttackWeaponPresent *= -1;
+                        InternalData.ModulesInTactical[7] = _thunderbirdGroundAttackWeaponPresent;
+                    }
 
                 }
                 catch (Exception e)

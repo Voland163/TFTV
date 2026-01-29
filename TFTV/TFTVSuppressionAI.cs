@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace TFTV
 {
-    internal class TFTVSupressionAI
+    internal class TFTVSuppressionAI
     {
         [HarmonyPatch(typeof(AIActionMoveAndAttack), nameof(AIActionMoveAndAttack.Execute))]
         public static class AIActionMoveAndAttack_Execute_Patch

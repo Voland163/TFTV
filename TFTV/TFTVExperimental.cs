@@ -1,27 +1,13 @@
 ﻿using Base.Core;
-using Base.Entities.Effects.ApplicationConditions;
-using Base.Utils.Maths;
-using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities.Characters;
-using PhoenixPoint.Geoscape.Cameras;
-using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.Research.Reward;
+using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.View;
-using PhoenixPoint.Geoscape.View.ViewModules;
-using PhoenixPoint.Geoscape.View.ViewStates;
-using PhoenixPoint.Modding;
 using PhoenixPoint.Tactical.Entities;
-using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.Levels;
-using PRMBetterClasses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
+using System.Text;
 using UnityEngine;
 
 
@@ -36,131 +22,282 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
 
 
+        /*   [HarmonyPatch(typeof(HavenZonesStats), "GetTotalHavenOutput")]
+           public static class HavenZonesStatsLoggingPatch
+           {
+               private static readonly AccessTools.FieldRef<HavenZonesStats, GeoHaven> HavenField =
+                   AccessTools.FieldRefAccess<HavenZonesStats, GeoHaven>("_haven");
 
-      /*  [HarmonyPatch(typeof(HealAbility), "ShouldReturnTarget")]
-        internal static class TechnicianRepairTargetLoggingPatch
+               public static void Postfix(HavenZonesStats __instance, HavenZonesStats.HavenOnlyOutput __result)
+               {
+                   GeoHaven haven = HavenField(__instance);
+                   if (haven == null)
+                   {
+                       Debug.Log("[HavenZonesStats.GetTotalHavenOutput] Haven reference missing on HavenZonesStats instance.");
+                       return;
+                   }
+
+                   HavenZonesStats.HavenOnlyOutput zoneOutput = __instance.ZoneOutput;
+                   HavenZonesStats.HavenOnlyOutput populationOutput = __instance.PopulationOutput;
+                   HavenZonesStats.HavenOnlyOutput bonuses = __instance.GetOtherHavensBonuses();
+                   GeoFactionStatModifiers modifiers = haven.Site?.Owner?.FactionStatModifiers;
+                   bool hasModifiers = modifiers != null;
+                   HavenZonesStats.HavenOnlyOutput combined = zoneOutput + populationOutput;
+                   HavenZonesStats.HavenOnlyOutput modified = hasModifiers
+                       ? combined * modifiers.HavenOutputModifiers
+                       : combined;
+                   HavenZonesStats.HavenOnlyOutput expected = modified + bonuses;
+                   string havenName = haven.Site != null ? haven.Site.Name : "<unknown>";
+
+                   TFTVLogger.Always(
+                       "[HavenZonesStats.GetTotalHavenOutput] " +
+                       $"Haven='{havenName}', Pop={haven.Population}, " +
+                       $"Zone(F:{zoneOutput.Food},D:{zoneOutput.Deployment},P:{zoneOutput.Production}), " +
+                       $"Pop(F:{populationOutput.Food},D:{populationOutput.Deployment},P:{populationOutput.Production}), " +
+                       $"Bonuses(F:{bonuses.Food},D:{bonuses.Deployment},P:{bonuses.Production}), " +
+                       $"Mods(FoodMod:{(hasModifiers ? modifiers.HavenOutputModifiers.FoodMod : 0f):0.###}, " +
+                       $"DeploymentMod:{(hasModifiers ? modifiers.HavenOutputModifiers.DeploymentMod : 0f):0.###}, " +
+                       $"ProductionMod:{(hasModifiers ? modifiers.HavenOutputModifiers.ProductionMod : 0f):0.###}, " +
+                       $"GlobalMod:{(hasModifiers ? modifiers.HavenOutputModifiers.GlobalMod : 0f):0.###}), " +
+                       $"Total(F:{__result.Food},D:{__result.Deployment},P:{__result.Production}), " +
+                       $"Expected(F:{expected.Food},D:{expected.Deployment},P:{expected.Production})", false);
+
+                   if (bonuses.Food != 0 || bonuses.Deployment != 0 || bonuses.Production != 0)
+                   {
+                       foreach (GeoHaven.HavenRangeEntry havenRangeEntry in haven.CoveredByHavens)
+                       {
+                           GeoHaven sourceHaven = havenRangeEntry.Haven;
+                           if (sourceHaven == null)
+                           {
+                               continue;
+                           }
+
+                           HavenZonesStats.HavenOnlyOutput sourceBonus = sourceHaven.ZonesStats.ProvidesBonusOutput;
+                           string sourceName = sourceHaven.Site != null ? sourceHaven.Site.Name : "<unknown>";
+                           TFTVLogger.Always(
+                               "[HavenZonesStats.GetTotalHavenOutput] " +
+                               $"BonusSource='{sourceName}', " +
+                               $"Bonus(F:{sourceBonus.Food},D:{sourceBonus.Deployment},P:{sourceBonus.Production}), " +
+                               $"Target='{havenName}'", false);
+                       }
+                   }
+               }
+           }*/
+
+        public static class GeoFactionResearchForecastLogger
         {
-            private const string TechnicianRepairAbilityName = "TechnicianRepair_AbilityDef";
-            private const string TargetDisplayName = "JUNKER";
+            private const string LogPrefix = "[ResearchForecast]";
 
-            private static void Postfix(HealAbility __instance, TacticalActor healer, TacticalActor targetActor, ref bool __result)
+            public static void LogForecasts(GeoLevelController level)
             {
-                if (__result || __instance?.HealAbilityDef == null || targetActor == null)
+                if (level == null)
                 {
                     return;
                 }
+                LogFactionForecast(level.AnuFaction);
+                LogFactionForecast(level.NewJerichoFaction);
+                LogFactionForecast(level.SynedrionFaction);
+            }
 
-                if (!string.Equals(__instance.HealAbilityDef.name, TechnicianRepairAbilityName, StringComparison.Ordinal))
+            private static void LogFactionForecast(GeoFaction faction)
+            {
+                if (faction == null || faction.Research == null)
                 {
                     return;
                 }
+                Research research = faction.Research;
+                float hourlyResearch = (float)faction.ResourceIncome.GetTotalResouce(ResourceType.Research).RoundedValue;
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.AppendLine(string.Format("{0} {1} starting research forecast:", LogPrefix, faction.Def.name));
+                stringBuilder.AppendLine(string.Format("{0} Hourly research production: {1:0.##}", LogPrefix, hourlyResearch));
 
-                if (!string.Equals(targetActor.DisplayName, TargetDisplayName, StringComparison.OrdinalIgnoreCase))
+                List<ResearchElement> completed = research.Completed.Where((ResearchElement r) => r.ResearchDef.Faction == faction.Def)
+                    .OrderBy((ResearchElement r) => r.ResearchDef.Id)
+                    .ToList<ResearchElement>();
+                foreach (ResearchElement researchElement in completed)
                 {
+                    stringBuilder.AppendLine(string.Format("{0} Day 0: {1} (already completed)", LogPrefix, researchElement.ResearchDef.Id));
+                }
+
+                List<ResearchElement> researchable = research.Researchable
+                    .Where((ResearchElement r) => r.ResearchDef.Faction == faction.Def)
+                    .OrderByDescending((ResearchElement r) => r.ResearchDef.Priority)
+                    .ThenByDescending((ResearchElement r) => r.ResearchDef.SecodaryPriority)
+                    .ThenBy((ResearchElement r) => r.ResearchDef.Id)
+                    .ToList<ResearchElement>();
+
+                HashSet<ResearchElement> researchableSet = new HashSet<ResearchElement>(researchable);
+                List<ResearchElement> locked = research.Noncompleted
+                    .Where((ResearchElement r) => r.ResearchDef.Faction == faction.Def && !researchableSet.Contains(r))
+                    .OrderBy((ResearchElement r) => r.ResearchDef.Id)
+                    .ToList<ResearchElement>();
+
+                if (hourlyResearch <= 0f)
+                {
+                    if (researchable.Count > 0)
+                    {
+                        stringBuilder.AppendLine(string.Format("{0} No research income; cannot forecast completion days for available research.", LogPrefix));
+                    }
+                    foreach (ResearchElement researchElement2 in locked)
+                    {
+                        stringBuilder.AppendLine(string.Format("{0} Locked at start: {1} (state: {2})", LogPrefix, researchElement2.ResearchDef.Id, researchElement2.State));
+                    }
+                    Debug.Log(stringBuilder.ToString());
                     return;
                 }
 
-                HealAbilityDef healAbilityDef = __instance.HealAbilityDef;
-                bool suppressedHealing = targetActor.HasGameTags(healAbilityDef.SuppressHealingOnTargetTags, false);
-                bool needsGeneralHeal = __instance.GeneralHealAmount > 0f && targetActor.Health.Value < targetActor.Health.Max;
-                bool hasHealableBodyParts = healAbilityDef.HealBodyParts && targetActor.BodyState.GetHealthSlots().Any((ItemSlot slot) => HasHealableBodyPart(healAbilityDef, slot));
-                bool repairsArmor = healAbilityDef.RestoresArmour;
-                bool hasDamagedArmor = repairsArmor && targetActor.BodyState.GetHealthSlots().Any((ItemSlot slot) => slot.GetArmor().Value < slot.GetArmor().Max);
-                bool conditionalEffectMet = healAbilityDef.HealEffects != null && healAbilityDef.HealEffects.Any((HealAbilityDef.ConditionalHealEffect effect) => ConditionalEffectApplies(effect, healer, targetActor));
-
-                string reason;
-                if (suppressedHealing && !conditionalEffectMet)
+                double cumulativeHours = 0.0;
+                foreach (ResearchElement researchElement3 in researchable)
                 {
-                    reason = "healing is suppressed on the target and no conditional heal effect matched.";
-                }
-                else if (!needsGeneralHeal && !hasHealableBodyParts && (!repairsArmor || !hasDamagedArmor) && !conditionalEffectMet)
-                {
-                    reason = "nothing to heal or repair and conditional heal effects did not match.";
-                }
-                else
-                {
-                    reason = "failed an unspecified heal targeting requirement.";
+                    float remainingCost = Mathf.Max(0f, researchElement3.ResearchCost - researchElement3.ResearchProgress);
+                    double hours = remainingCost / hourlyResearch;
+                    cumulativeHours += hours;
+                    int dayNumber = (int)Math.Ceiling(cumulativeHours / 24.0);
+                    stringBuilder.AppendLine(string.Format(
+                        "{0} Day {1}: {2} (cost {3}, priority {4}, secondary {5})",
+                        LogPrefix,
+                        dayNumber,
+                        researchElement3.ResearchDef.Id,
+                        researchElement3.ResearchCost,
+                        researchElement3.ResearchDef.Priority,
+                        researchElement3.ResearchDef.SecodaryPriority));
                 }
 
-                Debug.LogWarning($"[TechnicianRepair diagnostics] Ability '{healAbilityDef.name}' skipped target '{targetActor.DisplayName}': suppressed={suppressedHealing}, needsGeneralHeal={needsGeneralHeal}, healableBodyParts={hasHealableBodyParts}, armourDamaged={hasDamagedArmor}, conditionalEffectMet={conditionalEffectMet}. Reason: {reason}");
+                foreach (ResearchElement researchElement4 in locked)
+                {
+                    stringBuilder.AppendLine(string.Format("{0} Locked at start: {1} (state: {2})", LogPrefix, researchElement4.ResearchDef.Id, researchElement4.State));
+                }
+
+                TFTVLogger.Always(stringBuilder.ToString());
             }
+        }
 
-            private static bool ConditionalEffectApplies(HealAbilityDef.ConditionalHealEffect healEffect, TacticalActor healer, TacticalActor targetActor)
-            {
-                if (healEffect == null)
-                {
-                    return false;
-                }
 
-                return !(healEffect.HealerConditions?.Any((EffectConditionDef condition) => condition != null && !condition.ConditionMet(healer)) ?? false) && !(healEffect.TargetGenerationConditions?.Any((EffectConditionDef condition) => condition != null && !condition.ConditionMet(targetActor)) ?? false);
-            }
 
-            private static bool HasHealableBodyPart(HealAbilityDef healAbilityDef, ItemSlot slot)
-            {
-                if (slot == null)
-                {
-                    return false;
-                }
+        /*  [HarmonyPatch(typeof(HealAbility), "ShouldReturnTarget")]
+          internal static class TechnicianRepairTargetLoggingPatch
+          {
+              private const string TechnicianRepairAbilityName = "TechnicianRepair_AbilityDef";
+              private const string TargetDisplayName = "JUNKER";
 
-                if (!healAbilityDef.IgnoreDisabledSlots && !slot.Enabled)
-                {
-                    return false;
-                }
-
-                if (healAbilityDef.BlockedBodypartsTagDef != null && slot.HasDirectGameTag(healAbilityDef.BlockedBodypartsTagDef, true))
-                {
-                    return false;
-                }
-
-                if (healAbilityDef.ExclusiveBodypartsTagDef != null && !slot.HasDirectGameTag(healAbilityDef.ExclusiveBodypartsTagDef, true))
-                {
-                    return false;
-                }
-
-                return slot.GetHealth().Value < slot.GetHealth().Max;
-            }
-        }*/
-
-            /*  private static bool HasLineOfSight(
-                  TacticalTargetData targetData,
-                  TacticalActorBase sourceActor,
-                  Vector3 sourcePosition,
-                  TacticalActorBase targetActor)
+              private static void Postfix(HealAbility __instance, TacticalActor healer, TacticalActor targetActor, ref bool __result)
               {
-                  if (sourceActor.CheckVisibleLineBetweenActors(sourcePosition, targetActor, true))
+                  if (__result || __instance?.HealAbilityDef == null || targetActor == null)
                   {
-                      return true;
+                      return;
                   }
 
-                  if (!targetData.CanPeekFromEdge)
+                  if (!string.Equals(__instance.HealAbilityDef.name, TechnicianRepairAbilityName, StringComparison.Ordinal))
+                  {
+                      return;
+                  }
+
+                  if (!string.Equals(targetActor.DisplayName, TargetDisplayName, StringComparison.OrdinalIgnoreCase))
+                  {
+                      return;
+                  }
+
+                  HealAbilityDef healAbilityDef = __instance.HealAbilityDef;
+                  bool suppressedHealing = targetActor.HasGameTags(healAbilityDef.SuppressHealingOnTargetTags, false);
+                  bool needsGeneralHeal = __instance.GeneralHealAmount > 0f && targetActor.Health.Value < targetActor.Health.Max;
+                  bool hasHealableBodyParts = healAbilityDef.HealBodyParts && targetActor.BodyState.GetHealthSlots().Any((ItemSlot slot) => HasHealableBodyPart(healAbilityDef, slot));
+                  bool repairsArmor = healAbilityDef.RestoresArmour;
+                  bool hasDamagedArmor = repairsArmor && targetActor.BodyState.GetHealthSlots().Any((ItemSlot slot) => slot.GetArmor().Value < slot.GetArmor().Max);
+                  bool conditionalEffectMet = healAbilityDef.HealEffects != null && healAbilityDef.HealEffects.Any((HealAbilityDef.ConditionalHealEffect effect) => ConditionalEffectApplies(effect, healer, targetActor));
+
+                  string reason;
+                  if (suppressedHealing && !conditionalEffectMet)
+                  {
+                      reason = "healing is suppressed on the target and no conditional heal effect matched.";
+                  }
+                  else if (!needsGeneralHeal && !hasHealableBodyParts && (!repairsArmor || !hasDamagedArmor) && !conditionalEffectMet)
+                  {
+                      reason = "nothing to heal or repair and conditional heal effects did not match.";
+                  }
+                  else
+                  {
+                      reason = "failed an unspecified heal targeting requirement.";
+                  }
+
+                  Debug.LogWarning($"[TechnicianRepair diagnostics] Ability '{healAbilityDef.name}' skipped target '{targetActor.DisplayName}': suppressed={suppressedHealing}, needsGeneralHeal={needsGeneralHeal}, healableBodyParts={hasHealableBodyParts}, armourDamaged={hasDamagedArmor}, conditionalEffectMet={conditionalEffectMet}. Reason: {reason}");
+              }
+
+              private static bool ConditionalEffectApplies(HealAbilityDef.ConditionalHealEffect healEffect, TacticalActor healer, TacticalActor targetActor)
+              {
+                  if (healEffect == null)
                   {
                       return false;
                   }
 
-                  var floorCast = sourceActor.GetFloorCast();
-                  floorCast.Ray.direction = Vector3.down;
-                  floorCast.MaxDistance = 1f;
+                  return !(healEffect.HealerConditions?.Any((EffectConditionDef condition) => condition != null && !condition.ConditionMet(healer)) ?? false) && !(healEffect.TargetGenerationConditions?.Any((EffectConditionDef condition) => condition != null && !condition.ConditionMet(targetActor)) ?? false);
+              }
 
-                  float agentRadius = sourceActor.NavigationComponent.AgentNavSettings.AgentRadius;
-                  foreach (Vector3 peekPos in TacticalMap.GetPositionsInRange(sourcePosition, agentRadius, agentRadius + 1f))
+              private static bool HasHealableBodyPart(HealAbilityDef healAbilityDef, ItemSlot slot)
+              {
+                  if (slot == null)
                   {
-                      Vector3 dir = (peekPos - sourcePosition).normalized;
-                      if (sourceActor.Map.GetCoverInfoInDirection(sourcePosition, dir, sourceActor.TacticalPerceptionBase.VisionHeight).CoverType != CoverType.None)
-                      {
-                          continue;
-                      }
-
-                      floorCast.Ray.origin = peekPos + Vector3.up * 0.05f;
-                      if (!floorCast.Cast() &&
-                          sourceActor.CheckVisibleLineBetweenActors(peekPos, targetActor, false))
-                      {
-                          return true;
-                      }
+                      return false;
                   }
 
+                  if (!healAbilityDef.IgnoreDisabledSlots && !slot.Enabled)
+                  {
+                      return false;
+                  }
+
+                  if (healAbilityDef.BlockedBodypartsTagDef != null && slot.HasDirectGameTag(healAbilityDef.BlockedBodypartsTagDef, true))
+                  {
+                      return false;
+                  }
+
+                  if (healAbilityDef.ExclusiveBodypartsTagDef != null && !slot.HasDirectGameTag(healAbilityDef.ExclusiveBodypartsTagDef, true))
+                  {
+                      return false;
+                  }
+
+                  return slot.GetHealth().Value < slot.GetHealth().Max;
+              }
+          }*/
+
+        /*  private static bool HasLineOfSight(
+              TacticalTargetData targetData,
+              TacticalActorBase sourceActor,
+              Vector3 sourcePosition,
+              TacticalActorBase targetActor)
+          {
+              if (sourceActor.CheckVisibleLineBetweenActors(sourcePosition, targetActor, true))
+              {
+                  return true;
+              }
+
+              if (!targetData.CanPeekFromEdge)
+              {
                   return false;
-              }*/
-        
+              }
+
+              var floorCast = sourceActor.GetFloorCast();
+              floorCast.Ray.direction = Vector3.down;
+              floorCast.MaxDistance = 1f;
+
+              float agentRadius = sourceActor.NavigationComponent.AgentNavSettings.AgentRadius;
+              foreach (Vector3 peekPos in TacticalMap.GetPositionsInRange(sourcePosition, agentRadius, agentRadius + 1f))
+              {
+                  Vector3 dir = (peekPos - sourcePosition).normalized;
+                  if (sourceActor.Map.GetCoverInfoInDirection(sourcePosition, dir, sourceActor.TacticalPerceptionBase.VisionHeight).CoverType != CoverType.None)
+                  {
+                      continue;
+                  }
+
+                  floorCast.Ray.origin = peekPos + Vector3.up * 0.05f;
+                  if (!floorCast.Cast() &&
+                      sourceActor.CheckVisibleLineBetweenActors(peekPos, targetActor, false))
+                  {
+                      return true;
+                  }
+              }
+
+              return false;
+          }*/
+
 
 
         /*  [HarmonyPatch(typeof(UIStateVehicleSelected), "OnSelect")]
@@ -234,7 +371,7 @@ namespace TFTV
           }*/
 
 
-       
+
 
         /* [HarmonyPatch(typeof(FactionCharacterGenerator), "GeneratePersonalAbilities")]
             internal static class Debug_GenerateUnit_Patches
@@ -428,7 +565,7 @@ namespace TFTV
 
 
 
-               foreach (TacCharacterDef tacCharacterDef in controller.NewJerichoFaction.UnlockedUnitTemplates)
+                foreach (TacCharacterDef tacCharacterDef in controller.NewJerichoFaction.UnlockedUnitTemplates)
                 {
                     TFTVLogger.Always($"Template: {tacCharacterDef.name}, Level: {tacCharacterDef.Data.LevelProgression.Level}, ClassTag: {tacCharacterDef.ClassTag}");
                 }

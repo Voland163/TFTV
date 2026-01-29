@@ -239,17 +239,26 @@ namespace TFTV.TFTVUI.Tactical
                 {
                     //  TFTVLogger.Always($"creating alien panel {rowNumber}");
 
+                    Resolution resolution = Screen.currentResolution;
+                    float resolutionFactorWidth = (float)resolution.width / 1920f;
+                    if(resolutionFactorWidth>1.4f)
+                    {
+                        resolutionFactorWidth = 1.4f;
+                    }
+             //   TFTVLogger.Always($"resolutionFactorWidth: {resolutionFactorWidth} for {resolution.width}");
+
+
                     GameObject alienPanel = new GameObject($"AlienCapturePanel{rowNumber}");
                     alienPanel.transform.SetParent(parent, false);
                     RectTransform alienPanelRect = alienPanel.AddComponent<RectTransform>();
-                    alienPanelRect.sizeDelta = new Vector2(370, 85);  // Adjust as necessary
+                    alienPanelRect.sizeDelta = new Vector2(370 * resolutionFactorWidth, 85);  // Adjust as necessary
                     alienPanelRect.anchoredPosition = new Vector2(75, -90 * rowNumber - 220);  // Adjust position
 
                     // Add a black background image to the alien capture panel
                     Image background = alienPanel.AddComponent<Image>();
                     background.color = new Color(0, 0, 0, 0.5f);
                     background.type = Image.Type.Sliced;  // Optionally make it sliced for better scaling
-                    background.rectTransform.sizeDelta = new Vector2(370, 70);
+                    background.rectTransform.sizeDelta = new Vector2(370 * resolutionFactorWidth, 70);
 
                     if (rowNumber == 0)
                     {
@@ -294,6 +303,7 @@ namespace TFTV.TFTVUI.Tactical
                     Resolution resolution = Screen.currentResolution;
                     float resolutionFactorWidth = (float)resolution.width / 1920f;
                     float resolutionFactorHeight = (float)resolution.height / 1080f;
+                    float alienRowScale = Mathf.Min(resolutionFactorWidth, 1.4f);
 
                     foreach (GameObject alienPanel in _alienPanels)
                     {
@@ -368,7 +378,7 @@ namespace TFTV.TFTVUI.Tactical
                         alienIconImage.sprite = alien.ViewElementDef.SmallIcon;  // Use the alien sprite
                         RectTransform alienIconRect = alienIconObject.GetComponent<RectTransform>();
                         alienIconRect.sizeDelta = new Vector2(50, 50);  // Adjust size for the alien icon
-                        alienIconRect.anchoredPosition = new Vector2((position * 60 - 150) * resolutionFactorWidth, 0);  // Adjust the position of each alien icon
+                        alienIconRect.anchoredPosition = new Vector2((position * 60 - 150) * alienRowScale, 0);
 
 
                         AddOutlineToIcon addOutlineToIcon = alienIconObject.GetComponent<AddOutlineToIcon>() ?? alienIconObject.AddComponent<AddOutlineToIcon>();

@@ -1,15 +1,12 @@
 ﻿using Base.Core;
 using Base.Defs;
 using Base.Entities.Statuses;
-using Base.Levels;
 using Base.UI;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
-using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
-using PhoenixPoint.Common.Game;
 using PhoenixPoint.Common.Saves;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers;
@@ -123,13 +120,13 @@ namespace TFTV
                 TFTVChangesToDLC4Events.ClearDataOnLoad();
 
                 TFTVBehemothAndRaids.InternalData.BehemothDataToClearOnStateChangeAndLoad();
-                
+
                 TFTVBaseDefenseTactical.InternalData.BaseDefenseDataToClearOnStateChangeAndLoad();
-               
+
                 TFTVRevenant.InternalData.RevenantDataToClearOnStateChangeAndLoad();
 
                 TFTVBaseDefenseGeoscape.ClearInternalDataOnStateLoadAndChange();
-               
+
                 TFTVTouchedByTheVoid.TBTVVariable = 0;
                 TFTVTouchedByTheVoid.UmbraResearched = false;
 
@@ -141,7 +138,7 @@ namespace TFTV
                 TFTVHumanEnemiesNames.CreateNamesDictionary();
 
                 TFTVDiplomacyPenalties.VoidOmensImplemented = false;
-                
+
                 TFTVInfestation.InfestationMissionWon = false;
 
                 TFTVUI.Data.ClearInternalDataOnLoad();
@@ -151,25 +148,25 @@ namespace TFTV
                 TFTVAncients.CyclopsMolecularDamageBuff.Clear();
                 TFTVAncientsGeo.AutomataResearched = false;
                 TFTVAncients.AlertedHoplites.Clear();
-       
+
                 TFTVCapturePandoransGeoscape.ToxinsInCirculation = 0;
                 TFTVCapturePandoransGeoscape.PandasForFoodProcessing = 0;
                 TFTVCapturePandorans.ContainmentFacilityPresent = false;
-                
+
                 TFTVNewGameOptions.ConfigImplemented = false;
                 TFTVNewGameOptions.InternalDifficultyCheck = 0;
 
                 TFTVNewGameMenu.EnterStateRun = false;
-              
+
                 TFTVAmbushes.AN_FallenOnes_Hotspots = new List<int>();
                 TFTVAmbushes.NJ_Purists_Hotspots = new List<int>();
-              
+
                 TFTVDelirium.CharactersDeliriumPerksAndMissions.Clear();
 
                 TFTVPandoranProgress.ScyllaCount = 0;
 
                 TFTVTacticalDeploymentEnemies.UndesirablesSpawned.Clear();
-             
+
                 ClearHints();
                 TFTVCustomPortraits.CharacterPortrait.ClearPortraitData();
 
@@ -179,7 +176,7 @@ namespace TFTV
 
                 TFTVDragandDropFunctionality.VehicleRoster.PlayerVehicles = new List<int>();
                 TFTVDragandDropFunctionality.VehicleRoster.AircraftHotkeysBindingsApplied = false;
-                TFTVVanillaFixes.UI.ShowPerceptionCirclesBindingApplied = false;    
+                TFTVVanillaFixes.UI.ShowPerceptionCirclesBindingApplied = false;
 
                 TFTVNJQuestline.IntroMission.ClearDataOnMissionRestartLoadAndStateChange();
                 TFTVAircraftReworkMain.InternalData.ClearDataOnStateChange();
@@ -288,6 +285,8 @@ namespace TFTV
                 TFTVTacticalDeploymentEnemies.UndesirablesSpawned.Clear();
                 TFTVNJQuestline.IntroMission.ClearDataOnMissionRestartLoadAndStateChange();
 
+                AircraftReworkTacticalModules.ResetGroundAttackWeaponUsage();
+
                 TFTVLogger.Always($"Internal variables cleared on Mission Restart");
 
             }
@@ -308,14 +307,14 @@ namespace TFTV
                 {
                     TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
-                    
-                    if (controller!=null && controller.TacMission.MissionData.MissionType.name.Contains("Tutorial")) 
+
+                    if (controller != null && controller.TacMission.MissionData.MissionType.name.Contains("Tutorial"))
                     {
                         TFTVLogger.Always($"disabling save button in Tutorial");
                         __instance.SaveButton.GetComponent<PhoenixGeneralButton>().SetInteractable(false);
                     }
 
-                   
+
                 }
                 catch (Exception e)
                 {
@@ -534,7 +533,7 @@ namespace TFTV
                         },
                         TriggerEncounterID = eventToTrigger
                     }
-                    
+
                 });
             }
             catch (Exception e)
@@ -709,9 +708,9 @@ namespace TFTV
             }
         }
 
-        public static ExistingResearchRequirementDef[] CreateExistingResearchRequirementDefs(List <ResearchDef> requiredResearches, List <string> guids)
+        public static ExistingResearchRequirementDef[] CreateExistingResearchRequirementDefs(List<ResearchDef> requiredResearches, List<string> guids)
         {
-            try 
+            try
             {
                 ExistingResearchRequirementDef[] existingResearchRequirementDefs = new ExistingResearchRequirementDef[requiredResearches.Count];
 
@@ -835,9 +834,9 @@ namespace TFTV
                     newCaptureActorResearchRequirementDef.Actor = null;
                 }
 
-                if (actorTag != null) 
-                { 
-                   newCaptureActorResearchRequirementDef.Tag = actorTag;
+                if (actorTag != null)
+                {
+                    newCaptureActorResearchRequirementDef.Tag = actorTag;
 
                 }
 
@@ -1001,7 +1000,7 @@ namespace TFTV
         {
             try
             {
-                
+
                 GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
 
                 foreach (GeoVehicle aircraft in controller.PhoenixFaction.Vehicles)

@@ -180,6 +180,7 @@
     <Compile Include="TFTVEvacAll.cs" />
     <Compile Include="TFTVExperienceDistribution.cs" />
     <Compile Include="TFTVDragandDropFunctionality.cs" />
+    <Compile Include="TFTVHavenRecruitsGenerationAdjustments.cs" />
     <Compile Include="TFTVLaserWeapons\LaserWeaponsBatteryTooltip.cs" />
     <Compile Include="TFTVLaserWeapons\LaserWeaponsReplenishPatches.cs" />
     <Compile Include="TFTVReloadKeepPartialTactical.cs" />
@@ -211,7 +212,7 @@
     <Compile Include="TFTVNJQuestline.cs" />
     <Compile Include="TFTVRevertSGPatchBalance.cs" />
     <Compile Include="TFTVSuppression.cs" />
-    <Compile Include="TFTVSupressionAI.cs" />
+    <Compile Include="TFTVSuppressionAI.cs" />
     <Compile Include="TFTVTauntsAndQuips.cs" />
     <Compile Include="TFTVTimeScaling.cs" />
     <Compile Include="TFTVUI\Geoscape\TopInforBar.cs" />

@@ -376,7 +376,7 @@ namespace TFTV.Vehicles.Ammo
                     TacticalItemDef junkerVishnuAmmo = CreateAmmoForJunkerWeapon(
                         "vishnu",
                         junkerVishnu,
-                        120,
+                        100,
                         "{1B2C3D4E-5F60-7890-1234-567890ABCDEF}",
                         "{2A3B4C5D-6E7F-8901-2345-67890ABCDEF1}",
                         "{3C4D5E6F-7081-2345-6789-0ABCDEF12345}"
@@ -401,7 +401,7 @@ namespace TFTV.Vehicles.Ammo
                     CreateAmmoForJunkerWeapon(
                         "fullstop",
                         junkerFullStop,
-                        120,
+                        100,
                         "{4D5E6F70-8192-3456-7890-ABCDEF123456}",
                         "{5E6F7081-9234-5678-90AB-CDEF12345678}",
                         "{6F708192-3456-7890-ABCD-EF1234567890}"
@@ -412,7 +412,7 @@ namespace TFTV.Vehicles.Ammo
                     CreateAmmoForJunkerWeapon(
                         "screamer",
                         junkerScreamer,
-                        120,
+                        100,
                         "{7F809192-3456-7890-ABCD-EF1234567890}",
                         "{80919234-5678-90AB-CDEF-1234567890AB}",
                         "{90123456-7890-ABCD-EF12-34567890ABCD}"
@@ -489,8 +489,8 @@ namespace TFTV.Vehicles.Ammo
                     GeoMarketplaceItemOptionDef newMarketplaceItem = Helper.CreateDefFromClone
                          (DefCache.GetDef<GeoMarketplaceItemOptionDef>("Obliterator_MarketplaceItemOptionDef"), gUID2, name);
 
-                    newMarketplaceItem.MinPrice = minPrice;
-                    newMarketplaceItem.MaxPrice = minPrice + minPrice * 1.25f;
+                    newMarketplaceItem.MinPrice = minPrice*0.8f;
+                    newMarketplaceItem.MaxPrice = minPrice + minPrice*0.5f;
                     newMarketplaceItem.ItemDef = newAmmo;
                     newMarketplaceItem.DisallowDuplicates = false;
                     //  newMarketplaceItem.Availability = availability;

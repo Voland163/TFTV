@@ -9,6 +9,7 @@ using Base.Entities.Statuses;
 using Base.Input;
 using Base.UI;
 using Base.Utils;
+using Base.Utils.GameConsole;
 using Code.PhoenixPoint.Tactical.Entities.Equipments;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
@@ -24,6 +25,7 @@ using PhoenixPoint.Common.Entities.Items.SkinData;
 using PhoenixPoint.Common.Entities.RedeemableCodes;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
@@ -35,6 +37,7 @@ using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.AI.Actions;
 using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.AI.TargetGenerators;
+using PhoenixPoint.Tactical.Console;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
@@ -100,7 +103,80 @@ namespace TFTV
 
         }
 
+        public static void ListActionUsers(string actionDefName)
+        {
+            
+            DefRepository defRepository = GameUtl.GameComponent<DefRepository>();
+            AIActionDef aiactionDef = defRepository.GetAllDefs<AIActionDef>().FirstOrDefault((AIActionDef def) => def.name.IndexOf(actionDefName, StringComparison.OrdinalIgnoreCase) >= 0);
+           
+            List<TacAIActorDef> allDefs = defRepository.GetAllDefs<TacAIActorDef>().ToList<TacAIActorDef>();
+            int num = 0;
+            foreach (TacAIActorDef tacAIActorDef in allDefs)
+            {
+                List<string> list = GetActionUsageLocations(tacAIActorDef, aiactionDef);
+                if (list.Count > 0)
+                {
+                    num++;
+                    TFTVLogger.Always(string.Format("{0}: {1}", tacAIActorDef.name, string.Join(", ", list)));
+                }
+            }
+            TFTVLogger.Always(string.Format("Found {0} TacAIActorDef entries using {1}.", num, aiactionDef.name));
+        }
 
+    
+        private static List<string> GetActionUsageLocations(TacAIActorDef actorDef, AIActionDef actionDef)
+        {
+            List<string> list = new List<string>();
+            if (TemplateHasAction(actorDef.AIActionsTemplateDef, actionDef))
+            {
+                list.Add("default-template");
+            }
+            if (TemplateHasAction(actorDef.ForcedAIActionsTemplateDef, actionDef))
+            {
+                list.Add("forced-template");
+            }
+            TacAIActorDef.ClassDependentTemplate[] classDependentTemplates = actorDef.ClassDependentTemplates;
+            if (classDependentTemplates != null)
+            {
+                for (int i = 0; i < classDependentTemplates.Length; i++)
+                {
+                    TacAIActorDef.ClassDependentTemplate classDependentTemplate = classDependentTemplates[i];
+                    if (classDependentTemplate != null && TemplateHasAction(classDependentTemplate.TemplateDef, actionDef))
+                    {
+                        list.Add(string.Format("class-template[{0}]", i));
+                    }
+                }
+            }
+            TacAIActorDef.StatusDependentTemplate[] statusDependentTemplates = actorDef.StatusDependentTemplates;
+            if (statusDependentTemplates != null)
+            {
+                for (int j = 0; j < statusDependentTemplates.Length; j++)
+                {
+                    TacAIActorDef.StatusDependentTemplate statusDependentTemplate = statusDependentTemplates[j];
+                    if (statusDependentTemplate != null && TemplateHasAction(statusDependentTemplate.TemplateDef, actionDef))
+                    {
+                        list.Add(string.Format("status-template[{0}]", j));
+                    }
+                }
+            }
+            return list;
+        }
+
+        private static bool TemplateHasAction(AIActionsTemplateDef templateDef, AIActionDef actionDef)
+        {
+            if (templateDef == null || templateDef.ActionDefs == null)
+            {
+                return false;
+            }
+            foreach (AIActionDef aiactionDef in templateDef.ActionDefs)
+            {
+                if (aiactionDef == actionDef)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
 
         internal static void Print()
@@ -108,10 +184,46 @@ namespace TFTV
             try
             {
 
-                foreach (InventoryAbilityDef inventoryAbilityDef in Repo.GetAllDefs<InventoryAbilityDef>())
+              /*  DefRepository defRepository = GameUtl.GameComponent<DefRepository>();
+                List<AIActionDef> actionDefs = defRepository.GetAllDefs<AIActionDef>().ToList<AIActionDef>();
+                int num = 0;
+                foreach (AIActionDef aiactionDef in actionDefs)
                 {
-                    TFTVLogger.Always($"[InventoryAbilityDef] {inventoryAbilityDef.name}", false);
+                    List<string> list = GetSafePathLocations(aiactionDef);
+                    if (list.Count > 0)
+                    {
+                        num++;
+                        TFTVLogger.Always(string.Format("{0}: {1}", aiactionDef.name, string.Join(", ", list)));
+                        ListActionUsers(aiactionDef.name);
+                    }
                 }
+                TFTVLogger.Always(string.Format("Found {0} AIActionDef entries using AISafePathConsiderationDef.", num));*/
+
+               
+
+
+
+                 foreach (UnitTemplateResearchRewardDef unitTemplateResearchRewardDef in Repo.GetAllDefs<UnitTemplateResearchRewardDef>().
+                     Where(t => !t.name.StartsWith("ALN") && t.Add == true && !t.Template.name.StartsWith("FK") && !t.Template.name.StartsWith("PU") && t.Template?.Data?.LevelProgression?.Level <= 7))
+                 {
+                     TFTVLogger.Always($"[UnitTemplateResearchRewardDef] {unitTemplateResearchRewardDef.name}, adds {unitTemplateResearchRewardDef.Template.name} of level {unitTemplateResearchRewardDef.Template.Data.LevelProgression.Level}", false);
+                 }
+
+
+
+                 foreach (UnitTemplateResearchRewardDef unitTemplateResearchRewardDef in Repo.GetAllDefs<UnitTemplateResearchRewardDef>().
+                     Where(t => !t.name.StartsWith("ALN") && t.Add == false && !t.Template.name.StartsWith("FK") && !t.Template.name.StartsWith("PU") && t.Template?.Data?.LevelProgression?.Level<6))
+                 {
+                     TFTVLogger.Always($"[UnitTemplateResearchRewardDef] {unitTemplateResearchRewardDef.name}, removes {unitTemplateResearchRewardDef.Template.name} of level {unitTemplateResearchRewardDef.Template.Data.LevelProgression.Level}", false);     
+                 }
+
+
+
+
+                /* foreach (InventoryAbilityDef inventoryAbilityDef in Repo.GetAllDefs<InventoryAbilityDef>())
+                 {
+                     TFTVLogger.Always($"[InventoryAbilityDef] {inventoryAbilityDef.name}", false);
+                 }*/
 
                 /*foreach (PhoenixFacilityDef phoenixFacilityDef in Repo.GetAllDefs<PhoenixFacilityDef>())
                 {
@@ -125,22 +237,65 @@ namespace TFTV
 
                 foreach (TacticalItemDef tacticalItemDef in Repo.GetAllDefs<TacticalItemDef>().Where(tid=>tid.Tags.Any(t=>t.name.Equals("AmmoItem_TagDef"))))
                 {
-                   
+
                         TFTVLogger.Always($"[AmmoCost]{tacticalItemDef.name} mat cost {tacticalItemDef.ManufactureMaterials} tech cost {tacticalItemDef.ManufactureTech}", false);  
                 }
 
                 foreach (ResearchDef researchDef in Repo.GetAllDefs<ResearchDef>())
                 {
                     TFTVLogger.Always($"[ResearchCost]{researchDef.name} cost in research points: {researchDef.ResearchCost}", false);
-                  
+
                 }*/
+
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
         }
+        private static List<string> GetSafePathLocations(AIActionDef actionDef)
+        {
+            List<string> list = new List<string>();
+            if (HasSafePathConsideration(actionDef.EarlyExitConsiderations))
+            {
+                list.Add("early-exit");
+            }
+            AITargetEvaluation[] evaluations = actionDef.Evaluations;
+            if (evaluations != null)
+            {
+                for (int i = 0; i < evaluations.Length; i++)
+                {
+                    if (HasSafePathConsideration(evaluations[i].Considerations))
+                    {
+                        list.Add(string.Format("evaluation[{0}]", i));
+                    }
+                }
+            }
+            return list;
+        }
 
+        // Token: 0x0600817A RID: 33146 RVA: 0x0020F320 File Offset: 0x0020D520
+        private static bool HasSafePathConsideration(AIAdjustedConsideration[] considerations)
+        {
+            if (considerations == null)
+            {
+                return false;
+            }
+            foreach (AIAdjustedConsideration aiadjustedConsideration in considerations)
+            {
+                if (aiadjustedConsideration != null && aiadjustedConsideration.Consideration is AISafePathConsiderationDef)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+    
+
+
+
+
+        
 
         public static void DisplayTimerProperties()
         {
@@ -173,7 +328,7 @@ namespace TFTV
         {
             try
             {
-                //  Print();
+
 
 
 
@@ -261,11 +416,11 @@ namespace TFTV
                 CreateSuppressionStatusDefs();
                 AddMissingViewElementDefs();
                 LaserWeaponsInit.Init();
-
+                AdjustHavenRecruitTiming();
                 //  TestUseWorkerComponent();
                 // Test0();
 
-                //  Print();
+              //  Print();
 
             }
             catch (Exception e)
@@ -303,6 +458,31 @@ namespace TFTV
             }
 
 
+        }
+
+        private static void AdjustHavenRecruitTiming()
+        {
+            try
+            {
+                GeoFactionDef anuFaction = DefCache.GetDef<GeoFactionDef>("Anu_GeoFactionDef");
+                GeoFactionDef njFaction = DefCache.GetDef<GeoFactionDef>("NewJericho_GeoFactionDef");
+                GeoFactionDef synedrionFaction = DefCache.GetDef<GeoFactionDef>("Synedrion_GeoFactionDef");
+
+                anuFaction.RecruitIntervalCheckDays = 4;
+                njFaction.RecruitIntervalCheckDays = 4;
+                synedrionFaction.RecruitIntervalCheckDays = 4;
+
+                synedrionFaction.StartingZones[0].Amount = 18;
+                synedrionFaction.StartingZones[1].Amount = 17;
+
+                //consider adjusting food production
+                GeoHavenDef geoHavenDef = DefCache.GetDef<GeoHavenDef>("GeoHavenDef");
+                
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
 
         /* private static void TestUseWorkerComponent()
@@ -4249,7 +4429,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
             }
         }
 
-     
+
 
 
         internal static void ChangesModulesAndAcid()
@@ -4381,7 +4561,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
         }
 
 
-      
+
 
         internal static void CreateNanotechFieldkit()
         {
@@ -4487,32 +4667,32 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
             }
         }
 
-       /* internal static void CreateHealingMultiplierAbility()
-        {
-            try
-            {
-                DamageMultiplierAbilityDef damageMultiplierAbilityDefSource = DefCache.GetDef<DamageMultiplierAbilityDef>("EMPResistant_DamageMultiplierAbilityDef");
-                DamageMultiplierAbilityDef healingMultiplierAbility = Helper.CreateDefFromClone(damageMultiplierAbilityDefSource, "{39D33BA7-726A-417F-9DC7-42CD4E6762FD}", "ExtraHealing_DamageMultiplierAbilityDef");
-                healingMultiplierAbility.DamageTypeDef = DefCache.GetDef<StandardDamageTypeEffectDef>("Healing_StandardDamageTypeEffectDef");
-                healingMultiplierAbility.Multiplier = 1.25f;
-                healingMultiplierAbility.MultiplierType = DamageMultiplierType.Incoming;
-                healingMultiplierAbility.ViewElementDef = Helper.CreateDefFromClone(damageMultiplierAbilityDefSource.ViewElementDef, "{63C00610-5CAE-4152-9002-7A0F7C90AE30}", "ExtraHealing_ViewElementDef");
-                healingMultiplierAbility.ViewElementDef.DisplayName1.LocalizationKey = "EXTRAHEALING_NAME";
-                healingMultiplierAbility.ViewElementDef.Description.LocalizationKey = "EXTRAHEALING_DESCRIPTION";
-                healingMultiplierAbility.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_PersonalTrack_ExpertHealer-2.png");
-                healingMultiplierAbility.ViewElementDef.SmallIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_PersonalTrack_ExpertHealer-2.png");
+        /* internal static void CreateHealingMultiplierAbility()
+         {
+             try
+             {
+                 DamageMultiplierAbilityDef damageMultiplierAbilityDefSource = DefCache.GetDef<DamageMultiplierAbilityDef>("EMPResistant_DamageMultiplierAbilityDef");
+                 DamageMultiplierAbilityDef healingMultiplierAbility = Helper.CreateDefFromClone(damageMultiplierAbilityDefSource, "{39D33BA7-726A-417F-9DC7-42CD4E6762FD}", "ExtraHealing_DamageMultiplierAbilityDef");
+                 healingMultiplierAbility.DamageTypeDef = DefCache.GetDef<StandardDamageTypeEffectDef>("Healing_StandardDamageTypeEffectDef");
+                 healingMultiplierAbility.Multiplier = 1.25f;
+                 healingMultiplierAbility.MultiplierType = DamageMultiplierType.Incoming;
+                 healingMultiplierAbility.ViewElementDef = Helper.CreateDefFromClone(damageMultiplierAbilityDefSource.ViewElementDef, "{63C00610-5CAE-4152-9002-7A0F7C90AE30}", "ExtraHealing_ViewElementDef");
+                 healingMultiplierAbility.ViewElementDef.DisplayName1.LocalizationKey = "EXTRAHEALING_NAME";
+                 healingMultiplierAbility.ViewElementDef.Description.LocalizationKey = "EXTRAHEALING_DESCRIPTION";
+                 healingMultiplierAbility.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_PersonalTrack_ExpertHealer-2.png");
+                 healingMultiplierAbility.ViewElementDef.SmallIcon = Helper.CreateSpriteFromImageFile("UI_AbilitiesIcon_PersonalTrack_ExpertHealer-2.png");
 
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
+             }
+             catch (Exception e)
+             {
+                 TFTVLogger.Error(e);
+             }
 
-        }*/
+         }*/
 
-       
 
-        
+
+
 
         internal static void RemoveAcidAsVulnerability()
         {
@@ -4534,7 +4714,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
 
         }
 
-      
+
 
 
 
