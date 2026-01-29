@@ -652,12 +652,14 @@ namespace TFTV.TFTVDrills
                     }
 
 
-                    if (existingRapidClearanceStatus == null)
+                    if (existingRapidClearanceStatus != null)
                     {
-                        TFTVLogger.Always($"Applying Bullet Hell attack boost to {attacker.DisplayName} because no RC status present");
-                        attacker.Status.ApplyStatus(_bulletHellAttackBoostStatus);
+                        TFTVLogger.Always($"Replacing Rapid Clearance attack boost with Bullet Hell for {attacker.DisplayName}");
+                        attacker.Status.UnapplyStatus(existingRapidClearanceStatus);
                     }
 
+                    TFTVLogger.Always($"Applying Bullet Hell attack boost to {attacker.DisplayName}");
+                    attacker.Status.ApplyStatus(_bulletHellAttackBoostStatus);
 
                 }
                 catch (Exception e)

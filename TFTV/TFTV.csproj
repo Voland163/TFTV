@@ -182,6 +182,7 @@
     <Compile Include="TFTVDragandDropFunctionality.cs" />
     <Compile Include="TFTVLaserWeapons\LaserWeaponsBatteryTooltip.cs" />
     <Compile Include="TFTVLaserWeapons\LaserWeaponsReplenishPatches.cs" />
+    <Compile Include="TFTVReloadKeepPartialTactical.cs" />
     <Compile Include="TFTVUI\Common\Various.cs" />
     <Compile Include="TFTVUI\Data.cs" />
     <Compile Include="TFTVUI\Geoscape\Facilities.cs" />

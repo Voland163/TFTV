@@ -37,7 +37,7 @@ namespace TFTV.TFTVUI.Tactical
             public int totalCapacity;  // Example total capacity
             public int filledSpaces;    // Example filled spaces
                                         //private readonly Font _font = ; // Resources.FindObjectsOfTypeAll<Font>().FirstOrDefault(f => f.name.Equals("Purista Semibold"));
-
+            public bool showCaptureDetails = true;
             // List of currently captured aliens (to be updated dynamically)
             public List<TacticalActor> capturedAliens = new List<TacticalActor>();
 
@@ -116,6 +116,17 @@ namespace TFTV.TFTVUI.Tactical
                     // Step 3: Flip the background image by setting localScale on x-axis
                     containerRect.localScale = new Vector3(-1, 1, 1);
 
+                    if (TFTVAircraftReworkMain.AircraftReworkOn)
+                    {
+                        string tooltipText = AircraftReworkTacticalModules.BuildTacticalModulesTooltip();
+                        if (!string.IsNullOrWhiteSpace(tooltipText))
+                        {
+                            UITooltipText tooltip = backgroundImage.gameObject.GetComponent<UITooltipText>() ?? backgroundImage.gameObject.AddComponent<UITooltipText>();
+                            tooltip.TipText = tooltipText;
+                            tooltip.Position = UITooltip.Position.Bottom;
+                            tooltip.enabled = true;
+                        }
+                    }
 
                     // 2. Aircraft Name Text
                     GameObject nameTextObject = new GameObject("AircraftName");
@@ -145,7 +156,10 @@ namespace TFTV.TFTVUI.Tactical
                     addOutlineToIcon.icon = iconObject;
                     addOutlineToIcon.InitOrUpdate();
 
-
+                    if (!showCaptureDetails)
+                    {
+                        return;
+                    }
 
                     // 4. Free Space Text
                     freeSpaceTextObject = new GameObject("FreeSpaceText");
@@ -272,6 +286,11 @@ namespace TFTV.TFTVUI.Tactical
             {
                 try
                 {
+                    if (!showCaptureDetails)
+                    {
+                        return;
+                    }
+
                     Resolution resolution = Screen.currentResolution;
                     float resolutionFactorWidth = (float)resolution.width / 1920f;
                     float resolutionFactorHeight = (float)resolution.height / 1080f;
@@ -454,12 +473,11 @@ namespace TFTV.TFTVUI.Tactical
 
                 //  TFTVLogger.Always($"CreatCaptureTacticalWidget: {TFTVNewGameOptions.LimitedCaptureSetting} {ContainmentFacilityPresent} {AircraftCaptureCapacity}");
 
-                if (!TFTVNewGameOptions.LimitedCaptureSetting || !ContainmentFacilityPresent && AircraftCaptureCapacity <= 0)
-                {
-                    return;
-                }
-
-                if (!controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))
+                bool captureAvailable = TFTVNewGameOptions.LimitedCaptureSetting
+                   && (ContainmentFacilityPresent || AircraftCaptureCapacity > 0);
+                bool hasAliens = controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln"));
+                bool showCaptureDetails = captureAvailable && hasAliens;
+                if (!showCaptureDetails && !TFTVAircraftReworkMain.AircraftReworkOn)
                 {
                     return;
                 }
@@ -491,6 +509,7 @@ namespace TFTV.TFTVUI.Tactical
                     AircraftUI uiScript = aircraftUIPanel.AddComponent<AircraftUI>();
                     uiScript.transform.SetParent(aircraftUIPanel.transform, false);
                     uiScript.uiParent = aircraftUIPanel.transform;
+                    uiScript.showCaptureDetails = showCaptureDetails;
                     //   uiScript.transform.position = new Vector3(550 * resolutionFactorWidth, 1045 * resolutionFactorHeight, 0.0f);
                     // Parent the UI
 
@@ -519,13 +538,17 @@ namespace TFTV.TFTVUI.Tactical
 
                     uiScript.aircraftName = AircraftName;  // Set dynamically if needed
 
-                    if (AircraftCaptureCapacity != -1)
+                    if (showCaptureDetails && AircraftCaptureCapacity != -1)
                     {
                         uiScript.totalCapacity = Math.Min(ContainmentSpaceAvailable, AircraftCaptureCapacity);
                     }
-                    else
+                    else if (showCaptureDetails)
                     {
                         uiScript.totalCapacity = ContainmentSpaceAvailable;
+                    }
+                    else
+                    {
+                        uiScript.totalCapacity = 0;
                     }
 
                     uiScript.filledSpaces = 0;    // Example, adjust accordingly
@@ -537,7 +560,10 @@ namespace TFTV.TFTVUI.Tactical
                     uiScript.Init();
                 }
 
-                UpdateCaptureUI();
+                if (showCaptureDetails)
+                {
+                    UpdateCaptureUI();
+                }
             }
             catch (Exception e)
             {
@@ -554,6 +580,11 @@ namespace TFTV.TFTVUI.Tactical
         {
             try
             {
+                if (CaptureUI == null || !CaptureUI.showCaptureDetails)
+                {
+                    return;
+                }
+
                 TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
 
                 if (!controller.Factions.Any(f => f.Faction.FactionDef.MatchesShortName("aln")))

@@ -8,6 +8,7 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -137,6 +138,177 @@ namespace TFTV
             }
 
         }
+
+        internal static string BuildTacticalModulesTooltip()
+        {
+            try
+            {
+                if (!AircraftReworkOn)
+                {
+                    return string.Empty;
+                }
+
+                List<string> moduleBlocks = new List<string>();
+
+                if (_thunderBirdScannerPresent > 0)
+                {
+                    List<string> scannerBenefits = new List<string>();
+                    AddTieredBenefit(scannerBenefits, "TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT", _thunderBirdScannerPresent);
+                    if (_nestResearched > 0)
+                    {
+                        scannerBenefits.Add(TFTVCommonMethods.ConvertKeyToString("TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_PX_Alien_Colony"));
+                    }
+                    if (_lairResearched > 0)
+                    {
+                        scannerBenefits.Add(TFTVCommonMethods.ConvertKeyToString("TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_PX_Alien_Lair"));
+                    }
+                    AddModuleTooltip(moduleBlocks, _thunderbirdScannerModule, scannerBenefits);
+                }
+
+                if (_captureDronesPresent > 0)
+                {
+                    AddModuleTooltip(moduleBlocks, _captureDronesModule, null,
+                        new[] { TFTVCommonMethods.ConvertKeyToString("TFTV_CAPTURE_DRONES_MODULE_DESCRIPTION") });
+                }
+
+                if (_mistRepellerPresent > 0)
+                {
+                    AddModuleTooltip(moduleBlocks, _heliosMistRepellerModule, null,
+                        new[] { TFTVCommonMethods.ConvertKeyToString("TFTV_HELIOS_MISTREPELLER_MODULE_DESCRIPTION") });
+                }
+
+                if (_heliosStealthPresent > 0)
+                {
+                    List<string> stealthBenefits = new List<string>();
+                    AddTieredBenefit(stealthBenefits, "TFTV_HELIOS_STEALTH_MODULE_BENEFIT", _heliosStealthPresent);
+                    AddModuleTooltip(moduleBlocks, _heliosStealthModule, stealthBenefits);
+                }
+
+                if (_blimpMistPresent > 0)
+                {
+                    List<string> mistBenefits = new List<string>();
+                    mistBenefits.Add(TFTVCommonMethods.ConvertKeyToString("TFTV_BLIMP_WP_MODULE_BENEFIT_ANU_MutationTech"));
+                    if (_blimpMistPresent > 1)
+                    {
+                        mistBenefits.Add(TFTVCommonMethods.ConvertKeyToString("TFTV_BLIMP_WP_MODULE_BENEFIT_ANU_MutationTech2"));
+                    }
+                    if (_blimpMistPresent > 2)
+                    {
+                        mistBenefits.Add(TFTVCommonMethods.ConvertKeyToString("TFTV_BLIMP_WP_MODULE_BENEFIT_ANU_MutationTech3"));
+                    }
+                    if (_blimpPriestResearch > 0)
+                    {
+                        mistBenefits.Add(TFTVCommonMethods.ConvertKeyToString("TFTV_BLIMP_WP_MODULE_BENEFIT_ANU_AnuPriest"));
+                    }
+                    AddModuleTooltip(moduleBlocks, _blimpMistModule, mistBenefits);
+                }
+
+                if (_heliosNanotechPresent > 0 || _heliosVestBuff > 0)
+                {
+                    List<string> panaceaBenefits = new List<string>();
+                    AddTieredBenefit(panaceaBenefits, "TFTV_HELIOS_HEALING_MODULE_BENEFIT", _heliosNanotechPresent);
+                    if (_heliosNanotechPresent > 0)
+                    {
+                        panaceaBenefits.Add(TFTVCommonMethods.ConvertKeyToString("TFTV_HELIOS_HEALING_MODULE_BENEFIT_SYN_Rover"));
+                    }
+                    if (_heliosVestBuff > 0)
+                    {
+                        panaceaBenefits.Add(TFTVCommonMethods.ConvertKeyToString("TFTV_HELIOS_HEALING_MODULE_BENEFIT_SYN_VenomBolt"));
+                    }
+                    AddModuleTooltip(moduleBlocks, _heliosPanaceaModule, panaceaBenefits);
+                }
+
+                if (_thunderbirdGroundAttackWeaponPresent > 0)
+                {
+                    List<string> groundAttackBenefits = new List<string>();
+                    AddTieredBenefit(groundAttackBenefits, "TFTV_THUNDERBIRD_GROUNDATTACK_MODULE_BENEFIT", _thunderbirdGroundAttackWeaponPresent);
+                    AddModuleTooltip(moduleBlocks, _thunderbirdGroundAttackModule, groundAttackBenefits);
+                }
+
+                if (_blimpMutationLabFrenzyPresent > 0)
+                {
+                    List<string> mutationBenefits = new List<string>();
+                    AddTieredBenefit(mutationBenefits, "TFTV_BLIMP_MUTATIONLAB_MODULE_BENEFIT", _blimpMutationLabFrenzyPresent);
+                    mutationBenefits.Add("• Instills Frenzy on mutated operatives at mission start.");
+                    AddModuleTooltip(moduleBlocks, _blimpMutationLabModule, mutationBenefits);
+                }
+
+                if (_thunderbirdWorkshopPresent > 0)
+                {
+                    List<string> workshopBenefits = new List<string>();
+                    AddTieredBenefit(workshopBenefits, "TFTV_THUNDERBIRD_WORKSHOP_MODULE_BENEFIT", _thunderbirdWorkshopPresent);
+                    if (_thunderbirdWorkshopPresent > 1)
+                    {
+                        workshopBenefits.Add(TFTVCommonMethods.ConvertKeyToString("TFTV_THUNDERBIRD_WORKSHOP_MODULE_BENEFIT_PX_Alien_LiveAcheron"));
+                    }
+                    AddModuleTooltip(moduleBlocks, _thunderbirdWorkshopModule, workshopBenefits);
+                }
+
+                return moduleBlocks.Count == 0
+                    ? "No aircraft modules in play."
+                    : string.Join("\n\n", moduleBlocks);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        private static void AddModuleTooltip(List<string> moduleBlocks, GeoVehicleModuleDef moduleDef, IEnumerable<string> benefitLines, IEnumerable<string> extraLines = null)
+        {
+            if (moduleBlocks == null || moduleDef == null)
+            {
+                return;
+            }
+
+            string moduleName = moduleDef.ViewElementDef?.DisplayName1?.Localize(null) ?? moduleDef.name;
+            List<string> lines = new List<string>();
+
+            if (benefitLines != null)
+            {
+                foreach (string line in benefitLines)
+                {
+                    AddTooltipLine(lines, line);
+                }
+            }
+
+            if (extraLines != null)
+            {
+                foreach (string line in extraLines)
+                {
+                    AddTooltipLine(lines, line);
+                }
+            }
+
+            if (lines.Count == 0)
+            {
+                lines.Add("No active tactical effects.");
+            }
+
+            moduleBlocks.Add($"<b>{moduleName}</b>\n{string.Join("\n", lines)}");
+        }
+
+        private static void AddTieredBenefit(List<string> lines, string prefix, int tier)
+        {
+            if (lines == null || tier <= 0 || string.IsNullOrWhiteSpace(prefix))
+            {
+                return;
+            }
+
+            AddTooltipLine(lines, TFTVCommonMethods.ConvertKeyToString($"{prefix}_{tier}_SINGLE"));
+        }
+
+        private static void AddTooltipLine(List<string> lines, string line)
+        {
+            if (lines == null || string.IsNullOrWhiteSpace(line))
+            {
+                return;
+            }
+
+            lines.Add(line);
+        }
+
 
         internal static void LoadInternalDataForTactical()
         {
