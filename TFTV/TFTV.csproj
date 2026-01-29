@@ -138,14 +138,13 @@
     <Compile Include="TFTVAircraftRework\AircraftReworkGeoscape.Scanning.cs" />
     <Compile Include="TFTVAircraftRework\AircraftReworkMaintenance.cs" />
     <Compile Include="TFTVAircraftRework\AircraftReworkRemovingFS.cs" />
-    <Compile Include="TFTVAircraftRework\AircraftReworkSpeed.cs" />
+    <Compile Include="TFTVAircraftRework\AircraftReworkSpeedAndRange.cs" />
     <Compile Include="TFTVAircraftRework\AircraftReworkDefs.cs" />
     <Compile Include="TFTVAircraftRework\AircraftReworkGeoscape.cs" />
     <Compile Include="TFTVAircraftRework\AircraftReworkHelpers.cs" />
     <Compile Include="TFTVAircraftRework\AircraftReworkMissionDeployment.cs" />
     <Compile Include="TFTVAircraftRework\AircraftReworkTacticalModules.cs" />
     <Compile Include="TFTVAircraftRework\Healing.cs" />
-    <Compile Include="TFTVAircraftRework\OverdriveRange.cs" />
     <Compile Include="TFTVAircraftRework\PassengerModules.cs" />
     <Compile Include="TFTVAircraftRework\TFTVAircraftReworkMain.cs" />
     <Compile Include="TFTVAircraftRework\AWOffMapBombardmentAbility.cs" />

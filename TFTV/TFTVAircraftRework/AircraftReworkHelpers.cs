@@ -176,6 +176,114 @@ namespace TFTV
             }
         }
 
+        internal static List<string> GetModuleBenefitKeys(GeoVehicleModuleDef moduleDef)
+        {
+            try
+            {
+                List<string> keys = new List<string>();
+                if (moduleDef == null)
+                {
+                    return keys;
+                }
+
+                Research phoenixResearch = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()?.PhoenixFaction?.Research;
+
+                if (moduleDef == _blimpSpeedModule)
+                {
+                    AddSingleBenefit(keys, "TFTV_BLIMP_SPEED_MODULE_BENEFIT", Tiers.GetBlimpSpeedTier());
+                }
+                else if (moduleDef == _blimpMutationLabModule)
+                {
+                    AddSingleBenefit(keys, "TFTV_BLIMP_MUTATIONLAB_MODULE_BENEFIT",
+                        Tiers.GetBuffLevelFromResearchDefs(_blimpMutationLabModuleBuffResearches));
+                }
+                else if (moduleDef == _heliosStealthModule)
+                {
+                    AddSingleBenefit(keys, "TFTV_HELIOS_STEALTH_MODULE_BENEFIT", Tiers.GetStealthTierForUI());
+                }
+                else if (moduleDef == _thunderbirdGroundAttackModule)
+                {
+                    AddSingleBenefit(keys, "TFTV_THUNDERBIRD_GROUNDATTACK_MODULE_BENEFIT", Tiers.GetGWABuffLevel());
+                }
+                else if (moduleDef == _thunderbirdWorkshopModule)
+                {
+                    AddSingleBenefit(keys, "TFTV_THUNDERBIRD_WORKSHOP_MODULE_BENEFIT",
+                        Tiers.GetBuffLevelFromResearchDefs(_thunderbirdWorkshopBuffResearchDefs));
+                    AddBenefitIfResearched(keys, phoenixResearch, "TFTV_THUNDERBIRD_WORKSHOP_MODULE_BENEFIT_PX_Alien_LiveAcheron",
+                        "PX_Alien_LiveAcheron_ResearchDef");
+                }
+                else if (moduleDef == _thunderbirdRangeModule)
+                {
+                    AddSingleBenefit(keys, "TFTV_THUNDERBIRD_RANGE_MODULE_BENEFIT",
+                        Tiers.GetBuffLevelFromResearchDefs(_thunderbirdRangeBuffResearchDefs));
+                }
+                else if (moduleDef == _blimpMistModule)
+                {
+                    AddBenefitIfResearched(keys, phoenixResearch, "TFTV_BLIMP_WP_MODULE_BENEFIT_ANU_MutationTech",
+                        "ANU_MutationTech_ResearchDef");
+                    AddBenefitIfResearched(keys, phoenixResearch, "TFTV_BLIMP_WP_MODULE_BENEFIT_ANU_MutationTech2",
+                        "ANU_MutationTech2_ResearchDef");
+                    AddBenefitIfResearched(keys, phoenixResearch, "TFTV_BLIMP_WP_MODULE_BENEFIT_ANU_MutationTech3",
+                        "ANU_MutationTech3_ResearchDef");
+                    AddBenefitIfResearched(keys, phoenixResearch, "TFTV_BLIMP_WP_MODULE_BENEFIT_ANU_AnuPriest",
+                        "ANU_AnuPriest_ResearchDef");
+                }
+                else if (moduleDef == _heliosPanaceaModule)
+                {
+
+                    AddSingleBenefit(keys, "TFTV_HELIOS_HEALING_MODULE_BENEFIT",
+                        Tiers.GetBuffLevelFromResearchDefs(_heliosStatisChamberBuffResearchDefs));
+                    AddBenefitIfResearched(keys, phoenixResearch, "TFTV_HELIOS_HEALING_MODULE_BENEFIT_SYN_Rover",
+                        "SYN_Rover_ResearchDef");
+                    AddBenefitIfResearched(keys, phoenixResearch, "TFTV_HELIOS_HEALING_MODULE_BENEFIT_SYN_VenomBolt",
+                        "SYN_VenomBolt_ResearchDef");
+
+                }
+                else if (moduleDef == _thunderbirdScannerModule)
+                {
+                    AddSingleBenefit(keys, "TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT",
+                       Tiers.GetBuffLevelFromResearchDefs(_thunderbirdScannerBuffResearchDefs));
+                    AddBenefitIfResearched(keys, phoenixResearch, "TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_NJ_SateliteUplink",
+                        "NJ_SateliteUplink_ResearchDef");
+                    AddBenefitIfResearched(keys, phoenixResearch, "TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_PX_Alien_Citadel",
+                        "PX_Alien_Citadel_ResearchDef");
+                    AddBenefitIfResearched(keys, phoenixResearch, "TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_PX_Alien_Colony",
+                        "PX_Alien_Colony_ResearchDef");
+                    AddBenefitIfResearched(keys, phoenixResearch, "TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_PX_Alien_Lair",
+                        "PX_Alien_Lair_ResearchDef");
+                }
+
+                return keys;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        private static void AddSingleBenefit(List<string> keys, string prefix, int tier)
+        {
+            if (keys == null || tier <= 0 || string.IsNullOrWhiteSpace(prefix))
+            {
+                return;
+            }
+
+            keys.Add($"{prefix}_{tier}_SINGLE");
+        }
+
+        private static void AddBenefitIfResearched(List<string> keys, Research research, string key, string researchId)
+        {
+            if (keys == null || string.IsNullOrWhiteSpace(key))
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(researchId) || (research != null && research.HasCompleted(researchId)))
+            {
+                keys.Add(key);
+            }
+        }
 
         [HarmonyPatch(typeof(ItemDef), "GetDetailedImage")]
         public static class ItemDef_GetDetailedImage_Patch

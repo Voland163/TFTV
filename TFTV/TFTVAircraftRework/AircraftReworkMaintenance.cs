@@ -58,7 +58,7 @@ namespace TFTV
                             return;
                         }
 
-                        AircraftReworkSpeed.AdjustAircraftSpeed(__instance, true);
+                        AircraftReworkSpeedAndRange.AdjustAircraftSpeed(__instance, true);
 
                     }
                     catch (Exception e)
@@ -208,7 +208,7 @@ namespace TFTV
                         return;
                     }
 
-                    AircraftReworkSpeed.AdjustAircraftSpeed(__instance, true);
+                    AircraftReworkSpeedAndRange.AdjustAircraftSpeed(__instance, true);
 
                 }
                 catch (Exception e)

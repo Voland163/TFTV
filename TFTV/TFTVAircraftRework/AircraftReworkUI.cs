@@ -492,14 +492,29 @@ namespace TFTV
                         type.GetMethod("DisplayGeoscapeBonus", BindingFlags.NonPublic | BindingFlags.Instance)
                         .Invoke(__instance, new object[] { geoVehicleModuleDef });
 
-                        int tier = GetTier(geoVehicleModuleDef);
+                        List<string> benefitKeys = GetModuleBenefitKeys(geoVehicleModuleDef);
 
-                        if (tier > 0)
+                        if (benefitKeys.Count > 0)
                         {
-                            LocalizedTextBind localizedTextBindTest2 = new LocalizedTextBind("TFTV_KEY_TIER", true);
-
+                           
                             MethodInfo methodInfo = type.GetMethod("AddStatObject", BindingFlags.NonPublic | BindingFlags.Instance);
-                            methodInfo.Invoke(__instance, new object[] { localizedTextBindTest2, null, tier.ToString() });
+                            foreach (string key in benefitKeys)
+                            {
+                                LocalizedTextBind localizedTextBind = new LocalizedTextBind(key, true);
+                                methodInfo.Invoke(__instance, new object[] { localizedTextBind, null, string.Empty });
+                            }
+                        }
+                        else
+                        {
+                            int tier = GetTier(geoVehicleModuleDef);
+
+                            if (tier > 0)
+                            {
+                                LocalizedTextBind localizedTextBindTest2 = new LocalizedTextBind("TFTV_KEY_TIER", true);
+
+                                MethodInfo methodInfo = type.GetMethod("AddStatObject", BindingFlags.NonPublic | BindingFlags.Instance);
+                                methodInfo.Invoke(__instance, new object[] { localizedTextBindTest2, null, tier.ToString() });
+                            }
                         }
 
                     }
@@ -1317,37 +1332,6 @@ namespace TFTV
             }
         }
 
-
-
-
-       
-
-
-   /*     [HarmonyPatch(typeof(GeoVehicle), "GetAircraftInfo")]
-        public static class GeoVehicle_GetAircraftInfo_Patch
-        {
-            static void Prefix(GeoVehicle __instance, AircraftInfoData __result)
-            {
-
-                try
-                {
-                    if (!AircraftReworkOn)
-                    {
-                        return;
-                    }
-
-                    AircraftReworkSpeed.AdjustAircraftSpeed(__instance, true);
-
-                   // TFTVLogger.Always($"[GeoVehicle.GetAircraftInfo]{__instance?.Name} speed {__result.Speed}");
-
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-
-            }
-        }*/
 
 
 

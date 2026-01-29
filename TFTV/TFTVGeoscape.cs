@@ -139,7 +139,7 @@ namespace TFTV
             TFTVCustomPortraits.CharacterPortrait.PopulatePortraitFileList();
             TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
             TFTVUI.Geoscape.Facilities.CheckUnpoweredBasesOnGeoscapeStart();
-            AircraftReworkSpeed.Init(Controller);
+            AircraftReworkSpeedAndRange.Init(Controller);
             if (TFTVNewGameOptions.BaseRework)
             {
                 RestoreAssignments(Controller);

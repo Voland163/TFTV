@@ -1326,7 +1326,7 @@ namespace TFTV
                     {
                         DefCache.GetDef<ResearchDef>("NJ_NeuralTech_ResearchDef"),
                         DefCache.GetDef<ResearchDef>("NJ_SateliteUplink_ResearchDef"),
-                        DefCache.GetDef<ResearchDef>("PX_Alien_Citadel_ResearchDef"),
+                       // DefCache.GetDef<ResearchDef>("PX_Alien_Citadel_ResearchDef"),
                     };
 
 
@@ -1393,7 +1393,7 @@ namespace TFTV
                 Sprite smallIcon = Helper.CreateSpriteFromImageFile($"TFTV_{id}_Small.png");
                 Sprite largeIcon = smallIcon; //Helper.CreateSpriteFromImageFile("TFTVCaptureDronesModuleLargeIcon.png");
 
-                GeoVehicleModuleDef module = CreateModule(name, guid1, guid2, nameKey, descriptionKey, smallIcon, largeIcon, GeoVehicleModuleDef.GeoVehicleModuleBonusType.Range, 1000);
+                GeoVehicleModuleDef module = CreateModule(name, guid1, guid2, nameKey, descriptionKey, smallIcon, largeIcon);//, GeoVehicleModuleDef.GeoVehicleModuleBonusType.Range, 1000);
                 ResearchDef unlockResearch = DefCache.GetDef<ResearchDef>("NJ_VehicleTech_ResearchDef");
                 string guid3 = "{364448DA-316F-46E1-8F80-E5DAA9DCB454}";
                 AddToResearchUnlock(unlockResearch, module, guid3);
@@ -1444,7 +1444,7 @@ namespace TFTV
                     {
                         DefCache.GetDef<ResearchDef>("SYN_NanoTech_ResearchDef"), //Advanced Nanotechnology
                         DefCache.GetDef<ResearchDef>("SYN_NanoHealing_ResearchDef"), //Medical Nanites
-                        DefCache.GetDef<ResearchDef>("SYN_PoisonResistance_ResearchDef"),
+                      //  DefCache.GetDef<ResearchDef>("SYN_PoisonResistance_ResearchDef"),
                     };
             }
             catch (Exception e)

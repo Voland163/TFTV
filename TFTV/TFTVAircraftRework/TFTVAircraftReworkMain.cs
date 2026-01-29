@@ -155,7 +155,7 @@ namespace TFTV
                         return;
                     }
 
-                    AircraftReworkSpeed.ClearInternalData();
+                    AircraftReworkSpeedAndRange.ClearInternalData();
                     AircraftReworkGeoscape.Scanning.AircraftScanningSites = new Dictionary<int, List<int>>();
                 }
                 catch (Exception e)

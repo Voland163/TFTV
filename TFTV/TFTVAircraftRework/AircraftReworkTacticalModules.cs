@@ -295,12 +295,12 @@ namespace TFTV
 
                 if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _heliosPanaceaModule))
                 {
-                    if (phoenixResearch.HasCompleted("SYN_NanoTech_ResearchDef"))
+                    if (phoenixResearch.HasCompleted("SYN_Rover_ResearchDef"))
                     {
                         _heliosNanotechPresent = 1;
                     }
 
-                    if (phoenixResearch.HasCompleted("SYN_NanoHealing_ResearchDef"))
+                    if (phoenixResearch.HasCompleted("SYN_VenomBolt_ResearchDef"))
                     {
                         _heliosVestBuff = 1;
                     }
@@ -349,9 +349,8 @@ namespace TFTV
                     //pending acid res implementation, + self-repair implementation
                     _thunderbirdWorkshopPresent = 1;
 
-                    if (phoenixResearch.HasCompleted("PX_BlastResistanceVest_ResearchDef"))
+                    if (phoenixResearch.HasCompleted("PX_Alien_LiveAcheron_ResearchDef"))
                     {
-
                         _thunderbirdWorkshopPresent = 2;
                     }
                     // TFTVLogger.Always($"_thunderbirdWorkshopPresent: {_thunderbirdWorkshopPresent} ");

@@ -18,7 +18,7 @@ using Research = PhoenixPoint.Geoscape.Entities.Research.Research;
 namespace TFTV
 {
 
-    internal class AircraftReworkSpeed
+    internal class AircraftReworkSpeedAndRange
     {
         private static Dictionary<GeoVehicle, DateTime> _lastCallTime = new Dictionary<GeoVehicle, DateTime>();
 
@@ -35,6 +35,88 @@ namespace TFTV
             }
         }
 
+        internal class OverdriveRange
+        {
+
+            private static float GetThunderbirdOverdriveRange(Research phoenixResearch)
+            {
+                try
+                {
+
+
+                    float rangeBuff = _thunderbirdRangeBuffPerLevel;
+
+                    foreach (ResearchDef researchDef in _thunderbirdRangeBuffResearchDefs)
+                    {
+                        if (phoenixResearch.HasCompleted(researchDef.Id))
+                        {
+                            rangeBuff += _thunderbirdRangeBuffPerLevel;
+                        }
+                    }
+
+                    return rangeBuff;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            public static void UpdateThunderbirdRange(GeoVehicle geoVehicle)
+            {
+                try
+                {
+                    if (!AircraftReworkOn)
+                    {
+                        return;
+                    }
+                    Research research = geoVehicle?.GeoLevel?.PhoenixFaction?.Research;
+                    if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _thunderbirdRangeModule) && research != null)
+                    {
+                        float range = GetThunderbirdOverdriveRange(research);
+                        geoVehicle.Stats.MaximumRange.Value = geoVehicle.VehicleDef.BaseStats.MaximumRange.Value + range;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+
+            /* [HarmonyPatch(typeof(GeoVehicle), "UpdateVehicleBonusCache")]
+             internal static class GeoVehicle_UpdateVehicleBonusCache_patch
+             {
+                 private static void Prefix(GeoVehicle __instance)
+                 {
+                     try
+                     {
+                         if (!AircraftReworkOn)
+                         {
+                             return;
+                         }
+
+                         Research research = __instance?.GeoLevel?.PhoenixFaction?.Research;
+
+                         if (__instance.Modules.Any(m => m != null && m.ModuleDef == _thunderbirdRangeModule) && research != null)
+                         {
+                             float range = GetThunderbirdOverdriveRange(research);
+                             _thunderbirdRangeModule.GeoVehicleModuleBonusValue = range;
+                         }
+
+                     }
+                     catch (Exception e)
+                     {
+                         TFTVLogger.Error(e);
+                         throw;
+                     }
+
+                 }
+             }*/
+        }
+
 
         [HarmonyPatch(typeof(GeoVehicle), "UpdateVehicleStats")]
         public static class GeoVehicle_UpdateVehicleStats_Patch
@@ -49,7 +131,9 @@ namespace TFTV
                         return;
                     }
 
-                    AircraftReworkSpeed.AdjustAircraftSpeed(__instance, true);
+                    AdjustAircraftSpeed(__instance, true);
+                    OverdriveRange.UpdateThunderbirdRange(__instance);
+
                     TFTVLogger.Always($"[GeoVehicleStatModifier.UpdateBaseVehicleStats] new speed: {__instance?.Stats?.Speed}");
 
                 }
