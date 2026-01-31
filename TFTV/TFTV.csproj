@@ -251,7 +251,7 @@
     <Compile Include="TFTVChangesToDLC1andDLC2Events.cs" />
     <Compile Include="TFTVChangesToDLC3Events.cs" />
     <Compile Include="TFTVChangesToDLC4Events.cs" />
-    <Compile Include="TFTVChangesToDLC5.cs" />
+    <Compile Include="TFTVMarketplace\TFTVChangesToDLC5.cs" />
     <Compile Include="TFTVCommonMethods.cs" />
     <Compile Include="TFTVDefsInjectedOnlyOnce.cs" />
     <Compile Include="TFTVDefsRequiringReinjection.cs" />
@@ -324,7 +324,10 @@
     <Compile Include="Vehicles\Abilities\HealPassengersStatusDef.cs" />
     <Compile Include="Vehicles\Abilities\InvertedDamageMultiplierStatus.cs" />
     <Compile Include="Vehicles\Abilities\InvertedDamageMultiplierStatusDef.cs" />
-    <Compile Include="Vehicles\Ammo\HarmonyPatches.cs" />
+    <Compile Include="Vehicles\Ammo\MissionEndReplenish.cs" />
+    <Compile Include="Vehicles\Ammo\SubaddonWeapons.cs" />
+    <Compile Include="Vehicles\Ammo\SubaddonWeaponsLoadAmmoPatch.cs" />
+    <Compile Include="Vehicles\Ammo\VehicleAmmoReloadingFixes.cs" />
     <Compile Include="Vehicles\Ammo\VehiclesAmmoMain.cs" />
     <Compile Include="Vehicles\Armadillo\Armadillo.cs" />
     <Compile Include="Vehicles\Armadillo\GasTanks.cs" />

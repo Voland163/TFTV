@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
@@ -320,7 +321,7 @@ namespace TFTV.LaserWeapons
             }
 
         }
-        
+
         [HarmonyPatch(typeof(CommonItemData), nameof(CommonItemData.GetFullMagazinesCount))]
         private static class CommonItemData_GetFullMagazinesCount_Patch
         {
@@ -448,10 +449,12 @@ namespace TFTV.LaserWeapons
                 }
 
                 ICommonItem item = __instance?.Item;
-                if (item?.ItemDef == LaserAmmoShareHelper.BatteryPackDef)
+                if (item?.ItemDef == LaserAmmoShareHelper.BatteryPackDef || item?.ItemDef.name == "junkerMinigun_AmmoClipDef")
                 {
                     __instance.AmmoImageNode.gameObject.SetActive(false);
                 }
+
+
             }
         }
 

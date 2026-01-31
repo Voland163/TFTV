@@ -1,9 +1,18 @@
 ﻿using Base.Core;
+using Base.Defs;
+using Base.Utils.GameConsole;
+using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
+using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Equipments;
+using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +30,86 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
+
+      
+        public static void LogResearchDefs()
+        {
+            IEnumerable<ResearchDbDef> allDefs = GameUtl.GameComponent<DefRepository>().GetAllDefs<ResearchDbDef>();
+            foreach (ResearchDbDef researchDbDef in allDefs.OrderBy((ResearchDbDef def) => (def.Faction != null) ? def.Faction.GetName() : def.name))
+            {
+                string factionName = (researchDbDef.Faction != null) ? researchDbDef.Faction.GetName() : "UnknownFaction";
+                TFTVLogger.Always(string.Format("Research DB: {0} ({1})", researchDbDef.name, factionName), false);
+                if (researchDbDef.Researches == null || researchDbDef.Researches.Count == 0)
+                {
+                    TFTVLogger.Always("\t<no researches>");
+                    continue;
+                }
+                foreach (ResearchDef researchDef in researchDbDef.Researches.OrderBy((ResearchDef def) => def.name))
+                {
+                    string revealRequirements = FormatRequirementContainer(researchDef.RevealRequirements);
+                    string unlockRequirements = FormatRequirementContainer(researchDef.UnlockRequirements);
+                    string rewardsSummary = FormatRewardsSummary(researchDef.Unlocks);
+                    TFTVLogger.Always(string.Format("\t{0} (Id: {1})", researchDef.name, researchDef.Id), false);
+                    TFTVLogger.Always(string.Format("\t\tCost: {0} RP | Priority: {1}", researchDef.ResearchCost, researchDef.Priority), false);
+                    TFTVLogger.Always(string.Format("\t\tReveal Requirements: {0}", revealRequirements), false);
+                    TFTVLogger.Always(string.Format("\t\tUnlock Requirements: {0}", unlockRequirements), false);
+                    TFTVLogger.Always(string.Format("\t\tRewards: {0}", rewardsSummary), false);
+                }
+            }
+        }
+
+        private static string FormatRequirementContainer(ReseachRequirementDefContainer container)
+        {
+            if (container.Container == null || container.Container.Length == 0)
+            {
+                return "None";
+            }
+            IEnumerable<string> groups = from opContainer in container.Container
+                                         select FormatRequirementGroup(opContainer);
+            return string.Format("{0}({1})", FormatContainerOperation(container.Operation), string.Join(", ", groups));
+        }
+
+        // Token: 0x06005F99 RID: 24473 RVA: 0x0016B07C File Offset: 0x0016927C
+        private static string FormatRequirementGroup(ReseachRequirementDefOpContainer container)
+        {
+            if (container.Requirements == null || container.Requirements.Length == 0)
+            {
+                return FormatContainerOperation(container.Operation) + "()";
+            }
+            IEnumerable<string> requirements = from requirement in container.Requirements
+                                               select (requirement != null) ? requirement.name : "null";
+            return string.Format("{0}({1})", FormatContainerOperation(container.Operation), string.Join(", ", requirements));
+        }
+
+        // Token: 0x06005F9A RID: 24474 RVA: 0x0016B07C File Offset: 0x0016927C
+        private static string FormatContainerOperation(ResearchContainerOperation operation)
+        {
+            switch (operation)
+            {
+                case ResearchContainerOperation.ALL:
+                    return "AND";
+                case ResearchContainerOperation.ANY:
+                    return "OR/ANY";
+                case ResearchContainerOperation.NONE:
+                    return "NONE";
+                default:
+                    return operation.ToString();
+            }
+        }
+
+        // Token: 0x06005F9B RID: 24475 RVA: 0x0016B07C File Offset: 0x0016927C
+        private static string FormatRewardsSummary(ResearchRewardDef[] rewards)
+        {
+            if (rewards == null || rewards.Length == 0)
+            {
+                return "none";
+            }
+            IEnumerable<IGrouping<string, ResearchRewardDef>> groupedRewards = from reward in rewards
+                                                                               group reward by reward.GetType().Name;
+            IEnumerable<string> summaries = from rewardGroup in groupedRewards.OrderBy(g => g.Key)
+			select string.Format("{0} x{1}", rewardGroup.Key, rewardGroup.Count<ResearchRewardDef>());
+            return string.Format("{0} ({1})", rewards.Length, string.Join(", ", summaries));
+        }
 
         /*   [HarmonyPatch(typeof(HavenZonesStats), "GetTotalHavenOutput")]
            public static class HavenZonesStatsLoggingPatch

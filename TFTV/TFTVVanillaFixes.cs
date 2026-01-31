@@ -83,6 +83,32 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
+
+        [HarmonyPatch(typeof(UIInventorySlot), "UpdateItem")]
+        public static class InventoryStackCounterPatch
+        {
+            public static void Postfix(UIInventorySlot __instance)
+            {
+                if (__instance == null || __instance.Item == null)
+                {
+                    return;
+                }
+
+                if (!__instance.Item.CommonItemData.ShowMagazinesCounter() || !__instance.NumericBackground.gameObject.activeSelf)
+                {
+                    return;
+                }
+
+                if (__instance.Item.CommonItemData.IsAmmo())
+                {
+                    return;
+                }
+
+                __instance.NumericField.text = __instance.Item.CommonItemData.Count.ToString();
+            }
+        }
+
+
         //temporary fix for 1.30 locate phoenix base function
         [HarmonyPatch(typeof(UIStatePhoenixBaseLayout), "ShowBaseOnGeoscape")]
         internal static class LocatePhoenixBaseFocusPatch

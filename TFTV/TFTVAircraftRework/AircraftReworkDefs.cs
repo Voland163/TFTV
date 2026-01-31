@@ -65,6 +65,7 @@ namespace TFTV
                 ModifyVehicleBayHealing();
                 AddManufactureTagToResourceCrates();
                 AddLoadingTips();
+                RemoveResearches();
                 //  AdjustLocKeysFesteringSkies();
                 /*  foreach(CustomMissionTypeDef customMissionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>()) 
                   {
@@ -83,6 +84,51 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        private static void RemoveResearches()
+        {
+            try 
+            {
+                ResearchDbDef ppResearchDB = DefCache.GetDef<ResearchDbDef>("pp_ResearchDB");
+                ResearchDbDef anuResearchDB = DefCache.GetDef<ResearchDbDef>("anu_ResearchDB");
+                ResearchDbDef njResearchDB = DefCache.GetDef<ResearchDbDef>("nj_ResearchDB");
+                ResearchDbDef synResearchDB = DefCache.GetDef<ResearchDbDef>("syn_ResearchDB");
+
+                // ANU
+                anuResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("ANU_AerialWarfare_ResearchDef"));
+                anuResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("ANU_Aircraft_Oracle_ResearchDef"));
+                anuResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("ANU_Aircraft_ECMJammer_ResearchDef"));
+                anuResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("ANU_Aircraft_MutogCatapult_ResearchDef"));
+
+                // NJ
+                njResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("NJ_AerialWarfare_ResearchDef"));
+                njResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("NJ_Aircraft_CruiseControl_ResearchDef"));
+                njResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("NJ_Aircraft_FuelTank_ResearchDef"));
+                njResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("NJ_Aircraft_TacticalNuke_ResearchDef"));
+
+                // SYN
+                synResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("SYN_Aircraft_SecurityStation_ResearchDef"));
+                synResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("SYN_AerialWarfare_ResearchDef"));
+                synResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("SYN_Aircraft_EMPMissile_ResearchDef"));
+                synResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("SYN_Aircraft_HybernationPods_ResearchDef"));
+
+                // PX (Phoenix Project)
+                ppResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("PX_AdvancedScarabDevelopment_ResearchDef"));
+                ppResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("PX_AerialWarfare_ResearchDef"));
+                ppResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("PX_Aircraft_Flares_ResearchDef"));
+                ppResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("PX_Aircraft_VirophageGun_ResearchDef"));
+                ppResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("PX_ExperimentalArmadilloTechnology_ResearchDef"));
+                ppResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("PX_ExperimentalAspidaTechnology_ResearchDef"));
+                ppResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("PX_ExperimentalKaosBuggyTechnology_ResearchDef"));
+                ppResearchDB.Researches.Remove(DefCache.GetDef<ResearchDef>("PX_ExperimentalScarabTechnology_ResearchDef"));
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
         }
 
         private static void AddLoadingTips()

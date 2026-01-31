@@ -1,23 +1,17 @@
 ﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
 using Base.Core;
-using Code.PhoenixPoint.Tactical.Entities.Equipments;
+using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Equipments;
-using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Geoscape.View;
-using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewControllers.Manufacturing;
-using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Equipments;
@@ -27,12 +21,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using TFTV;
-using TFTV.Vehicles.Ammo;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace PhoenixPoint.Modding
+namespace TFTV.Vehicles.Ammo
 {
     [HarmonyPatch(typeof(UIStateEditVehicle), "SoldierSlotItemChangedHandler")]
     public static class UIStateEditVehicle_SoldierSlotItemChangedHandler_patch
@@ -60,18 +52,21 @@ namespace PhoenixPoint.Modding
     [HarmonyPatch]
     public static class VehicleModuleAmmoHarmonyPatches
     {
-        private sealed class AmmoDefHolder
-        {
-            public TacticalItemDef AmmoDef;
-        }
+       
 
         private sealed class TooltipOverrideHolder
         {
             public string TipText;
         }
 
-        private static readonly ConditionalWeakTable<GeoManufactureItem, AmmoDefHolder> ReplenishAmmoDefs = new ConditionalWeakTable<GeoManufactureItem, AmmoDefHolder>();
+        private sealed class MarketplacePromptHolder
+        {
+            public List<TacticalItemDef> AmmoDefs = new List<TacticalItemDef>();
+        }
+
+        
         private static readonly ConditionalWeakTable<UIInventorySlotSideButton, TooltipOverrideHolder> SideButtonTooltipOverrides = new ConditionalWeakTable<UIInventorySlotSideButton, TooltipOverrideHolder>();
+        private static readonly ConditionalWeakTable<UIInventorySlotSideButton, MarketplacePromptHolder> MarketplacePromptOverrides = new ConditionalWeakTable<UIInventorySlotSideButton, MarketplacePromptHolder>();
 
         private struct ModuleAmmoEntry
         {
@@ -80,7 +75,7 @@ namespace PhoenixPoint.Modding
             public int MaxCharges;
         }
 
-        private static List<TacticalItemDef> GetModuleAmmoDefs(GroundVehicleModuleDef moduleDef)
+        internal static List<TacticalItemDef> GetModuleAmmoDefs(GroundVehicleModuleDef moduleDef)
         {
             if (moduleDef == null)
             {
@@ -115,7 +110,7 @@ namespace PhoenixPoint.Modding
             return list;
         }
 
-        private static int GetAmmoChargesForDef(CommonItemData commonItemData, TacticalItemDef ammoDef)
+        internal static int GetAmmoChargesForDef(CommonItemData commonItemData, TacticalItemDef ammoDef)
         {
             if (commonItemData == null || commonItemData.Ammo == null || ammoDef == null)
             {
@@ -132,7 +127,7 @@ namespace PhoenixPoint.Modding
             return num;
         }
 
-        private static int GetAmmoCapacityForDef(GroundVehicleModuleDef moduleDef, TacticalItemDef ammoDef)
+        internal static int GetAmmoCapacityForDef(GroundVehicleModuleDef moduleDef, TacticalItemDef ammoDef)
         {
             if (moduleDef == null || ammoDef == null || ammoDef.ChargesMax <= 0)
             {
@@ -208,7 +203,7 @@ namespace PhoenixPoint.Modding
             }
         }
 
-        private static bool EnsureModuleAmmo(CommonItemData commonItemData, GroundVehicleModuleDef moduleDef)
+        internal static bool EnsureModuleAmmo(CommonItemData commonItemData, GroundVehicleModuleDef moduleDef)
         {
             if (commonItemData == null || moduleDef == null)
             {
@@ -225,61 +220,14 @@ namespace PhoenixPoint.Modding
             return true;
         }
 
-        private static TacticalItemDef GetPreferredAmmoDef(IReadOnlyList<ModuleAmmoEntry> ammoEntries)
+        private static bool HasAmmoInInventory(UIModuleSoldierEquip parentModule, TacticalItemDef ammoDef)
         {
-            if (ammoEntries == null || ammoEntries.Count == 0)
-            {
-                return null;
-            }
-            foreach (ModuleAmmoEntry moduleAmmoEntry in ammoEntries)
-            {
-                if (moduleAmmoEntry.CurrentCharges < moduleAmmoEntry.MaxCharges)
-                {
-                    return moduleAmmoEntry.AmmoDef;
-                }
-            }
-            return ammoEntries[0].AmmoDef;
-        }
-
-        private static TacticalItemDef GetPreferredAmmoDef(IReadOnlyList<ModuleAmmoEntry> ammoEntries, UIModuleSoldierEquip parentModule)
-        {
-            if (ammoEntries == null || ammoEntries.Count == 0)
-            {
-                return null;
-            }
-            foreach (ModuleAmmoEntry moduleAmmoEntry in ammoEntries)
-            {
-                if (moduleAmmoEntry.CurrentCharges < moduleAmmoEntry.MaxCharges && HasAmmoAvailable(parentModule, moduleAmmoEntry.AmmoDef))
-                {
-                    return moduleAmmoEntry.AmmoDef;
-                }
-            }
-            return GetPreferredAmmoDef(ammoEntries);
-        }
-
-        private static bool HasAmmoAvailable(UIModuleSoldierEquip parentModule, TacticalItemDef ammoDef)
-        {
-            if (parentModule == null || ammoDef == null)
+            if (parentModule == null || ammoDef == null || parentModule.InventoryList == null)
             {
                 return false;
             }
-            if (parentModule.StorageList.UnfilteredItems.Any((ICommonItem item) => item.ItemDef == ammoDef))
-            {
-                return true;
-            }
-            if (parentModule.StorageList.PartialMagazines.Items.ContainsKey(ammoDef))
-            {
-                return true;
-            }
-            if (parentModule.InventoryList.UnfilteredItems.Any((ICommonItem item) => item.ItemDef == ammoDef))
-            {
-                return true;
-            }
-            if (!parentModule.IsVehicle && parentModule.ReadyList.UnfilteredItems.Any((ICommonItem item) => item.ItemDef == ammoDef))
-            {
-                return true;
-            }
-            return false;
+
+            return parentModule.InventoryList.UnfilteredItems.Any(item => item.ItemDef == ammoDef);
         }
 
         private static bool HasAmmoInStorage(UIModuleSoldierEquip parentModule, TacticalItemDef ammoDef)
@@ -295,6 +243,16 @@ namespace PhoenixPoint.Modding
             }
 
             return parentModule.StorageList.PartialMagazines.Items.ContainsKey(ammoDef);
+        }
+
+        private static bool HasInventorySpace(UIModuleSoldierEquip parentModule, TacticalItemDef ammoDef)
+        {
+            if (parentModule == null || ammoDef == null || parentModule.InventoryList == null)
+            {
+                return false;
+            }
+
+            return parentModule.InventoryList.GetFirstAvailableSlot(ammoDef, false) != null;
         }
 
         private static void ClearTooltipOverride(UIInventorySlotSideButton button)
@@ -316,6 +274,31 @@ namespace PhoenixPoint.Modding
 
             SideButtonTooltipOverrides.Remove(button);
             SideButtonTooltipOverrides.Add(button, new TooltipOverrideHolder { TipText = tooltipText });
+        }
+
+        private static void ClearMarketplacePromptOverride(UIInventorySlotSideButton button)
+        {
+            if (button == null)
+            {
+                return;
+            }
+
+            MarketplacePromptOverrides.Remove(button);
+        }
+
+        private static void SetMarketplacePromptOverride(UIInventorySlotSideButton button, IEnumerable<TacticalItemDef> ammoDefs)
+        {
+            if (button == null)
+            {
+                return;
+            }
+
+            ClearMarketplacePromptOverride(button);
+
+            MarketplacePromptOverrides.Add(button, new MarketplacePromptHolder
+            {
+                AmmoDefs = ammoDefs.Where(def => def != null).ToList()
+            });
         }
 
         private static GeoEventChoice GetMarketplaceAmmoChoice(TacticalItemDef ammoDef)
@@ -399,59 +382,6 @@ namespace PhoenixPoint.Modding
             }
         }
 
-        private static bool IsMarketplaceAmmoRelevantToScope(UIModuleSoldierEquip parentModule, ICommonItem owningItem)
-        {
-            try
-            {
-                if (parentModule == null || owningItem == null || owningItem.ItemDef == null)
-                {
-                    return false;
-                }
-
-                ItemDef itemDef = owningItem.ItemDef;
-
-                if (itemDef.Tags != null && TFTVChangesToDLC5.TFTVKaosGuns._kGTag != null && itemDef.Tags.Contains(TFTVChangesToDLC5.TFTVKaosGuns._kGTag))
-                {
-                    return true;
-                }
-
-                if (itemDef.name != null && itemDef.name.StartsWith("KS_", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-
-                return IsVehicleWeaponSoldInMarketplace(itemDef);
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                return false;
-            }
-        }
-
-        private static bool IsVehicleWeaponSoldInMarketplace(ItemDef itemDef)
-        {
-            if (itemDef == null)
-            {
-                return false;
-            }
-
-            if(itemDef is GroundVehicleModuleDef groundVehicleModuleDef && groundVehicleModuleDef.GetSubWeapons().Any())
-            {
-                return true;
-            }
-
-            if(itemDef.Tags != null && VehiclesAmmoMain.MarketplaceGroundVehicleWeapon != null && itemDef.Tags.Contains(VehiclesAmmoMain.MarketplaceGroundVehicleWeapon))
-            {
-                return true;
-            }
-
-            return false;
-
-           /* IVehicleEquipment vehicleEquipment = itemDef as IVehicleEquipment;
-            return vehicleEquipment != null && vehicleEquipment.GetEquipmentType() == GroundVehicleEquipmentType.Weapon;*/
-        }
-
         [HarmonyPatch(typeof(UIInventorySlotSideButton), "GetState")]
         public static class UIInventorySlotSideButton_GetState_Patch
         {
@@ -500,8 +430,9 @@ namespace PhoenixPoint.Modding
                     }
 
                     ClearTooltipOverride(__instance);
+                    ClearMarketplacePromptOverride(__instance);
 
-                    if (item.ItemDef is GroundVehicleModuleDef moduleDef)
+                    if (item.ItemDef is GroundVehicleModuleDef moduleDef && moduleDef.GetSubWeapons().Count() > 0)
                     {
                         if (!EnsureModuleAmmo(item.CommonItemData, moduleDef))
                         {
@@ -511,7 +442,7 @@ namespace PhoenixPoint.Modding
                         return TryComputeVehicleModuleState(__instance, parentModule, slot, item, moduleDef, ref __result);
                     }
 
-                    return TryComputeNonModuleMarketplaceAmmoState(__instance, parentModule, slot, item, ref __result);
+                    return true;
                 }
                 catch (Exception e)
                 {
@@ -530,25 +461,6 @@ namespace PhoenixPoint.Modding
             {
                 result = default(UIInventorySlotSideButton.GeneralState);
 
-                bool canRepair = (bool)AccessTools.Method(typeof(UIInventorySlotSideButton), "CanRepair")
-                    .Invoke(instance, new object[] { item.ItemDef });
-
-                if (canRepair)
-                {
-                    float equippedItemHealth = parentModule.ModuleData.PrimarySoldierData.GetEquippedItemHealth(item.ItemDef);
-                    if (equippedItemHealth >= 0f && equippedItemHealth < 1f)
-                    {
-                        result.Action = UIInventorySlotSideButton.SideButtonAction.Repair;
-                        if (parentModule.ModuleData.Wallet != null)
-                        {
-                            ResourcePack repairCost = GeoCharacter.GetRepairCost(item.ItemDef, equippedItemHealth);
-                            result.State = parentModule.ModuleData.Wallet.HasResources(repairCost)
-                                ? UIInventorySlotSideButton.SideButtonState.ActionNeededAffordable
-                                : UIInventorySlotSideButton.SideButtonState.ActionNeededUnaffordable;
-                        }
-                        return false;
-                    }
-                }
 
                 if (item.CommonItemData.Ammo == null)
                 {
@@ -556,16 +468,30 @@ namespace PhoenixPoint.Modding
                 }
 
                 List<ModuleAmmoEntry> moduleAmmoEntries = GetModuleAmmoEntries(item.CommonItemData, moduleDef);
-                TacticalItemDef ammoDef = GetPreferredAmmoDef(moduleAmmoEntries, parentModule);
-                if (ammoDef == null)
+                if (moduleAmmoEntries.Count == 0)
                 {
                     return true;
                 }
 
+                List<ModuleAmmoEntry> missingEntries = moduleAmmoEntries
+                    .Where(entry => entry.MaxCharges > 0 && entry.CurrentCharges < entry.MaxCharges)
+                    .ToList();
+
+                if (missingEntries.Count == 0)
+                {
+                    return TryComputeFullModuleState(instance, parentModule, slot, moduleAmmoEntries, ref result);
+                }
+
+                ModuleAmmoEntry? preferredEntry = GetPreferredModuleAmmoEntry(parentModule, missingEntries, moduleAmmoEntries);
+                if (preferredEntry == null)
+                {
+                    return true;
+                }
+
+                TacticalItemDef ammoDef = preferredEntry.Value.AmmoDef;
                 ItemToProduce(instance) = ammoDef;
 
-                ModuleAmmoEntry moduleAmmoEntry = moduleAmmoEntries.FirstOrDefault(entry => entry.AmmoDef == ammoDef);
-                if (moduleAmmoEntry.MaxCharges > 0 && moduleAmmoEntry.CurrentCharges < moduleAmmoEntry.MaxCharges)
+                if (preferredEntry.Value.MaxCharges > 0 && preferredEntry.Value.CurrentCharges < preferredEntry.Value.MaxCharges)
                 {
                     result.Action = UIInventorySlotSideButton.SideButtonAction.LoadAmmo;
                     DestinationList(instance) = slot.ParentList;
@@ -584,88 +510,119 @@ namespace PhoenixPoint.Modding
                     return false;
                 }
 
-                if (destinationList != parentModule.StorageList &&
-                    parentModule.StorageList.UnfilteredItems.Any(storageItem => storageItem.ItemDef == ammoDef))
+                if (missingEntries.Count > 0)
                 {
-                    result.State = UIInventorySlotSideButton.SideButtonState.ActionNeededFree;
-                    return false;
-                }
+                    if (missingEntries.Any(entry => HasAmmoInStorage(parentModule, entry.AmmoDef)) ||
+                        missingEntries.Any(entry => HasAmmoInInventory(parentModule, entry.AmmoDef)))
+                    {
+                        result.State = UIInventorySlotSideButton.SideButtonState.ActionNeededFree;
+                        return false;
+                    }
 
-                if (IsVehicleWeaponSoldInMarketplace(moduleDef) && TrySetMarketplaceAmmoState(instance, parentModule, ammoDef, ref result))
-                {
-                    return false;
-                }
-
-                if (!parentModule.CanManufacture(ammoDef))
-                {
-                    result.State = UIInventorySlotSideButton.SideButtonState.ActionNeededImpossible;
-                    return false;
-                }
-
-                if (ammoDef.ManufacturePointsCost > 0f)
-                {
-                    result.State = UIInventorySlotSideButton.SideButtonState.ActionNeededNeedsTime;
-                    return false;
-                }
-
-                if (!parentModule.ModuleData.Wallet.HasResources(ammoDef.ManufacturePrice))
-                {
-                    result.State = UIInventorySlotSideButton.SideButtonState.ActionNeededUnaffordable;
-                    return false;
+                    if (missingEntries.Count == 1)
+                    {
+                        if (TrySetMarketplaceAmmoState(instance, parentModule, ammoDef, ref result))
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        TacticalItemDef first = missingEntries[0].AmmoDef;
+                        TacticalItemDef second = missingEntries[1].AmmoDef;
+                        if (TrySetMarketplaceAmmoState(instance, parentModule, new List<TacticalItemDef> { first, second }, ref result))
+                        {
+                            SetMarketplacePromptOverride(instance, new[] { first, second });
+                            return false;
+                        }
+                    }
                 }
 
                 result.State = UIInventorySlotSideButton.SideButtonState.ActionNeededAffordable;
                 return false;
             }
 
-            private static bool TryComputeNonModuleMarketplaceAmmoState(
-               UIInventorySlotSideButton instance,
-               UIModuleSoldierEquip parentModule,
-               UIInventorySlot slot,
-               ICommonItem item,
-               ref UIInventorySlotSideButton.GeneralState result)
+            private static bool TryComputeFullModuleState(
+                UIInventorySlotSideButton instance,
+                UIModuleSoldierEquip parentModule,
+                UIInventorySlot slot,
+                List<ModuleAmmoEntry> moduleAmmoEntries,
+                ref UIInventorySlotSideButton.GeneralState result)
             {
-                if (!IsMarketplaceAmmoRelevantToScope(parentModule, item))
+                if (parentModule == null || moduleAmmoEntries == null || moduleAmmoEntries.Count == 0)
                 {
                     return true;
                 }
 
-                EquipmentDef equipmentDef = item.ItemDef as EquipmentDef;
-                if (equipmentDef == null || equipmentDef.CompatibleAmmunition == null || equipmentDef.CompatibleAmmunition.Length == 0)
+                List<TacticalItemDef> ammoDefs = moduleAmmoEntries.Select(entry => entry.AmmoDef).Where(def => def != null).ToList();
+                TacticalItemDef storageAmmo = ammoDefs.FirstOrDefault(def => HasAmmoInStorage(parentModule, def) && HasInventorySpace(parentModule, def));
+                if (storageAmmo != null)
                 {
-                    return true;
-                }
-
-                TacticalItemDef ammoDef = equipmentDef.CompatibleAmmunition[0];
-                if (ammoDef == null)
-                {
-                    return true;
-                }
-
-                result = default(UIInventorySlotSideButton.GeneralState);
-                ItemToProduce(instance) = ammoDef;
-
-                if (item.CommonItemData?.Ammo != null && item.CommonItemData.Ammo.CurrentCharges < item.ItemDef.ChargesMax)
-                {
-                    result.Action = UIInventorySlotSideButton.SideButtonAction.LoadAmmo;
-                    DestinationList(instance) = slot.ParentList;
-                }
-                else
-                {
+                    ItemToProduce(instance) = storageAmmo;
                     result.Action = UIInventorySlotSideButton.SideButtonAction.AddAmmo;
-                    DestinationList(instance) = (UIInventoryList)AccessTools.Method(typeof(UIInventorySlotSideButton), "GetDestinationList")
-                        .Invoke(instance, new object[] { ammoDef });
-                }
-
-                if (HasAmmoInStorage(parentModule, ammoDef))
-                {
+                    DestinationList(instance) = parentModule.InventoryList;
                     result.State = UIInventorySlotSideButton.SideButtonState.ActionNeededFree;
                     return false;
                 }
 
-                TrySetMarketplaceAmmoState(instance, parentModule, ammoDef, ref result);
+                List<TacticalItemDef> marketplaceAmmo = ammoDefs.Where(def => HasMarketplaceAmmoStock(def)).ToList();
+                if (marketplaceAmmo.Count == 0)
+                {
+                    result.State = UIInventorySlotSideButton.SideButtonState.ActionNeededImpossible;
+                    return false;
+                }
 
+                TacticalItemDef firstMarketAmmo = marketplaceAmmo[0];
+                if (!HasInventorySpace(parentModule, firstMarketAmmo))
+                {
+                    result.State = UIInventorySlotSideButton.SideButtonState.ActionNeededNoStorage;
+                    return false;
+                }
+
+                ItemToProduce(instance) = firstMarketAmmo;
+                result.Action = UIInventorySlotSideButton.SideButtonAction.AddAmmo;
+                DestinationList(instance) = parentModule.InventoryList;
+
+                if (marketplaceAmmo.Count == 1)
+                {
+                    TrySetMarketplaceAmmoState(instance, parentModule, firstMarketAmmo, ref result);
+                    return false;
+                }
+
+                TacticalItemDef secondMarketAmmo = marketplaceAmmo[1];
+                TrySetMarketplaceAmmoState(instance, parentModule, new List<TacticalItemDef> { firstMarketAmmo, secondMarketAmmo }, ref result);
+                SetMarketplacePromptOverride(instance, new[] { firstMarketAmmo, secondMarketAmmo });
                 return false;
+            }
+
+            private static ModuleAmmoEntry? GetPreferredModuleAmmoEntry(
+                UIModuleSoldierEquip parentModule,
+                List<ModuleAmmoEntry> missingEntries,
+                List<ModuleAmmoEntry> allEntries)
+            {
+                if (missingEntries != null && missingEntries.Count > 0)
+                {
+                    ModuleAmmoEntry entryFromStorage = missingEntries.FirstOrDefault(entry => HasAmmoInStorage(parentModule, entry.AmmoDef));
+                    if (entryFromStorage.AmmoDef != null)
+                    {
+                        return entryFromStorage;
+                    }
+
+                    ModuleAmmoEntry entryFromInventory = missingEntries.FirstOrDefault(entry => HasAmmoInInventory(parentModule, entry.AmmoDef));
+                    if (entryFromInventory.AmmoDef != null)
+                    {
+                        return entryFromInventory;
+                    }
+
+                    return missingEntries[0];
+                }
+
+                if (allEntries == null || allEntries.Count == 0)
+                {
+                    return null;
+                }
+
+                return allEntries[0];
             }
         }
 
@@ -757,6 +714,36 @@ namespace PhoenixPoint.Modding
             return true;
         }
 
+        private static string BuildMarketplaceOutOfStockText(TacticalItemDef ammoDef)
+        {
+            string outOfStockText = TFTVCommonMethods.ConvertKeyToString("TFTV_MARKETPLACE_AMMO_OUT_OF_STOCK");
+            string ammoName = ammoDef.ViewElementDef != null ? ammoDef.ViewElementDef.DisplayName1.Localize() : ammoDef.name;
+
+            int daysToRotation;
+            if (!TryGetMarketplaceDaysToRotation(out daysToRotation))
+            {
+                daysToRotation = 1;
+            }
+
+            outOfStockText = outOfStockText.Replace("{0}", ammoName);
+            outOfStockText = outOfStockText.Replace("{1}", daysToRotation.ToString());
+            return outOfStockText;
+        }
+
+        private static string BuildMarketplaceBuyText(TacticalItemDef ammoDef, int stockCount, ResourcePack mpCost)
+        {
+            string buyText = TFTVCommonMethods.ConvertKeyToString("TFTV_MARKETPLACE_AMMO_BUY");
+            string ammoNameInStock = ammoDef.ViewElementDef != null ? ammoDef.ViewElementDef.DisplayName1.Localize() : ammoDef.name;
+
+            int matsCost = mpCost.ByResourceType(ResourceType.Materials).RoundedValue;
+
+            buyText = buyText.Replace("{0}", stockCount.ToString());
+            buyText = buyText.Replace("{1}", ammoNameInStock);
+            buyText = buyText.Replace("{2}", matsCost.ToString());
+
+            return buyText;
+        }
+
         private static bool TrySetMarketplaceAmmoState(
             UIInventorySlotSideButton instance,
             UIModuleSoldierEquip parentModule,
@@ -767,20 +754,7 @@ namespace PhoenixPoint.Modding
             if (stockCount <= 0)
             {
                 result.State = UIInventorySlotSideButton.SideButtonState.ActionNeededImpossible;
-
-                string outOfStockText = TFTVCommonMethods.ConvertKeyToString("TFTV_MARKETPLACE_AMMO_OUT_OF_STOCK");
-                string ammoName = ammoDef.ViewElementDef != null ? ammoDef.ViewElementDef.DisplayName1.Localize() : ammoDef.name;
-
-                int daysToRotation;
-                if (!TryGetMarketplaceDaysToRotation(out daysToRotation))
-                {
-                    daysToRotation = 1;
-                }
-
-                outOfStockText = outOfStockText.Replace("{0}", ammoName);
-                outOfStockText = outOfStockText.Replace("{1}", daysToRotation.ToString());
-
-                SetTooltipOverride(instance, outOfStockText);
+                SetTooltipOverride(instance, BuildMarketplaceOutOfStockText(ammoDef));
                 return true;
             }
 
@@ -798,36 +772,176 @@ namespace PhoenixPoint.Modding
                 ? UIInventorySlotSideButton.SideButtonState.ActionNeededAffordable
                 : UIInventorySlotSideButton.SideButtonState.ActionNeededUnaffordable;
 
-            string buyText = TFTVCommonMethods.ConvertKeyToString("TFTV_MARKETPLACE_AMMO_BUY");
-            string ammoNameInStock = ammoDef.ViewElementDef != null ? ammoDef.ViewElementDef.DisplayName1.Localize() : ammoDef.name;
-
-            int matsCost = mpCost.ByResourceType(ResourceType.Materials).RoundedValue;
-
-            buyText = buyText.Replace("{0}", stockCount.ToString());
-            buyText = buyText.Replace("{1}", ammoNameInStock);
-            buyText = buyText.Replace("{2}", matsCost.ToString());
-
-            SetTooltipOverride(instance, buyText);
+            SetTooltipOverride(instance, BuildMarketplaceBuyText(ammoDef, stockCount, mpCost));
             return true;
         }
 
-        private static bool TryPlacePurchasedAmmoClip(UIModuleSoldierEquip parentModule, TacticalItemDef ammoDef, UIInventorySlotSideButton.SideButtonAction action)
+        private static bool TrySetMarketplaceAmmoState(
+            UIInventorySlotSideButton instance,
+            UIModuleSoldierEquip parentModule,
+            List<TacticalItemDef> ammoDefs,
+            ref UIInventorySlotSideButton.GeneralState result)
+        {
+            if (ammoDefs == null || ammoDefs.Count == 0)
+            {
+                return false;
+            }
+
+            bool anyStock = false;
+            bool anyAffordable = false;
+            List<string> tooltipLines = new List<string>();
+
+            foreach (TacticalItemDef ammoDef in ammoDefs)
+            {
+                if (ammoDef == null)
+                {
+                    continue;
+                }
+
+                int stockCount = GetMarketplaceAmmoStockCount(ammoDef);
+                if (stockCount <= 0)
+                {
+                    tooltipLines.Add(BuildMarketplaceOutOfStockText(ammoDef));
+                    continue;
+                }
+
+                anyStock = true;
+                ResourcePack mpCost;
+                if (!TryGetMarketplaceAmmoCost(ammoDef, out mpCost))
+                {
+                    tooltipLines.Add(BuildMarketplaceOutOfStockText(ammoDef));
+                    continue;
+                }
+
+                if (parentModule.ModuleData?.Wallet != null && parentModule.ModuleData.Wallet.HasResources(mpCost))
+                {
+                    anyAffordable = true;
+                }
+
+                tooltipLines.Add(BuildMarketplaceBuyText(ammoDef, stockCount, mpCost));
+            }
+
+            if (!anyStock)
+            {
+                result.State = UIInventorySlotSideButton.SideButtonState.ActionNeededImpossible;
+                SetTooltipOverride(instance, string.Join("\n", tooltipLines));
+                return true;
+            }
+
+            result.State = anyAffordable
+                ? UIInventorySlotSideButton.SideButtonState.ActionNeededAffordable
+                : UIInventorySlotSideButton.SideButtonState.ActionNeededUnaffordable;
+
+            SetTooltipOverride(instance, string.Join("\n", tooltipLines));
+            return true;
+        }
+
+        private static bool TryPlacePurchasedAmmoClip(UIModuleSoldierEquip parentModule, TacticalItemDef ammoDef, int remainingCharges)
         {
             if (parentModule == null || ammoDef == null)
             {
                 return false;
             }
 
-            GeoItem clip = new GeoItem(ammoDef, 1, -1, null, -100);
-
-            if (action == UIInventorySlotSideButton.SideButtonAction.AddAmmo && parentModule.InventoryList != null)
+            if (remainingCharges <= 0)
             {
-                parentModule.InventoryList.AddItem(clip, null, null);
                 return true;
             }
 
+            GeoItem clip = new GeoItem(ammoDef, 1, -1, null, -100);
+            clip.CommonItemData.ModifyCharges(-clip.CommonItemData.CurrentCharges, false);
+            clip.CommonItemData.ModifyCharges(remainingCharges, false);
+
             parentModule.StorageList.AddItem(clip);
             return true;
+        }
+
+        private static bool TryPlacePurchasedAmmoClipInInventory(UIModuleSoldierEquip parentModule, TacticalItemDef ammoDef)
+        {
+            if (parentModule == null || ammoDef == null || parentModule.InventoryList == null)
+            {
+                return false;
+            }
+
+            if (!HasInventorySpace(parentModule, ammoDef))
+            {
+                return false;
+            }
+
+            GeoItem clip = new GeoItem(ammoDef, 1, -1, null, -100);
+            parentModule.InventoryList.AddItem(clip, null, null);
+            return true;
+        }
+
+        private static bool TryTakeAmmoFromStorageList(UIModuleSoldierEquip parentModule, TacticalItemDef ammoDef, out ICommonItem ammoItem)
+        {
+            ammoItem = null;
+
+            if (parentModule == null || ammoDef == null)
+            {
+                return false;
+            }
+
+            GeoItem partialItem;
+            if (parentModule.StorageList.PartialMagazines.Items.TryGetValue(ammoDef, out partialItem))
+            {
+                ICommonItem singleItem = partialItem.GetSingleItem();
+                parentModule.StorageList.PartialMagazines.RemoveItem((GeoItem)singleItem);
+                ammoItem = singleItem;
+                return true;
+            }
+
+            ICommonItem storedItem = parentModule.StorageList.UnfilteredItems.FirstOrDefault(item => item.ItemDef == ammoDef);
+            if (storedItem == null)
+            {
+                return false;
+            }
+
+            ammoItem = storedItem.GetSingleItem();
+            parentModule.StorageList.RemoveItem(ammoItem, null);
+            return true;
+        }
+
+        private static bool TryReloadModuleFromPurchasedClip(ICommonItem owningItem, TacticalItemDef ammoDef, UIModuleSoldierEquip parentModule)
+        {
+            try
+            {
+                if (owningItem == null || ammoDef == null || parentModule == null)
+                {
+                    return false;
+                }
+
+                GroundVehicleModuleDef moduleDef = owningItem.ItemDef as GroundVehicleModuleDef;
+                if (moduleDef == null || !EnsureModuleAmmo(owningItem.CommonItemData, moduleDef))
+                {
+                    return false;
+                }
+
+                int maxCharges = GetAmmoCapacityForDef(moduleDef, ammoDef);
+                int currentCharges = GetAmmoChargesForDef(owningItem.CommonItemData, ammoDef);
+                int needed = maxCharges - currentCharges;
+                if (needed <= 0)
+                {
+                    return false;
+                }
+
+                int clipCharges = ammoDef.ChargesMax;
+                int chargesToLoad = Mathf.Min(needed, clipCharges);
+                int remainingCharges = Mathf.Max(clipCharges - chargesToLoad, 0);
+
+                GeoItem geoItem = new GeoItem(ammoDef, 1, -1, null, -100);
+                geoItem.CommonItemData.ModifyCharges(-geoItem.CommonItemData.CurrentCharges, false);
+                geoItem.CommonItemData.ModifyCharges(chargesToLoad, false);
+                owningItem.CommonItemData.Ammo.LoadMagazine(geoItem);
+
+                TryPlacePurchasedAmmoClip(parentModule, ammoDef, remainingCharges);
+                return true;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return false;
+            }
         }
 
         [HarmonyPatch(typeof(UIInventorySlotSideButton), "OnSideButtonPressed")]
@@ -862,35 +976,97 @@ namespace PhoenixPoint.Modding
                     UIInventorySlot owningSlot = OwningSlot(__instance);
                     ICommonItem owningItem = owningSlot?.Item;
 
-                    if (!IsMarketplaceAmmoRelevantToScope(parentModule, owningItem))
+                    GroundVehicleModuleDef moduleDef = owningItem?.ItemDef as GroundVehicleModuleDef;
+                    if (moduleDef == null || !EnsureModuleAmmo(owningItem.CommonItemData, moduleDef))
                     {
                         return true;
                     }
 
-                    TacticalItemDef ammoDef = ItemToProduce(__instance) as TacticalItemDef;
-                    if (ammoDef == null)
+                    List<ModuleAmmoEntry> moduleAmmoEntries = GetModuleAmmoEntries(owningItem.CommonItemData, moduleDef);
+                    List<ModuleAmmoEntry> missingEntries = moduleAmmoEntries
+                        .Where(entry => entry.MaxCharges > 0 && entry.CurrentCharges < entry.MaxCharges)
+                        .ToList();
+
+                    if (missingEntries.Count == 0)
+                    {
+                        return HandleFullModuleSideButton(parentModule, owningItem, __instance);
+                    }
+
+                    ModuleAmmoEntry selectedEntry = missingEntries
+                        .FirstOrDefault(entry => HasAmmoInStorage(parentModule, entry.AmmoDef));
+
+                    bool useStorage = selectedEntry.AmmoDef != null;
+
+                    if (!useStorage)
+                    {
+                        selectedEntry = missingEntries.FirstOrDefault(entry => HasAmmoInInventory(parentModule, entry.AmmoDef));
+                    }
+
+                    if (selectedEntry.AmmoDef != null)
+                    {
+                        TacticalItemDef ammoDef = selectedEntry.AmmoDef;
+                        ICommonItem ammoItem = null;
+                        UIInventoryList sourceList = null;
+
+                        if (HasAmmoInStorage(parentModule, ammoDef))
+                        {
+                            ammoItem = parentModule.StorageList.UnfilteredItems
+                                .FirstOrDefault(item => item.ItemDef == ammoDef)?.GetSingleItem();
+                            sourceList = parentModule.StorageList;
+                        }
+                        else if (HasAmmoInInventory(parentModule, ammoDef))
+                        {
+                            ammoItem = parentModule.InventoryList.UnfilteredItems
+                                .FirstOrDefault(item => item.ItemDef == ammoDef);
+                            sourceList = parentModule.InventoryList;
+                        }
+
+                        if (ammoItem != null && sourceList != null)
+                        {
+                            if (sourceList == parentModule.InventoryList)
+                            {
+                                parentModule.StorageList.TryLoadItemWithItem(owningItem, ammoItem, null);
+                                if (ammoItem.CommonItemData.IsEmpty())
+                                {
+                                    sourceList.RemoveItem(ammoItem, null);
+                                }
+                            }
+                            else
+                            {
+                                sourceList.RemoveItem(ammoItem, null);
+                                parentModule.StorageList.TryLoadItemWithItem(owningItem, ammoItem, null);
+
+                                if (!ammoItem.CommonItemData.IsEmpty())
+                                {
+                                    sourceList.AddItem(ammoItem, null, null);
+                                }
+                            }
+
+                            owningSlot.UpdateItem();
+                            parentModule.RefreshSideButtons();
+                            return false;
+                        }
+                    }
+
+                    TacticalItemDef requestedAmmoDef = ItemToProduce(__instance) as TacticalItemDef;
+                    if (requestedAmmoDef == null)
                     {
                         return true;
                     }
 
-                    if (HasAmmoInStorage(parentModule, ammoDef))
+                    if (missingEntries.Count == 1)
                     {
-                        return true;
-                    }
+                        if (!HasMarketplaceAmmoStock(requestedAmmoDef))
+                        {
+                            return true;
+                        }
 
-                    if (!HasMarketplaceAmmoStock(ammoDef))
-                    {
-                        return true;
-                    }
+                        if (!TryBuyAmmoClipFromMarketplace(parentModule, requestedAmmoDef))
+                        {
+                            return true;
+                        }
 
-                    if (!TryBuyAmmoClipFromMarketplace(parentModule, ammoDef))
-                    {
-                        return true;
-                    }
-
-                    if (state.Action == UIInventorySlotSideButton.SideButtonAction.LoadAmmo)
-                    {
-                        if (TryReloadEquipmentFromPurchasedClip(owningItem))
+                        if (TryReloadModuleFromPurchasedClip(owningItem, requestedAmmoDef, parentModule))
                         {
                             parentModule.RefreshSideButtons();
                             return false;
@@ -899,12 +1075,13 @@ namespace PhoenixPoint.Modding
                         return true;
                     }
 
-                    if (!TryPlacePurchasedAmmoClip(parentModule, ammoDef, state.Action))
+                    MarketplacePromptHolder promptHolder;
+                    if (!MarketplacePromptOverrides.TryGetValue(__instance, out promptHolder) || promptHolder == null || promptHolder.AmmoDefs.Count < 2)
                     {
-                        parentModule.StorageList.AddItem(new GeoItem(ammoDef, 1, -1, null, -100));
+                        return true;
                     }
 
-                    parentModule.RefreshSideButtons();
+                    ShowMarketplaceAmmoChoicePrompt(parentModule, owningItem, promptHolder.AmmoDefs[0], promptHolder.AmmoDefs[1]);
                     return false;
                 }
                 catch (Exception e)
@@ -913,35 +1090,232 @@ namespace PhoenixPoint.Modding
                     return true;
                 }
             }
-        }
 
-        private static bool TryReloadEquipmentFromPurchasedClip(ICommonItem owningItem)
-        {
-            try
+            private static bool HandleFullModuleSideButton(UIModuleSoldierEquip parentModule, ICommonItem owningItem, UIInventorySlotSideButton instance)
             {
-                Equipment equipment = owningItem as Equipment;
-                if (equipment == null || equipment.CommonItemData == null || equipment.CommonItemData.Ammo == null)
+                if (parentModule == null || owningItem == null || instance == null)
                 {
+                    return true;
+                }
+
+                TacticalItemDef ammoDef = ItemToProduce(instance) as TacticalItemDef;
+                if (ammoDef == null)
+                {
+                    return true;
+                }
+
+                if (HasAmmoInStorage(parentModule, ammoDef) && HasInventorySpace(parentModule, ammoDef))
+                {
+                    ICommonItem ammoItem;
+                    if (TryTakeAmmoFromStorageList(parentModule, ammoDef, out ammoItem))
+                    {
+                        parentModule.InventoryList.AddItem(ammoItem, null, null);
+                        parentModule.RefreshSideButtons();
+                        return false;
+                    }
+                }
+
+                if (!HasMarketplaceAmmoStock(ammoDef))
+                {
+                    return true;
+                }
+
+                MarketplacePromptHolder promptHolder;
+                if (MarketplacePromptOverrides.TryGetValue(instance, out promptHolder) && promptHolder != null && promptHolder.AmmoDefs.Count >= 2)
+                {
+                    ShowMarketplaceAmmoChoicePromptForInventory(parentModule, promptHolder.AmmoDefs[0], promptHolder.AmmoDefs[1]);
                     return false;
                 }
 
-                int needed = equipment.ItemDef.ChargesMax - equipment.CommonItemData.CurrentCharges;
-                if (needed <= 0)
+                if (!TryBuyAmmoClipFromMarketplace(parentModule, ammoDef))
                 {
+                    return true;
+                }
+
+                if (TryPlacePurchasedAmmoClipInInventory(parentModule, ammoDef))
+                {
+                    parentModule.RefreshSideButtons();
                     return false;
                 }
 
-                equipment.CommonItemData.Ammo.ReloadCharges(needed, true);
                 return true;
             }
-            catch (Exception e)
+        }
+
+        private static string LimitToTwoWords(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
             {
-                TFTVLogger.Error(e);
-                return false;
+                return text;
+            }
+
+            string[] words = text
+                .Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (words.Length <= 2)
+            {
+                return text.Trim();
+            }
+
+            return words[0] + " " + words[1];
+        }
+
+        private static void ShowMarketplaceAmmoChoicePrompt(
+            UIModuleSoldierEquip parentModule,
+            ICommonItem owningItem,
+            TacticalItemDef firstAmmo,
+            TacticalItemDef secondAmmo)
+        {
+            string ammoName1 = firstAmmo?.ViewElementDef != null ? firstAmmo.ViewElementDef.DisplayName1.Localize() : firstAmmo?.name;
+            string ammoName2 = secondAmmo?.ViewElementDef != null ? secondAmmo.ViewElementDef.DisplayName1.Localize() : secondAmmo?.name;
+
+            ammoName1 = LimitToTwoWords(ammoName1);
+            ammoName2 = LimitToTwoWords(ammoName2);
+
+            if (string.IsNullOrWhiteSpace(ammoName1) || string.IsNullOrWhiteSpace(ammoName2))
+            {
+                return;
+            }
+
+            /* string promptText = TFTVCommonMethods.ConvertKeyToString("TFTV_MARKETPLACE_AMMO_CHOOSE");
+             if (string.IsNullOrWhiteSpace(promptText) || promptText == "TFTV_MARKETPLACE_AMMO_CHOOSE")
+             {
+                 promptText = "Choose ammo to purchase:";
+             }*/
+
+            Dictionary<MessageBoxButtons, string> buttonLabels = new Dictionary<MessageBoxButtons, string>
+            {
+                { MessageBoxButtons.Yes, ammoName1 },
+                { MessageBoxButtons.No, ammoName2 },
+                { MessageBoxButtons.Cancel, "CANCEL" }
+            };
+
+            GameUtl.GetMessageBox().ShowSimplePrompt(
+                "",
+                MessageBoxIcon.Question,
+                MessageBoxButtons.YesNoCancel,
+                buttonLabels,
+                result =>
+                {
+                    try
+                    {
+                        if (result.DialogResult == MessageBoxResult.Yes)
+                        {
+                            TryBuyAndReloadAmmoChoice(parentModule, owningItem, firstAmmo);
+                        }
+                        else if (result.DialogResult == MessageBoxResult.No)
+                        {
+                            TryBuyAndReloadAmmoChoice(parentModule, owningItem, secondAmmo);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                });
+        }
+
+        private static void ShowMarketplaceAmmoChoicePromptForInventory(
+            UIModuleSoldierEquip parentModule,
+            TacticalItemDef firstAmmo,
+            TacticalItemDef secondAmmo)
+        {
+            string ammoName1 = firstAmmo?.ViewElementDef != null ? firstAmmo.ViewElementDef.DisplayName1.Localize() : firstAmmo?.name;
+            string ammoName2 = secondAmmo?.ViewElementDef != null ? secondAmmo.ViewElementDef.DisplayName1.Localize() : secondAmmo?.name;
+
+            ammoName1 = LimitToTwoWords(ammoName1);
+            ammoName2 = LimitToTwoWords(ammoName2);
+
+            if (string.IsNullOrWhiteSpace(ammoName1) || string.IsNullOrWhiteSpace(ammoName2))
+            {
+                return;
+            }
+
+            /* string promptText = TFTVCommonMethods.ConvertKeyToString("TFTV_MARKETPLACE_AMMO_CHOOSE");
+             if (string.IsNullOrWhiteSpace(promptText) || promptText == "TFTV_MARKETPLACE_AMMO_CHOOSE")
+             {
+                 promptText = "Choose ammo to purchase:";
+             }*/
+
+            Dictionary<MessageBoxButtons, string> buttonLabels = new Dictionary<MessageBoxButtons, string>
+            {
+                { MessageBoxButtons.Yes, ammoName1 },
+                { MessageBoxButtons.No, ammoName2 },
+                { MessageBoxButtons.Cancel, "CANCEL" }
+            };
+
+            GameUtl.GetMessageBox().ShowSimplePrompt(
+                "",
+                MessageBoxIcon.Question,
+                MessageBoxButtons.YesNoCancel,
+                buttonLabels,
+                result =>
+                {
+                    try
+                    {
+                        if (result.DialogResult == MessageBoxResult.Yes)
+                        {
+                            TryBuyAndStoreAmmoChoice(parentModule, firstAmmo);
+                        }
+                        else if (result.DialogResult == MessageBoxResult.No)
+                        {
+                            TryBuyAndStoreAmmoChoice(parentModule, secondAmmo);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                });
+        }
+
+        private static void TryBuyAndReloadAmmoChoice(UIModuleSoldierEquip parentModule, ICommonItem owningItem, TacticalItemDef ammoDef)
+        {
+            if (ammoDef == null || parentModule == null || owningItem == null)
+            {
+                return;
+            }
+
+            if (!HasMarketplaceAmmoStock(ammoDef))
+            {
+                return;
+            }
+
+            if (!TryBuyAmmoClipFromMarketplace(parentModule, ammoDef))
+            {
+                return;
+            }
+
+            if (TryReloadModuleFromPurchasedClip(owningItem, ammoDef, parentModule))
+            {
+                parentModule.RefreshSideButtons();
             }
         }
 
-        private static bool ReloadModuleAmmo(GeoItem item, TacticalItemDef ammoDef)
+        private static void TryBuyAndStoreAmmoChoice(UIModuleSoldierEquip parentModule, TacticalItemDef ammoDef)
+        {
+            if (ammoDef == null || parentModule == null)
+            {
+                return;
+            }
+
+            if (!HasMarketplaceAmmoStock(ammoDef))
+            {
+                return;
+            }
+
+            if (!TryBuyAmmoClipFromMarketplace(parentModule, ammoDef))
+            {
+                return;
+            }
+
+            if (TryPlacePurchasedAmmoClipInInventory(parentModule, ammoDef))
+            {
+                parentModule.RefreshSideButtons();
+            }
+        }
+
+        public static bool ReloadModuleAmmo(GeoItem item, TacticalItemDef ammoDef)
         {
             if (item == null || ammoDef == null)
             {
@@ -987,7 +1361,7 @@ namespace PhoenixPoint.Modding
                 }
 
                 var moduleDef = __instance.ItemDef as GroundVehicleModuleDef;
-                if (moduleDef != null)
+                if (moduleDef != null && moduleDef.GetSubWeapons().Count() > 0)
                 {
                     EnsureModuleAmmo(__instance, moduleDef);
                 }
@@ -1084,7 +1458,7 @@ namespace PhoenixPoint.Modding
                 {
                     return true;
                 }
-                int maxCharges = tacticalItemDef.ChargesMax;
+                int maxCharges = GetAmmoCapacityForDef(moduleDef, tacticalItemDef);
                 if (maxCharges <= 0)
                 {
                     return true;
@@ -1092,10 +1466,25 @@ namespace PhoenixPoint.Modding
                 int currentCharges = GetAmmoChargesForDef(item.CommonItemData, tacticalItemDef);
                 while (!ammoItem.CommonItemData.IsEmpty() && currentCharges < maxCharges)
                 {
+                    int neededCharges = maxCharges - currentCharges;
                     ICommonItem commonItem = ammoItem.GetSingleItem().Clone();
+                    int availableCharges = commonItem.CommonItemData.TotalCharges;
+                    int chargesToLoad = Math.Min(neededCharges, availableCharges);
+                    if (chargesToLoad < availableCharges)
+                    {
+                        commonItem.CommonItemData.ModifyCharges(-commonItem.CommonItemData.CurrentCharges, false);
+                        commonItem.CommonItemData.ModifyCharges(chargesToLoad, false);
+                    }
                     item.CommonItemData.Ammo.LoadMagazine(commonItem);
-                    ammoItem.CommonItemData.Subtract(commonItem);
-                    currentCharges += commonItem.CommonItemData.TotalCharges;
+                    if (chargesToLoad >= availableCharges)
+                    {
+                        ammoItem.CommonItemData.Subtract(commonItem);
+                    }
+                    else
+                    {
+                        ammoItem.CommonItemData.ModifyCharges(-chargesToLoad, false);
+                    }
+                    currentCharges += chargesToLoad;
                     Action onItemLoaded = __instance.OnItemLoaded;
                     if (onItemLoaded != null)
                     {
@@ -1165,144 +1554,7 @@ namespace PhoenixPoint.Modding
             }
         }
 
-        [HarmonyPatch(typeof(UIModuleReplenish), "AddMissingAmmo")]
-        public static class UIModuleReplenish_AddMissingAmmo_Patch
-        {
-            private static readonly AccessTools.FieldRef<UIModuleReplenish, GeoscapeViewContext> ReplenishContext =
-                AccessTools.FieldRefAccess<UIModuleReplenish, GeoscapeViewContext>("_context");
-            private static readonly AccessTools.FieldRef<UIModuleReplenish, GeoPhoenixFaction> ReplenishFaction =
-                AccessTools.FieldRefAccess<UIModuleReplenish, GeoPhoenixFaction>("_faction");
 
-            private static InteractHandler GetInteractHandler(UIModuleReplenish instance, string methodName)
-            {
-                var methodInfo = AccessTools.Method(typeof(UIModuleReplenish), methodName);
-                if (methodInfo == null)
-                {
-                    return null;
-                }
-                return (InteractHandler)Delegate.CreateDelegate(typeof(InteractHandler), instance, methodInfo);
-            }
-
-            private static Action<GeoManufactureItem> GetManufactureItemHandler(UIModuleReplenish instance, string methodName)
-            {
-                var methodInfo = AccessTools.Method(typeof(UIModuleReplenish), methodName);
-                if (methodInfo == null)
-                {
-                    return null;
-                }
-                return (Action<GeoManufactureItem>)Delegate.CreateDelegate(typeof(Action<GeoManufactureItem>), instance, methodInfo);
-            }
-
-            public static bool Prefix(UIModuleReplenish __instance, GeoCharacter character, GeoItem item, ref int materialsCost, ref int techCost, ref bool __result)
-            {
-                if (!TFTVAircraftReworkMain.AircraftReworkOn)
-                {
-                    return true;
-                }
-
-                var moduleDef = (item != null) ? (item.ItemDef as GroundVehicleModuleDef) : null;
-                if (moduleDef == null)
-                {
-                    return true;
-                }
-                if (!EnsureModuleAmmo(item.CommonItemData, moduleDef))
-                {
-                    __result = false;
-                    return false;
-                }
-                bool flag = false;
-                foreach (TacticalItemDef tacticalItemDef in GetModuleAmmoDefs(moduleDef))
-                {
-                    int maxCharges = GetAmmoCapacityForDef(moduleDef, tacticalItemDef);
-                    if (maxCharges <= 0)
-                    {
-                        continue;
-                    }
-                    int currentCharges = GetAmmoChargesForDef(item.CommonItemData, tacticalItemDef);
-                    if (currentCharges >= maxCharges)
-                    {
-                        continue;
-                    }
-                    float num = (float)currentCharges / (float)maxCharges;
-                    ResourcePack repairCost = GeoCharacter.GetRepairCost(tacticalItemDef, num);
-                    GeoManufactureItem geoManufactureItem = UnityEngine.Object.Instantiate<GeoManufactureItem>(__instance.ItemListPrefab, __instance.ItemListContainer);
-                    GeoManufactureItem geoManufactureItem2 = geoManufactureItem;
-                    InteractHandler interactHandler = GetInteractHandler(__instance, "OnEnterSlot");
-                    if (interactHandler != null)
-                    {
-                        geoManufactureItem2.OnEnter = (InteractHandler)Delegate.Combine(geoManufactureItem2.OnEnter, interactHandler);
-                    }
-                    GeoManufactureItem geoManufactureItem3 = geoManufactureItem;
-                    InteractHandler interactHandler2 = GetInteractHandler(__instance, "OnExitSlot");
-                    if (interactHandler2 != null)
-                    {
-                        geoManufactureItem3.OnExit = (InteractHandler)Delegate.Combine(geoManufactureItem3.OnExit, interactHandler2);
-                    }
-                    GeoManufactureItem geoManufactureItem4 = geoManufactureItem;
-                    Action<GeoManufactureItem> action = GetManufactureItemHandler(__instance, "SingleItemReloadAndRefresh");
-                    if (action != null)
-                    {
-                        geoManufactureItem4.OnSelected = (Action<GeoManufactureItem>)Delegate.Combine(geoManufactureItem4.OnSelected, action);
-                    }
-                    GeoscapeViewContext geoscapeViewContext = ReplenishContext(__instance);
-                    geoManufactureItem.Init(tacticalItemDef, geoscapeViewContext.ViewerFaction, repairCost, false);
-                    geoManufactureItem.CanCraftQuantityText.transform.parent.gameObject.SetActive(false);
-                    ReplenishmentElementController.CreateAndAdd(geoManufactureItem.gameObject, ReplenishmentType.Reload, character, item.ItemDef, item);
-                    ReplenishAmmoDefs.Remove(geoManufactureItem);
-                    ReplenishAmmoDefs.Add(geoManufactureItem, new AmmoDefHolder
-                    {
-                        AmmoDef = tacticalItemDef
-                    });
-                    __instance.Items.Add(geoManufactureItem);
-                    GameTagDef manufacturableTag = GameUtl.GameComponent<SharedData>().SharedGameTags.ManufacturableTag;
-                    GeoPhoenixFaction geoPhoenixFaction = ReplenishFaction(__instance);
-                    bool flag2 = geoPhoenixFaction.Wallet.HasResources(repairCost) && tacticalItemDef.Tags.Contains(manufacturableTag) && geoPhoenixFaction.Manufacture.Contains(tacticalItemDef);
-                    PhoenixGeneralButton component = geoManufactureItem.AddToQueueButton.GetComponent<PhoenixGeneralButton>();
-                    if (component != null)
-                    {
-                        component.SetEnabled(flag2);
-                    }
-                    geoManufactureItem.AddToQueueButton.SetInteractable(flag2);
-                    if (flag2)
-                    {
-                        materialsCost += repairCost.ByResourceType(ResourceType.Materials).RoundedValue;
-                        techCost += repairCost.ByResourceType(ResourceType.Tech).RoundedValue;
-                        flag = true;
-                    }
-                }
-                __result = flag;
-                return false;
-            }
-        }
-
-        [HarmonyPatch(typeof(UIModuleReplenish), "SingleItemReloadAndRefresh")]
-        public static class UIModuleReplenish_SingleItemReloadAndRefresh_Patch
-        {
-            public static bool Prefix(UIModuleReplenish __instance, GeoManufactureItem item)
-            {
-                if (!TFTVAircraftReworkMain.AircraftReworkOn)
-                {
-                    return true;
-                }
-
-                if (item == null)
-                {
-                    return true;
-                }
-                AmmoDefHolder ammoDefHolder;
-                if (!ReplenishAmmoDefs.TryGetValue(item, out ammoDefHolder))
-                {
-                    return true;
-                }
-                GeoItem item2 = item.GetComponent<ReplenishmentElementController>().Item;
-                if (ReloadModuleAmmo(item2, ammoDefHolder.AmmoDef))
-                {
-                    AccessTools.Method(typeof(UIModuleReplenish), "RemoveFromList")?.Invoke(__instance, new object[] { item, true });
-                    AccessTools.Method(typeof(UIModuleReplenish), "RefreshItemList")?.Invoke(__instance, null);
-                }
-                return false;
-            }
-        }
 
         [HarmonyPatch(typeof(TacticalItem), "ToItemData")]
         public static class TacticalItem_ToItemData_Patch

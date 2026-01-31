@@ -359,6 +359,7 @@ namespace TFTV.Vehicles.Ammo
                     TacCharacterDef junker2 = DefCache.GetDef<TacCharacterDef>("KS_Kaos_Buggy_TacCharacterDef");
 
                     WeaponDef junkerMinigun = DefCache.GetDef<WeaponDef>("KS_Buggy_Minigun_Vishnu_WeaponDef");
+                    junkerMinigun.ViewElementDef.SmallIcon = junkerMinigun.ViewElementDef.InventoryIcon;
                     TacticalItemDef junkerMinigunAmmo = CreateAmmoForJunkerWeapon(
                         "junkerMinigun",
                         junkerMinigun,
@@ -384,17 +385,6 @@ namespace TFTV.Vehicles.Ammo
 
                     AddFreeStartingAmmo(junker, junkerVishnuAmmo, 1);
                     AddFreeStartingAmmo(junker2, junkerVishnuAmmo, 1);
-
-                    WeaponDef junkerMinigunFullstop = DefCache.GetDef<WeaponDef>("KS_Buggy_Minigun_Fullstop_WeaponDef");
-                    junkerMinigunFullstop.CompatibleAmmunition = new TacticalItemDef[] { junkerMinigun.CompatibleAmmunition[0] };
-                    junkerMinigunFullstop.FreeReloadOnMissionEnd = false;
-                    AmmoWeaponDatabase.AmmoToWeaponDictionary[junkerMinigun.CompatibleAmmunition[0]].Add(junkerMinigunFullstop);
-
-                    WeaponDef junkerMinigunScreamer = DefCache.GetDef<WeaponDef>("KS_Buggy_Minigun_Screamer_WeaponDef");
-                    junkerMinigunScreamer.CompatibleAmmunition = new TacticalItemDef[] { junkerMinigun.CompatibleAmmunition[0] };
-                    junkerMinigunScreamer.FreeReloadOnMissionEnd = false;
-                    AmmoWeaponDatabase.AmmoToWeaponDictionary[junkerMinigun.CompatibleAmmunition[0]].Add(junkerMinigunScreamer);
-
 
 
                     WeaponDef junkerFullStop = DefCache.GetDef<WeaponDef>("KS_Buggy_Fullstop_WeaponDef");
@@ -431,7 +421,17 @@ namespace TFTV.Vehicles.Ammo
                         );
                     // "vehicles_ammo_purgatory.png"
 
+                    WeaponDef junkerMinigunFullstop = DefCache.GetDef<WeaponDef>("KS_Buggy_Minigun_Fullstop_WeaponDef");
+                    junkerMinigunFullstop.CompatibleAmmunition = new TacticalItemDef[] { junkerMinigun.CompatibleAmmunition[0] };
+                    junkerMinigunFullstop.FreeReloadOnMissionEnd = false;
+                    junkerMinigunFullstop.ViewElementDef.SmallIcon = junkerMinigunFullstop.ViewElementDef.InventoryIcon;
+                    AmmoWeaponDatabase.AmmoToWeaponDictionary[junkerMinigun.CompatibleAmmunition[0]].Add(junkerMinigunFullstop);
 
+                    WeaponDef junkerMinigunScreamer = DefCache.GetDef<WeaponDef>("KS_Buggy_Minigun_Screamer_WeaponDef");
+                    junkerMinigunScreamer.CompatibleAmmunition = new TacticalItemDef[] { junkerMinigun.CompatibleAmmunition[0] };
+                    junkerMinigunScreamer.FreeReloadOnMissionEnd = false;
+                    junkerMinigunScreamer.ViewElementDef.SmallIcon = junkerMinigunScreamer.ViewElementDef.InventoryIcon;
+                    AmmoWeaponDatabase.AmmoToWeaponDictionary[junkerMinigun.CompatibleAmmunition[0]].Add(junkerMinigunScreamer);
 
                 }
                 catch (Exception e)
@@ -470,7 +470,7 @@ namespace TFTV.Vehicles.Ammo
                     newAmmo.ViewElementDef.DisplayName1.LocalizationKey = $"KEY_VEHICLE_AMMO_{ammoName}";
                     newAmmo.ViewElementDef.Description.LocalizationKey = $"KEY_VEHICLE_AMMO_DESCRIPTION_{ammoName}";
                     newAmmo.ViewElementDef.InventoryIcon = Helper.CreateSpriteFromImageFile(spriteFileName);
-
+                    newAmmo.ViewElementDef.SmallIcon = newAmmo.ViewElementDef.InventoryIcon;
                     newAmmo.Weight = 5;
                     newAmmo.ChargesMax = weaponDef.ChargesMax;
                     newAmmo.CrateSpawnWeight = 1000;
@@ -489,8 +489,8 @@ namespace TFTV.Vehicles.Ammo
                     GeoMarketplaceItemOptionDef newMarketplaceItem = Helper.CreateDefFromClone
                          (DefCache.GetDef<GeoMarketplaceItemOptionDef>("Obliterator_MarketplaceItemOptionDef"), gUID2, name);
 
-                    newMarketplaceItem.MinPrice = minPrice*0.8f;
-                    newMarketplaceItem.MaxPrice = minPrice + minPrice*0.5f;
+                    newMarketplaceItem.MinPrice = minPrice * 0.8f;
+                    newMarketplaceItem.MaxPrice = minPrice + minPrice * 0.5f;
                     newMarketplaceItem.ItemDef = newAmmo;
                     newMarketplaceItem.DisallowDuplicates = false;
                     //  newMarketplaceItem.Availability = availability;

@@ -408,7 +408,7 @@ namespace TFTV
 
                 TFTVDrills.DrillsDefs.CreateDefs();
 
-                // Experimental();
+               // Experimental();
 
 
 
@@ -419,7 +419,7 @@ namespace TFTV
                 AdjustHavenRecruitTiming();
                 //  TestUseWorkerComponent();
                 // Test0();
-
+              // TFTVExperimental.LogResearchDefs();
               //  Print();
 
             }
@@ -1307,9 +1307,24 @@ namespace TFTV
                 AdjustColorDefs();
                 ReduceMyrmidonDeploymentCost();
                 ChangeArchaelogyLab();
+                RemoveReturnFireFromMadmenInNJ0();
 
 
                 //  ChangeBuilderViewParams();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void RemoveReturnFireFromMadmenInNJ0()
+        {
+            try 
+            { 
+                TacCharacterDef madman = DefCache.GetDef<TacCharacterDef>("S_IN_Madman_TacCharacterDef");
+                madman.Data.Abilites = madman.Data.Abilites.Where(a => a != DefCache.GetDef<ReturnFireAbilityDef>("ReturnFire_AbilityDef")).ToArray();
+
             }
             catch (Exception e)
             {
