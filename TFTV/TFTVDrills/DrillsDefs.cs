@@ -229,6 +229,7 @@ namespace TFTV.TFTVDrills
                 Drills.Add(_ordnanceResupply);
 
                 _drawfireStatus = CreateDummyStatus("drawfire", "{65B5A8AC-FBB0-42CC-BC2E-EB9DB7460FC8}", "{7557CA9F-DAB8-4AE1-AF1A-853261A4CF05}");
+                _drawfireStatus.ExpireOnEndOfTurn = false;
                 Drills.Add(
                 _drawFire = CreateDrawFire("drawfire", "8f7c0a6a-6b63-4b01-9d69-6f7e3d4a4b9a", "f2a5a2d1-0c1f-4c28-8a3a-2f4a0cc2fd3c", "3a0f4d0b-0a8f-4b8f-a8cc-1f4f4f3c3f9d", 2, 0, _drawfireStatus));
 

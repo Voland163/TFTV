@@ -1,5 +1,6 @@
 ﻿using Base.Core;
 using HarmonyLib;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Sites;
@@ -11,9 +12,130 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace TFTV
 {
+
+    [HarmonyPatch]
+    public static class MissionaryCenterPopulationDrainPatches
+    {
+        private const float LowPopulationTrickleMultiplier = 0.1f;
+        private static readonly Dictionary<GeoHaven, float> DrainOverrides = new Dictionary<GeoHaven, float>();
+        private static readonly Action<HavenZonesStats, float> SetPopulationDrainPart = CreatePopulationDrainPartSetter();
+
+        [HarmonyPatch(typeof(GeoHaven), "UpdatePerDay")]
+        [HarmonyPrefix]
+        private static bool GeoHaven_UpdatePerDay_Prefix(GeoHaven __instance, out float __state)
+        {
+            __state = 0f;
+            if (__instance.Site.State != GeoSiteState.Functioning || __instance.IsInfested)
+            {
+                return true;
+            }
+
+            float drainPart = __instance.ZonesStats.PopulationDrainPart;
+            if (drainPart <= 0f)
+            {
+                return true;
+            }
+
+            __state = drainPart;
+            DrainOverrides[__instance] = drainPart;
+            SetPopulationDrainPart?.Invoke(__instance.ZonesStats, 0f);
+
+            foreach (GeoSite geoSite in from s in __instance.Range.SitesInRange
+                                        where s.Type == GeoSiteType.Haven && s.State == GeoSiteState.Functioning
+                                        select s)
+            {
+                GeoHaven target = geoSite.GetComponent<GeoHaven>();
+                int drained = CalculateDrainAmount(__instance, target, drainPart);
+                if (drained > 0)
+                {
+                    target.Population -= drained;
+                }
+            }
+
+            return true;
+        }
+
+        [HarmonyPatch(typeof(GeoHaven), "UpdatePerDay")]
+        [HarmonyPostfix]
+        private static void GeoHaven_UpdatePerDay_Postfix(GeoHaven __instance, float __state)
+        {
+            if (__state <= 0f)
+            {
+                return;
+            }
+
+            SetPopulationDrainPart?.Invoke(__instance.ZonesStats, __state);
+            DrainOverrides.Remove(__instance);
+        }
+
+        [HarmonyPatch(typeof(GeoHaven), "GetPopulationChange")]
+        [HarmonyPrefix]
+        private static bool GeoHaven_GetPopulationChange_Prefix(GeoHaven __instance, HavenZonesStats.HavenOnlyOutput output, ref int __result)
+        {
+            int populationChange = -__instance.GetDyingPopulation(output);
+            float drainPart = __instance.ZonesStats.PopulationDrainPart;
+            if (DrainOverrides.TryGetValue(__instance, out float overrideDrain))
+            {
+                drainPart = overrideDrain;
+            }
+
+            if (drainPart > 0f)
+            {
+                foreach (GeoSite geoSite in from s in __instance.Range.SitesInRange
+                                            where s.Type == GeoSiteType.Haven && s.State == GeoSiteState.Functioning
+                                            select s)
+                {
+                    GeoHaven target = geoSite.GetComponent<GeoHaven>();
+                    int drained = CalculateDrainAmount(__instance, target, drainPart);
+                    if (drained > 0)
+                    {
+                        populationChange += drained;
+                    }
+                }
+            }
+
+            __result = populationChange;
+            return false;
+        }
+
+        private static int CalculateDrainAmount(GeoHaven source, GeoHaven target, float drainPart)
+        {
+            if (target == null || target.Site.Owner == source.Site.Owner)
+            {
+                return 0;
+            }
+
+            int drain = Math.Min(target.Population, Mathf.CeilToInt(target.Population * drainPart));
+            if (drain <= 0)
+            {
+                return 0;
+            }
+
+            int minPopulation = target.HavenDef.MinPopulationFunctioningHaven;
+            if (target.Population < minPopulation * 0.5f)
+            {
+                drain = Mathf.Max(1, Mathf.FloorToInt(drain * LowPopulationTrickleMultiplier));
+            }
+
+            return drain;
+        }
+
+        private static Action<HavenZonesStats, float> CreatePopulationDrainPartSetter()
+        {
+            var setter = AccessTools.PropertySetter(typeof(HavenZonesStats), nameof(HavenZonesStats.PopulationDrainPart));
+            if (setter == null)
+            {
+                return null;
+            }
+
+            return (stats, value) => setter.Invoke(stats, new object[] { value });
+        }
+    }
+
     internal class TFTVHavenRecruitsGenerationAdjustments
     {
         private static readonly FieldInfo HavenZonesStatsHavenField = AccessTools.Field(typeof(HavenZonesStats), "_haven");

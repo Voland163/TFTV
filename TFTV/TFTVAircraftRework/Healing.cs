@@ -66,10 +66,9 @@ namespace TFTV
                         {
                             if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _heliosPanaceaModule))
                             {
-                                int buffLevel = Tiers.GetBuffLevelFromResearchDefs(_heliosStatisChamberBuffResearchDefs) == 4 ? 1 : 0;
-                                float healAmount = healingFactor + healingFactor * buffLevel; //10+10*(0 OR 1)*2, so 10 or 20
-                                float staminaAmount = _heliosPanaceaModule.GeoVehicleModuleBonusValue +
-                                    _heliosPanaceaModule.GeoVehicleModuleBonusValue * buffLevel; //0.35f + 0.35f * 2 * 1, so 0.35 or 0.7
+                                int buffLevel = Tiers.GetBuffLevelFromResearchDefs(_heliosStatisChamberBuffResearchDefs);
+                                float healAmount = healingFactor * buffLevel; //10 x 0-2
+                                float staminaAmount = _heliosPanaceaModule.GeoVehicleModuleBonusValue * buffLevel; //0.35f x 0-2
 
                                 foreach (GeoCharacter geoCharacter in geoVehicle.Soldiers)
                                 {
@@ -81,7 +80,7 @@ namespace TFTV
 
                             if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _thunderbirdWorkshopModule))
                             {
-                                int buffLevel = Tiers.GetBuffLevelFromResearchDefs(_thunderbirdWorkshopBuffResearchDefs) - 1; //0-2
+                                int buffLevel = Tiers.GetBuffLevelFromResearchDefs(_thunderbirdWorkshopBuffResearchDefs); //0-2
                                 float healAmount = healingFactor + healingFactor * buffLevel; //10+10*(0-3), so 10, 20 or 30
                                 float staminaAmount = _thunderbirdWorkshopModule.GeoVehicleModuleBonusValue
                                     + _thunderbirdWorkshopModule.GeoVehicleModuleBonusValue * buffLevel; // 0.35f + 0.35f * (0-2), so 0, 0.7, or 1.4
@@ -100,7 +99,7 @@ namespace TFTV
 
                             if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _blimpMutationLabModule))
                             {
-                                int buffLevel = Tiers.GetBuffLevelFromResearchDefs(_blimpMutationLabModuleBuffResearches) - 1;
+                                int buffLevel = Tiers.GetBuffLevelFromResearchDefs(_blimpMutationLabModuleBuffResearches);
                                 float healAmount = healingFactor + healingFactor * buffLevel; //10 + 10 * (0-2), so 10, 20 or 30
                                 float staminaAmount = _blimpMutationLabModule.GeoVehicleModuleBonusValue +
                                     _blimpMutationLabModule.GeoVehicleModuleBonusValue * buffLevel;

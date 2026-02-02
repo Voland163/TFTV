@@ -1,24 +1,19 @@
 ﻿using Base.Core;
 using Base.Defs;
-using Base.Utils.GameConsole;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
-using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
-
 
 
 namespace TFTV
@@ -30,236 +25,261 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
-
-      
-        public static void LogResearchDefs()
+        
+        public static class ResearchCalendarUtility
         {
-            IEnumerable<ResearchDbDef> allDefs = GameUtl.GameComponent<DefRepository>().GetAllDefs<ResearchDbDef>();
-            foreach (ResearchDbDef researchDbDef in allDefs.OrderBy((ResearchDbDef def) => (def.Faction != null) ? def.Faction.GetName() : def.name))
+            public sealed class ResearchCalendarEntry
             {
-                string factionName = (researchDbDef.Faction != null) ? researchDbDef.Faction.GetName() : "UnknownFaction";
-                TFTVLogger.Always(string.Format("Research DB: {0} ({1})", researchDbDef.name, factionName), false);
-                if (researchDbDef.Researches == null || researchDbDef.Researches.Count == 0)
+                public sealed class TemplateUnlockInfo
                 {
-                    TFTVLogger.Always("\t<no researches>");
-                    continue;
+                    public string TemplateName { get; private set; }
+                    public string LevelText { get; private set; }
+
+                    public TemplateUnlockInfo(string templateName, string levelText)
+                    {
+                        this.TemplateName = templateName;
+                        this.LevelText = levelText;
+                    }
                 }
-                foreach (ResearchDef researchDef in researchDbDef.Researches.OrderBy((ResearchDef def) => def.name))
+
+                public ResearchDef ResearchDef { get; private set; }
+                public int Priority { get; private set; }
+                public int SecondaryPriority { get; private set; }
+                public int ResearchCost { get; private set; }
+                public float RemainingCost { get; private set; }
+                public float DaysToComplete { get; private set; }
+                public float DaysFromNow { get; private set; }
+                public IReadOnlyList<TemplateUnlockInfo> TemplateUnlocks { get; private set; }
+
+                public ResearchCalendarEntry(ResearchDef researchDef, int priority, int secondaryPriority, int researchCost, float remainingCost, float daysToComplete, float daysFromNow, IReadOnlyList<TemplateUnlockInfo> templateUnlocks)
                 {
-                    string revealRequirements = FormatRequirementContainer(researchDef.RevealRequirements);
-                    string unlockRequirements = FormatRequirementContainer(researchDef.UnlockRequirements);
-                    string rewardsSummary = FormatRewardsSummary(researchDef.Unlocks);
-                    TFTVLogger.Always(string.Format("\t{0} (Id: {1})", researchDef.name, researchDef.Id), false);
-                    TFTVLogger.Always(string.Format("\t\tCost: {0} RP | Priority: {1}", researchDef.ResearchCost, researchDef.Priority), false);
-                    TFTVLogger.Always(string.Format("\t\tReveal Requirements: {0}", revealRequirements), false);
-                    TFTVLogger.Always(string.Format("\t\tUnlock Requirements: {0}", unlockRequirements), false);
-                    TFTVLogger.Always(string.Format("\t\tRewards: {0}", rewardsSummary), false);
+                    this.ResearchDef = researchDef;
+                    this.Priority = priority;
+                    this.SecondaryPriority = secondaryPriority;
+                    this.ResearchCost = researchCost;
+                    this.RemainingCost = remainingCost;
+                    this.DaysToComplete = daysToComplete;
+                    this.DaysFromNow = daysFromNow;
+                    this.TemplateUnlocks = templateUnlocks;
                 }
             }
-        }
 
-        private static string FormatRequirementContainer(ReseachRequirementDefContainer container)
-        {
-            if (container.Container == null || container.Container.Length == 0)
+            public sealed class FactionResearchCalendar
             {
-                return "None";
+                public GeoFaction Faction { get; private set; }
+                public float HourlyResearchOutput { get; private set; }
+                public IReadOnlyList<ResearchCalendarEntry> Entries { get; private set; }
+
+                public FactionResearchCalendar(GeoFaction faction, float hourlyResearchOutput, IReadOnlyList<ResearchCalendarEntry> entries)
+                {
+                    this.Faction = faction;
+                    this.HourlyResearchOutput = hourlyResearchOutput;
+                    this.Entries = entries;
+                }
             }
-            IEnumerable<string> groups = from opContainer in container.Container
-                                         select FormatRequirementGroup(opContainer);
-            return string.Format("{0}({1})", FormatContainerOperation(container.Operation), string.Join(", ", groups));
-        }
 
-        // Token: 0x06005F99 RID: 24473 RVA: 0x0016B07C File Offset: 0x0016927C
-        private static string FormatRequirementGroup(ReseachRequirementDefOpContainer container)
-        {
-            if (container.Requirements == null || container.Requirements.Length == 0)
-            {
-                return FormatContainerOperation(container.Operation) + "()";
-            }
-            IEnumerable<string> requirements = from requirement in container.Requirements
-                                               select (requirement != null) ? requirement.name : "null";
-            return string.Format("{0}({1})", FormatContainerOperation(container.Operation), string.Join(", ", requirements));
-        }
-
-        // Token: 0x06005F9A RID: 24474 RVA: 0x0016B07C File Offset: 0x0016927C
-        private static string FormatContainerOperation(ResearchContainerOperation operation)
-        {
-            switch (operation)
-            {
-                case ResearchContainerOperation.ALL:
-                    return "AND";
-                case ResearchContainerOperation.ANY:
-                    return "OR/ANY";
-                case ResearchContainerOperation.NONE:
-                    return "NONE";
-                default:
-                    return operation.ToString();
-            }
-        }
-
-        // Token: 0x06005F9B RID: 24475 RVA: 0x0016B07C File Offset: 0x0016927C
-        private static string FormatRewardsSummary(ResearchRewardDef[] rewards)
-        {
-            if (rewards == null || rewards.Length == 0)
-            {
-                return "none";
-            }
-            IEnumerable<IGrouping<string, ResearchRewardDef>> groupedRewards = from reward in rewards
-                                                                               group reward by reward.GetType().Name;
-            IEnumerable<string> summaries = from rewardGroup in groupedRewards.OrderBy(g => g.Key)
-			select string.Format("{0} x{1}", rewardGroup.Key, rewardGroup.Count<ResearchRewardDef>());
-            return string.Format("{0} ({1})", rewards.Length, string.Join(", ", summaries));
-        }
-
-        /*   [HarmonyPatch(typeof(HavenZonesStats), "GetTotalHavenOutput")]
-           public static class HavenZonesStatsLoggingPatch
-           {
-               private static readonly AccessTools.FieldRef<HavenZonesStats, GeoHaven> HavenField =
-                   AccessTools.FieldRefAccess<HavenZonesStats, GeoHaven>("_haven");
-
-               public static void Postfix(HavenZonesStats __instance, HavenZonesStats.HavenOnlyOutput __result)
-               {
-                   GeoHaven haven = HavenField(__instance);
-                   if (haven == null)
-                   {
-                       Debug.Log("[HavenZonesStats.GetTotalHavenOutput] Haven reference missing on HavenZonesStats instance.");
-                       return;
-                   }
-
-                   HavenZonesStats.HavenOnlyOutput zoneOutput = __instance.ZoneOutput;
-                   HavenZonesStats.HavenOnlyOutput populationOutput = __instance.PopulationOutput;
-                   HavenZonesStats.HavenOnlyOutput bonuses = __instance.GetOtherHavensBonuses();
-                   GeoFactionStatModifiers modifiers = haven.Site?.Owner?.FactionStatModifiers;
-                   bool hasModifiers = modifiers != null;
-                   HavenZonesStats.HavenOnlyOutput combined = zoneOutput + populationOutput;
-                   HavenZonesStats.HavenOnlyOutput modified = hasModifiers
-                       ? combined * modifiers.HavenOutputModifiers
-                       : combined;
-                   HavenZonesStats.HavenOnlyOutput expected = modified + bonuses;
-                   string havenName = haven.Site != null ? haven.Site.Name : "<unknown>";
-
-                   TFTVLogger.Always(
-                       "[HavenZonesStats.GetTotalHavenOutput] " +
-                       $"Haven='{havenName}', Pop={haven.Population}, " +
-                       $"Zone(F:{zoneOutput.Food},D:{zoneOutput.Deployment},P:{zoneOutput.Production}), " +
-                       $"Pop(F:{populationOutput.Food},D:{populationOutput.Deployment},P:{populationOutput.Production}), " +
-                       $"Bonuses(F:{bonuses.Food},D:{bonuses.Deployment},P:{bonuses.Production}), " +
-                       $"Mods(FoodMod:{(hasModifiers ? modifiers.HavenOutputModifiers.FoodMod : 0f):0.###}, " +
-                       $"DeploymentMod:{(hasModifiers ? modifiers.HavenOutputModifiers.DeploymentMod : 0f):0.###}, " +
-                       $"ProductionMod:{(hasModifiers ? modifiers.HavenOutputModifiers.ProductionMod : 0f):0.###}, " +
-                       $"GlobalMod:{(hasModifiers ? modifiers.HavenOutputModifiers.GlobalMod : 0f):0.###}), " +
-                       $"Total(F:{__result.Food},D:{__result.Deployment},P:{__result.Production}), " +
-                       $"Expected(F:{expected.Food},D:{expected.Deployment},P:{expected.Production})", false);
-
-                   if (bonuses.Food != 0 || bonuses.Deployment != 0 || bonuses.Production != 0)
-                   {
-                       foreach (GeoHaven.HavenRangeEntry havenRangeEntry in haven.CoveredByHavens)
-                       {
-                           GeoHaven sourceHaven = havenRangeEntry.Haven;
-                           if (sourceHaven == null)
-                           {
-                               continue;
-                           }
-
-                           HavenZonesStats.HavenOnlyOutput sourceBonus = sourceHaven.ZonesStats.ProvidesBonusOutput;
-                           string sourceName = sourceHaven.Site != null ? sourceHaven.Site.Name : "<unknown>";
-                           TFTVLogger.Always(
-                               "[HavenZonesStats.GetTotalHavenOutput] " +
-                               $"BonusSource='{sourceName}', " +
-                               $"Bonus(F:{sourceBonus.Food},D:{sourceBonus.Deployment},P:{sourceBonus.Production}), " +
-                               $"Target='{havenName}'", false);
-                       }
-                   }
-               }
-           }*/
-
-        public static class GeoFactionResearchForecastLogger
-        {
-            private const string LogPrefix = "[ResearchForecast]";
-
-            public static void LogForecasts(GeoLevelController level)
+            public static IReadOnlyList<FactionResearchCalendar> BuildCalendars(GeoLevelController level)
             {
                 if (level == null)
                 {
-                    return;
+                    throw new ArgumentNullException("level");
                 }
-                LogFactionForecast(level.AnuFaction);
-                LogFactionForecast(level.NewJerichoFaction);
-                LogFactionForecast(level.SynedrionFaction);
+                DefRepository defRepository = level.GameController.GetComponent<DefRepository>();
+                if (defRepository == null)
+                {
+                    throw new InvalidOperationException("DefRepository not found on the game controller.");
+                }
+                List<GeoFaction> factions = new List<GeoFaction>
+            {
+                level.AnuFaction,
+                level.NewJerichoFaction,
+                level.SynedrionFaction
+            };
+
+                List<FactionResearchCalendar> calendars = new List<FactionResearchCalendar>();
+                foreach (GeoFaction faction in factions)
+                {
+                    if (faction == null)
+                    {
+                        continue;
+                    }
+                    ResearchDbDef researchDb = null;
+                    if (faction == faction.GeoLevel.AnuFaction)
+                    {
+                        researchDb = DefCache.GetDef<ResearchDbDef>("anu_ResearchDB");
+                    }
+                    else if (faction == faction.GeoLevel.NewJerichoFaction)
+                    {
+
+                        researchDb = DefCache.GetDef<ResearchDbDef>("nj_ResearchDB");
+                    }
+                    else if (faction == faction.GeoLevel.SynedrionFaction)
+                    {
+                        researchDb = DefCache.GetDef<ResearchDbDef>("syn_ResearchDB");
+                    }
+
+                    if (researchDb == null)
+                    {
+                        continue;
+                    }
+
+                    List<ResearchCalendarEntry> entries = BuildFactionCalendarEntries(faction, researchDb.Researches);
+                    float hourlyOutput = GetHourlyResearchOutput(faction);
+                    calendars.Add(new FactionResearchCalendar(faction, hourlyOutput, entries));
+                }
+
+                return calendars;
             }
 
-            private static void LogFactionForecast(GeoFaction faction)
+            public static void LogCalendars(GeoLevelController level)
             {
-                if (faction == null || faction.Research == null)
+                foreach (FactionResearchCalendar calendar in BuildCalendars(level))
                 {
-                    return;
+                    TFTVLogger.Always(FormatCalendar(calendar));
                 }
+            }
+
+            private static float GetHourlyResearchOutput(GeoFaction faction)
+            {
+                return (float)faction.ResourceIncome.GetTotalResouce(ResourceType.Research).RoundedValue;
+            }
+
+            private static List<ResearchCalendarEntry> BuildFactionCalendarEntries(GeoFaction faction, IEnumerable<ResearchDef> researchDefs)
+            {
                 Research research = faction.Research;
-                float hourlyResearch = (float)faction.ResourceIncome.GetTotalResouce(ResourceType.Research).RoundedValue;
-                StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.AppendLine(string.Format("{0} {1} starting research forecast:", LogPrefix, faction.Def.name));
-                stringBuilder.AppendLine(string.Format("{0} Hourly research production: {1:0.##}", LogPrefix, hourlyResearch));
-
-                List<ResearchElement> completed = research.Completed.Where((ResearchElement r) => r.ResearchDef.Faction == faction.Def)
-                    .OrderBy((ResearchElement r) => r.ResearchDef.Id)
-                    .ToList<ResearchElement>();
-                foreach (ResearchElement researchElement in completed)
-                {
-                    stringBuilder.AppendLine(string.Format("{0} Day 0: {1} (already completed)", LogPrefix, researchElement.ResearchDef.Id));
-                }
-
-                List<ResearchElement> researchable = research.Researchable
-                    .Where((ResearchElement r) => r.ResearchDef.Faction == faction.Def)
-                    .OrderByDescending((ResearchElement r) => r.ResearchDef.Priority)
-                    .ThenByDescending((ResearchElement r) => r.ResearchDef.SecodaryPriority)
-                    .ThenBy((ResearchElement r) => r.ResearchDef.Id)
-                    .ToList<ResearchElement>();
-
-                HashSet<ResearchElement> researchableSet = new HashSet<ResearchElement>(researchable);
-                List<ResearchElement> locked = research.Noncompleted
-                    .Where((ResearchElement r) => r.ResearchDef.Faction == faction.Def && !researchableSet.Contains(r))
-                    .OrderBy((ResearchElement r) => r.ResearchDef.Id)
-                    .ToList<ResearchElement>();
-
-                if (hourlyResearch <= 0f)
-                {
-                    if (researchable.Count > 0)
+                List<ResearchDef> orderedResearches = researchDefs
+                    .Where((ResearchDef def) => def != null)
+                    .Where((ResearchDef def) =>
                     {
-                        stringBuilder.AppendLine(string.Format("{0} No research income; cannot forecast completion days for available research.", LogPrefix));
-                    }
-                    foreach (ResearchElement researchElement2 in locked)
+                        ResearchElement researchElement = research.GetByDef(def);
+                        return researchElement != null && !researchElement.IsCompleted;
+                    })
+                    .OrderByDescending((ResearchDef def) => def.Priority)
+                    .ThenByDescending((ResearchDef def) => def.SecodaryPriority)
+                    .ThenBy((ResearchDef def) => def.name)
+                    .ToList();
+
+                float hourlyOutput = GetHourlyResearchOutput(faction);
+                float daysFromNow = 0f;
+                List<ResearchCalendarEntry> entries = new List<ResearchCalendarEntry>();
+
+                foreach (ResearchDef researchDef in orderedResearches)
+                {
+                    ResearchElement researchElement = research.GetByDef(researchDef);
+                    float remainingCost = (float)researchDef.ResearchCost;
+                    if (researchElement != null)
                     {
-                        stringBuilder.AppendLine(string.Format("{0} Locked at start: {1} (state: {2})", LogPrefix, researchElement2.ResearchDef.Id, researchElement2.State));
+                        remainingCost = Mathf.Max(0f, (float)researchDef.ResearchCost - researchElement.ResearchProgress);
                     }
-                    Debug.Log(stringBuilder.ToString());
-                    return;
+
+                    float daysToComplete = (hourlyOutput <= 0f) ? float.PositiveInfinity : remainingCost / hourlyOutput / 24f;
+                    daysFromNow += daysToComplete;
+
+                    IReadOnlyList<ResearchCalendarEntry.TemplateUnlockInfo> templateUnlocks = GetTemplateUnlocks(researchDef);
+                    entries.Add(new ResearchCalendarEntry(
+                        researchDef,
+                        researchDef.Priority,
+                        researchDef.SecodaryPriority,
+                        researchDef.ResearchCost,
+                        remainingCost,
+                        daysToComplete,
+                        daysFromNow,
+                        templateUnlocks));
                 }
 
-                double cumulativeHours = 0.0;
-                foreach (ResearchElement researchElement3 in researchable)
+                return entries;
+            }
+
+            private static string FormatCalendar(FactionResearchCalendar calendar)
+            {
+                if (calendar == null)
                 {
-                    float remainingCost = Mathf.Max(0f, researchElement3.ResearchCost - researchElement3.ResearchProgress);
-                    double hours = remainingCost / hourlyResearch;
-                    cumulativeHours += hours;
-                    int dayNumber = (int)Math.Ceiling(cumulativeHours / 24.0);
-                    stringBuilder.AppendLine(string.Format(
-                        "{0} Day {1}: {2} (cost {3}, priority {4}, secondary {5})",
-                        LogPrefix,
-                        dayNumber,
-                        researchElement3.ResearchDef.Id,
-                        researchElement3.ResearchCost,
-                        researchElement3.ResearchDef.Priority,
-                        researchElement3.ResearchDef.SecodaryPriority));
+                    return "Research Calendar: (null)";
                 }
 
-                foreach (ResearchElement researchElement4 in locked)
+                string header = string.Format("Research Calendar for {0} (Hourly Output: {1})", calendar.Faction.Name, calendar.HourlyResearchOutput);
+                List<string> lines = new List<string> { header };
+
+                if (calendar.Entries.Count == 0)
                 {
-                    stringBuilder.AppendLine(string.Format("{0} Locked at start: {1} (state: {2})", LogPrefix, researchElement4.ResearchDef.Id, researchElement4.State));
+                    lines.Add("  (no remaining research)");
+                    return string.Join("\n", lines);
                 }
 
-                TFTVLogger.Always(stringBuilder.ToString());
+                foreach (ResearchCalendarEntry entry in calendar.Entries)
+                {
+                    string daysToComplete = float.IsPositiveInfinity(entry.DaysToComplete) ? "∞" : entry.DaysToComplete.ToString("0.00");
+                    string daysFromNow = float.IsPositiveInfinity(entry.DaysFromNow) ? "∞" : entry.DaysFromNow.ToString("0.00");
+                    lines.Add(string.Format("  {0} | Priority {1}/{2} | Cost {3} | Remaining {4:0.##} | +{5} days -> {6} days from now",
+                        entry.ResearchDef.name,
+                        entry.Priority,
+                        entry.SecondaryPriority,
+                        entry.ResearchCost,
+                        entry.RemainingCost,
+                        daysToComplete,
+                        daysFromNow));
+
+                    if (entry.TemplateUnlocks.Count > 0)
+                    {
+                        string templates = string.Join(", ", entry.TemplateUnlocks.Select((ResearchCalendarEntry.TemplateUnlockInfo t) => string.Format("{0} ({1})", t.TemplateName, t.LevelText)));
+                        lines.Add(string.Format("    Templates: {0}", templates));
+                    }
+                }
+
+                return string.Join("\n", lines);
+            }
+
+            private static IReadOnlyList<ResearchCalendarEntry.TemplateUnlockInfo> GetTemplateUnlocks(ResearchDef researchDef)
+            {
+                List<ResearchCalendarEntry.TemplateUnlockInfo> templates = new List<ResearchCalendarEntry.TemplateUnlockInfo>();
+                if (researchDef.Unlocks == null)
+                {
+                    return templates;
+                }
+
+                foreach (UnitTemplateResearchRewardDef rewardDef in researchDef.Unlocks.OfType<UnitTemplateResearchRewardDef>())
+                {
+                    TacCharacterDef template = rewardDef.Template;
+                    if (template == null || !IsFactionTemplateName(template.name))
+                    {
+                        continue;
+                    }
+
+                    templates.Add(new ResearchCalendarEntry.TemplateUnlockInfo(template.name, GetTemplateLevelText(template)));
+                }
+
+                return templates;
+            }
+
+            private static bool IsFactionTemplateName(string templateName)
+            {
+                if (string.IsNullOrEmpty(templateName))
+                {
+                    return false;
+                }
+
+                return templateName.StartsWith("AN_", StringComparison.OrdinalIgnoreCase)
+                    || templateName.StartsWith("NJ_", StringComparison.OrdinalIgnoreCase)
+                    || templateName.StartsWith("SY_", StringComparison.OrdinalIgnoreCase);
+            }
+
+            private static string GetTemplateLevelText(TacCharacterDef template)
+            {
+                if (template == null || template.Data == null)
+                {
+                    return "Level ?";
+                }
+
+                if (template.Data.LevelProgression != null && template.Data.LevelProgression.IsValid)
+                {
+                    return string.Format("Level {0}", template.Data.LevelProgression.Level);
+                }
+
+                return "Level ?";
             }
         }
+
+
 
 
 

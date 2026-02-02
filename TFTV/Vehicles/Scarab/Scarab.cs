@@ -218,6 +218,10 @@ namespace TFTVVehicleRework.Scarab
                 ShootAbilityDef LaunchMissiles = (ShootAbilityDef)Repo.GetDef("4da72135-1b6e-b184-8b64-77dbdde7cf30"); //"LaunchMissiles_ShootAbilityDef"
                 ShootAbilityDef ScarabMissiles = Repo.CreateDef<ShootAbilityDef>("df2e83d1-8688-4e47-8559-cc6a9f9906d1", LaunchMissiles);
                 ScarabMissiles.ExecutionsCount = 3;
+                ScarabMissiles.EquipmentTags = new PhoenixPoint.Common.Entities.GameTags.GameTagDef[]
+                {
+                    (PhoenixPoint.Common.Entities.GameTags.GameTagDef)Repo.GetDef("27e4d798-270b-84b4-39c4-ede8c10525e2") //"Scarab_ClassTagDef"
+                };
 
                 TacticalAbilityViewElementDef VED = Repo.CreateDef<TacticalAbilityViewElementDef>("3b4b01b4-1b14-4acd-a9c2-64040029700f", LaunchMissiles.ViewElementDef);
                 VED.Description = new Base.UI.LocalizedTextBind("UI_SALVO_DESC");
@@ -279,6 +283,11 @@ namespace TFTVVehicleRework.Scarab
                 ShootAbilityDef WeaponShoot = (ShootAbilityDef)Repo.GetDef("d3e8b389-069f-04c4-8aca-fb204c74fd37"); //"Weapon_ShootAbilityDef"
                 ShootAbilityDef ScarabShoot = Repo.CreateDef<ShootAbilityDef>("76ae9352-1343-4b95-964c-036341b6a0eb", WeaponShoot);
                 ScarabShoot.ExecutionsCount = 3;
+
+                ScarabShoot.EquipmentTags = new PhoenixPoint.Common.Entities.GameTags.GameTagDef[]
+                {
+                    (PhoenixPoint.Common.Entities.GameTags.GameTagDef)Repo.GetDef("27e4d798-270b-84b4-39c4-ede8c10525e2") //"Scarab_ClassTagDef"
+                };
 
                 TacticalAbilityViewElementDef VED = Repo.CreateDef<TacticalAbilityViewElementDef>("320228c4-4e2b-49d2-9ff5-bdb2f5fcf2e9", WeaponShoot.ViewElementDef);
                 VED.Description = new Base.UI.LocalizedTextBind("UI_TRIPLESHOOT_DESC");

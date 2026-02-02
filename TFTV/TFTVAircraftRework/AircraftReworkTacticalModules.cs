@@ -7,6 +7,7 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Interception.Equipments;
 using PhoenixPoint.Geoscape.View.ViewStates;
@@ -149,20 +150,29 @@ namespace TFTV
 
                 List<string> moduleBlocks = new List<string>();
 
+                TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
+
+                List<string> scannerBenefits = new List<string>();
+
                 if (_thunderBirdScannerPresent > 0)
                 {
-                    List<string> scannerBenefits = new List<string>();
-                    AddTieredBenefit(scannerBenefits, "TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT", _thunderBirdScannerPresent);
-                    if (_nestResearched > 0)
-                    {
-                        scannerBenefits.Add(TFTVCommonMethods.ConvertKeyToString("TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_PX_Alien_Colony"));
-                    }
-                    if (_lairResearched > 0)
-                    {
-                        scannerBenefits.Add(TFTVCommonMethods.ConvertKeyToString("TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_PX_Alien_Lair"));
-                    }
+                    scannerBenefits.Add(TFTVCommonMethods.ConvertKeyToString("TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_ARGUS_EYE"));
+                }
+
+                if (_nestResearched > 0 && controller != null && controller.TacMission.MissionData.MissionType.MissionTypeTag == DefCache.GetDef<MissionTypeTagDef>("MissionTypeAlienNestAssault_MissionTagDef"))
+                {
+                    scannerBenefits.Add(TFTVCommonMethods.ConvertKeyToString("TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_PX_Alien_Colony"));
+                }
+                if (_lairResearched > 0 && controller != null && controller.TacMission.MissionData.MissionType.MissionTypeTag == DefCache.GetDef<MissionTypeTagDef>("MissionTypeAlienLairAssault_MissionTagDef"))
+                {
+                    scannerBenefits.Add(TFTVCommonMethods.ConvertKeyToString("TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_PX_Alien_Lair"));
+                }
+
+                if(scannerBenefits.Count()>0)
+                {
                     AddModuleTooltip(moduleBlocks, _thunderbirdScannerModule, scannerBenefits);
                 }
+                
 
                 if (_captureDronesPresent > 0)
                 {
@@ -1527,7 +1537,42 @@ namespace TFTV
               }*/
 
 
+            [HarmonyPatch(typeof(CrateComponent), "Open")]
+            internal static class CrateComponent_Open_Postfix
+            {
+                // Postfix: after crate opens, reassign its faction if capture drones are present.
+                static void Postfix(CrateComponent __instance)
+                {
+                    try
+                    {
 
+                        if (_captureDronesPresent <= 0) // replace with your actual bool path
+                        {
+                            return;
+                        }
+
+                        CrateItemContainer crate = __instance.GetComponent<CrateItemContainer>();
+                        if (crate == null || crate.TacticalLevel == null)
+                        {
+                            return;
+                        }
+
+                        TacticalFaction playerFaction = crate.TacticalLevel.GetTacticalFaction(TacMissionParticipant.Player);
+                        if (playerFaction == null)
+                        {
+                            return;
+                        }
+
+                        // Switch crate’s faction + participant
+                        crate.SetFaction(playerFaction, TacMissionParticipant.Player);
+                        TFTVLogger.Always($"Crate {crate.name} faction changed to Player upon opening due to Capture Drones module.");
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
 
 
 
@@ -1601,6 +1646,25 @@ namespace TFTV
                     try
                     {
                         //  TFTVLogger.Always($"Running GetMissionResult");
+
+                        if (!AircraftReworkOn || _captureDronesPresent <= 0)
+                        {
+                            return;
+                        }
+
+
+                        TacticalFaction playerFaction = __instance.GetTacticalFaction(TacMissionParticipant.Player);
+
+                        foreach (TacticalActorBase actor in __instance.Map.GetActors<TacticalActorBase>().
+                            Where(tab => tab is CrateItemContainer crateItemContainer && crateItemContainer.GetComponent<CrateComponent>() != null
+                            && crateItemContainer.TacticalFaction == playerFaction))
+                        {
+
+                            TacticalFaction otherFaction = __instance.GetTacticalFaction(TacMissionParticipant.Environment) ?? __instance.GetTacticalFaction(TacMissionParticipant.Residents);
+
+                            // Switch crate’s faction + participant
+                            actor.SetFaction(otherFaction, TacMissionParticipant.Environment);
+                        }
 
                         foreach (TacticalActorBase actor in __instance.Map.GetActors<TacticalActorBase>().
                             Where(tab => tab is CrateItemContainer crateItemContainer && crateItemContainer.GetComponent<CrateComponent>() != null

@@ -175,9 +175,9 @@ namespace TFTV
                 }
 
                 //For Project Osiris
-                if (bionics == 3)
+                if (bionics >= 3)
                 {
-                    return maxCorruption;
+                    return 0;
 
                 }
 
@@ -366,23 +366,23 @@ namespace TFTV
                     // Calculate the percentage of current ODI level, these two variables are globally set by our ODI event patches
                     int odiPerc = TFTVODIandVoidOmenRoll.CurrentODI_Level * 100 / 20; //TFTVSDIandVoidOmenRoll.ODI_EventIDs.Length;
 
-                    int maxCorruption = tacticalActor.CharacterStats.Willpower.IntMax - (int)willFromArmor;
+                    int maxDelirium = tacticalActor.CharacterStats.Willpower.IntMax - (int)willFromArmor;
 
                     // Get max corruption dependent on max WP of the selected actor
                     if (!TFTVVoidOmens.VoidOmensCheck[10])
                     {
                         if (odiPerc < 25)
                         {
-                            maxCorruption /= 3;
+                            maxDelirium /= 3;
 
                             if (numberOfBionics == 1)
                             {
-                                maxCorruption -= (int)(maxCorruption * 0.33);
+                                maxDelirium -= (int)(maxDelirium * 0.33);
                             }
 
                             if (numberOfBionics == 2)
                             {
-                                maxCorruption -= (int)(maxCorruption * 0.66);
+                                maxDelirium -= (int)(maxDelirium * 0.66);
                             }
 
                         }
@@ -390,16 +390,16 @@ namespace TFTV
                         {
                             if (odiPerc < 45)
                             {
-                                maxCorruption /= 2;
+                                maxDelirium /= 2;
 
                                 if (numberOfBionics == 1)
                                 {
-                                    maxCorruption -= (int)(maxCorruption * 0.33);
+                                    maxDelirium -= (int)(maxDelirium * 0.33);
                                 }
 
                                 if (numberOfBionics == 2)
                                 {
-                                    maxCorruption -= (int)(maxCorruption * 0.66);
+                                    maxDelirium -= (int)(maxDelirium * 0.66);
                                 }
                             }
                             else // > 50%
@@ -408,12 +408,12 @@ namespace TFTV
 
                                 if (numberOfBionics == 1)
                                 {
-                                    maxCorruption -= (int)(maxCorruption * 0.33);
+                                    maxDelirium -= (int)(maxDelirium * 0.33);
                                 }
 
                                 if (numberOfBionics == 2)
                                 {
-                                    maxCorruption -= (int)(maxCorruption * 0.66);
+                                    maxDelirium -= (int)(maxDelirium * 0.66);
                                 }
 
                             }
@@ -426,24 +426,26 @@ namespace TFTV
 
                         if (numberOfBionics == 1)
                         {
-                            maxCorruption -= (int)(maxCorruption * 0.33);
+                            maxDelirium -= (int)(maxDelirium * 0.33);
                         }
 
                         if (numberOfBionics == 2)
                         {
-                            maxCorruption -= (int)(maxCorruption * 0.66);
+                            maxDelirium -= (int)(maxDelirium * 0.66);
                         }
                     }
 
-                    //For Project Osiris
-                    if (numberOfBionics == 3)
+                    //For Project Osiris and Pure
+                    if (numberOfBionics >= 3)
                     {
-                        maxCorruption = 0;
+                        TFTVLogger.Always($"[CorruptionStatus.CalculateValueIncrement] No Delirium applied to {tacticalActor.DisplayName} due to 3 or more bionics.");
+                        __result = 0;
+                        return;
                     }
 
                     if (config.DeliriumCappedAt4)
                     {
-                        maxCorruption = Mathf.Min(maxCorruption, 4);
+                        maxDelirium = Mathf.Min(maxDelirium, 4);
 
                     }
 
@@ -455,19 +457,16 @@ namespace TFTV
 
                     if (tacticalActor.GetAbilityWithDef<PassiveModifierAbility>(oneOfThemDef) != null)
                     {
-                        __result = Mathf.Min(__instance.CorruptionStatusDef.ValueIncrement * 2, maxCorruption - tacticalActor.CharacterStats.Corruption.IntValue);
+                        __result = Mathf.Min(__instance.CorruptionStatusDef.ValueIncrement * 2, maxDelirium - tacticalActor.CharacterStats.Corruption.IntValue);
                         // TFTVLogger.Always($"Applying Delirium to {base_TacticalActor.DisplayName} with One of Them, {__result}");
                     }
                     else
                     {
-                        __result = Mathf.Min(__instance.CorruptionStatusDef.ValueIncrement, maxCorruption - tacticalActor.CharacterStats.Corruption.IntValue);
+                        __result = Mathf.Min(__instance.CorruptionStatusDef.ValueIncrement, maxDelirium - tacticalActor.CharacterStats.Corruption.IntValue);
                         // TFTVLogger.Always($"Applying Delirium to {base_TacticalActor.DisplayName}, {__result}");
                     }
 
-                    if (maxCorruption == 0)
-                    {
-                        __result = 0;
-                    }
+                  
 
                     // TFTVLogger.Always($"{base_TacticalActor.DisplayName} bionics: {numberOfBionics} odi {odiPerc} willpower max: {base_TacticalActor.CharacterStats.Willpower.IntMax}, max delirium {maxCorruption} " +
                     //  $"Delirium {base_TacticalActor.CharacterStats.Corruption.IntValue}, result: {__result} ");

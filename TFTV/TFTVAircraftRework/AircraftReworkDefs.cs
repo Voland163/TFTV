@@ -433,7 +433,7 @@ namespace TFTV
                 newStatus.VisibleOnPassiveBar = false;
 
 
-                newStatus.DurationTurns = 2;
+                newStatus.DurationTurns = 3;
                 newStatus.StatModifications = new ItemStatModification[] {new ItemStatModification()
                     {
                     Modification = StatModificationType.Add,
@@ -1371,7 +1371,7 @@ namespace TFTV
                 _thunderbirdScannerBuffResearchDefs = new List<ResearchDef>()
                     {
                         DefCache.GetDef<ResearchDef>("NJ_NeuralTech_ResearchDef"),
-                        DefCache.GetDef<ResearchDef>("NJ_SateliteUplink_ResearchDef"),
+                       // DefCache.GetDef<ResearchDef>("NJ_SateliteUplink_ResearchDef"),
                        // DefCache.GetDef<ResearchDef>("PX_Alien_Citadel_ResearchDef"),
                     };
 

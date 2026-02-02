@@ -420,7 +420,7 @@ namespace TFTV
                 //  TestUseWorkerComponent();
                 // Test0();
               // TFTVExperimental.LogResearchDefs();
-              //  Print();
+                Print();
 
             }
             catch (Exception e)
@@ -475,9 +475,14 @@ namespace TFTV
                 synedrionFaction.StartingZones[0].Amount = 18;
                 synedrionFaction.StartingZones[1].Amount = 17;
 
-                //consider adjusting food production
+             
                 GeoHavenDef geoHavenDef = DefCache.GetDef<GeoHavenDef>("GeoHavenDef");
-                
+                geoHavenDef.PhoenixSoldiersCap = 1000;
+                geoHavenDef.StarvationDeathsPart = 0.0005f;
+                geoHavenDef.StarvationMistDeathsPart = 0.001f;
+                geoHavenDef.StarvationMistDeathsFlat = 0;
+                geoHavenDef.StarvationDeathsFlat = 0;
+
             }
             catch (Exception e)
             {
@@ -1318,6 +1323,7 @@ namespace TFTV
             }
         }
 
+      
         private static void RemoveReturnFireFromMadmenInNJ0()
         {
             try 

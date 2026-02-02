@@ -98,15 +98,15 @@ namespace TFTV
                 }
                 else if (moduleDef == _thunderbirdWorkshopModule)
                 {
-                    tier = Tiers.GetBuffLevelFromResearchDefs(_thunderbirdWorkshopBuffResearchDefs);
+                    tier = Tiers.GetBuffLevelFromResearchDefs(_thunderbirdWorkshopBuffResearchDefs)+1; //+1 to account for base level
                 }
                 else if (moduleDef == _thunderbirdScannerModule)
                 {
-                    tier = Tiers.GetBuffLevelFromResearchDefs(_thunderbirdScannerBuffResearchDefs);
+                    tier = Tiers.GetBuffLevelFromResearchDefs(_thunderbirdScannerBuffResearchDefs) + 1; //+1 to account for base level
                 }
                 else if (moduleDef == _thunderbirdRangeModule)
                 {
-                    tier = Tiers.GetBuffLevelFromResearchDefs(_thunderbirdRangeBuffResearchDefs);
+                    tier = Tiers.GetBuffLevelFromResearchDefs(_thunderbirdRangeBuffResearchDefs) + 1; //+1 to account for base level;
                 }
 
 
@@ -138,7 +138,7 @@ namespace TFTV
                 }
                 else if (moduleDef == _blimpMutationLabModule)
                 {
-                    int tier = Tiers.GetBuffLevelFromResearchDefs(_blimpMutationLabModuleBuffResearches);
+                    int tier = Tiers.GetBuffLevelFromResearchDefs(_blimpMutationLabModuleBuffResearches)+1;
 
                     if (tier > 1)
                     {
@@ -195,7 +195,7 @@ namespace TFTV
                 else if (moduleDef == _blimpMutationLabModule)
                 {
                     AddSingleBenefit(keys, "TFTV_BLIMP_MUTATIONLAB_MODULE_BENEFIT",
-                        Tiers.GetBuffLevelFromResearchDefs(_blimpMutationLabModuleBuffResearches));
+                        Tiers.GetBuffLevelFromResearchDefs(_blimpMutationLabModuleBuffResearches)+1);
                 }
                 else if (moduleDef == _heliosStealthModule)
                 {
@@ -208,14 +208,14 @@ namespace TFTV
                 else if (moduleDef == _thunderbirdWorkshopModule)
                 {
                     AddSingleBenefit(keys, "TFTV_THUNDERBIRD_WORKSHOP_MODULE_BENEFIT",
-                        Tiers.GetBuffLevelFromResearchDefs(_thunderbirdWorkshopBuffResearchDefs));
+                        Tiers.GetBuffLevelFromResearchDefs(_thunderbirdWorkshopBuffResearchDefs)+1);
                     AddBenefitIfResearched(keys, phoenixResearch, "TFTV_THUNDERBIRD_WORKSHOP_MODULE_BENEFIT_PX_Alien_LiveAcheron",
                         "PX_Alien_LiveAcheron_ResearchDef");
                 }
                 else if (moduleDef == _thunderbirdRangeModule)
                 {
                     AddSingleBenefit(keys, "TFTV_THUNDERBIRD_RANGE_MODULE_BENEFIT",
-                        Tiers.GetBuffLevelFromResearchDefs(_thunderbirdRangeBuffResearchDefs));
+                        Tiers.GetBuffLevelFromResearchDefs(_thunderbirdRangeBuffResearchDefs)+1);
                 }
                 else if (moduleDef == _blimpMistModule)
                 {
@@ -242,7 +242,7 @@ namespace TFTV
                 else if (moduleDef == _thunderbirdScannerModule)
                 {
                     AddSingleBenefit(keys, "TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT",
-                       Tiers.GetBuffLevelFromResearchDefs(_thunderbirdScannerBuffResearchDefs));
+                       Tiers.GetBuffLevelFromResearchDefs(_thunderbirdScannerBuffResearchDefs)+1);
                     AddBenefitIfResearched(keys, phoenixResearch, "TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_NJ_SateliteUplink",
                         "NJ_SateliteUplink_ResearchDef");
                     AddBenefitIfResearched(keys, phoenixResearch, "TFTV_THUNDERBIRD_SCANNER_MODULE_BENEFIT_PX_Alien_Citadel",
@@ -413,7 +413,7 @@ namespace TFTV
                 {
                     try
                     {
-                        int buffLevel = 1;
+                        int buffLevel = 0;
                         Research phoenixResearch = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction.Research;
 
 

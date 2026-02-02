@@ -23,6 +23,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.UI;
+using static TFTV.TFTVChangesToDLC5;
 
 namespace TFTV.Vehicles.Ammo
 {
@@ -301,6 +302,188 @@ namespace TFTV.Vehicles.Ammo
             });
         }
 
+        private static bool IsItemMissingAmmo(ICommonItem owningItem, TacticalItemDef ammoDef)
+        {
+            if (owningItem?.CommonItemData == null || ammoDef == null)
+            {
+                return false;
+            }
+
+            if (owningItem.CommonItemData.Ammo == null)
+            {
+                // Treat missing ammo manager as empty / needs ammo
+                return true;
+            }
+
+            int currentCharges = GetAmmoChargesForDef(owningItem.CommonItemData, ammoDef);
+            return currentCharges < ammoDef.ChargesMax;
+        }
+
+        private static bool TryLoadWeaponFromClipInInventoryOrStorage(
+            UIModuleSoldierEquip parentModule,
+            ICommonItem owningItem,
+            TacticalItemDef ammoDef)
+        {
+            if (parentModule == null || owningItem == null || ammoDef == null)
+            {
+                return false;
+            }
+
+            ICommonItem ammoItem = null;
+            UIInventoryList sourceList = null;
+
+            // Prefer storage first (matches module priority in GetPreferredModuleAmmoEntry)
+            if (HasAmmoInStorage(parentModule, ammoDef))
+            {
+                ammoItem = parentModule.StorageList.UnfilteredItems
+                    .FirstOrDefault(i => i.ItemDef == ammoDef)?.GetSingleItem();
+                sourceList = parentModule.StorageList;
+
+                if (ammoItem == null)
+                {
+                    // fallback: partial magazines are in storage list, take via helper
+                    ICommonItem partial;
+                    if (TryTakeAmmoFromStorageList(parentModule, ammoDef, out partial))
+                    {
+                        ammoItem = partial;
+                        sourceList = null; // already removed from storage by TryTakeAmmoFromStorageList
+                    }
+                }
+            }
+            else if (HasAmmoInInventory(parentModule, ammoDef))
+            {
+                ammoItem = parentModule.InventoryList.UnfilteredItems.FirstOrDefault(i => i.ItemDef == ammoDef);
+                sourceList = parentModule.InventoryList;
+            }
+
+            if (ammoItem == null)
+            {
+                return false;
+            }
+
+            // Ensure ammo manager exists
+            if (owningItem.CommonItemData.Ammo == null)
+            {
+                owningItem.CommonItemData.Ammo = new AmmoManager(owningItem.CommonItemData.OwnerItem);
+            }
+
+            int maxCharges = ammoDef.ChargesMax;
+            int currentCharges = GetAmmoChargesForDef(owningItem.CommonItemData, ammoDef);
+
+            // Load from the picked clip into the weapon (partial load supported)
+            while (!ammoItem.CommonItemData.IsEmpty() && currentCharges < maxCharges)
+            {
+                int neededCharges = maxCharges - currentCharges;
+
+                ICommonItem single = ammoItem.GetSingleItem().Clone();
+                int availableCharges = single.CommonItemData.TotalCharges;
+                int chargesToLoad = Math.Min(neededCharges, availableCharges);
+
+                if (chargesToLoad < availableCharges)
+                {
+                    single.CommonItemData.ModifyCharges(-single.CommonItemData.CurrentCharges, false);
+                    single.CommonItemData.ModifyCharges(chargesToLoad, false);
+                }
+
+                owningItem.CommonItemData.Ammo.LoadMagazine(single);
+
+                if (chargesToLoad >= availableCharges)
+                {
+                    ammoItem.CommonItemData.Subtract(single);
+                }
+                else
+                {
+                    ammoItem.CommonItemData.ModifyCharges(-chargesToLoad, false);
+                }
+
+                currentCharges += chargesToLoad;
+            }
+
+            // If we consumed the clip fully and it was from a list, remove it
+            if (ammoItem.CommonItemData.IsEmpty() && sourceList != null)
+            {
+                sourceList.RemoveItem(ammoItem, null);
+            }
+            else if (!ammoItem.CommonItemData.IsEmpty() && sourceList == parentModule.StorageList)
+            {
+                // If it was from storage and still has charges, put it back (matches module flow)
+                sourceList.AddItem(ammoItem, null, null);
+            }
+
+            return true;
+        }
+
+        private static bool TryReloadWeaponFromPurchasedClip(ICommonItem owningItem, TacticalItemDef ammoDef, UIModuleSoldierEquip parentModule)
+        {
+            try
+            {
+                if (owningItem == null || ammoDef == null || parentModule == null)
+                {
+                    return false;
+                }
+
+                WeaponDef weaponDef = owningItem.ItemDef as WeaponDef;
+                if (weaponDef == null || weaponDef.CompatibleAmmunition == null || !weaponDef.CompatibleAmmunition.Contains(ammoDef))
+                {
+                    return false;
+                }
+
+                if (owningItem.CommonItemData.Ammo == null)
+                {
+                    owningItem.CommonItemData.Ammo = new AmmoManager(owningItem.CommonItemData.OwnerItem);
+                }
+
+                int maxCharges = ammoDef.ChargesMax;
+                int currentCharges = GetAmmoChargesForDef(owningItem.CommonItemData, ammoDef);
+                int needed = maxCharges - currentCharges;
+
+                if (needed <= 0)
+                {
+                    return false;
+                }
+
+                int chargesToLoad = Mathf.Min(needed, ammoDef.ChargesMax);
+                int remainingCharges = Mathf.Max(ammoDef.ChargesMax - chargesToLoad, 0);
+
+                GeoItem geoItem = new GeoItem(ammoDef, 1, -1, null, -100);
+                geoItem.CommonItemData.ModifyCharges(-geoItem.CommonItemData.CurrentCharges, false);
+                geoItem.CommonItemData.ModifyCharges(chargesToLoad, false);
+
+                owningItem.CommonItemData.Ammo.LoadMagazine(geoItem);
+
+                // leftover goes to storage (consistent with module purchase behavior)
+                TryPlacePurchasedAmmoClip(parentModule, ammoDef, remainingCharges);
+                return true;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return false;
+            }
+        }
+
+       
+
+        private static bool IsWeaponWithCompatibleAmmo(ItemDef itemDef, out WeaponDef weaponDef, out TacticalItemDef ammoDef)
+        {
+            weaponDef = null;
+            ammoDef = null;
+
+            weaponDef = itemDef as WeaponDef;
+            if (weaponDef == null)
+            {
+                return false;
+            }
+
+            if (weaponDef.CompatibleAmmunition == null || weaponDef.CompatibleAmmunition.Length == 0)
+            {
+                return false;
+            }
+
+            ammoDef = weaponDef.CompatibleAmmunition[0];
+            return ammoDef != null;
+        }
+
         private static GeoEventChoice GetMarketplaceAmmoChoice(TacticalItemDef ammoDef)
         {
             if (ammoDef == null)
@@ -382,6 +565,26 @@ namespace TFTV.Vehicles.Ammo
             }
         }
 
+        private static bool IsKaosGunWeapon(ItemDef itemDef, out WeaponDef weaponDef, out TacticalItemDef ammoDef)
+        {
+            weaponDef = null;
+            ammoDef = null;
+
+            if (!IsWeaponWithCompatibleAmmo(itemDef, out weaponDef, out ammoDef))
+            {
+                return false;
+            }
+
+            // KG ammo is created in TFTVChangesToDLC5.cs and the weapon gets tagged there.
+            // We gate the KG sidebutton behavior to that tag so normal weapons keep vanilla behavior.
+            if (TFTVChangesToDLC5.TFTVKaosGuns._kGTag == null)
+            {
+                return false;
+            }
+
+            return weaponDef.Tags != null && weaponDef.Tags.Contains(TFTVChangesToDLC5.TFTVKaosGuns._kGTag);
+        }
+
         [HarmonyPatch(typeof(UIInventorySlotSideButton), "GetState")]
         public static class UIInventorySlotSideButton_GetState_Patch
         {
@@ -441,6 +644,32 @@ namespace TFTV.Vehicles.Ammo
 
                         return TryComputeVehicleModuleState(__instance, parentModule, slot, item, moduleDef, ref __result);
                     }
+
+                    if (IsKaosGunWeapon(item.ItemDef, out WeaponDef weaponDef, out TacticalItemDef weaponAmmoDef))
+                    {
+                        // IMPORTANT: do NOT force our own tooltip/state when storage/inventory already has ammo;
+                        // vanilla behavior should apply then.
+                        if (HasAmmoInStorage(parentModule, weaponAmmoDef)) //|| HasAmmoInInventory(parentModule, weaponAmmoDef))
+                        {
+                            return true;
+                        }
+
+                        // Only now do we show marketplace/out-of-stock tooltip
+                        if (!HasMarketplaceAmmoStock(weaponAmmoDef))
+                        {
+                            __result.State = UIInventorySlotSideButton.SideButtonState.ActionNeededImpossible;
+                            SetTooltipOverride(__instance, BuildMarketplaceOutOfStockText(weaponAmmoDef));
+                            return false;
+                        }
+
+                        ItemToProduce(__instance) = weaponAmmoDef;
+                        __result.Action = UIInventorySlotSideButton.SideButtonAction.AddAmmo;
+                        DestinationList(__instance) = parentModule.InventoryList;
+
+                        TrySetMarketplaceAmmoState(__instance, parentModule, weaponAmmoDef, ref __result);
+                        return false;
+                    }
+
 
                     return true;
                 }
@@ -569,6 +798,20 @@ namespace TFTV.Vehicles.Ammo
                 if (marketplaceAmmo.Count == 0)
                 {
                     result.State = UIInventorySlotSideButton.SideButtonState.ActionNeededImpossible;
+
+                    // Avoid the generic "can't be manufactured" tooltip by always showing the
+                    // marketplace rotation info for each compatible ammo type.
+                    var tooltipLines = ammoDefs
+                        .Where(def => def != null)
+                        .Select(def => BuildMarketplaceOutOfStockText(def))
+                        .Where(line => !string.IsNullOrWhiteSpace(line))
+                        .ToList();
+
+                    if (tooltipLines.Count > 0)
+                    {
+                        SetTooltipOverride(instance, string.Join("\n", tooltipLines));
+                    }
+
                     return false;
                 }
 
@@ -975,6 +1218,80 @@ namespace TFTV.Vehicles.Ammo
                     UIModuleSoldierEquip parentModule = ParentModule(__instance);
                     UIInventorySlot owningSlot = OwningSlot(__instance);
                     ICommonItem owningItem = owningSlot?.Item;
+
+                    WeaponDef weaponDef;
+                    TacticalItemDef weaponAmmoDef;
+                    if (owningItem != null && IsKaosGunWeapon(owningItem.ItemDef, out weaponDef, out weaponAmmoDef))
+                    {
+                        if (weaponAmmoDef == null || parentModule == null)
+                        {
+                            return true;
+                        }
+
+                        // 1) Empty/partial KG: use inventory/storage clips first (load into KG)
+                        if (IsItemMissingAmmo(owningItem, weaponAmmoDef))
+                        {
+                            if (HasAmmoInStorage(parentModule, weaponAmmoDef) || HasAmmoInInventory(parentModule, weaponAmmoDef))
+                            {
+                                if (TryLoadWeaponFromClipInInventoryOrStorage(parentModule, owningItem, weaponAmmoDef))
+                                {
+                                    owningSlot.UpdateItem();
+                                    parentModule.RefreshSideButtons();
+                                    return false;
+                                }
+                            }
+
+                            // 2) No clips available: marketplace fallback (buy 1 and load into KG)
+                            if (!HasMarketplaceAmmoStock(weaponAmmoDef))
+                            {
+                                return true;
+                            }
+
+                            if (!TryBuyAmmoClipFromMarketplace(parentModule, weaponAmmoDef))
+                            {
+                                return true;
+                            }
+
+                            if (TryReloadWeaponFromPurchasedClip(owningItem, weaponAmmoDef, parentModule))
+                            {
+                                owningSlot.UpdateItem();
+                                parentModule.RefreshSideButtons();
+                                return false;
+                            }
+
+                            return true;
+                        }
+
+                        // 3) Full KG: move storage clip -> inventory first (one at a time), else marketplace into inventory
+                        if (HasAmmoInStorage(parentModule, weaponAmmoDef) && HasInventorySpace(parentModule, weaponAmmoDef))
+                        {
+                            ICommonItem ammoItem;
+                            if (TryTakeAmmoFromStorageList(parentModule, weaponAmmoDef, out ammoItem))
+                            {
+                                parentModule.InventoryList.AddItem(ammoItem, null, null);
+                                parentModule.RefreshSideButtons();
+                                return false;
+                            }
+                        }
+
+                        if (!HasMarketplaceAmmoStock(weaponAmmoDef))
+                        {
+                            return true;
+                        }
+
+                        if (!TryBuyAmmoClipFromMarketplace(parentModule, weaponAmmoDef))
+                        {
+                            return true;
+                        }
+
+                        if (TryPlacePurchasedAmmoClipInInventory(parentModule, weaponAmmoDef))
+                        {
+                            parentModule.RefreshSideButtons();
+                            return false;
+                        }
+
+                        return true;
+                    }
 
                     GroundVehicleModuleDef moduleDef = owningItem?.ItemDef as GroundVehicleModuleDef;
                     if (moduleDef == null || !EnsureModuleAmmo(owningItem.CommonItemData, moduleDef))

@@ -76,27 +76,27 @@ PERCEPTION : la distance, en nombre de cases, où le personnage peut repérer u
 
 PRÉCISION : la précision dépend du type d'arme, mais il se peut également que le personnage possède un modificateur de précision grâce à son armure ou des capacités bien précises.
 
-DISCRÉTION : le facteur de discrétion d'un personnage est déterminé par l'armure qu'il porte et ses capacités spéciales. Le facteur de discrétion modifie la perception des personnages ennemis lors des tentatives de détection.","Alle Agenten verfügen über sechs Hauptattribute, die ihre Leistung im Kampf bestimmen. Diese werden in Hauptattribute (die durch Training verbessert werden können) und Unterstützungsattribute unterteilt.
+DISCRÉTION : le facteur de discrétion d'un personnage est déterminé par l'armure qu'il porte et ses capacités spéciales. Le facteur de discrétion modifie la perception des personnages ennemis lors des tentatives de détection.","Alle Einheiten verfügen über sechs Hauptattribute, die ihre Leistung im Kampf bestimmen. Diese werden in Hauptattribute (die durch Training verbessert werden können) und Unterstützungsattribute unterteilt.
 
 
 <color=#f7bc20>HAUPTATTRIBUTE</color>
-Hauptattribute sind fest mit dem Agenten verknüpft und können im Tab „PERSONAL“ durch den Einsatz von Fertigkeitspunkten gesteigert werden. Ausrüstung und Rüstung können diese Werte gelegentlich modifizieren.
+Hauptattribute sind fest mit der Einheit verknüpft und können im Tab „PERSONAL“ durch den Einsatz von Fertigkeitspunkten gesteigert werden. Ausrüstung und Rüstung können diese Werte gelegentlich modifizieren.
 
- • <color=#ffffff>STÄRKE</color>: Bestimmt Trefferpunkte (TP), Traglast, Wurfweite und den Schaden von Nahkampfangriffen mit Waffen.
+ • <color=#ffffff>STÄRKE</color>: Bestimmt Trefferpunkte (TP), Traglast, Wurfweite und den Schaden des Nahkampfangriffs „Hämmern“.
 
- • <color=#ffffff>GESCHWINDIGKEIT</color>: Die maximale Distanz, die ein Agent pro Zug mit allen Aktionspunkten zurücklegen kann. 
+ • <color=#ffffff>GESCHWINDIGKEIT</color>: Die maximale Distanz, die eine Einheit pro Zug mit allen Aktionspunkten zurücklegen kann. 
 
- • <color=#ffffff>WILLENSKRAFT</color>: Repräsentiert den mentalen Fokus des Agenten und ist Voraussetzung für fortgeschrittene Aktionen. Sie bestimmt die Anzahl der Willenskraftpunkte (WP) zu Kampfbeginn sowie das Maximum, das durch die Fähigkeit „Erholen“ regeneriert werden kann.
+ • <color=#ffffff>WILLENSKRAFT</color>: Repräsentiert den mentalen Fokus der Einheit und ist Voraussetzung für fortgeschrittene Aktionen. Sie bestimmt die Anzahl der Willenspunkte (WP) zu Kampfbeginn sowie das Maximum, das durch die Fähigkeit „Erholen“ regeneriert werden kann.
 
 
 <color=#f7bc20>UNTERSTÜTZUNGSATTRIBUTE</color>
 Unterstützungsattribute können nicht durch Training gesteigert werden, sondern hängen von der getragenen Rüstung und Ausrüstung ab. Zudem können bestimmte Fertigkeiten und Statuseffekte diese Werte dauerhaft oder vorübergehend verändern.
 
- • <color=#ffffff>WAHRNEHMUNG</color>: Die Entfernung (in Feldern), über die ein Agent ein menschengroßes Ziel bei Tageslicht entdecken kann. Die Wahrnehmung wird durch die Lichtverhältnisse, die Größe des Ziels und dessen Tarnwert beeinflusst.
+ • <color=#ffffff>WAHRNEHMUNG</color>: Die Entfernung (in Feldern), über die eine Einheit ein menschengroßes Ziel bei Tageslicht entdecken kann. Die Wahrnehmung wird durch die Lichtverhältnisse, die Größe des Ziels und dessen Tarnwert beeinflusst.
  
-• <color=#ffffff>GENAUIGKEIT</color>: Hängt primär vom Waffentyp ab. Ein Agent kann jedoch zusätzliche Genauigkeitsmodifikatoren durch getragene Rüstung oder spezielle Fertigkeiten erhalten.
+• <color=#ffffff>GENAUIGKEIT</color>: Hängt primär vom Waffentyp ab. Eine Einheit kann jedoch zusätzliche Genauigkeitsmodifikatoren durch getragene Rüstung oder spezielle Fertigkeiten erhalten.
 
- • <color=#ffffff>TARNUNG</color>: Bestimmt, wie schwer ein Agent für Gegner zu entdecken ist. Der Tarnwert wird durch die Rüstung und Spezialfertigkeiten definiert und modifiziert die Wahrnehmungsreichweite feindlicher Einheiten.","Tutti i personaggi hanno sei attributi principali che determinano le loro prestazioni in combattimento. In base alle loro caratteristiche, gli attributi sono divisi in principali (che possono essere modificati con l'addestramento) e secondari.
+ • <color=#ffffff>TARNUNG</color>: Bestimmt, wie schwer eine Einheit für Gegner zu entdecken ist. Der Tarnwert wird durch die Rüstung und Spezialfertigkeiten definiert und modifiziert die Wahrnehmungsreichweite feindlicher Einheiten.","Tutti i personaggi hanno sei attributi principali che determinano le loro prestazioni in combattimento. In base alle loro caratteristiche, gli attributi sono divisi in principali (che possono essere modificati con l'addestramento) e secondari.
 
 ATTRIBUTI PRINCIPALI
 Gli attributi principali sono collegati al personaggio e possono essere incrementati usando punti abilità nella sezione addestramento (nella scheda del PERSONALE). L'equipaggiamento e l'armatura talvolta possono modificare ulteriormente gli attributi principali.
@@ -192,14 +192,14 @@ PERCEPTION : la distance, en nombre de cases, où le personnage peut repérer u
 PRÉCISION : la précision dépend du type d'arme, mais il se peut également que le personnage possède un modificateur de précision grâce à son armure ou des capacités bien précises.
 
 DISCRÉTION : le facteur de discrétion d'un personnage est déterminé par l'armure qu'il porte et ses capacités spéciales. Le facteur de discrétion modifie la perception des personnages ennemis lors des tentatives de détection."
-KEY_PHOENIXPEDIA_GUIDE_ATTRIBUTES_NAME,Text,,Character Attributes,角色属性,Attributs de personnage,Agentenattribute,Attributi dei personaggi,Cechy postaci,Атрибуты персонажа,Atributos de personaje,Attributi dei personaggi
+KEY_PHOENIXPEDIA_GUIDE_ATTRIBUTES_NAME,Text,,Character Attributes,角色属性,Attributs de personnage,Einheitenattribute,Attributi dei personaggi,Cechy postaci,Атрибуты персонажа,Atributos de personaje,Attributi dei personaggi
 KEY_PHOENIXPEDIA_GUIDE_BLAST_DESC,Text,,"Explosive munitions with blast damage apply their damage value to every body part caught within the explosive radius of the blast. The highest damage suffered by any individual body part is then applied to the general Hit Points of the target.
 
 Explosives can be particularly devastating due to the fact they can damage multiple body parts in one attack. Explosives will normally have some shredding effect, reducing the armor value of every body part hit by the blast.","具有爆炸伤害的爆炸弹药会将其伤害值散布至爆炸范围内的每个身体部位。随后，任何一个身体部位受到的最大伤害都将影响目标的总生命值。
 
 爆炸物可以通过单次攻击损坏多个身体部位，因此具有格外强大的破坏力。爆炸物通常还会具有撕裂效果，能够降低被爆炸击中的每个身体部位的护甲值。","Les munitions explosives avec des dégâts d'explosion appliquent leur valeur de dégâts à chaque partie du corps touchée par l'explosion. Les dégâts les plus élevés à l'une des parties du corps individuelles sont appliquées aux points de vie globaux de la cible.
 
-Les explosifs, peuvent être particulièrement efficaces car ils peuvent causer des dégâts à plusieurs parties du corps en une seule attaque. De plus, les explosifs auront une bonne chance d'infliger des dégâts de déchiquetage, réduisant la valeur d'armure à chaque partie du corps touchée par l'explosion.","Der Schadenswert von explosiver Munition, die Stoßschaden zufügt, gilt für jeden Körperteil im Radius der Explosion. Der höchste Schaden, den ein einzelnes Körperteil erlitten hat, wird dann von den allgemeinen Trefferpunkten des Ziels abgezogen.
+Les explosifs, peuvent être particulièrement efficaces car ils peuvent causer des dégâts à plusieurs parties du corps en une seule attaque. De plus, les explosifs auront une bonne chance d'infliger des dégâts de déchiquetage, réduisant la valeur d'armure à chaque partie du corps touchée par l'explosion.","Der Schadenswert von explosiver Munition gilt für jeden Körperteil im Radius der Explosion. Der höchste Schaden, den ein einzelnes Körperteil erlitten hat, wird dann von den allgemeinen Trefferpunkten des Ziels abgezogen.
 
 Sprengstoff kann besonders verheerend sein, da er mehrere Körperteile bei einem Angriff beschädigt. Sprengstoffe haben normalerweise eine gewisse Zerfetzwirkung, wodurch der Rüstungswert jedes Körperteils, der von der Explosion getroffen wird, verringert wird.","Le munizioni esplosive capaci di danni da esplosione infliggono il loro valore di danni a ogni parte del corpo coinvolta nel raggio dell'esplosione. Il valore più alto di danni subito da ogni parte del corpo viene quindi applicato ai punti ferita generali del bersaglio.
 
@@ -212,7 +212,7 @@ Materiały wybuchowe mogą mieć szczególnie niszczycielski efekt ze względu n
 Los explosivos pueden ser devastadores, ya que pueden dañar a muchas partes del cuerpo con un solo ataque. Los explosivos tienen un efecto de rotura, lo que reduce el valor de armadura de las partes del cuerpo impactadas.","Les munitions explosives avec des dégâts d'explosion appliquent leur valeur de dégâts à chaque partie du corps touchée par l'explosion. Les dégâts les plus élevés à l'une des parties du corps individuelles sont appliquées aux points de vie globaux de la cible.
 
 Les explosifs, peuvent être particulièrement efficaces car ils peuvent causer des dégâts à plusieurs parties du corps en une seule attaque. De plus, les explosifs auront une bonne chance d'infliger des dégâts de déchiquetage, réduisant la valeur d'armure à chaque partie du corps touchée par l'explosion."
-KEY_PHOENIXPEDIA_GUIDE_BLAST_NAME,Text,,Blast Damage,爆炸伤害,Dégâts d'explosion,Stoßschaden,Danni da esplosione,Obrażenia od wybuchu,Урон от взрыва,Daño de estallido,Obrażenia od wybuchu
+KEY_PHOENIXPEDIA_GUIDE_BLAST_NAME,Text,,Blast Damage,爆炸伤害,Dégâts d'explosion,Explosionsschaden,Danni da esplosione,Obrażenia od wybuchu,Урон от взрыва,Daño de estallido,Obrażenia od wybuchu
 KEY_PHOENIXPEDIA_GUIDE_DAMAGE_SYSTEM_DESCRIPTION,Text,,"When an individual round, or weapon strike hits a target it applies a damage value.
 
 The armor value of the body part hit is subtracted from the damage value. The resultant damage is then applied to both the Body Part Hit Points and the character's General Hit Points.
@@ -248,9 +248,9 @@ Spezielle Schadenswerte – wie Gift, Virus oder Lähmung – werden nur dann au
 
 
 <color=#f7bc20>TAKTISCHE EMPFEHLUNGEN</color>
- • <color=#ffffff>Gezielte Ausschaltung</color>: Nutze den Freien Zielmodus, um Arme zu deaktivieren. Ein Gegner mit nur einem funktionsfähigen Arm kann keine Zweihandwaffen (wie Gewehre oder Schilde) mehr einsetzen. Deaktivierte Beine schränken die Bewegungsweite massiv ein.
+ • <color=#ffffff>Gezielte Ausschaltung</color>: Nutze den Freien Zielmodus, um Arme zu deaktivieren. Ein Gegner mit nur einem funktionsfähigen Arm kann keine Zweihandwaffen (wie Gewehre) mehr einsetzen. Deaktivierte Beine schränken die Bewegungsweite massiv ein.
  • <color=#ffffff>Willenskraft brechen</color>: Kopfschüsse verursachen den Verlust von Willenspunkten und schalten Spezialfähigkeiten aus.
- • <color=#ffffff>Feldmedizin</color>: Wenn ein Körperteil eines Agenten deaktiviert wurde, nutze sofort ein Medkit. Es stellt zwar die Funktion des Körperteils nicht wieder her, stoppt aber die Blutung und stabilisiert die Trefferpunkte für den weiteren Einsatz.
+ • <color=#ffffff>Feldmedizin</color>: Wenn ein Körperteil einer Einheit deaktiviert wurde, nutze sofort ein Medkit. Es stellt zwar die Funktion des Körperteils nicht wieder her, stoppt aber Blutung und stabilisiert die Trefferpunkte für den weiteren Einsatz.
  • <color=#ffffff>Rüstungsdurchschlag</color>: Spezialeffekte wie Gift oder Virus wirken nur, wenn der Schaden die Rüstung durchbricht. Bei schwer gepanzerten Gegnern musst du die Rüstung erst zerstören oder Waffen mit hohem Rüstungsdurchschlag nutzen.","Viene applicato un valore di danni ogni volta che un proiettile o colpo dell'arma raggiunge un bersaglio.
 
 Il valore armatura della parte del corpo colpita viene sottratto dal valore di danni. I danni risultanti vengono quindi applicati sia alla parte del corpo colpita che ai punti ferita generali del personaggio.
@@ -295,11 +295,11 @@ In the course of the game, each faction will offer series of Diplomacy missions.
  • <color=#ffffff>Allied: (attitude 75+)</color> The Phoenix Project can research all the allied faction's research projects. Attacking allied faction Havens puts you immediately At War.
  • <color=#ffffff>Aligned: (attitude 50 - 74)</color> The faction shares significant research projects with the Phoenix Project.
  • <color=#ffffff>Supportive: (attitude 25 - 49)</color> When the Phoenix Project discovers a Haven, belonging to the faction, it will be revealed instantly without exploration.
- • <color=#ffffff>Friendly: (attitude 1 - 24)</color> Standard relations.
- • <color=#ffffff>Unfriendly: (attitude -25  - 0)</color> Cannot Trade or Recruit from Haven Leaders with such an attitude.
- • <color=#ffffff>Hostile: (attitude -25 - -49)</color> No special effect.
- • <color=#ffffff>Aggressive: (attitude -50 - 74)</color> No special effect.
- • <color=#ffffff>At War: (attitude -75)</color> The faction will attempt to attack your bases. Relations cannot improve from this point.","除了凤凰计划之外，世界上还有三个主要派系：新耶利哥、平衡议会，以及安努门徒教会。世界上现存的大部分避难所都由这三个派系所控制着。
+ • <color=#ffffff>Friendly: (attitude 0 - 24)</color> Standard relations.
+ • <color=#ffffff>Unfriendly: (attitude -24  - -1)</color> Cannot Trade or Recruit from Haven Leaders with such an attitude.
+ • <color=#ffffff>Hostile: (attitude -49 - -25)</color> No special effect.
+ • <color=#ffffff>Aggressive: (attitude -74 - -50)</color> No special effect.
+ • <color=#ffffff>At War: (attitude 75-)</color> The faction will attempt to attack your bases. Relations cannot improve from this point.","除了凤凰计划之外，世界上还有三个主要派系：新耶利哥、平衡议会，以及安努门徒教会。世界上现存的大部分避难所都由这三个派系所控制着。
 
 在游戏过程中，每个派系都会提供一系列外交任务。完成这些任务可提升你与这些派系之间的关系。在达到关系等级的最高点时（友好为 24 点，支持为 49 点，一致为 74 点）会触发重要的外交任务。
 
@@ -323,19 +323,24 @@ Bienveillant : (de 1 à 24 points d'attitude) Relations normales.
 Froid : (de 0 à -25 points d'attitude) Impossible de commercer ou de recruter auprès des chefs de refuge avec pareille attitude.
 Hostile : (de -25 à -49 points d'attitude) Aucun effet spécial supplémentaire.
 Agressif : (de -50 à -74 points d'attitude) Aucun effet spécial supplémentaire.
-En guerre : (-75 points d'attitude et plus) La faction tentera d'attaquer vos bases. Les relations ne pourront plus s'améliorer à ce stade.","Neben dem Phoenix-Projekt gibt es drei weitere, wichtige Fraktionen auf der Welt: Neu-Jericho, Synedrion und die Jünger von Anu. Sie alle üben eine erhebliche Kontrolle über die Mehrheit der Zufluchten aus, die es noch auf der Welt gibt.
+En guerre : (-75 points d'attitude et plus) La faction tentera d'attaquer vos bases. Les relations ne pourront plus s'améliorer à ce stade.","Neben dem Phoenix-Projekt gibt es drei weitere, wichtige Fraktionen auf der Welt:
+ • <color=#ffffff>Neu-Jericho</color>
+ • <color=#ffffff>Synedrion</color>
+ • <color=#ffffff>Die Jünger von Anu</color>
 
-Im Laufe des Spiels wird jede Fraktion eine Reihe von Diplomatie-Missionen anbieten. Wenn du diese Missionen erfüllst, kannst du die Beziehungen zu ihnen verbessern. Wichtige diplomatische Missionen werden auf dem höchsten Punkt der Beziehungsebene Freundlich (24), Unterstützend (49) und Wohlwollend (74) gegeben.
+Diese üben eine erhebliche Kontrolle über die Mehrheit der noch existierenden Zufluchten aus.
+
+Im Laufe des Spiels bietet jede Fraktion eine Reihe von Diplomatie-Missionen an. Wenn du diese erfüllst, verbesserst du deine Beziehungen zu ihnen. Wichtige Missionen werden jeweils beim Erreichen von 24, 49 und 74 Haltungspunkten freigeschaltet.
 
 <color=#f7bc20>BEZIEHUNGSEBENEN</color>
- • <color=#ffffff>Verbündete: (Haltung 75+)</color> Das Phoenix-Projekt kann die Forschungsprojekte aller verbündeten Fraktionen erforschen. Der Angriff auf Zufluchten verbündeter Fraktionen bezieht dich sofort in den Krieg mit ein.
- • <color=#ffffff>Wohlwollend: (Haltung 50 - 74)</color> Die Fraktion teilt wichtige Forschungsprojekte mit dem Phoenix-Projekt.
- • <color=#ffffff>Unterstützend: (Haltung 25 - 49)</color> Wenn das Phoenix-Projekt eine Zuflucht entdeckt, die zu der Fraktion gehört, wird sie sofort und ohne Erkundung enthüllt.
- • <color=#ffffff>Freundlich: (Haltung 1 - 24)</color> Standardbeziehungen.
- • <color=#ffffff>Unfreundlich: (Haltung -25 - 0)</color> Handeln ist nicht möglich und Rekrutierung von Zufluchtsanführern mit dieser Haltung auch nicht.
- • <color=#ffffff>Feindlich: (Haltung -25 - -49)</color> Kein Spezialeffekt.
- • <color=#ffffff>Aggressiv: (Haltung -50 - -74)</color> Kein Spezialeffekt.
- • <color=#ffffff>Im Krieg: (Haltung -75)</color> Die Fraktion wird versuchen, deine Basen anzugreifen. Die Beziehungen können sich von diesem Punkt an nicht mehr verbessern.","Oltre al Progetto Phoenix, nel mondo restano tre fazioni principali: Nuova Gerico, Synedrion e i Discepoli di Anu. Esse nel complesso esercitano il sostanziale controllo della maggior parte dei rifugi superstiti sulla terra.
+ • <color=#ffffff>Verbündete: (Haltung 75+)</color>: Alle Fraktionsforschungen geteilt. Angriffe Verbündeter löst sofort Krieg aus.
+ • <color=#ffffff>Wohlwollend: (Haltung 50 - 74)</color>: Die Fraktion teilt wichtige Fraktionsforschungen mit dem Phoenix-Projekt.
+ • <color=#ffffff>Unterstützend: (Haltung 25 - 49)</color>: Alle Zufluchtsorte dieser Fraktion werden auf der Geoscape dauerhaft markiert.
+ • <color=#ffffff>Freundlich: (Haltung 0 - 24)</color>: Neutrale Ausgangslage für die Beziehungen zu einer Fraktion.
+ • <color=#ffffff>Unfreundlich: (Haltung -24 - -1)</color>: Handeln und Rekrutierung gesperrt durch Zufluchtsanführer.
+ • <color=#ffffff>Feindlich: (Haltung -49 - -25)</color>: -
+ • <color=#ffffff>Aggressiv: (Haltung -74 - -50)</color>: -
+ • <color=#ffffff>Im Krieg: (Haltung 75-)</color>: Die Fraktion greift deine Basen an und der Ruf ist unumkehrbar ruiniert!","Oltre al Progetto Phoenix, nel mondo restano tre fazioni principali: Nuova Gerico, Synedrion e i Discepoli di Anu. Esse nel complesso esercitano il sostanziale controllo della maggior parte dei rifugi superstiti sulla terra.
 
 Nel corso del gioco, ogni fazione offrirà una serie di missioni di Diplomazia. Le tue relazioni con loro miglioreranno portando a termine tali missioni. Le missioni diplomatiche più importanti vengono affidate in corrispondenza dei punti più alti delle relazioni Amichevole (24), Cooperante (49) e Allineata (74).
 
@@ -397,11 +402,13 @@ A character standing on a burning tile suffers the tile's fire damage (between 1
 
 Les dégâts de feu ne peuvent pas dépasser les 40 points, même en cas d'attaques multiples.
 
-Un personnage situé sur une case en feu subira la valeur de dégâts de feu de cette case. Elle sera comprise entre 10 et 40.","Eine Waffe mit Feuerschaden fügt dem Ziel 40 Feuerschaden hinzu. Zu Beginn des Zuges des Opfers wird der Feuerschaden auf jedes Körperteil abzüglich des Rüstungswertes angewendet. Dann verringert sich der Feuerschadenswert um 10. Die Dauer des brennenden Effekts hängt von der Intensität ab (z. B. entsprechen 40 Feuer einer Dauer von 4 Runden).
+Un personnage situé sur une case en feu subira la valeur de dégâts de feu de cette case. Elle sera comprise entre 10 et 40.","Waffen mit Feuerschaden belegen das Ziel mit bis zu 40 Feuerschaden (z.B. Brandgranaten).
 
-Der Wert des Feuerschadens darf 40 nicht übersteigen, selbst nach mehreren Treffern.
+Zu Beginn des Zuges erleidet das Ziel an jedem Körperteil Schaden in Höhe des aktuellen Feuerwerts, reduziert durch die Rüstung. Anschließend sinkt der Feuerwert um 10. Die Brenndauer ergibt sich direkt aus der Intensität (ein Wert von 40 entspricht z. B. 4 Runden).
 
-Ein Charakter, der auf einem Feld steht, das brennt, erleidet den Feuerschaden des Felds. Dieser kann zwischen 10 und 40 Punkte betragen.","Un'arma che infligge danni da fuoco aggiunge un valore danni di 40 al bersaglio. All'inizio del turno della vittima, il valore di danni viene applicato su tutte le parti del corpo, ridotto del valore armatura. In seguito il valore di danni si riduce di 10.
+Der angesammelte Feuerschaden kann den Wert von 40 nicht übersteigen, auch nicht durch mehrere Treffer.
+
+Charaktere, die auf brennenden Feldern stehen, erleiden ebenfalls den dortigen Feuerschaden (10 bis 40 Punkte).","Un'arma che infligge danni da fuoco aggiunge un valore danni di 40 al bersaglio. All'inizio del turno della vittima, il valore di danni viene applicato su tutte le parti del corpo, ridotto del valore armatura. In seguito il valore di danni si riduce di 10.
 
 Il valore di danni da fuoco non può superare 40, anche sommando più attacchi.
 
@@ -484,10 +491,10 @@ Jede Zuflucht hat einen Einflussbereich, der durch Fraktionstyp und Bevölkerung
  • <color=#ffffff>Energieerzeugung</color>: Stellt sicher, dass Fabriken, Lebensmittelproduktion und andere Zonen funktionstüchtig sind.
  • <color=#ffffff>Wohnviertel</color>: Dort wohnt die Bevölkerung der Zuflucht.
  • <color=#ffffff>Elitewohnbereiche</color>: Nur in großen Zufluchten vorhanden. Hier wohnt die Elite der Zuflucht.
- • <color=#ffffff>Nahrungsproduktion</color>: Liefert Lebensmittel für die Zuflucht, um Hunger zu verhindern. Ermöglicht den Handel mit anderen Ressourcen für Lebensmittel innerhalb der Zuflucht.
+ • <color=#ffffff>Nahrungsproduktion</color>: Liefert Lebensmittel, um Hunger zu verhindern. Ermöglicht den Handel mit Nahrung.
  • <color=#ffffff>Fabrik</color>: Baut und repariert Zonen der Zuflucht. Ermöglicht den Tausch von Ressourcen gegen Materialien.
- • <color=#ffffff>Forschungszentrum</color> Trägt zur spezialisierten Fraktionsforschung bei. Ermöglicht den Handel mit Technik-Ressourcen.
- • <color=#ffffff>Trainingszentrum</color>: Verbessert die militärische Macht der Zuflucht
+ • <color=#ffffff>Forschungszentrum</color>: Trägt zur spezialisierten Fraktionsforschung bei. Ermöglicht den Handel mit Technik-Ressourcen.
+ • <color=#ffffff>Trainingszentrum</color>: Verbessert die militärische Macht der Zuflucht.
  • <color=#ffffff>Elitetrainingszentrum</color>: Verbessert das Militär der Zuflucht erheblich. Hier werden Elitesoldaten ausgebildet.","I rifugi rappresentano gli unici insediamenti umani restanti sulla Terra, al di fuori delle basi Phoenix. Ogni rifugio è controllato da un leader che decide le sue alleanze e la sua disposizione verso tutte le fazioni, compreso il Progetto Phoenix. Se la disposizione è inferiore allo zero (fredda, o peggio), alle squadre Phoenix non sarà permesso di reclutare o fare scambi presso il rifugio.
 
 I rifugi sono divisi in zone dedicate a specifici aspetti del loro sviluppo. Qualsiasi zona può essere oggetto di attacco (da parte dei Pandora o di fazioni nemiche) o sabotaggio, e permette altre possibili missioni. Le fabbriche e le zone di produzione di cibo permettono lo scambio di un tipo di risorsa con un altro. 
@@ -631,13 +638,13 @@ KEY_PHOENIXPEDIA_GUIDE_PIERCE_DESC,Text,,"A weapon with a Pierce Value ignores a
 Pierce does not permanently destroy armor. This value has no effect against targets without any armor.
 
 <color=#f7bc20>EXAMPLE</color>
- • A gun with 50 damage against a target with 30 armor would normally only deal 20 damage. However, if the weapon has a Pierce Value of 20, the effective armor for that shot is reduced to 10 (30 armor minus 20 pierce). The target thus suffers 40 damage.",具有穿透值的武器在造成标准伤害前会无视一定数量的护甲，最高等同于穿透值。比如，如果一把武器对一个具有 30 点护甲的目标造成了 50 点伤害，那么在常规情况下，此次攻击会造成 20 点伤害。如果该武器拥有 20 点穿透值，那么护甲的效力将降低至 10 点，因此目标将遭受 40 点伤害。穿透对没有护甲值的目标没有任何效果。,"Une arme avec une valeur de perforation ignorera la valeur d'armure avant d'appliquer des dégâts normaux. Par exemple, un fusil infligeant 50 points de dégâts contre une armure de 30 infligerait 20 points de dégâts en temps normal. Mais s'il avait une valeur de perforation de 20, alors, l'efficacité de l'armure serait réduite à 10 points et la cible subirait 40 points de dégâts. La perforation n'a aucun effet sur les cibles sans valeur d'armure.","Waffen mit einem Rüstungsdurchschlag (Pierce) ignorieren einen Teil der gegnerischen Rüstung, bevor der Standardschaden berechnet wird.
+ • A gun with 50 damage against a target with 30 armor would normally only deal 20 damage. However, if the weapon has a Pierce Value of 20, the effective armor for that shot is reduced to 10 (30 armor minus 20 pierce). The target thus suffers 40 damage.",具有穿透值的武器在造成标准伤害前会无视一定数量的护甲，最高等同于穿透值。比如，如果一把武器对一个具有 30 点护甲的目标造成了 50 点伤害，那么在常规情况下，此次攻击会造成 20 点伤害。如果该武器拥有 20 点穿透值，那么护甲的效力将降低至 10 点，因此目标将遭受 40 点伤害。穿透对没有护甲值的目标没有任何效果。,"Une arme avec une valeur de perforation ignorera la valeur d'armure avant d'appliquer des dégâts normaux. Par exemple, un fusil infligeant 50 points de dégâts contre une armure de 30 infligerait 20 points de dégâts en temps normal. Mais s'il avait une valeur de perforation de 20, alors, l'efficacité de l'armure serait réduite à 10 points et la cible subirait 40 points de dégâts. La perforation n'a aucun effet sur les cibles sans valeur d'armure.","Waffen mit dem Wert Panzerbrechend ignorieren einen Teil der gegnerischen Rüstung, bevor der Standardschaden berechnet wird.
 
-Der Rüstungsdurchschlag zerstört die Rüstung nicht dauerhaft. Gegen Ziele ohne Rüstung hat dieser Wert keinen Effekt.
+Panzerbrechend zerstört die Rüstung nicht dauerhaft. Gegen Ziele ohne Rüstung hat dieser Wert keinen Effekt.
 
 <color=#f7bc20>BEISPIEL</color>
- • Ein Gewehr mit 50 Schaden gegen ein Ziel mit 30 Rüstung würde normalerweise nur 20 Schaden verursachen. Hat die Waffe jedoch einen Rüstungsdurchschlag von 20, wird die effektive Rüstung für diesen Schuss auf 10 reduziert (30 Rüstung minus 20 Durchschlag). Das Ziel erleidet somit 40 Schaden.","Un'arma dotata di valore di perforazione ignora l'armatura fino al livello di perforazione prima di infliggere i danni standard. Per esempio, una pistola con valore danni 50 contro un bersaglio con armatura 30 infliggerebbe, di norma, 20 danni. Se avesse un valore di perforazione pari a 20, allora l'efficacia dell'armatura verrebbe ridotta a 10, e il bersaglio subirebbe 40 danni. La perforazione non ha effetti su bersagli privi di valore armatura.","Broń z wartością przebicia powoduje pominięcie wartości pancerza do wysokości wartości przebicia przy naliczaniu obrażeń standardowych. Na przykład pistolet zadający obrażenia o wartości 50 punktów, którym trafiono w cel pokryty pancerzem o wartości 30 punktów, zazwyczaj spowodowałby obrażenia na poziomie 20 punktów. Jeżeli miałby dodatkowo wartość przebicia 20, wówczas skuteczność pancerza spadłaby do 10 punktów, a cel odniósłby obrażenia o wartości 40 punktów. Przebicie nie ma wpływu na cele, które nie noszą pancerza.","Оружие с пронзающим уроном будет игнорировать соответствующую часть брони, прежде чем нанести обычный уроню Например, если урон оружия против бронированных целей составляет 50 очков, а цель имеет 30 очков брони, то такое оружие нанесет 20 очков урона. Однако, если бы оно наносило 20 очков пронзающего урона, то эффективность брони снизилась бы до 10 очков, а цель в итоге получила бы 40 очков урона. Пронзающий урон не оказывает никакого эффекта на цели без брони.","Las armas con un valor de perforación ignoran la armadura según el valor de perforación antes de aplicar el daño estándar. Por ejemplo, una pistola con un daño de 50 contra un objetivo con una armadura de 30 inflige 20 de daño. Si tuviera un valor de perforación de 20, la efectividad de la armadura se reduciría a 10 y el objetivo recibiría 40 de daño. La perforación no tiene efecto alguno contra objetivos sin valor de armadura.","Broń z wartością przebicia powoduje pominięcie wartości pancerza do wysokości wartości przebicia przy naliczaniu obrażeń standardowych. Na przykład pistolet zadający obrażenia o wartości 50 punktów, którym trafiono w cel pokryty pancerzem o wartości 30 punktów, zazwyczaj spowodowałby obrażenia na poziomie 20 punktów. Jeżeli miałby dodatkowo wartość przebicia 20, wówczas skuteczność pancerza spadłaby do 10 punktów, a cel odniósłby obrażenia o wartości 40 punktów. Przebicie nie ma wpływu na cele, które nie noszą pancerza."
-KEY_PHOENIXPEDIA_GUIDE_PIERCE_NAME,Text,,Pierce Value,穿透值,Valeur de perforation,Rüstungsdurchschlag,Valore di perforazione,Wartość przebicia,Значение пронзающего урона,Valor de perforación,Значение пронзающего урона
+ • Ein Gewehr mit 50 Schaden würde bei einem Ziel mit 30 Rüstung normalerweise nur 20 Schaden verursachen. Verfügt die Waffe jedoch über einen Panzerbrechend-Wert von 20, wird die effektive Rüstung für diesen Schuss auf 10 reduziert (30 Rüstung minus 20 Panzerbrechend). Das Ziel erleidet somit 40 Schaden.","Un'arma dotata di valore di perforazione ignora l'armatura fino al livello di perforazione prima di infliggere i danni standard. Per esempio, una pistola con valore danni 50 contro un bersaglio con armatura 30 infliggerebbe, di norma, 20 danni. Se avesse un valore di perforazione pari a 20, allora l'efficacia dell'armatura verrebbe ridotta a 10, e il bersaglio subirebbe 40 danni. La perforazione non ha effetti su bersagli privi di valore armatura.","Broń z wartością przebicia powoduje pominięcie wartości pancerza do wysokości wartości przebicia przy naliczaniu obrażeń standardowych. Na przykład pistolet zadający obrażenia o wartości 50 punktów, którym trafiono w cel pokryty pancerzem o wartości 30 punktów, zazwyczaj spowodowałby obrażenia na poziomie 20 punktów. Jeżeli miałby dodatkowo wartość przebicia 20, wówczas skuteczność pancerza spadłaby do 10 punktów, a cel odniósłby obrażenia o wartości 40 punktów. Przebicie nie ma wpływu na cele, które nie noszą pancerza.","Оружие с пронзающим уроном будет игнорировать соответствующую часть брони, прежде чем нанести обычный уроню Например, если урон оружия против бронированных целей составляет 50 очков, а цель имеет 30 очков брони, то такое оружие нанесет 20 очков урона. Однако, если бы оно наносило 20 очков пронзающего урона, то эффективность брони снизилась бы до 10 очков, а цель в итоге получила бы 40 очков урона. Пронзающий урон не оказывает никакого эффекта на цели без брони.","Las armas con un valor de perforación ignoran la armadura según el valor de perforación antes de aplicar el daño estándar. Por ejemplo, una pistola con un daño de 50 contra un objetivo con una armadura de 30 inflige 20 de daño. Si tuviera un valor de perforación de 20, la efectividad de la armadura se reduciría a 10 y el objetivo recibiría 40 de daño. La perforación no tiene efecto alguno contra objetivos sin valor de armadura.","Broń z wartością przebicia powoduje pominięcie wartości pancerza do wysokości wartości przebicia przy naliczaniu obrażeń standardowych. Na przykład pistolet zadający obrażenia o wartości 50 punktów, którym trafiono w cel pokryty pancerzem o wartości 30 punktów, zazwyczaj spowodowałby obrażenia na poziomie 20 punktów. Jeżeli miałby dodatkowo wartość przebicia 20, wówczas skuteczność pancerza spadłaby do 10 punktów, a cel odniósłby obrażenia o wartości 40 punktów. Przebicie nie ma wpływu na cele, które nie noszą pancerza."
+KEY_PHOENIXPEDIA_GUIDE_PIERCE_NAME,Text,,Pierce Value,穿透值,Valeur de perforation,Panzerbrechend (Rüstungsdurchschlag),Valore di perforazione,Wartość przebicia,Значение пронзающего урона,Valor de perforación,Значение пронзающего урона
 KEY_PHOENIXPEDIA_GUIDE_POISON_DESC,Text,,"If a weapon inflicts at least some Standard Damage, the weapon's Poison value is added to the target's current poison level. Poison accumulates from multiple attacks. At the start of the affected character's turn, the poison value is subtracted from General Hit Points, while simultaneously reducing Willpower (WP) and decreasing Accuracy. The poison level then drops by 10. The victim may die if Hit Points reach zero before the poison level falls to zero.
 
 Medkits will remove all poison from a character that is healed.","如果某武器造成了标准伤害，那么其中毒伤害值就会增加至目标当前的中毒等级。
@@ -672,7 +679,7 @@ Zatrucie może się kumulować na skutek kolejnych ataków. Wartość zatrucia o
 
 Zastosowanie apteczki spowoduje usunięcie wszelkich efektów działania trucizny z organizmu wyleczonej postaci."
 KEY_PHOENIXPEDIA_GUIDE_POISON_NAME,Text,,Poison Damage,中毒伤害,Dégâts toxiques,Giftschaden,Danni da veleno,Obrażenia od trucizny,Урон от яда,Daño de veneno,Obrażenia od trucizny
-KEY_PHOENIXPEDIA_GUIDE_PSYCHIC_DESC,Text,,A psychic damage attack is usually an area effect attack that directly reduces the Will Points of targets according to the Psychic Damage value. This can cause characters to panic.,灵能伤害攻击是一种根据灵能伤害数值直接降低目标意志力点数的范围效果攻击。这能够使角色陷入恐慌。,Une attaque psychique est généralement une attaque de zone réduisant les points de volonté des cibles affectées en fonction de sa valeur de dégâts psychiques. Elle peut provoquer la panique chez les personnages touchés.,"Ein Angriff mit psychischem Schäden ist normalerweise ein Flächenangriff, der die Willenskraftpunkte der Ziele in Höhe des psychischen Schadenswerts verringert. Dies kann dazu führen, dass Charaktere in Panik geraten.",Un attacco con danni psichici consiste solitamente in un attacco ad area che riduce direttamente i punti volontà dei bersagli in base al valore di danni psichici. Questo può indurre il panico nei personaggi.,"Atak umożliwiający zadanie obrażeń telepatycznych jest zazwyczaj atakiem obszarowym, który bezpośrednio zmniejsza liczbę punktów woli celów zgodnie z wartością obrażeń telepatycznych. Skutkiem może być wpadnięcie postaci w panikę.",Атака с использованием психического урона обычно наносит урон по области и непосредственно уменьшает очки воли цели. Это может привести к панике персонажа.,Los ataques de daño psíquico suelen ser ataques con efectos de área que reducen los puntos de voluntad de los objetivos según el valor del daño psíquico. Esto puede aterrorizar a los personajes.,"Atak umożliwiający zadanie obrażeń telepatycznych jest zazwyczaj atakiem obszarowym, który bezpośrednio zmniejsza liczbę punktów woli celów zgodnie z wartością obrażeń telepatycznych. Skutkiem może być wpadnięcie postaci w panikę."
+KEY_PHOENIXPEDIA_GUIDE_PSYCHIC_DESC,Text,,A psychic damage attack is usually an area effect attack that directly reduces the Will Points of targets according to the Psychic Damage value. This can cause characters to panic.,灵能伤害攻击是一种根据灵能伤害数值直接降低目标意志力点数的范围效果攻击。这能够使角色陷入恐慌。,Une attaque psychique est généralement une attaque de zone réduisant les points de volonté des cibles affectées en fonction de sa valeur de dégâts psychiques. Elle peut provoquer la panique chez les personnages touchés.,"Ein Angriff mit psychischem Schäden ist normalerweise ein Flächenangriff, der die Willenspunkte der Ziele in Höhe des psychischen Schadenswerts verringert. Dies kann dazu führen, dass Charaktere in Panik geraten.",Un attacco con danni psichici consiste solitamente in un attacco ad area che riduce direttamente i punti volontà dei bersagli in base al valore di danni psichici. Questo può indurre il panico nei personaggi.,"Atak umożliwiający zadanie obrażeń telepatycznych jest zazwyczaj atakiem obszarowym, który bezpośrednio zmniejsza liczbę punktów woli celów zgodnie z wartością obrażeń telepatycznych. Skutkiem może być wpadnięcie postaci w panikę.",Атака с использованием психического урона обычно наносит урон по области и непосредственно уменьшает очки воли цели. Это может привести к панике персонажа.,Los ataques de daño psíquico suelen ser ataques con efectos de área que reducen los puntos de voluntad de los objetivos según el valor del daño psíquico. Esto puede aterrorizar a los personajes.,"Atak umożliwiający zadanie obrażeń telepatycznych jest zazwyczaj atakiem obszarowym, który bezpośrednio zmniejsza liczbę punktów woli celów zgodnie z wartością obrażeń telepatycznych. Skutkiem może być wpadnięcie postaci w panikę."
 KEY_PHOENIXPEDIA_GUIDE_PSYCHIC_NAME,Text,,Psychic Damage,灵能伤害,Dégâts psychiques,Psychischer Schaden,Danni psichici,Obrażenia telepatyczne,Психический урон,Daño psíquico,Obrażenia telepatyczne
 KEY_PHOENIXPEDIA_GUIDE_SEARCH,Text,,Type here to search,在此处输入搜索,Entrez ici votre recherche.,Zum Suchen hier eingeben,Scrivi qui per cercare,Wpisz wyszukiwane hasło tutaj,Введите поисковый запрос,Escribe aquí para buscar,Wpisz wyszukiwane hasło tutaj
 KEY_PHOENIXPEDIA_GUIDE_SHOCK_DESC,Text,,"Weapons that inflict shock damage can cause a target to become Dazed. The armor of the hit body part is subtracted from the Shock Damage value, and if this is higher than the target's current General Hit Points, then the target is Dazed.
@@ -683,7 +690,7 @@ Dazed characters will have 1 AP for their next turn, and their accuracy will be 
 
  Les personnages étourdis disposeront d'un point d'action jusqu'à la fin de leur prochain tour, et leur précision sera réduite de moitié. De plus, les capacités qui nécessitent des points de volonté seront inutilisables. Ils perdront l'état « étourdi » à la fin de leur tour. Cet état n'est pas cumulable, aussi infliger des dégâts électriques sur un personnage déjà étourdi n'aura aucun effet supplémentaire.","Waffen, die Schockschaden verursachen, können ein Ziel verwirren. Die Rüstung des getroffenen Körperteils wird vom Schockschaden subtrahiert, und wenn dieser höher ist als die aktuellen allgemeinen Trefferpunkte des Ziels, ist das Ziel verwirrt.
  
-Verwirrten Charakteren steht im nächsten Zug nur 1 AP zur Verfügung und ihre Genauigkeit ist halbiert. Darüber hinaus können keine Fähigkeiten eingesetzt werden, die Willenskraftpunkte benötigen. Sie verlieren den Status „Verwirrt“ am Ende ihres Zugs wieder. „Verwirrung“ wird nicht gestapelt, sodass weiterer Schockschaden bei bereits verwirrten Charakteren keine weitere Wirkung zeigt.","Le armi che infliggono danni da shock possono stordire un bersaglio. L'armatura della parte del corpo colpita viene sottratta dal valore dei danni da shock, e se questo è più alto dei punti ferita generali attuali del bersaglio, allora il bersaglio viene stordito.
+Verwirrten Charakteren steht im nächsten Zug nur 1 AP zur Verfügung und ihre Genauigkeit ist halbiert. Darüber hinaus können keine Fähigkeiten eingesetzt werden, die Willenspunkte benötigen. Sie verlieren den Status „Verwirrt“ am Ende ihres Zugs wieder. „Verwirrung“ wird nicht gestapelt, sodass weiterer Schockschaden bei bereits verwirrten Charakteren keine weitere Wirkung zeigt.","Le armi che infliggono danni da shock possono stordire un bersaglio. L'armatura della parte del corpo colpita viene sottratta dal valore dei danni da shock, e se questo è più alto dei punti ferita generali attuali del bersaglio, allora il bersaglio viene stordito.
  
  I personaggi storditi avranno 1 PA per il loro prossimo turno e la loro precisione sarà dimezzata. Inoltre, le abilità che richiedono punti volontà non potranno essere usate. Perderanno lo stato Stordimento alla fine del loro turno. Lo stato Stordimento non è cumulativo, perciò i danni da shock su un personaggio già stordito non hanno effetto aggiuntivo.","Broń, która umożliwia zadanie obrażeń od wstrząsu, może spowodować, że cel zostanie oszołomiony. Wartość pancerza trafionej części ciała jest odejmowana od wartości obrażeń od wstrząsu. Jeżeli jest wyższa od bieżącej ogólnej liczby punktów życia danego celu, wówczas zostaje on oszołomiony.
  
@@ -693,7 +700,7 @@ Verwirrten Charakteren steht im nächsten Zug nur 1 AP zur Verfügung und ihre G
  
  Los personajes aturdidos tienen 1 PA en el siguiente turno y su precisión se reduce a la mitad. Además, no se podrán usar las habilidades que necesitan puntos de voluntad. Pierden el estado de aturdido al final del turno. Los estados de aturdido no se acumulan, por lo que el daño de choque en un objetivo aturdido no tiene más efectos.",
 KEY_PHOENIXPEDIA_GUIDE_SHOCK_NAME,Text,,Shock Damage,冲击伤害,Dégâts électriques,Schockschaden,Danni da shock,Obrażenia od wstrząsu,Оглушающий урон,Daño eléctrico,Obrażenia od wstrząsu
-KEY_PHOENIXPEDIA_GUIDE_SHRED_DESC,Text,,A weapon with Shred Damage will deduct the Shred value from the hit body part's armor. Shred Damage is applied for each projectile that hits. Blast weapons with Shred Damage will shred every body part affected by the blast. Shred Damage has no affect on body parts without armor.,具有粉碎伤害的武器会从被击中的身体部位护甲值中扣除粉碎值。每一发命中的炮弹都会造成粉碎伤害。具有粉碎伤害的爆炸武器将会撕裂被爆炸影响的每一个身体部位。粉碎伤害对没有护甲的身体部位没有任何效果。,Les dégâts de déchiquetage réduiront de la valeur de déchiquetage l'armure de la partie du corps atteinte. Les dégâts de déchiquetage sont appliqués pour chaque projectile atteignant la cible. Les armes explosives avec des dégâts de déchiquetage déchiquèteront chaque partie du corps affectée par l'explosion. Les dégâts de déchiquetage n'ont aucun effet sur les parties du corps sans armure.,"Eine Waffe mit Zerfetzungsschaden sorgt dafür, dass von der Rüstung des getroffenen Körperteils Zerfetzungsschaden abgezogen wird. Für jede Kugel, die trifft, wird Zerfetzungsschaden angewendet. Stoßwaffen mit Zerfetzungsschaden fügen allen Körperteilen Schaden zu, die von der Explosion getroffen werden. Zerfetzungsschaden hat keinen Einfluss auf Körperteile ohne Rüstung.",Un'arma che infligge danni da lacerazione sottrae il valore di lacerazione dall'armatura della parte del corpo colpita. I danni da lacerazione vengono inflitti per ogni proiettile che va a segno. Le armi esplosive con danni da lacerazione lacerano tutte le parti del corpo coinvolte nell'esplosione. I danni da lacerazione non hanno effetti sulle parti del corpo prive di armatura.,Trafienie bronią umożliwiającą zadanie obrażeń od szatkowania spowoduje odjęcie wartości szatkowania od punktów pancerza założonego na trafioną część ciała. Obrażenia od szatkowania są naliczane za każdy celny pocisk. Broń wybuchowa umożliwiająca zadanie obrażeń od szatkowania spowoduje poszatkowanie każdej części ciała dotkniętej wybuchem. Obrażenia od szatkowania nie mają wpływu na części ciała nieosłonięte pancerzem.,"При использовании оружия, наносящего рваные раны, значение урона вычитается из брони пораженной части тела. Урон от рваных ран применяется к каждому снаряду, попавшему в цель. Взрывное оружие наносит урон от рваных ран всем частям тела в радиусе взрыва. Урон от рваных ран не влияет на не защищенные броней части тела.",Las armas con daño de desgarro reducen el valor de rotura de la armadura de la parte del cuerpo impactada. El daño de desgarro se aplica por cada proyectil que impacta. Las armas de estallido con daño de desgarro aplican los efectos a cada parte del cuerpo dentro del radio de la explosión. El daño de desgarro no tiene efecto alguno en las partes del cuerpo sin armadura.,Trafienie bronią umożliwiającą zadanie obrażeń od szatkowania spowoduje odjęcie wartości szatkowania od punktów pancerza założonego na trafioną część ciała. Obrażenia od szatkowania są naliczane za każdy celny pocisk. Broń wybuchowa umożliwiająca zadanie obrażeń od szatkowania spowoduje poszatkowanie każdej części ciała dotkniętej wybuchem. Obrażenia od szatkowania nie mają wpływu na części ciała nieosłonięte pancerzem.
+KEY_PHOENIXPEDIA_GUIDE_SHRED_DESC,Text,,A weapon with Shred Damage will deduct the Shred value from the hit body part's armor. Shred Damage is applied for each projectile that hits. Blast weapons with Shred Damage will shred every body part affected by the blast. Shred Damage has no affect on body parts without armor.,具有粉碎伤害的武器会从被击中的身体部位护甲值中扣除粉碎值。每一发命中的炮弹都会造成粉碎伤害。具有粉碎伤害的爆炸武器将会撕裂被爆炸影响的每一个身体部位。粉碎伤害对没有护甲的身体部位没有任何效果。,Les dégâts de déchiquetage réduiront de la valeur de déchiquetage l'armure de la partie du corps atteinte. Les dégâts de déchiquetage sont appliqués pour chaque projectile atteignant la cible. Les armes explosives avec des dégâts de déchiquetage déchiquèteront chaque partie du corps affectée par l'explosion. Les dégâts de déchiquetage n'ont aucun effet sur les parties du corps sans armure.,"Eine Waffe mit Zerfetzungsschaden sorgt dafür, dass von der Rüstung des getroffenen Körperteils Zerfetzungsschaden abgezogen wird. Für jede Kugel, die trifft, wird Zerfetzungsschaden angewendet. Explosionswaffen mit Zerfetzungsschaden fügen allen Körperteilen Schaden zu, die von der Explosion getroffen werden. Zerfetzungsschaden hat keinen Einfluss auf Körperteile ohne Rüstung.",Un'arma che infligge danni da lacerazione sottrae il valore di lacerazione dall'armatura della parte del corpo colpita. I danni da lacerazione vengono inflitti per ogni proiettile che va a segno. Le armi esplosive con danni da lacerazione lacerano tutte le parti del corpo coinvolte nell'esplosione. I danni da lacerazione non hanno effetti sulle parti del corpo prive di armatura.,Trafienie bronią umożliwiającą zadanie obrażeń od szatkowania spowoduje odjęcie wartości szatkowania od punktów pancerza założonego na trafioną część ciała. Obrażenia od szatkowania są naliczane za każdy celny pocisk. Broń wybuchowa umożliwiająca zadanie obrażeń od szatkowania spowoduje poszatkowanie każdej części ciała dotkniętej wybuchem. Obrażenia od szatkowania nie mają wpływu na części ciała nieosłonięte pancerzem.,"При использовании оружия, наносящего рваные раны, значение урона вычитается из брони пораженной части тела. Урон от рваных ран применяется к каждому снаряду, попавшему в цель. Взрывное оружие наносит урон от рваных ран всем частям тела в радиусе взрыва. Урон от рваных ран не влияет на не защищенные броней части тела.",Las armas con daño de desgarro reducen el valor de rotura de la armadura de la parte del cuerpo impactada. El daño de desgarro se aplica por cada proyectil que impacta. Las armas de estallido con daño de desgarro aplican los efectos a cada parte del cuerpo dentro del radio de la explosión. El daño de desgarro no tiene efecto alguno en las partes del cuerpo sin armadura.,Trafienie bronią umożliwiającą zadanie obrażeń od szatkowania spowoduje odjęcie wartości szatkowania od punktów pancerza założonego na trafioną część ciała. Obrażenia od szatkowania są naliczane za każdy celny pocisk. Broń wybuchowa umożliwiająca zadanie obrażeń od szatkowania spowoduje poszatkowanie każdej części ciała dotkniętej wybuchem. Obrażenia od szatkowania nie mają wpływu na części ciała nieosłonięte pancerzem.
 KEY_PHOENIXPEDIA_GUIDE_SHRED_NAME,Text,,Shred Damage,粉碎伤害,Dégâts de déchiquetage,Zerfetzungsschaden,Danni da lacerazione,Obrażenia od szatkowania,Урон от рваных ран,Daño de rotura,Obrażenia od szatkowania
 KEY_PHOENIXPEDIA_GUIDE_STATUS_EFFECTS_DESCRIPTION,Text,,"Status effects can apply to the entire character or only to a specific body part. Status effects are shown above the health bar, while body part statuses are visible under INFO.
 
@@ -766,7 +773,7 @@ ENRAGÉ : (Mutog uniquement) Les dégâts infligés et la vitesse augmentent de 
  PARALYSÉ : Déplacements ou actions impossibles.
 PARALYSIE : Les points d'action sont réduits proportionnellement à la valeur de paralysie appliquée à la puissance.
  ÉTOURDI : Points d'action réduits à 1 et précision réduite de moitié. Les capacités nécessitant des points de volonté ne peuvent pas être utilisées.
-VIGILANCE : Les ennemis qui entrent dans la zone de vigilance provoquent une attaque.","Statuseffekte betreffen Agenten oder Körperteile. Effekte stehen über der Gesundheit, Körperteil-Status unter INFO.
+VIGILANCE : Les ennemis qui entrent dans la zone de vigilance provoquent une attaque.","Statuseffekte betreffen Einheiten oder Körperteile. Effekte stehen über der Gesundheit, Körperteil-Status unter INFO.
 
 <color=#f7bc20>SCHADEN ÜBER ZEIT</color>
  • <color=#ffffff>SÄURE</color>: Zerfrisst Rüstung. Ohne Rüstung nimmt das Körperteil Schaden. Wert sinkt pro Zug um 10.
@@ -779,9 +786,9 @@ VIGILANCE : Les ennemis qui entrent dans la zone de vigilance provoquent une att
  • <color=#ffffff>LÄHMUNG</color>: Aktionspunkte sinken im Verhältnis Lähmung zu Stärke. 100% macht handlungsunfähig.
  • <color=#ffffff>VERWIRRT</color>: Aktionspunkte auf 1 reduziert, Genauigkeit halbiert. Willenspunkte-Fähigkeiten sind gesperrt.
  • <color=#ffffff>ZITTERND</color>: Die Einheit erleidet einen Malus auf die Genauigkeit.
- • <color=#ffffff>IN PANIK</color>: Agent kann sich einen Zug lang nicht bewegen und regeneriert dabei Willenspunkte.
- • <color=#ffffff>ÜBERWACHUNG</color>: Agent greift Gegner automatisch an, die den Zielkegel betreten.
- • <color=#ffffff>VERLANGSAMT</color>: Die Bewegungsgeschwindigkeit ist auf 25 % reduziert.
+ • <color=#ffffff>IN PANIK</color>: Einheit kann sich einen Zug lang nicht bewegen und regeneriert dabei Willenspunkte.
+ • <color=#ffffff>ÜBERWACHUNG</color>: Einheit greift Gegner automatisch an, die den Zielkegel betreten.
+ • <color=#ffffff>VERLANGSAMT</color>: Die Bewegungsgeschwindigkeit ist auf 25% reduziert.
  • <color=#ffffff>GESCHLEIMT</color>: Verlangsamt Charaktere bei direktem Treffer um 75%, bis der Schleim zerfällt oder entfernt wird. Das Passieren von Schleimfeldern verursacht keinen Malus.
 
 <color=#f7bc20>AUSDAUER & PSYCHE</color>
@@ -919,7 +926,7 @@ Les dégâts de virus peuvent être accumulés par le biais de plusieurs attaque
 
 Les médikits normaux n'ont aucun effet sur les dégâts de virus.","Wenn eine Waffe Standardschaden verursacht, wird der Wert des Virusschadens der Waffe zum aktuellen Viruswert des Ziels addiert.
 
-Virusschaden kann sich durch mehrere Angriffe ansammeln. Zu Beginn des Zuges des betroffenen Charakters wird der Viruswert von Willenskraftpunkten abgezogen. Dann verringert sich die Virusstufe um 1. Nach einigen Zügen sinkt die Virusstufe auf Null. Wenn das Opfer jedoch 0 Willenspunkte erreicht, verfällt es in Panik.
+Virusschaden kann sich durch mehrere Angriffe ansammeln. Zu Beginn des Zuges des betroffenen Charakters wird der Viruswert von Willenspunkten abgezogen. Dann verringert sich die Virusstufe um 1. Nach einigen Zügen sinkt die Virusstufe auf Null. Wenn das Opfer jedoch 0 Willenspunkte erreicht, verfällt es in Panik.
 
 Normale Medkits wirken bei Virusschaden nicht.","Se un'arma infligge dei danni standard, anche minimi, allora il valore danni virali viene sommato al livello di virus del bersaglio.
 
@@ -984,34 +991,34 @@ At Level 4, you can choose a secondary class for an operative. This significantl
  Vous gagnerez quelques points Phoenix après chaque bataille, en fonction des objectifs atteints.
  
  Au niveau 4, les soldats peuvent obtenir une nouvelle classe. Les capacités d'une classe nécessitant une maîtrise d'arme peuvent être utilisées sur des armes maîtrisées par l'autre classe.","<color=#f7bc20>ERFAHRUNGSPUNKTE (XP)</color>
-Am Ende von Missionen werden XP basierend auf dem Kampfbeitrag auf alle überlebenden Agenten verteilt.
+Am Ende von Missionen werden XP basierend auf dem Kampfbeitrag auf alle überlebenden Einheiten verteilt.
 
  • <color=#ffffff>Kampfbeitrag</color>: Berechnet sich aus den Aktionen im Einsatz (z.B. verursachter Schaden, Heilung).
-<i>Hinweis: Fahrzeuge, Drohnen, Geschütze und NPCs erhalten selbst keine XP. Ihr Kampfbeitrag wird stattdessen vollständig auf alle teilnehmenden Agenten verteilt</i>
+<i>Hinweis: Fahrzeuge, Drohnen, Geschütze und NPCs erhalten selbst keine XP. Ihr Kampfbeitrag wird stattdessen vollständig auf alle teilnehmenden Einheiten verteilt</i>
  • <color=#ffffff>Teamwork</color>: Der gesamte Kampfbeitrag im Einsatz zählt mehr als ein einzelner Abschuss!
 
 
 <color=#f7bc20>FERTIGKEITSPUNKTE (FP)</color>
-Agenten erhalten Fertigkeitspunkte (FP) auf mehrere Arten:
+Einheiten erhalten Fertigkeitspunkte (FP) auf mehrere Arten:
 
- • <color=#ffffff>Stufenaufstieg</color>: Beim Erreichen einer neuen Stufe erhält ein Agent individuelle FP.
- • <color=#ffffff>Missionsbelohnung</color>:  Je nach Schwierigkeitsgrad verdienen Agenten nach jedem erfolgreichen Einsatz individuelle FP.
+ • <color=#ffffff>Stufenaufstieg</color>: Beim Erreichen einer neuen Stufe erhält eine Einheit individuelle FP.
+ • <color=#ffffff>Missionsbelohnung</color>: Je nach Schwierigkeitsgrad verdienen Einheiten nach jedem erfolgreichen Einsatz individuelle FP.
  • <color=#ffffff>Phoenix-FP</color>: Diese werden für die gesamte Organisation vergeben und landen im Gemeinschaftspool.
 
 
 <color=#f7bc20>MENTORPROTOKOLL & ZWEITKLASSEN</color>
-Agenten auf Stufe 7 beanspruchen normalerweise weiterhin ihren XP-Anteil, obwohl sie keine weiteren Fortschritte machen. Die Fähigkeit „Mentorprotokoll“ verhindert diesen Verlust:
+Einheiten auf Stufe 7 beanspruchen normalerweise weiterhin ihren XP-Anteil, obwohl sie keine weiteren Fortschritte machen. Die Fähigkeit „Mentorprotokoll“ verhindert diesen Verlust:
 
- • <color=#ffffff>Funktionsweise</color>: Ein Agent auf Stufe 7 mit dieser Fähigkeit erhält keine XP mehr aus Missionen.
+ • <color=#ffffff>Funktionsweise</color>: Eine Einheit auf Stufe 7 mit dieser Fähigkeit erhält keine XP mehr aus Missionen.
  • <color=#ffffff>Umverteilung</color>: Sein Anteil wird stattdessen vollständig auf alle Teammitglieder unter Stufe 7 aufgeteilt.
- • <color=#ffffff>Bonus-FP</color>: Ein Agent mit dem Mentorprotokoll generiert nach jeder Mission zusätzlich 2 FP für den Gemeinschaftspool.
+ • <color=#ffffff>Bonus-FP</color>: Eine Einheit mit dem Mentorprotokoll generiert nach jeder Mission zusätzlich 2 FP für den Gemeinschaftspool.
  • <color=#ffffff>Trainingseffekt</color>: Mentorenanteile werden mit verteilt, wodurch keine Erfahrung verloren geht.
 
-Ab Stufe 4 kannst du für einen Agenten eine zweite Klasse wählen. Dies erweitert dein taktisches Spektrum erheblich: Fähigkeiten, die eine bestimmte Waffenfertigkeit voraussetzen, können nach der Spezialisierung auch mit den Waffen der jeweils anderen Klasse genutzt werden.
+Ab Stufe 4 kannst du für eine Einheit eine zweite Klasse wählen. Dies erweitert dein taktisches Spektrum erheblich: Fähigkeiten, die eine bestimmte Waffenfertigkeit voraussetzen, können nach der Spezialisierung auch mit den Waffen der jeweils anderen Klasse genutzt werden.
 
 
 <color=#f7bc20><i>TIPP FÜR NEUE DIREKTOREN</i></color>
-<i>Nutze das <b>Mentorprotokoll</b> strategisch: Es dient nicht nur dazu, junge Agenten schnell auf Stufe 7 zu bringen, sondern ist auch eine verlässliche Quelle für FP im <b>Gemeinschaftspool</b>. Diese Punkte sind essenziell, um deine erfahrenen Agenten mit zusätzlichen klassenübergreifenden Fähigkeiten zu spezialisieren.</i>","I punti esperienza (PE) sono ottenuti raggiungendo gli obiettivi durante le missioni. I PE vengono distribuiti tra i soldati sopravvissuti in base al loro contributo in battaglia.
+<i>Nutze das <b>Mentorprotokoll</b> strategisch: Es dient nicht nur dazu, junge Einheiten schnell auf Stufe 7 zu bringen, sondern ist auch eine verlässliche Quelle für FP im <b>Gemeinschaftspool</b>. Diese Punkte sind essenziell, um deine erfahrenen Einheiten mit zusätzlichen klassenübergreifenden Fähigkeiten zu spezialisieren.</i>","I punti esperienza (PE) sono ottenuti raggiungendo gli obiettivi durante le missioni. I PE vengono distribuiti tra i soldati sopravvissuti in base al loro contributo in battaglia.
  
  I soldati aumenteranno di livello automaticamente al raggiungimento della soglia PE del livello successivo. Aumentando di livello, i soldati vengono premiati con punti abilità (PA) che possono essere spesi per nuove abilità o per migliorare gli attributi principali: forza, volontà e velocità.
  

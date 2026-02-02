@@ -146,7 +146,7 @@ namespace TFTV
             }
 
             TFTVBetaSaveGamesFixes.ConvertAncientRefinerySitesToHarvestSites(Controller);
-          //  TFTVExperimental.GeoFactionResearchForecastLogger.LogForecasts(Controller);
+           // TFTVExperimental.ResearchCalendarUtility.LogCalendars(Controller);
 
         }
 

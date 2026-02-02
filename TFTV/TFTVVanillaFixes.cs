@@ -2711,6 +2711,8 @@ namespace TFTV
                     try
                     {
 
+                        TFTVLogger.Always($"[FixRescueMissionEvac] running for {actor.DisplayName}.");
+
                         TacticalFaction phoenixFaction = actor.TacticalLevel.GetFactionByCommandName("px");
 
                         if (!phoenixFaction.Objectives.Any(obj => obj is RescueSoldiersFactionObjective))
@@ -2718,16 +2720,16 @@ namespace TFTV
                             return;
                         }
 
-                        //        TFTVLogger.Always($"phoenixFaction.TacticalActors.Any(a => a.IsAlive && !a.IsEvacuated && a!=actor) {phoenixFaction.TacticalActors.Any(a => a.IsAlive && !a.IsEvacuated && a != actor && !a.IsMounted)}");
-
-                        if (phoenixFaction.TacticalActors.Any(a => a.IsAlive && !a.IsEvacuated && a != actor && !a.IsMounted))
+                   
+                        if (phoenixFaction.TacticalActors.Any(a => a.IsAlive && !a.IsEvacuated && a != actor && !a.IsMounted 
+                        && (a.Status==null||a.Status!=null && !a.Status.HasStatus<MindControlStatus>() && !a.Status.HasStatus<MinionStatus>())))
                         {
                             return;
                         }
 
                         RescueSoldiersFactionObjective objective = (RescueSoldiersFactionObjective)phoenixFaction.Objectives.FirstOrDefault(obj => obj is RescueSoldiersFactionObjective);
 
-                        //  TFTVLogger.Always($"got here! actor.TacticalFaction.Faction.FactionDef == objective.RescuedFaction {actor.TacticalFaction.Faction.FactionDef.name} {objective.RescuedFaction.name}");
+                        TFTVLogger.Always($"got here! actor.TacticalFaction.Faction.FactionDef == objective.RescuedFaction {actor.TacticalFaction.Faction.FactionDef.name} {objective.RescuedFaction.name}");
 
                         MindControlStatus status = actor.Status?.GetStatus<MindControlStatus>();
 
