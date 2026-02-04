@@ -129,6 +129,9 @@ namespace TFTV
                 {
                     if (geoVehicle.CurrentSite != null && geoVehicle.CurrentSite.Type == GeoSiteType.PhoenixBase)
                     {
+                        TFTVLogger.Always($"[CheckAircraftNewPassengerCapacity{geoVehicle?.Name}] " +
+                            $"geoVehicle.UsedCharacterSpace: {geoVehicle.UsedCharacterSpace} " +
+                            $"geoVehicle.MaxCharacterSpace: {geoVehicle.MaxCharacterSpace}");
 
                         if (geoVehicle.UsedCharacterSpace > geoVehicle.MaxCharacterSpace)
                         {
@@ -177,18 +180,17 @@ namespace TFTV
 
                     // TFTVLogger.Always($"{geoVehicle.Name} has {countVehicles} vehicles, {geoCharacter.DisplayName}, has harness: {hasHarness} is thunderbird {thunderbird}");
 
-                    if (AircraftReworkOn && geoVehicle.VehicleDef == blimp && countVehicles > 0)
+                    if (geoVehicle.VehicleDef == blimp && countVehicles > 0)
                     {
                         foreach (GeoCharacter vehicle in geoVehicle.Units.Where(c => c.GameTags.Any(t => t == Shared.SharedGameTags.VehicleTag)).ToList())
                         {
                             geoVehicle.RemoveCharacter(vehicle);
-
                             geoVehicle.CurrentSite?.AddCharacter(vehicle);
                         }
                     }
-                    else if (countVehicles > 1)
+                    else if(isThunderbird)   
                     {
-                        if (isThunderbird && hasHarness && countVehicles < 3)
+                        if (countVehicles < 2 || (hasHarness && countVehicles < 3))
                         {
 
                         }

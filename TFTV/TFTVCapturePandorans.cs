@@ -139,13 +139,71 @@ namespace TFTV
 
          }*/
 
+        private static void GetGeoVehicleForSite(GeoMission geoMission)
+        {
+            try
+            {
+                if (geoMission.Site.GetPlayerVehiclesOnSite() == null || geoMission.Site.GetPlayerVehiclesOnSite().Count() == 0) return;
+
+                List<GeoVehicle> geoVehicles = geoMission.Site.GetPlayerVehiclesOnSite().ToList();
+
+                GeoVehicle gv = null;
+
+                if (TFTVAircraftReworkMain.AircraftReworkOn)
+                {
+                    gv = GetSquadGeoVehicle(geoMission, geoVehicles);
+                }
+                else
+                {
+
+                    geoVehicles = geoVehicles.OrderByDescending(v => v.MaxCharacterSpace).ToList();
+                    gv = geoVehicles.First();
+
+                }
+
+                AircraftName = gv?.Name;
+                AircraftViewElement = gv?.VehicleDef?.ViewElement?.Guid;
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+        private static GeoVehicle GetSquadGeoVehicle(GeoMission geoMission, List<GeoVehicle> geoVehicles)
+        {
+            try
+            {
+                GeoVehicle gv = null;
+                foreach (GeoCharacter geoCharacter in geoMission.Squad.Units)
+                {
+                    gv = geoVehicles.FirstOrDefault(v => v.Units.Any(c => c == geoCharacter));
+                }
+
+                return gv;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
+        }
+
+
+
         public static void CheckCaptureCapability(GeoMission geoMission)
         {
             try
-            { 
-                if (geoMission.MissionDef.FinalMission) 
+            {
+               // TFTVLogger.Always("CheckCaptureCapability running");
+
+                GetGeoVehicleForSite(geoMission);
+
+                if (geoMission.MissionDef.FinalMission)
                 {
-                    return;            
+                    return;
                 }
 
                 ContainmentSpaceAvailable = geoMission.Site.GeoLevel.PhoenixFaction.GetTotalContaimentCapacity() - geoMission.Site.GeoLevel.PhoenixFaction.ContaimentUsage;
@@ -156,11 +214,11 @@ namespace TFTV
                     if (geoMission.Site.GeoLevel.PhoenixFaction.Research.HasCompleted("PX_CaptureTech_ResearchDef"))
                     {
 
-                       // TFTVLogger.Always($"geoMission.Site.LocalizedSiteName: {geoMission.Site.LocalizedSiteName}");
+                        // TFTVLogger.Always($"geoMission.Site.LocalizedSiteName: {geoMission.Site.LocalizedSiteName}");
 
-                      //  TFTVLogger.Always($"geoMission.Site.GetPlayerVehiclesOnSite() not null?: {geoMission.Site.GetPlayerVehiclesOnSite()!=null}");
+                        //  TFTVLogger.Always($"geoMission.Site.GetPlayerVehiclesOnSite() not null?: {geoMission.Site.GetPlayerVehiclesOnSite()!=null}");
 
-                       // TFTVLogger.Always($"geoMission.Site.GetPlayerVehiclesOnSite() count: {geoMission.Site.GetPlayerVehiclesOnSite().Count()}");
+                        // TFTVLogger.Always($"geoMission.Site.GetPlayerVehiclesOnSite() count: {geoMission.Site.GetPlayerVehiclesOnSite().Count()}");
 
                         PhoenixFacilityDef containmentFacility = DefCache.GetDef<PhoenixFacilityDef>("AlienContainment_PhoenixFacilityDef");
 
@@ -176,7 +234,7 @@ namespace TFTV
                                 {
 
                                     TFTVLogger.Always($"This is a Phoenix base mission, and there is a functioning Containment Facility, so capture capacity is not limited");
-                                    
+
                                     ContainmentFacilityPresent = true;
                                     AircraftCaptureCapacity = -1;
                                     AircraftName = geoMission.Site.LocalizedSiteName;
@@ -203,17 +261,35 @@ namespace TFTV
 
                                 List<GeoVehicle> geoVehicles = geoMission.Site.GetPlayerVehiclesOnSite().ToList();
 
-                                if (geoVehicles.Any(v => v.Modules.Any(m => m != null && m.ModuleDef != null && m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.SurvivalOdds)))
+
+
+                                GeoVehicle gv = null;
+
+                                if (TFTVAircraftReworkMain.AircraftReworkOn)
                                 {
-                                    ScyllaCaptureModulePresent = true;
-                                    AircraftCaptureCapacity += 8;
-                                    geoVehicles = geoVehicles.Where(v => v.Modules.Any(m => m != null && m.ModuleDef != null && m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.SurvivalOdds)).ToList();
-                                    TFTVLogger.Always($"Scylla Capture Module present!");
+                                    gv = GetSquadGeoVehicle(geoMission, geoVehicles);
+
+                                    if (gv.Modules.Any(m => m != null && m.ModuleDef != null && m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.SurvivalOdds))
+                                    {
+                                        ScyllaCaptureModulePresent = true;
+                                        AircraftCaptureCapacity += 8;
+                                        TFTVLogger.Always($"Scylla Capture Module present!");
+                                    }
+
                                 }
+                                else
+                                {
+                                    if (geoVehicles.Any(v => v.Modules.Any(m => m != null && m.ModuleDef != null && m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.SurvivalOdds)))
+                                    {
+                                        ScyllaCaptureModulePresent = true;
+                                        AircraftCaptureCapacity += 8;
+                                        geoVehicles = geoVehicles.Where(v => v.Modules.Any(m => m != null && m.ModuleDef != null && m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.SurvivalOdds)).ToList();
+                                        TFTVLogger.Always($"Scylla Capture Module present!");
+                                    }
 
-                                geoVehicles = geoVehicles.OrderByDescending(v => v.MaxCharacterSpace).ToList();
-
-                                GeoVehicle gv = geoVehicles.First();
+                                    geoVehicles = geoVehicles.OrderByDescending(v => v.MaxCharacterSpace).ToList();
+                                    gv = geoVehicles.First();
+                                }
 
                                 if (gv.VehicleDef.Equals(blimp12slots) || gv.VehicleDef.Equals(blimp8slots) || gv.VehicleDef.Equals(maskedManticore) || gv.VehicleDef.Equals(maskedManticore8slots))
                                 {
@@ -247,7 +323,7 @@ namespace TFTV
                     }
                 }
                 AircraftCaptureCapacity = -1;
-                TFTVLogger.Always($"No capture capacity; aircraft capture capacity {AircraftCaptureCapacity}");
+                TFTVLogger.Always($"No capture capacity; aircraft capture capacity {AircraftCaptureCapacity}. Aircraft name: {AircraftName} viewElement: {AircraftViewElement}");
             }
 
 
@@ -478,7 +554,7 @@ namespace TFTV
                                 if (!Pandoran.HasStatus(readyForCaptureStatus))
                                 {
                                     if (AircraftCaptureCapacity >= CalculateCaptureSlotCost(Pandoran.GameTags.ToList()))
-                                    {  
+                                    {
                                         selectedActor.AddAbility(capturePandoranAbility, selectedActor);
                                         ApplyStatusAbility markForCapture = selectedActor.GetAbilityWithDef<ApplyStatusAbility>(capturePandoranAbility);
                                         rawAbilities.Add(markForCapture);

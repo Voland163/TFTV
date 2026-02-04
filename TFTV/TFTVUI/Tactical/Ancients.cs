@@ -49,11 +49,19 @@ namespace TFTV.TFTVUI.Tactical
                     }
 
                     EventTrigger eventTrigger = gameObject.GetComponent<EventTrigger>();
-                    eventTrigger.triggers.Clear();
+
+                    // Don't wipe out non-click triggers (like tooltip hover) that were added elsewhere.
+                    // Remove only existing PointerClick entries we own.
+                    for (int i = eventTrigger.triggers.Count - 1; i >= 0; i--)
+                    {
+                        if (eventTrigger.triggers[i].eventID == EventTriggerType.PointerClick)
+                        {
+                            eventTrigger.triggers.RemoveAt(i);
+                        }
+                    }
 
                     if (tacticalActor != null)
                     {
-
                         EventTrigger.Entry click = new EventTrigger.Entry
                         {
                             eventID = EventTriggerType.PointerClick
@@ -65,12 +73,10 @@ namespace TFTV.TFTVUI.Tactical
                             {
                                 tacticalActor.TacticalActorView.DoCameraChase(tacticalActor);
                             }
-
                         });
 
                         eventTrigger.triggers.Add(click);
                     }
-
                 }
                 catch (Exception e)
                 {
@@ -95,12 +101,10 @@ namespace TFTV.TFTVUI.Tactical
 
                     float baseScale = Mathf.Max(Mathf.Min(resolutionFactorWidth, resolutionFactorHeight), 1);
 
-                    // Access UIModuleNavigation and set widgetContainer as its transform
                     TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
                     UIModuleNavigation uIModuleNavigation = controller.View.TacticalModules.NavigationModule;
                     widgetContainer = uIModuleNavigation.transform;
 
-                    // Dynamically create the leaderWidgetPrefab structure
                     ancientsWidgetPrefab = new GameObject(widgetObjectName);
                     RectTransform rectTransform = ancientsWidgetPrefab.AddComponent<RectTransform>();
 
@@ -108,93 +112,86 @@ namespace TFTV.TFTVUI.Tactical
                     rectTransform.position = new Vector2(245 * resolutionFactorWidth, 600 * resolutionFactorHeight);
 
                     GameObject backgroundImage = new GameObject("Background", typeof(RectTransform), typeof(Image));
-
-                    backgroundImage.transform.SetParent(ancientsWidgetPrefab.transform); // Attach to the existing GameObject
-                                                                                         // backgroundImage.AddComponent<UITooltipText>().TipText = TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_ANCIENTS_RULESET");
+                    backgroundImage.transform.SetParent(ancientsWidgetPrefab.transform, false);
 
                     RectTransform bgRect = backgroundImage.GetComponent<RectTransform>();
                     bgRect.sizeDelta = new Vector2(rectTransform.sizeDelta.x, rectTransform.sizeDelta.y / 3);
                     bgRect.anchoredPosition = Vector2.zero + new Vector2(0, 37.5f * resolutionFactorHeight);
 
                     Image bgImage = backgroundImage.GetComponent<Image>();
-                    bgImage.color = new Color(0, 0, 0, 0.5f); // Black with 50% opacity
+                    bgImage.color = new Color(0, 0, 0, 0.5f);
+                    bgImage.raycastTarget = true;
                     _bgImage = bgImage;
 
-                    // Set up the icon
+                    // IMPORTANT: make icon/text children of Background so hovering them still keeps us "over background"
                     GameObject iconObj = new GameObject("Icon");
-                    iconObj.transform.SetParent(ancientsWidgetPrefab.transform);
+                    iconObj.transform.SetParent(backgroundImage.transform, false);
                     Image iconImage = iconObj.AddComponent<Image>();
                     iconImage.sprite = TFTVAncients.CyclopsDefenseStatus.Visuals.SmallIcon;
                     iconImage.color = color;
                     iconImage.preserveAspect = true;
+                    iconImage.raycastTarget = true; // optional, but ensures it participates in UI raycasts
                     RectTransform iconImageRect = iconImage.GetComponent<RectTransform>();
-                    iconImageRect.sizeDelta = new Vector2(30 * baseScale, 30*baseScale);
-                    iconImageRect.anchoredPosition = Vector2.zero + new Vector2(-180 * resolutionFactorWidth, 38 * resolutionFactorHeight);//Vector2.zero + new Vector2(-150, 38);
+                    iconImageRect.sizeDelta = new Vector2(30 * baseScale, 30 * baseScale);
+                    iconImageRect.anchoredPosition = Vector2.zero + new Vector2(-180 * resolutionFactorWidth, 0.5f * resolutionFactorHeight);
                     _iconImage = iconImage;
 
-                    // Set up the name text
                     GameObject generatorHealthTextObj = new GameObject("CyclopsResistanceText");
-                    generatorHealthTextObj.transform.SetParent(ancientsWidgetPrefab.transform);
+                    generatorHealthTextObj.transform.SetParent(backgroundImage.transform, false);
                     Text cyclopsResistanceText = generatorHealthTextObj.AddComponent<Text>();
-                    cyclopsResistanceText.text = TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_ANCIENTS_CYCLOPS_RESISTANCE").Replace("{0}", cyclopsDamageResistance.ToString()); // CYCLOPS DAMAGE RESISTANCE AT {0}%;
+                    cyclopsResistanceText.text = TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_ANCIENTS_CYCLOPS_RESISTANCE")
+                        .Replace("{0}", cyclopsDamageResistance.ToString());
+                    cyclopsResistanceText.horizontalOverflow = HorizontalWrapMode.Overflow;
                     cyclopsResistanceText.alignment = TextAnchor.MiddleLeft;
                     cyclopsResistanceText.fontSize = (int)(35 * baseScale);
                     cyclopsResistanceText.color = Color.white;
                     cyclopsResistanceText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                    cyclopsResistanceText.raycastTarget = true; // optional
                     RectTransform rectGeneratorsHealthText = cyclopsResistanceText.GetComponent<RectTransform>();
-                    rectGeneratorsHealthText.sizeDelta = new Vector2(800*resolutionFactorWidth, 60*resolutionFactorHeight);
+                    rectGeneratorsHealthText.sizeDelta = new Vector2(400 * resolutionFactorWidth, 60 * resolutionFactorHeight);
                     rectGeneratorsHealthText.localScale = new Vector2(0.5f, 0.5f);
-                    rectGeneratorsHealthText.anchoredPosition = Vector2.zero + new Vector2(40*resolutionFactorWidth, 37.5f*resolutionFactorHeight); //Vector2.zero + new Vector2(20, 40);
+                    rectGeneratorsHealthText.anchoredPosition = Vector2.zero + new Vector2(-50 * resolutionFactorWidth, 0);
                     _cyclopsResistance = cyclopsResistanceText;
 
                     AddClickChaseTarget(chaseTarget, iconObj.gameObject);
 
-
                     ancientsWidgetPrefab.transform.SetParent(widgetContainer);
                     ancientsWidgetPrefab.SetActive(true);
 
-
                     GameObject tooltipBgObj = new GameObject("TooltipBackground", typeof(RectTransform));
-                    tooltipBgObj.transform.SetParent(ancientsWidgetPrefab.transform);
+                    tooltipBgObj.transform.SetParent(ancientsWidgetPrefab.transform, false);
                     Image tooltipBgImage = tooltipBgObj.AddComponent<Image>();
-                    tooltipBgImage.color = new Color(0, 0, 0, 0.75f); // Semi-transparent black
+                    tooltipBgImage.color = new Color(0, 0, 0, 0.75f);
 
                     RectTransform tooltipBgRect = tooltipBgObj.GetComponent<RectTransform>();
-                    tooltipBgRect.sizeDelta = new Vector2(1500 * resolutionFactorWidth, 1500 * resolutionFactorHeight); // Slightly larger than text for padding
+                    tooltipBgRect.sizeDelta = new Vector2(1500 * resolutionFactorWidth, 1500 * resolutionFactorHeight);
                     tooltipBgRect.anchoredPosition = new Vector2(600 * resolutionFactorWidth, 40 * resolutionFactorHeight);
                     tooltipBgRect.localScale = new Vector2(0.5f, 0.5f);
 
-                    // Ensure it appears behind the text
-                    //  tooltipText.transform.SetParent(tooltipBgObj.transform);
-                    //   tooltipText.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-
-                    // Hide both initially
                     tooltipBgObj.SetActive(false);
 
-                    // Modify EventTriggers to show/hide both the text and background
-
-
-                    // Create the tooltip text element
                     GameObject tooltipObj = new GameObject("TooltipText");
-                    tooltipObj.transform.SetParent(ancientsWidgetPrefab.transform);
+                    tooltipObj.transform.SetParent(ancientsWidgetPrefab.transform, false);
                     tooltipText = tooltipObj.AddComponent<Text>();
                     tooltipText.text = TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_ANCIENTS_RULESET");
                     tooltipText.alignment = TextAnchor.UpperLeft;
-                    tooltipText.fontSize = (int)(40 * baseScale); // Adjust as needed
-                    tooltipText.color = Color.white; // Adjust text color as needed
+                    tooltipText.fontSize = (int)(40 * baseScale);
+                    tooltipText.color = Color.white;
                     tooltipText.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                     tooltipText.verticalOverflow = VerticalWrapMode.Overflow;
                     tooltipText.horizontalOverflow = HorizontalWrapMode.Wrap;
 
                     RectTransform tooltipRect = tooltipText.GetComponent<RectTransform>();
-                    tooltipRect.sizeDelta = new Vector2(1400 * resolutionFactorWidth, 100 * resolutionFactorHeight); // Adjust size as needed
-                    tooltipRect.anchoredPosition = new Vector2(600 * resolutionFactorWidth, 350 * resolutionFactorHeight); // Adjust position relative to widget element
+                    tooltipRect.sizeDelta = new Vector2(1400 * resolutionFactorWidth, 100 * resolutionFactorHeight);
+                    tooltipRect.anchoredPosition = new Vector2(600 * resolutionFactorWidth, 350 * resolutionFactorHeight);
                     tooltipRect.localScale = new Vector2(0.5f, 0.5f);
 
-                    // Add EventTrigger to handle tooltip visibility
-                    EventTrigger eventTrigger = ancientsWidgetPrefab.AddComponent<EventTrigger>();
+                    EventTrigger hoverTrigger = backgroundImage.GetComponent<EventTrigger>();
+                    if (!hoverTrigger)
+                    {
+                        hoverTrigger = backgroundImage.AddComponent<EventTrigger>();
+                    }
 
-                    // Pointer Enter event to show tooltip
                     EventTrigger.Entry pointerEnter = new EventTrigger.Entry
                     {
                         eventID = EventTriggerType.PointerEnter
@@ -202,10 +199,10 @@ namespace TFTV.TFTVUI.Tactical
                     pointerEnter.callback.AddListener((eventData) =>
                     {
                         tooltipText.gameObject.SetActive(true);
+                        tooltipBgObj.SetActive(true);
                     });
-                    eventTrigger.triggers.Add(pointerEnter);
+                    hoverTrigger.triggers.Add(pointerEnter);
 
-                    // Pointer Exit event to hide tooltip
                     EventTrigger.Entry pointerExit = new EventTrigger.Entry
                     {
                         eventID = EventTriggerType.PointerExit
@@ -213,25 +210,11 @@ namespace TFTV.TFTVUI.Tactical
                     pointerExit.callback.AddListener((eventData) =>
                     {
                         tooltipText.gameObject.SetActive(false);
-                    });
-                    eventTrigger.triggers.Add(pointerExit);
-
-                    pointerEnter.callback.AddListener((eventData) =>
-                    {
-                        tooltipBgObj.SetActive(true);
-                    });
-
-                    pointerExit.callback.AddListener((eventData) =>
-                    {
                         tooltipBgObj.SetActive(false);
                     });
+                    hoverTrigger.triggers.Add(pointerExit);
 
                     tooltipObj.SetActive(false);
-
-                    // Create the tooltip background
-
-
-
                 }
                 catch (Exception e)
                 {
@@ -265,7 +248,8 @@ namespace TFTV.TFTVUI.Tactical
                 {
                     Color color = GetColor(chaseTarget);
 
-                    _cyclopsResistance.text = TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_ANCIENTS_CYCLOPS_RESISTANCE").Replace("{0}", cyclopsDamageResistance.ToString());
+                    _cyclopsResistance.text = TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_ANCIENTS_CYCLOPS_RESISTANCE")
+                        .Replace("{0}", cyclopsDamageResistance.ToString());
                     _iconImage.color = color;
 
                     AddClickChaseTarget(chaseTarget, _bgImage.gameObject);
@@ -278,15 +262,10 @@ namespace TFTV.TFTVUI.Tactical
             }
         }
 
-
-
-
-
         private static void CreateAncientsWidget(int cyclopsDamageResistance, TacticalActor chaseTarget)
         {
             try
             {
-
                 TFTVLogger.Always($"CreateAncientsWidget running");
 
                 _ancientWidget = new GameObject("AncientsWidgetObject");
@@ -297,7 +276,6 @@ namespace TFTV.TFTVUI.Tactical
                 _ancientWidget.transform.SetParent(uIModuleNavigation.transform, false);
 
                 defenseWidget.InitializeAncientsWidget(cyclopsDamageResistance, chaseTarget);
-
             }
             catch (Exception e)
             {
@@ -319,9 +297,7 @@ namespace TFTV.TFTVUI.Tactical
                 else
                 {
                     AncientsWidget ancientsWidget = _ancientWidget.GetComponent<AncientsWidget>();
-
                     ancientsWidget.ModifyWidget(cyclopsDamageResistance, chaseTarget);
-
                 }
             }
             catch (Exception e)
@@ -330,8 +306,5 @@ namespace TFTV.TFTVUI.Tactical
                 throw;
             }
         }
-
-
-
     }
 }

@@ -480,7 +480,7 @@ namespace TFTV.TFTVUI.Tactical
             try
             {
                 TacticalLevelController controller = GameUtl.CurrentLevel().GetComponent<TacticalLevelController>();
-
+              //  TFTVLogger.Always($"[CreateCaptureTacticalWidget] Aircraft name: {AircraftName} viewElement: {AircraftViewElement}");
                 //  TFTVLogger.Always($"CreatCaptureTacticalWidget: {TFTVNewGameOptions.LimitedCaptureSetting} {ContainmentFacilityPresent} {AircraftCaptureCapacity}");
 
                 bool captureAvailable = TFTVNewGameOptions.LimitedCaptureSetting

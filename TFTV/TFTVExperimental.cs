@@ -7,12 +7,14 @@ using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 
 
@@ -25,7 +27,221 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
-        
+
+        [HarmonyPatch(typeof(GeoAlienFaction), "OnResearchUpdated")]
+        public static class AlienResearchQueueSeeder
+        {
+            private const int MaxSeedAttempts = 5;
+
+            public static void Postfix(GeoAlienFaction __instance)
+            {
+               // TFTVLogger.Always("[AlienResearchCadence] OnResearchUpdated postfix called.");
+
+                if (__instance == null || __instance.Research == null || __instance.Research.Paused)
+                {
+                    return;
+                }
+
+            //    TFTVLogger.Always("[AlienResearchCadence] Alien faction research is not paused.");
+
+                Research research = __instance.Research;
+                if (research.Count > 0)
+                {
+                    return;
+                }
+
+                TFTVLogger.Always("[AlienResearchCadence] Research queue is empty, attempting to seed.");
+
+                int attempts = 0;
+                while (attempts < MaxSeedAttempts)
+                {
+                    ResearchElement candidate = research.Researchable.FirstOrDefault();
+
+                TFTVLogger.Always(string.Format("[AlienResearchCadence] Seed attempt {0}, candidate: {1}", attempts + 1, candidate != null ? candidate.ResearchDef.name : "<null>"));
+
+                    if (candidate == null)
+                    {
+                        break;
+                    }
+
+                    try
+                    {
+                        research.AddResearchToQueue(candidate);
+                    }
+                    catch (Exception ex)
+                    {
+                        TFTVLogger.Always(string.Format("[AlienResearchCadence] Failed to seed research {0}: {1}", candidate.ResearchDef.name, ex.Message));
+                        break;
+                    }
+
+                    if (research.Current != null)
+                    {
+                        TFTVLogger.Always(string.Format("[AlienResearchCadence] Successfully seeded research queue with {0}", research.Current.ResearchDef.name));
+
+                        return;
+                    }
+
+                    attempts++;
+                }
+
+                if (research.Current == null && research.Researchable.Any())
+                {
+                    TFTVLogger.Always(string.Format("[AlienResearchCadence] Research queue still empty after seeding attempts. Researchable={0}", research.Researchable.Count()));
+                }
+            }
+        }
+
+
+
+
+
+        /*[HarmonyPatch(typeof(GeoAlienFaction), "UpdateResearch")]
+        public static class AlienResearchCadenceLogger
+        {
+            internal struct CadenceSnapshot
+            {
+                public bool ShouldUpdate;
+                public float WalletResearch;
+                public float IncomePerHour;
+                public int CompletedCount;
+                public string[] CompletedIds;
+                public string CurrentResearchName;
+                public int CurrentResearchCost;
+                public float CurrentResearchProgress;
+                public bool ResearchPaused;
+                public int ResearchableCount;
+                public int HiddenCount;
+                public int RevealedCount;
+                public int UnlockedCount;
+                public int CompletedStateCount;
+                public TimeUnit Now;
+                public TimeUnit NextUpdate;
+                public int UpdateHours;
+            }
+
+            public static void Prefix(GeoAlienFaction __instance, ref CadenceSnapshot __state)
+            {
+                if (__instance == null || __instance.GeoLevel == null)
+                {
+                    return;
+                }
+
+                Research research = __instance.Research;
+                ResearchElement currentResearch = research != null ? research.Current : null;
+                int hiddenCount = 0;
+                int revealedCount = 0;
+                int unlockedCount = 0;
+                int completedCount = 0;
+                int researchableCount = 0;
+                if (research != null)
+                {
+                    hiddenCount = research.AllResearchesArray.Count(r => r.State == ResearchState.Hidden);
+                    revealedCount = research.AllResearchesArray.Count(r => r.State == ResearchState.Revealed);
+                    unlockedCount = research.AllResearchesArray.Count(r => r.State == ResearchState.Unlocked);
+                    completedCount = research.AllResearchesArray.Count(r => r.State == ResearchState.Completed);
+                    researchableCount = research.Researchable.Count();
+                }
+                __state = new CadenceSnapshot
+                {
+                    Now = __instance.GeoLevel.Timing.Now,
+                    NextUpdate = __instance.NextResearchUpdate,
+                    UpdateHours = __instance.Def.ResearchUpdateTimeHours,
+                    WalletResearch = __instance.Wallet[ResourceType.Research].Value,
+                    IncomePerHour = __instance.ResourceIncome.GetTotalResouce(ResourceType.Research).Value,
+                    CompletedCount = research != null ? research.Completed.Count() : 0,
+                    CompletedIds = research != null ? research.Completed.Select(r => r.ResearchDef.name).ToArray() : Array.Empty<string>(),
+                    CurrentResearchName = currentResearch != null ? currentResearch.ResearchDef.name : "<none>",
+                    CurrentResearchCost = currentResearch != null ? currentResearch.ResearchCost : 0,
+                    CurrentResearchProgress = currentResearch != null ? currentResearch.ResearchProgress : 0f,
+                    ResearchPaused = research != null && research.Paused,
+                    ResearchableCount = researchableCount,
+                    HiddenCount = hiddenCount,
+                    RevealedCount = revealedCount,
+                    UnlockedCount = unlockedCount,
+                    CompletedStateCount = completedCount,
+                    ShouldUpdate = research != null && __instance.NextResearchUpdate <= __instance.GeoLevel.Timing.Now
+                };
+            }
+
+            public static void Postfix(GeoAlienFaction __instance, CadenceSnapshot __state)
+            {
+                if (__instance == null || __instance.GeoLevel == null)
+                {
+                    return;
+                }
+
+                Research research = __instance.Research;
+                int completedAfter = research != null ? research.Completed.Count() : 0;
+                int completedDelta = completedAfter - __state.CompletedCount;
+                TimeUnit now = __instance.GeoLevel.Timing.Now;
+                float walletAfter = __instance.Wallet[ResourceType.Research].Value;
+                float incomePerHour = __instance.ResourceIncome.GetTotalResouce(ResourceType.Research).Value;
+                ResearchElement currentResearch = research != null ? research.Current : null;
+                string message = string.Format(
+                    "[AlienResearchCadence] now={0} nextBefore={1} nextAfter={2} updateHours={3} shouldUpdate={4} walletBefore={5:0.##} walletAfter={6:0.##} incomePerHour={7:0.##} completedDelta={8} current={9} progress={10:0.##}/{11} paused={12} researchable={13} stateCounts(H={14},R={15},U={16},C={17})",
+                    now,
+                    __state.NextUpdate,
+                    __instance.NextResearchUpdate,
+                    __state.UpdateHours,
+                    __state.ShouldUpdate,
+                    __state.WalletResearch,
+                    walletAfter,
+                    incomePerHour,
+                    completedDelta,
+                    currentResearch != null ? currentResearch.ResearchDef.name : "<none>",
+                    currentResearch != null ? currentResearch.ResearchProgress : 0f,
+                    currentResearch != null ? currentResearch.ResearchCost : 0,
+                    __state.ResearchPaused,
+                    __state.ResearchableCount,
+                    __state.HiddenCount,
+                    __state.RevealedCount,
+                    __state.UnlockedCount,
+                    __state.CompletedStateCount);
+                TFTVLogger.Always(message, false);
+
+                if (research == null)
+                {
+                    return;
+                }
+
+                HashSet<string> completedBefore = new HashSet<string>(__state.CompletedIds ?? Array.Empty<string>());
+                List<ResearchElement> newlyCompleted = research.Completed.Where(r => !completedBefore.Contains(r.ResearchDef.name)).ToList();
+                if (newlyCompleted.Count == 0)
+                {
+                    return;
+                }
+
+                StringBuilder details = new StringBuilder();
+                details.Append("[AlienResearchCadence] newlyCompleted=");
+                for (int i = 0; i < newlyCompleted.Count; i++)
+                {
+                    ResearchElement element = newlyCompleted[i];
+                    if (i > 0)
+                    {
+                        details.Append(" | ");
+                    }
+                    details.Append(element.ResearchDef.name);
+                    details.AppendFormat(" cost={0}", element.ResearchCost);
+                    List<string> rewardNames = new List<string>();
+                    foreach (ResearchReward reward in element.Rewards)
+                    {
+                        if (reward is UnitTemplateResearchReward unitTemplateReward)
+                        {
+                            rewardNames.Add(string.Format("UnitTemplate:{0} add={1}", unitTemplateReward.RewardDef.Template.name, unitTemplateReward.RewardDef.Add));
+                        }
+                        else
+                        {
+                            rewardNames.Add(reward.BaseDef.name);
+                        }
+                    }
+                    if (rewardNames.Count > 0)
+                    {
+                        details.AppendFormat(" rewards=[{0}]", string.Join(", ", rewardNames));
+                    }
+                }
+                TFTVLogger.Always(details.ToString(), false);
+            }
+        }*/
         public static class ResearchCalendarUtility
         {
             public sealed class ResearchCalendarEntry

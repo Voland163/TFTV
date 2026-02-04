@@ -156,13 +156,14 @@ namespace TFTV.TFTVDrills
                 effectConditionDef.StatusDef = newStatus;
                 effectConditionDef.HasStatus = false;
 
+              
                 // AddAttackBoostStatusDef addAttackBoostStatusDef = (AddAttackBoostStatusDef)_remoteControlAbilityDef.StatusDef;
                 //  addAttackBoostStatusDef.AdditionalStatusesToApply = addAttackBoostStatusDef.AdditionalStatusesToApply.AddToArray(newStatus);
 
                 _remoteControlAbilityDef.StatusDef = multiStatusDef;
 
                 _remoteControlAbilityDef.TargetApplicationConditions = _remoteControlAbilityDef.TargetApplicationConditions.AddToArray(effectConditionDef);
-
+              
             }
             catch (Exception e)
             {
@@ -1343,6 +1344,13 @@ namespace TFTV.TFTVDrills
 
                 Sprite icon = Helper.CreateSpriteFromImageFile($"Drill_{name}.png");
 
+
+                ActorHasTagEffectConditionDef actorHasTagEffectConditionDef = Helper.CreateDefFromClone(DefCache.GetDef<ActorHasTagEffectConditionDef>("HasAncientGuardianTag_ApplicationCondition"),
+                  "{B973EB33-430D-46E7-A8C7-8409E6788680}", $"{_remoteControlAbilityDef.name}");
+
+                actorHasTagEffectConditionDef.HasTag = false;
+                
+
                 ApplyStatusAbilityDef source = _remoteControlAbilityDef;
 
                 ApplyStatusAbilityDef newAbility = Helper.CreateDefFromClone(
@@ -1372,7 +1380,7 @@ namespace TFTV.TFTVDrills
                 newAbility.ViewElementDef.Description.LocalizationKey = locKeyDesc; // = description;
                 newAbility.ViewElementDef.LargeIcon = icon;
                 newAbility.ViewElementDef.SmallIcon = icon;
-                newAbility.TargetApplicationConditions = new EffectConditionDef[] { source.TargetApplicationConditions[0], source.TargetApplicationConditions[2] };
+                newAbility.TargetApplicationConditions = new EffectConditionDef[] { source.TargetApplicationConditions[0], source.TargetApplicationConditions[2], actorHasTagEffectConditionDef };
                 newAbility.TargetingDataDef.Origin.TargetEnemies = true;
                 newAbility.TargetingDataDef.Origin.TargetFriendlies = false;
                 newAbility.TargetingDataDef.Origin.FactionVisibility = LineOfSightType.InSight;

@@ -10,6 +10,7 @@ using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
@@ -281,6 +282,35 @@ namespace TFTV
         }
 
 
+        
+
+        //Invokes changes to MissionObjectives always, and if base defense vs aliens changes deployment and hint
+        [HarmonyPatch(typeof(GeoAncientSiteMission), "ModifyMissionData")]
+        public static class GeoAncientSiteMission_ModifyMissionData_patch
+        {
+            public static void Postfix(GeoAncientSiteMission __instance, TacMissionData missionData)
+            {
+                try
+                {
+                    TFTVLogger.Always($"[GeoAncientSiteMission.ModifyMissionData] invoked.");
+
+                    TFTVCapturePandorans.CheckCaptureCapability(__instance);
+                    TFTVBaseDefenseGeoscape.Deployment.ModifyMissionDataBaseDefense(__instance, missionData);
+                    TFTVBaseDefenseTactical.Objectives.ModifyBaseDefenseTacticalObjectives(missionData.MissionType);
+                    TFTVUI.Tactical.SecondaryObjectivesTactical.PopulateAvailableObjectives(__instance.Site.GeoLevel);
+                    TFTVUI.Tactical.SecondaryObjectivesTactical.AddAllAvailableSecondaryObjectivesToMission(missionData.MissionType);
+
+                    // __instance.GameController.SaveManager.IsSaveEnabled = true;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+
+                }
+            }
+        }
+
+
 
         //Invokes changes to MissionObjectives always, and if base defense vs aliens changes deployment and hint
         [HarmonyPatch(typeof(GeoMission), "ModifyMissionData")]
@@ -290,7 +320,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always($"GeoMission.ModifyMissionData invoked.");
+                    TFTVLogger.Always($"[GeoMission.ModifyMissionData] invoked.");
 
                     TFTVCapturePandorans.CheckCaptureCapability(__instance);
                     TFTVBaseDefenseGeoscape.Deployment.ModifyMissionDataBaseDefense(__instance, missionData);

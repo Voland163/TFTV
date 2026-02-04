@@ -50,7 +50,6 @@ using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects;
-using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Entities.Weapons;
@@ -116,11 +115,11 @@ namespace TFTV
             private static bool Prefix(UIStatePhoenixBaseLayout __instance, GeoPhoenixBase ____base)
             {
                 GeoLevelController geoLevelController = ____base.Site.GeoLevel;
-             
+
                 GeoscapeView view = geoLevelController.View;
 
                 GeoVehicle currentVehicle = view.SelectedActor as GeoVehicle;
-                
+
                 if (currentVehicle == null || !currentVehicle.IsOwnedByViewer)
                 {
                     currentVehicle = geoLevelController.PhoenixFaction.Vehicles.FirstOrDefault<GeoVehicle>();
@@ -142,7 +141,7 @@ namespace TFTV
         }
 
 
-    
+
 
         internal class Stealth
         {
@@ -493,7 +492,7 @@ namespace TFTV
 
             private static MethodInfo _drawAllEnemyVisionMarkersMethodInfo = null;
 
-            
+
             //Fixes size of ground marker for eggs/sentinels etc.
             public static void PatchInternalClassUIStateCharacterSelecter(Harmony harmony)
             {
@@ -1082,7 +1081,7 @@ namespace TFTV
                     }
                     if (uIModuleShortActorInfoTooltip == null)
                     {
-                      //  TFTVLogger.Always($"[GenerateData] tooltip module == null for actor={actor.DisplayName}");
+                        //  TFTVLogger.Always($"[GenerateData] tooltip module == null for actor={actor.DisplayName}");
                     }
 
 
@@ -1153,7 +1152,7 @@ namespace TFTV
                     TacticalActor selectedActor = actor.TacticalLevel.View.SelectedActor;
 
                     var view = actor.TacticalLevel?.View;
-                   // TFTVLogger.Always($"[GenerateData] actor={actor.DisplayName}, view={(view != null)}, selectedActor={(selectedActor != null)}, actorView={(actor.TacticalActorView != null)}");
+                    // TFTVLogger.Always($"[GenerateData] actor={actor.DisplayName}, view={(view != null)}, selectedActor={(selectedActor != null)}, actorView={(actor.TacticalActorView != null)}");
 
                     if (selectedActor != null && selectedActor.Status != null)
                     {
@@ -1217,7 +1216,7 @@ namespace TFTV
 
                         if (statusInfo == null)
                         {
-                           TFTVLogger.Always($"[GenerateData] statusInfo == null (actor={actor.DisplayName})");
+                            TFTVLogger.Always($"[GenerateData] statusInfo == null (actor={actor.DisplayName})");
                             continue;
                         }
                         if (statusInfo.Def == null)
@@ -1333,7 +1332,7 @@ namespace TFTV
                     {
                         var ctrl = GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>();
                         var actor = __instance?.SelectionInfo.Actor as TacticalActor;
-                       // TFTVLogger.Always($"[OnAbilityHover] hovered={isHovered}, infoButton={menuItem?.InfoButton ?? false}, ctrl={(ctrl != null)}, actor={(actor != null)}, actorView={(actor?.TacticalActorView != null)}");
+                        // TFTVLogger.Always($"[OnAbilityHover] hovered={isHovered}, infoButton={menuItem?.InfoButton ?? false}, ctrl={(ctrl != null)}, actor={(actor != null)}, actorView={(actor?.TacticalActorView != null)}");
 
                         if (!isHovered || menuItem == null || !menuItem.InfoButton || ctrl == null || actor == null)
                         {
@@ -1343,13 +1342,13 @@ namespace TFTV
                         var view = ctrl.View;
                         if (view == null || view.TacticalModules == null || view.SelectedActor == null)
                         {
-                         //   TFTVLogger.Always($"[OnAbilityHover] view/modules/selectedActor not ready (view={(view != null)}, modules={(view?.TacticalModules != null)}, selectedActor={(view?.SelectedActor != null)})");
+                            //   TFTVLogger.Always($"[OnAbilityHover] view/modules/selectedActor not ready (view={(view != null)}, modules={(view?.TacticalModules != null)}, selectedActor={(view?.SelectedActor != null)})");
                             return;
                         }
 
                         if (!actor.IsControlledByPlayer || view.ViewerFaction != actor.TacticalFaction)
                         {
-                           // TFTVLogger.Always($"[OnAbilityHover] actor not player-controlled or viewer mismatch (player={actor.IsControlledByPlayer}, viewerMatch={view.ViewerFaction == actor.TacticalFaction})");
+                            // TFTVLogger.Always($"[OnAbilityHover] actor not player-controlled or viewer mismatch (player={actor.IsControlledByPlayer}, viewerMatch={view.ViewerFaction == actor.TacticalFaction})");
                             return;
                         }
 
@@ -2292,66 +2291,66 @@ namespace TFTV
 
             }
 
-           /* internal class UmbraFire
-            {
-                /// <summary>
-                /// Fixes Umbra appearing when host had fire status
-                /// </summary>
-                /// <param name="tacticalActorBase"></param>
-                /// <returns></returns>
-                private static bool CheckUmbraEffectAndFire(TacticalActorBase tacticalActorBase)
-                {
-                    try
-                    {
-                        DeathBelcherAbilityDef umbraCrabDeathBelcher = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef");
-                        DeathBelcherAbilityDef umbraFishDeathBelcher = DefCache.GetDef<DeathBelcherAbilityDef>("Oilfish_Die_DeathBelcher_AbilityDef");
+            /* internal class UmbraFire
+             {
+                 /// <summary>
+                 /// Fixes Umbra appearing when host had fire status
+                 /// </summary>
+                 /// <param name="tacticalActorBase"></param>
+                 /// <returns></returns>
+                 private static bool CheckUmbraEffectAndFire(TacticalActorBase tacticalActorBase)
+                 {
+                     try
+                     {
+                         DeathBelcherAbilityDef umbraCrabDeathBelcher = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef");
+                         DeathBelcherAbilityDef umbraFishDeathBelcher = DefCache.GetDef<DeathBelcherAbilityDef>("Oilfish_Die_DeathBelcher_AbilityDef");
 
 
-                        if (tacticalActorBase is TacticalActor tacticalActor &&
-                            tacticalActor.Status != null && (
-                            tacticalActor.GetAbilityWithDef<DeathBelcherAbility>(umbraCrabDeathBelcher) != null
-                            || tacticalActor.GetAbilityWithDef<DeathBelcherAbility>(umbraFishDeathBelcher) != null) &&
-                            tacticalActor.Status.HasStatus<FireStatus>())
-                        {
-                            return true;
+                         if (tacticalActorBase is TacticalActor tacticalActor &&
+                             tacticalActor.Status != null && (
+                             tacticalActor.GetAbilityWithDef<DeathBelcherAbility>(umbraCrabDeathBelcher) != null
+                             || tacticalActor.GetAbilityWithDef<DeathBelcherAbility>(umbraFishDeathBelcher) != null) &&
+                             tacticalActor.Status.HasStatus<FireStatus>())
+                         {
+                             return true;
 
-                        }
-                        return false;
+                         }
+                         return false;
 
 
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
-                }
+                     }
+                     catch (Exception e)
+                     {
+                         TFTVLogger.Error(e);
+                         throw;
+                     }
+                 }
 
-                [HarmonyPatch(typeof(TacticalActorBase), "Die")] //VERIFIED
-                public static class TacticalActorBase_Die_patch
-                {
-                    public static void Prefix(TacticalActorBase __instance)
-                    {
-                        try
-                        {
-                            if (CheckUmbraEffectAndFire(__instance))
-                            {
-                                PropertyInfo propertyInfo = typeof(TacticalActorBase).GetProperty("LastDamageType", BindingFlags.Public | BindingFlags.Instance);
+                 [HarmonyPatch(typeof(TacticalActorBase), "Die")] //VERIFIED
+                 public static class TacticalActorBase_Die_patch
+                 {
+                     public static void Prefix(TacticalActorBase __instance)
+                     {
+                         try
+                         {
+                             if (CheckUmbraEffectAndFire(__instance))
+                             {
+                                 PropertyInfo propertyInfo = typeof(TacticalActorBase).GetProperty("LastDamageType", BindingFlags.Public | BindingFlags.Instance);
 
-                                propertyInfo.SetValue(__instance, DefCache.GetDef<StandardDamageTypeEffectDef>("Fire_StandardDamageTypeEffectDef"));
-                                // TFTVLogger.Always($"Last damage source set to fire for {__instance.name}, check {__instance.LastDamageType.name}");                       
-                            }
+                                 propertyInfo.SetValue(__instance, DefCache.GetDef<StandardDamageTypeEffectDef>("Fire_StandardDamageTypeEffectDef"));
+                                 // TFTVLogger.Always($"Last damage source set to fire for {__instance.name}, check {__instance.LastDamageType.name}");                       
+                             }
 
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            throw;
-                        }
-                    }
-                }
+                         }
+                         catch (Exception e)
+                         {
+                             TFTVLogger.Error(e);
+                             throw;
+                         }
+                     }
+                 }
 
-            }*/
+             }*/
 
             internal class AI
             {
@@ -2627,10 +2626,10 @@ namespace TFTV
                                     continue;
                                 }
 
-                            /*    if (award.Key.LevelProgression.Level >= 7)
-                                {
-                                    continue;
-                                }*/
+                                /*    if (award.Key.LevelProgression.Level >= 7)
+                                    {
+                                        continue;
+                                    }*/
 
                                 award.Key.LevelProgression.AddExperience(award.Value);
                             }
@@ -2720,9 +2719,9 @@ namespace TFTV
                             return;
                         }
 
-                   
-                        if (phoenixFaction.TacticalActors.Any(a => a.IsAlive && !a.IsEvacuated && a != actor && !a.IsMounted 
-                        && (a.Status==null||a.Status!=null && !a.Status.HasStatus<MindControlStatus>() && !a.Status.HasStatus<MinionStatus>())))
+
+                        if (phoenixFaction.TacticalActors.Any(a => a.IsAlive && !a.IsEvacuated && a != actor && !a.IsMounted
+                        && (a.Status == null || a.Status != null && !a.Status.HasStatus<MindControlStatus>() && !a.Status.HasStatus<MinionStatus>())))
                         {
                             return;
                         }
@@ -3244,6 +3243,42 @@ namespace TFTV
                 /// <summary>
                 /// Removes the empty target icons from destroyed vehicles
                 /// </summary>
+                /// 
+
+                [HarmonyPatch(typeof(UIModuleSpottedEnemies), nameof(UIModuleSpottedEnemies.AddCrateObjects))]
+                public static class UIModuleSpottedEnemies_AddCrateObjects_patch
+                {
+                    public static void Prefix(UIModuleSpottedEnemies __instance, ref List<TacticalActorBase> crateObjects)
+                    {
+                        try
+                        {
+
+                            List<TacticalActorBase> targetsToRemove = new List<TacticalActorBase>();
+
+                            foreach (TacticalActorBase target in crateObjects)
+                            {
+                               // TFTVLogger.Always($"[UIModuleSpottedEnemies.AddCrateObjects] looking at {target?.name}");
+
+                                if (target.ViewElementDef == null || target.ViewElementDef.SmallIcon == null)
+                                {
+                                    targetsToRemove.Add(target);
+                                    TFTVLogger.Always($"[UIModuleSpottedEnemies.AddCrateObjects] {target.name} has no viewelement");
+                                }
+                            }
+
+                            crateObjects.RemoveRange(targetsToRemove);
+
+                        }
+                        catch (Exception e)
+                        {
+                            TFTVLogger.Error(e);
+                            throw;
+                        }
+                    }
+                }
+
+
+
                 [HarmonyPatch(typeof(UIModuleSpottedEnemies), nameof(UIModuleSpottedEnemies.SetAllEnemies))]
                 public static class UIModuleSpottedEnemies_SetAllEnemies_patch
                 {
@@ -3256,6 +3291,7 @@ namespace TFTV
 
                             foreach (TacticalAbilityTarget target in allSortedKnownTargets)
                             {
+                               // TFTVLogger.Always($"[UIModuleSpottedEnemies.SetAllEnemies] looking at {target?.Actor?.name}");
 
                                 if (target.Actor != null)
                                 {
@@ -3264,7 +3300,7 @@ namespace TFTV
                                     if (tacticalActorBase.ViewElementDef == null || tacticalActorBase.ViewElementDef.SmallIcon == null)
                                     {
                                         targetsToRemove.Add(target);
-                                        //TFTVLogger.Always($"{tacticalActorBase.name} has no viewelement");
+                                        TFTVLogger.Always($"[UIModuleSpottedEnemies.SetAllEnemies] {tacticalActorBase.name} has no viewelement");
                                     }
                                 }
 
