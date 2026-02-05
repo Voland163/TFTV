@@ -866,10 +866,6 @@ namespace TFTV
 
             }
 
-
-
-
-
             private static void AdjustResearches()
             {
                 try
@@ -1078,14 +1074,27 @@ namespace TFTV
                 }
 
                 private static void ApplyTierToVest(
-                    GeoFaction faction,
-                    TacticalItemDef vestDef,
-                    IReadOnlyList<VestTierDefinition> tiers,
-                    DamageMultiplierStatusDef resistanceStatusDef,
-                    ItemSlotStatsModifyStatusDef buffStatusDef)
+    GeoFaction faction,
+    TacticalItemDef vestDef,
+    IReadOnlyList<VestTierDefinition> tiers,
+    DamageMultiplierStatusDef resistanceStatusDef,
+    ItemSlotStatsModifyStatusDef buffStatusDef)
                 {
 
-                    int tierIndex = GetActiveTierIndex(faction, tiers);
+                    int tierIndex;
+                    if (ReferenceEquals(tiers, AblativeTiers))
+                    {
+                        tierIndex = GetAblativeTierIndexAdditive(faction);
+                    }
+                    else if (ReferenceEquals(tiers, HazmatTiers))
+                    {
+                        tierIndex = GetHazmatTierIndexAdditive(faction);
+                    }
+                    else
+                    {
+                        tierIndex = GetActiveTierIndex(faction, tiers);
+                    }
+
                     VestTierDefinition tier = tiers[tierIndex];
 
                     UpdateVestView(vestDef, tier);
@@ -1101,6 +1110,40 @@ namespace TFTV
                     {
                         _currentHazmatTierIndex = tierIndex;
                     }
+                }
+
+                private static int GetAblativeTierIndexAdditive(GeoFaction faction)
+                {
+                    int tierIndex = 0;
+
+                    if (IsAnyResearchCompleted(faction, WormResearchDefNames))
+                    {
+                        tierIndex++;
+                    }
+
+                    if (IsResearchCompleted(faction, "PX_Alien_LiveChiron_ResearchDef"))
+                    {
+                        tierIndex++;
+                    }
+
+                    return Mathf.Clamp(tierIndex, 0, AblativeTiers.Count - 1);
+                }
+
+                private static int GetHazmatTierIndexAdditive(GeoFaction faction)
+                {
+                    int tierIndex = 0;
+
+                    if (IsResearchCompleted(faction, "PX_Alien_LiveSwarmer_ResearchDef"))
+                    {
+                        tierIndex++;
+                    }
+
+                    if (IsResearchCompleted(faction, "PX_Alien_LiveAcheron_ResearchDef"))
+                    {
+                        tierIndex++;
+                    }
+
+                    return Mathf.Clamp(tierIndex, 0, HazmatTiers.Count - 1);
                 }
 
                 private static void ApplyTierToVestByIndex(

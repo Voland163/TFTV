@@ -128,6 +128,9 @@ namespace TFTV
                 {
                     try
                     {
+                    TFTVLogger.Always($"Adding repairable item {itemDef?.name} for character {character?.DisplayName}");
+
+
                         GeoFaction faction = character.Faction;
 
 

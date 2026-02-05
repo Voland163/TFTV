@@ -1,4 +1,5 @@
 ﻿using Base.Defs;
+using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -10,14 +11,10 @@ using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.View;
 using PhoenixPoint.Tactical.View.ViewControllers;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using static TFTV.TFTVUI.Tactical.Data;
-using static TFTV.TFTVUI.Tactical.OpposingHumanoidForceWidget;
 
 namespace TFTV.TFTVUI.Tactical
 {
@@ -32,23 +29,48 @@ namespace TFTV.TFTVUI.Tactical
         private static Sprite _umbraArthronIcon = null;
         private static Sprite _umbraTritonIcon = null;
 
-      
+
 
         [HarmonyPatch(typeof(MindControlStatus), nameof(MindControlStatus.OnUnapply))]
         internal static class TFTV_MindControlStatus_OnUnapply_RefreshIcons_Patch
         {
+            private static T Safe<T>(Func<T> getter) where T : class
+            {
+                try
+                {
+                    return getter();
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+
+
             public static void Postfix(MindControlStatus __instance)
             {
                 try
                 {
-                    TacticalActor actor = __instance.TacticalActor;
-                    if (actor?.TacticalActorViewBase?.UIActorElement == null)
+                    if (__instance == null)
                     {
                         return;
                     }
 
-                    HealthbarUIActorElement hb = actor.TacticalActorViewBase.UIActorElement.GetComponent<HealthbarUIActorElement>();
-                    if (hb?.ActorClassIconElement == null)
+                    TacticalActor actor = Safe(() => __instance?.TacticalActor);
+
+                    if (actor == null || actor.TacticalActorViewBase == null)
+                    {
+                        return;
+                    }
+
+                    UIActorElement uiActorElement = actor.TacticalActorViewBase.UIActorElement;
+                    if (uiActorElement == null)
+                    {
+                        return;
+                    }
+
+                    HealthbarUIActorElement hb = uiActorElement.GetComponent<HealthbarUIActorElement>();
+                    if (hb == null || hb.ActorClassIconElement == null || hb.ActorClassIconElement.MainClassIcon == null)
                     {
                         return;
                     }
@@ -592,6 +614,11 @@ namespace TFTV.TFTVUI.Tactical
         {
             try
             {
+                if (actorClassIconElement?.MainClassIcon == null || tacticalActorBase == null)
+                {
+                    return;
+                }
+
                 RankIconCreator rankIconCreator = new RankIconCreator();
                 rankIconCreator.RemoveRankTriangles(actorClassIconElement.MainClassIcon.gameObject);
 
@@ -650,7 +677,6 @@ namespace TFTV.TFTVUI.Tactical
                 }
 
                 ImplementAncientsChargeLevel(actorClassIconElement, tacticalActorBase);
-
 
                 AddOutlineToIcon addOutlineToIcon = actorClassIconElement.MainClassIcon.GetComponent<AddOutlineToIcon>() ?? actorClassIconElement.MainClassIcon.gameObject.AddComponent<AddOutlineToIcon>();
                 addOutlineToIcon.icon = actorClassIconElement.MainClassIcon.gameObject;

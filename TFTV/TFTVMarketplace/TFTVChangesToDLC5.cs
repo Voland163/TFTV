@@ -36,6 +36,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using TFTV.TFTVBaseRework;
 using TFTV.Vehicles.Ammo;
 using UnityEngine;
 using UnityEngine.UI;
@@ -139,7 +140,7 @@ namespace TFTV
 
                     }
 
-                    if (!TFTVNewGameOptions.BaseRework)
+                    if (!BaseReworkUtils.BaseReworkEnabled)
                     {
                         return;
                     }

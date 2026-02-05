@@ -113,11 +113,39 @@ namespace TFTV
                 }
             }
 
+            private static int GetAdjustedOccupiedSpace(GeoVehicle geoVehicle, int occupancy)
+            {
+                try
+                {
+                    TFTVConfig config = TFTVMain.Main.Config;
 
+                    if (config.VehicleAndMutogSize1)
+                    {
+                        List<GeoCharacter> geoCharacters = geoVehicle.Units.ToList();
 
+                        int occupiedSpace = 0;
 
-           
+                        foreach (GeoCharacter geoCharacter in geoCharacters)
+                        {
+                            occupiedSpace += geoCharacter.OccupingSpace;
+                        }
 
+                        occupancy = occupiedSpace;
+                    }
+
+                    if (!AircraftReworkOn)
+                    {
+                        return occupancy;
+                    }
+
+                    return CheckIfCharacterSpaceCostReduced(geoVehicle, occupancy);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
 
             [HarmonyPatch(typeof(GeoVehicle))]
             [HarmonyPatch("CurrentOccupiedSpace", MethodType.Getter)]
@@ -127,30 +155,7 @@ namespace TFTV
                 {
                     try
                     {
-                        TFTVConfig config = TFTVMain.Main.Config;
-
-                        if (config.VehicleAndMutogSize1)
-                        {
-                            List<GeoCharacter> geoCharacters = __instance.Units.ToList();
-
-                            int occupiedSpace = 0;
-
-                            foreach (GeoCharacter geoCharacter in geoCharacters)
-                            {
-                                occupiedSpace += geoCharacter.OccupingSpace;
-                            }
-                            __result = occupiedSpace;
-                        }
-
-
-
-                        if (!AircraftReworkOn)
-                        {
-                            return;
-                        }
-
-                        __result = CheckIfCharacterSpaceCostReduced(__instance, __result);
-
+                        __result = GetAdjustedOccupiedSpace(__instance, __result);
                     }
 
                     catch (Exception e)
@@ -161,6 +166,39 @@ namespace TFTV
                 }
             }
 
+            [HarmonyPatch(typeof(GeoVehicle), "get_UsedCharacterSpace")]
+            public static class GeoVehicle_get_UsedCharacterSpace_Patch
+            {
+                public static void Postfix(GeoVehicle __instance, ref int __result)
+                {
+                    try
+                    {
+                        __result = GetAdjustedOccupiedSpace(__instance, __result);
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
+
+            [HarmonyPatch(typeof(GeoVehicle), "get_FreeCharacterSpace")]
+            public static class GeoVehicle_get_FreeCharacterSpace_Patch
+            {
+                public static void Postfix(GeoVehicle __instance, ref int __result)
+                {
+                    try
+                    {
+                        __result = __instance.MaxCharacterSpace - __instance.UsedCharacterSpace;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        throw;
+                    }
+                }
+            }
 
             [HarmonyPatch(typeof(GeoCharacter), "get_OccupingSpace")]
             public static class GeoCharacter_get_OccupingSpace_Patch
@@ -375,6 +413,10 @@ namespace TFTV
         }
     }
 }
+
+
+
+
 
 
 

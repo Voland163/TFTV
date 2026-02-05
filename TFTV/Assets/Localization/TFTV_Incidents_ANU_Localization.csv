@@ -1,0 +1,402 @@
+Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
+TFTV_INCIDENT_0_TITLE_AN,Text,"Requirements: Advanced Training Zone, 
+Haven Leader >24",The Divergent Dream,,,,,,,,
+TFTV_INCIDENT_0_DESC,Text,,"The Exarch of [HavenName], friendly to the Phoenix Project has contacted us about a neophyte Priest of Yearning, Nahia Girvane. She recently participated in a major communion rite, but her vision differed from the congregation’s. They fear that the Archierus of her order will expel her—or worse.",,,,,,,,
+TFTV_INCIDENT_0_CHOICE_0_O,Text,,Document her visions. (Occult),,,,,,,,
+TFTV_INCIDENT_0_CHOICE_1_B_C,Text,,Run a neural scan. (Biotech/Compute),,,,,,,,
+TFTV_INCIDENT_0_CHOICE_2,Text,,Refuse involvement. [END],,,,,,,,
+TFTV_INCIDENT_0_OUTCOME_0_SUCCESS,Text,"Reward: Nahia Grivane, LVL2 Priest","She described her vision as ‘the dawn of silence.’ A shattered city, billions walking into the sea. She’s too young to have experienced the First Mist—perhaps this is a genetic memory passed through mutation?
+There is no place for her at [HavenName] and she wishes to join the Phoenix Project.",,,,,,,,
+TFTV_INCIDENT_0_OUTCOME_1_SUCCESS,Text,"Reward: Nahia Grivane, LVL2 Priest","The scan revealed an anomalous resistance to oneiric influence, possibly tied to a childhood concussion. Her neural patterns diverge significantly from those of her congregation.
+There is no place for her at [HavenName] and she wishes to join the Phoenix Project.",,,,,,,,
+TFTV_INCIDENT_0_OUTCOME_0_FAIL,Text,,"Her story was disjointed—images of collapsing stone, a black tide, a voice that wasn't hers. She’s afraid of what it means. She asked us not to tell the others.",,,,,,,,
+TFTV_INCIDENT_0_OUTCOME_1_FAIL,Text,,The examination failed to yield any significant results and the procedure has made Nahia scared and distrustful.,,,,,,,,
+TFTV_INCIDENT_1_TITLE_AN,Text,,The Molt Beneath the Flesh,,,,,,,,
+TFTV_INCIDENT_1_DESC,Text,,"Director, the mutated here are shedding skin in waves of pain and delirium. Some call it holy transformation. Others are dying. Synod followers have barred outsiders from interfering. A few junior priests claim this is sickness, but the Syndod’s representatives claim it’s evolution.",,,,,,,,
+TFTV_INCIDENT_1_CHOICE_0_B,Text,,Treat and observe the molting victims. (Biotech),,,,,,,,
+TFTV_INCIDENT_1_CHOICE_1_E_O,Text,,Collect samples and withdraw. (Exploration/Occult),,,,,,,,
+TFTV_INCIDENT_1_CHOICE_2,Text,,Best not to interfere in Anu matters. [END],,,,,,,,
+TFTV_INCIDENT_1_OUTCOME_0_SUCCESS,Text,Reward: +4 Anu +8 Haven Leader,We saved lives and collected data pointing to failure of mutations to fully take hold. One priestess thanked us—then vanished.,,,,,,,,
+TFTV_INCIDENT_1_OUTCOME_1_SUCCESS,Text,Reward:  +200 Mutagens + 200 Research,Samples secured. Early analysis suggests exogenous instigation of an accelerated mutation cycle.,,,,,,,,
+TFTV_INCIDENT_1_OUTCOME_0_FAIL,Text,,We treated several before Synod loyalists intervened. Survivors are whispering of a ‘false evolution.,,,,,,,,
+TFTV_INCIDENT_1_OUTCOME_1_FAIL,Text,,We got what we came for—but were seen. The Synod accused us of sacrilege and we had to return the samples to avoid a diplomatic incident.,,,,,,,,
+TFTV_INCIDENT_2_TITLE_AN,Text,,The Delusional Taxiarch ,,,,,,,,
+TFTV_INCIDENT_2_DESC,Text,,"Director, a Taxiarch has sealed himself inside a meditation chamber, claiming to hear a voice ‘rising from the roots of the flesh.’ The Synod calls it a blessing. But others whisper he screams through the night, and that what he’s channeling may not be divine.",,,,,,,,
+TFTV_INCIDENT_2_CHOICE_0_B_P,Text,,Try to speak with the Taxiarch. (Biotech/Psycho-Sociology),,,,,,,,
+TFTV_INCIDENT_2_CHOICE_1_E,Text,,Set up surveillance to gather data. (Exploration),,,,,,,,
+TFTV_INCIDENT_2_CHOICE_2,Text,,Best not to interfere. [END],,,,,,,,
+TFTV_INCIDENT_2_OUTCOME_0_SUCCESS,Text,Reward: +4 Anu +8 Haven Leader,"[OperativeName] managed to calm him long enough to speak—if not to make sense. The Taxiarch appeared lucid, but his beliefs had collapsed. He claimed partial mutation was punishment, not salvation, and called the Pandoran creatures ‘the chosen.’ We’ve withdrawn. The Synod will handle the fallout.",,,,,,,,
+TFTV_INCIDENT_2_OUTCOME_1_SUCCESS,Text,Reward:  +8 Haven Leader +200 research,We captured hours of audio. His speech mimicked Pandoran patterns—though oddly articulate. He spoke of ‘the Creator’ and begged for a final stage he called ‘completion.’ The Synod remains silent.,,,,,,,,
+TFTV_INCIDENT_2_OUTCOME_0_FAIL,Text,,"He attacked our operative mid-sentence, issuing an inhuman hiss. We were expelled from the haven immediately.",,,,,,,,
+TFTV_INCIDENT_2_OUTCOME_1_FAIL,Text,,"The feed ended with a burst of static—and then silence. When the chamber was opened, the Taxiarch was dead. No cause could be determined.",,,,,,,,
+TFTV_INCIDENT_3_TITLE_AN,Text,Requirement: Rep with Anu >24,Echoes of Resonance,,,,,,,,
+TFTV_INCIDENT_3_DESC,Text,,A representative of the Blind Legate has extended an invitation— access to a sacred retreat close to the Haven: a pre-Pandoravirus site where early disciples sought 'resonance of the flesh.' The Legate claims it still holds echoes of collective vision. They trust us enough to enter… if we're willing.,,,,,,,,
+TFTV_INCIDENT_3_CHOICE_0_E,Text,,Send a team to explore and document the retreat. (Exploration),,,,,,,,
+TFTV_INCIDENT_3_CHOICE_1_M_O,Text,,"Attempt to recreate the experience of the early disciples, interacting with the devices they left behind (Machinery/Occult)",,,,,,,,
+TFTV_INCIDENT_3_CHOICE_2,Text,,Avoid religious entanglement. [END],,,,,,,,
+TFTV_INCIDENT_3_OUTCOME_0_SUCCESS,Text,Reward: +5 Anu ,"The retreat was intact—stone walls covered in hand-drawn neuro-symbolic patterns. We found logs describing synchronized trance rituals predating the first outbreak. The site was secured and sealed by a government agency shortly after the outbreak of the World War, and the members of the cult were prosecuted for ‘anti-patriotic subversion.",,,,,,,,
+TFTV_INCIDENT_3_OUTCOME_1_SUCCESS,Text,Reward: +5 Anu ,"[OperativeName] emerged deeply affected but composed. Described feeling ‘connected to something vast, unfinished.’ Neural scans show brief cortical resonance.",,,,,,,,
+TFTV_INCIDENT_3_OUTCOME_0_FAIL,Text,,Our presence disturbed something. [OperativeName] suffered acute migraine mid-mapping. No physical cause.,,,,,,,,
+TFTV_INCIDENT_3_OUTCOME_1_FAIL,Text,,"[OperativeName] collapsed after exiting. No injuries—just repeating the words, ‘We never reached the same frequency.’ No memory of the event.",,,,,,,,
+TFTV_INCIDENT_4_TITLE_AN,Text,Requirements: Mutogs researched; rep with Anu>24. Haven has slums and affluent districts,The Dismembered,,,,,,,,
+TFTV_INCIDENT_4_DESC,Text,,"A series of grisly murders in the affluent district of [HavenName] has thrown the haven into turmoil. The victims—merchants, administrators, and priests—were found dismembered, with parts of their bodies missing. The Exarch has called upon the Phoenix Project to assist in the investigation.",,,,,,,,
+TFTV_INCIDENT_4_CHOICE_0_P,Text,,"Investigate the slums and speak with the common folk.
+(Psycho-Sociology)",,,,,,,,
+TFTV_INCIDENT_4_CHOICE_1_B_O,Text,,"Conduct a detailed examination of the victims’ remains.
+(Biotech / Occult)",,,,,,,,
+TFTV_INCIDENT_4_CHOICE_2,Text,,This is a job for the local security forces [END],,,,,,,,
+TFTV_INCIDENT_4_OUTCOME_0_SUCCESS,Text,Reward: +4 Anu +8 Haven Leader + 400 food,"Resentment is simmering in the lower districts.
+To many, the killings are divine retribution—the return of justice in flesh and blood.
+One zealot, proud and trembling, claims to possess a “trophy” from one of the victims: a dried Arthron claw.
+Apparently at least some in the slums of [HavenName] believe their leaders are Pandorans in disguise.
+The Exarch appreciates our analysis.",,,,,,,,
+TFTV_INCIDENT_4_OUTCOME_1_SUCCESS,Text,Reward: +4 Anu +8 Haven Leader + Mutog,"The autopsies reveal no consistent pattern in the mutilations—no ritual marks, no surgical precision, no clear motive.
+Yet the wounds bear signs of feeding. Tissue has been torn away, devoured by something with immense strength and no apparent need for tools.
+When confronted, the Exarch swears by the Dead God that all Mutogs are <i>now</i> accounted for.",,,,,,,,
+TFTV_INCIDENT_4_OUTCOME_0_FAIL,Text,,"The slums are hostile and fearful. Most residents refuse to speak; others denounce the Phoenix operatives as blasphemers.
+A crowd gathers, chanting prayers for “purification.”
+The team is forced to withdraw under escort, learning nothing—except that fear and faith have become indistinguishable.",,,,,,,,
+TFTV_INCIDENT_4_OUTCOME_1_FAIL,Text,,"The examination is obstructed at every turn. Priests of the Circle of Life forbid invasive procedures, declaring the bodies “returned to the Flow.”
+By the time permission is granted, the remains have been cremated.
+The investigation ends with a sermon: “The flesh is not for comprehension, but for transcendence.”
+",,,,,,,,
+TFTV_INCIDENT_5_TITLE_AN,Text,Requirements: haven with >25k population,Seeds of Reformation,,,,,,,,
+TFTV_INCIDENT_5_DESC,Text,,"A schismatic sect has emerged in the slums of [HavenName], one of Anu's most populous havens. The sect preaches that true Ascendancy cannot be achieved through obedience to ritual or submission to the hierarchy of the Disciples. Fearing unrest or heresy spreading unchecked, the Exarch has requested Phoenix Project assistance.",,,,,,,,
+TFTV_INCIDENT_5_CHOICE_0_E_P,Text,,"Explore the slums and speak with recent converts.
+(Exploration / Psycho-Sociology)",,,,,,,,
+TFTV_INCIDENT_5_CHOICE_1_O,Text,,"Engage the sect’s leaders in theological debate.
+(Occult)",,,,,,,,
+TFTV_INCIDENT_5_CHOICE_2,Text,,We ought to stay as far away from this as possible [END],,,,,,,,
+TFTV_INCIDENT_5_OUTCOME_0_SUCCESS,Text,Extra personnel,"The Phoenix team spends some time in the lower district, speaking with artisans, traders, and refugees. The slums are filled not only with the dispossessed, but with skilled workers and small merchants—people who contribute to the haven yet remain excluded from advancement.
+
+The schism, lead by one Brad Huxley, offers them dignity and a voice.",,,,,,,,
+TFTV_INCIDENT_5_OUTCOME_1_SUCCESS,Text,Extra personnel,"The sect’s leader, Brad Huxley—a Synedrion exile—is articulate and pragmatic.
+
+He shows little interest in dismantling the Disciples of Anu. What he seeks is recognition.
+
+“Faith without dialogue becomes stagnation,” he says. “We only ask to be taken into account.”",,,,,,,,
+TFTV_INCIDENT_5_OUTCOME_0_FAIL,Text,,"The presence of Phoenix operatives causes doors to close and conversations to die mid-sentence.
+
+Many believe the team has come as agents of the Disciples’ hierarchy.
+
+The slums retreat into silence, and whatever truths they hold remain carefully hidden.",,,,,,,,
+TFTV_INCIDENT_5_OUTCOME_1_FAIL,Text,,"The operatives’ arguments are met with thin smiles and sharper words.
+
+Scriptural references are dismantled, logic turned against itself.
+
+The debate collapses into cruel ridicule, and Phoenix withdraws amid quiet laughter.",,,,,,,,
+TFTV_INCIDENT_6_TITLE_AN,Text,"Requirements: Seeds of Reformation I completed, 
+same haven",Seeds of Reformation II,,,,,,,,
+TFTV_INCIDENT_6_DESC,Text,,"Tensions rise once more in the slums of [HavenName].
+
+The schismatic sect is accused of harboring a dangerous criminal and apostate—someone the Disciples of Anu believe must be surrendered immediately. Both the Exarch and the leader of the sect, Brad Huxley, seek the involvement of Phoenix Project.",,,,,,,,
+TFTV_INCIDENT_6_CHOICE_0_O_P,Text,,"Convince Brad Huxley to deliver the fugitive to the Disciples.
+(Occult / Psycho-Sociology)",,,,,,,,
+TFTV_INCIDENT_6_CHOICE_1_B,Text,,"Perform a thorough examination of the alleged apostate.
+(Biotech)",,,,,,,,
+TFTV_INCIDENT_6_CHOICE_2,Text,,Do not get involved [END],,,,,,,,
+TFTV_INCIDENT_6_OUTCOME_0_SUCCESS,Text,Reward: +8 Anu +16 Haven Leader + 600 food,"Huxley fears losing face among his followers if he appears to simply submit to the Exarch’s demands, but he lacks the strength to resist Anu authority outright.
+
+With Phoenix Project overseeing the transfer of the fugitive, the surrender is framed as a matter of undeniable guilt rather than capitulation.",,,,,,,,
+TFTV_INCIDENT_6_OUTCOME_1_SUCCESS,Text,Reward: +8 Anu +16 Haven Leader + 400 mutagens,"The apostate is a Hiereus—an Anu warrior-priest—who passed the Water of Life ritual less than a week ago.
+
+Unlike most observed cases, the mutations have spread rapidly across nearly his entire body. The subject is barely coherent when the examination begins, and further neural deterioration becomes evident even before it concludes.
+
+Aggression escalates alongside the breakdown.",,,,,,,,
+TFTV_INCIDENT_6_OUTCOME_0_FAIL,Text,,"The discussion falters.
+
+Huxley grows defensive, sensing that Phoenix’s involvement makes his compromise too visible. Word spreads quickly that he is yielding under pressure.
+
+His followers begin to question his resolve, while Anu officials interpret the hesitation as defiance.",,,,,,,,
+TFTV_INCIDENT_6_OUTCOME_1_FAIL,Text,,"The examination is disrupted when the subject becomes violently unstable.
+
+An uncontrolled episode results in injuries and panic, confirming the worst fears of Anu authorities.
+
+The Disciples move swiftly, declaring the sect irresponsible for harboring the apostate and using the incident to justify immediate intervention.",,,,,,,,
+TFTV_INCIDENT_7_TITLE_AN,Text,Requirement: haven attacked by Forsaken; rep with Anu >24,The Forsaken Captive,,,,,,,,
+TFTV_INCIDENT_7_DESC,Text,,"After a raid by the Forsaken on the Anu haven of [HavenName], one of the attackers is captured alive.
+
+The creature bears the same mutations as the faithful, but pushed far beyond the limits sanctioned by ritual or doctrine.
+
+The Taxiarch has ordered the captive restrained and requests Phoenix Project assistance in interrogating the prisoner.",,,,,,,,
+TFTV_INCIDENT_7_CHOICE_0_B,Text,,"Apply neurochemical stimulation to induce interaction.
+(Biotech)",,,,,,,,
+TFTV_INCIDENT_7_CHOICE_1_O_P,Text,,"Attempt to communicate with the captive directly.
+(Occult / Psycho-Sociology approach)",,,,,,,,
+TFTV_INCIDENT_7_CHOICE_2,Text,,This is a waste of time [END],,,,,,,,
+TFTV_INCIDENT_7_OUTCOME_0_SUCCESS,Text,"Reward: Mutant with 3 mutations, anti-social perk (can't participate in incidents)","The subject reacts with violent agitation at first, but carefully calibrated neurochemical stimulation gradually suppresses the frenzy.
+
+Slowly, signs of recognition emerge. The captive responds to gestures, tracks movement, and follows simple instructions.
+
+The Taxiarch allows Phoenix Project to take custody of the subject—for further study.",,,,,,,,
+TFTV_INCIDENT_7_OUTCOME_1_SUCCESS,Text,"Reward: Mutant with 3 mutations, anti-social perk (can't participate in incidents)","The captive responds eagerly to attention.
+
+He attempts to communicate, gesturing and vocalizing, but no coherent language remains.
+
+When shown images of [HavenName], he becomes visibly agitated, repeating the same sounds and motions again and again.
+
+The Taxiarch hesitates, then agrees to Phoenix Project custody.",,,,,,,,
+TFTV_INCIDENT_7_OUTCOME_0_FAIL,Text,,"The stimulation backfires.
+
+Neural feedback sends the subject into uncontrollable spasms, triggering an extreme stress response.
+
+The captive dies shortly thereafter, his body collapsing into catastrophic organ failure.",,,,,,,,
+TFTV_INCIDENT_7_OUTCOME_1_FAIL,Text,,"The attempt at communication has an unexpected effect.
+
+The captive’s agitation grows rapidly, his body reacting as if exposed to a profound psychological trigger.
+
+He begins to scream—wordless, sustained, unbearable—until sedation is forced.",,,,,,,,
+TFTV_INCIDENT_8_TITLE_AN,Text,"Requirements:
+- haven has research district
+- relations with anu > 74",The Alleged Infiltrator,,,,,,,,
+TFTV_INCIDENT_8_DESC,Text,,"The Anu haven of [HavenName] hosts a research facility overseen by an Anagnostes of some prominence.
+
+The Exarch claims that a Synedrion infiltrator has been captured—allegedly tasked with assassinating the Anagnostes.
+
+Given Phoenix Project’s close ties with the Disciples of Anu and the sensitivity of the accusation, Phoenix has been asked to verify the claim before consequences ripple beyond the haven.",,,,,,,,
+TFTV_INCIDENT_8_CHOICE_0_C,Text,,"Review all available security files related to the case.
+(Compute)",,,,,,,,
+TFTV_INCIDENT_8_CHOICE_1_B_P,Text,,"Interrogate the suspect directly.
+(Biotech / Psycho-Sociology approach)",,,,,,,,
+TFTV_INCIDENT_8_CHOICE_2,Text,,Better to stay out of it [END],,,,,,,,
+TFTV_INCIDENT_8_OUTCOME_0_SUCCESS,Text,Reward: LVL6 Infiltrator,"The security files are extensive—and deeply unimpressive.
+
+They consist largely of handwritten testimonies, doctrinal annotations, and repeated references to “suspicious demeanor.”
+
+There is no meaningful attempt at evidence gathering.
+
+The sole concrete fact established is that the suspect -one Noah Serrin- arrived in [HavenName] from a Synedrion haven.",,,,,,,,
+TFTV_INCIDENT_8_OUTCOME_1_SUCCESS,Text,Reward: LVL6 Infiltrator,"The suspect is Noah Serrin.
+
+She is in peak physical condition and entirely unremarkable.
+
+When questioned, she answers plainly, without hesitation or affect.
+
+There is no sign of deception, ideology, or intent—only a person whose presence seems to have been enough to justify suspicion.",,,,,,,,
+TFTV_INCIDENT_8_OUTCOME_0_FAIL,Text,,"The files are disorganized and partially inaccessible.
+
+Encryption is applied inconsistently, and several records appear to have been altered after the suspect’s arrest.
+
+Whether through incompetence or intent, the documentation cannot support—or refute—the Exarch’s claim.
+
+The paper trail leads nowhere.",,,,,,,,
+TFTV_INCIDENT_8_OUTCOME_1_FAIL,Text,,"The interrogation yields nothing.
+
+The suspect responds politely but minimally, repeating herself until the questioning stalls.
+
+Attempts to provoke stress responses fail.
+
+The Anu observers interpret Phoenix’s inability to extract a confession as confirmation of guilt.",,,,,,,,
+TFTV_INCIDENT_9_TITLE_AN,Text,Requirements: Anu haven near liberated infested Synedrion haven ,Those Who Remain,,,,,,,,
+TFTV_INCIDENT_9_DESC,Text,,"Hundreds of refugees from the Synedrion haven of [RequirementHavenName], recently lost to Pandoran infestation, have been living at the Anu haven of [HavenName].
+
+Some voices in Synedrion have expressed concern for the wellbeing of the refugees; are their political and religious rights being respected? 
+
+The Exarch of [HavenName] has invited us to see the situation for ourselves. ",,,,,,,,
+TFTV_INCIDENT_9_CHOICE_0_B,Text,,"Assess the living conditions of the Synedrion refugees
+(Biotech)",,,,,,,,
+TFTV_INCIDENT_9_CHOICE_1_C_P,Text,,"Take the opportunity to examine how the Disciples integrate newcomers.
+(Compute/Psycho-Sociology)",,,,,,,,
+TFTV_INCIDENT_9_CHOICE_2,Text,,The Disciples immigration policy is not of our concern [END],,,,,,,,
+TFTV_INCIDENT_9_OUTCOME_0_SUCCESS,Text,Reward: extra personnel,"Initial impressions suggest resentment and cultural friction.
+
+Yet observation reveals something else entirely: The refugees are not acting as a bloc. Those with marketable skills—repair, cooking, gardening, etc.—have already found niches in the slums. Others are learning quickly, adapting to informal economies, trading favors, or simply enduring. The slums have absorbed these newcomers the same way they absorb everyone else: unevenly, impersonally, and without ceremony.",,,,,,,,
+TFTV_INCIDENT_9_OUTCOME_1_SUCCESS,Text,Reward: extra personnel,"Religious newcomers follow paths shaped by ritual and obedience, while secular refugees drift into a different reality—one defined by improvisation and exchange.
+
+Both groups are almost universally confined to the slums, yet the boundary between them is porous.
+
+There is no formal integration process. No doctrine prescribes one.
+
+Whether by fortune or by design, the slums remain a place where one is free to swim—or to sink.",,,,,,,,
+TFTV_INCIDENT_9_OUTCOME_0_FAIL,Text,,"Conversations remain superficial.
+
+Complaints about conditions drown out subtler patterns.
+
+Phoenix withdraws with the impression that tensions are mounting—though no clear source can be identified.",,,,,,,,
+TFTV_INCIDENT_9_OUTCOME_1_FAIL,Text,,"It all looks like chaos and neglect; if there is some pattern or direction, it remains hidden from us.",,,,,,,,
+TFTV_INCIDENT_10_TITLE_AN,Text,,Voices in the Engine,,,,,,,,
+TFTV_INCIDENT_10_DESC,Text,,"Maintenance personnel at the power plant of [HavenName] report seeing shapes in the shadows and hearing voices where none should be.
+
+The reports are consistent enough that the workers insist the facility is haunted.
+
+The Exarch wishes to know whether this is a spiritual matter—or something else entirely.",,,,,,,,
+TFTV_INCIDENT_10_CHOICE_0_E_O,Text,,"Investigate the reported apparitions within the power plant.
+(Occult)",,,,,,,,
+TFTV_INCIDENT_10_CHOICE_1_P_M,Text,,"Speak with the Skeouphylax responsible for maintaining the facility.
+(Psycho-Sociology / Machinery approach)",,,,,,,,
+TFTV_INCIDENT_10_CHOICE_2,Text,,We have better things to do than chase ghosts [END],,,,,,,,
+TFTV_INCIDENT_10_OUTCOME_0_SUCCESS,Text,"Reward: Anu +4, Haven leader +8, Research +200","Visual distortions and unexplained sounds are strongest near specific maintenance corridors and service shafts.
+
+A careful inspection reveals patches of organic growth—fungal in structure, probably originating in the Field of Transmutation.
+
+It thrives in areas exposed to heat, trace radiation, and persistent electrical discharge from the reactor systems.
+
+Subtle emissions from the growth interfere with perception, creating the illusion of movement and sound.",,,,,,,,
+TFTV_INCIDENT_10_OUTCOME_1_SUCCESS,Text,"Reward: Anu +4, Haven leader +8, Research +200","The Skeouphylax is guarded and evasive at first, reluctant to share the deeper aspects of her duties.
+
+Yet the ritualized way she maintains the plant—fixed routes, repeated gestures, and areas avoided without explicit explanation—reveals an unspoken structure.
+
+Following these patterns leads Phoenix operatives to sections of the facility that are rarely inspected.
+
+In these neglected spaces, an unfamiliar organic presence is discovered, clinging to conduits and shielding.",,,,,,,,
+TFTV_INCIDENT_10_OUTCOME_0_FAIL,Text,,"The investigation yields little more than shadows and noise.
+
+Environmental conditions fluctuate constantly, obscuring any consistent source.
+
+The workers’ fear makes every anomaly feel intentional.
+
+The sense of presence remains—unexplained, unresolved.",,,,,,,,
+TFTV_INCIDENT_10_OUTCOME_1_FAIL,Text,,"The Skeouphylax closes ranks.
+
+She insists that certain aspects of her work are not meant to be scrutinized by outsiders.
+
+Maintenance records are symbolic rather than practical, and technical details are obscured behind doctrine.
+
+If something inhabits the power plant, it remains unnamed—and untouched.",,,,,,,,
+TFTV_INCIDENT_11_TITLE_AN,Text,Requirement: Syn rep > 49,Protocol 67,,,,,,,,
+TFTV_INCIDENT_11_DESC,Text,,"Synedrion representatives request Phoenix Project assistance in locating a hacker believed to be operating from the slums of the Anu haven of [HavenName].
+
+Something has been taken—data of sufficient importance that its recovery has become a priority.
+
+How Synedrion narrowed the search to this particular haven remains unclear.",,,,,,,,
+TFTV_INCIDENT_11_CHOICE_0_M,Text,,"Monitor outgoing communications from the haven.
+(Machinery)",,,,,,,,
+TFTV_INCIDENT_11_CHOICE_1_E_O,Text,,"Explore the slums and speak with the locals under pretext of religious interest. 
+(Exploration / Occult)",,,,,,,,
+TFTV_INCIDENT_11_CHOICE_2,Text,,We are not Synedrion's hounds [END],,,,,,,,
+TFTV_INCIDENT_11_OUTCOME_0_SUCCESS,Text,"Reward: + 5 Syn, 100 tech","Traffic analysis reveals an unusual pattern: brief, irregular data bursts routed through public access relays. Most of the traffic is trivial—provocations, mockery, deliberately irritating intrusions into Synedrion networks. Tracking the source of the trolling leads Phoenix to a single terminal and its operator.
+
+The man appears amused rather than alarmed. “I know what you’re looking for,” he says.
+
+From his console, he initiates a final transmission addressed to Athena.
+
+The packet is labeled Protocol67Rev3b.",,,,,,,,
+TFTV_INCIDENT_11_OUTCOME_1_SUCCESS,Text,"Reward: + 5 Syn, 100 tech","The trail leads deep into the least regulated quarter of the slums—an area the Disciples show little interest in policing.
+
+Among chemical diversions and virtual indulgences, illicit data work is common enough to attract little attention.
+
+One individual greets Phoenix without surprise.
+
+“I heard you coming,” he says. “So I took care of it.”
+
+He demonstrates: the stolen material has already been transmitted, and the local storage wiped.
+
+Synedrion later confirms that Athena has received what was lost.",,,,,,,,
+TFTV_INCIDENT_11_OUTCOME_0_FAIL,Text,,"The data traffic is too diffuse to isolate.
+
+Encryption layers shift constantly, and civilian traffic overwhelms meaningful patterns.
+
+Whatever was taken remains out of reach.
+
+Synedrion advises continued discretion.",,,,,,,,
+TFTV_INCIDENT_11_OUTCOME_1_FAIL,Text,,"Conversations go nowhere.
+
+Some locals pretend ignorance. Others offer misleading directions for a price.
+
+The slums absorb Phoenix’s attention without yielding results.
+
+By the time a credible lead emerges, the opportunity has passed.",,,,,,,,
+TFTV_INCIDENT_12_TITLE_AN,Text,Requirements: haven surived attack,First to Burn,,,,,,,,
+TFTV_INCIDENT_12_DESC,Text,,"[HavenName] has survived a Pandoran attack—but barely.
+
+The cost was severe: widespread destruction, heavy casualties, and damage to infrastructure.
+
+In the aftermath, the Exarch accuses the Taxiarch of failing to mount an effective defense.  The Taxiarch, for his part, insists that events unfolded exactly as doctrine and necessity dictated.",,,,,,,,
+TFTV_INCIDENT_12_CHOICE_0_B_C,Text,,"Review command logs and reports on causalties.
+(Biotech/Compute)",,,,,,,,
+TFTV_INCIDENT_12_CHOICE_1_E_M,Text,,"Assess the haven’s defensive layout.
+(Exploration approach)",,,,,,,,
+TFTV_INCIDENT_12_CHOICE_2,Text,,Let's stay out of the blame game [END],,,,,,,,
+TFTV_INCIDENT_12_OUTCOME_0_SUCCESS,Text,"Reward: +4 Anu, + 8 Haven Leader, + 400 food","The initial attack carved a path of destruction through the slums. Security forces attempted to respond, but chaos spread quickly.
+
+Amid the confusion, a second group of attackers breached the walled upper districts from the opposite side.
+
+Communication delays and conflicting priorities hampered response.",,,,,,,,
+TFTV_INCIDENT_12_OUTCOME_1_SUCCESS,Text,"Reward: +4 Anu, + 8 Haven Leader, + 400 food","The unwalled slums form the outer perimeter, surrounding the fortified upper districts.
+
+They are not merely neglected—they are intended to absorb the first impact of any attack.
+
+In theory, this delays attackers.
+
+In practice, it also entangles defenders, drawing them into narrow streets and collapsing structures.",,,,,,,,
+TFTV_INCIDENT_12_OUTCOME_0_FAIL,Text,,"The reports are contradictory and incomplete.
+
+Accounts differ sharply depending on rank and affiliation.
+
+Some emphasize heroism. Others emphasize inevitability.
+
+Taken together, they offer justification—but not clarity.",,,,,,,,
+TFTV_INCIDENT_12_OUTCOME_1_FAIL,Text,,"Much of the defensive infrastructure has already been dismantled or repurposed for emergency repairs.
+
+Damage patterns overlap, obscuring original lines of engagement.
+
+Whatever logic once guided the haven’s defenses is now buried beneath the ruins.",,,,,,,,
+TFTV_INCIDENT_13_TITLE_AN,Text,"Requirements: 
+Anu haven within Mist + Synedrion Mist Repeller",Resonance,,,,,,,,
+TFTV_INCIDENT_13_DESC,Text,,"The inhabitants of the Anu haven of [HavenName] report persistent nausea, headaches, and disorientation.
+
+The Anagnostes has exhausted the prescribed cleansing rites, but the symptoms persist.
+
+No obvious contamination has been identified, and no single district appears uniquely affected.",,,,,,,,
+TFTV_INCIDENT_13_CHOICE_0_E,Text,,"Investigate whether the haven’s location plays a role.
+(Exploration)",,,,,,,,
+TFTV_INCIDENT_13_CHOICE_1_B_O,Text,,"Examine those reporting symptoms.
+(Biotech / Occult )",,,,,,,,
+TFTV_INCIDENT_13_CHOICE_2,Text,,"Nausea, headache or disorientation? Who <i>doesn't</i> feel it these days? [END]",,,,,,,,
+TFTV_INCIDENT_13_OUTCOME_0_SUCCESS,Text,Reward: Research +300,"Mapping environmental influences reveals that [HavenName] lies within the effective range of a Synedrion Mist Repeller operating from [RequirementHavenName].
+
+While the device is not intended to affect humans, its long-term secondary effects remain poorly understood.",,,,,,,,
+TFTV_INCIDENT_13_OUTCOME_1_SUCCESS,Text,Reward: Research +300,"Examination of the affected individuals reveals a common factor.
+
+All display signs of mutation—some minor, some extensive.
+
+No single mutation correlates cleanly with symptom severity.",,,,,,,,
+TFTV_INCIDENT_13_OUTCOME_0_FAIL,Text,,"No unusual environmental factors can be isolated.
+
+The haven’s position, airflow, and terrain appear unremarkable.
+
+The symptoms resist explanation, reinforcing the belief that the cause is spiritual rather than material.",,,,,,,,
+TFTV_INCIDENT_13_OUTCOME_1_FAIL,Text,,"Many refuse examination, fearing the results will be used to question their worthiness.
+
+Others insist the pain is proof of Ascendancy’s cost.
+
+The data remains fragmented, filtered through belief and fear.",,,,,,,,
+TFTV_INCIDENT_14_TITLE_AN,Text,"Requirement: haven with >10k population and advanced training facility
+",The Piercing of the Veil,,,,,,,,
+TFTV_INCIDENT_14_DESC,Text,,"The Exarch of [HavenName] invites the Phoenix Project to witness a sacred event known as the Piercing of the Veil.
+
+Before a gathered crowd, selected mutants demonstrate extraordinary abilities:
+bodies that heal in moments, minds that touch other minds, leaps beyond human limits, strength that defies anatomy.
+
+The ritual is presented as a glimpse of Ascendancy itself.",,,,,,,,
+TFTV_INCIDENT_14_CHOICE_0_P,Text,,"Observe the crowd and analyze the public reaction.
+(Psycho-Sociology)",,,,,,,,
+TFTV_INCIDENT_14_CHOICE_1_B_O,Text,,"Speak privately with the participants of the ritual.
+(Occult / Biotech)",,,,,,,,
+TFTV_INCIDENT_14_CHOICE_2,Text,,We don't have time for a freak show [END],,,,,,,,
+TFTV_INCIDENT_14_OUTCOME_0_SUCCESS,Text,"Reward: Anu +4, Haven leader +8, +300 food","Awe dominates the crowd. Cries of devotion, tears, spontaneous prayer. 
+
+Yet beneath the ecstasy, another emotion is present—quieter, harder to admit: Fear.
+
+Not only of what the mutants can do, but of the distance now revealed between them and those who cannot. Ascendancy promises unity, but the spectacle highlights separation. The crowd believes—but with unease.",,,,,,,,
+TFTV_INCIDENT_14_OUTCOME_1_SUCCESS,Text,"Reward: Anu +4, Haven leader +8, +300 food","The participants speak with pride. Their abilities are real, hard-won, and often painful to acquire. Many express a genuine desire to help their unascended brethren.
+
+Yet beneath the confidence lies uncertainty. Isn't Ascendancy meant to be more than this?
+
+If there is enlightenment beyond the flesh, they have not found it.
+
+What if there is no hidden truth—only power, discipline, and devotion?",,,,,,,,
+TFTV_INCIDENT_14_OUTCOME_0_FAIL,Text,,"The crowd’s reactions blur into noise.
+
+Ritual, chanting, movement—everything overlaps, making meaningful analysis difficult.
+
+What can be measured is enthusiasm, but its source remains unclear.
+
+Faith, fear, coercion, expectation—perhaps all at once.",,,,,,,,
+TFTV_INCIDENT_14_OUTCOME_1_FAIL,Text,,"The participants are guarded.
+
+Questions about doubt or meaning are deflected with doctrine.
+
+Their words sound practiced, almost rehearsed.
+
+Whether conviction or self-protection drives them is impossible to tell.",,,,,,,,

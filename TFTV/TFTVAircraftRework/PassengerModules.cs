@@ -129,7 +129,7 @@ namespace TFTV
                 {
                     if (geoVehicle.CurrentSite != null && geoVehicle.CurrentSite.Type == GeoSiteType.PhoenixBase)
                     {
-                        TFTVLogger.Always($"[CheckAircraftNewPassengerCapacity{geoVehicle?.Name}] " +
+                        TFTVLogger.Always($"[CheckAircraftNewPassengerCapacity {geoVehicle?.Name}] " +
                             $"geoVehicle.UsedCharacterSpace: {geoVehicle.UsedCharacterSpace} " +
                             $"geoVehicle.MaxCharacterSpace: {geoVehicle.MaxCharacterSpace}");
 

@@ -10,7 +10,7 @@ namespace TFTV.TFTVBaseRework
 {
     internal static class BaseReworkUtils
     {
-        internal static bool BaseReworkEnabled => TFTVNewGameOptions.BaseRework;
+        internal static bool BaseReworkEnabled = true;//> TFTVNewGameOptions.BaseRework;
         internal static void ClearTransformChildren(Transform root)
         {
             if (root == null)

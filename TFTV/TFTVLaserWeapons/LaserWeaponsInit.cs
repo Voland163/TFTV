@@ -85,7 +85,7 @@ namespace TFTV.LaserWeapons
                 DefCache.GetDef<WeaponDef>("SY_LaserPistol_WeaponDef").ChargesMax = 10;
                 DefCache.GetDef<WeaponDef>("SY_LaserAssaultRifle_WeaponDef").ChargesMax = 36;
                 DefCache.GetDef<WeaponDef>("PX_LaserPDW_WeaponDef").ChargesMax = 24;
-                DefCache.GetDef<WeaponDef>("SY_LaserSniperRifle_WeaponDef").ChargesMax = 8;
+                DefCache.GetDef<WeaponDef>("SY_LaserSniperRifle_WeaponDef").ChargesMax = 9;
                 DefCache.GetDef<WeaponDef>("PX_LaserArrayPack_WeaponDef").ChargesMax = 9;
                 DefCache.GetDef<WeaponDef>("SY_LaserAssaultRifle_Neon_WeaponDef").ChargesMax = 36;
                 DefCache.GetDef<WeaponDef>("SY_LaserAssaultRifle_WhiteNeon_WeaponDef").ChargesMax = 36;
@@ -108,6 +108,8 @@ namespace TFTV.LaserWeapons
                     TFTVLogger.Always("[LaserWeaponsInit] Aircraft rework is disabled, skipping LaserWeaponsInit.");
                     return;
                 }
+
+                AdjustWeaponMaxAmmo();
 
                 var weaponDefs = new Dictionary<string, int>
                 {
@@ -184,8 +186,7 @@ namespace TFTV.LaserWeapons
                     setup.WeaponDef.CompatibleAmmunition = compatibility.ToArray();
                 }
 
-                RegisterBatteryPackAmmoMappings(setups);
-                AdjustWeaponMaxAmmo();
+                RegisterBatteryPackAmmoMappings(setups); 
                 AdjustAllDefs();
             }
             catch (Exception ex)

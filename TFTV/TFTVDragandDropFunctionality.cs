@@ -1079,8 +1079,6 @@ namespace TFTV
             {
                 try
                 {
-
-
                     if (PlayerVehicles != null && PlayerVehicles.Count > 0)
                     {
                         GeoPhoenixFaction phoenixFaction = controller.PhoenixFaction;
@@ -1094,8 +1092,7 @@ namespace TFTV
                             return;
                         }
 
-
-                        if (factionActorCache.Cache.ContainsKey(phoenixFaction))
+                        if (!factionActorCache.Cache.ContainsKey(phoenixFaction))
                         {
                             TFTVLogger.Always($"PhoenixFaction not in factionActorCache.Cache! aborting");
                             return;

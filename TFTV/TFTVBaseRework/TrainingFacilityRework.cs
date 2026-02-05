@@ -15,7 +15,7 @@ using System.Reflection;
 
 namespace TFTV.TFTVBaseRework
 {
-    // Made public so RecruitTrainingSessionSave is fully public (resolves CS0052 when referenced by public save fields).
+    
     public static class TrainingFacilityRework
     {
         #region Config

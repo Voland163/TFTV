@@ -197,9 +197,11 @@ namespace TFTV
         {
             try
             {
-               // TFTVLogger.Always("CheckCaptureCapability running");
+                TFTVLogger.Always("CheckCaptureCapability running");
 
                 GetGeoVehicleForSite(geoMission);
+
+
 
                 if (geoMission.MissionDef.FinalMission)
                 {
@@ -207,6 +209,8 @@ namespace TFTV
                 }
 
                 ContainmentSpaceAvailable = geoMission.Site.GeoLevel.PhoenixFaction.GetTotalContaimentCapacity() - geoMission.Site.GeoLevel.PhoenixFaction.ContaimentUsage;
+
+
 
                 if (TFTVNewGameOptions.LimitedCaptureSetting)
                 {
@@ -269,7 +273,8 @@ namespace TFTV
                                 {
                                     gv = GetSquadGeoVehicle(geoMission, geoVehicles);
 
-                                    if (gv.Modules.Any(m => m != null && m.ModuleDef != null && m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.SurvivalOdds))
+
+                                    if (gv!=null && gv.Modules.Any(m => m != null && m.ModuleDef != null && m.ModuleDef.BonusType == GeoVehicleModuleDef.GeoVehicleModuleBonusType.SurvivalOdds))
                                     {
                                         ScyllaCaptureModulePresent = true;
                                         AircraftCaptureCapacity += 8;
@@ -290,6 +295,16 @@ namespace TFTV
                                     geoVehicles = geoVehicles.OrderByDescending(v => v.MaxCharacterSpace).ToList();
                                     gv = geoVehicles.First();
                                 }
+
+
+
+                                if (gv == null) 
+                                {
+                                    AircraftCaptureCapacity = -1;
+                                    TFTVLogger.Always($"No geo vehicle found");
+                                    return;
+                                }
+
 
                                 if (gv.VehicleDef.Equals(blimp12slots) || gv.VehicleDef.Equals(blimp8slots) || gv.VehicleDef.Equals(maskedManticore) || gv.VehicleDef.Equals(maskedManticore8slots))
                                 {

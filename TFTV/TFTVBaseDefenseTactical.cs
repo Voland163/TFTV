@@ -909,7 +909,6 @@ namespace TFTV
                             if (!listOfFactionObjectives.Contains(killSentinel))
                             {
                                 listOfFactionObjectives.Add(killSentinel);
-
                             }
                             if (listOfFactionObjectives.Contains(killSpawnery))
                             {

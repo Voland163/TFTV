@@ -189,14 +189,18 @@ namespace TFTV
         {
             try
             {
-                Research phoenixResearch = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction.Research;
+                Research phoenixResearch = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()?.PhoenixFaction?.Research;
+                 
                 float speedBuff = _thunderbirdSpeedBuffPerLevel;
 
-                foreach (ResearchDef researchDef in _thunderbirdRangeBuffResearchDefs)
+                if (phoenixResearch != null)
                 {
-                    if (phoenixResearch.HasCompleted(researchDef.Id))
+                    foreach (ResearchDef researchDef in _thunderbirdRangeBuffResearchDefs)
                     {
-                        speedBuff += _thunderbirdSpeedBuffPerLevel;
+                        if (phoenixResearch.HasCompleted(researchDef.Id))
+                        {
+                            speedBuff += _thunderbirdSpeedBuffPerLevel;
+                        }
                     }
                 }
 

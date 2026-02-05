@@ -42,6 +42,100 @@ namespace TFTV
         public static string LivingWeaponsAcquired = "Living_Weapons_Acquired";
         public static int roll = 0;
 
+        private const string InfestedHavenTagPrefix = "TFTV_INFESTED_HAVEN_";
+        private const string LiberatedInfestedHavenTagPrefix = "TFTV_LIBERATED_INFESTED_HAVEN_";
+        private const string AttackHavenTagPrefix = "TFTV_ATTACK_";
+
+        internal static string GetInfestedHavenTag(string factionSuffix)
+        {
+            return $"{InfestedHavenTagPrefix}{factionSuffix}";
+        }
+
+        internal static string GetInfestedHavenTagPrefix()
+        {
+            return InfestedHavenTagPrefix;
+        }
+
+        internal static string GetLiberatedInfestedHavenTag(string factionSuffix)
+        {
+            return $"{LiberatedInfestedHavenTagPrefix}{factionSuffix}";
+        }
+
+        internal static string GetAttackHavenTag(string factionSuffix)
+        {
+            return $"{AttackHavenTagPrefix}{factionSuffix}";
+        }
+
+        internal static string GetAttackHavenTagPrefix()
+        {
+            return AttackHavenTagPrefix;
+        }
+
+        private static void RemoveAttackTags(GeoSite site)
+        {
+            if (site?.SiteTags == null)
+            {
+                return;
+            }
+
+            site.SiteTags.RemoveAll(t => t.StartsWith(AttackHavenTagPrefix, StringComparison.OrdinalIgnoreCase));
+        }
+
+        internal static void SetHavenAttackTag(GeoSite site, string attacker)
+        {
+            if (site?.SiteTags == null)
+            {
+                return;
+            }
+
+            RemoveAttackTags(site);
+            AddSiteTag(site, GetAttackHavenTag(attacker));
+        }
+
+        private static void AddSiteTag(GeoSite site, string tag)
+        {
+            if (site?.SiteTags == null || string.IsNullOrEmpty(tag))
+            {
+                return;
+            }
+
+            if (!site.SiteTags.Contains(tag))
+            {
+                site.SiteTags.Add(tag);
+            }
+        }
+
+        private static void RemoveSiteTag(GeoSite site, string tag)
+        {
+            if (site?.SiteTags == null || string.IsNullOrEmpty(tag))
+            {
+                return;
+            }
+
+            if (site.SiteTags.Contains(tag))
+            {
+                site.SiteTags.Remove(tag);
+            }
+        }
+
+        private static string GetFactionSuffix(GeoFaction faction)
+        {
+            return faction?.PPFactionDef?.ShortName ?? string.Empty;
+        }
+
+        internal static void MarkHavenInfested(GeoSite site, GeoFaction originalOwner)
+        {
+            string suffix = GetFactionSuffix(originalOwner);
+            AddSiteTag(site, GetInfestedHavenTag(suffix));
+        }
+
+        internal static void MarkHavenLiberated(GeoSite site, GeoFaction originalOwner)
+        {
+            string suffix = GetFactionSuffix(originalOwner);
+            RemoveSiteTag(site, GetInfestedHavenTag(suffix));
+            AddSiteTag(site, GetLiberatedInfestedHavenTag(suffix));
+        }
+
         private static readonly string _trappedInTheMistVariable = "TrappedInTheMistTriggered";
         private static readonly string _investigateInfestedHavenObjective = "KEY_INFESTED_HAVEN_OBJECTIVE";
         public static bool InfestationMissionWon = false;
@@ -485,7 +579,11 @@ namespace TFTV
                         if (GeoSiteForInfestation != null && site == GeoSiteForInfestation && mission is GeoHavenDefenseMission)
                         {
                             TFTVLogger.Always("GeoSiteForInfestation is " + GeoSiteForInfestation.name);
+
+                            GeoFaction originalOwner = GeoSiteForInfestation.Owner;
+
                             site.GeoLevel.AlienFaction.InfestHaven(GeoSiteForInfestation);
+                            MarkHavenInfested(GeoSiteForInfestation, originalOwner);
                             TFTVLogger.Always("We got to here, haven should be infested!");
                             GeoSiteForInfestation = null;
                         }
@@ -554,9 +652,12 @@ namespace TFTV
                             {
                                 TFTVLogger.Always($"Science of Madness, suitable haven is {targetHaven?.LocalizedSiteName}");
 
+                                GeoFaction originalOwner = targetHaven.Owner;
+
                                 level.EventSystem.SetVariable(_trappedInTheMistVariable, 1);
                                 level.EventSystem.SetVariable(InfestedHavensVariable, level.EventSystem.GetVariable(InfestedHavensVariable) + 1);
                                 level.AlienFaction.InfestHaven(targetHaven);
+                                MarkHavenInfested(targetHaven, originalOwner);
                                 targetHaven.RevealSite(level.PhoenixFaction);
                                 targetHaven.RefreshVisuals();
                                 level.View.ChaseTarget(targetHaven, true);
@@ -623,6 +724,8 @@ namespace TFTV
                                     }
 
                                 }
+
+                                MarkHavenLiberated(site, originalOwner);
 
                                 List<GeoHaven> geoHavens = originalOwner.Havens.ToList();
 

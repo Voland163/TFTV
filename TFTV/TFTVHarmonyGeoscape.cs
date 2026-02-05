@@ -10,7 +10,9 @@ using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Missions;
+using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
@@ -31,6 +33,61 @@ namespace TFTV
 {
     internal class TFTVHarmonyGeoscape
     {
+
+
+        [HarmonyPatch(typeof(EnterBaseAbility), "ActivateInternal")]
+        public static class EnterBaseAbility_ActivateInternal_patch
+        {
+            public static bool Prefix(EnterBaseAbility __instance, GeoAbilityTarget target)
+            {
+                try
+                {
+                    if (TFTVBaseDefenseGeoscape.UseEnterBaseAbilityToInitiateBaseDefense(__instance, target))
+                    {
+                        return false;
+                    }
+
+                    if(TFTVBaseRework.BaseActivation.HideVanillaUIPatches.PreventEnterBaseAbilityForOutpost(__instance, target)) { return false; }
+
+                    return true;
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+
+
+        [HarmonyPatch(typeof(EnterBaseAbility), "GetTargetDisabledStateInternal")]
+        public static class EnterBaseAbility_GetTargetDisabledStateInternal_patch
+        {
+            public static void Postfix(EnterBaseAbility __instance, GeoAbilityTarget target, ref GeoAbilityTargetDisabledState __result)
+            {
+                try
+                {
+
+
+                    if (TFTVBaseRework.BaseActivation.HideVanillaUIPatches.PreventEnterBaseAbilityForOutpost(__instance, target)) 
+                    { 
+                        
+                       __result = GeoAbilityTargetDisabledState.InvalidAbilityTargetType; 
+                    
+                    }
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
 
         [HarmonyPatch(typeof(GeoEventChoiceOutcome), nameof(GeoEventChoiceOutcome.GenerateFactionReward))]
         public static class GeoEventChoiceOutcome_GenerateFactionReward_Postfix
@@ -252,6 +309,11 @@ namespace TFTV
                     TFTVBaseDefenseGeoscape.InitAttack.ContainmentBreach.HourlyCheckContainmentBreachDuringBaseDefense(__instance.GeoLevel);
                     TFTVChangesToDLC4Events.SoldierReachesFiveDelirium(__instance.GeoLevel);
                     AircraftReworkMaintenance.MaintenanceToll(__instance.GeoLevel);
+
+                    if (TFTVAircraftReworkMain.AircraftReworkOn)
+                    {
+                        TFTVIncidents.Roll.TryRollIncidentOnSchedule(__instance.GeoLevel);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -505,6 +567,7 @@ namespace TFTV
                 {
                     TFTVCommonMethods.RevealHavenUnderAttack(__instance, __instance.GeoLevel);
                     TFTVVoidOmens.ImplementStrongerHavenDefenseVO(ref attacker);
+                    TFTVInfestation.SetHavenAttackTag(__instance, attacker?.Faction.PPFactionDef.ShortName);
 
                 }
                 catch (Exception e)
@@ -609,6 +672,7 @@ namespace TFTV
                 }
             }
         }
-
+       
+        
     }
 }

@@ -63,11 +63,16 @@ namespace TFTV.Vehicles.Ammo
                     return true;
                 }
 
+                TFTVLogger.Always($"UIModuleReplenish_AddMissingAmmo_Patch Prefix called for item {item.ItemDef.name}");
+
                 var moduleDef = (item != null) ? (item.ItemDef as GroundVehicleModuleDef) : null;
                 if (moduleDef == null)
                 {
                     return true;
                 }
+
+                TFTVLogger.Always($"UIModuleReplenish_AddMissingAmmo_Patch got past here for {item.ItemDef.name}");
+
                 if (!EnsureModuleAmmo(item.CommonItemData, moduleDef))
                 {
                     __result = false;
@@ -82,11 +87,15 @@ namespace TFTV.Vehicles.Ammo
                         continue;
                     }
                     int currentCharges = GetAmmoChargesForDef(item.CommonItemData, tacticalItemDef);
+
+                    TFTVLogger.Always($"UIModuleReplenish_AddMissingAmmo_Patch current charges for {tacticalItemDef.name} {currentCharges}, max charges {maxCharges}");
+
                     if (currentCharges >= maxCharges)
                     {
                         continue;
                     }
                     float num = (float)currentCharges / (float)maxCharges;
+
                     ResourcePack repairCost = GeoCharacter.GetRepairCost(tacticalItemDef, num);
                     GeoManufactureItem geoManufactureItem = UnityEngine.Object.Instantiate<GeoManufactureItem>(__instance.ItemListPrefab, __instance.ItemListContainer);
                     GeoManufactureItem geoManufactureItem2 = geoManufactureItem;
@@ -118,8 +127,8 @@ namespace TFTV.Vehicles.Ammo
                     });
                     __instance.Items.Add(geoManufactureItem);
                     GameTagDef manufacturableTag = GameUtl.GameComponent<SharedData>().SharedGameTags.ManufacturableTag;
-                    GeoPhoenixFaction geoPhoenixFaction = ReplenishFaction(__instance);
-                    bool flag2 = geoPhoenixFaction.Wallet.HasResources(repairCost) && tacticalItemDef.Tags.Contains(manufacturableTag) && geoPhoenixFaction.Manufacture.Contains(tacticalItemDef);
+                     GeoPhoenixFaction geoPhoenixFaction = ReplenishFaction(__instance);
+                     bool flag2 = geoPhoenixFaction.Wallet.HasResources(repairCost) && tacticalItemDef.Tags.Contains(manufacturableTag) && geoPhoenixFaction.Manufacture.Contains(tacticalItemDef);
                     PhoenixGeneralButton component = geoManufactureItem.AddToQueueButton.GetComponent<PhoenixGeneralButton>();
                     if (component != null)
                     {
@@ -138,7 +147,7 @@ namespace TFTV.Vehicles.Ammo
             }
         }
 
-        [HarmonyPatch(typeof(UIModuleReplenish), "SingleItemReloadAndRefresh")]
+   /*     [HarmonyPatch(typeof(UIModuleReplenish), "SingleItemReloadAndRefresh")]
         public static class UIModuleReplenish_SingleItemReloadAndRefresh_Patch
         {
             public static bool Prefix(UIModuleReplenish __instance, GeoManufactureItem item)
@@ -165,6 +174,6 @@ namespace TFTV.Vehicles.Ammo
                 }
                 return false;
             }
-        }
+        }*/
     }
 }

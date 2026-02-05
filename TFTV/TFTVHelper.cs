@@ -3,6 +3,7 @@ using I2.Loc;
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 
 
@@ -36,6 +37,9 @@ namespace TFTV
         internal static string VehiclesReworkLocalizationFileName = "Vehicles.csv";
         public static readonly string SkillLocalizationFileName = "PR_BC_Localization.csv";
         public static readonly string PhoenixPaediaFileName = "TFTV_Phoenixpedia.csv";
+        public static readonly string ANUIncidents = "TFTV_Incidents_ANU_Localization.csv";
+        public static readonly string NJIncidents = "TFTV_Incidents_NJ_Localization.csv";
+        public static readonly string SYIncidents = "TFTV_Incidents_SY_Localization.csv";
 
         public static void Initialize()
         {
@@ -105,6 +109,24 @@ namespace TFTV
                 if (File.Exists(Path.Combine(LocalizationDirectory, PhoenixPaediaFileName)))
                 {
                     localizationChanged |= AddLocalizationFromCSV(PhoenixPaediaFileName, null, false);
+                }
+
+
+                if (File.Exists(Path.Combine(LocalizationDirectory, ANUIncidents)))
+                {
+                    localizationChanged |= AddLocalizationFromCSV(ANUIncidents, null, false);
+                }
+
+
+                if (File.Exists(Path.Combine(LocalizationDirectory, NJIncidents)))
+                {
+                    localizationChanged |= AddLocalizationFromCSV(NJIncidents, null, false);
+                }
+
+
+                if (File.Exists(Path.Combine(LocalizationDirectory, SYIncidents)))
+                {
+                    localizationChanged |= AddLocalizationFromCSV(SYIncidents, null, false);
                 }
 
                 if (localizationChanged)
@@ -266,6 +288,27 @@ namespace TFTV
                 return null;
             }
         }
+
+
+        /// <summary>
+        /// Copy fields of two objects of the same or derived classes by using reflection
+        /// </summary>
+        /// <param name="src">The source object</param>
+        /// <param name="dst">The destination object, can be an instance of a derived class of the source, all additional fields are skipped</param>
+        /// <param name="bindFlags"></param>
+        public static void CopyFieldsByReflection(object src, object dst, BindingFlags bindFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+        {
+            Type srcType = src.GetType();
+            foreach (FieldInfo dstFieldInfo in dst.GetType().GetFields(bindFlags))
+            {
+                FieldInfo srcField = srcType.GetField(dstFieldInfo.Name, bindFlags);
+                if (srcField != null && srcField.Name != "Guid")
+                {
+                    dstFieldInfo.SetValue(dst, srcField.GetValue(src));
+                }
+            }
+        }
+
 
     }
 

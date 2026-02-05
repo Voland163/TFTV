@@ -457,6 +457,8 @@ namespace TFTV.TFTVUI.Personnel
         {
             try
             {
+
+
                 _equipAllRunning = true;
 
                 GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
@@ -1485,7 +1487,9 @@ UIModuleSoldierEquip uIModuleSoldierEquip, ref List<string> missingItems, bool r
                     return;
                 }
 
-                EquipAll(charactersOnSite);
+            //LoadoutService.EquipAllFromButton(charactersOnSite, CharacterLoadouts);
+
+            EquipAll(charactersOnSite);
 
             }
             catch (Exception e)

@@ -1,4 +1,5 @@
 ﻿using Base;
+using Base.Achievements;
 using Base.AI.Defs;
 using Base.Core;
 using Base.Defs;
@@ -422,6 +423,21 @@ namespace TFTV
               // TFTVExperimental.LogResearchDefs();
               //  Print();
 
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
+        private static void AdjustAchievements()
+        {
+            try 
+            {
+                DefCache.GetDef<StringListAchievementDef>("ResearchAllProjects_AchievementDef");
+                DefCache.GetDef<StringListAchievementDef>("ManufactureAllItems_AchievementDef");
+                
             }
             catch (Exception e)
             {

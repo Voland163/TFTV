@@ -11,11 +11,13 @@ using Base.Eventus;
 using Base.Input;
 using Base.Levels;
 using Base.Rendering.ObjectRendering;
+using Base.UI;
 using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Characters;
+using PhoenixPoint.Common.Entities.Characters.CharacterTemplates;
 using PhoenixPoint.Common.Entities.Equipments;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsSharedData;
@@ -70,8 +72,10 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using static PhoenixPoint.Tactical.Entities.Effects.DamageEffect;
 using static PhoenixPoint.Tactical.Entities.SquadPortraitsDef;
+using static PhoenixPoint.Tactical.Entities.TacticalActorViewBase;
 
 
 namespace TFTV
@@ -83,7 +87,75 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
 
-        [HarmonyPatch(typeof(UIInventorySlot), "UpdateItem")]
+        /// <summary>
+        /// Fixes doubled HP in Geoscape alien template/intel displays for certain units (e.g. worms/eggs).
+        ///
+        /// Root cause in vanilla:
+        /// - TacCharacterDef.GenerateDummyCharacterStats() uses GetBodypartAspects()
+        /// - GetBodypartAspects() comes from GetTemplateBodyparts(true)
+        /// - Some templates can surface duplicate bodypart aspects through merged part sources/subaddons
+        /// - duplicate aspect stat modifiers stack twice -> doubled HP shown in report UI
+        ///
+        /// This postfix deduplicates aspects by def identity before they are consumed by stat generation.
+        /// </summary>
+        [HarmonyPatch(typeof(CharacterTemplateExtension), nameof(CharacterTemplateExtension.GetBodypartAspects))]
+        internal static class TemplateHpDoubleCountFix
+        {
+            private static void Postfix(TacCharacterDef def, ref IEnumerable<BodyPartAspectDef> __result)
+            {
+                if (__result == null)
+                {
+                    return;
+                }
+
+                // Distinct() is sufficient here because duplicate entries are usually the same def instance.
+                // Materialize to avoid re-enumerating deferred pipelines multiple times downstream.
+                __result = __result.Where(a => a != null).Distinct().ToList();
+            }
+        }
+
+
+        [HarmonyPatch(typeof(PXBaseActivationDataBind), "SetFacilities")]
+        internal static class PXBaseActivationDataBind_SetFacilities_Patch
+        {
+            private static readonly Action<PXBaseActivationDataBind, PhoenixFacilityDef, bool> ToggleFacilityTooltipInvoker =
+                AccessTools.MethodDelegate<Action<PXBaseActivationDataBind, PhoenixFacilityDef, bool>>(
+                    AccessTools.Method(typeof(PXBaseActivationDataBind), "ToggleFacilityTooltip"));
+
+            private static void Postfix(PXBaseActivationDataBind __instance, GeoPhoenixBase pxBase)
+            {
+                if (__instance == null || pxBase == null || pxBase.Layout == null)
+                {
+                    return;
+                }
+
+                GeoPhoenixFacility[] facilities = pxBase.Layout.BasicFacilities.ToArray();
+                PhoenixGeneralButton[] buttons = UIUtil
+                    .EnsureActiveComponentsInContainer<PhoenixGeneralButton>(__instance.FacilityContainer, __instance.FacilityContainerPrefab, facilities.Length)
+                    .ToArray();
+
+                for (int i = 0; i < facilities.Length && i < buttons.Length; i++)
+                {
+                    GeoPhoenixFacility facility = facilities[i];
+                    PhoenixGeneralButton button = buttons[i];
+                    PhoenixFacilityDef facilityDef = facility.Def;
+
+                    button.PointerHoverUnfiltered = null;
+                    button.PointerHoverUnfiltered = (PhoenixGeneralButton.HoverEventHandler)Delegate.Combine(button.PointerHoverUnfiltered, new PhoenixGeneralButton.HoverEventHandler(delegate (bool active)
+                    {
+                        ToggleFacilityTooltipInvoker(__instance, facilityDef, active);
+                    }));
+
+                    Image damagedMarker = button.GetComponentsInChildren<Image>(true).FirstOrDefault((Image image) => image.name == "DamagedFacility");
+                    if (damagedMarker != null)
+                    {
+                        damagedMarker.gameObject.SetActive(facility.IsDamaged);
+                    }
+                }
+            }
+        }
+
+            [HarmonyPatch(typeof(UIInventorySlot), "UpdateItem")]
         public static class InventoryStackCounterPatch
         {
             public static void Postfix(UIInventorySlot __instance)
@@ -107,6 +179,139 @@ namespace TFTV
             }
         }
 
+        [HarmonyPatch(typeof(TacticalActorViewBase), nameof(TacticalActorViewBase.GetStatusesFiltered))]
+        public static class TacticalActorViewBase_GetStatusesFiltered_patch
+        {
+
+            public static bool Prefix(TacticalActorViewBase __instance, Func<TacStatus, bool> statusesFilter, StatusComponent ____statusComponent, ref List<StatusInfo> __result, bool stackAsSingle)
+            {
+                try
+                {
+                    // TFTVLogger.Always($"[TacticalActorViewBase.GetStatusesFiltered] Prefix Checking for {__instance?.ActorBase?.name} display name: {__instance?.ActorBase?.DisplayName} statusesFilter null? {statusesFilter==null}");
+
+                    if (____statusComponent == null)
+                    {
+                        __result = new List<StatusInfo>();
+                        return false;
+                    }
+
+                    List<StatusInfo> list = new List<StatusInfo>();
+                    List<TacStatus> list2 = (from st in ____statusComponent.Statuses.OfType<TacStatus>().Where(statusesFilter)
+                                             orderby st.TacStatusDef.HealthbarPriority
+                                             select st).ToList();
+                    // TFTVLogger.Always($"[TacticalActorViewBase.GetStatusesFiltered] Prefix found {list2?.Count} statuses after filtering with provided filter and sorting by healthbar priority.");
+
+                    while (!list2.IsEmpty())
+                    {
+                        TacStatus tacStatus = list2.PopLast();
+                        if (tacStatus == null)
+                        {
+                            continue;
+                        }
+
+
+
+                        //  TFTVLogger.Always($"[TacticalActorViewBase.GetStatusesFiltered] Prefix status {tacStatus?.TacStatusDef?.name} has StackMultipleStatusesAsSingleIcon set to {tacStatus?.TacStatusDef?.StackMultipleStatusesAsSingleIcon} and stackAsSingle is {stackAsSingle}");
+
+                        if (tacStatus.TacStatusDef.StackMultipleStatusesAsSingleIcon && stackAsSingle)
+                        {
+                            float num = tacStatus.Value;
+                            float num2 = tacStatus.Limit;
+
+                            //   TFTVLogger.Always($"[TacticalActorViewBase.GetStatusesFiltered] Prefix status {tacStatus?.TacStatusDef?.name} initial value is {num} and limit is {num2}");
+                            //  TFTVLogger.Always($"[TacticalActorViewBase.GetStatusesFiltered] tacStatus.GetTargetSlotsNames()==null?: {tacStatus.GetTargetSlotsNames()==null} ");
+
+                            List<string> list3 = tacStatus.GetTargetSlotsNames().ToList();
+                            int num3 = 0;
+                            for (int count = list2.Count; num3 < count; num3++)
+                            {
+                                // TFTVLogger.Always($"[TacticalActorViewBase.GetStatusesFiltered] list2[num3]==null: {list2[num3]==null}");
+                                //  TFTVLogger.Always($"[TacticalActorViewBase.GetStatusesFiltered] list2[num3]?.TacStatusDef?.name: {list2[num3]?.TacStatusDef?.name}");
+
+
+                                TacStatus tacStatus2 = list2[num3];
+
+                                if (tacStatus2 == null)
+                                {
+                                    continue;
+                                }
+
+                                if (tacStatus2.TacStatusDef == tacStatus.TacStatusDef)
+                                {
+
+
+                                    list2[num3] = null;
+                                    num += tacStatus2.Value;
+                                    num2 += tacStatus2.Limit;
+                                    list3.AddRange(tacStatus2.GetTargetSlotsNames());
+                                }
+                            }
+
+                            list.Add(new StatusInfo
+                            {
+                                Def = tacStatus.TacStatusDef,
+                                Value = num,
+                                Limit = num2,
+                                TargetSlots = list3
+                            });
+                        }
+                        else
+                        {
+                            list.Add(new StatusInfo
+                            {
+                                Def = tacStatus.TacStatusDef,
+                                Value = tacStatus.Value,
+                                Limit = tacStatus.Limit,
+                                TargetSlots = tacStatus.GetTargetSlotsNames().ToList()
+                            });
+                        }
+                    }
+
+                    __result = list;
+                    return false;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+        }
+
+            //Prevents MC status from throwing errors because of dereferencing.
+            [HarmonyPatch(typeof(MindControlStatus), nameof(MindControlStatus.OnUnapply))]
+        internal static class MindControlStatus_OnUnapply_DebugPatch
+        {
+
+            [HarmonyPrefix]
+            private static bool Prefix(MindControlStatus __instance)
+            {
+                TacticalActor target = Safe(() => __instance?.TacticalActor);
+                TacticalLevelController level = Safe(() => __instance?.TacticalLevel);
+
+                if (__instance == null || target == null || level == null)
+                {
+                    Debug.LogWarning($"[MCDBG] OnUnapply skipped: status/target/level is null or unavailable. {__instance == null} {target == null} {level == null}");
+                    return false;
+                }
+
+                return true;
+            }
+
+
+            private static T Safe<T>(Func<T> getter) where T : class
+            {
+                try
+                {
+                    return getter();
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+        }
 
         //temporary fix for 1.30 locate phoenix base function
         [HarmonyPatch(typeof(UIStatePhoenixBaseLayout), "ShowBaseOnGeoscape")]
@@ -3171,6 +3376,7 @@ namespace TFTV
                     {
                         try
                         {
+                           // TFTVLogger.Always($"[SoldierPortraitUtil.RenderSoldierNoCopy] running for {soldierToRender.name} with camera {usedCamera.name} and resolution {renderParams.RenderedPortraitsResolution}");
 
                             /* List<Light> lights = new List<Light>()
                              {

@@ -18,6 +18,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TFTV.TFTVBaseRework;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -42,7 +43,10 @@ namespace TFTV.TFTVUI.Geoscape
         private static Dictionary<Transform, List<GeoPhoenixFacility>> _resourcePowerWarnings = new Dictionary<Transform, List<GeoPhoenixFacility>>();
         private static Dictionary<Transform, UITooltipText> _savedTooltips = new Dictionary<Transform, UITooltipText>();
 
-
+        private static bool IsOutpost(GeoSite site)
+        {
+            return site != null && site.SiteTags != null && site.SiteTags.Contains(BaseActivation.PhoenixBaseReworkState.OutpostTag);
+        }
 
         public static void ClearInternalDataForUIGeo()
         {
@@ -236,6 +240,11 @@ namespace TFTV.TFTVUI.Geoscape
         {
             try
             {
+                if (IsOutpost(geoPhoenixFacility?.PxBase?.Site))
+                {
+                    return;
+                }
+
                 GeoLevelController geoLevelController = geoPhoenixFacility.PxBase.Site.GeoLevel;
 
                 Transform transformHook = separateTextHook ?? label;
@@ -328,6 +337,11 @@ namespace TFTV.TFTVUI.Geoscape
         {
             try
             {
+                if (IsOutpost(facility?.PxBase?.Site))
+                {
+                    return;
+                }
+
                 UIModuleInfoBar uIModuleInfoBar = controller.View.GeoscapeModules.ResourcesModule;
                 UIColorDef warningColor = DefCache.GetDef<UIColorDef>("UIColorDef_UIColor_Warning");
 
@@ -447,6 +461,26 @@ namespace TFTV.TFTVUI.Geoscape
                         return;
                     }
 
+                    if (IsOutpost(site))
+                    {
+                        if (lightningTransform != null)
+                        {
+                            lightningTransform.gameObject.SetActive(false);
+                            geoSiteVisualsController.StopAllCoroutines();
+                        }
+
+                        GeoPhoenixBase phoenixBase = site.GetComponent<GeoPhoenixBase>();
+                        if (phoenixBase?.Layout?.Facilities != null)
+                        {
+                            foreach (GeoPhoenixFacility facility in phoenixBase.Layout.Facilities)
+                            {
+                                RemoveFacilityFromList(facility);
+                            }
+                        }
+
+                        return;
+                    }
+
                     bool baseHasUnpoweredFacilities = false;
 
 
@@ -561,10 +595,12 @@ namespace TFTV.TFTVUI.Geoscape
         {
             try
             {
-                //  TFTVLogger.Always($"base: {facilityController?.Facility?.PxBase?.Site?.LocalizedSiteName} DisplayRepairCost running for {facilityController?.Facility?.Def?.name}, repair cost display null? " +
-                //      $"{facilityController.transform.Find("RepairCostDisplay")==null}");
-
                 facilityController.transform.Find("RepairCostDisplay")?.gameObject?.SetActive(false);
+
+                if (IsOutpost(facilityController?.Facility?.PxBase?.Site))
+                {
+                    return;
+                }
 
                 if (facilityController.Facility != null && facilityController.Facility.IsAvailableForRepair
                     && facilityController.PowerButton != null && facilityController.PowerButton.enabled)
@@ -578,42 +614,34 @@ namespace TFTV.TFTVUI.Geoscape
                     bool isValidTech = wallet.HasResources(repairCost.ByResourceType(ResourceType.Tech));
                     bool isValidMaterials = wallet.HasResources(repairCost.ByResourceType(ResourceType.Materials));
 
-                    // Get a container (e.g., panel) to hold the repair cost display under the repair button, but outside the button itself
-                    Transform parentContainer = facilityController.transform; // Adjust if there's a more suitable container in the UI
+                    Transform parentContainer = facilityController.transform;
                     Transform existingRepairCostDisplay = parentContainer.Find("RepairCostDisplay");
                     GameObject repairCostDisplay;
 
                     if (existingRepairCostDisplay == null)
                     {
-                        // Create the RepairCostDisplay if it doesn't exist
                         repairCostDisplay = new GameObject("RepairCostDisplay", typeof(RectTransform), typeof(Image), typeof(HorizontalLayoutGroup));
                         repairCostDisplay.transform.SetParent(parentContainer, false);
                         Image background = repairCostDisplay.GetComponent<Image>();
                         background.color = new Color(0, 0, 0, 0.8f);
-                        //  background.type = Image.Type.Sliced;  // Optionally make it sliced for better scaling
-                        //   background.rectTransform.sizeDelta = new Vector2(350, 100);
                         RectTransform rectTransform = repairCostDisplay.GetComponent<RectTransform>();
-                        //    rectTransform.localScale = new Vector3(scale, scale, scale); // Adjust the size if necessary
                         rectTransform.anchoredPosition = Vector2.zero - new Vector2(0, 120);
                         rectTransform.sizeDelta = new Vector2(450, 100);
-                        // Position it over the facility
-                        // Use VerticalLayoutGroup to display costs in a vertical arrangement
                         HorizontalLayoutGroup horizontalLayoutGroup0 = repairCostDisplay.GetComponent<HorizontalLayoutGroup>();
                         horizontalLayoutGroup0.childScaleHeight = false;
                         horizontalLayoutGroup0.childScaleWidth = false;
                         horizontalLayoutGroup0.childControlHeight = false;
                         horizontalLayoutGroup0.childControlWidth = false;
                         horizontalLayoutGroup0.childAlignment = TextAnchor.MiddleCenter;
-                        horizontalLayoutGroup0.spacing = 5; // Adjust spacing between resource entries*/
+                        horizontalLayoutGroup0.spacing = 5;
                     }
                     else
                     {
-                        // If it already exists, clear its content
                         existingRepairCostDisplay.gameObject.SetActive(true);
                         repairCostDisplay = existingRepairCostDisplay.gameObject;
                         foreach (Transform child in repairCostDisplay.transform)
                         {
-                            GameObject.Destroy(child.gameObject); // Remove old resource displays
+                            GameObject.Destroy(child.gameObject);
                         }
                     }
 
@@ -627,17 +655,15 @@ namespace TFTV.TFTVUI.Geoscape
                             ResourceType type = resourceUnit.Type;
                             bool isValid = (type == ResourceType.Materials) ? isValidMaterials : isValidTech;
 
-                            // Create a horizontal layout to display both the icon and the text
                             GameObject resourceDisplay = new GameObject($"{type}CostDisplay", typeof(RectTransform), typeof(HorizontalLayoutGroup));
                             resourceDisplay.transform.SetParent(repairCostDisplay.transform, false);
                             RectTransform resourceDislayRect = resourceDisplay.GetComponent<RectTransform>();
                             resourceDislayRect.sizeDelta = new Vector2(225, 50);
                             resourceDislayRect.anchoredPosition = Vector2.zero;
                             HorizontalLayoutGroup horizontalLayout = resourceDisplay.GetComponent<HorizontalLayoutGroup>();
-                            horizontalLayout.spacing = 1; // Add spacing between icon and text
+                            horizontalLayout.spacing = 1;
                             horizontalLayout.childAlignment = TextAnchor.MiddleCenter;
 
-                            // Icon Image
                             GameObject iconObject = new GameObject($"{type}Icon", typeof(RectTransform), typeof(Image));
                             iconObject.transform.SetParent(resourceDisplay.transform);
                             Image iconImage = iconObject.GetComponent<Image>();
@@ -646,19 +672,16 @@ namespace TFTV.TFTVUI.Geoscape
                             iconImage.color = keyValuePairs.Values.First();
                             iconImage.preserveAspect = true;
 
-                            // Resize the icon
                             RectTransform iconRectTransform = iconImage.GetComponent<RectTransform>();
-                            iconRectTransform.sizeDelta = new Vector2(20, 20); // Set the width and height to 20x20, adjust as needed
-                                                                               //   iconImage.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
+                            iconRectTransform.sizeDelta = new Vector2(20, 20);
 
-                            // Text for resource cost using Unity's standard Text component
                             GameObject textObject = new GameObject($"{type}CostText");
                             textObject.transform.SetParent(resourceDisplay.transform);
                             Text resourceText = textObject.AddComponent<Text>();
                             resourcesInfo = resourceUnit.RoundedValue.ToString();
                             if (!isValid)
                             {
-                                resourcesInfo = $"<color=#FF0000>{resourcesInfo}</color>"; // Wrap the string with red color if not valid
+                                resourcesInfo = $"<color=#FF0000>{resourcesInfo}</color>";
                             }
                             resourceText.text = resourcesInfo;
                             resourceText.font = repairButtonText.font;
@@ -681,8 +704,6 @@ namespace TFTV.TFTVUI.Geoscape
                 throw;
             }
         }
-
-
 
         private static Dictionary<Sprite, Color> GetResourceIcon(ResourceType resourceType)
         {
@@ -713,6 +734,25 @@ namespace TFTV.TFTVUI.Geoscape
         {
             try
             {
+                if (IsOutpost(facilityController?.Facility?.PxBase?.Site))
+                {
+                    facilityController.transform.Find("RepairCostDisplay")?.gameObject?.SetActive(false);
+                    facilityController.transform.Find("LightningImage")?.gameObject?.SetActive(false);
+                    facilityController.transform.Find("AttackImage")?.gameObject?.SetActive(false);
+
+                    if (facilityController.RepairBuildContainer != null && facilityController.RepairBuildContainer.activeSelf)
+                    {
+                        facilityController.RepairBuildContainer.SetActive(false);
+                    }
+
+                    if (facilityController.RepairBuildSlidingContainer != null)
+                    {
+                        facilityController.RepairBuildSlidingContainer.gameObject.SetActive(false);
+                    }
+
+                    return;
+                }
+
                 DisplayRepairCost(facilityController);
 
                 bool flagCanbeUnpowered = facilityController.ContainedFacility != null
@@ -926,6 +966,9 @@ namespace TFTV.TFTVUI.Geoscape
 
 
 }
+
+
+
 
 
 

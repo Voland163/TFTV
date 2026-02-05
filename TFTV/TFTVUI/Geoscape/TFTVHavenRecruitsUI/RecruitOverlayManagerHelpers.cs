@@ -148,6 +148,11 @@ namespace TFTV
 
         internal static UIInventorySlot MakeInventorySlot(Transform parent, ItemDef item, int size, string namePrefix)
         {
+            return MakeInventorySlot(parent, item, size, namePrefix, null);
+        }
+
+        internal static UIInventorySlot MakeInventorySlot(Transform parent, ItemDef item, int size, string namePrefix, UIGeoItemTooltip tooltipOverride)
+        {
             try
             {
                 if (parent == null || item == null)
@@ -190,13 +195,11 @@ namespace TFTV
                 slot.Item = geoItem;
 
                 slot.AmmoInfoRoot.gameObject.SetActive(false);
-               // slot.EmptyAmmoImageNode.gameObject.SetActive(false);
-              //  slot.EmptyAmmoScaleNode.gameObject.SetActive(false);
-                slot.AmmoImageNode.gameObject.SetActive(false);          
-            
+                slot.AmmoImageNode.gameObject.SetActive(false);
+
                 ApplyOversizedIconOverlay(slot, icon, size, InventoryOverlayName);
 
-                var tooltip = EnsureOverlayItemTooltip();
+                var tooltip = tooltipOverride ?? EnsureOverlayItemTooltip();
                 if (tooltip != null)
                 {
                     ResetSlotHandlers(slot);
@@ -321,16 +324,45 @@ namespace TFTV
             {
                 try
                 {
-                    if (_tooltip == null)
+                    if (_tooltip == null || _slot == null)
                     {
                         return;
                     }
 
                     var tooltipRect = _tooltip.transform as RectTransform;
+                    if (tooltipRect == null)
+                    {
+                        TFTVLogger.Always("[LootTooltip] tooltipRect is null");
+                        return;
+                    }
+
+                    var canvas = _tooltip.GetComponentInParent<Canvas>();
+                    TFTVLogger.Always($"[LootTooltip] before pos parent={_tooltip.transform.parent?.name}, scale={_tooltip.transform.localScale}, anchored={tooltipRect.anchoredPosition}, canvas={canvas?.name}");
+
+                    if (_tooltip.transform.parent != null && _tooltip.transform.parent.name == "TFTV_BaseActivation_TooltipsRoot")
+                    {
+                        RectTransform canvasRect = canvas != null ? canvas.transform as RectTransform : null;
+                        RectTransform slotRect = _slot.transform as RectTransform;
+
+                        if (canvasRect != null && slotRect != null)
+                        {
+                            Camera cam = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+                            Vector2 screenPos = RectTransformUtility.WorldToScreenPoint(cam, slotRect.position);
+                            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPos, cam, out var localPoint))
+                            {
+                                tooltipRect.anchorMin = new Vector2(0.5f, 0.5f);
+                                tooltipRect.anchorMax = new Vector2(0.5f, 0.5f);
+                                tooltipRect.pivot = new Vector2(0f, 1f);
+                                tooltipRect.anchoredPosition = localPoint + new Vector2(40f, 60f);
+                                TFTVLogger.Always($"[LootTooltip] base activation anchored={tooltipRect.anchoredPosition}");
+                                return;
+                            }
+                        }
+                    }
 
                     tooltipRect.anchoredPosition = new Vector2(-550, -600);
 
-                
+                    TFTVLogger.Always($"[LootTooltip] after pos anchored={tooltipRect.anchoredPosition}, size={tooltipRect.sizeDelta}");
                 }
                 catch (Exception ex)
                 {

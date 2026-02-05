@@ -1,8 +1,7 @@
-﻿using Base;
-using Base.Core;
+﻿using Base.Core;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Sites;
@@ -18,7 +17,124 @@ namespace TFTV.TFTVBaseRework
 {
     internal static class Workers
     {
-        internal const float WorkerOutputPerSlot = 2.0f;
+        internal const float WorkerOutputPerSlot = 4.0f;
+        private const int UnoccupiedResearchPerSlot = 1;
+        private const int UnoccupiedProductionPerSlot = 2;
+        private const string CentralizedAIResearchId = "NJ_CentralizedAI_ResearchDef";
+
+        private static bool IsResearchOrManufacturingComponent(GeoFacilityComponentDef component, out bool isResearch, out bool isManufacturing)
+        {
+            isResearch = false;
+            isManufacturing = false;
+            if (component is ResourceGeneratorFacilityComponentDef generator)
+            {
+                if (generator.BaseResourcesOutput.ByResourceType(ResourceType.Research).Value > 0f)
+                {
+                    isResearch = true;
+                }
+
+                if (generator.BaseResourcesOutput.ByResourceType(ResourceType.Production).Value > 0f)
+                {
+                    isManufacturing = true;
+                }
+            }
+
+            return isResearch || isManufacturing;
+        }
+
+        private static bool FacilityProvidesResearch(PhoenixFacilityDef facilityDef)
+        {
+            if (facilityDef?.GeoFacilityComponentDefs == null) return false;
+            foreach (GeoFacilityComponentDef comp in facilityDef.GeoFacilityComponentDefs)
+            {
+                if (comp is ResourceGeneratorFacilityComponentDef gen
+                    && gen.BaseResourcesOutput.ByResourceType(ResourceType.Research).Value > 0f)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool FacilityProvidesManufacturing(PhoenixFacilityDef facilityDef)
+        {
+            if (facilityDef?.GeoFacilityComponentDefs == null) return false;
+            foreach (GeoFacilityComponentDef comp in facilityDef.GeoFacilityComponentDefs)
+            {
+                if (comp is ResourceGeneratorFacilityComponentDef gen
+                    && gen.BaseResourcesOutput.ByResourceType(ResourceType.Production).Value > 0f)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool HasFacilityBuff(GeoPhoenixFaction faction, Func<PhoenixFacilityDef, bool> facilityPredicate)
+        {
+            if (faction?.FacilityBuffs?.FacilityBuffs == null) return false;
+            return faction.FacilityBuffs.FacilityBuffs.Any(buff => buff?.FacilityDef != null && facilityPredicate(buff.FacilityDef));
+        }
+
+        private static bool TryGetUnoccupiedSlotBonuses(GeoPhoenixFaction faction, FacilitySlotPools pools, out float researchBonus, out float productionBonus)
+        {
+            researchBonus = 0f;
+            productionBonus = 0f;
+
+            if (faction == null || pools == null) return false;
+
+            int unoccupiedResearch = Math.Max(0, pools.Research.ProvidedSlots - pools.Research.UsedSlots);
+            int unoccupiedManufacturing = Math.Max(0, pools.Manufacturing.ProvidedSlots - pools.Manufacturing.UsedSlots);
+
+            if (unoccupiedResearch == 0 && unoccupiedManufacturing == 0)
+            {
+                return false;
+            }
+
+            int researchPerSlot = UnoccupiedResearchPerSlot;
+            int productionPerSlot = UnoccupiedProductionPerSlot;
+
+            if (faction.Research != null && faction.Research.HasCompleted(CentralizedAIResearchId))
+            {
+                researchPerSlot++;
+                productionPerSlot++;
+            }
+
+            if (HasFacilityBuff(faction, FacilityProvidesResearch) && unoccupiedResearch > 0)
+            {
+                researchBonus = unoccupiedResearch * researchPerSlot;
+            }
+
+            if (HasFacilityBuff(faction, FacilityProvidesManufacturing) && unoccupiedManufacturing > 0)
+            {
+                productionBonus = unoccupiedManufacturing * productionPerSlot;
+            }
+
+            return researchBonus > 0f || productionBonus > 0f;
+        }
+
+        private static void ApplyUnoccupiedSlotBonuses(GeoPhoenixFaction faction)
+        {
+            FacilitySlotPools pools = ResearchManufacturingSlotsManager.GetOrCreatePools(faction);
+            if (!TryGetUnoccupiedSlotBonuses(faction, pools, out float researchBonus, out float productionBonus))
+            {
+                return;
+            }
+
+            if (researchBonus > 0f)
+            {
+                faction.Wallet.Give(new ResourceUnit(ResourceType.Research, researchBonus), OperationReason.Production);
+            }
+
+            if (productionBonus > 0f)
+            {
+                faction.Wallet.Give(new ResourceUnit(ResourceType.Production, productionBonus), OperationReason.Production);
+            }
+
+            TryUpdateInfoBar(faction);
+        }
 
         [HarmonyPatch(typeof(GeoPhoenixFaction), nameof(GeoPhoenixFaction.UpdateBasesHourly))]
         internal static class GeoPhoenixFaction_UpdateBasesHourly_Patch
@@ -31,21 +147,27 @@ namespace TFTV.TFTVBaseRework
                 }
 
                 ResearchManufacturingSlotsManager.RecalculateSlots(__instance);
+                ApplyUnoccupiedSlotBonuses(__instance);
             }
         }
 
-        [HarmonyPatch(typeof(GeoPhoenixFaction), "OnFacilityStateChanged")]
-        internal static class GeoPhoenixFaction_OnFacilityStateChanged_Patch
+        [HarmonyPatch(typeof(GeoFactionFacilityBuffCollection), nameof(GeoFactionFacilityBuffCollection.GetValue))]
+        internal static class GeoFactionFacilityBuffCollection_GetValue_Patch
         {
-            private static void Postfix(GeoPhoenixFaction __instance)
+            private static bool Prefix(PhoenixFacilityDef facility, GeoFacilityComponentDef component, float baseValue, float addedValue, float multiplier, ref float __result)
             {
-                if (!BaseReworkUtils.BaseReworkEnabled)
+                if (!BaseReworkUtils.BaseReworkEnabled || component == null)
                 {
-                    return;
+                    return true;
                 }
 
-                ResearchManufacturingSlotsManager.RecalculateSlots(__instance);
-                TryUpdateInfoBar(__instance);
+                if (!IsResearchOrManufacturingComponent(component, out _, out _))
+                {
+                    return true;
+                }
+
+                __result = baseValue * multiplier + addedValue;
+                return false;
             }
         }
 
@@ -73,6 +195,10 @@ namespace TFTV.TFTVBaseRework
                 float prodBonus = usedProd * WorkerOutputPerSlot;
                 float researchBonus = usedResearch * WorkerOutputPerSlot;
 
+                TryGetUnoccupiedSlotBonuses(phoenix, slotPools, out float unoccupiedResearchBonus, out float unoccupiedProductionBonus);
+                prodBonus += unoccupiedProductionBonus;
+                researchBonus += unoccupiedResearchBonus;
+
                 float effectiveProd = baseProd + prodBonus;
                 float effectiveResearch = baseResearch + researchBonus;
 
@@ -86,9 +212,9 @@ namespace TFTV.TFTVBaseRework
                 int used = provided > 0 ? pool.UsedSlots : 0;
                 if (bonus > 0)
                 {
-                    return $"{totalPerHour} (+{bonus}) ({used}/{provided})";
+                    return $"{totalPerHour} (+{bonus}) \n({used}/{provided})";
                 }
-                return $"{totalPerHour} ({used}/{provided})";
+                return $"{totalPerHour} \n({used}/{provided})";
             }
         }
 
@@ -149,7 +275,7 @@ namespace TFTV.TFTVBaseRework
 
         internal static class ResearchManufacturingSlotsManager
         {
-            public const int SlotsPerFacility = 2;
+            public const int SlotsPerFacility = 1;
 
             private static readonly ConditionalWeakTable<GeoPhoenixFaction, FacilitySlotPools> Pools =
                 new ConditionalWeakTable<GeoPhoenixFaction, FacilitySlotPools>();
@@ -314,5 +440,7 @@ namespace TFTV.TFTVBaseRework
         private static bool _pendingInfoBarLog = false;
         private static bool _pendingInfoBarUpdate = false;
         private static GeoPhoenixFaction _pendingFaction;
+
+
     }
 }

@@ -1,9 +1,8 @@
 using Base.Core;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.Equipments;
 using PhoenixPoint.Common.Entities.GameTags;
-using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels.Factions;
@@ -13,7 +12,8 @@ using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
-using TFTV.LaserWeapons;
+using System.Collections.Generic;
+using TFTV.Vehicles.Ammo;
 using UnityEngine;
 
 namespace TFTV.LaserWeapons
@@ -77,6 +77,74 @@ namespace TFTV.LaserWeapons
                 new ResourceUnit(ResourceType.Materials, mats),
                 new ResourceUnit(ResourceType.Tech, tech)
             };
+        }
+
+        private static void TopUpPartialMagazines(IEnumerable<PostmissionReplenishManager.ReplenishableItems> missingItems)
+        {
+            if (missingItems == null)
+            {
+                return;
+            }
+
+            foreach (PostmissionReplenishManager.ReplenishableItems replenishableItems in missingItems)
+            {
+                if (replenishableItems?.ReloadableItems == null)
+                {
+                    continue;
+                }
+
+                foreach (GeoItem geoItem in replenishableItems.ReloadableItems)
+                {
+                    if (!TryGetLaserEntry(geoItem, out var entry) || geoItem?.CommonItemData == null)
+                    {
+                        continue;
+                    }
+
+                    int perCharge = Mathf.Max(1, entry.ShotsPerCharge);
+                    int current = Mathf.Max(0, geoItem.CommonItemData.CurrentCharges);
+                    int max = Mathf.Max(0, geoItem.ItemDef.ChargesMax);
+
+                    if (current <= 0 || current >= max)
+                    {
+                        continue;
+                    }
+
+                    int remainder = current % perCharge;
+                    if (remainder == 0)
+                    {
+                        continue;
+                    }
+
+                    int topUp = Mathf.Min(max - current, perCharge - remainder);
+                    if (topUp <= 0)
+                    {
+                        continue;
+                    }
+
+                    geoItem.CommonItemData.ModifyCharges(topUp, canCreateMagazines: true);
+                    LaserWeaponsMain.LaserAmmoShareHelper.Log($"Post-mission top-up: '{geoItem.ItemDef.name}' {current}/{max} -> {current + topUp}/{max}");
+                }
+            }
+        }
+
+      
+        [HarmonyPatch(typeof(UIModuleReplenish), nameof(UIModuleReplenish.Init))]
+        private static class UIModuleReplenish_Init_LaserBatteryTopUp_Patch
+        {
+            private static void Prefix(List<PostmissionReplenishManager.ReplenishableItems> missingItems)
+            {
+                try
+                {
+                    if (LaserWeaponsMain.LaserAmmoShareHelper.BatteryPackDef != null)
+                    {
+                        TopUpPartialMagazines(missingItems);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
         }
 
         [HarmonyPatch(typeof(UIModuleReplenish), "AddMissingAmmo")]

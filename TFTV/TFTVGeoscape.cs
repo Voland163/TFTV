@@ -140,9 +140,10 @@ namespace TFTV
             TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
             TFTVUI.Geoscape.Facilities.CheckUnpoweredBasesOnGeoscapeStart();
             AircraftReworkSpeedAndRange.Init(Controller);
-            if (TFTVNewGameOptions.BaseRework)
+            if (BaseReworkUtils.BaseReworkEnabled)
             {
                 RestoreAssignments(Controller);
+                TryGrantInitialPersonnel(Controller);
             }
 
             TFTVBetaSaveGamesFixes.ConvertAncientRefinerySitesToHarvestSites(Controller);
@@ -241,8 +242,8 @@ namespace TFTV
                 NewTrainingFacilities = TFTVNewGameOptions.NewTrainingFacilities,
                 BaseRework = TFTVNewGameOptions.BaseRework,
                 // Personnel & training sessions snapshot
-                PersonnelPool = TFTVNewGameOptions.BaseRework ? CreateAssignmentsSnapshot() : null,
-                RecruitTrainingSessions = TFTVNewGameOptions.BaseRework ? CreateRecruitSessionsSnapshot() : null,
+                PersonnelPool = BaseReworkUtils.BaseReworkEnabled ? CreateAssignmentsSnapshot() : null,
+                RecruitTrainingSessions = BaseReworkUtils.BaseReworkEnabled ? CreateRecruitSessionsSnapshot() : null,
             };
         }
         /// <summary>
@@ -345,7 +346,7 @@ namespace TFTV
                 PersonnelData.ClearAssignments();
                 ClearAllSessions();
 
-                if (TFTVNewGameOptions.BaseRework && data.PersonnelPool != null)
+                if (BaseReworkUtils.BaseReworkEnabled && data.PersonnelPool != null)
                 {
                     PersonnelData.LoadAssignmentsSnapshot(Controller, data.PersonnelPool);
 
@@ -356,12 +357,12 @@ namespace TFTV
 
                 }
 
-                if (TFTVNewGameOptions.BaseRework && data.RecruitTrainingSessions != null && data.RecruitTrainingSessions.Count > 0)
+                if (BaseReworkUtils.BaseReworkEnabled && data.RecruitTrainingSessions != null && data.RecruitTrainingSessions.Count > 0)
                 {
                     LoadRecruitSessionsSnapshot(Controller, data.RecruitTrainingSessions);
                 }
 
-                if (TFTVNewGameOptions.BaseRework)
+                if (BaseReworkUtils.BaseReworkEnabled)
                 {
                     TFTVLogger.Always($"[PersonnelPersistence] Restored Personnel={data.PersonnelPool?.Count ?? 0} TrainingSessions={data.RecruitTrainingSessions?.Count ?? 0}");
                 }
@@ -458,6 +459,10 @@ namespace TFTV
             GeoLevelController gsController = Controller;
             TFTVConfig config = TFTVMain.Main.Config;
 
+            if (BaseReworkUtils.BaseReworkEnabled)
+            {
+                MarkNewGameForInitialPersonnel();
+            }
 
             List<int> locations = new List<int>() {
                 0, // "Vanilla Random"

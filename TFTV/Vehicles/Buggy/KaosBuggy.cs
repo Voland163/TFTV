@@ -128,6 +128,9 @@ namespace TFTVVehicleRework.KaosBuggy
                     default: //Catches anything unexpected
                         break;
                 }
+
+                WeaponDef secondaryWeapon = (WeaponDef)BuggyGuns[Module].SubAddons[1].SubAddon;
+                BuggyGuns[Module].ChargesMax = Minigun.ChargesMax + secondaryWeapon.ChargesMax;
             }
         }
 

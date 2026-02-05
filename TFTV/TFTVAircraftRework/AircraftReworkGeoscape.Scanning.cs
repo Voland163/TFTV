@@ -22,12 +22,6 @@ namespace TFTV
     {
         internal class Scanning
         {
-
-
-
-
-
-
             [HarmonyPatch(typeof(GeoPhoenixFaction), "OnVehicleAdded")]
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             public static class GeoPhoenixFaction_OnVehicleAdded_Patch
@@ -42,7 +36,7 @@ namespace TFTV
                         }
 
                         CheckAircraftScannerAbility(vehicle);
-                        TFTVLogger.Always($"scanner ability added to {vehicle.Name}");
+                       
                     }
                     catch (Exception e)
                     {
@@ -188,6 +182,17 @@ namespace TFTV
                         if (geoVehicle != null && !geoVehicle.CanRedirect)
                         {
                             __result = GeoAbilityDisabledState.NoScanChargesLeft;
+                        }
+
+                        GeoSite geoSite = geoVehicle?.CurrentSite;
+                     
+                        if (geoSite != null)
+                        {
+                            int geoSiteId = geoSite.SiteId;
+                            if (AircraftScanningSites != null && AircraftScanningSites.ContainsKey(geoSiteId))
+                            {
+                                __result = GeoAbilityDisabledState.NoScanChargesLeft;
+                            }
                         }
 
                     }
@@ -374,16 +379,24 @@ namespace TFTV
 
                         GeoVehicle geoVehicle = __instance.Actor as GeoVehicle;
 
+                        GeoSite geoSite = geoVehicle?.CurrentSite;
+
+                        if (geoSite == null)
+                        {
+                            TFTVLogger.Always($"[ScanAbility.ActivateInternal] geoSite is null for {geoVehicle?.Name}!");
+                            return;
+                        }
+
                         if (AircraftScanningSites == null)
                         {
                             AircraftScanningSites = new Dictionary<int, List<int>>();
                         }
 
 
-                        if (!AircraftScanningSites.ContainsKey(geoVehicle.VehicleID))
+                        if (!AircraftScanningSites.ContainsKey(geoSite.SiteId))
                         {
-                            AircraftScanningSites.Add(geoVehicle.VehicleID, new List<int>());
-                            TFTVLogger.Always($"{geoVehicle?.Name} started scan!");
+                            AircraftScanningSites.Add(geoSite.SiteId, new List<int>());
+                            TFTVLogger.Always($"{geoVehicle?.Name} started scan at SiteId {geoSite.SiteId}!");
                         }
 
 
@@ -432,17 +445,26 @@ namespace TFTV
                             return;
                         }
 
-                        GeoVehicle geoVehicle = __instance?.Location?.Vehicles?.FirstOrDefault(v => v.IsOwnedByViewer && AircraftScanningSites.ContainsKey(v.VehicleID) &&
-                         (v.Modules.Any(m => m != null && m.ModuleDef == _thunderbirdScannerModule) || v.Modules.Any(m => m != null && m.ModuleDef == _basicScannerModule)) && !v.CanRedirect);
+                        GeoVehicle geoVehicle = __instance?.Location?.Vehicles?.FirstOrDefault(v => v.IsOwnedByViewer &&
+                         (v.Modules.Any(m => m != null && m.ModuleDef == _thunderbirdScannerModule) || v.Modules.Any(m => m != null && m.ModuleDef == _basicScannerModule))
+                         && !v.CanRedirect);
+
+                        TFTVLogger.Always($"[GeoScanner.CompleteScan] __instance?.Location?.Vehicles?.FirstOrDefault(v => v.IsOwnedByViewer {__instance?.Location?.Vehicles?.FirstOrDefault(v => v.IsOwnedByViewer)?.VehicleID}");
+
 
                         if (geoVehicle == null)
                         {
+
+                            TFTVLogger.Always($"[GeoScanner.CompleteScan] geoVehicle is null!");
                             return;
                         }
 
                         geoVehicle.CanRedirect = true;
 
-                        AircraftScanningSites.Remove(geoVehicle.VehicleID);
+                        if (AircraftScanningSites.ContainsKey(__instance.Location.SiteId))
+                        {
+                            AircraftScanningSites.Remove(__instance.Location.SiteId);
+                        }
 
                         TFTVLogger.Always($"{geoVehicle.Name} finished scan!");
                     }
@@ -502,43 +524,42 @@ namespace TFTV
 
                             if (scanner == null)
                             {
-                                TFTVLogger.Always($"scanner is null! This is unexpected");
+                              //  TFTVLogger.Always($"[GeoScanComponent.DetectSite] scanner is null! This is unexpected");
                                 return false;
                             }
 
-                            GeoSite geoSite = scanner.Location;
+                            GeoSite scannerLocationGeoSite = scanner.Location;
 
-                            if (geoSite == null)
+                            if (scannerLocationGeoSite == null)
                             {
-                                TFTVLogger.Always($"geoSite is null! This is unexpected");
+                              //  TFTVLogger.Always($"[GeoScanComponent.DetectSite] geoSite is null! This is unexpected");
                                 return false;
                             }
+
+                            int scannerLocationGeoSiteId = scannerLocationGeoSite.SiteId;
 
                             if (AircraftScanningSites == null)
                             {
                                 AircraftScanningSites = new Dictionary<int, List<int>>();
                             }
 
-                            GeoVehicle geoVehicle = geoSite.Vehicles.FirstOrDefault(v => v.IsOwnedByViewer && AircraftScanningSites.ContainsKey(v.VehicleID) &&
-                             (v.Modules.Any(m => m != null && m.ModuleDef == _thunderbirdScannerModule) || v.Modules.Any(m => m != null && m.ModuleDef == _basicScannerModule)));
-
-                            if (geoVehicle == null)
+                            if (!AircraftScanningSites.ContainsKey(scannerLocationGeoSiteId))
                             {
-                                TFTVLogger.Always($"no geo vehicle found in _aircraftScanningSites! This is unexpected");
-                                return false;
+                               // TFTVLogger.Always($"[GeoScanComponent.DetectSite] ScannerLocationSiteId not in the dictionary! This is unexpected");
+                                AircraftScanningSites.Add(scannerLocationGeoSiteId, new List<int>());
+                            }
+
+
+                            if (!AircraftScanningSites[scannerLocationGeoSiteId].Contains(site.SiteId))
+                            {
+                                AircraftScanningSites[scannerLocationGeoSiteId].Add(site.SiteId);
                             }
                             else
                             {
-                                if (!AircraftScanningSites[geoVehicle.VehicleID].Contains(site.SiteId))
-                                {
-                                    AircraftScanningSites[geoVehicle.VehicleID].Add(site.SiteId);
-                                }
-                                else
-                                {
-                                    //  TFTVLogger.Always($"site {site.name} already scanned by {geoVehicle.Name}, not rolling again");
-                                    return false;
-                                }
+                                //  TFTVLogger.Always($"site {site.name} already scanned by {geoVehicle.Name}, not rolling again");
+                                return false;
                             }
+
 
                             int chance = 50;
 
@@ -551,11 +572,11 @@ namespace TFTV
                             int num = UnityEngine.Random.Range(0, 100);
                             if (num < chance)
                             {
-                                TFTVLogger.Always($"rolled {num} Not revealing {site?.name}");
+                               // TFTVLogger.Always($"rolled {num} Not revealing {site?.name}");
                                 return false;
                             }
 
-                            TFTVLogger.Always($"rolled {num} revealing {site?.name}");
+                           // TFTVLogger.Always($"rolled {num} revealing {site?.name}");
                         }
 
                         return true;

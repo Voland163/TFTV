@@ -11,9 +11,13 @@ using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
+using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
 using System.Text;
 using UnityEngine;
 
@@ -26,6 +30,9 @@ namespace TFTV
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
+
+      
+       
 
 
         [HarmonyPatch(typeof(GeoAlienFaction), "OnResearchUpdated")]
@@ -90,7 +97,6 @@ namespace TFTV
                 }
             }
         }
-
 
 
 

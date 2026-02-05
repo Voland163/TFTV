@@ -1,13 +1,17 @@
-﻿using Base.Core;
+﻿using Base;
+using Base.Core;
+using Base.Defs;
 using Base.Serialization.General;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Tactical.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +20,7 @@ using static TFTV.TFTVBaseRework.Workers;
 
 namespace TFTV.TFTVBaseRework
 {
+
     public enum PersonnelAssignment
     {
         Unassigned,
@@ -42,10 +47,138 @@ namespace TFTV.TFTVBaseRework
 
     internal static class PersonnelData
     {
+        private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+        private static readonly SharedData Shared = TFTVMain.Shared;
+        private static readonly DefRepository Repo = TFTVMain.Repo;
+
+
         private const string LogPrefix = "[PersonnelData]";
 
         private static readonly Dictionary<int, PersonnelInfo> _assignments = new Dictionary<int, PersonnelInfo>();
         public static Dictionary<int, PersonnelInfo> Assignments => _assignments;
+
+        private static bool _pendingInitialPersonnelGrant;
+
+        internal static void MarkNewGameForInitialPersonnel()
+        {
+            if (!BaseReworkUtils.BaseReworkEnabled)
+            {
+                return;
+            }
+
+            _pendingInitialPersonnelGrant = true;
+        }
+
+        internal static void TryGrantInitialPersonnel(GeoLevelController level)
+        {
+            if (!BaseReworkUtils.BaseReworkEnabled || !_pendingInitialPersonnelGrant)
+            {
+                return;
+            }
+
+        
+            _pendingInitialPersonnelGrant = false;
+
+            int difficulty = level?.CurrentDifficultyLevel?.Order ?? 0;
+            int count = Math.Max(0, 7 - difficulty);
+            if (count <= 0)
+            {
+                return;
+            }
+
+            int added = AddIncidentPersonnelReward(level.PhoenixFaction, count);
+            TFTVLogger.Always($"[PersonnelData] Granted {added}/{count} initial personnel for difficulty {difficulty}.");
+        }
+        /// <summary>
+        /// Only unlocks the Recruit tab in the roster UI.
+        /// Does not modify recruitment gameplay functionality flags.
+        /// </summary>
+        [HarmonyPatch(typeof(UIModuleGeoRosterTabs), "CheckAvailableTabs")]
+        public static class AlwaysUnlockRecruitTabPatch
+        {
+            private static readonly AccessTools.FieldRef<UIModuleGeoRosterTabs, bool> RecruitsUnlockedRef =
+                AccessTools.FieldRefAccess<UIModuleGeoRosterTabs, bool>("_recruitsUnlocked");
+
+            [HarmonyPostfix]
+            public static void Postfix(UIModuleGeoRosterTabs __instance)
+            {
+                if (!BaseReworkUtils.BaseReworkEnabled)
+                {
+                    return;
+                }
+
+                RecruitsUnlockedRef(__instance) = true;
+                __instance.RecruitsTab.SetInteractable(true);
+                __instance.RecruitsTab.gameObject.SetActive(true);
+            }
+        }
+
+        /// <summary>
+        /// Prevents overflow when opening recruit UI without the underlying recruitment timer initialized.
+        /// </summary>
+        [HarmonyPatch(typeof(GeoPhoenixFaction), "GetNextRecruitRegeneration")]
+        public static class SafeRecruitRegenerationTimePatch
+        {
+            private static readonly AccessTools.FieldRef<GeoPhoenixFaction, TimeUnit> LastNakedRecruitRefreshRef =
+                AccessTools.FieldRefAccess<GeoPhoenixFaction, TimeUnit>("_lastNakedRecruitRefresh");
+
+            [HarmonyPrefix]
+            public static bool Prefix(GeoPhoenixFaction __instance, ref TimeUnit __result)
+            {
+                if (!LastNakedRecruitRefreshRef(__instance).IsValid)
+                {
+                    __result = __instance.GeoLevel.Timing.Now;
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+        internal static bool TryConsumePersonnelForBaseActivation(GeoPhoenixFaction faction, int requiredPersonnel)
+        {
+            if (!BaseReworkUtils.BaseReworkEnabled || faction == null || requiredPersonnel <= 0)
+            {
+                return false;
+            }
+
+            List<PersonnelInfo> candidates = _assignments.Values
+                .Where(person => person?.Character != null && person.Character.Faction == faction)
+                .Where(person => person.Assignment == PersonnelAssignment.Unassigned
+                    || person.Assignment == PersonnelAssignment.Research
+                    || person.Assignment == PersonnelAssignment.Manufacturing)
+                .OrderBy(person => GetBaseActivationPriority(person.Assignment))
+                .Take(requiredPersonnel)
+                .ToList();
+
+            if (candidates.Count < requiredPersonnel)
+            {
+                return false;
+            }
+
+            foreach (PersonnelInfo person in candidates)
+            {
+                RemovePersonnel(faction, person);
+                faction.KillCharacter(person.Character, CharacterDeathReason.Dismissed);
+            }
+
+            return true;
+        }
+
+        private static int GetBaseActivationPriority(PersonnelAssignment assignment)
+        {
+            switch (assignment)
+            {
+                case PersonnelAssignment.Unassigned:
+                    return 0;
+                case PersonnelAssignment.Research:
+                    return 1;
+                case PersonnelAssignment.Manufacturing:
+                    return 2;
+                default:
+                    return int.MaxValue;
+            }
+        }
 
         internal static void ClearAssignments()
         {
@@ -390,5 +523,101 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
+        internal static int AddIncidentPersonnelReward(GeoPhoenixFaction faction, int count)
+        {
+            if (!BaseReworkUtils.BaseReworkEnabled || faction == null || count <= 0)
+            {
+                return 0;
+            }
+
+            TFTVLogger.Always($"[PersonnelData] Adding {count} incident personnel reward(s) for faction {faction.Name}.");
+
+            GeoLevelController level = faction.GeoLevel;
+            TFTVLogger.Always($"[PersonnelData] level == null? {level == null}.");
+            if (level == null)
+            {
+                return 0;
+            }
+
+           
+
+            int added = 0;
+            for (int i = 0; i < count; i++)
+            {
+                GeoUnitDescriptor descriptor = GenerateIncidentPersonnelDescriptor(level, faction);
+
+                TFTVLogger.Always($"[PersonnelData] descriptor == null? {descriptor == null}.");
+                if (descriptor == null)
+                {
+                    break;
+                }
+
+                GeoCharacter character = CreateHiddenCharacterFromDescriptor(level, faction, descriptor);
+                TFTVLogger.Always($"[PersonnelData] character == null? {character == null}.");
+                if (character == null)
+                {
+                    continue;
+                }
+
+                AttachCharacter(character);
+                added++;
+            }
+
+            if (added > 0)
+            {
+                TFTVLogger.Always($"[PersonnelData] Added {added} incident personnel reward(s).");
+            }
+
+            return added;
+        }
+
+        private static GeoUnitDescriptor GenerateIncidentPersonnelDescriptor(GeoLevelController level, GeoPhoenixFaction faction)
+        {
+            TacCharacterDef template = GetIncidentPersonnelTemplate(faction);
+            if (level?.CharacterGenerator == null || template == null)
+            {
+                return null;
+            }
+
+            MethodInfo generateUnit = AccessTools.Method(level.CharacterGenerator.GetType(), "GenerateUnit",
+                new[] { typeof(GeoFaction), typeof(TacCharacterDef) });
+            if (generateUnit == null)
+            {
+                TFTVLogger.Always("[PersonnelData] GenerateUnit(GeoFaction, TacCharacterDef) not found.");
+                return null;
+            }
+
+            return generateUnit.Invoke(level.CharacterGenerator, new object[] { faction, template }) as GeoUnitDescriptor;
+        }
+
+        private static TacCharacterDef GetIncidentPersonnelTemplate(GeoPhoenixFaction faction)
+        {
+            List<TacCharacterDef> templates = faction?.UnlockedUnitTemplates?
+                .Where(t => t != null && !t.IsVehicle && !t.IsMutog)
+                .ToList();
+
+            if (templates == null || templates.Count == 0)
+            {
+                return DefCache.GetDef<TacCharacterDef>("PX_Assault1_CharacterTemplateDef");
+            }
+
+           // TFTVLogger.Always($"[PersonnelData] Found {templates?.Count ?? 0} unlocked unit templates for faction {faction?.Name}.");
+
+            return templates.GetRandomElement();
+        }
+
+        internal static int GetAvailablePersonnelCount(GeoPhoenixFaction faction)
+        {
+            if (!BaseReworkUtils.BaseReworkEnabled || faction == null)
+            {
+                return 0;
+            }
+
+            return _assignments.Values
+                .Where(person => person?.Character != null && person.Character.Faction == faction)
+                .Count(person => person.Assignment == PersonnelAssignment.Unassigned
+                    || person.Assignment == PersonnelAssignment.Research
+                    || person.Assignment == PersonnelAssignment.Manufacturing);
+        }
     }
 }

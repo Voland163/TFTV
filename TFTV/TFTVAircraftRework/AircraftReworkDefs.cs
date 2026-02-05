@@ -66,6 +66,11 @@ namespace TFTV
                 AddManufactureTagToResourceCrates();
                 AddLoadingTips();
                 RemoveResearches();
+                TFTVIncidents.Affinities.CreateDefs();
+                TFTVIncidents.GeoscapeEvents.CreateGeoscapeEvents();
+                TFTVIncidents.Resolution.IncidentController.InitializeDefaults();
+                TFTVBaseRework.Defs.CreateAndModifyDefs();
+
                 //  AdjustLocKeysFesteringSkies();
                 /*  foreach(CustomMissionTypeDef customMissionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>()) 
                   {

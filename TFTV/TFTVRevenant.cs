@@ -32,6 +32,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using static PhoenixPoint.Tactical.Entities.TacticalActorViewBase;
 using static UnityStandardAssets.Utility.TimedObjectActivator;
 using Action = System.Action;
 
@@ -1004,15 +1005,16 @@ namespace TFTV
             [HarmonyPatch(typeof(TacticalActorViewBase), nameof(TacticalActorViewBase.GetStatusesFiltered))]
             public static class TacticalActorViewBase_GetStatusesFiltered_patch
             {
-                public static void Postfix(ref List<TacticalActorViewBase.StatusInfo> __result)
+
+                public static void Postfix(TacticalActorViewBase __instance, ref List<TacticalActorViewBase.StatusInfo> __result)
                 {
                     try
                     {
+                        
                         if (__result != null && __result.Count > 0)
                         {                        
                             TacticalActorViewBase.StatusInfo armorStackInfo = __result
-                                .Where(si => si?.Def is ArmorStackStatusDef)
-                                .FirstOrDefault();
+                                .Where(si => si?.Def is ArmorStackStatusDef).FirstOrDefault();
 
                             if (armorStackInfo != null)
                             {

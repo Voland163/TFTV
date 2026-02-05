@@ -453,46 +453,7 @@ namespace TFTV
 
         }
 
-        public static DamageMultiplierStatusDef CreateNewDescriptiveTacticalStatus(string statusName, string gUIDStatus,
-            string gUIDVisuals, string title, string description, string iconFileName)
-        {
-            try
-            {
-                DamageMultiplierStatusDef source = DefCache.GetDef<DamageMultiplierStatusDef>("BionicResistances_StatusDef");
-                DamageMultiplierStatusDef newStatus = Helper.CreateDefFromClone(
-                    source,
-                    gUIDStatus,
-                    statusName);
-
-                newStatus.Visuals = Helper.CreateDefFromClone(
-                    source.Visuals,
-                    gUIDVisuals,
-                    statusName + "VisualsDef");
-
-                newStatus.EffectName = statusName;
-                newStatus.VisibleOnHealthbar = HealthBarVisibility.AlwaysVisible;
-                newStatus.VisibleOnPassiveBar = true;
-                newStatus.VisibleOnStatusScreen = StatusScreenVisibility.VisibleOnStatusesList;
-                newStatus.DamageTypeDefs = new DamageTypeBaseEffectDef[1];
-                newStatus.Visuals.DisplayName1.LocalizationKey = title;
-                newStatus.Visuals.Description.LocalizationKey = description;
-                newStatus.Visuals.LargeIcon = Helper.CreateSpriteFromImageFile(iconFileName);
-                newStatus.Visuals.SmallIcon = Helper.CreateSpriteFromImageFile(iconFileName);
-
-                //  TacticalAbilityViewElementDef visuals = (TacticalAbilityViewElementDef)newStatus.Visuals;
-                //  visuals.HideFromPassives = true;
-                //  visuals.ShowInStatusScreen = false;
-
-
-                return newStatus;
-            }
-
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-            throw new InvalidOperationException();
-        }
+       
 
         internal static ActorHasStatusEffectConditionDef CreateNewStatusEffectCondition(string gUID, StatusDef status, bool hasEffect = true)
         {

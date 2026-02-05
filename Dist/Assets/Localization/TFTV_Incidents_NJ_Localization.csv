@@ -1,0 +1,338 @@
+Key,Type,Desc,English
+TFTV_INCIDENT_15_TITLE_NJ,Text,Req: Haven leader rep > 50,The Walls Beneath
+TFTV_INCIDENT_15_DESC,Text,,"Director, we’ve received a request from [HavenName] security overseer—off the record. Personnel have reported noises beneath the oldest wing of the base: scratching, faint voices, and rhythmic banging. A schematic review revealed sublevels sealed during the haven’s early construction, likely predating New Jericho occupation. Officially, no one’s been down there in years. Unofficially… some believe something never left."
+TFTV_INCIDENT_15_CHOICE_0_E,Text,,Investigate the sealed sublevels. (Exploration)
+TFTV_INCIDENT_15_CHOICE_1_C_M,Text,,Conduct seismic and acoustic scans. (Machinery/Compute)
+TFTV_INCIDENT_15_CHOICE_2,Text,,Decline involvement. [END]
+TFTV_INCIDENT_15_OUTCOME_0_SUCCESS,Text,"Reward: Haven leader rep +12, 600 mat","We breached an old hatch and descended into forgotten corridors. The walls were marked with crude symbols—hand-drawn, ritualistic. At the end: a chamber with bones, candles, and remnants of military rations. The bodies had mutations, poorly hidden. Former New Jericho personnel, altered in secret—and left to rot."
+TFTV_INCIDENT_15_OUTCOME_1_SUCCESS,Text,"Reward: Haven leader rep +12, 600 mat","Acoustic scans picked up whisper-like patterns echoing through the sealed concrete—non-random, possibly language. One section shows signs of recent disturbance. Analysis suggests human activity within the last six months. West’s files make no mention of this level."
+TFTV_INCIDENT_15_OUTCOME_0_FAIL,Text,,"We reached the second sublevel before encountering unstable structure and collapsed halls. Still, the walls bore scratched symbols: half-military, half-religious. Something was worshipped down here."
+TFTV_INCIDENT_15_OUTCOME_1_FAIL,Text,,"Scans were inconclusive, but irregular heat signatures suggest recent passage. The haven’s commander thanked us and quietly doubled the guard near the lower sectors."
+TFTV_INCIDENT_16_TITLE_NJ,Text,Req: Melquiades first quest compeleted,Unwelcome Goods
+TFTV_INCIDENT_16_DESC,Text,,"Director, we’ve run into an old acquaintance—Staban Melquíades, the Anu-affiliated dealer in relics and curios. He’s attempting to set up a 'trade delegation' in [HavenName], offering rare tech, food concentrates, and something he calls ‘psionic insulation garments.’ The local authorities have rejected his permit outright, citing 'bio-contamination risk' and 'ideological infiltration.' Melquíades insists this is a simple business venture."
+TFTV_INCIDENT_16_CHOICE_0_P,Text,,Intervene on Melquíades’s behalf. (Psycho-Sociology)
+TFTV_INCIDENT_16_CHOICE_1_C_M,Text,,Discreetly inspect the goods he’s offering. (Compute/Machinery)
+TFTV_INCIDENT_16_CHOICE_2,Text,,Stay out of it—this is between him and New Jericho. [END]
+TFTV_INCIDENT_16_OUTCOME_0_SUCCESS,Text,"Reward: +300 Mats, +300 Food",We negotiated a narrow compromise—Melquíades was allowed to sell non-biological goods outside the security perimeter. He swore this was only the beginning of ‘a glorious cross-cultural bazaar.’ The garrison commander muttered something about posting snipers trained on the booth.
+TFTV_INCIDENT_16_OUTCOME_1_SUCCESS,Text,"Reward: +100 Tech, +200 Research","His tech was surprisingly clean. Some gear may even predate the fall—old military sensor rigs, energy converters, rare materials. But one crate contained psionic-dampening cloth woven with organic filaments of unknown origin. Possibly Anu-grown. Melquíades claimed they were ‘ethically cultivated in living silence.’"
+TFTV_INCIDENT_16_OUTCOME_0_FAIL,Text,,"The talks broke down quickly. Melquíades gave a passionate speech about ‘commerce as the path to communion,’ which only deepened suspicion. He was politely escorted to the outer wall and warned never to return."
+TFTV_INCIDENT_16_OUTCOME_1_FAIL,Text,,"Most of the goods were junk or harmless scrap—but one box was sealed tight, marked with Anu script and reeking of chemical preservative. Melquíades refused to open it, citing ‘religious stipulations.’ We advised him to leave."
+TFTV_INCIDENT_17_TITLE_NJ,Text,"Requirement: 
+have an operative with NJ background",Shadow of the Atom
+TFTV_INCIDENT_17_DESC,Text,,"Director, we went to [HavenName] on a tip from [RequirementOperativeName], a former New Jericho soldier. We arrived just as a black-ops unit returned from an undisclosed expedition. Several soldiers show clear signs of radiation exposure. One was stretchered and unconscious, another refused medical scans. The commanding officer insists it was a routine salvage mission, but the men are shaken. A junior logistics officer quietly reached out to us, claiming ‘something they brought back shouldn’t exist.’"
+TFTV_INCIDENT_17_CHOICE_0_P,Text,,Speak with the injured operatives off the record. (Psycho-Sociology)
+TFTV_INCIDENT_17_CHOICE_1_C_M,Text,,Investigate the cargo brought in from the mission. (Compute/Machinery)
+TFTV_INCIDENT_17_CHOICE_2,Text,,Step back—this is New Jericho’s business. [END]
+TFTV_INCIDENT_17_OUTCOME_0_SUCCESS,Text,Reward: Extra personnel,"One of the wounded soldiers broke down. They were sent to recover something from a subterranean storage vault—sealed since before the Collapse. Inside: an intact tactical nuclear device, guarded by automated defenses. One of the squad cracked under pressure and may have opened the casing."
+TFTV_INCIDENT_17_OUTCOME_1_SUCCESS,Text,Reward: 250 Tech,"Buried beneath crates of salvaged electronics and rations, we found lead-lined shielding and an incomplete warhead assembly—its core removed. Containment protocols were improvised and unstable. The local commander told us to forget what we saw."
+TFTV_INCIDENT_17_OUTCOME_0_FAIL,Text,,"The soldiers were evasive, but their trauma was obvious. We couldn’t confirm what they found, but the fear was real."
+TFTV_INCIDENT_17_OUTCOME_1_FAIL,Text,,"We weren’t permitted full access, but radiation traces on the outer containers were well above safe thresholds. Someone tried to clean the logs—half the shipping records are missing. Something dangerous is being hidden."
+TFTV_INCIDENT_18_TITLE_NJ,Text,Req: Training Facility,Friendly Fire
+TFTV_INCIDENT_18_DESC,Text,,"A training facility at the New Jericho haven [HavenName] reports a serious incident: a recruit opened fire during a live-fire exercise, killing three of his squadmates.
+The suspect was subdued and detained, but his statements are incoherent. Local command suspects the use of mind-influence technology, possibly of Anu or Synedrion origin."
+TFTV_INCIDENT_18_CHOICE_0_B,Text,,Interrogate and examine the suspect. (Biotech)
+TFTV_INCIDENT_18_CHOICE_1_C_M,Text,,Access and analyze the facility’s security logs. (Compute/Machinery)
+TFTV_INCIDENT_18_CHOICE_2,Text,,Risking our relations with the factions is just not worth it. [END] 
+TFTV_INCIDENT_18_OUTCOME_0_SUCCESS,Text,"Reward: NJ +4, Haven Leader + 8, Materials +400","At first, the trainee insists he was “possessed”—that a foreign voice guided his hand. Under sustained questioning, the narrative collapses. He breaks down, confessing that his victims had been hazing him for weeks."
+TFTV_INCIDENT_18_OUTCOME_1_SUCCESS,Text,"Reward: NJ +4, Haven Leader + 8, Materials +400","The Phoenix team discreetly hacks the haven’s archives, recovering several weeks of footage.
+The pattern is clear: the victims repeatedly followed the suspect into maintenance corridors and supply depots—blind spots without cameras.
+The night before the shooting, audio logs capture muffled confrontations and laughter. "
+TFTV_INCIDENT_18_OUTCOME_0_FAIL,Text,,"The interrogation proceeds aggressively. The subject becomes unresponsive, then catatonic.
+Medical examination reveals severe neural stress consistent with prior trauma, but no clear cause."
+TFTV_INCIDENT_18_OUTCOME_1_FAIL,Text,,"The logs prove partially corrupted—some files overwritten, others intentionally erased.
+Only fragments remain: flickers of uniformed figures moving through blind spots, an argument cut off mid-sentence."
+TFTV_INCIDENT_19_TITLE_NJ,Text,,The Synedrion Detainees
+TFTV_INCIDENT_19_DESC,Text,,"Synedrion has denounced that the New Jericho Internal Security Bureau in [HavenName] has detained several individuals without due process—allegedly for nothing more than sympathizing with Synedrion’s political ideas.
+The ISB chief rejects the accusation, claiming the detainees form part of a terrorist cell plotting to assassinate the haven’s leader.
+The leader, caught between Synedrion’s outrage and the ISB’s certainty, has invited the Phoenix Project to verify the evidence before the situation escalates into an inter-faction incident."
+TFTV_INCIDENT_19_CHOICE_0_P,Text,,"Assess the political atmosphere in the haven.
+ (Psycho-Sociology)"
+TFTV_INCIDENT_19_CHOICE_1_C_M,Text,,"Recover erased data on the suspects.
+ (Compute/Machinery)"
+TFTV_INCIDENT_19_CHOICE_2,Text,,It's best not to get involved in anything involving the ISB. [END]
+TFTV_INCIDENT_19_OUTCOME_0_SUCCESS,Text,Reward: extra personnel,"The atmosphere in [HavenName] is tense: the ISB patrols openly, while the haven’s leadership maintains a separate personal guard. Exchanges between the two verge on open hostility.
+The supposed Synedrion sympathizers appear isolated—few even know their names."
+TFTV_INCIDENT_19_OUTCOME_1_SUCCESS,Text,Reward: extra personnel,"Most digital files concerning the suspects were purged days before the arrests.
+Fragments of metadata survive—enough to identify two of them as known petty criminals and occasional informants for the Bureau.
+Whether they were working for or against the ISB when the alleged plot was discovered remains unclear."
+TFTV_INCIDENT_19_OUTCOME_0_FAIL,Text,,"Attempts to gauge local sentiment meet with silence.
+Citizens are wary, unwilling to speak. The ISB monitors public channels closely, and even the haven’s guards seem uncertain whom they serve.
+The Phoenix team withdraws without clear findings, leaving behind an uneasy balance of fear and rumor."
+TFTV_INCIDENT_19_OUTCOME_1_FAIL,Text,,"Most of the archive is encrypted with rotating security keys. Attempts to access the logs trigger a system lockdown, and the ISB chief personally intervenes to terminate the inspection.
+Later, official statements declare that the Phoenix Project “confirmed the legitimacy of the investigation.”"
+TFTV_INCIDENT_20_TITLE_NJ,Text,"Req: Haven leader rep >50, 
+Ancient Materials researched",The Antiquities of Fort Trident
+TFTV_INCIDENT_20_DESC,Text,,"The commander of [HavenName] contacts the Phoenix Project with a delicate request.
+A private collection of what appear to be extremely valuable antiquities has recently come into his possession. Before presenting them to Tobias West as a personal gift, he wishes to confirm that they are free from biological contamination."
+TFTV_INCIDENT_20_CHOICE_0_C,Text,,Conduct a scientific examination of the artifacts. (Compute)
+TFTV_INCIDENT_20_CHOICE_1_E_P,Text,,Investigate how the artifacts came into the leader’s possession. (Psycho-Sociology / Exploration approach)
+TFTV_INCIDENT_20_CHOICE_2,Text,,This is none of our business. [END]
+TFTV_INCIDENT_20_OUTCOME_0_SUCCESS,Text,Reward: 150 Orichalcum,"The artifacts are undeniably ancient—older than any known human civilization.
+Their composition suggests deliberate manufacture, yet isotope dating places their origin long before Homo sapiens.
+Recognizing the potential ramifications, the operatives quietly inform the haven leader that the objects are merely ossified remains of a long-dead Pandoran organism and should be disposed of safely.
+The leader accepts the report without question, grateful for Phoenix’s “swift containment.”"
+TFTV_INCIDENT_20_OUTCOME_1_SUCCESS,Text,Reward: 250 Orichalcum,"Discreet questioning and record tracing reveal that the artifacts were gifts from a group of refugees recently granted haven residence.
+Tracking them down, the operatives learn that one man claims descent from a member of the 1937 Antarctic expedition aboard the MV Pontus.
+He explains that the relics have been passed through his family for generations—kept hidden for fear of attracting attention.
+To protect the refugees, Phoenix certifies that the artifacts are uncontaminated.
+In gratitude, the old man quietly offers the operatives a more valuable piece from his great-great-grandfather’s collection."
+TFTV_INCIDENT_20_OUTCOME_0_FAIL,Text,,"The examination yields inconclusive results. Unknown organic residues trigger minor contamination alarms, forcing an emergency sterilization of the lab.
+The commander, alarmed by the incident, orders the entire collection destroyed and files a complaint about Phoenix’s “reckless procedures.”"
+TFTV_INCIDENT_20_OUTCOME_1_FAIL,Text,,"The inquiry draws unwanted attention. The haven’s security apparatus interprets Phoenix’s questions as political probing and cuts access to local records.
+The refugees vanish overnight, leaving only empty dormitories and a sense that the truth—whatever it was—has slipped once again beneath the ice."
+TFTV_INCIDENT_21_TITLE_NJ,Text,Req: Production Facility district,The Malfunctioning Factory
+TFTV_INCIDENT_21_DESC,Text,,"A major industrial complex in [HavenName] has reported a growing number of accidents and equipment failures, causing significant delays in production quotas.
+The haven’s leader, under pressure from higher command, has requested assistance from the Phoenix Project to determine the cause."
+TFTV_INCIDENT_21_CHOICE_0_M,Text,,Inspect the machinery and production systems. (Machinery)
+TFTV_INCIDENT_21_CHOICE_1_B_P,Text,,Interview the workers and examine their condition. (Biotech / Psycho-Sociology)
+TFTV_INCIDENT_21_CHOICE_2,Text,,New Jericho should be able to handle this themselves. [END]
+TFTV_INCIDENT_21_OUTCOME_0_SUCCESS,Text,"Reward: +4 NJ, +8 Haven leader, +400 materials","The Phoenix team conducts a detailed inspection of the plant.
+While the control room is spotless and equipped with modern interfaces—the part of the facility the haven leader proudly tours—the factory floor tells a different story.
+Most of the machines are relics from the pre-Collapse era, hastily refitted and forced into production cycles they were never designed to sustain."
+TFTV_INCIDENT_21_OUTCOME_1_SUCCESS,Text,"Reward: +4 NJ, +8 Haven leader, +400 materials","The operatives find the workforce exhausted and malnourished. Shifts run sixteen hours or longer, with little rest between cycles.
+Most workers express loyalty to New Jericho, but their eyes betray fear more than conviction."
+TFTV_INCIDENT_21_OUTCOME_0_FAIL,Text,,"The inspection is repeatedly interrupted by the haven’s overseers, citing safety protocols and “classified manufacturing processes.”
+The Phoenix team gathers little beyond surface impressions."
+TFTV_INCIDENT_21_OUTCOME_1_FAIL,Text,,"Attempts to speak with workers are quickly shut down by the plant’s foremen.
+Rumors spread that Phoenix agents are there to punish “inefficient citizens.”
+The workers become uncooperative."
+TFTV_INCIDENT_22_TITLE_NJ,Text,Requirement: nearby Synedrion Haven,The Negotiation Table
+TFTV_INCIDENT_22_DESC,Text,,"[HavenName] is attempting to finalize a trade treaty with a nearby Synedrion settlement of [RequirementHavenName], but progress has stalled.
+The haven’s leader requests Phoenix Project assistance, claiming that the Synedrion delegation keeps reopening issues already agreed upon.
+“They say they’re a real democracy,” the leader explains with visible irritation, “so apparently every clause must be reapproved by their entire population. We can’t negotiate with a crowd.”"
+TFTV_INCIDENT_22_CHOICE_0_M_P,Text,,Meet the Synedrion delegates under the pretext of discussing logistics automation. (Machinery)
+TFTV_INCIDENT_22_CHOICE_1_C_E,Text,,Gain access to the Synedrion delegation’s communications channel. (Compute / Exploration approach)
+TFTV_INCIDENT_22_CHOICE_2,Text,,They are more likely to hash out a deal without the involvement of a third party. [END]
+TFTV_INCIDENT_22_OUTCOME_0_SUCCESS,Text,"Reward: +4 NJ, +8 Haven leader, +400 materials","Outwardly, the Synedrion delegates appear articulate, and cooperative.
+Yet once the discussion turns to specifics—tonnage, supply routes, or even basic definitions—they falter.
+It becomes clear they are reciting from a prepared script, improvising when lines run out."
+TFTV_INCIDENT_22_OUTCOME_1_SUCCESS,Text,"Reward: +4 NJ, +8 Haven leader, +400 materials","The Phoenix team intercepts some communications between Synedrion delegation and [RequirementHavenName].
+Turns out the delegates are not negotiating of their own accord; every instruction, every response, is generated and transmitted by an administrative AI."
+TFTV_INCIDENT_22_OUTCOME_0_FAIL,Text,,"Attempts to engage the delegates are repeatedly postponed by procedural “consultations.”
+When the Phoenix operatives finally meet them, the conversation remains superficial, and every question is deflected with smiling vagueness.
+By the end of the day, the talks have achieved nothing except more meetings on the schedule."
+TFTV_INCIDENT_22_OUTCOME_1_FAIL,Text,,"The hacking attempt triggers an alert in the Synedrion network.
+All external channels are locked, and the delegates suddenly become defensive, accusing Phoenix of espionage.
+The trade talks collapse within hours, replaced by formal protests and a chorus of automated out-of-office replies."
+TFTV_INCIDENT_23_TITLE_NJ,Text,Req: same haven as Synedrion Detainees,The Administrator’s Demise
+TFTV_INCIDENT_23_DESC,Text,,"The leader of [HavenName] has been found dead in her quarters—stabbed multiple times, the body carefully arranged in what appears to be a ritual pattern.
+The Internal Security Bureau blames Anu sympathizers.
+With the haven already on edge after the recent arrests of the Synedrion sympathizers, Phoenix Project has been called in once again to conduct an independent investigation."
+TFTV_INCIDENT_23_CHOICE_0_C,Text,,Investigate the ISB chief and his recent activities. (Compute)
+TFTV_INCIDENT_23_CHOICE_1_O_P,Text,,Search for the real murderer among the haven’s personnel. (Occult / Psycho-Sociology)
+TFTV_INCIDENT_23_CHOICE_2,Text,,The Disciples might well be involved; better stay out of faction rivalry. [END]
+TFTV_INCIDENT_23_OUTCOME_0_SUCCESS,Text,Reward: additional personnel,"Phoenix operatives discreetly access the Bureau’s internal systems and personal records belonging to the ISB chief.
+The data shows a man consumed by bureaucracy and paranoia. He has been filing exhaustive loyalty reports on virtually every citizen, complaining incessantly about “civilian interference” and “administrative decay.”"
+TFTV_INCIDENT_23_OUTCOME_1_SUCCESS,Text,Reward: +4 NJ +8 Haven Leader + 400 Mats,"The last person seen near the Administrator’s quarters before the power outage was the communications officer.
+When confronted, her demeanor fractures. She insists she “didn’t do it,” speaking to someone not present in the room.
+As security moves in, she begins screaming, “He slouches! He slouches towards Bethlehem!” before collapsing in convulsions."
+TFTV_INCIDENT_23_OUTCOME_0_FAIL,Text,,"The Bureau’s archives are heavily encrypted and closely monitored.
+The attempt to access them triggers a counter-surveillance sweep. Within hours, Phoenix operatives are politely escorted out of the haven.
+The ISB releases a statement asserting that “foreign interference” has been detected and that the investigation is now closed."
+TFTV_INCIDENT_23_OUTCOME_1_FAIL,Text,,"The interviews lead nowhere. Witnesses contradict each other or simply refuse to talk.
+The murder weapon is never found, and the autopsy report is sealed before Phoenix can access it.
+The ISB announces that “an Anu extremist cell has been neutralized,” but no names are released."
+TFTV_INCIDENT_24_TITLE_NJ,Text,Req: nearby destroyed haven,Reclaiming the Ruins
+TFTV_INCIDENT_24_DESC,Text,,"The New Jericho haven of [HavenName] is considering reclaiming a nearby destroyed haven.
+
+A reconnaissance team has already surveyed the site, and preliminary data has been gathered.
+
+Before committing personnel and resources, the haven leadership has asked the Phoenix Project to assess the findings and advise on the feasibility of reclamation."
+TFTV_INCIDENT_24_CHOICE_0_C,Text,,"Analyze the reconnaissance data.
+(Compute)"
+TFTV_INCIDENT_24_CHOICE_1_E_P,Text,,"Debrief the reconnaissance team in person.
+(Exploration / Psycho-Sociology approach)"
+TFTV_INCIDENT_24_CHOICE_2,Text,,"We are not interested in New Jericho Reclamation efforts, we need to deal with the Pandoravirus menace. [END]"
+TFTV_INCIDENT_24_OUTCOME_0_SUCCESS,Text,Reward: +4 NJ +8 Haven Leader + 400 Mats,"Structural damage is extensive, environmental hazards persistent, and Pandoran presence likely.
+
+Even maintaining a secure perimeter—let alone restoring infrastructure—would require manpower far beyond what [HavenName] can realistically spare."
+TFTV_INCIDENT_24_OUTCOME_1_SUCCESS,Text,Reward: +4 NJ +8 Haven Leader + 400 Mats,"The recon team recounts their findings haltingly.
+
+The dead. The destruction. The silence.
+
+Seeing the ruins of the Old World is one thing—tragic, but distant. This is different."
+TFTV_INCIDENT_24_OUTCOME_0_FAIL,Text,,"The data is fragmented and inconsistent.
+
+Sensor feeds cut out intermittently, mapping files contradict each other, and several key telemetry logs are missing entirely.
+
+Any conclusions drawn would be speculative at best.
+
+Haven leadership files the report away, unresolved and increasingly frustrated."
+TFTV_INCIDENT_24_OUTCOME_1_FAIL,Text,,"The debrief goes poorly.
+
+Several members of the team shut down, unwilling or unable to articulate what they experienced.
+
+Others default to bravado and minimization, brushing aside details that clearly trouble them."
+TFTV_INCIDENT_25_TITLE_NJ,Text,,Black Streaks
+TFTV_INCIDENT_25_DESC,Text,,"A medical officer from the New Jericho haven of [HavenName] contacts the Phoenix Project with an urgent request.
+
+A lone survivor from a scouting patrol has been recovered in a near-catatonic state. His armor is streaked with a black, tar-like substance.
+
+The rest of the patrol is missing.
+
+Fearing a contagious agent, the medical staff has isolated the patient and halted further investigation pending Phoenix guidance."
+TFTV_INCIDENT_25_CHOICE_0_E,Text,,"Analyze the patrol’s mission data and trajectory.
+(Exploration)"
+TFTV_INCIDENT_25_CHOICE_1_B_P,Text,,"Examine the patient and attempt communication.
+(Biotech / Psycho-Sociology approach)"
+TFTV_INCIDENT_25_CHOICE_2,Text,,"It could be anything, we don't have time for this. [END]"
+TFTV_INCIDENT_25_OUTCOME_0_SUCCESS,Text,Reward: +4 NJ +8 Haven Leader + 400 Mats,"Phoenix aircraft perform a low-altitude flyby of the area where the survivor’s armor was likely contaminated. A depression filled with viscous black residue is located—thick, inert, and unremarkable under sensors. There are no signs of combat, no biological threats beyond known Pandoran activity, and no trace of the missing soldiers."
+TFTV_INCIDENT_25_OUTCOME_1_SUCCESS,Text,Reward: +4 NJ +8 Haven Leader + 400 Mats,"It takes time to break through the survivor’s isolation. Gradually, fragments of memory surface.
+
+He describes a pool of black substance—liquid, but not water. From it, humanoid shapes would rise. 
+
+They dragged his teammates into the pool.
+
+Later, they emerged again, changed.
+
+Analysis confirms the black streaks on his armor are nothing more than dirt and organic residue."
+TFTV_INCIDENT_25_OUTCOME_0_FAIL,Text,,"The patrol data is incomplete.
+
+Several waypoints were never logged, and sensor telemetry cuts out during key moments of the mission.
+
+The flyby yields nothing conclusive.
+
+The terrain remains quiet, empty, and unhelpfully ordinary."
+TFTV_INCIDENT_25_OUTCOME_1_FAIL,Text,,"The patient does not respond.
+
+Every attempt at communication triggers distress responses—elevated heart rate, violent shaking, and dissociation.
+
+The medical officer halts the session, citing risk of permanent psychological damage.
+
+The survivor remains alive, silent, and alone with whatever he remembers."
+TFTV_INCIDENT_26_TITLE_NJ,Text,"Requirement: haven with sat uplink, and nearby infested haven",Echoes Beyond the Signal
+TFTV_INCIDENT_26_DESC,Text,,"A New Jericho haven reports fragments of strange transmissions intercepted by a satellite uplink.
+
+The signals are intermittent, distorted, and do not match any known human or Pandoran communication patterns.
+
+Local analysts are unable to determine their origin or meaning and have requested Phoenix Project assistance before the matter is escalated further."
+TFTV_INCIDENT_26_CHOICE_0_M,Text,,"Attempt to triangulate the origin of the transmissions.
+(Machinery approach)"
+TFTV_INCIDENT_26_CHOICE_1_C_O,Text,,"Analyze the transmission structure and attempt interpretation.
+(Compute / Occult approach)"
+TFTV_INCIDENT_26_CHOICE_2,Text,,"It could be anything, there are countless strange signals out there. [END]"
+TFTV_INCIDENT_26_OUTCOME_0_SUCCESS,Text,Reward: +4 NJ +8 Haven Leader + 400 Research,"Cross-referencing satellite telemetry with Phoenix Project data allows partial triangulation.
+
+The transmissions appear to originate from the vicinity of [RequirementHavenName], a haven that recently fell to Pandoran infestation.
+
+Curiously, the signal behaves as though it is being refracted—bent and distorted by localized interference that does not correspond to atmospheric or electromagnetic models.
+
+It is as if the space around the infested haven is allowing something else to bleed through the signal."
+TFTV_INCIDENT_26_OUTCOME_1_SUCCESS,Text,Reward: +4 NJ +8 Haven Leader + 400 Research,"After extensive filtering, portions of the transmission become unexpectedly clear.
+
+The signal resolves into a structured language, governed by syntax and repetition.
+
+Its meaning remains inaccessible, but one pattern appears again and again—regular, urgent, unmistakable. Like a warning, a call for help, or perhaps an emergency broadcast."
+TFTV_INCIDENT_26_OUTCOME_0_FAIL,Text,,"The triangulation attempt produces contradictory results.
+
+Each recalculation places the signal somewhere else, sometimes hundreds of kilometers apart.
+
+The uplink behaves inconsistently, as though the source itself cannot be fixed in space.
+
+New Jericho files the anomaly under “unresolved interference.”"
+TFTV_INCIDENT_26_OUTCOME_1_FAIL,Text,,"Every attempt to stabilize the signal introduces further distortion.
+
+Filters collapse into static, and decoding routines begin to loop endlessly.
+
+At one point, the system briefly locks up, forcing a manual reset of the uplink.
+
+The data remains unreadable, leaving only fragments and an uneasy sense that something was missed."
+TFTV_INCIDENT_27_TITLE_NJ,Text,Req: haven survived Pandoran attack,Broken Chain
+TFTV_INCIDENT_27_DESC,Text,,"The inhabitants of the New Jericho haven of [HavenName] are still reeling after a recent Pandoran assault.
+
+The attack was repelled, but at a heavy cost. Many are dead or wounded, and key defensive installations were damaged.
+
+In the aftermath, it becomes apparent that the haven’s garrison commander is missing."
+TFTV_INCIDENT_27_CHOICE_0_C_M,Text,,"Review security footage and after-action reports.
+(Machinery / Compute approach)"
+TFTV_INCIDENT_27_CHOICE_1_B_E,Text,,"Conduct a forensic investigation of the headquarters.
+(Exploration / Biotech approach)"
+TFTV_INCIDENT_27_CHOICE_2,Text,,Surely they can find the body themselves. [END]
+TFTV_INCIDENT_27_OUTCOME_0_SUCCESS,Text,Reward: +4 NJ +8 Haven Leader + 400 Mats,"The garrison commander vanished shortly before the attack began.
+
+He was not alone. At least two junior officers with direct responsibility for perimeter defenses are also unaccounted for.
+
+Their last recorded movements suggest no struggle, no alarm—only absence."
+TFTV_INCIDENT_27_OUTCOME_1_SUCCESS,Text,Reward: +4 NJ +8 Haven Leader + 400 Mats,"A careful forensic sweep of headquarters uncovers a single anomaly.
+
+A ventilation duct cover in a restroom near the command offices is missing.
+
+Inside the duct, Phoenix operatives identify traces of dried organic residue.
+
+The material is consistent with secretions commonly associated with Triton activity."
+TFTV_INCIDENT_27_OUTCOME_0_FAIL,Text,,"The data is incomplete.
+
+Several cameras were disabled during the attack, while others appear to have looped corrupted footage.
+
+After-action reports contradict one another, filed hastily and under extreme stress.
+
+No clear sequence of events can be reconstructed.
+
+What happened before the attack remains lost in the confusion."
+TFTV_INCIDENT_27_OUTCOME_1_FAIL,Text,,"The investigation is hampered by extensive contamination.
+
+Emergency responders, medical teams, and repair crews moved freely through the headquarters before the site could be secured.
+
+Biological traces are degraded beyond usefulness, and structural damage obscures potential points of entry.
+
+The trail goes cold before it can even begin."
+TFTV_INCIDENT_28_TITLE_NJ,Text,Req: nearby liberated infested New Jericho haven,Clearance
+TFTV_INCIDENT_28_DESC,Text,,"Following the arrival of several refugee groups, medical screening at [HavenName] has identified multiple individuals testing positive for the Pandoravirus.
+
+All refugees have been placed under immediate quarantine."
+TFTV_INCIDENT_28_CHOICE_0_B,Text,,"Conduct a detailed examination of the quarantined refugees.
+(Biotech)"
+TFTV_INCIDENT_28_CHOICE_1_C_M,Text,,"Review and assess New Jericho’s infection detection procedures.
+(Compute / Machinery)"
+TFTV_INCIDENT_28_CHOICE_2,Text,,No matter what we do they are never leaving quarantine. [END]
+TFTV_INCIDENT_28_OUTCOME_0_SUCCESS,Text,Reward: Research +300,"Nearly all refugees - not just those that tested positive - exhibit one or more markers that could be associated with Pandoravirus exposure, but a reaction to the virus does not imply infection. It is also not possible to establish whether exposure ocurred during the infestation of [RequirementHavenName], or long before it. "
+TFTV_INCIDENT_28_OUTCOME_1_SUCCESS,Text,Reward: Research +300,"Though seemingly complex and thorough, New Jericho’s screening protocols are narrowly defined; detection focuses on specific biomarkers known to correlate with mutations or late-stage Pandoran adaptation, but which can also sometimes appear after an immune reaction. "
+TFTV_INCIDENT_28_OUTCOME_0_FAIL,Text,,"Several refugees refuse further examination, fearing the results will be used to justify permanent isolation.
+
+Stress responses interfere with testing, and cooperation deteriorates rapidly.
+
+The data remains inconclusive, and suspicion deepens on both sides of the quarantine barrier."
+TFTV_INCIDENT_28_OUTCOME_1_FAIL,Text,,"The procedures are classified, fragmented across multiple departments, and inconsistently applied.
+
+Responsibility is diffused. No one can fully explain why one individual is isolated while another is cleared.
+
+What was meant to reassure instead reinforces the impression that certainty is being improvised."
+TFTV_INCIDENT_29_TITLE_NJ,Text,Req: nearby haven with both research and advanced training facility,Transferred
+TFTV_INCIDENT_29_DESC,Text,,"An instructor at a New Jericho school in [HavenName] contacts the Phoenix Project with a concern.
+
+Many of her students are orphans under the care of New Jericho. Over the past weeks, several have stopped attending classes.
+
+When questioned, the facility’s warden responds laconically that the children have been transferred to another haven."
+TFTV_INCIDENT_29_CHOICE_0_C,Text,,"Hack into the warden’s personal files and correspondence.
+(Compute)"
+TFTV_INCIDENT_29_CHOICE_1_E_P,Text,,"Speak with the remaining wards and orphanage personnel.
+(Psycho-Sociology / Exploration approach)"
+TFTV_INCIDENT_29_CHOICE_2,Text,,We have more important things to do. [END]
+TFTV_INCIDENT_29_OUTCOME_0_SUCCESS,Text,Reward: Extra personnel,"For the warden the transfers appear to be a bureaucratic obligation—tedious, poorly explained, and outside her core responsibilities.
+
+Cross-referencing medical and administrative logs reveals a pattern: all transferred wards underwent medical examinations within weeks of departure.
+
+Every transfer destination is the same: [RequirementHavenName], a New Jericho haven that houses a research complex and an advanced training facility."
+TFTV_INCIDENT_29_OUTCOME_1_SUCCESS,Text,Reward: Extra personnel,"Conversations with staff yield little; most repeat the official explanation without comment.
+
+The children, however, speak more freely.
+
+Some talk in hushed, excited tones about a place they call the Royal Stables at [RequirementHavenName].
+
+They describe better food, cleaner quarters, and a special training program.
+
+Their tone is reverent, almost awed."
+TFTV_INCIDENT_29_OUTCOME_0_FAIL,Text,,"The files are sparse and poorly organized.
+
+Large portions of the warden’s correspondence appear to have been archived automatically, beyond Phoenix’s reach.
+
+What remains suggests routine compliance rather than initiative.
+
+If there is intent behind the transfers, it is being generated elsewhere."
+TFTV_INCIDENT_29_OUTCOME_1_FAIL,Text,,"Staff grow defensive as questions continue.
+
+They insist that Phoenix has no jurisdiction over internal child welfare decisions.
+
+The wards fall silent, watching carefully to see who is listening.
+
+Whatever rumors exist retreat further out of reach."

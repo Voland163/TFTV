@@ -47,11 +47,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Security.Policy;
 using TFTV.TFTVUI.Geoscape;
 using UnityEngine;
 using UnityEngine.UI;
-using static Base.Utils.TopologicalSorter;
 
 namespace TFTV
 {
@@ -91,7 +89,7 @@ namespace TFTV
 
         public static void ClearInternalDataOnStateLoadAndChange()
         {
-            try 
+            try
             {
                 PhoenixBasesUnderAttack = new Dictionary<int, Dictionary<string, double>>();
                 PhoenixBasesInfested.Clear();
@@ -481,7 +479,7 @@ namespace TFTV
 
                     string gUID1 = "{BFD120C0-61DF-4B93-A369-F8D5DB99BB35}";
                     string name1 = "TFTVBaseDefensePrompt0";
-                    
+
                     TacticalPromptDef newPrompt1 = Helper.CreateDefFromClone(source, gUID1, name1);
 
                     newPrompt1.PromptText.LocalizationKey = "BASEDEFENSE_VENTING_PROMPT0";
@@ -677,7 +675,7 @@ namespace TFTV
                     {
                         if (PandoransThatCanEscape == null
                             || geoSite == null
-                            || PandoransThatCanEscape.Count() == 0 
+                            || PandoransThatCanEscape.Count() == 0
                             || !PandoransThatCanEscape.ContainsKey(geoSite.SiteId)
                              || ContainmentBreachSchedule.ContainsKey(geoSite.SiteId))
                         {
@@ -1328,7 +1326,7 @@ namespace TFTV
                 }
             }
 
-            
+
 
             //Patch to add base to TFTV schedule
             [HarmonyPatch(typeof(SiteAttackSchedule), "StartAttack")]
@@ -1362,29 +1360,29 @@ namespace TFTV
                                setter.Invoke(__instance.Site, new object[] { GeoSiteState.Functioning });
                            }*/
 
-                           TFTVLogger.Always($"StartAttack invoked for {__instance.Site.LocalizedSiteName} " +
-                               $"__instance.Site.Type: {__instance.Site.Type} __instance.Site.Owner.PPFactionDef.name:  {__instance.Site?.Owner?.PPFactionDef?.name}" +
-                               $"__instance.Site.State: {__instance.Site.State} excavated: {__instance.Site.IsExcavated()}, site id {__instance.Site.SiteId}");
+                        TFTVLogger.Always($"StartAttack invoked for {__instance.Site.LocalizedSiteName} " +
+                            $"__instance.Site.Type: {__instance.Site.Type} __instance.Site.Owner.PPFactionDef.name:  {__instance.Site?.Owner?.PPFactionDef?.name}" +
+                            $"__instance.Site.State: {__instance.Site.State} excavated: {__instance.Site.IsExcavated()}, site id {__instance.Site.SiteId}");
 
 
 
 
 
-                          /* foreach(GeoSite geoSite in controller.Map.AllSites.Where(s=>s.Type==GeoSiteType.AncientHarvest || s.Type == GeoSiteType.AncientRefinery))
-                           {
-                               TFTVLogger.Always($"Site: {geoSite.LocalizedSiteName} Type: {geoSite.Type} Owner: {geoSite?.Owner?.PPFactionDef?.name} State: {geoSite.State} IsExcavated: {geoSite.IsExcavated()}");
-                               if (geoSite.State == GeoSiteState.Destroyed && geoSite.IsExcavated()) 
-                               {
-                                   setter.Invoke(geoSite, new object[] { GeoSiteState.Functioning });
+                        /* foreach(GeoSite geoSite in controller.Map.AllSites.Where(s=>s.Type==GeoSiteType.AncientHarvest || s.Type == GeoSiteType.AncientRefinery))
+                         {
+                             TFTVLogger.Always($"Site: {geoSite.LocalizedSiteName} Type: {geoSite.Type} Owner: {geoSite?.Owner?.PPFactionDef?.name} State: {geoSite.State} IsExcavated: {geoSite.IsExcavated()}");
+                             if (geoSite.State == GeoSiteState.Destroyed && geoSite.IsExcavated()) 
+                             {
+                                 setter.Invoke(geoSite, new object[] { GeoSiteState.Functioning });
 
-                                   if (geoSite.ActiveMission == null)
-                                   {
-                                       IGeoFactionMissionParticipant factionMissionParticipant = controller.GetFactionMissionParticipant(controller.ArcheologySettings.AncientsFactionDef);
-                                       geoSite.CreateAncientSiteMission(factionMissionParticipant, false);
-                                   }
-                               }
+                                 if (geoSite.ActiveMission == null)
+                                 {
+                                     IGeoFactionMissionParticipant factionMissionParticipant = controller.GetFactionMissionParticipant(controller.ArcheologySettings.AncientsFactionDef);
+                                     geoSite.CreateAncientSiteMission(factionMissionParticipant, false);
+                                 }
+                             }
 
-                           }*/
+                         }*/
 
                         /*controller.EventSystem.SetVariable("CyclopsBuiltVariable", 0);
                          TFTVLogger.Always($"Player failed the Cyclops mission, need to clean up");
@@ -1393,7 +1391,7 @@ namespace TFTV
 
                         GeoLevelController controller = __instance.Site.GeoLevel;
                         GeoSite phoenixBase = __instance.Site;
-                       
+
                         PPFactionDef factionDef = __instance.Attacker;
 
                         if (factionDef == Shared.AlienFactionDef)
@@ -2118,11 +2116,16 @@ namespace TFTV
 
                     GeoPhoenixBase phoenixBase = geoMission.Site.GetComponent<GeoPhoenixBase>();
                     TacCharacterDef mfSecurityGuardTemplate = TFTVBaseDefenseTactical.Defs.MFedSecurityGuard;
-                    int securityStations = phoenixBase.Layout.Facilities.Count(f => f.Def.name.Equals("SecurityStation_PhoenixFacilityDef")) - TFTVBaseDefenseTactical.StartingDeployment.SecurityStationsUnderConstruction; 
+                    int securityStations = phoenixBase.Layout.Facilities.Count(f => f.Def.name.Equals("SecurityStation_PhoenixFacilityDef")) - TFTVBaseDefenseTactical.StartingDeployment.SecurityStationsUnderConstruction;
 
                     ClassTagDef securityGuardTag = TFTVBaseDefenseTactical.Defs.MFSecurityGuardClassTag;
 
-                    int mindFraggedGuards = securityStations * 2;
+                    int mindFraggedGuards = securityStations;
+
+                    if (timer < 6)
+                    {
+                        mindFraggedGuards *= 2;
+                    }
 
                     if (mindFraggedGuards == 0)
                     {
@@ -2195,7 +2198,8 @@ namespace TFTV
                                 {
                                     TFTVBaseDefenseTactical.PandoransInContainment.Add(item, 1);
                                 }
-                            };
+                            }
+                            ;
                         }
 
                         if (ContainmentBreachSchedule != null
@@ -2630,7 +2634,7 @@ namespace TFTV
 
             internal class AddressBadLayout
             {
-               
+
                 /// <summary>
                 /// This checks for all facilities under construction (so that there are no empty tunnels on the map), and for damaged/under construction security stations, so they don't spawn guards
                 /// </summary>
@@ -2655,12 +2659,12 @@ namespace TFTV
                             foreach (GeoPhoenixFacility facility in geoPhoenixFacilities)
                             {
 
-                                if(facility.State == GeoPhoenixFacility.FacilityState.UnderContstruction)
+                                if (facility.State == GeoPhoenixFacility.FacilityState.UnderContstruction)
                                 {
                                     stateProperty.SetValue(facility, GeoPhoenixFacility.FacilityState.Damaged);
                                     facilitiesUnderConstruction.Add(facility);
                                 }
-                               
+
                                 if (facility.Def == DefCache.GetDef<PhoenixFacilityDef>("SecurityStation_PhoenixFacilityDef"))
                                 {
                                     TFTVBaseDefenseTactical.StartingDeployment.SecurityStationsUnderConstruction += 1;
@@ -2669,7 +2673,7 @@ namespace TFTV
                             }
                         }
 
-                        
+
 
 
                         return facilitiesUnderConstruction;
@@ -2737,7 +2741,7 @@ namespace TFTV
                                 bool anyFunctioningTrainingFacility = __instance.Facilities.Any(facility =>
                                    facility.Def == trainingFacilityDef && facility.State == GeoPhoenixFacility.FacilityState.Functioning);
 
-                               TFTVLogger.Always($"anyFunctioningTrainingFacility: {anyFunctioningTrainingFacility} anyPoweredTrainingFacility: {anyPoweredTrainingFacility}");
+                                TFTVLogger.Always($"anyFunctioningTrainingFacility: {anyFunctioningTrainingFacility} anyPoweredTrainingFacility: {anyPoweredTrainingFacility}");
 
                                 bool hasActiveSecurityStation = __instance.Facilities.Any(facility =>
                                     facility.Def == securityStationDef &&
@@ -3261,39 +3265,33 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(EnterBaseAbility), "ActivateInternal")]
-        public static class EnterBaseAbility_ActivateInternal_patch
+        public static bool UseEnterBaseAbilityToInitiateBaseDefense(EnterBaseAbility __instance, GeoAbilityTarget target)
         {
-            public static bool Prefix(EnterBaseAbility __instance, GeoAbilityTarget target)
+            try
             {
-                try
+                if (target.Actor is GeoSite site && site.ActiveMission != null && site.CharactersCount > 0
+                      &&
+                      (site.Vehicles.Count() == 0 || !site.Vehicles.Any(v => v.GetCharacterCount() > 0)))
                 {
-                    TFTVLogger.Always($"ActivateInternalfor ability {__instance.GeoscapeAbilityDef.name}");
 
-                    if (target.Actor is GeoSite site && site.ActiveMission != null && site.CharactersCount > 0
-                        &&
-                        (site.Vehicles.Count() == 0 || !site.Vehicles.Any(v => v.GetCharacterCount() > 0)))
-                    {
-                        TFTVLogger.Always($"Deploying Base Defense");
-                        GeoSite geoSite = (GeoSite)target.Actor;
-                        //  GeoVehicle initialContainer = (GeoVehicle)base.Actor;
+                    GeoSite geoSite = (GeoSite)target.Actor;
 
-
-                        __instance.GeoLevel.View.LaunchMission(geoSite.ActiveMission);
-                        return false;
-                    }
-
+                    TFTVLogger.Always($"[EnterBaseAbility.ActivateInternal] Launching base defense at {geoSite.LocalizedSiteName}");
+                    __instance.GeoLevel.View.LaunchMission(geoSite.ActiveMission);
                     return true;
+                }
 
 
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    throw;
-                }
+                return false;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
             }
         }
+
+       
 
         //These patches cancel the listeners added by the Register Mission method used in the TFTVAAExperiment.cs to force the base defense
         //mission when timer expires
@@ -3611,7 +3609,7 @@ namespace TFTV
             }
         }
 
-        
+
 
 
         //Patches to prevent recruiting to a base under attack
@@ -3727,7 +3725,7 @@ namespace TFTV
         }
 
 
-      
+
 
 
 
@@ -3835,8 +3833,8 @@ namespace TFTV
             }
         }
 
-      
-  
+
+
 
 
     }
