@@ -1,3 +1,4 @@
+using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
@@ -15,6 +16,37 @@ namespace TFTV.TFTVIncidents
     {
         private const string PanelRootName = "[Mod]AffinityBenefitChoiceRoot";
         private const string DiagTag = "[Incidents][AffinityChoiceUI]";
+        private const string KeyChoiceHeader = "KEY_AFFINITY_CHOICE_UI_HEADER";
+        private const string KeyChoiceGranted = "KEY_AFFINITY_CHOICE_UI_GRANTED";
+        private const string KeyChoiceTrackGeoscape = "KEY_AFFINITY_CHOICE_UI_TRACK_GEOSCAPE";
+        private const string KeyChoiceTrackTactical = "KEY_AFFINITY_CHOICE_UI_TRACK_TACTICAL";
+        private const string KeyChoiceSelected = "KEY_AFFINITY_CHOICE_UI_SELECTED";
+        private const string KeyChoiceOptionA = "KEY_AFFINITY_CHOICE_UI_OPTION_A";
+        private const string KeyChoiceOptionB = "KEY_AFFINITY_CHOICE_UI_OPTION_B";
+        private const string AffinityResultNoChangeText = "No change";
+        private const string AffinityResultRankSeparator = " rank ";
+
+        private const float PanelWidth = 820f;
+        private const float PanelRightMargin = 24f;
+        private const float PanelTopMargin = 170f;
+
+        private struct BenefitTrack
+        {
+            internal BenefitTrack(string localizationKey, bool isGeoscape)
+            {
+                LocalizationKey = localizationKey;
+                IsGeoscape = isGeoscape;
+            }
+
+            internal string LocalizationKey { get; }
+            internal bool IsGeoscape { get; }
+        }
+
+        private static readonly BenefitTrack[] BenefitTracks =
+        {
+            new BenefitTrack(KeyChoiceTrackGeoscape, true),
+            new BenefitTrack(KeyChoiceTrackTactical, false)
+        };
 
         private static readonly FieldInfo SummaryByExactKeyField =
             AccessTools.Field(typeof(IncidentOutcomeSummaryUI), "SummaryByExactKey");
@@ -83,12 +115,7 @@ namespace TFTV.TFTVIncidents
             {
                 try
                 {
-                    if (__instance == null || geoEvent?.Context == null || pagingEvent)
-                    {
-                        return;
-                    }
-
-                    TryRenderAffinityChoicePanel(__instance, geoEvent);
+                    RenderIfEligible(__instance, geoEvent, pagingEvent);
                 }
                 catch (Exception e)
                 {
@@ -104,17 +131,29 @@ namespace TFTV.TFTVIncidents
             {
                 try
                 {
-                    if (__instance == null || geoEvent?.Context == null)
-                    {
-                        return;
-                    }
-
-                    TryRenderAffinityChoicePanel(__instance, geoEvent);
+                    RenderIfEligible(__instance, geoEvent, false);
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
+            }
+        }
+
+        private static void RenderIfEligible(UIModuleSiteEncounters module, GeoscapeEvent geoEvent, bool pagingEvent)
+        {
+            try
+            {
+                if (module == null || geoEvent?.Context == null || pagingEvent)
+                {
+                    return;
+                }
+
+                TryRenderAffinityChoicePanel(module, geoEvent);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
 
@@ -182,7 +221,7 @@ namespace TFTV.TFTVIncidents
 
             string affinityResultText = GetStringField(summaryData, "AffinityResultText");
             if (string.IsNullOrEmpty(affinityResultText) ||
-                string.Equals(affinityResultText, "No change", StringComparison.OrdinalIgnoreCase))
+                 string.Equals(affinityResultText, AffinityResultNoChangeText, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -261,14 +300,14 @@ namespace TFTV.TFTVIncidents
                 return false;
             }
 
-            int idx = text.LastIndexOf(" rank ", StringComparison.OrdinalIgnoreCase);
+            int idx = text.LastIndexOf(AffinityResultRankSeparator, StringComparison.OrdinalIgnoreCase);
             if (idx <= 0)
             {
                 return false;
             }
 
             string approachToken = text.Substring(0, idx).Trim();
-            string rankToken = text.Substring(idx + 6).Trim();
+            string rankToken = text.Substring(idx + AffinityResultRankSeparator.Length).Trim();
 
             if (!Enum.TryParse(approachToken, true, out approach))
             {
@@ -300,14 +339,14 @@ namespace TFTV.TFTVIncidents
                 typeof(LayoutElement));
 
             // keep parent as module transform for input/raycast consistency
-            root.transform.SetParent(module.transform, false);
+            root.transform.SetParent(parent, false);
             root.transform.SetAsLastSibling();
 
             LayoutElement layoutElement = root.GetComponent<LayoutElement>();
             layoutElement.ignoreLayout = true;
 
             RectTransform rootRect = root.GetComponent<RectTransform>();
-            ConfigurePanelRect(rootRect, module);
+            ConfigurePanelRect(rootRect);
 
             Image background = root.GetComponent<Image>();
             background.raycastTarget = false;
@@ -332,18 +371,33 @@ namespace TFTV.TFTVIncidents
 
             Text style = module.EncounterDescriptionText;
 
-            CreateText(root.transform, style, $"<b>Affinity Benefits</b>\n{approach} rank {rank} granted.", 0);
+            string headerText = string.Format(
+                "<b>{0}</b>\n{1}",
+                Localize(KeyChoiceHeader),
+                LocalizeAndFormat(KeyChoiceGranted, approach, rank));
 
-            int geoCurrent = Affinities.AffinityBenefitsChoices.GetGeoscapeBenefitChoice(level, approach);
-            int tacCurrent = Affinities.AffinityBenefitsChoices.GetTacticalBenefitChoice(level, approach);
+            CreateText(root.transform, style, headerText, 0);
 
-            CreateBenefitSelector(root.transform, style, "Geoscape", approach, rank, geoCurrent, true, level);
-            CreateBenefitSelector(root.transform, style, "Tactical", approach, rank, tacCurrent, false, level);
+            for (int i = 0; i < BenefitTracks.Length; i++)
+            {
+                BenefitTrack track = BenefitTracks[i];
+                int currentOption = track.IsGeoscape
+                    ? Affinities.AffinityBenefitsChoices.GetGeoscapeBenefitChoice(level, approach)
+                    : Affinities.AffinityBenefitsChoices.GetTacticalBenefitChoice(level, approach);
+
+                CreateBenefitSelector(
+                    root.transform,
+                    style,
+                    Localize(track.LocalizationKey),
+                    approach,
+                    rank,
+                    currentOption,
+                    track.IsGeoscape,
+                    level);
+            }
 
             LayoutRebuilder.ForceRebuildLayoutImmediate(rootRect);
 
-            int buttonCount = root.GetComponentsInChildren<Button>(true).Length;
-           
         }
 
         private static void CreateBenefitSelector(
@@ -361,11 +415,11 @@ namespace TFTV.TFTVIncidents
             Text selectedText = CreateText(
                 parent,
                 style,
-                $"Selected: {BuildBenefitPreview(approach, rank, currentOption, isGeoscape)}",
+                 LocalizeAndFormat(KeyChoiceSelected, BuildBenefitPreview(approach, rank, currentOption, isGeoscape)),
                 2);
 
-            string optionAText = $"Option A: {BuildBenefitPreview(approach, rank, 1, isGeoscape)}";
-            string optionBText = $"Option B: {BuildBenefitPreview(approach, rank, 2, isGeoscape)}";
+            string optionAText = LocalizeAndFormat(KeyChoiceOptionA, BuildBenefitPreview(approach, rank, 1, isGeoscape));
+            string optionBText = LocalizeAndFormat(KeyChoiceOptionB, BuildBenefitPreview(approach, rank, 2, isGeoscape));
 
             CreateOptionButton(parent, style, optionAText, () =>
             {
@@ -378,7 +432,7 @@ namespace TFTV.TFTVIncidents
                     Affinities.AffinityBenefitsChoices.SetTacticalBenefitChoice(level, approach, 1);
                 }
 
-                selectedText.text = $"Selected: {BuildBenefitPreview(approach, rank, 1, isGeoscape)}";
+                selectedText.text = LocalizeAndFormat(KeyChoiceSelected, BuildBenefitPreview(approach, rank, 1, isGeoscape));
             });
 
             CreateOptionButton(parent, style, optionBText, () =>
@@ -392,8 +446,33 @@ namespace TFTV.TFTVIncidents
                     Affinities.AffinityBenefitsChoices.SetTacticalBenefitChoice(level, approach, 2);
                 }
 
-                selectedText.text = $"Selected: {BuildBenefitPreview(approach, rank, 2, isGeoscape)}";
+                selectedText.text = LocalizeAndFormat(KeyChoiceSelected, BuildBenefitPreview(approach, rank, 2, isGeoscape));
             });
+        }
+
+        private static string Localize(string key)
+        {
+            return LocalizeAndFormat(key);
+        }
+
+        private static string LocalizeAndFormat(string key, params object[] args)
+        {
+            try
+            {
+                string localized = new LocalizedTextBind { LocalizationKey = key }.Localize();
+                if (string.IsNullOrEmpty(localized))
+                {
+                    localized = key;
+                }
+
+                return args == null || args.Length == 0
+                    ? localized
+                    : string.Format(localized, args);
+            }
+            catch
+            {
+                return key ?? string.Empty;
+            }
         }
 
         private static Text CreateText(Transform parent, Text style, string content, int leftPad)
@@ -496,26 +575,23 @@ namespace TFTV.TFTVIncidents
             txt.raycastTarget = false;
             txt.text = label;
 
-            
+
         }
 
-        private static void ConfigurePanelRect(RectTransform rootRect, UIModuleSiteEncounters module)
+        private static void ConfigurePanelRect(RectTransform rootRect)
         {
             if (rootRect == null)
             {
                 return;
             }
 
-            const float panelWidth = 820f;
-            const float rightMargin = 24f;
-            const float topMargin = 170f; // push below top header/buttons
-
             rootRect.anchorMin = new Vector2(1f, 1f);
             rootRect.anchorMax = new Vector2(1f, 1f);
             rootRect.pivot = new Vector2(1f, 1f);
             rootRect.localScale = Vector3.one;
-            rootRect.sizeDelta = new Vector2(panelWidth, 0f);
-            rootRect.anchoredPosition = new Vector2(-rightMargin, -topMargin);
+            rootRect.sizeDelta = new Vector2(PanelWidth, 0f);
+            rootRect.anchoredPosition = new Vector2(-PanelRightMargin, -PanelTopMargin);
+
         }
 
         private static void RemoveExistingPanel(Transform parent)
@@ -549,35 +625,30 @@ namespace TFTV.TFTVIncidents
         private static void CleanupOldAwardRecords()
         {
             DateTime cutoff = DateTime.UtcNow.AddHours(-24);
+            RemoveExpiredRecords(AwardByExactKey, cutoff);
+            RemoveExpiredRecords(AwardBySiteKey, cutoff);
+        }
 
-            List<string> removeExact = new List<string>();
-            foreach (KeyValuePair<string, AwardRecord> kv in AwardByExactKey)
+
+
+        private static void RemoveExpiredRecords(Dictionary<string, AwardRecord> source, DateTime cutoff)
+        {
+            List<string> removeKeys = new List<string>();
+            foreach (KeyValuePair<string, AwardRecord> kv in source)
             {
                 if (kv.Value == null || kv.Value.CreatedUtc < cutoff)
                 {
-                    removeExact.Add(kv.Key);
+                    removeKeys.Add(kv.Key);
                 }
             }
 
-            for (int i = 0; i < removeExact.Count; i++)
+            for (int i = 0; i < removeKeys.Count; i++)
             {
-                AwardByExactKey.Remove(removeExact[i]);
-            }
 
-            List<string> removeSite = new List<string>();
-            foreach (KeyValuePair<string, AwardRecord> kv in AwardBySiteKey)
-            {
-                if (kv.Value == null || kv.Value.CreatedUtc < cutoff)
-                {
-                    removeSite.Add(kv.Key);
-                }
-            }
-
-            for (int i = 0; i < removeSite.Count; i++)
-            {
-                AwardBySiteKey.Remove(removeSite[i]);
+                source.Remove(removeKeys[i]);
             }
         }
+
 
         private static string BuildBenefitPreview(
             LeaderSelection.AffinityApproach approach,
@@ -585,34 +656,18 @@ namespace TFTV.TFTVIncidents
             int option,
             bool isGeoscape)
         {
-            int r = Math.Max(1, rank);
+            string localizedDescription = Affinities.AffinityBenefitsChoices.GetBenefitDescriptionForChoiceUI(
+                approach,
+                rank,
+                option,
+                isGeoscape);
 
-            if (isGeoscape)
+            if (!string.IsNullOrEmpty(localizedDescription))
             {
-                switch (approach)
-                {
-                    case LeaderSelection.AffinityApproach.PsychoSociology: return option == 1 ? $"+{15 * r}% Haven Defense rewards" : $"{15 * r}% Delirium perk recovery chance";
-                    case LeaderSelection.AffinityApproach.Exploration: return option == 1 ? $"{r}h faster exploration" : $"+{2 * r} Stamina after mission";
-                    case LeaderSelection.AffinityApproach.Occult: return option == 1 ? $"{6 * r}h base-attack warning" : $"{15 * r}% mist penalty/buff modifier";
-                    case LeaderSelection.AffinityApproach.Biotech: return option == 1 ? $"+{30 * r} HP after mission" : $"+{15 * r} Haven Leader Rep";
-                    case LeaderSelection.AffinityApproach.Machinery: return option == 1 ? $"+{150 * r} vehicle HP after mission" : $"{25 * r}% less maintenance loss";
-                    case LeaderSelection.AffinityApproach.Compute: return option == 1 ? $"+{10 * r}% aircraft speed" : "advance Haven attack warning";
-                }
-            }
-            else
-            {
-                switch (approach)
-                {
-                    case LeaderSelection.AffinityApproach.PsychoSociology: return option == 1 ? $"+{2 * r} WP on Recovery" : $"+{r} friendly Haven defender";
-                    case LeaderSelection.AffinityApproach.Exploration: return option == 1 ? $"higher enemy loot drops (x{r})" : $"+{r} controlled defender, +{r} WP civ extract";
-                    case LeaderSelection.AffinityApproach.Occult: return option == 1 ? $"-{5 * r}% TBTV chance" : $"+{50 * r}% Stamina->Delirium effect";
-                    case LeaderSelection.AffinityApproach.Biotech: return option == 1 ? $"Medkit: +{10 * r} organic part HP" : $"Medkit: +{4 * r} Delirium WP restored";
-                    case LeaderSelection.AffinityApproach.Machinery: return option == 1 ? $"Repair: +{10 * r} bionic/vehicle part HP" : $"Repair: +{4 * r} armor per part";
-                    case LeaderSelection.AffinityApproach.Compute: return option == 1 ? $"Vehicle crew bonus: +{3 * r} move, +{10 * r}% accuracy" : $"+{50 * r}% Delirium-based Perception vs Pandorans";
-                }
+                return localizedDescription;
             }
 
-            return option == 1 ? "Option A" : "Option B";
+            return string.Empty;
         }
     }
 }

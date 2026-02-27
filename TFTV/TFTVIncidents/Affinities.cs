@@ -488,6 +488,18 @@ namespace TFTV.TFTVIncidents
                 return false;
             }
 
+            internal static string GetBenefitDescriptionForChoiceUI(
+                LeaderSelection.AffinityApproach approach,
+                int rank,
+                int option,
+                bool isGeoscape)
+            {
+                return isGeoscape
+                    ? BuildGeoscapeBenefitDescription(approach, rank, option)
+                    : BuildTacticalBenefitDescription(approach, rank, option);
+            }
+
+
             private static string BuildGeoscapeBenefitDescription(
                 LeaderSelection.AffinityApproach approach,
                 int rank,
