@@ -1,5 +1,6 @@
 ﻿using Base;
 using Base.Core;
+using Base.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
@@ -9,8 +10,6 @@ using PhoenixPoint.Geoscape.Levels.Objectives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using PhoenixPoint.Geoscape.Entities.Sites;
-using Base.UI;
 using System.Reflection;
 
 namespace TFTV.TFTVIncidents
@@ -19,8 +18,8 @@ namespace TFTV.TFTVIncidents
     {
         private const string IncidentRolledVariablePrefix = "TFTV_Incident_Rolled_";
         private const string IncidentNextRollHourVariable = "TFTV_Incident_NextRollHour";
-        private const int MinRollHours = 10; // 4 * 24;
-        private const int MaxRollHours = 20; // 6 * 24;
+        private const int MinRollHours = 4 * 24;
+        private const int MaxRollHours = 6 * 24;
 
         internal static void TryRollIncidentOnSchedule(GeoLevelController geoLevelController)
         {

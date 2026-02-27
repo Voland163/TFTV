@@ -5,6 +5,7 @@ using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,7 @@ using Unity.Collections;
 using UnityEngine;
 using static TFTV.AircraftReworkHelpers;
 using static TFTV.TFTVAircraftReworkMain;
+using TFTV.TFTVIncidents;
 using Research = PhoenixPoint.Geoscape.Entities.Research.Research;
 
 namespace TFTV
@@ -416,6 +418,12 @@ namespace TFTV
                     // TFTVLogger.Always($"Hitpoints are below {_maintenanceSpeedThreshold}, so speed is halved to {totalSpeed}", false);
                 }
                 //  TFTVLogger.Always($"Final speed outside of Mist for {geoVehicle.Name} is {totalSpeed}", false);
+
+                if (geoVehicle.Owner is GeoPhoenixFaction)
+                {
+                    float affinityMultiplier = AffinityGeoscapeEffects.GetAircraftSpeedMultiplier(geoVehicle);
+                    totalSpeed *= affinityMultiplier;
+                }
 
                 return totalSpeed;
             }
