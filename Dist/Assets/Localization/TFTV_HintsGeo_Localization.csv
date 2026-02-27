@@ -338,11 +338,9 @@ Le Delirium a également d'autres effets <b>qui ne sont pas annulés par une mei
 Delirium reduziert die Willenskraft um denselben Betrag. Je niedriger die Willenskraft einer Einheit sinkt, desto anfälliger wird sie für Panik oder Gedankenkontrolle und desto weniger Fähigkeiten kann sie einsetzen.
 <b>Je 10 Punkte Ausdauer heben die Auswirkungen von 1 Punkt Delirium auf</b>.
 
-Delirium hat jedoch auch weitere Effekte, <b>die nicht durch hohe Ausdauer abgeschwächt werden</b>.",,,"Ваши бойцы получили 1 очко Сонного Безумия. В начале игры максимальный уровень Сонного Безумия равен одной трети Силы Воли персонажа. Этот предел будет расти по ходу игры.
-
-Сонное Безумие уменьшает Силу Воли на количество своих очков. Чем слабее Сила Воли бойца, тем более он подвержен панике и контролю разума и тем меньше у него Очков Воли для применения своих навыков. Хорошие новости: <b>Каждые 10 очков выносливости компенсируют 1 очко Сонного Безумия</b>.
-
-У Сонного Безумия есть и другие эффекты, которые никак не компенсируются высокой выносливостью.",,
+Delirium hat jedoch auch weitere Effekte, <b>die nicht durch hohe Ausdauer abgeschwächt werden</b>.",,,"Ваши бойцы получили 1 очко Сонного Безумия, максимальный уровень которого в начале игры равен одной трети Силы Воли персонажа. Этот предел будет расти по ходу игры.
+Сонное Безумие уменьшает Силу Воли на количество своих очков. Чем слабее Сила Воли бойца, тем более он подвержен панике и контролю разума и тем меньше у него Очков Воли для применения своих навыков. Хорошие новости: <b>Каждые 10 очков Выносливости компенсируют 1 очко Сонного Безумия</b>.
+У Сонного Безумия есть и другие эффекты, которые <b>никак не компенсируются высокой Выносливостью</b>.",,
 KEY_TAC_HINT_STATUS_CORRUPTED_NAME,Text,,SUFFERS ONEIRIC DELIRIUM,,AFFECTÉ PAR LE DELIRIUM,LEIDEN AN ONEIRISCHEM DELIRIUM,,,ЗАРАЖЕН СОННЫМ БЕЗУМИЕМ,,
 KEY_GEO_HINT_AUGMENTATION_SCREEN_DESCRIPTION,Text,,"You are about to augment your first soldier. A character can only have UP TO 2 BODY PARTS replaced this way.
 

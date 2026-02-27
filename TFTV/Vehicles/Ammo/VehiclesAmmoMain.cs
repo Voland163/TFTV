@@ -541,8 +541,8 @@ namespace TFTV.Vehicles.Ammo
                     TacticalItemDef hailstormAmmo = CreateAmmoForNJVehicleWeapon(
                         "hailstorm",
                         hailstormWeapon,
-                        3,
-                        22,
+                        4,
+                        36,
                         "{D55CD4B6-7851-4CC1-A0B9-2A5C65C69DF7}",
                         "{1E7B3C2D-9F41-4A3B-9D60-DB5D6D9A3CD1}",
                         "vehicles_ammo_hailstorm.png");

@@ -843,8 +843,10 @@ namespace TFTV.TFTVIncidents
                     }
                     else
                     {
-                        chosenApproach = approaches[UnityEngine.Random.Range(0, approaches.Count)];
+                        // deterministic first gain from token order (M_P => Machinery)
+                        chosenApproach = approaches[0];
                         targetRank = 1;
+                        TFTVLogger.Always($"[Incidents][Affinity] Leader had no affinity. Deterministic pick={chosenApproach} from tokens={active.ApproachTokens}");
                     }
 
                     PassiveModifierAbilityDef ability = LeaderSelection.GetAffinityAbility(chosenApproach, targetRank);
@@ -856,6 +858,14 @@ namespace TFTV.TFTVIncidents
                     if (!leader.Progression.Abilities.Contains(ability))
                     {
                         leader.Progression.AddAbility(ability);
+
+                        AffinityBenefitChoiceUI.RecordAffinityAward(
+                            active.CompletionEventId,
+                            active.SiteId,
+                            active.VehicleId,
+                            chosenApproach,
+                            targetRank);
+
                         TFTVLogger.Always($"[Incidents] {leader.DisplayName} gained {chosenApproach} rank {targetRank}.");
                         return $"{chosenApproach} rank {targetRank}";
                     }

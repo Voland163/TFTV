@@ -457,19 +457,19 @@ TFTV_SUPPRESSION_STATUS_0_NAME,Text,,LIGHT SUPPRESSION,,SUPPRESSION LÉGÈRE,LEI
 TFTV_SUPPRESSION_STATUS_0_DESC,Text,,"Incoming fire has disrupted your movement and focus.
 Effect: −0.5 Action Points next turn.",,"Les tirs ennemis ont perturbé vos déplacements et votre concentration.
 Effet : −0,5 PA au prochain tour.","Beschuss hat deine Bewegungs- und Konzentrationsfähigkeit beeinträchtigt.
-Effekt: -0,5 Aktionspunkte im nächsten Zug.",,,"Беспокоящий огонь отвлекает и сковывает ваши действия.
+Effekt: -0,5 Aktionspunkte im nächsten Zug.",,,"Беспокоящий огонь мешает и сковывает действия.
 Эффект: −0.5 Очка Действий в следующем ходу.",,
 TFTV_SUPPRESSION_STATUS_1_NAME,Text,,MODERATE SUPPRESSION,,SUPPRESSION MODÉRÉE,MÄSSIGE UNTERDRÜCKUNG,,,ПРИЖАТ ПЛОТНЫМ ОГНЕМ,,
 TFTV_SUPPRESSION_STATUS_1_DESC,Text,,"Sustained enemy fire is forcing you to keep your head down.
 Effect: −1 Action Point next turn.",,"Le feu soutenu des ennemis vous oblige à rester à couvert.
 Effet : −1 PA au prochain tour.","Anhaltendes Feindfeuer zwingt dich, in Deckung zu bleiben.
-Effekt: -1 Aktionspunkt im nächsten Zug.",,,"Плотный вражеский огонь прижимает вас к земле.
+Effekt: -1 Aktionspunkt im nächsten Zug.",,,"Плотный вражеский огонь прижимает к земле.
 Эффект: −1 Очко Действий в следующем ходу.",,
 TFTV_SUPPRESSION_STATUS_2_NAME,Text,,HEAVY SUPPRESSION,,SUPPRESSION INTENSE,STARKE UNTERDRÜCKUNG,,,ПОДАВЛЕН СИЛЬНЫМ ОГНЕМ,,
 TFTV_SUPPRESSION_STATUS_2_DESC,Text,,"Relentless gunfire has pinned you down, severely limiting your ability to act.
 Effect: −1.5 Action Points next turn.",,"Un feu nourri vous cloue au sol, limitant fortement votre liberté de mouvement.
 Effet : −1,5 PA au prochain tour.","Unnachgiebiger Beschuss hält dich nieder und schränkt deine Handlungsfähigkeit stark ein.
-Effekt: -1,5 Aktionspunkte im nächsten Zug.",,,"Шквальный огонь вынудил вас залечь, существенно ограничив маневренность.
+Effekt: -1,5 Aktionspunkte im nächsten Zug.",,,"Шквальный огонь существенно ограничивает маневренность.
 Эффект: −1.5 Очка Действий в следующем ходу.",,
 MUTOG_AGILE_LEGS_NAME,Text,,AGILE MUTOG LEGS,,PATTES AGILES DE MUTOG,AGILE MUTOG-BEINE,,,БЫСТРЫЕ НОГИ МУТОГА,,
 MUTOG_REGENERATIVE_LEGS_NAME,Text,,REGENERATIVE MUTOG LEGS,,PATTES RÉGÉNÉRANTE DE MUTOG,REGENERATIVE MUTOG-BEINE,,,РЕГЕНЕРИРУЮЩИЕ НОГИ МУТОГА,,

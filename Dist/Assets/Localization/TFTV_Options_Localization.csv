@@ -204,12 +204,24 @@ Standardmäßig (sofern KEINE ZWEITE CHANCE kannst du eine Mission nur ein einzi
 
 Die erste gegnerische Verstärkung in jeder Runde verfügt sofort über die vollen 4 Aktionspunkte und kann jede Fähigkeit oder Waffe gegen deine Einheiten einsetzen (nein, das kannst du nicht abschalten).
 
-Viele weitere fiese Folgen der numerischen Schwierigkeitsskalierung: Extrem hohe TP- und Angriffswerte bei Umbra, bis zu fünf gleichzeitige Leere-Omen, absurde Gegnerzahlen, Basisverteidigungsmissionen, die die reine Hölle sind, und mehr.",,,,,
-KEY_ELDRITCH_WARNING_1,Text,,"We call it Eldritch because it’s like playing Tetris inside a non-Euclidean geometry on a black-and-white Game Boy that runs on you, like the Matrix. It’s deeply messed up, and you prove nothing by attempting it—except that you enjoy pain for no reason.",,"Nous appelons cela Eldritch car c'est comme jouer à Tetris dans une géométrie non euclidienne sur une Game Boy noir et blanc qui puise son énergie en vous, comme dans la Matrice. C'est profondément tordu, et vous ne prouvez rien en vous y essayant — si ce n'est que vous aimez souffrir sans raison.",,,,,,
+Viele weitere fiese Folgen der numerischen Schwierigkeitsskalierung: Extrem hohe TP- und Angriffswerte bei Umbra, bis zu fünf gleichzeitige Leere-Omen, absurde Gegnerzahlen, Basisverteidigungsmissionen, die die reine Hölle sind, und mehr.",,,"<b>Разъясняем, во что вы ввязались:</b>
+
+По умолчанию (если вы не выберете другую стартовую базу) вы будете стартовать в Антарктиде или Австралии. Возможно, вы никогда оттуда не выберетесь.
+
+По умолчанию (если только вы не отключите «НАША УЯЗВИМОСТЬ, ИХ УСТОЙЧИВОСТЬ»), все враги получат +25% устойчивости к урону любого типа, а все ваши юниты -25%. Т.о. порой вы будете видеть кошмарные цифры: получать больше урона и наносить меньше, чем ожидалось.
+
+По умолчанию (если только вы не отключите «БЕЗ ШАНСОВ!»), вы сможете попробовать выполнить некоторые задания только один раз - если вы их провалите, вы не сможете повторить попытку, что в некоторых случаях навсегда остановит прогресс.
+
+Первое вражеское подкрепление в каждом ходу сразу же получает полные 4 Очка Действий и может использовать любую способность или оружие против ваших юнитов (нет, это нельзя отключить).
+
+Множество других БЕЗУМНЫХ ужасов: огромные показатели хитов и атаки «Фиолетовых Тварей», до 5 одновременных «Знамений Пустоты», нереальное количество врагов, настоящий ад при защите Баз и многое другое.",,
+KEY_ELDRITCH_WARNING_1,Text,,"We call it Eldritch because it’s like playing Tetris inside a non-Euclidean geometry on a black-and-white Game Boy that runs on you, like the Matrix. It’s deeply messed up, and you prove nothing by attempting it—except that you enjoy pain for no reason.",,"Nous appelons cela Eldritch car c'est comme jouer à Tetris dans une géométrie non euclidienne sur une Game Boy noir et blanc qui puise son énergie en vous, comme dans la Matrice. C'est profondément tordu, et vous ne prouvez rien en vous y essayant — si ce n'est que vous aimez souffrir sans raison.",,,,"Мы называем это «ПОЛНЫМ БЕЗУМИЕМ», потому что это все равно, что играть в Тетрис в искривленном неевклидовом пространстве на черно-белом телевизоре, который показывает не падающие блоки, а код, как в «Матрице». Выбрав эту бессмыслицу, вы докажете только оно: вам нравится боль! Без цели. Без смысла. Просто так.",,
 KEY_ELDRITCH_WARNING_2,Text,,"You were warned: if you choose to continue anyway, don't you dare complain about lack of fairness, or balance, the BS RNG, or the awful time in general you are about to have.
 
 We wish you a quick rage quit and a prompt return to your senses. ",,"Vous avez été prévenu : si vous choisissez de continuer malgré tout, ne vous avisez pas de vous plaindre du manque d'équité, de l'équilibrage, du RNG foireux ou du moment détestable que vous vous apprêtez à passer.
 
 Nous vous souhaitons un « rage quit » rapide et un prompt retour à la raison.","Du wurdest gewarnt: Wenn du dich entscheidest, trotzdem weiterzumachen, wage es ja nicht, dich über mangelnde Fairness, fehlendes Balancing, den Bullshit-RNG oder die allgemein furchtbare Zeit zu beschweren, die dir bevorsteht.
 
-Wir wünschen dir einen schnellen Ragequit und eine rasche Rückkehr zur Vernunft.",,,,,
+Wir wünschen dir einen schnellen Ragequit und eine rasche Rückkehr zur Vernunft.",,,"Вас предупредили: если вы все равно решите продолжить, не стоит жаловаться на отсутствие справедливости, баланса, нечестный рандом или на зря потраченное время.
+
+Побыстрее проходите фазу гнева, включайте режим «холодная ярость» - и в бой!",,

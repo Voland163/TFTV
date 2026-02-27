@@ -66,7 +66,7 @@ namespace TFTV
                 AddManufactureTagToResourceCrates();
                 AddLoadingTips();
                 RemoveResearches();
-                TFTVIncidents.Affinities.CreateDefs();
+                TFTVIncidents.Affinities.Defs.CreateDefs();
                 TFTVIncidents.GeoscapeEvents.CreateGeoscapeEvents();
                 TFTVIncidents.Resolution.IncidentController.InitializeDefaults();
                 TFTVBaseRework.Defs.CreateAndModifyDefs();

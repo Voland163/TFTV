@@ -492,6 +492,9 @@ namespace TFTV.TFTVDrills
                 scyllaLeftArm.Tags.Add(explosiveTag);
                 scyllaRightArm.Tags.Add(explosiveTag);
 
+                WeaponDef droneLauncher = DefCache.GetDef<WeaponDef>("SY_SpiderDroneLauncher_WeaponDef");
+                droneLauncher.Tags.Add(explosiveTag);
+
                 Drills.Add(abilityDef);
                 return abilityDef;
             }

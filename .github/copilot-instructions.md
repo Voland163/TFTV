@@ -24,6 +24,7 @@
 - In incident chains, "same haven" refers to the haven where the previous incident in that chain succeeded; tag that haven on the prior incident’s success and require the tag for the next incident.
 
 ## Affinities Design Rules
+- Affinities feature 6 affinities, each with 3 ranks. Each affinity has two benefit tracks (Geoscape and Tactical) with two player-selectable options each; choices are global/shared.
 - Affinities are gained or advanced by resolving Incidents or via Drill at one rank below max; there are three ranks.
 - Each affinity grants Geoscape and Tactical benefits, with incident resolution efficiency increased by 2?rank when affinity matches Approach.
 - Upon reaching a new rank for the first time, choose one of two benefits per affinity; this choice applies to all characters with that affinity.
@@ -32,3 +33,4 @@
 - Each character can have only one affinity.
 - For incident resolution, the cancel event should be the failure event; the only way to fail is canceling.
 - Affinity award behavior: only grant/advance on success using the leader stored at start; if choice has multiple affinity approaches, use the leader's matching affinity if present, otherwise pick one at random.
+- Implementation should proceed Geoscape first, starting with dynamic ability description updates.

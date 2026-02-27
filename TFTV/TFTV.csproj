@@ -190,7 +190,9 @@
     <Compile Include="TFTVDragandDropFunctionality.cs" />
     <Compile Include="TFTVHavenRecruitsGenerationAdjustments.cs" />
     <Compile Include="TFTVIncidents\Affinities.cs" />
+    <Compile Include="TFTVIncidents\AffinityBenefitChoiceUI.cs" />
     <Compile Include="TFTVIncidents\GeoscapeEvents.cs" />
+    <Compile Include="TFTVIncidents\GeoUIAdjustments.cs" />
     <Compile Include="TFTVIncidents\IncidentOutcomeSummaryUI.cs" />
     <Compile Include="TFTVIncidents\IncidentResolutionUI.cs" />
     <Compile Include="TFTVIncidents\LeaderSelection.cs" />

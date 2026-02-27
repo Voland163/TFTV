@@ -7,6 +7,7 @@ using PhoenixPoint.Common.UI;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using TFTVVehicleRework.Abilities;
 using PRMBetterClasses;
+using TFTV;
 
 namespace TFTVVehicleRework.Armadillo
 {
@@ -18,6 +19,12 @@ namespace TFTVVehicleRework.Armadillo
             // "NJ_Armadillo_Gauss_Turret_GroundVehicleWeaponDef"
             GroundVehicleWeaponDef GaussTurret = (GroundVehicleWeaponDef)Repo.GetDef("510bf01c-22d0-4b04-597b-c4eaff0b0de9");
             GaussTurret.ChargesMax = 32;
+
+            if(TFTVAircraftReworkMain.AircraftReworkOn)
+            {
+                GaussTurret.ChargesMax = 48;
+            };
+
             GaussTurret.SpreadDegrees = 40.99f/19f;
             GaussTurret.HitPoints = 360f;
             // GaussTurret.BodyPartAspectDef.Perception = 4;
@@ -31,7 +38,7 @@ namespace TFTVVehicleRework.Armadillo
             ReturnFire.ViewElementDef.ShowInInventoryItemTooltip = true; //Shows ability in the Geo UI
 
             FreeReloadAbilityDef ArmadilloReload = Repo.CreateDef<FreeReloadAbilityDef>("5f16a5b4-e6c5-49ca-95e3-4ba345bbd31d");
-            Helper.CopyFieldsByReflection(Reload, ArmadilloReload);
+            PRMBetterClasses.Helper.CopyFieldsByReflection(Reload, ArmadilloReload);
             ArmadilloReload.name = "FreeReload_AbilityDef";
             ArmadilloReload.ResourcePath = "Defs/Tactical/Actors/_Common/Abilities/FreeReload_AbilityDef";
             ArmadilloReload.InputAction = "";
