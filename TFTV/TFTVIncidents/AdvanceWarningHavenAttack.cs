@@ -36,10 +36,16 @@ namespace TFTV.TFTVIncidents
                 return SiteRiskById.TryGetValue(site.SiteId, out RiskWindow risk) ? risk : RiskWindow.None;
             }
 
-            public static void RebuildIfNeeded(GeoSite anySite)
+            public static void RebuildIfNeeded(GeoSite anySite, int leadHours)
             {
                 if (anySite?.GeoLevel?.AlienFaction == null)
                 {
+                    return;
+                }
+
+                if (leadHours <= 0)
+                {
+                    SiteRiskById.Clear();
                     return;
                 }
 
@@ -49,10 +55,10 @@ namespace TFTV.TFTVIncidents
                 }
 
                 _lastRebuildAtRealtime = Time.realtimeSinceStartup;
-                Rebuild(anySite.GeoLevel.AlienFaction);
+                Rebuild(anySite.GeoLevel.AlienFaction, leadHours);
             }
 
-            private static void Rebuild(GeoAlienFaction alienFaction)
+            private static void Rebuild(GeoAlienFaction alienFaction, int leadHours)
             {
                 SiteRiskById.Clear();
 
@@ -97,7 +103,7 @@ namespace TFTV.TFTVIncidents
                         continue;
                     }
 
-                    RiskWindow risk = ToRiskWindow(kvp.Value);
+                    RiskWindow risk = ToRiskWindow(kvp.Value, leadHours);
                     if (risk != RiskWindow.None)
                     {
                         SiteRiskById[havenSite.SiteId] = risk;
@@ -105,8 +111,14 @@ namespace TFTV.TFTVIncidents
                 }
             }
 
-            private static RiskWindow ToRiskWindow(int hoursUntilAttackRoll)
+            private static RiskWindow ToRiskWindow(int hoursUntilAttackRoll, int leadHours)
             {
+
+                if (hoursUntilAttackRoll > leadHours)
+                {
+                    return RiskWindow.None;
+                }
+
                 if (hoursUntilAttackRoll <= 4)
                 {
                     return RiskWindow.Hours4;
@@ -200,7 +212,14 @@ namespace TFTV.TFTVIncidents
                     return;
                 }
 
-                HavenAttackRiskService.RebuildIfNeeded(site);
+                int leadHours = AffinityGeoscapeEffects.GetComputeHavenAttackWarningLeadHours(site.GeoLevel);
+                if (leadHours <= 0)
+                {
+                    HavenAttackRiskVisuals.RefreshMarker(__instance, RiskWindow.None);
+                    return;
+                }
+
+                HavenAttackRiskService.RebuildIfNeeded(site, leadHours);
                 RiskWindow risk = HavenAttackRiskService.GetRisk(site);
                 HavenAttackRiskVisuals.RefreshMarker(__instance, risk);
             }

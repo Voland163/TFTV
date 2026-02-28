@@ -157,6 +157,25 @@ namespace TFTV.TFTVIncidents
             return rank <= 0 ? 1f : 1f + (0.10f * rank);
         }
 
+        internal static int GetComputeHavenAttackWarningLeadHours(GeoLevelController level)
+        {
+            try
+            {
+                if (level?.PhoenixFaction?.Soldiers == null)
+                {
+                    return 0;
+                }
+
+                int rank = GetActiveGeoscapeRank(level, level.PhoenixFaction.Soldiers.ToList(), LeaderSelection.AffinityApproach.Compute, requiredOption: 2);
+                return rank <= 0 ? 0 : 4 * rank;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return 0;
+            }
+        }
+
         internal static float GetMistPenaltyMultiplier(GeoVehicle geoVehicle)
         {
             int rank = GetActiveGeoscapeRank(geoVehicle.GeoLevel, geoVehicle.Soldiers.ToList(), LeaderSelection.AffinityApproach.Occult, requiredOption: 2);
