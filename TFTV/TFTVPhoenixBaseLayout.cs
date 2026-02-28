@@ -113,7 +113,15 @@ namespace TFTV
                     }
                 }
 
+               
+
                 int num = template.BlockedTiles.RandomValue();
+
+                if (TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                {
+                    num = 0;
+                }
+
                 for (int i = 0; i < num; i++)
                 {
                     ICollection<Vector2Int> rockPlacableTiles = geoPhoenixBaseLayout.GetRockPlacableTiles();

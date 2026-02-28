@@ -1,12 +1,14 @@
 using Base.Serialization.General;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Tactical.Entities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -70,14 +72,16 @@ namespace TFTV.TFTVBaseRework
         #region Public API (Recruit descriptor training)
         public static bool QueueCharacterTraining(GeoLevelController level, GeoCharacter character, SpecializationDef spec)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled)
-            {
-                return false;
-            }
 
             try
             {
                 if (level == null || character == null || spec == null) return false;
+
+                if (PersonnelRestrictions.IsDismissedOperative(character))
+                {
+                    TFTVLogger.Always($"[Training] {character.DisplayName} is a dismissed operative and cannot use recruit training.");
+                    return false;
+                }
 
                 if (RecruitSessions.Any(s => s.GeoUnitId == character.Id)) return false;
 
@@ -245,66 +249,72 @@ namespace TFTV.TFTVBaseRework
         {
             try
             {
-                var session = GetRecruitSession(character);
-                if (level == null || character == null || targetBase == null || session == null) return null;
-
-                int finalLevel = early ? session.VirtualLevelAchieved : session.TargetLevel;
-                if (session.TargetSpecialization != null)
+                RecruitTrainingSession session = GetRecruitSession(character);
+                if (level == null || character == null || targetBase == null || session == null)
                 {
-                    EnsureSpecialization(character, session.TargetSpecialization);
+                    return null;
                 }
 
-
-                character.LevelProgression?.SetLevel(finalLevel);
-                ApplyCumulativeLevelGains(character, finalLevel);
-                GeoCharacterFilter.HiddenOperativeTagFilter.RemoveHiddenTag(character);
+                int finalLevel = early ? session.VirtualLevelAchieved : session.TargetLevel;
+                GeoCharacter operative = CreateOperativeFromCivilian(level, character, targetBase, session.TargetSpecialization, finalLevel);
+                if (operative == null)
+                {
+                    return null;
+                }
 
                 session.Completed = true;
                 RemoveRecruitSession(session);
 
-                TFTVLogger.Always($"[Training] Finalized recruit training: {character.DisplayName} Level={finalLevel} Early={early}");
-                return character;
+                TFTVLogger.Always($"[Training] Finalized recruit training: {operative.DisplayName} Level={finalLevel} Early={early}");
+                return operative;
             }
-            catch (Exception e) { TFTVLogger.Error(e); return null; }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return null;
+            }
         }
 
         public static GeoCharacter FinalizeRecruitTrainingForUI(GeoLevelController level, GeoCharacter character, bool early)
         {
             try
             {
-                if (level == null || character == null) return null;
-                var session = GetRecruitSession(character);
+                if (level == null || character == null)
+                {
+                    return null;
+                }
+
+                RecruitTrainingSession session = GetRecruitSession(character);
                 if (session == null)
                 {
-                    ApplyCumulativeLevelGains(character, character.LevelProgression?.Level ?? 1);
-                    GeoCharacterFilter.HiddenOperativeTagFilter.RemoveHiddenTag(character);
-                    TFTVLogger.Always($"[Training] FinalizeForUI fallback use of existing character: {character.DisplayName}");
-                    return character;
+                    TFTVLogger.Always($"[Training] FinalizeForUI: no session found for {character.DisplayName}");
+                    return null;
+                }
+
+                GeoPhoenixBase targetBase = level.PhoenixFaction?.Bases?.FirstOrDefault();
+                if (targetBase == null)
+                {
+                    return null;
                 }
 
                 int finalLevel = early ? session.VirtualLevelAchieved : session.TargetLevel;
-                var spec = session.TargetSpecialization;
-
-
-                if (spec != null)
+                GeoCharacter operative = CreateOperativeFromCivilian(level, character, targetBase, session.TargetSpecialization, finalLevel);
+                if (operative == null)
                 {
-                    EnsureSpecialization(character, spec);
+                    return null;
                 }
-
-
-                character.LevelProgression?.SetLevel(finalLevel);
-
-                _pendingPostRecruitStatApply[character.Id] = finalLevel;
 
                 session.Completed = true;
                 RemoveRecruitSession(session);
 
-                GeoCharacterFilter.HiddenOperativeTagFilter.RemoveHiddenTag(character);
-
-                TFTVLogger.Always($"[Training] FinalizeForUI prepared character (pending stat gains): {character.DisplayName} Level={finalLevel} Early={early}");
-                return character;
+                TFTVLogger.Always($"[Training] FinalizeForUI prepared new operative: {operative.DisplayName} Level={finalLevel} Early={early}");
+                return operative;
             }
-            catch (Exception e) { TFTVLogger.Error(e); return null; }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return null;
+            }
         }
         #endregion
 
@@ -354,18 +364,132 @@ namespace TFTV.TFTVBaseRework
             if (session == null) return;
             RecruitSessions.Remove(session);
         }
-
-        internal static void EnsureSpecialization(GeoCharacter character, SpecializationDef specialization)
+        private static TacCharacterDef ResolveTemplateForSpecialization(GeoPhoenixFaction faction, SpecializationDef specialization)
         {
             try
             {
-                if (specialization == null || character == null) return;
-                if (character.ClassTags != null && character.ClassTags.Contains(specialization.ClassTag)) return;
-                character.Progression.MainSpecDef.ClassTag = specialization.ClassTag;
+                if (faction?.UnlockedUnitTemplates == null || specialization?.ClassTag == null)
+                {
+                    return null;
+                }
+
+                return faction.UnlockedUnitTemplates
+                    .Where(t => t != null && !t.IsVehicle && !t.IsMutog)
+                    .FirstOrDefault(t => t.Data != null
+                        && t.Data.GameTags != null
+                        && t.Data.GameTags.Contains(specialization.ClassTag));
             }
-            catch (Exception e) { TFTVLogger.Error(e); }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return null;
+            }
+        }
+
+        private static GeoUnitDescriptor GenerateOperativeDescriptor(
+            GeoLevelController level,
+            GeoPhoenixFaction faction,
+            SpecializationDef specialization)
+        {
+            try
+            {
+                TacCharacterDef template = ResolveTemplateForSpecialization(faction, specialization);
+                if (level?.CharacterGenerator == null || faction == null || template == null)
+                {
+                    return null;
+                }
+
+                MethodInfo generateUnit = AccessTools.Method(
+                    level.CharacterGenerator.GetType(),
+                    "GenerateUnit",
+                    new[] { typeof(GeoFaction), typeof(TacCharacterDef) });
+
+                if (generateUnit == null)
+                {
+                    return null;
+                }
+
+                return generateUnit.Invoke(level.CharacterGenerator, new object[] { faction, template }) as GeoUnitDescriptor;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return null;
+            }
+        }
+
+        private static void RemoveCivilianPlaceholder(GeoPhoenixFaction faction, GeoCharacter civilian)
+        {
+            try
+            {
+                if (faction == null || civilian == null)
+                {
+                    return;
+                }
+
+                faction.RemoveCharacter(civilian);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static GeoCharacter CreateOperativeFromCivilian(
+            GeoLevelController level,
+            GeoCharacter civilian,
+            GeoPhoenixBase targetBase,
+            SpecializationDef specialization,
+            int finalLevel)
+        {
+            try
+            {
+                GeoPhoenixFaction phoenix = level?.PhoenixFaction;
+                if (level == null || phoenix == null || civilian == null || targetBase == null || specialization == null)
+                {
+                    return null;
+                }
+
+                GeoUnitDescriptor descriptor = GenerateOperativeDescriptor(level, phoenix, specialization);
+                if (descriptor == null)
+                {
+                    TFTVLogger.Always($"[Training] Failed to generate operative descriptor for {specialization?.name ?? "UnknownSpec"}.");
+                    return null;
+                }
+
+                GeoCharacter operative = level.CreateCharacterFromDescriptor(descriptor);
+                if (operative == null)
+                {
+                    return null;
+                }
+
+                if (civilian.Identity != null && operative.Identity != null)
+                {
+                    operative.Identity.CopyFrom(civilian.Identity, CharacterIdentity.EmptyReplaceOperation.Default);
+                }
+
+                if (finalLevel > 1)
+                {
+                    operative.LevelProgression?.SetLevel(finalLevel);
+                }
+
+                phoenix.AddRecruit(operative, targetBase.Site);
+                ApplyCumulativeLevelGains(operative, finalLevel);
+                GeoCharacterFilter.HiddenOperativeMarkerFilter.RemoveHiddenMarker(operative);
+
+                RemoveCivilianPlaceholder(phoenix, civilian);
+
+                return operative;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return null;
+            }
         }
         #endregion
+
+       
 
         #region Public Helper API
         public static int GetEffectiveDurationDays(GeoPhoenixFaction faction) => CalculateEffectiveDurationDays(faction);
@@ -448,19 +572,61 @@ namespace TFTV.TFTVBaseRework
         {
             try
             {
-                if (level == null || character == null || targetBase == null || mainClass == null) return null;
+                if (PersonnelRestrictions.IsDismissedOperative(character))
+                {
+                    return null;
+                }
+
+                return CreateOperativeFromCivilian(level, character, targetBase, mainClass, 1);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return null;
+            }
+        }
+
+        public static GeoCharacter RedeployDismissedOperative(
+            GeoLevelController level,
+            GeoCharacter character,
+            GeoPhoenixBase targetBase)
+        {
+            try
+            {
+                if (level == null || character == null || targetBase == null)
+                {
+                    return null;
+                }
+
                 GeoPhoenixFaction phoenix = level.PhoenixFaction;
-                if (phoenix == null) return null;
+                if (phoenix == null || !PersonnelRestrictions.IsDismissedOperative(character))
+                {
+                    return null;
+                }
 
+                int cost = PersonnelRestrictions.GetRedeployCost(character);
+                if (phoenix.Skillpoints < cost)
+                {
+                    TFTVLogger.Always($"[Training] Not enough shared skill points to redeploy {character.DisplayName}. Required={cost}, Available={phoenix.Skillpoints}");
+                    return null;
+                }
 
+                if (cost > 0)
+                {
+                    phoenix.Skillpoints -= cost;
+                }
 
-                character.LevelProgression?.SetLevel(1);
-                EnsureSpecialization(character, mainClass);
-                GeoCharacterFilter.HiddenOperativeTagFilter.RemoveHiddenTag(character);
+                GeoCharacterFilter.HiddenOperativeMarkerFilter.RemoveHiddenMarker(character);
+                PersonnelRestrictions.ClearDismissedOperative(character);
 
+                TFTVLogger.Always($"[Training] Redeployed dismissed operative {character.DisplayName} for {cost} shared skill points.");
                 return character;
             }
-            catch (Exception e) { TFTVLogger.Error(e); return null; }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return null;
+            }
         }
         #endregion
 
@@ -748,6 +914,12 @@ namespace TFTV.TFTVBaseRework
             {
                 if (level == null || character == null || spec == null) return false;
 
+                if (PersonnelRestrictions.IsDismissedOperative(character))
+                {
+                    TFTVLogger.Always($"[Training] {character.DisplayName} is a dismissed operative and cannot use recruit training.");
+                    return false;
+                }
+
                 // Validate specialization is currently allowed.
                 var allowed = GetAvailableTrainingSpecializations(level.PhoenixFaction);
                 if (!allowed.Contains(spec))
@@ -755,7 +927,6 @@ namespace TFTV.TFTVBaseRework
                     TFTVLogger.Always($"[Training] Spec {spec.name} not available via research gating.");
                     return false;
                 }
-
 
                 int providedSlots = CalculateProvidedTrainingSlots(level.PhoenixFaction);
                 int usedSlots = CalculateUsedTrainingSlots();

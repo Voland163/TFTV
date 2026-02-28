@@ -17,6 +17,7 @@ using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using System;
 using System.Collections.Generic;
@@ -168,164 +169,74 @@ namespace TFTV.TFTVUI.Personnel
 
         }
 
+        private static void SetButtonVisibility(PhoenixGeneralButton button, bool visible)
+        {
+            if (button == null)
+            {
+                return;
+            }
+
+            button.gameObject.SetActive(visible);
+            button.ResetButtonAnimations();
+        }
+
+        private static void HideHelmetAndLoadoutButtons()
+        {
+            SetButtonVisibility(HelmetToggle, false);
+            SetButtonVisibility(UnequipAll, false);
+            SetButtonVisibility(SaveLoadout, false);
+            SetButtonVisibility(LoadLoadout, false);
+        }
+
         public static void ShowAndHideHelmetAndLoadoutButtons(UIModuleActorCycle uIModuleActorCycle)
         {
             try
             {
-                if (uIModuleActorCycle.CurrentUnit != null)
+                if (uIModuleActorCycle == null || uIModuleActorCycle.CurrentUnit == null)
                 {
-                    //  TFTVLogger.Always($"Actually here; {____parentModule.CurrentState}");
+                    HideHelmetAndLoadoutButtons();
+                    return;
+                }
 
-                    switch (uIModuleActorCycle.CurrentState)
-                    {
-                        case UIModuleActorCycle.ActorCycleState.RosterSection:
+                switch (uIModuleActorCycle.CurrentState)
+                {
+                    case UIModuleActorCycle.ActorCycleState.EditSoldierSection:
+                        SetButtonVisibility(UnequipAll, true);
+                        SetButtonVisibility(SaveLoadout, true);
+                        SetButtonVisibility(LoadLoadout, true);
 
-                            if (HelmetToggle != null)
-                            {
-                                HelmetToggle.gameObject.SetActive(false);
-                                HelmetToggle.ResetButtonAnimations();
-                                UnequipAll.gameObject.SetActive(false);
-                                UnequipAll.ResetButtonAnimations();
-                                SaveLoadout.gameObject.SetActive(false);
-                                SaveLoadout.ResetButtonAnimations();
-                                LoadLoadout.gameObject.SetActive(false);
-                                LoadLoadout.ResetButtonAnimations();
-                            }
-
-                            break;
-
-                        case UIModuleActorCycle.ActorCycleState.EditSoldierSection:
-
-
-                            //  HelmetToggle.gameObject.SetActive(true);
-                            //  HelmetToggle.ResetButtonAnimations();
-                            UnequipAll.gameObject.SetActive(true);
-                            UnequipAll.ResetButtonAnimations();
-                            SaveLoadout.gameObject.SetActive(true);
-                            SaveLoadout.ResetButtonAnimations();
-                            LoadLoadout.gameObject.SetActive(true);
-                            LoadLoadout.ResetButtonAnimations();
-
-                            bool hasAugmentedHead = false;
-                            ItemSlotDef headSlot = DefCache.GetDef<ItemSlotDef>("Human_Head_SlotDef");
-                            foreach (GeoItem bionic in uIModuleActorCycle?.CurrentCharacter?.ArmourItems)
-                            {
-                                if ((bionic.CommonItemData.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag) || bionic.CommonItemData.ItemDef.Tags.Contains(Shared.SharedGameTags.AnuMutationTag))
+                        bool hasAugmentedHead = false;
+                        ItemSlotDef headSlot = DefCache.GetDef<ItemSlotDef>("Human_Head_SlotDef");
+                        foreach (GeoItem bionic in uIModuleActorCycle.CurrentCharacter?.ArmourItems ?? Enumerable.Empty<GeoItem>())
+                        {
+                            if ((bionic.CommonItemData.ItemDef.Tags.Contains(Shared.SharedGameTags.BionicalTag)
+                                || bionic.CommonItemData.ItemDef.Tags.Contains(Shared.SharedGameTags.AnuMutationTag))
                                 && bionic.CommonItemData.ItemDef.RequiredSlotBinds[0].RequiredSlot == headSlot)
-                                {
-                                    hasAugmentedHead = true;
-                                }
-                            }
-
-                            if (hasAugmentedHead)
                             {
-                                HelmetToggle.gameObject.SetActive(false);
-                                HelmetToggle.ResetButtonAnimations();
+                                hasAugmentedHead = true;
                             }
-                            else
-                            {
-                                HelmetToggle.gameObject.SetActive(true);
-                                HelmetToggle.ResetButtonAnimations();
-                            }
-
-                            ShadeMutationBionics(uIModuleActorCycle);
-
-                            break;
-                        case UIModuleActorCycle.ActorCycleState.EditVehicleSection:
-                            if (HelmetToggle != null)
-                            {
-                                HelmetToggle.gameObject.SetActive(false);
-                                HelmetToggle.ResetButtonAnimations();
-                                UnequipAll.gameObject.SetActive(false);
-                                UnequipAll.ResetButtonAnimations();
-                                SaveLoadout.gameObject.SetActive(false);
-                                SaveLoadout.ResetButtonAnimations();
-                                LoadLoadout.gameObject.SetActive(false);
-                                LoadLoadout.ResetButtonAnimations();
-                            }
-                            break;
-                        case UIModuleActorCycle.ActorCycleState.EditMutogSection:
-                            if (HelmetToggle != null)
-                            {
-                                HelmetToggle.gameObject.SetActive(false);
-                                HelmetToggle.ResetButtonAnimations();
-                                UnequipAll.gameObject.SetActive(false);
-                                UnequipAll.ResetButtonAnimations();
-                                SaveLoadout.gameObject.SetActive(false);
-                                SaveLoadout.ResetButtonAnimations();
-                                LoadLoadout.gameObject.SetActive(false);
-                                LoadLoadout.ResetButtonAnimations();
-                            }
-                            break;
-                        case UIModuleActorCycle.ActorCycleState.CapturedAlienSection:
-                            if (HelmetToggle != null)
-                            {
-                                HelmetToggle.gameObject.SetActive(false);
-                                HelmetToggle.ResetButtonAnimations();
-                                UnequipAll.gameObject.SetActive(false);
-                                UnequipAll.ResetButtonAnimations();
-                                SaveLoadout.gameObject.SetActive(false);
-                                SaveLoadout.ResetButtonAnimations();
-                                LoadLoadout.gameObject.SetActive(false);
-                                LoadLoadout.ResetButtonAnimations();
-                            }
-                            break;
-                        case UIModuleActorCycle.ActorCycleState.RecruitSection:
-                            if (HelmetToggle != null)
-                            {
-                                HelmetToggle.gameObject.SetActive(false);
-                                HelmetToggle.ResetButtonAnimations();
-                                UnequipAll.gameObject.SetActive(false);
-                                UnequipAll.ResetButtonAnimations();
-                                SaveLoadout.gameObject.SetActive(false);
-                                SaveLoadout.ResetButtonAnimations();
-                                LoadLoadout.gameObject.SetActive(false);
-                                LoadLoadout.ResetButtonAnimations();
-                            }
-                            break;
-                        case UIModuleActorCycle.ActorCycleState.Memorial:
-                            if (HelmetToggle != null)
-                            {
-                                HelmetToggle.gameObject.SetActive(false);
-                                HelmetToggle.ResetButtonAnimations();
-                                UnequipAll.gameObject.SetActive(false);
-                                UnequipAll.ResetButtonAnimations();
-                                SaveLoadout.gameObject.SetActive(false);
-                                SaveLoadout.ResetButtonAnimations();
-                                LoadLoadout.gameObject.SetActive(false);
-                                LoadLoadout.ResetButtonAnimations();
-                            }
-                            break;
-
-                    }
-
-                    if (uIModuleActorCycle.CurrentState == UIModuleActorCycle.ActorCycleState.SubmenuSection)//EditUnitButtonsController.CustomizeButton.gameObject.activeInHierarchy)
-                    {
-
-                        // TFTVLogger.Always($"Customize button enabled is {____parentModule.EditUnitButtonsController.CustomizeButton.enabled}");
-                        if (HelmetToggle != null)
-                        {
-                            HelmetToggle.gameObject.SetActive(false);
-                            HelmetToggle.ResetButtonAnimations();
-                            UnequipAll.gameObject.SetActive(false);
-                            UnequipAll.ResetButtonAnimations();
-                            SaveLoadout.gameObject.SetActive(false);
-                            SaveLoadout.ResetButtonAnimations();
-                            LoadLoadout.gameObject.SetActive(false);
-                            LoadLoadout.ResetButtonAnimations();
                         }
-                        // HelmetsOff = false;
-                    }
 
-                    if (uIModuleActorCycle.CurrentCharacter != null && (CharacterLoadouts == null || CharacterLoadouts != null && !CharacterLoadouts.ContainsKey(uIModuleActorCycle.CurrentCharacter.Id)))
-                    {
-                        if (HelmetToggle != null)
-                        {
+                        SetButtonVisibility(HelmetToggle, !hasAugmentedHead);
+                        ShadeMutationBionics(uIModuleActorCycle);
+                        break;
 
-                            LoadLoadout.gameObject.SetActive(false);
-                            LoadLoadout.ResetButtonAnimations();
-                        }
-                    }
+                    case UIModuleActorCycle.ActorCycleState.RosterSection:
+                    case UIModuleActorCycle.ActorCycleState.EditVehicleSection:
+                    case UIModuleActorCycle.ActorCycleState.EditMutogSection:
+                    case UIModuleActorCycle.ActorCycleState.CapturedAlienSection:
+                    case UIModuleActorCycle.ActorCycleState.RecruitSection:
+                    case UIModuleActorCycle.ActorCycleState.Memorial:
+                    case UIModuleActorCycle.ActorCycleState.SubmenuSection:
+                    default:
+                        HideHelmetAndLoadoutButtons();
+                        break;
+                }
+
+                if (uIModuleActorCycle.CurrentCharacter != null
+                    && (CharacterLoadouts == null || !CharacterLoadouts.ContainsKey(uIModuleActorCycle.CurrentCharacter.Id)))
+                {
+                    SetButtonVisibility(LoadLoadout, false);
                 }
             }
             catch (Exception e)
@@ -334,6 +245,21 @@ namespace TFTV.TFTVUI.Personnel
             }
         }
 
+        [HarmonyPatch(typeof(UIStateRosterRecruits), "EnterState")]
+        internal static class TFTV_UIStateRosterRecruits_EnterState_LoadoutsButtons_Patch
+        {
+            private static void Postfix()
+            {
+                try
+                {
+                    HideHelmetAndLoadoutButtons();
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
 
         [HarmonyPatch(typeof(EditUnitButtonsController), nameof(EditUnitButtonsController.Awake))]
@@ -1499,7 +1425,7 @@ UIModuleSoldierEquip uIModuleSoldierEquip, ref List<string> missingItems, bool r
         }
 
 
-        private static void UnequipButtonClicked(bool droopAttachmentsSeparately = false)
+        public static void UnequipButtonClicked(bool dropAttachmentsSeparately = false)
         {
             try
             {
@@ -1534,7 +1460,7 @@ UIModuleSoldierEquip uIModuleSoldierEquip, ref List<string> missingItems, bool r
                         }
                     }
 
-                    if (droopAttachmentsSeparately)
+                    if (dropAttachmentsSeparately)
                     {
                         armorItems.AddRange(character.ArmourItems.
                            Where(a => !a.ItemDef.Tags.Contains(Shared.SharedGameTags.AnuMutationTag)).

@@ -621,7 +621,7 @@ namespace TFTV
                 }
             }*/
 
-            private static bool _scrapFromSoldierEquip = false;
+          /*  private static bool _scrapFromSoldierEquip = false;
 
             [HarmonyPatch(typeof(UIModuleSoldierEquip), "AreaEndDragHandler")] //VERIFIED
             public static class UIModuleSoldierEquip_AreaEndDragHandler_Patch
@@ -643,7 +643,7 @@ namespace TFTV
                         TFTVLogger.Error(e);
                     }
                 }
-            }
+            }*/
 
 
             /*  [HarmonyPatch(typeof(UIModuleManufacturing))]

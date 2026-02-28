@@ -10,6 +10,7 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TFTV.TFTVBaseRework;
 
 namespace TFTV.TFTVIncidents
 {
@@ -33,6 +34,12 @@ namespace TFTV.TFTVIncidents
             {
                 try
                 {
+                    if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                    {
+                        return;
+                    }
+
+
                     CreateAffinityTag();
 
                     CreateAffinityAbilities(
@@ -76,6 +83,9 @@ namespace TFTV.TFTVIncidents
                         "KEY_AFFINITY_DESC_COMPUTE_",
                         ComputeGuids,
                         ref Compute);
+
+                    ComputeMountedAbility.Defs.CreateDefs();
+                    MachineryRepairDefs.CreateDefs();
 
                     AffinityBenefitsChoices.InitializeDynamicDescriptionResolver();
                 }
@@ -271,6 +281,61 @@ namespace TFTV.TFTVIncidents
             private static readonly Dictionary<LeaderSelection.AffinityApproach, int> TacticalBenefitChoiceSnapshot =
               new Dictionary<LeaderSelection.AffinityApproach, int>();
 
+            internal static void RefreshTacticalAbilityDescriptionsFromSnapshot()
+            {
+                try
+                {
+                    if (!BaseReworkUtils.BaseReworkEnabled) return;
+
+                    ApplyTacticalDescriptionsForApproach(LeaderSelection.AffinityApproach.PsychoSociology, Affinities.PsychoSociology);
+                    ApplyTacticalDescriptionsForApproach(LeaderSelection.AffinityApproach.Exploration, Affinities.Exploration);
+                    ApplyTacticalDescriptionsForApproach(LeaderSelection.AffinityApproach.Occult, Affinities.Occult);
+                    ApplyTacticalDescriptionsForApproach(LeaderSelection.AffinityApproach.Biotech, Affinities.Biotech);
+                    ApplyTacticalDescriptionsForApproach(LeaderSelection.AffinityApproach.Machinery, Affinities.Machinery);
+                    ApplyTacticalDescriptionsForApproach(LeaderSelection.AffinityApproach.Compute, Affinities.Compute);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void ApplyTacticalDescriptionsForApproach(
+                LeaderSelection.AffinityApproach approach,
+                PassiveModifierAbilityDef[] abilities)
+            {
+                try
+                {
+                    if (abilities == null || abilities.Length == 0)
+                    {
+                        return;
+                    }
+
+                    int option = GetTacticalBenefitChoiceFromSnapshot(approach);
+
+                    for (int i = 0; i < abilities.Length; i++)
+                    {
+                        PassiveModifierAbilityDef ability = abilities[i];
+                        if (ability?.ViewElementDef == null)
+                        {
+                            continue;
+                        }
+
+                        string description = BuildTacticalBenefitDescription(approach, i + 1, option);
+                        if (string.IsNullOrEmpty(description))
+                        {
+                            continue;
+                        }
+
+                        ability.ViewElementDef.Description = new LocalizedTextBind(description, true);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
             internal static void SetGeoscapeBenefitChoice(
                GeoLevelController level,
                LeaderSelection.AffinityApproach approach,
@@ -334,6 +399,11 @@ namespace TFTV.TFTVIncidents
                     {
                         level.EventSystem.SetVariable(GetTacticalBenefitVariableName(approach), normalized);
                     }
+
+                    if (approach == LeaderSelection.AffinityApproach.Machinery)
+                    {
+                        MachineryRepairDefs.ApplyChoice(normalized);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -373,15 +443,19 @@ namespace TFTV.TFTVIncidents
             {
                 try
                 {
-                    if (level == null)
+                    if (level == null||!BaseReworkUtils.BaseReworkEnabled)
                     {
                         return;
                     }
+
+                    TFTVLogger.Always($"Capturing tactical benefit choices snapshot");
 
                     foreach (LeaderSelection.AffinityApproach approach in Enum.GetValues(typeof(LeaderSelection.AffinityApproach)).Cast<LeaderSelection.AffinityApproach>())
                     {
                         int option = GetTacticalBenefitChoice(level, approach);
                         TacticalBenefitChoiceSnapshot[approach] = NormalizeOption(option);
+                        TFTVLogger.Always($"Captured snapshot for {approach}: {option}");
+
                     }
                 }
                 catch (Exception e)
@@ -435,6 +509,8 @@ namespace TFTV.TFTVIncidents
             {
                 try
                 {
+                    if (!BaseReworkUtils.BaseReworkEnabled) return;
+
                     TacticalBenefitChoiceSnapshot.Clear();
 
                     foreach (LeaderSelection.AffinityApproach approach in Enum.GetValues(typeof(LeaderSelection.AffinityApproach)).Cast<LeaderSelection.AffinityApproach>())
@@ -459,6 +535,8 @@ namespace TFTV.TFTVIncidents
                             TacticalBenefitChoiceSnapshot[approach] = NormalizeOption(pair.Value);
                         }
                     }
+
+                    MachineryRepairDefs.ApplyChoiceFromSnapshot();
                 }
                 catch (Exception e)
                 {
@@ -601,9 +679,9 @@ namespace TFTV.TFTVIncidents
 
 
             private static string BuildGeoscapeBenefitDescription(
-                LeaderSelection.AffinityApproach approach,
-                int rank,
-                int option)
+        LeaderSelection.AffinityApproach approach,
+        int rank,
+        int option)
             {
                 int r = Math.Max(1, rank);
 
@@ -621,7 +699,7 @@ namespace TFTV.TFTVIncidents
 
                     case LeaderSelection.AffinityApproach.Occult:
                         return option == 1
-                            ? LocalizeAndFormat(KeyOccultGeoOpt1, 6 * r)
+                            ? LocalizeAndFormat(KeyOccultGeoOpt1, 4 * r)
                             : LocalizeAndFormat(KeyOccultGeoOpt2, 15 * r);
 
                     case LeaderSelection.AffinityApproach.Biotech:
@@ -637,7 +715,7 @@ namespace TFTV.TFTVIncidents
                     case LeaderSelection.AffinityApproach.Compute:
                         return option == 1
                             ? LocalizeAndFormat(KeyComputeGeoOpt1, 10 * r)
-                            : LocalizeAndFormat(KeyComputeGeoOpt2);
+                            : LocalizeAndFormat(KeyComputeGeoOpt2, 4 * r);
 
                     default:
                         return string.Empty;
@@ -656,7 +734,7 @@ namespace TFTV.TFTVIncidents
                     case LeaderSelection.AffinityApproach.PsychoSociology:
                         return option == 1
                             ? LocalizeAndFormat(KeyPsychoTacOpt1, 2 * r)
-                            : LocalizeAndFormat(KeyPsychoTacOpt2, r);
+                              : LocalizeAndFormat(KeyPsychoTacOpt2, 1);
 
                     case LeaderSelection.AffinityApproach.Exploration:
                         return option == 1
@@ -666,7 +744,7 @@ namespace TFTV.TFTVIncidents
                     case LeaderSelection.AffinityApproach.Occult:
                         return option == 1
                             ? LocalizeAndFormat(KeyOccultTacOpt1, 5 * r)
-                            : LocalizeAndFormat(KeyOccultTacOpt2, 50 * r);
+                              : LocalizeAndFormat(KeyOccultTacOpt2, 50);
 
                     case LeaderSelection.AffinityApproach.Biotech:
                         return option == 1
@@ -681,7 +759,7 @@ namespace TFTV.TFTVIncidents
                     case LeaderSelection.AffinityApproach.Compute:
                         return option == 1
                             ? LocalizeAndFormat(KeyComputeTacOpt1, 3 * r, 10 * r)
-                            : LocalizeAndFormat(KeyComputeTacOpt2, 50 * r);
+                            : LocalizeAndFormat(KeyComputeTacOpt2, 10 * r);
 
                     default:
                         return string.Empty;
@@ -748,6 +826,11 @@ namespace TFTV.TFTVIncidents
 
                 private static void Postfix(GeoRosterAbilityDetailTooltip __instance, TacticalAbilityDef abilityDef)
                 {
+                    if(!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                    {
+                        return;
+                    }
+
                     if (abilityDef == null || DescriptionResolver == null)
                     {
                         return;
@@ -761,5 +844,7 @@ namespace TFTV.TFTVIncidents
                 }
             }
         }
+
+     
     }
 }

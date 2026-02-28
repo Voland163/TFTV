@@ -164,6 +164,8 @@
     <Compile Include="TFTVBaseRework\GeoCharacterFilter.cs" />
     <Compile Include="TFTVBaseRework\LivingQuarters.cs" />
     <Compile Include="TFTVBaseRework\BaseOutpost.cs" />
+    <Compile Include="TFTVBaseRework\PersonnelDismissal.cs" />
+    <Compile Include="TFTVBaseRework\ResearchAndManufacturing.cs" />
     <Compile Include="TFTVBaseRework\TrainingFacilityRework.cs" />
     <Compile Include="TFTVBaseRework\UI.cs" />
     <Compile Include="TFTVBaseRework\Utils.cs" />
@@ -196,14 +198,13 @@
     <Compile Include="TFTVIncidents\AffinityTacticalEffects.cs" />
     <Compile Include="TFTVIncidents\BiotechMedkit.cs" />
     <Compile Include="TFTVIncidents\ComputeMountedAbility.cs" />
-    <Compile Include="TFTVIncidents\ExplorationGainControlofHaveDefender.cs" />
     <Compile Include="TFTVIncidents\GeoscapeEvents.cs" />
     <Compile Include="TFTVIncidents\GeoUIAdjustments.cs" />
     <Compile Include="TFTVIncidents\IncidentOutcomeSummaryUI.cs" />
     <Compile Include="TFTVIncidents\IncidentResolutionUI.cs" />
     <Compile Include="TFTVIncidents\LeaderSelection.cs" />
+    <Compile Include="TFTVIncidents\MachineryRepairDefs.cs" />
     <Compile Include="TFTVIncidents\PortraitGenerator.cs" />
-    <Compile Include="TFTVIncidents\PsychoSociologyAddHavenDefenders.cs" />
     <Compile Include="TFTVIncidents\Resolution.cs" />
     <Compile Include="TFTVIncidents\Roll.cs" />
     <Compile Include="TFTVIncidents\Set.cs" />

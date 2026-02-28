@@ -105,7 +105,7 @@ namespace TFTV.Vehicles.Ammo
 
                     if (weaponDef.Abilities.Any(a => a is FreeReloadAbilityDef))
                     {
-                        TFTVLogger.Always($"[VehiclesAmmoMain] Removing existing FreeReloadAbilityDef from {weaponDef.name}.");
+                       
 
                         FreeReloadAbilityDef freeReload = (FreeReloadAbilityDef)weaponDef.Abilities.FirstOrDefault(a => a is FreeReloadAbilityDef);
 

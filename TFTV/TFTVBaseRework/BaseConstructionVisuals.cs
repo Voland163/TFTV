@@ -96,7 +96,15 @@ namespace TFTV.TFTVBaseRework
             }
 
             Dictionary<string, GeoEventTimer> timers = TimersRef(eventSystem);
-            foreach (GeoEventTimer timer in timers.Values)
+
+          //  TFTVLogger.Always($"Rehydrating pending actions. Timers count: {(timers != null ? timers.Count.ToString() : "null")}");
+
+            if (timers == null || timers.Count == 0)
+            {
+                return;
+            }
+
+            foreach (GeoEventTimer timer in timers.Values.Where(t => t != null))
             {
                 if (!ActivePendingByTimerId.ContainsKey(timer.ID) && TryParsePendingTimer(timer, out PendingActionInfo active))
                 {
@@ -114,7 +122,12 @@ namespace TFTV.TFTVBaseRework
         private static void TickPendingActions(GeoscapeEventSystem eventSystem)
         {
             GeoLevelController level = eventSystem?.gameObject?.GetComponent<GeoLevelController>();
-            if (level == null)
+            if (eventSystem == null
+                || level == null
+                || level.Map == null
+                || level.Map.AllSites == null
+                || level.PhoenixFaction == null
+                || level.Timing == null)
             {
                 return;
             }
@@ -124,8 +137,10 @@ namespace TFTV.TFTVBaseRework
             List<string> toComplete = new List<string>();
             foreach (KeyValuePair<string, PendingActionInfo> kv in ActivePendingByTimerId)
             {
+              //  TFTVLogger.Always($"Checking pending action timer {kv.Key} for site {kv.Value.SiteId} and action {kv.Value.Action}. Now={level.Timing.Now}, EndAt={kv.Value.EndAt}");
                 GeoEventTimer timer = eventSystem.GetTimerById(kv.Key);
-                if (timer == null || level.Timing.Now >= kv.Value.EndAt)
+              //  TFTVLogger.Always($"Timer exists: {(timer != null)}, TimerEndAt={(timer != null ? timer.EndAt.ToString() : "null")}");
+                if (level.Timing.Now >= kv.Value.EndAt)
                 {
                     toComplete.Add(kv.Key);
                 }
@@ -137,26 +152,56 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
-        private static void CompletePendingActionFromTimer(GeoLevelController level, string timerId)
+        private static bool CompletePendingActionFromTimer(GeoLevelController level, string timerId)
         {
-            if (!ActivePendingByTimerId.TryGetValue(timerId, out PendingActionInfo active))
+            if (level == null
+                || string.IsNullOrEmpty(timerId)
+                || level.Map == null
+                || level.Map.AllSites == null)
             {
-                return;
+                return false;
             }
 
-            GeoSite site = level.Map.AllSites.FirstOrDefault(s => s.SiteId == active.SiteId);
-            GeoPhoenixFaction faction = level.PhoenixFaction;
-            if (site != null && faction != null)
+            GeoscapeEventSystem eventSystem = level.EventSystem;
+            if (eventSystem == null || level.PhoenixFaction == null)
             {
-                PhoenixBaseVisitFlow.CompletePendingAction(site, faction, active.Action);
+                return false;
             }
 
-            if (level.EventSystem.GetTimerById(timerId) != null)
+            if (!ActivePendingByTimerId.TryGetValue(timerId, out PendingActionInfo active) || active == null)
             {
-                level.EventSystem.RemoveTimer(timerId);
+                return false;
+            }
+
+            GeoSite site = level.Map.AllSites.FirstOrDefault(s => s != null && s.SiteId == active.SiteId);
+            if (site == null)
+            {
+                if (eventSystem.GetTimerById(timerId) != null)
+                {
+                    eventSystem.RemoveTimer(timerId);
+                }
+
+                ActivePendingByTimerId.Remove(timerId);
+                return true;
+            }
+
+            PhoenixBaseVisitFlow.CompletePendingAction(site, level.PhoenixFaction, active.Action);
+
+            bool completionSucceeded = !PhoenixBaseVisitFlow.HasPendingActionPublic(site)
+                && site.ExpiringTimerAt == TimeUnit.Zero;
+
+            if (!completionSucceeded)
+            {
+                return false;
+            }
+
+            if (eventSystem.GetTimerById(timerId) != null)
+            {
+                eventSystem.RemoveTimer(timerId);
             }
 
             ActivePendingByTimerId.Remove(timerId);
+            return true;
         }
 
         /* [HarmonyPatch(typeof(UIModuleSiteContextualMenu), "SetMenuItems")]
@@ -226,8 +271,8 @@ namespace TFTV.TFTVBaseRework
                 {
                     if (!PendingVisualMissingLogged.Contains(site.SiteId))
                     {
-                        TFTVLogger.Always(PendingVisualLogPrefix +
-                            $"Skip site {site.SiteId}: ExpiringTimerAt={site.ExpiringTimerAt}, Now={level.Timing.Now}");
+                       // TFTVLogger.Always(PendingVisualLogPrefix +
+                         //   $"Skip site {site.SiteId}: ExpiringTimerAt={site.ExpiringTimerAt}, Now={level.Timing.Now}");
                         PendingVisualMissingLogged.Add(site.SiteId);
                     }
                     continue;
@@ -247,7 +292,7 @@ namespace TFTV.TFTVBaseRework
                         if (!PendingVisualMissingLogged.Contains(site.SiteId))
                         {
                             TFTVLogger.Always(PendingVisualLogPrefix +
-                                $"Missing prefab/surface for site {site.SiteId}. Vehicle={(vehicle != null ? vehicle.VehicleID.ToString() : "null")}, Surface={(site.Surface != null)}");
+                            $"Missing prefab/surface for site {site.SiteId}. Vehicle={(vehicle != null ? vehicle.VehicleID.ToString() : "null")}, Surface={(site.Surface != null)}");
                             PendingVisualMissingLogged.Add(site.SiteId);
                         }
                         continue;

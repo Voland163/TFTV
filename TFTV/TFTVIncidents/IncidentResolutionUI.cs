@@ -9,8 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -154,6 +152,11 @@ namespace TFTV.TFTVIncidents
 
             public static void Postfix(UIModuleSiteEncounters __instance, GeoscapeEvent geoEvent, bool pagingEvent)
             {
+                if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                {
+                    return;
+                }
+
                 if (__instance == null || geoEvent?.Context == null || pagingEvent)
                 {
                     return;

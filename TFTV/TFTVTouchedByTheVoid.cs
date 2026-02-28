@@ -92,7 +92,7 @@ namespace TFTV
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                     int roll = UnityEngine.Random.Range(1, rollCap);
                     TacticalLevelController tacticalLevel = GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>();
-                    roll = TFTVIncidents.AffinityTacticalEffects.ApplyTBTVChanceReductionIfNeeded(tacticalLevel, roll);
+                 
 
                     TFTVLogger.Always("The TBTV roll is " + roll);
 
@@ -364,29 +364,50 @@ namespace TFTV
 
                 private static void RemoveTouchedByTheVoid(TacticalActor actor)
                 {
-                    try 
+                    try
                     {
+                        if (actor == null)
+                        {
+                            return;
+                        }
+
                         RemoveDeathBelcherAbilities(actor);
                         actor.RemoveAbility(hiddenTBTVAbilityDef);
 
-                        if (actor?.Status != null)
+                        if (actor.Status != null)
                         {
-                            Status hiddenTBTVStatus = actor.Status.GetStatusByName(hiddenTBTVAddAbilityStatus.EffectName);
+                            actor.Status.UnapplyAllStatusesFiltered(s =>
+                                s != null &&
+                                (
+                                    s.BaseDef == hiddenTBTVAddAbilityStatus ||
+                                    s.Def == hiddenTBTVAddAbilityStatus ||
+                                    (s.Def != null &&
+                                     !string.IsNullOrEmpty(s.Def.EffectName) &&
+                                     s.Def.EffectName.Equals(hiddenTBTVAddAbilityStatus.EffectName, StringComparison.OrdinalIgnoreCase))
+                                ));
 
-                            if (hiddenTBTVStatus != null)
+                            bool hiddenStatusStillPresent = actor.Status.Statuses.Any(s =>
+                                s != null &&
+                                (
+                                    s.BaseDef == hiddenTBTVAddAbilityStatus ||
+                                    s.Def == hiddenTBTVAddAbilityStatus ||
+                                    (s.Def != null &&
+                                     !string.IsNullOrEmpty(s.Def.EffectName) &&
+                                     s.Def.EffectName.Equals(hiddenTBTVAddAbilityStatus.EffectName, StringComparison.OrdinalIgnoreCase))
+                                ));
+
+                            if (hiddenStatusStillPresent)
                             {
-                                actor.Status.UnapplyStatus(hiddenTBTVStatus);
+                                TFTVLogger.Always($"Warning: hidden TBTV status still present on {actor.name} after cleanup.");
                             }
                         }
 
                         actor.GameTags.Remove(voidTouchedTag);
-
                     }
                     catch (Exception e)
                     {
                         TFTVLogger.Error(e);
                     }
-
                 }
 
                 private static void RemoveDeathBelcherAbilities(TacticalActor tacticalActor)
@@ -524,12 +545,10 @@ namespace TFTV
 
                             if (TFTVVoidOmens.VoidOmensCheck[15])
                             {
-                             baseChance = 32;
+                                baseChance = 32;
                             }
 
-                           
-                                totalDeliriumOnMission = baseChance + CheckForAcheronHarbingers(controller) * 10;
-                          
+                            totalDeliriumOnMission = baseChance + CheckForAcheronHarbingers(controller) * 10;
                         }
                         else
                         {
@@ -547,14 +566,14 @@ namespace TFTV
                             {
                                 totalDeliriumOnMission /= 2;
                             }
-                           
-                                totalDeliriumOnMission += CheckForAcheronHarbingers(controller) * 10;
-                            
-                           
+
+                            totalDeliriumOnMission += CheckForAcheronHarbingers(controller) * 10;
                         }
 
-                        return totalDeliriumOnMission;
+                        totalDeliriumOnMission = TFTV.TFTVIncidents.AffinityTacticalEffects.OccultTacticalBenefits
+                            .ApplyTBTVChanceReductionIfNeeded(controller, totalDeliriumOnMission);
 
+                        return totalDeliriumOnMission;
                     }
                     catch (Exception e)
                     {

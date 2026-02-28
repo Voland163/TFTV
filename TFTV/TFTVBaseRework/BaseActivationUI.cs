@@ -127,13 +127,13 @@ namespace TFTV.TFTVBaseRework
 
                     GeoPhoenixFaction faction = site.GeoLevel.PhoenixFaction;
 
-                    bool hasVehicle = PhoenixBaseVisitFlow.HasPhoenixVehicleAtSite(site, faction);
+                    bool hasAircraftWithSoldiers = PhoenixBaseVisitFlow.HasPhoenixAircraftWithSoldiersAtSite(site, faction);
                     bool isOutpost = site.SiteTags.Contains(PhoenixBaseReworkState.OutpostTag);
 
                     bool isLooted = site.SiteTags.Contains(PhoenixBaseReworkState.LootedTag);
-                    BaseInitialLoot.LootUiResult lootAwarded = BaseInitialLoot.TryGiveFirstVisitLootOnUI(site, faction, hasVehicle);
+                    BaseInitialLoot.LootUiResult lootAwarded = BaseInitialLoot.TryGiveFirstVisitLootOnUI(site, faction, hasAircraftWithSoldiers);
 
-                    TFTVLogger.Always($"[PXBaseActivationDataBind_ModalShowHandler_CustomPanel_patch] Site: {site?.LocalizedSiteName}, HasVehicle: {hasVehicle}, lootAwarded: {lootAwarded?.Text} ");
+                    TFTVLogger.Always($"[PXBaseActivationDataBind_ModalShowHandler_CustomPanel_patch] Site: {site?.LocalizedSiteName}, HasAircraftWithSoldiers: {hasAircraftWithSoldiers}, lootAwarded: {lootAwarded?.Text} ");
 
                     HideVanillaActivationCostBlock(__instance);
 
@@ -144,7 +144,7 @@ namespace TFTV.TFTVBaseRework
                         {
                             SetActivationLootDisplay(activationCostLabel, TFTVCommonMethods.ConvertKeyToString("KEY_BASE_ALREADY_LOOTED"), null);
                         }
-                        else if (!hasVehicle)
+                        else if (!hasAircraftWithSoldiers)
                         {
                             SetActivationLootDisplay(activationCostLabel, TFTVCommonMethods.ConvertKeyToString("KEY_BASE_VISIT_TO_LOOT"), null);
                         }
@@ -193,7 +193,7 @@ namespace TFTV.TFTVBaseRework
                         __instance.Confirm,
                         root,
                         TFTVCommonMethods.ConvertKeyToString("KEY_BASE_RANSACK_OPTION"),
-                        hasVehicle,
+                        hasAircraftWithSoldiers,
                         () => ExecuteAndCloseOnSuccess(modal, () => PhoenixBaseVisitFlow.TryRansackFromActivationUI(site, faction)));
                     if (!ApplyGainRow(ransackBtn, site))
                     {
@@ -205,11 +205,11 @@ namespace TFTV.TFTVBaseRework
                     if (!isOutpost)
                     {
                         PhoenixGeneralButton outpostBtn = CreateClonedActionButton(
-                           __instance.Confirm,
-                           root,
-                           TFTVCommonMethods.ConvertKeyToString("KEY_BASE_OUTPOST_OPTION"),
-                           hasVehicle && PhoenixBaseVisitFlow.CanAffordOutpost(faction),
-                           () => ExecuteAndCloseOnSuccess(modal, () => PhoenixBaseVisitFlow.TrySetOutpostFromActivationUI(site, faction)));
+                            __instance.Confirm,
+                            root,
+                            TFTVCommonMethods.ConvertKeyToString("KEY_BASE_OUTPOST_OPTION"),
+                            hasAircraftWithSoldiers && PhoenixBaseVisitFlow.CanAffordOutpost(faction),
+                            () => ExecuteAndCloseOnSuccess(modal, () => PhoenixBaseVisitFlow.TrySetOutpostFromActivationUI(site, faction)));
                         ApplyCostRow(outpostBtn, faction, PhoenixBaseVisitFlow.GetOutpostCostPack(), PhoenixBaseVisitFlow.GetOutpostPersonnelCost());
                         SetButtonTooltip(outpostBtn, TFTVCommonMethods.ConvertKeyToString("KEY_BASE_OUTPOST_TOOLTIP"));
                     }
@@ -219,11 +219,11 @@ namespace TFTV.TFTVBaseRework
                         ? TFTVCommonMethods.ConvertKeyToString("KEY_BASE_OUTPOST_UPGRADE_OPTION")
                         : TFTVCommonMethods.ConvertKeyToString("KEY_BASE_ACTIVATE_OPTION");
                     PhoenixGeneralButton activateBaseBtn = CreateClonedActionButton(
-                       __instance.Confirm,
-                       root,
+                        __instance.Confirm,
+                        root,
                         activateLabel,
-                        hasVehicle && PhoenixBaseVisitFlow.CanAffordBaseQueue(faction, fromOutpost),
-                       () => ExecuteAndCloseOnSuccess(modal, () => PhoenixBaseVisitFlow.TryQueueFullBaseFromActivationUI(site, faction, fromOutpost)));
+                        hasAircraftWithSoldiers && PhoenixBaseVisitFlow.CanAffordBaseQueue(faction, fromOutpost),
+                        () => ExecuteAndCloseOnSuccess(modal, () => PhoenixBaseVisitFlow.TryQueueFullBaseFromActivationUI(site, faction, fromOutpost)));
                     ApplyCostRow(activateBaseBtn, faction, PhoenixBaseVisitFlow.GetBaseQueueCostPack(fromOutpost), PhoenixBaseVisitFlow.GetBaseQueuePersonnelCost(fromOutpost));
                     SetButtonTooltip(activateBaseBtn, fromOutpost
                         ? TFTVCommonMethods.ConvertKeyToString("KEY_BASE_OUTPOST_UPGRADE_TOOLTIP")

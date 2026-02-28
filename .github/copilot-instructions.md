@@ -11,6 +11,7 @@
 - Follow naming conventions
 - Prefer a single combined Harmony patch per target method when possible, and refactor large Prefix bodies into smaller helper methods for readability.
 - Do not Harmony patch our own mod code; modify our own code directly instead.
+- Prefer persisting tactical mission state via `TFTVTacInstanceData`, consistent with existing save/load patterns in this codebase.
 
 ## Project-Specific Rules
 - Scarab Gemini is a standalone `GroundVehicleWeaponDef` (not attached as a `Weapon` subaddon of a `GroundVehicleModuleDef`). 
@@ -22,6 +23,9 @@
 - Apply incident requirements should be hardcoded in code (not parsed at runtime), implemented per faction in `GeoscapeEvents.ApplyIncidentRequirements`.
 - Confirmed that loot items do have icons; missing inventory slot icons is not caused by missing item icons.
 - In incident chains, "same haven" refers to the haven where the previous incident in that chain succeeded; tag that haven on the prior incident’s success and require the tag for the next incident.
+- For the dismissed-operative feature, do not store extra dismissed/redeploy metadata in PersonnelInfo if it can be derived from GeoCharacter; redeploy cost formula is 10 SP per character level above 1 (10 * (Level - 1)).
+- For BaseRework operative generation, adjust the source TacCharacterDef's class tag to the requested class immediately before character generation and restore it immediately after generation.
+- For BaseRework personnel markers, replace both hidden and dismissed tags with token PassiveModifierAbilityDef markers checked by ability presence rather than GameTags.
 
 ## Affinities Design Rules
 - Affinities feature 6 affinities, each with 3 ranks. Each affinity has two benefit tracks (Geoscape and Tactical) with two player-selectable options each; choices are global/shared.
@@ -34,3 +38,7 @@
 - For incident resolution, the cancel event should be the failure event; the only way to fail is canceling.
 - Affinity award behavior: only grant/advance on success using the leader stored at start; if choice has multiple affinity approaches, use the leader's matching affinity if present, otherwise pick one at random.
 - Implementation should proceed Geoscape first, starting with dynamic ability description updates.
+- For Biotech medkit affinity effects, apply the benefit only when the TacticalActor using the medkit has the relevant affinity.
+- For Compute tactical option 2, the Perception bonus scales by affinity rank: rank 1 = 1/3 of squad Delirium capped at 10, rank 2 = 2/3 capped at 20, rank 3 = 1x capped at 30.
+- For Biotech geoscape option 2, haven leader attitude must not be repeatedly farmed; revisit grants should only increase when a higher-rank Biotech operative visits, applying only the rank difference, tracked via haven SiteTags per rank. Leave a comment for later haven-info UI display of the Biotech rank bonus next to leader attitude instead of implementing it now.
+- Compute geoscape haven-attack warning is intended to scale with rank and be a visual indicator on affected havens; Exploration geoscape logic should be gated by BaseRework, not AircraftRework.

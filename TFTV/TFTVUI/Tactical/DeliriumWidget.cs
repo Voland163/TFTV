@@ -865,6 +865,9 @@ namespace TFTV.TFTVUI.Tactical
 
                 totalChances += harbingers * 10;
 
+                int adjustedTotalChances = TFTV.TFTVIncidents.AffinityTacticalEffects.OccultTacticalBenefits
+                    .ApplyTBTVChanceReductionIfNeeded(controller, Mathf.RoundToInt(totalChances));
+
                 if (element == _tbtvChancesBase || element == _tbtvChancesAcheron)
                 {
                     if (element == _tbtvChancesBase)
@@ -879,15 +882,14 @@ namespace TFTV.TFTVUI.Tactical
                         }
                         else
                         {
-                            //  int _acheronChanceTBTV = harbingers * 10;
-                            adjustedText = TFTVCommonMethods.ConvertKeyToString(element).Replace("{0}", (harbingers).ToString());
+                            adjustedText = TFTVCommonMethods.ConvertKeyToString(element).Replace("{0}", harbingers.ToString());
                         }
                     }
 
                 }
                 else if (element == _tbtvChances)
                 {
-                    adjustedText = TFTVCommonMethods.ConvertKeyToString(element).Replace("{0}", totalChances.ToString());
+                    adjustedText = TFTVCommonMethods.ConvertKeyToString(element).Replace("{0}", adjustedTotalChances.ToString());
                 }
                 else
                 {

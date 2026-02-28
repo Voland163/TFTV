@@ -1070,46 +1070,48 @@ namespace TFTV
 
 
         }
-        public static void CreateTouchedByTheVoidAbilities()
-        {
-            try
-            {
+      public static void CreateTouchedByTheVoidAbilities()
+{
+    try
+    {
 
-                string hiddenAbilityName = "TBTV_Hidden_AbilityDef";
-                PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
-                PassiveModifierAbilityDef hiddenTBTVAbility = Helper.CreateDefFromClone(
-                    source,
-                    "08B0682C-AAA0-42EC-9F96-794B1D4D7C7C",
-                    hiddenAbilityName);
-                hiddenTBTVAbility.CharacterProgressionData = Helper.CreateDefFromClone(
-                    source.CharacterProgressionData,
-                    "83A0DB53-E4EE-4EFC-A344-856BEE621D27",
-                    hiddenAbilityName);
-                hiddenTBTVAbility.ViewElementDef = Helper.CreateDefFromClone(
-                    source.ViewElementDef,
-                    "215E4A23-AF21-415D-B8FD-DA90E916542E",
-                    hiddenAbilityName);
-                hiddenTBTVAbility.StatModifications = new ItemStatModification[0];
-                hiddenTBTVAbility.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                hiddenTBTVAbility.ViewElementDef.DisplayName1.LocalizationKey = "TBTV_HIDDEN_ABILITY_NAME";
-                hiddenTBTVAbility.ViewElementDef.Description.LocalizationKey = "TBTV_HIDDEN_ABILITY_DESCRIPTION";
-                hiddenTBTVAbility.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("tbtv_icon.png");
-                hiddenTBTVAbility.ViewElementDef.SmallIcon = hiddenTBTVAbility.ViewElementDef.LargeIcon;
+        string hiddenAbilityName = "TBTV_Hidden_AbilityDef";
+        PassiveModifierAbilityDef source = DefCache.GetDef<PassiveModifierAbilityDef>("SelfDefenseSpecialist_AbilityDef");
+        PassiveModifierAbilityDef hiddenTBTVAbility = Helper.CreateDefFromClone(
+            source,
+            "08B0682C-AAA0-42EC-9F96-794B1D4D7C7C",
+            hiddenAbilityName);
+        hiddenTBTVAbility.CharacterProgressionData = Helper.CreateDefFromClone(
+            source.CharacterProgressionData,
+            "83A0DB53-E4EE-4EFC-A344-856BEE621D27",
+            hiddenAbilityName);
+        hiddenTBTVAbility.ViewElementDef = Helper.CreateDefFromClone(
+            source.ViewElementDef,
+            "215E4A23-AF21-415D-B8FD-DA90E916542E",
+            hiddenAbilityName);
+        hiddenTBTVAbility.StatModifications = new ItemStatModification[0];
+        hiddenTBTVAbility.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
+        hiddenTBTVAbility.ViewElementDef.DisplayName1.LocalizationKey = "TBTV_HIDDEN_ABILITY_NAME";
+        hiddenTBTVAbility.ViewElementDef.Description.LocalizationKey = "TBTV_HIDDEN_ABILITY_DESCRIPTION";
+        hiddenTBTVAbility.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile("tbtv_icon.png");
+        hiddenTBTVAbility.ViewElementDef.SmallIcon = hiddenTBTVAbility.ViewElementDef.LargeIcon;
 
-                AddAbilityStatusDef sourceAbilityStatusDef = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");
+        AddAbilityStatusDef sourceAbilityStatusDef = DefCache.GetDef<AddAbilityStatusDef>("OilCrab_AddAbilityStatusDef");
 
-                string statusHiddenAbilityTBTVName = "TBTV_Hidden_AddAbilityStatusDef";
-                AddAbilityStatusDef statusHiddenTBTVDef = Helper.CreateDefFromClone(sourceAbilityStatusDef, "23BD57AF-418A-49C7-B658-D05465248578", statusHiddenAbilityTBTVName);
-                statusHiddenTBTVDef.AbilityDef = hiddenTBTVAbility;
-                statusHiddenTBTVDef.ApplicationConditions = new EffectConditionDef[] { };
+        string statusHiddenAbilityTBTVName = "TBTV_Hidden_AddAbilityStatusDef";
+        AddAbilityStatusDef statusHiddenTBTVDef = Helper.CreateDefFromClone(sourceAbilityStatusDef, "23BD57AF-418A-49C7-B658-D05465248578", statusHiddenAbilityTBTVName);
+        statusHiddenTBTVDef.AbilityDef = hiddenTBTVAbility;
+        statusHiddenTBTVDef.ApplicationConditions = new EffectConditionDef[] { };
+        statusHiddenTBTVDef.EffectName = "TBTV_Hidden_Status";
+        statusHiddenTBTVDef.SingleInstance = true;
 
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
+    }
+    catch (Exception e)
+    {
+        TFTVLogger.Error(e);
+    }
 
-        }
+}
 
 
         public static void CreateNewDefsForTFTVStart()

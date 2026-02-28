@@ -130,7 +130,7 @@ namespace TFTV
                     //  TFTVLogger.Always($"running activate exit mission ability for {__instance.TacticalActor.DisplayName}, {__instance.TacticalActor.TacticalFaction.Faction.FactionDef.name} {__instance.TacticalActor.Status?.HasStatus<MindControlStatus>()}");
 
                     TFTVVanillaFixes.Tactical.XP.FixRescueMissionEvac(__instance.TacticalActor);
-
+                    TFTVIncidents.AffinityTacticalEffects.ExplorationTacticalBenefits.ApplyExplorationCivilianExtractionWillpowerBonus(__instance.TacticalActor);
                 }
                 catch (Exception e)
                 {
@@ -140,7 +140,22 @@ namespace TFTV
             }
         }
 
-
+        [HarmonyPatch(typeof(TacticalLevelController), "OnLevelStart")]
+        public static class TacticalLevelController_OnLevelStart_AffinityMissionStart_Patch
+        {
+            public static void Postfix(TacticalLevelController __instance)
+            {
+                try
+                {
+                    TFTVIncidents.AffinityTacticalEffects.ExplorationTacticalBenefits.ApplyHavenDefenseMissionStartBenefits(__instance);
+                   
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
         [HarmonyPatch(typeof(TacticalVoxelMatrix), nameof(TacticalVoxelMatrix.StartTurn))]
         public static class TacticalVoxelMatrix_StartTurn_Patch
@@ -151,7 +166,7 @@ namespace TFTV
                 try
                 {
                     AircraftReworkTacticalModules.MistRepeller.ImplementMistRepellerTurnStart(__instance, ____voxels);
-
+                    TFTVIncidents.AffinityTacticalEffects.ComputeTacticalBenefits.RefreshDeliriumPerceptionBonus(__instance.TacticalLevel);
                 }
                 catch (Exception e)
                 {
@@ -697,7 +712,7 @@ namespace TFTV
                     TFTVPalaceMission.MissionObjectives.CheckFinalMissionWinConditionForExalted(ability);
                     TFTVPalaceMission.Gates.CheckIfPlayerCloseToGate(__instance);
                     TFTVChangesToDLC5.TFTVMercenaries.Tactical.SlugHealTraumaEffect(ability, __instance);
-                    TFTVIncidents.AffinityTacticalEffects.ApplyRecoveryWillpowerBonus(ability, __instance);
+                    TFTVIncidents.AffinityTacticalEffects.PyschoSociolgyTacticalBenefits.ApplyRecoveryWillpowerBonus(ability, __instance);
                     TFTVArtOfCrab.GetBestWeaponForOWRF(__instance);
                     TFTVVehicleFixes.CheckSquashing(ability, __instance);
 

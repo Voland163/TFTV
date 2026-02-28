@@ -5,13 +5,15 @@ using Base.Serialization.General;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
-using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Equipments;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +22,6 @@ using static TFTV.TFTVBaseRework.Workers;
 
 namespace TFTV.TFTVBaseRework
 {
-
     public enum PersonnelAssignment
     {
         Unassigned,
@@ -45,11 +46,226 @@ namespace TFTV.TFTVBaseRework
         public PersonnelAssignment Assignment;
     }
 
+    internal static class PersonnelRestrictions
+    {
+        private const string JustAGruntAbilityDefName = "JustAGrunt_AbilityDef";
+        private const string HiddenFromOperativesAbilityDefName = "HiddenFromOperatives_AbilityDef";
+        private const string DismissedOperativeAbilityDefName = "DismissedOperative_AbilityDef";
+
+        internal static PassiveModifierAbilityDef JustAGruntAbility;
+        internal static PassiveModifierAbilityDef HiddenFromOperativesAbility;
+        internal static PassiveModifierAbilityDef DismissedOperativeAbility;
+
+        internal static bool EnsureJustAGrunt(GeoCharacter character, string source)
+        {
+            if (!BaseReworkUtils.BaseReworkEnabled || character?.Progression == null)
+            {
+                return false;
+            }
+
+            PassiveModifierAbilityDef justAGrunt = ResolveJustAGruntAbility();
+            if (justAGrunt == null)
+            {
+                TFTVLogger.Always($"[JustAGrunt] Ability def not available. Source={source ?? "Unknown"}");
+                return false;
+            }
+
+            if (HasMarkerAbility(character, justAGrunt))
+            {
+                return false;
+            }
+
+            character.Progression.AddAbility(justAGrunt);
+            TFTVLogger.Always($"[JustAGrunt] Added to {character.DisplayName}. Source={source ?? "Unknown"}");
+            return true;
+        }
+
+        internal static bool IsHiddenFromOperatives(GeoCharacter character)
+        {
+            return HasMarkerAbility(character, ResolveHiddenFromOperativesAbility());
+        }
+
+        internal static bool MarkHiddenFromOperatives(GeoCharacter character)
+        {
+            return AddMarkerAbility(character, ResolveHiddenFromOperativesAbility(), "HiddenFromOperatives");
+        }
+
+        internal static bool ClearHiddenFromOperatives(GeoCharacter character)
+        {
+            return RemoveMarkerAbility(character, ResolveHiddenFromOperativesAbility(), "HiddenFromOperatives");
+        }
+
+        internal static bool IsDismissedOperative(GeoCharacter character)
+        {
+            return HasMarkerAbility(character, ResolveDismissedOperativeAbility());
+        }
+
+        internal static bool MarkDismissedOperative(GeoCharacter character)
+        {
+            return AddMarkerAbility(character, ResolveDismissedOperativeAbility(), "DismissedOperative");
+        }
+
+        internal static bool ClearDismissedOperative(GeoCharacter character)
+        {
+            return RemoveMarkerAbility(character, ResolveDismissedOperativeAbility(), "DismissedOperative");
+        }
+
+        internal static int GetRedeployCost(GeoCharacter character)
+        {
+            int level = character?.LevelProgression?.Level ?? 1;
+            return Math.Max(0, (level - 1) * 10);
+        }
+
+        private static PassiveModifierAbilityDef ResolveJustAGruntAbility()
+        {
+            if (JustAGruntAbility != null)
+            {
+                return JustAGruntAbility;
+            }
+
+            try
+            {
+                JustAGruntAbility = TFTVMain.Main.DefCache.GetDef<PassiveModifierAbilityDef>(JustAGruntAbilityDefName);
+            }
+            catch
+            {
+                JustAGruntAbility = null;
+            }
+
+            return JustAGruntAbility;
+        }
+
+        private static PassiveModifierAbilityDef ResolveHiddenFromOperativesAbility()
+        {
+            if (HiddenFromOperativesAbility != null)
+            {
+                return HiddenFromOperativesAbility;
+            }
+
+            try
+            {
+                HiddenFromOperativesAbility = TFTVMain.Main.DefCache.GetDef<PassiveModifierAbilityDef>(HiddenFromOperativesAbilityDefName);
+            }
+            catch
+            {
+                HiddenFromOperativesAbility = null;
+            }
+
+            return HiddenFromOperativesAbility;
+        }
+
+        private static PassiveModifierAbilityDef ResolveDismissedOperativeAbility()
+        {
+            if (DismissedOperativeAbility != null)
+            {
+                return DismissedOperativeAbility;
+            }
+
+            try
+            {
+                DismissedOperativeAbility = TFTVMain.Main.DefCache.GetDef<PassiveModifierAbilityDef>(DismissedOperativeAbilityDefName);
+            }
+            catch
+            {
+                DismissedOperativeAbility = null;
+            }
+
+            return DismissedOperativeAbility;
+        }
+
+        private static bool HasMarkerAbility(GeoCharacter character, TacticalAbilityDef marker)
+        {
+            if (!BaseReworkUtils.BaseReworkEnabled || character?.Progression?.Abilities == null || marker == null)
+            {
+                return false;
+            }
+
+            return character.Progression.Abilities.Any(ability => AbilityMatches(ability, marker));
+        }
+
+        private static bool AddMarkerAbility(GeoCharacter character, PassiveModifierAbilityDef marker, string markerName)
+        {
+            if (!BaseReworkUtils.BaseReworkEnabled || character?.Progression == null || marker == null)
+            {
+                return false;
+            }
+
+            if (HasMarkerAbility(character, marker))
+            {
+                return false;
+            }
+
+            character.Progression.AddAbility(marker);
+            TFTVLogger.Always($"[{markerName}] Added marker to {character.DisplayName}.");
+            return true;
+        }
+
+        private static bool RemoveMarkerAbility(GeoCharacter character, PassiveModifierAbilityDef marker, string markerName)
+        {
+            if (!BaseReworkUtils.BaseReworkEnabled || character?.Progression == null || marker == null)
+            {
+                return false;
+            }
+
+            List<TacticalAbilityDef> abilities = Traverse.Create(character.Progression)
+                .Field("_abilities")
+                .GetValue<List<TacticalAbilityDef>>();
+
+            if (abilities == null)
+            {
+                return false;
+            }
+
+            int removed = abilities.RemoveAll(ability => AbilityMatches(ability, marker));
+            if (removed > 0)
+            {
+                TFTVLogger.Always($"[{markerName}] Removed marker from {character.DisplayName}.");
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool AbilityMatches(TacticalAbilityDef ability, TacticalAbilityDef marker)
+        {
+            if (ability == marker)
+            {
+                return true;
+            }
+
+            if (ability == null || marker == null)
+            {
+                return false;
+            }
+
+            return string.Equals(ability.name, marker.name, StringComparison.OrdinalIgnoreCase);
+        }
+
+        internal static bool HasJustAGrunt(GeoCharacter character)
+        {
+            return HasMarkerAbility(character, ResolveJustAGruntAbility());
+        }
+
+        internal static bool CanGainAffinities(GeoCharacter character)
+        {
+            return character != null && !HasJustAGrunt(character);
+        }
+
+        internal static bool CanContributeToIncidents(GeoCharacter character)
+        {
+            return character != null && !HasJustAGrunt(character);
+        }
+
+        internal static bool CanBeAssignedToManufacturingOrResearch(GeoCharacter character)
+        {
+            return character != null && !HasJustAGrunt(character);
+        }
+    }
+
     internal static class PersonnelData
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
-        private static readonly SharedData Shared = TFTVMain.Shared;
-        private static readonly DefRepository Repo = TFTVMain.Repo;
+
 
 
         private const string LogPrefix = "[PersonnelData]";
@@ -76,7 +292,7 @@ namespace TFTV.TFTVBaseRework
                 return;
             }
 
-        
+
             _pendingInitialPersonnelGrant = false;
 
             int difficulty = level?.CurrentDifficultyLevel?.Order ?? 0;
@@ -89,6 +305,11 @@ namespace TFTV.TFTVBaseRework
             int added = AddIncidentPersonnelReward(level.PhoenixFaction, count);
             TFTVLogger.Always($"[PersonnelData] Granted {added}/{count} initial personnel for difficulty {difficulty}.");
         }
+
+
+      
+
+
         /// <summary>
         /// Only unlocks the Recruit tab in the roster UI.
         /// Does not modify recruitment gameplay functionality flags.
@@ -186,6 +407,8 @@ namespace TFTV.TFTVBaseRework
             TFTVLogger.Always("[PersonnelData] Cleared assignments and personnel pool.");
         }
 
+
+
         private static PersonnelInfo FindPersonnel(GeoCharacter character)
         {
             if (character == null) return null;
@@ -216,6 +439,26 @@ namespace TFTV.TFTVBaseRework
 
             return info;
         }
+
+        internal static void UpdateDismissedPersonnelRecord(GeoCharacter character)
+        {
+            if (character == null)
+            {
+                return;
+            }
+
+            PersonnelInfo info = FindPersonnel(character) ?? FindPersonnel(character.Id) ?? CreatePersonnelRecord(character);
+            int previousId = info.Id;
+
+            info.Character = character;
+            info.Id = character.Id;
+            info.Assignment = PersonnelAssignment.Unassigned;
+            info.TrainingSpec = null;
+            _assignments[character.Id] = info;
+
+            TFTVLogger.Always($"{LogPrefix} UpdateDismissedPersonnelRecord Name={character.DisplayName} PreviousId={previousId} NewId={character.Id} Hidden={GeoCharacterFilter.HiddenOperativeMarkerFilter.ShouldHide(character)} Dismissed={PersonnelRestrictions.IsDismissedOperative(character)}");
+        }
+
 
         internal static int GetOrCreatePersonnelId(GeoCharacter character)
         {
@@ -249,7 +492,7 @@ namespace TFTV.TFTVBaseRework
                     return null;
                 }
 
-                GeoCharacterFilter.HiddenOperativeTagFilter.ApplyHiddenTag(character);
+                GeoCharacterFilter.HiddenOperativeMarkerFilter.ApplyHiddenMarker(character);
                 character.LevelProgression?.SetLevel(1);
                 faction.AddRecruit(character, site);
                 return character;
@@ -273,18 +516,133 @@ namespace TFTV.TFTVBaseRework
             {
                 _assignments[character.Id] = info;
             }
+
+            TryAutoAssignUnassignedPersonnel(character.Faction as GeoPhoenixFaction, "AttachCharacter");
         }
 
+        private static IEnumerable<PersonnelInfo> GetAutoAssignablePersonnel(GeoPhoenixFaction faction)
+        {
+            return _assignments.Values
+                .Where(person => person?.Character != null && person.Character.Faction == faction)
+                .Where(person => person.Assignment == PersonnelAssignment.Unassigned)
+                .Where(person => PersonnelRestrictions.CanBeAssignedToManufacturingOrResearch(person.Character))
+                .OrderBy(person => person.Id);
+        }
+
+        private static bool TryAssignUnassignedWorkerToSlot(PersonnelInfo person, GeoPhoenixFaction faction, FacilitySlotType slotType)
+        {
+            if (person?.Character == null || faction == null)
+            {
+                return false;
+            }
+
+            if (person.Assignment != PersonnelAssignment.Unassigned)
+            {
+                return false;
+            }
+
+            if (!ResearchManufacturingSlotsManager.IncrementUsedSlot(faction, slotType))
+            {
+                return false;
+            }
+
+            person.Assignment = slotType == FacilitySlotType.Research
+                ? PersonnelAssignment.Research
+                : PersonnelAssignment.Manufacturing;
+            person.TrainingSpec = null;
+
+            TFTVLogger.Always($"{LogPrefix} Auto-assigned {person.Character.DisplayName} to {person.Assignment}.");
+            return true;
+        }
+
+        internal static void TryAutoAssignUnassignedPersonnel(GeoPhoenixFaction faction, string source)
+        {
+            if (!BaseReworkUtils.BaseReworkEnabled || faction == null)
+            {
+                return;
+            }
+
+            ResearchManufacturingSlotsManager.RecalculateSlots(faction);
+
+            int assignedResearch = 0;
+            foreach (PersonnelInfo person in GetAutoAssignablePersonnel(faction).ToList())
+            {
+                if (!TryAssignUnassignedWorkerToSlot(person, faction, FacilitySlotType.Research))
+                {
+                    break;
+                }
+
+                assignedResearch++;
+            }
+
+            int assignedManufacturing = 0;
+            foreach (PersonnelInfo person in GetAutoAssignablePersonnel(faction).ToList())
+            {
+                if (!TryAssignUnassignedWorkerToSlot(person, faction, FacilitySlotType.Manufacturing))
+                {
+                    break;
+                }
+
+                assignedManufacturing++;
+            }
+
+            if (assignedResearch > 0 || assignedManufacturing > 0)
+            {
+                FacilitySlotPools pools = ResearchManufacturingSlotsManager.GetOrCreatePools(faction);
+                TFTVLogger.Always(
+                    $"{LogPrefix} Auto-assignment from {source}: " +
+                    $"Research +{assignedResearch}, Manufacturing +{assignedManufacturing}. " +
+                    $"Research {pools.Research.UsedSlots}/{pools.Research.ProvidedSlots}, " +
+                    $"Manufacturing {pools.Manufacturing.UsedSlots}/{pools.Manufacturing.ProvidedSlots}");
+            }
+        }
         internal static void RemovePersonnel(GeoPhoenixFaction faction, PersonnelInfo person)
         {
-            if (person == null) return;
+            if (person == null)
+            {
+                return;
+            }
+
+            int requestedId = person.Id;
+            int characterId = person.Character?.Id ?? 0;
+            string name = person.Character?.DisplayName ?? $"Personnel {requestedId}";
+
+            TFTVLogger.Always($"{LogPrefix} RemovePersonnel requested Name={name} RequestedId={requestedId} CharacterId={characterId} Assignment={person.Assignment}");
 
             if (person.Assignment == PersonnelAssignment.Research || person.Assignment == PersonnelAssignment.Manufacturing)
             {
                 ReleaseWorkSlotIfNeeded(faction, person.Assignment);
             }
 
-            _assignments.Remove(person.Id);
+            bool removed = _assignments.Remove(requestedId);
+
+            if (!removed && characterId > 0)
+            {
+                removed = _assignments.Remove(characterId);
+            }
+
+            if (!removed)
+            {
+                int fallbackKey = _assignments
+                    .Where(kv => kv.Value != null)
+                    .Where(kv => ReferenceEquals(kv.Value, person)
+                        || (characterId > 0 && kv.Value.Character != null && kv.Value.Character.Id == characterId))
+                    .Select(kv => kv.Key)
+                    .FirstOrDefault();
+
+                if (fallbackKey != 0)
+                {
+                    removed = _assignments.Remove(fallbackKey);
+                    TFTVLogger.Always($"{LogPrefix} RemovePersonnel fallback removal used Key={fallbackKey} Name={name}");
+                }
+            }
+
+            if (removed)
+            {
+                TryAutoAssignUnassignedPersonnel(faction, "RemovePersonnel");
+            }
+
+            TFTVLogger.Always($"{LogPrefix} RemovePersonnel result Name={name} Removed={removed} RemainingAssignments={_assignments.Count}");
         }
 
         internal static List<SpecializationDef> ResolveAvailableMainSpecs(GeoLevelController level)
@@ -301,7 +659,17 @@ namespace TFTV.TFTVBaseRework
                 return;
             }
 
-            if (person?.Character == null || faction == null) return;
+            if (person?.Character == null || faction == null)
+            {
+                return;
+            }
+
+            if (!PersonnelRestrictions.CanBeAssignedToManufacturingOrResearch(person.Character))
+            {
+                TFTVLogger.Always($"{LogPrefix} {person.Character.DisplayName} cannot be assigned to {slotType} because of Just a grunt.");
+                return;
+            }
+
             ResearchManufacturingSlotsManager.RecalculateSlots(faction);
 
             PersonnelAssignment desired = slotType == FacilitySlotType.Research
@@ -348,18 +716,26 @@ namespace TFTV.TFTVBaseRework
                 return new List<PersonnelAssignmentSave>();
             }
 
-
             var list = new List<PersonnelAssignmentSave>();
             foreach (var pi in _assignments.Values)
             {
+                string mainSpecName = null;
+
+                if (pi != null &&
+                    pi.Assignment == PersonnelAssignment.Training &&
+                    pi.TrainingSpec != null)
+                {
+                    mainSpecName = pi.TrainingSpec.name;
+                }
+
                 list.Add(new PersonnelAssignmentSave
                 {
                     GeoUnitId = pi.Id,
-                    MainSpecName = pi.TrainingSpec?.name ?? pi.Character?.Progression?.MainSpecDef?.name,
+                    MainSpecName = mainSpecName,
                     Assignment = pi.Assignment,
-
                 });
             }
+
             return list;
         }
 
@@ -370,10 +746,13 @@ namespace TFTV.TFTVBaseRework
                 return;
             }
 
-
             try
             {
-                if (level?.PhoenixFaction == null || snapshot == null) return;
+                if (level?.PhoenixFaction == null || snapshot == null)
+                {
+                    return;
+                }
+
                 var phoenix = level.PhoenixFaction;
 
                 TFTVLogger.Always($"[PersonnelData] Loading assignments snapshot.");
@@ -384,24 +763,29 @@ namespace TFTV.TFTVBaseRework
                     {
                         Id = save.GeoUnitId,
                         Character = phoenix.Soldiers.FirstOrDefault(s => s.Id == save.GeoUnitId),
-                        Assignment = save.Assignment
+                        Assignment = save.Assignment,
+                        TrainingSpec = null
                     };
 
                     if (info.Character != null)
                     {
-                        GeoCharacterFilter.HiddenOperativeTagFilter.ApplyHiddenTag(info.Character);
+                        GeoCharacterFilter.HiddenOperativeMarkerFilter.ApplyHiddenMarker(info.Character);
                     }
 
-                    if (save.MainSpecName != null && save.MainSpecName != "")
+                    if (save.Assignment == PersonnelAssignment.Training &&
+                        !string.IsNullOrEmpty(save.MainSpecName))
                     {
                         info.TrainingSpec = TFTVMain.Main.DefCache.GetDef<SpecializationDef>(save.MainSpecName);
                     }
 
                     _assignments.Add(info.Id, info);
 
-                    TFTVLogger.Always($"[PersonnelData] Restoring personnel id={info.Id} name={info.Character.DisplayName} assignment={info.Assignment} MainSpecName: {info?.TrainingSpec?.name}");
+                    TFTVLogger.Always(
+                        $"[PersonnelData] Restoring personnel id={info.Id} " +
+                        $"name={info.Character?.DisplayName ?? "null"} " +
+                        $"assignment={info.Assignment} " +
+                        $"MainSpecName={info.TrainingSpec?.name ?? "null"}");
                 }
-
             }
             catch (Exception e)
             {
@@ -419,6 +803,7 @@ namespace TFTV.TFTVBaseRework
             try
             {
                 ResyncWorkSlots(level.PhoenixFaction);
+                TryAutoAssignUnassignedPersonnel(level.PhoenixFaction, "RestoreAssignments");
                 RefreshInfoBar(level);
             }
             catch (Exception e)
@@ -539,7 +924,7 @@ namespace TFTV.TFTVBaseRework
                 return 0;
             }
 
-           
+
 
             int added = 0;
             for (int i = 0; i < count; i++)
@@ -601,7 +986,7 @@ namespace TFTV.TFTVBaseRework
                 return DefCache.GetDef<TacCharacterDef>("PX_Assault1_CharacterTemplateDef");
             }
 
-           // TFTVLogger.Always($"[PersonnelData] Found {templates?.Count ?? 0} unlocked unit templates for faction {faction?.Name}.");
+            // TFTVLogger.Always($"[PersonnelData] Found {templates?.Count ?? 0} unlocked unit templates for faction {faction?.Name}.");
 
             return templates.GetRandomElement();
         }
@@ -618,6 +1003,30 @@ namespace TFTV.TFTVBaseRework
                 .Count(person => person.Assignment == PersonnelAssignment.Unassigned
                     || person.Assignment == PersonnelAssignment.Research
                     || person.Assignment == PersonnelAssignment.Manufacturing);
+        }
+
+        internal static void AssignPersonnelToTraining(PersonnelInfo person, GeoPhoenixFaction faction, SpecializationDef spec)
+        {
+            if (!BaseReworkUtils.BaseReworkEnabled)
+            {
+                return;
+            }
+
+            if (person?.Character == null || faction == null || spec == null)
+            {
+                return;
+            }
+
+            PersonnelAssignment previous = person.Assignment;
+            if (previous == PersonnelAssignment.Research || previous == PersonnelAssignment.Manufacturing)
+            {
+                ReleaseWorkSlotIfNeeded(faction, previous);
+            }
+
+            person.Assignment = PersonnelAssignment.Training;
+            person.TrainingSpec = spec;
+
+            TryAutoAssignUnassignedPersonnel(faction, "AssignPersonnelToTraining");
         }
     }
 }

@@ -168,37 +168,15 @@ namespace TFTV.TFTVIncidents
             private static readonly AccessTools.FieldRef<GeoscapeEventSystem, Dictionary<string, GeoEventTimer>> TimersRef =
                 AccessTools.FieldRefAccess<GeoscapeEventSystem, Dictionary<string, GeoEventTimer>>("_timers");
 
-            private enum AffinityApproach
-            {
-                PsychoSociology,
-                Exploration,
-                Occult,
-                Biotech,
-                Machinery,
-                Compute
-            }
-
-            private sealed class LeaderCandidate
-            {
-                public GeoCharacter Character;
-                public int Missions;
-                public int Rank;
-                public AffinityApproach Approach;
-            }
-
-            private static readonly Dictionary<string, AffinityApproach> ApproachTokenMap =
-                new Dictionary<string, AffinityApproach>(StringComparer.OrdinalIgnoreCase)
-                {
-                    { "P", AffinityApproach.PsychoSociology },
-                    { "E", AffinityApproach.Exploration },
-                    { "O", AffinityApproach.Occult },
-                    { "B", AffinityApproach.Biotech },
-                    { "M", AffinityApproach.Machinery },
-                    { "C", AffinityApproach.Compute }
-                };
+            
 
             public static void InitializeDefaults()
             {
+                if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                {
+                    return;
+                }
+
                 if (Definitions.Count > 0)
                 {
                     return;
@@ -276,6 +254,8 @@ namespace TFTV.TFTVIncidents
 
             public static void OnGeoscapeLevelStart(GeoscapeEventSystem eventSystem)
             {
+                if (!BaseReworkUtils.BaseReworkEnabled) return;
+
                 RehydrateFromTimers(eventSystem);
                 RefreshAllVisuals(eventSystem?.gameObject?.GetComponent<GeoLevelController>());
             }
@@ -284,8 +264,15 @@ namespace TFTV.TFTVIncidents
             {
                 try
                 {
+                    if (!BaseReworkUtils.BaseReworkEnabled) return;
+
                     GeoscapeEvent geoscapeEvent = CurrentEventRef(module);
                     if (geoscapeEvent?.Context?.Level == null || geoscapeEvent.Context.Site == null)
+                    {
+                        return;
+                    }
+
+                    if (!IsIncidentIntroEvent(geoscapeEvent.EventID))
                     {
                         return;
                     }
@@ -314,6 +301,12 @@ namespace TFTV.TFTVIncidents
                         return;
                     }
 
+                    if (SiteHasActiveTimedProblem(geoscapeEvent.Context.Site))
+                    {
+                        TFTVLogger.Always($"[Incidents] Duplicate timed incident blocked at {geoscapeEvent.Context.Site.LocalizedSiteName}.");
+                        return;
+                    }
+
                     ClearIntroEventState(geoscapeEvent);
                     StartTimedProblem(geoscapeEvent, geoscapeEvent.Context.Level, geoscapeEvent.Context.Site, vehicle, definition, selectedChoice, choiceIndex);
                 }
@@ -323,6 +316,43 @@ namespace TFTV.TFTVIncidents
                     throw;
                 }
 
+            }
+
+            internal static bool SiteHasActiveIncident(GeoSite site)
+            {
+                if (site == null)
+                {
+                    return false;
+                }
+
+                return SiteHasActiveTimedProblem(site) || SiteHasActiveIncidentIntroEvent(site);
+            }
+
+            private static bool SiteHasActiveTimedProblem(GeoSite site)
+            {
+                if (site == null)
+                {
+                    return false;
+                }
+
+                return ActiveByTimerId.Values.Any(v => v.SiteId == site.SiteId);
+            }
+
+            private static bool SiteHasActiveIncidentIntroEvent(GeoSite site)
+            {
+                if (site?.GeoLevel?.EventSystem == null || string.IsNullOrEmpty(site.EncounterID))
+                {
+                    return false;
+                }
+
+                GeoscapeEventDef encounterEvent = site.GeoLevel.EventSystem.GetEventByID(site.EncounterID, true);
+                return IsIncidentIntroEvent(encounterEvent?.EventID);
+            }
+
+            private static bool IsIncidentIntroEvent(string eventId)
+            {
+                return !string.IsNullOrEmpty(eventId)
+                    && Definitions.Any(d => string.Equals(d.StartEventId, eventId, StringComparison.OrdinalIgnoreCase));
             }
 
             internal static bool TryComputeIncidentHours(
@@ -616,6 +646,8 @@ namespace TFTV.TFTVIncidents
 
             public static void Tick(GeoscapeEventSystem eventSystem)
             {
+                if (!BaseReworkUtils.BaseReworkEnabled) return;
+
                 if (eventSystem?.gameObject == null)
                 {
                     return;
@@ -822,6 +854,12 @@ namespace TFTV.TFTVIncidents
                         return "No change";
                     }
 
+                    if (!PersonnelRestrictions.CanGainAffinities(leader))
+                    {
+                        TFTVLogger.Always($"[Incidents][Affinity] {leader.DisplayName} cannot gain affinities because of Just a grunt.");
+                        return "No change";
+                    }
+
                     List<LeaderSelection.AffinityApproach> approaches = LeaderSelection.ParseApproachTokens(active.ApproachTokens);
                     if (approaches.Count == 0)
                     {
@@ -911,6 +949,8 @@ namespace TFTV.TFTVIncidents
             {
                 private static void Postfix(MoveVehicleAbility __instance, ref GeoAbilityDisabledState __result)
                 {
+                    if (!BaseReworkUtils.BaseReworkEnabled) return;
+
                     GeoVehicle vehicle = __instance.Actor as GeoVehicle;
                     if (vehicle == null)
                     {
@@ -930,6 +970,8 @@ namespace TFTV.TFTVIncidents
             {
                 private static void Prefix(MoveVehicleAbility __instance)
                 {
+                    if (!BaseReworkUtils.BaseReworkEnabled) return;
+
                     GeoVehicle vehicle = __instance.Actor as GeoVehicle;
                     if (vehicle == null)
                     {
@@ -995,6 +1037,8 @@ namespace TFTV.TFTVIncidents
                 {
                     try
                     {
+                        if (!BaseReworkUtils.BaseReworkEnabled) return;
+
                         if (SameHavenTagEvents.TryGetValue(eventId, out SameHavenTagInfo tagInfo))
                         {
                             GeoscapeEvents.AddSameHavenSiteTag(context?.Site, tagInfo.IncidentId, tagInfo.FactionSuffix);

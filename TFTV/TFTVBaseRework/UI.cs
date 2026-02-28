@@ -13,6 +13,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 using static TFTV.TFTVBaseRework.BaseReworkUtils;
@@ -23,6 +24,41 @@ using Object = UnityEngine.Object;
 namespace TFTV.TFTVBaseRework
 {
 
+    [HarmonyPatch(typeof(UIModuleGeoRosterTabs), nameof(UIModuleGeoRosterTabs.CheckAvailableTabs))]
+    public static class UIModuleGeoRosterTabs_CheckAvailableTabs_Patch
+    {
+        private static void Postfix(UIModuleGeoRosterTabs __instance)
+        {
+            if (!BaseReworkEnabled) 
+            {
+                return;
+            }
+
+            if (__instance?.SoldiersTab == null)
+                return;
+
+            string replacement = TFTVCommonMethods.ConvertKeyToString("KEY_FIELD_OPERATIVES");
+
+           
+            Text tmp = __instance.SoldiersTab.GetComponentInChildren<Text>(true);
+            if (tmp != null)
+            {
+          //  TFTVLogger.Always($"Found Text component for SoldiersTab {tmp.name}, {tmp.text}.");
+                tmp.text = replacement;
+                return;
+            }
+
+
+         /*   // Optional deep fallback: try private fields on PhoenixGeneralButton
+            FieldInfo textField = __instance.SoldiersTab.GetType()
+                .GetField("Text", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+            if (textField?.GetValue(__instance.SoldiersTab) is Text privateText)
+            {
+                privateText.text = replacement;
+            }*/
+        }
+    }
 
     public static class PersonnelManagementUI
     {
@@ -267,6 +303,7 @@ namespace TFTV.TFTVBaseRework
             actionsLE.flexibleWidth = 1;
 
             var specs = ResolveAvailableMainSpecs(level);
+            bool isDismissedOperative = PersonnelRestrictions.IsDismissedOperative(person?.Character);
 
             AddActionButton(actionsRow.transform, "Research", () =>
             {
@@ -282,10 +319,16 @@ namespace TFTV.TFTVBaseRework
 
             AddActionButton(actionsRow.transform, "Training", () =>
             {
+                if (isDismissedOperative)
+                {
+                    ShowMessage($"{person.Character?.DisplayName} is a dismissed operative and cannot use the civilian training path.\nUse Redeploy instead.");
+                    return;
+                }
+
                 ShowTrainingSelection(level, person, specs, refresh);
             });
 
-            AddActionButton(actionsRow.transform, "Deploy", () =>
+            AddActionButton(actionsRow.transform, isDismissedOperative ? "Redeploy" : "Deploy", () =>
             {
                 ShowDeploymentSelection(level, person, phoenix, specs, refresh);
             });
@@ -296,6 +339,11 @@ namespace TFTV.TFTVBaseRework
             if (person?.Character == null)
             {
                 return person?.Assignment.ToString() ?? "Unknown";
+            }
+
+            if (person.Assignment == PersonnelAssignment.Unassigned && PersonnelRestrictions.IsDismissedOperative(person.Character))
+            {
+                return "Dismissed";
             }
 
             switch (person.Assignment)
@@ -313,6 +361,130 @@ namespace TFTV.TFTVBaseRework
                     return $"Training: {specName} (Lv {session.VirtualLevelAchieved}/{session.TargetLevel}, {remaining}d left)";
                 default:
                     return person.Assignment.ToString();
+            }
+        }
+
+        private static void ShowDeploymentSelection(GeoLevelController level, PersonnelInfo person, GeoPhoenixFaction faction, List<SpecializationDef> specs, Action refresh)
+        {
+            if (level == null || faction == null || person == null) return;
+
+            bool isTraining = person.Assignment == PersonnelAssignment.Training;
+            bool trainingComplete = isTraining && TrainingFacilityRework.IsRecruitTrainingComplete(person.Character, level);
+            bool isDismissedOperative = PersonnelRestrictions.IsDismissedOperative(person.Character);
+
+            CloseModal();
+            _modalRoot = CreateModalRoot("DeploymentSelectionModal");
+            AddModalHeader("Select Deployment Base");
+            var content = CreateModalContentArea();
+
+            foreach (var baseObj in faction.Bases)
+            {
+                GeoPhoenixBase geoBase = baseObj.GetComponent<GeoPhoenixBase>();
+                string label = baseObj.Site?.Name ?? baseObj.name;
+                AddModalOptionButton(content, label, () =>
+                {
+                    if (isTraining)
+                    {
+                        Action finalize = () =>
+                        {
+                            var character = TrainingFacilityRework.FinalizeRecruitTraining(level, person.Character, geoBase, early: !trainingComplete);
+                            if (character != null)
+                            {
+                                PersonnelData.RemovePersonnel(faction, person);
+                            }
+                            refresh();
+                            CloseModal();
+                        };
+
+                        if (!trainingComplete)
+                        {
+                            ShowConfirmation($"Training incomplete for {person.Character?.DisplayName}.\nDeploy early?", finalize, () => CloseModal());
+                        }
+                        else
+                        {
+                            finalize();
+                        }
+                    }
+                    else if (isDismissedOperative)
+                    {
+                        int cost = PersonnelRestrictions.GetRedeployCost(person.Character);
+                        if (faction.Skillpoints < cost)
+                        {
+                            ShowMessage($"Not enough shared skill points to redeploy {person.Character?.DisplayName}.\nRequired: {cost}\nAvailable: {faction.Skillpoints}");
+                            return;
+                        }
+
+                        ShowConfirmation(
+                            $"Redeploy {person.Character?.DisplayName} to {label} for {cost} shared skill points?",
+                            () =>
+                            {
+                                var character = TrainingFacilityRework.RedeployDismissedOperative(level, person.Character, geoBase);
+                                if (character != null)
+                                {
+                                    PersonnelData.RemovePersonnel(faction, person);
+                                    RefreshResourceInfo(faction);
+                                }
+                                else
+                                {
+                                    TFTVLogger.Always($"{LogPrefix} Redeploy failed.");
+                                }
+
+                                refresh();
+                                CloseModal();
+                            },
+                            () => CloseModal());
+                    }
+                    else
+                    {
+                        if (person.TrainingSpec == null)
+                        {
+                            ShowClassSelectionForImmediateDeploy(level, person, geoBase, specs, refresh);
+                        }
+                        else
+                        {
+                            DeployNow(level, person, geoBase, person.TrainingSpec, refresh);
+                        }
+                    }
+                });
+            }
+            AddModalCloseButton();
+        }
+
+        private static void ShowMessage(string message)
+        {
+            CloseModal();
+            _modalRoot = CreateModalRoot("MessageModal");
+            AddModalHeader("Notice");
+            var content = CreateModalContentArea();
+
+            var msgGO = new GameObject("Message", typeof(RectTransform));
+            msgGO.transform.SetParent(content, false);
+            var txt = msgGO.AddComponent<Text>();
+            txt.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            txt.text = message;
+            txt.fontSize = 28;
+            txt.color = Color.white;
+            txt.alignment = TextAnchor.MiddleCenter;
+            msgGO.AddComponent<LayoutElement>().minHeight = 120;
+
+            AddModalCloseButton();
+        }
+
+        private static void RefreshResourceInfo(GeoPhoenixFaction faction)
+        {
+            try
+            {
+                GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                UIModuleInfoBar infoBar = level?.View?.GeoscapeModules?.ResourcesModule;
+                MethodInfo update = AccessTools.Method(typeof(UIModuleInfoBar), "UpdateResourceInfo");
+                if (faction != null && infoBar != null && update != null)
+                {
+                    update.Invoke(infoBar, new object[] { faction, false });
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
         #endregion
@@ -511,6 +683,13 @@ namespace TFTV.TFTVBaseRework
         private static void ShowTrainingSelection(GeoLevelController level, PersonnelInfo person, List<SpecializationDef> specs, Action refresh)
         {
             if (level == null || person == null) return;
+
+            if (PersonnelRestrictions.IsDismissedOperative(person.Character))
+            {
+                ShowMessage($"{person.Character?.DisplayName} is a dismissed operative and cannot use the civilian training path.\nUse Redeploy instead.");
+                return;
+            }
+
             CloseModal();
             _modalRoot = CreateModalRoot("TrainingSelectionModal");
             AddModalHeader("Select Class");
@@ -534,13 +713,11 @@ namespace TFTV.TFTVBaseRework
                     {
                         if (TrainingFacilityRework.QueueCharacterTrainingAutoFacility(level, person.Character, spec))
                         {
-                            person.Assignment = PersonnelAssignment.Training;
-                            person.TrainingSpec = spec;
-
+                            AssignPersonnelToTraining(person, level.PhoenixFaction, spec);
                         }
                         else
                         {
-                            TFTVLogger.Always($"{LogPrefix} Failed to queue training (no slot?).");
+                            TFTVLogger.Always($"{LogPrefix} Failed to queue training (no slot or dismissed operative).");
                         }
                         refresh();
                         CloseModal();
@@ -549,62 +726,6 @@ namespace TFTV.TFTVBaseRework
             }
             AddModalCloseButton();
         }
-
-        private static void ShowDeploymentSelection(GeoLevelController level, PersonnelInfo person, GeoPhoenixFaction faction, List<SpecializationDef> specs, Action refresh)
-        {
-            if (level == null || faction == null || person == null) return;
-
-            bool isTraining = person.Assignment == PersonnelAssignment.Training;
-            bool trainingComplete = isTraining && TrainingFacilityRework.IsRecruitTrainingComplete(person.Character, level);
-
-            CloseModal();
-            _modalRoot = CreateModalRoot("DeploymentSelectionModal");
-            AddModalHeader("Select Deployment Base");
-            var content = CreateModalContentArea();
-
-            foreach (var baseObj in faction.Bases)
-            {
-                string label = baseObj.Site?.Name ?? baseObj.name;
-                AddModalOptionButton(content, label, () =>
-                {
-                    if (isTraining)
-                    {
-                        Action finalize = () =>
-                        {
-                            var character = TrainingFacilityRework.FinalizeRecruitTraining(level, person.Character, baseObj.GetComponent<GeoPhoenixBase>(), early: !trainingComplete);
-                            if (character != null)
-                            {
-                                PersonnelData.RemovePersonnel(faction, person);
-                            }
-                            refresh();
-                            CloseModal();
-                        };
-
-                        if (!trainingComplete)
-                        {
-                            ShowConfirmation($"Training incomplete for {person.Character?.DisplayName}.\nDeploy early?", finalize, () => CloseModal());
-                        }
-                        else
-                        {
-                            finalize();
-                        }
-                    }
-                    else
-                    {
-                        if (person.TrainingSpec == null)
-                        {
-                            ShowClassSelectionForImmediateDeploy(level, person, baseObj.GetComponent<GeoPhoenixBase>(), specs, refresh);
-                        }
-                        else
-                        {
-                            DeployNow(level, person, baseObj.GetComponent<GeoPhoenixBase>(), person.TrainingSpec, refresh);
-                        }
-                    }
-                });
-            }
-            AddModalCloseButton();
-        }
-
         private static void ShowConfirmation(string message, Action onConfirm, Action onCancel)
         {
             CloseModal();
@@ -682,7 +803,7 @@ namespace TFTV.TFTVBaseRework
 
                 _deploymentUIActive = true;
 
-                faction.RemoveCharacter(person.Character);
+                faction.RemoveCharacter(character);
 
                 level.View.PrepareDeployAsset(faction, character, null, null, manufactured: false, spaceFull: false);
             }

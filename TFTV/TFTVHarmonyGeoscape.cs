@@ -12,6 +12,7 @@ using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Missions;
+using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
@@ -33,6 +34,8 @@ namespace TFTV
 {
     internal class TFTVHarmonyGeoscape
     {
+
+
 
 
         [HarmonyPatch(typeof(EnterBaseAbility), "ActivateInternal")]
@@ -390,7 +393,7 @@ namespace TFTV
                     TFTVBaseDefenseTactical.Objectives.ModifyBaseDefenseTacticalObjectives(missionData.MissionType);
                     TFTVUI.Tactical.SecondaryObjectivesTactical.PopulateAvailableObjectives(__instance.Site.GeoLevel);
                     TFTVUI.Tactical.SecondaryObjectivesTactical.AddAllAvailableSecondaryObjectivesToMission(missionData.MissionType);
-                    TFTVIncidents.Affinities.AffinityBenefitsChoices.CaptureTacticalBenefitChoiceSnapshot(__instance.Site?.GeoLevel ?? __instance.Level);
+                    TFTVIncidents.Affinities.AffinityBenefitsChoices.CaptureTacticalBenefitChoiceSnapshot(__instance.Level);
 
                     // __instance.GameController.SaveManager.IsSaveEnabled = true;
                 }
@@ -673,6 +676,24 @@ namespace TFTV
                     throw;
                 }
             }
+        }
+
+        [HarmonyPatch(typeof(GeoFaction), "UpdateProduction")]
+        public static class TFTV_GeoFaction_UpdateProduction_Patch
+        {
+            public static void Postfix(GeoFaction __instance)
+            {
+                try
+                {
+                    TFTVBaseRework.ResearchAndManufacturing.ApplyProductionAdjustments(__instance);
+                    TFTVVoidOmens.AdjustResearchOutputForVO6(__instance);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
         }
        
         

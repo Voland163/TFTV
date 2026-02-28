@@ -10,7 +10,6 @@ using Base.Entities.Statuses;
 using Base.Input;
 using Base.UI;
 using Base.Utils;
-using Base.Utils.GameConsole;
 using Code.PhoenixPoint.Tactical.Entities.Equipments;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
@@ -38,7 +37,6 @@ using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.AI.Actions;
 using PhoenixPoint.Tactical.AI.Considerations;
 using PhoenixPoint.Tactical.AI.TargetGenerators;
-using PhoenixPoint.Tactical.Console;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
@@ -58,9 +56,7 @@ using System.Diagnostics;
 using System.Linq;
 using TFTV.LaserWeapons;
 using UnityEngine;
-using static PhoenixPoint.Common.Entities.Addons.AddonDef;
 using static PhoenixPoint.Tactical.Entities.Abilities.HealAbilityDef;
-using static PhoenixPoint.Tactical.Entities.Statuses.ItemSlotStatsModifyStatusDef;
 using static TFTV.TFTVCapturePandorans;
 using ResourceType = PhoenixPoint.Common.Core.ResourceType;
 
@@ -106,10 +102,10 @@ namespace TFTV
 
         public static void ListActionUsers(string actionDefName)
         {
-            
+
             DefRepository defRepository = GameUtl.GameComponent<DefRepository>();
             AIActionDef aiactionDef = defRepository.GetAllDefs<AIActionDef>().FirstOrDefault((AIActionDef def) => def.name.IndexOf(actionDefName, StringComparison.OrdinalIgnoreCase) >= 0);
-           
+
             List<TacAIActorDef> allDefs = defRepository.GetAllDefs<TacAIActorDef>().ToList<TacAIActorDef>();
             int num = 0;
             foreach (TacAIActorDef tacAIActorDef in allDefs)
@@ -124,7 +120,7 @@ namespace TFTV
             TFTVLogger.Always(string.Format("Found {0} TacAIActorDef entries using {1}.", num, aiactionDef.name));
         }
 
-    
+
         private static List<string> GetActionUsageLocations(TacAIActorDef actorDef, AIActionDef actionDef)
         {
             List<string> list = new List<string>();
@@ -185,38 +181,38 @@ namespace TFTV
             try
             {
 
-              /*  DefRepository defRepository = GameUtl.GameComponent<DefRepository>();
-                List<AIActionDef> actionDefs = defRepository.GetAllDefs<AIActionDef>().ToList<AIActionDef>();
-                int num = 0;
-                foreach (AIActionDef aiactionDef in actionDefs)
+                /*  DefRepository defRepository = GameUtl.GameComponent<DefRepository>();
+                  List<AIActionDef> actionDefs = defRepository.GetAllDefs<AIActionDef>().ToList<AIActionDef>();
+                  int num = 0;
+                  foreach (AIActionDef aiactionDef in actionDefs)
+                  {
+                      List<string> list = GetSafePathLocations(aiactionDef);
+                      if (list.Count > 0)
+                      {
+                          num++;
+                          TFTVLogger.Always(string.Format("{0}: {1}", aiactionDef.name, string.Join(", ", list)));
+                          ListActionUsers(aiactionDef.name);
+                      }
+                  }
+                  TFTVLogger.Always(string.Format("Found {0} AIActionDef entries using AISafePathConsiderationDef.", num));*/
+
+
+
+
+
+                foreach (UnitTemplateResearchRewardDef unitTemplateResearchRewardDef in Repo.GetAllDefs<UnitTemplateResearchRewardDef>().
+                    Where(t => !t.name.StartsWith("ALN") && t.Add == true && !t.Template.name.StartsWith("FK") && !t.Template.name.StartsWith("PU") && t.Template?.Data?.LevelProgression?.Level <= 7))
                 {
-                    List<string> list = GetSafePathLocations(aiactionDef);
-                    if (list.Count > 0)
-                    {
-                        num++;
-                        TFTVLogger.Always(string.Format("{0}: {1}", aiactionDef.name, string.Join(", ", list)));
-                        ListActionUsers(aiactionDef.name);
-                    }
+                    TFTVLogger.Always($"[UnitTemplateResearchRewardDef] {unitTemplateResearchRewardDef.name}, adds {unitTemplateResearchRewardDef.Template.name} of level {unitTemplateResearchRewardDef.Template.Data.LevelProgression.Level}", false);
                 }
-                TFTVLogger.Always(string.Format("Found {0} AIActionDef entries using AISafePathConsiderationDef.", num));*/
-
-               
 
 
 
-                 foreach (UnitTemplateResearchRewardDef unitTemplateResearchRewardDef in Repo.GetAllDefs<UnitTemplateResearchRewardDef>().
-                     Where(t => !t.name.StartsWith("ALN") && t.Add == true && !t.Template.name.StartsWith("FK") && !t.Template.name.StartsWith("PU") && t.Template?.Data?.LevelProgression?.Level <= 7))
-                 {
-                     TFTVLogger.Always($"[UnitTemplateResearchRewardDef] {unitTemplateResearchRewardDef.name}, adds {unitTemplateResearchRewardDef.Template.name} of level {unitTemplateResearchRewardDef.Template.Data.LevelProgression.Level}", false);
-                 }
-
-
-
-                 foreach (UnitTemplateResearchRewardDef unitTemplateResearchRewardDef in Repo.GetAllDefs<UnitTemplateResearchRewardDef>().
-                     Where(t => !t.name.StartsWith("ALN") && t.Add == false && !t.Template.name.StartsWith("FK") && !t.Template.name.StartsWith("PU") && t.Template?.Data?.LevelProgression?.Level<6))
-                 {
-                     TFTVLogger.Always($"[UnitTemplateResearchRewardDef] {unitTemplateResearchRewardDef.name}, removes {unitTemplateResearchRewardDef.Template.name} of level {unitTemplateResearchRewardDef.Template.Data.LevelProgression.Level}", false);     
-                 }
+                foreach (UnitTemplateResearchRewardDef unitTemplateResearchRewardDef in Repo.GetAllDefs<UnitTemplateResearchRewardDef>().
+                    Where(t => !t.name.StartsWith("ALN") && t.Add == false && !t.Template.name.StartsWith("FK") && !t.Template.name.StartsWith("PU") && t.Template?.Data?.LevelProgression?.Level < 6))
+                {
+                    TFTVLogger.Always($"[UnitTemplateResearchRewardDef] {unitTemplateResearchRewardDef.name}, removes {unitTemplateResearchRewardDef.Template.name} of level {unitTemplateResearchRewardDef.Template.Data.LevelProgression.Level}", false);
+                }
 
 
 
@@ -291,12 +287,12 @@ namespace TFTV
             }
             return false;
         }
-    
 
 
 
 
-        
+
+
 
         public static void DisplayTimerProperties()
         {
@@ -409,7 +405,7 @@ namespace TFTV
 
                 TFTVDrills.DrillsDefs.CreateDefs();
 
-               // Experimental();
+                // Experimental();
 
 
 
@@ -420,8 +416,8 @@ namespace TFTV
                 AdjustHavenRecruitTiming();
                 //  TestUseWorkerComponent();
                 // Test0();
-              // TFTVExperimental.LogResearchDefs();
-              //  Print();
+                // TFTVExperimental.LogResearchDefs();
+                //  Print();
 
             }
             catch (Exception e)
@@ -433,11 +429,11 @@ namespace TFTV
 
         private static void AdjustAchievements()
         {
-            try 
+            try
             {
                 DefCache.GetDef<StringListAchievementDef>("ResearchAllProjects_AchievementDef");
                 DefCache.GetDef<StringListAchievementDef>("ManufactureAllItems_AchievementDef");
-                
+
             }
             catch (Exception e)
             {
@@ -491,7 +487,7 @@ namespace TFTV
                 synedrionFaction.StartingZones[0].Amount = 18;
                 synedrionFaction.StartingZones[1].Amount = 17;
 
-             
+
                 GeoHavenDef geoHavenDef = DefCache.GetDef<GeoHavenDef>("GeoHavenDef");
                 geoHavenDef.PhoenixSoldiersCap = 1000;
                 geoHavenDef.StarvationDeathsPart = 0.0005f;
@@ -1339,11 +1335,11 @@ namespace TFTV
             }
         }
 
-      
+
         private static void RemoveReturnFireFromMadmenInNJ0()
         {
-            try 
-            { 
+            try
+            {
                 TacCharacterDef madman = DefCache.GetDef<TacCharacterDef>("S_IN_Madman_TacCharacterDef");
                 madman.Data.Abilites = madman.Data.Abilites.Where(a => a != DefCache.GetDef<ReturnFireAbilityDef>("ReturnFire_AbilityDef")).ToArray();
 
@@ -4605,14 +4601,54 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
             try
             {
 
+
+
                 EquipmentDef repairKit = DefCache.GetDef<EquipmentDef>("FieldRepairKit_EquipmentDef");
-                HealAbilityDef repairKitAbility = DefCache.GetDef<HealAbilityDef>("FieldRepairKit_AbilityDef");
+
+                string name = "TFTVRepairKit";
 
                 Sprite nanotechFieldkitAbilityIcon = Helper.CreateSpriteFromImageFile("nanotechfieldkit.png");
 
                 repairKit.ManufactureMaterials = 30;
                 repairKit.ManufactureTech = 10;
 
+                //Create new repair kit
+                EquipmentDef newRepairKit = Helper.CreateDefFromClone(repairKit, "{B9C8E1B7-5F3B-4C9A-BDCD-2F0E1B8F3C6D}", name);
+                newRepairKit.ViewElementDef = Helper.CreateDefFromClone(repairKit.ViewElementDef, "{C9B1F8A7-5E3B-4C9A-BDCD-2F0E1B8F3C6D}", name);
+                repairKit.ViewElementDef.DisplayName1.LocalizationKey = "KEY_NANOTECH_KIT_NAME";
+                repairKit.ViewElementDef.Description.LocalizationKey = "KEY_NANOTECH_KIT_DESCRIPTION";
+                repairKit.ViewElementDef.InventoryIcon = Helper.CreateSpriteFromImageFile("nanotechfieldkit_item.png");
+
+                HealAbilityDef repairKitAbility = DefCache.GetDef<HealAbilityDef>("FieldRepairKit_AbilityDef");
+                // repairKitAbility.TargetingDataDef.Origin.CullTargetTags.Add(DefCache.GetDef<SubstanceTypeTagDef>("Organic_SubstanceTypeTagDef"));
+                repairKitAbility.TargetingDataDef.Origin.TargetTags.Clear();
+
+                TFTVLogger.Always($"repairKitAbility.ExclusiveBodypartsTagDef: {repairKitAbility.ExclusiveBodypartsTagDef?.name}");
+
+              //  repairKitAbility.ExclusiveBodypartsTagDef = DefCache.GetDef<ItemMaterialTagDef>("Electronic_ItemMaterialTagDef"); //DefCache.GetDef<SubstanceTypeTagDef>("Metallic_SubstanceTypeTagDef");
+
+
+
+
+                foreach (TacActorSimpleInteractionAnimActionDef animActionDef in Repo.GetAllDefs<TacActorSimpleInteractionAnimActionDef>().Where(aad => aad.name.Contains("Soldier_Utka_AnimActionsDef")))
+                {
+                    if (animActionDef.Items != null && animActionDef.Items.Contains(repairKit) && !animActionDef.Items.Contains(newRepairKit))
+                    {
+                        // TFTVLogger.Always($"Adding {newRepairKit.name} to {animActionDef.name}");
+                        animActionDef.Items = animActionDef.Items.Append(newRepairKit).ToArray();
+
+                    }
+                }
+
+                //removing nanokit from Bionic Reserach and adding new repairkit to the reward list
+                ManufactureResearchRewardDef bionicsReward1 = DefCache.GetDef<ManufactureResearchRewardDef>("NJ_Bionics1_ResearchDef_ManufactureResearchRewardDef_0");
+                bionicsReward1.Items = new ItemDef[] { bionicsReward1.Items[0], bionicsReward1.Items[1], bionicsReward1.Items[2], newRepairKit };
+
+                ManufactureResearchRewardDef bionicsReward2 = DefCache.GetDef<ManufactureResearchRewardDef>("NJ_Bionics2_ResearchDef_ManufactureResearchRewardDef_0");
+                bionicsReward2.Items = bionicsReward2.Items.AddToArray(newRepairKit);
+
+                ManufactureResearchRewardDef bionicsReward3 = DefCache.GetDef<ManufactureResearchRewardDef>("SYN_Bionics3_ResearchDef_ManufactureResearchRewardDef_0");
+                bionicsReward3.Items = bionicsReward3.Items.AddToArray(newRepairKit);
 
                 //need to create a new heal ability
 
@@ -4631,8 +4667,14 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
                 newDoTMedkitAbility.ViewElementDef.InventoryIcon = nanotechFieldkitAbilityIcon;
                 newDoTMedkitAbility.ViewElementDef.LargeIcon = nanotechFieldkitAbilityIcon;
                 newDoTMedkitAbility.ViewElementDef.SmallIcon = nanotechFieldkitAbilityIcon;
-                newDoTMedkitAbility.ViewElementDef.DisplayName1.LocalizationKey = "KEY_REPAIR_KIT_ABILITY_NAME";
-                newDoTMedkitAbility.ViewElementDef.Description.LocalizationKey = "KEY_REPAIR_KIT_ABILITY_DESCRIPTION";
+                newDoTMedkitAbility.ViewElementDef.DisplayName1.LocalizationKey = "KEY_NANOTECH_KIT_ABILITY_NAME";
+                newDoTMedkitAbility.ViewElementDef.Description.LocalizationKey = "KEY_NANOTECH_KIT_ABILITY_DESCRIPTION";
+
+
+
+                newDoTMedkitAbility.SuppressHealingOnTargetTags.Clear();
+                newDoTMedkitAbility.BlockedBodypartsTagDef = newDoTMedkitAbility.ExclusiveBodypartsTagDef;
+
 
                 repairKit.Abilities[0] = newDoTMedkitAbility;
 
@@ -4985,6 +5027,20 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
             }
 
         }
+
+        private static void AddMetalSubstanceTagToGroundVehicleBodyParts()
+        {
+            try
+            {
+
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
 
         internal static void ModifyDecoyAbility()
         {

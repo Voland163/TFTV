@@ -74,7 +74,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVLogger.Always($"setting event {eventID} for {site.SiteId}");
+                    TFTVLogger.Always($"[GeoscapeEventSystem.SetEventForSite] Setting event {eventID} for {site.SiteId}");
 
                     GeoLevelController controller = site.GeoLevel;
 

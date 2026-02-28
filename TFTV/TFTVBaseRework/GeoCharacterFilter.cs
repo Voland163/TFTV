@@ -1,5 +1,6 @@
-﻿using Base.Core;
-using Base.Defs;
+﻿using Base.Defs;
+using Base.UI.MessageBox;
+using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -14,8 +15,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace TFTV.TFTVBaseRework
@@ -27,12 +26,12 @@ namespace TFTV.TFTVBaseRework
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
-        internal static class HiddenOperativeTagFilter
-        {
-            internal const string HiddenTagName = "HiddenFromOperativesTagDef";
 
-            private static GameTagDef _hiddenTag;
-         
+     
+
+
+        internal static class HiddenOperativeMarkerFilter
+        {
             internal static bool ShouldHide(GeoCharacter character)
             {
                 if (!Enabled)
@@ -40,38 +39,27 @@ namespace TFTV.TFTVBaseRework
                     return false;
                 }
 
-
-                GameTagDef hiddenTag = EnsureHiddenTag();
-                return hiddenTag != null && character != null && character.GameTags.Contains(hiddenTag);
+                return PersonnelRestrictions.IsHiddenFromOperatives(character);
             }
 
-            internal static void ApplyHiddenTag(GeoCharacter character)
+            internal static void ApplyHiddenMarker(GeoCharacter character)
             {
-                if (!Enabled)
+                if (!Enabled || character == null)
                 {
                     return;
                 }
 
-
-                GameTagDef hiddenTag = EnsureHiddenTag();
-                if (hiddenTag != null && character != null && !character.GameTags.Contains(hiddenTag))
-                {
-                    character.GameTags.Add(hiddenTag);
-                }
+                PersonnelRestrictions.MarkHiddenFromOperatives(character);
             }
 
-            internal static void RemoveHiddenTag(GeoCharacter character)
+            internal static void RemoveHiddenMarker(GeoCharacter character)
             {
-                if (!Enabled)
+                if (!Enabled || character == null)
                 {
                     return;
                 }
 
-                GameTagDef hiddenTag = EnsureHiddenTag();
-                if (hiddenTag != null && character != null && character.GameTags.Contains(hiddenTag))
-                {
-                    character.GameTags.Remove(hiddenTag);
-                }
+                PersonnelRestrictions.ClearHiddenFromOperatives(character);
             }
 
             internal static IEnumerable<GeoCharacter> FilterCharacters(IEnumerable<GeoCharacter> characters)
@@ -81,59 +69,44 @@ namespace TFTV.TFTVBaseRework
                     return characters ?? Enumerable.Empty<GeoCharacter>();
                 }
 
-
-                GameTagDef hiddenTag = EnsureHiddenTag();
-                if (hiddenTag == null)
-                {
-                    return characters ?? Enumerable.Empty<GeoCharacter>();
-                }
-
-                return (characters ?? Enumerable.Empty<GeoCharacter>()).Where(c => c != null && !c.GameTags.Contains(hiddenTag));
+                return (characters ?? Enumerable.Empty<GeoCharacter>())
+                    .Where(c => c != null && !ShouldHide(c));
             }
 
             internal static void FilterList(List<GeoCharacter> characters)
             {
-                if (!Enabled)
+                if (!Enabled || characters == null)
                 {
                     return;
                 }
 
-
-                GameTagDef hiddenTag = EnsureHiddenTag();
-                if (hiddenTag == null || characters == null)
-                {
-                    return;
-                }
-
-                characters.RemoveAll(c => c != null && c.GameTags.Contains(hiddenTag));
-            }
-
-            private static GameTagDef EnsureHiddenTag()
-            {
-                if (!Enabled)
-                {
-                    return null;
-                }
-
-                if (_hiddenTag != null)
-                {
-                    return _hiddenTag;
-                }
- 
-                try
-                {
-                    _hiddenTag = TFTVCommonMethods.CreateNewTag(HiddenTagName, "{1A975AB1-68B0-44F4-BC8B-9AE06898A10F}");
-                
-                }
-
-                catch (Exception ex)
-                {
-                    Debug.LogWarning($"HiddenOperativeTagFilter failed to resolve tag '{HiddenTagName}': {ex}");
-                }
-
-                return _hiddenTag;
+                characters.RemoveAll(c => c != null && ShouldHide(c));
             }
         }
+
+        [HarmonyPatch(typeof(UIStateEditSoldier), "OnDismissSoldierDialogCallback")]
+        internal static class UIStateEditSoldier_OnDismissSoldierDialogCallback_HiddenOperativeCleanup_Patch
+        {
+            private static void Postfix(UIStateEditSoldier __instance, MessageBoxCallbackResult msgResult, ref List<GeoCharacter> ____characters)
+            {
+                if (msgResult.DialogResult != MessageBoxResult.Yes)
+                {
+                    return;
+                }            
+
+                ____characters = HiddenOperativeMarkerFilter.FilterCharacters(____characters).ToList();
+
+                foreach (GeoCharacter character in ____characters)
+                {
+                    TFTVLogger.Always($"[UIStateEditSoldier] Remaining character: {character.DisplayName}");
+
+                }
+
+            } 
+        }
+
+
+
 
         [HarmonyPatch(typeof(GeoSite), nameof(GeoSite.GetAllCharacters))]
         internal static class GeoSite_GetAllCharacters_Patch
@@ -145,7 +118,7 @@ namespace TFTV.TFTVBaseRework
                     return;
                 }
 
-                __result = HiddenOperativeTagFilter.FilterCharacters(__result);
+                __result = HiddenOperativeMarkerFilter.FilterCharacters(__result);
             }
         }
 
@@ -159,7 +132,7 @@ namespace TFTV.TFTVBaseRework
                     return;
                 }
 
-                __result = HiddenOperativeTagFilter.FilterCharacters(__result);
+                __result = HiddenOperativeMarkerFilter.FilterCharacters(__result);
             }
         }
 
@@ -175,7 +148,7 @@ namespace TFTV.TFTVBaseRework
                     return;
                 }
 
-                HiddenOperativeTagFilter.FilterList(CharactersField(__instance));
+                HiddenOperativeMarkerFilter.FilterList(CharactersField(__instance));
             }
         }
 
@@ -214,7 +187,7 @@ namespace TFTV.TFTVBaseRework
 
                     if (GeoTacUnitsField.GetValue(containerData) is IEnumerable<GeoCharacter> units)
                     {
-                        GeoTacUnitsField.SetValue(containerData, HiddenOperativeTagFilter.FilterCharacters(units).ToList());
+                        GeoTacUnitsField.SetValue(containerData, HiddenOperativeMarkerFilter.FilterCharacters(units).ToList());
                     }
                 }
             }
@@ -230,7 +203,7 @@ namespace TFTV.TFTVBaseRework
                     return;
                 }
 
-                __result = HiddenOperativeTagFilter.FilterCharacters(__result);
+                __result = HiddenOperativeMarkerFilter.FilterCharacters(__result);
             }
         }
 
@@ -244,9 +217,10 @@ namespace TFTV.TFTVBaseRework
                     return;
                 }
 
-                __result = HiddenOperativeTagFilter.FilterCharacters(__result);
+                __result = HiddenOperativeMarkerFilter.FilterCharacters(__result);
             }
         }
+
 
         [HarmonyPatch(typeof(UIStateRosterDeployment), MethodType.Constructor, new Type[]
         {
@@ -268,10 +242,10 @@ namespace TFTV.TFTVBaseRework
                 }
 
                 List<GeoCharacter> selectedDeployment = SelectedDeploymentField(__instance);
-                HiddenOperativeTagFilter.FilterList(selectedDeployment);
+                HiddenOperativeMarkerFilter.FilterList(selectedDeployment);
 
                 GeoCharacter initialCharacter = InitialCharacterField(__instance);
-                if (HiddenOperativeTagFilter.ShouldHide(initialCharacter))
+                if (HiddenOperativeMarkerFilter.ShouldHide(initialCharacter))
                 {
                     InitialCharacterField(__instance) = null;
                 }

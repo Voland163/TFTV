@@ -2148,39 +2148,6 @@ namespace TFTV
 
 
 
-        /*   [HarmonyPatch(typeof(UIModuleWeaponSelection), "HandleEquipments")]
-            public static class UIModuleWeaponSelection_HandleEquipments_patch
-           {
-               public static void Postfix(UIModuleWeaponSelection __instance, Equipment ____selectedEquipment)
-               {
-                   try
-                   {
-                       EquipmentDef repairKit = DefCache.GetDef<EquipmentDef>("FieldRepairKit_EquipmentDef");
-
-                       if (____selectedEquipment.EquipmentDef==repairKit) 
-                       {
-                           TFTVLogger.Always("");
-                           __instance.DamageTypeVisualsTemplate.DamageTypeIcon.gameObject.SetActive(false);
-                           __instance.DamageTypeVisualsTemplate.DamageText.gameObject.SetActive(false);
-
-
-                       }
-
-
-
-                   }
-                   catch (Exception e)
-                   {
-                       TFTVLogger.Error(e);
-                       throw;
-                   }
-               }
-           }*/
-
-
-
-
-
         // UIModuleAbilities
 
 

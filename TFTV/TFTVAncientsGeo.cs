@@ -164,13 +164,18 @@ namespace TFTV
             {
                 try
                 {
+                    if (vehicle?.CurrentSite == null)
+                    {
+                        return false;
+                    }
+
+                    TFTVIncidents.AffinityGeoscapeEffects.ApplyVisitedSiteBenefits(__instance, vehicle);
 
                     if (vehicle.CurrentSite.Type == GeoSiteType.PhoenixBase
                         && vehicle.CurrentSite.State == GeoSiteState.Functioning
                         && vehicle.CurrentSite.Owner == __instance
                         && vehicle.ReloadAllEquipments())
                     {
-
                         var fi = AccessTools.Field(typeof(GeoPhoenixFaction), "OnVehicleReloaded");
                         var handler = (Action<GeoVehicle>)fi.GetValue(__instance);
                         handler?.Invoke(vehicle);

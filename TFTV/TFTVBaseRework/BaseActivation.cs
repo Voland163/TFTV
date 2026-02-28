@@ -1,4 +1,5 @@
 ﻿using Base.Core;
+using Base.Levels;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Geoscape.Entities;
@@ -197,6 +198,29 @@ namespace TFTV.TFTVBaseRework
         }
 
 
+
+
+        [HarmonyPatch(typeof(GeoPhoenixFaction), "EvaluateArcheologyState")]
+        internal static class GeoPhoenixFaction_EvaluateArcheologyState_patch
+        {
+
+            public static void Prefix(GeoPhoenixFaction __instance, List<GeoPhoenixBase> ____bases)
+            {
+                try
+                {
+                TFTVLogger.Always($"[GeoPhoenixFaction.EvaluateArcheologyState] Evaluating archeology state, bases null?: {____bases==null}");
+
+                   
+                   
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                    throw;
+                }
+            }
+        }   
+
         internal static class PhoenixBaseVisitFlow
         {
 
@@ -205,6 +229,25 @@ namespace TFTV.TFTVBaseRework
                 try
                 {
                     return site?.Vehicles != null && faction != null && site.Vehicles.Any(v => v != null && v.Owner == faction);
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                    return false;
+                }
+            }
+
+            internal static bool HasPhoenixAircraftWithSoldiersAtSite(GeoSite site, GeoPhoenixFaction faction)
+            {
+                try
+                {
+                    return site?.Vehicles != null
+                        && faction != null
+                        && site.Vehicles.Any(v =>
+                            v != null
+                            && v.Owner == faction
+                            && v.Soldiers != null
+                            && v.Soldiers.Any());
                 }
                 catch (Exception ex)
                 {
@@ -228,12 +271,14 @@ namespace TFTV.TFTVBaseRework
             });
 
 
-
             internal static bool TryQueueFullBaseFromActivationUI(GeoSite site, GeoPhoenixFaction faction, bool fromOutpost)
             {
                 try
                 {
-                    if (site == null || faction == null || HasPendingAction(site))
+                    if (site == null
+                        || faction == null
+                        || HasPendingAction(site)
+                        || !HasPhoenixAircraftWithSoldiersAtSite(site, faction))
                     {
                         return false;
                     }
@@ -251,7 +296,10 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
-                    if (site == null || faction == null || HasPendingAction(site))
+                    if (site == null
+                        || faction == null
+                        || HasPendingAction(site)
+                        || !HasPhoenixAircraftWithSoldiersAtSite(site, faction))
                     {
                         return false;
                     }
@@ -269,7 +317,10 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
-                    if (site == null || faction == null || HasPendingAction(site))
+                    if (site == null
+                        || faction == null
+                        || HasPendingAction(site)
+                        || !HasPhoenixAircraftWithSoldiersAtSite(site, faction))
                     {
                         return false;
                     }
@@ -283,7 +334,6 @@ namespace TFTV.TFTVBaseRework
                     return false;
                 }
             }
-
 
             private static bool SetOutpost(GeoSite site, GeoPhoenixFaction faction)
             {
@@ -442,28 +492,28 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
-                    if (site == null || faction == null)
-                    {
-                        return NextUpdate.StopScheduler;
-                    }
-
+                  
                     TFTVLogger.Always($"[BaseActivation] CompletePendingAction: site={site.SiteId}, action={action}, owner={site.Owner?.Name}");
 
                     if (action == PendingBaseAction.Outpost)
                     {
-                        if (site.Owner.IsEnvironmentFaction)
+                        if (site.Owner != null && site.Owner.IsEnvironmentFaction)
                         {
+                            TFTVBetaSaveGamesFixes.FirebirdGeoFixMissingHarvestingComponentConvertedSites(site.GeoLevel);
                             faction.ActivateBaseFromExploration(site);
                         }
+
                         site.SiteTags.Add(PhoenixBaseReworkState.OutpostTag);
                         site.SiteProduction = new ResourcePack();
                     }
                     else
                     {
-                        if (site.Owner.IsEnvironmentFaction)
+                        if (site.Owner != null && site.Owner.IsEnvironmentFaction)
                         {
+                            TFTVBetaSaveGamesFixes.FirebirdGeoFixMissingHarvestingComponentConvertedSites(site.GeoLevel);
                             faction.ActivateBaseFromExploration(site);
                         }
+
                         site.SiteTags.Remove(PhoenixBaseReworkState.OutpostTag);
                     }
 

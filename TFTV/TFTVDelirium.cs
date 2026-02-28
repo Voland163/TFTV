@@ -183,7 +183,7 @@ namespace TFTV
 
                 if (!TFTVVoidOmens.VoidOmensCheck[10])
                 {
-                    if (odiPerc < 25)
+                    if ( odiPerc < 25)
                     {
                         maxCorruption = actualWillpower / 3;
 
@@ -280,7 +280,6 @@ namespace TFTV
                     {
                         // TFTVLogger.Always($"{character.DisplayName} has {character.Fatigue.Stamina}");
 
-
                         if (character.Fatigue.Stamina == 40)
                         {
                             deliriumReduction = 4;
@@ -297,11 +296,12 @@ namespace TFTV
                         {
                             deliriumReduction = 1;
                         }
-
                     }
 
-                    //   TFTVLogger.Always($"so Delirium for {character.DisplayName} with {character.Fatigue.Stamina} should be reduced by {deliriumReduction}");
+                    deliriumReduction = TFTV.TFTVIncidents.AffinityTacticalEffects.OccultTacticalBenefits
+                        .ApplyStaminaDeliriumReductionBonusIfNeeded(character, deliriumReduction);
 
+                    //   TFTVLogger.Always($"so Delirium for {character.DisplayName} with {character.Fatigue.Stamina} should be reduced by {deliriumReduction}");
 
                     return deliriumReduction;
                 }
@@ -756,41 +756,56 @@ namespace TFTV
         {
             try
             {
-                // GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-                int difficultyLevel = Math.Max(controller.CurrentDifficultyLevel.Order - 1, 1);
-
-                if (CharactersDeliriumPerksAndMissions != null) //add difficulty/config option check
+                if (controller == null || squad?.Soldiers == null || CharactersDeliriumPerksAndMissions == null)
                 {
-                    // TFTVLogger.Always($"");
+                    return;
+                }
 
-                    foreach (GeoCharacter geoCharacter in squad.Soldiers)
+                int difficultyLevel = Math.Max(controller.CurrentDifficultyLevel.Order - 1, 1);
+                int psychoBonusPercent = TFTVIncidents.AffinityGeoscapeEffects.GetPsychoSociologyDeliriumRecoveryBonusPercent(controller, squad.Soldiers.ToList());
+
+                foreach (GeoCharacter geoCharacter in squad.Soldiers)
+                {
+                    if (!CharactersDeliriumPerksAndMissions.ContainsKey(geoCharacter.Id))
                     {
-                        if (CharactersDeliriumPerksAndMissions.ContainsKey(geoCharacter.Id))
+                        continue;
+                    }
+
+                    CharactersDeliriumPerksAndMissions[geoCharacter.Id] += 1;
+
+                    UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
+                    int sides = 100 + (10 * difficultyLevel) - (10 * CharactersDeliriumPerksAndMissions[geoCharacter.Id]);
+
+                    if (sides <= 0)
+                    {
+                        sides = 1;
+                    }
+
+                    int num = UnityEngine.Random.Range(0, sides);
+
+                    TFTVLogger.Always($"{geoCharacter.DisplayName} with {CharactersDeliriumPerksAndMissions[geoCharacter.Id]} missions rolls {num} on a {sides} sided dice to get rid of Delirium perks");
+
+                    bool recovered = false;
+
+                    if (num <= 1)
+                    {
+                        recovered = TryRecoverDeliriumPerk(geoCharacter);
+                    }
+
+                    if (!recovered && psychoBonusPercent > 0)
+                    {
+                        UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp() + geoCharacter.Id);
+                        int bonusRoll = UnityEngine.Random.Range(0, 100);
+
+                        TFTVLogger.Always($"{geoCharacter.DisplayName} rolls {bonusRoll} on a 100 sided dice for Psycho-Sociology bonus Delirium recovery ({psychoBonusPercent}% chance)");
+
+                        if (bonusRoll < psychoBonusPercent)
                         {
-                            CharactersDeliriumPerksAndMissions[geoCharacter.Id] += 1;
-
-                            UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-                            int sides = 100 + (10 * difficultyLevel) - (10 * CharactersDeliriumPerksAndMissions[geoCharacter.Id]);
-
-                            if (sides <= 0)
-                            {
-                                sides = 1;
-
-                            }
-
-                            int num = UnityEngine.Random.Range(0, sides);
-
-                            TFTVLogger.Always($"{geoCharacter.DisplayName} with {CharactersDeliriumPerksAndMissions[geoCharacter.Id]} missions rolls {num} on a {sides} sided dice to get rid of Delirium perks");
-
-                            if (num <= 1)
-                            {
-                                TryRecoverDeliriumPerk(geoCharacter);
-                            }
+                            TryRecoverDeliriumPerk(geoCharacter);
                         }
                     }
                 }
             }
-
             catch (Exception e)
             {
                 TFTVLogger.Error(e);

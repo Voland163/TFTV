@@ -77,6 +77,7 @@ namespace TFTV
         public int AblativeVestTierIndex;
         public int HazmatVestTierIndex;
         public Dictionary<string, int> AffinityTacticalBenefitChoices;
+        public Dictionary<string, float> BiotechMedkitOption2RestoreAppliedByActorId;
     }
 
     /// <summary>
@@ -242,7 +243,9 @@ namespace TFTV
             TFTVLogger.Always("Tactical start completed");
 
             TFTVNJQuestline.IntroMission.RunOnTacticalStart(Controller);
-            // TFTVExperimental.AdjustMusicLevelAncientMaps(Controller);
+
+            TFTVIncidents.MachineryRepairDefs.GrantRankAbilitiesOnMissionStart(Controller);
+            TFTVIncidents.AffinityTacticalEffects.ComputeTacticalBenefits.ApplyMissionStartBenefits(Controller);
         }
 
         /// <summary>
@@ -256,7 +259,7 @@ namespace TFTV
             TFTVRevenant.TFTVRevenantResearch.CheckRevenantCapturedOrKilled(Controller);
 
             base.OnTacticalEnd();
-            
+
         }
 
         /// <summary>
@@ -381,7 +384,12 @@ namespace TFTV
                 TFTVVests.Tiers.VestTierUpgradesPatch.ApplyTierUpgradesFromIndexes(
                     data.AblativeVestTierIndex,
                     data.HazmatVestTierIndex);
-                TFTV.TFTVIncidents.Affinities.AffinityBenefitsChoices.ImportTacticalBenefitChoiceSnapshot(data.AffinityTacticalBenefitChoices);
+                TFTVIncidents.Affinities.AffinityBenefitsChoices.ImportTacticalBenefitChoiceSnapshot(data.AffinityTacticalBenefitChoices);
+                TFTVIncidents.MachineryRepairDefs.ApplyChoiceFromSnapshot();
+                TFTVIncidents.BiotechMedkit.ImportOption2RestoreAppliedSnapshot(data.BiotechMedkitOption2RestoreAppliedByActorId);
+                TFTVIncidents.Affinities.AffinityBenefitsChoices.ImportTacticalBenefitChoiceSnapshot(data.AffinityTacticalBenefitChoices);
+                TFTVIncidents.Affinities.AffinityBenefitsChoices.RefreshTacticalAbilityDescriptionsFromSnapshot();
+
                 TurnZeroMethodsExecuted = data.TurnZeroMethodsExecuted;
 
             }
@@ -460,7 +468,8 @@ namespace TFTV
                 TurnZeroMethodsExecuted = TurnZeroMethodsExecuted,
                 AblativeVestTierIndex = TFTVVests.Tiers.VestTierUpgradesPatch.CurrentAblativeTierIndex,
                 HazmatVestTierIndex = TFTVVests.Tiers.VestTierUpgradesPatch.CurrentHazmatTierIndex,
-                   AffinityTacticalBenefitChoices = TFTV.TFTVIncidents.Affinities.AffinityBenefitsChoices.ExportTacticalBenefitChoiceSnapshot()
+                AffinityTacticalBenefitChoices = TFTVIncidents.Affinities.AffinityBenefitsChoices.ExportTacticalBenefitChoiceSnapshot(),
+                BiotechMedkitOption2RestoreAppliedByActorId = TFTVIncidents.BiotechMedkit.ExportOption2RestoreAppliedSnapshot(),
 
             };
         }
@@ -525,11 +534,11 @@ namespace TFTV
                 else
                 {
                     TFTVLogger.Always($"Playing tutorial mission; disabling saves");
-                    GameUtl.CurrentLevel().GetComponent<TacticalLevelController>().GameController.SaveManager.IsSaveEnabled =false;
+                    GameUtl.CurrentLevel().GetComponent<TacticalLevelController>().GameController.SaveManager.IsSaveEnabled = false;
 
                 }
 
-               
+
 
                 //  TFTVVanillaFixes.ClearDataActorsParalysisDamage();
 

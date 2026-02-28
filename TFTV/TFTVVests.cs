@@ -914,9 +914,6 @@ namespace TFTV
                     EquipmentDef repairKit = DefCache.GetDef<EquipmentDef>("FieldRepairKit_EquipmentDef");
 
 
-                    //removing nanokit from Bionic Reserach
-                    ManufactureResearchRewardDef bionicsReward = DefCache.GetDef<ManufactureResearchRewardDef>("NJ_Bionics1_ResearchDef_ManufactureResearchRewardDef_0");
-                    bionicsReward.Items = new ItemDef[] { bionicsReward.Items[0], bionicsReward.Items[1], bionicsReward.Items[2] };
 
 
                     TacticalItemDef newNanoVest = DefCache.GetDef<TacticalItemDef>("NanotechVest");

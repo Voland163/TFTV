@@ -1225,6 +1225,8 @@ namespace TFTV
                     {
                         if (geoUnitDescriptor.GetGameTags().Contains(MercenaryTag))
                         {
+                            PersonnelRestrictions.EnsureJustAGrunt(character, "Mercenary hire");
+
                             AdjustMercenaryProficiencyPerks(character);
 
                             if (geoUnitDescriptor.ClassTag != berserkerTag)

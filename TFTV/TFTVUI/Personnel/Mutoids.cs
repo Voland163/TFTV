@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TFTV.TFTVBaseRework;
 
 namespace TFTV.TFTVUI.Personnel
 {
@@ -119,6 +120,8 @@ namespace TFTV.TFTVUI.Personnel
                             recruit.Identity.Name = $"{TFTVCommonMethods.ConvertKeyToString("KEY_MUTOID_CLASS")} {dictionary[classTag].DisplayName2.Localize()}";
                         }
                     }
+
+                    PersonnelRestrictions.EnsureJustAGrunt(recruit, "Mutoid recruit");
                 }
             }
             catch (Exception e)

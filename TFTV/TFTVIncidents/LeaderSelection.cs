@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using TFTV.TFTVBaseRework;
 
 namespace TFTV.TFTVIncidents
 {
@@ -76,6 +77,11 @@ namespace TFTV.TFTVIncidents
                         continue;
                     }
 
+                    if (!PersonnelRestrictions.CanContributeToIncidents(character))
+                    {
+                        continue;
+                    }
+
                     if (!TryGetMatchingAffinityRank(character, approaches, out int rank, out AffinityApproach approach))
                     {
                         continue;
@@ -119,7 +125,7 @@ namespace TFTV.TFTVIncidents
 
                 if (leader != null)
                 {
-                    return leader;
+                    return PersonnelRestrictions.CanContributeToIncidents(leader) ? leader : null;
                 }
 
                 GeoPhoenixFaction phoenixFaction = level?.PhoenixFaction;
@@ -128,7 +134,8 @@ namespace TFTV.TFTVIncidents
                     return null;
                 }
 
-                return phoenixFaction.Characters.FirstOrDefault(c => c != null && c.Id == leaderId);
+                GeoCharacter fallback = phoenixFaction.Characters.FirstOrDefault(c => c != null && c.Id == leaderId);
+                return PersonnelRestrictions.CanContributeToIncidents(fallback) ? fallback : null;
             }
             catch (Exception ex)
             {
@@ -173,6 +180,11 @@ namespace TFTV.TFTVIncidents
             try
             {
                 if (leader == null || string.IsNullOrEmpty(approachTokens))
+                {
+                    return 0f;
+                }
+
+                if (!PersonnelRestrictions.CanContributeToIncidents(leader))
                 {
                     return 0f;
                 }
@@ -467,6 +479,7 @@ namespace TFTV.TFTVIncidents
 
             return characters
                 .Where(c => c?.TemplateDef != null && c.TemplateDef.IsHuman)
+                .Where(PersonnelRestrictions.CanContributeToIncidents)
                 .OrderByDescending(GetMissionCount)
                 .FirstOrDefault();
         }

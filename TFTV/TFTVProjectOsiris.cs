@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using TFTV.TFTVBaseRework;
 
 namespace TFTV
 {
@@ -729,6 +730,10 @@ namespace TFTV
                 TFTVLogger.Always($"controller.PhoenixFaction.Soldiers.FirstOrDefault(s => s.Id.Equals(NewBodyGeoID)) null? {controller.PhoenixFaction.Soldiers.FirstOrDefault(s => s.Id.Equals(NewBodyGeoID)) == null}");
 
                 GeoCharacter returned = controller.PhoenixFaction.Soldiers.FirstOrDefault(s => s.Id.Equals(NewBodyGeoID));
+                if (returned == null)
+                {
+                    return;
+                }
 
                 TFTVLogger.Always($"The returned is {returned?.DisplayName} and in Identity: {_geoCharacterCloneFromDead.Identity.Name}");
 
@@ -741,10 +746,12 @@ namespace TFTV
                 //  geoCharacterCloneFromDead.LevelProgression.SetLevel(geoCharacterCloneFromDead.LevelProgression.Level);
                 // TFTVLogger.Always("The clone has a secondary class " + geoCharacterCloneFromDead.Progression.SecondarySpecDef.name);
 
-                if (_geoCharacterCloneFromDead.Progression.SecondarySpecDef != null && returned.Progression.SecondarySpecDef==null)
+                if (_geoCharacterCloneFromDead.Progression.SecondarySpecDef != null && returned.Progression.SecondarySpecDef == null)
                 {
                     returned.Progression.AddSecondaryClass(_geoCharacterCloneFromDead.Progression.SecondarySpecDef);
                 }
+
+                PersonnelRestrictions.EnsureJustAGrunt(returned, "Project Osiris recruit");
 
                 ProjectOsirisCleanUp(controller);
             }

@@ -93,7 +93,13 @@ namespace TFTV.TFTVIncidents
                     return false;
                 }
 
-                SetupTimedEventForSite(chosenIncident.Definition.IntroEvent.EventID, chosenHaven.Site, 120);
+                string timerId = SetupTimedEventForSite(chosenIncident.Definition.IntroEvent.EventID, chosenHaven.Site, 120);
+                if (string.IsNullOrEmpty(timerId))
+                {
+                    TFTVLogger.Always($"[Incidents] Failed to set up incident {chosenIncident.Definition.Id} at {chosenHaven.Site.LocalizedSiteName}.");
+                    return false;
+                }
+
                 MarkIncidentRolled(geoLevelController, chosenIncident.Definition);
                 AddIncidentLogEntryAndPause(geoLevelController, chosenIncident.Definition, chosenHaven);
 
@@ -140,7 +146,6 @@ namespace TFTV.TFTVIncidents
         {
             try
             {
-
                 if (string.IsNullOrWhiteSpace(eventID))
                 {
                     throw new ArgumentException("Event ID must be provided.", "eventID");
@@ -153,23 +158,33 @@ namespace TFTV.TFTVIncidents
                 {
                     throw new ArgumentOutOfRangeException("durationHours", "Duration in hours must be greater than zero.");
                 }
+                if (Resolution.IncidentController.SiteHasActiveIncident(site))
+                {
+                    TFTVLogger.Always($"[Incidents] Site {site.LocalizedSiteName} already has an active incident.");
+                    return null;
+                }
 
                 GeoLevelController controller = site.GeoLevel;
-
                 GeoscapeEventSystem eventSystem = controller.EventSystem;
 
                 GeoscapeEventDef eventByID = eventSystem.GetEventByID(eventID, false);
                 eventSystem.SetEventForSite(site, eventID);
+
                 string text = eventByID.GeoscapeEventData.TimerID;
                 if (string.IsNullOrWhiteSpace(text))
                 {
                     text = eventID + "_TIMER";
                     eventByID.GeoscapeEventData.SetMetadata(GeoscapeEventData.MetadataSchema.TimerKey, text);
                 }
+
                 TimeUnit duration = TimeUnit.FromHours((float)durationHours);
                 eventSystem.StartTimer(text, duration);
                 eventSystem.RemoveEventAfterTimer(text, eventID);
-                EventGeoFactionObjective eventGeoFactionObjective = controller.PhoenixFaction.Objectives.OfType<EventGeoFactionObjective>().FirstOrDefault((EventGeoFactionObjective o) => o.EventID == eventID);
+
+                EventGeoFactionObjective eventGeoFactionObjective = controller.PhoenixFaction.Objectives
+                    .OfType<EventGeoFactionObjective>()
+                    .FirstOrDefault((EventGeoFactionObjective o) => o.EventID == eventID);
+
                 if (eventGeoFactionObjective == null)
                 {
                     eventGeoFactionObjective = new EventGeoFactionObjective(controller.PhoenixFaction, eventID)
@@ -180,8 +195,8 @@ namespace TFTV.TFTVIncidents
                     };
                     controller.PhoenixFaction.AddObjective(eventGeoFactionObjective);
                 }
-                site.DiplomaticObjectiveFaction = controller.PhoenixFaction;
 
+                site.DiplomaticObjectiveFaction = controller.PhoenixFaction;
                 return text;
             }
             catch (Exception e)
@@ -190,8 +205,6 @@ namespace TFTV.TFTVIncidents
                 return null;
             }
         }
-
-
 
         private static void ScheduleNextRoll(GeoLevelController geoLevelController, int currentHour)
         {
@@ -207,7 +220,8 @@ namespace TFTV.TFTVIncidents
                 .Where(haven => haven?.Site != null
                     && haven.Site.ActiveMission == null
                     && haven.Site.State == PhoenixPoint.Common.Core.GeoSiteState.Functioning
-                    && haven.Site.GetVisited(phoenixFaction))
+                    && haven.Site.GetVisited(phoenixFaction)
+                    && !Resolution.IncidentController.SiteHasActiveIncident(haven.Site))
                 .ToList();
         }
 

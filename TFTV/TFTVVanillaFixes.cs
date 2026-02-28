@@ -86,6 +86,18 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
+        [HarmonyPatch(typeof(GeoFaction), "OnCharacterAdded")]
+        public static class GeoFaction_OnCharacterAdded_RefreshTagsPatch
+        {
+            static void Postfix(GeoCharacter character)
+            {
+                if (character == null || character.Identity == null) return;
+                if (!character.TemplateDef.IsHuman) return;
+
+                // critical line: sync Identity -> GameTags immediately
+                character.RefreshTags();
+            }
+        }
 
         /// <summary>
         /// Fixes doubled HP in Geoscape alien template/intel displays for certain units (e.g. worms/eggs).
@@ -155,7 +167,7 @@ namespace TFTV
             }
         }
 
-            [HarmonyPatch(typeof(UIInventorySlot), "UpdateItem")]
+        [HarmonyPatch(typeof(UIInventorySlot), "UpdateItem")]
         public static class InventoryStackCounterPatch
         {
             public static void Postfix(UIInventorySlot __instance)
@@ -279,8 +291,8 @@ namespace TFTV
             }
         }
 
-            //Prevents MC status from throwing errors because of dereferencing.
-            [HarmonyPatch(typeof(MindControlStatus), nameof(MindControlStatus.OnUnapply))]
+        //Prevents MC status from throwing errors because of dereferencing.
+        [HarmonyPatch(typeof(MindControlStatus), nameof(MindControlStatus.OnUnapply))]
         internal static class MindControlStatus_OnUnapply_DebugPatch
         {
 
@@ -3376,7 +3388,7 @@ namespace TFTV
                     {
                         try
                         {
-                           // TFTVLogger.Always($"[SoldierPortraitUtil.RenderSoldierNoCopy] running for {soldierToRender.name} with camera {usedCamera.name} and resolution {renderParams.RenderedPortraitsResolution}");
+                            // TFTVLogger.Always($"[SoldierPortraitUtil.RenderSoldierNoCopy] running for {soldierToRender.name} with camera {usedCamera.name} and resolution {renderParams.RenderedPortraitsResolution}");
 
                             /* List<Light> lights = new List<Light>()
                              {
@@ -3463,7 +3475,7 @@ namespace TFTV
 
                             foreach (TacticalActorBase target in crateObjects)
                             {
-                               // TFTVLogger.Always($"[UIModuleSpottedEnemies.AddCrateObjects] looking at {target?.name}");
+                                // TFTVLogger.Always($"[UIModuleSpottedEnemies.AddCrateObjects] looking at {target?.name}");
 
                                 if (target.ViewElementDef == null || target.ViewElementDef.SmallIcon == null)
                                 {
@@ -3497,7 +3509,7 @@ namespace TFTV
 
                             foreach (TacticalAbilityTarget target in allSortedKnownTargets)
                             {
-                               // TFTVLogger.Always($"[UIModuleSpottedEnemies.SetAllEnemies] looking at {target?.Actor?.name}");
+                                // TFTVLogger.Always($"[UIModuleSpottedEnemies.SetAllEnemies] looking at {target?.Actor?.name}");
 
                                 if (target.Actor != null)
                                 {
