@@ -362,7 +362,7 @@ namespace TFTV
                     TFTVBaseDefenseTactical.Objectives.ModifyBaseDefenseTacticalObjectives(missionData.MissionType);
                     TFTVUI.Tactical.SecondaryObjectivesTactical.PopulateAvailableObjectives(__instance.Site.GeoLevel);
                     TFTVUI.Tactical.SecondaryObjectivesTactical.AddAllAvailableSecondaryObjectivesToMission(missionData.MissionType);
-
+                    TFTVIncidents.Affinities.AffinityBenefitsChoices.CaptureTacticalBenefitChoiceSnapshot(__instance.Site?.GeoLevel ?? __instance.Level);
                     // __instance.GameController.SaveManager.IsSaveEnabled = true;
                 }
                 catch (Exception e)
@@ -390,6 +390,7 @@ namespace TFTV
                     TFTVBaseDefenseTactical.Objectives.ModifyBaseDefenseTacticalObjectives(missionData.MissionType);
                     TFTVUI.Tactical.SecondaryObjectivesTactical.PopulateAvailableObjectives(__instance.Site.GeoLevel);
                     TFTVUI.Tactical.SecondaryObjectivesTactical.AddAllAvailableSecondaryObjectivesToMission(missionData.MissionType);
+                    TFTVIncidents.Affinities.AffinityBenefitsChoices.CaptureTacticalBenefitChoiceSnapshot(__instance.Site?.GeoLevel ?? __instance.Level);
 
                     // __instance.GameController.SaveManager.IsSaveEnabled = true;
                 }

@@ -76,6 +76,7 @@ namespace TFTV
         public int[] AircraftModulesInTactical;
         public int AblativeVestTierIndex;
         public int HazmatVestTierIndex;
+        public Dictionary<string, int> AffinityTacticalBenefitChoices;
     }
 
     /// <summary>
@@ -380,6 +381,7 @@ namespace TFTV
                 TFTVVests.Tiers.VestTierUpgradesPatch.ApplyTierUpgradesFromIndexes(
                     data.AblativeVestTierIndex,
                     data.HazmatVestTierIndex);
+                TFTV.TFTVIncidents.Affinities.AffinityBenefitsChoices.ImportTacticalBenefitChoiceSnapshot(data.AffinityTacticalBenefitChoices);
                 TurnZeroMethodsExecuted = data.TurnZeroMethodsExecuted;
 
             }
@@ -457,8 +459,8 @@ namespace TFTV
 
                 TurnZeroMethodsExecuted = TurnZeroMethodsExecuted,
                 AblativeVestTierIndex = TFTVVests.Tiers.VestTierUpgradesPatch.CurrentAblativeTierIndex,
-                HazmatVestTierIndex = TFTVVests.Tiers.VestTierUpgradesPatch.CurrentHazmatTierIndex
-
+                HazmatVestTierIndex = TFTVVests.Tiers.VestTierUpgradesPatch.CurrentHazmatTierIndex,
+                   AffinityTacticalBenefitChoices = TFTV.TFTVIncidents.Affinities.AffinityBenefitsChoices.ExportTacticalBenefitChoiceSnapshot()
 
             };
         }

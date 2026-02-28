@@ -193,12 +193,17 @@
     <Compile Include="TFTVIncidents\Affinities.cs" />
     <Compile Include="TFTVIncidents\AffinityBenefitChoiceUI.cs" />
     <Compile Include="TFTVIncidents\AffinityGeoscapeEffects.cs" />
+    <Compile Include="TFTVIncidents\AffinityTacticalEffects.cs" />
+    <Compile Include="TFTVIncidents\BiotechMedkit.cs" />
+    <Compile Include="TFTVIncidents\ComputeMountedAbility.cs" />
+    <Compile Include="TFTVIncidents\ExplorationGainControlofHaveDefender.cs" />
     <Compile Include="TFTVIncidents\GeoscapeEvents.cs" />
     <Compile Include="TFTVIncidents\GeoUIAdjustments.cs" />
     <Compile Include="TFTVIncidents\IncidentOutcomeSummaryUI.cs" />
     <Compile Include="TFTVIncidents\IncidentResolutionUI.cs" />
     <Compile Include="TFTVIncidents\LeaderSelection.cs" />
     <Compile Include="TFTVIncidents\PortraitGenerator.cs" />
+    <Compile Include="TFTVIncidents\PsychoSociologyAddHavenDefenders.cs" />
     <Compile Include="TFTVIncidents\Resolution.cs" />
     <Compile Include="TFTVIncidents\Roll.cs" />
     <Compile Include="TFTVIncidents\Set.cs" />

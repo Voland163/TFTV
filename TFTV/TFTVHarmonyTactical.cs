@@ -697,6 +697,7 @@ namespace TFTV
                     TFTVPalaceMission.MissionObjectives.CheckFinalMissionWinConditionForExalted(ability);
                     TFTVPalaceMission.Gates.CheckIfPlayerCloseToGate(__instance);
                     TFTVChangesToDLC5.TFTVMercenaries.Tactical.SlugHealTraumaEffect(ability, __instance);
+                    TFTVIncidents.AffinityTacticalEffects.ApplyRecoveryWillpowerBonus(ability, __instance);
                     TFTVArtOfCrab.GetBestWeaponForOWRF(__instance);
                     TFTVVehicleFixes.CheckSquashing(ability, __instance);
 

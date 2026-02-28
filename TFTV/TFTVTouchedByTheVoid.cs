@@ -1,4 +1,5 @@
-﻿using Base.Entities.Statuses;
+﻿using Base.Core;
+using Base.Entities.Statuses;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -90,6 +91,9 @@ namespace TFTV
 
                     UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
                     int roll = UnityEngine.Random.Range(1, rollCap);
+                    TacticalLevelController tacticalLevel = GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>();
+                    roll = TFTVIncidents.AffinityTacticalEffects.ApplyTBTVChanceReductionIfNeeded(tacticalLevel, roll);
+
                     TFTVLogger.Always("The TBTV roll is " + roll);
 
                     return roll;

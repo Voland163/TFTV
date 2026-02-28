@@ -268,6 +268,9 @@ namespace TFTV.TFTVIncidents
             private static readonly Dictionary<LeaderSelection.AffinityApproach, int> TacticalBenefitChoiceCache =
                 new Dictionary<LeaderSelection.AffinityApproach, int>();
 
+            private static readonly Dictionary<LeaderSelection.AffinityApproach, int> TacticalBenefitChoiceSnapshot =
+              new Dictionary<LeaderSelection.AffinityApproach, int>();
+
             internal static void SetGeoscapeBenefitChoice(
                GeoLevelController level,
                LeaderSelection.AffinityApproach approach,
@@ -363,6 +366,103 @@ namespace TFTV.TFTVIncidents
                 {
                     TFTVLogger.Error(e);
                     return 1;
+                }
+            }
+
+            internal static void CaptureTacticalBenefitChoiceSnapshot(GeoLevelController level)
+            {
+                try
+                {
+                    if (level == null)
+                    {
+                        return;
+                    }
+
+                    foreach (LeaderSelection.AffinityApproach approach in Enum.GetValues(typeof(LeaderSelection.AffinityApproach)).Cast<LeaderSelection.AffinityApproach>())
+                    {
+                        int option = GetTacticalBenefitChoice(level, approach);
+                        TacticalBenefitChoiceSnapshot[approach] = NormalizeOption(option);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            internal static int GetTacticalBenefitChoiceFromSnapshot(LeaderSelection.AffinityApproach approach)
+            {
+                try
+                {
+                    return TacticalBenefitChoiceSnapshot.TryGetValue(approach, out int option)
+                        ? NormalizeOption(option)
+                        : 1;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    return 1;
+                }
+            }
+
+            private static int NormalizeOption(int option)
+            {
+                return option == 2 ? 2 : 1;
+            }
+
+
+            internal static Dictionary<string, int> ExportTacticalBenefitChoiceSnapshot()
+            {
+                try
+                {
+                    Dictionary<string, int> export = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+                    foreach (KeyValuePair<LeaderSelection.AffinityApproach, int> item in TacticalBenefitChoiceSnapshot)
+                    {
+                        export[item.Key.ToString()] = NormalizeOption(item.Value);
+                    }
+
+                    return export;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    return new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+                }
+            }
+
+            internal static void ImportTacticalBenefitChoiceSnapshot(Dictionary<string, int> imported)
+            {
+                try
+                {
+                    TacticalBenefitChoiceSnapshot.Clear();
+
+                    foreach (LeaderSelection.AffinityApproach approach in Enum.GetValues(typeof(LeaderSelection.AffinityApproach)).Cast<LeaderSelection.AffinityApproach>())
+                    {
+                        TacticalBenefitChoiceSnapshot[approach] = 1;
+                    }
+
+                    if (imported == null)
+                    {
+                        return;
+                    }
+
+                    foreach (KeyValuePair<string, int> pair in imported)
+                    {
+                        if (string.IsNullOrEmpty(pair.Key))
+                        {
+                            continue;
+                        }
+
+                        if (Enum.TryParse(pair.Key, true, out LeaderSelection.AffinityApproach approach))
+                        {
+                            TacticalBenefitChoiceSnapshot[approach] = NormalizeOption(pair.Value);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
                 }
             }
 
