@@ -784,22 +784,7 @@ namespace TFTV
 
                             if (num <= 1)
                             {
-
-                                foreach (TacticalAbilityDef tacticalAbilityDef in geoCharacter.GetTacticalAbilities().Where(ta => DeliriumPerks.Contains(ta)))
-                                {
-                                    List<TacticalAbilityDef> abilities = Traverse.Create(geoCharacter.Progression).Field("_abilities").GetValue<List<TacticalAbilityDef>>();
-                                    TFTVLogger.Always($"removing {tacticalAbilityDef.name} from {geoCharacter.DisplayName}");
-
-                                    abilities.Remove(tacticalAbilityDef);
-
-                                    if (tacticalAbilityDef == wolverineDef)
-                                    {
-                                        TFTVLogger.Always($"Adding cured wolverine ability");
-                                        abilities.Add(wolverineCuredDef);
-                                    }
-                                }
-
-                                CharactersDeliriumPerksAndMissions[geoCharacter.Id] = -1;
+                                TryRecoverDeliriumPerk(geoCharacter);
                             }
                         }
                     }
@@ -811,6 +796,51 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
+
+        public static bool TryRecoverDeliriumPerk(GeoCharacter geoCharacter)
+        {
+            try
+            {
+                if (geoCharacter?.Progression == null)
+                {
+                    return false;
+                }
+                bool removedPerk = false;
+                List<TacticalAbilityDef> abilities = Traverse.Create(geoCharacter.Progression).Field("_abilities").GetValue<List<TacticalAbilityDef>>();
+                if (abilities == null)
+                {
+                    return false;
+                }
+                foreach (TacticalAbilityDef tacticalAbilityDef in geoCharacter.GetTacticalAbilities().Where(ta => DeliriumPerks.Contains(ta)).ToList())
+                {
+                    TFTVLogger.Always($"removing {tacticalAbilityDef.name} from {geoCharacter.DisplayName}");
+                    abilities.Remove(tacticalAbilityDef);
+                    removedPerk = true;
+                    if (tacticalAbilityDef == wolverineDef)
+                    {
+                        TFTVLogger.Always("Adding cured wolverine ability");
+                        abilities.Add(wolverineCuredDef);
+                    }
+                }
+                if (removedPerk)
+                {
+                    if (CharactersDeliriumPerksAndMissions == null)
+                    {
+                        CharactersDeliriumPerksAndMissions = new Dictionary<int, int>();
+                    }
+
+                    CharactersDeliriumPerksAndMissions[geoCharacter.Id] = -1;
+                }
+
+                return removedPerk;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return false;
+            }
+        }
+
 
         public static void DeliriumPerkRecoveryPrompt(UIModuleActorCycle uIModuleActorCycle)
         {

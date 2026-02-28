@@ -353,13 +353,15 @@ namespace TFTV
 
                 if (geoVehicle.VehicleDef != blimp)
                 {
-                    speed *= 1 - _mistSpeedMalus;
+                    float penaltyMultiplier = TFTVIncidents.AffinityGeoscapeEffects.GetMistPenaltyMultiplier(geoVehicle);
+                    speed *= 1 - (_mistSpeedMalus * penaltyMultiplier);
 
                     // TFTVLogger.Always($"speed in Mist of {geoVehicle.Name}, after applying malus of {_mistSpeedMalus} is {speed}", false);
                 }
                 else
                 {
-                    speed += _mistSpeedModuleBuff;
+                    float buffMultiplier = TFTVIncidents.AffinityGeoscapeEffects.GetMistBuffMultiplier(geoVehicle);
+                    speed += _mistSpeedModuleBuff * buffMultiplier;
                     // TFTVLogger.Always($"speed in Mist of {geoVehicle.Name}, after adding {_mistSpeedModuleBuff} is {speed}", false);
                 }
 

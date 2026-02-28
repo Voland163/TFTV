@@ -48,6 +48,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using TFTV.TFTVUI.Geoscape;
+using TFTV.TFTVIncidents;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -61,7 +62,7 @@ namespace TFTV
         public static Dictionary<int, int> PhoenixBasesUnderAttackSchedule = new Dictionary<int, int>(); //actually not only breaches, but any time other than 18 hours
         public static Dictionary<int, bool> ContainmentBreachSchedule = new Dictionary<int, bool>();
         public static Dictionary<int, List<string>> PandoransThatCanEscape = new Dictionary<int, List<string>>();
-
+        private static readonly HashSet<int> OccultAttackWarningTriggered = new HashSet<int>();
 
         private static readonly SharedData Shared = TFTVMain.Shared;
         public static List<int> PhoenixBasesInfested = new List<int>();
@@ -520,11 +521,64 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoAlienFaction), "PhoenixBaseAttackCheck")]
         public static class GeoAlienFaction_PhoenixBaseAttackCheck_patch
         {
+            private static void TryShowOccultAttackWarning(GeoLevelController controller, SiteAttackSchedule schedule, int pointsPerDay, int currentCounter)
+            {
+                try
+                {
+                    if (controller == null || schedule?.Site == null || pointsPerDay <= 0)
+                    {
+                        return;
+                    }
+
+                    int warningLeadHours = AffinityGeoscapeEffects.GetOccultAttackWarningLeadHours(controller);
+                    if (warningLeadHours <= 0)
+                    {
+                        return;
+                    }
+
+                    int siteId = schedule.Site.SiteId;
+                    if (OccultAttackWarningTriggered.Contains(siteId))
+                    {
+                        return;
+                    }
+
+                    int requiredCounter = controller.AlienFaction.FactionDef.PhoenixBaseAttackMissionCounter;
+                    int remainingCounter = requiredCounter - currentCounter;
+                    if (remainingCounter <= 0)
+                    {
+                        return;
+                    }
+
+                    double estimatedHoursToAttack = (remainingCounter / (double)pointsPerDay) * 24d;
+                    if (estimatedHoursToAttack > warningLeadHours)
+                    {
+                        return;
+                    }
+
+                    int roundedEta = Math.Max(1, (int)Math.Round(estimatedHoursToAttack));
+                    string warningTemplate = TFTVCommonMethods.ConvertKeyToString("KEY_AFFINITY_OCCULT_BASE_ATTACK_WARNING");
+                    string warningMessage = string.IsNullOrEmpty(warningTemplate)
+                        ? $"Occult warning: attack expected at {schedule.Site.LocalizedSiteName} in ~{roundedEta} hours."
+                        : string.Format(warningTemplate, schedule.Site.LocalizedSiteName, roundedEta);
+
+                    GameUtl.GetMessageBox().ShowSimplePrompt(warningMessage, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                    OccultAttackWarningTriggered.Add(siteId);
+
+                    TFTVLogger.Always($"[OccultAffinity] Warning issued for {schedule.Site.LocalizedSiteName}. ETA ~{roundedEta}h, lead window {warningLeadHours}h, points/day={pointsPerDay}, remaining points={remainingCounter}");
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
 
             public static bool Prefix(GeoAlienFaction __instance)
             {
                 try
                 {
+                    OccultAttackWarningTriggered.RemoveWhere(siteId => !__instance.PhoenixBaseAttackSchedule.Any(s => s.Site?.SiteId == siteId));
+
                     foreach (SiteAttackSchedule item in __instance.PhoenixBaseAttackSchedule)
                     {
                         if (item.HasAttackScheduled)
@@ -537,8 +591,12 @@ namespace TFTV
                             || PhoenixBasesUnderAttack != null && PhoenixBasesUnderAttack.ContainsKey(pxBase.SiteId)
                             || PhoenixBasesInfested != null && PhoenixBasesInfested.Contains(pxBase.SiteId))
                         {
+                            OccultAttackWarningTriggered.Remove(pxBase.SiteId);
                             continue;
                         }
+
+                        int counterBeforeAccrual = item.Counter;
+                        int totalCounterPerDayForBase = 0;
 
                         foreach (GeoAlienBase colony in __instance.Bases)
                         {
@@ -590,6 +648,8 @@ namespace TFTV
                                 }
 
                                 int adjustedCounter = (int)(colonyCounter * multiplier);
+                                totalCounterPerDayForBase += adjustedCounter;
+
 
                                 item.Counter += adjustedCounter;
 
@@ -600,8 +660,12 @@ namespace TFTV
                             }
                         }
 
+                        TryShowOccultAttackWarning(__instance.GeoLevel, item, totalCounterPerDayForBase, counterBeforeAccrual);
+
+
                         if (item.Counter >= __instance.FactionDef.PhoenixBaseAttackMissionCounter && !item.Site.HasActiveMission && __instance.Research.HasCompleted("ALN_Lair_ResearchDef"))
                         {
+                            OccultAttackWarningTriggered.Remove(pxBase.SiteId);
                             (from b in __instance.Bases
                              where b.SitesInRange.Contains(pxBase)
                              select b.Site).ToList();
@@ -1814,7 +1878,7 @@ namespace TFTV
 
                         //  TFTVLogger.Always($"{geoRosterDeploymentItem.Character.DisplayName} vehicle? {isVehicle}");
 
-                        Resolution resolution = Screen.currentResolution;
+                        UnityEngine.Resolution resolution = Screen.currentResolution;
 
                         // TFTVLogger.Always("Resolution is " + Screen.currentResolution.width);
                         float resolutionFactorWidth = (float)resolution.width / 1920f;

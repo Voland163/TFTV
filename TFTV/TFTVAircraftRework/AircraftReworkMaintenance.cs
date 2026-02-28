@@ -136,8 +136,10 @@ namespace TFTV
                     if (geoVehicle.Travelling)
                     {
                         List<GeoVehicleModuleDef> modules = geoVehicle.Modules.Select(m => m?.ModuleDef).ToList();
-
-                        geoVehicle.SetHitpoints(geoVehicle.Stats.HitPoints - GetMaintenanceFactor(modules));
+                        int baseMaintenanceLoss = GetMaintenanceFactor(modules);
+                        float maintenanceMultiplier = TFTVIncidents.AffinityGeoscapeEffects.GetAircraftMaintenanceLossMultiplier(geoVehicle);
+                        int adjustedMaintenanceLoss = Mathf.Max(0, Mathf.RoundToInt(baseMaintenanceLoss * maintenanceMultiplier));
+                        geoVehicle.SetHitpoints(geoVehicle.Stats.HitPoints - adjustedMaintenanceLoss);
                     }
                 }
 

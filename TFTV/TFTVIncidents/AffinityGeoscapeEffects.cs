@@ -12,6 +12,7 @@ using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace TFTV.TFTVIncidents
 {
@@ -131,33 +132,47 @@ namespace TFTV.TFTVIncidents
             }
         }
 
-        //This doesn't work, we want a warning before the attack starts.
-        /*[HarmonyPatch(typeof(TFTVBaseDefenseGeoscape), "AddToTFTVAttackSchedule")]
-        private static class TFTVBaseDefenseGeoscape_AddToTFTVAttackSchedule_AffinityWarningBonus_Patch
+        internal static int GetOccultAttackWarningLeadHours(GeoLevelController level)
         {
-            private static void Prefix(GeoLevelController controller, ref int hours)
+            try
             {
-                try
+                if (level?.PhoenixFaction?.Soldiers == null)
                 {
-                    int rank = GetActiveGeoscapeRank(controller, LeaderSelection.AffinityApproach.Occult, requiredOption: 1);
-                    if (rank <= 0)
-                    {
-                        return;
-                    }
+                    return 0;
+                }
 
-                    hours += (6 * rank);
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
+                int rank = GetActiveGeoscapeRank(level, level.PhoenixFaction.Soldiers.ToList(), LeaderSelection.AffinityApproach.Occult, requiredOption: 1);
+                return rank <= 0 ? 0 : 6 * rank;
             }
-        }*/
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return 0;
+            }
+        }
 
         internal static float GetAircraftSpeedMultiplier(GeoVehicle geoVehicle)
         {
             int rank = GetActiveGeoscapeRank(geoVehicle.GeoLevel, geoVehicle.Soldiers.ToList(), LeaderSelection.AffinityApproach.Compute, requiredOption: 1);
             return rank <= 0 ? 1f : 1f + (0.10f * rank);
+        }
+
+        internal static float GetMistPenaltyMultiplier(GeoVehicle geoVehicle)
+        {
+            int rank = GetActiveGeoscapeRank(geoVehicle.GeoLevel, geoVehicle.Soldiers.ToList(), LeaderSelection.AffinityApproach.Occult, requiredOption: 2);
+            return rank <= 0 ? 1f : Mathf.Max(0f, 1f - (0.15f * rank));
+        }
+
+        internal static float GetMistBuffMultiplier(GeoVehicle geoVehicle)
+        {
+            int rank = GetActiveGeoscapeRank(geoVehicle.GeoLevel, geoVehicle.Soldiers.ToList(), LeaderSelection.AffinityApproach.Occult, requiredOption: 2);
+            return rank <= 0 ? 1f : 1f + (0.15f * rank);
+        }
+
+        internal static float GetAircraftMaintenanceLossMultiplier(GeoVehicle geoVehicle)
+        {
+            int rank = GetActiveGeoscapeRank(geoVehicle.GeoLevel, geoVehicle.Soldiers.ToList(), LeaderSelection.AffinityApproach.Machinery, requiredOption: 2);
+            return rank <= 0 ? 1f : Mathf.Max(0f, 1f - (0.25f * rank));
         }
 
         internal static void ApplyPostMissionRecovery(GeoMission mission, TacMissionResult result, GeoSquad squad)
