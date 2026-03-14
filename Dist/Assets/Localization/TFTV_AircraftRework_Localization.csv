@@ -209,7 +209,7 @@ KEY_AFFINITY_TAC_DESC_BIOTECH_OPTION_2,Text,,Tactical Benefit (selected): Gain p
 KEY_AFFINITY_TAC_DESC_MACHINERY_OPTION_1,Text,,"Tactical Benefit (selected): Gain passive ability: Using any healing item or ability on a vehicle or a character with bionics, restores additional 30HP to the target [not implemented/pending design decision]",,,,,,,,
 KEY_AFFINITY_TAC_DESC_MACHINERY_OPTION_2,Text,,Tactical Benefit (selected): Gain passive ability: Using any healing item or ability restores up to {0} Armor on each body part of the target.,,,,,,,,
 KEY_AFFINITY_TAC_DESC_COMPUTE_OPTION_1,Text,,Tactical Benefit (selected): Gain passive ability: Ground vehicles with character inside gain +{0} movement and +{1}% accuracy.,,,,,,,,
-KEY_AFFINITY_TAC_DESC_COMPUTE_OPTION_2,Text,,"Tactical Benefit (selected): For all Allies, Perception vs Pandorans increased by {0} of the total amount of Delirium in the squad, up to +{1}.",,,,,,,,
+KEY_AFFINITY_TAC_DESC_COMPUTE_OPTION_2,Text,,"Tactical Benefit (selected): For all Allies, Perception vs Pandorans increased by {0}% of the total amount of Delirium in the squad, up to +{1}.",,,,,,,,
 KEY_AFFINITY_CHOICE_UI_HEADER,Text,,Affinity Benefits,,,,,,,,
 KEY_AFFINITY_CHOICE_UI_GRANTED,Text,,{0} rank {1} granted.,,,,,,,,
 KEY_AFFINITY_CHOICE_UI_TRACK_GEOSCAPE,Text,,Geoscape,,,,,,,,
@@ -236,3 +236,5 @@ The higher the number, the faster Technologies will be researched.",,,,,,,,
 KEY_PRODUCTION_TOTAL_TT,Text,,"Manufacturing per hour generated (+ Manufacturing from personnel assigned to Manufacturing)
 (Manufacturing slots used/Manufacturing slots available). Each Manufacturing Plant generates 2 Manufacturing and provides 1 Slot to which Personnel not on active field duty can be assigned. Each Personnel assigned to Manufacturing generates 4 Manufacturing. 
 The higher the number, the faster the production of Equipment, Armor, Ground Vehicles and Aircraft.",,,,,,,,
+TFTV_TBTV_OCCULT_AFFINITY_REDUCTION,Text,,Occult affinity: {0} reduces Touched by the Void chance by {1}.,,,,,,,,
+KEY_BASE_RECRUITS_SPAWNED,Text,,"New personnel has arrived. Can be assigned to Manufacturing or Research, or deployed.",,,,,,,,

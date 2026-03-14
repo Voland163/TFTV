@@ -492,12 +492,14 @@ namespace TFTV.TFTVIncidents
 
             private static string FormatHours(float hours)
             {
+                TFTVLogger.Always($"[FormatHours] Computed hours: {hours}");
+
                 if (hours <= 0f)
                 {
                     return "N/A";
                 }
 
-                return hours.ToString("0.#", CultureInfo.InvariantCulture) + "h";
+                return hours.ToString("0", CultureInfo.InvariantCulture) + "h";
             }
 
             private static Sprite ResolveAbilityIcon(GeoCharacter character)

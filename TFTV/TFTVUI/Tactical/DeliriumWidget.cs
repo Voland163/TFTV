@@ -638,6 +638,7 @@ namespace TFTV.TFTVUI.Tactical
         private static readonly string _tbtvChancesBase = "TFTV_TBTV_CHANCES_BASE";
         private static readonly string _tbtvChancesMoreTBTV = "TFTV_TBTV_CHANCES_VO_MORE_TBTV";
         private static readonly string _tbtvChancesAcheron = "TFTV_TBTV_CHANCES_ACHERONS";
+        private static readonly string _tbtvOccultAffinityReduction = "TFTV_TBTV_OCCULT_AFFINITY_REDUCTION";
 
 
         private static void PopulateDictionary(bool TBTVRelevant)
@@ -732,7 +733,7 @@ namespace TFTV.TFTVUI.Tactical
                 }
 
                 _ODISitrepList.Add((_voidOmenSprite, _tbtvChancesAcheron, ODIDetailType.TBTVModifier));
-
+                _ODISitrepList.Add((_tbtvGeneralSprite, _tbtvOccultAffinityReduction, ODIDetailType.TBTVModifier));
                 //  _ODISitrepDictionary.Add("TFTV_TBTV_CHANCES_TOTAL", null);
             }
 
@@ -766,6 +767,11 @@ namespace TFTV.TFTVUI.Tactical
                 {
                     foreach (TacticalActor actor in phoenix.TacticalActors)
                     {
+                        if (!actor.IsAlive || actor.IsEvacuated)
+                        {
+                            continue;
+                        }
+
                         if (actor.CharacterStats.Corruption.Value > 0)
                         {
                             totalDeliriumOnMission += (int)actor.CharacterStats.Corruption.Value.BaseValue;
@@ -774,8 +780,6 @@ namespace TFTV.TFTVUI.Tactical
 
                     totalDeliriumOnMission /= 2;
                 }
-
-                // _baseChanceTBTV = totalDeliriumOnMission;
 
                 return totalDeliriumOnMission;
 
@@ -891,6 +895,10 @@ namespace TFTV.TFTVUI.Tactical
                 {
                     adjustedText = TFTVCommonMethods.ConvertKeyToString(element).Replace("{0}", adjustedTotalChances.ToString());
                 }
+                else if (element == _tbtvOccultAffinityReduction)
+                {
+                    adjustedText = GetOccultTBTVReductionText(controller);
+                }
                 else
                 {
                     adjustedText = element;
@@ -963,6 +971,31 @@ namespace TFTV.TFTVUI.Tactical
             {
                 TFTVLogger.Error(e);
                 throw;
+            }
+        }
+
+        private static string GetOccultTBTVReductionText(TacticalLevelController controller)
+        {
+            try
+            {
+                TacticalActor sourceActor;
+                int reduction;
+
+                if (!TFTV.TFTVIncidents.AffinityTacticalEffects.OccultTacticalBenefits
+                    .TryGetTBTVChanceReductionInfo(controller, out sourceActor, out reduction))
+                {
+                    return null;
+                }
+
+                string actorName = !string.IsNullOrEmpty(sourceActor.DisplayName) ? sourceActor.DisplayName : sourceActor.name;
+                string localized = TFTVCommonMethods.ConvertKeyToString(_tbtvOccultAffinityReduction);
+
+                return string.Format(localized, actorName, reduction);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return null;
             }
         }
     }

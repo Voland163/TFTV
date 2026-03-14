@@ -4,15 +4,19 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Entities.Missions.Outcomes;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View.ViewControllers;
+using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace TFTV.TFTVIncidents
 {
@@ -83,41 +87,111 @@ namespace TFTV.TFTVIncidents
 
         internal class ExplorationGeoscapeBenefits
         {
-            private static readonly Dictionary<GeoSite, int> _vehicleStartingExploration = new Dictionary<GeoSite, int>();
+            
+            private static GeoSite _pendingExplorationSite;
+            private static int _pendingExplorationRank;
+
+           /* [HarmonyPatch(typeof(UIModuleSiteContextualMenu))]
+            internal static class UIModuleSiteContextualMenu_ExploreSiteTimePatch
+            {
+                private const string TimeSeparator = " ~ ";
+                private const string TimeFormat = "{0}H";
+
+                [HarmonyPatch("SetMenuItems")]
+                [HarmonyPostfix]
+                private static void SetMenuItems_Postfix(UIModuleSiteContextualMenu __instance)
+                {
+                    if (__instance == null || __instance.ButtonsHolder == null)
+                    {
+                        return;
+                    }
+                    foreach (object obj in __instance.ButtonsHolder.transform)
+                    {
+                        SiteContextualMenuItem siteContextualMenuItem = ((Transform)obj).GetComponent<SiteContextualMenuItem>();
+                        if (siteContextualMenuItem == null || !siteContextualMenuItem.gameObject.activeSelf)
+                        {
+                            continue;
+                        }
+                        GeoAbility ability = siteContextualMenuItem.Ability;
+                        if (!(ability is ExploreSiteAbility))
+                        {
+                            continue;
+                        }
+                        if (!TryGetExplorationHours(ability, __instance.SelectedSite, out int num))
+                        {
+                            continue;
+                        }
+                        string text = ability.View.ViewElementDef.DisplayName1.Localize(null).ToUpperInvariant();
+                        siteContextualMenuItem.ItemText.text = text + TimeSeparator + string.Format(TimeFormat, num);
+                    }
+                }
+
+                [HarmonyPatch("OnAbilityHover")]
+                [HarmonyPostfix]
+                private static void OnAbilityHover_Postfix(UIModuleSiteContextualMenu __instance, bool isHovered, SiteContextualMenuItem menuItem)
+                {
+                    if (!isHovered || __instance?.DescriptionBox == null || menuItem == null || !(menuItem.Ability is ExploreSiteAbility))
+                    {
+                        return;
+                    }
+                    if (!TryGetExplorationHours(menuItem.Ability, __instance.SelectedSite, out int num))
+                    {
+                        return;
+                    }
+                    string text = __instance.DescriptionBox.DescriptionText.text;
+                    if (string.IsNullOrEmpty(text))
+                    {
+                        return;
+                    }
+                    string text2 = TimeSeparator.Trim();
+                    if (text.Contains(text2))
+                    {
+                        return;
+                    }
+                    __instance.DescriptionBox.DescriptionText.text = string.Format("{0}\n\nExploration time: {1}", text, string.Format(TimeFormat, num));
+                }
+
+                private static bool TryGetExplorationHours(GeoAbility ability, GeoSite selectedSite, out int hours)
+                {
+                    hours = 0;
+                    GeoVehicle geoVehicle = ability?.GeoActor as GeoVehicle;
+                    GeoSite geoSite = geoVehicle?.CurrentSite ?? selectedSite;
+                    if (geoSite == null)
+                    {
+                        return false;
+                    }
+                    double totalHours = geoSite.ExplorationTime.TimeSpan.TotalHours;
+                    if (totalHours <= 0.0)
+                    {
+                        return false;
+                    }
+                    hours = Mathf.CeilToInt((float)totalHours);
+                    return true;
+                }
+            }*/
 
             [HarmonyPatch(typeof(GeoVehicle), "StartExploringCurrentSite")]
-            private static class GeoSite_StartExploringCurrentSite_AffinityExplorationBonus_Patch
+            private static class GeoVehicle_StartExploringCurrentSite_AffinityExplorationBonus_Patch
             {
                 private static void Prefix(GeoVehicle __instance)
                 {
                     try
                     {
-                        TFTVLogger.Always($"{DiagTag} Checking for Exploration affinity exploration time bonus... " +
-                            $"vehicle null? {__instance == null}, current site null? {__instance?.CurrentSite == null}");
+                      
+                        BeginExplorationAdjustment(__instance);
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
 
-                        if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
-                        {
-                            return;
-                        }
-
-                        if (__instance?.CurrentSite == null)
-                        {
-                            return;
-                        }
-
-                        GeoLevelController level = __instance.GeoLevel;
-                        int rank = GetActiveGeoscapeRank(level, __instance.Soldiers.ToList(), LeaderSelection.AffinityApproach.Exploration, requiredOption: 1);
-                       
-                        TFTVLogger.Always($"{DiagTag} Exploration affinity rank for current vehicle: {rank}.");
-
-                        if (rank <= 0)
-                        {
-                            return;
-                        }
-
-
-
-                        _vehicleStartingExploration[__instance.CurrentSite] = rank;
+                private static void Postfix(GeoVehicle __instance)
+                {
+                    try
+                    {
+                     
+                        EndExplorationAdjustment();
                     }
                     catch (Exception e)
                     {
@@ -129,33 +203,29 @@ namespace TFTV.TFTVIncidents
             [HarmonyPatch(typeof(GeoSite), "get_ExplorationTime")]
             private static class GeoSite_get_ExplorationTime_AffinityExplorationBonus_Patch
             {
-                private static void Postfix(GeoSite __instance, ref TimeUnit __result)
+                public static void Postfix(GeoSite __instance, ref TimeUnit __result)
                 {
                     try
                     {
-                        TFTVLogger.Always($"{DiagTag} Checking for Exploration affinity exploration time bonus... " +
-                            $"site null? {__instance == null}, site type: {__instance?.Type}, has stored rank? {_vehicleStartingExploration.ContainsKey(__instance)}");
-
-                        if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
-                        {
-                            return;
-                        }
-
-                        if (__instance?.Type != GeoSiteType.Exploration)
-                        {
-                            return;
-                        }
-
-                        if (!_vehicleStartingExploration.TryGetValue(__instance, out int rank) || rank <= 0)
-                        {
-                            return;
-                        }
-
                         double baseHours = __result.TimeSpan.TotalHours;
-                        double reducedHours = Math.Max(1d, baseHours - rank);
+
+                        bool shouldApply = ShouldApplyExplorationAdjustment(__instance);
+
+            
+                        if (!shouldApply)
+                        {
+                            return;
+                        }
+
+                        double reducedHours = Math.Max(1d, baseHours - _pendingExplorationRank);
+                        if (reducedHours >= baseHours)
+                        {
+                          
+                            return;
+                        }
+
                         __result = TimeUnit.FromHours((float)reducedHours);
 
-                        _vehicleStartingExploration.Remove(__instance);
                     }
                     catch (Exception e)
                     {
@@ -163,6 +233,102 @@ namespace TFTV.TFTVIncidents
                     }
                 }
             }
+
+            private static void BeginExplorationAdjustment(GeoVehicle vehicle)
+            {
+                _pendingExplorationSite = null;
+                _pendingExplorationRank = 0;
+
+                if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                {
+                 
+                    return;
+                }
+
+                if (vehicle == null)
+                {
+
+                    return;
+                }
+
+                if (vehicle.CurrentSite == null)
+                {
+
+                    return;
+                }
+
+                List<GeoCharacter> soldiers = vehicle.Soldiers != null
+                    ? vehicle.Soldiers.ToList()
+                    : new List<GeoCharacter>();
+
+                int chosenOption = Affinities.AffinityBenefitsChoices.GetGeoscapeBenefitChoice(
+                    vehicle.GeoLevel,
+                    LeaderSelection.AffinityApproach.Exploration);
+
+             
+
+                int rank = GetActiveGeoscapeRank(
+                    vehicle.GeoLevel,
+                    soldiers,
+                    LeaderSelection.AffinityApproach.Exploration,
+                    requiredOption: 1);
+
+
+                if (rank <= 0)
+                {
+                    
+                    return;
+                }
+
+                _pendingExplorationSite = vehicle.CurrentSite;
+                _pendingExplorationRank = rank;
+
+            }
+
+            private static void EndExplorationAdjustment()
+            {
+               
+
+                _pendingExplorationSite = null;
+                _pendingExplorationRank = 0;
+            }
+
+            private static bool ShouldApplyExplorationAdjustment(GeoSite site)
+            {
+                if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                {
+
+                    return false;
+                }
+
+                if (site == null)
+                {
+
+                    return false;
+                }
+      
+                if (_pendingExplorationSite == null)
+                {
+
+                    return false;
+                }
+
+                if (_pendingExplorationRank <= 0)
+                {
+
+                    return false;
+                }
+
+                if (!ReferenceEquals(site, _pendingExplorationSite))
+                {
+              
+                    return false;
+                }
+
+                return true;
+            }
+
+          
         }
         internal static int GetOccultAttackWarningLeadHours(GeoLevelController level)
         {
@@ -174,7 +340,7 @@ namespace TFTV.TFTVIncidents
                 }
 
                 int rank = GetActiveGeoscapeRank(level, level.PhoenixFaction.Soldiers.ToList(), LeaderSelection.AffinityApproach.Occult, requiredOption: 1);
-                return rank <= 0 ? 0 : 4 * rank;
+                return rank <= 0 ? 0 : 24 * rank;
             }
             catch (Exception e)
             {
@@ -189,17 +355,40 @@ namespace TFTV.TFTVIncidents
             return rank <= 0 ? 1f : 1f + (0.10f * rank);
         }
 
+
         internal static int GetComputeHavenAttackWarningLeadHours(GeoLevelController level)
         {
             try
             {
-                if (level?.PhoenixFaction?.Soldiers == null)
-                {
-                    return 0;
+               
+                if(Affinities.AffinityBenefitsChoices.GetGeoscapeBenefitChoice(
+                    level, LeaderSelection.AffinityApproach.Compute)!=2) 
+                { 
+                return 0;
                 }
 
-                int rank = GetActiveGeoscapeRank(level, level.PhoenixFaction.Soldiers.ToList(), LeaderSelection.AffinityApproach.Compute, requiredOption: 2);
-                return rank <= 0 ? 0 : 4 * rank;
+                List<GeoCharacter> soldiers = level.PhoenixFaction.Soldiers.ToList();
+                List<string> rankedOperatives = new List<string>();
+                int bestRosterRank = 0;
+
+                foreach (GeoCharacter soldier in soldiers)
+                {
+                    int rank = GetAffinityRankForApproach(soldier, LeaderSelection.AffinityApproach.Compute);
+                    if (rank <= 0)
+                    {
+                        continue;
+                    }
+
+                    if (rank > bestRosterRank)
+                    {
+                        bestRosterRank = rank;
+                    }
+                }
+
+                int leadHours = bestRosterRank*4;
+
+               
+                return leadHours;
             }
             catch (Exception e)
             {
@@ -235,7 +424,7 @@ namespace TFTV.TFTVIncidents
                 GeoLevelController level = mission.Level;
 
                 TFTVLogger.Always($"{DiagTag} Checking for post-mission recovery benefits... " +
-                    $"level null? {level==null}, squad null: {squad==null}, phoenix won? {!DidPhoenixWin(result, level)}");
+                    $"level null? {level==null}, squad null: {squad==null}, phoenix won? {DidPhoenixWin(result, level)}");
 
                 if (level == null || squad == null || !DidPhoenixWin(result, level))
                 {
@@ -259,6 +448,9 @@ namespace TFTV.TFTVIncidents
                 }
 
                 int explorationRank = GetActiveGeoscapeRank(level, squadSoldiers, LeaderSelection.AffinityApproach.Exploration, requiredOption: 2);
+
+                    TFTVLogger.Always($"{DiagTag} Exploration post-mission recovery rank: {explorationRank}.");
+
                 if (explorationRank > 0 && squad.Soldiers != null)
                 {
                     float staminaAmount = 2f * explorationRank;
@@ -269,6 +461,9 @@ namespace TFTV.TFTVIncidents
                 }
 
                 int machineryRank = GetActiveGeoscapeRank(level, squadSoldiers, LeaderSelection.AffinityApproach.Machinery, requiredOption: 1);
+
+                    TFTVLogger.Always($"{DiagTag} Machinery post-mission recovery rank: {machineryRank}.");
+
                 if (machineryRank > 0 && squad.Vehicles != null)
                 {
                     int repairAmount = 150 * machineryRank;

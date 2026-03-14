@@ -111,12 +111,15 @@ namespace TFTV.TFTVIncidents
             {
                 try
                 {
-                    if (__instance == null || geoEvent?.Context == null || pagingEvent)
+                    bool isIncidentSuccess = IsIncidentSuccessEvent(geoEvent != null ? geoEvent.EventID : null);
+                    Transform parent = GetSummaryParent(__instance);
+
+                    if (parent != null && (!isIncidentSuccess || geoEvent?.Context == null))
                     {
-                        return;
+                        ClearInjectedSummaryUI(parent);
                     }
 
-                    if (!IsIncidentSuccessEvent(geoEvent.EventID))
+                    if (__instance == null || geoEvent?.Context == null || pagingEvent || !isIncidentSuccess)
                     {
                         return;
                     }
@@ -137,12 +140,15 @@ namespace TFTV.TFTVIncidents
             {
                 try
                 {
-                    if (__instance == null || geoEvent?.Context == null)
+                    bool isIncidentSuccess = IsIncidentSuccessEvent(geoEvent != null ? geoEvent.EventID : null);
+                    Transform parent = GetSummaryParent(__instance);
+
+                    if (parent != null && (!isIncidentSuccess || geoEvent?.Context == null))
                     {
-                        return;
+                        ClearInjectedSummaryUI(parent);
                     }
 
-                    if (!IsIncidentSuccessEvent(geoEvent.EventID))
+                    if (__instance == null || geoEvent?.Context == null || !isIncidentSuccess)
                     {
                         return;
                     }
@@ -156,9 +162,15 @@ namespace TFTV.TFTVIncidents
             }
         }
 
-        private static void TryRenderSummary(UIModuleSiteEncounters module, GeoscapeEvent geoEvent)
+        private static Transform GetSummaryParent(UIModuleSiteEncounters module)
         {
-            Transform parent = module.SiteEncounterTextContainer != null ? module.SiteEncounterTextContainer.transform : null;
+            return module?.SiteEncounterTextContainer != null
+                ? module.SiteEncounterTextContainer.transform
+                : null;
+        }
+
+        private static void ClearInjectedSummaryUI(Transform parent)
+        {
             if (parent == null)
             {
                 return;
@@ -167,6 +179,17 @@ namespace TFTV.TFTVIncidents
             RemoveExistingSummary(parent);
             RemoveExistingAffinityRewardLine(parent);
             RemoveExistingPersonnelRewardLine(parent);
+        }
+
+        private static void TryRenderSummary(UIModuleSiteEncounters module, GeoscapeEvent geoEvent)
+        {
+            Transform parent = GetSummaryParent(module);
+            if (parent == null)
+            {
+                return;
+            }
+
+            ClearInjectedSummaryUI(parent);
 
             int siteId = geoEvent.Context.Site?.SiteId ?? -1;
             int vehicleId = geoEvent.Context.Vehicle?.VehicleID ?? -1;
@@ -197,9 +220,25 @@ namespace TFTV.TFTVIncidents
                 $"Leading operative: {data.LeaderName}";
 
             CreateOrUpdateSummaryPanel(parent, module, summaryBody);
-
             AddPersonnelToRewards(module, parent, data);
             AddAffinityToRewards(module, parent, data);
+            ConsumeSummary(data);
+        }
+
+        private static void ConsumeSummary(SummaryData data)
+        {
+            if (data == null)
+            {
+                return;
+            }
+
+            string exactKey = BuildExactKey(data.EventId, data.SiteId, data.VehicleId);
+            string siteKey = BuildSiteKey(data.EventId, data.SiteId);
+
+            SummaryByExactKey.Remove(exactKey);
+            SummaryBySiteKey.Remove(siteKey);
+
+            TFTVLogger.Always($"{DiagTag} CONSUME event={data.EventId} site={data.SiteId} vehicle={data.VehicleId} keys exact={exactKey} site={siteKey}");
         }
 
         private static void AddAffinityToRewards(UIModuleSiteEncounters module, Transform rewardContainer, SummaryData data)
@@ -655,7 +694,7 @@ namespace TFTV.TFTVIncidents
             {
                 RectTransform descRect = desc.rectTransform;
                 float leftEdgeX = descRect.anchoredPosition.x - (descRect.rect.width * descRect.pivot.x);
-                rootRect.anchoredPosition = new Vector2(leftEdgeX - gapFromEventText, descRect.anchoredPosition.y+800);
+                rootRect.anchoredPosition = new Vector2(leftEdgeX - gapFromEventText, descRect.anchoredPosition.y+600);
             }
             
         }

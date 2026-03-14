@@ -317,6 +317,8 @@ namespace TFTV
                     if (TFTVAircraftReworkMain.AircraftReworkOn)
                     {
                         TFTVIncidents.Roll.TryRollIncidentOnSchedule(__instance.GeoLevel);
+                       // TFTVLogger.Always($"[GeoAlienFaction.UpdateFactionHourly] Checking for scheduled incidents. Current time: {__instance.GeoLevel.Timing.Now.DateTime}");
+                        TFTVIncidents.AdvanceWarningHavenAttack.RefreshForCurrentHour(__instance.GeoLevel);
                     }
                 }
                 catch (Exception e)

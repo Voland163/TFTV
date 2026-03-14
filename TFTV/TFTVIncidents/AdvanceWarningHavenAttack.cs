@@ -1,8 +1,10 @@
 ﻿using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -11,6 +13,42 @@ namespace TFTV.TFTVIncidents
 {
     internal class AdvanceWarningHavenAttack
     {
+        private const string DiagTag = "[Incidents][ComputeWarning]";
+
+        private static string GetSiteName(GeoSite site)
+        {
+            if (site == null)
+            {
+                return "UNKNOWN_SITE";
+            }
+
+            return string.IsNullOrEmpty(site.LocalizedSiteName) ? site.name : site.LocalizedSiteName;
+        }
+
+        internal static void RefreshForCurrentHour(GeoLevelController level)
+        {
+            try
+            {
+                if (level == null || !TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                {
+                    return;
+                }
+
+                int leadHours = AffinityGeoscapeEffects.GetComputeHavenAttackWarningLeadHours(level);
+
+               // TFTVLogger.Always($"{DiagTag} RefreshForCurrentHour: leadHours={leadHours}");
+
+                if (leadHours > 0)
+                {
+                    HavenAttackRiskService.RefreshForCurrentHour(level, leadHours);
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
         internal enum RiskWindow
         {
             None,
@@ -21,10 +59,10 @@ namespace TFTV.TFTVIncidents
 
         internal static class HavenAttackRiskService
         {
-            private const float RebuildIntervalSeconds = 1f;
-
             private static readonly Dictionary<int, RiskWindow> SiteRiskById = new Dictionary<int, RiskWindow>();
-            private static float _lastRebuildAtRealtime = -9999f;
+            private static int _currentLeadHours;
+
+            public static int CurrentLeadHours => _currentLeadHours;
 
             public static RiskWindow GetRisk(GeoSite site)
             {
@@ -36,34 +74,29 @@ namespace TFTV.TFTVIncidents
                 return SiteRiskById.TryGetValue(site.SiteId, out RiskWindow risk) ? risk : RiskWindow.None;
             }
 
-            public static void RebuildIfNeeded(GeoSite anySite, int leadHours)
+            public static void RefreshForCurrentHour(GeoLevelController level, int leadHours)
             {
-                if (anySite?.GeoLevel?.AlienFaction == null)
+                try
                 {
-                    return;
+                    _currentLeadHours = leadHours;
+                    Rebuild(level.AlienFaction, leadHours, level.Timing.Now.ToString());
                 }
-
-                if (leadHours <= 0)
+                catch (Exception e)
                 {
-                    SiteRiskById.Clear();
-                    return;
+                    TFTVLogger.Error(e);
                 }
-
-                if (Time.realtimeSinceStartup - _lastRebuildAtRealtime < RebuildIntervalSeconds)
-                {
-                    return;
-                }
-
-                _lastRebuildAtRealtime = Time.realtimeSinceStartup;
-                Rebuild(anySite.GeoLevel.AlienFaction, leadHours);
             }
 
-            private static void Rebuild(GeoAlienFaction alienFaction, int leadHours)
+            private static void Rebuild(GeoAlienFaction alienFaction, int leadHours, string currentTime)
             {
                 SiteRiskById.Clear();
 
-                // Track the earliest base timer for each haven.
-                var minCounterByHaven = new Dictionary<GeoSite, int>();
+                List<string> rebuildDetails = new List<string>
+                {
+                    $"rebuild start; time={currentTime}; leadHours={leadHours}; alienBases={(alienFaction.Bases != null ? alienFaction.Bases.Count() : 0)}"
+                };
+
+                Dictionary<GeoSite, int> minCounterByHaven = new Dictionary<GeoSite, int>();
 
                 foreach (GeoAlienBase alienBase in alienFaction.Bases)
                 {
@@ -73,13 +106,14 @@ namespace TFTV.TFTVIncidents
                     }
 
                     int counter = alienBase.HavenAttackCounter;
-                    foreach (GeoSite site in alienBase.SitesInRange)
-                    {
-                        if (site == null || site.Type != GeoSiteType.Haven)
-                        {
-                            continue;
-                        }
+                    List<GeoSite> havensInRange = alienBase.SitesInRange != null
+                        ? alienBase.SitesInRange.Where(site => site != null && site.Type == GeoSiteType.Haven).ToList()
+                        : new List<GeoSite>();
 
+                    rebuildDetails.Add($"base={alienBase.name}; counter={counter}; havensInRange=[{string.Join(", ", havensInRange.Select(GetSiteName))}]");
+
+                    foreach (GeoSite site in havensInRange)
+                    {
                         if (!minCounterByHaven.TryGetValue(site, out int oldCounter) || counter < oldCounter)
                         {
                             minCounterByHaven[site] = counter;
@@ -91,29 +125,44 @@ namespace TFTV.TFTVIncidents
                 {
                     GeoSite havenSite = kvp.Key;
 
-                    // Mirror game-side attackability checks for a meaningful "at risk" list.
                     if (!alienFaction.CanSiteBeAttacked(havenSite))
                     {
+                        rebuildDetails.Add($"haven={GetSiteName(havenSite)}; minCounter={kvp.Value}; skipped=CanSiteBeAttacked false");
                         continue;
                     }
 
                     GeoHaven haven = havenSite.GetComponent<GeoHaven>();
-                    if (haven == null || haven.Zones == null || haven.Zones.Count() == 0)
+                    if (haven == null)
                     {
+                        rebuildDetails.Add($"haven={GetSiteName(havenSite)}; minCounter={kvp.Value}; skipped=no GeoHaven");
+                        continue;
+                    }
+
+                    if (haven.Zones == null || haven.Zones.Count() == 0)
+                    {
+                        rebuildDetails.Add($"haven={GetSiteName(havenSite)}; minCounter={kvp.Value}; skipped=no zones");
                         continue;
                     }
 
                     RiskWindow risk = ToRiskWindow(kvp.Value, leadHours);
+                    rebuildDetails.Add($"haven={GetSiteName(havenSite)}; minCounter={kvp.Value}; risk={risk}");
+
                     if (risk != RiskWindow.None)
                     {
                         SiteRiskById[havenSite.SiteId] = risk;
                     }
                 }
+
+                rebuildDetails.Add($"activeWarnings=[{string.Join(", ", SiteRiskById.Select(kvp => $"{kvp.Key}:{kvp.Value}"))}]");
+
+                foreach (string detail in rebuildDetails)
+                {
+                    TFTVLogger.Always(detail);
+                }
             }
 
             private static RiskWindow ToRiskWindow(int hoursUntilAttackRoll, int leadHours)
             {
-
                 if (hoursUntilAttackRoll > leadHours)
                 {
                     return RiskWindow.None;
@@ -167,9 +216,6 @@ namespace TFTV.TFTVIncidents
                 {
                     markerRoot = new GameObject(MarkerRootName);
                     markerRoot.transform.SetParent(iconParent, false);
-                    markerRoot.transform.localPosition = new Vector3(0f, 0.65f, 0f);
-                    markerRoot.transform.localScale = Vector3.one * 0.1f;
-                    markerRoot.transform.localRotation = Quaternion.identity;
 
                     textMesh = markerRoot.AddComponent<TextMesh>();
                     textMesh.anchor = TextAnchor.MiddleCenter;
@@ -182,6 +228,9 @@ namespace TFTV.TFTVIncidents
                     markerRoot = existing.gameObject;
                     textMesh = markerRoot.GetComponent<TextMesh>() ?? markerRoot.AddComponent<TextMesh>();
                 }
+
+                AlignMarkerTransform(controller, markerRoot.transform);
+                EnsureTextVisibility(textMesh);
 
                 switch (risk)
                 {
@@ -199,12 +248,70 @@ namespace TFTV.TFTVIncidents
                         break;
                 }
             }
+
+            private static void AlignMarkerTransform(GeoSiteVisualsController controller, Transform marker)
+            {
+                Transform template = null;
+                if (controller.SoldiersAvailableCountText != null)
+                {
+                    template = controller.SoldiersAvailableCountText.transform;
+                }
+                else if (controller.SiteScannerProgressText != null)
+                {
+                    template = controller.SiteScannerProgressText.transform;
+                }
+                else if (controller.BaseIDText != null)
+                {
+                    template = controller.BaseIDText.transform;
+                }
+
+                marker.localPosition = template != null
+                    ? template.localPosition + new Vector3(0f, 0.14f, 0f)
+                    : new Vector3(0f, 0.2f, 0f);
+
+                marker.localRotation = template != null ? template.localRotation : Quaternion.identity;
+
+                float scale = template != null ? Mathf.Max(0.14f, Mathf.Abs(template.localScale.x) * 2.4f) : 0.18f;
+                marker.localScale = new Vector3(scale, scale, scale);
+
+                FaceMarkerTowardsCamera(marker);
+            }
+
+            private static void EnsureTextVisibility(TextMesh textMesh)
+            {
+                textMesh.characterSize = Mathf.Max(textMesh.characterSize, 0.14f);
+                textMesh.fontSize = Mathf.Max(textMesh.fontSize, 90);
+                textMesh.fontStyle = FontStyle.Bold;
+
+                MeshRenderer meshRenderer = textMesh.GetComponent<MeshRenderer>();
+                if (meshRenderer != null)
+                {
+                    meshRenderer.enabled = true;
+                }
+            }
+
+            private static void FaceMarkerTowardsCamera(Transform marker)
+            {
+                Camera mainCamera = Camera.main;
+                if (mainCamera == null)
+                {
+                    return;
+                }
+
+                Vector3 viewDirection = mainCamera.transform.position - marker.position;
+                if (viewDirection.sqrMagnitude < 0.0001f)
+                {
+                    return;
+                }
+
+                marker.rotation = Quaternion.LookRotation(viewDirection.normalized, Vector3.up) * Quaternion.Euler(0f, 180f, 0f);
+            }
         }
 
         [HarmonyPatch(typeof(GeoSiteVisualsController), "Update")]
         internal static class GeoSiteVisualsController_Update_Patch
         {
-            private static void Postfix(GeoSiteVisualsController __instance)
+            public static void Postfix(GeoSiteVisualsController __instance)
             {
                 GeoSite site = __instance.Site;
                 if (site == null || site.Type != GeoSiteType.Haven)
@@ -212,18 +319,11 @@ namespace TFTV.TFTVIncidents
                     return;
                 }
 
-                int leadHours = AffinityGeoscapeEffects.GetComputeHavenAttackWarningLeadHours(site.GeoLevel);
-                if (leadHours <= 0)
-                {
-                    HavenAttackRiskVisuals.RefreshMarker(__instance, RiskWindow.None);
-                    return;
-                }
+                int leadHours = HavenAttackRiskService.CurrentLeadHours;
+                RiskWindow risk = leadHours > 0 ? HavenAttackRiskService.GetRisk(site) : RiskWindow.None;
 
-                HavenAttackRiskService.RebuildIfNeeded(site, leadHours);
-                RiskWindow risk = HavenAttackRiskService.GetRisk(site);
                 HavenAttackRiskVisuals.RefreshMarker(__instance, risk);
             }
         }
-
     }
 }

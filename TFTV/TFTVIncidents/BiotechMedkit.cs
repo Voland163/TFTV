@@ -58,20 +58,14 @@ namespace TFTV.TFTVIncidents
             {
                 if (!(parameter is TacticalAbilityTarget tacticalAbilityTarget) || !(tacticalAbilityTarget.Actor is TacticalActor))
                 {
-                    //  TFTVLogger.Always($"{DiagTag} Activate skipped: invalid parameter for {__instance?.HealAbilityDef?.name ?? "<null>"}.");
                     return;
                 }
 
                 TacticalActor healer = __instance.TacticalActor;
-                TacticalActor target = (TacticalActor)((TacticalAbilityTarget)parameter).Actor;
+                TacticalActor target = (TacticalActor)tacticalAbilityTarget.Actor;
                 Equipment equipment = __instance.GetSource<Equipment>() ?? healer?.Equipments?.SelectedEquipment;
 
-                /*  TFTVLogger.Always(
-                      $"{DiagTag} Activate: ability={__instance?.HealAbilityDef?.name ?? "<null>"}, " +
-                      $"healer={healer?.name ?? "<null>"}, target={target?.name ?? "<null>"}, " +
-                      $"equipment={GetEquipmentDebugName(equipment)}.");*/
-
-                ApplyBiotechHealingBonus(healer, target, equipment);
+                ApplyAffinityHealingBonuses(healer, target, equipment);
             }
 
             [HarmonyPostfix]
@@ -80,20 +74,23 @@ namespace TFTV.TFTVIncidents
             {
                 if (__result || healer == null || targetActor == null)
                 {
-                    /* TFTVLogger.Always(
-                         $"{DiagTag} ShouldReturnTarget skipped: baseResult={__result}, " +
-                         $"healer={healer?.name ?? "<null>"}, target={targetActor?.name ?? "<null>"}.");*/
                     return;
                 }
 
                 Equipment equipment = __instance.GetSource<Equipment>() ?? healer.Equipments.SelectedEquipment;
-                /* TFTVLogger.Always(
-                     $"{DiagTag} ShouldReturnTarget: ability={__instance?.HealAbilityDef?.name ?? "<null>"}, " +
-                     $"healer={healer?.name ?? "<null>"}, target={targetActor?.name ?? "<null>"}, " +
-                     $"equipment={GetEquipmentDebugName(equipment)}.");*/
+                __result = CanApplyAffinityHealingBonuses(healer, targetActor, equipment);
+            }
 
-                __result = CanApplyBiotechHealingBonus(healer, targetActor, equipment);
-                // TFTVLogger.Always($"{DiagTag} ShouldReturnTarget result: {__result}.");
+            private static void ApplyAffinityHealingBonuses(TacticalActor healer, TacticalActor targetActor, Equipment equipment)
+            {
+                ApplyBiotechHealingBonus(healer, targetActor, equipment);
+                ApplyMachineryHealingBonus(healer, targetActor);
+            }
+
+            private static bool CanApplyAffinityHealingBonuses(TacticalActor healer, TacticalActor targetActor, Equipment equipment)
+            {
+                return CanApplyBiotechHealingBonus(healer, targetActor, equipment)
+                    || CanApplyMachineryHealingBonus(healer, targetActor);
             }
 
             private static void ApplyBiotechHealingBonus(TacticalActor healer, TacticalActor targetActor, Equipment equipment)

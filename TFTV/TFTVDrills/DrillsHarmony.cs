@@ -62,7 +62,7 @@ namespace TFTV.TFTVDrills
                                 if (TFTVNewGameOptions.NewTrainingFacilities)
                                 {
                                     __result = 7 - controller.CurrentDifficultyLevel.Order;
-                                    TFTVLogger.Always($"ExperienceFacilityComponent get_SkillpointsOutput modified to {__result}");
+                                    
                                 }
                             }
                         }

@@ -385,60 +385,92 @@ namespace TFTV.TFTVIncidents
                 }
             }
 
-            internal static void SetTacticalBenefitChoice(
-                GeoLevelController level,
-                LeaderSelection.AffinityApproach approach,
-                int option)
-            {
-                try
-                {
-                    int normalized = option <= 1 ? 1 : 2;
-                    TacticalBenefitChoiceCache[approach] = normalized;
+            private static void CacheTacticalBenefitChoice(
+    LeaderSelection.AffinityApproach approach,
+    int option)
+{
+    int normalized = NormalizeOption(option);
+    TacticalBenefitChoiceCache[approach] = normalized;
+    TacticalBenefitChoiceSnapshot[approach] = normalized;
+}
 
-                    if (level?.EventSystem != null)
-                    {
-                        level.EventSystem.SetVariable(GetTacticalBenefitVariableName(approach), normalized);
-                    }
+internal static void SetTacticalBenefitChoice(
+    GeoLevelController level,
+    LeaderSelection.AffinityApproach approach,
+    int option)
+{
+    try
+    {
+        int normalized = NormalizeOption(option);
+        CacheTacticalBenefitChoice(approach, normalized);
 
-                    if (approach == LeaderSelection.AffinityApproach.Machinery)
-                    {
-                        MachineryRepairDefs.ApplyChoice(normalized);
-                    }
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
+        if (level?.EventSystem != null)
+        {
+            level.EventSystem.SetVariable(GetTacticalBenefitVariableName(approach), normalized);
+        }
 
-            internal static int GetTacticalBenefitChoice(
-                GeoLevelController level,
-                LeaderSelection.AffinityApproach approach)
-            {
-                try
-                {
-                    if (TacticalBenefitChoiceCache.TryGetValue(approach, out int cached) && (cached == 1 || cached == 2))
-                    {
-                        return cached;
-                    }
+        if (approach == LeaderSelection.AffinityApproach.Machinery)
+        {
+            MachineryRepairDefs.ApplyChoice(normalized);
+        }
+    }
+    catch (Exception e)
+    {
+        TFTVLogger.Error(e);
+    }
+}
 
-                    int stored = 0;
-                    if (level?.EventSystem != null)
-                    {
-                        stored = level.EventSystem.GetVariable(GetTacticalBenefitVariableName(approach));
-                    }
+internal static int GetTacticalBenefitChoice(
+    GeoLevelController level,
+    LeaderSelection.AffinityApproach approach)
+{
+    try
+    {
+        if (TacticalBenefitChoiceCache.TryGetValue(approach, out int cached) && (cached == 1 || cached == 2))
+        {
+            TacticalBenefitChoiceSnapshot[approach] = cached;
+            return cached;
+        }
 
-                    int normalized = (stored == 2) ? 2 : 1;
-                    TacticalBenefitChoiceCache[approach] = normalized;
-                    return normalized;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    return 1;
-                }
-            }
+        int stored = 0;
+        if (level?.EventSystem != null)
+        {
+            stored = level.EventSystem.GetVariable(GetTacticalBenefitVariableName(approach));
+        }
 
+        int normalized = NormalizeOption(stored);
+        CacheTacticalBenefitChoice(approach, normalized);
+        return normalized;
+    }
+    catch (Exception e)
+    {
+        TFTVLogger.Error(e);
+        return 1;
+    }
+}
+
+internal static int GetTacticalBenefitChoiceFromSnapshot(LeaderSelection.AffinityApproach approach)
+{
+    try
+    {
+        if (TacticalBenefitChoiceSnapshot.TryGetValue(approach, out int option))
+        {
+            return NormalizeOption(option);
+        }
+
+        if (TacticalBenefitChoiceCache.TryGetValue(approach, out int cached))
+        {
+            return NormalizeOption(cached);
+        }
+
+        return 1;
+    }
+    catch (Exception e)
+    {
+        TFTVLogger.Error(e);
+        return 1;
+    }
+}
             internal static void CaptureTacticalBenefitChoiceSnapshot(GeoLevelController level)
             {
                 try
@@ -461,21 +493,6 @@ namespace TFTV.TFTVIncidents
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
-                }
-            }
-
-            internal static int GetTacticalBenefitChoiceFromSnapshot(LeaderSelection.AffinityApproach approach)
-            {
-                try
-                {
-                    return TacticalBenefitChoiceSnapshot.TryGetValue(approach, out int option)
-                        ? NormalizeOption(option)
-                        : 1;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                    return 1;
                 }
             }
 
@@ -699,7 +716,7 @@ namespace TFTV.TFTVIncidents
 
                     case LeaderSelection.AffinityApproach.Occult:
                         return option == 1
-                            ? LocalizeAndFormat(KeyOccultGeoOpt1, 4 * r)
+                            ? LocalizeAndFormat(KeyOccultGeoOpt1, 24 * r)
                             : LocalizeAndFormat(KeyOccultGeoOpt2, 15 * r);
 
                     case LeaderSelection.AffinityApproach.Biotech:
@@ -734,7 +751,7 @@ namespace TFTV.TFTVIncidents
                     case LeaderSelection.AffinityApproach.PsychoSociology:
                         return option == 1
                             ? LocalizeAndFormat(KeyPsychoTacOpt1, 2 * r)
-                              : LocalizeAndFormat(KeyPsychoTacOpt2, 1);
+                            : LocalizeAndFormat(KeyPsychoTacOpt2, 50 * r);
 
                     case LeaderSelection.AffinityApproach.Exploration:
                         return option == 1
@@ -744,7 +761,7 @@ namespace TFTV.TFTVIncidents
                     case LeaderSelection.AffinityApproach.Occult:
                         return option == 1
                             ? LocalizeAndFormat(KeyOccultTacOpt1, 5 * r)
-                              : LocalizeAndFormat(KeyOccultTacOpt2, 50);
+                            : LocalizeAndFormat(KeyOccultTacOpt2, 50);
 
                     case LeaderSelection.AffinityApproach.Biotech:
                         return option == 1
@@ -759,10 +776,23 @@ namespace TFTV.TFTVIncidents
                     case LeaderSelection.AffinityApproach.Compute:
                         return option == 1
                             ? LocalizeAndFormat(KeyComputeTacOpt1, 3 * r, 10 * r)
-                            : LocalizeAndFormat(KeyComputeTacOpt2, 10 * r);
+                            : LocalizeAndFormat(KeyComputeTacOpt2, GetComputeTacticalOption2PercentText(r), 10 * r);
 
                     default:
                         return string.Empty;
+                }
+            }
+
+            private static string GetComputeTacticalOption2PercentText(int rank)
+            {
+                switch (Math.Max(1, Math.Min(3, rank)))
+                {
+                    case 1:
+                        return "33";
+                    case 2:
+                        return "66";
+                    default:
+                        return "100";
                 }
             }
 

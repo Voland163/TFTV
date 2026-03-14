@@ -1,11 +1,10 @@
 ﻿using Base;
 using Base.Core;
-using Base.Defs;
+using Base.Levels;
 using Base.Serialization.General;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
-using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
@@ -13,7 +12,6 @@ using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.Equipments;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -307,7 +305,7 @@ namespace TFTV.TFTVBaseRework
         }
 
 
-      
+
 
 
         /// <summary>
@@ -849,17 +847,65 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoPhoenixFaction), nameof(GeoPhoenixFaction.RegenerateNakedRecruits))]
         internal static class GeoPhoenixFaction_RegenerateNakedRecruits_PersonnelSync
         {
-            private static void Postfix(GeoPhoenixFaction __instance, ref TimeUnit ____lastNakedRecruitRefresh)
+
+            private static int GetTargetCount(GameDifficultyLevelDef diff)
             {
+                int order = diff.Order;
 
-                if (!BaseReworkUtils.BaseReworkEnabled)
+                if (order <= 2) return 5;   // Story/Rookie
+                if (order <= 3) return 4;   // Veteran
+                if (order <= 4) return 3;   // Hero
+                return 2;                   // Legend/Eldritch
+            }
+
+
+            private static void Postfix(GeoPhoenixFaction __instance, ref TimeUnit ____lastNakedRecruitRefresh, ref Dictionary<GeoUnitDescriptor, ResourcePack> ____nakedRecruits)
+            {
+                try
                 {
-                    return;
+
+                    if (!BaseReworkUtils.BaseReworkEnabled)
+                    {
+                        return;
+                    }
+
+                    TFTVLogger.Always($"GeoPhoenixFaction.RegenerateNakedRecruits running");
+
+                    GeoLevelController controller = __instance.GeoLevel;
+
+                    int target = GetTargetCount(controller.CurrentDifficultyLevel);
+
+                    // Add recruits if below target
+                    if (____nakedRecruits.Count < target)
+                    {
+                        var context = controller.CharacterGenerator.GenerateCharacterGeneratorContext(__instance);
+
+                        int safety = 0;
+                        while (____nakedRecruits.Count < target && safety++ < 50)
+                        {
+                            var unit = controller.CharacterGenerator.GenerateRandomUnit(context);
+                            controller.CharacterGenerator.ApplyRecruitDifficultyParameters(unit);
+                            var cost = __instance.GenerateNakedRecruitsCost();
+
+                            // Avoid key collisions if any
+                            if (!____nakedRecruits.ContainsKey(unit))
+                            {
+                                ____nakedRecruits.Add(unit, cost);
+                            }
+                        }
+                    }
+                    // Remove recruits if above target
+                    else if (____nakedRecruits.Count > target)
+                    {
+                        int toRemove = ____nakedRecruits.Count - target;
+                        foreach (var key in ____nakedRecruits.Keys.Take(toRemove).ToList())
+                        {
+                            ____nakedRecruits.Remove(key);
+                        }
+                    }
+
+                    SyncFromNakedRecruits(__instance);
                 }
-
-                TFTVLogger.Always($"GeoPhoenixFaction.RegenerateNakedRecruits running");
-
-                try { SyncFromNakedRecruits(__instance); }
                 catch (Exception e) { TFTVLogger.Error(e); }
             }
         }

@@ -198,29 +198,6 @@ namespace TFTV.TFTVBaseRework
         }
 
 
-
-
-        [HarmonyPatch(typeof(GeoPhoenixFaction), "EvaluateArcheologyState")]
-        internal static class GeoPhoenixFaction_EvaluateArcheologyState_patch
-        {
-
-            public static void Prefix(GeoPhoenixFaction __instance, List<GeoPhoenixBase> ____bases)
-            {
-                try
-                {
-                TFTVLogger.Always($"[GeoPhoenixFaction.EvaluateArcheologyState] Evaluating archeology state, bases null?: {____bases==null}");
-
-                   
-                   
-                }
-                catch (Exception ex)
-                {
-                    TFTVLogger.Error(ex);
-                    throw;
-                }
-            }
-        }   
-
         internal static class PhoenixBaseVisitFlow
         {
 
@@ -486,6 +463,7 @@ namespace TFTV.TFTVBaseRework
 
                 site.RefreshVisuals();
                 BaseConstructionVisuals.RefreshPendingConstructionVisuals(level);
+                global::TFTV.TFTVAAAgendaTracker.ExtendedAgendaTracker.RefreshCustomSiteTracker(site);
             }
 
             internal static NextUpdate CompletePendingAction(GeoSite site, GeoPhoenixFaction faction, PendingBaseAction action)
@@ -521,6 +499,7 @@ namespace TFTV.TFTVBaseRework
                     site.ExpiringTimerAt = TimeUnit.Zero;
                     site.RefreshVisuals();
                     BaseConstructionVisuals.RefreshPendingConstructionVisuals(site.GeoLevel);
+                    global::TFTV.TFTVAAAgendaTracker.ExtendedAgendaTracker.RefreshCustomSiteTracker(site);
                     return NextUpdate.StopScheduler;
                 }
                 catch (Exception ex)

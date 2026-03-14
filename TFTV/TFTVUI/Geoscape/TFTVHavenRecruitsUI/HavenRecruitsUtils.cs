@@ -1,15 +1,12 @@
-﻿using Epic.OnlineServices.RTCAudio;
-using HarmonyLib;
+﻿using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.UI;
-using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
@@ -98,11 +95,14 @@ namespace TFTV.TFTVHavenRecruitsUI
 
                 GeoPhoenixFaction geoPhoenixFaction = faction.GeoLevel.PhoenixFaction; // player faction wrapper
                                                                                        // All sites with havens, owned by factionDef, revealed to player
-                List<GeoHaven> havens = faction.Havens.Where(s => s != null 
-                && s.AvailableRecruit != null 
+                List<GeoHaven> havens = faction.Havens.Where(s => s != null
+                && s.AvailableRecruit != null
                 && s.Site.GetInspected(geoPhoenixFaction)
                 && s.Leader.CanRecruitWithFaction(geoPhoenixFaction)
-                && s.Zones.Any((GeoHavenZone z) => z.Def.ProvidesRecruitment && z.IsOperational)
+                && s.Zones.Any((GeoHavenZone z) =>
+                    z?.Def != null
+                    && (z.Def.ProvidesRecruitment || z.Def.ProvidesEliteRecruitment)
+                    && (z.IsOperational || z.State == GeoHavenZoneState.Building))
                ).ToList();
 
                 foreach (var haven in havens)
@@ -377,11 +377,11 @@ namespace TFTV.TFTVHavenRecruitsUI
         {
             if (recruit?.ArmorItems == null)
             {
-               // TFTVLogger.Always($"{recruit.Identity?.Name} recruit.Equipment is null");
+                // TFTVLogger.Always($"{recruit.Identity?.Name} recruit.Equipment is null");
                 yield break;
             }
 
-          //  TFTVLogger.Always($"{recruit.Identity?.Name} recruit.Equipment is not null");
+            //  TFTVLogger.Always($"{recruit.Identity?.Name} recruit.Equipment is not null");
 
             foreach (var item in recruit.ArmorItems)
             {
@@ -389,7 +389,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                 {
                     continue;
                 }
-              //  TFTVLogger.Always($"item= {item.name}");
+                //  TFTVLogger.Always($"item= {item.name}");
                 yield return item;
             }
         }

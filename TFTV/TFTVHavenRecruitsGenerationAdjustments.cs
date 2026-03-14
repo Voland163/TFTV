@@ -5,6 +5,7 @@ using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View.ViewControllers.HavenDetails;
 using PhoenixPoint.Tactical.Entities;
 using System;
 using System.Collections.Generic;
@@ -142,19 +143,48 @@ namespace TFTV
         private static readonly FieldInfo CanGenerateRecruitField = AccessTools.Field(typeof(HavenZonesStats), "<CanGenerateRecruit>k__BackingField");
         private static readonly FieldInfo CanRecruitField = AccessTools.Field(typeof(HavenZonesStats), "<CanRecruit>k__BackingField");
 
+        [HarmonyPatch(typeof(HavenFacilityItemController), nameof(HavenFacilityItemController.SetFacilityItem))]
+        internal static class HavenFacilityItemControllerRecruitmentPatch
+        {
+            private static readonly MethodInfo SetFacilityInteractionsMethod = AccessTools.Method(typeof(HavenFacilityItemController), "SetFacilityInteractions");
+
+            private static void Postfix(HavenFacilityItemController __instance, GeoSite site, GeoHavenZone zone)
+            {
+                if (zone == null || zone.State != GeoHavenZoneState.Building || zone.Def == null)
+                {
+                    return;
+                }
+
+                if (!zone.Def.ProvidesRecruitment && !zone.Def.ProvidesEliteRecruitment)
+                {
+                    return;
+                }
+
+                if (site?.ActiveMission is GeoHavenDefenseMission)
+                {
+                    return;
+                }
+
+                SetFacilityInteractionsMethod?.Invoke(__instance, null);
+            }
+        }
+
+
+        private static bool HasRecruitmentWhileUpgrading(GeoHaven haven)
+        {
+            return haven?.Zones != null && haven.Zones.Any(zone =>
+                zone?.Def != null
+                && (zone.Def.ProvidesRecruitment || zone.Def.ProvidesEliteRecruitment)
+                && (zone.IsOperational || zone.State == GeoHavenZoneState.Building));
+        }
+
         [HarmonyPatch(typeof(HavenZonesStats), nameof(HavenZonesStats.UpdateZonesStats))]
         internal static class HavenZonesStats_UpdateZonesStats_Patch
         {
             private static void Postfix(HavenZonesStats __instance)
             {
                 GeoHaven haven = HavenZonesStatsHavenField?.GetValue(__instance) as GeoHaven;
-                if (haven == null)
-                {
-                    return;
-                }
-
-                bool hasEliteZoneBuilding = haven.Zones.Any(zone => zone.Def.ProvidesEliteRecruitment && zone.State == GeoHavenZoneState.Building);
-                if (!hasEliteZoneBuilding)
+                if (haven == null || !HasRecruitmentWhileUpgrading(haven))
                 {
                     return;
                 }

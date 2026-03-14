@@ -233,19 +233,22 @@ namespace TFTV
             {
                 TFTVLogger.Always($"# Aircraft modules in tactical: {TFTVAircraftReworkMain.InternalData.ModulesInTactical.Where(b => b > 0).Count()}\n" +
                     $"{AircraftReworkTacticalModules.ReportModulesPresent()}");
+
+                TFTVDrills.DrillsHarmony.NeuralLink.RefreshNeuralLinkStatus();
+                AircraftReworkTacticalModules.HeliosStatisChamber.ImplementVestBuff();
+                AircraftReworkTacticalModules.GroundAttackWeapon.ImplementGroundAttackWeaponModule(Controller);
+                
             }
 
-            AircraftReworkTacticalModules.HeliosStatisChamber.ImplementVestBuff();
-            AircraftReworkTacticalModules.GroundAttackWeapon.ImplementGroundAttackWeaponModule(Controller);
+        
 
-            TFTVDrills.DrillsHarmony.NeuralLink.RefreshNeuralLinkStatus();
+          
 
             TFTVLogger.Always("Tactical start completed");
 
             TFTVNJQuestline.IntroMission.RunOnTacticalStart(Controller);
 
-            TFTVIncidents.MachineryRepairDefs.GrantRankAbilitiesOnMissionStart(Controller);
-            TFTVIncidents.AffinityTacticalEffects.ComputeTacticalBenefits.ApplyMissionStartBenefits(Controller);
+           
         }
 
         /// <summary>
@@ -513,7 +516,21 @@ namespace TFTV
                         TFTVVoidOmens.VO5TurnHostileCivviesFriendly(Controller);
                         TFTVBaseDefenseTactical.Map.FirstTurnBaseDefenseDeployment(Controller);
                         TFTVNJQuestline.IntroMission.MissionStartChanges.TurnNeutralGruntsOverToNJAndApplyMCStatus(Controller);
-                        AircraftReworkTacticalModules.FirstTurn.ImplementModuleEffectsOnFirstTurn(Controller);
+
+                        if (TFTVAircraftReworkMain.AircraftReworkOn)
+                        {
+
+                            AircraftReworkTacticalModules.FirstTurn.ImplementModuleEffectsOnFirstTurn(Controller);
+                        }
+
+                        if (TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                        {
+                            TFTVIncidents.Affinities.AffinityBenefitsChoices.RefreshTacticalAbilityDescriptionsFromSnapshot();
+                            TFTVIncidents.MachineryRepairDefs.GrantRankAbilitiesOnMissionStart(Controller);
+                            TFTVIncidents.AffinityTacticalEffects.ComputeTacticalBenefits.ApplyMissionStartBenefits(Controller);
+                            TFTVIncidents.AffinityTacticalEffects.ExplorationTacticalBenefits.ApplyHavenDefenseMissionStartBenefits(Controller);
+                        }
+
                         //  TFTVBaseDefenseTactical.ModifyObjectives(Controller.TacMission.MissionData.MissionType);
                         TurnZeroMethodsExecuted = true;
 

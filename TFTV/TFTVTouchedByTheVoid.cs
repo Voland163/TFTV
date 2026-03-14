@@ -556,6 +556,11 @@ namespace TFTV
 
                             foreach (TacticalActor actor in phoenix.TacticalActors)
                             {
+                                if (!actor.IsAlive || actor.IsEvacuated)
+                                {
+                                    continue;
+                                }
+
                                 if (actor.CharacterStats.Corruption.Value > 0)
                                 {
                                     totalDeliriumOnMission += (int)actor.CharacterStats.Corruption.Value.BaseValue;

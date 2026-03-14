@@ -7,14 +7,14 @@ using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.Levels.Factions.Modifiers;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
-using RootMotion.FinalIK;
 using System;
 using System.Linq;
 using UnityEngine;
+using static PhoenixPoint.Common.Levels.Missions.TacMissionTypeParticipantData;
 
 namespace TFTV.TFTVIncidents
 {
@@ -90,12 +90,18 @@ namespace TFTV.TFTVIncidents
                 }
 
                 int selectedOption = Affinities.AffinityBenefitsChoices.GetTacticalBenefitChoiceFromSnapshot(approach);
+
+                TFTVLogger.Always($"{DiagTag} Checking if should apply global tactical benefit for approach {approach}: selected option {selectedOption}, required option {requiredOption}.");
+
                 if (selectedOption != requiredOption)
                 {
                     return false;
                 }
 
                 TacticalFaction phoenixFaction = level.GetFactionByCommandName("PX");
+
+                TFTVLogger.Always($"{DiagTag} Retrieved Phoenix faction: {(phoenixFaction != null ? phoenixFaction.Faction.FactionDef.GetName() : "null")} with actors count: {(phoenixFaction?.Actors != null ? phoenixFaction.Actors.Count() : 0)}");
+
                 if (phoenixFaction?.Actors == null)
                 {
                     return false;
@@ -115,6 +121,8 @@ namespace TFTV.TFTVIncidents
                     }
                 }
 
+                TFTVLogger.Always($"{DiagTag} Best affinity rank for approach {approach} among Phoenix operatives: {bestRank}.");
+
                 return bestRank > 0;
             }
             catch (Exception e)
@@ -129,9 +137,13 @@ namespace TFTV.TFTVIncidents
         {
             try
             {
-                return level?.TacMission?.MissionData?.MissionType?.MissionTags != null
+                bool hasHavenDefenseTag = level?.TacMission?.MissionData?.MissionType?.MissionTags != null
                     && HavenDefenseTag != null
                     && level.TacMission.MissionData.MissionType.MissionTags.Contains(HavenDefenseTag);
+
+                TFTVLogger.Always($"{DiagTag} Checking if mission is Haven Defense: {hasHavenDefenseTag} (mission: {level?.TacMission?.MissionData?.MissionType?.name ?? "null"})");
+
+                return hasHavenDefenseTag;
             }
             catch (Exception e)
             {
@@ -147,7 +159,10 @@ namespace TFTV.TFTVIncidents
             {
                 try
                 {
-                    if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled) return;
+                    if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                    {
+                        return;
+                    }
 
                     if (ability?.AbilityDef != RecoverWillAbilityDef || actor == null)
                     {
@@ -155,7 +170,11 @@ namespace TFTV.TFTVIncidents
                     }
 
                     TacticalLevelController level = actor.TacticalLevel;
-                    if (!ShouldApplyGlobalBenefit(level, LeaderSelection.AffinityApproach.PsychoSociology, requiredOption: 1, out _))
+                    if (!ShouldApplyGlobalBenefit(
+                        level,
+                        LeaderSelection.AffinityApproach.PsychoSociology,
+                        requiredOption: 1,
+                        out int bestRank))
                     {
                         return;
                     }
@@ -165,11 +184,13 @@ namespace TFTV.TFTVIncidents
                         return;
                     }
 
+                    float bonusWillpower = 2f * bestRank;
                     float before = actor.CharacterStats.WillPoints.Value.BaseValue;
-                    actor.CharacterStats.WillPoints.Add(2f);
+                    actor.CharacterStats.WillPoints.Add(bonusWillpower);
                     float after = actor.CharacterStats.WillPoints.Value.BaseValue;
 
-                    TFTVLogger.Always($"{DiagTag} Recovery bonus applied to {actor.name}: +2 WP ({before} -> {after}).");
+                    TFTVLogger.Always(
+                        $"{DiagTag} Recovery bonus applied to {actor.name}: +{bonusWillpower} WP ({before} -> {after}, rank {bestRank}).");
                 }
                 catch (Exception e)
                 {
@@ -177,11 +198,13 @@ namespace TFTV.TFTVIncidents
                 }
             }
 
+
+
             /// <summary>
             /// Need to wire this to PsychoSociology benefit 2, and change description to increase haven defense deployment by 50% per rank.
             /// </summary>
-            [HarmonyPatch(typeof(GeoHavenDefenseMission), "CalculatePerParticipantDeployment")]
-            public static class GeoHavenDefenseMission_CalculatePerParticipantDeployment_PsychoSociologyBonus_Patch
+            [HarmonyPatch(typeof(DeploymentRuleData), "CalculateDeployment")]
+            public static class DeploymentRuleData_CalculateDeployment_PsychoSociologyBonus_Patch
             {
 
                 private static int GetAffinityRankForApproach(GeoCharacter character, LeaderSelection.AffinityApproach approach)
@@ -211,12 +234,14 @@ namespace TFTV.TFTVIncidents
 
                 private static int GetBestGeoRankForTacticalBenefit(
                     GeoLevelController level,
-                    GeoHavenDefenseMission mission,
+                    GeoMission mission,
                     LeaderSelection.AffinityApproach approach,
                     int requiredOption)
                 {
                     try
                     {
+
+
                         if (level == null || mission?.Squad?.Soldiers == null)
                         {
                             return 0;
@@ -250,7 +275,7 @@ namespace TFTV.TFTVIncidents
 
 
 
-                public static void Postfix(GeoHavenDefenseMission __instance, TacMissionTypeParticipantData participant, ref int __result)
+                public static void Postfix(GeoMission mission, TacMissionTypeParticipantData participant, ref int __result)
                 {
                     try
                     {
@@ -259,20 +284,22 @@ namespace TFTV.TFTVIncidents
                             return;
                         }
 
-                        if (__result <= 0 || participant == null || __instance?.Site?.Owner?.Def == null)
+                        TFTVLogger.Always($"{DiagTag} Calculating Psycho-Sociology bonus for haven defense deployment. Initial deployment: {__result}, participant: {participant?.ParticipantKind.ToString() ?? "null"}");
+
+                        if (__result <= 0 || participant == null || mission?.Site?.Owner?.Def == null)
                         {
                             return;
                         }
 
-                        if (participant.FactionDef != __instance.Site.Owner.Def.PPFactionDef)
+                        if (participant.FactionDef != mission.Site.Owner.Def.PPFactionDef)
                         {
                             return;
                         }
 
-                        GeoLevelController level = __instance.Site.GeoLevel;
+                        GeoLevelController level = mission.Site.GeoLevel;
                         int bestRank = GetBestGeoRankForTacticalBenefit(
                             level,
-                            __instance,
+                            mission,
                             LeaderSelection.AffinityApproach.PsychoSociology,
                             requiredOption: 2);
 
@@ -341,6 +368,9 @@ namespace TFTV.TFTVIncidents
                 }
 
                 TacticalFaction playerFaction = level.GetFactionByCommandName("PX");
+
+                TFTVLogger.Always($"{DiagTag} Attempting to transfer control of friendly Haven defenders to player. Player faction: {(playerFaction != null ? playerFaction.Faction.FactionDef.GetName() : "null")}, defenders to transfer: {defendersToTransfer}");
+
                 if (playerFaction == null || level.Map == null)
                 {
                     return;
@@ -356,6 +386,8 @@ namespace TFTV.TFTVIncidents
                     .Take(defendersToTransfer)
                     .ToArray();
 
+                TFTVLogger.Always($"{DiagTag} Found {defenders.Length} eligible Haven defenders for control transfer.");
+
                 if (defenders.Length == 0)
                 {
                     return;
@@ -363,6 +395,21 @@ namespace TFTV.TFTVIncidents
 
                 foreach (TacticalActor defender in defenders)
                 {
+
+                    MindControlStatusDef underPhoenixControlStatus = DefCache.GetDef<MindControlStatusDef>("UnderPhoenixControl_StatusDef");
+                    TriggerAbilityZoneOfControlStatusDef triggerAbilityZoneOfControlStatus = DefCache.GetDef<TriggerAbilityZoneOfControlStatusDef>("CanBeRecruitedIntoPhoenix_1x1_StatusDef");
+
+                    if (defender.Status.HasStatus(triggerAbilityZoneOfControlStatus))
+                    {
+                        defender.Status.UnapplyStatus(defender.Status.GetStatus<TriggerAbilityZoneOfControlStatus>());
+                    }
+
+
+                    if (!defender.Status.HasStatus(underPhoenixControlStatus))
+                    {
+                        defender.Status.ApplyStatus(underPhoenixControlStatus);
+                    }
+
                     defender.SetFaction(playerFaction, TacMissionParticipant.Player);
                 }
 
@@ -375,7 +422,7 @@ namespace TFTV.TFTVIncidents
                 try
                 {
                     TacticalLevelController level = extractedActor?.TacticalLevel;
-                    if (level == null || !IsHavenDefenseMission(level) || !IsExtractedCivilian(extractedActor))
+                    if (level == null || !IsExtractedCivilian(extractedActor))
                     {
                         return;
                     }
@@ -400,7 +447,7 @@ namespace TFTV.TFTVIncidents
                             continue;
                         }
 
-                        actor.CharacterStats.WillPoints.AddRestrictedToMax(willpowerBonus);
+                        actor?.CharacterStats?.WillPoints?.AddRestrictedToMax(willpowerBonus);
                     }
 
                     TFTVLogger.Always($"{DiagTag} Exploration tactical benefit granted +{willpowerBonus} WP to Phoenix operatives after civilian extraction.");
@@ -420,6 +467,8 @@ namespace TFTV.TFTVIncidents
             {
                 try
                 {
+                    if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled) return;
+
                     if (!IsHavenDefenseMission(level))
                     {
                         return;
@@ -427,6 +476,8 @@ namespace TFTV.TFTVIncidents
 
                     if (ShouldApplyGlobalBenefit(level, LeaderSelection.AffinityApproach.Exploration, requiredOption: 2, out int bestRank))
                     {
+                        TFTVLogger.Always($"{DiagTag} Applying Exploration tactical benefit for Haven Defense mission start: transferring control of {bestRank} friendly defender(s) to player.");
+
                         TakeControlOfFriendlyHavenDefender(level, bestRank);
                     }
                 }
@@ -502,21 +553,99 @@ namespace TFTV.TFTVIncidents
                 }
             }
 
-            internal static int ApplyTBTVChanceReductionIfNeeded(TacticalLevelController level, int chance)
+            private static bool TryGetBestOccultTBTVReductionSource(
+    TacticalLevelController level,
+    out TacticalActor sourceActor,
+    out int bestRank)
             {
+                sourceActor = null;
+                bestRank = 0;
+
+                try
+                {
+                    if (level == null)
+                    {
+                        return false;
+                    }
+
+                    if (Affinities.AffinityBenefitsChoices.GetTacticalBenefitChoiceFromSnapshot(LeaderSelection.AffinityApproach.Occult) != 1)
+                    {
+                        return false;
+                    }
+
+                    TacticalFaction phoenixFaction = level.GetFactionByCommandName("PX");
+                    if (phoenixFaction?.Actors == null)
+                    {
+                        return false;
+                    }
+
+                    foreach (TacticalActor actor in phoenixFaction.Actors.OfType<TacticalActor>())
+                    {
+                        if (!actor.IsAlive || actor.IsEvacuated)
+                        {
+                            continue;
+                        }
+
+                        int rank = GetAffinityRankForApproach(actor, LeaderSelection.AffinityApproach.Occult);
+                        if (rank > bestRank)
+                        {
+                            bestRank = rank;
+                            sourceActor = actor;
+                        }
+                    }
+
+                    return sourceActor != null && bestRank > 0;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    sourceActor = null;
+                    bestRank = 0;
+                    return false;
+                }
+            }
+
+            internal static bool TryGetTBTVChanceReductionInfo(
+                TacticalLevelController level,
+                out TacticalActor sourceActor,
+                out int reduction)
+            {
+                sourceActor = null;
+                reduction = 0;
+
                 try
                 {
                     if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
                     {
-                        return chance;
+                        return false;
                     }
 
-                    if (!ShouldApplyGlobalBenefit(level, LeaderSelection.AffinityApproach.Occult, requiredOption: 1, out int bestRank))
+                    if (!TryGetBestOccultTBTVReductionSource(level, out sourceActor, out int bestRank))
+                    {
+                        return false;
+                    }
+
+                    reduction = 5 * bestRank;
+                    return reduction > 0;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    sourceActor = null;
+                    reduction = 0;
+                    return false;
+                }
+            }
+
+            internal static int ApplyTBTVChanceReductionIfNeeded(TacticalLevelController level, int chance)
+            {
+                try
+                {
+                    if (!TryGetTBTVChanceReductionInfo(level, out TacticalActor _, out int reduction))
                     {
                         return chance;
                     }
 
-                    int reduction = 5 * bestRank;
                     return Math.Max(0, chance - reduction);
                 }
                 catch (Exception e)
@@ -535,14 +664,14 @@ namespace TFTV.TFTVIncidents
             {
                 try
                 {
-                    
+
                     if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled || level == null)
                     {
                         return;
                     }
 
                     ApplyMountedVehicleBonusAbility(level);
-                   // RefreshDeliriumPerceptionBonus(level, logApplication: true);
+                    // RefreshDeliriumPerceptionBonus(level, logApplication: true);
                 }
                 catch (Exception e)
                 {
@@ -658,8 +787,8 @@ namespace TFTV.TFTVIncidents
                     }
 
                     TacticalFaction phoenixFaction = level.GetFactionByCommandName("PX");
-                    
-                    TFTVLogger.Always($"{DiagTag} Retrieved Phoenix faction: {(phoenixFaction != null ? phoenixFaction.Faction.FactionDef.GetName() : "null")} with actors count: {(phoenixFaction?.Actors != null ? phoenixFaction.Actors.Count() : 0)}");
+
+                    // TFTVLogger.Always($"{DiagTag} Retrieved Phoenix faction: {(phoenixFaction != null ? phoenixFaction.Faction.FactionDef.GetName() : "null")} with actors count: {(phoenixFaction?.Actors != null ? phoenixFaction.Actors.Count() : 0)}");
 
                     if (phoenixFaction?.Actors == null)
                     {
@@ -669,17 +798,17 @@ namespace TFTV.TFTVIncidents
                     foreach (TacticalActorBase actorBase in phoenixFaction.Actors)
                     {
                         TacticalActor actor = actorBase as TacticalActor;
-                    TFTVLogger.Always($"{DiagTag} Evaluating actor for mounted driver passive: {actor?.DisplayName ?? "null"}");    
+                        // TFTVLogger.Always($"{DiagTag} Evaluating actor for mounted driver passive: {actor?.DisplayName ?? "null"}");    
 
                         if (actor == null || !actor.IsAlive || actor.IsEvacuated)
                         {
                             continue;
                         }
 
-                        
+
 
                         int rank = GetAffinityRankForApproach(actor, LeaderSelection.AffinityApproach.Compute);
-                        TFTVLogger.Always($"{DiagTag} Actor {actor.DisplayName ?? actor.name} is alive and in play. rank: {rank}");
+                        // TFTVLogger.Always($"{DiagTag} Actor {actor.DisplayName ?? actor.name} is alive and in play. rank: {rank}");
                         if (rank <= 0)
                         {
                             continue;
@@ -688,7 +817,7 @@ namespace TFTV.TFTVIncidents
                         ComputeMountedAbility.MountedDriverPassiveAbilityDef abilityDef =
                             ComputeMountedAbility.Defs.GetMountedDriverPassiveAbilityDef(rank);
 
-                        TFTVLogger.Always($"{DiagTag} Retrieved ability def for rank {rank}: {(abilityDef != null ? abilityDef.name : "null")}");
+                        //  TFTVLogger.Always($"{DiagTag} Retrieved ability def for rank {rank}: {(abilityDef != null ? abilityDef.name : "null")}");
 
                         if (abilityDef == null)
                         {
@@ -799,6 +928,6 @@ namespace TFTV.TFTVIncidents
     }
 }
 
-      
-    
+
+
 

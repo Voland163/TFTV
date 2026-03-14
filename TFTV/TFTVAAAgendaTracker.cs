@@ -25,10 +25,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using TFTV.TFTVBaseRework;
+using TFTV.TFTVIncidents;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Resolution = TFTV.TFTVIncidents.Resolution;
 
 namespace TFTV
 {
@@ -59,6 +62,154 @@ namespace TFTV
             internal static string actionAcquire = "SECURE";
             internal static string actionAttack = "WILL ATTACK:";
             internal static string actionAttackOnPX = "WILL COMPLETE ATTACK ON";
+
+            internal static string actionResolvingIncident = "RESOLVING INCIDENT:";
+            internal static string actionActivatingOutpost = "ACTIVATING OUTPOST:";
+            internal static string actionActivatingBase = "ACTIVATING BASE:";
+            internal static string actionUpgradingBase = "UPGRADING BASE:";
+
+            internal static Color incidentTrackerColor = new Color32(126, 214, 223, 255);
+            internal static Color baseActivationTrackerColor = new Color32(120, 196, 120, 255);
+
+            private static ViewElementDef GetGenericSiteTrackerViewElement()
+            {
+                return DefCache.GetDef<ViewElementDef>("0481b9e2-947c-fbb2-3d96-8f769e1e05cd");
+            }
+
+            private static BaseActivation.PendingBaseAction? GetPendingBaseAction(GeoSite site)
+            {
+                if (site == null)
+                {
+                    return null;
+                }
+
+                if (site.SiteTags.Contains(BaseActivation.PhoenixBaseReworkState.PendingOutpostTag))
+                {
+                    return BaseActivation.PendingBaseAction.Outpost;
+                }
+
+                if (site.SiteTags.Contains(BaseActivation.PhoenixBaseReworkState.PendingBaseUpgradeTag))
+                {
+                    return BaseActivation.PendingBaseAction.UpgradeToBase;
+                }
+
+                if (site.SiteTags.Contains(BaseActivation.PhoenixBaseReworkState.PendingBaseTag))
+                {
+                    return BaseActivation.PendingBaseAction.FullBase;
+                }
+
+                return null;
+            }
+
+            private static Resolution.ActiveTimedProblem GetActiveIncident(GeoSite site)
+            {
+                return Resolution.IncidentController.GetActiveTimedProblem(site);
+            }
+
+            private static bool HasCustomSiteTracker(GeoSite site)
+            {
+                return GetPendingBaseAction(site).HasValue || GetActiveIncident(site) != null;
+            }
+
+            private static string GetCustomSiteTrackerText(GeoSite site, GeoFaction viewerFaction)
+            {
+                string siteName = GetSiteName(site, viewerFaction ?? site?.Owner);
+
+                BaseActivation.PendingBaseAction? pendingAction = GetPendingBaseAction(site);
+                if (pendingAction.HasValue)
+                {
+                    switch (pendingAction.Value)
+                    {
+                        case BaseActivation.PendingBaseAction.Outpost:
+                            return $"{actionActivatingOutpost} {siteName}";
+                        case BaseActivation.PendingBaseAction.UpgradeToBase:
+                            return $"{actionUpgradingBase} {siteName}";
+                        default:
+                            return $"{actionActivatingBase} {siteName}";
+                    }
+                }
+
+                if (GetActiveIncident(site) != null)
+                {
+                    return $"{actionResolvingIncident} {siteName}";
+                }
+
+                return null;
+            }
+
+            private static bool TryUpdateCustomSiteElement(UIFactionDataTrackerElement element, GeoSite site, GeoscapeViewContext context, out bool isExpired)
+            {
+                isExpired = false;
+
+                BaseActivation.PendingBaseAction? pendingAction = GetPendingBaseAction(site);
+                if (pendingAction.HasValue && site.ExpiringTimerAt > TimeUnit.Zero)
+                {
+                    TimeUnit remaining = site.ExpiringTimerAt - context.Level.Timing.Now;
+                    element.UpdateData(remaining, true, null);
+                    isExpired = remaining <= TimeUnit.Zero;
+                    return true;
+                }
+
+                Resolution.ActiveTimedProblem incident = GetActiveIncident(site);
+                if (incident != null)
+                {
+                    TimeUnit remaining = incident.EndAt - context.Level.Timing.Now;
+                    element.UpdateData(remaining, true, null);
+                    isExpired = remaining <= TimeUnit.Zero;
+                    return true;
+                }
+
+                return false;
+            }
+
+            internal static void RefreshCustomSiteTracker(GeoSite site)
+            {
+                try
+                {
+                    if (___factionTracker == null || site == null)
+                    {
+                        return;
+                    }
+
+                    List<UIFactionDataTrackerElement> currentTrackedElements =
+                        (List<UIFactionDataTrackerElement>)AccessTools.Field(typeof(UIModuleFactionAgendaTracker), "_currentTrackedElements").GetValue(___factionTracker);
+
+                    UIFactionDataTrackerElement existingElement =
+                        currentTrackedElements.FirstOrDefault(e => e.TrackedObject is GeoSite trackedSite && trackedSite == site);
+
+                    if (!HasCustomSiteTracker(site))
+                    {
+                        if (existingElement != null)
+                        {
+                            ___Dispose.Invoke(___factionTracker, new object[] { existingElement });
+                            ___UpdateData.Invoke(___factionTracker, null);
+                        }
+
+                        return;
+                    }
+
+                    GeoFaction viewerFaction = site.GeoLevel != null ? site.GeoLevel.ViewerFaction : site.Owner;
+                    string trackerText = GetCustomSiteTrackerText(site, viewerFaction);
+
+                    if (existingElement == null)
+                    {
+                        UIFactionDataTrackerElement freeElement = (UIFactionDataTrackerElement)___GetFreeElement.Invoke(___factionTracker, null);
+                        freeElement.Init(site, trackerText, GetGenericSiteTrackerViewElement(), false);
+                        ___OnAddedElement.Invoke(___factionTracker, new object[] { freeElement });
+                    }
+                    else
+                    {
+                        existingElement.TrackedName.text = trackerText;
+                    }
+
+                    ___UpdateData.Invoke(___factionTracker, null);
+                    ___OrderElements.Invoke(___factionTracker, null);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
 
             public static void LocalizeExtendedAgendaUI()
             {
@@ -1244,6 +1395,12 @@ namespace TFTV
                             click.callback.AddListener((eventData) => { ____context.View.ChaseTarget(geoSite, false); });
                             eventTrigger.triggers.Add(click);
 
+                            if (TryUpdateCustomSiteElement(element, geoSite, ____context, out bool customExpired))
+                            {
+                                __result = customExpired;
+                                return false;
+                            }
+
 
                             if (geoSite.IsArcheologySite)
                             {
@@ -1400,6 +1557,14 @@ namespace TFTV
                                 ___OnAddedElement.Invoke(__instance, new object[] { freeElement });
                             }
 
+                            foreach (GeoSite site in ____context.Level.Map.AllSites.Where(s => s != null && HasCustomSiteTracker(s)))
+                            {
+                                UIFactionDataTrackerElement freeElement = (UIFactionDataTrackerElement)___GetFreeElement.Invoke(__instance, null);
+                                string siteInfo = GetCustomSiteTrackerText(site, ____context.ViewerFaction);
+
+                                freeElement.Init(site, siteInfo, GetGenericSiteTrackerViewElement(), false);
+                                ___OnAddedElement.Invoke(__instance, new object[] { freeElement });
+                            }
 
                             // Base defense incoming
                             foreach (GeoFaction geoFaction in ____context.Level.Factions)
@@ -1549,6 +1714,27 @@ namespace TFTV
                         }
                         else if (__instance.TrackedObject is GeoSite gs)
                         {
+
+                            if (GetPendingBaseAction(gs).HasValue)
+                            {
+                                __instance.TrackedName.text = text;
+                                __instance.TrackedName.color = baseActivationTrackerColor;
+                                __instance.TrackedTime.color = baseActivationTrackerColor;
+                                __instance.Icon.color = baseActivationTrackerColor;
+                                __instance.Icon.sprite = phoenixFactionSprite;
+                                return;
+                            }
+
+                            if (GetActiveIncident(gs) != null)
+                            {
+                                __instance.TrackedName.text = text;
+                                __instance.TrackedName.color = incidentTrackerColor;
+                                __instance.TrackedTime.color = incidentTrackerColor;
+                                __instance.Icon.color = incidentTrackerColor;
+                                __instance.Icon.sprite = ancientSiteProbeSprite;
+                                return;
+                            }
+
                             if (gs.IsArcheologySite)
                             {
                                 // Attack scheduled

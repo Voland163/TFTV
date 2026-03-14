@@ -130,6 +130,18 @@ namespace TFTV
                     //  TFTVLogger.Always($"running activate exit mission ability for {__instance.TacticalActor.DisplayName}, {__instance.TacticalActor.TacticalFaction.Faction.FactionDef.name} {__instance.TacticalActor.Status?.HasStatus<MindControlStatus>()}");
 
                     TFTVVanillaFixes.Tactical.XP.FixRescueMissionEvac(__instance.TacticalActor);
+                   
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+            public static void Postfix(ExitMissionAbility __instance)
+            {
+                try
+                {
                     TFTVIncidents.AffinityTacticalEffects.ExplorationTacticalBenefits.ApplyExplorationCivilianExtractionWillpowerBonus(__instance.TacticalActor);
                 }
                 catch (Exception e)
@@ -140,23 +152,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(TacticalLevelController), "OnLevelStart")]
-        public static class TacticalLevelController_OnLevelStart_AffinityMissionStart_Patch
-        {
-            public static void Postfix(TacticalLevelController __instance)
-            {
-                try
-                {
-                    TFTVIncidents.AffinityTacticalEffects.ExplorationTacticalBenefits.ApplyHavenDefenseMissionStartBenefits(__instance);
-                   
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-        }
-
+      
         [HarmonyPatch(typeof(TacticalVoxelMatrix), nameof(TacticalVoxelMatrix.StartTurn))]
         public static class TacticalVoxelMatrix_StartTurn_Patch
         {

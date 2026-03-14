@@ -24,6 +24,8 @@ namespace TFTV.TFTVIncidents
 {
     internal class Resolution
     {
+
+
         /// <summary>
         /// Full Harmony-only implementation for delayed geoscape operations that:
         /// 1) start from specific encounter options,
@@ -43,7 +45,7 @@ namespace TFTV.TFTVIncidents
             public float BaseHours = 24f;
             public float MinHours = 4f;
             public float MaxHours = 72f;
-            public float PerSoldierSpeedBonusHours = 1.5f;
+            public float PerSoldierSpeedBonusHours = 2f;
 
             public bool Matches(string eventId, int choiceIndex)
             {
@@ -53,6 +55,8 @@ namespace TFTV.TFTVIncidents
             public float ComputeDurationHours(GeoVehicle vehicle)
             {
                 int soldiers = vehicle?.Soldiers?.Count() ?? 0;
+
+                TFTVLogger.Always($"[Incidents] Computing hours, base={BaseHours} soldiers={soldiers} bonusPerSoldier={PerSoldierSpeedBonusHours}");
 
                 float hours = BaseHours - soldiers * PerSoldierSpeedBonusHours;
                 return Mathf.Clamp(hours, MinHours, MaxHours);
@@ -70,6 +74,8 @@ namespace TFTV.TFTVIncidents
             public string ApproachTokens;
             public TimeUnit StartAt;
             public TimeUnit EndAt;
+
+
 
             public bool IsExpired(Timing timing)
             {
@@ -156,7 +162,7 @@ namespace TFTV.TFTVIncidents
             private const float DefaultBaseHours = 24f;
             private const float DefaultMinHours = 4f;
             private const float DefaultMaxHours = 72f;
-            private const float DefaultPerSoldierSpeedBonusHours = 1.5f;
+            private const float DefaultPerSoldierSpeedBonusHours = 2f;
 
             private static readonly List<IncidentInProgressDefinition> Definitions = new List<IncidentInProgressDefinition>();
             private static readonly Dictionary<string, ActiveTimedProblem> ActiveByTimerId = new Dictionary<string, ActiveTimedProblem>(StringComparer.Ordinal);
@@ -168,7 +174,16 @@ namespace TFTV.TFTVIncidents
             private static readonly AccessTools.FieldRef<GeoscapeEventSystem, Dictionary<string, GeoEventTimer>> TimersRef =
                 AccessTools.FieldRefAccess<GeoscapeEventSystem, Dictionary<string, GeoEventTimer>>("_timers");
 
-            
+            internal static ActiveTimedProblem GetActiveTimedProblem(GeoSite site)
+            {
+                if (site == null)
+                {
+                    return null;
+                }
+
+                return ActiveByTimerId.Values.FirstOrDefault(v => v.SiteId == site.SiteId);
+            }
+
 
             public static void InitializeDefaults()
             {
@@ -385,6 +400,8 @@ namespace TFTV.TFTVIncidents
 
                 hours = definition.ComputeDurationHours(vehicle);
 
+                TFTVLogger.Always($"[Incidents] Base hours={hours:0.#}, soldiers={vehicle.Soldiers?.Count() ?? 0}");
+
                 GeoEventChoice choice = choices[choiceIndex];
                 string approachTokens = LeaderSelection.ExtractApproachTokens(choice?.Text?.LocalizationKey, choiceIndex);
                 float bonusHours = LeaderSelection.GetLeaderBonusHours(leader, approachTokens);
@@ -466,6 +483,7 @@ namespace TFTV.TFTVIncidents
                 };
 
                 RefreshSiteVisual(level, site.SiteId);
+                global::TFTV.TFTVAAAgendaTracker.ExtendedAgendaTracker.RefreshCustomSiteTracker(site);
             }
 
             private static void RestoreIntroEventOnCancel(GeoscapeEvent geoscapeEvent)
@@ -719,6 +737,12 @@ namespace TFTV.TFTVIncidents
 
                 ActiveByTimerId.Remove(active.TimerId);
                 DestroySiteVisual(active.SiteId);
+
+                if (site != null)
+                {
+                    global::TFTV.TFTVAAAgendaTracker.ExtendedAgendaTracker.RefreshCustomSiteTracker(site);
+                }
+
                 return true;
             }
 
@@ -732,64 +756,7 @@ namespace TFTV.TFTVIncidents
                 return ActiveByTimerId.Values.Any(v => v.VehicleId == vehicle.VehicleID);
             }
 
-            private static void StartTimedProblem(
-                GeoLevelController level,
-                GeoSite site,
-                GeoVehicle vehicle,
-                IncidentInProgressDefinition definition,
-                GeoEventChoice choice,
-                int choiceIndex)
-            {
-                float durationHours = definition.ComputeDurationHours(vehicle);
-                int leaderId = -1;
-
-                if (LeaderSelection.TrySelectLeader(vehicle, choice, choiceIndex, out LeaderSelection.LeaderSelectionResult leader))
-                {
-                    float bonusHours = leader.BonusHours;
-                    durationHours = Mathf.Clamp(durationHours - bonusHours, definition.MinHours, definition.MaxHours);
-                    leaderId = leader.LeaderId;
-                    TFTVLogger.Always($"[Incidents] Leader {leader.Character.DisplayName} ({leader.Approach}) rank {leader.Rank} reduced time by {bonusHours:0.#}h.");
-                }
-                else
-                {
-                    GeoCharacter fallback = LeaderSelection.SelectFallbackLeader(vehicle);
-                    leaderId = fallback?.Id ?? -1;
-                }
-
-                string approachTokens = LeaderSelection.ExtractApproachTokens(choice?.Text?.LocalizationKey, choiceIndex);
-                TimeUnit duration = TimeUnit.FromHours(durationHours);
-                string timerId = ActiveTimedProblem.BuildTimerId(
-                    site,
-                    vehicle,
-                    definition.CompletionEventId,
-                    definition.CancelEventId,
-                    leaderId,
-                    approachTokens);
-
-                GeoEventTimer timer = level.EventSystem.StartTimer(timerId, duration);
-                site.ExpiringTimerAt = timer.EndAt;
-
-                vehicle.CanRedirect = false;
-                if (vehicle.Navigation != null)
-                {
-                    vehicle.Navigation.CancelNavigation();
-                }
-
-                ActiveByTimerId[timerId] = new ActiveTimedProblem
-                {
-                    TimerId = timerId,
-                    CompletionEventId = definition.CompletionEventId,
-                    CancelEventId = definition.CancelEventId,
-                    SiteId = site.SiteId,
-                    VehicleId = vehicle.VehicleID,
-                    LeaderId = leaderId,
-                    ApproachTokens = approachTokens,
-                    StartAt = timer.StartAt,
-                    EndAt = timer.EndAt
-                };
-
-                RefreshSiteVisual(level, site.SiteId);
-            }
+           
 
             private static void CompleteTimedProblem(GeoLevelController level, string timerId)
             {
@@ -831,6 +798,14 @@ namespace TFTV.TFTVIncidents
 
                 ActiveByTimerId.Remove(timerId);
                 DestroySiteVisual(active.SiteId);
+
+                ActiveByTimerId.Remove(timerId);
+                DestroySiteVisual(active.SiteId);
+
+                if (site != null)
+                {
+                    global::TFTV.TFTVAAAgendaTracker.ExtendedAgendaTracker.RefreshCustomSiteTracker(site);
+                }
             }
 
             private static bool IsSuccessOutcome(string eventId)
@@ -893,22 +868,73 @@ namespace TFTV.TFTVIncidents
                         return "No change";
                     }
 
-                    if (!leader.Progression.Abilities.Contains(ability))
+                    if (!TrySetAffinityRank(leader, chosenApproach, targetRank, ability))
                     {
-                        leader.Progression.AddAbility(ability);
-
-                        AffinityBenefitChoiceUI.RecordAffinityAward(
-                            active.CompletionEventId,
-                            active.SiteId,
-                            active.VehicleId,
-                            chosenApproach,
-                            targetRank);
-
-                        TFTVLogger.Always($"[Incidents] {leader.DisplayName} gained {chosenApproach} rank {targetRank}.");
-                        return $"{chosenApproach} rank {targetRank}";
+                        return "No change";
                     }
 
-                    return "No change";
+                    AffinityBenefitChoiceUI.RecordAffinityAward(
+                        active.CompletionEventId,
+                        active.SiteId,
+                        active.VehicleId,
+                        chosenApproach,
+                        targetRank);
+
+                    TFTVLogger.Always($"[Incidents] {leader.DisplayName} gained {chosenApproach} rank {targetRank}.");
+                    return $"{chosenApproach} rank {targetRank}";
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                    throw;
+                }
+            }
+
+            private static bool TrySetAffinityRank(
+                GeoCharacter character,
+                LeaderSelection.AffinityApproach approach,
+                int targetRank,
+                PassiveModifierAbilityDef targetAbility)
+            {
+                try
+                {
+                    if (character?.Progression == null || targetAbility == null || targetRank <= 0)
+                    {
+                        return false;
+                    }
+
+                    ICollection<TacticalAbilityDef> progressionAbilities = character.Progression.Abilities as ICollection<TacticalAbilityDef>;
+                    if (progressionAbilities == null)
+                    {
+                        progressionAbilities = Traverse.Create(character.Progression)
+                            .Field("_abilities")
+                            .GetValue<List<TacticalAbilityDef>>();
+                    }
+
+                    if (progressionAbilities == null)
+                    {
+                        return false;
+                    }
+
+                    bool changed = false;
+
+                    for (int rank = 1; rank <= 3; rank++)
+                    {
+                        PassiveModifierAbilityDef rankAbility = LeaderSelection.GetAffinityAbility(approach, rank);
+                        if (rankAbility != null && rank != targetRank && progressionAbilities.Contains(rankAbility))
+                        {
+                            progressionAbilities.Remove(rankAbility);
+                            changed = true;
+                        }
+                    }
+
+                    if (!progressionAbilities.Contains(targetAbility))
+                    {
+                        character.Progression.AddAbility(targetAbility);
+                        changed = true;
+                    }
+
+                    return changed;
                 }
                 catch (Exception ex)
                 {

@@ -70,6 +70,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using TFTV.LaserWeapons;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -4302,6 +4303,27 @@ namespace TFTV
                         if (__instance.CommonItemData.Ammo == null || tacticalItemDef == null || !tacticalItemDef.CompatibleAmmunition.Any())
                         {
                             __instance.CommonItemData.SetChargesToMax();
+                            return false;
+                        }
+
+                        if (__instance?.ItemDef is WeaponDef weaponDef && LaserWeaponsMain.LaserAmmoShareHelper.TryGetEntry(weaponDef, out _))
+                        {                           
+                            int targetMax = __instance.ItemDef.ChargesMax;
+                            int current = Math.Max(0, __instance.CommonItemData.CurrentCharges);
+                            int missing = Math.Max(0, targetMax - current);
+                            if (missing <= 0)
+                            {
+                                return false;
+                            }
+
+                            if (__instance.CommonItemData.Ammo != null)
+                            {
+                                __instance.CommonItemData.Ammo.ReloadCharges(missing, true);
+                            }
+                            else
+                            {
+                                __instance.CommonItemData.SetChargesToMax();
+                            }
                             return false;
                         }
 
