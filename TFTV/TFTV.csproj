@@ -191,6 +191,7 @@
     <Compile Include="TFTVExperienceDistribution.cs" />
     <Compile Include="TFTVDragandDropFunctionality.cs" />
     <Compile Include="TFTVHavenRecruitsGenerationAdjustments.cs" />
+    <Compile Include="TFTVIncidents\ActorHasBodypartTagEffectConditionDef.cs" />
     <Compile Include="TFTVIncidents\AdvanceWarningHavenAttack.cs" />
     <Compile Include="TFTVIncidents\Affinities.cs" />
     <Compile Include="TFTVIncidents\AffinityBenefitChoiceUI.cs" />

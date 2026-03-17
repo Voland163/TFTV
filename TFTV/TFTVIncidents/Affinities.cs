@@ -770,7 +770,7 @@ internal static int GetTacticalBenefitChoiceFromSnapshot(LeaderSelection.Affinit
 
                     case LeaderSelection.AffinityApproach.Machinery:
                         return option == 1
-                            ? LocalizeAndFormat(KeyMachineryTacOpt1, 10 * r)
+                            ? LocalizeAndFormat(KeyMachineryTacOpt1, r)
                             : LocalizeAndFormat(KeyMachineryTacOpt2, 4 * r);
 
                     case LeaderSelection.AffinityApproach.Compute:

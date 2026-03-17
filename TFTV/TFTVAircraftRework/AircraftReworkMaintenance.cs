@@ -1,4 +1,6 @@
 ﻿using Base.Core;
+using Base.Entities.Statuses;
+using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
@@ -8,14 +10,15 @@ using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
-using Research = PhoenixPoint.Geoscape.Entities.Research.Research;
-using static TFTV.TFTVAircraftReworkMain;
 using static TFTV.AircraftReworkHelpers;
-using PhoenixPoint.Tactical.View.ViewStates;
+using static TFTV.TFTVAircraftReworkMain;
+using Research = PhoenixPoint.Geoscape.Entities.Research.Research;
 
 namespace TFTV
 {
@@ -314,34 +317,31 @@ namespace TFTV
                         return true;
                     }
 
+                    if (vehicle == null)
+                    { 
+                        return false;
+                    }
+              
                     if (newValue < oldValue)
                     {
-                        /* if (newValue > 50)
-                         {
-                             return false;
-                         }
+                        if (vehicle.IsOwnedByViewer && oldValue > 200 && newValue <= 200)
+                        {
+                            GeoscapeLogEntry entry = new GeoscapeLogEntry
+                            {
+                                Text = new LocalizedTextBind($"{vehicle.Name} Maintenance has fallen to 50% or below. Speed halved! Geoscape paused.", true)
+                            };
 
-                         MethodInfo methodInfo = typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance);
+                            typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance)
+                               .Invoke(__instance, new object[] { entry, vehicle });
+                            vehicle.GeoLevel?.View?.SetGamePauseState(true);
+                        }
+                        else
+                        {
+                            return false;
+                        }
 
-                         LocalizedTextBind localizedTextBindReducedSpeed = new LocalizedTextBind($"Maintenance is at 50%! Speed halved", true);
-                         LocalizedTextBind localizedTextBindNeedUrgentRepairs = new LocalizedTextBind($"In need of urgent repairs! Returning to nearest base", true);
+                        //LocalizedTextBind localizedTextBindNeedUrgentRepairs = new LocalizedTextBind($"In need of urgent repairs! Returning to nearest base", true);
 
-
-
-                         GeoscapeLogEntry entry = new GeoscapeLogEntry
-                         {
-                             Text = localizedTextBindReducedSpeed,
-                             Parameters = new LocalizedTextBind[1] { new LocalizedTextBind(vehicle.Name, doNotLocalize: true) }
-                         };
-
-                         if (newValue == 0)
-                         {
-                             entry.Text = localizedTextBindNeedUrgentRepairs;     
-                         }
-
-                         methodInfo.Invoke(__instance, new object[] { entry, vehicle });
-                        */
-                        return false;
                     }
 
                     if (vehicle?.Travelling == true)

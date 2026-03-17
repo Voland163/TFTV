@@ -137,9 +137,25 @@ namespace TFTV
                 return null;
             }
 
+            private static void ApplyCustomSiteTrackerText(UIFactionDataTrackerElement element, GeoSite site, GeoFaction viewerFaction)
+            {
+                if (element == null || site == null)
+                {
+                    return;
+                }
+
+                string trackerText = GetCustomSiteTrackerText(site, viewerFaction ?? site.GeoLevel?.ViewerFaction ?? site.Owner);
+                if (!string.IsNullOrEmpty(trackerText))
+                {
+                    element.TrackedName.text = trackerText;
+                }
+            }
+
             private static bool TryUpdateCustomSiteElement(UIFactionDataTrackerElement element, GeoSite site, GeoscapeViewContext context, out bool isExpired)
             {
                 isExpired = false;
+
+                ApplyCustomSiteTrackerText(element, site, context?.ViewerFaction);
 
                 BaseActivation.PendingBaseAction? pendingAction = GetPendingBaseAction(site);
                 if (pendingAction.HasValue && site.ExpiringTimerAt > TimeUnit.Zero)
@@ -189,17 +205,17 @@ namespace TFTV
                     }
 
                     GeoFaction viewerFaction = site.GeoLevel != null ? site.GeoLevel.ViewerFaction : site.Owner;
-                    string trackerText = GetCustomSiteTrackerText(site, viewerFaction);
 
                     if (existingElement == null)
                     {
                         UIFactionDataTrackerElement freeElement = (UIFactionDataTrackerElement)___GetFreeElement.Invoke(___factionTracker, null);
-                        freeElement.Init(site, trackerText, GetGenericSiteTrackerViewElement(), false);
+                        freeElement.Init(site, GetCustomSiteTrackerText(site, viewerFaction), GetGenericSiteTrackerViewElement(), false);
                         ___OnAddedElement.Invoke(___factionTracker, new object[] { freeElement });
+                        ApplyCustomSiteTrackerText(freeElement, site, viewerFaction);
                     }
                     else
                     {
-                        existingElement.TrackedName.text = trackerText;
+                        ApplyCustomSiteTrackerText(existingElement, site, viewerFaction);
                     }
 
                     ___UpdateData.Invoke(___factionTracker, null);
@@ -290,7 +306,6 @@ namespace TFTV
                        }
                    }
                }*/
-
 
 
 
@@ -956,7 +971,6 @@ namespace TFTV
                         freeElement.Init(geoSite, siteInfo, borrowedViewElementDef, false);
 
                         ___OnAddedElement.Invoke(___factionTracker, new object[] { freeElement });
-
 
 
                         geoSite.ExpiringTimerAt = target.ScheduledFor;

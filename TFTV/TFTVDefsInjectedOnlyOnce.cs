@@ -100,80 +100,7 @@ namespace TFTV
 
         }
 
-        public static void ListActionUsers(string actionDefName)
-        {
-
-            DefRepository defRepository = GameUtl.GameComponent<DefRepository>();
-            AIActionDef aiactionDef = defRepository.GetAllDefs<AIActionDef>().FirstOrDefault((AIActionDef def) => def.name.IndexOf(actionDefName, StringComparison.OrdinalIgnoreCase) >= 0);
-
-            List<TacAIActorDef> allDefs = defRepository.GetAllDefs<TacAIActorDef>().ToList<TacAIActorDef>();
-            int num = 0;
-            foreach (TacAIActorDef tacAIActorDef in allDefs)
-            {
-                List<string> list = GetActionUsageLocations(tacAIActorDef, aiactionDef);
-                if (list.Count > 0)
-                {
-                    num++;
-                    TFTVLogger.Always(string.Format("{0}: {1}", tacAIActorDef.name, string.Join(", ", list)));
-                }
-            }
-            TFTVLogger.Always(string.Format("Found {0} TacAIActorDef entries using {1}.", num, aiactionDef.name));
-        }
-
-
-        private static List<string> GetActionUsageLocations(TacAIActorDef actorDef, AIActionDef actionDef)
-        {
-            List<string> list = new List<string>();
-            if (TemplateHasAction(actorDef.AIActionsTemplateDef, actionDef))
-            {
-                list.Add("default-template");
-            }
-            if (TemplateHasAction(actorDef.ForcedAIActionsTemplateDef, actionDef))
-            {
-                list.Add("forced-template");
-            }
-            TacAIActorDef.ClassDependentTemplate[] classDependentTemplates = actorDef.ClassDependentTemplates;
-            if (classDependentTemplates != null)
-            {
-                for (int i = 0; i < classDependentTemplates.Length; i++)
-                {
-                    TacAIActorDef.ClassDependentTemplate classDependentTemplate = classDependentTemplates[i];
-                    if (classDependentTemplate != null && TemplateHasAction(classDependentTemplate.TemplateDef, actionDef))
-                    {
-                        list.Add(string.Format("class-template[{0}]", i));
-                    }
-                }
-            }
-            TacAIActorDef.StatusDependentTemplate[] statusDependentTemplates = actorDef.StatusDependentTemplates;
-            if (statusDependentTemplates != null)
-            {
-                for (int j = 0; j < statusDependentTemplates.Length; j++)
-                {
-                    TacAIActorDef.StatusDependentTemplate statusDependentTemplate = statusDependentTemplates[j];
-                    if (statusDependentTemplate != null && TemplateHasAction(statusDependentTemplate.TemplateDef, actionDef))
-                    {
-                        list.Add(string.Format("status-template[{0}]", j));
-                    }
-                }
-            }
-            return list;
-        }
-
-        private static bool TemplateHasAction(AIActionsTemplateDef templateDef, AIActionDef actionDef)
-        {
-            if (templateDef == null || templateDef.ActionDefs == null)
-            {
-                return false;
-            }
-            foreach (AIActionDef aiactionDef in templateDef.ActionDefs)
-            {
-                if (aiactionDef == actionDef)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
+     
 
 
         internal static void Print()
@@ -250,46 +177,7 @@ namespace TFTV
                 TFTVLogger.Error(e);
             }
         }
-        private static List<string> GetSafePathLocations(AIActionDef actionDef)
-        {
-            List<string> list = new List<string>();
-            if (HasSafePathConsideration(actionDef.EarlyExitConsiderations))
-            {
-                list.Add("early-exit");
-            }
-            AITargetEvaluation[] evaluations = actionDef.Evaluations;
-            if (evaluations != null)
-            {
-                for (int i = 0; i < evaluations.Length; i++)
-                {
-                    if (HasSafePathConsideration(evaluations[i].Considerations))
-                    {
-                        list.Add(string.Format("evaluation[{0}]", i));
-                    }
-                }
-            }
-            return list;
-        }
-
-        // Token: 0x0600817A RID: 33146 RVA: 0x0020F320 File Offset: 0x0020D520
-        private static bool HasSafePathConsideration(AIAdjustedConsideration[] considerations)
-        {
-            if (considerations == null)
-            {
-                return false;
-            }
-            foreach (AIAdjustedConsideration aiadjustedConsideration in considerations)
-            {
-                if (aiadjustedConsideration != null && aiadjustedConsideration.Consideration is AISafePathConsiderationDef)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-
-
+     
 
 
 

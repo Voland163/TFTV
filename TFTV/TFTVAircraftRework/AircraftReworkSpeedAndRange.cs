@@ -440,35 +440,73 @@ namespace TFTV
         {
             try
             {
-                List<GeoSite> _destinationSites = typeof(GeoVehicle).GetField("_destinationSites", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(geoVehicle) as List<GeoSite>;
-
-                float speed = 0;
-
-
-                if (inMist)
+                if (geoVehicle == null)
                 {
-                    speed = GetSpeedInMist(geoVehicle, GetSpeedOutsideOfMist(geoVehicle));
+                    return;
                 }
-                else
-                {
-                    speed = GetSpeedOutsideOfMist(geoVehicle);
-                }
+
+                List<GeoSite> destinationSites = typeof(GeoVehicle)
+                    .GetField("_destinationSites", BindingFlags.NonPublic | BindingFlags.Instance)?
+                    .GetValue(geoVehicle) as List<GeoSite>;
+
+                float speed = inMist
+                    ? GetSpeedInMist(geoVehicle, GetSpeedOutsideOfMist(geoVehicle))
+                    : GetSpeedOutsideOfMist(geoVehicle);
 
                 TFTVLogger.Always($"resetting speed for {geoVehicle.Name}, inMist? {inMist}. current speed is {geoVehicle.Stats.Speed.Value}, should be {speed}");
 
                 geoVehicle.Stats.Speed.Value = speed;
 
-                if (geoVehicle.Travelling && _destinationSites.Any())
-                {
-                    List<Vector3> path = _destinationSites.Select((GeoSite d) => d.WorldPosition).ToList();
-                    geoVehicle.Navigation.Navigate(path);
-                }
-                
+                TryRefreshNavigation(geoVehicle, destinationSites);
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
-                throw;
+            }
+        }
+
+        private static void TryRefreshNavigation(GeoVehicle geoVehicle, List<GeoSite> destinationSites)
+        {
+            try
+            {
+                if (geoVehicle == null || !geoVehicle.Travelling)
+                {
+                    return;
+                }
+
+                if (destinationSites == null || destinationSites.Count == 0)
+                {
+                    return;
+                }
+
+                if (geoVehicle.Navigation == null)
+                {
+                    TFTVLogger.Always($"Skipping navigation refresh for {geoVehicle?.Name}: Navigation component is null");
+                    return;
+                }
+
+                List<Vector3> path = destinationSites
+                    .Where(site => site != null)
+                    .Select(site => site.WorldPosition)
+                    .ToList();
+
+                if (path.Count == 0)
+                {
+                    return;
+                }
+
+                try
+                {
+                    geoVehicle.Navigation.Navigate(path);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Always($"Skipping navigation refresh for {geoVehicle?.Name}: {e.Message}");
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
 
