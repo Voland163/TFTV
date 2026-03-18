@@ -5,6 +5,7 @@
 - Second general instruction
 - When information is missing, fetch the required code/context directly without asking the user to paste it, and proceed.
 - Avoid using a 'deep breath' preface in responses.
+- Explicitly cover each issue raised and address all reported cases; point out any omissions in proposed fixes.
 
 ## Code Style
 - Use specific formatting rules

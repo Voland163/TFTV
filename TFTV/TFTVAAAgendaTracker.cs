@@ -4,6 +4,7 @@ using Base.Defs;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape;
@@ -67,13 +68,124 @@ namespace TFTV
             internal static string actionActivatingOutpost = "ACTIVATING OUTPOST:";
             internal static string actionActivatingBase = "ACTIVATING BASE:";
             internal static string actionUpgradingBase = "UPGRADING BASE:";
+            internal static string actionTrainingOperative = "TRAINING:";
 
             internal static Color incidentTrackerColor = new Color32(126, 214, 223, 255);
             internal static Color baseActivationTrackerColor = new Color32(120, 196, 120, 255);
+            internal static Color trainingTrackerColor = new Color32(163, 214, 72, 255);
 
             private static ViewElementDef GetGenericSiteTrackerViewElement()
             {
                 return DefCache.GetDef<ViewElementDef>("0481b9e2-947c-fbb2-3d96-8f769e1e05cd");
+            }
+
+            private static ViewElementDef GetTrainingTrackerViewElement()
+            {
+                PhoenixFacilityDef trainingFacilityDef = DefCache.GetDef<PhoenixFacilityDef>("TrainingFacility_PhoenixFacilityDef");
+                return trainingFacilityDef?.ViewElementDef ?? GetGenericSiteTrackerViewElement();
+            }
+
+            private static string GetRecruitTrainingTrackerText(GeoCharacter character)
+            {
+                if (character == null)
+                {
+                    return null;
+                }
+
+                TrainingFacilityRework.RecruitTrainingSession session = TrainingFacilityRework.GetRecruitSession(character);
+                if (session == null)
+                {
+                    return null;
+                }
+
+                string specialization = session.TargetSpecialization?.ViewElementDef?.DisplayName1?.Localize();
+                return string.IsNullOrEmpty(specialization)
+                    ? $"{actionTrainingOperative} {character.DisplayName}"
+                    : $"{actionTrainingOperative} {character.DisplayName} ({specialization})";
+            }
+
+            private static TimeUnit GetRecruitTrainingRemainingTime(GeoCharacter character, GeoLevelController level)
+            {
+                if (character == null || level == null)
+                {
+                    return TimeUnit.Zero;
+                }
+
+                TrainingFacilityRework.RecruitTrainingSession session = TrainingFacilityRework.GetRecruitSession(character);
+                if (session == null)
+                {
+                    return TimeUnit.Zero;
+                }
+
+                TimeUnit endAt = TimeUnit.FromHours((session.StartDay + session.DurationDays) * 24f);
+                TimeUnit remaining = endAt - level.Timing.Now;
+
+                return remaining <= TimeUnit.Zero ? TimeUnit.Zero : remaining;
+            }
+
+            internal static void RefreshRecruitTrainingTracker(GeoCharacter character)
+            {
+                try
+                {
+                    if (___factionTracker == null || character == null)
+                    {
+                        return;
+                    }
+
+                    List<UIFactionDataTrackerElement> currentTrackedElements =
+                        (List<UIFactionDataTrackerElement>)AccessTools.Field(typeof(UIModuleFactionAgendaTracker), "_currentTrackedElements").GetValue(___factionTracker);
+
+                    UIFactionDataTrackerElement existingElement =
+                        currentTrackedElements.FirstOrDefault(e => e.TrackedObject is GeoCharacter trackedCharacter && trackedCharacter.Id == character.Id);
+
+                    TrainingFacilityRework.RecruitTrainingSession session = TrainingFacilityRework.GetRecruitSession(character);
+                    if (session == null || session.Completed)
+                    {
+                        if (existingElement != null)
+                        {
+                            ___Dispose.Invoke(___factionTracker, new object[] { existingElement });
+                            ___UpdateData.Invoke(___factionTracker, null);
+                        }
+
+                        return;
+                    }
+
+                    string trackerText = GetRecruitTrainingTrackerText(character);
+
+                    if (existingElement == null)
+                    {
+                        UIFactionDataTrackerElement freeElement = (UIFactionDataTrackerElement)___GetFreeElement.Invoke(___factionTracker, null);
+                        freeElement.Init(character, trackerText, GetTrainingTrackerViewElement(), false);
+                        ___OnAddedElement.Invoke(___factionTracker, new object[] { freeElement });
+                        ApplyRecruitTrainingTrackerText(freeElement, character);
+                    }
+                    else
+                    {
+                        ApplyRecruitTrainingTrackerText(existingElement, character);
+                    }
+
+                    ___UpdateData.Invoke(___factionTracker, null);
+                    ___OrderElements.Invoke(___factionTracker, null);
+                    ReapplyResolvedTrackerTexts(___factionTracker, null);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void ApplyRecruitTrainingTrackerText(UIFactionDataTrackerElement element, GeoCharacter character)
+            {
+                if (element == null || character == null)
+                {
+                    return;
+                }
+
+                string trackerText = GetRecruitTrainingTrackerText(character);
+                if (!string.IsNullOrEmpty(trackerText))
+                {
+                    element.TrackedName.text = trackerText;
+                }
             }
 
             private static BaseActivation.PendingBaseAction? GetPendingBaseAction(GeoSite site)
@@ -111,11 +223,31 @@ namespace TFTV
                 return GetPendingBaseAction(site).HasValue || GetActiveIncident(site) != null;
             }
 
+            private static ViewElementDef GetBaseActivationTrackerViewElement()
+            {
+                PhoenixFacilityDef trainingFacilityDef = DefCache.GetDef<PhoenixFacilityDef>("TrainingFacility_PhoenixFacilityDef");
+                return trainingFacilityDef?.ViewElementDef ?? GetGenericSiteTrackerViewElement();
+            }
+
+            private static ViewElementDef GetCustomSiteTrackerViewElement(GeoSite site)
+            {
+                if (site != null && GetPendingBaseAction(site).HasValue)
+                {
+                    return GetBaseActivationTrackerViewElement();
+                }
+
+                return GetGenericSiteTrackerViewElement();
+            }
+
             private static string GetCustomSiteTrackerText(GeoSite site, GeoFaction viewerFaction)
             {
                 string siteName = GetSiteName(site, viewerFaction ?? site?.Owner);
 
                 BaseActivation.PendingBaseAction? pendingAction = GetPendingBaseAction(site);
+
+               // TFTVLogger.Always($"[GetCustomSiteTrackerText] For site: " +
+                 //   $"{site.Name}, {siteName}, pending action: {(pendingAction.HasValue ? pendingAction.Value.ToString() : "None")}");
+
                 if (pendingAction.HasValue)
                 {
                     switch (pendingAction.Value)
@@ -133,6 +265,8 @@ namespace TFTV
                 {
                     return $"{actionResolvingIncident} {siteName}";
                 }
+
+               // TFTVLogger.Always($"[GetCustomSiteTrackerText] No pending action or active incident found for site: {site.Name}, {siteName}. This should not happen. Returning generic site name.");
 
                 return null;
             }
@@ -209,7 +343,7 @@ namespace TFTV
                     if (existingElement == null)
                     {
                         UIFactionDataTrackerElement freeElement = (UIFactionDataTrackerElement)___GetFreeElement.Invoke(___factionTracker, null);
-                        freeElement.Init(site, GetCustomSiteTrackerText(site, viewerFaction), GetGenericSiteTrackerViewElement(), false);
+                        freeElement.Init(site, GetCustomSiteTrackerText(site, viewerFaction), GetCustomSiteTrackerViewElement(site), false);
                         ___OnAddedElement.Invoke(___factionTracker, new object[] { freeElement });
                         ApplyCustomSiteTrackerText(freeElement, site, viewerFaction);
                     }
@@ -220,6 +354,7 @@ namespace TFTV
 
                     ___UpdateData.Invoke(___factionTracker, null);
                     ___OrderElements.Invoke(___factionTracker, null);
+                    ReapplyResolvedTrackerTexts(___factionTracker, viewerFaction);
                 }
                 catch (Exception e)
                 {
@@ -1363,6 +1498,20 @@ namespace TFTV
                             return false;
                         }
 
+                        else if (element.TrackedObject is GeoCharacter character)
+                        {
+                            TrainingFacilityRework.RecruitTrainingSession session = TrainingFacilityRework.GetRecruitSession(character);
+                            if (session != null)
+                            {
+                                ApplyRecruitTrainingTrackerText(element, character);
+
+                                TimeUnit remaining = GetRecruitTrainingRemainingTime(character, ____context.Level);
+                                element.UpdateData(remaining, true, null);
+                                __result = session.Completed || remaining <= TimeUnit.Zero;
+                                return false;
+                            }
+                        }
+
                         else if (element.TrackedObject is GeoPhoenixFacility facility)
                         {
                             // Add click event to the item that focuses camera on the tracked object
@@ -1554,6 +1703,17 @@ namespace TFTV
                                 ___OnAddedElement.Invoke(__instance, new object[] { freeElement });
                             }
 
+                            foreach (TrainingFacilityRework.RecruitTrainingSession session in TrainingFacilityRework.GetActiveRecruitSessions())
+                            {
+                                UIFactionDataTrackerElement freeElement = (UIFactionDataTrackerElement)___GetFreeElement.Invoke(__instance, null);
+                                string trainingInfo = GetRecruitTrainingTrackerText(session.Character);
+
+                                freeElement.Init(session.Character, trainingInfo, GetTrainingTrackerViewElement(), false);
+                                ___OnAddedElement.Invoke(__instance, new object[] { freeElement });
+                                ApplyRecruitTrainingTrackerText(freeElement, session.Character);
+                            }
+
+
                             // Excavations in progress
 
                             IEnumerable<SiteExcavationState> excavatingSites = geoPhoenixFaction.ExcavatingSites.Where(s => !s.IsExcavated);
@@ -1576,8 +1736,9 @@ namespace TFTV
                                 UIFactionDataTrackerElement freeElement = (UIFactionDataTrackerElement)___GetFreeElement.Invoke(__instance, null);
                                 string siteInfo = GetCustomSiteTrackerText(site, ____context.ViewerFaction);
 
-                                freeElement.Init(site, siteInfo, GetGenericSiteTrackerViewElement(), false);
+                                freeElement.Init(site, siteInfo, GetCustomSiteTrackerViewElement(site), false);
                                 ___OnAddedElement.Invoke(__instance, new object[] { freeElement });
+                                ApplyCustomSiteTrackerText(freeElement, site, ____context.ViewerFaction);
                             }
 
                             // Base defense incoming
@@ -1651,6 +1812,7 @@ namespace TFTV
                                 }
                             }
 
+                            ReapplyResolvedTrackerTexts(__instance, ____context.ViewerFaction);
                         }
                     }
                     catch (Exception e)
@@ -1726,12 +1888,31 @@ namespace TFTV
                             //__instance.TrackedTime.color = facilityTrackerColor;
                             //__instance.Icon.color = facilityTrackerColor;
                         }
+                        else if (__instance.TrackedObject is GeoCharacter character)
+                        {
+                            if (TrainingFacilityRework.GetRecruitSession(character) != null)
+                            {
+                                ApplyRecruitTrainingTrackerText(__instance, character);
+                                __instance.TrackedName.color = trainingTrackerColor;
+                                __instance.TrackedTime.color = trainingTrackerColor;
+                                __instance.Icon.color = trainingTrackerColor;
+
+                                ViewElementDef trainingViewElement = GetTrainingTrackerViewElement();
+                                if (trainingViewElement != null)
+                                {
+                                    __instance.Icon.sprite = trainingViewElement.SmallIcon;
+                                }
+
+                                return;
+                            }
+                        }
                         else if (__instance.TrackedObject is GeoSite gs)
                         {
+                            string resolvedSiteText = GetCustomSiteTrackerText(gs, gs.GeoLevel?.ViewerFaction ?? gs.Owner) ?? text;
 
                             if (GetPendingBaseAction(gs).HasValue)
                             {
-                                __instance.TrackedName.text = text;
+                                __instance.TrackedName.text = resolvedSiteText;
                                 __instance.TrackedName.color = baseActivationTrackerColor;
                                 __instance.TrackedTime.color = baseActivationTrackerColor;
                                 __instance.Icon.color = baseActivationTrackerColor;
@@ -1741,7 +1922,7 @@ namespace TFTV
 
                             if (GetActiveIncident(gs) != null)
                             {
-                                __instance.TrackedName.text = text;
+                                __instance.TrackedName.text = resolvedSiteText;
                                 __instance.TrackedName.color = incidentTrackerColor;
                                 __instance.TrackedTime.color = incidentTrackerColor;
                                 __instance.Icon.color = incidentTrackerColor;
@@ -1751,18 +1932,16 @@ namespace TFTV
 
                             if (gs.IsArcheologySite)
                             {
-                                // Attack scheduled
                                 if (gs.IsOwnedByViewer)
                                 {
-                                    __instance.TrackedName.text = text; // Always use passed text for non-default elements as def disturbs it
+                                    __instance.TrackedName.text = text;
                                     __instance.TrackedName.color = baseAttackTrackerColor;
                                     __instance.TrackedTime.color = baseAttackTrackerColor;
                                     __instance.Icon.color = baseAttackTrackerColor;
                                 }
-                                // Excavating
                                 else
                                 {
-                                    __instance.TrackedName.text = text; // Always use passed text for non-default elements as def disturbs it
+                                    __instance.TrackedName.text = text;
                                     __instance.TrackedName.color = excavationTrackerColor;
                                     __instance.TrackedTime.color = excavationTrackerColor;
                                     __instance.Icon.color = excavationTrackerColor;
@@ -1772,12 +1951,10 @@ namespace TFTV
                             {
                                 __instance.gameObject.SetActive(false);
 
-                                __instance.TrackedName.text = text; // Always use passed text for non-default elements as def disturbs it
+                                __instance.TrackedName.text = text;
                                 __instance.TrackedName.color = baseAttackTrackerColor;
                                 __instance.TrackedTime.color = baseAttackTrackerColor;
                                 __instance.Icon.color = baseAttackTrackerColor;
-
-                                // Borrowed from UIModuleInfoBar, fetched at UIModuleInfoBar.Init()
                                 __instance.Icon.sprite = phoenixFactionSprite;
                             }
                         }
@@ -1788,7 +1965,39 @@ namespace TFTV
                     }
                 }
             }
+
+            private static void ReapplyResolvedTrackerTexts(UIModuleFactionAgendaTracker factionTracker, GeoFaction viewerFaction)
+            {
+                if (factionTracker == null)
+                {
+                    return;
+                }
+
+                List<UIFactionDataTrackerElement> currentTrackedElements =
+                    (List<UIFactionDataTrackerElement>)AccessTools.Field(typeof(UIModuleFactionAgendaTracker), "_currentTrackedElements").GetValue(factionTracker);
+
+                foreach (UIFactionDataTrackerElement trackedElement in currentTrackedElements)
+                {
+                    if (trackedElement == null)
+                    {
+                        continue;
+                    }
+
+                    if (trackedElement.TrackedObject is GeoSite site && HasCustomSiteTracker(site))
+                    {
+                        ApplyCustomSiteTrackerText(trackedElement, site, viewerFaction);
+                        continue;
+                    }
+
+                    if (trackedElement.TrackedObject is GeoCharacter character
+                        && TrainingFacilityRework.GetRecruitSession(character) != null)
+                    {
+                        ApplyRecruitTrainingTrackerText(trackedElement, character);
+                    }
+                }
+            }
         }
     }
 }
+
 

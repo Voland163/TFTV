@@ -243,6 +243,7 @@ namespace TFTV.TFTVIncidents
                     row.gameObject.SetActive(true);
                     NormalizeRowRect(row.transform as RectTransform);
                     row.SetSoldierData((ICommonActor)character);
+                    ResetRowSelectionVisualState(row);
 
                     Sprite abilityIcon = ResolveAbilityIcon(character);
                     SetAffinityIconAfterName(row, abilityIcon);
@@ -435,7 +436,41 @@ namespace TFTV.TFTVIncidents
                     }
                 }
 
-                return Resources.FindObjectsOfTypeAll<SoldierSlotController>().FirstOrDefault();
+                SoldierSlotController[] candidates = Resources.FindObjectsOfTypeAll<SoldierSlotController>();
+                return candidates
+                    .Where(c => c != null)
+                    .OrderBy(c => c.gameObject.scene.IsValid() ? 1 : 0)
+                    .ThenBy(c => c.gameObject.activeInHierarchy ? 1 : 0)
+                    .FirstOrDefault();
+            }
+
+            private static void ResetRowSelectionVisualState(SoldierSlotController row)
+            {
+                if (row == null)
+                {
+                    return;
+                }
+
+                Button button = row.GetComponent<Button>();
+                if (button == null)
+                {
+                    return;
+                }
+
+                if (button.targetGraphic != null)
+                {
+                    Color baseColor = button.IsInteractable() ? button.colors.normalColor : button.colors.disabledColor;
+                    button.targetGraphic.canvasRenderer.SetColor(baseColor);
+                    button.targetGraphic.CrossFadeColor(baseColor, 0f, true, true);
+                }
+
+                if (button.animator != null)
+                {
+                    button.animator.Rebind();
+                    button.animator.Update(0f);
+                }
+
+                SetRowHighlight(row, false);
             }
 
             private static Text CreateHeader(Transform parent, Text styleSource)

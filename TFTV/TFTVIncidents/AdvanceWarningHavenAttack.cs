@@ -91,10 +91,7 @@ namespace TFTV.TFTVIncidents
             {
                 SiteRiskById.Clear();
 
-                List<string> rebuildDetails = new List<string>
-                {
-                    $"rebuild start; time={currentTime}; leadHours={leadHours}; alienBases={(alienFaction.Bases != null ? alienFaction.Bases.Count() : 0)}"
-                };
+               
 
                 Dictionary<GeoSite, int> minCounterByHaven = new Dictionary<GeoSite, int>();
 
@@ -110,8 +107,7 @@ namespace TFTV.TFTVIncidents
                         ? alienBase.SitesInRange.Where(site => site != null && site.Type == GeoSiteType.Haven).ToList()
                         : new List<GeoSite>();
 
-                    rebuildDetails.Add($"base={alienBase.name}; counter={counter}; havensInRange=[{string.Join(", ", havensInRange.Select(GetSiteName))}]");
-
+                    
                     foreach (GeoSite site in havensInRange)
                     {
                         if (!minCounterByHaven.TryGetValue(site, out int oldCounter) || counter < oldCounter)
@@ -127,37 +123,30 @@ namespace TFTV.TFTVIncidents
 
                     if (!alienFaction.CanSiteBeAttacked(havenSite))
                     {
-                        rebuildDetails.Add($"haven={GetSiteName(havenSite)}; minCounter={kvp.Value}; skipped=CanSiteBeAttacked false");
+                       
                         continue;
                     }
 
                     GeoHaven haven = havenSite.GetComponent<GeoHaven>();
                     if (haven == null)
                     {
-                        rebuildDetails.Add($"haven={GetSiteName(havenSite)}; minCounter={kvp.Value}; skipped=no GeoHaven");
+                 
                         continue;
                     }
 
                     if (haven.Zones == null || haven.Zones.Count() == 0)
                     {
-                        rebuildDetails.Add($"haven={GetSiteName(havenSite)}; minCounter={kvp.Value}; skipped=no zones");
+         
                         continue;
                     }
 
                     RiskWindow risk = ToRiskWindow(kvp.Value, leadHours);
-                    rebuildDetails.Add($"haven={GetSiteName(havenSite)}; minCounter={kvp.Value}; risk={risk}");
+     
 
                     if (risk != RiskWindow.None)
                     {
                         SiteRiskById[havenSite.SiteId] = risk;
                     }
-                }
-
-                rebuildDetails.Add($"activeWarnings=[{string.Join(", ", SiteRiskById.Select(kvp => $"{kvp.Key}:{kvp.Value}"))}]");
-
-                foreach (string detail in rebuildDetails)
-                {
-                    TFTVLogger.Always(detail);
                 }
             }
 

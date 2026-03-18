@@ -209,7 +209,10 @@ namespace TFTV.TFTVIncidents
 
             if (geoEvent.Context != null)
             {
+                introText = TextAdjustment.GeoscapeEventTokenPostfixPatch.ReplaceCustomTokens(geoEvent.Context, introText, data.EventId);
                 introText = geoEvent.Context.ReplaceEventTokens(introText);
+
+                chosenApproach = TextAdjustment.GeoscapeEventTokenPostfixPatch.ReplaceCustomTokens(geoEvent.Context, chosenApproach, data.EventId);
                 chosenApproach = geoEvent.Context.ReplaceEventTokens(chosenApproach);
             }
 

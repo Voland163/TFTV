@@ -119,9 +119,9 @@ namespace TFTV
             public static void Postfix(GeoLevelController __instance)
             {
                 TFTVVanillaFixes.Geoscape.ApplyDailyUpdate(__instance);
-                TFTVBaseRework.PersonnelData.DailyUpdatePersonnelPool(__instance);
                 TFTVBaseRework.TrainingFacilityRework.DailyUpdateTraining(__instance);
                 TFTVBaseRework.TrainingFacilityRework.DailyUpdateTrainingDeferredFallback(__instance);
+                TFTVBaseRework.PersonnelData.DailyUpdatePersonnelPool(__instance);
             }
         }
 

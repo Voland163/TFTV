@@ -153,6 +153,83 @@ namespace MadSkunkyTweaks.Tools
                 tacticalOption);
         }
 
+        [ConsoleCommand(
+            Command = "incident_list",
+            Description = "Lists available incident IDs.")]
+        public static void ListIncidents(IConsole console)
+        {
+            try
+            {
+                if (!EnsureIncidentDefinitionsAvailable())
+                {
+                    TFTVLogger.Always("[IncidentTest] Incident definitions are not available.");
+                    return;
+                }
+
+                foreach (Objects.GeoIncidentDefinition incident in GeoscapeEvents.IncidentDefinitions
+                    .Where(i => i != null && i.IntroEvent != null)
+                    .OrderBy(i => i.Id))
+                {
+                    string factionShortName = incident.FactionDef != null && incident.FactionDef.PPFactionDef != null
+                        ? incident.FactionDef.PPFactionDef.ShortName
+                        : "ANY";
+
+                    TFTVLogger.Always($"[IncidentTest] {incident.Id} ({factionShortName}) -> {incident.IntroEvent.EventID}");
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        [ConsoleCommand(
+            Command = "incident_trigger",
+            Description = "Usage: incident_trigger <incidentId> [siteNameContains]")]
+        public static void TriggerIncident(IConsole console, int incidentId, params string[] siteNameParts)
+        {
+            try
+            {
+                if (!BaseReworkUtils.BaseReworkEnabled)
+                {
+                    TFTVLogger.Always("[IncidentTest] Base Rework is disabled.");
+                    return;
+                }
+
+                GeoLevelController level = GetCurrentGeoLevel();
+                if (level == null)
+                {
+                    TFTVLogger.Always("[IncidentTest] This command must be used in geoscape.");
+                    return;
+                }
+
+                string siteNameFilter = siteNameParts == null || siteNameParts.Length == 0
+                    ? string.Empty
+                    : string.Join(" ", siteNameParts).Trim();
+
+                if (!Roll.TryTriggerIncident(level, incidentId, siteNameFilter))
+                {
+                    string suffix = string.IsNullOrEmpty(siteNameFilter) ? string.Empty : $" for site filter '{siteNameFilter}'";
+                    TFTVLogger.Always($"[IncidentTest] Failed to trigger incident {incidentId}{suffix}.");
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static bool EnsureIncidentDefinitionsAvailable()
+        {
+            if (GeoscapeEvents.IncidentDefinitions != null && GeoscapeEvents.IncidentDefinitions.Count > 0)
+            {
+                return true;
+            }
+
+            GeoscapeEvents.CreateGeoscapeEvents();
+            return GeoscapeEvents.IncidentDefinitions != null && GeoscapeEvents.IncidentDefinitions.Count > 0;
+        }
+
         /// Injcecting the mods console commands to the base game console handler
         public static void InjectConsoleCommands()
         {

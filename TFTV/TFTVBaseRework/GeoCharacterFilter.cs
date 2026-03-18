@@ -1,10 +1,9 @@
 ﻿using Base.Defs;
 using Base.UI.MessageBox;
-using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
@@ -15,7 +14,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using UnityEngine;
 
 namespace TFTV.TFTVBaseRework
 {
@@ -27,7 +25,45 @@ namespace TFTV.TFTVBaseRework
         private static readonly SharedData Shared = TFTVMain.Shared;
 
 
-     
+        internal class PersonnelCountersAdjustments
+        {
+            [HarmonyPatch(typeof(GeoSiteVisualsController), "RefreshSiteVisuals")]
+            public static class GeoSiteVisualsController_BaseIconAbilityFilterPatch
+            {
+               
+                private static readonly MethodInfo RefreshAvailableSoldiersCountMethod = AccessTools.Method(typeof(GeoSiteVisualsController), "RefreshAvailableSoldiersCount");
+
+                public static void Postfix(GeoSiteVisualsController __instance, GeoSite site)
+                {
+                    try
+                    {
+
+                        if (!BaseReworkUtils.BaseReworkEnabled) return;
+
+                        if (__instance == null || site == null || site.Type != GeoSiteType.PhoenixBase || site.State != GeoSiteState.Functioning)
+                        {
+                            return;
+                        }
+
+                        GeoPhoenixBase phoenixBase = site.GetComponent<GeoPhoenixBase>();
+                        if (phoenixBase == null || phoenixBase.Site == null)
+                        {
+                            return;
+                        }
+
+                        int filteredCount = phoenixBase.SoldiersInBase.Count((GeoCharacter character) => character != null && !HiddenOperativeMarkerFilter.ShouldHide(character));
+                        RefreshAvailableSoldiersCountMethod?.Invoke(__instance, new object[]
+                        {
+                filteredCount != 0,
+                filteredCount
+                        });
+                    }
+                    catch (Exception ex) { TFTVLogger.Error(ex); }
+                }
+
+
+            }
+        }
 
 
         internal static class HiddenOperativeMarkerFilter
@@ -92,7 +128,7 @@ namespace TFTV.TFTVBaseRework
                 if (msgResult.DialogResult != MessageBoxResult.Yes)
                 {
                     return;
-                }            
+                }
 
                 ____characters = HiddenOperativeMarkerFilter.FilterCharacters(____characters).ToList();
 
@@ -102,7 +138,7 @@ namespace TFTV.TFTVBaseRework
 
                 }
 
-            } 
+            }
         }
 
 

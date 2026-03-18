@@ -18,6 +18,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using static TFTV.TFTVBaseRework.BaseReworkUtils;
 using static TFTV.TFTVBaseRework.PersonnelData;
+using static TFTV.TFTVBaseRework.TrainingFacilityRework;
 using static TFTV.TFTVBaseRework.Workers;
 using Object = UnityEngine.Object;
 
@@ -43,20 +44,10 @@ namespace TFTV.TFTVBaseRework
             Text tmp = __instance.SoldiersTab.GetComponentInChildren<Text>(true);
             if (tmp != null)
             {
-          //  TFTVLogger.Always($"Found Text component for SoldiersTab {tmp.name}, {tmp.text}.");
                 tmp.text = replacement;
                 return;
             }
 
-
-         /*   // Optional deep fallback: try private fields on PhoenixGeneralButton
-            FieldInfo textField = __instance.SoldiersTab.GetType()
-                .GetField("Text", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-            if (textField?.GetValue(__instance.SoldiersTab) is Text privateText)
-            {
-                privateText.text = replacement;
-            }*/
         }
     }
 
@@ -77,32 +68,82 @@ namespace TFTV.TFTVBaseRework
                 return;
             }
 
-
             try
             {
-                if (level?.PhoenixFaction == null) return;
-
-                if (!_deploymentUIActive)
+                if (level?.PhoenixFaction == null)
                 {
-                    foreach (var p in Assignments.Values)
-                    {
-                        if (p.Assignment == PersonnelAssignment.Training &&
-                            p.Character != null &&
-                             TrainingFacilityRework.IsRecruitTrainingComplete(p.Character, level))
-                        {
-                            AutoOpenVanillaDeploymentUI(level, level.PhoenixFaction, p);
-                            break;
-                        }
-                    }
+                    TFTVLogger.Always($"{LogPrefix} DailyTick skipped: level or PhoenixFaction is null.");
+                    return;
                 }
+      
+                bool opened = TryOpenNextCompletedDeployment(level);
+
             }
             catch (Exception e) { TFTVLogger.Error(e); }
+        }
+
+        private static bool TryOpenNextCompletedDeployment(GeoLevelController level)
+        {
+            try
+            {
+                if (level?.PhoenixFaction == null)
+                {
+                    TFTVLogger.Always($"{LogPrefix} TryOpenNextCompletedDeployment aborted: level or PhoenixFaction is null.");
+                    return false;
+                }
+
+                if (_deploymentUIActive)
+                {
+                    TFTVLogger.Always($"{LogPrefix} TryOpenNextCompletedDeployment blocked: deployment UI already active.");
+                    return false;
+                }
+
+                foreach (PersonnelInfo p in Assignments.Values.OrderBy(x => GetPersonnelName(x)))
+                {
+                    if (p == null)
+                    {
+                        TFTVLogger.Always($"{LogPrefix} Candidate skipped: PersonnelInfo is null.");
+                        continue;
+                    }
+
+                    string name = GetPersonnelName(p);
+                    string assignment = p.Assignment.ToString();
+                    bool hasCharacter = p.Character != null;
+
+
+                    if (p.Assignment != PersonnelAssignment.Training)
+                    {
+                        continue;
+                    }
+
+                    if (p.Character == null)
+                    {
+                        TFTVLogger.Always($"{LogPrefix} Candidate {name} skipped: training assignment but Character is null.");
+                        continue;
+                    }
+
+                    RecruitTrainingSession session = TrainingFacilityRework.GetRecruitSession(p.Character);
+                    bool complete = TrainingFacilityRework.IsRecruitTrainingComplete(p.Character, level);
+
+
+                    if (complete)
+                    {
+
+                        AutoOpenVanillaDeploymentUI(level, level.PhoenixFaction, p);
+                      
+                        return true;
+                    }
+                }
+
+    
+            }
+            catch (Exception e) { TFTVLogger.Error(e); }
+
+            return false;
         }
         #endregion
 
         #region Harmony
-        
-
         [HarmonyPatch(typeof(UIStateRosterRecruits), "EnterState")]
         internal static class UIStateRosterRecruits_EnterState_PersonnelManagement
         {
@@ -113,8 +154,10 @@ namespace TFTV.TFTVBaseRework
                     return;
                 }
 
-
-                try { CreatePersonnelPanel(__instance); }
+                try
+                {
+                    CreatePersonnelPanel(__instance);
+                }
                 catch (Exception e) { TFTVLogger.Error(e); }
             }
         }
@@ -129,16 +172,44 @@ namespace TFTV.TFTVBaseRework
                     return;
                 }
 
-
                 try
                 {
+                 
                     if (_personnelPanel != null) { Object.Destroy(_personnelPanel); _personnelPanel = null; }
                     CloseModal();
                     _deploymentUIActive = false;
+
                 }
                 catch (Exception e) { TFTVLogger.Error(e); }
             }
         }
+
+       
+
+        [HarmonyPatch(typeof(UIStateAssetDeployment), "ExitState")]
+        internal static class UIStateAssetDeployment_ExitState_PersonnelManagement
+        {
+            private static void Postfix()
+            {
+                if (!BaseReworkEnabled)
+                {
+                    return;
+                }
+
+                try
+                {
+                   
+                    _deploymentUIActive = false;
+
+                    GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                   
+                    bool opened = TryOpenNextCompletedDeployment(level);
+                  
+                }
+                catch (Exception e) { TFTVLogger.Error(e); }
+            }
+        }
+
 
         [HarmonyPatch(typeof(UIModuleRecruitsList), nameof(UIModuleRecruitsList.SetRecruitsList))]
         public static class PersonnelManagementPatch
@@ -167,8 +238,6 @@ namespace TFTV.TFTVBaseRework
             {
                 return;
             }
-
-
 
             var level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
             var recruitsModule = level?.View?.GeoscapeModules?.RecruitsListModule;
@@ -792,10 +861,19 @@ namespace TFTV.TFTVBaseRework
         {
             try
             {
-                if (level == null || faction == null || person == null) return;
+                if (level == null || faction == null || person == null)
+                {
+                    TFTVLogger.Always($"{LogPrefix} AutoOpenVanillaDeploymentUI aborted: level/faction/person null.");
+                    return;
+                }
+
 
                 GeoCharacter character = TrainingFacilityRework.FinalizeRecruitTrainingForUI(level, person.Character, early: false);
-                if (character == null) return;
+                if (character == null)
+                {
+                    TFTVLogger.Always($"{LogPrefix} AutoOpenVanillaDeploymentUI failed: FinalizeRecruitTrainingForUI returned null for {GetPersonnelName(person)}.");
+                    return;
+                }
 
                 PersonnelData.RemovePersonnel(faction, person);
 
@@ -803,9 +881,12 @@ namespace TFTV.TFTVBaseRework
 
                 _deploymentUIActive = true;
 
-                faction.RemoveCharacter(character);
 
+                faction.RemoveCharacter(character);
+           
+         
                 level.View.PrepareDeployAsset(faction, character, null, null, manufactured: false, spaceFull: false);
+      
             }
             catch (Exception e)
             {

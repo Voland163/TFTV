@@ -113,6 +113,125 @@ namespace TFTV.TFTVIncidents
             }
         }
 
+        internal static bool TryTriggerIncident(GeoLevelController geoLevelController, int incidentId, string siteNameFilter)
+        {
+            try
+            {
+                if (geoLevelController == null || geoLevelController.EventSystem == null || geoLevelController.PhoenixFaction == null)
+                {
+                    TFTVLogger.Always("[Incidents] Manual trigger requires an active geoscape level.");
+                    return false;
+                }
+
+                if (!EnsureIncidentDefinitionsInitialized())
+                {
+                    TFTVLogger.Always("[Incidents] Incident definitions are not initialized.");
+                    return false;
+                }
+
+                Objects.GeoIncidentDefinition incident = GeoscapeEvents.IncidentDefinitions.FirstOrDefault(i =>
+                    i != null
+                    && i.Id == incidentId
+                    && i.IntroEvent != null);
+
+                if (incident == null)
+                {
+                    TFTVLogger.Always($"[Incidents] Incident {incidentId} was not found.");
+                    return false;
+                }
+
+                GeoHaven targetHaven = FindManualTriggerTargetHaven(geoLevelController, incident, siteNameFilter);
+                if (targetHaven == null || targetHaven.Site == null)
+                {
+                    string factionShortName = GetIncidentFactionShortName(incident);
+                    string filterText = string.IsNullOrWhiteSpace(siteNameFilter) ? string.Empty : $" matching '{siteNameFilter}'";
+                    TFTVLogger.Always($"[Incidents] No eligible {factionShortName} haven found{filterText} for incident {incidentId}.");
+                    return false;
+                }
+
+                string timerId = SetupTimedEventForSite(incident.IntroEvent.EventID, targetHaven.Site, 120);
+                if (string.IsNullOrEmpty(timerId))
+                {
+                    TFTVLogger.Always($"[Incidents] Failed to queue incident {incidentId} at {targetHaven.Site.LocalizedSiteName}.");
+                    return false;
+                }
+
+                AddIncidentLogEntryAndPause(geoLevelController, incident, targetHaven);
+                TFTVLogger.Always($"[Incidents] Manually triggered incident {incidentId} at {targetHaven.Site.LocalizedSiteName}.");
+                return true;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return false;
+            }
+        }
+
+        private static bool EnsureIncidentDefinitionsInitialized()
+        {
+            if (GeoscapeEvents.IncidentDefinitions != null && GeoscapeEvents.IncidentDefinitions.Count > 0)
+            {
+                return true;
+            }
+
+            GeoscapeEvents.CreateGeoscapeEvents();
+            return GeoscapeEvents.IncidentDefinitions != null && GeoscapeEvents.IncidentDefinitions.Count > 0;
+        }
+
+        private static GeoHaven FindManualTriggerTargetHaven(
+            GeoLevelController geoLevelController,
+            Objects.GeoIncidentDefinition incident,
+            string siteNameFilter)
+        {
+            GeoPhoenixFaction phoenixFaction = geoLevelController.PhoenixFaction;
+
+            IEnumerable<GeoHaven> havens = geoLevelController.Map.AllSites
+                .Select(site => site != null ? site.GetComponent<GeoHaven>() : null)
+                .Where(haven => haven != null
+                    && haven.Site != null
+                    && haven.Site.State == PhoenixPoint.Common.Core.GeoSiteState.Functioning
+                    && haven.Site.ActiveMission == null
+                    && !Resolution.IncidentController.SiteHasActiveIncident(haven.Site));
+
+            if (incident.FactionDef != null)
+            {
+                havens = havens.Where(haven => haven.Site.Owner != null && haven.Site.Owner.Def == incident.FactionDef);
+            }
+
+            if (!string.IsNullOrWhiteSpace(siteNameFilter))
+            {
+                havens = havens.Where(haven => SiteMatchesFilter(haven.Site, siteNameFilter));
+            }
+
+            return havens
+                .OrderByDescending(haven => haven.Site.GetVisited(phoenixFaction))
+                .ThenBy(haven => haven.Site.LocalizedSiteName)
+                .FirstOrDefault();
+        }
+
+        private static bool SiteMatchesFilter(GeoSite site, string siteNameFilter)
+        {
+            if (site == null || string.IsNullOrWhiteSpace(siteNameFilter))
+            {
+                return true;
+            }
+
+            return (!string.IsNullOrEmpty(site.LocalizedSiteName)
+                    && site.LocalizedSiteName.IndexOf(siteNameFilter, StringComparison.OrdinalIgnoreCase) >= 0)
+                || (!string.IsNullOrEmpty(site.name)
+                    && site.name.IndexOf(siteNameFilter, StringComparison.OrdinalIgnoreCase) >= 0);
+        }
+
+        private static string GetIncidentFactionShortName(Objects.GeoIncidentDefinition incident)
+        {
+            if (incident?.FactionDef?.PPFactionDef != null)
+            {
+                return incident.FactionDef.PPFactionDef.ShortName;
+            }
+
+            return "ANY";
+        }
+
         private static void AddIncidentLogEntryAndPause(
             GeoLevelController geoLevelController,
             Objects.GeoIncidentDefinition incident,

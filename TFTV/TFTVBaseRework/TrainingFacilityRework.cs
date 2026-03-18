@@ -72,7 +72,6 @@ namespace TFTV.TFTVBaseRework
         #region Public API (Recruit descriptor training)
         public static bool QueueCharacterTraining(GeoLevelController level, GeoCharacter character, SpecializationDef spec)
         {
-
             try
             {
                 if (level == null || character == null || spec == null) return false;
@@ -93,7 +92,7 @@ namespace TFTV.TFTVBaseRework
                 int targetLevel = DetermineTargetLevel(level.PhoenixFaction);
                 int effectiveDuration = CalculateEffectiveDurationDays(level.PhoenixFaction);
 
-                var recruitSession = new RecruitTrainingSession
+                RecruitTrainingSession recruitSession = new RecruitTrainingSession
                 {
                     PersonnelId = PersonnelData.GetOrCreatePersonnelId(character),
                     Character = character,
@@ -105,12 +104,36 @@ namespace TFTV.TFTVBaseRework
                     Completed = false,
                     VirtualLevelAchieved = 1
                 };
+
                 RecruitSessions.Add(recruitSession);
+                TFTVAAAgendaTracker.ExtendedAgendaTracker.RefreshRecruitTrainingTracker(character);
 
                 TFTVLogger.Always($"[Training] Queued recruit training: {character.DisplayName} Spec={spec.name} StartDay={currentDay} Duration={effectiveDuration} TargetLevel={targetLevel} Used/Provided={usedSlots + 1}/{providedSlots}");
                 return true;
             }
-            catch (Exception e) { TFTVLogger.Error(e); return false; }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return false;
+            }
+        }
+
+        public static List<RecruitTrainingSession> GetActiveRecruitSessions()
+        {
+            return RecruitSessions
+                .Where(s => s != null && !s.Completed && s.Character != null)
+                .ToList();
+        }
+
+        private static void RemoveRecruitSession(RecruitTrainingSession session)
+        {
+            if (session == null)
+            {
+                return;
+            }
+
+            RecruitSessions.Remove(session);
+            TFTVAAAgendaTracker.ExtendedAgendaTracker.RefreshRecruitTrainingTracker(session.Character);
         }
 
         public static RecruitTrainingSession GetRecruitSession(GeoCharacter character)
@@ -359,11 +382,7 @@ namespace TFTV.TFTVBaseRework
 
         private static int CalculateUsedTrainingSlots() => RecruitSessions.Count(s => !s.Completed);
 
-        private static void RemoveRecruitSession(RecruitTrainingSession session)
-        {
-            if (session == null) return;
-            RecruitSessions.Remove(session);
-        }
+      
         private static TacCharacterDef ResolveTemplateForSpecialization(GeoPhoenixFaction faction, SpecializationDef specialization)
         {
             try

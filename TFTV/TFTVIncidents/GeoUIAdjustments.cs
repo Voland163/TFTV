@@ -119,7 +119,7 @@ namespace TFTV.TFTVIncidents
 
                 if (IsIncidentIntroEventId(encounterEvent.EventID))
                 {
-                    TFTVLogger.Always($"[Incidents UI] Detected intro event: {encounterEvent.EventID}");
+                  
                     return true;
                 }
 
@@ -130,11 +130,7 @@ namespace TFTV.TFTVIncidents
                         && !string.IsNullOrEmpty(i.IntroEvent.EventID)
                         && string.Equals(i.IntroEvent.EventID, encounterEvent.EventID, StringComparison.OrdinalIgnoreCase));
 
-                if (inDefinitions)
-                {
-                    TFTVLogger.Always($"[Incidents UI] Detected intro event from definitions: {encounterEvent.EventID}");
-                }
-
+            
                 return inDefinitions;
             }
 

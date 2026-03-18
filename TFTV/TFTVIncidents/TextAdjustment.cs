@@ -34,16 +34,26 @@ namespace TFTV.TFTVIncidents
                     { "[OperativeName]", GetOperativeName }
                 };
 
+
+            private const string Incident22EventPrefix = "TFTV_INCIDENT_22_";
+
             public static void Postfix(GeoscapeEventContext __instance, ref string __result)
             {
-                if (string.IsNullOrEmpty(__result))
+                __result = ReplaceCustomTokens(__instance, __result, null);
+            }
+
+            internal static string ReplaceCustomTokens(GeoscapeEventContext context, string text, string eventIdOverride)
+            {
+                if (string.IsNullOrEmpty(text))
                 {
-                    return;
+                    return text;
                 }
+
+                string result = text;
 
                 foreach (KeyValuePair<string, Func<GeoscapeEventContext, string>> entry in _customTokenReplacers)
                 {
-                    if (!__result.Contains(entry.Key))
+                    if (!result.Contains(entry.Key))
                     {
                         continue;
                     }
@@ -51,21 +61,167 @@ namespace TFTV.TFTVIncidents
                     string replacement = string.Empty;
                     try
                     {
-                        replacement = entry.Value?.Invoke(__instance) ?? string.Empty;
+                        replacement = ResolveCustomToken(entry.Key, context, eventIdOverride) ?? string.Empty;
                     }
-                    catch
+                    catch (Exception e)
                     {
-                        // Keep event rendering safe even if a token callback fails.
                         replacement = string.Empty;
                     }
 
-                    __result = __result.Replace(entry.Key, replacement);
+                    result = result.Replace(entry.Key, replacement);
+    
                 }
+
+                return result;
+            }
+
+            private static string ResolveCustomToken(string token, GeoscapeEventContext context, string eventIdOverride)
+            {
+                switch (token)
+                {
+                    case "[RequirementOperativeName]":
+                        return GetRequirementOperativeName(context, eventIdOverride);
+
+                    case "[RequirementHavenName]":
+                        return GetRequirementHavenName(context, eventIdOverride);
+
+                    case "[OperativeName]":
+                        return GetOperativeName(context);
+
+                    default:
+                        return string.Empty;
+                }
+            }
+
+            private static string GetRequirementHavenName(GeoscapeEventContext context)
+            {
+                return GetRequirementHavenName(context, null);
+            }
+
+            private static string GetRequirementHavenName(GeoscapeEventContext context, string eventIdOverride)
+            {
+               
+
+                Objects.GeoIncidentDefinition incident = GetIncidentDefinition(context, eventIdOverride);
+                if (incident == null || incident.EligibilityConditions == null)
+                {
+                   
+
+                    return string.Empty;
+                }
+
+                Objects.GeoIncidentEligibilityCondition nearbyCondition = incident.EligibilityConditions
+                    .FirstOrDefault(c => c != null && c.NearbyHavenRange > EarthUnits.Zero);
+
+                if (nearbyCondition == null)
+                {
+                    
+                    return string.Empty;
+                }
+
+                GeoHaven originHaven = GetIncidentHaven(context);
+                if (originHaven == null)
+                {
+
+                    return string.Empty;
+                }
+
+                GeoFaction visitingFaction = GetPhoenixFaction(context);
+                GeoHaven nearbyHaven = GetFirstNearbyEligibleHaven(originHaven, visitingFaction, nearbyCondition);
+                string resolvedName = nearbyHaven?.Site?.LocalizedSiteName ?? string.Empty;         
+
+                return resolvedName;
+            }
+
+         
+            private static Objects.GeoIncidentDefinition GetIncidentDefinition(GeoscapeEventContext context, string eventIdOverride)
+            {
+               
+                if (GeoscapeEvents.IncidentDefinitions == null || GeoscapeEvents.IncidentDefinitions.Count == 0)
+                {
+                    return null;
+                }
+
+                string eventId = GetEventId(context, eventIdOverride);
+                if (string.IsNullOrEmpty(eventId))
+                {
+                    return null;
+                }
+
+                Match match = IncidentIdRegex.Match(eventId);
+                if (!match.Success)
+                {
+                    return null;
+                }
+
+                int incidentId;
+                if (!int.TryParse(match.Groups[1].Value, out incidentId))
+                {
+                    return null;
+                }
+
+                Objects.GeoIncidentDefinition incident = GeoscapeEvents.IncidentDefinitions.FirstOrDefault(i => i.Id == incidentId);
+
+
+                return incident;
+            }
+
+            private static string GetEventId(GeoscapeEventContext context)
+            {
+                return GetEventId(context, null);
+            }
+
+            private static string GetEventId(GeoscapeEventContext context, string eventIdOverride)
+            {
+                object eventObj = GetMemberValue(context, "Event") ?? GetMemberValue(context, "GeoscapeEvent");
+                object eventData = GetMemberValue(context, "EventData")
+                    ?? GetMemberValue(eventObj, "EventData")
+                    ?? GetMemberValue(eventObj, "GeoscapeEventData");
+                GeoSite site = GetContextSite(context);
+
+                string contextEventId = GetStringMemberValue(context, "EventID");
+                string eventEventId = GetStringMemberValue(eventObj, "EventID");
+                string eventDataEventId = GetStringMemberValue(eventData, "EventID");
+                string encounterId = site != null ? site.EncounterID : string.Empty;
+
+
+
+                if (!string.IsNullOrEmpty(eventIdOverride))
+                {
+                    return eventIdOverride;
+                }
+
+                if (!string.IsNullOrEmpty(contextEventId))
+                {
+                    return contextEventId;
+                }
+
+                if (!string.IsNullOrEmpty(eventEventId))
+                {
+                    return eventEventId;
+                }
+
+                if (!string.IsNullOrEmpty(eventDataEventId))
+                {
+                    return eventDataEventId;
+                }
+
+                if (!string.IsNullOrEmpty(encounterId))
+                {
+                    return encounterId;
+                }
+
+                return string.Empty;
             }
 
             private static string GetRequirementOperativeName(GeoscapeEventContext context)
             {
-                Objects.GeoIncidentDefinition incident = GetIncidentDefinition(context);
+                return GetRequirementOperativeName(context, null);
+            }
+
+            private static string GetRequirementOperativeName(GeoscapeEventContext context, string eventIdOverride)
+            {
+                Objects.GeoIncidentDefinition incident = GetIncidentDefinition(context, eventIdOverride);
                 if (incident == null || incident.EligibilityConditions == null)
                 {
                     return string.Empty;
@@ -87,32 +243,7 @@ namespace TFTV.TFTVIncidents
                 return GetCharacterName(operative);
             }
 
-            private static string GetRequirementHavenName(GeoscapeEventContext context)
-            {
-                Objects.GeoIncidentDefinition incident = GetIncidentDefinition(context);
-                if (incident == null || incident.EligibilityConditions == null)
-                {
-                    return string.Empty;
-                }
-
-                Objects.GeoIncidentEligibilityCondition nearbyCondition = incident.EligibilityConditions
-                    .FirstOrDefault(c => c != null && c.NearbyHavenRange > EarthUnits.Zero);
-
-                if (nearbyCondition == null)
-                {
-                    return string.Empty;
-                }
-
-                GeoHaven originHaven = GetIncidentHaven(context);
-                if (originHaven == null)
-                {
-                    return string.Empty;
-                }
-
-                GeoFaction visitingFaction = GetPhoenixFaction(context);
-                GeoHaven nearbyHaven = GetFirstNearbyEligibleHaven(originHaven, visitingFaction, nearbyCondition);
-                return nearbyHaven?.Site?.LocalizedSiteName ?? string.Empty;
-            }
+            
 
             private static string GetOperativeName(GeoscapeEventContext context)
             {
@@ -168,56 +299,7 @@ namespace TFTV.TFTVIncidents
                 return null;
             }
 
-            private static Objects.GeoIncidentDefinition GetIncidentDefinition(GeoscapeEventContext context)
-            {
-                if (GeoscapeEvents.IncidentDefinitions == null || GeoscapeEvents.IncidentDefinitions.Count == 0)
-                {
-                    return null;
-                }
-
-                string eventId = GetEventId(context);
-                if (string.IsNullOrEmpty(eventId))
-                {
-                    return null;
-                }
-
-                Match match = IncidentIdRegex.Match(eventId);
-                if (!match.Success)
-                {
-                    return null;
-                }
-
-                int incidentId;
-                if (!int.TryParse(match.Groups[1].Value, out incidentId))
-                {
-                    return null;
-                }
-
-                return GeoscapeEvents.IncidentDefinitions.FirstOrDefault(i => i.Id == incidentId);
-            }
-
-            private static string GetEventId(GeoscapeEventContext context)
-            {
-                string eventId = GetStringMemberValue(context, "EventID");
-                if (!string.IsNullOrEmpty(eventId))
-                {
-                    return eventId;
-                }
-
-                object eventObj = GetMemberValue(context, "Event") ?? GetMemberValue(context, "GeoscapeEvent");
-                eventId = GetStringMemberValue(eventObj, "EventID");
-                if (!string.IsNullOrEmpty(eventId))
-                {
-                    return eventId;
-                }
-
-                object eventData = GetMemberValue(context, "EventData")
-                    ?? GetMemberValue(eventObj, "EventData")
-                    ?? GetMemberValue(eventObj, "GeoscapeEventData");
-
-                return GetStringMemberValue(eventData, "EventID");
-            }
-
+ 
             private static GeoSite GetContextSite(GeoscapeEventContext context)
             {
                 GeoSite site = GetMemberValue(context, "Site") as GeoSite;

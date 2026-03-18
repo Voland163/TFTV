@@ -144,7 +144,15 @@ namespace TFTV.TFTVIncidents
         {
             try
             {
-                if (module == null || geoEvent?.Context == null || pagingEvent)
+                bool isIncidentSuccess = IsIncidentSuccessEvent(geoEvent != null ? geoEvent.EventID : null);
+                Transform panelParent = GetPanelParent(module);
+
+                if (panelParent != null && (!isIncidentSuccess || geoEvent?.Context == null || pagingEvent))
+                {
+                    RemoveExistingPanel(panelParent);
+                }
+
+                if (module == null || geoEvent?.Context == null || pagingEvent || !isIncidentSuccess)
                 {
                     return;
                 }
@@ -157,9 +165,14 @@ namespace TFTV.TFTVIncidents
             }
         }
 
+        private static Transform GetPanelParent(UIModuleSiteEncounters module)
+        {
+            return module != null ? module.transform : null;
+        }
+
         private static void TryRenderAffinityChoicePanel(UIModuleSiteEncounters module, GeoscapeEvent geoEvent)
         {
-            Transform panelParent = module.transform;
+            Transform panelParent = GetPanelParent(module);
             if (panelParent == null)
             {
                 TFTVLogger.Always($"{DiagTag} No panel parent.");
@@ -187,7 +200,6 @@ namespace TFTV.TFTVIncidents
 
             CreatePanel(panelParent, module, level, approach, rank);
         }
-
         private static bool IsIncidentSuccessEvent(string eventId)
         {
             return !string.IsNullOrEmpty(eventId)
