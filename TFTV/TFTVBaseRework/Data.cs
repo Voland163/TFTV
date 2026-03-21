@@ -760,7 +760,7 @@ namespace TFTV.TFTVBaseRework
                     PersonnelInfo info = new PersonnelInfo
                     {
                         Id = save.GeoUnitId,
-                        Character = phoenix.Soldiers.FirstOrDefault(s => s.Id == save.GeoUnitId),
+                        Character = phoenix.Characters.FirstOrDefault(s => s.Id == save.GeoUnitId),
                         Assignment = save.Assignment,
                         TrainingSpec = null
                     };

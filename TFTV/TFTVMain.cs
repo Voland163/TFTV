@@ -95,7 +95,7 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                string version = $"TFTV 1.0, Closed Beta Patch 24 20260318 release #1  v{MetaData.Version}";
+                string version = $"TFTV 1.0, Closed Beta Patch 24 20260322 release #1  v{MetaData.Version}";
 
                 //AIRCRAFT REWORK LASER WEAPONS
 

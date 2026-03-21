@@ -5,6 +5,7 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewModules;
@@ -24,6 +25,46 @@ namespace TFTV.TFTVBaseRework
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
+
+        private static bool ShouldIncludeInSoldiersResult(GeoPhoenixFaction faction, GeoCharacter character)
+        {
+            if (character == null)
+            {
+                return false;
+            }
+
+            if (!Enabled)
+            {
+                return true;
+            }
+
+            if (faction != null && character.Faction != faction)
+            {
+                return false;
+            }
+
+            if (!HiddenOperativeMarkerFilter.ShouldHide(character))
+            {
+                return true;
+            }
+
+            PersonnelInfo personnel = PersonnelData.GetPersonnelByUnitId(character.Id);
+            if (personnel == null)
+            {
+                return false;
+            }
+
+            switch (personnel.Assignment)
+            {
+                case PersonnelAssignment.Research:
+                case PersonnelAssignment.Manufacturing:
+                case PersonnelAssignment.Training:
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
 
         internal class PersonnelCountersAdjustments
         {
@@ -60,9 +101,22 @@ namespace TFTV.TFTVBaseRework
                     }
                     catch (Exception ex) { TFTVLogger.Error(ex); }
                 }
-
-
             }
+
+            [HarmonyPatch(typeof(GeoPhoenixFaction), "get_Soldiers")]
+            private static class GeoPhoenixFaction_GetSoldiers_Patch
+            {
+                private static void Postfix(GeoPhoenixFaction __instance, ref IEnumerable<GeoCharacter> __result)
+                {
+                    if (!Enabled || __result == null)
+                    {
+                        return;
+                    }
+
+                    __result = __result.Where((GeoCharacter soldier) => ShouldIncludeInSoldiersResult(__instance, soldier));
+                }
+            }
+
         }
 
 

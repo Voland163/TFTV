@@ -717,7 +717,7 @@ namespace TFTV.TFTVBaseRework
                 }
 
                 if (_pendingPostRecruitStatApply.Count == 0) return;
-                foreach (var soldier in level?.PhoenixFaction?.Soldiers ?? Enumerable.Empty<GeoCharacter>())
+                foreach (var soldier in level?.PhoenixFaction?.Characters ?? Enumerable.Empty<GeoCharacter>())
                 {
                     if (_pendingPostRecruitStatApply.ContainsKey(soldier.Id))
                     {
@@ -838,7 +838,8 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
-                    GeoCharacter character = level.PhoenixFaction?.Soldiers?.FirstOrDefault(s => s.Id == save.GeoUnitId);
+
+                    GeoCharacter character = level.PhoenixFaction?.Characters?.FirstOrDefault(s => s.Id == save.GeoUnitId);
 
                     SpecializationDef spec = null;
                     if (!string.IsNullOrEmpty(save.MainSpecName))
