@@ -32,8 +32,8 @@ namespace TFTV.TFTVBaseRework
 
         private static readonly Dictionary<string, float> DurationReductionResearch = new Dictionary<string, float>
         {
-            { "NJ_Training_ResearchDef", 0.15f },
-            { "PX_AntediluvianArchaeology_ResearchDef", 0.10f },
+            { "NJ_Training_ResearchDef", 0.25f },
+            { "PX_AntediluvianArchaeology_ResearchDef", 0.25f },
         };
 
         private static readonly string AdvancedLevelResearchId = "PX_EliteTraining_ResearchDef";

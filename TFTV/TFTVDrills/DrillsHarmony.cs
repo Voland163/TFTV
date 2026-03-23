@@ -675,6 +675,8 @@ namespace TFTV.TFTVDrills
                 [HarmonyPrefix]
                 private static bool PreventSwitchingWhenLocked(EquipmentComponent __instance, Equipment equipment)
                 {
+                   
+
                     if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return true;
@@ -684,6 +686,15 @@ namespace TFTV.TFTVDrills
                     TacticalActor actor = __instance.TacticalActor;
                     if (actor != null && equipment != null && equipment != __instance.SelectedEquipment && actor.Status.HasStatus(_bulletHellSlowStatus))
                     {
+                       
+                        if (__instance.TacticalActor.TacticalLevel.IsLoadingSavedGame) 
+                        {
+                            TFTVLogger.Always($"Trying to set equipment for actor {__instance?.TacticalActor?.DisplayName} who has bullet hell slow status: " +
+                      $"{__instance.TacticalActor.Status.HasStatus(_bulletHellSlowStatus)}. __instance.TacticalActor.TacticalLevel.IsLoadingSavedGame: {__instance.TacticalActor.TacticalLevel.IsLoadingSavedGame}");
+
+                            return true;
+                        }
+
                         return false;
                     }
 

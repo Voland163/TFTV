@@ -553,9 +553,16 @@ namespace TFTV.TFTVBaseRework
             return true;
         }
 
+        internal static bool AutoAssignEnabled = true;
+
         internal static void TryAutoAssignUnassignedPersonnel(GeoPhoenixFaction faction, string source)
         {
             if (!BaseReworkUtils.BaseReworkEnabled || faction == null)
+            {
+                return;
+            }
+
+            if (!AutoAssignEnabled)
             {
                 return;
             }
@@ -1073,6 +1080,35 @@ namespace TFTV.TFTVBaseRework
             person.TrainingSpec = spec;
 
             TryAutoAssignUnassignedPersonnel(faction, "AssignPersonnelToTraining");
+        }
+
+        internal static void UnassignFromWork(PersonnelInfo person, GeoPhoenixFaction faction)
+        {
+            if (!BaseReworkUtils.BaseReworkEnabled) return;
+            if (person?.Character == null || faction == null) return;
+
+            PersonnelAssignment previous = person.Assignment;
+            if (previous == PersonnelAssignment.Unassigned) return;
+
+            if (previous == PersonnelAssignment.Research || previous == PersonnelAssignment.Manufacturing)
+            {
+                ReleaseWorkSlotIfNeeded(faction, previous);
+            }
+
+            person.Assignment = PersonnelAssignment.Unassigned;
+            TFTVLogger.Always($"{LogPrefix} Unassigned {person.Character.DisplayName} from {previous} to Unassigned.");
+
+            try
+            {
+                GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                UIModuleInfoBar infoBar = level?.View?.GeoscapeModules?.ResourcesModule;
+                var update = AccessTools.Method(typeof(UIModuleInfoBar), "UpdateResourceInfo");
+                if (infoBar != null && update != null)
+                {
+                    update.Invoke(infoBar, new object[] { faction, false });
+                }
+            }
+            catch (Exception e) { TFTVLogger.Error(e); }
         }
     }
 }
