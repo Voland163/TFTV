@@ -213,14 +213,21 @@ namespace TFTV.TFTVIncidents
         {
             try
             {
-                PassiveModifierAbilityDef[] abilities = GetAffinityAbilities(approach);
-                if (abilities == null || abilities.Length < 3)
-                {
-                    return 0;
-                }
+                return GetAffinityRank(character?.Progression?.Abilities, approach);
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+                throw;
+            }
+        }
 
-                IEnumerable<TacticalAbilityDef> learned = character.Progression?.Abilities;
-                if (learned == null)
+        private static int GetAffinityRank(IEnumerable<TacticalAbilityDef> learned, AffinityApproach approach)
+        {
+            try
+            {
+                PassiveModifierAbilityDef[] abilities = GetAffinityAbilities(approach);
+                if (abilities == null || abilities.Length < 3 || learned == null)
                 {
                     return 0;
                 }
@@ -393,7 +400,7 @@ namespace TFTV.TFTVIncidents
             }
         }
 
-        private static int GetMissionCount(GeoCharacter character)
+        internal static int GetMissionCount(GeoCharacter character)
         {
             try
             {
@@ -416,22 +423,24 @@ namespace TFTV.TFTVIncidents
             }
         }
 
-        internal static bool TryGetCurrentAffinity(GeoCharacter character, out AffinityApproach approach, out int rank)
+        private static bool TryGetCurrentAffinity(
+            IEnumerable<TacticalAbilityDef> learnedAbilities,
+            out AffinityApproach approach,
+            out int rank)
         {
             try
             {
-
                 approach = default(AffinityApproach);
                 rank = 0;
 
-                if (character == null)
+                if (learnedAbilities == null)
                 {
                     return false;
                 }
 
                 foreach (AffinityApproach candidate in Enum.GetValues(typeof(AffinityApproach)))
                 {
-                    int candidateRank = GetAffinityRank(character, candidate);
+                    int candidateRank = GetAffinityRank(learnedAbilities, candidate);
                     if (candidateRank > rank)
                     {
                         rank = candidateRank;
@@ -440,6 +449,80 @@ namespace TFTV.TFTVIncidents
                 }
 
                 return rank > 0;
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+                throw;
+            }
+        }
+
+        internal static bool TryGetCurrentAffinity(GeoCharacter character, out AffinityApproach approach, out int rank)
+        {
+            try
+            {
+
+                if (character == null)
+                {
+                    approach = default(AffinityApproach);
+                    rank = 0;
+                    return false;
+                }
+
+                return TryGetCurrentAffinity(character.Progression?.Abilities, out approach, out rank);
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+                throw;
+            }
+        }
+
+        internal static bool TrySetAffinityRank(GeoCharacter character, AffinityApproach approach, int targetRank)
+        {
+            try
+            {
+                PassiveModifierAbilityDef targetAbility = GetAffinityAbility(approach, targetRank);
+                if (character?.Progression == null || targetAbility == null || targetRank <= 0)
+                {
+                    return false;
+                }
+
+                ICollection<TacticalAbilityDef> progressionAbilities = character.Progression.Abilities as ICollection<TacticalAbilityDef>;
+                if (progressionAbilities == null)
+                {
+                    progressionAbilities = HarmonyLib.Traverse.Create(character.Progression)
+                        .Field("_abilities")
+                        .GetValue<List<TacticalAbilityDef>>();
+                }
+
+                if (progressionAbilities == null)
+                {
+                    return false;
+                }
+
+                bool changed = false;
+
+                foreach (AffinityApproach candidateApproach in Enum.GetValues(typeof(AffinityApproach)))
+                {
+                    for (int rankIndex = 1; rankIndex <= 3; rankIndex++)
+                    {
+                        PassiveModifierAbilityDef rankAbility = GetAffinityAbility(candidateApproach, rankIndex);
+                        if (rankAbility != null && rankAbility != targetAbility && progressionAbilities.Contains(rankAbility))
+                        {
+                            progressionAbilities.Remove(rankAbility);
+                            changed = true;
+                        }
+                    }
+                }
+
+                if (!progressionAbilities.Contains(targetAbility))
+                {
+                    character.Progression.AddAbility(targetAbility);
+                    changed = true;
+                }
+
+                return changed;
             }
             catch (Exception ex)
             {

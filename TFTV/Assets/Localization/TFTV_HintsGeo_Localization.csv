@@ -4,7 +4,7 @@ KEY_GEO_HINT_CUSTOMIZE_DESC,Text,,"Maybe it's time to introduce all these purple
 Example: Margareta has 12 Willpower and 5 Delirium. Because she has 36 Stamina, and each 10 points in Stamina reduce effects of Delirium by 1, effect of Delirium on Margareta's Willpower is reduced by 3. Therefore she has 12-(5-3)=10 Willpower available.
 
 1) This is character's actual Willpower. Number in <color=#A020F0>() in purple</color> means Willpower is being reduced by Delirium.
-2) This shows the Delirium character has over the total Delirium character can have, depending on progress of Oneiric Delirium. At first, character may not have Delirium in excess of one third of their Willpower. By midgame this is increased to a half, and by late game there is no cap. <b>Pay attention to Oneiric Delirium events to learn when the cap is changed</b>.
+2) This shows the Delirium character has over the total Delirium character can have, depending on progress of Oneiric Delirium. At first, character may not have Delirium in excess of 4. By midgame this is increased to 8, and by late game to 12. <b>Pay attention to Oneiric Delirium events to learn when the cap is changed</b>.
 3) Stamina is reducing effects of Delirium on Willpower: each <color=#A020F0><b> -</b></color> signifies that effect is reduced by 1. ",,"Peut-être qu'il est temps d'expliquer tous ces chiffres violets et les tirets !
 
 Exemple : Margareta a 12 Points de Volonté et 5 Points de Delirium. Comme elle a 36 points d'Endurance, et que chaque 10 points d'Endurance, les effets du Delirium sont réduit de 1, l'effet du Delirium sur la Volonté de Margareta est réduit de 3. Elle a donc 12-(5-3)=10 Volontés disponibles.
@@ -317,7 +317,7 @@ Once an augmentation is installed, the soldier will not be able to revert back t
 
 Augmented body parts are IMMUNE TO BLEEDING and RESISTANT TO VIRAL DAMAGE, POISON, AND PARALYSIS. Damaged cybernetics CAN BE REPAIRED after battle at the expense of Tech and Materials. 
 
-In addition, each bionic augmentation reduces the maximum Delirium the character can have by 1/3, and removes up to that amount of Delirium from the character. 
+In addition, each bionic augmentation reduces the maximum Delirium the character can have by 4, and removes up to that amount of Delirium from the character. 
 
 Augmenting a character will reduce their Stamina to zero.",,"Vous êtes sur le point d'augmenter votre premiere unité. Un personnage ne peut avoir que JUSQU'À 2 PARTIES DU CORPS remplacées de cette manière. Cette action réduira son Endurance à zéro.
 
@@ -460,7 +460,7 @@ Mientras un Mutoide pueden aprender muchas habilidades, solo puede añadir una h
 Los Mutoides solo se pueden curar a base de usar MUTÁGENOS.",
 KEY_GEO_HINT_ENEMY_SPECIAL_MUTOID_NAME,Text,,MUTOID SOLDIERS,,SOLDAT MUTOIDE,MUTOID-EINHEITEN,,ŻOŁNIERZE MUTOIDZI,Солдат-Мутоид,SOLDADOS MUTOIDES,
 KEY_GEOSCAPE_CLEAN_LAIR_MISSION_OBJECTIVE_TITLE,Text,NEED TO CHANGE,Obtain Corruption Sample from Lair,,Obtenir un échantillon de corruption dans une Tanière,VERDERBNISPROBE AUS BAU GEWONNEN,,Zdobądź próbkę skażenia z Legowiska,Добыть зараженный Образец в Логове,Obtén una muestra de Corrupción de la Guarida,
-KEY_TAC_HINT_STATUS_CORRUPTED_DESCRIPTION,Text,,"Your soldiers have gained one point of Delirium. At the start of the game, Delirium is capped at one third of the character's willpower. This cap will increase as the game progresses.
+KEY_TAC_HINT_STATUS_CORRUPTED_DESCRIPTION,Text,,"Your soldiers have gained one point of Delirium. At the start of the game, Delirium is capped at 4. This cap will increase as the game progresses.
 
 Delirium reduces Willpower by an equal amount. The lower a soldier's Willpower becomes, the more susceptible they are to panic or mind control, and the less they can use their skills. <b>Each 10 points in Stamina negate the effects of 1 point of Delirium</b>.
 
@@ -491,7 +491,7 @@ Once an augmentation is installed, the soldier will not be able to revert back t
 
 Augmented body parts are IMMUNE TO BLEEDING and RESISTANT TO VIRAL DAMAGE, POISON, AND PARALYSIS. Damaged cybernetics CAN BE REPAIRED after battle at the expense of Tech and Materials. 
 
-In addition, each bionic augmentation reduces the maximum Delirium the character can have by 1/3, and removes up to that amount of Delirium from the character. 
+In addition, each bionic augmentation reduces the maximum Delirium the character can have by 4, and removes up to that amount of Delirium from the character. 
 
 Augmenting a character will reduce their Stamina to zero.",,"Vous êtes sur le point d'augmenter votre premiere unité. Un personnage ne peut avoir que JUSQU'À 2 PARTIES DU CORPS remplacées de cette manière. Cette action réduira son Endurance à zéro.
 
@@ -535,7 +535,7 @@ Aumentar un personaje reducirá su Aguante a cero.",
 KEY_GEO_HINT_AUGMENTATION_SCREEN_NAME,Text,,AUGMENTING A SOLDIER,,AUGMENTATION D'UN SOLDAT,AUGMENTIERUNG EINER EINHEIT,,AUGMENTOWANIE ŻOŁNIERZA,АУГМЕНТАЦИЯ БОЙЦА,MECANIZAR UN SOLDADO,
 KEY_GEO_HINT_CYBERNETICS_LAB_BUILT_DESCRIPTION,Text,,"The construction of your Cybernetics Lab is complete. You will now be able to AUGMENT SOLDIERS, replacing their natural limbs with powerful cybernetics.
 
-Each augmentation reduces the maximum Delirium a character may have by 1/3 and also immediately removes that much Delirium from the character.  
+Each augmentation reduces the maximum Delirium a character may have by 4 and also immediately removes that much Delirium from the character.  
 
 To Augment a soldier, navigate to the PERSONNEL tab, select EDIT UNIT and then select AUGMENT.",,"La construction de votre Laboratoire Cybernétique est terminée. Vous allez désormais pouvoir AUGMENTER VOS SOLDATS en remplaçant leurs membres naturels par de puissantes prothèses cybernétiques.
 

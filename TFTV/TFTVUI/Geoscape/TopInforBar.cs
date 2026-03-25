@@ -245,7 +245,7 @@ namespace TFTV.TFTVUI.Geoscape
                         populationBar.gameObject.SetActive(true);
                         deliriumIconHolder.gameObject.SetActive(true);
                         deliriumIcon.sprite = Helper.CreateSpriteFromImageFile("Void-04P.png");
-                        deliriumToolTipText = $"<color=#ec9006><b>{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_MAX_TIP")}</b></color>";
+                        deliriumToolTipText = $"<color=#ec9006><b>{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_VO_TIP")}</b></color>";
                         separator.gameObject.SetActive(true);
                         separator2.gameObject.SetActive(true);
                     }
@@ -261,7 +261,6 @@ namespace TFTV.TFTVUI.Geoscape
                     }
                     else if (controller.EventSystem.GetEventRecord("SDI_01")?.SelectedChoice == 0)
                     {
-                        // TFTVLogger.Always("Got to SDI01");
                         deliriumIcon.sprite = Helper.CreateSpriteFromImageFile("Void-04Pthird.png");
                         populationBar.gameObject.SetActive(true);
                         __instance.PopulationBarRoot.gameObject.SetActive(true);
@@ -271,7 +270,8 @@ namespace TFTV.TFTVUI.Geoscape
                         separator2.gameObject.SetActive(true);
                     }
 
-                    if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(10))
+                    if (TFTVVoidOmens.CheckFordVoidOmensInPlay(controller).Contains(10)
+                        && controller.EventSystem.GetEventRecord("SDI_10")?.SelectedChoice != 0)
                     {
                         deliriumToolTipText += $"\n{TFTVCommonMethods.ConvertKeyToString("KEY_DELIRIUM_UI_VO_TIP")}";
                     }

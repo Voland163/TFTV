@@ -161,6 +161,7 @@
     <Compile Include="TFTVBaseRework\BaseRansack.cs" />
     <Compile Include="TFTVBaseRework\Data.cs" />
     <Compile Include="TFTVBaseRework\Defs.cs" />
+    <Compile Include="TFTVBaseRework\Fallen.cs" />
     <Compile Include="TFTVBaseRework\GeoCharacterFilter.cs" />
     <Compile Include="TFTVBaseRework\LivingQuarters.cs" />
     <Compile Include="TFTVBaseRework\BaseOutpost.cs" />
@@ -196,6 +197,7 @@
     <Compile Include="TFTVIncidents\Affinities.cs" />
     <Compile Include="TFTVIncidents\AffinityBenefitChoiceUI.cs" />
     <Compile Include="TFTVIncidents\AffinityGeoscapeEffects.cs" />
+    <Compile Include="TFTVIncidents\AffinityInheritance.cs" />
     <Compile Include="TFTVIncidents\AffinityTacticalEffects.cs" />
     <Compile Include="TFTVIncidents\BiotechMedkit.cs" />
     <Compile Include="TFTVIncidents\ComputeMountedAbility.cs" />

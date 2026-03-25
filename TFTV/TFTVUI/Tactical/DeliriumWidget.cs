@@ -679,7 +679,7 @@ namespace TFTV.TFTVUI.Tactical
                 {
                     if (TFTVVoidOmens.VoidOmensCheck[10])
                     {
-                        _ODISitrepList.Add((_deliriumStatusSprite, TFTVCommonMethods.ConvertKeyToString(_deliriumMaxTipKey).Replace("-", ""), ODIDetailType.ODIDescription));
+                        _ODISitrepList.Add((_deliriumStatusSprite, TFTVCommonMethods.ConvertKeyToString(_justVoidOmens).Replace("-", ""), ODIDetailType.ODIDescription));
                     }
                     else
                     {
@@ -704,7 +704,7 @@ namespace TFTV.TFTVUI.Tactical
                 {
                     if (TFTVVoidOmens.VoidOmensCheck[10])
                     {
-                        _ODISitrepList.Add((_deliriumStatusSprite, TFTVCommonMethods.ConvertKeyToString(_deliriumMaxTipKey).Replace("-", ""), ODIDetailType.ODIDescription));
+                        _ODISitrepList.Add((_deliriumStatusSprite, TFTVCommonMethods.ConvertKeyToString(_justVoidOmens).Replace("-", ""), ODIDetailType.ODIDescription));
                     }
                     else
                     {

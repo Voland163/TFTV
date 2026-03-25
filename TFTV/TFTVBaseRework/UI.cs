@@ -434,6 +434,9 @@ namespace TFTV.TFTVBaseRework
 
         private static void CreateAutoAssignToggleBar(Transform parent, GeoPhoenixFaction phoenix)
         {
+            GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+            PersonnelData.EnsureAutoAssignSettingInitialized(level);
+
             var bar = new GameObject("AutoAssignBar", typeof(RectTransform));
             bar.transform.SetParent(parent, false);
             bar.AddComponent<Image>().color = new Color(0.08f, 0.10f, 0.14f, 0.90f);
@@ -465,11 +468,14 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
-                    PersonnelData.AutoAssignEnabled = !PersonnelData.AutoAssignEnabled;
+                    GeoLevelController currentLevel = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                    PersonnelData.SetAutoAssignEnabled(currentLevel, !PersonnelData.AutoAssignEnabled);
+
                     if (PersonnelData.AutoAssignEnabled && phoenix != null)
                     {
                         PersonnelData.TryAutoAssignUnassignedPersonnel(phoenix, "ToggleUI");
                     }
+
                     RefreshPanel();
                 }
                 catch (Exception e) { TFTVLogger.Error(e); }

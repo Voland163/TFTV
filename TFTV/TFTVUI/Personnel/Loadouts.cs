@@ -348,7 +348,6 @@ namespace TFTV.TFTVUI.Personnel
                     saveLoadout.PointerClicked += () => SaveLoadoutButtonClicked();
                     loadLoadout.PointerClicked += () => LoadLoadoutButtonClicked();
 
-                    helmetToggleButton.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("TFTV_helmet_off_icon.png");
                     unequipAllPhoenixGeneralButton.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("lockers.png");
                     saveLoadout.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("loadout_load.png");
                     loadLoadout.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("loadout_save.png");
@@ -357,6 +356,8 @@ namespace TFTV.TFTVUI.Personnel
                     UnequipAll = unequipAllPhoenixGeneralButton;
                     SaveLoadout = saveLoadout;
                     LoadLoadout = loadLoadout;
+
+                    ShowWithoutHelmet.SyncCustomHelmetButtonIcon();
                 }
             }
             catch (Exception e)

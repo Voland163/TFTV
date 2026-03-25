@@ -3,7 +3,6 @@ using Base.Core;
 using Base.Entities.Statuses;
 using Base.UI;
 using Base.UI.MessageBox;
-using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
@@ -59,7 +58,7 @@ namespace TFTV
 
 
 
-         [HarmonyPatch(typeof(CorruptionStatus), nameof(CorruptionStatus.GetMultiplier))]
+        [HarmonyPatch(typeof(CorruptionStatus), nameof(CorruptionStatus.GetMultiplier))]
         internal static class TFTV_CorruptionStatus_GetMultiplier_Mutations_patch
         {
 
@@ -183,69 +182,25 @@ namespace TFTV
 
                 if (!TFTVVoidOmens.VoidOmensCheck[10])
                 {
-                    if ( odiPerc < 25)
+                    if (odiPerc < 25)
                     {
-                        maxCorruption = actualWillpower / 3;
-
-                        if (bionics == 1)
-                        {
-                            maxCorruption -= maxCorruption * 0.33f;
-                        }
-
-                        if (bionics == 2)
-                        {
-                            maxCorruption -= maxCorruption * 0.66f;
-                        }
-
+                        maxCorruption = 4;
+                    }
+                    else if (odiPerc < 45)
+                    {
+                        maxCorruption = 8;
                     }
                     else
                     {
-                        if (odiPerc < 45)
-                        {
-                            maxCorruption = actualWillpower * 1 / 2;
-
-                            if (bionics == 1)
-                            {
-                                maxCorruption -= maxCorruption * 0.33f;
-                            }
-
-                            if (bionics == 2)
-                            {
-                                maxCorruption -= maxCorruption * 0.66f;
-                            }
-
-                        }
-                        else // > 75%
-                        {
-                            maxCorruption = actualWillpower;
-
-                            if (bionics == 1)
-                            {
-                                maxCorruption -= maxCorruption * 0.33f;
-                            }
-
-                            if (bionics == 2)
-                            {
-                                maxCorruption -= maxCorruption * 0.66f;
-                            }
-
-                        }
+                        maxCorruption = 12;
                     }
                 }
                 else
                 {
-                    maxCorruption = actualWillpower;
-
-                    if (bionics == 1)
-                    {
-                        maxCorruption -= maxCorruption * 0.33f;
-                    }
-
-                    if (bionics == 2)
-                    {
-                        maxCorruption -= maxCorruption * 0.66f;
-                    }
+                    maxCorruption = actualWillpower;          
                 }
+
+                maxCorruption = Mathf.Max(0, maxCorruption - (4 * bionics));
 
                 if (config.DeliriumCappedAt4)
                 {
@@ -320,7 +275,8 @@ namespace TFTV
 
 
         // Harmony patch to change the result of CorruptionStatus.CalculateValueIncrement() to be capped by ODI
-        // When ODI is <25%, max corruption is 1/3, between 25 and 50% ODI, max corruption is 2/3, and ODI >50%, corruption can be 100%
+        // When ODI is <25%, max corruption is 4, between 25% and 45% ODI it is 8, and ODI >=45% it is 12
+        // Each bionic body part reduces max Delirium by a flat 4 points
         // Tell Harmony what original method in what class should get patched, the following class after this directive will be used to perform own code by injection
         [HarmonyPatch(typeof(CorruptionStatus), "CalculateValueIncrement")] //VERIFIED
 
@@ -373,67 +329,23 @@ namespace TFTV
                     {
                         if (odiPerc < 25)
                         {
-                            maxDelirium /= 3;
 
-                            if (numberOfBionics == 1)
-                            {
-                                maxDelirium -= (int)(maxDelirium * 0.33);
-                            }
-
-                            if (numberOfBionics == 2)
-                            {
-                                maxDelirium -= (int)(maxDelirium * 0.66);
-                            }
-
+                            maxDelirium = 4;
+                        }
+                        else if (odiPerc < 45)
+                        {
+                           
+                            maxDelirium = 8;
                         }
                         else
                         {
-                            if (odiPerc < 45)
-                            {
-                                maxDelirium /= 2;
-
-                                if (numberOfBionics == 1)
-                                {
-                                    maxDelirium -= (int)(maxDelirium * 0.33);
-                                }
-
-                                if (numberOfBionics == 2)
-                                {
-                                    maxDelirium -= (int)(maxDelirium * 0.66);
-                                }
-                            }
-                            else // > 50%
-                            {
-                                // maxCorruption = tacticalActor.CharacterStats.Willpower.IntMax;
-
-                                if (numberOfBionics == 1)
-                                {
-                                    maxDelirium -= (int)(maxDelirium * 0.33);
-                                }
-
-                                if (numberOfBionics == 2)
-                                {
-                                    maxDelirium -= (int)(maxDelirium * 0.66);
-                                }
-
-                            }
+                            maxDelirium = 12;
                         }
                     }
 
-                    if (TFTVVoidOmens.VoidOmensCheck[10])
-                    {
-                        // maxCorruption = tacticalActor.CharacterStats.Willpower.IntMax;
+                    maxDelirium = Mathf.Max(0, maxDelirium - (4 * numberOfBionics));
 
-                        if (numberOfBionics == 1)
-                        {
-                            maxDelirium -= (int)(maxDelirium * 0.33);
-                        }
-
-                        if (numberOfBionics == 2)
-                        {
-                            maxDelirium -= (int)(maxDelirium * 0.66);
-                        }
-                    }
+                   
 
                     //For Project Osiris and Pure
                     if (numberOfBionics >= 3)
@@ -466,7 +378,7 @@ namespace TFTV
                         // TFTVLogger.Always($"Applying Delirium to {base_TacticalActor.DisplayName}, {__result}");
                     }
 
-                  
+
 
                     // TFTVLogger.Always($"{base_TacticalActor.DisplayName} bionics: {numberOfBionics} odi {odiPerc} willpower max: {base_TacticalActor.CharacterStats.Willpower.IntMax}, max delirium {maxCorruption} " +
                     //  $"Delirium {base_TacticalActor.CharacterStats.Corruption.IntValue}, result: {__result} ");
@@ -876,16 +788,16 @@ namespace TFTV
         }
 
 
-        //When getting an augment, each augment reduces corruption by a 1/3
+        //When getting an augment, each augment reduces corruption by 4
         //And thanks to Mergele also Removes wolverine on installing a bionic torso
 
-        public static void ReduceDeliriumOnAugmentApplied(UIModuleBionics uIModuleBionics, ItemDef augment) 
+        public static void ReduceDeliriumOnAugmentApplied(UIModuleBionics uIModuleBionics, ItemDef augment)
         {
             try
             {
-                if (uIModuleBionics.CurrentCharacter.CharacterStats.Corruption - uIModuleBionics.CurrentCharacter.CharacterStats.Willpower * 0.33 >= 0)
+                if (uIModuleBionics.CurrentCharacter.CharacterStats.Corruption >= 4)
                 {
-                    uIModuleBionics.CurrentCharacter.CharacterStats.Corruption.Set((float)(uIModuleBionics.CurrentCharacter.CharacterStats.Corruption - uIModuleBionics.CurrentCharacter.CharacterStats.Willpower * 0.33));
+                    uIModuleBionics.CurrentCharacter.CharacterStats.Corruption.Set(uIModuleBionics.CurrentCharacter.CharacterStats.Corruption - 4);
                 }
                 else
                 {

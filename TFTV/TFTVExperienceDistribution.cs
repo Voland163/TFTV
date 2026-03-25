@@ -70,6 +70,23 @@ namespace TFTV
             }
         }
 
+        internal static int GetDeathSkillPointRefund(SoldierStats soldierStats, GameDifficultyLevelDef difficulty)
+        {
+            if (soldierStats == null || difficulty == null)
+            {
+                return 0;
+            }
+
+            int missionsParticipated = Math.Max(0, soldierStats.MissionsParticipated);
+            int skillPointsPerMission = Math.Max(0, difficulty.SoldierSkillPointsPerMission);
+            if (missionsParticipated == 0 || skillPointsPerMission == 0)
+            {
+                return 0;
+            }
+
+            return missionsParticipated * skillPointsPerMission / 2;
+        }
+
         [HarmonyPatch(typeof(PhoenixStatisticsManager), "ActorKilledInGeoscape")] //VERIFIED
         internal static class PhoenixStatisticsManager_ActorKilledInGeoscape_Patch
         {
@@ -115,14 +132,7 @@ namespace TFTV
                     return;
                 }
 
-                int missionsParticipated = Math.Max(0, soldierStats.MissionsParticipated);
-                int skillPointsPerMission = Math.Max(0, difficulty.SoldierSkillPointsPerMission);
-                if (missionsParticipated == 0 || skillPointsPerMission == 0)
-                {
-                    return;
-                }
-
-                int refund = missionsParticipated * skillPointsPerMission / 2;
+                int refund = GetDeathSkillPointRefund(soldierStats, difficulty);
                 if (refund <= 0)
                 {
                     return;
@@ -140,7 +150,7 @@ namespace TFTV
                 }
 
                 phoenixFaction.Skillpoints += refund;
-                TFTVLogger.Always($"Refunded {refund} shared skill points after the death of {charater.DisplayName} ({missionsParticipated} missions).");
+                TFTVLogger.Always($"Refunded {refund} shared skill points after the death of {charater.DisplayName}.");
             }
         }
 

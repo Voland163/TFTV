@@ -28,39 +28,162 @@ namespace TFTV.TFTVUI.Personnel
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
+        private const string HelmetsOffPreferenceVariable = "TFTV_HelmetsOff";
+
         public static bool HelmetsOff;
-        private static bool toggleState = false;  // Initial toggle state
         public static UIModuleSoldierCustomization uIModuleSoldierCustomization = null;
+
+        private static GeoLevelController GetGeoLevelController()
+        {
+            return GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+        }
+
+        private static Image GetHelmetToggleButtonIcon(PhoenixGeneralButton helmetToggleButton)
+        {
+            try
+            {
+                if (helmetToggleButton == null)
+                {
+                    return null;
+                }
+
+                return helmetToggleButton.transform.GetChildren().First().GetChildren()
+                    .FirstOrDefault(t => t.name.Equals("UI_Icon"))?.GetComponent<Image>();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return null;
+            }
+        }
+
+        internal static void SyncCustomHelmetButtonIcon()
+        {
+            try
+            {
+                PhoenixGeneralButton helmetToggleButton = Loadouts.HelmetToggle;
+                Image icon = GetHelmetToggleButtonIcon(helmetToggleButton);
+
+                if (icon != null)
+                {
+                    icon.sprite = Helper.CreateSpriteFromImageFile(HelmetsOff
+                        ? "TFTV_helmet_on_icon.png"
+                        : "TFTV_helmet_off_icon.png");
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static bool GetStoredHelmetPreference()
+        {
+            try
+            {
+                GeoLevelController controller = GetGeoLevelController();
+                if (controller?.EventSystem == null)
+                {
+                    return HelmetsOff;
+                }
+
+                return controller.EventSystem.GetVariable(HelmetsOffPreferenceVariable) == 1;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return HelmetsOff;
+            }
+        }
+
+        private static void SetStoredHelmetPreference(bool helmetsOff)
+        {
+            try
+            {
+                HelmetsOff = helmetsOff;
+
+                GeoLevelController controller = GetGeoLevelController();
+                if (controller?.EventSystem != null)
+                {
+                    controller.EventSystem.SetVariable(HelmetsOffPreferenceVariable, helmetsOff ? 1 : 0);
+                }
+
+                SyncCustomHelmetButtonIcon();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void ApplyStoredHelmetPreference(UIModuleSoldierCustomization module)
+        {
+            try
+            {
+                if (module?.HideHelmetToggle == null)
+                {
+                    return;
+                }
+
+                bool helmetsOff = GetStoredHelmetPreference();
+                HelmetsOff = helmetsOff;
+                module.HideHelmetToggle.isOn = helmetsOff;
+                SyncCustomHelmetButtonIcon();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static bool HasAugmentedHead(GeoCharacter character, GameTagDef bionicalTag, GameTagDef mutationTag, ItemSlotDef headSlot)
+        {
+            try
+            {
+                if (character == null)
+                {
+                    return false;
+                }
+
+                foreach (GeoItem bionic in character.ArmourItems)
+                {
+                    if ((bionic.CommonItemData.ItemDef.Tags.Contains(bionicalTag) || bionic.CommonItemData.ItemDef.Tags.Contains(mutationTag))
+                        && bionic.CommonItemData.ItemDef.RequiredSlotBinds[0].RequiredSlot == headSlot)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return false;
+            }
+        }
 
         internal static void ToggleButtonClicked(PhoenixGeneralButton helmetToggleButton)
         {
             try
             {
-                toggleState = !toggleState;  // Flip the toggle state
+                bool helmetsOff = !GetStoredHelmetPreference();
+                SetStoredHelmetPreference(helmetsOff);
 
-                // Perform any actions based on the toggle state
-                if (toggleState)
+                Image icon = GetHelmetToggleButtonIcon(helmetToggleButton);
+
+                if (icon != null)
                 {
-                    //  if (uIModuleSoldierCustomization != null)
-                    //  {
-                    //      uIModuleSoldierCustomization.HideHelmetToggle.isOn = true;
-
-                    //  }
-                    helmetToggleButton.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("TFTV_helmet_on_icon.png");
-                    HelmetsOff = true;
-                    // TFTVLogger.Always($"{uIModuleSoldierCustomization.HideHelmetToggle.isOn}");
+                    icon.sprite = Helper.CreateSpriteFromImageFile(helmetsOff
+                        ? "TFTV_helmet_on_icon.png"
+                        : "TFTV_helmet_off_icon.png");
                 }
-                else
+
+                if (uIModuleSoldierCustomization?.HideHelmetToggle != null && uIModuleSoldierCustomization.HideHelmetToggle.interactable)
                 {
-
-                    //                    if (uIModuleSoldierCustomization != null)
-                    //                  {
-                    //                    uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
-                    //              }
-
-                    helmetToggleButton.transform.GetChildren().First().GetChildren().Where(t => t.name.Equals("UI_Icon")).FirstOrDefault().GetComponent<Image>().sprite = Helper.CreateSpriteFromImageFile("TFTV_helmet_off_icon.png");
-                    HelmetsOff = false;
+                    uIModuleSoldierCustomization.HideHelmetToggle.isOn = helmetsOff;
                 }
+
                 TFTVLogger.Always($"HelmetsOff is {HelmetsOff}");
             }
             catch (Exception e)
@@ -69,10 +192,7 @@ namespace TFTV.TFTVUI.Personnel
             }
         }
 
-
-
         [HarmonyPatch(typeof(UIModuleSoldierCustomization), nameof(uIModuleSoldierCustomization.OnNewCharacter))]
-
         internal static class TFTV_UI_UIModuleSoldierCustomization_patch
         {
             private static readonly GameTagDef bionicalTag = GameUtl.GameComponent<SharedData>().SharedGameTags.BionicalTag;
@@ -83,53 +203,28 @@ namespace TFTV.TFTVUI.Personnel
             {
                 try
                 {
-                    //  TFTVLogger.Always("Checking that OnNewCharacter is launched");
-                    if (newCharacter != null && (newCharacter.TemplateDef.IsHuman || newCharacter.TemplateDef.IsMutoid))
+                    if (newCharacter == null || (!newCharacter.TemplateDef.IsHuman && !newCharacter.TemplateDef.IsMutoid))
                     {
-                        //    TFTVLogger.Always("character is " + newCharacter.DisplayName + " and is human or mutoid");
+                        return;
+                    }
 
-                        UIModuleSoldierCustomization uIModuleSoldierCustomizationLocal = __instance;//(UIModuleSoldierCustomization)UnityEngine.Object.FindObjectOfType(typeof(UIModuleSoldierCustomization));
-                        uIModuleSoldierCustomization = uIModuleSoldierCustomizationLocal;
+                    uIModuleSoldierCustomization = __instance;
+
+                    bool allowHelmetToggle = newCharacter.TemplateDef.IsHuman
+                        && !newCharacter.IsMutoid
+                        && !HasAugmentedHead(newCharacter, bionicalTag, mutationTag, headSlot);
+
+                    uIModuleSoldierCustomization.HideHelmetToggle.interactable = allowHelmetToggle;
+
+                    if (allowHelmetToggle)
+                    {
+                        ApplyStoredHelmetPreference(uIModuleSoldierCustomization);
+                    }
+                    else
+                    {
                         uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
-
-                        if (newCharacter != null && (!newCharacter.TemplateDef.IsHuman || newCharacter.IsMutoid))
-                        {
-
-                            uIModuleSoldierCustomization.HideHelmetToggle.interactable = false;
-                            uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
-                            //  TFTVLogger.Always("character is " + newCharacter.DisplayName + " and is mutoid");
-
-                        }
-                        else if (newCharacter != null && newCharacter.TemplateDef.IsHuman)
-                        {
-                            // TFTVLogger.Always("character is " + newCharacter.DisplayName + " and is human");
-                            bool hasAugmentedHead = false;
-                            foreach (GeoItem bionic in (newCharacter.ArmourItems))
-                            {
-                                if ((bionic.CommonItemData.ItemDef.Tags.Contains(bionicalTag) || bionic.CommonItemData.ItemDef.Tags.Contains(mutationTag))
-                                && bionic.CommonItemData.ItemDef.RequiredSlotBinds[0].RequiredSlot == headSlot)
-                                {
-                                    hasAugmentedHead = true;
-                                }
-                            }
-
-                            if (hasAugmentedHead)
-                            {
-                                uIModuleSoldierCustomization.HideHelmetToggle.interactable = false;
-                                uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
-                                //   TFTVLogger.Always("character is " + newCharacter.DisplayName + " and has augmented head");
-                            }
-                            else
-                            {
-                                uIModuleSoldierCustomization.HideHelmetToggle.interactable = true;
-                                //   TFTVLogger.Always("character is " + newCharacter.DisplayName + " and does not have an augmented head");
-                            }
-                        }
-                        /* else
-                         {
-                             uIModuleSoldierCustomization.HideHelmetToggle.interactable = true;
-                         }*/
-
+                        HelmetsOff = GetStoredHelmetPreference();
+                        SyncCustomHelmetButtonIcon();
                     }
                 }
                 catch (Exception e)
@@ -137,14 +232,7 @@ namespace TFTV.TFTVUI.Personnel
                     TFTVLogger.Error(e);
                 }
             }
-
-
         }
-
-
-
-      
-
 
         [HarmonyPatch(typeof(UIStateSoldierCustomization), "UpdateHelmetShown")] //VERIFIED
         internal static class TFTV_UIStateSoldierCustomization_UpdateHelmetShown_HelmetToggle_patch
@@ -153,15 +241,27 @@ namespace TFTV.TFTVUI.Personnel
             {
                 try
                 {
-                    HelmetsOff = !uIModuleSoldierCustomization.HideHelmetToggle.isOn;
+                    if (uIModuleSoldierCustomization?.HideHelmetToggle == null)
+                    {
+                        return;
+                    }
+
+                    if (!uIModuleSoldierCustomization.HideHelmetToggle.interactable)
+                    {
+                        HelmetsOff = GetStoredHelmetPreference();
+                        SyncCustomHelmetButtonIcon();
+                        return;
+                    }
+
+                    SetStoredHelmetPreference(uIModuleSoldierCustomization.HideHelmetToggle.isOn);
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
             }
-
         }
+
         [HarmonyPatch(typeof(UIStateSoldierCustomization), "EnterState")] //VERIFIED
         internal static class TFTV_UIStateSoldierCustomization_DisplaySoldier_HelmetToggle_patch
         {
@@ -173,58 +273,40 @@ namespace TFTV.TFTVUI.Personnel
             {
                 try
                 {
-                    GeoCharacter geoCharacter = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ActorCycleModule.CurrentCharacter;//
+                    GeoCharacter geoCharacter = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.ActorCycleModule.CurrentCharacter;
 
-                    HelmetsOff = false;
-                    //  TFTVLogger.Always("Trying to set helmets off if character has mutated head");
-                    if (geoCharacter != null && (geoCharacter.TemplateDef.IsHuman || geoCharacter.TemplateDef.IsMutoid))
+                    HelmetsOff = GetStoredHelmetPreference();
+                    SyncCustomHelmetButtonIcon();
+
+                    if (geoCharacter == null
+                        || (!geoCharacter.TemplateDef.IsHuman && !geoCharacter.TemplateDef.IsMutoid)
+                        || uIModuleSoldierCustomization?.HideHelmetToggle == null)
                     {
-                        //     TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and is human or mutoid");
-                        if (geoCharacter != null && (!geoCharacter.TemplateDef.IsHuman || geoCharacter.IsMutoid))
-                        {
-                            //     TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and is mutoid");
-                            uIModuleSoldierCustomization.HideHelmetToggle.interactable = false;
-                            uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
+                        return;
+                    }
 
-                        }
-                        else if (geoCharacter != null && geoCharacter.TemplateDef.IsHuman)
-                        {
-                            //    TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and is human");
-                            bool hasAugmentedHead = false;
-                            foreach (GeoItem bionic in (geoCharacter.ArmourItems))
-                            {
-                                if ((bionic.CommonItemData.ItemDef.Tags.Contains(bionicalTag) || bionic.CommonItemData.ItemDef.Tags.Contains(mutationTag))
-                                && bionic.CommonItemData.ItemDef.RequiredSlotBinds[0].RequiredSlot == headSlot)
-                                {
-                                    hasAugmentedHead = true;
-                                }
-                            }
+                    bool allowHelmetToggle = geoCharacter.TemplateDef.IsHuman
+                        && !geoCharacter.IsMutoid
+                        && !HasAugmentedHead(geoCharacter, bionicalTag, mutationTag, headSlot);
 
-                            if (hasAugmentedHead)
-                            {
-                                uIModuleSoldierCustomization.HideHelmetToggle.interactable = false;
-                                uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
-                                //   TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and has augmented head");
-                            }
-                            else
-                            {
-                                uIModuleSoldierCustomization.HideHelmetToggle.interactable = true;
+                    uIModuleSoldierCustomization.HideHelmetToggle.interactable = allowHelmetToggle;
 
-                                //    TFTVLogger.Always("character is " + hookToCharacter.DisplayName + " and does not have an augmented head");
-                            }
-                        }
+                    if (allowHelmetToggle)
+                    {
+                        ApplyStoredHelmetPreference(uIModuleSoldierCustomization);
+                    }
+                    else
+                    {
+                        uIModuleSoldierCustomization.HideHelmetToggle.isOn = false;
+                        SyncCustomHelmetButtonIcon();
                     }
                 }
-
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
             }
-
         }
-
-
 
         [HarmonyPatch(typeof(UIModuleActorCycle), nameof(UIModuleActorCycle.DisplaySoldier), new Type[] { typeof(GeoCharacter), typeof(bool), typeof(bool), typeof(bool) })]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
@@ -252,22 +334,9 @@ namespace TFTV.TFTVUI.Personnel
                         return true;
                     }
 
-
                     if (character != null && character.TemplateDef.IsHuman && !character.IsMutoid && !character.TemplateDef.IsMutog && !character.TemplateDef.IsVehicle)
                     {
-
-                        bool hasAugmentedHead = false;
-
-                        foreach (GeoItem bionic in character.ArmourItems)
-                        {
-
-                            if ((bionic.CommonItemData.ItemDef.Tags.Contains(bionicalTag) || bionic.CommonItemData.ItemDef.Tags.Contains(mutationTag))
-                                && bionic.CommonItemData.ItemDef.RequiredSlotBinds[0].RequiredSlot == headSlot)
-                            {
-                                hasAugmentedHead = true;
-
-                            }
-                        }
+                        bool hasAugmentedHead = HasAugmentedHead(character, bionicalTag, mutationTag, headSlot);
 
                         if (!hasAugmentedHead)
                         {
@@ -277,38 +346,31 @@ namespace TFTV.TFTVUI.Personnel
                                 return true;
                             }
 
-
                             ____classWorldDisplay.SetDisplay(character.GetClassViewElementDefs(), (float)character.CharacterStats.Corruption > 0f);
+
+                            HelmetsOff = GetStoredHelmetPreference();
 
                             if (HelmetsOff && __instance.CurrentState != UIModuleActorCycle.ActorCycleState.SubmenuSection)
                             {
-
-                                // if (uIModuleSoldierCustomization == null && HelmetsOff || uIModuleSoldierCustomization.HideHelmetToggle.isOn)
-                                // {
                                 __instance.DisplaySoldier(unitDisplayData, resetAnimation, addWeapon, showHelmet = false);
                                 return false;
                             }
 
-                            else
-                            {
-                                return true;
-
-                            }
-                        }
-                        else
-                        {
                             return true;
                         }
+
+                        return true;
                     }
+
                     return true;
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
+
                 return true;
             }
         }
     }
-
 }

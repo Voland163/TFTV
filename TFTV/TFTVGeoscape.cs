@@ -1,26 +1,15 @@
-using Base.Core;
-using Base.Defs;
 using Base.Serialization.General;
-using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
-using PhoenixPoint.Common.Entities.Characters;
-using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
-using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Geoscape.Levels.Objectives;
-using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Modding;
-using PhoenixPoint.Tactical.Entities.Abilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using TFTV.TFTVBaseRework;
+using TFTV.TFTVIncidents;
 using static TFTV.TFTVBaseRework.PersonnelData;
 using static TFTV.TFTVBaseRework.TrainingFacilityRework;
 
@@ -85,6 +74,9 @@ namespace TFTV
         public List<PersonnelAssignmentSave> PersonnelPool;
         public List<RecruitTrainingSessionSave> RecruitTrainingSessions;
         public int PersonnelLastGenerationDay;
+
+        public List<OperativeAffinitySave> OperativeAffinities;
+        public List<BankedAffinitySave> BankedAffinityTransfers;
     }
 
 
@@ -147,11 +139,12 @@ namespace TFTV
             }
 
             TFTVBetaSaveGamesFixes.ConvertAncientRefinerySitesToHarvestSites(Controller);
-           // TFTVExperimental.ResearchCalendarUtility.LogCalendars(Controller);
+            TFTVLogger.Always($"Geoscape start finished");
+            // TFTVExperimental.ResearchCalendarUtility.LogCalendars(Controller);
 
         }
 
-        
+
         /// <summary>
         /// Called when Geoscape ends.
         /// </summary>
@@ -170,7 +163,7 @@ namespace TFTV
             TFTVDiplomacyPenalties.VoidOmensImplemented = false;
             TFTVAncientsGeo.AncientsResearch.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(gsController);
             TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
-
+            AffinityInheritance.ReconcileOperativeAffinities(gsController);
         }
 
         /// <summary>
@@ -192,7 +185,7 @@ namespace TFTV
             TFTVRevenant.RecordUpkeep.UpdateRevenantTimer(Controller);
             TFTVDragandDropFunctionality.VehicleRoster.RecordVehicleOrder(Controller);
             TFTVBehemothAndRaids.InternalData.JustInCaseBehemothScenicRouteAndTargetClear();
-
+            AffinityInheritance.ReconcileOperativeAffinities(Controller);
 
             return new TFTVGSInstanceData()
             {
@@ -244,6 +237,8 @@ namespace TFTV
                 // Personnel & training sessions snapshot
                 PersonnelPool = BaseReworkUtils.BaseReworkEnabled ? CreateAssignmentsSnapshot() : null,
                 RecruitTrainingSessions = BaseReworkUtils.BaseReworkEnabled ? CreateRecruitSessionsSnapshot() : null,
+                OperativeAffinities = AffinityInheritance.CreateOperativeAffinitySnapshot(),
+                BankedAffinityTransfers = AffinityInheritance.CreateBankedAffinitySnapshot(),
             };
         }
         /// <summary>
@@ -343,8 +338,10 @@ namespace TFTV
 
                 TFTVCustomPortraits.CharacterPortrait.characterPics = data.CharacterPortraits;
 
-                PersonnelData.ClearAssignments();
+                ClearAssignments();
                 ClearAllSessions();
+                AffinityInheritance.LoadOperativeAffinitySnapshot(data.OperativeAffinities);
+                AffinityInheritance.LoadBankedAffinitySnapshot(data.BankedAffinityTransfers);
 
                 if (BaseReworkUtils.BaseReworkEnabled && data.PersonnelPool != null)
                 {
@@ -364,7 +361,11 @@ namespace TFTV
 
                 if (BaseReworkUtils.BaseReworkEnabled)
                 {
-                    TFTVLogger.Always($"[PersonnelPersistence] Restored Personnel={data.PersonnelPool?.Count ?? 0} TrainingSessions={data.RecruitTrainingSessions?.Count ?? 0}");
+                    TFTVLogger.Always(
+                        $"[PersonnelPersistence] Restored Personnel={data.PersonnelPool?.Count ?? 0} " +
+                        $"TrainingSessions={data.RecruitTrainingSessions?.Count ?? 0} " +
+                        $"OperativeAffinities={data.OperativeAffinities?.Count ?? 0} " +
+                        $"BankedAffinities={data.BankedAffinityTransfers?.Count ?? 0}");
                 }
 
 
@@ -389,14 +390,14 @@ namespace TFTV
 
                 //  Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVUmbra.TBTVVariableName));
                 Main.Logger.LogInfo("# Characters with broken limbs: " + TFTVStamina.charactersWithDisabledBodyParts.Count);
-              //  Main.Logger.LogInfo("# Behemoth targets for this emergence: " + TFTVBehemothAndRaids.targetsForBehemoth.Count);
+                //  Main.Logger.LogInfo("# Behemoth targets for this emergence: " + TFTVBehemothAndRaids.targetsForBehemoth.Count);
                 //    Main.Logger.LogInfo("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);
-              //  Main.Logger.LogInfo("# Pandoran flyers that have visited havens on this emergence:  " + TFTVBehemothAndRaids.flyersAndHavens.Count);
+                //  Main.Logger.LogInfo("# Pandoran flyers that have visited havens on this emergence:  " + TFTVBehemothAndRaids.flyersAndHavens.Count);
                 Main.Logger.LogInfo("Hammerfall: " + TFTVBehemothAndRaids.checkHammerfall);
                 Main.Logger.LogInfo("# Lost operatives: " + TFTVRevenant.DeadSoldiersDelirium.Count);
-               // Main.Logger.LogInfo("# sites on Behemoth scenic route " + TFTVBehemothAndRaids.behemothScenicRoute.Count);
-               // Main.Logger.LogInfo("Behemoth target id number is " + TFTVBehemothAndRaids.behemothTarget);
-              //  Main.Logger.LogInfo("Behemoth will wait for " + TFTVBehemothAndRaids.behemothWaitHours + " hours before moving");
+                // Main.Logger.LogInfo("# sites on Behemoth scenic route " + TFTVBehemothAndRaids.behemothScenicRoute.Count);
+                // Main.Logger.LogInfo("Behemoth target id number is " + TFTVBehemothAndRaids.behemothTarget);
+                //  Main.Logger.LogInfo("Behemoth will wait for " + TFTVBehemothAndRaids.behemothWaitHours + " hours before moving");
                 Main.Logger.LogInfo("Last time a Revenant was seen was on  " + myDate.Add(new TimeSpan(TFTVRevenant.daysRevenantLastSeen, 0, 0, 0)) + ", and now it is day " + myDate.Add(new TimeSpan(Controller.Timing.Now.TimeSpan.Ticks)));
                 Main.Logger.LogInfo("Project Osiris stats count " + TFTVRevenant.TFTVRevenantResearch.ProjectOsirisStats.Count);
                 //  Main.Logger.LogInfo("LOTAGlobalReworkCheck is " + TFTVBetaSaveGamesFixes.LOTAReworkGlobalCheck);
@@ -415,7 +416,7 @@ namespace TFTV
                 //  
                 TFTVLogger.Always("# Characters with broken limbs: " + TFTVStamina.charactersWithDisabledBodyParts.Count);
                 TFTVLogger.Always("# Behemoth targets for this emergence: " + TFTVBehemothAndRaids.targetsForBehemoth.Count);
-             //   TFTVLogger.Always("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);
+                //   TFTVLogger.Always("# Targets already hit by Behemoth on this emergence: " + TFTVAirCombat.targetsVisitedByBehemoth.Count);
                 TFTVLogger.Always("# Pandoran flyers that have visited havens on this emergence:  " + TFTVBehemothAndRaids.flyersAndHavens.Count);
                 TFTVLogger.Always("Hammerfall: " + TFTVBehemothAndRaids.checkHammerfall);
                 TFTVLogger.Always("# Lost operatives: " + TFTVRevenant.DeadSoldiersDelirium.Count);

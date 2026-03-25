@@ -6,6 +6,7 @@
 - When information is missing, fetch the required code/context directly without asking the user to paste it, and proceed.
 - Avoid using a 'deep breath' preface in responses.
 - Explicitly cover each issue raised and address all reported cases; point out any omissions in proposed fixes.
+- Confirm that `Geoscape start finished` occurs before `[Fallen] GetFallenOperatives running` for the Fallen panel flow, ensuring the panel runs after Geoscape start.
 
 ## Code Style
 - Use specific formatting rules
@@ -27,10 +28,12 @@
 - For the dismissed-operative feature, do not store extra dismissed/redeploy metadata in PersonnelInfo if it can be derived from GeoCharacter; redeploy cost formula is 10 SP per character level above 1 (10 * (Level - 1)).
 - For BaseRework operative generation, adjust the source TacCharacterDef's class tag to the requested class immediately before character generation and restore it immediately after generation.
 - For BaseRework personnel markers, replace both hidden and dismissed tags with token PassiveModifierAbilityDef markers checked by ability presence rather than GameTags.
+- For affinity inheritance, do not rely on `GeoUnitDescriptor` for fallen operatives' affinity data. Maintain an internal persisted data structure keyed by operative GeoId that tracks current affinity and rank, and use the same structure to support the bank of unassigned affinities; refresh it before leaving geoscape for save compatibility and update it whenever affinities are gained, ranked up, or inherited.
 
 ## Affinities Design Rules
 - Affinities feature 6 affinities, each with 3 ranks. Each affinity has two benefit tracks (Geoscape and Tactical) with two player-selectable options each; choices are global/shared.
-- Affinities are gained or advanced by resolving Incidents or via Drill at one rank below max; there are three ranks.
+- Affinities are gained or advanced by resolving Incidents; they do not advance through Drills.
+- Upon the death of an operative with an earned affinity, reassign that affinity to a weighted-random eligible operative, preferring same-aircraft and higher-mission candidates. Exclude operatives currently resolving an Incident elsewhere from this selection. If no eligible operative exists, bank it for the next operative that becomes available; show this in the Fallen panel. The weighting logic should include placeholder bonus hooks for TacticalAbilityDef/background matches and for equipment/body-state cues such as mutations favoring Occult and bionics favoring Machinery.
 - Each affinity grants Geoscape and Tactical benefits, with incident resolution efficiency increased by 2?rank when affinity matches Approach.
 - Upon reaching a new rank for the first time, choose one of two benefits per affinity; this choice applies to all characters with that affinity.
 - Benefits are multiplied by rank, but bonuses do not stack (only the highest-ranked specialist's benefits apply).

@@ -553,7 +553,54 @@ namespace TFTV.TFTVBaseRework
             return true;
         }
 
+        private const string AutoAssignEnabledVariableName = "TFTV_BaseRework_AutoAssignEnabled";
+        private const string AutoAssignInitializedVariableName = "TFTV_BaseRework_AutoAssignInitialized";
+
         internal static bool AutoAssignEnabled = true;
+
+        internal static void EnsureAutoAssignSettingInitialized(GeoLevelController level)
+        {
+            if (!BaseReworkUtils.BaseReworkEnabled || level?.EventSystem == null)
+            {
+                return;
+            }
+
+            if (level.EventSystem.GetVariable(AutoAssignInitializedVariableName) == 0)
+            {
+                level.EventSystem.SetVariable(AutoAssignInitializedVariableName, 1);
+                level.EventSystem.SetVariable(AutoAssignEnabledVariableName, 1);
+                AutoAssignEnabled = true;
+
+                TFTVLogger.Always($"{LogPrefix} Auto-assign setting initialized from default: ON.");
+                return;
+            }
+
+            AutoAssignEnabled = level.EventSystem.GetVariable(AutoAssignEnabledVariableName) != 0;
+        }
+
+        internal static void SetAutoAssignEnabled(GeoLevelController level, bool enabled)
+        {
+            AutoAssignEnabled = enabled;
+
+            if (level?.EventSystem == null)
+            {
+                return;
+            }
+
+            level.EventSystem.SetVariable(AutoAssignInitializedVariableName, 1);
+            level.EventSystem.SetVariable(AutoAssignEnabledVariableName, enabled ? 1 : 0);
+
+            TFTVLogger.Always($"{LogPrefix} Auto-assign setting saved to Geoscape variable: {(enabled ? "ON" : "OFF")}.");
+        }
+
+        private static void SyncAutoAssignSettingFromCurrentGeoscape()
+        {
+            GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+            if (level != null)
+            {
+                EnsureAutoAssignSettingInitialized(level);
+            }
+        }
 
         internal static void TryAutoAssignUnassignedPersonnel(GeoPhoenixFaction faction, string source)
         {
@@ -561,6 +608,8 @@ namespace TFTV.TFTVBaseRework
             {
                 return;
             }
+
+            SyncAutoAssignSettingFromCurrentGeoscape();
 
             if (!AutoAssignEnabled)
             {
@@ -807,6 +856,7 @@ namespace TFTV.TFTVBaseRework
 
             try
             {
+                EnsureAutoAssignSettingInitialized(level);
                 ResyncWorkSlots(level.PhoenixFaction);
                 TryAutoAssignUnassignedPersonnel(level.PhoenixFaction, "RestoreAssignments");
                 RefreshInfoBar(level);

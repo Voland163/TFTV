@@ -150,6 +150,7 @@ namespace TFTV
                 {
                     TFTVProjectOsiris.AddProjectOsirisRecruitGeoPhoenixFactionAddRecruitToContainerFinal(__instance, recruit);
                     TFTVBaseRework.TrainingFacilityRework.TryApplyDeferredTrainingStats(recruit);
+                    TFTV.TFTVIncidents.AffinityInheritance.TryAssignBankedAffinity(__instance, recruit);
                 }
                 catch (Exception e)
                 {
@@ -189,6 +190,7 @@ namespace TFTV
                     TFTVDelirium.RemoveDeliriumPerksGeoMissionApplyMissionResults(__instance, result, squad);
                     AircraftReworkMaintenance.AfterLosingAmbushGeoMissionApplyMissionResults(__instance, result, squad);
                     TFTVIncidents.AffinityGeoscapeEffects.ApplyPostMissionRecovery(__instance, result, squad);
+                    TFTV.TFTVIncidents.AffinityInheritance.ProcessMissionResults(__instance, result, squad);
                 }
                 catch (Exception e)
                 {

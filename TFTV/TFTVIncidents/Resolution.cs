@@ -756,7 +756,15 @@ namespace TFTV.TFTVIncidents
                 return ActiveByTimerId.Values.Any(v => v.VehicleId == vehicle.VehicleID);
             }
 
-           
+            internal static bool IsVehicleResolvingIncident(int vehicleId, int excludedVehicleId = -1)
+            {
+                if (vehicleId <= 0 || vehicleId == excludedVehicleId)
+                {
+                    return false;
+                }
+
+                return ActiveByTimerId.Values.Any(v => v.VehicleId == vehicleId && v.VehicleId != excludedVehicleId);
+            }
 
             private static void CompleteTimedProblem(GeoLevelController level, string timerId)
             {
@@ -862,16 +870,12 @@ namespace TFTV.TFTVIncidents
                         TFTVLogger.Always($"[Incidents][Affinity] Leader had no affinity. Deterministic pick={chosenApproach} from tokens={active.ApproachTokens}");
                     }
 
-                    PassiveModifierAbilityDef ability = LeaderSelection.GetAffinityAbility(chosenApproach, targetRank);
-                    if (ability == null)
+                    if (!LeaderSelection.TrySetAffinityRank(leader, chosenApproach, targetRank))
                     {
                         return "No change";
                     }
 
-                    if (!TrySetAffinityRank(leader, chosenApproach, targetRank, ability))
-                    {
-                        return "No change";
-                    }
+                    AffinityInheritance.RecordOrUpdateOperativeAffinity(leader.Id, chosenApproach, targetRank);
 
                     AffinityBenefitChoiceUI.RecordAffinityAward(
                         active.CompletionEventId,
@@ -890,58 +894,7 @@ namespace TFTV.TFTVIncidents
                 }
             }
 
-            private static bool TrySetAffinityRank(
-                GeoCharacter character,
-                LeaderSelection.AffinityApproach approach,
-                int targetRank,
-                PassiveModifierAbilityDef targetAbility)
-            {
-                try
-                {
-                    if (character?.Progression == null || targetAbility == null || targetRank <= 0)
-                    {
-                        return false;
-                    }
-
-                    ICollection<TacticalAbilityDef> progressionAbilities = character.Progression.Abilities as ICollection<TacticalAbilityDef>;
-                    if (progressionAbilities == null)
-                    {
-                        progressionAbilities = Traverse.Create(character.Progression)
-                            .Field("_abilities")
-                            .GetValue<List<TacticalAbilityDef>>();
-                    }
-
-                    if (progressionAbilities == null)
-                    {
-                        return false;
-                    }
-
-                    bool changed = false;
-
-                    for (int rank = 1; rank <= 3; rank++)
-                    {
-                        PassiveModifierAbilityDef rankAbility = LeaderSelection.GetAffinityAbility(approach, rank);
-                        if (rankAbility != null && rank != targetRank && progressionAbilities.Contains(rankAbility))
-                        {
-                            progressionAbilities.Remove(rankAbility);
-                            changed = true;
-                        }
-                    }
-
-                    if (!progressionAbilities.Contains(targetAbility))
-                    {
-                        character.Progression.AddAbility(targetAbility);
-                        changed = true;
-                    }
-
-                    return changed;
-                }
-                catch (Exception ex)
-                {
-                    TFTVLogger.Error(ex);
-                    throw;
-                }
-            }
+            
 
             [HarmonyPatch(typeof(GeoscapeEventSystem), "OnLevelStart")]
             internal static class GeoscapeEventSystem_OnLevelStart_Patch
