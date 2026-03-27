@@ -190,30 +190,30 @@ KEY_OUTPOST_ACTIVATED_TITLE,Text,,Outpost operational,,,,,,,,
 KEY_OUTPOST_ACTIVATED_DESCRIPTION,Text,,"You have finished building an Outpost. You cannot build any facilities at an Outpost nor receive any income nor other advantages from existing facilities at an Outpost. Aircraft and Units at the Outpost heal, repair and recover Stamina at half the rate they would at a regular Base with the corresponding facilities. Outposts cannot be attacked and can be later upgraded to a regular Base costing half the resources and 3 personnel.",,,,,,,,
 KEY_INCIDENT_START_OPTION,Text,,INITIATE INCIDENT RESOLUTION,,,,,,,,
 KEY_INCIDENT_START_OPTION_TOOLTIP,Text,,"Starts the Incident event. After choosing how to approach the Incident, Aircraft must stay at the Haven. Moving the Aircraft before the Incident is resolved will result in Failure. ",,,,,,,,
-KEY_AFFINITY_GEO_DESC_PSYCHO_SOCIOLOGY_OPTION_1,Text,,Geoscape Benefit (selected): Haven Defense rewards +{0}%.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_PSYCHO_SOCIOLOGY_OPTION_2,Text,,Geoscape Benefit (selected): {0}% chance for teammates to recover from a Delirium perk after mission.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_EXPLORATION_OPTION_1,Text,,Geoscape Benefit (selected): Exploration is {0} hour(s) faster.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_EXPLORATION_OPTION_2,Text,,Geoscape Benefit (selected): All operatives in the aircraft recover {0} Stamina after mission.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_OCCULT_OPTION_1,Text,,Geoscape Benefit (selected): Receive a {0}-hour warning before an attack on a Phoenix Base.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_OCCULT_OPTION_2,Text,,Geoscape Benefit (selected): {0}% less penalty and {0}% more buff from flying in Mist.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_BIOTECH_OPTION_1,Text,,Geoscape Benefit (selected): Operatives recover {0} HP after mission.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_BIOTECH_OPTION_2,Text,,Geoscape Benefit (selected): Haven Leaders visited by this character gain +{0} Rep toward Phoenix Project.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_MACHINERY_OPTION_1,Text,,Geoscape Benefit (selected): Vehicles recover {0} HP after mission.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_MACHINERY_OPTION_2,Text,,Geoscape Benefit (selected): {0}% less Aircraft maintenance loss.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_COMPUTE_OPTION_1,Text,,Geoscape Benefit (selected): Aircraft speed increased by {0}%.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_COMPUTE_OPTION_2,Text,,Geoscape Benefit (selected): Receive advance warning of possible attacks on Havens.,,,,,,,,
-KEY_AFFINITY_TAC_DESC_PSYCHO_SOCIOLOGY_OPTION_1,Text,,Tactical Benefit (selected): Allies recover +{0} WP when activating Recovery.,,,,,,,,
-KEY_AFFINITY_TAC_DESC_PSYCHO_SOCIOLOGY_OPTION_2,Text,,Tactical Benefit (selected): Increase friendly Haven deployment by {0}%.,,,,,,,,
-KEY_AFFINITY_TAC_DESC_EXPLORATION_OPTION_1,Text,,Tactical Benefit (selected): Enemies are {0}% more likely to drop loot.,,,,,,,,
-KEY_AFFINITY_TAC_DESC_EXPLORATION_OPTION_2,Text,,"Tactical Benefit (selected): Gain immediate control of {0} friendly Haven defender at mission start, and +{1} WP when extracting civilians.",,,,,,,,
-KEY_AFFINITY_TAC_DESC_OCCULT_OPTION_1,Text,,Tactical Benefit (selected): Reduce TBTV chance by {0}%.,,,,,,,,
-KEY_AFFINITY_TAC_DESC_OCCULT_OPTION_2,Text,,"Tactical Benefit (selected): For all allies, effect of Stamina on Delirium increased by {0}%.",,,,,,,,
-KEY_AFFINITY_TAC_DESC_BIOTECH_OPTION_1,Text,,"Tactical Benefit (selected): Gain passive ability: Using a Medkit or a Virophage Kit restores {0} HP to all broken or damaged organic body parts of the target, restoring them if disabled.",,,,,,,,
-KEY_AFFINITY_TAC_DESC_BIOTECH_OPTION_2,Text,,Tactical Benefit (selected): Gain passive ability: Using any healing item or ability restores up to {0} WP that the target had lost to Delirium; lasts only for the duration of the mission.,,,,,,,,
-KEY_AFFINITY_TAC_DESC_MACHINERY_OPTION_1,Text,,"Tactical Benefit (selected): Gain active ability: Overdrive - restore {0} AP to a Vehicle or Operative with Bionics, but giving a 50% vulnerability to all damage types until the end of next turn (1 AP, 3 WP)",,,,,,,,
-KEY_AFFINITY_TAC_DESC_MACHINERY_OPTION_2,Text,,Tactical Benefit (selected): Gain passive ability: Using any healing item or ability restores up to {0} Armor on each body part of the target.,,,,,,,,
-KEY_AFFINITY_TAC_DESC_COMPUTE_OPTION_1,Text,,Tactical Benefit (selected): Gain passive ability: Ground vehicles with character inside gain +{0} movement and +{1}% accuracy.,,,,,,,,
-KEY_AFFINITY_TAC_DESC_COMPUTE_OPTION_2,Text,,"Tactical Benefit (selected): For all Allies, Perception vs Pandorans increased by {0}% of the total amount of Delirium in the squad, up to +{1}.",,,,,,,,
+KEY_AFFINITY_GEO_DESC_PSYCHO_SOCIOLOGY_OPTION_1,Text,,Geoscape Benefit: Haven Defense rewards +{0}%.,,,,,,,,
+KEY_AFFINITY_GEO_DESC_PSYCHO_SOCIOLOGY_OPTION_2,Text,,Geoscape Benefit: {0}% chance for teammates to recover from a Delirium perk after mission.,,,,,,,,
+KEY_AFFINITY_GEO_DESC_EXPLORATION_OPTION_1,Text,,Geoscape Benefit: Exploration is {0} hour(s) faster and resources gained from exploration events increased by {1}%.,,,,,,,,
+KEY_AFFINITY_GEO_DESC_EXPLORATION_OPTION_2,Text,,Geoscape Benefit : All operatives in the aircraft recover {0} Stamina after mission.,,,,,,,,
+KEY_AFFINITY_GEO_DESC_OCCULT_OPTION_1,Text,,Geoscape Benefit : Receive a {0}-hour warning before an attack on a Phoenix Base.,,,,,,,,
+KEY_AFFINITY_GEO_DESC_OCCULT_OPTION_2,Text,,Geoscape Benefit : {0}% less penalty and {0}% more buff from flying in Mist.,,,,,,,,
+KEY_AFFINITY_GEO_DESC_BIOTECH_OPTION_1,Text,,Geoscape Benefit : Operatives recover {0} HP after mission.,,,,,,,,
+KEY_AFFINITY_GEO_DESC_BIOTECH_OPTION_2,Text,,Geoscape Benefit : Haven Leaders visited by this character gain +{0} Rep toward Phoenix Project.,,,,,,,,
+KEY_AFFINITY_GEO_DESC_MACHINERY_OPTION_1,Text,,Geoscape Benefit : Vehicles recover {0} HP after mission.,,,,,,,,
+KEY_AFFINITY_GEO_DESC_MACHINERY_OPTION_2,Text,,Geoscape Benefit : {0}% less Aircraft maintenance loss.,,,,,,,,
+KEY_AFFINITY_GEO_DESC_COMPUTE_OPTION_1,Text,,Geoscape Benefit : Aircraft speed increased by {0}%.,,,,,,,,
+KEY_AFFINITY_GEO_DESC_COMPUTE_OPTION_2,Text,,Geoscape Benefit : Receive advance warning of possible attacks on Havens.,,,,,,,,
+KEY_AFFINITY_TAC_DESC_PSYCHO_SOCIOLOGY_OPTION_1,Text,,Tactical Benefit : Allies recover +{0} WP when activating Recovery.,,,,,,,,
+KEY_AFFINITY_TAC_DESC_PSYCHO_SOCIOLOGY_OPTION_2,Text,,Tactical Benefit : Increase friendly Haven deployment by {0}%.,,,,,,,,
+KEY_AFFINITY_TAC_DESC_EXPLORATION_OPTION_1,Text,,Tactical Benefit : Enemies are {0}% more likely to drop loot.,,,,,,,,
+KEY_AFFINITY_TAC_DESC_EXPLORATION_OPTION_2,Text,,"Tactical Benefit : Gain immediate control of {0} friendly Haven defender at mission start, and +{1} WP when extracting civilians.",,,,,,,,
+KEY_AFFINITY_TAC_DESC_OCCULT_OPTION_1,Text,,Tactical Benefit : Reduce TBTV chance by {0}%.,,,,,,,,
+KEY_AFFINITY_TAC_DESC_OCCULT_OPTION_2,Text,,"Tactical Benefit : For all allies, effect of Stamina on Delirium increased by {0}%.",,,,,,,,
+KEY_AFFINITY_TAC_DESC_BIOTECH_OPTION_1,Text,,"Tactical Benefit : Gain passive ability: Using a Medkit or a Virophage Kit restores {0} HP to all broken or damaged organic body parts of the target, restoring them if disabled.",,,,,,,,
+KEY_AFFINITY_TAC_DESC_BIOTECH_OPTION_2,Text,,Tactical Benefit : Gain passive ability: Using any healing item or ability restores up to {0} WP that the target had lost to Delirium; lasts only for the duration of the mission.,,,,,,,,
+KEY_AFFINITY_TAC_DESC_MACHINERY_OPTION_1,Text,,"Tactical Benefit : Gain active ability: Overdrive - restore {0} AP to a Vehicle or Operative with Bionics, but giving a 50% vulnerability to all damage types until the end of next turn (1 AP, 3 WP)",,,,,,,,
+KEY_AFFINITY_TAC_DESC_MACHINERY_OPTION_2,Text,,Tactical Benefit : Gain passive ability: Using any healing item or ability restores up to {0} Armor on each body part of the target.,,,,,,,,
+KEY_AFFINITY_TAC_DESC_COMPUTE_OPTION_1,Text,,Tactical Benefit : Gain passive ability: Ground vehicles with character inside gain +{0} movement and +{1}% accuracy.,,,,,,,,
+KEY_AFFINITY_TAC_DESC_COMPUTE_OPTION_2,Text,,"Tactical Benefit : For all Allies, Perception vs Pandorans increased by {0}% of the total amount of Delirium in the squad, up to +{1}.",,,,,,,,
 KEY_AFFINITY_CHOICE_UI_HEADER,Text,,Affinity Benefits,,,,,,,,
 KEY_AFFINITY_CHOICE_UI_GRANTED,Text,,{0} rank {1} granted.,,,,,,,,
 KEY_AFFINITY_CHOICE_UI_TRACK_GEOSCAPE,Text,,Geoscape,,,,,,,,
@@ -248,3 +248,73 @@ TFTV_KEY_MACHINERY_OVERDRIVE_DESC_R2,Text,,"Restore 2 AP to a Vehicle or Operati
 TFTV_KEY_MACHINERY_OVERDRIVE_DESC_R3,Text,,"Restore 3 AP to a Vehicle or Operative with Bionics, but give it a 50% vulnerability versus the configured damage types until its next turn. Costs 1 AP and 3 WP.",,,,,,,,
 TFTV_KEY_MACHINERY_OVERDRIVE_VULNERABILITY_NAME,Text,,Overdrive Vulnerability,,,,,,,,
 TFTV_KEY_MACHINERY_OVERDRIVE_VULNERABILITY_DESC,Text,,This unit is 50% more vulnerable to all types of Damage,,,,,,,,
+KEY_AFFINITY_INHERITANCE_TRANSFER_TO_RECIPIENT,Text,,Affinity Passed On: {0} -> {1},,,,,,,,
+KEY_AFFINITY_INHERITANCE_TRANSFER_BANKED,Text,,Affinity Passed On: {0} banked,,,,,,,,
+KEY_AFFINITY_PSYCHO_SOCIOLOGY_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
+
+- Haven Defense rewards +15% per Affinity Rank
+OR
+- Additional 15% chance per Affinity Rank for teammates to recover from a Delirium Perk after mission. 
+
+Tactical Benefits (choose one globally):
+
+- Allies recover +2 WP per Affinity Rank when activating Recovery.
+OR
+- Gain immediate control of friendly Haven Defenders at mission start, and WP when extracting civilians (1 of each per Affinity Rank).
+",,,,,,,,
+KEY_AFFINITY_EXPLORATION_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
+
+- Exploration is 1 hour faster and resources gained from exploration events increased by 10% per Affinity Rank.
+OR
+- All operatives in the aircraft recover 2 Stamina per Affinity Rank after mission.
+
+Tactical Benefits (choose one globally):
+
+- Enemies are 15% per Affinity Rank more likely to drop loot.
+OR
+-  Increase friendly Haven deployment by 50% per Affinity Rank.",,,,,,,,
+KEY_AFFINITY_OCCULT_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
+
+- Receive a 1-hour per Affinity Rank warning before an attack on a Phoenix Base.
+OR
+- 15% per Affinity Rank less penalty/more buff from flying in Mist.
+
+Tactical Benefits (choose one globally):
+
+- Reduce TBTV chance by 5% per Affinity Rank.
+OR
+- For all Allies, effect of Stamina on Delirium increased by 50% per Affinity Rank.
+",,,,,,,,
+KEY_AFFINITY_BIOTECH_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
+
+- Operatives recover 30 HP per Affinity Rank after mission.
+OR
+- Haven Leaders visited by this character gain +15 Rep per Affinity Rank toward Phoenix Project.
+
+Tactical Benefits (choose one globally):
+
+- Gain passive ability: Using a Medkit or a Virophage Kit restores 10 HP per Affinity Rank to all broken or damaged organic body parts of the target, restoring them if disabled.
+OR
+- Gain passive ability: Using any healing item or ability restores up to 3 WP per Affinity Rank that the target had lost to Delirium; lasts only for the duration of the mission.",,,,,,,,
+KEY_AFFINITY_MACHINERY_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
+
+- Vehicles recover 150 HP per Affinity Rank after mission.
+OR
+- 25% per Affinity Rank less Aircraft maintenance loss.
+
+Tactical Benefits (choose one globally):
+
+- Gain active ability: Overdrive - restore 1 AP per Affinity Rank to a Vehicle or Operative with Bionics, but giving a 50% vulnerability to all damage types until the end of next turn (1 AP, 3 WP)
+OR
+- Gain passive ability: Using any healing item or ability restores up to 4 Armor per Affinity Rank on each body part of the target.",,,,,,,,
+KEY_AFFINITY_COMPUTE_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
+
+- Aircraft speed increased by 10% per Affinity Rank.
+OR
+- Receive 4h per Affinity Rank advance warning of possible attacks on Havens.
+
+Tactical Benefits (choose one globally):
+
+- Gain passive ability: Ground vehicles with character inside gain +3 movement and +10% accuracy per Affinity Rank.
+OR
+- For all Allies, Perception vs Pandorans increased by 1 per Affinity Rank out of 3 of the total amount of Delirium in the squad, up to +10 per Affinity Rank.",,,,,,,,

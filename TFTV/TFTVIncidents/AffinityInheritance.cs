@@ -37,7 +37,8 @@ namespace TFTV.TFTVIncidents
     {
         private const string DiagTag = "[AffinityInheritance]";
         private const string NurseAbilityDefName = "Helpful_AbilityDef";
-
+        private const string TransferToRecipientKey = "KEY_AFFINITY_INHERITANCE_TRANSFER_TO_RECIPIENT";
+        private const string TransferBankedKey = "KEY_AFFINITY_INHERITANCE_TRANSFER_BANKED";
         private const int SameAircraftWeightBonus = 100;
 
         // Placeholder tuning hooks.
@@ -406,7 +407,7 @@ namespace TFTV.TFTVIncidents
                 RecordOrUpdateOperativeAffinity(recipient.Id, approach, rank);
                 RemoveOperativeAffinity(deadOperativeKey);
 
-                string summary = $"Affinity Passed On: {FormatAffinity(approach, rank)} -> {recipient.DisplayName}";
+                string summary = BuildTransferToRecipientSummary(approach, rank, recipient.DisplayName);
                 TransferSummaryByDeadUnitId[deadOperativeKey] = summary;
 
                 TFTVLogger.Always(
@@ -422,7 +423,7 @@ namespace TFTV.TFTVIncidents
                 Rank = rank
             });
 
-            TransferSummaryByDeadUnitId[deadOperativeKey] = $"Affinity Passed On: {FormatAffinity(approach, rank)} banked";
+            TransferSummaryByDeadUnitId[deadOperativeKey] = BuildTransferBankedSummary(approach, rank);
 
             TFTVLogger.Always(
                 $"{DiagTag} {descriptor.GetName()} had no eligible recipient for {FormatAffinity(approach, rank)}. Banked={BankedAffinities.Count}");
@@ -691,6 +692,38 @@ namespace TFTV.TFTVIncidents
             PassiveModifierAbilityDef ability = LeaderSelection.GetAffinityAbility(approach, 1);
             string affinityName = ability?.ViewElementDef?.DisplayName1?.Localize() ?? approach.ToString();
             return $"{affinityName} {ToRoman(rank)}";
+        }
+
+        private static string BuildTransferToRecipientSummary(
+            LeaderSelection.AffinityApproach approach,
+            int rank,
+            string recipientName)
+        {
+            string template = GetLocalizedTemplate(
+                TransferToRecipientKey,
+                "Affinity Passed On: {0} -> {1}");
+
+            return string.Format(template, FormatAffinity(approach, rank), recipientName ?? "-");
+        }
+
+        private static string BuildTransferBankedSummary(LeaderSelection.AffinityApproach approach, int rank)
+        {
+            string template = GetLocalizedTemplate(
+                TransferBankedKey,
+                "Affinity Passed On: {0} banked");
+
+            return string.Format(template, FormatAffinity(approach, rank));
+        }
+
+        private static string GetLocalizedTemplate(string key, string fallback)
+        {
+            string localized = global::TFTV.TFTVCommonMethods.ConvertKeyToString(key);
+            if (string.IsNullOrEmpty(localized) || string.Equals(localized, key, StringComparison.Ordinal))
+            {
+                return fallback;
+            }
+
+            return localized;
         }
 
         private static string ToRoman(int rank)

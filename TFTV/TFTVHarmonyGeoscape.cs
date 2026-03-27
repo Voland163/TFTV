@@ -99,6 +99,7 @@ namespace TFTV
             {
                 TFTVVanillaFixes.Geoscape.ApplyGenerateFactionReward(__instance, eventID, ref __result);
                 TFTVAircraftReworkMain.MarketPlace.ApplyGenerateFactionReward(__instance, faction);
+                TFTVIncidents.AffinityGeoscapeEffects.ExplorationGeoscapeBenefits.ApplyExplorationBenefitOption1IncreasedReward(context, eventID, ref __result);
             }
         }
 

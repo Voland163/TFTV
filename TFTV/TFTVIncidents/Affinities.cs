@@ -711,7 +711,7 @@ internal static int GetTacticalBenefitChoiceFromSnapshot(LeaderSelection.Affinit
 
                     case LeaderSelection.AffinityApproach.Exploration:
                         return option == 1
-                            ? LocalizeAndFormat(KeyExplorationGeoOpt1, r)
+                            ? LocalizeAndFormat(KeyExplorationGeoOpt1, r, 10 * r)
                             : LocalizeAndFormat(KeyExplorationGeoOpt2, 2 * r);
 
                     case LeaderSelection.AffinityApproach.Occult:
@@ -755,7 +755,7 @@ internal static int GetTacticalBenefitChoiceFromSnapshot(LeaderSelection.Affinit
 
                     case LeaderSelection.AffinityApproach.Exploration:
                         return option == 1
-                            ? LocalizeAndFormat(KeyExplorationTacOpt1, r)
+                            ? LocalizeAndFormat(KeyExplorationTacOpt1, 15 * r)
                             : LocalizeAndFormat(KeyExplorationTacOpt2, r, r);
 
                     case LeaderSelection.AffinityApproach.Occult:

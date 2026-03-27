@@ -349,7 +349,7 @@ namespace TFTV.TFTVIncidents
                         return false;
                     }
 
-                    float lootDropChance = Mathf.Clamp01(0.10f * bestRank);
+                    float lootDropChance = Mathf.Clamp01(0.15f * bestRank);
                     return UnityEngine.Random.Range(0f, 1f) < lootDropChance;
                 }
                 catch (Exception e)

@@ -451,6 +451,14 @@ namespace TFTV.TFTVIncidents
                     leaderId = fallback?.Id ?? -1;
                 }
 
+                // Narrow to the player-selected (or auto-selected) approach for award tracking.
+                // This runs AFTER bonus computation so the full token set is used for hour reduction,
+                // but only the chosen approach is persisted for affinity award on resolution.
+                if (IncidentResolutionUI.GeoscapeEventCrewListPatch.TryGetSelectedApproachToken(choiceIndex, out string selectedApproachToken))
+                {
+                    approachTokens = selectedApproachToken;
+                }
+
                 TimeUnit duration = TimeUnit.FromHours(durationHours);
                 string timerId = ActiveTimedProblem.BuildTimerId(
                     site,

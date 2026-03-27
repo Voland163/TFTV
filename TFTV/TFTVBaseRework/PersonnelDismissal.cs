@@ -96,7 +96,7 @@ namespace TFTV.TFTVBaseRework
                 TFTVLogger.Always($"{LogPrefix} ConvertDismissedOperativeToCivilian begin Name={character.DisplayName} Id={character.Id} Level={character.LevelProgression?.Level ?? 0} MainSpec={character.Progression?.MainSpecDef?.name ?? "None"} HiddenBefore={GeoCharacterFilter.HiddenOperativeMarkerFilter.ShouldHide(character)} DismissedBefore={PersonnelRestrictions.IsDismissedOperative(character)}");
 
                 TFTVUI.Personnel.Loadouts.UnequipButtonClicked();
-
+                MoveDismissedOperativeToSiteIfNeeded(faction, character);
                 PersonnelRestrictions.MarkDismissedOperative(character);
                 PersonnelRestrictions.MarkHiddenFromOperatives(character);
                 PersonnelData.UpdateDismissedPersonnelRecord(character);

@@ -863,7 +863,7 @@ namespace TFTV.TFTVUI.Geoscape
             {
                 try
                 {
-                    TFTVLogger.Always($"UIModuleBaseLayout setupbaselayout running for {__instance?.PxBase?.Site?.LocalizedSiteName}");
+                   
 
                     foreach (PhoenixFacilityController facilityController in ____slots)
                     {

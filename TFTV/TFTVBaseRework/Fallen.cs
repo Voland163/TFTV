@@ -11,6 +11,7 @@ using PhoenixPoint.Tactical.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TFTV.TFTVIncidents;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -75,7 +76,7 @@ namespace TFTV.TFTVBaseRework
                 if (!tacActorUnitResult.IsAlive && tacActorUnitResult.GeoUnitId != GeoTacUnitId.None)
                 {
                     FallenOperativeInfo operativeInfo = GetOperativeInfo(geoLevel, currentGameStats, tacActorUnitResult.GeoUnitId);
-                    if (operativeInfo != null && !string.IsNullOrEmpty(operativeInfo.Name) && !list.Any(i => i.Name == operativeInfo.Name))
+                    if (operativeInfo != null && !string.IsNullOrEmpty(operativeInfo.Name) && !list.Any(i => i.GeoUnitId == operativeInfo.GeoUnitId))
                     {
                         list.Add(operativeInfo);
                     }
@@ -94,7 +95,8 @@ namespace TFTV.TFTVBaseRework
 
             FallenOperativeInfo fallenOperativeInfo = new FallenOperativeInfo
             {
-                Name = value.GetName()
+                Name = value.GetName(),
+                GeoUnitId = (int)unitId
             };
 
             List<ViewElementDef> classViewElements = new List<ViewElementDef>
@@ -230,6 +232,13 @@ namespace TFTV.TFTVBaseRework
                 CreateInfoLine(entry.transform, $"SP Returned: {fallenOperativeInfo.SkillPointsReturned}", 30, FontStyle.Normal);
                 CreateInfoLine(entry.transform, $"Favorite Weapon: {fallenOperativeInfo.FavoriteWeapon}", 28, FontStyle.Normal);
                 CreateInfoLine(entry.transform, $"Favorite Skill: {fallenOperativeInfo.FavoriteSkill}", 28, FontStyle.Normal);
+
+                string transferSummary = AffinityInheritance.GetTransferSummary(fallenOperativeInfo.GeoUnitId);
+                if (!string.IsNullOrEmpty(transferSummary))
+                {
+                    CreateInfoLine(entry.transform, transferSummary, 24, FontStyle.Italic);
+                }
+
             }
         }
 
@@ -393,6 +402,7 @@ namespace TFTV.TFTVBaseRework
 
         private sealed class FallenOperativeInfo
         {
+            public int GeoUnitId;
             public string Name;
             public IEnumerable<ViewElementDef> ClassViewElements = Enumerable.Empty<ViewElementDef>();
             public int Missions;

@@ -106,14 +106,14 @@ namespace TFTV.TFTVIncidents
             {
                 if (site?.GeoLevel?.EventSystem == null || string.IsNullOrEmpty(site.EncounterID))
                 {
-                    TFTVLogger.Always($"[Incidents UI] Site {site?.name ?? "<null>"} has no encounter/event system.");
+                   // TFTVLogger.Always($"[Incidents UI] Site {site?.name ?? "<null>"} has no encounter/event system.");
                     return false;
                 }
 
                 GeoscapeEventDef encounterEvent = site.GeoLevel.EventSystem.GetEventByID(site.EncounterID, true);
                 if (encounterEvent == null || string.IsNullOrEmpty(encounterEvent.EventID))
                 {
-                    TFTVLogger.Always("[Incidents UI] Encounter event is null or has no EventID.");
+                  //  TFTVLogger.Always("[Incidents UI] Encounter event is null or has no EventID.");
                     return false;
                 }
 

@@ -932,11 +932,11 @@ namespace TFTV.TFTVBaseRework
 
                 case PersonnelAssignment.Training:
                     // Deploy/Train column: prompt with deploy-now vs train-first
-                    if (PersonnelRestrictions.IsDismissedOperative(person.Character))
+                   /* if (PersonnelRestrictions.IsDismissedOperative(person.Character))
                     {
                         ShowMessage($"{person.Character?.DisplayName} is a dismissed operative and cannot use the civilian training path.\nUse Deploy/Redeploy instead.");
                         return;
-                    }
+                    }*/
                     ShowDeployOrTrainSelection(level, person, phoenix, () => RefreshPanel());
                     return; // Don't refresh yet — modal is open
             }
@@ -1346,11 +1346,12 @@ namespace TFTV.TFTVBaseRework
                             $"Redeploy {person.Character?.DisplayName} to {label} for {cost} shared skill points?",
                             () =>
                             {
-                                var character = TrainingFacilityRework.RedeployDismissedOperative(level, person.Character, geoBase);
+                                var character = RedeployDismissedOperative(level, person.Character, geoBase);
                                 if (character != null)
                                 {
-                                    PersonnelData.RemovePersonnel(faction, person);
+                                    RemovePersonnel(faction, person);
                                     RefreshResourceInfo(faction);
+                                  
                                 }
                                 else
                                 {

@@ -100,7 +100,7 @@ TFTV_INCIDENT_22_TITLE_NJ,Text,Requirement: nearby Synedrion Haven,The Negotiati
 TFTV_INCIDENT_22_DESC,Text,,"[HavenName] is attempting to finalize a trade treaty with a nearby Synedrion settlement of [RequirementHavenName], but progress has stalled.
 The haven’s leader requests Phoenix Project assistance, claiming that the Synedrion delegation keeps reopening issues already agreed upon.
 “They say they’re a real democracy,” the leader explains with visible irritation, “so apparently every clause must be reapproved by their entire population. We can’t negotiate with a crowd.”"
-TFTV_INCIDENT_22_CHOICE_0_M_P,Text,,Meet the Synedrion delegates under the pretext of discussing logistics automation. (Machinery)
+TFTV_INCIDENT_22_CHOICE_0_M,Text,,Meet the Synedrion delegates under the pretext of discussing logistics automation. (Machinery)
 TFTV_INCIDENT_22_CHOICE_1_C_E,Text,,Gain access to the Synedrion delegation’s communications channel. (Compute / Exploration approach)
 TFTV_INCIDENT_22_CHOICE_2,Text,,They are more likely to hash out a deal without the involvement of a third party. [END]
 TFTV_INCIDENT_22_OUTCOME_0_SUCCESS,Text,"Reward: +4 NJ, +8 Haven leader, +400 materials","Outwardly, the Synedrion delegates appear articulate, and cooperative.
