@@ -3,10 +3,7 @@ using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TFTV.TFTVBaseRework
 {
@@ -47,7 +44,7 @@ namespace TFTV.TFTVBaseRework
             return true;
         }
 
-       
+
 
         private static void MoveDismissedOperativeToSiteIfNeeded(GeoPhoenixFaction faction, GeoCharacter character)
         {
@@ -66,7 +63,19 @@ namespace TFTV.TFTVBaseRework
                     return;
                 }
 
-                GeoSite destination = carrier.CurrentSite ?? faction.Bases?.FirstOrDefault()?.Site;
+
+                GeoSite destination = carrier?.CurrentSite;
+
+                if (destination != null && faction.Bases.Any(b => b.Site == destination))
+                {
+
+                }
+                else
+                {
+                    destination = faction.Bases?.FirstOrDefault()?.Site;
+
+                }
+
                 if (destination == null)
                 {
                     TFTVLogger.Always($"{LogPrefix} Could not find destination site for dismissed operative {character.DisplayName}.");
@@ -75,6 +84,8 @@ namespace TFTV.TFTVBaseRework
 
                 carrier.RemoveCharacter(character);
                 destination.AddCharacter(character);
+                TFTVLogger.Always($"{LogPrefix} Moved dismissed operative {character.DisplayName} to site {destination?.LocalizedSiteName}.");
+
             }
             catch (Exception e)
             {
@@ -92,8 +103,6 @@ namespace TFTV.TFTVBaseRework
                 {
                     return false;
                 }
-
-                TFTVLogger.Always($"{LogPrefix} ConvertDismissedOperativeToCivilian begin Name={character.DisplayName} Id={character.Id} Level={character.LevelProgression?.Level ?? 0} MainSpec={character.Progression?.MainSpecDef?.name ?? "None"} HiddenBefore={GeoCharacterFilter.HiddenOperativeMarkerFilter.ShouldHide(character)} DismissedBefore={PersonnelRestrictions.IsDismissedOperative(character)}");
 
                 TFTVUI.Personnel.Loadouts.UnequipButtonClicked();
                 MoveDismissedOperativeToSiteIfNeeded(faction, character);

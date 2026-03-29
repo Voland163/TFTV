@@ -15,6 +15,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Policy;
 
 namespace TFTV.TFTVBaseRework
 {
@@ -26,19 +27,9 @@ namespace TFTV.TFTVBaseRework
         private static readonly SharedData Shared = TFTVMain.Shared;
 
 
-        private static bool ShouldIncludeInSoldiersResult(GeoPhoenixFaction faction, GeoCharacter character)
+        private static bool ShouldIncludeInSoldiersResult(GeoCharacter character)
         {
             if (character == null)
-            {
-                return false;
-            }
-
-            if (!Enabled)
-            {
-                return true;
-            }
-
-            if (faction != null && character.Faction != faction)
             {
                 return false;
             }
@@ -113,7 +104,7 @@ namespace TFTV.TFTVBaseRework
                         return;
                     }
 
-                    __result = __result.Where((GeoCharacter soldier) => ShouldIncludeInSoldiersResult(__instance, soldier));
+                    __result = __result.Where((GeoCharacter soldier) => ShouldIncludeInSoldiersResult(soldier));
                 }
             }
 
@@ -134,7 +125,7 @@ namespace TFTV.TFTVBaseRework
 
             internal static void ApplyHiddenMarker(GeoCharacter character)
             {
-                if (!Enabled || character == null)
+                if (character == null)
                 {
                     return;
                 }
@@ -144,7 +135,7 @@ namespace TFTV.TFTVBaseRework
 
             internal static void RemoveHiddenMarker(GeoCharacter character)
             {
-                if (!Enabled || character == null)
+                if (character == null)
                 {
                     return;
                 }
@@ -185,12 +176,6 @@ namespace TFTV.TFTVBaseRework
                 }
 
                 ____characters = HiddenOperativeMarkerFilter.FilterCharacters(____characters).ToList();
-
-                foreach (GeoCharacter character in ____characters)
-                {
-                    TFTVLogger.Always($"[UIStateEditSoldier] Remaining character: {character.DisplayName}");
-
-                }
 
             }
         }
@@ -341,5 +326,31 @@ namespace TFTV.TFTVBaseRework
                 }
             }
         }
+
+        [HarmonyPatch(typeof(SiteManagementRow), "ShowSiteStats")]
+        internal static class Patch_SiteManagementRow_ShowSiteStats
+        {
+            private static void Postfix(SiteManagementRow __instance)
+            {
+
+                if (!Enabled)
+                {
+                    return;
+                }
+
+              //  TFTVLogger.Always($"Postfix: SiteManagementRow.ShowSiteStats called for site: {__instance?.Site?.Name} __instance.PersonnelNumber.text: {__instance?.PersonnelNumber?.text}");
+
+                if (__instance?.Site == null || __instance.PersonnelNumber == null)
+                    return;
+
+             
+                int modified = __instance.Site.GetAllCharacters().Where(c => c != null && !HiddenOperativeMarkerFilter.ShouldHide(c)).Count();
+
+               // TFTVLogger.Always($"Postfix: Calculated modified personnel count: {modified}");
+
+                __instance.PersonnelNumber.text = modified.ToString();
+            }
+        }
+
     }
 }

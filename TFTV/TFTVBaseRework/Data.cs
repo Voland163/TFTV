@@ -173,7 +173,7 @@ namespace TFTV.TFTVBaseRework
 
         private static bool HasMarkerAbility(GeoCharacter character, TacticalAbilityDef marker)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled || character?.Progression?.Abilities == null || marker == null)
+            if (character?.Progression?.Abilities == null || marker == null)
             {
                 return false;
             }
@@ -183,7 +183,7 @@ namespace TFTV.TFTVBaseRework
 
         private static bool AddMarkerAbility(GeoCharacter character, PassiveModifierAbilityDef marker, string markerName)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled || character?.Progression == null || marker == null)
+            if (character?.Progression == null || marker == null)
             {
                 return false;
             }
@@ -200,7 +200,7 @@ namespace TFTV.TFTVBaseRework
 
         private static bool RemoveMarkerAbility(GeoCharacter character, PassiveModifierAbilityDef marker, string markerName)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled || character?.Progression == null || marker == null)
+            if (character?.Progression == null || marker == null)
             {
                 return false;
             }

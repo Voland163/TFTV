@@ -635,10 +635,27 @@ namespace TFTV.TFTVBaseRework
                     phoenix.Skillpoints -= cost;
                 }
 
+               
+
                 GeoCharacterFilter.HiddenOperativeMarkerFilter.RemoveHiddenMarker(character);
                 PersonnelRestrictions.ClearDismissedOperative(character);
 
-                TFTVLogger.Always($"[Training] Redeployed dismissed operative {character.DisplayName} for {cost} shared skill points.");
+                if(!targetBase.Site.GetAllCharacters().Any(c=> c == character)) 
+                {
+                    
+                    GeoPhoenixBase currentBase = phoenix.Bases.FirstOrDefault(b=>b.Site.GetAllCharacters().Any(c=> c == character));
+                    targetBase.Site.AddCharacter(character);
+                    currentBase.Site.RemoveCharacter(character);
+                    TFTVLogger.Always($"[Training] Redeployed {character?.DisplayName} from {currentBase?.Site?.LocalizedSiteName} to {targetBase?.Site?.LocalizedSiteName} at a cost of {cost} skill points.");
+                }
+                else 
+                { 
+                
+                    TFTVLogger.Always($"[Training] {character?.DisplayName} redeployed at {targetBase?.Site?.LocalizedSiteName} at a cost of {cost} skill points.");
+
+                }
+               
+
                 return character;
             }
             catch (Exception e)

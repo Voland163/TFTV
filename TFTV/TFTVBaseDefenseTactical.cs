@@ -3701,8 +3701,20 @@ namespace TFTV
                         TacCharacterDef chosenEnemy = enemies.GetRandomElement(new System.Random((int)Stopwatch.GetTimestamp()));
                         TFTVLogger.Always($"umbraType {chosenEnemy.name}");
 
-                        ActorDeployData actorDeployData = chosenEnemy.GenerateActorDeployData();
+
+                        ActorDeployData actorDeployData = chosenEnemy?.GenerateActorDeployData();
+                        if (actorDeployData == null)
+                        {
+                            TFTVLogger.Always($"ERROR: GenerateActorDeployData returned null for {chosenEnemy?.name}");
+                            return; // or continue
+                        }
+
                         actorDeployData.InitializeInstanceData();
+                        if (actorDeployData.ComponentSetDef == null)
+                        {
+                            TFTVLogger.Always($"ERROR: ComponentSetDef is null for {chosenEnemy?.name}");
+                            continue;
+                        }
 
                         List<Vector3> orderedSpawnPositions = zone.GetOrderedSpawnPositions();
                         if (orderedSpawnPositions == null || orderedSpawnPositions.Count == 0)
@@ -3714,13 +3726,17 @@ namespace TFTV
                         List<Vector3> mistCoveredSpawnPositions = new List<Vector3>();
                         foreach (Vector3 candidate in orderedSpawnPositions)
                         {
-                            if (tacticalVoxelMatrix.GetVoxel(candidate).GetVoxelType() == TacticalVoxelType.Mist)
+                            var voxel = tacticalVoxelMatrix?.GetVoxel(candidate);
+                            if (voxel == null) {
+                                TFTVLogger.Always($"Warning: Voxel is null for candidate spawn position {candidate} near {phoenixOperative?.DisplayName}; skipping this position.");
+                                continue; } 
+                            if (voxel.GetVoxelType() == TacticalVoxelType.Mist)
                             {
                                 mistCoveredSpawnPositions.Add(candidate);
                             }
                         }
 
-                        TFTVLogger.Always($"mistCoveredSpawnPositions count: {mistCoveredSpawnPositions.Count}");
+                        TFTVLogger.Always($"mistCoveredSpawnPositions count: {mistCoveredSpawnPositions?.Count}");
 
                         IReadOnlyCollection<Vector3> validSpawnPosition = zone.GetValidSpawnPosition(actorDeployData.ComponentSetDef, actorDeployData.DeploymentTags, mistCoveredSpawnPositions);
                         if (validSpawnPosition == null || validSpawnPosition.Count == 0)
