@@ -210,7 +210,6 @@
     <Compile Include="TFTVIncidents\PortraitGenerator.cs" />
     <Compile Include="TFTVIncidents\Resolution.cs" />
     <Compile Include="TFTVIncidents\Roll.cs" />
-    <Compile Include="TFTVIncidents\Set.cs" />
     <Compile Include="TFTVIncidents\TextAdjustment.cs" />
     <Compile Include="TFTVLaserWeapons\LaserWeaponsBatteryTooltip.cs" />
     <Compile Include="TFTVLaserWeapons\LaserWeaponsFilter.cs" />

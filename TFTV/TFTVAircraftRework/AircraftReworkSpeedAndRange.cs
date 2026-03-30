@@ -69,16 +69,39 @@ namespace TFTV
             {
                 try
                 {
-                    if (!AircraftReworkOn)
+                    if (!AircraftReworkOn || geoVehicle == null)
                     {
                         return;
                     }
-                    Research research = geoVehicle?.GeoLevel?.PhoenixFaction?.Research;
-                    if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _thunderbirdRangeModule) && research != null)
+
+                   // TFTVLogger.Always($"[OverdriveRange.UpdateThunderbirdRange] Updating range for {geoVehicle.Name}. Current range: {geoVehicle?.Stats?.MaximumRange.Value}");
+
+                    if (geoVehicle.Stats.MaximumRange.Value != geoVehicle.VehicleDef.BaseStats.MaximumRange.Value) 
                     {
-                        float range = GetThunderbirdOverdriveRange(research);
-                        geoVehicle.Stats.MaximumRange.Value = geoVehicle.VehicleDef.BaseStats.MaximumRange.Value + range;
+                        if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _basicRangeModule))
+                        {
+                            geoVehicle.Stats.MaximumRange.Value = geoVehicle.VehicleDef.BaseStats.MaximumRange.Value + _basicRangeModule.GeoVehicleModuleBonusValue;
+                        }
+                        else 
+                        {
+                            geoVehicle.Stats.MaximumRange.Value = geoVehicle.VehicleDef.BaseStats.MaximumRange.Value;
+                        }
                     }
+
+                    Research research = geoVehicle.GeoLevel?.PhoenixFaction?.Research;
+                    if (research == null || !geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _thunderbirdRangeModule))
+                    {
+                        return;
+                    }
+
+                    float totalRangeBonus = GetThunderbirdOverdriveRange(research);
+
+                    if (geoVehicle.Modules.Any(m => m != null && m.ModuleDef == _basicRangeModule))
+                    {
+                        totalRangeBonus += _basicRangeModule.GeoVehicleModuleBonusValue;
+                    }
+
+                    geoVehicle.Stats.MaximumRange.Value = geoVehicle.VehicleDef.BaseStats.MaximumRange.Value + totalRangeBonus;
                 }
                 catch (Exception e)
                 {
@@ -136,7 +159,7 @@ namespace TFTV
                     AdjustAircraftSpeed(__instance, true);
                     OverdriveRange.UpdateThunderbirdRange(__instance);
 
-                    TFTVLogger.Always($"[GeoVehicleStatModifier.UpdateBaseVehicleStats] new speed: {__instance?.Stats?.Speed}");
+                    TFTVLogger.Always($"[GeoVehicleStatModifier.UpdateBaseVehicleStats] new speed: {__instance?.Stats?.Speed} new range: {__instance?.Stats?.MaximumRange}");
 
                 }
                 catch (Exception e)
@@ -161,6 +184,7 @@ namespace TFTV
                 foreach (GeoVehicle geoVehicle in controller.PhoenixFaction.Vehicles)
                 {
                     AdjustAircraftSpeed(geoVehicle, true);
+                    OverdriveRange.UpdateThunderbirdRange(geoVehicle);
                 }
 
             }

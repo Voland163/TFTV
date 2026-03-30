@@ -1,4 +1,5 @@
 ﻿using Base.Defs;
+using Base.UI;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -7,15 +8,12 @@ using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
-using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Security.Policy;
 
 namespace TFTV.TFTVBaseRework
 {
@@ -59,10 +57,73 @@ namespace TFTV.TFTVBaseRework
 
         internal class PersonnelCountersAdjustments
         {
+            internal static class RosterFilterPolicy
+            {
+                // Customize this however you want.
+                public static bool ShouldHide(GeoCharacter c)
+                {
+                    if (c == null) return true;
+
+
+                    return HiddenOperativeMarkerFilter.ShouldHide(c);
+
+                }
+            }
+
+            [HarmonyPatch(typeof(UIModuleGeneralPersonelRoster), "InitRosterSlots")]
+            internal static class Patch_UIModuleGeneralPersonelRoster_InitRosterSlots_HideRows
+            {
+                static void Postfix(UIModuleGeneralPersonelRoster __instance)
+                {
+                    if (__instance?.Slots == null) return;
+
+                    foreach (var slot in __instance.Slots)
+                    {
+                        var c = slot.Character;
+                        if (c != null && RosterFilterPolicy.ShouldHide(c))
+                        {
+                            slot.gameObject.SetActive(false);
+                        }
+                    }
+
+                    // private RefreshNavigation()
+                    Traverse.Create(__instance).Method("RefreshNavigation").GetValue();
+                }
+            }
+
+            [HarmonyPatch(typeof(GeoscapeView), "ToEditUnitState")]
+            [HarmonyPatch(new Type[] { typeof(GeoCharacter), typeof(IEnumerable<GeoCharacter>), typeof(StateStackAction) })]
+            internal static class Patch_GeoscapeView_ToEditUnitState_FilterCharacters
+            {
+                static void Prefix(
+                    GeoscapeView __instance,
+                    ref GeoCharacter initCharacter,
+                    ref IEnumerable<GeoCharacter> characters)
+                {
+                    bool Visible(GeoCharacter c) => c != null && !RosterFilterPolicy.ShouldHide(c);
+
+                    // Mirror original fallback, but filtered.
+                    var source = characters ?? __instance.GetFactionCharacters(null);
+
+                    // Materialize once.
+                    var filtered = source.Where(Visible).Distinct().ToList();
+
+                    // If currently selected initCharacter is hidden, pick first visible.
+                    if (initCharacter == null || !Visible(initCharacter))
+                    {
+                        initCharacter = filtered.FirstOrDefault();
+                    }
+
+                    // Feed filtered list into original method.
+                    characters = filtered;
+                }
+            }
+
+
             [HarmonyPatch(typeof(GeoSiteVisualsController), "RefreshSiteVisuals")]
             public static class GeoSiteVisualsController_BaseIconAbilityFilterPatch
             {
-               
+
                 private static readonly MethodInfo RefreshAvailableSoldiersCountMethod = AccessTools.Method(typeof(GeoSiteVisualsController), "RefreshAvailableSoldiersCount");
 
                 public static void Postfix(GeoSiteVisualsController __instance, GeoSite site)
@@ -183,90 +244,6 @@ namespace TFTV.TFTVBaseRework
 
 
 
-        [HarmonyPatch(typeof(GeoSite), nameof(GeoSite.GetAllCharacters))]
-        internal static class GeoSite_GetAllCharacters_Patch
-        {
-            private static void Postfix(ref IEnumerable<GeoCharacter> __result)
-            {
-                if (!Enabled)
-                {
-                    return;
-                }
-
-                __result = HiddenOperativeMarkerFilter.FilterCharacters(__result);
-            }
-        }
-
-        [HarmonyPatch(typeof(GeoVehicle), nameof(GeoVehicle.GetAllCharacters))]
-        internal static class GeoVehicle_GetAllCharacters_Patch
-        {
-            private static void Postfix(ref IEnumerable<GeoCharacter> __result)
-            {
-                if (!Enabled)
-                {
-                    return;
-                }
-
-                __result = HiddenOperativeMarkerFilter.FilterCharacters(__result);
-            }
-        }
-
-        [HarmonyPatch(typeof(UIStateGeoRoster), "FilterCharacters")] //VERIFIED
-        internal static class UIStateGeoRoster_FilterCharacters_Patch
-        {
-            private static readonly AccessTools.FieldRef<UIStateGeoRoster, List<GeoCharacter>> CharactersField = AccessTools.FieldRefAccess<UIStateGeoRoster, List<GeoCharacter>>("_characters");
-
-            private static void Postfix(UIStateGeoRoster __instance)
-            {
-                if (!Enabled)
-                {
-                    return;
-                }
-
-                HiddenOperativeMarkerFilter.FilterList(CharactersField(__instance));
-            }
-        }
-
-        [HarmonyPatch(typeof(UIModuleGeneralPersonelRoster), "Init", new Type[]
-        {
-        typeof(GeoscapeViewContext),
-        typeof(List<IGeoCharacterContainer>),
-        typeof(IGeoCharacterContainer),
-        typeof(GeoRosterFilterMode),
-        typeof(RosterSelectionMode)
-        })]
-        internal static class UIModuleGeneralPersonelRoster_Init_Patch
-        {
-            private static readonly FieldInfo UnitContainersField = AccessTools.Field(typeof(UIModuleGeneralPersonelRoster), "_unitContainers");
-            private static readonly Type ContainerDataType = AccessTools.Inner(typeof(UIModuleGeneralPersonelRoster), "ContainerData");
-            private static readonly FieldInfo GeoTacUnitsField = AccessTools.Field(ContainerDataType, "<GeoTacUnits>k__BackingField");
-
-            private static void Postfix(UIModuleGeneralPersonelRoster __instance)
-            {
-                if (!Enabled)
-                {
-                    return;
-                }
-
-                if (!(UnitContainersField.GetValue(__instance) is IList containerList))
-                {
-                    return;
-                }
-
-                foreach (object containerData in containerList)
-                {
-                    if (containerData == null)
-                    {
-                        continue;
-                    }
-
-                    if (GeoTacUnitsField.GetValue(containerData) is IEnumerable<GeoCharacter> units)
-                    {
-                        GeoTacUnitsField.SetValue(containerData, HiddenOperativeMarkerFilter.FilterCharacters(units).ToList());
-                    }
-                }
-            }
-        }
 
         [HarmonyPatch(typeof(GeoMission), nameof(GeoMission.GetDefaultDeploymentSetup), new Type[] { typeof(IEnumerable<GeoCharacter>) })]
         internal static class GeoMission_GetDefaultDeploymentSetup_FromEnumerable_Patch
@@ -338,18 +315,43 @@ namespace TFTV.TFTVBaseRework
                     return;
                 }
 
-              //  TFTVLogger.Always($"Postfix: SiteManagementRow.ShowSiteStats called for site: {__instance?.Site?.Name} __instance.PersonnelNumber.text: {__instance?.PersonnelNumber?.text}");
+                //  TFTVLogger.Always($"Postfix: SiteManagementRow.ShowSiteStats called for site: {__instance?.Site?.Name} __instance.PersonnelNumber.text: {__instance?.PersonnelNumber?.text}");
 
-                if (__instance?.Site == null || __instance.PersonnelNumber == null)
+                if (__instance?.Site == null || __instance.PersonnelNumber == null || __instance.Site.GetComponent<GeoPhoenixBase>() == null)
                     return;
 
-             
-                int modified = __instance.Site.GetAllCharacters().Where(c => c != null && !HiddenOperativeMarkerFilter.ShouldHide(c)).Count();
 
-               // TFTVLogger.Always($"Postfix: Calculated modified personnel count: {modified}");
+                int modified = __instance.Site.GetComponent<GeoPhoenixBase>().SoldiersInBase.Where(c => c != null && c.TemplateDef.IsHuman && !HiddenOperativeMarkerFilter.ShouldHide(c)).Count();
+
+                // TFTVLogger.Always($"Postfix: Calculated modified personnel count: {modified}");
 
                 __instance.PersonnelNumber.text = modified.ToString();
             }
+        }
+
+        [HarmonyPatch(typeof(UIModuleBaseLayout), "SetLeftSideInfo")]
+        internal static class Patch_UIModuleBaseLayout_SetLeftSideInfo
+        {
+            private static void Postfix(UIModuleBaseLayout __instance)
+            {
+                if (!Enabled)
+                {
+                    return;
+                }
+
+
+                if (__instance?.PxBase == null || __instance.PersonnelAtBaseText == null)
+                    return;
+
+
+
+                // Replace with your logic:
+                int modified = __instance.PxBase.SoldiersInBase.Where(c => c != null && c.TemplateDef.IsHuman && !HiddenOperativeMarkerFilter.ShouldHide(c)).Count();
+
+                __instance.PersonnelAtBaseText.text = modified.ToString();
+            }
+
+
         }
 
     }

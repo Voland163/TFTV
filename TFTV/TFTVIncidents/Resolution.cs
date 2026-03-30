@@ -72,10 +72,9 @@ namespace TFTV.TFTVIncidents
             public int VehicleId;
             public int LeaderId;
             public string ApproachTokens;
+            public int MatchedNearbyHavenSiteId = -1;
             public TimeUnit StartAt;
             public TimeUnit EndAt;
-
-
 
             public bool IsExpired(Timing timing)
             {
@@ -88,20 +87,22 @@ namespace TFTV.TFTVIncidents
                 string completionEventId,
                 string cancelEventId,
                 int leaderId,
-                string approachTokens)
+                string approachTokens,
+                int matchedNearbyHavenSiteId)
             {
-                // Format: GTP|siteId|vehicleId|completion|cancel|leaderId|approachTokens|ticksUtc
+                // Format: GTP|siteId|vehicleId|completion|cancel|leaderId|approachTokens|matchedNearbyHavenSiteId|ticksUtc
                 return string.Join("|", new[]
                 {
-                "GTP",
-                (site?.SiteId ?? -1).ToString(CultureInfo.InvariantCulture),
-                (vehicle?.VehicleID ?? -1).ToString(CultureInfo.InvariantCulture),
-                completionEventId ?? string.Empty,
-                cancelEventId ?? string.Empty,
-                leaderId.ToString(CultureInfo.InvariantCulture),
-                approachTokens ?? string.Empty,
-                DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture)
-            });
+                    "GTP",
+                    (site?.SiteId ?? -1).ToString(CultureInfo.InvariantCulture),
+                    (vehicle?.VehicleID ?? -1).ToString(CultureInfo.InvariantCulture),
+                    completionEventId ?? string.Empty,
+                    cancelEventId ?? string.Empty,
+                    leaderId.ToString(CultureInfo.InvariantCulture),
+                    approachTokens ?? string.Empty,
+                    matchedNearbyHavenSiteId.ToString(CultureInfo.InvariantCulture),
+                    DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture)
+                });
             }
 
             public static bool TryParseFromTimer(GeoEventTimer timer, out ActiveTimedProblem active)
@@ -130,6 +131,7 @@ namespace TFTV.TFTVIncidents
 
                 int leaderId = -1;
                 string approachTokens = string.Empty;
+                int matchedNearbyHavenSiteId = -1;
 
                 if (parts.Length >= 7)
                 {
@@ -141,6 +143,11 @@ namespace TFTV.TFTVIncidents
                     approachTokens = parts[6];
                 }
 
+                if (parts.Length >= 9)
+                {
+                    int.TryParse(parts[7], NumberStyles.Integer, CultureInfo.InvariantCulture, out matchedNearbyHavenSiteId);
+                }
+
                 active = new ActiveTimedProblem
                 {
                     TimerId = timer.ID,
@@ -148,6 +155,7 @@ namespace TFTV.TFTVIncidents
                     VehicleId = vehicleId,
                     LeaderId = leaderId,
                     ApproachTokens = approachTokens,
+                    MatchedNearbyHavenSiteId = matchedNearbyHavenSiteId,
                     CompletionEventId = parts[3],
                     CancelEventId = parts[4],
                     StartAt = timer.StartAt,
@@ -173,6 +181,104 @@ namespace TFTV.TFTVIncidents
 
             private static readonly AccessTools.FieldRef<GeoscapeEventSystem, Dictionary<string, GeoEventTimer>> TimersRef =
                 AccessTools.FieldRefAccess<GeoscapeEventSystem, Dictionary<string, GeoEventTimer>>("_timers");
+
+            private static readonly Dictionary<string, int> MatchedNearbyHavenByExactKey = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            private static readonly Dictionary<string, int> MatchedNearbyHavenBySiteKey = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+            internal static bool TryGetStoredMatchedNearbyHavenSiteId(string eventId, int siteId, int vehicleId, out int matchedNearbyHavenSiteId)
+            {
+                matchedNearbyHavenSiteId = -1;
+                if (string.IsNullOrEmpty(eventId) || siteId <= 0)
+                {
+                    return false;
+                }
+
+                if (vehicleId > 0
+                    && MatchedNearbyHavenByExactKey.TryGetValue(
+                        BuildMatchedNearbyHavenExactKey(eventId, siteId, vehicleId),
+                        out matchedNearbyHavenSiteId))
+                {
+                    return matchedNearbyHavenSiteId > 0;
+                }
+
+                if (MatchedNearbyHavenBySiteKey.TryGetValue(
+                    BuildMatchedNearbyHavenSiteKey(eventId, siteId),
+                    out matchedNearbyHavenSiteId))
+                {
+                    return matchedNearbyHavenSiteId > 0;
+                }
+
+                matchedNearbyHavenSiteId = -1;
+                return false;
+            }
+
+            private static void RememberMatchedNearbyHaven(string eventId, int siteId, int vehicleId, int matchedNearbyHavenSiteId)
+            {
+                if (string.IsNullOrEmpty(eventId) || siteId <= 0 || matchedNearbyHavenSiteId <= 0)
+                {
+                    return;
+                }
+
+                if (vehicleId > 0)
+                {
+                    MatchedNearbyHavenByExactKey[BuildMatchedNearbyHavenExactKey(eventId, siteId, vehicleId)] = matchedNearbyHavenSiteId;
+                }
+
+                MatchedNearbyHavenBySiteKey[BuildMatchedNearbyHavenSiteKey(eventId, siteId)] = matchedNearbyHavenSiteId;
+            }
+
+            private static string BuildMatchedNearbyHavenExactKey(string eventId, int siteId, int vehicleId)
+            {
+                return string.Join("|", new[]
+                {
+                    eventId ?? string.Empty,
+                    siteId.ToString(CultureInfo.InvariantCulture),
+                    vehicleId.ToString(CultureInfo.InvariantCulture)
+                });
+            }
+
+            private static string BuildMatchedNearbyHavenSiteKey(string eventId, int siteId)
+            {
+                return string.Join("|", new[]
+                {
+                    eventId ?? string.Empty,
+                    siteId.ToString(CultureInfo.InvariantCulture)
+                });
+            }
+
+            private static int ResolveMatchedNearbyHavenSiteId(GeoscapeEvent geoscapeEvent, GeoSite site)
+            {
+                if (geoscapeEvent == null || site == null)
+                {
+                    return -1;
+                }
+
+                GeoHaven originHaven = site.GetComponent<GeoHaven>();
+                if (originHaven == null || GeoscapeEvents.IncidentDefinitions == null)
+                {
+                    return -1;
+                }
+
+                Objects.GeoIncidentDefinition incident = GeoscapeEvents.IncidentDefinitions.FirstOrDefault(i =>
+                    string.Equals(i?.IntroEvent?.EventID, geoscapeEvent.EventID, StringComparison.OrdinalIgnoreCase));
+
+                if (incident?.EligibilityConditions == null)
+                {
+                    return -1;
+                }
+
+                Objects.GeoIncidentEligibilityCondition nearbyCondition = incident.EligibilityConditions
+                    .FirstOrDefault(c => c != null && c.NearbyHavenRange > EarthUnits.Zero);
+
+                if (nearbyCondition == null)
+                {
+                    return -1;
+                }
+
+                GeoFaction visitingFaction = site.GeoLevel?.PhoenixFaction;
+                GeoHaven matchedNearbyHaven = GeoscapeEvents.GetFirstNearbyEligibleHaven(originHaven, visitingFaction, nearbyCondition);
+                return matchedNearbyHaven?.Site?.SiteId ?? -1;
+            }
 
             internal static ActiveTimedProblem GetActiveTimedProblem(GeoSite site)
             {
@@ -415,13 +521,13 @@ namespace TFTV.TFTVIncidents
             }
 
             private static void StartTimedProblem(
-                GeoscapeEvent geoscapeEvent,
-                GeoLevelController level,
-                GeoSite site,
-                GeoVehicle vehicle,
-                IncidentInProgressDefinition definition,
-                GeoEventChoice choice,
-                int choiceIndex)
+     GeoscapeEvent geoscapeEvent,
+     GeoLevelController level,
+     GeoSite site,
+     GeoVehicle vehicle,
+     IncidentInProgressDefinition definition,
+     GeoEventChoice choice,
+     int choiceIndex)
             {
                 string approachTokens = LeaderSelection.ExtractApproachTokens(choice?.Text?.LocalizationKey, choiceIndex);
                 float durationHours = definition.ComputeDurationHours(vehicle);
@@ -451,13 +557,12 @@ namespace TFTV.TFTVIncidents
                     leaderId = fallback?.Id ?? -1;
                 }
 
-                // Narrow to the player-selected (or auto-selected) approach for award tracking.
-                // This runs AFTER bonus computation so the full token set is used for hour reduction,
-                // but only the chosen approach is persisted for affinity award on resolution.
                 if (IncidentResolutionUI.GeoscapeEventCrewListPatch.TryGetSelectedApproachToken(choiceIndex, out string selectedApproachToken))
                 {
                     approachTokens = selectedApproachToken;
                 }
+
+                int matchedNearbyHavenSiteId = ResolveMatchedNearbyHavenSiteId(geoscapeEvent, site);
 
                 TimeUnit duration = TimeUnit.FromHours(durationHours);
                 string timerId = ActiveTimedProblem.BuildTimerId(
@@ -466,7 +571,8 @@ namespace TFTV.TFTVIncidents
                     definition.CompletionEventId,
                     definition.CancelEventId,
                     leaderId,
-                    approachTokens);
+                    approachTokens,
+                    matchedNearbyHavenSiteId);
 
                 GeoEventTimer timer = level.EventSystem.StartTimer(timerId, duration);
                 site.ExpiringTimerAt = timer.EndAt;
@@ -486,12 +592,13 @@ namespace TFTV.TFTVIncidents
                     VehicleId = vehicle.VehicleID,
                     LeaderId = leaderId,
                     ApproachTokens = approachTokens,
+                    MatchedNearbyHavenSiteId = matchedNearbyHavenSiteId,
                     StartAt = timer.StartAt,
                     EndAt = timer.EndAt
                 };
 
                 RefreshSiteVisual(level, site.SiteId);
-                global::TFTV.TFTVAAAgendaTracker.ExtendedAgendaTracker.RefreshCustomSiteTracker(site);
+                TFTVAAAgendaTracker.ExtendedAgendaTracker.RefreshCustomSiteTracker(site);
             }
 
             private static void RestoreIntroEventOnCancel(GeoscapeEvent geoscapeEvent)
@@ -594,10 +701,20 @@ namespace TFTV.TFTVIncidents
 
             private static void RehydrateFromTimers(GeoscapeEventSystem eventSystem)
             {
+                if (eventSystem == null)
+                {
+                    return;
+                }
+
                 Dictionary<string, GeoEventTimer> timers = TimersRef(eventSystem);
+                if (timers == null || timers.Count == 0)
+                {
+                    return;
+                }
+
                 foreach (GeoEventTimer timer in timers.Values)
                 {
-                    if (!ActiveByTimerId.ContainsKey(timer.ID) && ActiveTimedProblem.TryParseFromTimer(timer, out ActiveTimedProblem active))
+                    if (timer != null && !ActiveByTimerId.ContainsKey(timer.ID) && ActiveTimedProblem.TryParseFromTimer(timer, out ActiveTimedProblem active))
                     {
                         ActiveByTimerId[active.TimerId] = active;
                     }
@@ -672,20 +789,19 @@ namespace TFTV.TFTVIncidents
 
             public static void Tick(GeoscapeEventSystem eventSystem)
             {
-                if (!BaseReworkUtils.BaseReworkEnabled) return;
-
-                if (eventSystem?.gameObject == null)
-                {
-                    return;
-                }
-
-                GeoLevelController level = eventSystem.gameObject.GetComponent<GeoLevelController>();
-                if (level == null)
+                if (!BaseReworkUtils.BaseReworkEnabled)
                 {
                     return;
                 }
 
                 RehydrateFromTimers(eventSystem);
+
+                GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+
+                if(level == null) 
+                {
+                    return;
+                }
 
                 List<string> toComplete = new List<string>();
                 foreach (KeyValuePair<string, ActiveTimedProblem> kv in ActiveByTimerId)
@@ -739,6 +855,8 @@ namespace TFTV.TFTVIncidents
 
                 if (!string.IsNullOrEmpty(active.CancelEventId) && site != null)
                 {
+                    RememberMatchedNearbyHaven(active.CancelEventId, active.SiteId, active.VehicleId, active.MatchedNearbyHavenSiteId);
+
                     GeoscapeEventContext ctx = new GeoscapeEventContext(site, level.ViewerFaction, vehicle);
                     level.EventSystem.TriggerGeoscapeEvent(active.CancelEventId, ctx);
                 }
@@ -748,7 +866,7 @@ namespace TFTV.TFTVIncidents
 
                 if (site != null)
                 {
-                    global::TFTV.TFTVAAAgendaTracker.ExtendedAgendaTracker.RefreshCustomSiteTracker(site);
+                    TFTVAAAgendaTracker.ExtendedAgendaTracker.RefreshCustomSiteTracker(site);
                 }
 
                 return true;
@@ -776,14 +894,25 @@ namespace TFTV.TFTVIncidents
 
             private static void CompleteTimedProblem(GeoLevelController level, string timerId)
             {
-                if (!ActiveByTimerId.TryGetValue(timerId, out ActiveTimedProblem active))
+                if (level == null || string.IsNullOrEmpty(timerId))
                 {
                     return;
                 }
 
-                GeoSite site = level.Map.AllSites.FirstOrDefault(s => s.SiteId == active.SiteId);
-                GeoVehicle vehicle = level.PhoenixFaction.Vehicles.FirstOrDefault(v => v.VehicleID == active.VehicleId)
-                                     ?? level.Factions.SelectMany(f => f.Vehicles).FirstOrDefault(v => v.VehicleID == active.VehicleId);
+                if (!ActiveByTimerId.TryGetValue(timerId, out ActiveTimedProblem active) || active == null)
+                {
+                    return;
+                }
+
+                GeoSite site = level.Map?.AllSites?.FirstOrDefault(s => s != null && s.SiteId == active.SiteId);
+
+                GeoVehicle vehicle =
+                    (level.PhoenixFaction?.Vehicles ?? Enumerable.Empty<GeoVehicle>())
+                        .FirstOrDefault(v => v != null && v.VehicleID == active.VehicleId)
+                    ?? (level.Factions ?? Enumerable.Empty<GeoFaction>())
+                        .Where(f => f != null)
+                        .SelectMany(f => f.Vehicles ?? Enumerable.Empty<GeoVehicle>())
+                        .FirstOrDefault(v => v != null && v.VehicleID == active.VehicleId);
 
                 if (vehicle != null)
                 {
@@ -802,25 +931,33 @@ namespace TFTV.TFTVIncidents
                 {
                     affinityResultText = ApplyIncidentAffinity(level, vehicle, active);
                     TFTVLogger.Always($"[Incidents][OutcomeRecapDiag] AFFINITY result={affinityResultText}");
-                    IncidentOutcomeSummaryUI.RecordIncidentSuccess(level, vehicle, active, affinityResultText);
+
+                    if (vehicle != null)
+                    {
+                        IncidentOutcomeSummaryUI.RecordIncidentSuccess(level, vehicle, active, affinityResultText);
+                    }
                 }
 
-                if (!string.IsNullOrEmpty(active.CompletionEventId) && site != null && vehicle != null)
+                if (!string.IsNullOrEmpty(active.CompletionEventId) && site != null && vehicle != null && level.EventSystem != null)
                 {
+                    RememberMatchedNearbyHaven(active.CompletionEventId, active.SiteId, active.VehicleId, active.MatchedNearbyHavenSiteId);
+
                     TFTVLogger.Always($"[Incidents][OutcomeRecapDiag] TRIGGER event={active.CompletionEventId}");
                     GeoscapeEventContext ctx = new GeoscapeEventContext(site, level.ViewerFaction, vehicle);
                     level.EventSystem.TriggerGeoscapeEvent(active.CompletionEventId, ctx);
                 }
 
-                ActiveByTimerId.Remove(timerId);
-                DestroySiteVisual(active.SiteId);
+                if (level.EventSystem != null && level.EventSystem.GetTimerById(timerId) != null)
+                {
+                    level.EventSystem.RemoveTimer(timerId);
+                }
 
                 ActiveByTimerId.Remove(timerId);
                 DestroySiteVisual(active.SiteId);
 
                 if (site != null)
                 {
-                    global::TFTV.TFTVAAAgendaTracker.ExtendedAgendaTracker.RefreshCustomSiteTracker(site);
+                    TFTVAAAgendaTracker.ExtendedAgendaTracker.RefreshCustomSiteTracker(site);
                 }
             }
 

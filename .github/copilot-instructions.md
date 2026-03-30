@@ -14,6 +14,7 @@
 - Prefer a single combined Harmony patch per target method when possible, and refactor large Prefix bodies into smaller helper methods for readability.
 - Do not Harmony patch our own mod code; modify our own code directly instead.
 - Prefer persisting tactical mission state via `TFTVTacInstanceData`, consistent with existing save/load patterns in this codebase.
+- Use `StatModification?` or a separate boolean/default-value pattern instead of assigning `null` to `StatModification`, as it is a struct in this codebase.
 
 ## Project-Specific Rules
 - Scarab Gemini is a standalone `GroundVehicleWeaponDef` (not attached as a `Weapon` subaddon of a `GroundVehicleModuleDef`). 

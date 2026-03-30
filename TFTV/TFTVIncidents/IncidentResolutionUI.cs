@@ -333,18 +333,38 @@ namespace TFTV.TFTVIncidents
 
                     return new LocalizedTextBind() { LocalizationKey = key }.Localize();
                 }
+            }
 
-                private static string GetAffinityDisplayName(LeaderSelection.AffinityApproach approach)
+            private static void CleanupChoiceButtonDecorations(UIModuleSiteEncounters module)
+            {
+                if (module?.ChoiceButtonsContainer == null)
                 {
-                    switch (approach)
+                    return;
+                }
+
+                SiteBaseChoiceButton[] buttons = module.ChoiceButtonsContainer.GetComponentsInChildren<SiteBaseChoiceButton>(true);
+                if (buttons == null)
+                {
+                    return;
+                }
+
+                foreach (SiteBaseChoiceButton button in buttons)
+                {
+                    if (button == null)
                     {
-                        case LeaderSelection.AffinityApproach.PsychoSociology: return "Psycho-Sociology";
-                        case LeaderSelection.AffinityApproach.Exploration: return "Exploration";
-                        case LeaderSelection.AffinityApproach.Occult: return "Occult";
-                        case LeaderSelection.AffinityApproach.Biotech: return "Biotech";
-                        case LeaderSelection.AffinityApproach.Machinery: return "Machinery";
-                        case LeaderSelection.AffinityApproach.Compute: return "Compute";
-                        default: return approach.ToString();
+                        continue;
+                    }
+
+                    Transform iconRoot = button.transform.Find(ChoiceIconsRootName);
+                    if (iconRoot != null)
+                    {
+                        UnityEngine.Object.Destroy(iconRoot.gameObject);
+                    }
+
+                    ChoiceButtonVisualState state = button.GetComponent<ChoiceButtonVisualState>();
+                    if (state != null)
+                    {
+                        UnityEngine.Object.Destroy(state);
                     }
                 }
             }
@@ -370,6 +390,7 @@ namespace TFTV.TFTVIncidents
                 RemovePreviousInjectedRows(parent);
                 ApproachIconTooltipTrigger.DestroyTooltip();
                 RestoreChoiceButtons(__instance);
+                CleanupChoiceButtonDecorations(__instance);
                 _selectedRow = null;
                 ResetSelectedLeaderContext(null, null);
 

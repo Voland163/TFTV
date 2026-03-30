@@ -107,6 +107,11 @@ namespace TFTV
         {
             try
             {
+                foreach(ResearchDef researchDef in Repo.GetAllDefs<ResearchDef>().Where(r=>r.name.StartsWith("SYN")))
+                {
+                   TFTVLogger.Always($"[ResearchDef] {researchDef.name} has share tag: {researchDef.ShareLevelTagDef?.name}", false);
+                }
+
 
                 /*  DefRepository defRepository = GameUtl.GameComponent<DefRepository>();
                   List<AIActionDef> actionDefs = defRepository.GetAllDefs<AIActionDef>().ToList<AIActionDef>();
@@ -305,7 +310,7 @@ namespace TFTV
                 //  TestUseWorkerComponent();
                 // Test0();
                 // TFTVExperimental.LogResearchDefs();
-                //  Print();
+               // Print();
 
             }
             catch (Exception e)

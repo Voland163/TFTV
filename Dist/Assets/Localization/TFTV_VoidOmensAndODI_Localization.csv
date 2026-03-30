@@ -317,7 +317,7 @@ Hemos denominado esta condición como “Delirio Onírico”, debido a las queja
 SDI_01_TITLE,Text,,The Third Mist,,La Troisième Brume,Der Dritte Nebel,,Trzecia Mgła,Третий Туман,La Tercera Niebla,
 SDI6_OUTCOME,Text,,"The Oneiric Delirium grows stronger.
 
-<color=#e8bcf0><b>Our operatives can now be afflicted with a Delirium status of up to half of their Willpower</b></color>",,"Le Delirium s’intensifie.
+<color=#e8bcf0><b>Our operatives can now be afflicted with a Delirium status up to 8</b></color>",,"Le Delirium s’intensifie.
 
 <color=#e8bcf0><b>Nos unités peuvent désormais être affectées par un statut Delirium pouvant atteindre la moitié de leur Volonté</b></color>","Das Oneirische Delirium wird stärker.
 
@@ -332,7 +332,7 @@ SDI7_OUTCOME,Text,,<color=#e8bcf0><b>Havens in the Mist can become infested inst
 SDI09_OUTCOME,Text,,<color=#e8bcf0><b>The Umbra grow in strength</b></color>,,<color=#e8bcf0><b>Les Umbra gagnent en puissance</b></color>,<color=#e8bcf0><b>Die Umbra gewinnen an Stärke</b></color>,,<color=#e8bcf0><b>Umbry stają się silniejsze</b></color>,<color=#e8bcf0><b>Фиолетовые Твари становятся сильнее</b></color>,<color=#e8bcf0><b>La Umbra gane fuerza</b></color>,
 SDI10_OUTCOME,Text,,"The Oneiric Delirium grows stronger.
 
-<color=#e8bcf0><b>Our operatives can now be afflicted with a Delirium status equal to their Willpower</b></color>",,"Le Delirium s’intensifie.
+<color=#e8bcf0><b>Our operatives can now be afflicted with a Delirium status up to 12</b></color>",,"Le Delirium s’intensifie.
 
 <color=#e8bcf0><b>Nos unités peuvent désormais être affectées par un statut Delirium égal à leur Volonté</b></color>","Das Oneirische Delirium wird stärker.
 

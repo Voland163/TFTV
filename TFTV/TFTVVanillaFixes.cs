@@ -1630,6 +1630,12 @@ namespace TFTV
         internal class Tactical
         {
 
+            internal class HavenDefendersFullAPFix
+            {
+               
+               
+
+            }
             internal static class RetrieveDeployedItemAbility_RetrieveTurretCrt_Patch
             {
                 internal static class RetrieveTurretStateStore
@@ -2105,34 +2111,57 @@ namespace TFTV
 
             internal class OverwatchFix
             {
-                [HarmonyPatch(typeof(TacticalLevelController), "ExecuteOverwatch")] //VERIFIED
+                [HarmonyPatch(typeof(TacticalLevelController), "ExecuteOverwatch")] // VERIFIED
                 public static class TacticalLevelControllerExecuteOverwatchPatch
                 {
-                    private static readonly FieldInfo OverwatchExecutedEventField = AccessTools.Field(typeof(TacticalLevelController), nameof(TacticalLevelController.OverwatchExecutedEvent));
+                    private const float MarkedWatchAccuracyBonus = 0.5f;
 
-                    private static readonly FieldInfo OverwatchFinishedEventField = AccessTools.Field(typeof(TacticalLevelController), nameof(TacticalLevelController.OverwatchFinishedEvent));
+                    private static readonly FieldInfo OverwatchExecutedEventField =
+                        AccessTools.Field(typeof(TacticalLevelController), nameof(TacticalLevelController.OverwatchExecutedEvent));
 
-                    private static readonly MethodInfo OverwatchTargetSetter = AccessTools.PropertySetter(typeof(TacticalLevelController), nameof(TacticalLevelController.OverwatchTarget));
+                    private static readonly FieldInfo OverwatchFinishedEventField =
+                        AccessTools.Field(typeof(TacticalLevelController), nameof(TacticalLevelController.OverwatchFinishedEvent));
 
-                    public static bool Prefix(TacticalLevelController __instance, TacticalActor target, List<OverwatchStatus> overwatchStatuses, ref IEnumerator<NextUpdate> __result)
+                    private static readonly MethodInfo OverwatchTargetSetter =
+                        AccessTools.PropertySetter(typeof(TacticalLevelController), nameof(TacticalLevelController.OverwatchTarget));
+
+                    public static bool Prefix(
+                        TacticalLevelController __instance,
+                        TacticalActor target,
+                        List<OverwatchStatus> overwatchStatuses,
+                        ref IEnumerator<NextUpdate> __result)
                     {
                         __result = ExecuteOverwatch(__instance, target, overwatchStatuses);
                         return false;
                     }
 
-                    private static IEnumerator<NextUpdate> ExecuteOverwatch(TacticalLevelController controller, TacticalActor target, List<OverwatchStatus> overwatchStatuses)
+                    private static IEnumerator<NextUpdate> ExecuteOverwatch(
+                        TacticalLevelController controller,
+                        TacticalActor target,
+                        List<OverwatchStatus> overwatchStatuses)
                     {
-                        if (controller == null)
+                        if (controller == null || controller.Map == null || overwatchStatuses == null)
                         {
                             yield break;
                         }
 
+                        MarkedWatchOverwatchData markedWatchData = BuildMarkedWatchOverwatchData(controller, target);
+
                         SetOverwatchTarget(controller, target);
-                        target?.TimingScale.AddScale(controller.OverwatchTimeScale, controller);
+                        if (target != null)
+                        {
+                            target.TimingScale?.AddScale(controller.OverwatchTimeScale, controller);
+                        }
 
                         try
                         {
-                            using (new MultiForceTargetableLock(controller.Map.GetActors<TacticalActorBase>(null)))
+                            IEnumerable<TacticalActorBase> lockActors = controller.Map.GetActors<TacticalActorBase>(null);
+                            if (lockActors == null)
+                            {
+                                yield break;
+                            }
+
+                            using (new MultiForceTargetableLock(lockActors))
                             {
                                 foreach (OverwatchStatus overwatch in overwatchStatuses)
                                 {
@@ -2141,19 +2170,47 @@ namespace TFTV
                                         break;
                                     }
 
+                                    if (overwatch == null)
+                                    {
+                                        continue;
+                                    }
+
                                     if (!OverwatchAimPointHelper.IsAnyAimPointInCone(overwatch, target))
                                     {
                                         continue;
                                     }
 
-                                    ShootAbility defaultShootAbility = overwatch.GetWeapon().DefaultShootAbility;
+                                    Weapon weapon = overwatch.GetWeapon();
+                                    ShootAbility defaultShootAbility = weapon?.DefaultShootAbility;
+                                    if (defaultShootAbility == null)
+                                    {
+                                        continue;
+                                    }
+
                                     TacticalActor shooterActor = defaultShootAbility.TacticalActor;
+                                    if (shooterActor == null)
+                                    {
+                                        continue;
+                                    }
+
+                                    if (ShouldSkipMarkedWatchOverwatch(markedWatchData, shooterActor))
+                                    {
+                                        continue;
+                                    }
+
                                     if (defaultShootAbility.GetWeaponDisabledState(IgnoredAbilityDisabledStatesFilter.CreateDefaultFilter()) != AbilityDisabledState.NotDisabled)
                                     {
                                         continue;
                                     }
 
-                                    if (!TacticalFactionVision.CheckVisibleLineBetweenActors(shooterActor, shooterActor.Pos, target, false, null, 1f, null))
+                                    if (!TacticalFactionVision.CheckVisibleLineBetweenActors(
+                                            shooterActor,
+                                            shooterActor.Pos,
+                                            target,
+                                            false,
+                                            null,
+                                            1f,
+                                            null))
                                     {
                                         continue;
                                     }
@@ -2164,17 +2221,53 @@ namespace TFTV
                                         continue;
                                     }
 
-                                    if (shooterActor.TacticalPerception.CheckFriendlyFire(defaultShootAbility.GetSource<Weapon>(), overwatchTarget.ShootFromPos, overwatchTarget, out TacticalActor blockingActor, FactionRelation.Neutral | FactionRelation.Friend))
+                                    if (shooterActor.TacticalPerception == null)
                                     {
                                         continue;
                                     }
 
-                                    overwatch.SetConeVisualsMode(false, false);
-                                    InvokeOverwatchEvent(controller, OverwatchExecutedEventField, overwatchTarget, shooterActor.gameObject);
-                                    yield return controller.Timing.Call(defaultShootAbility.Execute(overwatchTarget), null);
-                                    InvokeOverwatchEvent(controller, OverwatchFinishedEventField, overwatchTarget, shooterActor.gameObject);
+                                    Weapon sourceWeapon = defaultShootAbility.GetSource<Weapon>();
+                                    if (sourceWeapon == null)
+                                    {
+                                        continue;
+                                    }
 
-                                    if (overwatch.Applied)
+                                    if (shooterActor.TacticalPerception.CheckFriendlyFire(
+                                            sourceWeapon,
+                                            overwatchTarget.ShootFromPos,
+                                            overwatchTarget,
+                                            out TacticalActor _,
+                                            FactionRelation.Neutral | FactionRelation.Friend))
+                                    {
+                                        continue;
+                                    }
+
+                                    StatModification? markedWatchAccuracyModifier = null;
+
+                                    try
+                                    {
+                                        markedWatchAccuracyModifier = ApplyMarkedWatchAccuracyBonus(defaultShootAbility, markedWatchData, shooterActor);
+
+                                        overwatch.SetConeVisualsMode(false, false);
+                                        InvokeOverwatchEvent(controller, OverwatchExecutedEventField, overwatchTarget, shooterActor.gameObject);
+
+                                        if (controller.Timing != null)
+                                        {
+                                            IEnumerator<NextUpdate> abilityExecution = defaultShootAbility.Execute(overwatchTarget);
+                                            if (abilityExecution != null)
+                                            {
+                                                yield return controller.Timing.Call(abilityExecution, null);
+                                            }
+                                        }
+
+                                        InvokeOverwatchEvent(controller, OverwatchFinishedEventField, overwatchTarget, shooterActor.gameObject);
+                                    }
+                                    finally
+                                    {
+                                        RemoveMarkedWatchAccuracyBonus(defaultShootAbility, markedWatchAccuracyModifier);
+                                    }
+
+                                    if (overwatch.Applied && shooterActor.Status != null)
                                     {
                                         shooterActor.Status.UnapplyStatus(overwatch);
                                     }
@@ -2183,20 +2276,142 @@ namespace TFTV
                         }
                         finally
                         {
-                            target?.TimingScale.RemoveScale(controller.OverwatchTimeScale, controller);
+                            if (target != null)
+                            {
+                                target.TimingScale?.RemoveScale(controller.OverwatchTimeScale, controller);
+                            }
 
                             SetOverwatchTarget(controller, null);
                         }
                     }
 
-                    private static void InvokeOverwatchEvent(TacticalLevelController controller, FieldInfo field, TacticalAbilityTarget overwatchTarget, GameObject shooter)
+                    private static bool ShouldSkipMarkedWatchOverwatch(
+                        MarkedWatchOverwatchData markedWatchData,
+                        TacticalActor shooterActor)
+                    {
+                        return shooterActor != null
+                            && markedWatchData != null
+                            && markedWatchData.ShootersWithMarkedTargets.Contains(shooterActor)
+                            && !markedWatchData.ShootersAllowedOnCurrentTarget.Contains(shooterActor);
+                    }
+
+                    private static StatModification? ApplyMarkedWatchAccuracyBonus(
+                        ShootAbility ability,
+                        MarkedWatchOverwatchData markedWatchData,
+                        TacticalActor shooterActor)
+                    {
+                        if (ability == null || shooterActor == null || markedWatchData == null)
+                        {
+                            return null;
+                        }
+
+                        if (!markedWatchData.ShootersAllowedOnCurrentTarget.Contains(shooterActor))
+                        {
+                            return null;
+                        }
+
+                        BaseStat accuracyStat = shooterActor.CharacterStats?.TryGetStat(StatModificationTarget.Accuracy);
+                        if (accuracyStat == null)
+                        {
+                            return null;
+                        }
+
+                        StatModification modifier = new StatModification(
+                            StatModificationType.Add,
+                            accuracyStat.Name,
+                            MarkedWatchAccuracyBonus,
+                            ability,
+                            0f);
+
+                        accuracyStat.AddStatModification(modifier, true);
+                        return modifier;
+                    }
+
+                    private static void RemoveMarkedWatchAccuracyBonus(ShootAbility ability, StatModification? modifier)
+                    {
+                        if (ability == null || !modifier.HasValue)
+                        {
+                            return;
+                        }
+
+                        BaseStat accuracyStat = ability.TacticalActor?.CharacterStats?.TryGetStat(StatModificationTarget.Accuracy);
+                        if (accuracyStat == null)
+                        {
+                            return;
+                        }
+
+                        accuracyStat.RemoveStatModification(modifier.Value, true);
+                    }
+
+                    private static MarkedWatchOverwatchData BuildMarkedWatchOverwatchData(TacticalLevelController controller, TacticalActor target)
+                    {
+                        MarkedWatchOverwatchData data = new MarkedWatchOverwatchData();
+
+                        DamageMultiplierStatusDef markedWatchStatusDef = TFTVDrills.DrillsDefs._markedwatchStatus;
+                        if (!TFTVAircraftReworkMain.AircraftReworkOn || controller?.Map == null || markedWatchStatusDef == null || string.IsNullOrEmpty(markedWatchStatusDef.EffectName))
+                        {
+                            return data;
+                        }
+
+                        IEnumerable<TacticalActor> actors = controller.Map.GetActors<TacticalActor>();
+                        if (actors == null)
+                        {
+                            return data;
+                        }
+
+                        foreach (TacticalActor actor in actors)
+                        {
+                            if (actor?.Status == null)
+                            {
+                                continue;
+                            }
+
+                            IEnumerable<TacStatus> statuses = actor.Status.GetStatusesByName(markedWatchStatusDef.EffectName)?.OfType<TacStatus>();
+                            if (statuses == null)
+                            {
+                                continue;
+                            }
+
+                            foreach (TacStatus status in statuses)
+                            {
+                                TacticalActor sourceActor = status?.Source as TacticalActor;
+                                if (sourceActor == null)
+                                {
+                                    continue;
+                                }
+
+                                data.ShootersWithMarkedTargets.Add(sourceActor);
+
+                                if (ReferenceEquals(actor, target))
+                                {
+                                    data.ShootersAllowedOnCurrentTarget.Add(sourceActor);
+                                }
+                            }
+                        }
+
+                        return data;
+                    }
+
+                    private sealed class MarkedWatchOverwatchData
+                    {
+                        public HashSet<TacticalActor> ShootersWithMarkedTargets { get; } = new HashSet<TacticalActor>();
+                        public HashSet<TacticalActor> ShootersAllowedOnCurrentTarget { get; } = new HashSet<TacticalActor>();
+                    }
+
+                    private static void InvokeOverwatchEvent(
+                        TacticalLevelController controller,
+                        FieldInfo field,
+                        TacticalAbilityTarget overwatchTarget,
+                        GameObject shooter)
                     {
                         if (controller == null || field == null)
                         {
                             return;
                         }
 
-                        TacticalLevelController.OverwatchExecutedHandler handler = field.GetValue(controller) as TacticalLevelController.OverwatchExecutedHandler;
+                        TacticalLevelController.OverwatchExecutedHandler handler =
+                            field.GetValue(controller) as TacticalLevelController.OverwatchExecutedHandler;
+
                         handler?.Invoke(overwatchTarget, shooter);
                     }
 
@@ -2260,9 +2475,12 @@ namespace TFTV
                             }
                         }
 
-                        foreach (Vector3 point in EnumerateAimPointPositions((ITargetDummyProvider)actor, actor.TargetDummy))
+                        if (actor is ITargetDummyProvider provider)
                         {
-                            yield return point;
+                            foreach (Vector3 point in EnumerateAimPointPositions(provider, actor.TargetDummy))
+                            {
+                                yield return point;
+                            }
                         }
                     }
 
@@ -2273,7 +2491,13 @@ namespace TFTV
                             yield break;
                         }
 
-                        foreach (Transform transform in actor.GetAimPoints())
+                        IEnumerable<Transform> aimPoints = actor.GetAimPoints();
+                        if (aimPoints == null)
+                        {
+                            yield break;
+                        }
+
+                        foreach (Transform transform in aimPoints)
                         {
                             if (transform != null)
                             {
@@ -2308,7 +2532,13 @@ namespace TFTV
                             yield break;
                         }
 
-                        foreach (Transform transform in dummy.GetAimPoints())
+                        IEnumerable<Transform> aimPoints = dummy.GetAimPoints();
+                        if (aimPoints == null)
+                        {
+                            yield break;
+                        }
+
+                        foreach (Transform transform in aimPoints)
                         {
                             if (transform != null)
                             {
@@ -2317,8 +2547,6 @@ namespace TFTV
                         }
                     }
                 }
-
-
             }
 
 
@@ -4693,9 +4921,10 @@ namespace TFTV
                         {
                             if ((float)character2.Health > 1f && character2.TemplateDef.IsHuman)
                             {
+                                //TFTVLogger.Always($"{character2?.DisplayName} has {character2.Health.Value}");
                                 int addAllSoldiersDamage = Math.Min(__instance.AddAllSoldiersDamage, (int)character2.Health - 1);
                                 character2.Health.AddRestrictedToMax(-addAllSoldiersDamage);
-                                TFTVLogger.Always($"applied {addAllSoldiersDamage} damage to {character2.DisplayName}");
+                                TFTVLogger.Always($"applied {addAllSoldiersDamage} damage to {character2.DisplayName}, so now has {character2.Health.Value}");
                             }
                         }
 

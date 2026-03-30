@@ -901,6 +901,29 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
+        [HarmonyPatch]
+        public static class Patch_GeoscapeLog_PhoenixFaction_OnRecruitsRegenerated
+        {
+            static System.Reflection.MethodBase TargetMethod()
+            {
+                return AccessTools.Method(
+                    typeof(GeoscapeLog),
+                    "PhoenixFaction_OnRecruitsRegenerated",
+                    new[] { typeof(IEnumerable<GeoUnitDescriptor>) }
+                );
+            }
+
+            // return false => skip original handler
+            static bool Prefix(IEnumerable<GeoUnitDescriptor> nakedRecruits)
+            {
+                if (nakedRecruits == null)
+                    return false; // treat as zero
+
+                // If empty, suppress log
+                return nakedRecruits.Any();
+            }
+        }
+
         [HarmonyPatch(typeof(GeoPhoenixFaction), nameof(GeoPhoenixFaction.RegenerateNakedRecruits))]
         internal static class GeoPhoenixFaction_RegenerateNakedRecruits_PersonnelSync
         {
@@ -909,10 +932,10 @@ namespace TFTV.TFTVBaseRework
             {
                 int order = diff.Order;
 
-                if (order <= 2) return 5;   // Story/Rookie
-                if (order <= 3) return 4;   // Veteran
-                if (order <= 4) return 3;   // Hero
-                return 2;                   // Legend/Eldritch
+                if (order <= 2) return 3;   // Story/Rookie
+                if (order <= 3) return 2;   // Veteran
+                if (order <= 4) return 1;   // Hero
+                return 0;                   // Legend/Eldritch
             }
 
 
@@ -959,6 +982,11 @@ namespace TFTV.TFTVBaseRework
                         {
                             ____nakedRecruits.Remove(key);
                         }
+                    }
+
+                    if(target <= 0) 
+                    { 
+                    __instance.SpawnedRecruitNotification = false;
                     }
 
                     SyncFromNakedRecruits(__instance);

@@ -100,13 +100,20 @@ namespace TFTV.TFTVIncidents
 
             private static string GetRequirementHavenName(GeoscapeEventContext context, string eventIdOverride)
             {
-               
+                string eventId = GetEventId(context, eventIdOverride);
+                GeoSite contextSite = GetContextSite(context);
+                int siteId = contextSite?.SiteId ?? -1;
+                int vehicleId = GetContextVehicle(context)?.VehicleID ?? -1;
+
+                if (Resolution.IncidentController.TryGetStoredMatchedNearbyHavenSiteId(eventId, siteId, vehicleId, out int matchedNearbyHavenSiteId))
+                {
+                    GeoSite matchedNearbySite = GetSiteById(GetGeoLevel(context), matchedNearbyHavenSiteId);
+                    return matchedNearbySite?.LocalizedSiteName ?? string.Empty;
+                }
 
                 Objects.GeoIncidentDefinition incident = GetIncidentDefinition(context, eventIdOverride);
                 if (incident == null || incident.EligibilityConditions == null)
                 {
-                   
-
                     return string.Empty;
                 }
 
@@ -115,22 +122,18 @@ namespace TFTV.TFTVIncidents
 
                 if (nearbyCondition == null)
                 {
-                    
                     return string.Empty;
                 }
 
                 GeoHaven originHaven = GetIncidentHaven(context);
                 if (originHaven == null)
                 {
-
                     return string.Empty;
                 }
 
                 GeoFaction visitingFaction = GetPhoenixFaction(context);
-                GeoHaven nearbyHaven = GetFirstNearbyEligibleHaven(originHaven, visitingFaction, nearbyCondition);
-                string resolvedName = nearbyHaven?.Site?.LocalizedSiteName ?? string.Empty;         
-
-                return resolvedName;
+                GeoHaven nearbyHaven = GeoscapeEvents.GetFirstNearbyEligibleHaven(originHaven, visitingFaction, nearbyCondition);
+                return nearbyHaven?.Site?.LocalizedSiteName ?? string.Empty;
             }
 
          
@@ -418,7 +421,37 @@ namespace TFTV.TFTVIncidents
                 return value is bool boolValue && boolValue;
             }
 
+            private static GeoVehicle GetContextVehicle(GeoscapeEventContext context)
+            {
+                GeoVehicle vehicle = GetMemberValue(context, "Vehicle") as GeoVehicle;
+                if (vehicle != null)
+                {
+                    return vehicle;
+                }
 
+                object eventObj = GetMemberValue(context, "Event") ?? GetMemberValue(context, "GeoscapeEvent");
+                vehicle = GetMemberValue(eventObj, "Vehicle") as GeoVehicle;
+                if (vehicle != null)
+                {
+                    return vehicle;
+                }
+
+                object eventData = GetMemberValue(context, "EventData")
+                    ?? GetMemberValue(eventObj, "EventData")
+                    ?? GetMemberValue(eventObj, "GeoscapeEventData");
+
+                return GetMemberValue(eventData, "Vehicle") as GeoVehicle;
+            }
+
+            private static GeoSite GetSiteById(GeoLevelController level, int siteId)
+            {
+                if (level?.Map?.AllSites == null || siteId <= 0)
+                {
+                    return null;
+                }
+
+                return level.Map.AllSites.FirstOrDefault(s => s != null && s.SiteId == siteId);
+            }
         }
 
     }

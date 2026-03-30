@@ -800,7 +800,14 @@ namespace TFTV.TFTVUI.Tactical
             {
                 GeoPhoenixFaction phoenixFaction = controller.PhoenixFaction;
 
-
+                if (AvailableSecondaryObjectivesTactical == null)
+                {
+                    AvailableSecondaryObjectivesTactical = new List<string>();
+                }
+                else
+                {
+                    AvailableSecondaryObjectivesTactical.Clear();
+                }
 
                 if (TFTVRevenant.DeadSoldiersDelirium.Count > 0 && controller.EventSystem.GetVariable(TFTVRevenant.TFTVRevenantResearch.RevenantCapturedVariable) == 0
                     && CheckCapacityForCaptureObjective(phoenixFaction, 2))

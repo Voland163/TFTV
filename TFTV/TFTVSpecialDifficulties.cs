@@ -749,6 +749,7 @@ namespace TFTV
                             rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(__instance.DiplomacyToFaction.Min * 0.5f));
                             TFTVLogger.Always($"In preview, applying VO2. Original diplo reward from mission {mission?.MissionDef?.name} was " +
                                 $"{__instance.DiplomacyToFaction.Min}; now it is {__instance.DiplomacyToFaction.Min * 0.5f}");
+                       // TFTVLogger.Always($"{__instance.name}");
                         }
                     }
                     catch (Exception e)
@@ -812,13 +813,14 @@ namespace TFTV
                                }
                            }*/
 
-                        if (TFTVVoidOmens.CheckFordVoidOmensInPlay(geoLevel).Contains(2))
+                       if (TFTVVoidOmens.CheckFordVoidOmensInPlay(geoLevel).Contains(2))
                         {
                             GeoFaction viewerFaction = mission.Site.GeoLevel.ViewerFaction;
                             GeoFaction faction = geoLevel.GetFaction(__instance.ToFaction);
                             rewardDescription.SetDiplomacyChange(faction, viewerFaction, Mathf.RoundToInt(__instance.DiplomacyToFaction.RandomValue() * 0.5f));
                             TFTVLogger.Always("Apply VO2. Original diplo reward from mission " + mission.MissionName.LocalizeEnglish() + " was at the least " + __instance.DiplomacyToFaction.Min
                                 + "; now it is at the least  " + __instance.DiplomacyToFaction.Min * 0.5f);
+                           // TFTVLogger.Always($"{__instance.name}");
                         }
 
                     }

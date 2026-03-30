@@ -614,7 +614,8 @@ namespace TFTV.TFTVDrills
                 statusDef.Visuals.SmallIcon = icon;
 
                 statusDef.ApplicationConditions = Array.Empty<EffectConditionDef>();
-                statusDef.DurationTurns = -1;
+                statusDef.DurationTurns = 0;
+                statusDef.ExpireOnEndOfTurn = true;
                 statusDef.DisablesActor = false;
                 statusDef.SingleInstance = true;
                 statusDef.ShowNotification = true;
@@ -1258,7 +1259,8 @@ namespace TFTV.TFTVDrills
                 light.Visuals.DisplayName1.LocalizationKey = locKeyName;
                 light.Visuals.Description.LocalizationKey = locKeyDesc;
 
-                light.ActionPointsReduction = 0.5f;
+                light.ActionPointsReduction = 0.25f;
+                light.DurationTurns = 1;
                 light.ApplyOnTurnStart = true;
                 light.EffectName = "ReducedStun";
                 light.ApplicationConditions = new EffectConditionDef[0];

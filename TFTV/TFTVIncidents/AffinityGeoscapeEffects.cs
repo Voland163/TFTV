@@ -6,10 +6,13 @@ using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Missions;
 using PhoenixPoint.Geoscape.Entities.Missions.Outcomes;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View.ViewControllers;
+using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Levels;
 using System;
@@ -92,84 +95,133 @@ namespace TFTV.TFTVIncidents
             private static GeoSite _pendingExplorationSite;
             private static int _pendingExplorationRank;
 
-            /* [HarmonyPatch(typeof(UIModuleSiteContextualMenu))]
-             internal static class UIModuleSiteContextualMenu_ExploreSiteTimePatch
-             {
-                 private const string TimeSeparator = " ~ ";
-                 private const string TimeFormat = "{0}H";
+            [HarmonyPatch(typeof(UIModuleSiteContextualMenu))]
+            internal static class UIModuleSiteContextualMenu_ExploreSiteTimePatch
+            {
+                private const string TimeSeparator = " ~ ";
+                private const string TimeFormat = "{0}H";
 
-                 [HarmonyPatch("SetMenuItems")]
-                 [HarmonyPostfix]
-                 private static void SetMenuItems_Postfix(UIModuleSiteContextualMenu __instance)
-                 {
-                     if (__instance == null || __instance.ButtonsHolder == null)
-                     {
-                         return;
-                     }
-                     foreach (object obj in __instance.ButtonsHolder.transform)
-                     {
-                         SiteContextualMenuItem siteContextualMenuItem = ((Transform)obj).GetComponent<SiteContextualMenuItem>();
-                         if (siteContextualMenuItem == null || !siteContextualMenuItem.gameObject.activeSelf)
-                         {
-                             continue;
-                         }
-                         GeoAbility ability = siteContextualMenuItem.Ability;
-                         if (!(ability is ExploreSiteAbility))
-                         {
-                             continue;
-                         }
-                         if (!TryGetExplorationHours(ability, __instance.SelectedSite, out int num))
-                         {
-                             continue;
-                         }
-                         string text = ability.View.ViewElementDef.DisplayName1.Localize(null).ToUpperInvariant();
-                         siteContextualMenuItem.ItemText.text = text + TimeSeparator + string.Format(TimeFormat, num);
-                     }
-                 }
+                [HarmonyPatch("SetMenuItems")]
+                [HarmonyPostfix]
+                private static void SetMenuItems_Postfix(UIModuleSiteContextualMenu __instance)
+                {
+                    try
+                    {
+                        if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                        {
+                            return;
+                        }
 
-                 [HarmonyPatch("OnAbilityHover")]
-                 [HarmonyPostfix]
-                 private static void OnAbilityHover_Postfix(UIModuleSiteContextualMenu __instance, bool isHovered, SiteContextualMenuItem menuItem)
-                 {
-                     if (!isHovered || __instance?.DescriptionBox == null || menuItem == null || !(menuItem.Ability is ExploreSiteAbility))
-                     {
-                         return;
-                     }
-                     if (!TryGetExplorationHours(menuItem.Ability, __instance.SelectedSite, out int num))
-                     {
-                         return;
-                     }
-                     string text = __instance.DescriptionBox.DescriptionText.text;
-                     if (string.IsNullOrEmpty(text))
-                     {
-                         return;
-                     }
-                     string text2 = TimeSeparator.Trim();
-                     if (text.Contains(text2))
-                     {
-                         return;
-                     }
-                     __instance.DescriptionBox.DescriptionText.text = string.Format("{0}\n\nExploration time: {1}", text, string.Format(TimeFormat, num));
-                 }
+                        if (__instance == null || __instance.ButtonsHolder == null)
+                        {
+                            return;
+                        }
 
-                 private static bool TryGetExplorationHours(GeoAbility ability, GeoSite selectedSite, out int hours)
-                 {
-                     hours = 0;
-                     GeoVehicle geoVehicle = ability?.GeoActor as GeoVehicle;
-                     GeoSite geoSite = geoVehicle?.CurrentSite ?? selectedSite;
-                     if (geoSite == null)
-                     {
-                         return false;
-                     }
-                     double totalHours = geoSite.ExplorationTime.TimeSpan.TotalHours;
-                     if (totalHours <= 0.0)
-                     {
-                         return false;
-                     }
-                     hours = Mathf.CeilToInt((float)totalHours);
-                     return true;
-                 }
-             }*/
+                        foreach (object obj in __instance.ButtonsHolder.transform)
+                        {
+                            SiteContextualMenuItem siteContextualMenuItem = ((Transform)obj).GetComponent<SiteContextualMenuItem>();
+                            if (siteContextualMenuItem == null || !siteContextualMenuItem.gameObject.activeSelf)
+                            {
+                                continue;
+                            }
+                            GeoAbility ability = siteContextualMenuItem.Ability;
+                            if (!(ability is ExploreSiteAbility))
+                            {
+                                continue;
+                            }
+                            if (!TryGetAdjustedExplorationHours(ability, __instance.SelectedSite, out int hours))
+                            {
+                                continue;
+                            }
+                            string text = ability.View.ViewElementDef.DisplayName1.Localize(null).ToUpperInvariant();
+                            siteContextualMenuItem.ItemText.text = text + TimeSeparator + string.Format(TimeFormat, hours);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                [HarmonyPatch("OnAbilityHover")]
+                [HarmonyPostfix]
+                private static void OnAbilityHover_Postfix(UIModuleSiteContextualMenu __instance, bool isHovered, SiteContextualMenuItem menuItem)
+                {
+                    try
+                    {
+                        if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                        {
+                            return;
+                        }
+
+                        if (!isHovered || __instance?.DescriptionBox == null || menuItem == null || !(menuItem.Ability is ExploreSiteAbility))
+                        {
+                            return;
+                        }
+                        if (!TryGetAdjustedExplorationHours(menuItem.Ability, __instance.SelectedSite, out int hours))
+                        {
+                            return;
+                        }
+                        string text = __instance.DescriptionBox.DescriptionText.text;
+                        if (string.IsNullOrEmpty(text))
+                        {
+                            return;
+                        }
+                        string trimmedSeparator = TimeSeparator.Trim();
+                        if (text.Contains(trimmedSeparator))
+                        {
+                            return;
+                        }
+                        __instance.DescriptionBox.DescriptionText.text = string.Format("{0}\n\nExploration time: {1}", text, string.Format(TimeFormat, hours));
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                /// <summary>
+                /// Returns the exploration hours for the site, reduced by the Exploration affinity rank
+                /// of the highest-ranked qualifying operative aboard the vehicle (option 1 = time reduction).
+                /// </summary>
+                private static bool TryGetAdjustedExplorationHours(GeoAbility ability, GeoSite selectedSite, out int hours)
+                {
+                    hours = 0;
+                    GeoVehicle geoVehicle = ability?.GeoActor as GeoVehicle;
+                    GeoSite geoSite = geoVehicle?.CurrentSite ?? selectedSite;
+                    if (geoSite == null)
+                    {
+                        return false;
+                    }
+                    double totalHours = geoSite.ExplorationTime.TimeSpan.TotalHours;
+                    if (totalHours <= 0.0)
+                    {
+                        return false;
+                    }
+
+                    // Apply Exploration affinity time reduction (mirrors the formula in GeoSite_get_ExplorationTime patch)
+                    if (geoVehicle != null)
+                    {
+                        List<GeoCharacter> soldiers = geoVehicle.Soldiers != null
+                            ? geoVehicle.Soldiers.ToList()
+                            : new List<GeoCharacter>();
+
+                        int rank = GetActiveGeoscapeRank(
+                            geoVehicle.GeoLevel,
+                            soldiers,
+                            LeaderSelection.AffinityApproach.Exploration,
+                            requiredOption: 1);
+
+                        if (rank > 0)
+                        {
+                            totalHours = Math.Max(1d, totalHours - rank);
+                        }
+                    }
+
+                    hours = Mathf.CeilToInt((float)totalHours);
+                    return true;
+                }
+            }
 
             [HarmonyPatch(typeof(GeoVehicle), "StartExploringCurrentSite")]
             private static class GeoVehicle_StartExploringCurrentSite_AffinityExplorationBonus_Patch

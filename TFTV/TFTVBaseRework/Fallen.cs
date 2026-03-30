@@ -23,6 +23,7 @@ namespace TFTV.TFTVBaseRework
         private const string HeaderObjectName = "FallenOperativesHeader_Harmony";
         private const string ContentObjectName = "FallenOperativesContent_Harmony";
         private const string HeaderText = "FALLEN OPERATIVES";
+        private const string ProjectOsirisPreparationText = "Preparing for PROJECT OSIRIS";
 
         private static readonly Color TextColor = new Color(0.95f, 0.95f, 0.95f, 1f);
 
@@ -96,7 +97,8 @@ namespace TFTV.TFTVBaseRework
             FallenOperativeInfo fallenOperativeInfo = new FallenOperativeInfo
             {
                 Name = value.GetName(),
-                GeoUnitId = (int)unitId
+                GeoUnitId = (int)unitId,
+                IsPreparingForProjectOsiris = unitId == global::TFTV.TFTVProjectOsiris.IdProjectOsirisCandidate
             };
 
             List<ViewElementDef> classViewElements = new List<ViewElementDef>
@@ -114,7 +116,7 @@ namespace TFTV.TFTVBaseRework
             SoldierStats soldierStat = gameStats?.GetSoldierStat(unitId, false);
             fallenOperativeInfo.Missions = soldierStat?.MissionsParticipated ?? 0;
             fallenOperativeInfo.Kills = soldierStat?.EnemiesKilled.Sum(e => e.KillCount) ?? 0;
-            fallenOperativeInfo.SkillPointsReturned = global::TFTV.TFTVExperienceDistribution.GetDeathSkillPointRefund(
+            fallenOperativeInfo.SkillPointsReturned = TFTVExperienceDistribution.GetDeathSkillPointRefund(
                 soldierStat,
                 geoLevel.CurrentDifficultyLevel);
             fallenOperativeInfo.FavoriteWeapon = GetFavoriteWeapon(soldierStat);
@@ -229,16 +231,21 @@ namespace TFTV.TFTVBaseRework
 
                 CreateInfoLine(entry.transform, fallenOperativeInfo.Name, 40, FontStyle.Bold);
                 CreateInfoLine(entry.transform, $"Missions: {fallenOperativeInfo.Missions}  |  Kills: {fallenOperativeInfo.Kills}", 28, FontStyle.Normal);
-                CreateInfoLine(entry.transform, $"SP Returned: {fallenOperativeInfo.SkillPointsReturned}", 30, FontStyle.Normal);
                 CreateInfoLine(entry.transform, $"Favorite Weapon: {fallenOperativeInfo.FavoriteWeapon}", 28, FontStyle.Normal);
                 CreateInfoLine(entry.transform, $"Favorite Skill: {fallenOperativeInfo.FavoriteSkill}", 28, FontStyle.Normal);
+                CreateInfoLine(
+                    entry.transform,
+                    fallenOperativeInfo.IsPreparingForProjectOsiris
+                        ? ProjectOsirisPreparationText
+                        : $"SP Returned: {fallenOperativeInfo.SkillPointsReturned}",
+                    30,
+                    FontStyle.Normal);
 
                 string transferSummary = AffinityInheritance.GetTransferSummary(fallenOperativeInfo.GeoUnitId);
                 if (!string.IsNullOrEmpty(transferSummary))
                 {
                     CreateInfoLine(entry.transform, transferSummary, 24, FontStyle.Italic);
                 }
-
             }
         }
 
@@ -410,6 +417,7 @@ namespace TFTV.TFTVBaseRework
             public int SkillPointsReturned;
             public string FavoriteWeapon;
             public string FavoriteSkill;
+            public bool IsPreparingForProjectOsiris;
         }
     }
 }

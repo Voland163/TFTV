@@ -81,6 +81,12 @@ namespace TFTV
                     if (__instance.Mission.MissionDef.Tags.Contains(DefCache.GetDef<MissionTypeTagDef>("MissionTypeAncientSiteDefense_MissionTagDef"))
                        || __instance.Mission.MissionDef.Tags.Contains(DefCache.GetDef<MissionTypeTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef")))
                     {
+                        if (AircraftReworkOn && __instance.Mission.MissionDef.Tags.Contains(DefCache.GetDef<MissionTypeTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef"))) 
+                        {
+                            NoVehicleMutogWarning(__instance, item, ____confirmationBox, ____selectedDeployment, ____deploymentItems);
+                            return false;
+                        }
+
                         return true;
                     }
 

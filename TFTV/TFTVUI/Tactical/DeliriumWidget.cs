@@ -178,27 +178,33 @@ namespace TFTV.TFTVUI.Tactical
             {
                 try
                 {
-
-                    // Create the root object for the tooltip
-                    GameObject tooltip = new GameObject("Tooltip", typeof(RectTransform), typeof(Image)); //typeof(CanvasRenderer), 
+                    GameObject tooltip = new GameObject("Tooltip", typeof(RectTransform), typeof(Image));
                     RectTransform tooltipRect = tooltip.GetComponent<RectTransform>();
-                    tooltipRect.sizeDelta = new Vector2(1200, 1750); // Adjust default size
-                    tooltipRect.pivot = new Vector2(0.25f, 1.035f); // Top-left pivot
+                    tooltipRect.pivot = new Vector2(0.25f, 1f);
                     tooltipRect.SetParent(_parentTransform, false);
 
-                    // Style the background
                     Image background = tooltip.GetComponent<Image>();
-                    background.color = new Color(0, 0, 0, 0.8f); // Semi-transparent black
+                    background.color = new Color(0, 0, 0, 0.8f);
+                    tooltip.AddComponent<RectMask2D>();
 
+                    // Let Unity lay out children top-to-bottom and auto-size the panel height
+                    VerticalLayoutGroup layout = tooltip.AddComponent<VerticalLayoutGroup>();
+                    layout.padding = new RectOffset(20, 20, 20, 20);
+                    layout.spacing = 20f;
+                    layout.childAlignment = TextAnchor.UpperLeft;
+                    layout.childControlWidth = true;
+                    layout.childControlHeight = true;
+                    layout.childForceExpandWidth = true;
+                    layout.childForceExpandHeight = false;
 
-                    // Add Vertical Layout Group for dynamic content
-                    //VerticalLayoutGroup layout = tooltip.AddComponent<VerticalLayoutGroup>();
-                    //layout.padding = new RectOffset(10, 10, 10, 10);
-                    //  layout.spacing = 50;
+                    ContentSizeFitter fitter = tooltip.AddComponent<ContentSizeFitter>();
+                    fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+                    fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-                    //  layout.childAlignment = TextAnchor.UpperLeft;
+                    // Fix the width; height will be driven by content
+                    tooltipRect.sizeDelta = new Vector2(1500, 0);  // was 1200
 
-                    tooltip.SetActive(false); // Hide by default
+                    tooltip.SetActive(false);
                     return tooltip;
                 }
                 catch (Exception e)
@@ -210,86 +216,94 @@ namespace TFTV.TFTVUI.Tactical
 
 
 
-            private GameObject CreateDetailItem(Sprite icon, string text, float yOffset, bool tab = false, bool separator = false)
+            private GameObject CreateDetailItem(Sprite icon, string text, bool tab = false, bool separator = false)
             {
                 try
                 {
+                    float tabOffset = tab ? 100f : 0f;
 
+                    GameObject row = new GameObject("DetailRow", typeof(RectTransform));
+                    HorizontalLayoutGroup hlg = row.AddComponent<HorizontalLayoutGroup>();
+                    hlg.padding = new RectOffset((int)tabOffset, 0, 0, 0);
+                    hlg.spacing = 10f;
+                    hlg.childAlignment = TextAnchor.MiddleLeft;
+                    hlg.childControlWidth = true;
+                    hlg.childControlHeight = true;
+                    hlg.childForceExpandWidth = false;
+                    hlg.childForceExpandHeight = false;
 
-                    // Create a container for the detail item
-                    GameObject detail = new GameObject("DetailItem", typeof(RectTransform));
-                    RectTransform detailRect = detail.GetComponent<RectTransform>();
-                    detailRect.pivot = new Vector2(0.5f, -4f);
-                    detailRect.sizeDelta = new Vector2(1000, 200);
-
-
-                    float tabOffest = 0;
-
-                    if (tab)
-                    {
-                        tabOffest = 100;
-                    }
-
-                    // Optional Icon
                     if (icon != null)
                     {
-                        GameObject iconObj = new GameObject("Icon", typeof(RectTransform), typeof(Image));
-                        RectTransform iconRect = iconObj.GetComponent<RectTransform>();
-                        iconRect.sizeDelta = new Vector2(60, 200); // Icon size
-                        iconRect.anchoredPosition += new Vector2(-30 - detailRect.sizeDelta.x / 2 + tabOffest, -yOffset);
-                        iconObj.GetComponent<Image>().sprite = icon;
-                        iconObj.GetComponent<Image>().preserveAspect = true;
-                        iconObj.transform.SetParent(detail.transform, false);
-
+                        GameObject iconObj = new GameObject("Icon", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+                        LayoutElement iconLayout = iconObj.GetComponent<LayoutElement>();
+                        iconLayout.preferredWidth = 50f;
+                        iconLayout.preferredHeight = 50f;
+                        iconLayout.minWidth = 50f;
+                        iconLayout.minHeight = 50f;
+                        iconLayout.flexibleWidth = 0f;
+                        iconLayout.flexibleHeight = 0f;
+                        Image img = iconObj.GetComponent<Image>();
+                        img.sprite = icon;
+                        img.preserveAspect = true;
                         if (icon != _voidOmenSprite)
                         {
-                            iconObj.GetComponent<Image>().color = VoidColor;
+                            img.color = VoidColor;
                         }
-
-                        AddOutlineToIcon addOutlineToIcon = iconObj.GetComponent<AddOutlineToIcon>() ?? iconObj.AddComponent<AddOutlineToIcon>();
-                        addOutlineToIcon.icon = iconObj;
-                        addOutlineToIcon.InitOrUpdate();
-
-
-                        // iconRect.pivot = new Vector2(0f, 0f);
+                        AddOutlineToIcon outline = iconObj.AddComponent<AddOutlineToIcon>();
+                        outline.icon = iconObj;
+                        outline.InitOrUpdate();
+                        iconObj.transform.SetParent(row.transform, false);
+                    }
+                    else
+                    {
+                        GameObject spacer = new GameObject("Spacer", typeof(RectTransform), typeof(LayoutElement));
+                        LayoutElement spacerLayout = spacer.GetComponent<LayoutElement>();
+                        spacerLayout.preferredWidth = 50f;
+                        spacerLayout.minWidth = 50f;
+                        spacerLayout.flexibleWidth = 0f;
+                        spacerLayout.flexibleHeight = 0f;
+                        spacer.transform.SetParent(row.transform, false);
                     }
 
-                    // Text
-                    GameObject textObj = new GameObject("Text", typeof(RectTransform), typeof(Text));
-                    //      textObj.GetComponent<RectTransform>().localScale = new Vector3(0.5f, 0.5f, 0.5f);
-                    textObj.GetComponent<RectTransform>().anchoredPosition += new Vector2(tabOffest, -yOffset);
-                    textObj.GetComponent<RectTransform>().sizeDelta = new Vector2(940 - tabOffest * 2, 200);
-                    //   textObj.GetComponent<RectTransform>().pivot = new Vector2(5, -5);
+                    GameObject textObj = new GameObject("Text", typeof(RectTransform), typeof(Text), typeof(LayoutElement));
                     Text textComponent = textObj.GetComponent<Text>();
                     textComponent.text = text;
                     textComponent.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
-                    textComponent.fontSize = 40; //70
+                    textComponent.fontSize = 40;
                     textComponent.color = WhiteColor;
                     textComponent.horizontalOverflow = HorizontalWrapMode.Wrap;
                     textComponent.verticalOverflow = VerticalWrapMode.Overflow;
-
                     textComponent.alignment = TextAnchor.MiddleLeft;
-                    textObj.transform.SetParent(detail.transform, false);
+
+                    LayoutElement textLayout = textObj.GetComponent<LayoutElement>();
+                    textLayout.flexibleWidth = 1f;
+                    textLayout.flexibleHeight = 1f;
+
+                    textObj.transform.SetParent(row.transform, false);
 
                     if (separator)
                     {
-                        GameObject separatorObject = new GameObject($"Separator", typeof(RectTransform), typeof(Image));
-                        RectTransform separatorRect = separatorObject.GetComponent<RectTransform>();
-                        separatorRect.SetParent(detail.transform, false);
+                        GameObject wrapper = new GameObject("DetailItem", typeof(RectTransform));
+                        VerticalLayoutGroup wrapVlg = wrapper.AddComponent<VerticalLayoutGroup>();
+                        wrapVlg.spacing = 8f;
+                        wrapVlg.childControlWidth = true;
+                        wrapVlg.childControlHeight = true;
+                        wrapVlg.childForceExpandWidth = true;
+                        wrapVlg.childForceExpandHeight = false;
 
-                        separatorRect.sizeDelta = new Vector2(1000, 2); // Width: 800, Height: 2 (Adjust as needed)
-                                                                        //  separatorRect.anchorMin = new Vector2(0, 0.5f); // Anchors to stretch across the width
-                                                                        //   separatorRect.anchorMax = new Vector2(1, 0.5f);
-                        separatorRect.pivot = new Vector2(0.5f, 1f);
-                        separatorRect.anchoredPosition = new Vector2(0, -yOffset - 90);
+                        row.transform.SetParent(wrapper.transform, false);
 
-                        // Style the separator
-                        Image separatorImage = separatorObject.GetComponent<Image>();
-                        separatorImage.sprite = Helper.CreateSpriteFromImageFile("pp_obj_update_line.png");
-                        separatorImage.preserveAspect = true;
+                        GameObject sep = new GameObject("Separator", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+                        sep.GetComponent<LayoutElement>().preferredHeight = 2f;
+                        Image sepImage = sep.GetComponent<Image>();
+                        sepImage.sprite = Helper.CreateSpriteFromImageFile("pp_obj_update_line.png");
+                        sepImage.preserveAspect = true;
+                        sep.transform.SetParent(wrapper.transform, false);
+
+                        return wrapper;
                     }
 
-                    return detail;
+                    return row;
                 }
                 catch (Exception e)
                 {
@@ -409,73 +423,34 @@ namespace TFTV.TFTVUI.Tactical
             {
                 try
                 {
-                    Sprite umbraIcon = _tbtvOnDeathSprite;
-                    Sprite modIcon = _tbtvOnAttackSprite;
-                    Sprite onTurnEndIcon = _tbtvOnTurnEndSprite;
-                    Sprite tbtvIcon = _tbtvGeneralSprite;
-                    Sprite corruptionIcon = _deliriumStatusSprite;
-                    Sprite voidOmenIcon = _voidOmenSprite;
-
                     tooltipInstance = CreateTooltipPanel();
-
-
                     RectTransform tooltipRect = tooltipInstance.GetComponent<RectTransform>();
-                    // tooltipRect.sizeDelta = new Vector2(1200, details.Count * 200);
                     tooltipRect.position = position;
-
-                    // Clear existing content
-                    foreach (Transform child in tooltipInstance.transform)
-                    {
-                        Destroy(child.gameObject);
-                    }
-
-                    float distanceCounter = 100;
-
-                    //   TFTVLogger.Always($"{distanceCounter}");
+                    // Shift the panel down so it doesn't overlap the header
+                    tooltipRect.anchoredPosition += new Vector2(0, -40f);
 
                     for (int x = 0; x < details.Count; x++)
                     {
-                        float distanceToPreviousElement = Mathf.Min(200, 200 * x);
-
-                        Sprite icon = details.ElementAt(x).icon;
                         ODIDetailType type = details.ElementAt(x).Item3;
 
-                        bool tab = false;
-
-                        if (type == ODIDetailType.ODIDescription || type == ODIDetailType.VoidOmen || type == ODIDetailType.TBTVDescription || type == ODIDetailType.TBTVChance)
-                        {
-                            distanceToPreviousElement *= 0.75f;
-                        }
-
-                        if (type == ODIDetailType.TBTVEffect || type == ODIDetailType.TBTVModifier && details.ElementAt(x - 1).Item3 != ODIDetailType.TBTVModifier)
-                        {
-                            distanceToPreviousElement *= 0.75f;
-                            tab = true;
-                        }
-
-                        if (type == ODIDetailType.TBTVModifier && details.ElementAt(x - 1).Item3 == ODIDetailType.TBTVModifier)
-                        {
-                            distanceToPreviousElement *= 0.55f;
-                            tab = true;
-                        }
+                        bool tab = type == ODIDetailType.TBTVEffect
+                                || type == ODIDetailType.TBTVModifier;
 
                         bool separator = false;
-
-                        //Adds separator if general description or last TBTVEffect
-                        if (type == ODIDetailType.ODIDescription || type == ODIDetailType.VoidOmen && details.Count() >= x + 2 && details.ElementAt(x + 1).Item3 != ODIDetailType.VoidOmen
-                            || type == ODIDetailType.TBTVEffect && details.ElementAt(x).Item3 != ODIDetailType.TBTVEffect)
+                        if (type == ODIDetailType.ODIDescription
+                            || (type == ODIDetailType.VoidOmen && details.Count >= x + 2 && details.ElementAt(x + 1).Item3 != ODIDetailType.VoidOmen)
+                            || (type == ODIDetailType.TBTVEffect && (x + 1 >= details.Count || details.ElementAt(x + 1).Item3 != ODIDetailType.TBTVEffect)))
                         {
                             separator = true;
                         }
 
-
-                        distanceCounter += distanceToPreviousElement;
-
-                        GameObject detailItem = CreateDetailItem(details.ElementAt(x).icon, details.ElementAt(x).text, distanceCounter, tab, separator);
+                        GameObject detailItem = CreateDetailItem(details.ElementAt(x).icon, details.ElementAt(x).text, tab, separator);
                         detailItem.transform.SetParent(tooltipInstance.transform, false);
                     }
 
+                    // Force layout rebuild so ContentSizeFitter computes the correct height
                     tooltipInstance.SetActive(true);
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipRect);
                 }
                 catch (Exception e)
                 {

@@ -405,6 +405,25 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
+        private static void ApplyRecruitDifficultyParametersToDescriptor(
+            GeoLevelController level,
+            GeoUnitDescriptor descriptor)
+        {
+            try
+            {
+                if (level?.CharacterGenerator == null || descriptor == null)
+                {
+                    return;
+                }
+
+                level.CharacterGenerator.ApplyRecruitDifficultyParameters(descriptor);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
         private static GeoUnitDescriptor GenerateOperativeDescriptor(
             GeoLevelController level,
             GeoPhoenixFaction faction,
@@ -428,7 +447,17 @@ namespace TFTV.TFTVBaseRework
                     return null;
                 }
 
-                return generateUnit.Invoke(level.CharacterGenerator, new object[] { faction, template }) as GeoUnitDescriptor;
+                GeoUnitDescriptor descriptor = generateUnit.Invoke(
+                    level.CharacterGenerator,
+                    new object[] { faction, template }) as GeoUnitDescriptor;
+
+                if (descriptor == null)
+                {
+                    return null;
+                }
+
+                ApplyRecruitDifficultyParametersToDescriptor(level, descriptor);
+                return descriptor;
             }
             catch (Exception e)
             {

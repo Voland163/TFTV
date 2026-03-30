@@ -983,6 +983,7 @@ namespace TFTV.TFTVIncidents
                 case 29:
                     RequireNearbyHaven(incident, new List<Objects.GeoIncidentEligibilityCondition>
                     {
+                        new Objects.GeoIncidentEligibilityCondition { RequiredFaction = NewJerichoFactionDef },
                         new Objects.GeoIncidentEligibilityCondition { RequiredZoneDefName = "Research_GeoHavenZoneDef" },
                         new Objects.GeoIncidentEligibilityCondition { RequiredZoneDefName = "TrainingElite_GeoHavenZoneDef" }
                     });
@@ -1192,6 +1193,48 @@ namespace TFTV.TFTVIncidents
             public string CancelChoiceKey;
             public string CancelOutcomeKey;
             public string RequirementsText;
+        }
+
+        internal static GeoHaven GetFirstNearbyEligibleHaven(
+            GeoHaven haven,
+            GeoFaction visitingFaction,
+            Objects.GeoIncidentEligibilityCondition condition)
+        {
+            if (condition == null)
+            {
+                return null;
+            }
+
+            GeoSite site = haven?.Site;
+            if (site == null || haven.Range == null)
+            {
+                return null;
+            }
+
+            IEnumerable<Objects.GeoIncidentEligibilityCondition> nearbyConditions = condition.NearbyHavenConditions;
+            EarthUnits range = haven.Range.Range;
+
+            foreach (GeoSite geoSite in haven.Range.SitesInRange)
+            {
+                if (geoSite == null || geoSite == site)
+                {
+                    continue;
+                }
+
+                GeoHaven candidate = geoSite.GetComponent<GeoHaven>();
+                if (candidate == null)
+                {
+                    continue;
+                }
+
+                bool isEligible = nearbyConditions == null || nearbyConditions.All(c => c.IsEligible(candidate, visitingFaction));
+                if (isEligible && GeoMap.Distance(site, geoSite) <= range)
+                {
+                    return candidate;
+                }
+            }
+
+            return null;
         }
     }
 }

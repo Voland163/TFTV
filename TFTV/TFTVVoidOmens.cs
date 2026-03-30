@@ -1,10 +1,8 @@
 ﻿using Base;
 using Base.Defs;
 using Base.Entities.Effects;
-using Base.Levels;
 using Base.UI;
 using com.ootii.Helpers;
-using Epic.OnlineServices;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
@@ -86,8 +84,8 @@ namespace TFTV
         //V0#18 is extra defense points, less rewards
 
 
-       
-      
+
+
         public static void ImplementHavenDefendersAlwaysHostile(TacticalLevelController controller)
         {
             try
@@ -313,7 +311,7 @@ namespace TFTV
                     DefCache.GetDef<GeoAlienFactionDef>("Alien_GeoAlienFactionDef").ProgressEvolutionWhenAlienMissionIsWon = true;
                     VoidOmensCheck[6] = true;
                     controller.PhoenixFaction.Research.Update();
-                   
+
                 }
                 else if (VoidOmensCheck[6])
                 {
@@ -367,7 +365,7 @@ namespace TFTV
                 {
                     VoidOmensCheck[11] = false;
                     controller.AlienFaction.Behemoth?.UpdateHourly();
-                   
+
                 }
 
                 // VO12: Stronger haven defense attackers (applied elsewhere)
@@ -1076,11 +1074,11 @@ namespace TFTV
                     new ResourceUnit(ResourceType.Production, faction.ResourceIncome.GetTotalResouce(ResourceType.Production).Value)
             });
         }
-    
 
 
 
-    [HarmonyPatch(typeof(TacticalAbility), "get_WillPointCost")] //VERIFIED
+
+        [HarmonyPatch(typeof(TacticalAbility), "get_WillPointCost")] //VERIFIED
         public static class TacticalAbility_get_WillPointCost_VoidOmenExtraWPCost_Patch
         {
             public static void Postfix(ref float __result, TacticalAbility __instance)
@@ -1162,14 +1160,14 @@ namespace TFTV
                         __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min = Mathf.FloorToInt(3 + difficultyLevel * (int)(6 * missionTypeModifer));
                         __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = Mathf.FloorToInt(8 + difficultyLevel * (int)(6 * missionTypeModifer));
                         TFTVLogger.Always($"min blobs: {__instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min}, max blobs: {__instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max}");
-                        
+
                     }
                     else
                     {
 
                         __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Min = 1;
                         __instance.VoxelMatrixData.InitialMistEntitiesToSpawn.Max = Mathf.FloorToInt(3);
-                        
+
                     }
                 }
                 catch (Exception e)
@@ -1180,7 +1178,7 @@ namespace TFTV
             }
         }
 
-       
+
 
 
 
@@ -1212,7 +1210,7 @@ namespace TFTV
                         __result = 9;
                     }
 
-                    if (config.UnLimitedDeployment) 
+                    if (config.UnLimitedDeployment)
                     {
                         __result = 99;
                     }
@@ -1329,6 +1327,56 @@ namespace TFTV
             }
         }
 
+
+
+
+        [HarmonyPatch(typeof(GeoAlienBase), "AddDiplomacyDestructionReward")] //VERIFIED
+        public static class GeoAlienFaction_AddDiplomacyDestructionReward_V02_patch
+        {
+            private static float _originalReward = 0;
+
+            public static void Prefix(GeoAlienBase __instance)
+            {
+                try
+                {
+                    GeoLevelController geoLevel = __instance.Site.GeoLevel;
+
+                    if (geoLevel == null) return;
+
+                    if (CheckFordVoidOmensInPlay(geoLevel).Contains(2))
+                    {
+                        _originalReward = __instance.AlienBaseTypeDef.FactionDiplomacyRewardPerHaven;
+                        __instance.AlienBaseTypeDef.FactionDiplomacyRewardPerHaven = __instance.AlienBaseTypeDef.FactionDiplomacyRewardPerHaven * 0.5f;
+                    }
+
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            public static void Postfix(GeoAlienBase __instance)
+            {
+                try
+                {
+                    if(_originalReward != 0)
+                    {
+                        __instance.AlienBaseTypeDef.FactionDiplomacyRewardPerHaven = _originalReward;
+                        _originalReward = 0;
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+
         [HarmonyPatch(typeof(GeoscapeLog), "AddEntry")] //VERIFIED
         public static void Prefix(ref GeoscapeLogEntry entry, GeoActor actor, GeoscapeLogMessagesDef ____messagesDef, GeoscapeLog __instance)
         {
@@ -1341,7 +1389,7 @@ namespace TFTV
                         entry.Parameters[0] = _destroyedAlienBase;
                     }
                 }
-               
+
             }
             catch (Exception e)
             {
@@ -1429,7 +1477,7 @@ namespace TFTV
             }
         }
 
-       
+
 
     }
 }

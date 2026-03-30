@@ -508,8 +508,9 @@ namespace TFTV
                     }
                 }
 
-                if (geoVehicle.VehicleDef == helios)
+                if (geoVehicle.VehicleDef == helios && geoMission.MissionDef.MissionTags.Contains(Shared.SharedGameTags.AmbushMissionTag))
                 {
+                    TFTVLogger.Always($"Helios is present on an ambush mission, setting _heliosPresent to 1.");
                     _heliosPresent = 1;
                 }
 
@@ -2109,7 +2110,8 @@ namespace TFTV
             {
                 try
                 {
-                    if (!AircraftReworkOn || _mistRepellerPresent == 0)
+                    if (!AircraftReworkOn || _mistRepellerPresent == 0 || tacticalVoxelMatrix.TacticalLevel == null|| 
+                        tacticalVoxelMatrix.TacticalLevel.CurrentFaction != tacticalVoxelMatrix.TacticalLevel.FirstFaction ||tacticalVoxelMatrix.TacticalLevel.IsLoadingSavedGame)
                     {
                         return;
                     }

@@ -465,7 +465,7 @@ namespace TFTV
 
                         TFTVLogger.Always("The roll is " + roll + " and the rollTo is " + rollTo);
 
-                        if (roll >= 0) //<= rollTo)  TESTING
+                        if (roll <= rollTo)
                         {
                             foreach (GeoTacUnitId id in allProjectOsirisCandidates.Keys)
                             {

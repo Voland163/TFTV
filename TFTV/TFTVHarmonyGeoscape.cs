@@ -250,6 +250,8 @@ namespace TFTV
                 {
                     AircraftReworkGeoscape.Scanning.CheckAircraftScannerAbility(__instance);
                     AircraftReworkGeoscape.PassengerModules.CheckAircraftNewPassengerCapacity(__instance);
+                    AircraftReworkSpeedAndRange.AdjustAircraftSpeed(__instance, true);
+                    AircraftReworkSpeedAndRange.OverdriveRange.UpdateThunderbirdRange(__instance);
 
                 }
                 catch (Exception e)

@@ -260,8 +260,7 @@ Tactical Benefits (choose one globally):
 
 - Allies recover +2 WP per Affinity Rank when activating Recovery.
 OR
-- Gain immediate control of friendly Haven Defenders at mission start, and WP when extracting civilians (1 of each per Affinity Rank).
-",,,,,,,,
+- Increase friendly Haven deployment by 50% per Affinity Rank.",,,,,,,,
 KEY_AFFINITY_EXPLORATION_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
 
 - Exploration is 1 hour faster and resources gained from exploration events increased by 10% per Affinity Rank.
@@ -272,10 +271,10 @@ Tactical Benefits (choose one globally):
 
 - Enemies are 15% per Affinity Rank more likely to drop loot.
 OR
--  Increase friendly Haven deployment by 50% per Affinity Rank.",,,,,,,,
+- Gain immediate control of friendly Haven Defenders at mission start, and WP when extracting civilians (1 of each per Affinity Rank).",,,,,,,,
 KEY_AFFINITY_OCCULT_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
 
-- Receive a 1-hour per Affinity Rank warning before an attack on a Phoenix Base.
+- Receive a 1 day per Affinity Rank warning before an attack on a Phoenix Base.
 OR
 - 15% per Affinity Rank less penalty/more buff from flying in Mist.
 
@@ -283,8 +282,7 @@ Tactical Benefits (choose one globally):
 
 - Reduce TBTV chance by 5% per Affinity Rank.
 OR
-- For all Allies, effect of Stamina on Delirium increased by 50% per Affinity Rank.
-",,,,,,,,
+- For all Allies, effect of Stamina on Delirium increased by 50% per Affinity Rank.",,,,,,,,
 KEY_AFFINITY_BIOTECH_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
 
 - Operatives recover 30 HP per Affinity Rank after mission.

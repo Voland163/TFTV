@@ -383,7 +383,7 @@ namespace TFTV
                         if (status == null)
                         {
                             actor.Status.ApplyStatus(slowedStatus);
-                            TFTVLogger.Always($"applying Slowed status to {actor.DisplayName} for touching goo at pos {pos}");
+                           // TFTVLogger.Always($"applying Slowed status to {actor.DisplayName} for touching goo at pos {pos}");
                         }
                     }
                 }

@@ -468,7 +468,10 @@ namespace TFTV
                         umbraCrabBodyAspect.Speed = 20;
 
                         umbraFish.HitPoints = healthPoints * 0.75f;
+
+                      //  umbraFish.DamagePayload.DamageKeywords[0].DamageKeywordDef = umbraCrab.DamagePayload.DamageKeywords[0].DamageKeywordDef;
                         umbraFish.DamagePayload.DamageKeywords[0].Value = standardDamageAttack;
+                        
                         umbraFish.DamagePayload.DamageKeywords.Add(new PhoenixPoint.Tactical.Entities.DamageKeywords.DamageKeywordPair() 
                         { 
                         DamageKeywordDef = umbraCrab.DamagePayload.DamageKeywords[1].DamageKeywordDef,
