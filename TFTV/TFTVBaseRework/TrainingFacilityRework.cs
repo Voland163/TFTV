@@ -14,21 +14,29 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using TFTV.AgendaTracker;
 
 namespace TFTV.TFTVBaseRework
 {
-    
+
     public static class TrainingFacilityRework
     {
         #region Config
         private const int BaseDurationDays = 6;
         private const int SlotsPerFacility = 2;
-        private const int BaseTargetLevel = 4;
-        private const int UpgradedTargetLevel = 5;
+        private const int BaseMaxTargetLevel = 4;
+        private const int UpgradedMaxTargetLevel = 5;
+        private const int MinTargetLevel = 2;
+
+        private const int SpCostPerLevel = 10;
 
         private const int EndurancePerLevel = 2;
         private const int WillpowerPerLevel = 1;
         private const int SpeedPerLevel = 1;
+
+        // Extra days added per target level above MinTargetLevel.
+        // Set to 0 for flat duration; increase to make higher levels take longer.
+        private const float DurationPerAdditionalLevel = 0f;
 
         private static readonly Dictionary<string, float> DurationReductionResearch = new Dictionary<string, float>
         {
@@ -51,6 +59,8 @@ namespace TFTV.TFTVBaseRework
             public int TargetLevel;
             public bool Completed;
             public int VirtualLevelAchieved; // starts at 1
+            public int SpPaid;
+            public bool WasDismissed;
 
             public float ProgressFraction(int currentDay)
             {
@@ -70,27 +80,70 @@ namespace TFTV.TFTVBaseRework
         #endregion
 
         #region Public API (Recruit descriptor training)
-        public static bool QueueCharacterTraining(GeoLevelController level, GeoCharacter character, SpecializationDef spec)
+
+        /// <summary>
+        /// Returns the SP cost for training to the given target level: 10 × (targetLevel − 1).
+        /// </summary>
+        public static int GetTrainingSpCost(int targetLevel)
+        {
+            return SpCostPerLevel * Math.Max(0, targetLevel - 1);
+        }
+
+        /// <summary>
+        /// Returns the maximum target level the player may choose (4, or 5 with Elite Training research).
+        /// </summary>
+        public static int GetMaxTargetLevel(GeoPhoenixFaction faction)
+        {
+            return faction?.Research?.HasCompleted(AdvancedLevelResearchId) == true
+                ? UpgradedMaxTargetLevel
+                : BaseMaxTargetLevel;
+        }
+
+        /// <summary>
+        /// Returns the stat gains description string for a given level count (for UI display).
+        /// </summary>
+        public static string GetStatGainDescription(int levelsGained)
+        {
+            if (levelsGained <= 0) return "No stat gains";
+            return $"+{levelsGained * EndurancePerLevel} STR / +{levelsGained * WillpowerPerLevel} WP / +{levelsGained * SpeedPerLevel} SPD";
+        }
+
+        public static bool QueueCharacterTraining(GeoLevelController level, GeoCharacter character, SpecializationDef spec, int chosenTargetLevel)
         {
             try
             {
                 if (level == null || character == null || spec == null) return false;
 
-                if (PersonnelRestrictions.IsDismissedOperative(character))
+                GeoPhoenixFaction faction = level.PhoenixFaction;
+                if (faction == null) return false;
+
+                int maxLevel = GetMaxTargetLevel(faction);
+                if (chosenTargetLevel < MinTargetLevel || chosenTargetLevel > maxLevel)
                 {
-                    TFTVLogger.Always($"[Training] {character.DisplayName} is a dismissed operative and cannot use recruit training.");
+                    TFTVLogger.Always($"[Training] Invalid target level {chosenTargetLevel} (allowed {MinTargetLevel}-{maxLevel}).");
                     return false;
                 }
 
                 if (RecruitSessions.Any(s => s.GeoUnitId == character.Id)) return false;
 
-                int providedSlots = CalculateProvidedTrainingSlots(level.PhoenixFaction);
+                int providedSlots = CalculateProvidedTrainingSlots(faction);
                 int usedSlots = RecruitSessions.Count(s => !s.Completed);
                 if (usedSlots >= providedSlots) return false;
 
+                int spCost = GetTrainingSpCost(chosenTargetLevel);
+                if (faction.Skillpoints < spCost)
+                {
+                    TFTVLogger.Always($"[Training] Not enough SP to train {character.DisplayName}. Required={spCost}, Available={faction.Skillpoints}");
+                    return false;
+                }
+
+                bool wasDismissed = PersonnelRestrictions.IsDismissedOperative(character);
+
+                // Charge SP upfront.
+                faction.Skillpoints -= spCost;
+
                 int currentDay = level.Timing.Now.TimeSpan.Days;
-                int targetLevel = DetermineTargetLevel(level.PhoenixFaction);
-                int effectiveDuration = CalculateEffectiveDurationDays(level.PhoenixFaction);
+                int effectiveDuration = CalculateEffectiveDurationDays(faction, chosenTargetLevel);
 
                 RecruitTrainingSession recruitSession = new RecruitTrainingSession
                 {
@@ -100,21 +153,67 @@ namespace TFTV.TFTVBaseRework
                     TargetSpecialization = spec,
                     StartDay = currentDay,
                     DurationDays = effectiveDuration,
-                    TargetLevel = targetLevel,
+                    TargetLevel = chosenTargetLevel,
                     Completed = false,
-                    VirtualLevelAchieved = 1
+                    VirtualLevelAchieved = 1,
+                    SpPaid = spCost,
+                    WasDismissed = wasDismissed
                 };
 
                 RecruitSessions.Add(recruitSession);
-                TFTVAAAgendaTracker.ExtendedAgendaTracker.RefreshRecruitTrainingTracker(character);
+                AgendaRefresh.RefreshRecruitTrainingTracker(character);
 
-                TFTVLogger.Always($"[Training] Queued recruit training: {character.DisplayName} Spec={spec.name} StartDay={currentDay} Duration={effectiveDuration} TargetLevel={targetLevel} Used/Provided={usedSlots + 1}/{providedSlots}");
+                TFTVLogger.Always($"[Training] Queued recruit training: {character.DisplayName} Spec={spec.name} TargetLevel={chosenTargetLevel} SpPaid={spCost} WasDismissed={wasDismissed} StartDay={currentDay} Duration={effectiveDuration} Used/Provided={usedSlots + 1}/{providedSlots}");
                 return true;
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Cancels a recruit training session. Returns partial SP refund for unachieved levels.
+        /// Dismissed operatives remain dismissed on cancel (no free redeploy via cancel).
+        /// </summary>
+        public static int CancelRecruitTraining(GeoLevelController level, GeoCharacter character)
+        {
+            try
+            {
+                if (level == null || character == null) return 0;
+
+                RecruitTrainingSession session = GetRecruitSession(character);
+                if (session == null) return 0;
+
+                GeoPhoenixFaction faction = level.PhoenixFaction;
+                if (faction == null) return 0;
+
+                // Force progress update so VirtualLevelAchieved is current.
+                int currentDay = level.Timing.Now.TimeSpan.Days;
+                ForceRecruitProgressUpdate(session, currentDay);
+
+                int levelsAchieved = Math.Max(0, session.VirtualLevelAchieved - 1);
+                int spForAchieved = SpCostPerLevel * levelsAchieved;
+                int refund = Math.Max(0, session.SpPaid - spForAchieved);
+
+                if (refund > 0)
+                {
+                    faction.Skillpoints += refund;
+                }
+
+                // Dismissed operatives stay dismissed — cancel does NOT clear the marker.
+                TFTVLogger.Always($"[Training] Cancelled training for {character.DisplayName}: SpPaid={session.SpPaid} LevelsAchieved={levelsAchieved} Refund={refund} WasDismissed={session.WasDismissed}");
+
+                session.Completed = true;
+                RemoveRecruitSession(session);
+
+                return refund;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return 0;
             }
         }
 
@@ -133,7 +232,7 @@ namespace TFTV.TFTVBaseRework
             }
 
             RecruitSessions.Remove(session);
-            TFTVAAAgendaTracker.ExtendedAgendaTracker.RefreshRecruitTrainingTracker(session.Character);
+            AgendaRefresh.RefreshRecruitTrainingTracker(session.Character);
         }
 
         public static RecruitTrainingSession GetRecruitSession(GeoCharacter character)
@@ -221,12 +320,10 @@ namespace TFTV.TFTVBaseRework
                 return;
             }
 
-
             if (geoLevel?.PhoenixFaction == null || deltaDays <= 0) return;
             int currentDay = geoLevel.Timing.Now.TimeSpan.Days;
             TFTVLogger.Always($"[Training] AdvanceAllTraining day={currentDay} delta={deltaDays}");
 
-            // Recruit descriptor sessions only (operative sessions removed).
             foreach (var session in RecruitSessions.ToList())
             {
                 if (session.Completed) continue;
@@ -268,6 +365,17 @@ namespace TFTV.TFTVBaseRework
         #endregion
 
         #region Finalization
+
+        /// <summary>
+        /// Calculates the SP refund for an early finalization (levels not yet achieved).
+        /// </summary>
+        private static int CalculatePartialRefund(RecruitTrainingSession session, int finalLevel)
+        {
+            int levelsAchieved = Math.Max(0, finalLevel - 1);
+            int spForAchieved = SpCostPerLevel * levelsAchieved;
+            return Math.Max(0, session.SpPaid - spForAchieved);
+        }
+
         public static GeoCharacter FinalizeRecruitTraining(GeoLevelController level, GeoCharacter character, GeoPhoenixBase targetBase, bool early = false)
         {
             try
@@ -278,17 +386,48 @@ namespace TFTV.TFTVBaseRework
                     return null;
                 }
 
+                GeoPhoenixFaction faction = level.PhoenixFaction;
                 int finalLevel = early ? session.VirtualLevelAchieved : session.TargetLevel;
-                GeoCharacter operative = CreateOperativeFromCivilian(level, character, targetBase, session.TargetSpecialization, finalLevel);
+
+                // Partial refund on early finalization.
+                int refund = 0;
+                if (early)
+                {
+                    refund = CalculatePartialRefund(session, finalLevel);
+                    if (refund > 0 && faction != null)
+                    {
+                        faction.Skillpoints += refund;
+                    }
+                }
+
+                GeoCharacter operative;
+
+                if (session.WasDismissed)
+                {
+                    // Dismissed operatives: reuse the existing character, apply level/stat gains,
+                    // charge redeploy cost, clear marker, and relocate to targetBase.
+                    operative = FinalizeDismissedOperativeTraining(level, character, targetBase, session, finalLevel, early);
+                }
+                else
+                {
+                    // Civilians: create a new operative from the civilian placeholder.
+                    operative = CreateOperativeFromCivilian(level, character, targetBase, session.TargetSpecialization, finalLevel);
+                }
+
                 if (operative == null)
                 {
+                    // Reverse refund on failure.
+                    if (refund > 0 && faction != null)
+                    {
+                        faction.Skillpoints -= refund;
+                    }
                     return null;
                 }
 
                 session.Completed = true;
                 RemoveRecruitSession(session);
 
-                TFTVLogger.Always($"[Training] Finalized recruit training: {operative.DisplayName} Level={finalLevel} Early={early}");
+                TFTVLogger.Always($"[Training] Finalized recruit training: {operative.DisplayName} Level={finalLevel} Early={early} Refund={refund} WasDismissed={session.WasDismissed}");
                 return operative;
             }
             catch (Exception e)
@@ -298,6 +437,74 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
+        /// <summary>
+        /// Finalizes training for a dismissed operative by applying level/stat gains
+        /// to the existing character rather than generating a new one.
+        /// Charges redeploy SP cost, clears dismissed marker, and relocates to targetBase.
+        /// </summary>
+        private static GeoCharacter FinalizeDismissedOperativeTraining(
+            GeoLevelController level,
+            GeoCharacter character,
+            GeoPhoenixBase targetBase,
+            RecruitTrainingSession session,
+            int finalLevel,
+            bool early)
+        {
+            try
+            {
+                GeoPhoenixFaction phoenix = level?.PhoenixFaction;
+                if (phoenix == null || character == null || targetBase == null)
+                {
+                    return null;
+                }
+
+                // Charge redeploy SP cost (10 * (level - 1)).
+                int redeployCost = PersonnelRestrictions.GetRedeployCost(character);
+                if (phoenix.Skillpoints < redeployCost)
+                {
+                    TFTVLogger.Always($"[Training] Not enough SP to redeploy dismissed operative {character.DisplayName}. Required={redeployCost}, Available={phoenix.Skillpoints}");
+                    return null;
+                }
+                if (redeployCost > 0)
+                {
+                    phoenix.Skillpoints -= redeployCost;
+                }
+
+                // Only apply gains for levels above the operative's original level.
+                int originalLevel = character.LevelProgression?.Level ?? 1;
+                if (finalLevel > originalLevel)
+                {
+                    character.LevelProgression?.SetLevel(finalLevel);
+                    ApplyCumulativeLevelGains(character, finalLevel);
+                }
+
+                // Clear dismissed marker (both early and full completion deploy the operative).
+                PersonnelRestrictions.ClearDismissedOperative(character);
+                GeoCharacterFilter.HiddenOperativeMarkerFilter.RemoveHiddenMarker(character);
+
+                // Relocate to the player-chosen base.
+                GeoPhoenixBase currentBase = phoenix.Bases.FirstOrDefault(b => b.Site.GetAllCharacters().Any(c => c == character));
+                if (currentBase != null && currentBase != targetBase)
+                {
+                    currentBase.Site.RemoveCharacter(character);
+                    targetBase.Site.AddCharacter(character);
+                    TFTVLogger.Always($"[Training] Relocated {character.DisplayName} from {currentBase.Site?.LocalizedSiteName} to {targetBase.Site?.LocalizedSiteName}");
+                }
+                else if (currentBase == null)
+                {
+                    targetBase.Site.AddCharacter(character);
+                    TFTVLogger.Always($"[Training] Placed {character.DisplayName} at {targetBase.Site?.LocalizedSiteName}");
+                }
+
+                TFTVLogger.Always($"[Training] Dismissed operative finalized: {character.DisplayName} OriginalLevel={originalLevel} FinalLevel={finalLevel} Early={early} RedeployCost={redeployCost}");
+                return character;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return null;
+            }
+        }
         public static GeoCharacter FinalizeRecruitTrainingForUI(GeoLevelController level, GeoCharacter character, bool early)
         {
             try
@@ -320,17 +527,44 @@ namespace TFTV.TFTVBaseRework
                     return null;
                 }
 
+                GeoPhoenixFaction faction = level.PhoenixFaction;
                 int finalLevel = early ? session.VirtualLevelAchieved : session.TargetLevel;
-                GeoCharacter operative = CreateOperativeFromCivilian(level, character, targetBase, session.TargetSpecialization, finalLevel);
+
+                // Partial refund on early finalization.
+                int refund = 0;
+                if (early)
+                {
+                    refund = CalculatePartialRefund(session, finalLevel);
+                    if (refund > 0 && faction != null)
+                    {
+                        faction.Skillpoints += refund;
+                    }
+                }
+
+                GeoCharacter operative;
+
+                if (session.WasDismissed)
+                {
+                    operative = FinalizeDismissedOperativeTraining(level, character, targetBase, session, finalLevel, early);
+                }
+                else
+                {
+                    operative = CreateOperativeFromCivilian(level, character, targetBase, session.TargetSpecialization, finalLevel);
+                }
+
                 if (operative == null)
                 {
+                    if (refund > 0 && faction != null)
+                    {
+                        faction.Skillpoints -= refund;
+                    }
                     return null;
                 }
 
                 session.Completed = true;
                 RemoveRecruitSession(session);
 
-                TFTVLogger.Always($"[Training] FinalizeForUI prepared new operative: {operative.DisplayName} Level={finalLevel} Early={early}");
+                TFTVLogger.Always($"[Training] FinalizeForUI prepared operative: {operative.DisplayName} Level={finalLevel} Early={early} Refund={refund} WasDismissed={session.WasDismissed}");
                 return operative;
             }
             catch (Exception e)
@@ -342,9 +576,10 @@ namespace TFTV.TFTVBaseRework
         #endregion
 
         #region Helpers / Internal
-        private static int CalculateEffectiveDurationDays(GeoPhoenixFaction faction)
+        private static int CalculateEffectiveDurationDays(GeoPhoenixFaction faction, int targetLevel)
         {
-            float duration = BaseDurationDays;
+            // Base duration plus optional scaling for higher target levels.
+            float duration = BaseDurationDays + DurationPerAdditionalLevel * Math.Max(0, targetLevel - MinTargetLevel);
             if (faction?.Research != null)
             {
                 foreach (var kv in DurationReductionResearch)
@@ -353,11 +588,6 @@ namespace TFTV.TFTVBaseRework
                 }
             }
             return Math.Max(1, (int)Math.Ceiling(duration));
-        }
-
-        private static int DetermineTargetLevel(GeoPhoenixFaction faction)
-        {
-            return faction?.Research?.HasCompleted(AdvancedLevelResearchId) == true ? UpgradedTargetLevel : BaseTargetLevel;
         }
 
         internal static bool IsValidFacility(GeoPhoenixFacility facility)
@@ -382,7 +612,6 @@ namespace TFTV.TFTVBaseRework
 
         private static int CalculateUsedTrainingSlots() => RecruitSessions.Count(s => !s.Completed);
 
-      
         private static TacCharacterDef ResolveTemplateForSpecialization(GeoPhoenixFaction faction, SpecializationDef specialization)
         {
             try
@@ -537,11 +766,8 @@ namespace TFTV.TFTVBaseRework
         }
         #endregion
 
-       
-
         #region Public Helper API
-        public static int GetEffectiveDurationDays(GeoPhoenixFaction faction) => CalculateEffectiveDurationDays(faction);
-        public static int GetTargetLevel(GeoPhoenixFaction faction) => DetermineTargetLevel(faction);
+        public static int GetEffectiveDurationDays(GeoPhoenixFaction faction, int targetLevel) => CalculateEffectiveDurationDays(faction, targetLevel);
 
         public static int GetProvidedTrainingSlots(GeoPhoenixFaction faction) => CalculateProvidedTrainingSlots(faction);
         public static int GetUsedTrainingSlots() => CalculateUsedTrainingSlots();
@@ -568,14 +794,12 @@ namespace TFTV.TFTVBaseRework
                 int bonusWill = remainingLevels * WillpowerPerLevel;
                 int bonusSpeed = remainingLevels * SpeedPerLevel;
 
-                // Persist via bonus stats (not overwritten by LevelProgression.SetLevel).
                 character.BonusStrength += bonusEndurance;
                 character.BonusWillpower += bonusWill;
                 character.BonusSpeed += bonusSpeed;
 
                 _appliedStatLevels[character.Id] = targetAppliedLevels;
 
-                // Force a stat rebuild WITHOUT resetting progression values.
                 RefreshCharacterStats(character);
 
                 TFTVLogger.Always($"[Training] Applied training bonuses to {character.DisplayName}: +" +
@@ -586,16 +810,14 @@ namespace TFTV.TFTVBaseRework
             catch (Exception e) { TFTVLogger.Error(e); }
         }
 
-        // Uses reflection to call private GeoCharacter.UpdateStats(false).
         private static void RefreshCharacterStats(GeoCharacter character)
         {
             try
             {
                 if (character == null) return;
-                var m = typeof(GeoCharacter).GetMethod("UpdateStats", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                var m = typeof(GeoCharacter).GetMethod("UpdateStats", BindingFlags.Instance | BindingFlags.NonPublic);
                 if (m != null)
                 {
-                    // parameter recalculateBodyparts = false
                     m.Invoke(character, new object[] { false });
                 }
             }
@@ -664,26 +886,20 @@ namespace TFTV.TFTVBaseRework
                     phoenix.Skillpoints -= cost;
                 }
 
-               
-
                 GeoCharacterFilter.HiddenOperativeMarkerFilter.RemoveHiddenMarker(character);
                 PersonnelRestrictions.ClearDismissedOperative(character);
 
-                if(!targetBase.Site.GetAllCharacters().Any(c=> c == character)) 
+                if (!targetBase.Site.GetAllCharacters().Any(c => c == character))
                 {
-                    
-                    GeoPhoenixBase currentBase = phoenix.Bases.FirstOrDefault(b=>b.Site.GetAllCharacters().Any(c=> c == character));
+                    GeoPhoenixBase currentBase = phoenix.Bases.FirstOrDefault(b => b.Site.GetAllCharacters().Any(c => c == character));
                     targetBase.Site.AddCharacter(character);
                     currentBase.Site.RemoveCharacter(character);
                     TFTVLogger.Always($"[Training] Redeployed {character?.DisplayName} from {currentBase?.Site?.LocalizedSiteName} to {targetBase?.Site?.LocalizedSiteName} at a cost of {cost} skill points.");
                 }
-                else 
-                { 
-                
+                else
+                {
                     TFTVLogger.Always($"[Training] {character?.DisplayName} redeployed at {targetBase?.Site?.LocalizedSiteName} at a cost of {cost} skill points.");
-
                 }
-               
 
                 return character;
             }
@@ -708,7 +924,6 @@ namespace TFTV.TFTVBaseRework
             catch (Exception e) { TFTVLogger.Error(e); }
         }
 
-
         [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruit")]
         internal static class GeoPhoenixFaction_AddRecruit_TrainingStats_Postfix
         {
@@ -724,12 +939,10 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
-
         public static void TryApplyDeferredTrainingStats(GeoCharacter recruit)
         {
             try
             {
-
                 if (!BaseReworkUtils.BaseReworkEnabled)
                 {
                     return;
@@ -748,10 +961,6 @@ namespace TFTV.TFTVBaseRework
                 TFTVLogger.Error(e);
             }
         }
-
-
-
-        // Optional fallback after daily update
 
         internal static void DailyUpdateTrainingDeferredFallback(GeoLevelController level)
         {
@@ -839,12 +1048,10 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
-
         #region Recruit Training Sessions - Save/Load
         [SerializeType(SerializeMembersByDefault = SerializeMembersType.SerializeAll)]
         public sealed class RecruitTrainingSessionSave
         {
-
             public int GeoUnitId;
             public string CharacterName;
             public string MainSpecName;
@@ -853,6 +1060,8 @@ namespace TFTV.TFTVBaseRework
             public int TargetLevel;
             public int VirtualLevelAchieved;
             public bool Completed;
+            public int SpPaid;
+            public bool WasDismissed;
         }
 
         public static List<RecruitTrainingSessionSave> CreateRecruitSessionsSnapshot()
@@ -868,7 +1077,9 @@ namespace TFTV.TFTVBaseRework
                     DurationDays = s.DurationDays,
                     TargetLevel = s.TargetLevel,
                     VirtualLevelAchieved = s.VirtualLevelAchieved,
-                    Completed = s.Completed
+                    Completed = s.Completed,
+                    SpPaid = s.SpPaid,
+                    WasDismissed = s.WasDismissed
                 });
             }
             return list;
@@ -884,7 +1095,6 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
-
                     GeoCharacter character = level.PhoenixFaction?.Characters?.FirstOrDefault(s => s.Id == save.GeoUnitId);
 
                     SpecializationDef spec = null;
@@ -902,10 +1112,12 @@ namespace TFTV.TFTVBaseRework
                         DurationDays = save.DurationDays,
                         TargetLevel = save.TargetLevel,
                         VirtualLevelAchieved = save.VirtualLevelAchieved,
-                        Completed = save.Completed
+                        Completed = save.Completed,
+                        SpPaid = save.SpPaid,
+                        WasDismissed = save.WasDismissed
                     });
 
-                    TFTVLogger.Always($"[Training] Session restored: PersonnelId={character.Id} {character.DisplayName} TargetLevel={save.TargetLevel} Completed={save.Completed}");
+                    TFTVLogger.Always($"[Training] Session restored: PersonnelId={character.Id} {character.DisplayName} TargetLevel={save.TargetLevel} SpPaid={save.SpPaid} WasDismissed={save.WasDismissed} Completed={save.Completed}");
                 }
                 catch (Exception e) { TFTVLogger.Error(e); }
             }
@@ -914,7 +1126,6 @@ namespace TFTV.TFTVBaseRework
 
         #region Class Availability (Research-Gated)
 
-        // Specialization Def IDs (adjust if your actual Def names differ)
         private const string AssaultSpecDefId = "AssaultSpecializationDef";
         private const string HeavySpecDefId = "HeavySpecializationDef";
         private const string SniperSpecDefId = "SniperSpecializationDef";
@@ -923,7 +1134,6 @@ namespace TFTV.TFTVBaseRework
         private const string BerserkerSpecDefId = "BerserkerSpecializationDef";
         private const string TechnicianSpecDefId = "TechnicianSpecializationDef";
 
-        // Research IDs gating optional classes
         private const string InfiltratorResearchId = "SYN_InfiltratorTech_ResearchDef";
         private const string PriestResearchId = "ANU_AnuPriest_ResearchDef";
         private const string BerserkerResearchId = "ANU_Berserker_ResearchDef";
@@ -953,7 +1163,6 @@ namespace TFTV.TFTVBaseRework
                 catch { /* ignore missing defs */ }
             }
 
-            // Always available
             TryAdd(AssaultSpecDefId);
             TryAdd(HeavySpecDefId);
             TryAdd(SniperSpecDefId);
@@ -971,20 +1180,14 @@ namespace TFTV.TFTVBaseRework
         }
 
         /// <summary>
-        /// Queues training automatically picking a valid facility with a free slot; player supplies only class.
+        /// Queues training automatically picking a valid facility with a free slot; player supplies class and target level.
         /// Returns true on success.
         /// </summary>
-        public static bool QueueCharacterTrainingAutoFacility(GeoLevelController level, GeoCharacter character, SpecializationDef spec)
+        public static bool QueueCharacterTrainingAutoFacility(GeoLevelController level, GeoCharacter character, SpecializationDef spec, int chosenTargetLevel)
         {
             try
             {
                 if (level == null || character == null || spec == null) return false;
-
-                if (PersonnelRestrictions.IsDismissedOperative(character))
-                {
-                    TFTVLogger.Always($"[Training] {character.DisplayName} is a dismissed operative and cannot use recruit training.");
-                    return false;
-                }
 
                 // Validate specialization is currently allowed.
                 var allowed = GetAvailableTrainingSpecializations(level.PhoenixFaction);
@@ -1002,8 +1205,7 @@ namespace TFTV.TFTVBaseRework
                     return false;
                 }
 
-                // Delegate to existing queue logic (with facility).
-                return QueueCharacterTraining(level, character, spec);
+                return QueueCharacterTraining(level, character, spec, chosenTargetLevel);
             }
             catch (Exception e)
             {

@@ -12,6 +12,7 @@ using PhoenixPoint.Geoscape.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TFTV.AgendaTracker;
 
 namespace TFTV.TFTVBaseRework
 {
@@ -463,7 +464,7 @@ namespace TFTV.TFTVBaseRework
 
                 site.RefreshVisuals();
                 BaseConstructionVisuals.RefreshPendingConstructionVisuals(level);
-                global::TFTV.TFTVAAAgendaTracker.ExtendedAgendaTracker.RefreshCustomSiteTracker(site);
+                AgendaRefresh.RefreshCustomSiteTracker(site);
             }
 
             internal static NextUpdate CompletePendingAction(GeoSite site, GeoPhoenixFaction faction, PendingBaseAction action)
@@ -499,7 +500,7 @@ namespace TFTV.TFTVBaseRework
                     site.ExpiringTimerAt = TimeUnit.Zero;
                     site.RefreshVisuals();
                     BaseConstructionVisuals.RefreshPendingConstructionVisuals(site.GeoLevel);
-                    global::TFTV.TFTVAAAgendaTracker.ExtendedAgendaTracker.RefreshCustomSiteTracker(site);
+                    AgendaRefresh.RefreshCustomSiteTracker(site);
                     return NextUpdate.StopScheduler;
                 }
                 catch (Exception ex)

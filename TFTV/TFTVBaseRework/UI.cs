@@ -1263,6 +1263,7 @@ namespace TFTV.TFTVBaseRework
             var content = CreateModalContentArea();
 
             var specs = ResolveAvailableMainSpecs(level);
+            bool isDismissed = PersonnelRestrictions.IsDismissedOperative(person.Character);
 
             // Option 1: Deploy Now (immediate class selection + base selection)
             AddModalOptionButton(content, "Deploy Now", () =>
@@ -1275,11 +1276,32 @@ namespace TFTV.TFTVBaseRework
             int usedSlots = TrainingFacilityRework.GetUsedTrainingSlots();
             if (usedSlots < providedSlots)
             {
-                int duration = TrainingFacilityRework.GetEffectiveDurationDays(phoenix);
+                int maxLevel = TrainingFacilityRework.GetMaxTargetLevel(phoenix);
+                int minDuration = TrainingFacilityRework.GetEffectiveDurationDays(phoenix, 2);
+                int maxDuration = TrainingFacilityRework.GetEffectiveDurationDays(phoenix, maxLevel);
                 int freeSlots = providedSlots - usedSlots;
-                AddModalOptionButton(content, $"Train First ({duration}d, {freeSlots} slot{(freeSlots != 1 ? "s" : "")} free)", () =>
+                string durationLabel = minDuration == maxDuration
+                    ? $"{minDuration}d"
+                    : $"{minDuration}-{maxDuration}d";
+                AddModalOptionButton(content, $"Train First ({durationLabel}, {freeSlots} slot{(freeSlots != 1 ? "s" : "")} free)", () =>
                 {
-                    ShowTrainingSelection(level, person, specs, refresh);
+                    if (isDismissed)
+                    {
+                        // Dismissed operatives keep their existing class — skip class selection.
+                        SpecializationDef existingSpec = ResolveExistingSpecialization(person.Character);
+                        if (existingSpec != null)
+                        {
+                            ShowTrainingLevelSelection(level, person, existingSpec, refresh);
+                        }
+                        else
+                        {
+                            ShowMessage($"Could not determine class for {person.Character?.DisplayName}.");
+                        }
+                    }
+                    else
+                    {
+                        ShowTrainingSelection(level, person, specs, refresh);
+                    }
                 });
             }
             else
@@ -1289,6 +1311,29 @@ namespace TFTV.TFTVBaseRework
 
             AddModalCloseButton();
         }
+
+        private static SpecializationDef ResolveExistingSpecialization(GeoCharacter character)
+        {
+            try
+            {
+                if (character?.ClassTag == null) return null;
+
+                // Match the character's current class tag against available specializations.
+                var allSpecs = TrainingFacilityRework.GetAvailableTrainingSpecializations(
+                    GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()?.PhoenixFaction);
+
+                foreach (var spec in allSpecs)
+                {
+                    if (spec?.ClassTag != null && character.ClassTag == spec.ClassTag)
+                    {
+                        return spec;
+                    }
+                } 
+            }
+            catch (Exception e) { TFTVLogger.Error(e); }
+            return null;
+        }
+
         #endregion
 
         #region Deployment / Training Selection
@@ -1313,12 +1358,16 @@ namespace TFTV.TFTVBaseRework
                 {
                     if (isTraining)
                     {
+                        var session = TrainingFacilityRework.GetRecruitSession(person.Character);
+                        bool wasDismissed = session?.WasDismissed ?? false;
+
                         Action finalize = () =>
                         {
                             var character = TrainingFacilityRework.FinalizeRecruitTraining(level, person.Character, geoBase, early: !trainingComplete);
                             if (character != null)
                             {
                                 PersonnelData.RemovePersonnel(faction, person);
+                                RefreshResourceInfo(faction);
                             }
                             refresh();
                             CloseModal();
@@ -1326,7 +1375,16 @@ namespace TFTV.TFTVBaseRework
 
                         if (!trainingComplete)
                         {
-                            ShowConfirmation($"Training incomplete for {person.Character?.DisplayName}.\nDeploy early?", finalize, () => CloseModal());
+                            int currentLevel = session?.VirtualLevelAchieved ?? 1;
+                            int refund = session != null ? Math.Max(0, session.SpPaid - (10 * Math.Max(0, currentLevel - 1))) : 0;
+                            string earlyMsg = $"Training incomplete for {person.Character?.DisplayName}.\nCurrent level: {currentLevel}\nSP refund: {refund}";
+                            if (wasDismissed)
+                            {
+                                int redeployCost = PersonnelRestrictions.GetRedeployCost(person.Character);
+                                earlyMsg += $"\n\nRedeploy cost: {redeployCost} SP";
+                            }
+                            earlyMsg += "\n\nDeploy early?";
+                            ShowConfirmation(earlyMsg, finalize, () => CloseModal());
                         }
                         else
                         {
@@ -1421,12 +1479,6 @@ namespace TFTV.TFTVBaseRework
         {
             if (level == null || person == null) return;
 
-            if (PersonnelRestrictions.IsDismissedOperative(person.Character))
-            {
-                ShowMessage($"{person.Character?.DisplayName} is a dismissed operative and cannot use the civilian training path.\nUse Redeploy instead.");
-                return;
-            }
-
             CloseModal();
             _modalRoot = CreateModalRoot("TrainingSelectionModal");
             AddModalHeader("Select Class");
@@ -1442,24 +1494,82 @@ namespace TFTV.TFTVBaseRework
             }
             else
             {
-                int duration = TrainingFacilityRework.GetEffectiveDurationDays(level.PhoenixFaction);
                 foreach (var spec in specs)
                 {
-                    string label = $"{spec.ViewElementDef.DisplayName1.Localize()} ({duration}d)";
-                    AddModalOptionButton(content, label, () =>
+                    string specName = spec.ViewElementDef.DisplayName1.Localize();
+                    AddModalOptionButton(content, specName, () =>
                     {
-                        if (TrainingFacilityRework.QueueCharacterTrainingAutoFacility(level, person.Character, spec))
+                        ShowTrainingLevelSelection(level, person, spec, refresh);
+                    });
+                }
+            }
+            AddModalCloseButton();
+        }
+
+        private static void ShowTrainingLevelSelection(GeoLevelController level, PersonnelInfo person, SpecializationDef spec, Action refresh)
+        {
+            if (level == null || person == null || spec == null) return;
+
+            GeoPhoenixFaction faction = level.PhoenixFaction;
+            int maxLevel = TrainingFacilityRework.GetMaxTargetLevel(faction);
+            bool isDismissed = PersonnelRestrictions.IsDismissedOperative(person.Character);
+
+            // Dismissed operatives start from their current level; civilians start from level 1.
+            int currentCharLevel = isDismissed
+                ? (person.Character?.LevelProgression?.Level ?? 1)
+                : 1;
+            int minTargetLevel = Math.Max(2, currentCharLevel + 1);
+
+            CloseModal();
+            _modalRoot = CreateModalRoot("TrainingLevelSelectionModal");
+            AddModalHeader("Select Training Level");
+            var content = CreateModalContentArea();
+
+            if (minTargetLevel > maxLevel)
+            {
+                ShowMessage($"{person.Character?.DisplayName} is already at level {currentCharLevel} and cannot train further.");
+                return;
+            }
+
+            for (int targetLevel = minTargetLevel; targetLevel <= maxLevel; targetLevel++)
+            {
+                int levelsGained = targetLevel - 1;
+                int spCost = TrainingFacilityRework.GetTrainingSpCost(targetLevel);
+                int duration = TrainingFacilityRework.GetEffectiveDurationDays(faction, targetLevel);
+                string statGains = TrainingFacilityRework.GetStatGainDescription(levelsGained);
+                string label = $"Level {targetLevel} — {spCost} SP — {duration}d\n{statGains}";
+
+                bool canAfford = faction.Skillpoints >= spCost;
+                int capturedLevel = targetLevel;
+
+                AddModalOptionButton(content, canAfford ? label : $"{label}\n(Not enough SP)", () =>
+                {
+                    if (!canAfford)
+                    {
+                        ShowMessage($"Not enough shared skill points.\nRequired: {spCost}\nAvailable: {faction.Skillpoints}");
+                        return;
+                    }
+
+                    string confirmMsg = $"Train {person.Character?.DisplayName} as {spec.ViewElementDef.DisplayName1.Localize()} to Level {capturedLevel}?\nCost: {spCost} SP ({duration} days)\n{statGains}";
+                    if (isDismissed)
+                    {
+                        confirmMsg += "\n\nThis operative is dismissed. Completing training will clear the dismissed status.";
+                    }
+
+                    ShowConfirmation(confirmMsg, () =>
+                    {
+                        if (TrainingFacilityRework.QueueCharacterTrainingAutoFacility(level, person.Character, spec, capturedLevel))
                         {
-                            AssignPersonnelToTraining(person, level.PhoenixFaction, spec);
+                            AssignPersonnelToTraining(person, faction, spec);
                         }
                         else
                         {
-                            TFTVLogger.Always($"{LogPrefix} Failed to queue training (no slot or dismissed operative).");
+                            TFTVLogger.Always($"{LogPrefix} Failed to queue training.");
                         }
                         refresh();
                         CloseModal();
-                    });
-                }
+                    }, () => CloseModal());
+                });
             }
             AddModalCloseButton();
         }

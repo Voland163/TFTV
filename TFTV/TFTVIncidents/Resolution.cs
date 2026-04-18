@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using TFTV.AgendaTracker;
 using TFTV.TFTVBaseRework;
 using UnityEngine;
 
@@ -598,7 +599,7 @@ namespace TFTV.TFTVIncidents
                 };
 
                 RefreshSiteVisual(level, site.SiteId);
-                TFTVAAAgendaTracker.ExtendedAgendaTracker.RefreshCustomSiteTracker(site);
+                AgendaRefresh.RefreshCustomSiteTracker(site);
             }
 
             private static void RestoreIntroEventOnCancel(GeoscapeEvent geoscapeEvent)
@@ -866,7 +867,7 @@ namespace TFTV.TFTVIncidents
 
                 if (site != null)
                 {
-                    TFTVAAAgendaTracker.ExtendedAgendaTracker.RefreshCustomSiteTracker(site);
+                    AgendaRefresh.RefreshCustomSiteTracker(site);
                 }
 
                 return true;
@@ -957,7 +958,7 @@ namespace TFTV.TFTVIncidents
 
                 if (site != null)
                 {
-                    TFTVAAAgendaTracker.ExtendedAgendaTracker.RefreshCustomSiteTracker(site);
+                    AgendaRefresh.RefreshCustomSiteTracker(site);
                 }
             }
 

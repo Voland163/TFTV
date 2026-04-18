@@ -66,6 +66,8 @@ namespace TFTV
         /// </summary>
         public static class SuppressionRuntime
         {
+            private static readonly GameTagDef UmbraClassTag = DefCache.GetDef<GameTagDef>("Umbra_ClassTagDef");
+
             private sealed class ActorSuppressionState
             {
                 public readonly SuppressionTracker Tracker = new SuppressionTracker();
@@ -92,6 +94,12 @@ namespace TFTV
             {
                 if (actor == null || !actor.IsAlive || weapon == null || weapon.WeaponDef == null || !weapon.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("GunWeapon_TagDef")))
                 {
+                    return;
+                }
+
+                if (IsSuppressionExcluded(actor))
+                {
+                    ClearSuppression(actor);
                     return;
                 }
 
@@ -138,6 +146,12 @@ namespace TFTV
             {
                 if (actor == null)
                 {
+                    return SuppressionPenalty.None;
+                }
+
+                if (IsSuppressionExcluded(actor))
+                {
+                    ClearSuppression(actor);
                     return SuppressionPenalty.None;
                 }
 
@@ -443,6 +457,20 @@ namespace TFTV
                 RegisterSuppressionEvent(actor, weapon, 1f);
             }
 
+            private static bool IsSuppressionExcluded(TacticalActor actor)
+            {
+                if (actor == null)
+                {
+                    return true;
+                }
+
+                if (actor.ActorDef?.name == "Oilcrab_ActorDef" || actor.ActorDef?.name == "Oilfish_ActorDef")
+                {
+                    return true;
+                }
+
+                return UmbraClassTag != null && actor.GameTags != null && actor.GameTags.Contains(UmbraClassTag);
+            }
 
             [HarmonyPatch]
             private static class Patches

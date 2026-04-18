@@ -133,7 +133,10 @@
     <Compile Include="Tactical\Entities\Statuses\FumbleChanceStatusDef.cs" />
     <Compile Include="Tactical\Entities\Statuses\OnActorDazedEffectStatus.cs" />
     <Compile Include="Tactical\Entities\Statuses\OnActorDazedEffectStatusDef.cs" />
-    <Compile Include="TFTVAAAgendaTracker.cs" />
+    <Compile Include="TFTVAAAgenda\AgendaHelpers.cs" />
+    <Compile Include="TFTVAAAgenda\AgendaPatches.cs" />
+    <Compile Include="TFTVAAAgenda\AgendaRefresh.cs" />
+    <Compile Include="TFTVAAAgenda\AgendaTracker.cs" />
     <Compile Include="TFTVAcid.cs" />
     <Compile Include="TFTVAircraftRework\AircraftReworkGeoscape.Scanning.cs" />
     <Compile Include="TFTVAircraftRework\AircraftReworkMaintenance.cs" />
@@ -240,8 +243,8 @@
     <Compile Include="TFTVMeleeDamage.cs" />
     <Compile Include="TFTVNJQuestline.cs" />
     <Compile Include="TFTVRevertSGPatchBalance.cs" />
-    <Compile Include="TFTVSuppression.cs" />
-    <Compile Include="TFTVSuppressionAI.cs" />
+    <Compile Include="TFTVSuppression\TFTVSuppression.cs" />
+    <Compile Include="TFTVSuppression\TFTVSuppressionAI.cs" />
     <Compile Include="TFTVTauntsAndQuips.cs" />
     <Compile Include="TFTVTimeScaling.cs" />
     <Compile Include="TFTVUI\Geoscape\TopInforBar.cs" />

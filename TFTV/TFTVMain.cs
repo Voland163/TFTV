@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using TFTV.AgendaTracker;
 using UnityEngine;
 
 namespace TFTV
@@ -142,7 +143,7 @@ namespace TFTV
                 TFTVHumanEnemiesNames.CreateRanksDictionary();
                 Logger.LogInfo("Ranks for human enemies created");
                 TFTVHumanEnemiesNames.CreateTierDescriptions();
-                TFTVAAAgendaTracker.ExtendedAgendaTracker.LocalizeExtendedAgendaUI();
+                AgendaConstants.LocalizeExtendedAgendaUI();
 
                 Logger.LogInfo("Loading Vehicle Rework");
                 TFTVVehicleRework.VehiclesMain.ReworkVehicles();

@@ -18,6 +18,7 @@ using PhoenixPoint.Tactical.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TFTV.AgendaTracker;
 using UnityEngine;
 using static UITooltip;
 
@@ -115,8 +116,7 @@ namespace TFTV
             public static void Postfix(UIModuleInfoBar __instance)
             {
                 try
-                {
-                    TFTVAAAgendaTracker.ExtendedAgendaTracker.StoreSpritesForTrackerAndObjectivesList(__instance);
+                { AgendaHelpers.LoadSprites(__instance);
                 }
                 catch (Exception e)
                 {
@@ -157,7 +157,7 @@ namespace TFTV
                         TFTVLogger.Debug($"[GeoObjectiveElementController_SetObjective_PREFIX] Icon is null, setting a custom one.");
 
                         // Fallback to some prepared sprite
-                        icon = TFTVAAAgendaTracker.ExtendedAgendaTracker.archeologyLabSprite;
+                        icon = AgendaConstants.archeologyLabSprite;
                         iconColor = Color.white;
                     }
                 }
@@ -182,7 +182,7 @@ namespace TFTV
             {
                 try
                 {
-                    TFTVAAAgendaTracker.ExtendedAgendaTracker.RecolorTimerBaseAndAncientSiteAttacks(__instance, site);
+                    AgendaPatches.RecolorTimerBaseAndAncientSiteAttacks(__instance, site);
                     TFTVUI.Geoscape.Facilities.AddBlinkingPowerMarkerGeoMap(__instance, site);
                     TFTVBaseDefenseGeoscape.Visuals.RefreshBaseDefenseVisuals(__instance, site);
                 }
