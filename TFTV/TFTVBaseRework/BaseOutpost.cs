@@ -7,6 +7,7 @@ using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
+using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
 using System;
@@ -32,17 +33,121 @@ namespace TFTV.TFTVBaseRework
         }
     }
 
+
+    /// <summary>
+    /// Overrides the soldier count shown in the Geoscape "deploy asset to base" dialog.
+    /// </summary>
+    [HarmonyPatch(typeof(UIModuleGeoAssetDeployment), "SetBaseButtonElement")]
+    internal static class Patch_UIModuleGeoAssetDeployment_SetBaseButtonElement
+    {
+
+        // private void SetBaseButtonElement(GeoDeployAssetBaseElementController element, GeoSite site, GeoDeployAssetFactionCharacterBind bind)
+        private static void Postfix(
+            GeoDeployAssetBaseElementController element,
+            GeoSite site,
+            object bind)
+        {
+            try
+            {
+                if (element == null || site == null || element.SoldiersCountText == null)
+                {
+                    return;
+                }
+
+                GeoPhoenixBase phoenixBase = site.GetComponent<GeoPhoenixBase>();
+                if (phoenixBase == null)
+                {
+                    return;
+                }
+
+                int customCount = site.Units
+                    .OfType<GeoCharacter>()
+                    .Count(c =>
+                        c.TemplateDef != null
+                        && c.TemplateDef.IsHuman
+                        && !GeoCharacterFilter.HiddenOperativeMarkerFilter.ShouldHide(c));
+
+                element.SoldiersCountText.text = customCount.ToString();
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Harmony postfix for Phoenix Base geoscape icon behavior:
+    /// - Bases that have not been looted yet show the "not visited haven" marker.
+    /// - Outpost bases have their icon tinted gray.
+    /// Only active when BaseRework is enabled.
+    /// </summary>
+    internal static class PhoenixBaseIconPatches
+    {
+        private static readonly int ColorShaderId = Shader.PropertyToID("_Color");
+        private static readonly Color OutpostGrayColor = Color.gray;
+
+        [HarmonyPatch(typeof(GeoSiteVisualsController), "RefreshSiteVisuals")]
+        private static class GeoSiteVisualsController_RefreshSiteVisuals_Patch
+        {
+            private static void Postfix(GeoSiteVisualsController __instance, GeoSite site)
+            {
+                if (!BaseReworkUtils.BaseReworkEnabled) return;
+                if (__instance == null || site == null) return;
+                if (site.Type != GeoSiteType.PhoenixBase) return;
+
+                bool isActivated = site.State == GeoSiteState.Functioning;
+                /*  TFTVLogger.Always($"[GeoSiteVisualsController.RefreshSiteVisuals] " +
+                      $"Refreshing visuals for {site.LocalizedSiteName}. " +
+                      $"Activated: {isActivated}, " +
+                      $"Looted: {site.SiteTags.Contains(PhoenixBaseReworkState.LootedTag)}, " +
+                      $"Is Outpost: {site.SiteTags.Contains(PhoenixBaseReworkState.OutpostTag)}" +
+                      $"__instance.HavenVisitedIcon != null: {__instance.HavenVisitedIcon != null}");*/
+
+                // Show "not visited" marker on activated bases that haven't been looted yet.
+                if (__instance.HavenVisitedIcon != null && !isActivated && site.Owner != site.GeoLevel.PhoenixFaction)
+                {
+                    bool showNotLootedMarker = !site.SiteTags.Contains(PhoenixBaseReworkState.LootedTag);
+                    __instance.LockIcon.SetActive(false); // Ensure lock icon is hidden for bases.
+                    __instance.HavenVisitedIcon.SetActive(showNotLootedMarker);
+
+                }
+
+                // Tint the icon gray when the base is an outpost.
+                if (__instance.SiteIconRenderer != null)
+                {
+                    bool isOutpost = isActivated
+                        && site.SiteTags.Contains(PhoenixBaseReworkState.OutpostTag);
+
+                    if (isOutpost)
+                    {
+                        MaterialPropertyBlock block = new MaterialPropertyBlock();
+                        __instance.SiteIconRenderer.GetPropertyBlock(block);
+                        block.SetColor(ColorShaderId, OutpostGrayColor);
+                        __instance.SiteIconRenderer.SetPropertyBlock(block);
+                    }
+                    else
+                    {
+                        __instance.SiteIconRenderer.SetPropertyBlock(null);
+                    }
+                }
+            }
+        }
+    }
+
+
+
     [HarmonyPatch(typeof(GeoscapeView), "PxFaction_OnBaseActivated")]
     public static class Patch_CaptureActivatedBase
     {
         static void Postfix(GeoPhoenixBase @base, bool activatedFromExploration)
         {
-            if(!BaseReworkUtils.BaseReworkEnabled) return;
+            if (!BaseReworkUtils.BaseReworkEnabled) return;
 
 
             if (!activatedFromExploration) return;
             BaseActivationModalPatchState.LastActivatedBase = @base;
-          
+
             if (BaseActivationModalPatchState.TitleOutpostActivated == "" || BaseActivationModalPatchState.DescriptionOutpostActivated == "")
             {
                 BaseActivationModalPatchState.LoadLocalizedStrings();

@@ -358,13 +358,13 @@ namespace TFTV.TFTVIncidents
                     Transform iconRoot = button.transform.Find(ChoiceIconsRootName);
                     if (iconRoot != null)
                     {
-                        UnityEngine.Object.Destroy(iconRoot.gameObject);
+                        UnityEngine.Object.DestroyImmediate(iconRoot.gameObject); // was Destroy — deferred destroy caused reuse in same frame
                     }
 
                     ChoiceButtonVisualState state = button.GetComponent<ChoiceButtonVisualState>();
                     if (state != null)
                     {
-                        UnityEngine.Object.Destroy(state);
+                        UnityEngine.Object.DestroyImmediate(state); // was Destroy — deferred destroy caused stale BaseText to persist
                     }
                 }
             }
@@ -387,7 +387,8 @@ namespace TFTV.TFTVIncidents
                     return;
                 }
 
-                RemovePreviousInjectedRows(parent);
+                RemovePreviousRows(parent);
+                IncidentIntroTutorialPanel.ClearPanel(parent);   // ADD THIS LINE
                 ApproachIconTooltipTrigger.DestroyTooltip();
                 RestoreChoiceButtons(__instance);
                 CleanupChoiceButtonDecorations(__instance);
@@ -527,6 +528,8 @@ namespace TFTV.TFTVIncidents
                     // Shrink choice buttons after approach data is populated to make room for icons.
                     AdjustChoiceButtons(__instance, geoEvent);
                 }
+
+                IncidentIntroTutorialPanel.TryShowPanel(__instance, geoEvent);   // ADD THIS LINE after crew list is built, before AdjustChoiceButtons
             }
 
             private static void UpdateChoiceButtonsForSelectedOperative(
@@ -718,7 +721,7 @@ namespace TFTV.TFTVIncidents
                     state.OriginalPadding.left, state.OriginalPadding.right,
                     state.OriginalPadding.top, state.OriginalPadding.bottom);
 
-                UnityEngine.Object.Destroy(state);
+                UnityEngine.Object.DestroyImmediate(state); // was Destroy — deferred destroy caused AdjustChoiceButtons to reuse stale state in same frame, progressively compounding the shrink
             }
 
 
@@ -1760,7 +1763,7 @@ namespace TFTV.TFTVIncidents
                 }
             }
 
-            private static void RemovePreviousInjectedRows(Transform parent)
+            private static void RemovePreviousRows(Transform parent)
             {
                 List<Transform> toRemove = new List<Transform>();
                 foreach (Transform child in parent)
@@ -1774,6 +1777,199 @@ namespace TFTV.TFTVIncidents
                 for (int i = 0; i < toRemove.Count; i++)
                 {
                     UnityEngine.Object.Destroy(toRemove[i].gameObject);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Injects a one-time explanatory text panel into the UIModuleSiteEncounters UI
+        /// the first time an incident intro event opens in a playthrough.
+        /// Uses the same panel construction pattern as IncidentOutcomeSummaryUI.
+        /// </summary>
+        internal static class IncidentIntroTutorialPanel
+        {
+            private const string PanelRootName = "[Mod]IncidentTutorialPanelRoot";
+            private const string PanelTextName = "[Mod]IncidentTutorialPanelText";
+            private const string VarShown = "TFTV_INCIDENT_INTRO_TUTORIAL_SHOWN";
+
+            private const float PanelWidth = 800f;
+            private const float GapFromEventText = 1000f;
+
+            // Localization keys — add matching entries to your localization table.
+            private const string TitleKey = "TUTORIAL_INCIDENTS_TITLE0";
+            private const string TextKey = "TUTORIAL_INCIDENTS_TEXT1";
+
+            internal static void TryShowPanel(UIModuleSiteEncounters module, GeoscapeEvent geoEvent)
+            {
+                try
+                {
+                    GeoLevelController controller = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                    if (controller == null)
+                    {
+                        return;
+                    }
+
+                    if (controller.EventSystem.GetVariable(VarShown) != 0)
+                    {
+                        return;
+                    }
+
+                    controller.EventSystem.SetVariable(VarShown, 1);
+
+                    Transform parent = module?.SiteEncounterTextContainer != null
+                        ? module.SiteEncounterTextContainer.transform
+                        : null;
+                    if (parent == null)
+                    {
+                        return;
+                    }
+
+                    string title = TFTVCommonMethods.ConvertKeyToString(TitleKey);
+                    string body = TFTVCommonMethods.ConvertKeyToString(TextKey);
+
+                    string panelText = string.Empty;
+                    if (!string.IsNullOrEmpty(title))
+                    {
+                        panelText = $"<b>{title}</b>\n";
+                    }
+                    if (!string.IsNullOrEmpty(body))
+                    {
+                        panelText += body;
+                    }
+
+                    if (string.IsNullOrEmpty(panelText))
+                    {
+                        return;
+                    }
+
+                    CreateOrUpdatePanel(parent, module, panelText);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            internal static void ClearPanel(Transform parent)
+            {
+                if (parent == null)
+                {
+                    return;
+                }
+
+                List<Transform> toRemove = new List<Transform>();
+                foreach (Transform child in parent)
+                {
+                    if (child != null && child.name == PanelRootName)
+                    {
+                        toRemove.Add(child);
+                    }
+                }
+
+                for (int i = 0; i < toRemove.Count; i++)
+                {
+                    UnityEngine.Object.Destroy(toRemove[i].gameObject);
+                }
+            }
+
+            private static void CreateOrUpdatePanel(Transform parent, UIModuleSiteEncounters module, string panelText)
+            {
+                Transform existingRoot = parent.Find(PanelRootName);
+                GameObject root;
+                if (existingRoot == null)
+                {
+                    root = new GameObject(
+                        PanelRootName,
+                        typeof(RectTransform),
+                        typeof(Image),
+                        typeof(Outline),
+                        typeof(VerticalLayoutGroup),
+                        typeof(ContentSizeFitter),
+                        typeof(LayoutElement));
+                    root.transform.SetParent(parent, false);
+                }
+                else
+                {
+                    root = existingRoot.gameObject;
+                }
+
+                LayoutElement layoutElement = root.GetComponent<LayoutElement>();
+                if (layoutElement != null)
+                {
+                    layoutElement.ignoreLayout = true;
+                }
+
+                RectTransform rootRect = root.GetComponent<RectTransform>();
+                ConfigurePanelRect(rootRect, module);
+
+                Image background = root.GetComponent<Image>();
+                background.raycastTarget = false;
+                background.color = new Color(0f, 0f, 0f, 0.55f);
+
+                Outline border = root.GetComponent<Outline>();
+                border.effectColor = new Color(1f, 1f, 1f, 0.25f);
+                border.effectDistance = new Vector2(1f, 1f);
+
+                VerticalLayoutGroup layout = root.GetComponent<VerticalLayoutGroup>();
+                layout.childAlignment = TextAnchor.UpperLeft;
+                layout.childControlWidth = true;
+                layout.childControlHeight = true;
+                layout.childForceExpandWidth = false;
+                layout.childForceExpandHeight = false;
+                layout.padding = new RectOffset(12, 12, 10, 10);
+                layout.spacing = 4f;
+
+                ContentSizeFitter fitter = root.GetComponent<ContentSizeFitter>();
+                fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+                fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+                Text textComponent;
+                Transform existingText = root.transform.Find(PanelTextName);
+                if (existingText == null)
+                {
+                    GameObject textObj = new GameObject(PanelTextName, typeof(RectTransform), typeof(Text));
+                    textObj.transform.SetParent(root.transform, false);
+                    textComponent = textObj.GetComponent<Text>();
+                }
+                else
+                {
+                    textComponent = existingText.GetComponent<Text>();
+                }
+
+                Text style = module.EncounterDescriptionText;
+                if (style != null)
+                {
+                    textComponent.font = style.font;
+                    textComponent.fontSize = style.fontSize > 2 ? style.fontSize - 2 : style.fontSize;
+                    textComponent.color = style.color;
+                }
+
+                textComponent.alignment = TextAnchor.UpperLeft;
+                textComponent.horizontalOverflow = HorizontalWrapMode.Wrap;
+                textComponent.verticalOverflow = VerticalWrapMode.Overflow;
+                textComponent.supportRichText = true;
+                textComponent.text = panelText;
+            }
+
+            private static void ConfigurePanelRect(RectTransform rootRect, UIModuleSiteEncounters module)
+            {
+                if (rootRect == null)
+                {
+                    return;
+                }
+
+                rootRect.anchorMin = new Vector2(0.5f, 1f);
+                rootRect.anchorMax = new Vector2(0.5f, 1f);
+                rootRect.pivot = new Vector2(1f, 1f);
+                rootRect.localScale = Vector3.one;
+                rootRect.sizeDelta = new Vector2(PanelWidth, 0f);
+
+                Text desc = module?.EncounterDescriptionText;
+                if (desc != null)
+                {
+                    RectTransform descRect = desc.rectTransform;
+                    float leftEdgeX = descRect.anchoredPosition.x - (descRect.rect.width * descRect.pivot.x);
+                    rootRect.anchoredPosition = new Vector2(leftEdgeX - GapFromEventText, descRect.anchoredPosition.y + 600f);
                 }
             }
         }

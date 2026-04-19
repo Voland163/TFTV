@@ -1,6 +1,6 @@
 Key,Type,Desc,English
 TFTV_INCIDENT_30_TITLE_SY,Text,,The Hollow Ones
-TFTV_INCIDENT_30_DESC,Text,,"A scavenger named Childs Brimley, currently in custody, claims his team was infected—*mimicked*, he says—by a Pandoran organism. According to his report, the creature didn’t just copy their physiology but also their behavior and memories. One by one, his team turned… until he was the last. Synedrion researchers are at loss, and rumors are spreading throughout the [HavenName]."
+TFTV_INCIDENT_30_DESC,Text,,"A scavenger named Childs Brimley, currently in custody, claims his team was infected—*mimicked*, he says—by a Pandoran organism. According to his report, the creature didn’t just copy their physiology but also their behavior and memories. One by one, his team turned… until he was the last. Synedrion researchers are at loss, and rumors are spreading throughout [HavenName]."
 TFTV_INCIDENT_30_CHOICE_0_B,Text,,Conduct an interview with Brimley. (Biotech)
 TFTV_INCIDENT_30_CHOICE_1_E_O,Text,,Investigate the scavenging site. (Exploration/Occult)
 TFTV_INCIDENT_30_CHOICE_2,Text,,Leave it to Synedrion. [END]
@@ -65,8 +65,8 @@ TFTV_INCIDENT_36_OUTCOME_0_FAIL,Text,,"We couldn’t isolate the exact trigger, 
 TFTV_INCIDENT_36_OUTCOME_1_FAIL,Text,,"Most officials were defensive. One coordinator finally admitted, ‘This haven was built to survive, not to collapse under idealism. We all knew that line would be crossed eventually.’"
 TFTV_INCIDENT_37_TITLE_SY,Text,Req: Synedrion Recruit,Directive 11
 TFTV_INCIDENT_37_DESC,Text,,"Director, [RequirementOperativeName] was sent some data by a Synedrion friend. It's a series of task logs from the [HavenName] civic AI. The pattern is disturbing: individuals flagged as ‘sub-optimally aligned’ were repeatedly assigned high-risk tasks—scavenging in mist zones, deep structural repairs, unshielded reclamation work. Officially, these were random civic assignments. Unofficially, most of those individuals are dead."
-TFTV_INCIDENT_37_CHOICE_0_E_O,Text,,Conduct a full analysis of the task records. (Compute)
-TFTV_INCIDENT_37_CHOICE_1_M_C,Text,,Quietly interview relatives of the deceased on the pretext of a health survey. (Psycho-Sociology/Biotech)
+TFTV_INCIDENT_37_CHOICE_0_C,Text,,Conduct a full analysis of the task records. (Compute)
+TFTV_INCIDENT_37_CHOICE_1_P_B,Text,,Quietly interview relatives of the deceased on the pretext of a health survey. (Psycho-Sociology/Biotech)
 TFTV_INCIDENT_37_CHOICE_2,Text,,Leave it alone—Synedrion internal affairs. [END]
 TFTV_INCIDENT_37_OUTCOME_0_SUCCESS,Text,Reward: additional personnel,The AI used a hidden behavioral compliance score. Those below a certain threshold were gradually funneled into dangerous roles. All within policy. All automated. The haven council may not even know.
 TFTV_INCIDENT_37_OUTCOME_1_SUCCESS,Text,Reward: additional personnel,"Relatives spoke carefully. Many suspected something was wrong. ‘He asked one too many questions about food allocation. Next day, he was sent to reinforce the southern shield.’ The pattern is undeniable."
@@ -100,13 +100,9 @@ TFTV_INCIDENT_40_OUTCOME_1_SUCCESS,Text,"Reward: +4 Syn, +8 haven leader, + 80 t
 TFTV_INCIDENT_40_OUTCOME_0_FAIL,Text,,"We raised counterarguments, but her charm deflected them easily. Her language is coded, careful. She accuses us of censorship. The council remains deadlocked."
 TFTV_INCIDENT_40_OUTCOME_1_FAIL,Text,,"We found traces of financial support routed through shell collectives tied to New Jericho. It’s enough to raise suspicion, but not expel her outright. She continues her campaign—framed now as ‘resistance to ideological oppression.’"
 TFTV_INCIDENT_41_TITLE_SY,Text,Polyphonic tendency > Terraformer tendency,The Garden
-TFTV_INCIDENT_41_DESC,Text,,"Synedrion representatives invite the Phoenix Project to examine a showcase they intend to present to the world.
+TFTV_INCIDENT_41_DESC,Text,,"Synedrion representatives invite the Phoenix Project to examine a showcase they intend to present to the world. Within a sealed biodome at the haven of [HavenName], they have cultivated a garden of flora and fauna altered by the Pandoravirus.
 
-Within a sealed biodome at the haven of [HavenName], they have cultivated a garden of flora and fauna altered by the Pandoravirus.
-
-According to its creators, the specimens are harmless—some even beneficial to humans.
-
-They claim the Garden proves that coexistence with Pandoran change is not only possible, but desirable."
+According to its creators, the specimens are harmless—some even beneficial to humans. They claim the Garden proves that coexistence with Pandoran change is not only possible, but desirable."
 TFTV_INCIDENT_41_CHOICE_0_B,Text,,"Examine the specimens directly.
 (Biotech)"
 TFTV_INCIDENT_41_CHOICE_1_C_E,Text,,"Search Phoenix records for prior encounters with similar organisms.
@@ -114,24 +110,16 @@ TFTV_INCIDENT_41_CHOICE_1_C_E,Text,,"Search Phoenix records for prior encounters
 TFTV_INCIDENT_41_CHOICE_2,Text,,We don't have time for this. [END]
 TFTV_INCIDENT_41_OUTCOME_0_SUCCESS,Text,"Reward: +4 Syn, +8 haven leader, + 500 Research","The specimens display a wide range of alteration.
 
-Some are barely changed:
-a grain plant with reinforced cellulose fibers that resists fungal blight,
+Some are barely changed: a grain plant with reinforced cellulose fibers that resists fungal blight,
 a small mammal whose metabolism efficiently neutralizes trace toxins.
 
-Others appear to be natural adaptations to Pandoran environments:
-a moss that thrives in Mist-saturated air while filtering particulates,
+Others appear to be natural adaptations to Pandoran environments: a moss that thrives in Mist-saturated air while filtering particulates,
 insects that feed exclusively on mutated detritus without aggressive behavior.
 
 Still, their practical benefits seem modest, and carefully constrained by the artificial conditions of the Garden."
-TFTV_INCIDENT_41_OUTCOME_1_SUCCESS,Text,"Reward: +4 Syn, +8 haven leader, + 500 Research","Cross-referencing Phoenix exploration logs reveals familiar patterns.
+TFTV_INCIDENT_41_OUTCOME_1_SUCCESS,Text,"Reward: +4 Syn, +8 haven leader, + 500 Research","Cross-referencing Phoenix exploration logs reveals familiar patterns. Variations of nearly every specimen have been encountered before—sometimes thriving, sometimes failing, sometimes changing without warning. In their current form and environment, the Garden’s inhabitants pose no immediate danger.
 
-Variations of nearly every specimen have been encountered before—sometimes thriving, sometimes failing, sometimes changing without warning.
-
-In their current form and environment, the Garden’s inhabitants pose no immediate danger.
-
-Yet experience suggests caution.
-
-If there is one lesson the Pandoravirus has taught humanity, it is that adaptation is not a finished state.
+Yet experience suggests caution. If there is one lesson the Pandoravirus has taught humanity, it is that adaptation is not a finished state.
 
 Stability today does not guarantee harmlessness tomorrow."
 TFTV_INCIDENT_41_OUTCOME_0_FAIL,Text,,"The examination is limited by access restrictions.

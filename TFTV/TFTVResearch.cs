@@ -429,7 +429,12 @@ namespace TFTV
                         controller.EventSystem.TriggerGeoscapeEvent("PROG_CH0", context);
 
                     }
+                    // Add inside Research_CompleteResearch_TFTV_Patch.Postfix, alongside the other else if branches:
 
+                    else if (research.ResearchID == "PX_PhoenixProject_ResearchDef")
+                    {
+                        TFTVHints.BaseReworkHints.TriggerAdditionalBasesHint(controller);
+                    }
                     // TFTVChangesToDLC1andDLC2Events.CheckTriggerPU5(controller, research);
 
                     TFTVCapturePandoransGeoscape.RefreshFoodAndMutagenProductionTooltupUI();

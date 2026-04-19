@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using TFTV.AgendaTracker;
 using TFTV.TFTVBaseRework;
 using TFTV.TFTVIncidents;
 using static TFTV.TFTVBaseRework.PersonnelData;
@@ -136,6 +137,7 @@ namespace TFTV
             {
                 RestoreAssignments(Controller);
                 TryGrantInitialPersonnel(Controller);
+                AgendaRefresh.RequestRefreshAfterBaseReworkRestore();
             }
 
             TFTVBetaSaveGamesFixes.ConvertAncientRefinerySitesToHarvestSites(Controller);
@@ -144,6 +146,22 @@ namespace TFTV
 
         }
 
+        private static void ResetBaseReworkStateForNewGame()
+        {
+            try
+            {
+                ClearAssignments();
+                ClearAllSessions();
+                AffinityInheritance.LoadOperativeAffinitySnapshot(null);
+                AffinityInheritance.LoadBankedAffinitySnapshot(null);
+
+                TFTVLogger.Always("[PersonnelPersistence] Cleared BaseRework state for new game.");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
         /// <summary>
         /// Called when Geoscape ends.
@@ -368,9 +386,6 @@ namespace TFTV
                         $"BankedAffinities={data.BankedAffinityTransfers?.Count ?? 0}");
                 }
 
-
-
-
                 TFTVLogger.Always($"Config settings:" +
                     $"\nAmountOfExoticResourcesSetting: {TFTVNewGameOptions.AmountOfExoticResourcesSetting}\nResourceMultiplierSetting: {TFTVNewGameOptions.ResourceMultiplierSetting}" +
                     $"\nDiplomaticPenaltiesSetting: {TFTVNewGameOptions.DiplomaticPenaltiesSetting}\nStaminaPenaltyFromInjurySetting: {TFTVNewGameOptions.StaminaPenaltyFromInjurySetting}" +
@@ -462,7 +477,10 @@ namespace TFTV
 
             if (BaseReworkUtils.BaseReworkEnabled)
             {
+
+                ResetBaseReworkStateForNewGame();
                 MarkNewGameForInitialPersonnel();
+
             }
 
             List<int> locations = new List<int>() {

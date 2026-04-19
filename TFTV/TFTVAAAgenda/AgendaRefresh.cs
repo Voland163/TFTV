@@ -10,6 +10,37 @@ namespace TFTV.AgendaTracker
 {
     internal static class AgendaRefresh
     {
+        internal static void RequestRefreshAfterBaseReworkRestore()
+        {
+            try
+            {
+                AgendaConstants.pendingRefreshAfterBaseReworkRestore = true;
+                TryApplyPendingRefreshAfterBaseReworkRestore();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        internal static void TryApplyPendingRefreshAfterBaseReworkRestore()
+        {
+            try
+            {
+                if (!AgendaConstants.pendingRefreshAfterBaseReworkRestore || AgendaConstants.factionTracker == null)
+                {
+                    return;
+                }
+
+                AgendaConstants.pendingRefreshAfterBaseReworkRestore = false;
+                AgendaHelpers.RefreshTracker();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
         internal static void RefreshCustomSiteTracker(GeoSite site)
         {
             try

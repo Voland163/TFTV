@@ -10,6 +10,7 @@ using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
+using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.ContextHelp.HintConditions;
 using PhoenixPoint.Geoscape.View;
@@ -26,6 +27,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Security.Permissions;
+using TFTV.TFTVIncidents;
 using UnityEngine;
 
 namespace TFTV
@@ -798,17 +800,16 @@ namespace TFTV
                 }
             }
 
-            private static void CreateCustomGeoHint(string title, string description, string imageFile) 
+            internal static void CreateCustomGeoHint(string title, string description, string imageFile)
             {
-                try 
+                try
                 {
                     GeoscapeTutorialStepsDef geoscapeTutorialStepsDef = DefCache.GetDef<GeoscapeTutorialStepsDef>("GeoscapeTutorialStepsDef");
 
-                    geoscapeTutorialStepsDef.Hints[27].Title.LocalizationKey = title; //27
-                    geoscapeTutorialStepsDef.Hints[27].Description.LocalizationKey = description; //27
+                    geoscapeTutorialStepsDef.Hints[27].Title.LocalizationKey = title;
+                    geoscapeTutorialStepsDef.Hints[27].Description.LocalizationKey = description;
 
-                    CustomGeoHintImage = Helper.CreateSpriteFromImageFile(imageFile);
-                
+                    CustomGeoHintImage = imageFile != null ? Helper.CreateSpriteFromImageFile(imageFile) : null;
                 }
                 catch (Exception e)
                 {
@@ -816,7 +817,7 @@ namespace TFTV
                 }
             }
 
-            private static void PlayCustomGeoHint(GeoLevelController controller) 
+            internal static void PlayCustomGeoHint(GeoLevelController controller) 
             {
                 try
                 {
@@ -881,7 +882,9 @@ namespace TFTV
                 {
                     try
                     {
-                       // TFTVLogger.Always($"setting geo tutorial step {step.StepType}");
+                        // TFTVLogger.Always($"setting geo tutorial step {step.StepType}");
+
+                        __instance.Image.gameObject.SetActive(true);
 
                         if (step.StepType == GeoscapeTutorialStepType.CorruptionActivated && step.Title.LocalizationKey == "KEY_GEO_HINT_ENEMY_SPECIAL_CORRUPTION_NAME")
                         {
@@ -903,9 +906,16 @@ namespace TFTV
                         {  
                         __instance.Image.sprite = Helper.CreateSpriteFromImageFile("MP_Choices_All.jpg");
                         }
-                        else if (step.StepType == GeoscapeTutorialStepType.AlienReconRaid) 
+                        else if (step.StepType == GeoscapeTutorialStepType.AlienReconRaid)
                         {
-                            __instance.Image.sprite = CustomGeoHintImage;
+                            if (CustomGeoHintImage == null)
+                            {
+                                __instance.Image.gameObject.SetActive(false);
+                            }
+                            else
+                            {
+                                __instance.Image.sprite = CustomGeoHintImage;
+                            }
                         }
                         else if (step.StepType == GeoscapeTutorialStepType.Geoscape) 
                         {
@@ -915,6 +925,8 @@ namespace TFTV
                             geoLevelController.Phoenixpedia.AddEntryFromDef(Repo.GetDef("38ACBF41-7D2D-479F-981E-10FED4FC6800"));
 
                         }
+                      
+
 
                     }
                     catch (Exception e)
@@ -1240,6 +1252,74 @@ namespace TFTV
                         TFTVLogger.Error(e);
                     }
                 }
+            }
+        }
+
+        internal class BaseReworkHints
+        {
+            private const string VarPersonnel = "TFTV_HINT_PERSONNEL_SHOWN";
+            private const string VarAdditionalBases = "TFTV_HINT_ADDITIONAL_BASES_SHOWN";
+            private const string VarIncidents = "TFTV_HINT_INCIDENTS_SHOWN";
+            private const string VarAffinities = "TFTV_HINT_AFFINITIES_SHOWN";
+
+            public static void TriggerPersonnelHint(GeoLevelController controller)
+            {
+                try
+                {
+                    if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled) return;
+                    if (controller.EventSystem.GetVariable(VarPersonnel) != 0) return;
+
+                    controller.EventSystem.SetVariable(VarPersonnel, 1);
+                    GeoscapeHints.CreateCustomGeoHint("TUTORIAL_PERSONNEL_TITLE0", "TUTORIAL_PERSONNEL_TEXT0", null);
+                    GeoscapeHints.PlayCustomGeoHint(controller);
+                }
+                catch (Exception e) { TFTVLogger.Error(e); }
+            }
+
+            public static void TriggerAdditionalBasesHint(GeoLevelController controller)
+            {
+                try
+                {
+                    if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled) return;
+                    if (controller.EventSystem.GetVariable(VarAdditionalBases) != 0) return;
+
+                    controller.EventSystem.SetVariable(VarAdditionalBases, 1);
+                    GeoscapeHints.CreateCustomGeoHint("TUTORIAL_ADDITIONAL_BASES_TITLE0", "TUTORIAL_ADDITIONAL_BASES_TEXT0", null);
+                    GeoscapeHints.PlayCustomGeoHint(controller);
+                }
+                catch (Exception e) { TFTVLogger.Error(e); }
+            }
+
+            public static void TriggerIncidentsHint0(GeoLevelController controller)
+            {
+                try
+                {
+                    if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled) return;
+                    if (controller.EventSystem.GetVariable(VarIncidents) != 0) return;
+
+                    GeoscapeEventContext eventContext = new GeoscapeEventContext(controller.PhoenixFaction.Bases.FirstOrDefault().Site, controller.PhoenixFaction);
+                    controller.EventSystem.TriggerGeoscapeEvent(GeoscapeEvents.FirstIncidentAppearedEventId, eventContext);
+                    controller.EventSystem.SetVariable(VarIncidents, 1);
+                    GeoscapeHints.CreateCustomGeoHint("TUTORIAL_INCIDENTS_TITLE0", "TUTORIAL_INCIDENTS_TEXT0", null);
+                    GeoscapeHints.PlayCustomGeoHint(controller);
+                }
+                catch (Exception e) { TFTVLogger.Error(e); }
+            }
+
+            
+
+            public static void TriggerAffinitiesHint(GeoLevelController controller)
+            {
+                try
+                {
+                    if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled) return;
+                    if (controller.EventSystem.GetVariable(VarAffinities) != 0) return;
+
+                    controller.EventSystem.SetVariable(VarAffinities, 1);
+                    GeoscapeHints.CreateCustomGeoHint("TUTORIAL_AFFINITIES_TITLE0", "TUTORIAL_AFFINITIES_TEXT0", "Affinities.jpg");
+                    GeoscapeHints.PlayCustomGeoHint(controller);
+                }
+                catch (Exception e) { TFTVLogger.Error(e); }
             }
         }
     }

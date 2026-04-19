@@ -58,6 +58,8 @@ namespace TFTV.AgendaTracker
         // Cached tracker instance
         internal static UIModuleFactionAgendaTracker factionTracker = null;
 
+        internal static bool pendingRefreshAfterBaseReworkRestore = false;
+
         // Cached reflected methods on UIModuleFactionAgendaTracker
         internal static readonly MethodInfo GetFreeElement =
             typeof(UIModuleFactionAgendaTracker).GetMethod("GetFreeElement", BindingFlags.NonPublic | BindingFlags.Instance);

@@ -6,6 +6,7 @@ using Base.Entities.Abilities;
 using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
+using Base.Utils;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.Core;
@@ -21,6 +22,7 @@ using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
+using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
@@ -130,7 +132,24 @@ namespace TFTV
                     CreateEventsForLOTA();
                     ChangeAncientDefenseMission();
                     ChangeAncientSiteMissions();
+                    RemoveArchaelogyLabAccessFromTimeVault();
 
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void RemoveArchaelogyLabAccessFromTimeVault()
+            {
+                try 
+                {
+                GeoscapeEventDef timeVault =  DefCache.GetDef<GeoscapeEventDef>("PROG_PX14_GeoscapeEventDef");
+
+                    timeVault.GeoscapeEventData.Choices[0].Outcome.VariablesChange = new List<OutcomeVariableChange>
+                    { new OutcomeVariableChange() {VariableName="Oglethorpe", Value = new RangeDataInt() { Min = 1, Max = 1 }, IsSetOperation = true }
+                    };
                 }
                 catch (Exception e)
                 {

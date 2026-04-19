@@ -244,9 +244,9 @@ The attack was repelled, but at a heavy cost. Many are dead or wounded, and key 
 
 In the aftermath, it becomes apparent that the haven’s garrison commander is missing."
 TFTV_INCIDENT_27_CHOICE_0_C_M,Text,,"Review security footage and after-action reports.
-(Machinery / Compute approach)"
-TFTV_INCIDENT_27_CHOICE_1_B_E,Text,,"Conduct a forensic investigation of the headquarters.
-(Exploration / Biotech approach)"
+(Machinery / Compute)"
+TFTV_INCIDENT_27_CHOICE_1_E,Text,,"Conduct a forensic investigation of the headquarters.
+(Exploration)"
 TFTV_INCIDENT_27_CHOICE_2,Text,,Surely they can find the body themselves. [END]
 TFTV_INCIDENT_27_OUTCOME_0_SUCCESS,Text,Reward: +4 NJ +8 Haven Leader + 400 Mats,"The garrison commander vanished shortly before the attack began.
 

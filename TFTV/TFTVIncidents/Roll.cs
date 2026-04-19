@@ -11,6 +11,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting.Contexts;
+using UnityEngine.EventSystems;
 
 namespace TFTV.TFTVIncidents
 {
@@ -253,6 +255,8 @@ namespace TFTV.TFTVIncidents
                 typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance)
                     .Invoke(geoLevelController.Log, new object[] { entry, null });
 
+                TFTVHints.BaseReworkHints.TriggerIncidentsHint0(geoLevelController);
+         
                 geoLevelController.View.SetGamePauseState(true);
             }
             catch (Exception e)

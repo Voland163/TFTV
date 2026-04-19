@@ -316,3 +316,65 @@ Tactical Benefits (choose one globally):
 - Gain passive ability: Ground vehicles with character inside gain +3 movement and +10% accuracy per Affinity Rank.
 OR
 - For all Allies, Perception vs Pandorans increased by 1 per Affinity Rank out of 3 of the total amount of Delirium in the squad, up to +10 per Affinity Rank.",,,,,,,,
+ALISTAIR_ON_INCIDENTS_0_TITLE,Text,,Incident,,,,,,,,
+ALISTAIR_ON_INCIDENTS_0_TEXT,Text,,"Director, we just learned of an incident taking place at a haven that we have visited previously. If we resolve it, perhaps we will learn something valuable, and it can't hurt to show the havens and the factions that we are trying to help.",,,,,,,,
+ALISTAIR_ON_INCIDENTS_1_TITLE,Text,,Human Resources,,,,,,,,
+ALISTAIR_ON_INCIDENTS_1_TEXT,Text,,"Director, we desperately need additional personnel, individuals who have what it takes to be in the Phoenix Project: ingenuity, intellectual curiosity and courage. It turns out that resolving incidents like this one might be the best way to attract new members; wanting to join up after seeing us at work attracts exactly the kind of people we are looking for.",,,,,,,,
+TUTORIAL_PERSONNEL_TITLE0,Text,,Personnel Management,,,,,,,,
+TUTORIAL_PERSONNEL_TEXT0,Text,,"Personnel can be assigned to generate additional Research or Manufacturing. Each Research Lab or Manufacturing Plant generates 2 Research or 2 Manufacturing and provides 1 worker slot. Each Personnel assigned to a worker slot generates 4 Research or 4 Manufacturing. 
+
+Personnel can also be deployed as regular Level 1 Operatives of the Class of your choosing. 
+
+If you have a Training Facility you can train Personnel up to Level 4 before deploying them. They will gain +2 Strength, + 1 Willpower and + 1 Speed per level trained. Training costs 10 Faction SP per final level trained. Training takes time, which can be shortened by acquiring certain Technologies, and can be terminated early, in which case you will be refunded the corresponding SP. 
+
+You start the game with some Personnel, the number depending on difficulty (2 on Legend, 6 on Rookie). 
+
+You gain new Personnel by resolving Incidents; special timed events that occur from time to time at previously visited havens. 
+
+On Hero difficulty and lower you also gain new Personnel periodically (1 on Hero, 3 on Rookie).
+
+You can also dismiss Operatives to add them to the Personnel pool. Previously Dismissed Operatives can be redeployed to the field, but you have to pay 10 Faction SP for each level of the Character above 1. They can also be trained before redeploying. 
+
+Some Dismissed operatives that have “Just a Grunt” perk, such as Mercenaries, can't be assigned to Research or Manufacturing.",,,,,,,,
+TUTORIAL_PERSONNEL_TITLE1,Text,,Acquiring New Personnel,,,,,,,,
+TUTORIAL_PERSONNEL_TEXT1,Text,,"You start the game with some Personnel, the number depending on difficulty (2 on Legend, 6 on Rookie). 
+
+You gain new Personnel by resolving Incidents; special timed events that occur from time to time at previously visited havens. 
+
+On Hero difficulty and lower you also gain new Personnel periodically (1 on Hero, 3 on Rookie).
+
+You can also dismiss Operatives to add them to the Personnel pool. Previously Dismissed Operatives can be redeployed to the field, but you have to pay 10 Faction SP for each level of the Character above 1. They can also be trained before redeploying. 
+
+Some Dismissed operatives that have “Just a Grunt” perk, such as Mercenaries, can't be assigned to Research or Manufacturing.",,,,,,,,
+TUTORIAL_ADDITIONAL_BASES_TITLE0,Text,,Additional Phoenix Bases,,,,,,,,
+TUTORIAL_ADDITIONAL_BASES_TEXT0,Text,,"Bases can no longer be remotely activated. However, you can pay 60 mat and 10 tech to initiate remotely a low-quality Scan (same as the one with the Aircraft Marketplace Module, with each POI in range having a 50% of being revealed) from any Phoenix base that hasn’t been fully activated. 
+
+Once you arrive at a Phoenix Base for the first time, you immediately receive some loot, the type and amount depending on difficulty level (on Hero and below you can find a damaged Manticore or a Scarab). 
+
+You then have the following options:
+
+1) Ransack the base (destroy the base and get back all the resources as if you demolished every facility at the base, including those that can't be demolished). 
+2) Establish an Outpost (pay 200 mat, 50 tech and 1 Personnel, takes 24 hours). Outposts provide some repair and healing, and cannot be attacked, but their facilities don't generate anything and you can't build or demolish facilities at them. Outposts can be upgraded to Bases. 
+3) Activate Base (pay 400 mat, 100 tech, 4 personnel, takes 72 hours, cost reduced by price of setting up an Outpost if upgrading from it). Get the regular Phoenix base. ",,,,,,,,
+TUTORIAL_INCIDENTS_TITLE0,Text,,Incidents,,,,,,,,
+TUTORIAL_INCIDENTS_TEXT0,Text,,"Incidents are Geoscape Events that take time to resolve and are the primary way of securing new Personnel. You will get at least 2 Personnel for resolving an Incident successfully (among other rewards, such as Resources, Characters, Improved attitude from Faction and/or Haven Leader), and 1 Personnel if you attempt it but then move the Aircraft away before it is completed. 
+
+Every 4-6 days, an Incident will occur at a previously visited haven, inviting you to resolve it within the next 5 days.
+
+To initiate the Incident, you must travel to the haven with an Aircraft with at least one Operative without the “Just a Grunt” perk.",,,,,,,,
+TUTORIAL_INCIDENTS_TEXT1,Text,,"Every Incident can be resolved in two different ways. One of the choices will correspond to one Approach, and the other choice will allow 2 different Approaches. You have to select one of them. 
+
+You must also choose the Operative to lead the team. Completing the Incident successfully will give the Leading Operative the Affinity corresponding to the Approach taken, or increase the Rank in that Affinity. 
+
+You can also Cancel to return to the Incident later. 
+
+The time it will take to resolve an Incident depends on 1) Whether the Leading Operative has an Affinity corresponding to one of the chosen Approaches, and 2) how many Operatives there are in the Aircraft.",,,,,,,,
+TUTORIAL_AFFINITIES_TITLE0,Text,,Affinities,,,,,,,,
+TUTORIAL_AFFINITIES_TEXT0,Text,,"- Affinities are gained and advanced in rank by resolving Incidents or inherited from a dead operative with an Affinity. 
+- There are three ranks.
+- They grant Geoscape and Tactical benefits, and increase Incident resolution efficiency by 2 × rank when the Affinity matches the Approach taken to resolving the Incident.
+- Each Affinity provides one Geoscape and one Tactical benefit, chosen from two options every time an affinity is granted or a new rank is reached; the choice applies to all Characters who have that Affinity.
+- All benefits are multiplied by the Affinity’s rank.
+- Affinity bonuses do not stack — only the highest-ranked specialist’s bonus applies.
+- Geoscape benefits apply to the Aircraft on which the Character is currently a passenger, Benefits in Tactical grant an ability to the Character with the Affinity.
+- Each Character can have only one Affinity.",,,,,,,,

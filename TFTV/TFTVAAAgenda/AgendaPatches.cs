@@ -24,6 +24,7 @@ using PhoenixPoint.Geoscape.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using TFTV.TFTVBaseRework;
 using UnityEngine;
 using UnityEngine.UI;
@@ -32,6 +33,42 @@ namespace TFTV.AgendaTracker
 {
     internal static class AgendaPatches
     {
+        private static readonly MethodInfo UpdateProductionMethod =
+            AccessTools.Method(typeof(GeoFaction), "UpdateProduction");
+
+        private static bool _pendingBaseReworkAgendaProductionRefresh;
+
+        internal static void QueueBaseReworkAgendaProductionRefresh()
+        {
+            _pendingBaseReworkAgendaProductionRefresh = BaseReworkUtils.BaseReworkEnabled;
+        }
+
+        private static void RefreshBaseReworkProductionIfPending(GeoscapeViewContext context)
+        {
+            try
+            {
+                if (!_pendingBaseReworkAgendaProductionRefresh || !BaseReworkUtils.BaseReworkEnabled)
+                {
+                    return;
+                }
+
+                GeoPhoenixFaction phoenix = context?.ViewerFaction as GeoPhoenixFaction;
+                _pendingBaseReworkAgendaProductionRefresh = false;
+
+                if (phoenix == null || UpdateProductionMethod == null)
+                {
+                    return;
+                }
+
+                UpdateProductionMethod.Invoke(phoenix, new object[] { });
+            }
+            catch (Exception e)
+            {
+                _pendingBaseReworkAgendaProductionRefresh = false;
+                TFTVLogger.Error(e);
+            }
+        }
+
         #region Minor patches
 
         [HarmonyPatch(typeof(UIStateVehicleSelected), "EnterState")]
@@ -324,6 +361,42 @@ namespace TFTV.AgendaTracker
         [HarmonyPatch(typeof(UIModuleFactionAgendaTracker), "UpdateData", new Type[] { typeof(UIFactionDataTrackerElement) })]
         public static class UIModuleFactionAgendaTracker_UpdateData_Patch
         {
+            private static readonly BindingFlags InstanceBindings =
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+            private static readonly string[] ManufactureQueueMemberNames = new string[]
+            {
+                "_queue",
+                "queue",
+                "Queue"
+            };
+
+            private static readonly string[] ManufacturableItemMemberNames = new string[]
+            {
+                "ManufacturableItem",
+                "_manufacturableItem",
+                "Item",
+                "_item"
+            };
+
+            private static readonly string[] QueueProgressMemberNames = new string[]
+            {
+                "Progress",
+                "_progress",
+                "ManufactureProgress",
+                "_manufactureProgress",
+                "ProgressPoints",
+                "_progressPoints",
+                "ManufactureProgressPoints",
+                "_manufactureProgressPoints"
+            };
+
+            private static readonly string[] ManufacturePointsCostMemberNames = new string[]
+            {
+                "ManufacturePointsCost",
+                "_manufacturePointsCost"
+            };
+
             public static bool Prefix(ref bool __result, UIFactionDataTrackerElement element, GeoscapeViewContext ____context)
             {
                 try
@@ -335,6 +408,8 @@ namespace TFTV.AgendaTracker
                             ____context.Level.Timing.Paused = true;
                             ____context.View.ToResearchState();
                         });
+
+                        return true;
                     }
                     else if (element.TrackedObject is ItemManufacturing.ManufactureQueueItem)
                     {
@@ -343,6 +418,8 @@ namespace TFTV.AgendaTracker
                             ____context.Level.Timing.Paused = true;
                             ____context.View.ToManufacturingState(null, null, StateStackAction.ClearStackAndPush);
                         });
+
+                        return true;
                     }
                     else if (element.TrackedObject is GeoVehicle vehicle)
                     {
@@ -404,7 +481,11 @@ namespace TFTV.AgendaTracker
 
                     return true;
                 }
-                catch (Exception e) { TFTVLogger.Error(e); return true; }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    return true;
+                }
             }
 
             private static void UpdateSiteTimers(UIFactionDataTrackerElement element, GeoSite geoSite, GeoscapeViewContext context)
@@ -420,7 +501,7 @@ namespace TFTV.AgendaTracker
                             {
                                 if (schedule.HasAttackScheduled && schedule.Site == geoSite)
                                 {
-                                    var attackTime = TimeUnit.FromHours((float)(schedule.ScheduledFor - context.Level.Timing.Now).TimeSpan.TotalHours);
+                                    TimeUnit attackTime = TimeUnit.FromHours((float)(schedule.ScheduledFor - context.Level.Timing.Now).TimeSpan.TotalHours);
                                     element.UpdateData(attackTime, true, null);
                                 }
                             }
@@ -431,15 +512,15 @@ namespace TFTV.AgendaTracker
                         var excavation = geoSite.GeoLevel.PhoenixFaction.ExcavatingSites.FirstOrDefault(s => s.Site == geoSite);
                         if (excavation != null)
                         {
-                            var timeLeft = TimeUnit.FromHours((float)(excavation.ExcavationEndDate - context.Level.Timing.Now).TimeSpan.TotalHours);
+                            TimeUnit timeLeft = TimeUnit.FromHours((float)(excavation.ExcavationEndDate - context.Level.Timing.Now).TimeSpan.TotalHours);
                             element.UpdateData(timeLeft, true, null);
                         }
                     }
                 }
                 else if (geoSite.Type == GeoSiteType.PhoenixBase && TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.ContainsKey(geoSite.SiteId))
                 {
-                    var timer = TimeUnit.FromSeconds((float)(3600 * TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack[geoSite.SiteId].First().Value));
-                    var attackTime = timer - context.Level.Timing.Now;
+                    TimeUnit timer = TimeUnit.FromSeconds((float)(3600 * TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack[geoSite.SiteId].First().Value));
+                    TimeUnit attackTime = timer - context.Level.Timing.Now;
                     element.UpdateData(attackTime, true, null);
                     geoSite.RefreshVisuals();
                 }
@@ -455,6 +536,7 @@ namespace TFTV.AgendaTracker
         {
             public static void Prefix(UIModuleFactionAgendaTracker __instance)
             {
+                AgendaConstants.factionTracker = __instance;
                 AgendaConstants.trackerElementDefault = __instance.TrackerRowPrefab;
             }
 
@@ -507,6 +589,7 @@ namespace TFTV.AgendaTracker
                     AddAttackTrackers(__instance, ____faction, ____context);
 
                     AgendaHelpers.ReapplyResolvedTrackerTexts(__instance, ____context.ViewerFaction);
+                    AgendaRefresh.TryApplyPendingRefreshAfterBaseReworkRestore();
                 }
                 catch (Exception e) { TFTVLogger.Error(e); }
             }
@@ -600,6 +683,15 @@ namespace TFTV.AgendaTracker
                 el.Icon.color = color;
             }
 
+            private static void DisableTrackedNameLocalization(UIFactionDataTrackerElement el)
+            {
+                var localize = el.TrackedName != null ? el.TrackedName.GetComponent<I2.Loc.Localize>() : null;
+                if (localize != null)
+                {
+                    localize.enabled = false;
+                }
+            }
+
             private static void ApplyTypeSpecificVisuals(UIFactionDataTrackerElement el, string text)
             {
                 if (el.TrackedObject is GeoVehicle)
@@ -635,6 +727,8 @@ namespace TFTV.AgendaTracker
 
             private static void ApplySiteVisuals(UIFactionDataTrackerElement el, GeoSite gs, string text)
             {
+                DisableTrackedNameLocalization(el);
+
                 string resolved = AgendaHelpers.GetCustomSiteTrackerText(gs, gs.GeoLevel?.ViewerFaction ?? gs.Owner) ?? text;
 
                 if (AgendaHelpers.GetPendingBaseAction(gs).HasValue)

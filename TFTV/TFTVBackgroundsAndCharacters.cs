@@ -56,7 +56,50 @@ namespace TFTV
         }
     };
 
+        private const string FirstIncidentAppearedVariable = "TFTV_AlistairOnIncidents0Played";
+        private const string FirstIncidentResolvedVariable = "TFTV_AlistairOnIncidents1Played";
 
+        private static void TryTriggerIncidentNarration(string eventId, GeoscapeEventSystem eventSystem, GeoscapeEventContext context)
+        {
+            if (eventSystem == null)
+            {
+                return;
+            }
+
+            if (TFTVIncidents.Resolution.IncidentController.IsIncidentSuccessOutcomeEventId(eventId))
+            {
+                TryTriggerIncidentNarrationOnce(
+                    eventSystem,
+                    context,
+                    FirstIncidentResolvedVariable,
+                    TFTVIncidents.GeoscapeEvents.FirstIncidentResolvedEventId);
+            }
+        }
+
+        private static void TryTriggerIncidentNarrationOnce(
+            GeoscapeEventSystem eventSystem,
+            GeoscapeEventContext context,
+            string variableName,
+            string narrationEventId)
+        {
+            if (eventSystem.GetVariable(variableName) > 0)
+            {
+                return;
+            }
+
+            GeoLevelController level = context?.Level ?? GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+            if (level == null)
+            {
+                return;
+            }
+
+            eventSystem.SetVariable(variableName, 1);
+
+            GeoscapeEventContext narrationContext = context
+                ?? new GeoscapeEventContext(level.PhoenixFaction, level.ViewerFaction);
+
+            eventSystem.TriggerGeoscapeEvent(narrationEventId, narrationContext);
+        }
         public static void PlayIntro(GeoLevelController level)
         {
             try
@@ -189,7 +232,6 @@ namespace TFTV
         //needs to be done this way because if TriggerEncounter is assigned to only Outcome, that event is triggered before the Outcome! 
 
         [HarmonyPatch(typeof(GeoscapeEventSystem), nameof(GeoscapeEventSystem.TriggerGeoscapeEvent))]
-
         public static class GeoscapeEventSystem_TriggerGeoscapeEvent_TriggerAdditionalEvent_patch
         {
             public static void Postfix(string eventId, GeoscapeEventSystem __instance, GeoscapeEventContext context, in string __state)
@@ -198,6 +240,7 @@ namespace TFTV
                 {
                     TFTVLogger.Always($"TriggerGeoscapeEvent triggered for event {eventId}");
 
+                    TryTriggerIncidentNarration(eventId, __instance, context);
 
                     if (eventId == "PROG_PX10_WIN")
                     {
@@ -245,30 +288,21 @@ namespace TFTV
                     }
                     else if (eventId == "PROG_FS2_WIN")
                     {
-                            
                         AdjustAlistairRoads();
 
-                        // TFTVThirdAct.ActivateFS3Event(context.Level);
                         TFTVVoidOmens.RemoveAllVoidOmens(context.Level);
                         __instance.TriggerGeoscapeEvent("AlistairRoads", new GeoscapeEventContext(context.Level.PhoenixFaction, context.Level.PhoenixFaction));
                         TFTVDelirium.RemoveDeliriumFromAllCharactersWithoutMutations(context.Level);
-                      //  TFTVBehemothAndRaids.behemothScenicRoute.Clear();
-                      //  TFTVBehemothAndRaids.targetsForBehemoth.Clear();
-                      //  TFTVBehemothAndRaids.flyersAndHavens.Clear();
                     }
                     else if (eventId == "Helena_Oneiromancy")
                     {
                         __instance.TriggerGeoscapeEvent("Olena_Oneiromancy", context);
                     }
-                 
-                    
                 }
-
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
                 }
-
             }
         }
 

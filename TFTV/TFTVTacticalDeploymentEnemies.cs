@@ -339,6 +339,13 @@ namespace TFTV
                     {
                         TacticalFaction tacticalFaction = __instance.TacticalFaction;
 
+                        // NEW: never block unique deployments (story/mission-specific uniques)
+                        if (actorDeployData.Unique)
+                        {
+                            yield return actorDeployData;
+                            continue;
+                        }
+
                         if (actorDeployData.InstanceDef is TacCharacterDef tacCharacterDef)
                         {
                             if (!UnDesirableActorCheck(tacCharacterDef, tacticalFaction))

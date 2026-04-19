@@ -231,6 +231,7 @@ namespace TFTV.TFTVBaseRework
 
                     __instance.Confirm.gameObject.SetActive(false);
 
+                 
                 }
                 catch (Exception ex)
                 {

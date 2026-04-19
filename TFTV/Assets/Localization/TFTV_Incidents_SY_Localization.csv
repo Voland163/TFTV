@@ -65,8 +65,8 @@ TFTV_INCIDENT_36_OUTCOME_0_FAIL,Text,,"We couldn’t isolate the exact trigger, 
 TFTV_INCIDENT_36_OUTCOME_1_FAIL,Text,,"Most officials were defensive. One coordinator finally admitted, ‘This haven was built to survive, not to collapse under idealism. We all knew that line would be crossed eventually.’"
 TFTV_INCIDENT_37_TITLE_SY,Text,Req: Synedrion Recruit,Directive 11
 TFTV_INCIDENT_37_DESC,Text,,"Director, [RequirementOperativeName] was sent some data by a Synedrion friend. It's a series of task logs from the [HavenName] civic AI. The pattern is disturbing: individuals flagged as ‘sub-optimally aligned’ were repeatedly assigned high-risk tasks—scavenging in mist zones, deep structural repairs, unshielded reclamation work. Officially, these were random civic assignments. Unofficially, most of those individuals are dead."
-TFTV_INCIDENT_37_CHOICE_0_E_O,Text,,Conduct a full analysis of the task records. (Compute)
-TFTV_INCIDENT_37_CHOICE_1_M_C,Text,,Quietly interview relatives of the deceased on the pretext of a health survey. (Psycho-Sociology/Biotech)
+TFTV_INCIDENT_37_CHOICE_0_C,Text,,Conduct a full analysis of the task records. (Compute)
+TFTV_INCIDENT_37_CHOICE_1_P_B,Text,,Quietly interview relatives of the deceased on the pretext of a health survey. (Psycho-Sociology/Biotech)
 TFTV_INCIDENT_37_CHOICE_2,Text,,Leave it alone—Synedrion internal affairs. [END]
 TFTV_INCIDENT_37_OUTCOME_0_SUCCESS,Text,Reward: additional personnel,The AI used a hidden behavioral compliance score. Those below a certain threshold were gradually funneled into dangerous roles. All within policy. All automated. The haven council may not even know.
 TFTV_INCIDENT_37_OUTCOME_1_SUCCESS,Text,Reward: additional personnel,"Relatives spoke carefully. Many suspected something was wrong. ‘He asked one too many questions about food allocation. Next day, he was sent to reinforce the southern shield.’ The pattern is undeniable."

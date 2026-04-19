@@ -1,3 +1,4 @@
+using Base.Core;
 using HarmonyLib;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Events;
@@ -97,6 +98,9 @@ namespace TFTV.TFTVIncidents
 
                 StoreSummary(data);
                 CleanupOldSummaries();
+
+                GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                TFTVHints.BaseReworkHints.TriggerAffinitiesHint(controller);
             }
             catch (Exception e)
             {

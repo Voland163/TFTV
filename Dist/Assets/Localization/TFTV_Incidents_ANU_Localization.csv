@@ -220,7 +220,7 @@ TFTV_INCIDENT_10_DESC,Text,,"Maintenance personnel at the power plant of [HavenN
 The reports are consistent enough that the workers insist the facility is haunted.
 
 The Exarch wishes to know whether this is a spiritual matter—or something else entirely.",,,,,,,,
-TFTV_INCIDENT_10_CHOICE_0_E_O,Text,,"Investigate the reported apparitions within the power plant.
+TFTV_INCIDENT_10_CHOICE_0_O,Text,,"Investigate the reported apparitions within the power plant.
 (Occult)",,,,,,,,
 TFTV_INCIDENT_10_CHOICE_1_P_M,Text,,"Speak with the Skeouphylax responsible for maintaining the facility.
 (Psycho-Sociology / Machinery approach)",,,,,,,,
@@ -304,8 +304,8 @@ The cost was severe: widespread destruction, heavy casualties, and damage to inf
 In the aftermath, the Exarch accuses the Taxiarch of failing to mount an effective defense.  The Taxiarch, for his part, insists that events unfolded exactly as doctrine and necessity dictated.",,,,,,,,
 TFTV_INCIDENT_12_CHOICE_0_B_C,Text,,"Review command logs and reports on causalties.
 (Biotech/Compute)",,,,,,,,
-TFTV_INCIDENT_12_CHOICE_1_E_M,Text,,"Assess the haven’s defensive layout.
-(Exploration approach)",,,,,,,,
+TFTV_INCIDENT_12_CHOICE_1_E,Text,,"Assess the haven’s defensive layout.
+(Exploration)",,,,,,,,
 TFTV_INCIDENT_12_CHOICE_2,Text,,Let's stay out of the blame game [END],,,,,,,,
 TFTV_INCIDENT_12_OUTCOME_0_SUCCESS,Text,"Reward: +4 Anu, + 8 Haven Leader, + 400 food","The initial attack carved a path of destruction through the slums. Security forces attempted to respond, but chaos spread quickly.
 

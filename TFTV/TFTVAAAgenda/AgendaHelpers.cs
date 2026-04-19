@@ -417,7 +417,14 @@ namespace TFTV.AgendaTracker
             if (tracker == null) return null;
 
             var freeElement = (UIFactionDataTrackerElement)AgendaConstants.GetFreeElement.Invoke(tracker, null);
-            freeElement.Init(trackedObject, text, viewElement, false);
+
+            ViewElementDef initViewElement = viewElement;
+            if (trackedObject is GeoSite site && HasCustomSiteTracker(site))
+            {
+                initViewElement = null;
+            }
+
+            freeElement.Init(trackedObject, text, initViewElement, false);
             AgendaConstants.OnAddedElement.Invoke(tracker, new object[] { freeElement });
             return freeElement;
         }

@@ -100,89 +100,21 @@ namespace TFTV
 
         }
 
-     
+
 
 
         internal static void Print()
         {
             try
             {
-                foreach(ResearchDef researchDef in Repo.GetAllDefs<ResearchDef>().Where(r=>r.name.StartsWith("SYN")))
-                {
-                   TFTVLogger.Always($"[ResearchDef] {researchDef.name} has share tag: {researchDef.ShareLevelTagDef?.name}", false);
-                }
-
-
-                /*  DefRepository defRepository = GameUtl.GameComponent<DefRepository>();
-                  List<AIActionDef> actionDefs = defRepository.GetAllDefs<AIActionDef>().ToList<AIActionDef>();
-                  int num = 0;
-                  foreach (AIActionDef aiactionDef in actionDefs)
-                  {
-                      List<string> list = GetSafePathLocations(aiactionDef);
-                      if (list.Count > 0)
-                      {
-                          num++;
-                          TFTVLogger.Always(string.Format("{0}: {1}", aiactionDef.name, string.Join(", ", list)));
-                          ListActionUsers(aiactionDef.name);
-                      }
-                  }
-                  TFTVLogger.Always(string.Format("Found {0} AIActionDef entries using AISafePathConsiderationDef.", num));*/
-
-
-
-
-
-                foreach (UnitTemplateResearchRewardDef unitTemplateResearchRewardDef in Repo.GetAllDefs<UnitTemplateResearchRewardDef>().
-                    Where(t => !t.name.StartsWith("ALN") && t.Add == true && !t.Template.name.StartsWith("FK") && !t.Template.name.StartsWith("PU") && t.Template?.Data?.LevelProgression?.Level <= 7))
-                {
-                    TFTVLogger.Always($"[UnitTemplateResearchRewardDef] {unitTemplateResearchRewardDef.name}, adds {unitTemplateResearchRewardDef.Template.name} of level {unitTemplateResearchRewardDef.Template.Data.LevelProgression.Level}", false);
-                }
-
-
-
-                foreach (UnitTemplateResearchRewardDef unitTemplateResearchRewardDef in Repo.GetAllDefs<UnitTemplateResearchRewardDef>().
-                    Where(t => !t.name.StartsWith("ALN") && t.Add == false && !t.Template.name.StartsWith("FK") && !t.Template.name.StartsWith("PU") && t.Template?.Data?.LevelProgression?.Level < 6))
-                {
-                    TFTVLogger.Always($"[UnitTemplateResearchRewardDef] {unitTemplateResearchRewardDef.name}, removes {unitTemplateResearchRewardDef.Template.name} of level {unitTemplateResearchRewardDef.Template.Data.LevelProgression.Level}", false);
-                }
-
-
-
-
-                /* foreach (InventoryAbilityDef inventoryAbilityDef in Repo.GetAllDefs<InventoryAbilityDef>())
-                 {
-                     TFTVLogger.Always($"[InventoryAbilityDef] {inventoryAbilityDef.name}", false);
-                 }*/
-
-                /*foreach (PhoenixFacilityDef phoenixFacilityDef in Repo.GetAllDefs<PhoenixFacilityDef>())
-                {
-                    TFTVLogger.Always($"[FacilityCost] {phoenixFacilityDef.name} cost in construction days: {phoenixFacilityDef.ConstructionTimeDays}", false);
-
-                    foreach(ResourceUnit resourceUnit in phoenixFacilityDef.ResourceCost)
-                    {
-                        TFTVLogger.Always($"[FacilityCost] {phoenixFacilityDef.name} cost in {resourceUnit.Type} {resourceUnit.Value}", false);
-                    }
-                }
-
-                foreach (TacticalItemDef tacticalItemDef in Repo.GetAllDefs<TacticalItemDef>().Where(tid=>tid.Tags.Any(t=>t.name.Equals("AmmoItem_TagDef"))))
-                {
-
-                        TFTVLogger.Always($"[AmmoCost]{tacticalItemDef.name} mat cost {tacticalItemDef.ManufactureMaterials} tech cost {tacticalItemDef.ManufactureTech}", false);  
-                }
-
-                foreach (ResearchDef researchDef in Repo.GetAllDefs<ResearchDef>())
-                {
-                    TFTVLogger.Always($"[ResearchCost]{researchDef.name} cost in research points: {researchDef.ResearchCost}", false);
-
-                }*/
-
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
         }
-     
+        
+
 
 
 
@@ -310,7 +242,7 @@ namespace TFTV
                 //  TestUseWorkerComponent();
                 // Test0();
                 // TFTVExperimental.LogResearchDefs();
-               // Print();
+              //  Print();
 
             }
             catch (Exception e)
@@ -4518,7 +4450,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
 
                 TFTVLogger.Always($"repairKitAbility.ExclusiveBodypartsTagDef: {repairKitAbility.ExclusiveBodypartsTagDef?.name}");
 
-              //  repairKitAbility.ExclusiveBodypartsTagDef = DefCache.GetDef<ItemMaterialTagDef>("Electronic_ItemMaterialTagDef"); //DefCache.GetDef<SubstanceTypeTagDef>("Metallic_SubstanceTypeTagDef");
+                //  repairKitAbility.ExclusiveBodypartsTagDef = DefCache.GetDef<ItemMaterialTagDef>("Electronic_ItemMaterialTagDef"); //DefCache.GetDef<SubstanceTypeTagDef>("Metallic_SubstanceTypeTagDef");
 
 
 

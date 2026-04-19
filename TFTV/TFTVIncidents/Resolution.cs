@@ -186,6 +186,21 @@ namespace TFTV.TFTVIncidents
             private static readonly Dictionary<string, int> MatchedNearbyHavenByExactKey = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             private static readonly Dictionary<string, int> MatchedNearbyHavenBySiteKey = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
+            internal static bool IsIncidentIntroEventId(string eventId)
+            {
+                InitializeDefaults();
+                return IsIncidentIntroEvent(eventId);
+            }
+
+            internal static bool IsIncidentSuccessOutcomeEventId(string eventId)
+            {
+                InitializeDefaults();
+
+                return !string.IsNullOrEmpty(eventId)
+                    && IsSuccessOutcome(eventId)
+                    && Definitions.Any(d => string.Equals(d.CompletionEventId, eventId, StringComparison.OrdinalIgnoreCase));
+            }
+
             internal static bool TryGetStoredMatchedNearbyHavenSiteId(string eventId, int siteId, int vehicleId, out int matchedNearbyHavenSiteId)
             {
                 matchedNearbyHavenSiteId = -1;

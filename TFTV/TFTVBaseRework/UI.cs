@@ -263,6 +263,8 @@ namespace TFTV.TFTVBaseRework
                 try
                 {
                     CreatePersonnelPanel(__instance);
+                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                    TFTVHints.BaseReworkHints.TriggerPersonnelHint(controller);
                 }
                 catch (Exception e) { TFTVLogger.Error(e); }
             }
@@ -431,6 +433,7 @@ namespace TFTV.TFTVBaseRework
                 TFTVLogger.Error(e);
             }
         }
+
 
         private static void CreateAutoAssignToggleBar(Transform parent, GeoPhoenixFaction phoenix)
         {

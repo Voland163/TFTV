@@ -37,6 +37,10 @@ namespace TFTV.TFTVIncidents
 
         public static readonly List<Objects.GeoIncidentDefinition> IncidentDefinitions = new List<Objects.GeoIncidentDefinition>();
 
+        private static bool IncidentNarrationEventsCreated;
+        internal const string FirstIncidentAppearedEventId = "AlistairOnIncidents0";
+        internal const string FirstIncidentResolvedEventId = "AlistairOnIncidents1";
+
         public static void CreateGeoscapeEvents()
         {
             try
@@ -47,6 +51,7 @@ namespace TFTV.TFTVIncidents
                 }
 
                 IncidentDefinitions.Clear();
+                CreateIncidentNarrationEvents();
 
                 List<IncidentKeys> incidents = LoadIncidentKeys();
                 foreach (IncidentKeys incident in incidents)
@@ -77,6 +82,30 @@ namespace TFTV.TFTVIncidents
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        private static void CreateIncidentNarrationEvents()
+        {
+            if (IncidentNarrationEventsCreated)
+            {
+                return;
+            }
+
+            TFTVCommonMethods.CreateNewEventWithFixedGUID(
+                FirstIncidentAppearedEventId,
+                "ALISTAIR_ON_INCIDENTS_0_TITLE",
+                "ALISTAIR_ON_INCIDENTS_0_TEXT",
+                null,
+                "2D6D1F4E-6B8A-4E66-A3EF-7F0D6D1B9A10");
+
+            TFTVCommonMethods.CreateNewEventWithFixedGUID(
+                FirstIncidentResolvedEventId,
+                "ALISTAIR_ON_INCIDENTS_1_TITLE",
+                "ALISTAIR_ON_INCIDENTS_1_TEXT",
+                null,
+                "6A7A67B9-0D31-4CB9-9F6F-9D6A5F4B20C1");
+
+            IncidentNarrationEventsCreated = true;
         }
 
         private static GeoFactionDef GetFactionDef(string factionSuffix)
