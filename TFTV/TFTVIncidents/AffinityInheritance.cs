@@ -78,7 +78,7 @@ namespace TFTV.TFTVIncidents
         {
             try
             {
-                if (!BaseReworkUtils.BaseReworkEnabled || mission?.Site?.GeoLevel == null || result == null)
+                if (!BaseReworkCheck.BaseReworkEnabled || mission?.Site?.GeoLevel == null || result == null)
                 {
                     return;
                 }
@@ -127,7 +127,7 @@ namespace TFTV.TFTVIncidents
         {
             try
             {
-                if (!BaseReworkUtils.BaseReworkEnabled || faction == null || !IsEligibleRecruit(recruit))
+                if (!BaseReworkCheck.BaseReworkEnabled || faction == null || !IsEligibleRecruit(recruit))
                 {
                     return;
                 }

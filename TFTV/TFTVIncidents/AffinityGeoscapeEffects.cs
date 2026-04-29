@@ -44,7 +44,7 @@ namespace TFTV.TFTVIncidents
                 {
                     try
                     {
-                        if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                        if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled)
                         {
                             return;
                         }
@@ -107,7 +107,7 @@ namespace TFTV.TFTVIncidents
                 {
                     try
                     {
-                        if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                        if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled)
                         {
                             return;
                         }
@@ -149,7 +149,7 @@ namespace TFTV.TFTVIncidents
                 {
                     try
                     {
-                        if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                        if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled)
                         {
                             return;
                         }
@@ -292,7 +292,7 @@ namespace TFTV.TFTVIncidents
                 _pendingExplorationSite = null;
                 _pendingExplorationRank = 0;
 
-                if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled)
                 {
 
                     return;
@@ -348,7 +348,7 @@ namespace TFTV.TFTVIncidents
 
             private static bool ShouldApplyExplorationAdjustment(GeoSite site)
             {
-                if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled)
                 {
 
                     return false;
@@ -388,7 +388,7 @@ namespace TFTV.TFTVIncidents
                 try 
                 
                 {
-                    if (!BaseReworkUtils.BaseReworkEnabled) return;
+                    if (!BaseReworkCheck.BaseReworkEnabled) return;
 
                     if (!eventID.StartsWith("EX"))
                     {
@@ -711,7 +711,7 @@ namespace TFTV.TFTVIncidents
         {
             try
             {
-                if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled || phoenixFaction == null || vehicle?.CurrentSite == null)
+                if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled || phoenixFaction == null || vehicle?.CurrentSite == null)
                 {
                     return;
                 }

@@ -1,8 +1,12 @@
 ﻿using Base.Core;
 using Base.Defs;
+using Base.Utils.GameConsole;
+using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
@@ -10,15 +14,12 @@ using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
+using PhoenixPoint.Tactical.UI;
+using PhoenixPoint.Tactical.View;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
 using UnityEngine;
 
 
@@ -31,9 +32,208 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
-      
-       
+        [HarmonyPatch(typeof(MoveAbilitySceneViewElement), nameof(MoveAbilitySceneViewElement.DrawHoverMarker))]
+        public static class KnownMeleeThreatMoveHoverPatch
+        {
 
+            [ConsoleVariable(Alias = "move_melee_threat_range_tolerance", Description = "Extra distance tolerance for known melee enemy threat tile markers.")]
+            public static float RangeTolerance = 0.25f;
+
+            private const string MeleeWeaponTagDefName = "MeleeWeapon_TagDef";
+            private const float MovePositionMatchTolerance = 0.2f;
+            private static GameTagDef _meleeWeaponTagDef;
+
+            private static void Postfix(MoveAbilitySceneViewElement __instance, TacticalViewContext context, bool __result)
+            {
+                if (!__result || __instance == null || context == null)
+                {
+                    return;
+                }
+
+                MoveAbility selectedMoveAbility = __instance.Ability as MoveAbility;
+                TacticalActor selectedActor = selectedMoveAbility?.TacticalActor;
+                GroundMarker hoverMarker = __instance.HoverMarker;
+                GameObject hoverVisual = hoverMarker?.VisualObject;
+                if (selectedMoveAbility == null || selectedActor == null || hoverVisual == null)
+                {
+                    return;
+                }
+
+                List<MoveAbilityTargetData> selectedMoves = selectedMoveAbility.GetTargetsData(null).ToList();
+                if (selectedMoves.Count == 0)
+                {
+                    return;
+                }
+
+                Vector3 hoveredPosition = hoverVisual.transform.position;
+                MoveAbilityTargetData hoveredMove = selectedMoves.FirstOrDefault(move => SameMovePosition(move.Position, hoveredPosition));
+                if (hoveredMove == null)
+                {
+                    return;
+                }
+
+              //  TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Hovering move to position {0} for actor '{1}'", hoveredMove.Position, selectedActor.DisplayName));
+
+                DrawKnownMeleeThreatMarkers(context, selectedActor, hoveredMove.Position);
+            }
+
+            private static void DrawKnownMeleeThreatMarkers(TacticalViewContext context, TacticalActor selectedActor, Vector3 hoveredMovePosition)
+            {
+                HashSet<Vector3> markedPositions = new HashSet<Vector3>(Vector3EqualityComparer.Default);
+                foreach (TacticalActor threatActor in GetKnownMeleeEnemies(selectedActor))
+                {
+                    ShootAbility meleeAbility = GetBestMeleeAbility(threatActor);
+                    if (meleeAbility == null)
+                    {
+                        continue;
+                    }
+
+                   // TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Evaluating threat actor '{0}' with melee ability '{1}'", threatActor.DisplayName, meleeAbility.TacticalAbilityDef.name));
+
+                    float meleeRange = meleeAbility.Weapon.GetMaxRange();
+
+                   // TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Melee range for actor '{0}': {1}", threatActor.DisplayName, meleeRange));
+                    float maxMoveRange = GetFullTurnMoveRange(threatActor);
+
+                  //  TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Full turn move range for actor '{0}': {1}", threatActor.DisplayName, maxMoveRange));
+
+
+                    float moveAndAttackRange = GetFullTurnMoveAndAttackRange(threatActor, meleeAbility);
+
+                   // TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Move+attack range for actor '{0}': {1}", threatActor.DisplayName, moveAndAttackRange));
+
+                    foreach (MoveAbilityTargetData threatMove in GetThreatActorMoveTargets(threatActor, maxMoveRange))
+                    {
+
+                      //  TFTVLogger.Always($"threatMove.IsPositionInRange(moveAndAttackRange):{threatMove.IsPositionInRange(moveAndAttackRange)};" +
+                      //   $" CanMeleeAttackFrom(threatMove.Position, hoveredMovePosition, meleeRange): {CanMeleeAttackFrom(threatMove.Position, hoveredMovePosition, meleeRange)}");
+
+
+                        if (!threatMove.IsPositionInRange(moveAndAttackRange) || !CanMeleeAttackFrom(threatMove.Position, hoveredMovePosition, meleeRange) || !markedPositions.Add(threatMove.Position))
+                        {
+                            continue;
+                        }
+
+                        GroundMarker marker = new GroundMarker(GroundMarkerType.MeleeAttackPosition, threatMove.Position, 0f)
+                        {
+                            Areas = threatActor.TacticalNav.NavAreas
+                        };
+                        context.View.Markers.AddGroundMarker(GroundMarkerGroup.HoverSelection, marker, false);
+                        Utils.TiltForTerrain(context, marker, threatActor.TacticalNav.FloorLayers);
+                    } 
+                }
+            }
+
+            private static IEnumerable<TacticalActor> GetKnownMeleeEnemies(TacticalActor selectedActor)
+            {
+                return from actor in selectedActor.TacticalFaction.Vision.GetKnownActors(KnownState.Revealed, FactionRelation.Enemy, false).OfType<TacticalActor>()
+                       where actor.InPlay && actor.Interactable && GetBestMeleeAbility(actor) != null
+                       select actor;
+            }
+
+            private static ShootAbility GetBestMeleeAbility(TacticalActor actor)
+            {
+                GameTagDef meleeWeaponTagDef = GetMeleeWeaponTagDef();
+                if (meleeWeaponTagDef == null)
+                {
+                    return null;
+                }
+
+               // TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Searching for melee abilities for actor '{0}' with melee weapon tag '{1}'", actor.DisplayName, meleeWeaponTagDef.name));
+
+               // TFTVLogger.Always($"Shoot abilities count: {actor.GetAbilities<ShootAbility>()?.Count()}");
+
+                ShootAbility shootAbility = (from ability in actor.GetAbilities<ShootAbility>()
+                                             let weapon = ability.Weapon
+                                             where weapon != null && weapon.WeaponDef.Tags.Contains(meleeWeaponTagDef)
+                                             orderby weapon.GetMaxRange() descending
+                                             select ability).FirstOrDefault();
+
+              //  TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Best melee ability for actor '{0}': {1}", actor.DisplayName, shootAbility != null ? shootAbility.TacticalAbilityDef.name : "<none>"));
+                return shootAbility;
+            }
+
+            private static GameTagDef GetMeleeWeaponTagDef()
+            {
+                if (_meleeWeaponTagDef == null)
+                {
+                    _meleeWeaponTagDef = DefCache.GetDef<ItemClassificationTagDef>(MeleeWeaponTagDefName);
+                    //TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Retrieved melee weapon tag def: {0}", _meleeWeaponTagDef != null ? _meleeWeaponTagDef.name : "<null>"));
+                }
+                return _meleeWeaponTagDef;
+            }
+
+            private static IEnumerable<MoveAbilityTargetData> GetThreatActorMoveTargets(TacticalActor actor)
+            {
+                // Always include the actor's current tile so already-in-range melee enemies
+                // are highlighted even if they cannot or need not move.
+                yield return new MoveAbilityTargetData(actor.Pos, 0f);
+
+                MoveAbility moveAbility = actor.GetAbility<MoveAbility>();
+                if (moveAbility == null)
+                {
+                    yield break;
+                }
+
+                foreach (MoveAbilityTargetData moveTarget in moveAbility.GetTargetsData(null))
+                {
+                    yield return moveTarget;
+                }
+            }
+
+            private static float GetFullTurnMoveRange(TacticalActor actor)
+            {
+                MoveAbility moveAbility = actor.GetAbility<MoveAbility>();
+                float distanceToApFactor = moveAbility != null ? moveAbility.DistanceToAPFactor : actor.TacticalNav.DistanceToAPFactor;
+                return actor.CharacterStats.ActionPoints.Max * distanceToApFactor;
+            }
+
+            private static float GetFullTurnMoveAndAttackRange(TacticalActor actor, ShootAbility meleeAbility)
+            {
+                MoveAbility moveAbility = actor.GetAbility<MoveAbility>();
+                if (moveAbility == null)
+                {
+                    return 0f;
+                }
+
+                // Do not call TacticalActor.GetMaxMoveAndActRange() here: outside the enemy's
+                // active turn it uses current AP and ability enabled state, so it often returns
+                // 0 during the player's turn. Estimate the enemy's next full turn instead.
+                float attackApCost = actor.CalcActionPointCost(actor.CalcFractActionPointCost(meleeAbility.FractActionPointCost, meleeAbility));
+                float remainingApForMovement = Mathf.Max(0f, actor.CharacterStats.ActionPoints.Max - attackApCost);
+                return remainingApForMovement * moveAbility.DistanceToAPFactor;
+            }
+
+            private static IEnumerable<MoveAbilityTargetData> GetThreatActorMoveTargets(TacticalActor actor, float maxMoveRange)
+            {
+                // Always include the actor's current tile so already-in-range melee enemies
+                // are highlighted even if they cannot or need not move.
+                yield return new MoveAbilityTargetData(actor.Pos, 0f);
+
+                MoveAbility moveAbility = actor.GetAbility<MoveAbility>();
+                if (moveAbility == null || maxMoveRange <= 0f)
+                {
+                    yield break;
+                }
+
+                TacticalPathRequest pathRequest = actor.TacticalNav.CreatePathRequest() as TacticalPathRequest;
+                pathRequest.MaxPathLength = maxMoveRange;
+                foreach (MoveAbilityTargetData moveTarget in moveAbility.GetTargetsData(pathRequest))
+                {
+                    yield return moveTarget;
+                }
+            }
+
+            private static bool CanMeleeAttackFrom(Vector3 attackerPosition, Vector3 targetPosition, float meleeRange)
+            {
+                return Utl.LesserThanOrEqualTo(Vector3.Distance(attackerPosition, targetPosition), meleeRange + RangeTolerance, 1E-05f);
+            }
+
+            private static bool SameMovePosition(Vector3 a, Vector3 b)
+            {
+                return Utl.Equals(a, b, MovePositionMatchTolerance);
+            }
+        }
 
         [HarmonyPatch(typeof(GeoAlienFaction), "OnResearchUpdated")]
         public static class AlienResearchQueueSeeder
@@ -42,14 +242,14 @@ namespace TFTV
 
             public static void Postfix(GeoAlienFaction __instance)
             {
-               // TFTVLogger.Always("[AlienResearchCadence] OnResearchUpdated postfix called.");
+                // TFTVLogger.Always("[AlienResearchCadence] OnResearchUpdated postfix called.");
 
                 if (__instance == null || __instance.Research == null || __instance.Research.Paused)
                 {
                     return;
                 }
 
-            //    TFTVLogger.Always("[AlienResearchCadence] Alien faction research is not paused.");
+                //    TFTVLogger.Always("[AlienResearchCadence] Alien faction research is not paused.");
 
                 Research research = __instance.Research;
                 if (research.Count > 0)
@@ -64,7 +264,7 @@ namespace TFTV
                 {
                     ResearchElement candidate = research.Researchable.FirstOrDefault();
 
-                TFTVLogger.Always(string.Format("[AlienResearchCadence] Seed attempt {0}, candidate: {1}", attempts + 1, candidate != null ? candidate.ResearchDef.name : "<null>"));
+                    TFTVLogger.Always(string.Format("[AlienResearchCadence] Seed attempt {0}, candidate: {1}", attempts + 1, candidate != null ? candidate.ResearchDef.name : "<null>"));
 
                     if (candidate == null)
                     {

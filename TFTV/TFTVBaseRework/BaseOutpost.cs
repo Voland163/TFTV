@@ -92,7 +92,7 @@ namespace TFTV.TFTVBaseRework
         {
             private static void Postfix(GeoSiteVisualsController __instance, GeoSite site)
             {
-                if (!BaseReworkUtils.BaseReworkEnabled) return;
+                if (!BaseReworkCheck.BaseReworkEnabled) return;
                 if (__instance == null || site == null) return;
                 if (site.Type != GeoSiteType.PhoenixBase) return;
 
@@ -142,7 +142,7 @@ namespace TFTV.TFTVBaseRework
     {
         static void Postfix(GeoPhoenixBase @base, bool activatedFromExploration)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled) return;
+            if (!BaseReworkCheck.BaseReworkEnabled) return;
 
 
             if (!activatedFromExploration) return;
@@ -161,7 +161,7 @@ namespace TFTV.TFTVBaseRework
     {
         static void Postfix(UIModuleModal __instance, ModalType modal)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled) return;
+            if (!BaseReworkCheck.BaseReworkEnabled) return;
 
             if (modal != ModalType.GeoPhoenixBaseOutcome) return;
 
@@ -201,7 +201,7 @@ namespace TFTV.TFTVBaseRework
         {
             private static void Postfix(GeoPhoenixBase __instance)
             {
-                if (!BaseReworkUtils.BaseReworkEnabled) return;
+                if (!BaseReworkCheck.BaseReworkEnabled) return;
 
                 if (__instance.Site.SiteTags.Contains(PhoenixBaseReworkState.OutpostTag))
                 {
@@ -215,7 +215,7 @@ namespace TFTV.TFTVBaseRework
         {
             private static bool Prefix(GeoPhoenixBase __instance)
             {
-                if (!BaseReworkUtils.BaseReworkEnabled) return true;
+                if (!BaseReworkCheck.BaseReworkEnabled) return true;
 
                 /* TFTVLogger.Always($"[GeoPhoenixBase.BaseHourlyUpdate] Running for {__instance?.Site?.LocalizedSiteName}. " +
                      $"is Outpost? {__instance.Site.SiteTags.Contains(PhoenixBaseReworkState.OutpostTag)}");*/
@@ -286,7 +286,7 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
-                    if (!BaseReworkUtils.BaseReworkEnabled) return;
+                    if (!BaseReworkCheck.BaseReworkEnabled) return;
 
                     Transform container = Traverse.Create(__instance).Field("BasesContainer").GetValue<Transform>();
                     if (container == null)
@@ -323,7 +323,7 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
-                    if (!BaseReworkUtils.BaseReworkEnabled) return;
+                    if (!BaseReworkCheck.BaseReworkEnabled) return;
 
                     GeoPhoenixBase current = Traverse.Create(__instance).Field("_base").GetValue<GeoPhoenixBase>();
                     if (current == null || !current.Site.SiteTags.Contains(PhoenixBaseReworkState.OutpostTag))

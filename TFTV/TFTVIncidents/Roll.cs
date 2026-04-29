@@ -22,6 +22,7 @@ namespace TFTV.TFTVIncidents
         private const string IncidentNextRollHourVariable = "TFTV_Incident_NextRollHour";
         private const int MinRollHours = 4 * 24;
         private const int MaxRollHours = 6 * 24;
+        private const string FirstIncidentAppearedVariable = "TFTV_FirstIncidentAppeared";
 
         internal static void TryRollIncidentOnSchedule(GeoLevelController geoLevelController)
         {
@@ -235,13 +236,13 @@ namespace TFTV.TFTVIncidents
         }
 
         private static void AddIncidentLogEntryAndPause(
-            GeoLevelController geoLevelController,
+            GeoLevelController controller,
             Objects.GeoIncidentDefinition incident,
             GeoHaven haven)
         {
             try
             {
-                if (geoLevelController == null || incident == null || haven?.Site == null)
+                if (controller == null || incident == null || haven?.Site == null)
                 {
                     return;
                 }
@@ -253,11 +254,18 @@ namespace TFTV.TFTVIncidents
                 };
 
                 typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance)
-                    .Invoke(geoLevelController.Log, new object[] { entry, null });
+                    .Invoke(controller.Log, new object[] { entry, null });
 
-                TFTVHints.BaseReworkHints.TriggerIncidentsHint0(geoLevelController);
-         
-                geoLevelController.View.SetGamePauseState(true);
+                if (controller.EventSystem.GetVariable(FirstIncidentAppearedVariable) <= 0)
+                {
+                    GeoscapeEventContext eventContext = new GeoscapeEventContext(controller.PhoenixFaction.Bases.FirstOrDefault().Site, controller.PhoenixFaction);
+                    controller.EventSystem.TriggerGeoscapeEvent(GeoscapeEvents.FirstIncidentAppearedEventId, eventContext);
+                    controller.EventSystem.SetVariable(FirstIncidentAppearedVariable, 1);
+                }
+
+                TFTVHints.BaseReworkHints.TriggerIncidentsHint0(controller);
+
+                controller.View.SetGamePauseState(true);
             }
             catch (Exception e)
             {

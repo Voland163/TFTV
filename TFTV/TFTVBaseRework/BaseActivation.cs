@@ -46,7 +46,7 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
-                    if (BaseReworkUtils.BaseReworkEnabled && target.Actor is GeoSite site && site.SiteTags.Contains(PhoenixBaseReworkState.OutpostTag))
+                    if (BaseReworkCheck.BaseReworkEnabled && target.Actor is GeoSite site && site.SiteTags.Contains(PhoenixBaseReworkState.OutpostTag))
                     {
                         return true;
                     }
@@ -89,7 +89,7 @@ namespace TFTV.TFTVBaseRework
                 {
                     try
                     {
-                        if (!BaseReworkUtils.BaseReworkEnabled)
+                        if (!BaseReworkCheck.BaseReworkEnabled)
                         {
                             return true;
                         }
@@ -144,7 +144,7 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
-                    if (!BaseReworkUtils.BaseReworkEnabled || justPassing || __instance == null)
+                    if (!BaseReworkCheck.BaseReworkEnabled || justPassing || __instance == null)
                     {
                         return;
                     }
@@ -362,7 +362,7 @@ namespace TFTV.TFTVBaseRework
                         return false;
                     }
 
-                    if (BaseReworkUtils.BaseReworkEnabled)
+                    if (BaseReworkCheck.BaseReworkEnabled)
                     {
                         if (!PersonnelData.TryConsumePersonnelForBaseActivation(faction, requiredPersonnel))
                         {
@@ -559,7 +559,7 @@ namespace TFTV.TFTVBaseRework
                     return false;
                 }
 
-                if (!BaseReworkUtils.BaseReworkEnabled)
+                if (!BaseReworkCheck.BaseReworkEnabled)
                 {
                     return true;
                 }

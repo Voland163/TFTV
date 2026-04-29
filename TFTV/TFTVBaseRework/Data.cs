@@ -55,7 +55,7 @@ namespace TFTV.TFTVBaseRework
 
         internal static bool EnsureJustAGrunt(GeoCharacter character, string source)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled || character?.Progression == null)
+            if (!BaseReworkCheck.BaseReworkEnabled || character?.Progression == null)
             {
                 return false;
             }
@@ -274,7 +274,7 @@ namespace TFTV.TFTVBaseRework
 
         internal static void MarkNewGameForInitialPersonnel()
         {
-            if (!BaseReworkUtils.BaseReworkEnabled)
+            if (!BaseReworkCheck.BaseReworkEnabled)
             {
                 return;
             }
@@ -284,7 +284,7 @@ namespace TFTV.TFTVBaseRework
 
         internal static void TryGrantInitialPersonnel(GeoLevelController level)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled || !_pendingInitialPersonnelGrant)
+            if (!BaseReworkCheck.BaseReworkEnabled || !_pendingInitialPersonnelGrant)
             {
                 return;
             }
@@ -320,7 +320,7 @@ namespace TFTV.TFTVBaseRework
             [HarmonyPostfix]
             public static void Postfix(UIModuleGeoRosterTabs __instance)
             {
-                if (!BaseReworkUtils.BaseReworkEnabled)
+                if (!BaseReworkCheck.BaseReworkEnabled)
                 {
                     return;
                 }
@@ -355,7 +355,7 @@ namespace TFTV.TFTVBaseRework
 
         internal static bool TryConsumePersonnelForBaseActivation(GeoPhoenixFaction faction, int requiredPersonnel)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled || faction == null || requiredPersonnel <= 0)
+            if (!BaseReworkCheck.BaseReworkEnabled || faction == null || requiredPersonnel <= 0)
             {
                 return false;
             }
@@ -559,7 +559,7 @@ namespace TFTV.TFTVBaseRework
 
         internal static void EnsureAutoAssignSettingInitialized(GeoLevelController level)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled || level?.EventSystem == null)
+            if (!BaseReworkCheck.BaseReworkEnabled || level?.EventSystem == null)
             {
                 return;
             }
@@ -603,7 +603,7 @@ namespace TFTV.TFTVBaseRework
 
         internal static void TryAutoAssignUnassignedPersonnel(GeoPhoenixFaction faction, string source)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled || faction == null)
+            if (!BaseReworkCheck.BaseReworkEnabled || faction == null)
             {
                 return;
             }
@@ -707,7 +707,7 @@ namespace TFTV.TFTVBaseRework
 
         internal static void AssignWorker(PersonnelInfo person, GeoPhoenixFaction faction, FacilitySlotType slotType)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled)
+            if (!BaseReworkCheck.BaseReworkEnabled)
             {
                 return;
             }
@@ -764,7 +764,7 @@ namespace TFTV.TFTVBaseRework
 
         internal static List<PersonnelAssignmentSave> CreateAssignmentsSnapshot()
         {
-            if (!BaseReworkUtils.BaseReworkEnabled)
+            if (!BaseReworkCheck.BaseReworkEnabled)
             {
                 return new List<PersonnelAssignmentSave>();
             }
@@ -794,7 +794,7 @@ namespace TFTV.TFTVBaseRework
 
         internal static void LoadAssignmentsSnapshot(GeoLevelController level, IEnumerable<PersonnelAssignmentSave> snapshot)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled)
+            if (!BaseReworkCheck.BaseReworkEnabled)
             {
                 return;
             }
@@ -819,6 +819,13 @@ namespace TFTV.TFTVBaseRework
                         Assignment = save.Assignment,
                         TrainingSpec = null
                     };
+
+                    if (info.Character == null)
+                    {
+                        TFTVLogger.Always(
+                            $"[PersonnelData] Skipping personnel id={info.Id}: character not found in PhoenixFaction.Characters.");
+                        continue;
+                    }
 
                     if (info.Character != null)
                     {
@@ -848,7 +855,7 @@ namespace TFTV.TFTVBaseRework
 
         internal static void RestoreAssignments(GeoLevelController level)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled)
+            if (!BaseReworkCheck.BaseReworkEnabled)
             {
                 return;
             }
@@ -885,7 +892,7 @@ namespace TFTV.TFTVBaseRework
         }
         internal static void DailyUpdatePersonnelPool(GeoLevelController level)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled)
+            if (!BaseReworkCheck.BaseReworkEnabled)
             {
                 return;
 
@@ -906,7 +913,7 @@ namespace TFTV.TFTVBaseRework
         {
             static bool Prefix(IEnumerable<GeoUnitDescriptor> nakedRecruits, GeoLevelController ____level)
             {
-                if (!BaseReworkUtils.BaseReworkEnabled)
+                if (!BaseReworkCheck.BaseReworkEnabled)
                 {
                     return true;
                 }
@@ -942,7 +949,7 @@ namespace TFTV.TFTVBaseRework
                 try
                 {
 
-                    if (!BaseReworkUtils.BaseReworkEnabled)
+                    if (!BaseReworkCheck.BaseReworkEnabled)
                     {
                         return;
                     }
@@ -1041,7 +1048,7 @@ namespace TFTV.TFTVBaseRework
 
         internal static int AddIncidentPersonnelReward(GeoPhoenixFaction faction, int count)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled || faction == null || count <= 0)
+            if (!BaseReworkCheck.BaseReworkEnabled || faction == null || count <= 0)
             {
                 return 0;
             }
@@ -1124,7 +1131,7 @@ namespace TFTV.TFTVBaseRework
 
         internal static int GetAvailablePersonnelCount(GeoPhoenixFaction faction)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled || faction == null)
+            if (!BaseReworkCheck.BaseReworkEnabled || faction == null)
             {
                 return 0;
             }
@@ -1138,7 +1145,7 @@ namespace TFTV.TFTVBaseRework
 
         internal static void AssignPersonnelToTraining(PersonnelInfo person, GeoPhoenixFaction faction, SpecializationDef spec)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled)
+            if (!BaseReworkCheck.BaseReworkEnabled)
             {
                 return;
             }
@@ -1162,7 +1169,7 @@ namespace TFTV.TFTVBaseRework
 
         internal static void UnassignFromWork(PersonnelInfo person, GeoPhoenixFaction faction)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled) return;
+            if (!BaseReworkCheck.BaseReworkEnabled) return;
             if (person?.Character == null || faction == null) return;
 
             PersonnelAssignment previous = person.Assignment;

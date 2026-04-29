@@ -29,7 +29,7 @@ namespace TFTV.TFTVIncidents
         {
             try
             {
-                if (level == null || !TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                if (level == null || !TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled)
                 {
                     return;
                 }

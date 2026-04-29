@@ -1,18 +1,18 @@
 using Base.Defs;
+using Base.Entities.Effects;
 using Base.Entities.Effects.ApplicationConditions;
 using Base.Entities.Statuses;
-using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.Effects.ApplicationConditions;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using TFTV.TFTVBaseRework;
+using static Base.Entities.Effects.ModifyStatusStatRatioEffectDef;
 
 namespace TFTV.TFTVIncidents
 {
@@ -87,6 +87,26 @@ namespace TFTV.TFTVIncidents
                 "c0e3f6fe-a86d-4f23-8bc2-01f7f520d821",
                 "c0e3f6fe-a86d-4f23-8bc2-01f7f520d822",
                 "c0e3f6fe-a86d-4f23-8bc2-01f7f520d823"
+            }
+        };
+
+        // Add this new GUID array alongside the existing ones (after RankRestoreStatusGuids)
+        private static readonly string[][] RankRestoreEffectGuids =
+        {
+            new[]
+            {
+                "d1e4f7aa-11b2-4c33-9ef1-02f8a631e901"
+            },
+            new[]
+            {
+                "d1e4f7aa-11b2-4c33-9ef1-02f8a631e911",
+                "d1e4f7aa-11b2-4c33-9ef1-02f8a631e912"
+            },
+            new[]
+            {
+                "d1e4f7aa-11b2-4c33-9ef1-02f8a631e921",
+                "d1e4f7aa-11b2-4c33-9ef1-02f8a631e922",
+                "d1e4f7aa-11b2-4c33-9ef1-02f8a631e923"
             }
         };
 
@@ -170,7 +190,7 @@ namespace TFTV.TFTVIncidents
                 null,
                 TargetConditionGuid,
                 "MachineryOverdrive_TargetConditionDef");
-            
+
             condition.VehicleTag = Shared.SharedGameTags.VehicleTag;
             condition.RequiredBodyPartTag = Shared.SharedGameTags.BionicalTag;
             condition.RequiredCount = 1;
@@ -216,9 +236,33 @@ namespace TFTV.TFTVIncidents
             restoreStatus.SingleInstance = true;
             restoreStatus.VisibleOnPassiveBar = false;
             restoreStatus.VisibleOnHealthbar = TacStatusDef.HealthBarVisibility.Hidden;
-          //  restoreStatus.VisibleOnStatusScreen = TacStatusDef.StatusScreenVisibility.;
             restoreStatus.ApplyOnStatusApplication = true;
             restoreStatus.ApplyOnTurnStart = false;
+
+            // Clone and override the EffectDef to restore exactly 0.25 AP per application
+            // (rank 1 = 1×0.25 AP, rank 2 = 2×0.25 AP, rank 3 = 3×0.25 AP)
+            ModifyStatusStatRatioEffectDef sourceEffect = sourceRestoreStatus.EffectDef as ModifyStatusStatRatioEffectDef;
+            if (sourceEffect != null)
+            {
+                ModifyStatusStatRatioEffectDef clonedEffect = Helper.CreateDefFromClone(
+                    sourceEffect,
+                    RankRestoreEffectGuids[rank - 1][index],
+                    $"MachineryOverdrive_Rank{rank}_Restore_{index + 1}_EffectDef");
+
+                clonedEffect.Modifications = new StatusStatRatioModification[] { 
+                    new StatusStatRatioModification()
+                    {
+                        StatName = "ActionPoints",
+                        ModificationValue = 0.25f,
+                    }
+                }
+                ;
+                restoreStatus.EffectDef = clonedEffect;
+            }
+            else
+            {
+                TFTVLogger.Always($"[MachineryRepairDefs] WARNING: EffectDef was not ModifyStatusStatRatioEffectDef, AP restore not overridden. Actual type: {sourceRestoreStatus.EffectDef?.GetType().FullName ?? "NULL"}");
+            }
 
             return restoreStatus;
         }
@@ -309,11 +353,7 @@ namespace TFTV.TFTVIncidents
         {
             try
             {
-                if (!BaseReworkUtils.BaseReworkEnabled)
-                {
-                    return;
-                }
-
+               
                 int option = Affinities.AffinityBenefitsChoices.GetTacticalBenefitChoiceFromSnapshot(
                     LeaderSelection.AffinityApproach.Machinery);
 
@@ -333,6 +373,8 @@ namespace TFTV.TFTVIncidents
                 {
                     return;
                 }
+
+                TFTVLogger.Info("Granting Machinery Repair rank abilities based on saved choice...");
 
                 ApplyChoiceFromSnapshot();
 
@@ -368,6 +410,7 @@ namespace TFTV.TFTVIncidents
 
                         if (actor.GetAbilityWithDef<TacticalAbility>(rankDef) != null)
                         {
+                            TFTVLogger.Info($"Removing rank {i + 1} ability from {actor.DisplayName}");
                             actor.RemoveAbility(rankDef);
                         }
                     }

@@ -25,7 +25,7 @@ internal class LivingQuarters
         [HarmonyPatch(typeof(PhoenixBaseStats), "Update")]
         private static void PhoenixBaseStats_Update_Postfix(PhoenixBaseStats __instance)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled)
+            if (!BaseReworkCheck.BaseReworkEnabled)
             {
                 return;
             }

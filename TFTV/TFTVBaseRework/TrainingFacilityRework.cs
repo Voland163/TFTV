@@ -237,7 +237,7 @@ namespace TFTV.TFTVBaseRework
 
         public static RecruitTrainingSession GetRecruitSession(GeoCharacter character)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled)
+            if (!BaseReworkCheck.BaseReworkEnabled)
             {
                 return null;
             }
@@ -249,7 +249,7 @@ namespace TFTV.TFTVBaseRework
 
         public static int GetRecruitRemainingDays(GeoCharacter character, GeoLevelController level)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled)
+            if (!BaseReworkCheck.BaseReworkEnabled)
             {
                 return 0;
             }
@@ -263,7 +263,7 @@ namespace TFTV.TFTVBaseRework
 
         public static bool IsRecruitTrainingComplete(GeoCharacter character, GeoLevelController level)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled)
+            if (!BaseReworkCheck.BaseReworkEnabled)
             {
                 return false;
             }
@@ -315,7 +315,7 @@ namespace TFTV.TFTVBaseRework
         #region Progression
         private static void AdvanceAllTraining(GeoLevelController geoLevel, int deltaDays)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled)
+            if (!BaseReworkCheck.BaseReworkEnabled)
             {
                 return;
             }
@@ -915,7 +915,7 @@ namespace TFTV.TFTVBaseRework
 
         internal static void DailyUpdateTraining(GeoLevelController level)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled)
+            if (!BaseReworkCheck.BaseReworkEnabled)
             {
                 return;
             }
@@ -929,7 +929,7 @@ namespace TFTV.TFTVBaseRework
         {
             private static void Postfix(GeoPhoenixFaction __instance, GeoCharacter recruit, IGeoCharacterContainer toContainer)
             {
-                if (!BaseReworkUtils.BaseReworkEnabled)
+                if (!BaseReworkCheck.BaseReworkEnabled)
                 {
                     return;
                 }
@@ -943,7 +943,7 @@ namespace TFTV.TFTVBaseRework
         {
             try
             {
-                if (!BaseReworkUtils.BaseReworkEnabled)
+                if (!BaseReworkCheck.BaseReworkEnabled)
                 {
                     return;
                 }
@@ -966,7 +966,7 @@ namespace TFTV.TFTVBaseRework
         {
             try
             {
-                if (!BaseReworkUtils.BaseReworkEnabled)
+                if (!BaseReworkCheck.BaseReworkEnabled)
                 {
                     return;
                 }
@@ -996,7 +996,7 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
-                    if (!BaseReworkUtils.BaseReworkEnabled)
+                    if (!BaseReworkCheck.BaseReworkEnabled)
                     {
                         return true;
                     }

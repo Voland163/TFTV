@@ -240,3 +240,5 @@ Wir wünschen dir einen schnellen Ragequit und eine rasche Rückkehr zur Vernunf
 Życzymy szybkiego rage quitu i błyskawicznego powrotu do zmysłów. ","Вас предупредили: если вы все равно решите продолжить, не стоит жаловаться на отсутствие справедливости, баланса, нечестный рандом или на зря потраченное время.
 
 Побыстрее проходите фазу гнева, включайте режим «холодная ярость» - и в бой!",,
+KEY_ShowBaseReworkHints,Text,,TUTORIAL HINTS FOR AIRCRAFT REWORK,,,,,,,,
+KEY_ShowBaseReworkHints_DESCRIPTION,Text,,"When playing the AIRCRAFT REWORK BETA, turning this option ON will show context hints for new mechanics introduced by Part 3 of the AIRCRAFT REWORK relating to BASE ACTIVATION, PERSONNEL MANAGEMENT, INCIDENTS and AFFINITIES. ",,,,,,,,

@@ -4,7 +4,6 @@ using Base.Defs;
 using Base.Platforms;
 using Base.UI;
 using Base.UI.MessageBox;
-using Base.UI.MessageBox.PromptControllers;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.View.ViewControllers;
@@ -15,7 +14,6 @@ using PhoenixPoint.Home.View.ViewControllers;
 using PhoenixPoint.Home.View.ViewModules;
 using PhoenixPoint.Home.View.ViewStates;
 using PhoenixPoint.Modding;
-using PhoenixPoint.Tactical.Entities.Abilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +31,7 @@ namespace TFTV
         private static readonly TFTVConfig config = TFTVMain.Main.Config;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
-        public static bool ShowedTacticalSavesWarning = false;
+
 
         private static int SelectedDifficulty = 0;
 
@@ -60,11 +58,11 @@ namespace TFTV
             return SelectedDifficulty == 6;
         }
 
-        
+
 
         private static readonly MethodInfo _gameSettingsOnConfirmMethod =
             typeof(UIStateNewGeoscapeGameSettings).GetMethod("GameSettings_OnConfirm", BindingFlags.Instance | BindingFlags.NonPublic);
-       
+
 
         private static void StartEldritchWarningsThenConfirm(UIStateNewGeoscapeGameSettings state)
         {
@@ -126,21 +124,12 @@ namespace TFTV
                         }
                     });
 
-                  
+
                     Image background = mb.GetComponentInChildren<Image>();
 
                     background.color = Color.black;
 
-                 /*   foreach (Component component in mb.GetComponentsInChildren<Component>())
-                    {
-                        TFTVLogger.Always($"MessageBox component in children {component.name}: {component.GetType()}");
 
-                        if(component is Image image) 
-                        {
-                            image.color = Color.black;
-                        }
-
-                    }*/
 
                 }
             }
@@ -627,9 +616,9 @@ namespace TFTV
                         float resolutionFactorWidth = GetResolutionFactorWidth();
                         float resolutionFactorHeight = GetResolutionFactorHeight();
                         bool ultrawideresolution = GetResolutionFactor() > 2;
-                        
+
                         UIModuleGameSettings uIModuleGameSettings = GameUtl.CurrentLevel().GetComponent<HomeScreenView>().HomeScreenModules.GameSettings;
-                        
+
                         RectTransform rectTransform = uIModuleGameSettings.GameAddiotionalContentGroup.GetComponentInChildren<RectTransform>();
                         GameOptionViewController gameOptionViewController = UnityEngine.Object.Instantiate(uIModuleGameSettings.SecondaryOptions.Container.GetComponentsInChildren<GameOptionViewController>().First(), rectTransform);
 
@@ -688,7 +677,7 @@ namespace TFTV
            string[] optionsKeys,
            int currentValue,
            Action<int, ArrowPickerController> onValueChangedWithController,
-           float lengthScale, List <ModSettingController> optionsType = null)
+           float lengthScale, List<ModSettingController> optionsType = null)
                 {
                     try
                     {
@@ -809,7 +798,7 @@ namespace TFTV
 
                         uITooltipText.TipText = description;
 
-                       
+
                     }
                     catch (Exception e)
                     {
@@ -841,7 +830,7 @@ namespace TFTV
             [HarmonyPatch(typeof(UIModuleGameSettings), "InitFullContent")] //VERIFIED
             internal static class UIStateNewGeoscapeGameSettings_InitFullContent_patch
             {
-               
+
                 private static void SetNewStartScavVisibility(bool show)
                 {
                     try
@@ -892,7 +881,7 @@ namespace TFTV
                 {
                     try
                     {
-                        foreach(GameOptionViewController gameOptionViewController in _gameOptionViewControllers)
+                        foreach (GameOptionViewController gameOptionViewController in _gameOptionViewControllers)
                         {
                             if (gameOptionViewController != null)
                             {
@@ -963,7 +952,7 @@ namespace TFTV
 
 
 
-               
+
 
 
                 public static void Postfix(UIModuleGameSettings __instance)
@@ -976,7 +965,7 @@ namespace TFTV
                         rectTransform.DestroyChildren();
 
 
-                        
+
 
                         HelperMethods.InstantiateArrowPickerController("StartingFaction", _optionsStartingFaction, (int)(TFTVNewGameOptions.startingSquad), OnStartingFactionValueChangedCallback, 1f);
                         HelperMethods.InstantiateArrowPickerController("StartingBase", _optionsStartingBase, (int)(TFTVNewGameOptions.startingBaseLocation), OnStartingBaseValueChangedCallback, 1f);
@@ -1034,7 +1023,7 @@ namespace TFTV
                         HelperMethods.InstantiateArrowPickerController("MultipleVehiclesInAircraftAllowed", _optionsBool, ConvertBoolToInt(config.MultipleVehiclesInAircraftAllowed), OnMultipleVehiclesInAircraftAllowedValueChangedCallback, 0.5f, _cheatOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("EasyAirCombat", _optionsBool, ConvertBoolToInt(config.EasyAirCombat), OnEasyAirCombatValueChangedCallback, 0.5f, _cheatOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("BehemothSubmergesForever", _optionsBool, ConvertBoolToInt(config.BehemothSubmergesForever), OnBehemothSubmergesForeverValueChangedCallback, 0.5f, _cheatOptionsSettings);
-                        
+
                         SetAllVisibility(false);
                         DefaultDifficulties.UpdateOptionsOnSelectingDifficutly();
                     }
@@ -1099,7 +1088,7 @@ namespace TFTV
                         bool option = newValue == 0;
                         string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                         arrowPickerController.CurrentItemText.text = options[newValue];
-                       config.DeliriumCappedAt4 = option;
+                        config.DeliriumCappedAt4 = option;
                     }
                     catch (Exception e)
                     {
@@ -1161,7 +1150,7 @@ namespace TFTV
                         bool option = newValue == 0;
                         string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                         arrowPickerController.CurrentItemText.text = options[newValue];
-                       config.MultipleVehiclesInAircraftAllowed = option;
+                        config.MultipleVehiclesInAircraftAllowed = option;
                     }
                     catch (Exception e)
                     {
@@ -1231,16 +1220,16 @@ namespace TFTV
                 {
                     try
                     {
-                       /* if (newValue == 1 && !ShowedTacticalSavesWarning)
-                        {
-                           
+                        /* if (newValue == 1 && !ShowedTacticalSavesWarning)
+                         {
 
-                            string warning = TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_TACTICAL_SAVING_WARNING");// $"Saving and loading on Tactical can result in odd behavior and bugs (Vanilla issues). It is recommended to save only on Geoscape (and use several saves, in case one of them gets corrupted). And, you know what... losing soldiers in TFTV is fun :)";
 
-                            GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                             string warning = TFTVCommonMethods.ConvertKeyToString("KEY_OPTIONS_TACTICAL_SAVING_WARNING");// $"Saving and loading on Tactical can result in odd behavior and bugs (Vanilla issues). It is recommended to save only on Geoscape (and use several saves, in case one of them gets corrupted). And, you know what... losing soldiers in TFTV is fun :)";
 
-                            ShowedTacticalSavesWarning = true;
-                        }*/
+                             GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+
+                             ShowedTacticalSavesWarning = true;
+                         }*/
 
                         bool option = newValue == 0;
 
@@ -1357,7 +1346,7 @@ namespace TFTV
                 {
                     try
                     {
-                       
+
                         bool option = newValue == 0;
                         string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                         arrowPickerController.CurrentItemText.text = options[newValue];
@@ -1813,7 +1802,7 @@ namespace TFTV
                 {
                     try
                     {
-                       
+
                         bool limitedCapture = newValue == 0;
                         string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                         arrowPickerController.CurrentItemText.text = options[newValue];
@@ -1831,7 +1820,7 @@ namespace TFTV
                 {
                     try
                     {
-                      
+
                         bool limitedHarvesting = newValue == 0;
                         string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                         arrowPickerController.CurrentItemText.text = options[newValue];
@@ -1853,31 +1842,6 @@ namespace TFTV
 
 
 
-        /*    [HarmonyPatch(typeof(UIStateHomeLoadGame), "EnterState")]
-            public static class UIStateHomeLoadGame_EnterState_Patch
-            {
-                private static void Postfix(UIStateHomeLoadGame __instance)
-                {
-                    try
-                    {
-                        TFTVLogger.Always($"UIStateHomeLoadGame.EnterState PostFix running");
-
-                        TFTVLogger.Always($"Config settings:" +
-                        $"\nAmountOfExoticResourcesSetting: {TFTVNewGameOptions.AmountOfExoticResourcesSetting}\nResourceMultiplierSetting: {TFTVNewGameOptions.ResourceMultiplierSetting}" +
-                        $"\nDiplomaticPenaltiesSetting: {TFTVNewGameOptions.DiplomaticPenaltiesSetting}\nStaminaPenaltyFromInjurySetting: {TFTVNewGameOptions.StaminaPenaltyFromInjurySetting}" +
-                        $"\nMoreAmbushesSetting: {TFTVNewGameOptions.MoreAmbushesSetting}\nLimitedCaptureSetting: {TFTVNewGameOptions.LimitedCaptureSetting}\nLimitedHarvestingSetting: {TFTVNewGameOptions.LimitedHarvestingSetting}" +
-                        $"\nStrongerPandoransSetting {TFTVNewGameOptions.StrongerPandoransSetting}\nImpossibleWeaponsAdjustmentsSetting: {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}" +
-                        $"\nNoSecondChances: {TFTVNewGameOptions.NoSecondChances}");
-
-                        TFTVDefsWithConfigDependency.ImplementConfigChoices();
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
-                }
-            }*/
 
         [HarmonyPatch(typeof(UIStateNewGeoscapeGameSettings), "EnterState")] //VERIFIED
         public static class UIStateNewGeoscapeGameSettings_EnterState_Patch
@@ -1991,13 +1955,7 @@ namespace TFTV
 
                         element.CheckedToggle.isOn = false;
 
-                        UITooltipText uITooltipText = element.CheckedToggle.gameObject.GetComponent<UITooltipText>();
-
-                        if (uITooltipText == null)
-                        {
-                            uITooltipText = element.CheckedToggle.gameObject.AddComponent<UITooltipText>();
-                        }
-
+                        UITooltipText uITooltipText = element.CheckedToggle.gameObject.GetComponent<UITooltipText>() ?? element.CheckedToggle.gameObject.AddComponent<UITooltipText>();
                         uITooltipText.TipKey = new LocalizedTextBind(TFTVCommonMethods.ConvertKeyToString("TFTV_PROMO_SKINS"), true);
                     }
 
@@ -2017,7 +1975,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIModuleGameSettings), nameof(UIModuleGameSettings.GetActivatedEntitlements))] 
+        [HarmonyPatch(typeof(UIModuleGameSettings), nameof(UIModuleGameSettings.GetActivatedEntitlements))]
         public static class UIModuleGameSettings_GetActivatedEntitlements_Experiment_Patch
         {
             public static bool Prefix(UIModuleGameSettings __instance, ref List<EntitlementDef> __result, List<GameAdditionalContentEntry> ____gameEntitlementContentEntries)
@@ -2082,7 +2040,12 @@ namespace TFTV
                     TFTVCommonMethods.ClearInternalVariablesOnStateChangeAndLoad();
                     TFTVNewGameOptions.ConfigImplemented = true;
                     TFTVNewGameOptions.NewTrainingFacilities = true;
-                    ShowedTacticalSavesWarning = false;
+                  
+                    if (TFTVAircraftReworkMain.AircraftReworkOn)
+                    {
+                        TFTVLogger.Always("Aircraft rework enabled for new game, setting BaseRework to true");
+                        TFTVNewGameOptions.BaseRework = true;
+                    }
 
                     return false;
 

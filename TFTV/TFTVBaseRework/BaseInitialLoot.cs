@@ -29,7 +29,7 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
-                    if (!BaseReworkUtils.BaseReworkEnabled || __instance == null)
+                    if (!BaseReworkCheck.BaseReworkEnabled || __instance == null)
                     {
                         return;
                     }

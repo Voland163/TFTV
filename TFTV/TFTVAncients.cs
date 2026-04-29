@@ -2133,6 +2133,7 @@ namespace TFTV
 
             }
 
+           
         }
 
         internal class AncientsNewTurn
@@ -2184,6 +2185,9 @@ namespace TFTV
                             {
                                 TFTVLogger.Always($"{tacticalActor.name} has disabled {bodyPart.DisplayName}. Adding {bodyPart.GetHealth().Max / 2} health ");
                                 bodyPart.GetHealth().Add(bodyPart.GetHealth().Max / 2);
+
+                                EnsureDefaultShootAbilitiesAfterBodyPartRepair(tacticalActor, bodyPart);
+
                                 tacticalActor.CharacterStats.WillPoints.Subtract(5);
                             }
 
@@ -2195,6 +2199,95 @@ namespace TFTV
                             TFTVUI.Tactical.TargetIcons.ImplementAncientsChargeLevel(actorClassIconElement, tacticalActor);
                         }
                     }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void EnsureDefaultShootAbilitiesAfterBodyPartRepair(TacticalActor tacticalActor, ItemSlot repairedBodyPartSlot)
+            {
+                try
+                {
+                    if (tacticalActor == null || repairedBodyPartSlot == null)
+                    {
+                        return;
+                    }
+
+                    foreach (Weapon weapon in repairedBodyPartSlot.GetAllDirectItems(false).OfType<Weapon>())
+                    {
+                        EnsureDefaultShootAbilityAfterBodyPartRepair(tacticalActor, weapon, repairedBodyPartSlot);
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void EnsureDefaultShootAbilityAfterBodyPartRepair(TacticalActor tacticalActor, Weapon weapon, ItemSlot repairedBodyPartSlot)
+            {
+                try
+                {
+                    if (tacticalActor == null || weapon == null)
+                    {
+                        return;
+                    }
+
+                    // If the game already restored the runtime ability correctly, do nothing.
+                    if (weapon.DefaultShootAbility != null)
+                    {
+                        return;
+                    }
+
+                    ShootAbilityDef defaultShootAbilityDef = weapon.TacticalItemDef?.Abilities?
+                        .OfType<ShootAbilityDef>()
+                        .FirstOrDefault(shootAbilityDef => shootAbilityDef.IsDefault);
+
+                    if (defaultShootAbilityDef == null)
+                    {
+                        TFTVLogger.Always(
+                            $"[AncientsRepair] {tacticalActor.name} repaired {repairedBodyPartSlot.DisplayName}, " +
+                            $"but weapon {weapon.DisplayName} / {weapon.WeaponDef?.name} has no default ShootAbilityDef.");
+                        return;
+                    }
+
+                    bool staleEnabledActiveWeapon =
+                        weapon.Enabled &&
+                        weapon.IsActive &&
+                        weapon.IsUsable;
+
+                    if (!staleEnabledActiveWeapon)
+                    {
+                        TFTVLogger.Always(
+                            $"[AncientsRepair] {tacticalActor.name} repaired {repairedBodyPartSlot.DisplayName}; " +
+                            $"weapon {weapon.DisplayName} / {weapon.WeaponDef?.name} is missing DefaultShootAbility, " +
+                            $"but is not currently eligible for repair. " +
+                            $"enabled={weapon.Enabled} isActive={weapon.IsActive} isUsable={weapon.IsUsable}");
+                        return;
+                    }
+
+                    ShootAbility existingSameDefAndSource = tacticalActor.GetAbilities<ShootAbility>()
+                        .FirstOrDefault(shootAbility =>
+                            shootAbility.Source == weapon &&
+                            shootAbility.AbilityDef == defaultShootAbilityDef);
+
+                    if (existingSameDefAndSource != null)
+                    {
+                        TFTVLogger.Always(
+                            $"[AncientsRepair] {tacticalActor.name} already has {defaultShootAbilityDef.name} " +
+                            $"sourced from {weapon.DisplayName}, but weapon.DefaultShootAbility is still null. " +
+                            $"isDefault={existingSameDefAndSource.IsDefault}");
+                        return;
+                    }
+
+                    tacticalActor.AddAbility(defaultShootAbilityDef, weapon);
+
+                    TFTVLogger.Always(
+                        $"[AncientsRepair] Restored missing default shoot ability {defaultShootAbilityDef.name} " +
+                        $"for {tacticalActor.name}'s repaired weapon {weapon.DisplayName} / {weapon.WeaponDef?.name}. " +
+                        $"AfterRepairDefaultShoot={weapon.DefaultShootAbility?.TacticalAbilityDef?.name ?? "<null>"}");
                 }
                 catch (Exception e)
                 {

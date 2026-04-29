@@ -50,7 +50,7 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
-                    if (!BaseReworkUtils.BaseReworkEnabled)
+                    if (!BaseReworkCheck.BaseReworkEnabled)
                     {
                         return;
                     }
@@ -74,7 +74,7 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
-                    if (!BaseReworkUtils.BaseReworkEnabled)
+                    if (!BaseReworkCheck.BaseReworkEnabled)
                     {
                         return true;
                     }
@@ -108,7 +108,7 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
-                    if (!BaseReworkUtils.BaseReworkEnabled || __instance == null || modal == null)
+                    if (!BaseReworkCheck.BaseReworkEnabled || __instance == null || modal == null)
                     {
                         return;
                     }

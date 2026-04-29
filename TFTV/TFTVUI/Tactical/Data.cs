@@ -17,6 +17,7 @@ namespace TFTV.TFTVUI.Tactical
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
         public static Font PuristaSemiboldFontCache = null;
+        public static Font SourceHanSansMediumFontCache = null;
         public static Color LeaderColor = new Color(1f, 0.72f, 0f);
         public static Color NegativeColor = new Color(1.0f, 0.145f, 0.286f);
         public static Color RegularNoLOSColor = Color.gray;
@@ -43,6 +44,38 @@ namespace TFTV.TFTVUI.Tactical
 
 
         }
+
+        public static Font GetSourceHanSansMediumFont()
+        {
+            if (SourceHanSansMediumFontCache != null)
+                return SourceHanSansMediumFontCache;
+
+            // Try to find the font already loaded in Unity's object pool (game asset)
+            foreach (Font f in Resources.FindObjectsOfTypeAll<Font>())
+            {
+                if (f.name.IndexOf("SourceHanSans-Medium", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    f.name.IndexOf("SourceHanSansMedium", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    SourceHanSansMediumFontCache = f;
+                    TFTVLogger.Always($"Found SourceHanSans-Medium font in loaded resources: {f.name}");
+                    return SourceHanSansMediumFontCache;
+                }
+            }
+
+            // Fallback: try OS-installed font by name
+            Font osFont = Font.CreateDynamicFontFromOSFont("SourceHanSans-Medium", 40);
+            if (osFont != null)
+            {
+                SourceHanSansMediumFontCache = osFont;
+                TFTVLogger.Always("Loaded SourceHanSans-Medium font from OS.");
+                return SourceHanSansMediumFontCache;
+            }
+
+            // Last resort fallback
+            TFTVLogger.Always("SourceHanSans-Medium font not found in resources or OS. Using Arial as fallback.");
+            return PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+        }
+
 
         public static void ClearDataOnLoadAndStateChange()
         {

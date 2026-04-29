@@ -53,6 +53,7 @@ namespace TFTV
         public bool HandGrenadeScatter = false;
         public bool EquipBeforeAmbush = true;
         public bool TFTVSuppression = false;
+        public bool ShowBaseReworkHints = true;
 
         //Cheat options:
         public bool AllowFullAugmentations = false;

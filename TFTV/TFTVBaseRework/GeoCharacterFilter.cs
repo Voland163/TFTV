@@ -19,7 +19,7 @@ namespace TFTV.TFTVBaseRework
 {
     internal class GeoCharacterFilter
     {
-        private static bool Enabled => BaseReworkUtils.BaseReworkEnabled;
+        private static bool Enabled => BaseReworkCheck.BaseReworkEnabled;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
@@ -131,7 +131,7 @@ namespace TFTV.TFTVBaseRework
                     try
                     {
 
-                        if (!BaseReworkUtils.BaseReworkEnabled) return;
+                        if (!BaseReworkCheck.BaseReworkEnabled) return;
 
                         if (__instance == null || site == null || site.Type != GeoSiteType.PhoenixBase || site.State != GeoSiteState.Functioning)
                         {

@@ -1,20 +1,9 @@
-﻿using Base.Core;
-using Base.Defs;
+﻿using Base.Defs;
 using Base.UI;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Geoscape.Entities.Abilities;
-using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
-using PhoenixPoint.Geoscape.Entities.Research;
-using PhoenixPoint.Geoscape.Entities.Research.Reward;
-using PhoenixPoint.Geoscape.Events;
-using PhoenixPoint.Geoscape.Events.Eventus;
-using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace TFTV.TFTVBaseRework
 {
@@ -28,64 +17,12 @@ namespace TFTV.TFTVBaseRework
         {
             try
             {
-                if (!BaseReworkUtils.BaseReworkEnabled)
-                {
-                    return;
-                }
 
                 CreateJustAGruntDef();
                 CreateHiddenFromOperativesMarkerDef();
                 CreateDismissedOperativeMarkerDef();
                 TFTVIncidents.ComputeMountedAbility.Defs.CreateDefs();
 
-                DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [BionicsLab_PhoenixFacilityDef]").BaseResourcesOutput.Values = new List<ResourceUnit>
-                {
-                    new ResourceUnit()
-                    {
-                        Type = PhoenixPoint.Common.Core.ResourceType.Research,
-                        Value = 2
-                    },
-                };
-
-                DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [ResearchLab_PhoenixFacilityDef]").BaseResourcesOutput.Values = new List<ResourceUnit>
-                {
-                    new ResourceUnit()
-                    {
-                        Type = PhoenixPoint.Common.Core.ResourceType.Research,
-                        Value = 2
-                    },
-                };
-
-                DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [FabricationPlant_PhoenixFacilityDef]").BaseResourcesOutput.Values = new List<ResourceUnit>
-                {
-                    new ResourceUnit()
-                    {
-                        Type = PhoenixPoint.Common.Core.ResourceType.Production,
-                        Value = 2
-                    },
-                };
-
-                ResearchDef havenRecruitingResearchDef = DefCache.GetDef<ResearchDef>("PX_HavenRecruits_ResearchDef");
-
-                List<ResearchRewardDef> havenRecruitingUnlocks = havenRecruitingResearchDef.Unlocks.ToList();
-                havenRecruitingUnlocks.RemoveAll(unlocks => unlocks is UnitTemplateResearchRewardDef);
-                havenRecruitingResearchDef.Unlocks = havenRecruitingUnlocks.ToArray();
-
-                DefCache.GetDef<ActivateBaseAbilityDef>("ActivateBaseAbilityDef").Cost = new ResourcePack() { };
-
-                GeoscapeEventDef synFreeBaseEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_SY3_WIN_GeoscapeEventDef");
-                foreach (GeoEventChoice geoEventChoice in synFreeBaseEvent.GeoscapeEventData.Choices)
-                {
-                    geoEventChoice.Outcome.ConvertSiteToPhoenixBase = false;
-                }
-
-                GeoPhoenixFactionDef geoPhoenixFactionDef = DefCache.GetDef<GeoPhoenixFactionDef>("Phoenix_GeoPhoenixFactionDef");
-                geoPhoenixFactionDef.StartingUnits = new TacCharacterDef[]
-                {
-                    DefCache.GetDef<TacCharacterDef>("PX_Heavy1_CharacterTemplateDef"),
-                    DefCache.GetDef<TacCharacterDef>("PX_Assault1_CharacterTemplateDef"),
-                    DefCache.GetDef<TacCharacterDef>("PX_Sniper1_CharacterTemplateDef")
-                };
             }
             catch (Exception e)
             {

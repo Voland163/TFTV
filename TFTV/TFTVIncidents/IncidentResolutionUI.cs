@@ -79,12 +79,15 @@ namespace TFTV.TFTVIncidents
             private static readonly Dictionary<int, bool> _approachSelectionLocked =
                 new Dictionary<int, bool>();
 
-            private static Text _headerGainLabel;
-            private static Image _headerGainIcon;
-            private static Text _headerGainDetail;
-            private static ApproachIconTooltipTrigger _headerGainTooltip;
+            // Replace the per-choice gain fields and methods with these:
+
+            // In the field declarations section, replace the single gain fields with arrays:
+            private static readonly Text[] _choiceGainLabel = new Text[2];
+            private static readonly Image[] _choiceGainIcon = new Image[2];
+            private static readonly Text[] _choiceGainDetail = new Text[2];
+            private static readonly ApproachIconTooltipTrigger[] _choiceGainTooltip = new ApproachIconTooltipTrigger[2];
+
             private static GeoCharacter _currentSelectedCharacter;
-            private static int _lastInteractedChoiceIndex;
 
             private sealed class CrewRowHighlightState : MonoBehaviour
             {
@@ -371,7 +374,7 @@ namespace TFTV.TFTVIncidents
 
             public static void Postfix(UIModuleSiteEncounters __instance, GeoscapeEvent geoEvent, bool pagingEvent)
             {
-                if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled)
                 {
                     return;
                 }
@@ -800,7 +803,6 @@ namespace TFTV.TFTVIncidents
                 }
 
                 _selectedApproach[choiceIndex] = approach;
-                _lastInteractedChoiceIndex = choiceIndex;
                 RefreshApproachIconVisuals(parentButton, choiceIndex);
                 RefreshHeaderGainDisplay();
             }
@@ -1152,17 +1154,18 @@ namespace TFTV.TFTVIncidents
                 _selectedVehicleId = vehicle?.VehicleID ?? -1;
                 _selectedLeaderId = -1;
                 _currentSelectedCharacter = null;
-                _lastInteractedChoiceIndex = 0;
-
 
                 _choiceApproaches.Clear();
                 _selectedApproach.Clear();
                 _approachSelectionLocked.Clear();
 
-                _headerGainLabel = null;
-                _headerGainIcon = null;
-                _headerGainDetail = null;
-                _headerGainTooltip = null;
+                for (int i = 0; i < 2; i++)
+                {
+                    _choiceGainLabel[i] = null;
+                    _choiceGainIcon[i] = null;
+                    _choiceGainDetail[i] = null;
+                    _choiceGainTooltip[i] = null;
+                }
             }
 
             private static void SetSelectedLeader(GeoCharacter character, GeoscapeEvent geoEvent, GeoVehicle vehicle)
@@ -1364,77 +1367,102 @@ namespace TFTV.TFTVIncidents
 
             private static void CreateGainRow(Transform parent, Text styleSource)
             {
-                GameObject row = new GameObject(GainRowName, typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
-                row.transform.SetParent(parent, false);
+                // Outer container
+                GameObject outerRow = new GameObject(GainRowName, typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(LayoutElement));
+                outerRow.transform.SetParent(parent, false);
 
-                HorizontalLayoutGroup hlg = row.GetComponent<HorizontalLayoutGroup>();
-                hlg.childAlignment = TextAnchor.MiddleCenter;
-                hlg.childControlWidth = true;
-                hlg.childControlHeight = true;
-                hlg.childForceExpandWidth = false;
-                hlg.childForceExpandHeight = false;
-                hlg.spacing = GainRowSpacing;
+                VerticalLayoutGroup vlg = outerRow.GetComponent<VerticalLayoutGroup>();
+                vlg.childAlignment = TextAnchor.UpperCenter;
+                vlg.childControlWidth = true;
+                vlg.childControlHeight = true;
+                vlg.childForceExpandWidth = false;
+                vlg.childForceExpandHeight = false;
+                vlg.spacing = 4f;
 
-                LayoutElement rowLE = row.GetComponent<LayoutElement>();
-                rowLE.minHeight = GainIconSize + 8f;
-                rowLE.preferredHeight = GainIconSize + 8f;
+                LayoutElement outerLE = outerRow.GetComponent<LayoutElement>();
+                outerLE.minHeight = (GainIconSize + 8f) * 2 + 4f;
+                outerLE.preferredHeight = (GainIconSize + 8f) * 2 + 4f;
 
                 int fontSize = styleSource != null ? Mathf.RoundToInt(styleSource.fontSize * 0.85f) : 38;
 
-                // Label: "Leading operative will gain:"
-                GameObject labelGO = new GameObject("[Mod]GainLabel", typeof(RectTransform), typeof(Text));
-                labelGO.transform.SetParent(row.transform, false);
-                _headerGainLabel = labelGO.GetComponent<Text>();
-                _headerGainLabel.text = "Leading operative will gain:";
-                _headerGainLabel.alignment = TextAnchor.MiddleRight;
-                _headerGainLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
-                _headerGainLabel.verticalOverflow = VerticalWrapMode.Overflow;
-                _headerGainLabel.raycastTarget = false;
-                if (styleSource != null)
+                for (int i = 0; i < 2; i++)
                 {
-                    _headerGainLabel.font = styleSource.font;
-                    _headerGainLabel.fontSize = fontSize;
-                    _headerGainLabel.color = styleSource.color;
+                    int capturedIndex = i;
+                    string choiceLabel = $"Choice {i + 1}:";
+
+                    GameObject subRow = new GameObject($"[Mod]GainSubRow_{i}", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
+                    subRow.transform.SetParent(outerRow.transform, false);
+
+                    HorizontalLayoutGroup hlg = subRow.GetComponent<HorizontalLayoutGroup>();
+                    hlg.childAlignment = TextAnchor.MiddleCenter;
+                    hlg.childControlWidth = true;
+                    hlg.childControlHeight = true;
+                    hlg.childForceExpandWidth = false;
+                    hlg.childForceExpandHeight = false;
+                    hlg.spacing = GainRowSpacing;
+
+                    LayoutElement subLE = subRow.GetComponent<LayoutElement>();
+                    subLE.minHeight = GainIconSize + 8f;
+                    subLE.preferredHeight = GainIconSize + 8f;
+
+                    // "Choice X: Leading operative will gain:"
+                    GameObject labelGO = new GameObject($"[Mod]GainLabel_{i}", typeof(RectTransform), typeof(Text));
+                    labelGO.transform.SetParent(subRow.transform, false);
+                    _choiceGainLabel[i] = labelGO.GetComponent<Text>();
+                    _choiceGainLabel[i].text = $"{choiceLabel} Leading operative will gain:";
+                    _choiceGainLabel[i].alignment = TextAnchor.MiddleRight;
+                    _choiceGainLabel[i].horizontalOverflow = HorizontalWrapMode.Overflow;
+                    _choiceGainLabel[i].verticalOverflow = VerticalWrapMode.Overflow;
+                    _choiceGainLabel[i].raycastTarget = false;
+                    if (styleSource != null)
+                    {
+                        _choiceGainLabel[i].font = styleSource.font;
+                        _choiceGainLabel[i].fontSize = fontSize;
+                        _choiceGainLabel[i].color = styleSource.color;
+                    }
+
+                    // Icon
+                    GameObject iconGO = new GameObject($"[Mod]GainIcon_{i}", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+                    iconGO.transform.SetParent(subRow.transform, false);
+                    _choiceGainIcon[i] = iconGO.GetComponent<Image>();
+                    _choiceGainIcon[i].raycastTarget = true;
+                    _choiceGainIcon[i].enabled = false;
+
+                    LayoutElement iconLE = iconGO.GetComponent<LayoutElement>();
+                    iconLE.preferredWidth = GainIconSize;
+                    iconLE.preferredHeight = GainIconSize;
+                    iconLE.minWidth = GainIconSize;
+                    iconLE.minHeight = GainIconSize;
+
+                    _choiceGainTooltip[i] = iconGO.AddComponent<ApproachIconTooltipTrigger>();
+                    _choiceGainTooltip[i].ChoiceIndex = i;
+
+                    // Detail: "Exploration  Rank: 2"
+                    GameObject detailGO = new GameObject($"[Mod]GainDetail_{i}", typeof(RectTransform), typeof(Text));
+                    detailGO.transform.SetParent(subRow.transform, false);
+                    _choiceGainDetail[i] = detailGO.GetComponent<Text>();
+                    _choiceGainDetail[i].text = string.Empty;
+                    _choiceGainDetail[i].alignment = TextAnchor.MiddleLeft;
+                    _choiceGainDetail[i].horizontalOverflow = HorizontalWrapMode.Overflow;
+                    _choiceGainDetail[i].verticalOverflow = VerticalWrapMode.Overflow;
+                    _choiceGainDetail[i].raycastTarget = false;
+                    if (styleSource != null)
+                    {
+                        _choiceGainDetail[i].font = styleSource.font;
+                        _choiceGainDetail[i].fontSize = fontSize;
+                        _choiceGainDetail[i].color = styleSource.color;
+                        _choiceGainDetail[i].fontStyle = FontStyle.Bold;
+                    }
+
+                    subRow.SetActive(false);
                 }
 
-                // Icon
-                GameObject iconGO = new GameObject("[Mod]GainIcon", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
-                iconGO.transform.SetParent(row.transform, false);
-                _headerGainIcon = iconGO.GetComponent<Image>();
-                _headerGainIcon.raycastTarget = true;
-                _headerGainIcon.enabled = false;
-
-                LayoutElement iconLE = iconGO.GetComponent<LayoutElement>();
-                iconLE.preferredWidth = GainIconSize;
-                iconLE.preferredHeight = GainIconSize;
-                iconLE.minWidth = GainIconSize;
-                iconLE.minHeight = GainIconSize;
-
-                _headerGainTooltip = iconGO.AddComponent<ApproachIconTooltipTrigger>();
-
-                // Detail: "Exploration  Rank: 2"
-                GameObject detailGO = new GameObject("[Mod]GainDetail", typeof(RectTransform), typeof(Text));
-                detailGO.transform.SetParent(row.transform, false);
-                _headerGainDetail = detailGO.GetComponent<Text>();
-                _headerGainDetail.text = string.Empty;
-                _headerGainDetail.alignment = TextAnchor.MiddleLeft;
-                _headerGainDetail.horizontalOverflow = HorizontalWrapMode.Overflow;
-                _headerGainDetail.verticalOverflow = VerticalWrapMode.Overflow;
-                _headerGainDetail.raycastTarget = false;
-                if (styleSource != null)
-                {
-                    _headerGainDetail.font = styleSource.font;
-                    _headerGainDetail.fontSize = fontSize;
-                    _headerGainDetail.color = styleSource.color;
-                    _headerGainDetail.fontStyle = FontStyle.Bold;
-                }
-
-                row.SetActive(false);
+                outerRow.SetActive(false);
             }
 
             private static void RefreshHeaderGainDisplay()
             {
-                if (_headerGainIcon == null || _headerGainDetail == null || _currentSelectedCharacter == null)
+                if (_currentSelectedCharacter == null)
                 {
                     return;
                 }
@@ -1444,89 +1472,90 @@ namespace TFTV.TFTVIncidents
                     out LeaderSelection.AffinityApproach charApproach,
                     out int charRank);
 
-                LeaderSelection.AffinityApproach? gainApproach = null;
-                int gainRank = 0;
-                bool alreadyMax = false;
+                bool anyVisible = false;
 
-                if (hasAffinity)
+                // Outer container is the parent of the two sub-rows.
+                Transform outerRow = _choiceGainIcon[0] != null ? _choiceGainIcon[0].transform.parent?.parent : null;
+
+                for (int i = 0; i < 2; i++)
                 {
-                    // Check if any choice has the operative's affinity selected.
-                    for (int i = 0; i < 2; i++)
+                    if (_choiceGainIcon[i] == null || _choiceGainDetail[i] == null)
                     {
-                        if (_selectedApproach.TryGetValue(i, out LeaderSelection.AffinityApproach? sel)
-                            && sel.HasValue && sel.Value == charApproach)
+                        continue;
+                    }
+
+                    Transform subRow = _choiceGainIcon[i].transform.parent;
+
+                    LeaderSelection.AffinityApproach? gainApproach = null;
+                    int gainRank = 0;
+                    bool alreadyMax = false;
+
+                    if (_selectedApproach.TryGetValue(i, out LeaderSelection.AffinityApproach? sel) && sel.HasValue)
+                    {
+                        if (hasAffinity)
                         {
-                            gainApproach = charApproach;
-                            if (charRank >= 3)
+                            // Only show a gain if this choice's selected approach matches the operative's affinity.
+                            if (sel.Value == charApproach)
                             {
-                                gainRank = 3;
-                                alreadyMax = true;
+                                gainApproach = charApproach;
+                                if (charRank >= 3)
+                                {
+                                    gainRank = 3;
+                                    alreadyMax = true;
+                                }
+                                else
+                                {
+                                    gainRank = charRank + 1;
+                                }
                             }
-                            else
-                            {
-                                gainRank = charRank + 1;
-                            }
-                            break;
+                            // else: operative has a different affinity; no gain from this choice — leave hidden.
+                        }
+                        else
+                        {
+                            // No affinity yet — gaining this approach would grant rank 1.
+                            gainApproach = sel.Value;
+                            gainRank = 1;
                         }
                     }
-                }
-                else
-                {
-                    // No affinity — prefer the last-interacted choice so the header
-                    // reacts to whichever approach icon the player just clicked.
-                    int first = _lastInteractedChoiceIndex;
-                    int second = first == 0 ? 1 : 0;
 
-                    if (_selectedApproach.TryGetValue(first, out LeaderSelection.AffinityApproach? selFirst) && selFirst.HasValue)
+                    if (!gainApproach.HasValue || gainRank <= 0)
                     {
-                        gainApproach = selFirst.Value;
-                        gainRank = 1;
+                        if (subRow != null)
+                        {
+                            subRow.gameObject.SetActive(false);
+                        }
+                        continue;
                     }
-                    else if (_selectedApproach.TryGetValue(second, out LeaderSelection.AffinityApproach? selSecond) && selSecond.HasValue)
+
+                    PassiveModifierAbilityDef ability = LeaderSelection.GetAffinityAbility(gainApproach.Value, gainRank);
+                    Sprite icon = ability?.ViewElementDef?.SmallIcon;
+
+                    _choiceGainIcon[i].sprite = icon;
+                    _choiceGainIcon[i].enabled = icon != null;
+
+                    if (_choiceGainTooltip[i] != null)
                     {
-                        gainApproach = selSecond.Value;
-                        gainRank = 1;
+                        _choiceGainTooltip[i].Approach = gainApproach.Value;
                     }
-                }
 
-                Transform gainRow = _headerGainIcon.transform.parent;
+                    string name = GetApproachDisplayName(gainApproach.Value);
+                    _choiceGainDetail[i].text = alreadyMax
+                        ? $"{name}  Rank: 3 (max)"
+                        : $"{name}  Rank: {gainRank}";
 
-                if (!gainApproach.HasValue || gainRank <= 0)
-                {
-                    if (gainRow != null)
+                    if (subRow != null)
                     {
-                        gainRow.gameObject.SetActive(false);
+                        subRow.gameObject.SetActive(true);
                     }
-                    return;
+
+                    anyVisible = true;
                 }
 
-                PassiveModifierAbilityDef ability = LeaderSelection.GetAffinityAbility(gainApproach.Value, gainRank);
-                Sprite icon = ability?.ViewElementDef?.SmallIcon;
-
-                _headerGainIcon.sprite = icon;
-                _headerGainIcon.enabled = icon != null;
-
-                if (_headerGainTooltip != null)
+                if (outerRow != null)
                 {
-                    _headerGainTooltip.Approach = gainApproach.Value;
-                }
-
-                string name = GetApproachDisplayName(gainApproach.Value);
-                if (alreadyMax)
-                {
-                    _headerGainDetail.text = $"{name}  Rank: 3 (max)";
-                }
-                else
-                {
-                    _headerGainDetail.text = $"{name}  Rank: {gainRank}";
-                }
-
-                if (gainRow != null)
-                {
-                    gainRow.gameObject.SetActive(true);
+                    outerRow.gameObject.SetActive(anyVisible);
                 }
             }
-
             private static string GetApproachDisplayName(LeaderSelection.AffinityApproach approach)
             {
                 switch (approach)
@@ -1904,7 +1933,7 @@ namespace TFTV.TFTVIncidents
 
                 Image background = root.GetComponent<Image>();
                 background.raycastTarget = false;
-                background.color = new Color(0f, 0f, 0f, 0.55f);
+                background.color = new Color(0f, 0f, 0f, 1f);
 
                 Outline border = root.GetComponent<Outline>();
                 border.effectColor = new Color(1f, 1f, 1f, 0.25f);
@@ -1958,19 +1987,12 @@ namespace TFTV.TFTVIncidents
                     return;
                 }
 
-                rootRect.anchorMin = new Vector2(0.5f, 1f);
-                rootRect.anchorMax = new Vector2(0.5f, 1f);
-                rootRect.pivot = new Vector2(1f, 1f);
+                rootRect.anchorMin = new Vector2(0f, 0f);
+                rootRect.anchorMax = new Vector2(0f, 0f);
+                rootRect.pivot = new Vector2(0f, 0f);
                 rootRect.localScale = Vector3.one;
                 rootRect.sizeDelta = new Vector2(PanelWidth, 0f);
-
-                Text desc = module?.EncounterDescriptionText;
-                if (desc != null)
-                {
-                    RectTransform descRect = desc.rectTransform;
-                    float leftEdgeX = descRect.anchoredPosition.x - (descRect.rect.width * descRect.pivot.x);
-                    rootRect.anchoredPosition = new Vector2(leftEdgeX - GapFromEventText, descRect.anchoredPosition.y + 600f);
-                }
+                rootRect.anchoredPosition = new Vector2(100f, 20f);
             }
         }
     }

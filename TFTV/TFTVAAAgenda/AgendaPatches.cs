@@ -40,14 +40,14 @@ namespace TFTV.AgendaTracker
 
         internal static void QueueBaseReworkAgendaProductionRefresh()
         {
-            _pendingBaseReworkAgendaProductionRefresh = BaseReworkUtils.BaseReworkEnabled;
+            _pendingBaseReworkAgendaProductionRefresh = BaseReworkCheck.BaseReworkEnabled;
         }
 
         private static void RefreshBaseReworkProductionIfPending(GeoscapeViewContext context)
         {
             try
             {
-                if (!_pendingBaseReworkAgendaProductionRefresh || !BaseReworkUtils.BaseReworkEnabled)
+                if (!_pendingBaseReworkAgendaProductionRefresh || !BaseReworkCheck.BaseReworkEnabled)
                 {
                     return;
                 }

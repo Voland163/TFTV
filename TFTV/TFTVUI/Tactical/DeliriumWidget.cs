@@ -184,13 +184,12 @@ namespace TFTV.TFTVUI.Tactical
                     tooltipRect.SetParent(_parentTransform, false);
 
                     Image background = tooltip.GetComponent<Image>();
-                    background.color = new Color(0, 0, 0, 0.8f);
+                    background.color = new Color(0, 0, 0, 0.95f);
                     tooltip.AddComponent<RectMask2D>();
 
-                    // Let Unity lay out children top-to-bottom and auto-size the panel height
                     VerticalLayoutGroup layout = tooltip.AddComponent<VerticalLayoutGroup>();
-                    layout.padding = new RectOffset(20, 20, 20, 20);
-                    layout.spacing = 20f;
+                    layout.padding = new RectOffset(80, 80, 80, 80);
+                    layout.spacing = 80f;
                     layout.childAlignment = TextAnchor.UpperLeft;
                     layout.childControlWidth = true;
                     layout.childControlHeight = true;
@@ -201,8 +200,7 @@ namespace TFTV.TFTVUI.Tactical
                     fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
                     fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-                    // Fix the width; height will be driven by content
-                    tooltipRect.sizeDelta = new Vector2(1500, 0);  // was 1200
+                    tooltipRect.sizeDelta = new Vector2(1500, 0);
 
                     tooltip.SetActive(false);
                     return tooltip;
@@ -268,7 +266,7 @@ namespace TFTV.TFTVUI.Tactical
                     GameObject textObj = new GameObject("Text", typeof(RectTransform), typeof(Text), typeof(LayoutElement));
                     Text textComponent = textObj.GetComponent<Text>();
                     textComponent.text = text;
-                    textComponent.font = PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
+                    textComponent.font = textComponent.font = Data.GetSourceHanSansMediumFont();// PuristaSemiboldFontCache ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
                     textComponent.fontSize = 40;
                     textComponent.color = WhiteColor;
                     textComponent.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -285,7 +283,7 @@ namespace TFTV.TFTVUI.Tactical
                     {
                         GameObject wrapper = new GameObject("DetailItem", typeof(RectTransform));
                         VerticalLayoutGroup wrapVlg = wrapper.AddComponent<VerticalLayoutGroup>();
-                        wrapVlg.spacing = 8f;
+                        wrapVlg.spacing = 32f;
                         wrapVlg.childControlWidth = true;
                         wrapVlg.childControlHeight = true;
                         wrapVlg.childForceExpandWidth = true;

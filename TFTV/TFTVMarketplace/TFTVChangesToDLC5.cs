@@ -140,7 +140,7 @@ namespace TFTV
 
                     }
 
-                    if (!BaseReworkUtils.BaseReworkEnabled)
+                    if (!BaseReworkCheck.BaseReworkEnabled)
                     {
                         return;
                     }

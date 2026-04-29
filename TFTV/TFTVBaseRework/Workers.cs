@@ -25,7 +25,7 @@ namespace TFTV.TFTVBaseRework
         {
             private static void Postfix(GeoPhoenixFaction __instance)
             {
-                if (!BaseReworkUtils.BaseReworkEnabled)
+                if (!BaseReworkCheck.BaseReworkEnabled)
                 {
                     return;
                 }
@@ -40,7 +40,7 @@ namespace TFTV.TFTVBaseRework
         {
             private static bool Prefix(PhoenixFacilityDef facility, GeoFacilityComponentDef component, float baseValue, float addedValue, float multiplier, ref float __result)
             {
-                if (!BaseReworkUtils.BaseReworkEnabled || component == null)
+                if (!BaseReworkCheck.BaseReworkEnabled || component == null)
                 {
                     return true;
                 }
@@ -60,7 +60,7 @@ namespace TFTV.TFTVBaseRework
         {
             public static void Postfix(UIModuleInfoBar __instance, GeoFaction faction)
             {
-                if (!BaseReworkUtils.BaseReworkEnabled)
+                if (!BaseReworkCheck.BaseReworkEnabled)
                 {
                     return;
                 }

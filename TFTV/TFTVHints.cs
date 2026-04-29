@@ -5,30 +5,25 @@ using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
 using PhoenixPoint.Common.ContextHelp.HintConditions;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.View.ViewModules;
-using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.ContextHelp.HintConditions;
-using PhoenixPoint.Geoscape.View;
-using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.ContextHelp;
 using PhoenixPoint.Tactical.ContextHelp.HintConditions;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.View.ViewModules;
-using PhoenixPoint.Tactical.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Security.Permissions;
-using TFTV.TFTVIncidents;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace TFTV
 {
@@ -443,9 +438,9 @@ namespace TFTV
 
                     //For some reason the hint is played anyway, but without breaking the chain, it is played in the wrong order.
                     hatchingHint1.NextHint = null;
-                    
-              
-                   
+
+
+
 
                 }
                 catch (Exception e)
@@ -531,7 +526,7 @@ namespace TFTV
                     string nameSacrificeHint = "SacrificeHint";
                     ContextHelpHintDef sacrificeHint = CreateNewManualTacticalHint(nameSacrificeHint, "{B99AAD83-9D04-4B65-9E12-AB9423713973}", "VICTORY_MISSION_SACRIFICE_TITLE", "VICTORY_MISSION_SACRIFICE_TEXT", "VICTORY_GATE_SACRIFICE.jpg");
 
-                   
+
                 }
 
                 catch (Exception e)
@@ -551,19 +546,19 @@ namespace TFTV
                     CreateNewManualTacticalHint("BaseDefenseForce2Strat", "{22DF1F91-2D1A-4F34-AD9A-E9881E60CCD5}", "BASEDEFENSE_FORCE2STRAT_TITLE", "BASEDEFENSE_FORCE2STRAT_TEXT", "Olena_static.jpg");
 
                     ContextHelpHintDef sourceBaseDefenseHint = DefCache.GetDef<ContextHelpHintDef>("TUT_BaseDefense_HintDef");
-                   // ContextHelpHintDef sourceBaseDefenseHint2 = DefCache.GetDef<ContextHelpHintDef>("TUT_DLC3_MissionStartStory_HintDef");
+                    // ContextHelpHintDef sourceBaseDefenseHint2 = DefCache.GetDef<ContextHelpHintDef>("TUT_DLC3_MissionStartStory_HintDef");
                     string name = "TFTVBaseDefense";
                     ContextHelpHintDef newBaseDefenseHint = Helper.CreateDefFromClone(sourceBaseDefenseHint, "{61AA33F7-0B37-48C9-9C57-4B38AF024CCF}", name);
                     alwaysDisplayedTacticalHintsDbDef.Hints.Add(newBaseDefenseHint);
 
-                 //   CreateNewTacticalHint("TFTVBaseDefense", HintTrigger.MissionStart, baseDefenseMissionTag.name, "BASEDEFENSE_TACTICAL_ADVANTAGE_TITLE", "BASEDEFENSE_TACTICAL_ADVANTAGE_DESCRIPTION", 3, false, "{DB7CF4DE-D59F-4990-90AE-4C0B43550468}", "base_defense_hint.jpg");
+                    //   CreateNewTacticalHint("TFTVBaseDefense", HintTrigger.MissionStart, baseDefenseMissionTag.name, "BASEDEFENSE_TACTICAL_ADVANTAGE_TITLE", "BASEDEFENSE_TACTICAL_ADVANTAGE_DESCRIPTION", 3, false, "{DB7CF4DE-D59F-4990-90AE-4C0B43550468}", "base_defense_hint.jpg");
 
 
 
-                  //  ContextHelpHintDef baseDefenseStartHint = DefCache.GetDef<ContextHelpHintDef>("TFTVBaseDefense");
-                  //  baseDefenseStartHint.AnyCondition = true;
+                    //  ContextHelpHintDef baseDefenseStartHint = DefCache.GetDef<ContextHelpHintDef>("TFTVBaseDefense");
+                    //  baseDefenseStartHint.AnyCondition = true;
 
-                 //   DefCache.GetDef<ContextHelpHintDbDef>("TacticalHintsDbDef").Hints.Add(baseDefenseStartHint);
+                    //   DefCache.GetDef<ContextHelpHintDbDef>("TacticalHintsDbDef").Hints.Add(baseDefenseStartHint);
 
                     CreateNewManualTacticalHint("BaseDefenseVenting", "{AE6CE201-816F-4363-A80E-5CD07D8263CF}", "BASEDEFENSE_VENTING_TITLE", "BASEDEFENSE_VENTING_TEXT", "Olena_static.jpg");
                 }
@@ -644,7 +639,7 @@ namespace TFTV
                     hoplitesHint.Conditions.Add(Constructors.ActorHasStatusHintConditionDefCreateNewConditionForTacticalHint("Alerted_StatusDef"));
                     CreateNewTacticalHint(hintHopliteRepair, HintTrigger.ActorSeen, AddAutoRepairStatusAbility.name, hoplitesRepairTitle, hoplitesRepairText, 2, true, "B25F1794-5641-40D3-88B5-0AA104FC75A1", "HINT_TFTV_Ancients_Tactical_Hoplites_Overpower.jpg");
                     CreateNewTacticalHint(hintHopliteMaxPower, HintTrigger.ActorSeen, ancientsPowerUpStatus.name, hopliteMaxPowerTitle, hopliteMaxPowerText, 2, true, "0DC75121-325A-406E-AC37-5F1AAB4E7778", "HINT_TFTV_Ancients_Tactical_Hoplites_Overpower.jpg");
-                    TFTVAncientsGeo.AncientAutomataInfoHint =  CreateNewTacticalHint(ancientAutomataResearched, HintTrigger.MissionStart, ancientMissionTag.name, ancientAutomataResearchedTitle, ancientAutomataResearchedText, 3, true, "{F77D8357-21F1-4B56-847F-54AA816A7291}", "Olena_static.jpg");
+                    TFTVAncientsGeo.AncientAutomataInfoHint = CreateNewTacticalHint(ancientAutomataResearched, HintTrigger.MissionStart, ancientMissionTag.name, ancientAutomataResearchedTitle, ancientAutomataResearchedText, 3, true, "{F77D8357-21F1-4B56-847F-54AA816A7291}", "Olena_static.jpg");
                 }
                 catch (Exception e)
                 {
@@ -685,14 +680,14 @@ namespace TFTV
 
                     CreateNewTacticalHint(tagTBTVOnTurnEndName + "_Hint", HintTrigger.ActorHurt, "VoidTouchedOnTurnEnd_GameTagDef", "TBTV_ON_TURN_END_TITLE_HINT", "TBTV_ON_TURN_END_TEXT_HINT", 1, true, "E7365C33-7222-44E3-B397-77DA892E6D9F", "Hint_TBTV_EoT.jpg");
 
-                  /*  string tagVoidBlightName = "VoidBlight";
+                    /*  string tagVoidBlightName = "VoidBlight";
 
-                    Helper.CreateDefFromClone(
-                        source,
-                        "D3276B4D-4A50-48AF-B21D-EB831287811B",
-                        tagVoidBlightName + "_GameTagDef");
+                      Helper.CreateDefFromClone(
+                          source,
+                          "D3276B4D-4A50-48AF-B21D-EB831287811B",
+                          tagVoidBlightName + "_GameTagDef");
 
-                    CreateNewTacticalHint(tagVoidBlightName, HintTrigger.StatusApplied, "TBTV_Target", "VOID_BLIGHT_NAME_HINT", "VOID_BLIGHT_DESCRIPTION_HINT", 2, true, "24D1EE1C-90A2-47FC-A999-FC0A4B63997C", "acheron_void_blight.jpg");*/
+                      CreateNewTacticalHint(tagVoidBlightName, HintTrigger.StatusApplied, "TBTV_Target", "VOID_BLIGHT_NAME_HINT", "VOID_BLIGHT_DESCRIPTION_HINT", 2, true, "24D1EE1C-90A2-47FC-A999-FC0A4B63997C", "acheron_void_blight.jpg");*/
 
                 }
                 catch (Exception e)
@@ -761,10 +756,10 @@ namespace TFTV
         {
             internal static Sprite CustomGeoHintImage;
 
-            public static void TriggerBaseDefenseHint(GeoLevelController controller) 
+            public static void TriggerBaseDefenseHint(GeoLevelController controller)
             {
                 try
-                {               
+                {
                     CreateCustomGeoHint("KEY_HINT_BASE_MISSION_TITLE", "KEY_HINT_BASE_MISSION_DESCRIPTION", "base_defense_geo_hint.JPG");
                     PlayCustomGeoHint(controller);
                 }
@@ -776,7 +771,7 @@ namespace TFTV
 
             public static void TriggerBehemothDeployHint(GeoLevelController controller)
             {
-                try 
+                try
                 {
                     CreateCustomGeoHint("KEY_HINT_BEHEMOTH_DEPLOY_TITLE", "KEY_HINT_BEHEMOTH_DEPLOY_DESCRIPTION", "HINT_GEO_BEHEMOTH_DEPLOY.JPG");
                     PlayCustomGeoHint(controller);
@@ -817,12 +812,12 @@ namespace TFTV
                 }
             }
 
-            internal static void PlayCustomGeoHint(GeoLevelController controller) 
+
+            internal static void PlayCustomGeoHint(GeoLevelController controller, bool forceShow = false)
             {
                 try
                 {
                     GeoscapeTutorialStepType stepType = GeoscapeTutorialStepType.AlienReconRaid;
-
                     GeoscapeTutorial geoscapeTutorial = controller.Tutorial;
 
                     FieldInfo _shownStepsFieldInfo = typeof(GeoscapeTutorial).GetField("_shownSteps", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -831,10 +826,10 @@ namespace TFTV
                     HashSet<GeoscapeTutorialStepType> shownSteps = (HashSet<GeoscapeTutorialStepType>)_shownStepsFieldInfo.GetValue(geoscapeTutorial);
                     HashSet<GeoscapeTutorialStepType> completedSteps = (HashSet<GeoscapeTutorialStepType>)_completedStepsFieldInfo.GetValue(geoscapeTutorial);
 
-                    if(shownSteps.Contains(stepType)) 
+                    if (shownSteps.Contains(stepType))
                     {
                         shownSteps.Remove(stepType);
-                        _shownStepsFieldInfo.SetValue(geoscapeTutorial, shownSteps);                
+                        _shownStepsFieldInfo.SetValue(geoscapeTutorial, shownSteps);
                     }
 
                     if (completedSteps.Contains(stepType))
@@ -843,8 +838,28 @@ namespace TFTV
                         _completedStepsFieldInfo.SetValue(geoscapeTutorial, completedSteps);
                     }
 
+                    OptionsManager optionsManager = null;
+                    bool savedHintsEnabled = false;
+                    if (forceShow)
+                    {
+                        BaseReworkHints.IsBaseReworkHintActive = true;
+                        optionsManager = GameUtl.GameComponent<OptionsManager>();
+                        OptionsManager.GameplayOptions opts = optionsManager.CurrentGameplayOptions;
+                        savedHintsEnabled = opts.EnableContextHelpHints;
+                        opts.EnableContextHelpHints = true;
+                        optionsManager.CurrentGameplayOptions = opts;
+                    }
+
                     geoscapeTutorial.ShowTutorialStep(stepType);
 
+                    if (forceShow && optionsManager != null)
+                    {
+                        OptionsManager.GameplayOptions opts = optionsManager.CurrentGameplayOptions;
+                        opts.EnableContextHelpHints = savedHintsEnabled;
+                        optionsManager.CurrentGameplayOptions = opts;
+                      TFTVLogger.Always($"Restored hints enabled to {savedHintsEnabled} after showing forced hint; " +
+                          $"optionsManager.CurrentGameplayOptions.EnableContextHelpHints: {optionsManager.CurrentGameplayOptions.EnableContextHelpHints}");
+                    }
                 }
                 catch (Exception e)
                 {
@@ -852,28 +867,44 @@ namespace TFTV
                 }
             }
 
-            
-
-
-          /*  [HarmonyPatch(typeof(GeoscapeTutorial), "ShowTutorialStep", typeof(GeoscapeTutorialStepType), typeof(int))]
-            public static class TFTV_GeoscapeTutorial_ShowTutorialStep_Hints_Patch
+            [HarmonyPatch(typeof(GeoscapeTutorial), "OnHintClosed")]
+            internal static class GeoscapeTutorial_OnHintClosed_Patch
             {
-                public static void Postfix(GeoscapeTutorial __instance, GeoscapeTutorialStepType stepType, bool __result)
+                private static bool Prefix(GeoscapeTutorial __instance)
                 {
-                    try
+                    GeoLevelController level = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                    if (level == null)
                     {
-                        TFTVLogger.Always($"setting geo tutorial step {stepType}, result is {__result}");
+                        return true;
+                    }
 
-                    }
-                    catch (Exception e)
+                    UIModuleTutorialModal tutorialModule = level.View.GeoscapeModules.TutorialModule;
+                    if (!tutorialModule.DisableHints.activeInHierarchy)
                     {
-                        TFTVLogger.Error(e);
+                        return false;
                     }
+
+                    return true;
                 }
-            }*/
+            }
 
 
+            /*  [HarmonyPatch(typeof(GeoscapeTutorial), "ShowTutorialStep", typeof(GeoscapeTutorialStepType), typeof(int))]
+              public static class TFTV_GeoscapeTutorial_ShowTutorialStep_Hints_Patch
+              {
+                  public static void Postfix(GeoscapeTutorial __instance, GeoscapeTutorialStepType stepType, bool __result)
+                  {
+                      try
+                      {
+                          TFTVLogger.Always($"setting geo tutorial step {stepType}, result is {__result}");
 
+                      }
+                      catch (Exception e)
+                      {
+                          TFTVLogger.Error(e);
+                      }
+                  }
+              }*/
 
             [HarmonyPatch(typeof(UIModuleTutorialModal), "SetTutorialStep")]
             public static class UIModuleTutorialModal_SetTutorialStep_Hints_Patch
@@ -882,9 +913,16 @@ namespace TFTV
                 {
                     try
                     {
-                        // TFTVLogger.Always($"setting geo tutorial step {step.StepType}");
-
                         __instance.Image.gameObject.SetActive(true);
+
+                        __instance.DisableHintsToggle.gameObject.SetActive(true);
+
+                        OptionsManager optionsManager = GameUtl.GameComponent<OptionsManager>();
+
+                        OptionsManager.GameplayOptions opts = optionsManager.CurrentGameplayOptions;
+
+                        TFTVLogger.Always($"On SetTutorialStep: optionsManager.CurrentGameplayOptions.EnableContextHelpHints: {optionsManager.CurrentGameplayOptions.EnableContextHelpHints}");
+
 
                         if (step.StepType == GeoscapeTutorialStepType.CorruptionActivated && step.Title.LocalizationKey == "KEY_GEO_HINT_ENEMY_SPECIAL_CORRUPTION_NAME")
                         {
@@ -902,9 +940,9 @@ namespace TFTV
                         {
                             __instance.Image.sprite = Helper.CreateSpriteFromImageFile("background_ancients_hint.jpg");
                         }
-                        else if (step.StepType == GeoscapeTutorialStepType.AlienInfestHavenRaid) 
-                        {  
-                        __instance.Image.sprite = Helper.CreateSpriteFromImageFile("MP_Choices_All.jpg");
+                        else if (step.StepType == GeoscapeTutorialStepType.AlienInfestHavenRaid)
+                        {
+                            __instance.Image.sprite = Helper.CreateSpriteFromImageFile("MP_Choices_All.jpg");
                         }
                         else if (step.StepType == GeoscapeTutorialStepType.AlienReconRaid)
                         {
@@ -916,18 +954,26 @@ namespace TFTV
                             {
                                 __instance.Image.sprite = CustomGeoHintImage;
                             }
+
+                            // If this is a BaseRework hint,disable the DisableHints toggle
+                            if (BaseReworkHints.IsBaseReworkHintActive)
+                            {
+                                TFTVLogger.Always($"Disable hints toggle: {__instance.DisableHintsToggle.enabled}");
+                                __instance.DisableHintsToggle.enabled = !opts.EnableContextHelpHints;
+                                TFTVLogger.Always($"And now? Disable hints toggle: {__instance.DisableHintsToggle.enabled}");
+                                __instance.DisableHints.SetActive(false);
+                               
+                            }
                         }
-                        else if (step.StepType == GeoscapeTutorialStepType.Geoscape) 
+                        else if (step.StepType == GeoscapeTutorialStepType.Geoscape)
                         {
                             TFTVLogger.Always($"Geoscape tutorial step triggered adding Alistair and Olena lore entries");
                             GeoLevelController geoLevelController = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
                             geoLevelController.Phoenixpedia.AddEntryFromDef(Repo.GetDef("B955090F-62E0-41F2-9036-3548A1DC5F46"));
                             geoLevelController.Phoenixpedia.AddEntryFromDef(Repo.GetDef("38ACBF41-7D2D-479F-981E-10FED4FC6800"));
-
                         }
-                      
 
-
+                        TFTVLogger.Always($"On end of SetTutorialStep: optionsManager.CurrentGameplayOptions.EnableContextHelpHints: {optionsManager.CurrentGameplayOptions.EnableContextHelpHints}");
                     }
                     catch (Exception e)
                     {
@@ -935,6 +981,8 @@ namespace TFTV
                     }
                 }
             }
+
+         
         }
 
         internal class TacticalHints
@@ -1202,7 +1250,7 @@ namespace TFTV
                 }
             }
 
-        
+
 
             [HarmonyPatch(typeof(UIModuleContextHelp), "ShowPanel")]
             public static class UIModuleContextHelp_Show_Hints_Patch
@@ -1262,16 +1310,24 @@ namespace TFTV
             private const string VarIncidents = "TFTV_HINT_INCIDENTS_SHOWN";
             private const string VarAffinities = "TFTV_HINT_AFFINITIES_SHOWN";
 
+
+            public static bool IsBaseReworkHintActive = false;
+            private static bool ForceShow => TFTVMain.Main.Config.ShowBaseReworkHints;
+
             public static void TriggerPersonnelHint(GeoLevelController controller)
             {
                 try
                 {
-                    if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled) return;
-                    if (controller.EventSystem.GetVariable(VarPersonnel) != 0) return;
+                    if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled) return;
+                    if (!ForceShow) return;
 
-                    controller.EventSystem.SetVariable(VarPersonnel, 1);
+                    GeoscapeEventSystem eventSystem = controller.EventSystem;
+
+                    if (eventSystem.GetVariable(VarPersonnel) > 0) return;
+
                     GeoscapeHints.CreateCustomGeoHint("TUTORIAL_PERSONNEL_TITLE0", "TUTORIAL_PERSONNEL_TEXT0", null);
-                    GeoscapeHints.PlayCustomGeoHint(controller);
+                    GeoscapeHints.PlayCustomGeoHint(controller, forceShow: true);
+                    eventSystem.SetVariable(VarPersonnel, 1);
                 }
                 catch (Exception e) { TFTVLogger.Error(e); }
             }
@@ -1280,12 +1336,16 @@ namespace TFTV
             {
                 try
                 {
-                    if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled) return;
-                    if (controller.EventSystem.GetVariable(VarAdditionalBases) != 0) return;
+                    if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled) return;
+                    if (!ForceShow) return;
 
-                    controller.EventSystem.SetVariable(VarAdditionalBases, 1);
+                    GeoscapeEventSystem eventSystem = controller.EventSystem;
+
+                    if (eventSystem.GetVariable(VarAdditionalBases) > 0) return;
+
                     GeoscapeHints.CreateCustomGeoHint("TUTORIAL_ADDITIONAL_BASES_TITLE0", "TUTORIAL_ADDITIONAL_BASES_TEXT0", null);
-                    GeoscapeHints.PlayCustomGeoHint(controller);
+                    GeoscapeHints.PlayCustomGeoHint(controller, forceShow: true);
+                    eventSystem.SetVariable(VarAdditionalBases, 1);
                 }
                 catch (Exception e) { TFTVLogger.Error(e); }
             }
@@ -1294,30 +1354,35 @@ namespace TFTV
             {
                 try
                 {
-                    if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled) return;
-                    if (controller.EventSystem.GetVariable(VarIncidents) != 0) return;
+                    if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled) return;
+                    if (!ForceShow) return;
 
-                    GeoscapeEventContext eventContext = new GeoscapeEventContext(controller.PhoenixFaction.Bases.FirstOrDefault().Site, controller.PhoenixFaction);
-                    controller.EventSystem.TriggerGeoscapeEvent(GeoscapeEvents.FirstIncidentAppearedEventId, eventContext);
-                    controller.EventSystem.SetVariable(VarIncidents, 1);
+                    GeoscapeEventSystem eventSystem = controller.EventSystem;
+
+                    if (eventSystem.GetVariable(VarIncidents) > 0) return;
+
                     GeoscapeHints.CreateCustomGeoHint("TUTORIAL_INCIDENTS_TITLE0", "TUTORIAL_INCIDENTS_TEXT0", null);
-                    GeoscapeHints.PlayCustomGeoHint(controller);
+                    GeoscapeHints.PlayCustomGeoHint(controller, forceShow: true);
+                    eventSystem.SetVariable(VarIncidents, 1);
                 }
                 catch (Exception e) { TFTVLogger.Error(e); }
             }
-
-            
 
             public static void TriggerAffinitiesHint(GeoLevelController controller)
             {
                 try
                 {
-                    if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled) return;
-                    if (controller.EventSystem.GetVariable(VarAffinities) != 0) return;
+                    if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled) return;
+                    if (!ForceShow) return;
 
-                    controller.EventSystem.SetVariable(VarAffinities, 1);
+                    GeoscapeEventSystem eventSystem = controller.EventSystem;
+
+                    if (eventSystem.GetVariable(VarAffinities) > 0) return;
+
                     GeoscapeHints.CreateCustomGeoHint("TUTORIAL_AFFINITIES_TITLE0", "TUTORIAL_AFFINITIES_TEXT0", "Affinities.jpg");
-                    GeoscapeHints.PlayCustomGeoHint(controller);
+                    GeoscapeHints.PlayCustomGeoHint(controller, forceShow: true);
+
+                    eventSystem.SetVariable(VarAffinities, 1);
                 }
                 catch (Exception e) { TFTVLogger.Error(e); }
             }

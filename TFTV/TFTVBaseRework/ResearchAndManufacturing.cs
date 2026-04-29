@@ -22,7 +22,7 @@ namespace TFTV.TFTVBaseRework
 
         internal static void ApplyProductionAdjustments(GeoFaction faction)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled)
+            if (!BaseReworkCheck.BaseReworkEnabled)
             {
                 return;
             }
@@ -52,7 +52,7 @@ namespace TFTV.TFTVBaseRework
             researchBonus = 0f;
             productionBonus = 0f;
 
-            if (!BaseReworkUtils.BaseReworkEnabled || faction == null)
+            if (!BaseReworkCheck.BaseReworkEnabled || faction == null)
             {
                 return;
             }

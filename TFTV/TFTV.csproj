@@ -172,7 +172,7 @@
     <Compile Include="TFTVBaseRework\ResearchAndManufacturing.cs" />
     <Compile Include="TFTVBaseRework\TrainingFacilityRework.cs" />
     <Compile Include="TFTVBaseRework\UI.cs" />
-    <Compile Include="TFTVBaseRework\Utils.cs" />
+    <Compile Include="TFTVBaseRework\BaseReworkActiveCheck.cs" />
     <Compile Include="TFTVBaseRework\Workers.cs" />
     <Compile Include="TFTVCustomPortraits.cs" />
     <Compile Include="TFTVDrills\CanvasGroupExtensions.cs" />

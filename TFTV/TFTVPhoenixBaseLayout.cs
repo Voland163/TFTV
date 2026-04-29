@@ -117,7 +117,7 @@ namespace TFTV
 
                 int num = template.BlockedTiles.RandomValue();
 
-                if (TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                if (TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled)
                 {
                     num = 0;
                 }

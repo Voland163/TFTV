@@ -190,7 +190,7 @@ namespace MadSkunkyTweaks.Tools
         {
             try
             {
-                if (!BaseReworkUtils.BaseReworkEnabled)
+                if (!BaseReworkCheck.BaseReworkEnabled)
                 {
                     TFTVLogger.Always("[IncidentTest] Base Rework is disabled.");
                     return;
@@ -319,7 +319,7 @@ namespace MadSkunkyTweaks.Tools
         {
             try
             {
-                if (!BaseReworkUtils.BaseReworkEnabled)
+                if (!BaseReworkCheck.BaseReworkEnabled)
                 {
                     TFTVLogger.Always("[AffinityTest] Base Rework is disabled.");
                     return;

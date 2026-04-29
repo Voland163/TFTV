@@ -25,8 +25,6 @@ namespace TFTV.TFTVIncidents
 
         internal static void ImportOption2RestoreAppliedSnapshot(Dictionary<string, float> imported)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled) return;
-
             HealAbility_BiotechMedkitPatch.ImportOption2RestoreAppliedSnapshot(imported);
         }
 

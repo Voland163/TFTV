@@ -133,7 +133,7 @@ namespace TFTV
             TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
             TFTVUI.Geoscape.Facilities.CheckUnpoweredBasesOnGeoscapeStart();
             AircraftReworkSpeedAndRange.Init(Controller);
-            if (BaseReworkUtils.BaseReworkEnabled)
+            if (BaseReworkCheck.BaseReworkEnabled)
             {
                 RestoreAssignments(Controller);
                 TryGrantInitialPersonnel(Controller);
@@ -253,8 +253,8 @@ namespace TFTV
                 NewTrainingFacilities = TFTVNewGameOptions.NewTrainingFacilities,
                 BaseRework = TFTVNewGameOptions.BaseRework,
                 // Personnel & training sessions snapshot
-                PersonnelPool = BaseReworkUtils.BaseReworkEnabled ? CreateAssignmentsSnapshot() : null,
-                RecruitTrainingSessions = BaseReworkUtils.BaseReworkEnabled ? CreateRecruitSessionsSnapshot() : null,
+                PersonnelPool = BaseReworkCheck.BaseReworkEnabled ? CreateAssignmentsSnapshot() : null,
+                RecruitTrainingSessions = BaseReworkCheck.BaseReworkEnabled ? CreateRecruitSessionsSnapshot() : null,
                 OperativeAffinities = AffinityInheritance.CreateOperativeAffinitySnapshot(),
                 BankedAffinityTransfers = AffinityInheritance.CreateBankedAffinitySnapshot(),
             };
@@ -299,6 +299,18 @@ namespace TFTV
                 TFTVAmbushes.NJ_Purists_Hotspots = data.PU_Hotspots;
                 TFTVNewGameOptions.NewTrainingFacilities = data.NewTrainingFacilities;
                 TFTVNewGameOptions.BaseRework = data.BaseRework;
+
+                // Backwards compatibility: beta saves were recorded when BaseRework was
+                // hardcoded true and the field did not yet exist in save data, so it
+                // deserialises as false.  PersonnelPool is only written when BaseRework
+                // is enabled, so a non-null value here is conclusive proof the save
+                // originates from a BaseRework session.
+
+                if (!TFTVNewGameOptions.BaseRework && data.PersonnelPool != null)
+                {
+                    TFTVLogger.Always("[BaseRework] Legacy beta save detected (PersonnelPool present but BaseRework flag missing); enabling BaseRework.");
+                    TFTVNewGameOptions.BaseRework = true;
+                }
 
                 if (data.PlayerVehicles != null)
                 {
@@ -361,7 +373,7 @@ namespace TFTV
                 AffinityInheritance.LoadOperativeAffinitySnapshot(data.OperativeAffinities);
                 AffinityInheritance.LoadBankedAffinitySnapshot(data.BankedAffinityTransfers);
 
-                if (BaseReworkUtils.BaseReworkEnabled && data.PersonnelPool != null)
+                if (BaseReworkCheck.BaseReworkEnabled && data.PersonnelPool != null)
                 {
                     PersonnelData.LoadAssignmentsSnapshot(Controller, data.PersonnelPool);
 
@@ -372,12 +384,12 @@ namespace TFTV
 
                 }
 
-                if (BaseReworkUtils.BaseReworkEnabled && data.RecruitTrainingSessions != null && data.RecruitTrainingSessions.Count > 0)
+                if (BaseReworkCheck.BaseReworkEnabled && data.RecruitTrainingSessions != null && data.RecruitTrainingSessions.Count > 0)
                 {
                     LoadRecruitSessionsSnapshot(Controller, data.RecruitTrainingSessions);
                 }
 
-                if (BaseReworkUtils.BaseReworkEnabled)
+                if (BaseReworkCheck.BaseReworkEnabled)
                 {
                     TFTVLogger.Always(
                         $"[PersonnelPersistence] Restored Personnel={data.PersonnelPool?.Count ?? 0} " +
@@ -392,7 +404,8 @@ namespace TFTV
                     $"\nMoreAmbushesSetting: {TFTVNewGameOptions.MoreAmbushesSetting}\nLimitedCaptureSetting: {TFTVNewGameOptions.LimitedCaptureSetting}\nLimitedHarvestingSetting: {TFTVNewGameOptions.LimitedHarvestingSetting}" +
                     $"\nStrongerPandoransSetting {TFTVNewGameOptions.StrongerPandoransSetting}\nImpossibleWeaponsAdjustmentsSetting: {TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting}" +
                     $"\nNoSecondChances: {TFTVNewGameOptions.NoSecondChances}" +
-                    $"\nNewTrainingFacilities: {TFTVNewGameOptions.NewTrainingFacilities}");
+                    $"\nNewTrainingFacilities: {TFTVNewGameOptions.NewTrainingFacilities}" +
+                    $"\nBaseRework: {TFTVNewGameOptions.BaseRework}");
 
                 TFTVDefsWithConfigDependency.ImplementConfigChoices();
                 TFTVDragandDropFunctionality.VehicleRoster.RestoreVehicleOrder(Controller);
@@ -475,7 +488,7 @@ namespace TFTV
             GeoLevelController gsController = Controller;
             TFTVConfig config = TFTVMain.Main.Config;
 
-            if (BaseReworkUtils.BaseReworkEnabled)
+            if (BaseReworkCheck.BaseReworkEnabled)
             {
 
                 ResetBaseReworkStateForNewGame();

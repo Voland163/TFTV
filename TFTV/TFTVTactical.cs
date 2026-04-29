@@ -6,6 +6,7 @@ using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TFTV.TFTVBaseRework;
 
 namespace TFTV
 {
@@ -237,12 +238,12 @@ namespace TFTV
                 TFTVDrills.DrillsHarmony.NeuralLink.RefreshNeuralLinkStatus();
                 AircraftReworkTacticalModules.HeliosStatisChamber.ImplementVestBuff();
                 AircraftReworkTacticalModules.GroundAttackWeapon.ImplementGroundAttackWeaponModule(Controller);
-                
+                TFTVIncidents.MachineryRepairDefs.GrantRankAbilitiesOnMissionStart(Controller);
+                TFTVIncidents.AffinityTacticalEffects.ComputeTacticalBenefits.ApplyMissionStartBenefits(Controller);
+
             }
 
-        
 
-          
 
             TFTVLogger.Always("Tactical start completed");
 
@@ -277,6 +278,9 @@ namespace TFTV
                 TFTVLogger.Always("Tactical save is being processed");
 
                 TFTVCommonMethods.ClearInternalVariablesOnStateChangeAndLoad();
+
+                PersonnelData.ClearAssignments();
+                TrainingFacilityRework.ClearAllSessions();
 
                 TFTVTacInstanceData data = (TFTVTacInstanceData)instanceData;
                 TFTVStamina.charactersWithDisabledBodyParts = data.charactersWithBrokenLimbs;
@@ -383,15 +387,17 @@ namespace TFTV
                 {
                     TFTVAircraftReworkMain.InternalData.ModulesInTactical = data.AircraftModulesInTactical;
                     AircraftReworkTacticalModules.LoadInternalDataForTactical();
+                    TFTVIncidents.Affinities.AffinityBenefitsChoices.ImportTacticalBenefitChoiceSnapshot(data.AffinityTacticalBenefitChoices);
+                    TFTVIncidents.MachineryRepairDefs.ApplyChoiceFromSnapshot();
+                    TFTVIncidents.BiotechMedkit.ImportOption2RestoreAppliedSnapshot(data.BiotechMedkitOption2RestoreAppliedByActorId);
+                    TFTVIncidents.Affinities.AffinityBenefitsChoices.ImportTacticalBenefitChoiceSnapshot(data.AffinityTacticalBenefitChoices);
+                    TFTVIncidents.Affinities.AffinityBenefitsChoices.RefreshTacticalAbilityDescriptionsFromSnapshot();
                 }
+
                 TFTVVests.Tiers.VestTierUpgradesPatch.ApplyTierUpgradesFromIndexes(
                     data.AblativeVestTierIndex,
                     data.HazmatVestTierIndex);
-                TFTVIncidents.Affinities.AffinityBenefitsChoices.ImportTacticalBenefitChoiceSnapshot(data.AffinityTacticalBenefitChoices);
-                TFTVIncidents.MachineryRepairDefs.ApplyChoiceFromSnapshot();
-                TFTVIncidents.BiotechMedkit.ImportOption2RestoreAppliedSnapshot(data.BiotechMedkitOption2RestoreAppliedByActorId);
-                TFTVIncidents.Affinities.AffinityBenefitsChoices.ImportTacticalBenefitChoiceSnapshot(data.AffinityTacticalBenefitChoices);
-                TFTVIncidents.Affinities.AffinityBenefitsChoices.RefreshTacticalAbilityDescriptionsFromSnapshot();
+              
 
                 TurnZeroMethodsExecuted = data.TurnZeroMethodsExecuted;
 
@@ -521,21 +527,18 @@ namespace TFTV
                         {
 
                             AircraftReworkTacticalModules.FirstTurn.ImplementModuleEffectsOnFirstTurn(Controller);
-                        }
-
-                        if (TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
-                        {
                             TFTVIncidents.Affinities.AffinityBenefitsChoices.RefreshTacticalAbilityDescriptionsFromSnapshot();
-                            TFTVIncidents.MachineryRepairDefs.GrantRankAbilitiesOnMissionStart(Controller);
-                            TFTVIncidents.AffinityTacticalEffects.ComputeTacticalBenefits.ApplyMissionStartBenefits(Controller);
                             TFTVIncidents.AffinityTacticalEffects.ExplorationTacticalBenefits.ApplyHavenDefenseMissionStartBenefits(Controller);
                         }
+
+                     
 
                         //  TFTVBaseDefenseTactical.ModifyObjectives(Controller.TacMission.MissionData.MissionType);
                         TurnZeroMethodsExecuted = true;
 
                     }
 
+                  
 
 
                     TFTVTacticalUtils.RevealExfilPoint(Controller, turnNumber);

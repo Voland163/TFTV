@@ -16,7 +16,7 @@ namespace TFTV.TFTVBaseRework
           GeoCharacter character,
           CharacterDeathReason reason)
         {
-            if (!BaseReworkUtils.BaseReworkEnabled || faction == null || character == null)
+            if (!BaseReworkCheck.BaseReworkEnabled || faction == null || character == null)
             {
                 return false;
             }
@@ -134,7 +134,7 @@ namespace TFTV.TFTVBaseRework
             {
                 try
                 {
-                    if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                    if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled)
                     {
                         return true;
                     }

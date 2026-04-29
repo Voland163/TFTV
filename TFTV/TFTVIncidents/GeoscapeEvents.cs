@@ -45,10 +45,7 @@ namespace TFTV.TFTVIncidents
         {
             try
             {
-                if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
-                {
-                    return;
-                }
+               
 
                 IncidentDefinitions.Clear();
                 CreateIncidentNarrationEvents();

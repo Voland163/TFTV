@@ -9,11 +9,13 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Entities.Sites;
+using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
@@ -59,6 +61,7 @@ namespace TFTV
                 HandGrenadeScatter.ImplementHandGrenadeScatterConfig();
                 EquipBeforeAmbush.ImplementEquipBeforeAmbush();
                 NewTrainingFacilities.ImplementNewTrainingFacilities();
+                BaseReworkResearch.ImplementBaseReworkResearch();
             }
             catch (Exception e)
             {
@@ -1486,5 +1489,125 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
                 }
             }
         }
+
+                internal class BaseReworkResearch
+        {
+            private static bool _implemented = false;
+
+            // Cached vanilla values
+            private static List<ResourceUnit> _vanillaBionicsLabOutput;
+            private static List<ResourceUnit> _vanillaResearchLabOutput;
+            private static List<ResourceUnit> _vanillaFabricationPlantOutput;
+            private static ResearchRewardDef[] _vanillaHavenRecruitingUnlocks;
+            private static ResourcePack _vanillaActivateBaseCost;
+            private static TacCharacterDef[] _vanillaStartingUnits;
+            private static bool[] _vanillaConvertSiteToPhoenixBase;
+
+            public static void ImplementBaseReworkResearch()
+            {
+                try
+                {
+                    bool enabled = TFTVNewGameOptions.BaseRework;
+                    bool revert = !enabled && _implemented;
+
+                    if (enabled && !_implemented)
+                    {
+                        ModifyDefs(false);
+                        _implemented = true;
+                        TFTVLogger.Always("BaseRework research/manufacturing defs applied.");
+                    }
+                    else if (revert)
+                    {
+                        ModifyDefs(true);
+                        _implemented = false;
+                        TFTVLogger.Always("BaseRework research/manufacturing defs reverted to vanilla.");
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void ModifyDefs(bool revert)
+            {
+                try
+                {
+                    ResourceGeneratorFacilityComponentDef bionicsLab = DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [BionicsLab_PhoenixFacilityDef]");
+                    ResourceGeneratorFacilityComponentDef researchLab = DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [ResearchLab_PhoenixFacilityDef]");
+                    ResourceGeneratorFacilityComponentDef fabricationPlant = DefCache.GetDef<ResourceGeneratorFacilityComponentDef>("E_ResourceGenerator [FabricationPlant_PhoenixFacilityDef]");
+                    ResearchDef havenRecruitingResearchDef = DefCache.GetDef<ResearchDef>("PX_HavenRecruits_ResearchDef");
+                    ActivateBaseAbilityDef activateBaseAbilityDef = DefCache.GetDef<ActivateBaseAbilityDef>("ActivateBaseAbilityDef");
+                    GeoscapeEventDef synFreeBaseEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_SY3_WIN_GeoscapeEventDef");
+                    GeoPhoenixFactionDef geoPhoenixFactionDef = DefCache.GetDef<GeoPhoenixFactionDef>("Phoenix_GeoPhoenixFactionDef");
+
+                    if (!revert)
+                    {
+                        // Cache vanilla values before first modification
+                        _vanillaBionicsLabOutput = bionicsLab.BaseResourcesOutput.Values.ToList();
+                        _vanillaResearchLabOutput = researchLab.BaseResourcesOutput.Values.ToList();
+                        _vanillaFabricationPlantOutput = fabricationPlant.BaseResourcesOutput.Values.ToList();
+                        _vanillaHavenRecruitingUnlocks = havenRecruitingResearchDef.Unlocks.ToArray();
+                        _vanillaActivateBaseCost = activateBaseAbilityDef.Cost;
+                        _vanillaStartingUnits = geoPhoenixFactionDef.StartingUnits.ToArray();
+                        _vanillaConvertSiteToPhoenixBase = synFreeBaseEvent.GeoscapeEventData.Choices
+                            .Select(c => c.Outcome.ConvertSiteToPhoenixBase).ToArray();
+
+                        bionicsLab.BaseResourcesOutput.Values = new List<ResourceUnit>
+                        {
+                            new ResourceUnit() { Type = ResourceType.Research, Value = 2 }
+                        };
+                        researchLab.BaseResourcesOutput.Values = new List<ResourceUnit>
+                        {
+                            new ResourceUnit() { Type = ResourceType.Research, Value = 2 }
+                        };
+                        fabricationPlant.BaseResourcesOutput.Values = new List<ResourceUnit>
+                        {
+                            new ResourceUnit() { Type = ResourceType.Production, Value = 2 }
+                        };
+
+                        List<ResearchRewardDef> havenRecruitingUnlocks = havenRecruitingResearchDef.Unlocks.ToList();
+                        havenRecruitingUnlocks.RemoveAll(u => u is UnitTemplateResearchRewardDef);
+                        havenRecruitingResearchDef.Unlocks = havenRecruitingUnlocks.ToArray();
+
+                        activateBaseAbilityDef.Cost = new ResourcePack() { };
+
+                        foreach (GeoEventChoice choice in synFreeBaseEvent.GeoscapeEventData.Choices)
+                        {
+                            choice.Outcome.ConvertSiteToPhoenixBase = false;
+                        }
+
+                        geoPhoenixFactionDef.StartingUnits = new TacCharacterDef[]
+                        {
+                            DefCache.GetDef<TacCharacterDef>("PX_Heavy1_CharacterTemplateDef"),
+                            DefCache.GetDef<TacCharacterDef>("PX_Assault1_CharacterTemplateDef"),
+                            DefCache.GetDef<TacCharacterDef>("PX_Sniper1_CharacterTemplateDef")
+                        };
+                    }
+                    else
+                    {
+                        bionicsLab.BaseResourcesOutput.Values = _vanillaBionicsLabOutput;
+                        researchLab.BaseResourcesOutput.Values = _vanillaResearchLabOutput;
+                        fabricationPlant.BaseResourcesOutput.Values = _vanillaFabricationPlantOutput;
+                        havenRecruitingResearchDef.Unlocks = _vanillaHavenRecruitingUnlocks;
+                        activateBaseAbilityDef.Cost = _vanillaActivateBaseCost;
+
+                        List<GeoEventChoice> choices = synFreeBaseEvent.GeoscapeEventData.Choices;
+                        for (int i = 0; i < choices.Count && i < _vanillaConvertSiteToPhoenixBase.Length; i++)
+                        {
+                            choices[i].Outcome.ConvertSiteToPhoenixBase = _vanillaConvertSiteToPhoenixBase[i];
+                        }
+
+                        geoPhoenixFactionDef.StartingUnits = _vanillaStartingUnits;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
     }
+
+
 }

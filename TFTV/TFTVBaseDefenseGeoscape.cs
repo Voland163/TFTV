@@ -72,6 +72,7 @@ namespace TFTV
         internal static Color red = new Color32(192, 32, 32, 255);
         internal static Color brightRed = new Color32(255, 0, 0, 255);
         internal static GeoSite KludgeSite = null;
+        public static HashSet<int> PurgePending = new HashSet<int>();
 
         private static GeoscapeEventDef _underAttackEventDef;
         private static GeoscapeEventDef _purgeContainmentEventDef;
@@ -98,6 +99,7 @@ namespace TFTV
                 ContainmentBreachSchedule.Clear();
                 PandoransThatCanEscape.Clear();
                 Deployment.UI.DeploymentItemButtonMap.Clear();
+                PurgePending.Clear();
 
             }
             catch (Exception e)
@@ -712,8 +714,16 @@ namespace TFTV
                         {
 
 
-                            float timer = CalculateBaseAttackProgress(phoenixBase.Site);
                             int siteID = phoenixBase.Site.SiteId;
+
+                            // Don't roll while player hasn't answered the purge prompt yet
+                            if (PurgePending.Contains(siteID))
+                            {
+                                continue;
+                            }
+
+                            float timer = CalculateBaseAttackProgress(phoenixBase.Site);
+                            
 
                             if (HasUndamagedContainment(phoenixBase) && RollContainmentBreach(phoenixBase.Site, timer))
                             {
@@ -866,16 +876,26 @@ namespace TFTV
                 {
                     try
                     {
-                        if (@event.EventID == _purgeContainmentEventDef.EventID && choice == _purgeContainmentEventDef.GeoscapeEventData.Choices[0])
+                        if (@event.EventID == _purgeContainmentEventDef.EventID)
                         {
-                            TFTVLogger.Always($"Elected purge!");
                             GeoSite geoSite = @event.Context.Site;
 
-                            if (geoSite != null && PandoransThatCanEscape.ContainsKey(geoSite.SiteId))
+                            // Clear pending flag regardless of choice
+                            if (geoSite != null)
                             {
-                                TFTVLogger.Always($"Found the site");
-                                PurgeContainment(geoSite.SiteId, geoSite.GeoLevel.PhoenixFaction);
-                                PandoransThatCanEscape.Remove(geoSite.SiteId);
+                                PurgePending.Remove(geoSite.SiteId);
+                            }
+
+                            if (choice == _purgeContainmentEventDef.GeoscapeEventData.Choices[0])
+                            {
+                                TFTVLogger.Always($"Elected purge!");
+
+                                if (geoSite != null && PandoransThatCanEscape.ContainsKey(geoSite.SiteId))
+                                {
+                                    TFTVLogger.Always($"Found the site");
+                                    PurgeContainment(geoSite.SiteId, geoSite.GeoLevel.PhoenixFaction);
+                                    PandoransThatCanEscape.Remove(geoSite.SiteId);
+                                }
                             }
                         }
                     }
@@ -884,8 +904,6 @@ namespace TFTV
                         TFTVLogger.Error(e);
                         throw;
                     }
-
-
                 }
 
                 internal static bool HasUndamagedContainment(GeoPhoenixBase phoenixBase) //checks if breach already happened
@@ -1375,6 +1393,7 @@ namespace TFTV
                         if (PandoransThatCanEscape.Count > 0)
                         {
                             TFTVLogger.Always($"ContainmentBreach._pandoransThatCanEscape.Count > 0");
+                            PurgePending.Add(phoenixBase.SiteId);
                             controller.EventSystem.TriggerGeoscapeEvent(_purgeContainmentEventDef.EventID, context);
 
                         }

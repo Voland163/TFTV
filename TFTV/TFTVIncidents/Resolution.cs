@@ -309,10 +309,7 @@ namespace TFTV.TFTVIncidents
 
             public static void InitializeDefaults()
             {
-                if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
-                {
-                    return;
-                }
+               
 
                 if (Definitions.Count > 0)
                 {
@@ -391,7 +388,7 @@ namespace TFTV.TFTVIncidents
 
             public static void OnGeoscapeLevelStart(GeoscapeEventSystem eventSystem)
             {
-                if (!BaseReworkUtils.BaseReworkEnabled) return;
+                if (!BaseReworkCheck.BaseReworkEnabled) return;
 
                 RehydrateFromTimers(eventSystem);
                 RefreshAllVisuals(eventSystem?.gameObject?.GetComponent<GeoLevelController>());
@@ -401,7 +398,7 @@ namespace TFTV.TFTVIncidents
             {
                 try
                 {
-                    if (!BaseReworkUtils.BaseReworkEnabled) return;
+                    if (!BaseReworkCheck.BaseReworkEnabled) return;
 
                     GeoscapeEvent geoscapeEvent = CurrentEventRef(module);
                     if (geoscapeEvent?.Context?.Level == null || geoscapeEvent.Context.Site == null)
@@ -805,7 +802,7 @@ namespace TFTV.TFTVIncidents
 
             public static void Tick(GeoscapeEventSystem eventSystem)
             {
-                if (!BaseReworkUtils.BaseReworkEnabled)
+                if (!BaseReworkCheck.BaseReworkEnabled)
                 {
                     return;
                 }
@@ -1089,7 +1086,7 @@ namespace TFTV.TFTVIncidents
             {
                 private static void Postfix(MoveVehicleAbility __instance, ref GeoAbilityDisabledState __result)
                 {
-                    if (!BaseReworkUtils.BaseReworkEnabled) return;
+                    if (!BaseReworkCheck.BaseReworkEnabled) return;
 
                     GeoVehicle vehicle = __instance.Actor as GeoVehicle;
                     if (vehicle == null)
@@ -1110,7 +1107,7 @@ namespace TFTV.TFTVIncidents
             {
                 private static void Prefix(MoveVehicleAbility __instance)
                 {
-                    if (!BaseReworkUtils.BaseReworkEnabled) return;
+                    if (!BaseReworkCheck.BaseReworkEnabled) return;
 
                     GeoVehicle vehicle = __instance.Actor as GeoVehicle;
                     if (vehicle == null)
@@ -1177,7 +1174,7 @@ namespace TFTV.TFTVIncidents
                 {
                     try
                     {
-                        if (!BaseReworkUtils.BaseReworkEnabled) return;
+                        if (!BaseReworkCheck.BaseReworkEnabled) return;
 
                         if (SameHavenTagEvents.TryGetValue(eventId, out SameHavenTagInfo tagInfo))
                         {

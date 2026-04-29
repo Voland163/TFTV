@@ -19,7 +19,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using static TFTV.TFTVBaseRework.BaseReworkUtils;
+using static TFTV.TFTVBaseRework.BaseReworkCheck;
 using static TFTV.TFTVBaseRework.PersonnelData;
 using static TFTV.TFTVBaseRework.TrainingFacilityRework;
 using static TFTV.TFTVBaseRework.Workers;
@@ -64,7 +64,19 @@ namespace TFTV.TFTVBaseRework
         private const string PersonnelContainerName = "TFTV_PersonnelContainer";
         private const string LogPrefix = "[PersonnelUI]";
 
-        internal static Font PuristaSemibold = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.PhoenixpediaModule.EntryTitle.font;
+        private static Font _puristaSemibold;
+        internal static Font PuristaSemibold
+        {
+            get
+            {
+                if (_puristaSemibold == null)
+                {
+                    _puristaSemibold = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()
+                        ?.View?.GeoscapeModules?.PhoenixpediaModule?.EntryTitle?.font;
+                }
+                return _puristaSemibold;
+            }
+        }
 
         private static GameObject _personnelPanel;
         private static GameObject _modalRoot;
@@ -289,6 +301,7 @@ namespace TFTV.TFTVBaseRework
                     _selectedIds.Clear();
                     _cachedState = null;
                     _cachedLevel = null;
+                    _puristaSemibold = null; // reset so it re-resolves from live level on next open
 
                 }
                 catch (Exception e) { TFTVLogger.Error(e); }
@@ -1031,8 +1044,8 @@ namespace TFTV.TFTVBaseRework
             SoldierSlotController[] candidates = Resources.FindObjectsOfTypeAll<SoldierSlotController>();
             return candidates
                 .Where(c => c != null)
-                .OrderBy(c => c.gameObject.scene.IsValid() ? 1 : 0)
-                .ThenBy(c => c.gameObject.activeInHierarchy ? 1 : 0)
+                .OrderByDescending(c => c.gameObject.scene.IsValid() ? 1 : 0)
+                .ThenByDescending(c => c.gameObject.activeInHierarchy ? 1 : 0)
                 .FirstOrDefault();
         }
 

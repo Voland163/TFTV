@@ -129,6 +129,7 @@ namespace TFTV.TFTVIncidents
                     }
 
                     TryRenderSummary(__instance, geoEvent);
+                    RemoveDuplicateResearchRewardLine(__instance);
                 }
                 catch (Exception e)
                 {
@@ -158,6 +159,7 @@ namespace TFTV.TFTVIncidents
                     }
 
                     TryRenderSummary(__instance, geoEvent);
+                    RemoveDuplicateResearchRewardLine(__instance);
                 }
                 catch (Exception e)
                 {
@@ -328,7 +330,135 @@ namespace TFTV.TFTVIncidents
             }
         }
 
-        
+        // ── Duplicate-research-reward suppressor ─────────────────────────────
+
+        /// <summary>
+        /// The vanilla reward renderer emits two entries for ResourceType.Research:
+        ///   1. A bare "+N"  (generic resource-amount line).
+        ///   2. A named "RESEARCH +N" / "RESEARCH + …" line.
+        /// This removes the redundant bare-number duplicate whenever a named
+        /// RESEARCH line is present, scoping the cleanup to incident success events.
+        /// </summary>
+        private static void RemoveDuplicateResearchRewardLine(Transform rewardContainer)
+        {
+            if (rewardContainer == null)
+            {
+                return;
+            }
+
+            // Collect all Text children (direct) that represent reward lines.
+            List<Transform> allChildren = new List<Transform>();
+            foreach (Transform child in rewardContainer)
+            {
+                if (child != null)
+                {
+                    allChildren.Add(child);
+                }
+            }
+
+            // First pass: is there a named RESEARCH line?
+            bool hasNamedResearchLine = allChildren
+                .Select(c => c.GetComponent<Text>())
+                .Where(t => t != null && !string.IsNullOrEmpty(t.text))
+                .Any(t => t.text.IndexOf("RESEARCH", StringComparison.OrdinalIgnoreCase) >= 0);
+
+            if (!hasNamedResearchLine)
+            {
+                return;
+            }
+
+            // Second pass: find and destroy bare "+N" lines (no letters, only sign + digits + whitespace).
+            List<Transform> toRemove = new List<Transform>();
+            foreach (Transform child in allChildren)
+            {
+                Text t = child.GetComponent<Text>();
+                if (t == null || string.IsNullOrEmpty(t.text))
+                {
+                    continue;
+                }
+
+                string trimmed = t.text.Trim();
+                // Matches "+200", "+2,000", "-200" etc. — no letters.
+                bool isBareNumber = trimmed.Length > 0
+                    && (trimmed[0] == '+' || trimmed[0] == '-')
+                    && trimmed.Skip(1).All(c => char.IsDigit(c) || c == ',' || c == '.' || c == ' ');
+
+                if (isBareNumber)
+                {
+                    toRemove.Add(child);
+                }
+            }
+
+            foreach (Transform child in toRemove)
+            {
+                TFTVLogger.Always($"[Incidents][RewardFix] Removing duplicate bare-number reward line: '{child.GetComponent<Text>()?.text}'");
+                UnityEngine.Object.Destroy(child.gameObject);
+            }
+        }
+
+        // ── Duplicate bare-number research reward suppressor ─────────────────
+        // The vanilla renderer adds two UITextGeneric_Medium_SiteEncounterReward(Clone)
+        // children to EncounterInfoContent for ResourceType.Research:
+        //   1.  ' <color="#1EDD30">+160</color>'   ← bare number, no label  (duplicate)
+        //   2.  'RESEARCH <color="#1EDD30">+160</color>'                     (keep)
+        // We destroy #1 only when #2 is present, so other event types are untouched.
+        private static void RemoveDuplicateResearchRewardLine(UIModuleSiteEncounters module)
+        {
+            if (module?.SiteEncounterTextContainer == null)
+            {
+                return;
+            }
+
+            // module.SiteEncounterTextContainer IS EncounterInfoContent —
+            // the two reward clones are its direct children.
+            Transform container = module.SiteEncounterTextContainer.transform;
+
+            const string cloneName = "UITextGeneric_Medium_SiteEncounterReward(Clone)";
+
+            List<Transform> bareNumberClones = new List<Transform>();
+            bool hasNamedResearchClone = false;
+
+            foreach (Transform child in container)
+            {
+                if (child == null || !child.name.Equals(cloneName, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                Text t = child.GetComponent<Text>();
+                if (t == null)
+                {
+                    continue;
+                }
+
+                // Strip rich-text tags to get plain content.
+                string plain = System.Text.RegularExpressions.Regex.Replace(t.text ?? string.Empty, "<[^>]*>", string.Empty).Trim();
+
+                if (plain.IndexOf("RESEARCH", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    hasNamedResearchClone = true;
+                }
+                else if (plain.Length > 0
+                         && (plain[0] == '+' || plain[0] == '-')
+                         && plain.Skip(1).All(c => char.IsDigit(c) || c == ',' || c == '.'))
+                {
+                    bareNumberClones.Add(child);
+                }
+            }
+
+            if (!hasNamedResearchClone)
+            {
+                return;
+            }
+
+            foreach (Transform child in bareNumberClones)
+            {
+                TFTVLogger.Always($"[Incidents][RewardFix] Destroying bare-number duplicate: '{child.GetComponent<Text>()?.text}'");
+                UnityEngine.Object.Destroy(child.gameObject);
+            }
+        }
+
+
 
         private static bool IsIncidentSuccessEvent(string eventId)
         {
@@ -633,7 +763,7 @@ namespace TFTV.TFTVIncidents
 
             Image background = root.GetComponent<Image>();
             background.raycastTarget = false;
-            background.color = new Color(0f, 0f, 0f, 0.55f);
+            background.color = new Color(0f, 0f, 0f, 1f);
 
             Outline border = root.GetComponent<Outline>();
             border.effectColor = new Color(1f, 1f, 1f, 0.25f);
@@ -688,22 +818,13 @@ namespace TFTV.TFTVIncidents
             }
 
             const float panelWidth = 800f;
-            const float gapFromEventText = 1000f;
 
-            rootRect.anchorMin = new Vector2(0.5f, 1f);
-            rootRect.anchorMax = new Vector2(0.5f, 1f);
-            rootRect.pivot = new Vector2(1f, 1f);
+            rootRect.anchorMin = new Vector2(0f, 0f);
+            rootRect.anchorMax = new Vector2(0f, 0f);
+            rootRect.pivot = new Vector2(0f, 0f);
             rootRect.localScale = Vector3.one;
             rootRect.sizeDelta = new Vector2(panelWidth, 0f);
-
-            Text desc = module != null ? module.EncounterDescriptionText : null;
-            if (desc != null)
-            {
-                RectTransform descRect = desc.rectTransform;
-                float leftEdgeX = descRect.anchoredPosition.x - (descRect.rect.width * descRect.pivot.x);
-                rootRect.anchoredPosition = new Vector2(leftEdgeX - gapFromEventText, descRect.anchoredPosition.y+600);
-            }
-            
+            rootRect.anchoredPosition = new Vector2(100f, 20f);
         }
 
         private static void AddPersonnelToRewards(UIModuleSiteEncounters module, Transform rewardContainer, SummaryData data)

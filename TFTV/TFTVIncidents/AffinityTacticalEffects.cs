@@ -159,7 +159,7 @@ namespace TFTV.TFTVIncidents
             {
                 try
                 {
-                    if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                    if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled)
                     {
                         return;
                     }
@@ -279,7 +279,7 @@ namespace TFTV.TFTVIncidents
                 {
                     try
                     {
-                        if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                        if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled)
                         {
                             return;
                         }
@@ -331,7 +331,7 @@ namespace TFTV.TFTVIncidents
             {
                 try
                 {
-                    if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled) return false;
+                    if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled) return false;
 
                     if (deadActor == null || deadActor.TacticalLevel == null)
                     {
@@ -467,8 +467,6 @@ namespace TFTV.TFTVIncidents
             {
                 try
                 {
-                    if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled) return;
-
                     if (!IsHavenDefenseMission(level))
                     {
                         return;
@@ -494,12 +492,21 @@ namespace TFTV.TFTVIncidents
             {
                 try
                 {
-                    if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                    if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled)
                     {
                         return deliriumReduction;
                     }
 
-                    GeoLevelController level = character?.Faction?.GeoLevel;
+                    if (character == null)
+                    {
+                        return deliriumReduction;
+                    }
+
+                    GeoFaction faction;
+                    try { faction = character.Faction; }
+                    catch { return deliriumReduction; }
+
+                    GeoLevelController level = faction?.GeoLevel;
                     if (level == null)
                     {
                         return deliriumReduction;
@@ -615,7 +622,7 @@ namespace TFTV.TFTVIncidents
 
                 try
                 {
-                    if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled)
+                    if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled)
                     {
                         return false;
                     }
@@ -665,7 +672,7 @@ namespace TFTV.TFTVIncidents
                 try
                 {
 
-                    if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled || level == null)
+                    if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled || level == null)
                     {
                         return;
                     }
@@ -683,7 +690,7 @@ namespace TFTV.TFTVIncidents
             {
                 try
                 {
-                    if (!TFTVBaseRework.BaseReworkUtils.BaseReworkEnabled || level == null || level.Map == null)
+                    if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled || level == null || level.Map == null)
                     {
                         return;
                     }

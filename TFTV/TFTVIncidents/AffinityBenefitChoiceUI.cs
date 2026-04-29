@@ -27,7 +27,7 @@ namespace TFTV.TFTVIncidents
         private const string AffinityResultRankSeparator = " rank ";
 
         private const float PanelWidth = 820f;
-        private const float PanelRightMargin = 24f;
+        private const float PanelRightMargin = 100f;
         private const float PanelTopMargin = 170f;
 
         private struct BenefitTrack
@@ -362,7 +362,7 @@ namespace TFTV.TFTVIncidents
 
             Image background = root.GetComponent<Image>();
             background.raycastTarget = false;
-            background.color = new Color(0f, 0f, 0f, 0.55f);
+            background.color = new Color(0f, 0f, 0f, 1f);
 
             Outline border = root.GetComponent<Outline>();
             border.effectColor = new Color(1f, 1f, 1f, 0.25f);
