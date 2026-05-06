@@ -948,13 +948,6 @@ namespace TFTV
 
                 }
 
-
-
-
-
-
-
-
                 public static void Postfix(UIModuleGameSettings __instance)
                 {
                     try
@@ -1011,6 +1004,12 @@ namespace TFTV
                         HelperMethods.InstantiateArrowPickerController("HandGrenadeScatter", _optionsBool, ConvertBoolToInt(config.HandGrenadeScatter), OnHandGrenadeScatterValueChangedCallback, 0.5f, _anytimeOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("EquipBeforeAmbush", _optionsBool, ConvertBoolToInt(config.EquipBeforeAmbush), OnEquipBeforeAmbushValueChangedCallback, 0.5f, _anytimeOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("TFTVSuppression", _optionsBool, ConvertBoolToInt(config.TFTVSuppression), OnTFTVSuppressionValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                      
+                        HelperMethods.InstantiateArrowPickerController("ShowMeleeThreatMarkers", _optionsBool, ConvertBoolToInt(config.ShowMeleeThreatMarkers), OnShowMeleeThreatMarkersValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        if (TFTVNewGameOptions.IsReworkEnabled())
+                        {
+                            HelperMethods.InstantiateArrowPickerController("ShowBaseReworkHints", _optionsBool, ConvertBoolToInt(config.ShowBaseReworkHints), OnShowBaseReworkHintsValueChangedCallback, 0.5f, _anytimeOptionsSettings);
+                        }
 
                         HelperMethods.InstantiateGameOptionViewController("TFTV_CHEAT_OPTIONS_TITLE", "TFTV_CHEAT_OPTIONS_DESCRIPTION", "SetCheatOptionsVisibility");
 
@@ -1826,6 +1825,36 @@ namespace TFTV
                         arrowPickerController.CurrentItemText.text = options[newValue];
                         TFTVNewGameOptions.LimitedHarvestingSetting = limitedHarvesting;
                         _limitedHarvesting = arrowPickerController;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnShowMeleeThreatMarkersValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.ShowMeleeThreatMarkers = option;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnShowBaseReworkHintsValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        bool option = newValue == 0;
+                        string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        config.ShowBaseReworkHints = option;
                     }
                     catch (Exception e)
                     {

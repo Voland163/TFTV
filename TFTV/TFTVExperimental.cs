@@ -45,6 +45,11 @@ namespace TFTV
 
             private static void Postfix(MoveAbilitySceneViewElement __instance, TacticalViewContext context, bool __result)
             {
+                if (!TFTVMain.Main.Config.ShowMeleeThreatMarkers)
+                {
+                    return;
+                }
+
                 if (!__result || __instance == null || context == null)
                 {
                     return;

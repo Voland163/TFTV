@@ -242,3 +242,5 @@ Wir wünschen dir einen schnellen Ragequit und eine rasche Rückkehr zur Vernunf
 Побыстрее проходите фазу гнева, включайте режим «холодная ярость» - и в бой!",,
 KEY_ShowBaseReworkHints,Text,,TUTORIAL HINTS FOR AIRCRAFT REWORK,,,,,,,,
 KEY_ShowBaseReworkHints_DESCRIPTION,Text,,"When playing the AIRCRAFT REWORK BETA, turning this option ON will show context hints for new mechanics introduced by Part 3 of the AIRCRAFT REWORK relating to BASE ACTIVATION, PERSONNEL MANAGEMENT, INCIDENTS and AFFINITIES. ",,,,,,,,
+KEY_ShowMeleeThreatMarkers,Text,,SHOW MELEE THREAT MARKERS,,,,,,,,
+KEY_ShowMeleeThreatMarkers_DESCRIPTION,Text,,"When hovering a move tile, highlights positions from which known melee enemies could attack the player unit on their next turn.",,,,,,,,
