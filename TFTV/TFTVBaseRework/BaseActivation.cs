@@ -461,7 +461,7 @@ namespace TFTV.TFTVBaseRework
                     StartAt = timer.StartAt,
                     EndAt = timer.EndAt
                 };
-
+ 
                 site.RefreshVisuals();
                 BaseConstructionVisuals.RefreshPendingConstructionVisuals(level);
                 AgendaRefresh.RefreshCustomSiteTracker(site);

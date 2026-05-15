@@ -28,6 +28,7 @@ namespace TFTV.Vehicles.Ammo
         private static readonly SharedData Shared = TFTVMain.Shared;
 
         internal static Dictionary<ItemDef, GeoMarketplaceItemOptionDef> MarketplaceWeaponsAndAmmo = new Dictionary<ItemDef, GeoMarketplaceItemOptionDef>();
+        internal static Dictionary<TacticalItemDef, GeoMarketplaceItemOptionDef> MarketplaceAmmoDefsAndOptions = new Dictionary<TacticalItemDef, GeoMarketplaceItemOptionDef>();
         internal static GameTagDef MarketplaceGroundVehicleWeapon;
         private static ReloadAbilityDef _reloadVehicleAbility3APDef;
         private static ReloadAbilityDef _reloadAbilityDef;
@@ -457,7 +458,6 @@ namespace TFTV.Vehicles.Ammo
             {
                 try
                 {
-
                     FactionTagDef neutralFactionTag = DefCache.GetDef<FactionTagDef>("Neutral_FactionTagDef");
                     FactionTagDef phoenixFactionTag = DefCache.GetDef<FactionTagDef>("PhoenixPoint_FactionTagDef");
 
@@ -478,7 +478,6 @@ namespace TFTV.Vehicles.Ammo
                     newAmmo.Tags.Add(neutralFactionTag);
                     newAmmo.Tags.Remove(DefCache.GetDef<ClassTagDef>("Assault_ClassTagDef"));
                     newAmmo.Tags.Add(DefCache.GetDef<ClassTagDef>("Vehicle_ClassTagDef"));
-                    //  newAmmo.CombineWhenStacking = false;
                     newAmmo.ManufactureTech = 0;
                     newAmmo.ManufactureMaterials = minPrice;
                     weaponDef.CompatibleAmmunition = new TacticalItemDef[] { newAmmo };
@@ -486,36 +485,27 @@ namespace TFTV.Vehicles.Ammo
                     weaponDef.Tags.Add(MarketplaceGroundVehicleWeapon);
                     weaponDef.FreeReloadOnMissionEnd = false;
                     AddReloadAbilityIfMissing(weaponDef);
-                    GeoMarketplaceItemOptionDef newMarketplaceItem = Helper.CreateDefFromClone
-                         (DefCache.GetDef<GeoMarketplaceItemOptionDef>("Obliterator_MarketplaceItemOptionDef"), gUID2, name);
+
+                    GeoMarketplaceItemOptionDef newMarketplaceItem = Helper.CreateDefFromClone(
+                        DefCache.GetDef<GeoMarketplaceItemOptionDef>("Obliterator_MarketplaceItemOptionDef"),
+                        gUID2,
+                        name);
 
                     newMarketplaceItem.MinPrice = minPrice * 0.8f;
                     newMarketplaceItem.MaxPrice = minPrice + minPrice * 0.5f;
                     newMarketplaceItem.ItemDef = newAmmo;
                     newMarketplaceItem.DisallowDuplicates = false;
-                    //  newMarketplaceItem.Availability = availability;
-
-                    /* TheMarketplaceSettingsDef marketplaceSettings = DefCache.GetDef<TheMarketplaceSettingsDef>("TheMarketplaceSettingsDef");
-
-                     List<GeoMarketplaceOptionDef> geoMarketplaceItemOptionDefs = marketplaceSettings.PossibleOptions.ToList();
-
-                     geoMarketplaceItemOptionDefs.Add(newMarketplaceItem);
-
-                     marketplaceSettings.PossibleOptions = geoMarketplaceItemOptionDefs.ToArray();*/
 
                     AmmoWeaponDatabase.AmmoToWeaponDictionary.Add(newAmmo, new List<TacticalItemDef>() { weaponDef });
-                    /*  GeoMarketplaceItemOptionDef weaponMarketPlaceOption = (GeoMarketplaceItemOptionDef)geoMarketplaceItemOptionDefs.Find(o => o is GeoMarketplaceItemOptionDef marketOption && marketOption.ItemDef == groundVehicleModuleDef);
-
-                       _junkerWeaponsAndAmmo.Add(weaponMarketPlaceOption, newMarketplaceItem);*/
 
                     GeoFactionDef neutralFaction = DefCache.GetDef<GeoFactionDef>("Neutral_GeoFactionDef");
-
                     neutralFaction.StartingManufacturableItems = neutralFaction.StartingManufacturableItems.AddToArray(newAmmo);
 
                     InventoryComponentDef neutralCrateInventoryComponent = DefCache.GetDef<InventoryComponentDef>("Crate_PX_InventoryComponentDef");
                     neutralCrateInventoryComponent.ItemDefs = neutralCrateInventoryComponent.ItemDefs.AddToArray(newAmmo);
 
-                    MarketplaceWeaponsAndAmmo.Add(weaponDef, newMarketplaceItem);
+                    MarketplaceWeaponsAndAmmo[weaponDef] = newMarketplaceItem;
+                    MarketplaceAmmoDefsAndOptions[newAmmo] = newMarketplaceItem;
 
                     return newAmmo;
                 }

@@ -186,6 +186,9 @@ namespace TFTV.TFTVIncidents
             private static readonly Dictionary<string, int> MatchedNearbyHavenByExactKey = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             private static readonly Dictionary<string, int> MatchedNearbyHavenBySiteKey = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
+            // Add with the other static fields in IncidentController.
+            private static readonly HashSet<string> CompletedTimerIds = new HashSet<string>(StringComparer.Ordinal);
+
             internal static bool IsIncidentIntroEventId(string eventId)
             {
                 InitializeDefaults();
@@ -725,12 +728,31 @@ namespace TFTV.TFTVIncidents
                     return;
                 }
 
+                List<string> staleCompletedTimerIds = new List<string>();
+
                 foreach (GeoEventTimer timer in timers.Values)
                 {
-                    if (timer != null && !ActiveByTimerId.ContainsKey(timer.ID) && ActiveTimedProblem.TryParseFromTimer(timer, out ActiveTimedProblem active))
+                    if (timer == null)
+                    {
+                        continue;
+                    }
+
+                    if (CompletedTimerIds.Contains(timer.ID))
+                    {
+                        staleCompletedTimerIds.Add(timer.ID);
+                        continue;
+                    }
+
+                    if (!ActiveByTimerId.ContainsKey(timer.ID)
+                        && ActiveTimedProblem.TryParseFromTimer(timer, out ActiveTimedProblem active))
                     {
                         ActiveByTimerId[active.TimerId] = active;
                     }
+                }
+
+                foreach (string staleTimerId in staleCompletedTimerIds)
+                {
+                    RemoveTimerIfPresent(eventSystem, staleTimerId);
                 }
             }
 
@@ -912,10 +934,22 @@ namespace TFTV.TFTVIncidents
                     return;
                 }
 
+                if (CompletedTimerIds.Contains(timerId))
+                {
+                    TFTVLogger.Always($"[Incidents][OutcomeRecapDiag] SKIP duplicate complete timer={timerId}");
+                    RemoveTimerIfPresent(level.EventSystem, timerId);
+                    ActiveByTimerId.Remove(timerId);
+                    return;
+                }
+
                 if (!ActiveByTimerId.TryGetValue(timerId, out ActiveTimedProblem active) || active == null)
                 {
                     return;
                 }
+
+                CompletedTimerIds.Add(timerId);
+                ActiveByTimerId.Remove(timerId);
+                RemoveTimerIfPresent(level.EventSystem, timerId);
 
                 GeoSite site = level.Map?.AllSites?.FirstOrDefault(s => s != null && s.SiteId == active.SiteId);
 
@@ -936,6 +970,8 @@ namespace TFTV.TFTVIncidents
                 {
                     site.ExpiringTimerAt = TimeUnit.Zero;
                 }
+
+                DestroySiteVisual(active.SiteId);
 
                 TFTVLogger.Always($"[Incidents][OutcomeRecapDiag] COMPLETE timer={timerId} event={active.CompletionEventId} site={active.SiteId} vehicle={active.VehicleId} leaderId={active.LeaderId} tokens={active.ApproachTokens}");
 
@@ -959,14 +995,6 @@ namespace TFTV.TFTVIncidents
                     GeoscapeEventContext ctx = new GeoscapeEventContext(site, level.ViewerFaction, vehicle);
                     level.EventSystem.TriggerGeoscapeEvent(active.CompletionEventId, ctx);
                 }
-
-                if (level.EventSystem != null && level.EventSystem.GetTimerById(timerId) != null)
-                {
-                    level.EventSystem.RemoveTimer(timerId);
-                }
-
-                ActiveByTimerId.Remove(timerId);
-                DestroySiteVisual(active.SiteId);
 
                 if (site != null)
                 {
@@ -1246,6 +1274,67 @@ namespace TFTV.TFTVIncidents
                 }
             }
 
+
+            internal static void ClearStateOnStateChangeAndLoad()
+            {
+                if(!BaseReworkCheck.BaseReworkEnabled)
+                {
+                    return;      
+                }
+
+                TFTVLogger.Always("[Incidents] Clearing incident controller state on load/state change.");
+
+                CompletedTimerIds.Clear();
+                ActiveByTimerId.Clear();
+                MatchedNearbyHavenByExactKey.Clear();
+                MatchedNearbyHavenBySiteKey.Clear();
+
+                foreach (int siteId in SiteProgressVisuals.Keys.ToList())
+                {
+                    DestroySiteVisual(siteId);
+                }
+
+                TFTVLogger.Always("[Incidents] Cleared incident controller state on load/state change.");
+            }
+
+            internal static List<string> CreateCompletedTimerSnapshot()
+            {
+                return CompletedTimerIds.ToList();
+            }
+
+            internal static void LoadCompletedTimerSnapshot(IEnumerable<string> timerIds)
+            {
+                CompletedTimerIds.Clear();
+
+                if (timerIds == null)
+                {
+                    TFTVLogger.Always("[Incidents] Loaded completed incident timers: 0");
+                    return;
+                }
+
+                foreach (string timerId in timerIds)
+                {
+                    if (!string.IsNullOrEmpty(timerId))
+                    {
+                        CompletedTimerIds.Add(timerId);
+                    }
+                }
+
+                TFTVLogger.Always($"[Incidents] Loaded completed incident timers: {CompletedTimerIds.Count}");
+            }
+
+            private static void RemoveTimerIfPresent(GeoscapeEventSystem eventSystem, string timerId)
+            {
+                if (eventSystem == null || string.IsNullOrEmpty(timerId))
+                {
+                    return;
+                }
+
+                if (eventSystem.GetTimerById(timerId) != null)
+                {
+                    eventSystem.RemoveTimer(timerId);
+                }
+            }
         }
     }
 }

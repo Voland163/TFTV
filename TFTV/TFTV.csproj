@@ -158,6 +158,7 @@
     <Compile Include="TFTVBaseRework\BaseActivation.cs" />
     <Compile Include="TFTVBaseRework\BaseActivationUI.cs" />
     <Compile Include="TFTVBaseRework\BaseConstructionVisuals.cs" />
+    <Compile Include="TFTVBaseRework\BaseExploration.cs" />
     <Compile Include="TFTVBaseRework\BaseInitialLoot.cs" />
     <Compile Include="TFTVBaseRework\BaseInitialLootTooltip.cs" />
     <Compile Include="TFTVBaseRework\BaseLowQualityScanning.cs" />
@@ -165,6 +166,7 @@
     <Compile Include="TFTVBaseRework\Data.cs" />
     <Compile Include="TFTVBaseRework\Defs.cs" />
     <Compile Include="TFTVBaseRework\Fallen.cs" />
+    <Compile Include="TFTVBaseRework\FoodAndLivingSpacePolicy.cs" />
     <Compile Include="TFTVBaseRework\GeoCharacterFilter.cs" />
     <Compile Include="TFTVBaseRework\LivingQuarters.cs" />
     <Compile Include="TFTVBaseRework\BaseOutpost.cs" />
@@ -217,6 +219,11 @@
     <Compile Include="TFTVLaserWeapons\LaserWeaponsBatteryTooltip.cs" />
     <Compile Include="TFTVLaserWeapons\LaserWeaponsFilter.cs" />
     <Compile Include="TFTVLaserWeapons\LaserWeaponsReplenishPatches.cs" />
+    <Compile Include="TFTVMarketplace\TFTVKaosGuns.cs" />
+    <Compile Include="TFTVMarketplace\TFTVMarketPlaceGenerateOffers.cs" />
+    <Compile Include="TFTVMarketplace\TFTVMarketPlaceItems.cs" />
+    <Compile Include="TFTVMarketplace\TFTVMarketPlaceUI.cs" />
+    <Compile Include="TFTVMarketplace\TFTVMercenaries.cs" />
     <Compile Include="TFTVUI\Common\Various.cs" />
     <Compile Include="TFTVUI\Data.cs" />
     <Compile Include="TFTVUI\Geoscape\Facilities.cs" />
@@ -284,7 +291,7 @@
     <Compile Include="TFTVChangesToDLC1andDLC2Events.cs" />
     <Compile Include="TFTVChangesToDLC3Events.cs" />
     <Compile Include="TFTVChangesToDLC4Events.cs" />
-    <Compile Include="TFTVMarketplace\TFTVChangesToDLC5.cs" />
+    <Compile Include="TFTVMarketplace\Various.cs" />
     <Compile Include="TFTVCommonMethods.cs" />
     <Compile Include="TFTVDefsInjectedOnlyOnce.cs" />
     <Compile Include="TFTVDefsRequiringReinjection.cs" />

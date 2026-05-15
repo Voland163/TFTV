@@ -31,7 +31,7 @@ using PhoenixPoint.Tactical.View;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
+using TFTV.TFTVBaseRework;
 using UnityEngine;
 
 namespace TFTV
@@ -996,85 +996,49 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
+        }
 
+        private const float VO6ResearchMultiplier = 1.5f;
 
+        public static bool IsVO6ResearchModifierActive(GeoFaction faction)
+        {
+            if (BaseReworkCheck.BaseReworkEnabled)
+            {
+                return false;
+            }
 
+            if (!VoidOmensCheck[6])
+            {
+                return false;
+            }
+
+            GeoLevelController controller = faction?.GeoLevel;
+            return controller != null && faction == controller.PhoenixFaction;
+        }
+
+        public static float ApplyVO6ResearchModifier(float vanillaResearch, GeoFaction faction)
+        {
+            return IsVO6ResearchModifierActive(faction)
+                ? vanillaResearch * VO6ResearchMultiplier
+                : vanillaResearch;
         }
 
 
-        //Adjust Research output based on VO6
-        public static void AdjustResearchOutputForVO6(GeoFaction faction)
+        [HarmonyPatch(typeof(Research), "GetHourlyResearchProduction")]
+        public static class TFTV_Research_GetHourlyResearchProduction_Patch
         {
-            GeoPhoenixFaction phoenixFaction = faction as GeoPhoenixFaction;
-            if (phoenixFaction?.Research == null || phoenixFaction.ResourceIncome == null)
+            public static void Postfix(Research __instance, ref float __result)
             {
-                return;
-            }
-
-            ResourcePack productionOutput = GetProductionReasonOutput(phoenixFaction);
-            float currentResearch = productionOutput.ByResourceType(ResourceType.Research).Value;
-            float adjustedResearch = AdjustResearchOutputForVO6(currentResearch, phoenixFaction.Research);
-
-            if (Math.Abs(adjustedResearch - currentResearch) < 0.01f)
-            {
-                return;
-            }
-
-            float currentProduction = productionOutput.ByResourceType(ResourceType.Production).Value;
-
-            phoenixFaction.ResourceIncome.SetOutput(OperationReason.Production, new ResourcePack(new ResourceUnit[]
-            {
-                    new ResourceUnit(ResourceType.Research, adjustedResearch),
-                    new ResourceUnit(ResourceType.Production, currentProduction)
-            }));
-        }
-
-        private static float AdjustResearchOutputForVO6(float baseOutput, Research research)
-        {
-            try
-            {
-                GeoLevelController controller = research.Faction.GeoLevel;
-                if (research.Faction == controller.PhoenixFaction && VoidOmensCheck[6])
+                try
                 {
-                    float multiplier = 1.5f;
-                    return baseOutput * multiplier;
+                    __result = ApplyVO6ResearchModifier(__result, __instance?.Faction);
                 }
-                return baseOutput;
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                return baseOutput;
-            }
-        }
-
-
-        private static ResourcePack GetProductionReasonOutput(GeoPhoenixFaction faction)
-        {
-            try
-            {
-                MethodInfo getOutputMethod = AccessTools.Method(faction.ResourceIncome.GetType(), "GetOutput", new[] { typeof(OperationReason) });
-                if (getOutputMethod != null)
+                catch (Exception e)
                 {
-                    object output = getOutputMethod.Invoke(faction.ResourceIncome, new object[] { OperationReason.Production });
-                    if (output is ResourcePack productionOutput)
-                    {
-                        return productionOutput;
-                    }
+                    TFTVLogger.Error(e);
                 }
             }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-            return new ResourcePack(new ResourceUnit[]
-            {
-                    new ResourceUnit(ResourceType.Research, faction.ResourceIncome.GetTotalResouce(ResourceType.Research).Value),
-                    new ResourceUnit(ResourceType.Production, faction.ResourceIncome.GetTotalResouce(ResourceType.Production).Value)
-            });
         }
-
 
 
 
@@ -1196,6 +1160,7 @@ namespace TFTV
                     {
                         __result += 1;
                     }
+
                     if (VoidOmensCheck[4] && config.LimitedDeploymentVO)
                     {
                         __result -= 2;
@@ -1204,7 +1169,8 @@ namespace TFTV
                     {
                         __result = 8;
                     }
-                    if (__instance.Mission.MissionDef.MissionTypeTag == DefCache.GetDef<MissionTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef"))
+
+                    if (__instance.Mission.MissionDef.MissionTypeTag == DefCache.GetDef<MissionTagDef>("MissionTypePhoenixBaseDefence_MissionTagDef") && !TFTVAircraftReworkMain.AircraftReworkOn)
                     {
                         TFTVLogger.Always($"Base defense mission: setting max deployment to 9");
                         __result = 9;
@@ -1361,7 +1327,7 @@ namespace TFTV
             {
                 try
                 {
-                    if(_originalReward != 0)
+                    if (_originalReward != 0)
                     {
                         __instance.AlienBaseTypeDef.FactionDiplomacyRewardPerHaven = _originalReward;
                         _originalReward = 0;

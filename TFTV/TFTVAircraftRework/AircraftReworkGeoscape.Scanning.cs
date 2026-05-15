@@ -12,7 +12,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using TFTV.TFTVBaseRework;
 using static TFTV.TFTVAircraftReworkMain;
+using static TFTV.TFTVBaseRework.BaseActivation;
 using Research = PhoenixPoint.Geoscape.Entities.Research.Research;
 
 namespace TFTV
@@ -652,6 +654,8 @@ namespace TFTV
                                     .Any(v => v.Modules.Any(m => m != null && m.ModuleDef == _thunderbirdScannerModule) && v.CurrentSite != null
                                     && ____level.Map.SitesInRange(v.CurrentSite, thunderbirdScannerRange, true).Contains(site));
 
+
+
                                 if (geoPhoenixFaction.IsSiteInBaseScannerRange(site, true) || anyThunderbirdScannerInRange)
                                 {
                                     component.IncrementBaseAttacksRevealCounter();
@@ -660,6 +664,19 @@ namespace TFTV
                                     //__result = true;
                                     //return false;
                                 }
+
+                                EarthUnits outPostRange = new EarthUnits() { Value = 2500 };
+
+                                bool anyOutpostInRange = BaseReworkCheck.BaseReworkEnabled &&
+    geoPhoenixFaction.Bases.Any(b =>
+        b.Site.SiteTags.Contains(PhoenixBaseReworkState.OutpostTag) &&
+        ____level.Map.SitesInRange(b.Site, outPostRange, true).Contains(site));
+
+                                if (anyOutpostInRange && UnityEngine.Random.Range(0, 100) < 50)
+                                {
+                                    component.IncrementBaseAttacksRevealCounter();
+                                }
+
                             }
 
                             if (component.CheckForBaseReveal())

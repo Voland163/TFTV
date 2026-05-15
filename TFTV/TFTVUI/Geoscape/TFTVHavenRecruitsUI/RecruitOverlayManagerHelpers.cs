@@ -263,35 +263,46 @@ namespace TFTV
 
         private class TacticalItemSlotTooltipForwarder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         {
+            private static TacticalItemSlotTooltipForwarder _currentTooltipOwner;
+
             private UIInventorySlot _slot;
             private UIGeoItemTooltip _tooltip;
             private GeoItem _item;
-          
+            private bool _ownsVisibleTooltip;
 
             internal void Initialize(UIInventorySlot slot, GeoItem geoItem, UIGeoItemTooltip tooltip)
             {
                 _slot = slot;
                 _item = geoItem;
-                _tooltip = tooltip;  
+                _tooltip = tooltip;
+                _ownsVisibleTooltip = false;
             }
 
             public void OnPointerEnter(PointerEventData eventData)
             {
                 try
                 {
-                  //  TFTVLogger.Always($"_tooltip == null? {_tooltip == null} is _slot null? {_slot == null} item {_item?.ItemDef?.name}");
-                    if (_item != null && _tooltip != null)
+                    if (_item == null || _tooltip == null || _slot == null)
                     {
-                        //TFTVLogger.Always($"got here for item {_item.ItemDef.name}");
-
-                        _tooltip.ShowStats(_item, _slot.transform);
-                        PositionTooltip(eventData);
+                        return;
                     }
 
+                    if (_currentTooltipOwner != null && _currentTooltipOwner != this)
+                    {
+                        _currentTooltipOwner.HideTooltip();
+                    }
+
+                    _tooltip.ShowStats(_item, _slot.transform);
+                    _currentTooltipOwner = this;
+                    _ownsVisibleTooltip = true;
+
+                    PositionTooltip(eventData);
                 }
                 catch (Exception ex)
                 {
                     TFTVLogger.Error(ex);
+                    ReleaseTooltipOwnership();
+                    SafeDeactivateTooltip();
                 }
             }
 
@@ -305,13 +316,67 @@ namespace TFTV
                 HideTooltip();
             }
 
+            private void OnDestroy()
+            {
+                HideTooltip();
+            }
+
             private void HideTooltip()
             {
                 try
                 {
-                    if (_tooltip != null)
+                    if (_tooltip == null)
                     {
-                        _tooltip.HideStats();
+                        ReleaseTooltipOwnership();
+                        return;
+                    }
+
+                    if (_currentTooltipOwner != this && !_ownsVisibleTooltip)
+                    {
+                        return;
+                    }
+
+                    try
+                    {
+                        if (_tooltip.gameObject != null && _tooltip.gameObject.activeInHierarchy)
+                        {
+                            _tooltip.HideStats();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        TFTVLogger.Error(ex);
+                    }
+                    finally
+                    {
+                        SafeDeactivateTooltip();
+                        ReleaseTooltipOwnership();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                    ReleaseTooltipOwnership();
+                }
+            }
+
+            private void ReleaseTooltipOwnership()
+            {
+                if (_currentTooltipOwner == this)
+                {
+                    _currentTooltipOwner = null;
+                }
+
+                _ownsVisibleTooltip = false;
+            }
+
+            private void SafeDeactivateTooltip()
+            {
+                try
+                {
+                    if (_tooltip != null && _tooltip.gameObject != null && _currentTooltipOwner == this)
+                    {
+                        _tooltip.gameObject.SetActive(false);
                     }
                 }
                 catch (Exception ex)

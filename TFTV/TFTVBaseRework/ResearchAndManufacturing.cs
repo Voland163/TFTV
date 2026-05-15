@@ -1,13 +1,10 @@
-﻿using HarmonyLib;
-using PhoenixPoint.Common.Core;
+﻿using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
-using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using System;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
 
 namespace TFTV.TFTVBaseRework
@@ -37,13 +34,19 @@ namespace TFTV.TFTVBaseRework
 
             float baseResearch = baseProductionOutput.ByResourceType(ResourceType.Research).Value;
             float baseProduction = baseProductionOutput.ByResourceType(ResourceType.Production).Value;
+            //   float baseSupplies = baseProductionOutput.ByResourceType(ResourceType.Supplies).Value;
+            //   float baseMutagen = baseProductionOutput.ByResourceType(ResourceType.Mutagen).Value;
+
+            // TFTVLogger.Always($"Base production output - Research: {baseResearch}, Production: {baseProduction}, Supplies: {baseSupplies}, Mutagen: {baseMutagen}");
 
             GetOutputBonuses(phoenixFaction, out float researchBonus, out float productionBonus);
 
             phoenixFaction.ResourceIncome.SetOutput(OperationReason.Production, new ResourcePack(new ResourceUnit[]
             {
                 new ResourceUnit(ResourceType.Research, Mathf.Max(0f, baseResearch + researchBonus)),
-                new ResourceUnit(ResourceType.Production, Mathf.Max(0f, baseProduction + productionBonus))
+                new ResourceUnit(ResourceType.Production, Mathf.Max(0f, baseProduction + productionBonus)),
+               // new ResourceUnit(ResourceType.Supplies, baseSupplies),
+               // new ResourceUnit(ResourceType.Mutagen, baseMutagen)
             }));
         }
 
@@ -52,13 +55,19 @@ namespace TFTV.TFTVBaseRework
             researchBonus = 0f;
             productionBonus = 0f;
 
-            if (!BaseReworkCheck.BaseReworkEnabled || faction == null)
+            if (faction == null)
             {
                 return;
             }
 
             PoolAssignmentSnapshot snapshot = BuildPoolAssignmentSnapshot(faction);
             researchBonus = GetAssignedBonus(snapshot.ResearchAssigned) + GetIdleSlotBonus(faction, snapshot.ResearchCapacity, snapshot.ResearchAssigned, ResourceType.Research, UnoccupiedResearchPerSlot);
+
+            if (TFTVVoidOmens.VoidOmensCheck[6])
+            {
+                researchBonus *= 1.5f;
+            }
+
             productionBonus = GetAssignedBonus(snapshot.ManufacturingAssigned) + GetIdleSlotBonus(faction, snapshot.ManufacturingCapacity, snapshot.ManufacturingAssigned, ResourceType.Production, UnoccupiedProductionPerSlot);
         }
 
@@ -71,26 +80,22 @@ namespace TFTV.TFTVBaseRework
 
             try
             {
-                MethodInfo getOutputMethod = AccessTools.Method(faction.ResourceIncome.GetType(), "GetOutput", new[] { typeof(OperationReason) });
-                if (getOutputMethod != null)
+
+                return new ResourcePack(new ResourceUnit[]
                 {
-                    object output = getOutputMethod.Invoke(faction.ResourceIncome, new object[] { OperationReason.Production });
-                    if (output is ResourcePack productionOutput)
-                    {
-                        return productionOutput;
-                    }
-                }
+                new ResourceUnit(ResourceType.Research, faction.ResourceIncome.GetTotalResouce(ResourceType.Research).Value),
+                new ResourceUnit(ResourceType.Production, faction.ResourceIncome.GetTotalResouce(ResourceType.Production).Value),
+                    //  new ResourceUnit(ResourceType.Supplies, faction.ResourceIncome.GetTotalResouce(ResourceType.Supplies).Value),
+                    //  new ResourceUnit(ResourceType.Mutagen, faction.ResourceIncome.GetTotalResouce(ResourceType.Mutagen).Value)
+
+                });
+
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
+                throw;
             }
-
-            return new ResourcePack(new ResourceUnit[]
-            {
-                new ResourceUnit(ResourceType.Research, faction.ResourceIncome.GetTotalResouce(ResourceType.Research).Value),
-                new ResourceUnit(ResourceType.Production, faction.ResourceIncome.GetTotalResouce(ResourceType.Production).Value)
-            });
         }
 
         private static PoolAssignmentSnapshot BuildPoolAssignmentSnapshot(GeoPhoenixFaction faction)

@@ -3020,12 +3020,6 @@ namespace TFTV
                                                         orderby p.Contribution.Contribution descending
                                                         select p).ToList();
 
-                            int mentorCount = list.Count(p => TFTVDrills.DrillsHarmony.MentorProtocol.CheckForMentorProtocolAbility(p));
-                            if (mentorCount > 0 && __instance.State == TacFactionState.Won)
-                            {
-                                num += mentorCount * 2;
-                            }
-
                             MethodInfo skillpointsMethodInfo = typeof(TacticalFaction).GetMethod("set_Skillpoints", BindingFlags.Instance | BindingFlags.NonPublic);
 
                             skillpointsMethodInfo.Invoke(__instance, new object[] { __instance.Skillpoints + num });
@@ -3049,20 +3043,67 @@ namespace TFTV
                             Dictionary<TacticalActor, int> xpAwards = list.ToDictionary(actor => actor, actor => 0);
                             DistributeExperience(num2, list, difficulty, xpAwards);
 
-                            int mentorPool = 0;
-                            foreach (TacticalActor actor in list)
+                            // --- Mentor Protocol (new behaviour) ---
+                            // Build xpAwards first so we know who earned the most XP before redistribution.
+                            // 1. Find the highest single XP award among ALL squad members (before mentor zeroing).
+                            int highestXpInSquad = xpAwards.Count > 0 ? xpAwards.Values.Max() : 0;
+
+                            // 2. Gather mentors and eligible non-mentor recipients (alive, in squad, no mentor ability).
+                            List<TacticalActor> mentors = list.Where(a => TFTVDrills.DrillsHarmony.MentorProtocol.CheckForMentorProtocolAbility(a)).ToList();
+                            List<TacticalActor> nonMentorRecipients = list
+                                .Where(a => !TFTVDrills.DrillsHarmony.MentorProtocol.CheckForMentorProtocolAbility(a) && a.LevelProgression.Level<7)
+                                .OrderBy(a => a.LevelProgression.Level)
+                                .ThenBy(a => a.LevelProgression.Experience) // tie-break: least XP toward next level
+                                .ToList();
+
+                            // Track which non-mentor operatives have already been assigned a mentor's XP.
+                            HashSet<TacticalActor> claimedRecipients = new HashSet<TacticalActor>();
+                            int mentorSpBonus = 0;
+
+                            foreach (TacticalActor mentor in mentors)
                             {
-                                if (TFTVDrills.DrillsHarmony.MentorProtocol.CheckForMentorProtocolAbility(actor))
+                                int mentorXp = xpAwards.ContainsKey(mentor) ? xpAwards[mentor] : 0;
+
+                                // Check BEFORE zeroing: does this mentor have the highest XP in the squad?
+                                if (mentorXp >= highestXpInSquad && highestXpInSquad > 0)
                                 {
-                                    mentorPool += xpAwards[actor];
-                                    xpAwards[actor] = 0;
+                                    mentorSpBonus += 2;
+                                }
+
+                                // Zero out the mentor's own XP.
+                                if (xpAwards.ContainsKey(mentor))
+                                {
+                                    xpAwards[mentor] = 0;
+                                }
+
+                                if (mentorXp <= 0)
+                                {
+                                    continue;
+                                }
+
+                                // Find the lowest-level non-mentor operative not yet claimed.
+                                TacticalActor target = nonMentorRecipients.FirstOrDefault(a => !claimedRecipients.Contains(a));
+                                if (target == null)
+                                {
+                                    continue; // No eligible recipient; XP is lost (mentor keeps nothing).
+                                }
+
+                                claimedRecipients.Add(target);
+                                if (xpAwards.ContainsKey(target))
+                                {
+                                    xpAwards[target] += mentorXp;
+                                }
+                                else
+                                {
+                                    xpAwards[target] = mentorXp;
                                 }
                             }
 
-                            List<TacticalActor> mentorRecipients = list.Where(a => !TFTVDrills.DrillsHarmony.MentorProtocol.CheckForMentorProtocolAbility(a) && a.LevelProgression.Level < 7).ToList();
-                            if (mentorPool > 0 && mentorRecipients.Any())
+                            // Apply SP bonus to the common pool.
+                            if (mentorSpBonus > 0)
                             {
-                                DistributeExperience(mentorPool, mentorRecipients, difficulty, xpAwards);
+                                MethodInfo skillpointsMethodInfoBonus = typeof(TacticalFaction).GetMethod("set_Skillpoints", BindingFlags.Instance | BindingFlags.NonPublic);
+                                skillpointsMethodInfoBonus.Invoke(__instance, new object[] { __instance.Skillpoints + mentorSpBonus });
                             }
 
                             foreach (KeyValuePair<TacticalActor, int> award in xpAwards)

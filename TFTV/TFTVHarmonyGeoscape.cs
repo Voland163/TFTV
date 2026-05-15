@@ -693,7 +693,6 @@ namespace TFTV
                 try
                 {
                     TFTVBaseRework.ResearchAndManufacturing.ApplyProductionAdjustments(__instance);
-                    TFTVVoidOmens.AdjustResearchOutputForVO6(__instance);
                 }
                 catch (Exception e)
                 {

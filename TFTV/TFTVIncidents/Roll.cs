@@ -350,6 +350,7 @@ namespace TFTV.TFTVIncidents
                 .Select(site => site?.GetComponent<GeoHaven>())
                 .Where(haven => haven?.Site != null
                     && haven.Site.ActiveMission == null
+                    && string.IsNullOrEmpty(haven.Site.EncounterID)
                     && haven.Site.State == PhoenixPoint.Common.Core.GeoSiteState.Functioning
                     && haven.Site.GetVisited(phoenixFaction)
                     && !Resolution.IncidentController.SiteHasActiveIncident(haven.Site))

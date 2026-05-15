@@ -47,10 +47,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using TFTV.TFTVUI.Geoscape;
+using TFTV.TFTVBaseRework;
 using TFTV.TFTVIncidents;
+using TFTV.TFTVUI.Geoscape;
 using UnityEngine;
 using UnityEngine.UI;
+using static TFTV.TFTVBaseRework.BaseActivation;
 
 namespace TFTV
 {
@@ -597,6 +599,12 @@ namespace TFTV
                             continue;
                         }
 
+                        // BaseRework: Outposts are not full Phoenix bases and should not be attacked
+                        if (BaseReworkCheck.BaseReworkEnabled && pxBase.SiteTags.Contains(PhoenixBaseReworkState.OutpostTag))
+                        {
+                            continue;
+                        }
+
                         int counterBeforeAccrual = item.Counter;
                         int totalCounterPerDayForBase = 0;
 
@@ -723,7 +731,7 @@ namespace TFTV
                             }
 
                             float timer = CalculateBaseAttackProgress(phoenixBase.Site);
-                            
+
 
                             if (HasUndamagedContainment(phoenixBase) && RollContainmentBreach(phoenixBase.Site, timer))
                             {
@@ -3374,7 +3382,7 @@ namespace TFTV
             }
         }
 
-       
+
 
         //These patches cancel the listeners added by the Register Mission method used in the TFTVAAExperiment.cs to force the base defense
         //mission when timer expires
@@ -3827,8 +3835,7 @@ namespace TFTV
 
                     UIModuleModal uIModuleModal = geoscapeView.GeoscapeModules.ModalModule;
 
-
-
+                 
                     if (data is GeoMission geoMission && __instance.name.Contains("Brief"))
                     {
                         TFTVLogger.Always($"data is GeoMission and the mission state is {geoMission.GetMissionOutcomeState()}");
@@ -3839,8 +3846,6 @@ namespace TFTV
                             __instance.Close();
                             TFTVLogger.Always("Closing modal because mission is not in play");
                         }
-
-
 
                         if (PhoenixBasesUnderAttack.ContainsKey(geoSite.SiteId) && geoSite.CharactersCount == 0)
                         {
@@ -3881,7 +3886,6 @@ namespace TFTV
 
                             commonMissionDataController.InfectedAreaGroup.gameObject.SetActive(false);
                         }
-
                     }
                 }
                 catch (Exception e)

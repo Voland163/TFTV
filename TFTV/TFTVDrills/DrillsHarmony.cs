@@ -1,5 +1,6 @@
 ﻿using Base.Core;
 using Base.Defs;
+using Base.Entities.Abilities;
 using Base.Entities.Statuses;
 using Base.Utils.Maths;
 using com.ootii.Helpers;
@@ -1070,7 +1071,45 @@ namespace TFTV.TFTVDrills
 
         }
 
+        internal class HeavySharpshoot
+        {
+            [HarmonyPatch(typeof(TacticalAbility), nameof(TacticalAbility.GetDisabledState))]
+            static class TacticalAbility_GetDisabledState_HeavySharpshot_Patch
+            {
+                static void Postfix(TacticalAbility __instance, ref AbilityDisabledState __result, IAbilityDisabledStatesFilter filter = null)
+                {
+                    if (!TFTVNewGameOptions.IsReworkEnabled()) return;
+                    if (__instance?.TacticalActor?.BodyState == null) return;
 
+                    // If already disabled by vanilla, keep vanilla reason.
+                    if (__result != AbilityDisabledState.NotDisabled) return;
+
+                    // IMPORTANT: include every related def here, not only _heavySharpshot
+                    if (!IsHeavySharpshotFamily(__instance.TacticalAbilityDef)) return;
+
+                    bool hasRequiredLegs = __instance.TacticalActor.BodyState
+                        .GetArmourItems()
+                        .Any(item => item?.ItemDef is TacticalItemDef tid && HeavySharpshotLegItems.Contains(tid));
+
+                    if (!hasRequiredLegs)
+                    {
+                        __result = AbilityDisabledState.RequirementsNotMet;
+                    }
+                }
+
+                static bool IsHeavySharpshotFamily(TacticalAbilityDef def)
+                {
+                    if (def == null) return false;
+
+                    return def == _heavySharpshot;
+                           
+                }
+            }
+        }
+
+
+
+    
         //ADDED TO VANILLA OVERWATCH FIX
        /* internal class MarkedWatch
         {

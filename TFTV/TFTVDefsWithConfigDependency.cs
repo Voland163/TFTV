@@ -10,6 +10,7 @@ using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
+using PhoenixPoint.Geoscape.Entities.Missions.Outcomes;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
@@ -19,6 +20,7 @@ using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Events.Eventus;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Animations;
@@ -62,6 +64,7 @@ namespace TFTV
                 EquipBeforeAmbush.ImplementEquipBeforeAmbush();
                 NewTrainingFacilities.ImplementNewTrainingFacilities();
                 BaseReworkResearch.ImplementBaseReworkResearch();
+                NewPowerManagement.ImplementNewPowerManagement();
             }
             catch (Exception e)
             {
@@ -526,7 +529,7 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
                     //  foodProductionBuff.Increase = 0.0f;
                     foodProductionBuff.ModificationType = GeoFactionFacilityBuff.FacilityComponentModificationType.Multiply;
 
-                    fungusResearchDef.Unlocks = new ResearchRewardDef[] { DefCache.GetDef<FacilityResearchRewardDef>("ANU_AnuFungusFood_ResearchDef_FacilityResearchRewardDef_0"), fungusResearchDef.Unlocks[1] };
+                    fungusResearchDef.Unlocks = new ResearchRewardDef[] { DefCache.GetDef<FacilityResearchRewardDef>("ANU_AnuFungusFood_ResearchDef_FacilityResearchRewardDef_0"), fungusResearchDef.Unlocks[0] };
 
 
                 }
@@ -1490,7 +1493,79 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
             }
         }
 
-                internal class BaseReworkResearch
+        internal class NewPowerManagement
+        {
+            private static bool _implemented = false;
+
+            private static int _vanillaPowerFacilityOutput;
+            private static float _vanillaFusionCellsBuff;
+            private static GeoFactionFacilityBuff.FacilityComponentModificationType _vanillaFusionCellsBuffModType;
+
+            public static void ImplementNewPowerManagement()
+            {
+                try
+                {
+                    bool enabled = TFTVNewGameOptions.NewPowerManagement;
+                    bool revert = !enabled && _implemented;
+
+                    if (enabled && !_implemented)
+                    {
+                        ModifyDefs(false);
+                        _implemented = true;
+                        TFTVLogger.Always("NewPowerManagement defs applied.");
+                    }
+                    else if (revert)
+                    {
+                        ModifyDefs(true);
+                        _implemented = false;
+                        TFTVLogger.Always("NewPowerManagement defs reverted.");
+                    }
+
+                }
+                catch (Exception e) { TFTVLogger.Error(e); }
+
+            }
+
+            private static void ModifyDefs(bool revert)
+            {
+                try
+                {
+                  
+                    PowerFacilityComponentDef powerFacility = DefCache.GetDef<PowerFacilityComponentDef>("E_Power [EnergyGenerator_PhoenixFacilityDef]");
+                    FacilityBuffResearchRewardDef fusionCellPowerFacilityBuffReward = DefCache.GetDef<FacilityBuffResearchRewardDef>("SYN_FusionCellTech_ResearchDef_FacilityBuffResearchRewardDef_0");
+                   
+
+
+                    if (!revert)
+                    {
+                        _vanillaPowerFacilityOutput = powerFacility.PowerOutput;
+                        _vanillaFusionCellsBuff = fusionCellPowerFacilityBuffReward.Increase;
+                        _vanillaFusionCellsBuffModType = fusionCellPowerFacilityBuffReward.ModificationType;
+                     
+
+                        powerFacility.PowerOutput = 15;
+                        fusionCellPowerFacilityBuffReward.ModificationType = GeoFactionFacilityBuff.FacilityComponentModificationType.Add;
+                        fusionCellPowerFacilityBuffReward.Increase = 5;
+
+                    }
+                    else
+                    {
+                       
+                        powerFacility.PowerOutput = _vanillaPowerFacilityOutput;
+                        fusionCellPowerFacilityBuffReward.ModificationType = _vanillaFusionCellsBuffModType;
+                        fusionCellPowerFacilityBuffReward.Increase = _vanillaFusionCellsBuff;
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+        }
+
+        internal class BaseReworkResearch
         {
             private static bool _implemented = false;
 
@@ -1503,6 +1578,9 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
             private static TacCharacterDef[] _vanillaStartingUnits;
             private static bool[] _vanillaConvertSiteToPhoenixBase;
 
+            private static bool _vanillaBaseInfestationMandatory;
+            private static bool _vanillaBaseInfestationDestroySite;
+            private static MissionOutcomeDef[] _vanillaBaseInfestationOutcomes;
             public static void ImplementBaseReworkResearch()
             {
                 try
@@ -1529,6 +1607,8 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
                 }
             }
 
+           
+
             private static void ModifyDefs(bool revert)
             {
                 try
@@ -1540,6 +1620,9 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
                     ActivateBaseAbilityDef activateBaseAbilityDef = DefCache.GetDef<ActivateBaseAbilityDef>("ActivateBaseAbilityDef");
                     GeoscapeEventDef synFreeBaseEvent = DefCache.GetDef<GeoscapeEventDef>("PROG_SY3_WIN_GeoscapeEventDef");
                     GeoPhoenixFactionDef geoPhoenixFactionDef = DefCache.GetDef<GeoPhoenixFactionDef>("Phoenix_GeoPhoenixFactionDef");
+                    
+                    CustomMissionTypeDef pxBaseInfestationMission = DefCache.GetDef<CustomMissionTypeDef>("PXBaseInfestationAlien_CustomMissionTypeDef");
+          
 
                     if (!revert)
                     {
@@ -1552,7 +1635,12 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
                         _vanillaStartingUnits = geoPhoenixFactionDef.StartingUnits.ToArray();
                         _vanillaConvertSiteToPhoenixBase = synFreeBaseEvent.GeoscapeEventData.Choices
                             .Select(c => c.Outcome.ConvertSiteToPhoenixBase).ToArray();
+                               
+                        _vanillaBaseInfestationMandatory = pxBaseInfestationMission.MandatoryMission;
+                        _vanillaBaseInfestationDestroySite = pxBaseInfestationMission.Outcomes[1].DestroySite;
+                        _vanillaBaseInfestationOutcomes = pxBaseInfestationMission.Outcomes[0].Outcomes;
 
+                      
                         bionicsLab.BaseResourcesOutput.Values = new List<ResourceUnit>
                         {
                             new ResourceUnit() { Type = ResourceType.Research, Value = 2 }
@@ -1583,6 +1671,11 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
                             DefCache.GetDef<TacCharacterDef>("PX_Assault1_CharacterTemplateDef"),
                             DefCache.GetDef<TacCharacterDef>("PX_Sniper1_CharacterTemplateDef")
                         };
+
+
+                        pxBaseInfestationMission.MandatoryMission = true;
+                        pxBaseInfestationMission.Outcomes[1].DestroySite = true;
+                        pxBaseInfestationMission.Outcomes[0].Outcomes = new MissionOutcomeDef[] { DefCache.GetDef<MissionOutcomeDef>("FacilityDamageMissionOutcomeDef") };
                     }
                     else
                     {
@@ -1599,6 +1692,10 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
                         }
 
                         geoPhoenixFactionDef.StartingUnits = _vanillaStartingUnits;
+                      
+                        pxBaseInfestationMission.MandatoryMission = _vanillaBaseInfestationMandatory;
+                        pxBaseInfestationMission.Outcomes[1].DestroySite = _vanillaBaseInfestationDestroySite;
+                        pxBaseInfestationMission.Outcomes[0].Outcomes = _vanillaBaseInfestationOutcomes;
                     }
                 }
                 catch (Exception e)

@@ -184,7 +184,7 @@ KEY_BASE_ACTIVATE_OPTION,Text,,Activate the Base,,,,,,,,
 KEY_BASE_OUTPOST_UPGRADE_TOOLTIP,Text,,Upgrade the Outpost to a regular Base. Takes 48 hours to complete.,,,,,,,,
 KEY_BASE_ACTIVATE_OPTION_TOOLTIP,Text,,Activate the Base. Any damaged Facilities will still need to be repaired after the activation. Takes 72 hours to complete.,,,,,,,,
 KEY_BASE_ALREADY_LOOTED,Text,,You have already looted this place!,,,,,,,,
-KEY_BASE_VISIT_TO_LOOT,Text,,Visit the base to get valuable loot!,,,,,,,,
+KEY_BASE_VISIT_TO_LOOT,Text,,Explore the base to get valuable loot!,,,,,,,,
 KEY_BASE_LOOT_YOU_FOUND,Text,,You found:,,,,,,,,
 KEY_OUTPOST_ACTIVATED_TITLE,Text,,Outpost operational,,,,,,,,
 KEY_OUTPOST_ACTIVATED_DESCRIPTION,Text,,"You have finished building an Outpost. You cannot build any facilities at an Outpost nor receive any income nor other advantages from existing facilities at an Outpost. Aircraft and Units at the Outpost heal, repair and recover Stamina at half the rate they would at a regular Base with the corresponding facilities. Outposts cannot be attacked and can be later upgraded to a regular Base costing half the resources and 3 personnel.",,,,,,,,
@@ -208,7 +208,7 @@ KEY_AFFINITY_TAC_DESC_EXPLORATION_OPTION_1,Text,,Tactical Benefit : Enemies are 
 KEY_AFFINITY_TAC_DESC_EXPLORATION_OPTION_2,Text,,"Tactical Benefit : Gain immediate control of {0} friendly Haven defender at mission start, and +{1} WP when extracting civilians.",,,,,,,,
 KEY_AFFINITY_TAC_DESC_OCCULT_OPTION_1,Text,,Tactical Benefit : Reduce TBTV chance by {0}%.,,,,,,,,
 KEY_AFFINITY_TAC_DESC_OCCULT_OPTION_2,Text,,"Tactical Benefit : For all allies, effect of Stamina on Delirium increased by {0}%.",,,,,,,,
-KEY_AFFINITY_TAC_DESC_BIOTECH_OPTION_1,Text,,"Tactical Benefit : Gain passive ability: Using a Medkit or a Virophage Kit restores {0} HP to all broken or damaged organic body parts of the target, restoring them if disabled.",,,,,,,,
+KEY_AFFINITY_TAC_DESC_BIOTECH_OPTION_1,Text,,"Tactical Benefit : Gain passive ability: Using a Medkit or a Virophage Kit gives the target Ignore Pain status for {0} turn(s), allowing the target to ignore disabled limbs for that duration.",,,,,,,,
 KEY_AFFINITY_TAC_DESC_BIOTECH_OPTION_2,Text,,Tactical Benefit : Gain passive ability: Using any healing item or ability restores up to {0} WP that the target had lost to Delirium; lasts only for the duration of the mission.,,,,,,,,
 KEY_AFFINITY_TAC_DESC_MACHINERY_OPTION_1,Text,,"Tactical Benefit : Gain active ability: Overdrive - restore {0} AP to a Vehicle or Operative with Bionics, but giving a 50% vulnerability to all damage types until the end of next turn (1 AP, 3 WP)",,,,,,,,
 KEY_AFFINITY_TAC_DESC_MACHINERY_OPTION_2,Text,,Tactical Benefit : Gain passive ability: Using any healing item or ability restores up to {0} Armor on each body part of the target.,,,,,,,,
@@ -291,7 +291,7 @@ OR
 
 Tactical Benefits (choose one globally):
 
-- Gain passive ability: Using a Medkit or a Virophage Kit restores 10 HP per Affinity Rank to all broken or damaged organic body parts of the target, restoring them if disabled.
+- Gain passive ability: Using a Medkit or a Virophage Kit gives the target Ignore Pain status for 1 turn per Affinity Rank, allowing the target to ignore disabled limbs for that duration
 OR
 - Gain passive ability: Using any healing item or ability restores up to 3 WP per Affinity Rank that the target had lost to Delirium; lasts only for the duration of the mission.",,,,,,,,
 KEY_AFFINITY_MACHINERY_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
@@ -378,3 +378,4 @@ TUTORIAL_AFFINITIES_TEXT0,Text,,"- Affinities are gained and advanced in rank by
 - Affinity bonuses do not stack — only the highest-ranked specialist’s bonus applies.
 - Geoscape benefits apply to the Aircraft on which the Character is currently a passenger, Benefits in Tactical grant an ability to the Character with the Affinity.
 - Each Character can have only one Affinity.",,,,,,,,
+KEY_BASE_EXPLORE_FIRST,Text,,Explore the base first to unlock these options.,,,,,,,,

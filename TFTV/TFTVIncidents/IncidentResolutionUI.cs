@@ -1,4 +1,5 @@
 ﻿using Base.Core;
+using Base.Levels;
 using Base.UI;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities;
@@ -416,8 +417,9 @@ namespace TFTV.TFTVIncidents
                 {
                     return;
                 }
+                // Resolve SoldierSlotController prefab
+                SoldierSlotController rowPrefab = vehicle.GeoLevel.View.GeoscapeModules.SoldierEquipModule.SoldierSlotPrefab;
 
-                SoldierSlotController rowPrefab = ResolveSoldierSlotPrefab();
                 if (rowPrefab == null)
                 {
                     Debug.LogWarning("[GeoscapeEventCrewListPatch] SoldierSlotController prefab could not be resolved.");
@@ -1273,25 +1275,7 @@ namespace TFTV.TFTVIncidents
                 return source.ToList();
             }
 
-            private static SoldierSlotController ResolveSoldierSlotPrefab()
-            {
-                if (SoldierSlotPrefabProvider != null)
-                {
-                    SoldierSlotController provided = SoldierSlotPrefabProvider();
-                    if (provided != null)
-                    {
-                        return provided;
-                    }
-                }
-
-                SoldierSlotController[] candidates = Resources.FindObjectsOfTypeAll<SoldierSlotController>();
-                return candidates
-                    .Where(c => c != null)
-                    .OrderBy(c => c.gameObject.scene.IsValid() ? 1 : 0)
-                    .ThenBy(c => c.gameObject.activeInHierarchy ? 1 : 0)
-                    .FirstOrDefault();
-            }
-
+           
             private static void ResetRowSelectionVisualState(SoldierSlotController row)
             {
                 if (row == null)

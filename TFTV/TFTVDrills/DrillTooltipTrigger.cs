@@ -350,7 +350,7 @@ namespace TFTV.TFTVDrills
                     return;
                 }
 
-                int apCost = Mathf.RoundToInt(_ability.ActionPointCost);
+              /*  int apCost = Mathf.RoundToInt(_ability.ActionPointCost);
                 int wpCost = Mathf.RoundToInt(_ability.WillPointCost);
 
                 if (tooltip.AbilitySkillCostGroup != null)
@@ -376,7 +376,7 @@ namespace TFTV.TFTVDrills
                         string wpFormat = tooltip.WPCostTextKey != null ? tooltip.WPCostTextKey.Localize() : "{0}";
                         tooltip.AbilitySkillWPCostText.text = string.Format(wpFormat, wpCost);
                     }
-                }
+                }*/
             }
 
             private GeoRosterAbilityDetailTooltip EnsureTooltip()

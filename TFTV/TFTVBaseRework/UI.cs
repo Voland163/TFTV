@@ -28,9 +28,6 @@ using Object = UnityEngine.Object;
 namespace TFTV.TFTVBaseRework
 {
 
-
-
-
     [HarmonyPatch(typeof(UIModuleGeoRosterTabs), nameof(UIModuleGeoRosterTabs.CheckAvailableTabs))]
     public static class UIModuleGeoRosterTabs_CheckAvailableTabs_Patch
     {
@@ -429,7 +426,7 @@ namespace TFTV.TFTVBaseRework
                 FacilitySlotPools pools = ResearchManufacturingSlotsManager.GetOrCreatePools(phoenix);
 
                 // Resolve SoldierSlotController prefab
-                SoldierSlotController slotPrefab = ResolveSoldierSlotPrefab();
+                SoldierSlotController slotPrefab = level.View.GeoscapeModules.SoldierEquipModule.SoldierSlotPrefab;
 
                 // Training slot counts
                 int trainProvided = TrainingFacilityRework.GetProvidedTrainingSlots(phoenix);
@@ -1033,20 +1030,6 @@ namespace TFTV.TFTVBaseRework
                 RefreshPanel();
             }
             catch (Exception e) { TFTVLogger.Error(e); }
-        }
-
-        #endregion
-
-        #region Prefab Resolution
-
-        private static SoldierSlotController ResolveSoldierSlotPrefab()
-        {
-            SoldierSlotController[] candidates = Resources.FindObjectsOfTypeAll<SoldierSlotController>();
-            return candidates
-                .Where(c => c != null)
-                .OrderByDescending(c => c.gameObject.scene.IsValid() ? 1 : 0)
-                .ThenByDescending(c => c.gameObject.activeInHierarchy ? 1 : 0)
-                .FirstOrDefault();
         }
 
         #endregion

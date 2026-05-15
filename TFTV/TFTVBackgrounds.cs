@@ -210,7 +210,7 @@ namespace TFTV
 
             private static int CalculateFontSize(string text)
             {
-                TFTVLogger.Always($"length: {text.Length}");
+               // TFTVLogger.Always($"length: {text.Length}");
 
                 if (text.Length <= 200)
                 {

@@ -41,25 +41,6 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
 
-        public static void CreateNewGeoObjectivePhoenixFaction(GeoLevelController controller, string titleKey, string descriptionKey)
-        {
-            try
-            {
-                DiplomaticGeoFactionObjective newObjective = new DiplomaticGeoFactionObjective(controller.PhoenixFaction, controller.PhoenixFaction)
-                {
-                    Title = new LocalizedTextBind(titleKey),
-                    Description = new LocalizedTextBind(descriptionKey),
-                };
-
-                controller.PhoenixFaction.AddObjective(newObjective);
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
-
         public static int D12DifficultyModifiedRoll(int unModifiedDifficultyOrder)
         {
             try
@@ -182,7 +163,7 @@ namespace TFTV
                 TFTVAircraftReworkMain.InternalData.ClearDataOnStateChange();
                 HavenRecruitsMain.ClearInternalData();
                 DrillsUI.InternalData.ClearInternalData();
-
+                TFTV.TFTVIncidents.Resolution.IncidentController.ClearStateOnStateChangeAndLoad();
                 TFTVLogger.Always($"Internal variables cleared on State change or Load");
             }
             catch (Exception e)
@@ -984,70 +965,6 @@ namespace TFTV
                 throw;
             }
         }
-
-        internal static List<int> LocateOtherVehicles(int id)
-        {
-            try
-            {
-                List<int> vehicleIDs = new List<int>();
-
-                if (id != 0)
-                {
-                    GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-
-                    List<GeoVehicle> geoVehiclesAtSite = controller.PhoenixFaction?.Vehicles?.FirstOrDefault(v => v?.VehicleID == id)?.CurrentSite?.Vehicles?.Where(vs => vs?.Owner == controller.PhoenixFaction && vs?.VehicleID != id)?.ToList();
-
-                    if (geoVehiclesAtSite != null && geoVehiclesAtSite.Count > 0)
-                    {
-
-                        foreach (GeoVehicle vehicle in geoVehiclesAtSite)
-                        {
-                            vehicleIDs.Add(vehicle.VehicleID);
-
-                        }
-                    }
-                }
-
-                return vehicleIDs;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
-
-        internal static bool CheckPhoenixBasePresent(int vehicleID)
-        {
-            try
-            {
-                GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-
-                if (vehicleID == 0)
-                {
-                    return true;
-
-                }
-
-                if (controller.PhoenixFaction.Vehicles.FirstOrDefault(v => v.VehicleID == vehicleID)?.CurrentSite?.GetComponent<GeoPhoenixBase>() != null)
-                {
-                    return true;
-                }
-
-                return false;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-
-        }
-
-
-
     }
 }
 

@@ -114,7 +114,7 @@ namespace TFTV.TFTVBaseRework
                     }
 
                     GeoSite site = ____data?.PhoenixBase?.Site;
-                  
+
                     if (site == null)
                     {
                         return;
@@ -123,24 +123,44 @@ namespace TFTV.TFTVBaseRework
                     if (!TryBeginModalOnce(__instance))
                     {
                         return;
-                    }                   
+                    }
 
                     GeoPhoenixFaction faction = site.GeoLevel.PhoenixFaction;
 
+                    int ambushChance = PhoenixBaseExplorationConfig.InfestationChancePercent;
+
+                    if (site.IsInMist) 
+                    {
+                        ambushChance *= 2;  
+                    }
+
+
+                    __instance.InfestationDesc.text = "Ambush chance during base exploration";
+                    __instance.InfestationThreat.text = $"{ambushChance}%";
+
                     bool hasAircraftWithSoldiers = PhoenixBaseVisitFlow.HasPhoenixAircraftWithSoldiersAtSite(site, faction);
                     bool isOutpost = site.SiteTags.Contains(PhoenixBaseReworkState.OutpostTag);
+                    bool isExplored = site.GetVisited(faction);
 
                     bool isLooted = site.SiteTags.Contains(PhoenixBaseReworkState.LootedTag);
-                    BaseInitialLoot.LootUiResult lootAwarded = BaseInitialLoot.TryGiveFirstVisitLootOnUI(site, faction, hasAircraftWithSoldiers);
 
-                    TFTVLogger.Always($"[PXBaseActivationDataBind_ModalShowHandler_CustomPanel_patch] Site: {site?.LocalizedSiteName}, HasAircraftWithSoldiers: {hasAircraftWithSoldiers}, lootAwarded: {lootAwarded?.Text} ");
+                    // Only award loot if the base has been explored by the Explore Site action.
+                    BaseInitialLoot.LootUiResult lootAwarded = isExplored
+                        ? BaseInitialLoot.TryGiveFirstVisitLootOnUI(site, faction, hasAircraftWithSoldiers)
+                        : null;
+
+                    TFTVLogger.Always($"[PXBaseActivationDataBind_ModalShowHandler_CustomPanel_patch] Site: {site?.LocalizedSiteName}, HasAircraftWithSoldiers: {hasAircraftWithSoldiers}, isExplored: {isExplored}, lootAwarded: {lootAwarded?.Text} ");
 
                     HideVanillaActivationCostBlock(__instance);
 
                     Text activationCostLabel = FindActivationCostLabel(__instance);
                     if (activationCostLabel != null)
                     {
-                        if (isLooted)
+                        if (!isExplored)
+                        {
+                            SetActivationLootDisplay(activationCostLabel, TFTVCommonMethods.ConvertKeyToString("KEY_BASE_VISIT_TO_LOOT"), null);
+                        }
+                        else if (isLooted)
                         {
                             SetActivationLootDisplay(activationCostLabel, TFTVCommonMethods.ConvertKeyToString("KEY_BASE_ALREADY_LOOTED"), null);
                         }
@@ -180,27 +200,37 @@ namespace TFTV.TFTVBaseRework
 
                     ClearChildren(root);
 
+                    // Exploration-gate prefix: prepended to tooltips when the base is not yet explored.
+                    string exploreFirstPrefix = !isExplored
+                        ? $"{TFTVCommonMethods.ConvertKeyToString("KEY_BASE_EXPLORE_FIRST")}\n\n"
+                        : string.Empty;
+
+                    bool canScan = !BaseLowQualityScanning.IsScanInProgress(site, faction)
+                        && BaseLowQualityScanning.CanAffordLowQualityScan(site, faction)
+                        && BaseLowQualityScanning.HasPhoenixAircraftWithinRange(site, faction);
+
                     PhoenixGeneralButton scanBtn = CreateClonedActionButton(
                         __instance.Confirm,
                         root,
                         TFTVCommonMethods.ConvertKeyToString("KEY_BASE_PING_SCAN_OPTION"),
-                        BaseLowQualityScanning.CanAffordLowQualityScan(faction),
+                        canScan,
                         () => ExecuteAndCloseOnSuccess(modal, () => BaseLowQualityScanning.TryStartLowQualityScan(site, faction)));
-                    ApplyCostRow(scanBtn, faction, BaseLowQualityScanning.GetScanCostPack(), 0);
+                    ApplyCostRow(scanBtn, faction, BaseLowQualityScanning.GetScanCostPack(site), 0);
                     SetButtonTooltip(scanBtn, TFTVCommonMethods.ConvertKeyToString("KEY_BASE_PING_SCAN_TOOLTIP"));
 
                     PhoenixGeneralButton ransackBtn = CreateClonedActionButton(
                         __instance.Confirm,
                         root,
                         TFTVCommonMethods.ConvertKeyToString("KEY_BASE_RANSACK_OPTION"),
-                        hasAircraftWithSoldiers,
+                        hasAircraftWithSoldiers && isExplored,
                         () => ExecuteAndCloseOnSuccess(modal, () => PhoenixBaseVisitFlow.TryRansackFromActivationUI(site, faction)));
                     if (!ApplyGainRow(ransackBtn, site))
                     {
                         SetButtonLabel(ransackBtn.gameObject,
                             $"{TFTVCommonMethods.ConvertKeyToString("KEY_BASE_RANSACK_OPTION")}   {BaseRansack.GetRansackPreviewText(site)}");
                     }
-                    SetButtonTooltip(ransackBtn, TFTVCommonMethods.ConvertKeyToString("KEY_BASE_RANSACK_TOOLTIP"));
+                    SetButtonTooltip(ransackBtn,
+                        $"{exploreFirstPrefix}{TFTVCommonMethods.ConvertKeyToString("KEY_BASE_RANSACK_TOOLTIP")}");
 
                     if (!isOutpost)
                     {
@@ -208,10 +238,11 @@ namespace TFTV.TFTVBaseRework
                             __instance.Confirm,
                             root,
                             TFTVCommonMethods.ConvertKeyToString("KEY_BASE_OUTPOST_OPTION"),
-                            hasAircraftWithSoldiers && PhoenixBaseVisitFlow.CanAffordOutpost(faction),
+                            hasAircraftWithSoldiers && isExplored && PhoenixBaseVisitFlow.CanAffordOutpost(faction),
                             () => ExecuteAndCloseOnSuccess(modal, () => PhoenixBaseVisitFlow.TrySetOutpostFromActivationUI(site, faction)));
                         ApplyCostRow(outpostBtn, faction, PhoenixBaseVisitFlow.GetOutpostCostPack(), PhoenixBaseVisitFlow.GetOutpostPersonnelCost());
-                        SetButtonTooltip(outpostBtn, TFTVCommonMethods.ConvertKeyToString("KEY_BASE_OUTPOST_TOOLTIP"));
+                        SetButtonTooltip(outpostBtn,
+                            $"{exploreFirstPrefix}{TFTVCommonMethods.ConvertKeyToString("KEY_BASE_OUTPOST_TOOLTIP")}");
                     }
 
                     bool fromOutpost = isOutpost;
@@ -222,16 +253,16 @@ namespace TFTV.TFTVBaseRework
                         __instance.Confirm,
                         root,
                         activateLabel,
-                        hasAircraftWithSoldiers && PhoenixBaseVisitFlow.CanAffordBaseQueue(faction, fromOutpost),
+                        hasAircraftWithSoldiers && isExplored && PhoenixBaseVisitFlow.CanAffordBaseQueue(faction, fromOutpost),
                         () => ExecuteAndCloseOnSuccess(modal, () => PhoenixBaseVisitFlow.TryQueueFullBaseFromActivationUI(site, faction, fromOutpost)));
                     ApplyCostRow(activateBaseBtn, faction, PhoenixBaseVisitFlow.GetBaseQueueCostPack(fromOutpost), PhoenixBaseVisitFlow.GetBaseQueuePersonnelCost(fromOutpost));
                     SetButtonTooltip(activateBaseBtn, fromOutpost
-                        ? TFTVCommonMethods.ConvertKeyToString("KEY_BASE_OUTPOST_UPGRADE_TOOLTIP")
-                        : TFTVCommonMethods.ConvertKeyToString("KEY_BASE_ACTIVATE_OPTION_TOOLTIP"));
+                        ? $"{exploreFirstPrefix}{TFTVCommonMethods.ConvertKeyToString("KEY_BASE_OUTPOST_UPGRADE_TOOLTIP")}"
+                        : $"{exploreFirstPrefix}{TFTVCommonMethods.ConvertKeyToString("KEY_BASE_ACTIVATE_OPTION_TOOLTIP")}");
 
                     __instance.Confirm.gameObject.SetActive(false);
 
-                 
+                    site.RefreshVisuals();
                 }
                 catch (Exception ex)
                 {

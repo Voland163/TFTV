@@ -96,6 +96,15 @@ namespace TFTV.TFTVBaseRework
                 if (__instance == null || site == null) return;
                 if (site.Type != GeoSiteType.PhoenixBase) return;
 
+               /* TFTVLogger.Always($"[GeoSiteVisualsController.RefreshSiteVisuals] Refreshing visuals for {site.LocalizedSiteName}. " +
+                      $"State: {site.State}, " +
+                      $"Activated: {site.State == GeoSiteState.Functioning}, " +
+                      $"Looted: {site.SiteTags.Contains(PhoenixBaseReworkState.LootedTag)}, " +
+                      $"Is Outpost: {site.SiteTags.Contains(PhoenixBaseReworkState.OutpostTag)}," +
+                      $"Site owner: {site.Owner?.Name?.Localize()}"+
+                      $"Infested?: {site.GetComponent<GeoPhoenixBase>().HasInfestedMission}");*/
+
+
                 bool isActivated = site.State == GeoSiteState.Functioning;
                 /*  TFTVLogger.Always($"[GeoSiteVisualsController.RefreshSiteVisuals] " +
                       $"Refreshing visuals for {site.LocalizedSiteName}. " +

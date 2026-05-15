@@ -6,6 +6,7 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
+using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,77 @@ namespace TFTV.TFTVIncidents
     internal class BiotechMedkit
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
+        // -----------------------------------------------------------------------
+        // Def creation for the Ignore Pain status clones (1 turn per rank).
+        // -----------------------------------------------------------------------
+        internal static class BiotechIgnorePainDefs
+        {
+            private const string DiagTag = "[Incidents][BiotechMedkit][Defs]";
+
+            // Index 0 = rank 1 (1 turn), index 1 = rank 2 (2 turns), index 2 = rank 3 (3 turns).
+            internal static FreezeAspectStatsStatusDef[] IgnorePainByRank { get; private set; } =
+                new FreezeAspectStatsStatusDef[3];
+
+            private static readonly string[] Guids = new string[]
+            {
+                "a1b2c3d4-0001-4e5f-9abc-000000000001",
+                "a1b2c3d4-0001-4e5f-9abc-000000000002",
+                "a1b2c3d4-0001-4e5f-9abc-000000000003",
+            };
+
+            internal static void CreateDefs()
+            {
+                try
+                {
+                    TFTVLogger.Always($"{DiagTag} CreateDefs starting.");
+
+                    FreezeAspectStatsStatusDef source = DefCache.GetDef<FreezeAspectStatsStatusDef>("IgnorePain_StatusDef");
+                    if (source == null)
+                    {
+                        TFTVLogger.Always($"{DiagTag} CreateDefs FAILED: IgnorePain_StatusDef not found.");
+                        return;
+                    }
+
+                    for (int i = 0; i < 3; i++)
+                    {
+                        int turns = i + 1;
+                        string defName = $"BiotechIgnorePain_Rank{turns}_StatusDef";
+
+                        FreezeAspectStatsStatusDef clone = Helper.CreateDefFromClone(source, Guids[i], defName);
+                        clone.DurationTurns = turns;
+
+                        IgnorePainByRank[i] = clone;
+                        TFTVLogger.Always($"{DiagTag} Created rank {turns} def: name={clone.name}, DurationTurns={clone.DurationTurns}.");
+                    }
+
+                    TFTVLogger.Always($"{DiagTag} CreateDefs complete.");
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            internal static bool IsOurDef(FreezeAspectStatsStatusDef def)
+            {
+                if (def == null)
+                {
+                    return false;
+                }
+
+                foreach (FreezeAspectStatsStatusDef d in IgnorePainByRank)
+                {
+                    if (d == def)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
         internal static Dictionary<string, float> ExportOption2RestoreAppliedSnapshot()
         {
             return HealAbility_BiotechMedkitPatch.ExportOption2RestoreAppliedSnapshot();
@@ -32,7 +104,6 @@ namespace TFTV.TFTVIncidents
         internal static class HealAbility_BiotechMedkitPatch
         {
             private const string DiagTag = "[Incidents][BiotechMedkit]";
-            private const float BaseOrganicBodyPartRestoreAmount = 10f;
             private const float BaseDeliriumWillRestoreAmount = 3f;
             private const string DeliriumRestoreSourceName = "BiotechMedkit_DeliriumRestore";
             private static readonly object DeliriumRestoreSource = new object();
@@ -47,6 +118,47 @@ namespace TFTV.TFTVIncidents
                 private static void Postfix()
                 {
                     Option2RestoreAppliedByActorId.Clear();
+                }
+            }
+
+            // When our Ignore Pain status expires, RecalculateUsableHands was already called
+            // while the status was still in the list (inside OnUnapply base), so the disabled
+            // arm would still be counted. Re-run it now that the status is gone.
+            [HarmonyPatch(typeof(TacStatus), "OnUnapply")]
+            private static class TacStatus_OnUnapply_BiotechIgnorePain_Patch
+            {
+                private static void Postfix(TacStatus __instance)
+                {
+                    try
+                    {
+                        if (__instance == null || __instance.BaseDef == null || !(__instance.BaseDef is FreezeAspectStatsStatusDef))
+                        {
+                            return;
+                        }
+
+                        FreezeAspectStatsStatusDef def = __instance.BaseDef as FreezeAspectStatsStatusDef;
+                        if (!BiotechIgnorePainDefs.IsOurDef(def))
+                        {
+                            return;
+                        }
+
+                        TacticalActor actor = __instance.TacticalActor;
+                        if (actor == null)
+                        {
+                            TFTVLogger.Always($"{DiagTag} OnUnapply: actor is null.");
+                            return;
+                        }
+
+                        // Status is now removed — recalculate so disabled arms no longer
+                        // count toward usable hands.
+                        actor.RecalculateUsableHands();
+
+                        TFTVLogger.Always($"{DiagTag} OnUnapply: {def.name} expired on {actor.name}, usableHands={actor.GetUsableHands()}, hasFreezeStatus={actor.Status.HasStatus<FreezeAspectStatsStatus>()}.");
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
                 }
             }
 
@@ -96,24 +208,19 @@ namespace TFTV.TFTVIncidents
                 int biotechRank = GetBiotechRank(healer);
                 if (biotechRank <= 0)
                 {
-                    // TFTVLogger.Always($"{DiagTag} ApplyBiotechHealingBonus aborted: healer {healer?.name ?? "<null>"} has no Biotech rank.");
                     return;
                 }
 
                 int selectedOption = Affinities.AffinityBenefitsChoices.GetTacticalBenefitChoiceFromSnapshot(LeaderSelection.AffinityApproach.Biotech);
-                /*  TFTVLogger.Always(
-                      $"{DiagTag} ApplyBiotechHealingBonus: healer={healer?.name ?? "<null>"}, target={targetActor?.name ?? "<null>"}, " +
-                      $"rank={biotechRank}, selectedOption={selectedOption}, equipment={GetEquipmentDebugName(equipment)}.");*/
 
                 if (selectedOption == 1)
                 {
                     if (!IsBiotechOption1Equipment(equipment))
                     {
-                        //  TFTVLogger.Always($"{DiagTag} ApplyBiotechHealingBonus aborted: equipment is not valid for option 1.");
                         return;
                     }
 
-                    ApplyOrganicBodypartRestore(targetActor, BaseOrganicBodyPartRestoreAmount * biotechRank);
+                    ApplyIgnorePainStatus(targetActor, biotechRank);
                 }
                 else
                 {
@@ -126,28 +233,84 @@ namespace TFTV.TFTVIncidents
                 int biotechRank = GetBiotechRank(healer);
                 if (biotechRank <= 0)
                 {
-                    // TFTVLogger.Always($"{DiagTag} CanApplyBiotechHealingBonus: healer {healer?.name ?? "<null>"} has no Biotech rank.");
                     return false;
                 }
 
                 int selectedOption = Affinities.AffinityBenefitsChoices.GetTacticalBenefitChoiceFromSnapshot(LeaderSelection.AffinityApproach.Biotech);
-                /* TFTVLogger.Always(
-                     $"{DiagTag} CanApplyBiotechHealingBonus: healer={healer?.name ?? "<null>"}, target={targetActor?.name ?? "<null>"}, " +
-                     $"rank={biotechRank}, selectedOption={selectedOption}, equipment={GetEquipmentDebugName(equipment)}.");*/
 
                 if (selectedOption == 1)
                 {
-                    bool validEquipment = IsBiotechOption1Equipment(equipment);
-                    bool hasDamagedParts = HasDamagedOrganicBodyParts(targetActor);
-                    // TFTVLogger.Always(
-                    //     $"{DiagTag} CanApplyBiotechHealingBonus option1: validEquipment={validEquipment}, hasDamagedOrganicBodyParts={hasDamagedParts}.");
+                    if (!IsBiotechOption1Equipment(equipment))
+                    {
+                        return false;
+                    }
 
-                    return validEquipment && hasDamagedParts;
+                    // Valid target: has a disabled arm AND doesn't already have our status.
+                    return HasDisabledHandSlot(targetActor) && !HasOurIgnorePainStatus(targetActor);
                 }
 
                 float remaining = GetRemainingDeliriumRestoreCapacity(targetActor, BaseDeliriumWillRestoreAmount * biotechRank);
-                // TFTVLogger.Always($"{DiagTag} CanApplyBiotechHealingBonus option2: remaining={remaining}.");
                 return remaining > 0f;
+            }
+
+            private static void ApplyIgnorePainStatus(TacticalActor targetActor, int biotechRank)
+            {
+                if (targetActor == null || biotechRank <= 0)
+                {
+                    TFTVLogger.Always($"{DiagTag} ApplyIgnorePainStatus: skipped, target={targetActor?.name ?? "<null>"}, rank={biotechRank}.");
+                    return;
+                }
+
+                int rankIndex = Mathf.Clamp(biotechRank - 1, 0, BiotechIgnorePainDefs.IgnorePainByRank.Length - 1);
+                FreezeAspectStatsStatusDef statusDef = BiotechIgnorePainDefs.IgnorePainByRank[rankIndex];
+
+                TFTVLogger.Always($"{DiagTag} ApplyIgnorePainStatus PRE: target={targetActor.name}, rank={biotechRank}, statusDef={statusDef?.name ?? "<null>"}, usableHands={targetActor.GetUsableHands()}, hasFreezeStatus={targetActor.Status.HasStatus<FreezeAspectStatsStatus>()}.");
+
+                if (statusDef == null)
+                {
+                    TFTVLogger.Always($"{DiagTag} ApplyIgnorePainStatus: statusDef is null — IgnorePainByRank not initialized.");
+                    return;
+                }
+
+                targetActor.Status.ApplyStatus(statusDef);
+
+                // RecalculateUsableHands() fires inside OnApply before the status is registered,
+                // so HasStatus<FreezeAspectStatsStatus>() returns false at that point.
+                // Re-run now that ApplyStatus() has returned and the status IS in the list.
+                targetActor.RecalculateUsableHands();
+
+                TFTVLogger.Always($"{DiagTag} ApplyIgnorePainStatus POST: target={targetActor.name}, usableHands={targetActor.GetUsableHands()}, hasFreezeStatus={targetActor.Status.HasStatus<FreezeAspectStatsStatus>()}, DurationTurns={statusDef.DurationTurns}.");
+            }
+
+            private static bool HasDisabledHandSlot(TacticalActor targetActor)
+            {
+                if (targetActor == null)
+                {
+                    return false;
+                }
+
+                foreach (ItemSlot slot in targetActor.BodyState.GetHealthSlots())
+                {
+                    if (!slot.Enabled && slot.ItemSlotDef != null && slot.ItemSlotDef.ProvidesHand)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            private static bool HasOurIgnorePainStatus(TacticalActor targetActor)
+            {
+                foreach (FreezeAspectStatsStatusDef def in BiotechIgnorePainDefs.IgnorePainByRank)
+                {
+                    if (def != null && targetActor.HasStatus(def))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
             }
 
             private static void ApplyMachineryHealingBonus(TacticalActor healer, TacticalActor targetActor)
@@ -228,9 +391,6 @@ namespace TFTV.TFTVIncidents
             {
                 if (actor == null || affinityTrack == null || affinityTrack.Length < 3)
                 {
-                    /* TFTVLogger.Always(
-                         $"{DiagTag} GetAffinityRank invalid input: actor={actor?.name ?? "<null>"}, " +
-                         $"trackLength={(affinityTrack == null ? 0 : affinityTrack.Length)}.");*/
                     return 0;
                 }
 
@@ -239,92 +399,13 @@ namespace TFTV.TFTVIncidents
                     PassiveModifierAbilityDef def = affinityTrack[i];
                     PassiveModifierAbility ability = def != null ? actor.GetAbilityWithDef<PassiveModifierAbility>(def) : null;
 
-                    /*  TFTVLogger.Always(
-                          $"{DiagTag} GetAffinityRank check: actor={actor.name}, def={def?.name ?? "<null>"}, found={(ability != null)}.");*/
-
                     if (ability != null)
                     {
-                        // TFTVLogger.Always($"{DiagTag} GetAffinityRank result: {i + 1} for {actor.name}.");
                         return i + 1;
                     }
                 }
 
-                //  TFTVLogger.Always($"{DiagTag} GetAffinityRank result: 0 for {actor.name}.");
                 return 0;
-            }
-
-            private static bool HasDamagedOrganicBodyParts(TacticalActor targetActor)
-            {
-                if (targetActor == null)
-                {
-                    //  TFTVLogger.Always($"{DiagTag} HasDamagedOrganicBodyParts: target is null.");
-                    return false;
-                }
-
-                GameTagDef organicTag = CommonHelpers.GetSharedGameTags().Substances.OrganicTag;
-                bool result = false;
-
-                foreach (ItemSlot slot in targetActor.BodyState.GetHealthSlots())
-                {
-                    StatusStat health = slot.GetHealth();
-                    bool damaged = health != null && health.Value < health.Max;
-                    bool matchesOrganicTag = organicTag == null || slot.HasDirectGameTag(organicTag, true);
-
-                    /*  TFTVLogger.Always(
-                          $"{DiagTag} HasDamagedOrganicBodyParts slot: target={targetActor.name}, " +
-                          $"health={(health != null ? health.Value.ToString() : "<null>")}, " +
-                          $"max={(health != null ? health.Max.ToString() : "<null>")}, " +
-                          $"damaged={damaged}, matchesOrganicTag={matchesOrganicTag}.");*/
-
-                    if (damaged && matchesOrganicTag)
-                    {
-                        result = true;
-                    }
-                }
-
-                //TFTVLogger.Always($"{DiagTag} HasDamagedOrganicBodyParts result for {targetActor.name}: {result}.");
-                return result;
-            }
-
-            private static void ApplyOrganicBodypartRestore(TacticalActor targetActor, float restoreAmount)
-            {
-                if (targetActor == null || restoreAmount <= 0f)
-                {
-                    // TFTVLogger.Always(
-                    //     $"{DiagTag} ApplyOrganicBodypartRestore skipped: target={targetActor?.name ?? "<null>"}, restoreAmount={restoreAmount}.");
-                    return;
-                }
-
-                GameTagDef organicTag = CommonHelpers.GetSharedGameTags().Substances.OrganicTag; //DefCache.GetDef<SubstanceTypeTagDef>("Organic_SubstanceTypeTagDef"); // 
-                int restoredSlots = 0;
-
-                foreach (ItemSlot itemSlot in targetActor.BodyState.GetHealthSlots())
-                {
-                    StatusStat health = itemSlot.GetHealth();
-                    bool damaged = health != null && health.Value < health.Max;
-                    bool matchesOrganicTag = itemSlot.GetAllDirectItems(true).Any(ti => ti.GameTags.Contains(organicTag));
-
-                    /*  TFTVLogger.Always(
-                          $"{DiagTag} ApplyOrganicBodypartRestore slot pre-check: target={targetActor.name}, " +
-                          $"health={(health != null ? health.Value.ToString() : "<null>")}, " +
-                          $"max={(health != null ? health.Max.ToString() : "<null>")}, " +
-                          $"damaged={damaged}, matchesOrganicTag={matchesOrganicTag}, restoreAmount={restoreAmount}.");*/
-
-                    if (!damaged || !matchesOrganicTag)
-                    {
-                        continue;
-                    }
-
-                    float before = health.Value;
-                    health.Add(restoreAmount);
-                    float after = health.Value;
-                    restoredSlots++;
-
-                    /*  TFTVLogger.Always(
-                          $"{DiagTag} ApplyOrganicBodypartRestore applied: target={targetActor.name}, before={before}, after={after}.");*/
-                }
-
-                TFTVLogger.Always($"{DiagTag} ApplyOrganicBodypartRestore finished for {targetActor.name}. RestoredSlots={restoredSlots}.");
             }
 
             private static void ApplyDeliriumWillRestore(TacticalActor targetActor, float restoreAmount)
@@ -465,7 +546,6 @@ namespace TFTV.TFTVIncidents
                     && (equipment.EquipmentDef.name == "Medkit_EquipmentDef"
                         || equipment.EquipmentDef.name == "VirophageMedkit_EquipmentDef");
             }
-
 
             private static bool HasMissingArmour(TacticalActor targetActor)
             {

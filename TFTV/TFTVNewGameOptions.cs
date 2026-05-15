@@ -75,7 +75,7 @@ namespace TFTV
 
         public static bool NewTrainingFacilities = false;
         public static bool BaseRework = false;
-
+        public static bool NewPowerManagement = false;
 
         public static int initialScavSites = 8; // 16 on Vanilla
 

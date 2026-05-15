@@ -2074,6 +2074,8 @@ namespace TFTV
                     {
                         TFTVLogger.Always("Aircraft rework enabled for new game, setting BaseRework to true");
                         TFTVNewGameOptions.BaseRework = true;
+                        TFTVLogger.Always($"Setting New Power Management to on for new game");
+                        TFTVNewGameOptions.NewPowerManagement = true;
                     }
 
                     return false;

@@ -91,7 +91,7 @@ namespace TFTV.TFTVIncidents
 
                 int selectedOption = Affinities.AffinityBenefitsChoices.GetTacticalBenefitChoiceFromSnapshot(approach);
 
-                TFTVLogger.Always($"{DiagTag} Checking if should apply global tactical benefit for approach {approach}: selected option {selectedOption}, required option {requiredOption}.");
+             //   TFTVLogger.Always($"{DiagTag} Checking if should apply global tactical benefit for approach {approach}: selected option {selectedOption}, required option {requiredOption}.");
 
                 if (selectedOption != requiredOption)
                 {
@@ -100,7 +100,7 @@ namespace TFTV.TFTVIncidents
 
                 TacticalFaction phoenixFaction = level.GetFactionByCommandName("PX");
 
-                TFTVLogger.Always($"{DiagTag} Retrieved Phoenix faction: {(phoenixFaction != null ? phoenixFaction.Faction.FactionDef.GetName() : "null")} with actors count: {(phoenixFaction?.Actors != null ? phoenixFaction.Actors.Count() : 0)}");
+              //  TFTVLogger.Always($"{DiagTag} Retrieved Phoenix faction: {(phoenixFaction != null ? phoenixFaction.Faction.FactionDef.GetName() : "null")} with actors count: {(phoenixFaction?.Actors != null ? phoenixFaction.Actors.Count() : 0)}");
 
                 if (phoenixFaction?.Actors == null)
                 {
@@ -121,7 +121,7 @@ namespace TFTV.TFTVIncidents
                     }
                 }
 
-                TFTVLogger.Always($"{DiagTag} Best affinity rank for approach {approach} among Phoenix operatives: {bestRank}.");
+               // TFTVLogger.Always($"{DiagTag} Best affinity rank for approach {approach} among Phoenix operatives: {bestRank}.");
 
                 return bestRank > 0;
             }

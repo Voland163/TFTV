@@ -63,6 +63,7 @@ namespace TFTV.TFTVDrills
         internal static ShootAbilityDef _partingShot;
         internal static ReloadAbilityDef _ordnanceResupply;
         internal static ShootAbilityDef _heavySharpshot;
+        internal static List<TacticalItemDef> HeavySharpshotLegItems = new List<TacticalItemDef>();
         internal static PassiveModifierAbilityDef _pinpointToss;
         internal static ApplyStatusAbilityDef _heavyConditioning;
         internal static ExplosiveDisableShootAbilityDef _explosiveShot;
@@ -86,6 +87,7 @@ namespace TFTV.TFTVDrills
         internal static TacStatsModifyStatusDef _bulletHellSlowStatus;
         internal static ChangeAbilitiesCostStatusDef _bulletHellAPCostReductionStatus;
         internal static TacStatsModifyStatusDef _pounceProtocolSpeedStatus;
+
 
 
         public static List<TacticalAbilityDef> Drills = new List<TacticalAbilityDef>();
@@ -313,7 +315,7 @@ namespace TFTV.TFTVDrills
 
 
                 newAbility.ActionPointCost = 1f;
-                newAbility.WillPointCost = 2f;
+                newAbility.WillPointCost = 4f;
                 newAbility.EquipmentTags = new GameTagDef[]
                 {
                    heavyGunWeaponTag  
@@ -321,6 +323,19 @@ namespace TFTV.TFTVDrills
                 newAbility.ActorTags = Array.Empty<GameTagDef>();
                 newAbility.ProjectileSpreadMultiplier = 0.5f;
                 newAbility.DisablingStatuses = new StatusDef[] { DefCache.GetDef<StatMultiplierStatusDef>("E AccuracyMultiplier [BC_QuickAim_AbilityDef]") };
+                HeavySharpshotLegItems = new List<TacticalItemDef>
+                {
+                    DefCache.GetDef<TacticalItemDef>("IN_Heavy_Legs_ItemDef"),
+                    DefCache.GetDef<TacticalItemDef>("NJ_Heavy_Legs_ItemDef"),
+                    DefCache.GetDef<TacticalItemDef>("PX_Heavy_Legs_ItemDef"),
+                    DefCache.GetDef<TacticalItemDef>("NEU_Heavy_Legs_ItemDef"),
+                    DefCache.GetDef<TacticalItemDef>("PX_Heavy_Legs_Headhunter_ItemDef"),
+                    DefCache.GetDef<TacticalItemDef>("PX_Heavy_Legs_Christmas_ItemDef"),
+                    DefCache.GetDef<TacticalItemDef>("PX_Heavy_Legs_Gold_ItemDef"),
+                    DefCache.GetDef<TacticalItemDef>("NJ_Jugg_BIO_Legs_ItemDef"),
+                    DefCache.GetDef<TacticalItemDef>("NJ_Technician_Legs_ItemDef"),
+                    DefCache.GetDef<TacticalItemDef>("AN_Berserker_Heavy_Legs_ItemDef"),
+                };
 
                 return newAbility;
             }

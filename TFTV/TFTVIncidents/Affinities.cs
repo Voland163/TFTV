@@ -83,7 +83,7 @@ namespace TFTV.TFTVIncidents
 
                     ComputeMountedAbility.Defs.CreateDefs();
                     MachineryRepairDefs.CreateDefs();
-
+                    BiotechMedkit.BiotechIgnorePainDefs.CreateDefs();
                     AffinityBenefitsChoices.InitializeDynamicDescriptionResolver();
                 }
                 catch (Exception e)
@@ -760,7 +760,7 @@ namespace TFTV.TFTVIncidents
 
                     case LeaderSelection.AffinityApproach.Biotech:
                         return option == 1
-                            ? LocalizeAndFormat(KeyBiotechTacOpt1, 10 * r)
+                            ? LocalizeAndFormat(KeyBiotechTacOpt1, 1 * r)
                             : LocalizeAndFormat(KeyBiotechTacOpt2, 4 * r);
 
                     case LeaderSelection.AffinityApproach.Machinery:

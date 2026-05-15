@@ -78,6 +78,8 @@ namespace TFTV
 
         public List<OperativeAffinitySave> OperativeAffinities;
         public List<BankedAffinitySave> BankedAffinityTransfers;
+        public List<string> CompletedIncidentTimers;
+        public bool NewPowerManagement;
     }
 
 
@@ -154,7 +156,7 @@ namespace TFTV
                 ClearAllSessions();
                 AffinityInheritance.LoadOperativeAffinitySnapshot(null);
                 AffinityInheritance.LoadBankedAffinitySnapshot(null);
-
+                Resolution.IncidentController.ClearStateOnStateChangeAndLoad();
                 TFTVLogger.Always("[PersonnelPersistence] Cleared BaseRework state for new game.");
             }
             catch (Exception e)
@@ -257,6 +259,7 @@ namespace TFTV
                 RecruitTrainingSessions = BaseReworkCheck.BaseReworkEnabled ? CreateRecruitSessionsSnapshot() : null,
                 OperativeAffinities = AffinityInheritance.CreateOperativeAffinitySnapshot(),
                 BankedAffinityTransfers = AffinityInheritance.CreateBankedAffinitySnapshot(),
+                NewPowerManagement = TFTVNewGameOptions.NewPowerManagement
             };
         }
         /// <summary>
@@ -299,6 +302,7 @@ namespace TFTV
                 TFTVAmbushes.NJ_Purists_Hotspots = data.PU_Hotspots;
                 TFTVNewGameOptions.NewTrainingFacilities = data.NewTrainingFacilities;
                 TFTVNewGameOptions.BaseRework = data.BaseRework;
+                TFTVNewGameOptions.NewPowerManagement = data.NewPowerManagement;
 
                 // Backwards compatibility: beta saves were recorded when BaseRework was
                 // hardcoded true and the field did not yet exist in save data, so it
@@ -372,6 +376,11 @@ namespace TFTV
                 ClearAllSessions();
                 AffinityInheritance.LoadOperativeAffinitySnapshot(data.OperativeAffinities);
                 AffinityInheritance.LoadBankedAffinitySnapshot(data.BankedAffinityTransfers);
+
+                if (BaseReworkCheck.BaseReworkEnabled)
+                {
+                    Resolution.IncidentController.LoadCompletedTimerSnapshot(data.CompletedIncidentTimers);
+                }
 
                 if (BaseReworkCheck.BaseReworkEnabled && data.PersonnelPool != null)
                 {

@@ -26,6 +26,7 @@ using PhoenixPoint.Common.Entities.RedeemableCodes;
 using PhoenixPoint.Common.Levels.Missions;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Missions.Outcomes;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Requirement;
@@ -107,13 +108,36 @@ namespace TFTV
         {
             try
             {
+
+                foreach (CustomMissionTypeDef customMissionTypeDef in Repo.GetAllDefs<CustomMissionTypeDef>())
+                {
+                    TFTVLogger.Always($"Checking {customMissionTypeDef?.name} for unique units");
+
+                    foreach (TacMissionTypeParticipantData tacMissionTypeParticipantData in customMissionTypeDef.ParticipantsData)
+                    {
+                        TFTVLogger.Always($"Checking tacMissionTypeParticipantData in {customMissionTypeDef?.name} for unique units");
+                        foreach (TacMissionTypeParticipantData.UniqueChatarcterBind uniqueChatarcterBind in tacMissionTypeParticipantData.UniqueUnits)
+                        {
+                            TFTVLogger.Always($"Checking uniqueChatarcterBind in {customMissionTypeDef?.name} for unique units");
+
+                            if (uniqueChatarcterBind.Character!=null &&uniqueChatarcterBind.Character.name.Equals("AcidwormTest_AlienMutationVariationDef"))
+                            {
+                                TFTVLogger.Always($"Found bad acidworm");
+
+                                TFTVLogger.Always($"Found {uniqueChatarcterBind.Character.name} in {customMissionTypeDef.name}");
+                            }
+
+                        }
+                    }
+                }
+
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
         }
-        
+
 
 
 
@@ -242,7 +266,7 @@ namespace TFTV
                 //  TestUseWorkerComponent();
                 // Test0();
                 // TFTVExperimental.LogResearchDefs();
-              //  Print();
+               // Print();
 
             }
             catch (Exception e)
@@ -1361,18 +1385,51 @@ namespace TFTV
                 //  Removed because now in base game FixAcheronAiming();
                 //  Removed because now in base game FixInstilFrenzySound();
                 FixMutoidDazeImmunity();
-                FixMutagenCostBadAcidWorm();
+              // FixMutagenCostBadAcidWorm();
                 FixNotCapturableFaceHuggers();
                 FixFactionLevel1Templates();
                 FixByzantiumAutoRecover();
                 FixCrateContentsNotVisibleDueToFailedPerceptionCheck();
-
+                FixBaseInfestationMissionDamageToFacilities();
+                FixBadAcidWormTemplate();
                 // FixUmbraFire(); doesn't work because status removed before check - implemented differently elsewhere
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        private static void FixBadAcidWormTemplate()
+        {
+            try 
+            {
+                TacCharacterDef badAcidWorm = DefCache.GetDef<TacCharacterDef>("AcidwormTest_AlienMutationVariationDef");
+                TacCharacterDef goodAcidWorm = DefCache.GetDef<TacCharacterDef>("Acidworm_AlienMutationVariationDef");
+                ReflectionHelper.CopyFields(goodAcidWorm, badAcidWorm);
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
+        }
+
+        private static void FixBaseInfestationMissionDamageToFacilities()
+        {
+            try
+            {
+                CustomMissionTypeDef pxBaseInfestationMission = DefCache.GetDef<CustomMissionTypeDef>("PXBaseInfestationAlien_CustomMissionTypeDef");
+                pxBaseInfestationMission.Outcomes[0].Outcomes = new MissionOutcomeDef[] { DefCache.GetDef<MissionOutcomeDef>("FacilityDamageMissionOutcomeDef") };
+
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
         }
 
         private static void FixCrateContentsNotVisibleDueToFailedPerceptionCheck()
@@ -1466,21 +1523,6 @@ namespace TFTV
 
                 faceHuggerOther.Data.GameTags = faceHuggerNormal.Data.GameTags;
 
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-        }
-
-        private static void FixMutagenCostBadAcidWorm()
-        {
-            try
-            {
-                TacCharacterDef badAcidWorm = DefCache.GetDef<TacCharacterDef>("AcidwormTest_AlienMutationVariationDef");
-                TacCharacterDef regularAcidWorm = DefCache.GetDef<TacCharacterDef>("Acidworm_AlienMutationVariationDef");
-                badAcidWorm.DeploymentCost = regularAcidWorm.DeploymentCost;
             }
             catch (Exception e)
             {
