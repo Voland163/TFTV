@@ -2,6 +2,7 @@
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Sites;
@@ -12,6 +13,7 @@ using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using static TFTV.TFTVBaseRework.BaseActivation;
 
 namespace TFTV.TFTVBaseRework
 {
@@ -31,6 +33,7 @@ namespace TFTV.TFTVBaseRework
                 }
 
                 ResearchManufacturingSlotsManager.RecalculateSlots(__instance);
+                PersonnelData.EnforceLivingCapacity(__instance);
                 PersonnelData.TryAutoAssignUnassignedPersonnel(__instance, "UpdateBasesHourly");
             }
         }
@@ -54,32 +57,57 @@ namespace TFTV.TFTVBaseRework
                 return false;
             }
         }
-
         [HarmonyPatch(typeof(UIModuleInfoBar), "UpdateResourceInfo")]
         internal static class UIModuleInfoBar_UpdateResourceInfo_Patch
         {
             public static void Postfix(UIModuleInfoBar __instance, GeoFaction faction)
             {
-                if (!BaseReworkCheck.BaseReworkEnabled)
+                try
                 {
-                    return;
-                }
+                    if (!BaseReworkCheck.BaseReworkEnabled)
+                    {
+                        return;
+                    }
 
-                GeoPhoenixFaction phoenix = faction as GeoPhoenixFaction;
-                if (phoenix == null)
+                    GeoPhoenixFaction phoenix = faction as GeoPhoenixFaction;
+                    if (phoenix == null)
+                    {
+                        return;
+                    }
+
+                    if (faction.ResourceIncome == null)
+                    {
+                        return;
+                    }
+
+                    if (__instance.ProductionLabel == null || __instance.ResearchLabel == null)
+                    {
+                        return;
+                    }
+
+                    FacilitySlotPools slotPools = ResearchManufacturingSlotsManager.RecalculateSlots(phoenix);
+
+                    float totalProduction = faction.ResourceIncome.GetTotalResouce(ResourceType.Production).Value;
+                    float totalResearch = faction.ResourceIncome.GetTotalResouce(ResourceType.Research).Value;
+
+                    ResearchAndManufacturing.GetOutputBonuses(phoenix, out float researchBonus, out float productionBonus);
+
+                    __instance.ProductionLabel.text = FormatSlotString(Mathf.RoundToInt(totalProduction), Mathf.RoundToInt(productionBonus), slotPools.Manufacturing);
+                    __instance.ResearchLabel.text = FormatSlotString(Mathf.RoundToInt(totalResearch), Mathf.RoundToInt(researchBonus), slotPools.Research);
+
+                    // Override SoldiersLabel to show living space used vs capacity,
+                    // since our living-space accounting differs from vanilla's Soldiers.Count().
+                    if (__instance.SoldiersLabel != null)
+                    {
+                        int used = FoodAndLivingSpacePolicy.GetTotalLivingSpaceUsed(phoenix);
+                        int capacity = phoenix.SoldierCapacity;
+                        __instance.SoldiersLabel.text = $"{used}/{capacity}";
+                    }
+                }
+                catch (Exception e)
                 {
-                    return;
+                    TFTVLogger.Error(e);
                 }
-
-                FacilitySlotPools slotPools = ResearchManufacturingSlotsManager.RecalculateSlots(phoenix);
-
-                float totalProduction = faction.ResourceIncome.GetTotalResouce(ResourceType.Production).Value;
-                float totalResearch = faction.ResourceIncome.GetTotalResouce(ResourceType.Research).Value;
-
-                ResearchAndManufacturing.GetOutputBonuses(phoenix, out float researchBonus, out float productionBonus);
-
-                __instance.ProductionLabel.text = FormatSlotString(Mathf.RoundToInt(totalProduction), Mathf.RoundToInt(productionBonus), slotPools.Manufacturing);
-                __instance.ResearchLabel.text = FormatSlotString(Mathf.RoundToInt(totalResearch), Mathf.RoundToInt(researchBonus), slotPools.Research);
             }
 
             private static string FormatSlotString(int totalPerHour, int bonus, FacilitySlotPool pool)
@@ -196,6 +224,10 @@ namespace TFTV.TFTVBaseRework
                     {
                         continue;
                     }
+
+                    // Outposts do not contribute research or manufacturing slots.
+                    if (geoBase.Site.SiteTags.Contains(PhoenixBaseReworkState.OutpostTag))
+                        continue;
 
                     foreach (GeoPhoenixFacility facility in geoBase.Layout.Facilities)
                     {
@@ -326,16 +358,25 @@ namespace TFTV.TFTVBaseRework
             {
                 return;
             }
-
+         
             MethodInfo updateProductionMethod = AccessTools.Method(typeof(GeoFaction), "UpdateProduction");
 
-        //TFTVLogger.Always($"[Workers] TryUpdateInfoBar called for faction {faction.Name}. UpdateProduction method found: {updateProductionMethod != null}");
-
-            updateProductionMethod.Invoke(faction, new object[] { });
+            try
+            {
+                updateProductionMethod?.Invoke(faction, new object[] { });
+            }
+            catch
+            {
+                _pendingInfoBarUpdate = true;
+                _pendingFaction = faction;
+                return;
+            }
 
             GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
             if (level == null)
             {
+                _pendingInfoBarUpdate = true;
+                _pendingFaction = faction;
                 return;
             }
 
@@ -348,7 +389,6 @@ namespace TFTV.TFTVBaseRework
                     _pendingInfoBarLog = true;
                 }
 
-                TFTVLogger.Always($"[Workers] Queuing pending info bar update. Pending={_pendingInfoBarUpdate} Faction={faction?.Name}");
                 _pendingInfoBarUpdate = true;
                 _pendingFaction = faction;
                 return;
@@ -365,9 +405,13 @@ namespace TFTV.TFTVBaseRework
 
                 UpdateResourceInfoMethod?.Invoke(infoBar, new object[] { faction, false });
             }
-            catch (Exception e)
+            catch
             {
-                TFTVLogger.Error(e);
+                // Geoscape UI is in a transitional state (e.g. post-mission teardown).
+                // Queue for FlushPendingInfoBarUpdate once geoscape is fully ready.
+                TFTVLogger.Always("[Workers] UpdateResourceInfo threw (geoscape transitional state); queuing pending update.");
+                _pendingInfoBarUpdate = true;
+                _pendingFaction = faction;
             }
         }
 

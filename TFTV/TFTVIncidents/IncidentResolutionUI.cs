@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using TFTV.TFTVBaseRework;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -415,6 +416,7 @@ namespace TFTV.TFTVIncidents
                 List<GeoCharacter> crew = ResolveCrew(vehicle);
                 if (crew.Count == 0)
                 {
+                    DisableChoiceButtons(__instance, "No eligible operative available.");
                     return;
                 }
                 // Resolve SoldierSlotController prefab
@@ -727,6 +729,7 @@ namespace TFTV.TFTVIncidents
                     state.OriginalPadding.top, state.OriginalPadding.bottom);
 
                 UnityEngine.Object.DestroyImmediate(state); // was Destroy — deferred destroy caused AdjustChoiceButtons to reuse stale state in same frame, progressively compounding the shrink
+                EnableChoiceButtons(module);
             }
 
 
@@ -1266,16 +1269,50 @@ namespace TFTV.TFTVIncidents
 
             private static List<GeoCharacter> ResolveCrew(GeoVehicle vehicle)
             {
-                IEnumerable<GeoCharacter> source = vehicle.GetAllCharacters().Where(c => c != null && c.TemplateDef != null && c.TemplateDef.IsHuman);
+                IEnumerable<GeoCharacter> source = vehicle.GetAllCharacters()
+                    .Where(c => c != null && c.TemplateDef != null && c.TemplateDef.IsHuman
+                             && PersonnelRestrictions.CanContributeToIncidents(c));
                 if (CrewFilter != null)
                 {
                     source = source.Where(CrewFilter);
                 }
-
                 return source.ToList();
             }
 
-           
+            private static void DisableChoiceButtons(UIModuleSiteEncounters module, string reason)
+            {
+                if (module?.ChoiceButtonsContainer == null) return;
+                foreach (SiteBaseChoiceButton cb in module.ChoiceButtonsContainer
+                         .GetComponentsInChildren<SiteBaseChoiceButton>(true))
+                {
+                    if (cb == null) continue;
+
+                    // Never disable the cancel choice (CHOICE_2).
+                    string key = cb.Choice?.Text?.LocalizationKey ?? string.Empty;
+                    if (key.IndexOf("_CHOICE_2", StringComparison.OrdinalIgnoreCase) >= 0)
+                        continue;
+
+                    Button btn = cb.GetComponent<Button>();
+                    if (btn != null) btn.interactable = false;
+
+                    ChoiceButtonVisualState state = EnsureChoiceButtonVisualState(cb);
+                    if (state?.Label != null && !string.IsNullOrEmpty(reason))
+                        state.Label.text = reason;
+                }
+            }
+
+            private static void EnableChoiceButtons(UIModuleSiteEncounters module)
+            {
+                if (module?.ChoiceButtonsContainer == null) return;
+                foreach (SiteBaseChoiceButton cb in module.ChoiceButtonsContainer
+                         .GetComponentsInChildren<SiteBaseChoiceButton>(true))
+                {
+                    if (cb == null) continue;
+                    Button btn = cb.GetComponent<Button>();
+                    if (btn != null) btn.interactable = true;
+                }
+            }
+
             private static void ResetRowSelectionVisualState(SoldierSlotController row)
             {
                 if (row == null)

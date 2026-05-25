@@ -47,6 +47,12 @@ namespace TFTV
         private static ArrowPickerController _exoticResources = null;
         private static ArrowPickerController _eventResources = null;
 
+        private static ArrowPickerController _ransackResources = null;
+        private static ArrowPickerController _initialLootLevel = null;
+        private static ArrowPickerController _personnelInfluxLevel = null;
+        private static ArrowPickerController _initialManticoreLimit = null;
+        private static ArrowPickerController _initialScarabLimit = null;
+
         // Eldritch warning gate (hardest difficulty confirmation)
         private static bool _eldritchWarningInProgress = false;
         private static bool _eldritchWarningAccepted = false;
@@ -300,6 +306,116 @@ namespace TFTV
                 }
             }
 
+            public static int ConvertDifficultyToIndexRansackResources()
+            {
+                try
+                {
+                    switch (SelectedDifficulty)
+                    {
+                        case 1: return 8; // 200%
+                        case 2: return 6; // 150%
+                        case 3: return 4; // 100%
+                        case 4: return 3; // 75%
+                        case 5: return 2; // 50%
+                        case 6: return 1; // 25%
+                    }
+                    return 4;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            public static int ConvertDifficultyToIndexManticoreLimit()
+            {
+                try
+                {
+                    switch (SelectedDifficulty)
+                    {
+                        case 1: return 2; // Story
+                        case 2: return 1; // Rookie
+                        case 3: return 1; // Veteran
+                        case 4: return 0; // Hero
+                        case 5: return 0; // Legend
+                        case 6: return 0; // Eldritch
+                    }
+                    return 1;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            public static int ConvertDifficultyToIndexScarabLimit()
+            {
+                try
+                {
+                    switch (SelectedDifficulty)
+                    {
+                        case 1: return 2; // Story
+                        case 2: return 2; // Rookie
+                        case 3: return 1; // Veteran
+                        case 4: return 1; // Hero
+                        case 5: return 0; // Legend
+                        case 6: return 0; // Eldritch
+                    }
+                    return 1;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            public static int ConvertDifficultyToIndexInitialLootLevel()
+            {
+                try
+                {
+                    switch (SelectedDifficulty)
+                    {
+                        case 1: return 7; // Story Mode
+                        case 2: return 6; // Rookie
+                        case 3: return 5; // Veteran
+                        case 4: return 4; // Hero
+                        case 5: return 3; // Legend
+                        case 6: return 2; // Eldritch
+                    }
+                    return 5;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            public static int ConvertDifficultyToIndexPersonnelInfluxLevel()
+            {
+                try
+                {
+                    switch (SelectedDifficulty)
+                    {
+                        case 1: return 3; // Story Mode
+                        case 2: return 3; // Rookie
+                        case 3: return 2; // Veteran
+                        case 4: return 1; // Hero
+                        case 5: return 0; // Legend
+                        case 6: return 0; // Eldritch
+                    }
+                    return 2;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
             public static int ConvertDifficultyToIndexEventsResources()
             {
                 try
@@ -410,6 +526,20 @@ namespace TFTV
                     MethodInfo eventResourcesChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnResourcesEventsValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
                     eventResourcesChangedCallback.Invoke(gameSettings, new object[] { ConvertDifficultyToIndexEventsResources(), _eventResources });
 
+                    MethodInfo ransackResourcesChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnRansackResourcesValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
+                    ransackResourcesChangedCallback.Invoke(gameSettings, new object[] { ConvertDifficultyToIndexRansackResources(), _ransackResources });
+
+                    MethodInfo initialLootLevelChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnInitialLootLevelValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
+                    initialLootLevelChangedCallback.Invoke(gameSettings, new object[] { ConvertDifficultyToIndexInitialLootLevel(), _initialLootLevel });
+
+                    MethodInfo personnelInfluxLevelChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnPersonnelInfluxLevelValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
+                    personnelInfluxLevelChangedCallback.Invoke(gameSettings, new object[] { ConvertDifficultyToIndexPersonnelInfluxLevel(), _personnelInfluxLevel });
+
+                    MethodInfo initialManticoreLimitChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnInitialManticoreLimitValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
+                    initialManticoreLimitChangedCallback.Invoke(gameSettings, new object[] { ConvertDifficultyToIndexManticoreLimit(), _initialManticoreLimit });
+
+                    MethodInfo initialScarabLimitChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnInitialScarabLimitValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
+                    initialScarabLimitChangedCallback.Invoke(gameSettings, new object[] { ConvertDifficultyToIndexScarabLimit(), _initialScarabLimit });
                 }
 
 
@@ -490,6 +620,13 @@ namespace TFTV
 
             private static readonly string[] _amountPercentageResources = { "25%", "50%", "75%", "100%", "125%", "150%", "175%", "200%", "250%", "300%", "400%" };
             private static readonly float[] _amountMultiplierResources = { 0.25f, 0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f, 2.5f, 3f, 4f };
+
+            private static readonly string[] _optionsRansackResources = { "0%", "25%", "50%", "75%", "100%", "125%", "150%", "175%", "200%" };
+            private static readonly float[] _ransackMultipliers = { 0f, 0.25f, 0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f };
+
+            private static readonly string[] _optionsInitialLootLevel = { "0", "1", "2", "3", "4", "5", "6", "7", "8" };
+            private static readonly string[] _optionsPersonnelInfluxLevel = { "0", "1", "2", "3", "4", "5" };
+            private static readonly string[] _optionsVehicleLimit = { "0", "1", "2", "3", "4" };
 
             private static readonly string[] _optionsTacticalDifficulty = { "NO_CHANGE", "TFTV_DIFFICULTY_ROOKIE_TITLE", "KEY_DIFFICULTY_EASY", "KEY_DIFFICULTY_STANDARD", "KEY_DIFFICULTY_DIFFICULT", "KEY_DIFFICULTY_VERY_DIFFICULT", "TFTV_DIFFICULTY_ETERMES_TITLE" };
 
@@ -674,10 +811,10 @@ namespace TFTV
                 }
 
                 internal static void InstantiateArrowPickerController(string baseKey,
-           string[] optionsKeys,
-           int currentValue,
-           Action<int, ArrowPickerController> onValueChangedWithController,
-           float lengthScale, List<ModSettingController> optionsType = null)
+string[] optionsKeys,
+int currentValue,
+Action<int, ArrowPickerController> onValueChangedWithController,
+float lengthScale, List<ModSettingController> optionsType = null)
                 {
                     try
                     {
@@ -687,45 +824,41 @@ namespace TFTV
                         ModSettingController modSettingController = UnityEngine.Object.Instantiate(ModSettingControllerHook, rectTransform);
                         ArrowPickerController arrowPickerController = modSettingController.ListField;
 
-                        // Extract title and description keys from the modSettingController's name                   
+                        // Disable raycast on the label text so it does not swallow clicks
+                        // intended for the left/right arrow buttons sitting behind it.
+                        if (arrowPickerController.CurrentItemText != null)
+                        {
+                            arrowPickerController.CurrentItemText.raycastTarget = false;
+                        }
+
                         string titleKey = $"KEY_{baseKey}";
                         string descriptionKey = $"KEY_{baseKey}_DESCRIPTION";
-
-                        // TFTVLogger.Always($"baseKey: {baseKey} titleKey {titleKey} descriptionKey: {descriptionKey} ");
-
-                        //_startingFactionModSettings
 
                         string title = TFTVCommonMethods.ConvertKeyToString(titleKey);
                         string description = TFTVCommonMethods.ConvertKeyToString(descriptionKey);
 
-                        // Localize options
-                        string[] options = new string[] { };
+                        string[] options = optionsKeys.Select(key => new LocalizedTextBind { LocalizationKey = key }.Localize()).ToArray();
 
-                        options = optionsKeys.Select(key => new LocalizedTextBind { LocalizationKey = key }.Localize()).ToArray();
-
-                        // Configure the modSettingController
                         modSettingController.Label.text = title;
                         modSettingController.transform.localScale *= 0.75f;
 
-                        // Adjust arrowPickerController position and scale
+                        // Apply size BEFORE positioning and Init so edge-anchored child buttons
+                        // land in the correct positions when Init wires up their click handlers.
+                        arrowPickerController.GetComponent<RectTransform>().sizeDelta = new Vector2(
+                            arrowPickerController.GetComponent<RectTransform>().sizeDelta.x * lengthScale,
+                            arrowPickerController.GetComponent<RectTransform>().sizeDelta.y
+                        );
+
                         AdjustArrowPickerPositionAndScale(arrowPickerController, modSettingController, lengthScale);
 
-                        // Add tooltip for description
                         AddTooltip(modSettingController, description);
 
-                        // Initialize the arrow picker
                         arrowPickerController.Init(options.Length, currentValue, newValue =>
                         {
                             onValueChangedWithController?.Invoke(newValue, arrowPickerController);
                         });
                         arrowPickerController.CurrentItemText.text = options[currentValue];
 
-                        arrowPickerController.GetComponent<RectTransform>().sizeDelta = new Vector2(
-                            arrowPickerController.GetComponent<RectTransform>().sizeDelta.x * lengthScale,
-                            arrowPickerController.GetComponent<RectTransform>().sizeDelta.y
-                        );
-
-                        // Populate options
                         PopulateOptions(arrowPickerController, options);
 
                         optionsType?.Add(modSettingController);
@@ -894,6 +1027,14 @@ namespace TFTV
                         SetAnyTimeOptionsVisibility(show);
                         SetCheatOptionsVisibility(show);
 
+                        if (TFTVNewGameOptions.IsReworkEnabled())
+                        {
+                            HelperMethods.InstantiateArrowPickerController("RansackResources", _optionsRansackResources, DefaultDifficulties.ConvertDifficultyToIndexRansackResources(), OnRansackResourcesValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+                            HelperMethods.InstantiateArrowPickerController("InitialLootLevel", _optionsInitialLootLevel, DefaultDifficulties.ConvertDifficultyToIndexInitialLootLevel(), OnInitialLootLevelValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+                            HelperMethods.InstantiateArrowPickerController("PersonnelInfluxLevel", _optionsPersonnelInfluxLevel, DefaultDifficulties.ConvertDifficultyToIndexPersonnelInfluxLevel(), OnPersonnelInfluxLevelValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+                            HelperMethods.InstantiateArrowPickerController("InitialManticoreLimit", _optionsVehicleLimit, DefaultDifficulties.ConvertDifficultyToIndexManticoreLimit(), OnInitialManticoreLimitValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+                            HelperMethods.InstantiateArrowPickerController("InitialScarabLimit", _optionsVehicleLimit, DefaultDifficulties.ConvertDifficultyToIndexScarabLimit(), OnInitialScarabLimitValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -1855,6 +1996,97 @@ namespace TFTV
                         string[] options = { new LocalizedTextBind() { LocalizationKey = "YES" }.Localize(), new LocalizedTextBind() { LocalizationKey = "NO" }.Localize() };
                         arrowPickerController.CurrentItemText.text = options[newValue];
                         config.ShowBaseReworkHints = option;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnRansackResourcesValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        if (arrowPickerController == null)
+                        {
+                            TFTVNewGameOptions.RansackResourcesMultiplier = _ransackMultipliers[newValue];
+                            return;
+                        }
+                        arrowPickerController.CurrentItemText.text = _optionsRansackResources[newValue];
+                        TFTVNewGameOptions.RansackResourcesMultiplier = _ransackMultipliers[newValue];
+                        _ransackResources = arrowPickerController;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnInitialLootLevelValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        TFTVNewGameOptions.InitialLootLevel = newValue;
+                        if (arrowPickerController == null)
+                        {
+                            return;
+                        }
+                        arrowPickerController.CurrentItemText.text = newValue.ToString();
+                        _initialLootLevel = arrowPickerController;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnPersonnelInfluxLevelValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        TFTVNewGameOptions.PersonnelInfluxLevel = newValue;
+                        if (arrowPickerController == null)
+                        {
+                            return;
+                        }
+                        arrowPickerController.CurrentItemText.text = newValue.ToString();
+                        _personnelInfluxLevel = arrowPickerController;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnInitialManticoreLimitValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        TFTVNewGameOptions.InitialManticoreLimit = newValue;
+                        if (arrowPickerController == null)
+                        {
+                            return;
+                        }
+                        arrowPickerController.CurrentItemText.text = _optionsVehicleLimit[newValue];
+                        _initialManticoreLimit = arrowPickerController;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnInitialScarabLimitValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        TFTVNewGameOptions.InitialScarabLimit = newValue;
+                        if (arrowPickerController == null)
+                        {
+                            return;
+                        }
+                        arrowPickerController.CurrentItemText.text = _optionsVehicleLimit[newValue];
+                        _initialScarabLimit = arrowPickerController;
                     }
                     catch (Exception e)
                     {

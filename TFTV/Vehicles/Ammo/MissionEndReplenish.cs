@@ -3,6 +3,7 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Equipments;
 using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels.Factions;
@@ -13,6 +14,7 @@ using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using System;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 using static TFTV.Vehicles.Ammo.VehicleModuleAmmoHarmonyPatches;
 
 namespace TFTV.Vehicles.Ammo
@@ -26,7 +28,81 @@ namespace TFTV.Vehicles.Ammo
 
         private static readonly ConditionalWeakTable<GeoManufactureItem, AmmoDefHolder> ReplenishAmmoDefs = new ConditionalWeakTable<GeoManufactureItem, AmmoDefHolder>();
 
+        // Intercept TryReloadItem for GroundVehicleModuleDef items, which vanilla does not handle.
+        // Vanilla's non-equipment branch looks for the module def itself in storage (wrong),
+        // and the equipment branch (CompatibleAmmunition) is only reached for EquipmentDef.
+        // We handle each sub-weapon ammo def independently using our existing helpers.
+        [HarmonyPatch(typeof(GeoMission), "TryReloadItem")]
+        public static class GeoMission_TryReloadItem_Patch
+        {
+            public static bool Prefix(GeoItem item, ItemStorage storage, string storageName, ref bool __result)
+            {
+                if (!TFTVAircraftReworkMain.AircraftReworkOn)
+                    return true;
 
+                GroundVehicleModuleDef moduleDef = item?.ItemDef as GroundVehicleModuleDef;
+                if (moduleDef == null)
+                    return true;
+
+                if (!EnsureModuleAmmo(item.CommonItemData, moduleDef))
+                {
+                    __result = true;
+                    return false;
+                }
+
+                bool allFull = true;
+                foreach (TacticalItemDef ammoDef in GetModuleAmmoDefs(moduleDef))
+                {
+                    int maxCharges = GetAmmoCapacityForDef(moduleDef, ammoDef);
+                    if (maxCharges <= 0)
+                        continue;
+
+                    int currentCharges = GetAmmoChargesForDef(item.CommonItemData, ammoDef);
+                    if (currentCharges >= maxCharges)
+                        continue;
+
+                    if (!storage.Items.ContainsKey(ammoDef))
+                    {
+                        Debug.Log($"POSTMISSION RELOAD: Trying to reload {item} ({ammoDef.name}) but there is no ammo available in {storageName}!");
+                        allFull = false;
+                        continue;
+                    }
+
+                    GeoItem storageAmmo = storage.Items[ammoDef];
+                    int clipSize = ammoDef.ChargesMax;
+
+                    while (!storageAmmo.CommonItemData.IsEmpty())
+                    {
+                        int needed = maxCharges - GetAmmoChargesForDef(item.CommonItemData, ammoDef);
+                        if (needed <= 0)
+                            break;
+
+                        int toLoad = Mathf.Min(needed, clipSize);
+                        GeoItem clip = new GeoItem(ammoDef, 1, -1, null, -100);
+                        // Zero out and set to exactly toLoad charges (handles partial last clip)
+                        clip.CommonItemData.ModifyCharges(-clip.CommonItemData.CurrentCharges, false);
+                        clip.CommonItemData.ModifyCharges(toLoad, false);
+                        item.CommonItemData.Ammo.LoadMagazine(clip);
+                        storageAmmo.CommonItemData.Subtract(clip);
+                    }
+
+                    int finalCharges = GetAmmoChargesForDef(item.CommonItemData, ammoDef);
+                    Debug.Log($"POSTMISSION RELOAD: Reloaded {item} ({ammoDef.name}) now at {finalCharges}/{maxCharges} from {storageName}!");
+
+                    if (storageAmmo.CommonItemData.IsEmpty())
+                    {
+                        storage.RemoveItem(storageAmmo);
+                        Debug.Log($"POSTMISSION RELOAD: No more {ammoDef.name} left in {storageName}!");
+                    }
+
+                    if (finalCharges < maxCharges)
+                        allFull = false;
+                }
+
+                __result = allFull;
+                return false;
+            }
+        }
 
         [HarmonyPatch(typeof(UIModuleReplenish), "AddMissingAmmo")]
         public static class UIModuleReplenish_AddMissingAmmo_Patch
@@ -127,8 +203,8 @@ namespace TFTV.Vehicles.Ammo
                     });
                     __instance.Items.Add(geoManufactureItem);
                     GameTagDef manufacturableTag = GameUtl.GameComponent<SharedData>().SharedGameTags.ManufacturableTag;
-                     GeoPhoenixFaction geoPhoenixFaction = ReplenishFaction(__instance);
-                     bool flag2 = geoPhoenixFaction.Wallet.HasResources(repairCost) && tacticalItemDef.Tags.Contains(manufacturableTag) && geoPhoenixFaction.Manufacture.Contains(tacticalItemDef);
+                    GeoPhoenixFaction geoPhoenixFaction = ReplenishFaction(__instance);
+                    bool flag2 = geoPhoenixFaction.Wallet.HasResources(repairCost) && tacticalItemDef.Tags.Contains(manufacturableTag) && geoPhoenixFaction.Manufacture.Contains(tacticalItemDef);
                     PhoenixGeneralButton component = geoManufactureItem.AddToQueueButton.GetComponent<PhoenixGeneralButton>();
                     if (component != null)
                     {
@@ -147,33 +223,33 @@ namespace TFTV.Vehicles.Ammo
             }
         }
 
-   /*     [HarmonyPatch(typeof(UIModuleReplenish), "SingleItemReloadAndRefresh")]
-        public static class UIModuleReplenish_SingleItemReloadAndRefresh_Patch
-        {
-            public static bool Prefix(UIModuleReplenish __instance, GeoManufactureItem item)
-            {
-                if (!TFTVAircraftReworkMain.AircraftReworkOn)
-                {
-                    return true;
-                }
+        /*     [HarmonyPatch(typeof(UIModuleReplenish), "SingleItemReloadAndRefresh")]
+             public static class UIModuleReplenish_SingleItemReloadAndRefresh_Patch
+             {
+                 public static bool Prefix(UIModuleReplenish __instance, GeoManufactureItem item)
+                 {
+                     if (!TFTVAircraftReworkMain.AircraftReworkOn)
+                     {
+                         return true;
+                     }
 
-                if (item == null)
-                {
-                    return true;
-                }
-                AmmoDefHolder ammoDefHolder;
-                if (!ReplenishAmmoDefs.TryGetValue(item, out ammoDefHolder))
-                {
-                    return true;
-                }
-                GeoItem item2 = item.GetComponent<ReplenishmentElementController>().Item;
-                if (ReloadModuleAmmo(item2, ammoDefHolder.AmmoDef))
-                {
-                    AccessTools.Method(typeof(UIModuleReplenish), "RemoveFromList")?.Invoke(__instance, new object[] { item, true });
-                    AccessTools.Method(typeof(UIModuleReplenish), "RefreshItemList")?.Invoke(__instance, null);
-                }
-                return false;
-            }
-        }*/
+                     if (item == null)
+                     {
+                         return true;
+                     }
+                     AmmoDefHolder ammoDefHolder;
+                     if (!ReplenishAmmoDefs.TryGetValue(item, out ammoDefHolder))
+                     {
+                         return true;
+                     }
+                     GeoItem item2 = item.GetComponent<ReplenishmentElementController>().Item;
+                     if (ReloadModuleAmmo(item2, ammoDefHolder.AmmoDef))
+                     {
+                         AccessTools.Method(typeof(UIModuleReplenish), "RemoveFromList")?.Invoke(__instance, new object[] { item, true });
+                         AccessTools.Method(typeof(UIModuleReplenish), "RefreshItemList")?.Invoke(__instance, null);
+                     }
+                     return false;
+                 }
+             }*/
     }
 }

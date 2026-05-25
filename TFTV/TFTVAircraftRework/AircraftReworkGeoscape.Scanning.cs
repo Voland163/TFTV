@@ -3,10 +3,12 @@ using Base.Core;
 using com.ootii.Helpers;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Abilities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using System;
 using System.Collections.Generic;
@@ -632,7 +634,119 @@ namespace TFTV
                 }
             }
 
-            // Harmony patch to change the reveal of alien bases when in scanner range, so increases the reveal chance instead of revealing it right away
+            // ── Context DTO populated in TryRevealAlienBase and consumed by the modal ──
+            internal class ColonyDetectionContext
+            {
+                internal bool SatelliteUplinkInRange;
+                internal bool OutpostToss1Succeeded;
+                internal bool OutpostToss2Succeeded;
+                internal bool OutpostWasInRange;           // true even if both tosses failed
+                internal bool ExplorationAffinityTriggered;
+                internal string ExplorationOperativeName;
+                internal int ExplorationAffinityRank;
+                internal int ExplorationAffinityChance;    // detectionChance at roll time
+                internal int PreviousTracingAttempts;      // _baseAttacksCounter BEFORE this call
+                internal float IncrementalRevealChance;    // AlienBaseTypeDef.IncrementalRevealChance
+                internal bool Detected;
+
+                internal static readonly ColonyDetectionContext Last = new ColonyDetectionContext();
+
+                internal void Reset()
+                {
+                    SatelliteUplinkInRange = false;
+                    OutpostToss1Succeeded = false;
+                    OutpostToss2Succeeded = false;
+                    OutpostWasInRange = false;
+                    ExplorationAffinityTriggered = false;
+                    ExplorationOperativeName = null;
+                    ExplorationAffinityRank = 0;
+                    ExplorationAffinityChance = 0;
+                    PreviousTracingAttempts = 0;
+                    IncrementalRevealChance = 0f;
+                    Detected = false;
+                }
+            }
+
+            [HarmonyPatch(typeof(PandoranBaseRevealDataBind), "ModalShowHandler", new[] { typeof(UIModal) })]
+            public static class Patch_PandoranBaseRevealDataBind_ModalShowHandler
+            {
+                public static void Postfix(PandoranBaseRevealDataBind __instance, UIModal modal)
+                {
+                    try
+                    {
+                        if (__instance?.Description == null || modal == null)
+                            return;
+
+                        ColonyDetectionContext ctx = ColonyDetectionContext.Last;
+                        GeoSite geoSite = modal.Data as GeoSite;
+
+                        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+
+                        if (geoSite == null)
+                        {
+                            sb.AppendLine("No Pandoran colony was detected after the attack.");
+                        }
+                        else
+                        {
+                            string baseType = geoSite.GetComponent<GeoAlienBase>()
+                                ?.AlienBaseTypeDef?.Name?.Localize(null) ?? "Pandoran Colony";
+                            sb.AppendLine($"Pandoran colony located: {baseType}.");
+                        }
+
+                        sb.AppendLine();
+                        sb.AppendLine("Detection contributors:");
+
+                        // Satellite Uplink
+                        if (ctx.SatelliteUplinkInRange)
+                            sb.AppendLine("  + Satellite Uplink: in range");
+                        else
+                            sb.AppendLine("  - Satellite Uplink: not in range");
+
+                        // Outpost
+                        if (ctx.OutpostWasInRange)
+                        {
+                            string toss1 = ctx.OutpostToss1Succeeded ? "success" : "failed";
+                            string toss2 = ctx.OutpostToss2Succeeded ? "success" : "failed";
+                            sb.AppendLine($"  + Outpost: in range (roll 1: {toss1}, roll 2: {toss2})");
+                        }
+                        else
+                        {
+                            sb.AppendLine("  - Outpost: not in range");
+                        }
+
+                        // Exploration Affinity
+                        if (ctx.ExplorationAffinityRank > 0)
+                        {
+                            string opName = ctx.ExplorationOperativeName ?? "Unknown";
+                            string triggered = ctx.ExplorationAffinityTriggered ? "triggered" : "did not trigger";
+                            sb.AppendLine($"  {(ctx.ExplorationAffinityTriggered ? "+" : "-")} Exploration affinity ({opName}, rank {ctx.ExplorationAffinityRank}): {ctx.ExplorationAffinityChance}% chance, {triggered}");
+                        }
+                        else
+                        {
+                            sb.AppendLine("  - Exploration affinity: no operative");
+                        }
+
+                        // Previous tracing attempts
+                        if (ctx.PreviousTracingAttempts > 0)
+                        {
+                            float tracingPercent = ctx.IncrementalRevealChance * 100f * ctx.PreviousTracingAttempts;
+                            sb.AppendLine($"  + Previous tracing: {ctx.PreviousTracingAttempts} attempt(s) (+{tracingPercent:F0}% base detection chance)");
+                        }
+                        else
+                        {
+                            sb.AppendLine("  - Previous tracing: none");
+                        }
+
+                        __instance.Description.text = sb.ToString();
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+
+
             [HarmonyPatch(typeof(GeoAlienFaction), "TryRevealAlienBase")]
             internal static class BC_GeoAlienFaction_TryRevealAlienBase_patch
             {
@@ -641,56 +755,92 @@ namespace TFTV
                 {
                     try
                     {
+                        ColonyDetectionContext ctx = ColonyDetectionContext.Last;
+                        ctx.Reset();
 
                         if (!site.GetVisible(revealToFaction))
                         {
                             GeoAlienBase component = site.GetComponent<GeoAlienBase>();
 
+                            // Capture counter and reveal chance BEFORE any increments
+                            ctx.PreviousTracingAttempts = component.BaseAttacksCounter;
+                            ctx.IncrementalRevealChance = component.AlienBaseTypeDef?.IncrementalRevealChance ?? 0f;
+
                             if (revealToFaction is GeoPhoenixFaction geoPhoenixFaction)
                             {
-                                EarthUnits thunderbirdScannerRange = AircraftReworkOn ? new EarthUnits() { Value = GetThunderbirdScannerRange() } : new EarthUnits() { Value = 0 };
+                                EarthUnits thunderbirdScannerRange = AircraftReworkOn
+                                    ? new EarthUnits() { Value = GetThunderbirdScannerRange() }
+                                    : new EarthUnits() { Value = 0 };
 
-                                bool anyThunderbirdScannerInRange = AircraftReworkOn && geoPhoenixFaction.Research.HasCompleted("NJ_SateliteUplink_ResearchDef") && geoPhoenixFaction.Vehicles
-                                    .Any(v => v.Modules.Any(m => m != null && m.ModuleDef == _thunderbirdScannerModule) && v.CurrentSite != null
-                                    && ____level.Map.SitesInRange(v.CurrentSite, thunderbirdScannerRange, true).Contains(site));
+                                bool anyThunderbirdScannerInRange = AircraftReworkOn
+                                    && geoPhoenixFaction.Research.HasCompleted("NJ_SateliteUplink_ResearchDef")
+                                    && geoPhoenixFaction.Vehicles.Any(v =>
+                                        v.Modules.Any(m => m != null && m.ModuleDef == _thunderbirdScannerModule)
+                                        && v.CurrentSite != null
+                                        && ____level.Map.SitesInRange(v.CurrentSite, thunderbirdScannerRange, true).Contains(site));
 
-
+                                ctx.SatelliteUplinkInRange = anyThunderbirdScannerInRange;
 
                                 if (geoPhoenixFaction.IsSiteInBaseScannerRange(site, true) || anyThunderbirdScannerInRange)
                                 {
                                     component.IncrementBaseAttacksRevealCounter();
-                                    // original code:
-                                    //site.RevealSite(____level.PhoenixFaction);
-                                    //__result = true;
-                                    //return false;
                                 }
 
                                 EarthUnits outPostRange = new EarthUnits() { Value = 2500 };
 
                                 bool anyOutpostInRange = BaseReworkCheck.BaseReworkEnabled &&
-    geoPhoenixFaction.Bases.Any(b =>
-        b.Site.SiteTags.Contains(PhoenixBaseReworkState.OutpostTag) &&
-        ____level.Map.SitesInRange(b.Site, outPostRange, true).Contains(site));
+                                    geoPhoenixFaction.Bases.Any(b =>
+                                        b.Site.SiteTags.Contains(PhoenixBaseReworkState.OutpostTag) &&
+                                        ____level.Map.SitesInRange(b.Site, outPostRange, true).Contains(site));
 
-                                if (anyOutpostInRange && UnityEngine.Random.Range(0, 100) < 50)
+                                ctx.OutpostWasInRange = anyOutpostInRange;
+
+                                if (anyOutpostInRange)
                                 {
-                                    component.IncrementBaseAttacksRevealCounter();
+                                    ctx.OutpostToss1Succeeded = UnityEngine.Random.Range(0, 100) < 50;
+                                    if (ctx.OutpostToss1Succeeded)
+                                        component.IncrementBaseAttacksRevealCounter();
+
+                                    ctx.OutpostToss2Succeeded = UnityEngine.Random.Range(0, 100) < 50;
+                                    if (ctx.OutpostToss2Succeeded)
+                                        component.IncrementBaseAttacksRevealCounter();
                                 }
 
+                                // Exploration affinity option 2: +15% per rank chance to detect colony after a haven attack
+                                string explorationOpName;
+                                int explorationOpRank;
+                                bool hasExplorationOperative = TFTVIncidents.AffinityGeoscapeEffects
+                                    .TryGetExplorationColonyDetectionOperative(____level, out explorationOpName, out explorationOpRank);
+
+                                if (hasExplorationOperative && explorationOpRank > 0)
+                                {
+                                    int detectionChance = 15 * explorationOpRank;
+                                    ctx.ExplorationAffinityChance = detectionChance;
+                                    ctx.ExplorationOperativeName = explorationOpName;
+                                    ctx.ExplorationAffinityRank = explorationOpRank;
+
+                                    UnityEngine.Random.InitState((int)System.Diagnostics.Stopwatch.GetTimestamp());
+                                    if (UnityEngine.Random.Range(0, 100) < detectionChance)
+                                    {
+                                        TFTVLogger.Always($"[Incidents][AffinityEffects] Exploration affinity (rank {explorationOpRank}) triggered extra colony detection increment for {site?.name}.");
+                                        component.IncrementBaseAttacksRevealCounter();
+                                        ctx.ExplorationAffinityTriggered = true;
+                                    }
+                                }
                             }
 
                             if (component.CheckForBaseReveal())
                             {
                                 site.RevealSite(____level.PhoenixFaction);
+                                ctx.Detected = true;
                                 __result = true;
                                 return false;
                             }
                             component.IncrementBaseAttacksRevealCounter();
                         }
                         __result = false;
-                        return false; // Return without calling the original method
+                        return false;
                     }
-
                     catch (Exception e)
                     {
                         TFTVLogger.Error(e);

@@ -538,6 +538,12 @@ namespace TFTV.TFTVBaseRework
                 return false;
             }
 
+            // Block assignment if living quarters are full.
+            if (IsLivingCapacityFull(faction))
+            {
+                return false;
+            }
+
             if (!ResearchManufacturingSlotsManager.IncrementUsedSlot(faction, slotType))
             {
                 return false;
@@ -705,22 +711,22 @@ namespace TFTV.TFTVBaseRework
             return TrainingFacilityRework.GetAvailableTrainingSpecializations(faction).ToList();
         }
 
-        internal static void AssignWorker(PersonnelInfo person, GeoPhoenixFaction faction, FacilitySlotType slotType)
+        internal static bool AssignWorker(PersonnelInfo person, GeoPhoenixFaction faction, FacilitySlotType slotType)
         {
             if (!BaseReworkCheck.BaseReworkEnabled)
             {
-                return;
+                return false;
             }
 
             if (person?.Character == null || faction == null)
             {
-                return;
+                return false;
             }
 
             if (!PersonnelRestrictions.CanBeAssignedToManufacturingOrResearch(person.Character))
             {
                 TFTVLogger.Always($"{LogPrefix} {person.Character.DisplayName} cannot be assigned to {slotType} because of Just a grunt.");
-                return;
+                return false;
             }
 
             ResearchManufacturingSlotsManager.RecalculateSlots(faction);
@@ -729,14 +735,25 @@ namespace TFTV.TFTVBaseRework
                 ? PersonnelAssignment.Research
                 : PersonnelAssignment.Manufacturing;
 
-            if (person.Assignment == desired) return;
-            var previous = person.Assignment;
+            if (person.Assignment == desired)
+            {
+                return true;
+            }
+
+            PersonnelAssignment previous = person.Assignment;
+
+            // If coming from Unassigned, check living cap (R→M or M→R swaps don't change living usage).
+            if (previous == PersonnelAssignment.Unassigned && IsLivingCapacityFull(faction))
+            {
+                TFTVLogger.Always($"{LogPrefix} Cannot assign {person.Character.DisplayName} to {slotType}: living quarters full.");
+                return false;
+            }
 
             bool slotAdded = ResearchManufacturingSlotsManager.IncrementUsedSlot(faction, slotType);
             if (!slotAdded)
             {
                 TFTVLogger.Always($"{LogPrefix} No free {slotType} slots available (used >= provided).");
-                return;
+                return false;
             }
 
             ReleaseWorkSlotIfNeeded(faction, previous);
@@ -746,6 +763,7 @@ namespace TFTV.TFTVBaseRework
             UIModuleInfoBar infoBar = level.View.GeoscapeModules.ResourcesModule;
             var update = AccessTools.Method(typeof(UIModuleInfoBar), "UpdateResourceInfo");
             update.Invoke(infoBar, new object[] { faction, false });
+            return true;
         }
 
         private static void ReleaseWorkSlotIfNeeded(GeoPhoenixFaction faction, PersonnelAssignment assignment)
@@ -864,6 +882,7 @@ namespace TFTV.TFTVBaseRework
             {
                 EnsureAutoAssignSettingInitialized(level);
                 ResyncWorkSlots(level.PhoenixFaction);
+                EnforceLivingCapacity(level.PhoenixFaction);
                 TryAutoAssignUnassignedPersonnel(level.PhoenixFaction, "RestoreAssignments");
                 RefreshInfoBar(level);
             }
@@ -932,8 +951,12 @@ namespace TFTV.TFTVBaseRework
 
         private static int GetTargetCount(GameDifficultyLevelDef diff)
         {
-            int order = diff.Order;
+            if (TFTVNewGameOptions.ConfigImplemented)
+            {
+                return TFTVNewGameOptions.PersonnelInfluxLevel;
+            }
 
+            int order = diff.Order;
             if (order <= 2) return 3;   // Story/Rookie
             if (order <= 3) return 2;   // Veteran
             if (order <= 4) return 1;   // Hero
@@ -1143,16 +1166,23 @@ namespace TFTV.TFTVBaseRework
                     || person.Assignment == PersonnelAssignment.Manufacturing);
         }
 
-        internal static void AssignPersonnelToTraining(PersonnelInfo person, GeoPhoenixFaction faction, SpecializationDef spec)
+        internal static bool AssignPersonnelToTraining(PersonnelInfo person, GeoPhoenixFaction faction, SpecializationDef spec)
         {
             if (!BaseReworkCheck.BaseReworkEnabled)
             {
-                return;
+                return false;
             }
 
             if (person?.Character == null || faction == null || spec == null)
             {
-                return;
+                return false;
+            }
+
+            // If coming from Unassigned, assigning to Training increases living usage — block if full.
+            if (person.Assignment == PersonnelAssignment.Unassigned && IsLivingCapacityFull(faction))
+            {
+                TFTVLogger.Always($"{LogPrefix} Cannot assign {person.Character.DisplayName} to Training: living quarters full.");
+                return false;
             }
 
             PersonnelAssignment previous = person.Assignment;
@@ -1165,6 +1195,7 @@ namespace TFTV.TFTVBaseRework
             person.TrainingSpec = spec;
 
             TryAutoAssignUnassignedPersonnel(faction, "AssignPersonnelToTraining");
+            return true;
         }
 
         internal static void UnassignFromWork(PersonnelInfo person, GeoPhoenixFaction faction)
@@ -1194,6 +1225,67 @@ namespace TFTV.TFTVBaseRework
                 }
             }
             catch (Exception e) { TFTVLogger.Error(e); }
+        }
+
+
+        // ── Living-capacity helpers ──────────────────────────────────────────────
+
+        internal static bool IsLivingCapacityFull(GeoPhoenixFaction faction)
+        {
+            return faction != null
+                && FoodAndLivingSpacePolicy.GetTotalLivingSpaceUsed(faction) >= faction.SoldierCapacity;
+        }
+
+        /// <summary>
+        /// If living space used exceeds capacity, removes workers from Manufacturing
+        /// then Research (never Training) until usage is back within capacity.
+        /// Triggers a single infobar + production refresh at the end.
+        /// </summary>
+        internal static void EnforceLivingCapacity(GeoPhoenixFaction faction)
+        {
+            if (!BaseReworkCheck.BaseReworkEnabled || faction == null)
+            {
+                return;
+            }
+
+            int over = FoodAndLivingSpacePolicy.GetTotalLivingSpaceUsed(faction) - faction.SoldierCapacity;
+            if (over <= 0)
+            {
+                return;
+            }
+
+            TFTVLogger.Always($"{LogPrefix} Living capacity exceeded by {over}. Evicting workers from R/M slots.");
+
+            // Evict Manufacturing first, then Research. Never touch Training.
+            foreach (PersonnelAssignment targetAssignment in new[] { PersonnelAssignment.Manufacturing, PersonnelAssignment.Research })
+            {
+                if (over <= 0)
+                {
+                    break;
+                }
+
+                List<PersonnelInfo> victims = _assignments.Values
+                    .Where(p => p?.Character != null && p.Character.Faction == faction && p.Assignment == targetAssignment)
+                    .ToList();
+
+                foreach (PersonnelInfo person in victims)
+                {
+                    if (over <= 0)
+                    {
+                        break;
+                    }
+
+                    ReleaseWorkSlotIfNeeded(faction, person.Assignment);
+                    person.Assignment = PersonnelAssignment.Unassigned;
+                    over--;
+
+                    TFTVLogger.Always($"{LogPrefix} Evicted {person.Character.DisplayName} from {targetAssignment} due to living capacity.");
+                }
+            }
+
+            // Single refresh after all evictions.
+            ResearchAndManufacturing.ApplyProductionAdjustments(faction);
+            Workers.RefreshInfoBar(faction);
         }
     }
 }

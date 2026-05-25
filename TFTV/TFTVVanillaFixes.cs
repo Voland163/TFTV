@@ -41,6 +41,7 @@ using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Geoscape.View.ViewControllers.HavenDetails;
+using PhoenixPoint.Geoscape.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
 using PhoenixPoint.Geoscape.View.ViewControllers.SiteEncounters;
 using PhoenixPoint.Geoscape.View.ViewModules;
@@ -86,6 +87,124 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefRepository Repo = TFTVMain.Repo;
+
+        [HarmonyPatch(typeof(UIInventoryDropArea), "InitForItem", new Type[]
+    {
+        typeof(ICommonItem)
+    })]
+        public static class UIInventoryDropArea_HarmonyPatch
+        {
+            private static void Postfix(UIInventoryDropArea __instance, ICommonItem item)
+            {
+                if (!__instance.IsScrap || item == null)
+                {
+                    return;
+                }
+                float nextScrapRefundMultiplier = ScrapRefundUtils.GetNextScrapRefundMultiplier(item);
+                ResourcePack resourcePack = item.ItemDef.ScrapPrice * nextScrapRefundMultiplier;
+                __instance.MaterialsCost.SetResource(resourcePack.ByResourceType(ResourceType.Materials), true, false, true);
+                __instance.TechCost.SetResource(resourcePack.ByResourceType(ResourceType.Tech), true, false, true);
+                __instance.MutagenCost.SetResource(resourcePack.ByResourceType(ResourceType.Mutagen), true, true, true);
+                __instance.CrystalCost.SetResource(resourcePack.ByResourceType(ResourceType.LivingCrystals), true, true, true);
+                __instance.OrichalcumCost.SetResource(resourcePack.ByResourceType(ResourceType.Orichalcum), true, true, true);
+                __instance.PropaneCost.SetResource(resourcePack.ByResourceType(ResourceType.ProteanMutane), true, true, true);
+            }
+        }
+
+
+
+
+        [HarmonyPatch(typeof(GeoFaction), "ScrapItem")]
+        public static class GeoFaction_ScrapItem_HarmonyPatch
+        {
+            private static readonly AccessTools.FieldRef<GeoFaction, GeoLevelController> _levelRef = AccessTools.FieldRefAccess<GeoFaction, GeoLevelController>("_level");
+
+            private static bool Prefix(GeoFaction __instance, GeoItem geoItem, int amount = 1)
+            {
+                for (int i = 0; i < amount; i++)
+                {
+                    float num = ScrapRefundUtils.GetNextScrapRefundMultiplier(geoItem);
+                    ResourcePack resourcePack = geoItem.ItemDef.ScrapPrice * num;
+                    __instance.Wallet.Give(resourcePack, OperationReason.Scrap);
+                    PhoenixTelemetry instance = PhoenixTelemetry.Instance;
+                    if (instance.Enabled)
+                    {
+                        instance.OnResourcesGiven(resourcePack, "ItemScrap");
+                    }
+                    geoItem.CommonItemData.Subtract(geoItem.GetSingleItem());
+                }
+                _levelRef(__instance).AchievmentTracker.ScrapItemsProgress(geoItem, amount);
+                return false;
+            }
+        }
+
+        internal static class ScrapRefundUtils
+        {
+            public static bool ShouldProrateScrapRefund(ICommonItem item)
+            {
+                return item.ItemDef.ChargesMax > 0 && item.CommonItemData.IsAmmo();
+            }
+
+            public static float GetNextScrapRefundMultiplier(ICommonItem item)
+            {
+                if (!ShouldProrateScrapRefund(item))
+                {
+                    return 1f;
+                }
+                if (item.ItemDef.CombineWhenStacking && item.CommonItemData.Count > 1)
+                {
+                    return 1f;
+                }
+                return Mathf.Clamp01((float)item.CommonItemData.CurrentCharges / (float)item.ItemDef.ChargesMax);
+            }
+        }
+
+        [HarmonyPatch(typeof(GeoInventoryItemScrap), "UpdateScrapInfo")]
+        public static class GeoInventoryItemScrap_HarmonyPatch
+        {
+            private static readonly AccessTools.FieldRef<GeoInventoryItemScrap, UIInventorySlot> _slotRef = AccessTools.FieldRefAccess<GeoInventoryItemScrap, UIInventorySlot>("_slot");
+            private static readonly AccessTools.FieldRef<GeoInventoryItemScrap, int> _scrappedItemsAmountRef = AccessTools.FieldRefAccess<GeoInventoryItemScrap, int>("_scrappedItemsAmount");
+            private static readonly AccessTools.FieldRef<GeoInventoryItemScrap, int> _itemsRemainingAmountRef = AccessTools.FieldRefAccess<GeoInventoryItemScrap, int>("_itemsRemainingAmount");
+
+            private static bool Prefix(GeoInventoryItemScrap __instance)
+            {
+                int scrappedItemsAmount = _scrappedItemsAmountRef(__instance);
+                int itemsRemainingAmount = _itemsRemainingAmountRef(__instance);
+                ICommonItem item = _slotRef(__instance).Item;
+                __instance.ItemAmount.text = scrappedItemsAmount.ToString();
+                __instance.IncreaseAmountButton.enabled = (itemsRemainingAmount > scrappedItemsAmount);
+                __instance.DecreaseAmountButton.enabled = (scrappedItemsAmount > 1);
+                ResourcePack resourcePack = GetPreviewScrapPack(item, scrappedItemsAmount, itemsRemainingAmount);
+                __instance.MaterialsCost.SetResource(resourcePack.ByResourceType(ResourceType.Materials), true, false, true);
+                __instance.TechCost.SetResource(resourcePack.ByResourceType(ResourceType.Tech), true, false, true);
+                __instance.MutagenCost.SetResource(resourcePack.ByResourceType(ResourceType.Mutagen), true, true, true);
+                __instance.CrystalCost.SetResource(resourcePack.ByResourceType(ResourceType.LivingCrystals), true, true, true);
+                __instance.OrichalcumCost.SetResource(resourcePack.ByResourceType(ResourceType.Orichalcum), true, true, true);
+                __instance.PropaneCost.SetResource(resourcePack.ByResourceType(ResourceType.ProteanMutane), true, true, true);
+                return false;
+            }
+
+            private static ResourcePack GetPreviewScrapPack(ICommonItem item, int amount, int itemsRemainingAmount)
+            {
+                float num = 0f;
+                float num2 = ScrapRefundUtils.ShouldProrateScrapRefund(item) ? Mathf.Clamp01((float)item.CommonItemData.CurrentCharges / (float)item.ItemDef.ChargesMax) : 1f;
+                for (int i = 0; i < amount; i++)
+                {
+                    if (ScrapRefundUtils.ShouldProrateScrapRefund(item) && item.ItemDef.CombineWhenStacking)
+                    {
+                        num += ((itemsRemainingAmount - i > 1) ? 1f : num2);
+                    }
+                    else
+                    {
+                        num += ScrapRefundUtils.GetNextScrapRefundMultiplier(item);
+                    }
+                }
+                return item.ItemDef.ScrapPrice * num;
+            }
+        }
+
+
+
 
         [HarmonyPatch(typeof(GeoFaction), "OnCharacterAdded")]
         public static class GeoFaction_OnCharacterAdded_RefreshTagsPatch
@@ -1632,8 +1751,8 @@ namespace TFTV
 
             internal class HavenDefendersFullAPFix
             {
-               
-               
+
+
 
             }
             internal static class RetrieveDeployedItemAbility_RetrieveTurretCrt_Patch
@@ -3051,7 +3170,7 @@ namespace TFTV
                             // 2. Gather mentors and eligible non-mentor recipients (alive, in squad, no mentor ability).
                             List<TacticalActor> mentors = list.Where(a => TFTVDrills.DrillsHarmony.MentorProtocol.CheckForMentorProtocolAbility(a)).ToList();
                             List<TacticalActor> nonMentorRecipients = list
-                                .Where(a => !TFTVDrills.DrillsHarmony.MentorProtocol.CheckForMentorProtocolAbility(a) && a.LevelProgression.Level<7)
+                                .Where(a => !TFTVDrills.DrillsHarmony.MentorProtocol.CheckForMentorProtocolAbility(a) && a.LevelProgression.Level < 7)
                                 .OrderBy(a => a.LevelProgression.Level)
                                 .ThenBy(a => a.LevelProgression.Experience) // tie-break: least XP toward next level
                                 .ToList();
@@ -4576,7 +4695,7 @@ namespace TFTV
                         }
 
                         if (__instance?.ItemDef is WeaponDef weaponDef && LaserWeaponsMain.LaserAmmoShareHelper.TryGetEntry(weaponDef, out _))
-                        {                           
+                        {
                             int targetMax = __instance.ItemDef.ChargesMax;
                             int current = Math.Max(0, __instance.CommonItemData.CurrentCharges);
                             int missing = Math.Max(0, targetMax - current);
@@ -4852,57 +4971,57 @@ namespace TFTV
             }
 
 
-            /// <summary>
-            /// Not strictly a bug, but once partial magazines become visible, without this patch they can be scrapped for the same price as a full one.
-            /// This patch ensures that scrapping ammo is never profitable.
-            /// </summary>
+            /*   /// <summary>
+               /// Not strictly a bug, but once partial magazines become visible, without this patch they can be scrapped for the same price as a full one.
+               /// This patch ensures that scrapping ammo is never profitable.
+               /// </summary>
 
-            [HarmonyPatch(typeof(ItemDef), "get_ScrapPrice")] //VERIFIED
-            public static class ItemDef_get_ScrapPrice_patch
-            {
-                public static void Postfix(ItemDef __instance, ref ResourcePack __result, ResourcePack ____scrapPrice)
-                {
-                    try
-                    {
+               [HarmonyPatch(typeof(ItemDef), "get_ScrapPrice")] //VERIFIED
+               public static class ItemDef_get_ScrapPrice_patch
+               {
+                   public static void Postfix(ItemDef __instance, ref ResourcePack __result, ResourcePack ____scrapPrice)
+                   {
+                       try
+                       {
 
-                        if (__instance.Tags.Contains(Shared.SharedGameTags.AmmoTag))
-                        {
-                            TacticalItemDef tacticalItemDef = __instance as TacticalItemDef;
+                           if (__instance.Tags.Contains(Shared.SharedGameTags.AmmoTag))
+                           {
+                               TacticalItemDef tacticalItemDef = __instance as TacticalItemDef;
 
-                            if (!AmmoWeaponDatabase.AmmoToWeaponDictionary.ContainsKey(tacticalItemDef))
-                            {
-                                return;
-                            }
+                               if (!AmmoWeaponDatabase.AmmoToWeaponDictionary.ContainsKey(tacticalItemDef))
+                               {
+                                   return;
+                               }
 
-                            WeaponDef weaponDef = (WeaponDef)AmmoWeaponDatabase.AmmoToWeaponDictionary[tacticalItemDef][0];
+                               WeaponDef weaponDef = (WeaponDef)AmmoWeaponDatabase.AmmoToWeaponDictionary[tacticalItemDef][0];
 
-                            float costMultiplier = Math.Max(__instance.ChargesMax / Math.Max(weaponDef.DamagePayload.AutoFireShotCount, weaponDef.DamagePayload.ProjectilesPerShot), 2);
-
-
+                               float costMultiplier = Math.Max(__instance.ChargesMax / Math.Max(weaponDef.DamagePayload.AutoFireShotCount, weaponDef.DamagePayload.ProjectilesPerShot), 2);
 
 
-                            __result = new ResourcePack(new ResourceUnit[]
-                                 {
-                        new ResourceUnit(ResourceType.Tech, Mathf.Max(Mathf.FloorToInt(__instance.ManufactureTech / costMultiplier), Mathf.FloorToInt(__instance.ManufactureTech/10))),
-                        new ResourceUnit(ResourceType.Materials, Mathf.Max(Mathf.CeilToInt(__instance.ManufactureMaterials / costMultiplier), Mathf.CeilToInt(__instance.ManufactureMaterials/10))),
-                        new ResourceUnit(ResourceType.Mutagen, Mathf.Floor(__instance.ManufactureMutagen / costMultiplier)),
-                        new ResourceUnit(ResourceType.LivingCrystals, Mathf.Floor(__instance.ManufactureLivingCrystals / costMultiplier)),
-                        new ResourceUnit(ResourceType.Orichalcum, Mathf.Floor(__instance.ManufactureOricalcum / costMultiplier)),
-                        new ResourceUnit(ResourceType.ProteanMutane, Mathf.Floor(__instance.ManufactureProteanMutane / costMultiplier))
-                                 });
 
 
-                        }
+                               __result = new ResourcePack(new ResourceUnit[]
+                                    {
+                           new ResourceUnit(ResourceType.Tech, Mathf.Max(Mathf.FloorToInt(__instance.ManufactureTech / costMultiplier), Mathf.FloorToInt(__instance.ManufactureTech/10))),
+                           new ResourceUnit(ResourceType.Materials, Mathf.Max(Mathf.CeilToInt(__instance.ManufactureMaterials / costMultiplier), Mathf.CeilToInt(__instance.ManufactureMaterials/10))),
+                           new ResourceUnit(ResourceType.Mutagen, Mathf.Floor(__instance.ManufactureMutagen / costMultiplier)),
+                           new ResourceUnit(ResourceType.LivingCrystals, Mathf.Floor(__instance.ManufactureLivingCrystals / costMultiplier)),
+                           new ResourceUnit(ResourceType.Orichalcum, Mathf.Floor(__instance.ManufactureOricalcum / costMultiplier)),
+                           new ResourceUnit(ResourceType.ProteanMutane, Mathf.Floor(__instance.ManufactureProteanMutane / costMultiplier))
+                                    });
 
 
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
-                }
-            }
+                           }
+
+
+                       }
+                       catch (Exception e)
+                       {
+                           TFTVLogger.Error(e);
+                           throw;
+                       }
+                   }
+               }*/
 
 
 

@@ -22,7 +22,8 @@ namespace TFTV.TFTVBaseRework
     public static class TrainingFacilityRework
     {
         #region Config
-        private const int BaseDurationDays = 6;
+        private const int BaseDurationDays = 2;
+
         private const int SlotsPerFacility = 2;
         private const int BaseMaxTargetLevel = 4;
         private const int UpgradedMaxTargetLevel = 5;
@@ -36,7 +37,7 @@ namespace TFTV.TFTVBaseRework
 
         // Extra days added per target level above MinTargetLevel.
         // Set to 0 for flat duration; increase to make higher levels take longer.
-        private const float DurationPerAdditionalLevel = 0f;
+        private const float DurationPerAdditionalLevel = 2f;
 
         private static readonly Dictionary<string, float> DurationReductionResearch = new Dictionary<string, float>
         {
@@ -54,19 +55,19 @@ namespace TFTV.TFTVBaseRework
             public GeoCharacter Character;
             public int GeoUnitId;
             public SpecializationDef TargetSpecialization;
-            public int StartDay;
-            public int DurationDays;
+            public float StartHour;
+            public float DurationHours;
             public int TargetLevel;
             public bool Completed;
             public int VirtualLevelAchieved; // starts at 1
             public int SpPaid;
             public bool WasDismissed;
 
-            public float ProgressFraction(int currentDay)
+            public float ProgressFraction(float currentHour)
             {
                 if (Completed) return 1f;
-                int elapsed = currentDay - StartDay;
-                return Math.Max(0f, Math.Min(1f, (float)elapsed / DurationDays));
+                float elapsed = currentHour - StartHour;
+                return Math.Max(0f, Math.Min(1f, elapsed / DurationHours));
             }
         }
 
@@ -139,11 +140,17 @@ namespace TFTV.TFTVBaseRework
 
                 bool wasDismissed = PersonnelRestrictions.IsDismissedOperative(character);
 
+                // For dismissed operatives, duration is based on levels to gain from their current level.
+                // For civilians, start level is always 1.
+                int startLevel = wasDismissed ? (character.LevelProgression?.Level ?? 1) : 1;
+
+                TFTVLogger.Always($"[Training] QueueCharacterTraining: {character.DisplayName} wasDismissed={wasDismissed} currentLevel={startLevel} targetLevel={chosenTargetLevel}");
+
                 // Charge SP upfront.
                 faction.Skillpoints -= spCost;
 
-                int currentDay = level.Timing.Now.TimeSpan.Days;
-                int effectiveDuration = CalculateEffectiveDurationDays(faction, chosenTargetLevel);
+                float currentHour = (float)level.Timing.Now.TimeSpan.TotalHours;
+                float effectiveDuration = CalculateEffectiveDurationHours(faction, chosenTargetLevel, startLevel);
 
                 RecruitTrainingSession recruitSession = new RecruitTrainingSession
                 {
@@ -151,11 +158,11 @@ namespace TFTV.TFTVBaseRework
                     Character = character,
                     GeoUnitId = character.Id,
                     TargetSpecialization = spec,
-                    StartDay = currentDay,
-                    DurationDays = effectiveDuration,
+                    StartHour = currentHour,
+                    DurationHours = effectiveDuration,
                     TargetLevel = chosenTargetLevel,
                     Completed = false,
-                    VirtualLevelAchieved = 1,
+                    VirtualLevelAchieved = startLevel,
                     SpPaid = spCost,
                     WasDismissed = wasDismissed
                 };
@@ -163,7 +170,7 @@ namespace TFTV.TFTVBaseRework
                 RecruitSessions.Add(recruitSession);
                 AgendaRefresh.RefreshRecruitTrainingTracker(character);
 
-                TFTVLogger.Always($"[Training] Queued recruit training: {character.DisplayName} Spec={spec.name} TargetLevel={chosenTargetLevel} SpPaid={spCost} WasDismissed={wasDismissed} StartDay={currentDay} Duration={effectiveDuration} Used/Provided={usedSlots + 1}/{providedSlots}");
+                TFTVLogger.Always($"[Training] Queued recruit training: {character.DisplayName} Spec={spec.name} StartLevel={startLevel} TargetLevel={chosenTargetLevel} SpPaid={spCost} WasDismissed={wasDismissed} StartHour={currentHour:0.0} DurationHours={effectiveDuration:0.0} Used/Provided={usedSlots + 1}/{providedSlots}");
                 return true;
             }
             catch (Exception e)
@@ -190,8 +197,8 @@ namespace TFTV.TFTVBaseRework
                 if (faction == null) return 0;
 
                 // Force progress update so VirtualLevelAchieved is current.
-                int currentDay = level.Timing.Now.TimeSpan.Days;
-                ForceRecruitProgressUpdate(session, currentDay);
+                float currentHour = (float)level.Timing.Now.TimeSpan.TotalHours;
+                ForceRecruitProgressUpdate(session, currentHour);
 
                 int levelsAchieved = Math.Max(0, session.VirtualLevelAchieved - 1);
                 int spForAchieved = SpCostPerLevel * levelsAchieved;
@@ -247,19 +254,18 @@ namespace TFTV.TFTVBaseRework
             return RecruitSessions.FirstOrDefault(s => s.PersonnelId == id || s.GeoUnitId == character.Id);
         }
 
-        public static int GetRecruitRemainingDays(GeoCharacter character, GeoLevelController level)
+        public static float GetRecruitRemainingHours(GeoCharacter character, GeoLevelController level)
         {
-            if (!BaseReworkCheck.BaseReworkEnabled)
-            {
-                return 0;
-            }
-
+            if (!BaseReworkCheck.BaseReworkEnabled) return 0f;
             var s = GetRecruitSession(character);
-            if (s == null || level == null) return 0;
-            int currentDay = level.Timing.Now.TimeSpan.Days;
-            int remaining = (s.StartDay + s.DurationDays) - currentDay;
-            return Math.Max(0, remaining);
+            if (s == null || level == null) return 0f;
+            float currentHour = (float)level.Timing.Now.TimeSpan.TotalHours;
+            float remaining = (s.StartHour + s.DurationHours) - currentHour;
+            return Math.Max(0f, remaining);
         }
+
+        public static int GetRecruitRemainingDays(GeoCharacter character, GeoLevelController level)
+            => (int)Math.Ceiling(GetRecruitRemainingHours(character, level) / 24f);
 
         public static bool IsRecruitTrainingComplete(GeoCharacter character, GeoLevelController level)
         {
@@ -285,16 +291,16 @@ namespace TFTV.TFTVBaseRework
                 return false;
             }
 
-            int currentDay = level.Timing.Now.TimeSpan.Days;
-            ForceRecruitProgressUpdate(s, currentDay);
+            float currentHour = (float)level.Timing.Now.TimeSpan.TotalHours;
+            ForceRecruitProgressUpdate(s, currentHour);
 
-            bool complete = s.Completed || currentDay - s.StartDay >= s.DurationDays || s.VirtualLevelAchieved >= s.TargetLevel;
+            bool complete = s.Completed || (currentHour - s.StartHour) >= s.DurationHours || s.VirtualLevelAchieved >= s.TargetLevel;
 
-            TFTVLogger.Always($"[Training] Completion check for {character.DisplayName}: Completed={s.Completed} AutoComplete={complete} Day={currentDay} StartDay={s.StartDay} Duration={s.DurationDays} VirtualLevel={s.VirtualLevelAchieved}/{s.TargetLevel}");
+            TFTVLogger.Always($"[Training] Completion check for {character.DisplayName}: Completed={s.Completed} AutoComplete={complete} Hour={currentHour:0.0} StartHour={s.StartHour:0.0} DurationHours={s.DurationHours:0.0} VirtualLevel={s.VirtualLevelAchieved}/{s.TargetLevel}");
             return complete;
         }
 
-        private static void ForceRecruitProgressUpdate(RecruitTrainingSession session, int currentDay)
+        private static void ForceRecruitProgressUpdate(RecruitTrainingSession session, float currentHour)
         {
             try
             {
@@ -302,7 +308,7 @@ namespace TFTV.TFTVBaseRework
 
                 int beforeLevel = session.VirtualLevelAchieved;
                 bool beforeCompleted = session.Completed;
-                ProcessRecruitSessionProgress(session, currentDay);
+                ProcessRecruitSessionProgress(session, currentHour);
                 if (session.VirtualLevelAchieved != beforeLevel || session.Completed != beforeCompleted)
                 {
                     TFTVLogger.Always($"[Training] Progress tick (inline) Session={session.Character?.DisplayName ?? "Unknown"} Level {beforeLevel}->{session.VirtualLevelAchieved} Completed={session.Completed}");
@@ -321,25 +327,29 @@ namespace TFTV.TFTVBaseRework
             }
 
             if (geoLevel?.PhoenixFaction == null || deltaDays <= 0) return;
-            int currentDay = geoLevel.Timing.Now.TimeSpan.Days;
-            TFTVLogger.Always($"[Training] AdvanceAllTraining day={currentDay} delta={deltaDays}");
+            float currentHour = (float)geoLevel.Timing.Now.TimeSpan.TotalHours;
+            TFTVLogger.Always($"[Training] AdvanceAllTraining hour={currentHour:0.0} deltaDays={deltaDays}");
 
             foreach (var session in RecruitSessions.ToList())
             {
                 if (session.Completed) continue;
-                ProcessRecruitSessionProgress(session, currentDay);
+                ProcessRecruitSessionProgress(session, currentHour);
             }
 
             RecruitSessions.RemoveAll(s => s.Character == null);
         }
 
-        private static void ProcessRecruitSessionProgress(RecruitTrainingSession session, int currentDay)
+        private static void ProcessRecruitSessionProgress(RecruitTrainingSession session, float currentHour)
         {
             try
             {
-                float progress = session.ProgressFraction(currentDay);
-                int totalLevelsToGain = session.TargetLevel - 1;
-                int projectedLevel = 1 + (int)Math.Floor(progress * totalLevelsToGain);
+                float progress = session.ProgressFraction(currentHour);
+                // VirtualLevelAchieved starts at the operative's original level (not always 1).
+                int startLevel = session.VirtualLevelAchieved > 1
+                    ? (session.WasDismissed ? session.VirtualLevelAchieved : 1)
+                    : 1;
+                int totalLevelsToGain = session.TargetLevel - startLevel;
+                int projectedLevel = startLevel + (int)Math.Floor(progress * totalLevelsToGain);
                 projectedLevel = Math.Min(session.TargetLevel, projectedLevel);
 
                 int prevLevel = session.VirtualLevelAchieved;
@@ -357,7 +367,7 @@ namespace TFTV.TFTVBaseRework
 
                 if (prevLevel != session.VirtualLevelAchieved || prevCompleted != session.Completed)
                 {
-                    TFTVLogger.Always($"[Training] Recruit progress: {session.Character?.DisplayName ?? "Unknown"} Level {prevLevel}->{session.VirtualLevelAchieved} Completed={session.Completed} Progress={progress:0.00}");
+                    TFTVLogger.Always($"[Training] Recruit progress: {session.Character?.DisplayName ?? "Unknown"} Level {prevLevel}->{session.VirtualLevelAchieved} Completed={session.Completed} Progress={progress:0.00} StartLevel={startLevel} Target={session.TargetLevel}");
                 }
             }
             catch (Exception e) { TFTVLogger.Error(e); }
@@ -443,12 +453,12 @@ namespace TFTV.TFTVBaseRework
         /// Charges redeploy SP cost, clears dismissed marker, and relocates to targetBase.
         /// </summary>
         private static GeoCharacter FinalizeDismissedOperativeTraining(
-            GeoLevelController level,
-            GeoCharacter character,
-            GeoPhoenixBase targetBase,
-            RecruitTrainingSession session,
-            int finalLevel,
-            bool early)
+      GeoLevelController level,
+      GeoCharacter character,
+      GeoPhoenixBase targetBase,
+      RecruitTrainingSession session,
+      int finalLevel,
+      bool early)
         {
             try
             {
@@ -470,12 +480,27 @@ namespace TFTV.TFTVBaseRework
                     phoenix.Skillpoints -= redeployCost;
                 }
 
-                // Only apply gains for levels above the operative's original level.
                 int originalLevel = character.LevelProgression?.Level ?? 1;
+                TFTVLogger.Always($"[Training] FinalizeDismissed: {character.DisplayName} originalLevel={originalLevel} finalLevel={finalLevel} early={early}");
+                TFTVLogger.Always($"[Training] FinalizeDismissed: _appliedStatLevels has entry={_appliedStatLevels.ContainsKey(character.Id)} value={(_appliedStatLevels.TryGetValue(character.Id, out var dbg) ? dbg : -1)}");
+
+                // Only apply gains for levels above the operative's original level.
                 if (finalLevel > originalLevel)
                 {
                     character.LevelProgression?.SetLevel(finalLevel);
+
+                    // Seed _appliedStatLevels so ApplyCumulativeLevelGains only applies the delta
+                    // (levels gained during training, not all levels since level 1).
+                    int currentApplied = _appliedStatLevels.TryGetValue(character.Id, out var existing) ? existing : 0;
+                    int seedValue = Math.Max(currentApplied, originalLevel - 1);
+                    TFTVLogger.Always($"[Training] FinalizeDismissed: seeding _appliedStatLevels[{character.Id}] = {seedValue} (was {currentApplied}, originalLevel-1={originalLevel - 1})");
+                    _appliedStatLevels[character.Id] = seedValue;
+
                     ApplyCumulativeLevelGains(character, finalLevel);
+                }
+                else
+                {
+                    TFTVLogger.Always($"[Training] FinalizeDismissed: no level/stat gains needed (finalLevel={finalLevel} <= originalLevel={originalLevel})");
                 }
 
                 // Clear dismissed marker (both early and full completion deploy the operative).
@@ -576,18 +601,19 @@ namespace TFTV.TFTVBaseRework
         #endregion
 
         #region Helpers / Internal
-        private static int CalculateEffectiveDurationDays(GeoPhoenixFaction faction, int targetLevel)
+        private static float CalculateEffectiveDurationHours(GeoPhoenixFaction faction, int targetLevel, int startLevel = 1)
         {
-            // Base duration plus optional scaling for higher target levels.
-            float duration = BaseDurationDays + DurationPerAdditionalLevel * Math.Max(0, targetLevel - MinTargetLevel);
+            int levelsToGain = Math.Max(1, targetLevel - startLevel);
+            float durationHours = DurationPerAdditionalLevel * 24f * levelsToGain;
             if (faction?.Research != null)
             {
                 foreach (var kv in DurationReductionResearch)
                 {
-                    if (faction.Research.HasCompleted(kv.Key)) duration *= (1f - kv.Value);
+                    if (faction.Research.HasCompleted(kv.Key)) durationHours *= (1f - kv.Value);
                 }
             }
-            return Math.Max(1, (int)Math.Ceiling(duration));
+            TFTVLogger.Always($"[Training] CalculateEffectiveDurationHours: targetLevel={targetLevel} startLevel={startLevel} levelsToGain={levelsToGain} durationHours={durationHours:0.0}");
+            return durationHours;
         }
 
         internal static bool IsValidFacility(GeoPhoenixFacility facility)
@@ -767,7 +793,8 @@ namespace TFTV.TFTVBaseRework
         #endregion
 
         #region Public Helper API
-        public static int GetEffectiveDurationDays(GeoPhoenixFaction faction, int targetLevel) => CalculateEffectiveDurationDays(faction, targetLevel);
+        public static float GetEffectiveDurationHours(GeoPhoenixFaction faction, int targetLevel, int startLevel = 1)
+    => CalculateEffectiveDurationHours(faction, targetLevel, startLevel);
 
         public static int GetProvidedTrainingSlots(GeoPhoenixFaction faction) => CalculateProvidedTrainingSlots(faction);
         public static int GetUsedTrainingSlots() => CalculateUsedTrainingSlots();
@@ -1055,11 +1082,11 @@ namespace TFTV.TFTVBaseRework
             public int GeoUnitId;
             public string CharacterName;
             public string MainSpecName;
-            public int StartDay;
-            public int DurationDays;
+            public float StartHour;
+            public float DurationHours;
             public int TargetLevel;
-            public int VirtualLevelAchieved;
             public bool Completed;
+            public int VirtualLevelAchieved; // starts at 1
             public int SpPaid;
             public bool WasDismissed;
         }
@@ -1073,8 +1100,8 @@ namespace TFTV.TFTVBaseRework
                 {
                     GeoUnitId = s.GeoUnitId,
                     MainSpecName = s.TargetSpecialization?.name,
-                    StartDay = s.StartDay,
-                    DurationDays = s.DurationDays,
+                    StartHour = s.StartHour,
+                    DurationHours = s.DurationHours,
                     TargetLevel = s.TargetLevel,
                     VirtualLevelAchieved = s.VirtualLevelAchieved,
                     Completed = s.Completed,
@@ -1108,8 +1135,8 @@ namespace TFTV.TFTVBaseRework
                         Character = character,
                         GeoUnitId = character.Id,
                         TargetSpecialization = spec,
-                        StartDay = save.StartDay,
-                        DurationDays = save.DurationDays,
+                        StartHour = save.StartHour,
+                        DurationHours = save.DurationHours,
                         TargetLevel = save.TargetLevel,
                         VirtualLevelAchieved = save.VirtualLevelAchieved,
                         Completed = save.Completed,

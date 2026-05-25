@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using Base.Core;
+using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Utils;
@@ -10,7 +11,9 @@ using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
+using PhoenixPoint.Geoscape.View.DataObjects;
 using PhoenixPoint.Geoscape.View.ViewControllers.Modal;
+using PhoenixPoint.Geoscape.View.ViewModules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +24,7 @@ namespace TFTV.TFTVBaseRework
     internal static class PhoenixBaseExplorationConfig
     {
 
-        public const int InfestationChancePercent = 25;
+        public const int InfestationChancePercent = 15;
 
         /// <summary>
         /// Sites currently completing exploration.
@@ -296,7 +299,7 @@ namespace TFTV.TFTVBaseRework
                     return;
                 }
 
-                TFTVLogger.Always($"[MissionModalDataBind_ModalShowHandler_Patch] got here 0");
+             //   TFTVLogger.Always($"[MissionModalDataBind_ModalShowHandler_Patch] got here 0");
 
                 GeoMission geoMission = modal.Data as GeoMission;
                 
@@ -305,7 +308,7 @@ namespace TFTV.TFTVBaseRework
                     return;
                 }
 
-                TFTVLogger.Always($"[MissionModalDataBind_ModalShowHandler_Patch] got here 1");
+               // TFTVLogger.Always($"[MissionModalDataBind_ModalShowHandler_Patch] got here 1");
 
                 if (geoMission.IsCompleted) return;
 
@@ -313,7 +316,7 @@ namespace TFTV.TFTVBaseRework
 
                 if (geoMission.MissionDef.MissionTags == null) return;
 
-                TFTVLogger.Always($"[MissionModalDataBind_ModalShowHandler_Patch] got here 2");
+                // TFTVLogger.Always($"[MissionModalDataBind_ModalShowHandler_Patch] got here 2");
 
                 MissionTypeTagDef baseInfestationtTag = DefCache.GetDef<MissionTypeTagDef>("MissionTypeBaseInfestation_MissionTagDef");
                
@@ -321,7 +324,7 @@ namespace TFTV.TFTVBaseRework
                 
                 if (!geoMission.MissionDef.MissionTags.Contains(baseInfestationtTag)) return;
 
-                TFTVLogger.Always($"[MissionModalDataBind_ModalShowHandler_Patch] got here 3");
+             
 
                 //  TFTVLogger.Always($"[MissionModalDataBind_ModalShowHandler_Patch] Base infestation mission detected, modifying briefing.");
 
@@ -374,6 +377,88 @@ namespace TFTV.TFTVBaseRework
         }
     }
 
+    /// <summary>
+    /// Override the displayed infestation chance on the short Phoenix base tooltip
+    /// for unexplored abandoned bases when BaseRework is active.
+    ///
+    /// Vanilla's BaseInfestationCheck is suppressed for these bases, so InfestedChance
+    /// would show 0%. We replace it with our exploration roll chance: 25%, or 50% if in mist.
+
+    [HarmonyPatch(typeof(UIModuleShortPhoenixBaseTooltip), "SetTooltipData")]
+    internal static class UIModuleShortPhoenixBaseTooltip_SetTooltipData_ExplorationChance_Patch
+    {
+        private static void Postfix(UIModuleShortPhoenixBaseTooltip __instance, PhoenixBaseShortInfoData baseData)
+        {
+            try
+            {
+               // TFTVLogger.Always($"[UIModuleShortPhoenixBaseTooltip_SetTooltipData_ExplorationChance_Patch] Checking if tooltip update for unexplored Phoenix base to set infestation chance. " +
+                //    $"Base name: {baseData?.BaseName?.Localize()}");
+
+                if (!BaseReworkCheck.BaseReworkEnabled)
+                {
+                    return;
+                }
+
+                if (baseData == null)
+                {
+                    return;
+                }
+
+              /*  // Only modify unexplored (not yet activated, not currently infested) bases.
+                if (baseData.IsActivated || baseData.IsBaseInfested)
+                {
+                    return;
+                }*/
+
+                GeoLevelController geoLevel = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+                if (geoLevel == null)
+                {
+                    return;
+                }
+
+                // Find the matching abandoned Phoenix base site by name.
+                GeoSite site = geoLevel.Map.AllSites
+                    .FirstOrDefault(s =>s.GetComponent<GeoPhoenixBase>()!=null && s.SiteName.Localize() == baseData.BaseName.Localize());
+
+                //TFTVLogger.Always($"[UIModuleShortPhoenixBaseTooltip_SetTooltipData_ExplorationChance_Patch] Found site: {site?.LocalizedSiteName}");
+
+                if (site == null)
+                {
+                    return;
+                }
+
+                bool isExplored = site.GetVisited(site.GeoLevel.PhoenixFaction);
+
+                if (isExplored)
+                {
+                    __instance.InfestationSectionGroup.SetActive(value: false);
+                    __instance.InfestationThreatText.gameObject.SetActive(value: false);
+
+                }
+                else
+                {
+                  
+                    __instance.InfestationSectionGroup.SetActive(value: true);
+                    __instance.InfestationThreatText.gameObject.SetActive(value: true);
+
+                    int chance = PhoenixBaseExplorationConfig.InfestationChancePercent;
+
+                    if (site.IsInMist)
+                    {
+                        chance *= 2;
+                    }
+
+                    __instance.InfestationThreatText.text = $"{chance}%";
+
+                }
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+            }
+        }
+    }
+
     [HarmonyPatch(typeof(GeoPhoenixFaction), "ActivateBaseFromExploration")]
     public static class GeoPhoenixFaction_ActivateBaseFromExploration_Patch
     {
@@ -384,16 +469,12 @@ namespace TFTV.TFTVBaseRework
             {
                 if (!BaseReworkCheck.BaseReworkEnabled) return true;
 
-                if (site.ActiveMission != null)
-                {
                     site.ActiveMission = null;
                     site.RefreshVisuals();
                     TFTVLogger.Always($"[GeoPhoenixFaction_ActivateBaseFromExploration_Patch] Skipping activation for  " +
                         $"'{site.LocalizedSiteName}' because after infestation.");
                     return false;
-                }
 
-                return true;
             }
             catch (Exception ex)
             {

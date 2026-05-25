@@ -191,9 +191,9 @@ KEY_OUTPOST_ACTIVATED_DESCRIPTION,Text,,"You have finished building an Outpost. 
 KEY_INCIDENT_START_OPTION,Text,,INITIATE INCIDENT RESOLUTION,,,,,,,,
 KEY_INCIDENT_START_OPTION_TOOLTIP,Text,,"Starts the Incident event. After choosing how to approach the Incident, Aircraft must stay at the Haven. Moving the Aircraft before the Incident is resolved will result in Failure. ",,,,,,,,
 KEY_AFFINITY_GEO_DESC_PSYCHO_SOCIOLOGY_OPTION_1,Text,,Geoscape Benefit: Haven Defense rewards +{0}%.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_PSYCHO_SOCIOLOGY_OPTION_2,Text,,Geoscape Benefit: {0}% chance for teammates to recover from a Delirium perk after mission.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_EXPLORATION_OPTION_1,Text,,Geoscape Benefit: Exploration is {0} hour(s) faster and resources gained from exploration events increased by {1}%.,,,,,,,,
-KEY_AFFINITY_GEO_DESC_EXPLORATION_OPTION_2,Text,,Geoscape Benefit : All operatives in the aircraft recover {0} Stamina after mission.,,,,,,,,
+KEY_AFFINITY_GEO_DESC_PSYCHO_SOCIOLOGY_OPTION_2,Text,,Geoscape Benefit: All operatives in the aircraft recover {0} Stamina after mission.,,,,,,,,
+KEY_AFFINITY_GEO_DESC_EXPLORATION_OPTION_1,Text,,Geoscape Benefit: Exploration is {0} hour(s) faster.,,,,,,,,
+KEY_AFFINITY_GEO_DESC_EXPLORATION_OPTION_2,Text,,Geoscape Benefit : Chances of detecting Pandoran Colonies after an attack increased by {0}%,,,,,,,,
 KEY_AFFINITY_GEO_DESC_OCCULT_OPTION_1,Text,,Geoscape Benefit : Receive a {0}-hour warning before an attack on a Phoenix Base.,,,,,,,,
 KEY_AFFINITY_GEO_DESC_OCCULT_OPTION_2,Text,,Geoscape Benefit : {0}% less penalty and {0}% more buff from flying in Mist.,,,,,,,,
 KEY_AFFINITY_GEO_DESC_BIOTECH_OPTION_1,Text,,Geoscape Benefit : Operatives recover {0} HP after mission.,,,,,,,,
@@ -254,7 +254,7 @@ KEY_AFFINITY_PSYCHO_SOCIOLOGY_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one 
 
 - Haven Defense rewards +15% per Affinity Rank
 OR
-- Additional 15% chance per Affinity Rank for teammates to recover from a Delirium Perk after mission. 
+- All operatives in the aircraft recover 3 Stamina per Affinity Rank after mission.
 
 Tactical Benefits (choose one globally):
 
@@ -263,9 +263,9 @@ OR
 - Increase friendly Haven deployment by 50% per Affinity Rank.",,,,,,,,
 KEY_AFFINITY_EXPLORATION_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
 
-- Exploration is 1 hour faster and resources gained from exploration events increased by 10% per Affinity Rank.
+- Exploration is 1 hour faster per Affinity Rank.
 OR
-- All operatives in the aircraft recover 2 Stamina per Affinity Rank after mission.
+- Chances of detecting Pandoran Colonies after an attack increased by 15% per Affinity Rank
 
 Tactical Benefits (choose one globally):
 

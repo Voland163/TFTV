@@ -205,7 +205,7 @@ namespace TFTV.AgendaTracker
             var session = TrainingFacilityRework.GetRecruitSession(character);
             if (session == null) return TimeUnit.Zero;
 
-            TimeUnit endAt = TimeUnit.FromHours((session.StartDay + session.DurationDays) * 24f);
+            TimeUnit endAt = TimeUnit.FromHours(session.StartHour + session.DurationHours);
             TimeUnit remaining = endAt - level.Timing.Now;
             return remaining <= TimeUnit.Zero ? TimeUnit.Zero : remaining;
         }

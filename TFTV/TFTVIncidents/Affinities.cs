@@ -691,9 +691,9 @@ namespace TFTV.TFTVIncidents
 
 
             private static string BuildGeoscapeBenefitDescription(
-        LeaderSelection.AffinityApproach approach,
-        int rank,
-        int option)
+LeaderSelection.AffinityApproach approach,
+int rank,
+int option)
             {
                 int r = Math.Max(1, rank);
 
@@ -702,12 +702,12 @@ namespace TFTV.TFTVIncidents
                     case LeaderSelection.AffinityApproach.PsychoSociology:
                         return option == 1
                             ? LocalizeAndFormat(KeyPsychoGeoOpt1, 15 * r)
-                            : LocalizeAndFormat(KeyPsychoGeoOpt2, 15 * r);
+                            : LocalizeAndFormat(KeyPsychoGeoOpt2, 2 * r);    // 2 Stamina per rank
 
                     case LeaderSelection.AffinityApproach.Exploration:
                         return option == 1
-                            ? LocalizeAndFormat(KeyExplorationGeoOpt1, r, 10 * r)
-                            : LocalizeAndFormat(KeyExplorationGeoOpt2, 2 * r);
+                            ? LocalizeAndFormat(KeyExplorationGeoOpt1, r)    // r hours faster (single arg now)
+                            : LocalizeAndFormat(KeyExplorationGeoOpt2, 15 * r); // 15% colony detection per rank
 
                     case LeaderSelection.AffinityApproach.Occult:
                         return option == 1

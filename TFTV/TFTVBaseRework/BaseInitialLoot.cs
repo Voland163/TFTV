@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
@@ -9,8 +10,6 @@ using PhoenixPoint.Tactical.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static TFTV.TFTVBaseRework.BaseActivation;
 
 namespace TFTV.TFTVBaseRework
@@ -39,20 +38,22 @@ namespace TFTV.TFTVBaseRework
                         JustLootedManticore = __instance;
                         TFTVLogger.Always($"[GeoVehicle.TeleportToSite] JustLootedManticore set to {__instance.Name}");
                     }
-
                 }
                 catch (Exception ex)
                 {
                     TFTVLogger.Error(ex);
-
                 }
             }
         }
 
-
-        private const int VehicleBaseWeight = 3;
-        private const int VehicleFirstFoundBonusWeight = 4;
-        private const int NoVehicleWeight = 3;
+        // ── Chance formula constants ─────────────────────────────────────────
+        // Base chance when no vehicles of this type have been found yet and
+        // no bases have been explored yet (besides the first one, which is the
+        // current visit).  +10 pp per vehicle of this type still remaining,
+        // +10 pp per already-looted base (not counting the current one).
+        private const int BaseChancePercent = 20;
+        private const int BonusPerRemainingVehicle = 10;
+        private const int BonusPerExploredBase = 10;
 
         private const float VehicleMinHealthPercent = 0.35f;
         private const float VehicleMaxHealthPercent = 0.75f;
@@ -81,6 +82,8 @@ namespace TFTV.TFTVBaseRework
             internal List<ItemDef> Items { get; }
             internal bool HasItems => Items != null && Items.Count > 0;
         }
+
+        // ── Public surface ────────────────────────────────────────────────────
 
         internal static string GetOrCreateFirstVisitPreviewText(GeoSite site, GeoPhoenixFaction faction)
         {
@@ -141,6 +144,8 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
+        // ── Loot tag helpers ──────────────────────────────────────────────────
+
         private static void SetLastLootResult(GeoSite site, string result)
         {
             if (site == null)
@@ -162,157 +167,31 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
-        private static string BuildFirstVisitLootPreview(GeoSite site, GeoPhoenixFaction faction)
+        // ── Limit helpers ─────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Returns the per-type limit from new-game settings if the config has been
+        /// committed, otherwise falls back to 0 (no vehicles) so old/vanilla saves
+        /// are unaffected.
+        /// </summary>
+        private static int GetManticoreLimit()
         {
-            int difficultyOrder = site.GeoLevel.CurrentDifficultyLevel.Order;
-            TacCharacterDef scarab = DefCache.GetDef<TacCharacterDef>("PX_Scarab_TacCharacterDef");
-            VehicleItemDef manticore = DefCache.GetDef<VehicleItemDef>("PP_Manticore_VehicleItemDef");
-
-            List<string> vehicleCandidates = new List<string>();
-            if (manticore != null && CanGiveLimitedVehicle(faction, "PX_REWORK_MANTICORE_COUNT:", difficultyOrder))
-            {
-                vehicleCandidates.Add("Manticore");
-            }
-            if (scarab != null && CanGiveLimitedVehicle(faction, "PX_REWORK_SCARAB_COUNT:", difficultyOrder))
-            {
-                vehicleCandidates.Add("Scarab");
-            }
-
-            if (vehicleCandidates.Count > 0)
-            {
-                return string.Join(" / ", vehicleCandidates);
-            }
-
-            return "Random equipment";
+            return TFTVNewGameOptions.ConfigImplemented
+                ? TFTVNewGameOptions.InitialManticoreLimit
+                : 0;
         }
 
-        private static LootUiResult GiveInitialLoot(GeoSite site, GeoPhoenixFaction faction)
+        private static int GetScarabLimit()
+        {
+            return TFTVNewGameOptions.ConfigImplemented
+                ? TFTVNewGameOptions.InitialScarabLimit
+                : 0;
+        }
+
+        private static bool CanGiveLimitedVehicle(GeoPhoenixFaction faction, string tagPrefix, int limit)
         {
             try
             {
-                if (site.SiteTags.Contains(PhoenixBaseReworkState.LootedTag))
-                {
-                    return null;
-                }
-
-                int difficultyOrder = site.GeoLevel.CurrentDifficultyLevel.Order;
-
-                TacCharacterDef scarab = DefCache.GetDef<TacCharacterDef>("PX_Scarab_CharacterTemplateDef");
-                VehicleItemDef manticore = DefCache.GetDef<VehicleItemDef>("PP_Manticore_VehicleItemDef");
-                ItemDef scarabItemDef = DefCache.GetDef<ItemDef>("PX_Scarab_ItemDef");
-
-                List<WeightedLootOption> vehicleRollTable = new List<WeightedLootOption>();
-
-                if (manticore != null && CanGiveLimitedVehicle(faction, PhoenixBaseReworkState.ManticoreCountTagPrefix, difficultyOrder))
-                {
-                    int weight = GetVehicleLootWeight(faction, PhoenixBaseReworkState.ManticoreCountTagPrefix);
-                    vehicleRollTable.Add(new WeightedLootOption(weight, delegate
-                    {
-                        LootedManticoreBeingCreated = true;
-                        GeoVehicle geoVehicle =  faction.CreateVehicle(site, manticore.ComponentSetDef);
-                        JustLootedManticore = null;
-                        LootedManticoreBeingCreated = false;
-                        ApplyRandomHealthToVehicle(geoVehicle);
-                        IncrementLimitedVehicleCount(faction, PhoenixBaseReworkState.ManticoreCountTagPrefix);
-                        return new LootUiResult("Manticore", BuildVehicleLootItems(manticore));
-                    }));
-                }
-
-                if (scarab != null && CanGiveLimitedVehicle(faction, PhoenixBaseReworkState.ScarabCountTagPrefix, difficultyOrder))
-                {
-                    int weight = GetVehicleLootWeight(faction, PhoenixBaseReworkState.ScarabCountTagPrefix);
-                    vehicleRollTable.Add(new WeightedLootOption(weight, delegate
-                    {
-                        GeoVehicle vehicle = site.Vehicles
-                             .Where(v => v != null && v.Owner == faction)
-                             .OrderByDescending(v => Math.Max(0, v.MaxCharacterSpace - v.UsedCharacterSpace))
-                             .FirstOrDefault();
-
-                        GeoCharacter character = faction.GeoLevel.CreateCharacterFromTemplate(scarab, faction, null, null);
-                        ApplyRandomHealthToCharacter(character);
-                        faction.AddRecruit(character, vehicle);
-                        IncrementLimitedVehicleCount(faction, PhoenixBaseReworkState.ScarabCountTagPrefix);
-                        return new LootUiResult("Scarab", BuildVehicleLootItems(scarabItemDef));
-                    }));
-                }
-
-                if (vehicleRollTable.Count > 0)
-                {
-                    vehicleRollTable.Add(new WeightedLootOption(NoVehicleWeight, null));
-
-                    LootUiResult awarded = RollVehicleLoot(vehicleRollTable);
-                    if (awarded != null && !string.IsNullOrEmpty(awarded.Text))
-                    {
-                        site.SiteTags.Add(PhoenixBaseReworkState.LootedTag);
-                        SetLastLootResult(site, awarded.Text);
-                        return awarded;
-                    }
-                }
-
-                List<ItemDef> awardedItems = GiveStartingItems(site, faction, difficultyOrder, out string itemsAwarded);
-                if (!string.IsNullOrEmpty(itemsAwarded))
-                {
-                    site.SiteTags.Add(PhoenixBaseReworkState.LootedTag);
-                    SetLastLootResult(site, itemsAwarded);
-                }
-                return new LootUiResult(itemsAwarded, awardedItems);
-            }
-            catch (Exception ex)
-            {
-                TFTVLogger.Error(ex);
-                return null;
-            }
-        }
-
-        private static List<ItemDef> GiveStartingItems(GeoSite site, GeoPhoenixFaction faction, int difficultyOrder, out string itemsAwarded)
-        {
-            try
-            {
-                GameTagDef ammoTag = site.GeoLevel.SharedData.SharedGameTags.AmmoTag;
-                List<ItemDef> itemPool = (faction.Def.StartingManufacturableItems ?? Array.Empty<ItemDef>())
-                    .Where(i => i != null && 
-                    !i.Tags.Contains(ammoTag) && 
-                    !i.Tags.Contains(DefCache.GetDef<FactionTagDef>("Neutral_FactionTagDef")) &&
-                    (i.Tags.Contains(DefCache.GetDef<ClassTagDef>("Assault_ClassTagDef")) ||
-                    i.Tags.Contains(DefCache.GetDef<ClassTagDef>("Heavy_ClassTagDef")) 
-                    || i.Tags.Contains(DefCache.GetDef<ClassTagDef>("Sniper_ClassTagDef"))))
-                    .ToList();
-
-                if (itemPool.Count == 0)
-                {
-                    itemsAwarded = "nothing";
-                    return new List<ItemDef>();
-                }
-
-                int amount = Math.Min(itemPool.Count, Math.Max(1, 8 - difficultyOrder));
-                List<ItemDef> awardedItems = new List<ItemDef>();
-                List<string> foundItems = new List<string>();
-                for (int i = 0; i < amount; i++)
-                {
-                    int index = UnityEngine.Random.Range(0, itemPool.Count);
-                    ItemDef item = itemPool[index];
-                    itemPool.RemoveAt(index);
-                    faction.ItemStorage.AddItem(new GeoItem(item, 1, -1, null, -100));
-                    awardedItems.Add(item);
-                    foundItems.Add(item.GetDisplayName().Localize(null));
-                }
-
-                itemsAwarded = string.Join(", ", foundItems);
-                return awardedItems;
-            }
-            catch (Exception ex)
-            {
-                TFTVLogger.Error(ex);
-                itemsAwarded = string.Empty;
-                return new List<ItemDef>();
-            }
-        }
-
-        private static bool CanGiveLimitedVehicle(GeoPhoenixFaction faction, string tagPrefix, int difficultyOrder)
-        {
-            try
-            {
-                int limit = GetVehicleLootLimit(difficultyOrder);
                 return limit > 0 && GetLimitedVehicleCount(faction, tagPrefix) < limit;
             }
             catch (Exception ex)
@@ -320,23 +199,6 @@ namespace TFTV.TFTVBaseRework
                 TFTVLogger.Error(ex);
                 return false;
             }
-        }
-
-        private static int GetVehicleLootLimit(int difficultyOrder)
-        {
-            if (difficultyOrder == 1 || difficultyOrder == 2)
-            {
-                return 3;
-            }
-            if (difficultyOrder == 3)
-            {
-                return 2;
-            }
-            if (difficultyOrder == 4)
-            {
-                return 1;
-            }
-            return 0;
         }
 
         private static int GetLimitedVehicleCount(GeoPhoenixFaction faction, string tagPrefix)
@@ -395,6 +257,245 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
+        // ── Chance calculation ────────────────────────────────────────────────
+
+        /// <summary>
+        /// Returns the number of Phoenix bases that have already been looted
+        /// (have LootedTag), NOT counting <paramref name="currentSite"/> itself.
+        /// Used to scale up vehicle drop chances the further into the game you are.
+        /// </summary>
+        private static int GetAlreadyLootedBaseCount(GeoSite currentSite)
+        {
+            try
+            {
+                return currentSite.GeoLevel.Map.AllSites
+                    .Count(s => s != currentSite
+                        && s.Type == GeoSiteType.PhoenixBase
+                        && s.SiteTags.Contains(PhoenixBaseReworkState.LootedTag));
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Computes the chance (0–100, integer percentage points) that this vehicle
+        /// type will drop at the current base visit.
+        ///
+        ///   chance = BASE + (remaining * BONUS_PER_REMAINING) + (explored * BONUS_PER_EXPLORED)
+        ///
+        /// where <c>remaining = limit - alreadyAwarded</c>.
+        /// </summary>
+        private static int GetVehicleChancePercent(GeoPhoenixFaction faction, string tagPrefix, int limit, int exploredBases)
+        {
+            int awarded = GetLimitedVehicleCount(faction, tagPrefix);
+            int remaining = limit - awarded;
+
+            if (remaining <= 0)
+            {
+                return 0;
+            }
+
+            int chance = BaseChancePercent
+                + (remaining * BonusPerRemainingVehicle)
+                + (exploredBases * BonusPerExploredBase);
+
+            return Math.Min(100, Math.Max(0, chance));
+        }
+
+        // ── Preview text ──────────────────────────────────────────────────────
+
+        private static string BuildFirstVisitLootPreview(GeoSite site, GeoPhoenixFaction faction)
+        {
+            int manticoreLimit = GetManticoreLimit();
+            int scarabLimit = GetScarabLimit();
+            int exploredBases = GetAlreadyLootedBaseCount(site);
+
+            List<string> vehicleCandidates = new List<string>();
+
+            if (CanGiveLimitedVehicle(faction, PhoenixBaseReworkState.ManticoreCountTagPrefix, manticoreLimit))
+            {
+                int chance = GetVehicleChancePercent(faction, PhoenixBaseReworkState.ManticoreCountTagPrefix, manticoreLimit, exploredBases);
+                vehicleCandidates.Add($"Manticore ({chance}%)");
+            }
+
+            if (CanGiveLimitedVehicle(faction, PhoenixBaseReworkState.ScarabCountTagPrefix, scarabLimit))
+            {
+                int chance = GetVehicleChancePercent(faction, PhoenixBaseReworkState.ScarabCountTagPrefix, scarabLimit, exploredBases);
+                vehicleCandidates.Add($"Scarab ({chance}%)");
+            }
+
+            if (vehicleCandidates.Count > 0)
+            {
+                return string.Join(" / ", vehicleCandidates);
+            }
+
+            return "Random equipment";
+        }
+
+        // ── Core loot roll ────────────────────────────────────────────────────
+
+        private static LootUiResult GiveInitialLoot(GeoSite site, GeoPhoenixFaction faction)
+        {
+            try
+            {
+                if (site.SiteTags.Contains(PhoenixBaseReworkState.LootedTag))
+                {
+                    return null;
+                }
+
+                int difficultyOrder = site.GeoLevel.CurrentDifficultyLevel.Order;
+                int manticoreLimit = GetManticoreLimit();
+                int scarabLimit = GetScarabLimit();
+                int exploredBases = GetAlreadyLootedBaseCount(site);
+
+                TacCharacterDef scarabTemplate = DefCache.GetDef<TacCharacterDef>("PX_Scarab_CharacterTemplateDef");
+                VehicleItemDef manticoreDef = DefCache.GetDef<VehicleItemDef>("PP_Manticore_VehicleItemDef");
+                ItemDef scarabItemDef = DefCache.GetDef<ItemDef>("PX_Scarab_ItemDef");
+
+                // Build a roll table where each vehicle type occupies its computed
+                // percentage of the 0-100 space, and the remainder is "no vehicle".
+                List<WeightedLootOption> vehicleRollTable = new List<WeightedLootOption>();
+
+                int manticoreChance = 0;
+                int scarabChance = 0;
+
+                if (manticoreDef != null && CanGiveLimitedVehicle(faction, PhoenixBaseReworkState.ManticoreCountTagPrefix, manticoreLimit))
+                {
+                    manticoreChance = GetVehicleChancePercent(faction, PhoenixBaseReworkState.ManticoreCountTagPrefix, manticoreLimit, exploredBases);
+                    vehicleRollTable.Add(new WeightedLootOption(manticoreChance, delegate
+                    {
+                        LootedManticoreBeingCreated = true;
+                        GeoVehicle geoVehicle = faction.CreateVehicle(site, manticoreDef.ComponentSetDef);
+                        JustLootedManticore = null;
+                        LootedManticoreBeingCreated = false;
+                        ApplyRandomHealthToVehicle(geoVehicle);
+                        IncrementLimitedVehicleCount(faction, PhoenixBaseReworkState.ManticoreCountTagPrefix);
+                        return new LootUiResult("Manticore", BuildVehicleLootItems(manticoreDef));
+                    }));
+                }
+
+                if (scarabTemplate != null && CanGiveLimitedVehicle(faction, PhoenixBaseReworkState.ScarabCountTagPrefix, scarabLimit))
+                {
+                    scarabChance = GetVehicleChancePercent(faction, PhoenixBaseReworkState.ScarabCountTagPrefix, scarabLimit, exploredBases);
+                    vehicleRollTable.Add(new WeightedLootOption(scarabChance, delegate
+                    {
+                        GeoVehicle vehicle = site.Vehicles
+                            .Where(v => v != null && v.Owner == faction)
+                            .OrderByDescending(v => Math.Max(0, v.MaxCharacterSpace - v.UsedCharacterSpace))
+                            .FirstOrDefault();
+
+                        GeoCharacter character = faction.GeoLevel.CreateCharacterFromTemplate(scarabTemplate, faction, null, null);
+                        ApplyRandomHealthToCharacter(character);
+                        faction.AddRecruit(character, vehicle);
+                        IncrementLimitedVehicleCount(faction, PhoenixBaseReworkState.ScarabCountTagPrefix);
+                        return new LootUiResult("Scarab", BuildVehicleLootItems(scarabItemDef));
+                    }));
+                }
+
+                if (vehicleRollTable.Count > 0)
+                {
+                    // The "no vehicle" bucket fills whatever percentage is left after
+                    // clamping individual chances so they never exceed 100 combined.
+                    int vehicleTotal = Math.Min(100, manticoreChance + scarabChance);
+                    int noVehicleWeight = Math.Max(0, 100 - vehicleTotal);
+                    vehicleRollTable.Add(new WeightedLootOption(noVehicleWeight, null));
+
+                    TFTVLogger.Always(
+                        $"[BaseInitialLoot] site={site.SiteId} exploredBases={exploredBases} " +
+                        $"manticoreChance={manticoreChance}% scarabChance={scarabChance}% noVehicle={noVehicleWeight}%");
+
+                    LootUiResult awarded = RollVehicleLoot(vehicleRollTable);
+                    if (awarded != null && !string.IsNullOrEmpty(awarded.Text))
+                    {
+                        site.SiteTags.Add(PhoenixBaseReworkState.LootedTag);
+                        SetLastLootResult(site, awarded.Text);
+                        return awarded;
+                    }
+                }
+
+                // Vehicle roll gave nothing (or no vehicles are available) — fall back
+                // to random starting equipment.
+                List<ItemDef> awardedItems = GiveStartingItems(site, faction, difficultyOrder, out string itemsAwarded);
+                if (!string.IsNullOrEmpty(itemsAwarded))
+                {
+                    site.SiteTags.Add(PhoenixBaseReworkState.LootedTag);
+                    SetLastLootResult(site, itemsAwarded);
+                }
+                return new LootUiResult(itemsAwarded, awardedItems);
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+                return null;
+            }
+        }
+
+        // ── Starting items fallback ───────────────────────────────────────────
+
+        private static List<ItemDef> GiveStartingItems(GeoSite site, GeoPhoenixFaction faction, int difficultyOrder, out string itemsAwarded)
+        {
+            try
+            {
+                GameTagDef ammoTag = site.GeoLevel.SharedData.SharedGameTags.AmmoTag;
+                List<ItemDef> itemPool = (faction.Def.StartingManufacturableItems ?? Array.Empty<ItemDef>())
+                    .Where(i => i != null &&
+                        !i.Tags.Contains(ammoTag) &&
+                        !i.Tags.Contains(DefCache.GetDef<FactionTagDef>("Neutral_FactionTagDef")) &&
+                        (i.Tags.Contains(DefCache.GetDef<ClassTagDef>("Assault_ClassTagDef")) ||
+                         i.Tags.Contains(DefCache.GetDef<ClassTagDef>("Heavy_ClassTagDef")) ||
+                         i.Tags.Contains(DefCache.GetDef<ClassTagDef>("Sniper_ClassTagDef"))))
+                    .ToList();
+
+                if (itemPool.Count == 0)
+                {
+                    itemsAwarded = "nothing";
+                    return new List<ItemDef>();
+                }
+
+                int amount;
+                if (TFTVNewGameOptions.ConfigImplemented)
+                {
+                    amount = Math.Min(itemPool.Count, TFTVNewGameOptions.InitialLootLevel);
+                }
+                else
+                {
+                    amount = Math.Min(itemPool.Count, Math.Max(0, 8 - difficultyOrder));
+                }
+
+                if (amount <= 0)
+                {
+                    itemsAwarded = "nothing";
+                    return new List<ItemDef>();
+                }
+
+                List<ItemDef> awardedItems = new List<ItemDef>();
+                List<string> foundItems = new List<string>();
+                for (int i = 0; i < amount; i++)
+                {
+                    int index = UnityEngine.Random.Range(0, itemPool.Count);
+                    ItemDef item = itemPool[index];
+                    itemPool.RemoveAt(index);
+                    faction.ItemStorage.AddItem(new GeoItem(item, 1, -1, null, -100));
+                    awardedItems.Add(item);
+                    foundItems.Add(item.GetDisplayName().Localize(null));
+                }
+
+                itemsAwarded = string.Join(", ", foundItems);
+                return awardedItems;
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+                itemsAwarded = string.Empty;
+                return new List<ItemDef>();
+            }
+        }
+
+        // ── Roll helpers ──────────────────────────────────────────────────────
+
         private static List<ItemDef> BuildVehicleLootItems(ItemDef itemDef)
         {
             if (itemDef == null)
@@ -403,17 +504,6 @@ namespace TFTV.TFTVBaseRework
             }
 
             return new List<ItemDef> { itemDef };
-        }
-
-        private static int GetVehicleLootWeight(GeoPhoenixFaction faction, string tagPrefix)
-        {
-            int count = GetLimitedVehicleCount(faction, tagPrefix);
-            int weight = VehicleBaseWeight;
-            if (count == 0)
-            {
-                weight += VehicleFirstFoundBonusWeight;
-            }
-            return Math.Max(0, weight);
         }
 
         private static LootUiResult RollVehicleLoot(List<WeightedLootOption> options)
@@ -442,6 +532,8 @@ namespace TFTV.TFTVBaseRework
 
             return null;
         }
+
+        // ── Health randomisation ──────────────────────────────────────────────
 
         private static float RollRandomVehicleHealthPercent()
         {

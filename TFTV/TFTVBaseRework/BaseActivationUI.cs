@@ -127,22 +127,42 @@ namespace TFTV.TFTVBaseRework
 
                     GeoPhoenixFaction faction = site.GeoLevel.PhoenixFaction;
 
-                    int ambushChance = PhoenixBaseExplorationConfig.InfestationChancePercent;
-
-                    if (site.IsInMist) 
-                    {
-                        ambushChance *= 2;  
-                    }
-
-
-                    __instance.InfestationDesc.text = "Ambush chance during base exploration";
-                    __instance.InfestationThreat.text = $"{ambushChance}%";
+                  
 
                     bool hasAircraftWithSoldiers = PhoenixBaseVisitFlow.HasPhoenixAircraftWithSoldiersAtSite(site, faction);
                     bool isOutpost = site.SiteTags.Contains(PhoenixBaseReworkState.OutpostTag);
                     bool isExplored = site.GetVisited(faction);
 
                     bool isLooted = site.SiteTags.Contains(PhoenixBaseReworkState.LootedTag);
+
+                    if (isExplored)
+                    {
+                        __instance.InfestationDesc.gameObject.SetActive(false);
+                        __instance.InfestationThreat.gameObject.SetActive(false);
+
+                        ShowInfestationVisuals(__instance.InfestationDesc?.transform, false);
+
+
+                    }
+                    else
+                    {
+                        __instance.InfestationDesc.gameObject.SetActive(true);
+                        __instance.InfestationThreat.gameObject.SetActive(true);
+
+                        ShowInfestationVisuals(__instance.InfestationDesc?.transform, true);
+
+                        int ambushChance = PhoenixBaseExplorationConfig.InfestationChancePercent;
+
+                        if (site.IsInMist)
+                        {
+                            ambushChance *= 2;
+                        }
+
+                        __instance.InfestationDesc.text = "Ambush chance during base exploration";
+                        __instance.InfestationThreat.text = $"{ambushChance}%";
+                    }
+
+
 
                     // Only award loot if the base has been explored by the Explore Site action.
                     BaseInitialLoot.LootUiResult lootAwarded = isExplored
@@ -267,6 +287,32 @@ namespace TFTV.TFTVBaseRework
                 catch (Exception ex)
                 {
                     TFTVLogger.Error(ex);
+                }
+            }
+
+
+            static void ShowInfestationVisuals(Transform t, bool show = true)
+            {
+                if (t == null) return;
+                Transform p = t.parent;
+                if (p == null) return;
+
+              //  RectTransform infestationTransform = p.GetComponentsInChildren<RectTransform>().FirstOrDefault(r => r.name.Contains("Infest"));
+              //  infestationTransform?.gameObject.SetActive(show);
+
+                // Only touch children of this row, not the parent row itself.
+                 for (int i = 0; i < p.childCount; i++)
+                {
+                    Transform c = p.GetChild(i);
+                    string n = c.name.ToLowerInvariant();
+
+                    //TFTVLogger.Always($"{n} {c.GetType()?.Name}");
+
+                    // adjust keywords once you log actual object names
+                    if (n.Contains("infest")) //|| n.Contains("pandoran") || n.Contains("threat") || n.Contains("icon"))
+                    {
+                        c.gameObject.SetActive(show);
+                    }
                 }
             }
 

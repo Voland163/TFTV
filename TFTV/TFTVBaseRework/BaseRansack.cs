@@ -66,10 +66,14 @@ namespace TFTV.TFTVBaseRework
 
                 int difficulty = site.GeoLevel.CurrentDifficultyLevel.Order;
 
-                mats = Mathf.RoundToInt(matsTotal) + (100 * (6 - difficulty));
-                tech = Mathf.RoundToInt(techTotal) + (20 * (6 - difficulty));
+                float multiplier = TFTVNewGameOptions.ConfigImplemented
+                    ? TFTVNewGameOptions.RansackResourcesMultiplier
+                    : 1f;
 
-               // TFTVLogger.Always($"[BaseActivation] TryGetRansackDemolitionValue: Total refund - Materials: {mats}, Tech: {tech}, from {matsTotal} and {techTotal} adjusted by difficulty {difficulty}");
+                mats = Mathf.RoundToInt(Mathf.RoundToInt(matsTotal) * multiplier);
+                tech = Mathf.RoundToInt(Mathf.RoundToInt(techTotal) * multiplier);
+
+                TFTVLogger.Always($"[BaseRansack] Ransack value: mats={mats} tech={tech} (multiplier={multiplier}, difficulty={difficulty})");
 
             }
             catch (Exception ex)

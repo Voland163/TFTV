@@ -383,11 +383,14 @@ namespace TFTV.TFTVIncidents
 
 
             public static void ApplyExplorationBenefitOption1IncreasedReward(GeoscapeEventContext context, string eventID, ref GeoFactionReward reward)
-
             {
-                try 
-                
+                try
                 {
+                    // COMMENTED OUT — still balancing the resource reward bonus for Exploration option 1.
+                    // Option 1 is now: Exploration is 1 hour faster (time reduction, handled in GeoSite_get_ExplorationTime and UI patches).
+                    // The resource reward increase below is kept for reference during balancing.
+
+                    /*
                     if (!BaseReworkCheck.BaseReworkEnabled) return;
 
                     if (!eventID.StartsWith("EX"))
@@ -405,7 +408,6 @@ namespace TFTV.TFTVIncidents
                     {
                         return;
                     }
-
 
                     GeoVehicle vehicle = context.Vehicle;
 
@@ -433,8 +435,6 @@ namespace TFTV.TFTVIncidents
                         LeaderSelection.AffinityApproach.Exploration,
                         requiredOption: 1);
 
-
-
                     ResourcePack increasedResouces = new ResourcePack() { };
 
                     foreach (ResourceUnit resource in reward.Resources)
@@ -451,7 +451,7 @@ namespace TFTV.TFTVIncidents
                         }
                     }
                     reward.Resources = increasedResouces;
-               
+                    */
                 }
                 catch (Exception e)
                 {
@@ -459,8 +459,57 @@ namespace TFTV.TFTVIncidents
                 }
             }
 
-          
+           
         }
+
+        /// <summary>
+        /// Returns the best-ranked operative (by name) with Exploration option 2 affinity,
+        /// along with their rank. Returns null if none.
+        /// </summary>
+        internal static bool TryGetExplorationColonyDetectionOperative(
+            GeoLevelController level,
+            out string operativeName,
+            out int rank)
+        {
+            operativeName = null;
+            rank = 0;
+            try
+            {
+                if (level?.PhoenixFaction?.Soldiers == null)
+                    return false;
+
+                int chosenOption = Affinities.AffinityBenefitsChoices.GetGeoscapeBenefitChoice(
+                    level, LeaderSelection.AffinityApproach.Exploration);
+
+                if (chosenOption != 2)
+                    return false;
+
+                GeoCharacter bestChar = null;
+                int bestRank = 0;
+                foreach (GeoCharacter soldier in level.PhoenixFaction.Soldiers)
+                {
+                    int r = GetAffinityRankForApproach(soldier, LeaderSelection.AffinityApproach.Exploration);
+                    if (r > bestRank)
+                    {
+                        bestRank = r;
+                        bestChar = soldier;
+                    }
+                }
+
+                if (bestChar == null || bestRank <= 0)
+                    return false;
+
+                operativeName = bestChar.DisplayName;
+                rank = bestRank;
+                return true;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return false;
+            }
+        }
+
         internal static int GetOccultAttackWarningLeadHours(GeoLevelController level)
         {
             try
@@ -550,8 +599,6 @@ namespace TFTV.TFTVIncidents
         {
             try
             {
-
-
                 GeoLevelController level = mission.Level;
 
                 TFTVLogger.Always($"{DiagTag} Checking for post-mission recovery benefits... " +
@@ -563,6 +610,22 @@ namespace TFTV.TFTVIncidents
                 }
 
                 List<GeoCharacter> squadSoldiers = squad.Soldiers?.ToList() ?? new List<GeoCharacter>();
+
+                // PsychoSociology option 1: handled via ResourceMissionOutcomeDef_ApplyOutcome_AffinityHavenDefenseReward_Patch
+
+                // PsychoSociology option 2: all operatives in the aircraft recover 2 Stamina after a mission
+                int psychoSociologyRank = GetActiveGeoscapeRank(level, squadSoldiers, LeaderSelection.AffinityApproach.PsychoSociology, requiredOption: 2);
+
+                TFTVLogger.Always($"{DiagTag} PsychoSociology post-mission stamina recovery rank: {psychoSociologyRank}.");
+
+                if (psychoSociologyRank > 0 && squad.Soldiers != null)
+                {
+                    float staminaAmount = 2f * psychoSociologyRank;
+                    foreach (GeoCharacter soldier in squad.Soldiers)
+                    {
+                        soldier.Fatigue?.Stamina?.AddRestrictedToMax(staminaAmount);
+                    }
+                }
 
                 int biotechRank = GetActiveGeoscapeRank(level, squadSoldiers, LeaderSelection.AffinityApproach.Biotech, requiredOption: 1);
 
@@ -578,18 +641,7 @@ namespace TFTV.TFTVIncidents
                     }
                 }
 
-                int explorationRank = GetActiveGeoscapeRank(level, squadSoldiers, LeaderSelection.AffinityApproach.Exploration, requiredOption: 2);
-
-                TFTVLogger.Always($"{DiagTag} Exploration post-mission recovery rank: {explorationRank}.");
-
-                if (explorationRank > 0 && squad.Soldiers != null)
-                {
-                    float staminaAmount = 2f * explorationRank;
-                    foreach (GeoCharacter soldier in squad.Soldiers)
-                    {
-                        soldier.Fatigue?.Stamina?.AddRestrictedToMax(staminaAmount);
-                    }
-                }
+                // Exploration option 2 (post-mission stamina) removed; now: +15% Pandoran Colony detection after attack (see AircraftReworkGeoscape.Scanning.cs)
 
                 int machineryRank = GetActiveGeoscapeRank(level, squadSoldiers, LeaderSelection.AffinityApproach.Machinery, requiredOption: 1);
 
@@ -845,9 +897,9 @@ namespace TFTV.TFTVIncidents
         }
 
         private static bool TryIncreaseLeaderAttitudeToPhoenix(
-            GeoHaven haven,
-            PhoenixPoint.Geoscape.Levels.Factions.GeoPhoenixFaction phoenixFaction,
-            int delta)
+    GeoHaven haven,
+    PhoenixPoint.Geoscape.Levels.Factions.GeoPhoenixFaction phoenixFaction,
+    int delta)
         {
             try
             {
@@ -858,7 +910,7 @@ namespace TFTV.TFTVIncidents
 
                 object diplomacy = haven.Leader.Diplomacy;
                 int currentValue = haven.Leader.Diplomacy.GetDiplomacy(phoenixFaction);
-                int targetValue = Mathf.Clamp(currentValue + delta, 0, 100);
+                int targetValue = Math.Min(currentValue + delta, 100);
 
                 if (TryInvokeDiplomacyMethod(diplomacy, "SetDiplomacy", phoenixFaction, targetValue))
                 {
@@ -950,9 +1002,14 @@ namespace TFTV.TFTVIncidents
         }
 
         internal static int GetPsychoSociologyDeliriumRecoveryBonusPercent(
-            GeoLevelController level,
-            List<GeoCharacter> operativesInvolved)
+    GeoLevelController level,
+    List<GeoCharacter> operativesInvolved)
         {
+            // PsychoSociology option 2 is now: all operatives recover 2 Stamina after a mission (handled in ApplyPostMissionRecovery).
+            // Delirium recovery bonus has been removed. Returning 0 to neutralise the call in TFTVDelirium.RemoveDeliriumPerks.
+            return 0;
+
+            /*
             try
             {
                 int rank = GetActiveGeoscapeRank(
@@ -968,6 +1025,7 @@ namespace TFTV.TFTVIncidents
                 TFTVLogger.Error(e);
                 return 0;
             }
+            */
         }
     }
 }

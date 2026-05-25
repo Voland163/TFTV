@@ -1,10 +1,14 @@
-﻿using HarmonyLib;
+﻿using Base.Core;
+using HarmonyLib;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Sites;
+using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using TFTV.TFTVBaseRework;
 
 internal class LivingQuarters
@@ -21,6 +25,15 @@ internal class LivingQuarters
         private static readonly AccessTools.FieldRef<PhoenixBaseStats, int> HealSoldiersStaminaField =
             AccessTools.FieldRefAccess<PhoenixBaseStats, int>("<HealSoldiersStamina>k__BackingField");
 
+        // Tracks last known SoldierCapacity per faction to detect drops.
+        private static readonly ConditionalWeakTable<GeoPhoenixFaction, CapacityTracker> _capacityTrackers =
+            new ConditionalWeakTable<GeoPhoenixFaction, CapacityTracker>();
+
+        private sealed class CapacityTracker
+        {
+            public int LastCapacity = -1;
+        }
+
         [HarmonyPostfix]
         [HarmonyPatch(typeof(PhoenixBaseStats), "Update")]
         private static void PhoenixBaseStats_Update_Postfix(PhoenixBaseStats __instance)
@@ -36,6 +49,27 @@ internal class LivingQuarters
                 return;
             }
 
+            // ── Living capacity change detection ─────────────────────────────
+            GeoPhoenixFaction faction = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction;
+            if (faction != null)
+            {
+                CapacityTracker tracker = _capacityTrackers.GetOrCreateValue(faction);
+                int currentCapacity = faction.SoldierCapacity;
+
+                if (tracker.LastCapacity != currentCapacity)
+                {
+                    bool capacityDropped = tracker.LastCapacity > 0 && currentCapacity < tracker.LastCapacity;
+                    tracker.LastCapacity = currentCapacity;
+
+                    if (capacityDropped)
+                    {
+                        PersonnelData.EnforceLivingCapacity(faction);
+                        Workers.RefreshInfoBar(faction);
+                    }
+                }
+            }
+
+            // ── Heal / stamina rework ────────────────────────────────────────
             List<HealFacilityComponent> healComponents = layout
                 .QueryFacilitiesWithComponent<HealFacilityComponent>(onlyWorking: true)
                 .Where(component => component.HealSoldier)

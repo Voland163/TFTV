@@ -1,5 +1,6 @@
 ﻿using Base.Core;
 using Base.Serialization.General;
+using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.UI;
@@ -33,6 +34,7 @@ namespace TFTV.TFTVBaseRework
     {
         private static void Postfix(UIModuleGeoRosterTabs __instance)
         {
+
             if (!BaseReworkEnabled)
             {
                 return;
@@ -916,7 +918,6 @@ namespace TFTV.TFTVBaseRework
             switch (targetColumn)
             {
                 case PersonnelAssignment.Unassigned:
-                    // Cannot move training personnel back to Unassigned
                     if (currentAssignment == PersonnelAssignment.Training)
                     {
                         TFTVLogger.Always($"{LogPrefix} Cannot move {person.Character?.DisplayName} from Training back to Unassigned.");
@@ -931,6 +932,13 @@ namespace TFTV.TFTVBaseRework
                         TFTVLogger.Always($"{LogPrefix} {person.Character?.DisplayName} cannot be assigned to Research (Just a Grunt).");
                         return;
                     }
+                    if (currentAssignment == PersonnelAssignment.Unassigned && PersonnelData.IsLivingCapacityFull(phoenix))
+                    {
+                        GameUtl.GetMessageBox().ShowSimplePrompt(
+                            "Living quarters are full.\nBuild or repair a Living Quarters facility to assign more personnel to Research.",
+                            MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                        return;
+                    }
                     AssignWorker(person, phoenix, FacilitySlotType.Research);
                     break;
 
@@ -940,16 +948,24 @@ namespace TFTV.TFTVBaseRework
                         TFTVLogger.Always($"{LogPrefix} {person.Character?.DisplayName} cannot be assigned to Manufacturing (Just a Grunt).");
                         return;
                     }
+                    if (currentAssignment == PersonnelAssignment.Unassigned && PersonnelData.IsLivingCapacityFull(phoenix))
+                    {
+                        GameUtl.GetMessageBox().ShowSimplePrompt(
+                            "Living quarters are full.\nBuild or repair a Living Quarters facility to assign more personnel to Manufacturing.",
+                            MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                        return;
+                    }
                     AssignWorker(person, phoenix, FacilitySlotType.Manufacturing);
                     break;
 
                 case PersonnelAssignment.Training:
-                    // Deploy/Train column: prompt with deploy-now vs train-first
-                   /* if (PersonnelRestrictions.IsDismissedOperative(person.Character))
+                    if (currentAssignment == PersonnelAssignment.Unassigned && PersonnelData.IsLivingCapacityFull(phoenix))
                     {
-                        ShowMessage($"{person.Character?.DisplayName} is a dismissed operative and cannot use the civilian training path.\nUse Deploy/Redeploy instead.");
+                        GameUtl.GetMessageBox().ShowSimplePrompt(
+                            "Living quarters are full.\nBuild or repair a Living Quarters facility to assign more personnel to Training.",
+                            MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
                         return;
-                    }*/
+                    }
                     ShowDeployOrTrainSelection(level, person, phoenix, () => RefreshPanel());
                     return; // Don't refresh yet — modal is open
             }
@@ -1053,13 +1069,13 @@ namespace TFTV.TFTVBaseRework
                     var session = TrainingFacilityRework.GetRecruitSession(person.Character);
                     if (session == null) return "Training (queued)";
                     bool complete = TrainingFacilityRework.IsRecruitTrainingComplete(person.Character, level);
-                    int remaining = TrainingFacilityRework.GetRecruitRemainingDays(person.Character, level);
+                    float remainingHours = TrainingFacilityRework.GetRecruitRemainingHours(person.Character, level);
                     string specName = person.TrainingSpec?.ViewElementDef.DisplayName1.Localize() ?? person.TrainingSpec?.name ?? "Class";
                     if (complete)
                     {
                         return $"Complete ({specName})";
                     }
-                    return $"{specName} (Lv {session.VirtualLevelAchieved}/{session.TargetLevel}, {remaining}d)";
+                    return $"{specName} (Lv {session.VirtualLevelAchieved}/{session.TargetLevel}, {FormatDuration(remainingHours)})";
                 default:
                     return person.Assignment.ToString();
             }
@@ -1276,12 +1292,12 @@ namespace TFTV.TFTVBaseRework
             if (usedSlots < providedSlots)
             {
                 int maxLevel = TrainingFacilityRework.GetMaxTargetLevel(phoenix);
-                int minDuration = TrainingFacilityRework.GetEffectiveDurationDays(phoenix, 2);
-                int maxDuration = TrainingFacilityRework.GetEffectiveDurationDays(phoenix, maxLevel);
+                float minDuration = TrainingFacilityRework.GetEffectiveDurationHours(phoenix, 2);
+                float maxDuration = TrainingFacilityRework.GetEffectiveDurationHours(phoenix, maxLevel);
                 int freeSlots = providedSlots - usedSlots;
                 string durationLabel = minDuration == maxDuration
-                    ? $"{minDuration}d"
-                    : $"{minDuration}-{maxDuration}d";
+     ? FormatDuration(minDuration)
+     : $"{FormatDuration(minDuration)}–{FormatDuration(maxDuration)}";
                 AddModalOptionButton(content, $"Train First ({durationLabel}, {freeSlots} slot{(freeSlots != 1 ? "s" : "")} free)", () =>
                 {
                     if (isDismissed)
@@ -1532,11 +1548,11 @@ namespace TFTV.TFTVBaseRework
 
             for (int targetLevel = minTargetLevel; targetLevel <= maxLevel; targetLevel++)
             {
-                int levelsGained = targetLevel - 1;
+                int levelsGained = targetLevel - currentCharLevel;
                 int spCost = TrainingFacilityRework.GetTrainingSpCost(targetLevel);
-                int duration = TrainingFacilityRework.GetEffectiveDurationDays(faction, targetLevel);
+                float duration = TrainingFacilityRework.GetEffectiveDurationHours(faction, targetLevel, currentCharLevel);
                 string statGains = TrainingFacilityRework.GetStatGainDescription(levelsGained);
-                string label = $"Level {targetLevel} — {spCost} SP — {duration}d\n{statGains}";
+                string label = $"Level {targetLevel} — {spCost} SP — {FormatDuration(duration)}\n{statGains}";
 
                 bool canAfford = faction.Skillpoints >= spCost;
                 int capturedLevel = targetLevel;
@@ -1670,6 +1686,15 @@ namespace TFTV.TFTVBaseRework
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        private static string FormatDuration(float hours)
+        {
+            int d = (int)(hours / 24f);
+            int h = (int)(hours % 24f);
+            if (d > 0 && h > 0) return $"{d}d {h}h";
+            if (d > 0) return $"{d}d";
+            return $"{h}h";
         }
 
         #endregion

@@ -5,6 +5,7 @@ using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Entities.Sites;
+using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers;
@@ -28,6 +29,7 @@ namespace TFTV.TFTVBaseRework
 
         internal static void LoadLocalizedStrings()
         {
+            
             TitleOutpostActivated = TFTVCommonMethods.ConvertKeyToString("KEY_OUTPOST_ACTIVATED_TITLE");
             DescriptionOutpostActivated = TFTVCommonMethods.ConvertKeyToString("KEY_OUTPOST_ACTIVATED_DESCRIPTION");
         }
@@ -197,6 +199,22 @@ namespace TFTV.TFTVBaseRework
 
                 BaseActivationModalPatchState.LastActivatedBase = null;
             }
+
+            // Change the background image for outpost activation.
+            foreach (var img in modalObj.GetComponentsInChildren<UnityEngine.UI.Image>(true))
+            {
+                if (img.name == "Background")
+                {
+                    var sprite = Helper.CreateSpriteFromImageFile("Background_Outpost2.jpg");
+                    if (sprite != null)
+                    {
+                        img.sprite = sprite;
+                        img.preserveAspect = true;
+                    }
+                    break;
+                }
+            }
+
         }
     }
 
@@ -204,6 +222,66 @@ namespace TFTV.TFTVBaseRework
     internal class BaseOutpost
     {
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
+        [HarmonyPatch(typeof(GeoPhoenixFaction), "GetTotalAvailableStorage")]
+        internal static class GeoPhoenixFaction_GetTotalAvailableStorage_Patch
+        {
+            private static void Postfix(GeoPhoenixFaction __instance, ref int __result)
+            {
+                if (!BaseReworkCheck.BaseReworkEnabled) return;
+
+                foreach (GeoPhoenixBase b in __instance.Bases)
+                {
+                    if (b?.Site == null) continue;
+                    if (!b.Site.SiteTags.Contains(PhoenixBaseReworkState.OutpostTag)) continue;
+
+                    __result -= b.Stats.ItemCapacity;
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(GeoPhoenixFaction), "UpdateStats")]
+        internal static class GeoPhoenixFaction_UpdateStats_Patch
+        {
+            private static readonly AccessTools.FieldRef<GeoPhoenixFaction, int> SoldierCapacityField =
+                AccessTools.FieldRefAccess<GeoPhoenixFaction, int>("<SoldierCapacity>k__BackingField");
+
+            private static readonly AccessTools.FieldRef<GeoPhoenixFaction, int> GroundVehicleCapacityField =
+                AccessTools.FieldRefAccess<GeoPhoenixFaction, int>("<GroundVehicleCapacity>k__BackingField");
+
+            private static readonly AccessTools.FieldRef<GeoPhoenixFaction, int> AircraftVehicleCapacityField =
+                AccessTools.FieldRefAccess<GeoPhoenixFaction, int>("<AircraftVehicleCapacity>k__BackingField");
+
+           
+
+
+            private static void Postfix(GeoPhoenixFaction __instance)
+            {
+                if (!BaseReworkCheck.BaseReworkEnabled) return;
+
+                // Re-sum the three capacity values excluding outpost bases,
+                // overwriting what vanilla just computed from all bases.
+                int soldiers = 0;
+                int groundVehicles = 0;
+                int aircraft = 0;
+
+                foreach (GeoPhoenixBase b in __instance.Bases)
+                {
+                    if (b?.Site == null) continue;
+                    if (b.Site.SiteTags.Contains(PhoenixBaseReworkState.OutpostTag)) continue;
+
+                    soldiers += b.Stats.SoldierCapacity;
+                    groundVehicles += b.Stats.GroundVehicleCapacity;
+                    aircraft += b.Stats.AircraftCapacity;
+                }
+
+                SoldierCapacityField(__instance) = soldiers;
+                GroundVehicleCapacityField(__instance) = groundVehicles;
+                AircraftVehicleCapacityField(__instance) = aircraft;
+            }
+        }
+
 
         [HarmonyPatch(typeof(GeoPhoenixBase), "UpdateStats")]
         internal static class GeoPhoenixBase_UpdateStats_patch

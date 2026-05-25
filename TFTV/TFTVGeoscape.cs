@@ -58,6 +58,13 @@ namespace TFTV
         public bool ImpossibleWeaponsAdjustmentsSettingInstance;
         public bool NoSecondChances;
         public int EtermesVulnerabilityProtection = TFTVNewGameOptions.EtermesResistanceAndVulnerability;
+
+        public float RansackResourcesMultiplierInstance;
+        public int InitialLootLevelInstance;
+        public int PersonnelInfluxLevelInstance;
+        public int InitialManticoreLimitInstance;
+        public int InitialScarabLimitInstance;
+
         public bool NewTrainingFacilities;
         public bool BaseRework;
 
@@ -244,6 +251,11 @@ namespace TFTV
                 ImpossibleWeaponsAdjustmentsSettingInstance = TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting,
                 NoSecondChances = TFTVNewGameOptions.NoSecondChances,
                 EtermesVulnerabilityProtection = TFTVNewGameOptions.EtermesResistanceAndVulnerability,
+                RansackResourcesMultiplierInstance = TFTVNewGameOptions.RansackResourcesMultiplier,
+                InitialLootLevelInstance = TFTVNewGameOptions.InitialLootLevel,
+                PersonnelInfluxLevelInstance = TFTVNewGameOptions.PersonnelInfluxLevel,
+                InitialManticoreLimitInstance = TFTVNewGameOptions.InitialManticoreLimit,
+                InitialScarabLimitInstance = TFTVNewGameOptions.InitialScarabLimit,
                 PU_Hotspots = TFTVAmbushes.NJ_Purists_Hotspots,
                 FO_Hotspots = TFTVAmbushes.AN_FallenOnes_Hotspots,
                 PandoransContainmentBaseAttack = TFTVBaseDefenseGeoscape.PandoransThatCanEscape,
@@ -364,6 +376,22 @@ namespace TFTV
                     TFTVNewGameOptions.ImpossibleWeaponsAdjustmentsSetting = data.ImpossibleWeaponsAdjustmentsSettingInstance;
                     TFTVNewGameOptions.NoSecondChances = data.NoSecondChances;
                     TFTVNewGameOptions.EtermesResistanceAndVulnerability = data.EtermesVulnerabilityProtection;
+
+                    // Old saves will have RansackResourcesMultiplierInstance == 0f; derive from difficulty in that case.
+                    if (data.RansackResourcesMultiplierInstance > 0f)
+                    {
+                        TFTVNewGameOptions.RansackResourcesMultiplier = data.RansackResourcesMultiplierInstance;
+                        TFTVNewGameOptions.InitialLootLevel = data.InitialLootLevelInstance;
+                        TFTVNewGameOptions.PersonnelInfluxLevel = data.PersonnelInfluxLevelInstance;
+                        TFTVNewGameOptions.InitialManticoreLimit = data.InitialManticoreLimitInstance;
+                        TFTVNewGameOptions.InitialScarabLimit = data.InitialScarabLimitInstance;
+
+                    }
+                    else if (TFTVNewGameOptions.BaseRework)
+                    {
+                        TFTVLogger.Always("[BaseRework] Old save: RansackResourcesMultiplierInstance not set, deriving BaseRework option defaults from difficulty.");
+                        TFTVNewGameOptions.SetBaseReworkOptionDefaults(data.DifficultySetting);
+                    }
                 }
                 else
                 {

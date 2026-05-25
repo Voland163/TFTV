@@ -73,6 +73,12 @@ namespace TFTV
         public static bool NoSecondChances;
         public static int EtermesResistanceAndVulnerability;
 
+        public static float RansackResourcesMultiplier = 1f;  // 0.0 – 2.0
+        public static int InitialLootLevel = 2;               // 0=+4 Story, 1=Story, 2=Rookie, 3=Veteran, 4=Hero, 5=Legend, 6=Eldritch, 7=None
+        public static int PersonnelInfluxLevel = 2;           // 0=+2 Story, 1=Story, 2=Rookie, 3=Veteran, 4=Hero, 5=None
+        public static int InitialManticoreLimit = 1;          // 0–4; max Manticores to award across all base visits
+        public static int InitialScarabLimit = 1;             // 0–4; max Scarabs to award across all base visits
+
         public static bool NewTrainingFacilities = false;
         public static bool BaseRework = false;
         public static bool NewPowerManagement = false;
@@ -90,6 +96,66 @@ namespace TFTV
 
         public static ScavengingWeight chancesScavGroundVehicleRescue = ScavengingWeight.Low;
 
+        public static void SetBaseReworkOptionDefaults(int difficulty)
+        {
+            try
+            {
+                switch (difficulty)
+                {
+                    case 1: // Story
+                        RansackResourcesMultiplier = 2f;
+                        InitialLootLevel = 7;
+                        PersonnelInfluxLevel = 3;
+                        InitialManticoreLimit = 2;
+                        InitialScarabLimit = 2;
+                        break;
+                    case 2: // Rookie
+                        RansackResourcesMultiplier = 1.5f;
+                        InitialLootLevel = 6;
+                        PersonnelInfluxLevel = 3;
+                        InitialManticoreLimit = 1;
+                        InitialScarabLimit = 2;
+                        break;
+                    case 3: // Veteran
+                        RansackResourcesMultiplier = 1f;
+                        InitialLootLevel = 5;
+                        PersonnelInfluxLevel = 2;
+                        InitialManticoreLimit = 1;
+                        InitialScarabLimit = 1;
+                        break;
+                    case 4: // Hero
+                        RansackResourcesMultiplier = 0.75f;
+                        InitialLootLevel = 4;
+                        PersonnelInfluxLevel = 1;
+                        InitialManticoreLimit = 0;
+                        InitialScarabLimit = 1;
+                        break;
+                    case 5: // Legend
+                        RansackResourcesMultiplier = 0.5f;
+                        InitialLootLevel = 3;
+                        PersonnelInfluxLevel = 0;
+                        InitialManticoreLimit = 0;
+                        InitialScarabLimit = 0;
+                        break;
+                    default: // Eldritch+
+                        RansackResourcesMultiplier = 0.25f;
+                        InitialLootLevel = 2;
+                        PersonnelInfluxLevel = 0;
+                        InitialManticoreLimit = 0;
+                        InitialScarabLimit = 0;
+                        break;
+                }
+
+                TFTVLogger.Always($"[BaseRework] SetBaseReworkOptionDefaults for difficulty {difficulty}: " +
+                    $"Ransack={RansackResourcesMultiplier} Loot={InitialLootLevel} Personnel={PersonnelInfluxLevel} " +
+                    $"ManticoreLimit={InitialManticoreLimit} ScarabLimit={InitialScarabLimit}");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
 
         public static void SetInternalConfigOptions(GeoLevelController geoLevelController)
         {
@@ -104,7 +170,6 @@ namespace TFTV
                 }
 
                 int difficulty = geoLevelController.CurrentDifficultyLevel.Order;
-
                 switch (difficulty)
                 {
                     case 1:
@@ -132,6 +197,8 @@ namespace TFTV
                         ResourceMultiplierSetting = 0.75f;
                         break;
                 }
+
+                SetBaseReworkOptionDefaults(difficulty);
 
                 if (difficulty > 5)
                 {

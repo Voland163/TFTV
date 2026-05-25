@@ -1148,6 +1148,31 @@ namespace TFTV.TFTVIncidents
                 }
             }
 
+            [HarmonyPatch(typeof(GeoVehicle), nameof(GeoVehicle.CanTransferBetweenContainer))]
+            internal static class GeoVehicle_CanTransferBetweenContainer_BlockIncidentTransfer_Patch
+            {
+                private static void Postfix(GeoVehicle __instance, IGeoCharacterContainer container, ref bool __result)
+                {
+                    if (!__result) return;
+                    if (!BaseReworkCheck.BaseReworkEnabled) return;
+
+                    // Block transfers FROM an aircraft that is resolving an incident.
+                    if (IncidentController.HasActiveTimedProblem(__instance))
+                    {
+                       TFTVLogger.Always($"[Incidents] Block transfer from vehicle {__instance.Name} that is resolving an incident.");
+                        __result = false;
+                        return;
+                    }
+
+                    // Block transfers TO an aircraft that is resolving an incident.
+                    if (container is GeoVehicle targetVehicle && IncidentController.HasActiveTimedProblem(targetVehicle))
+                    {
+                       TFTVLogger.Always($"[Incidents] Block transfer to vehicle {__instance.Name} that is resolving an incident.");
+                        __result = false;
+                    }
+                }
+            }
+
             [HarmonyPatch(typeof(GeoscapeEventSystem), nameof(GeoscapeEventSystem.TriggerGeoscapeEvent))]
             internal static class GeoscapeEventSystem_TriggerGeoscapeEvent_IncidentPersonnelReward_Patch
             {

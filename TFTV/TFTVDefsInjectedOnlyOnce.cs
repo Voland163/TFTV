@@ -1572,59 +1572,7 @@ namespace TFTV
 
         }
 
-        private static void FixInstilFrenzySound()
-        {
-            try
-            {
-                DefCache.GetDef<TacticalEventDef>("FrenzyStatus_TargetEffect_EventDef").AudioData.Mute = true;
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-
-        }
-
-        private static void FixAcheronAiming()
-        {
-            try
-            {
-
-
-                TacticalPerceptionDef tacticalPerceptionDef = DefCache.GetDef<TacticalPerceptionDef>("Acheron_PerceptionDef");
-                tacticalPerceptionDef.DefaultAimSlot = DefCache.GetDef<ItemSlotDef>("Acheron_Husk_SlotDef");
-
-                List<TacticalItemDef> tacticalItemDefs = new List<TacticalItemDef>()
-                {
-DefCache.GetDef<TacticalItemDef>("Acheron_Husk_BodyPartDef"),
-DefCache.GetDef<TacticalItemDef>("AcheronAchlys_Husk_BodyPartDef"),
-DefCache.GetDef<TacticalItemDef>("AcheronAchlysChampion_Husk_BodyPartDef"),
-DefCache.GetDef<TacticalItemDef>("AcheronAsclepius_Husk_BodyPartDef"),
-DefCache.GetDef<TacticalItemDef>("AcheronAsclepiusChampion_Husk_BodyPartDef"),
-DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
-
-                };
-
-                // DefCache.GetDef<TacticalItemDef>("AcheronAchlys_Torso_BodyPartDef").Armor = 20;
-                //  DefCache.GetDef<TacticalItemDef>("AcheronAchlys_Husk_BodyPartDef").Armor = 5;
-                foreach (TacticalItemDef tacticalItemDef in tacticalItemDefs)
-                {
-                    int armorRemoved = (int)tacticalItemDef.Armor;
-
-                    tacticalItemDef.Armor = 0;
-                    tacticalItemDef.HitPoints += 10 * armorRemoved;
-                }
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-
-        }
+       
 
         private static void FixMindWard()
         {
@@ -2007,37 +1955,7 @@ DefCache.GetDef<TacticalItemDef>("AcheronPrime_Husk_BodyPartDef")
             }
         }
 
-        private static void ChangeStoryAN4_CustomMissionTypeDef()
-        {
-            try
-            {
-                WipeEnemyFactionObjectiveDef sourceWipeEnemyObjective = DefCache.GetDef<WipeEnemyFactionObjectiveDef>("300WipeEnemy_CustomMissionObjective");
-
-                WipeEnemyFactionObjectiveDef newWipeEnemyObjective = Helper.CreateDefFromClone(sourceWipeEnemyObjective, "{C8E9CA43-D615-4A57-A123-C1082D718702}", "newWipeEnemyObjective");
-
-                newWipeEnemyObjective.IsUiHidden = true;
-
-
-
-                CustomMissionTypeDef anStory4 = DefCache.GetDef<CustomMissionTypeDef>("StoryAN4_CustomMissionTypeDef");
-
-                anStory4.CustomObjectives = anStory4.CustomObjectives.AddToArray(newWipeEnemyObjective);
-
-                foreach (FactionObjectiveDef factionObjective in anStory4.CustomObjectives)
-                {
-                    TFTVLogger.Always($"{factionObjective.name}");
-
-
-                }
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-
-
-        }
+        
 
         private static void CreateAndAdjustDefsForLimitedCapture()
         {

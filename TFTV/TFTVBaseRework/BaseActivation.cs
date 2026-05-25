@@ -479,7 +479,7 @@ namespace TFTV.TFTVBaseRework
                         if (site.Owner != null && site.Owner.IsEnvironmentFaction)
                         {
                             TFTVBetaSaveGamesFixes.FirebirdGeoFixMissingHarvestingComponentConvertedSites(site.GeoLevel);
-                            faction.ActivateBaseFromExploration(site);
+                            faction.ActivatePhoenixBase(site, true);
                         }
 
                         site.SiteTags.Add(PhoenixBaseReworkState.OutpostTag);
@@ -490,7 +490,7 @@ namespace TFTV.TFTVBaseRework
                         if (site.Owner != null && site.Owner.IsEnvironmentFaction)
                         {
                             TFTVBetaSaveGamesFixes.FirebirdGeoFixMissingHarvestingComponentConvertedSites(site.GeoLevel);
-                            faction.ActivateBaseFromExploration(site);
+                            faction.ActivatePhoenixBase(site, true);
                         }
 
                         site.SiteTags.Remove(PhoenixBaseReworkState.OutpostTag);

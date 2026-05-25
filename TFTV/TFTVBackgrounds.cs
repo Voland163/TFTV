@@ -811,7 +811,7 @@ namespace TFTV
         private static Sprite _backgroundCustomization = null;
         private static Sprite _backgroundMemorial = null;
         private static Sprite _backgroundAirForce = null;
-
+        private static Sprite _backgroundDeployment = null;
 
 
         private static CharacterClassWorldDisplay _copyCharacterClassWorldDisplayMain = null;
@@ -1130,6 +1130,8 @@ namespace TFTV
             {
                 try
                 {
+
+                   // _activeBackground = _backgroundDeployment;
                     _activeBackground = _backgroundSquadDeploy;
                     //TFTVLogger.Always($"entering UIStateRosterDeployment ");
 
@@ -1194,6 +1196,7 @@ namespace TFTV
                 _backgroundBionics = Helper.CreateSpriteFromImageFile("scenebionics.jpg");
                 _backgroundMemorial = Helper.CreateSpriteFromImageFile("scenememorial.jpg");
                 _backgroundAirForce = Helper.CreateSpriteFromImageFile("sceneairforce.jpg");
+                //_backgroundDeployment = Helper.CreateSpriteFromImageFile("anu_haven_night.jpg");
 
             }
             catch (Exception e)

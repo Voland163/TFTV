@@ -3,6 +3,7 @@ using Base.UI;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
@@ -115,6 +116,30 @@ namespace TFTV.TFTVBaseRework
                     }
 
                     // Feed filtered list into original method.
+                    characters = filtered;
+                }
+            }
+
+            [HarmonyPatch(typeof(UIModuleActorCycle), nameof(UIModuleActorCycle.Init),
+    new Type[] { typeof(IEnumerable<GeoCharacter>), typeof(GeoCharacter), typeof(GeoscapeViewContext) })]
+            internal static class Patch_UIModuleActorCycle_Init_FilterCharacters
+            {
+                static void Prefix(
+                    ref IEnumerable<GeoCharacter> characters,
+                    ref GeoCharacter initialCharacter)
+                {
+                    bool Visible(GeoCharacter c) => c != null && !RosterFilterPolicy.ShouldHide(c);
+
+                    var filtered = (characters ?? Enumerable.Empty<GeoCharacter>())
+                        .Where(Visible)
+                        .Distinct()
+                        .ToList();
+
+                    if (initialCharacter == null || !Visible(initialCharacter))
+                    {
+                        initialCharacter = filtered.FirstOrDefault();
+                    }
+
                     characters = filtered;
                 }
             }
