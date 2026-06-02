@@ -1,22 +1,16 @@
-﻿using Base;
-using Base.Core;
-using Base.Defs;
+﻿using Base.Core;
 using Base.UI;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
-using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
-using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using TFTV.TFTVBaseRework;
-using TFTV.TFTVIncidents;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -29,19 +23,19 @@ namespace TFTV.AgendaTracker
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         // Well-known ViewElementDef GUIDs
-        private const string GenericSiteViewElementGuid = "0481b9e2-947c-fbb2-3d96-8f769e1e05cd";
-        private const string CrabmanViewElementGuid = "8188f3a3-befd-e463-f345-4af1815cd848";
+        private const string AncientSiteViewElementGuid = "E_ViewElement [ArcheologyLab_PhoenixFacilityDef]";
+        private const string CrabmanViewElementGuid = "E_View [Crabman_ActorViewDef]";
 
         #region ViewElementDef helpers
 
         internal static ViewElementDef GetGenericSiteViewElement()
         {
-            return DefCache.GetDef<ViewElementDef>(GenericSiteViewElementGuid);
+            return DefCache.GetDef<ViewElementDef>(AncientSiteViewElementGuid);
         }
 
         internal static ViewElementDef GetCrabmanViewElement()
         {
-            return (ViewElementDef)GameUtl.GameComponent<DefRepository>().GetDef(CrabmanViewElementGuid);
+            return DefCache.GetDef<ViewElementDef>(CrabmanViewElementGuid);
         }
 
         internal static ViewElementDef GetTrainingViewElement()
@@ -165,19 +159,19 @@ namespace TFTV.AgendaTracker
                 : $"{AgendaConstants.actionTrainingOperative} {character.DisplayName} ({spec})";
         }
 
-        internal static string BuildVehicleText(GeoVehicle vehicle, bool travelling)
-        {
-            if (travelling)
-            {
-                string siteName = GetSiteName(vehicle.FinalDestination, vehicle.Owner);
-                return $"{vehicle.Name} {AgendaConstants.actionTraveling} {siteName}";
-            }
-            else
-            {
-                string siteName = GetSiteName(vehicle.CurrentSite, vehicle.Owner);
-                return $"{vehicle.Name} {AgendaConstants.actionExploring} {siteName}";
-            }
-        }
+        /*  internal static string BuildVehicleText(GeoVehicle vehicle, bool travelling)
+          {
+              if (travelling)
+              {
+                  string siteName = GetSiteName(vehicle.FinalDestination, vehicle.Owner);
+                  return $"{vehicle.Name} {AgendaConstants.actionTraveling} {siteName}";
+              }
+              else
+              {
+                  string siteName = GetSiteName(vehicle.CurrentSite, vehicle.Owner);
+                  return $"{vehicle.Name} {AgendaConstants.actionExploring} {siteName}";
+              }
+          }*/
 
         internal static string AppendTime(float hours)
         {

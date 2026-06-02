@@ -33,41 +33,7 @@ namespace TFTV.AgendaTracker
 {
     internal static class AgendaPatches
     {
-        private static readonly MethodInfo UpdateProductionMethod =
-            AccessTools.Method(typeof(GeoFaction), "UpdateProduction");
 
-        private static bool _pendingBaseReworkAgendaProductionRefresh;
-
-        internal static void QueueBaseReworkAgendaProductionRefresh()
-        {
-            _pendingBaseReworkAgendaProductionRefresh = BaseReworkCheck.BaseReworkEnabled;
-        }
-
-        private static void RefreshBaseReworkProductionIfPending(GeoscapeViewContext context)
-        {
-            try
-            {
-                if (!_pendingBaseReworkAgendaProductionRefresh || !BaseReworkCheck.BaseReworkEnabled)
-                {
-                    return;
-                }
-
-                GeoPhoenixFaction phoenix = context?.ViewerFaction as GeoPhoenixFaction;
-                _pendingBaseReworkAgendaProductionRefresh = false;
-
-                if (phoenix == null || UpdateProductionMethod == null)
-                {
-                    return;
-                }
-
-                UpdateProductionMethod.Invoke(phoenix, new object[] { });
-            }
-            catch (Exception e)
-            {
-                _pendingBaseReworkAgendaProductionRefresh = false;
-                TFTVLogger.Error(e);
-            }
-        }
 
         #region Minor patches
 
@@ -120,7 +86,8 @@ namespace TFTV.AgendaTracker
             }
         }
 
-        [HarmonyPatch(typeof(UIModuleStatusBarMessages), "Update")]
+
+       [HarmonyPatch(typeof(UIModuleStatusBarMessages), "Update")]
         public static class UIModuleStatusBarMessages_Update_Patch
         {
             public static void Postfix(UIModuleStatusBarMessages __instance)
@@ -140,31 +107,7 @@ namespace TFTV.AgendaTracker
             }
         }
 
-        [HarmonyPatch(typeof(UIModuleSiteContextualMenu), nameof(UIModuleSiteContextualMenu.SetMenuItems))]
-        public static class UIModuleSiteContextualMenu_SetMenuItems_Patch
-        {
-            public static void Postfix(GeoSite site, List<SiteContextualMenuItem> ____menuItems)
-            {
-                try
-                {
-                    foreach (var item in ____menuItems)
-                    {
-                        if (item.Ability is MoveVehicleAbility move && move.GeoActor is GeoVehicle v && v.CurrentSite != site)
-                        {
-                            if (AgendaHelpers.GetTravelTime(v, out float eta, site))
-                                item.ItemText.text += AgendaHelpers.AppendTime(eta);
-                        }
-                        else if (item.Ability is ExploreSiteAbility)
-                        {
-                            var vehicle = item.Ability?.GeoActor as GeoVehicle;
-                            float hours = AgendaHelpers.GetExplorationTime(vehicle, (float)site.ExplorationTime.TimeSpan.TotalHours);
-                            item.ItemText.text += AgendaHelpers.AppendTime(hours);
-                        }
-                    }
-                }
-                catch (Exception e) { TFTVLogger.Error(e); }
-            }
-        }
+    
 
         #endregion
 
@@ -224,65 +167,7 @@ namespace TFTV.AgendaTracker
             }
         }
 
-        [HarmonyPatch(typeof(UIStateVehicleSelected), "OnContextualItemSelected")]
-        public static class UIStateVehicleSelected_OnContextualItemSelected_Patch
-        {
-            public static void Postfix(GeoAbility ability)
-            {
-                try
-                {
-                    GeoVehicle vehicle = null;
-                    string vehicleInfo = null;
-
-                    if (ability is MoveVehicleAbility)
-                    {
-                        vehicle = (GeoVehicle)ability.GeoActor;
-                        vehicleInfo = AgendaHelpers.BuildVehicleText(vehicle, true);
-                    }
-                    else if (ability is ExploreSiteAbility)
-                    {
-                        vehicle = (GeoVehicle)ability.GeoActor;
-                        vehicleInfo = AgendaHelpers.BuildVehicleText(vehicle, false);
-                    }
-
-                    if (vehicle == null) return;
-                    AddOrUpdateVehicleTracker(vehicle, vehicleInfo);
-                }
-                catch (Exception e) { TFTVLogger.Error(e); }
-            }
-        }
-
-        [HarmonyPatch(typeof(UIStateVehicleSelected), "AddTravelSite")]
-        public static class UIStateVehicleSelected_AddTravelSite_Patch
-        {
-            public static void Postfix(UIStateVehicleSelected __instance, GeoSite site)
-            {
-                try
-                {
-                    var vehicle = (GeoVehicle)AccessTools.Property(typeof(UIStateVehicleSelected), "SelectedVehicle").GetValue(__instance, null);
-                    var ability = vehicle.GetAbility<MoveVehicleAbility>();
-                    if (ability == null || !ability.CanActivate(new GeoAbilityTarget(site))) return;
-
-                    string vehicleInfo = AgendaHelpers.BuildVehicleText(vehicle, true);
-                    AddOrUpdateVehicleTracker(vehicle, vehicleInfo);
-                }
-                catch (Exception e) { TFTVLogger.Error(e); }
-            }
-        }
-
-        private static void AddOrUpdateVehicleTracker(GeoVehicle vehicle, string vehicleInfo)
-        {
-            var existing = AgendaHelpers.FindTrackedElement(vehicle);
-            if (existing != null)
-            {
-                existing.TrackedName.text = vehicleInfo;
-                AgendaConstants.UpdateData.Invoke(AgendaConstants.factionTracker, null);
-                AgendaConstants.OrderElements.Invoke(AgendaConstants.factionTracker, null);
-                return;
-            }
-
-            AgendaHelpers.AddTrackerElement(vehicle, vehicleInfo, vehicle.VehicleDef.ViewElement);
-        }
+  
 
         #endregion
 
@@ -361,42 +246,7 @@ namespace TFTV.AgendaTracker
         [HarmonyPatch(typeof(UIModuleFactionAgendaTracker), "UpdateData", new Type[] { typeof(UIFactionDataTrackerElement) })]
         public static class UIModuleFactionAgendaTracker_UpdateData_Patch
         {
-            private static readonly BindingFlags InstanceBindings =
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
-            private static readonly string[] ManufactureQueueMemberNames = new string[]
-            {
-                "_queue",
-                "queue",
-                "Queue"
-            };
-
-            private static readonly string[] ManufacturableItemMemberNames = new string[]
-            {
-                "ManufacturableItem",
-                "_manufacturableItem",
-                "Item",
-                "_item"
-            };
-
-            private static readonly string[] QueueProgressMemberNames = new string[]
-            {
-                "Progress",
-                "_progress",
-                "ManufactureProgress",
-                "_manufactureProgress",
-                "ProgressPoints",
-                "_progressPoints",
-                "ManufactureProgressPoints",
-                "_manufactureProgressPoints"
-            };
-
-            private static readonly string[] ManufacturePointsCostMemberNames = new string[]
-            {
-                "ManufacturePointsCost",
-                "_manufacturePointsCost"
-            };
-
+         
             public static bool Prefix(ref bool __result, UIFactionDataTrackerElement element, GeoscapeViewContext ____context)
             {
                 try
@@ -426,7 +276,7 @@ namespace TFTV.AgendaTracker
                         AircraftReworkSpeedAndRange.AdjustAircraftSpeed(vehicle);
                         AgendaHelpers.WireClickEvent(element, () => ____context.View.ChaseTarget(vehicle, false));
 
-                        if (vehicle.Travelling && AgendaHelpers.GetTravelTime(vehicle, out float travelTime))
+                       /* if (vehicle.Travelling && AgendaHelpers.GetTravelTime(vehicle, out float travelTime))
                         {
                             var arrival = TimeUnit.FromHours(travelTime);
                             element.UpdateData(arrival, true, null);
@@ -438,8 +288,8 @@ namespace TFTV.AgendaTracker
                             var explorationEnd = TimeUnit.FromHours(hours);
                             element.UpdateData(explorationEnd, true, null);
                             __result = explorationEnd <= TimeUnit.Zero;
-                        }
-                        return false;
+                        }*/
+                        return true;
                     }
                     else if (element.TrackedObject is GeoCharacter character)
                     {
@@ -453,7 +303,7 @@ namespace TFTV.AgendaTracker
                             return false;
                         }
                     }
-                    else if (element.TrackedObject is GeoPhoenixFacility facility)
+                   /* else if (element.TrackedObject is GeoPhoenixFacility facility)
                     {
                         AgendaHelpers.WireClickEvent(element, () => ____context.View.ChaseTarget(facility.PxBase.Site, false));
 
@@ -464,7 +314,7 @@ namespace TFTV.AgendaTracker
                             __result = timeLeft <= TimeUnit.Zero;
                             return false;
                         }
-                    }
+                    }*/
                     else if (element.TrackedObject is GeoSite geoSite)
                     {
                         AgendaHelpers.WireClickEvent(element, () => ____context.View.ChaseTarget(geoSite, false));
@@ -547,7 +397,7 @@ namespace TFTV.AgendaTracker
                     if (!(____faction is GeoPhoenixFaction phoenix)) return;
 
                     // Travelling/exploring vehicles
-                    foreach (var vehicle in phoenix.Vehicles.Where(v => v.Travelling || v.IsExploringSite))
+                  /*  foreach (var vehicle in phoenix.Vehicles.Where(v => v.Travelling || v.IsExploringSite))
                     {
                         string info = vehicle.Travelling
                             ? AgendaHelpers.BuildVehicleText(vehicle, true)
@@ -560,7 +410,7 @@ namespace TFTV.AgendaTracker
                     {
                         string name = facility.Def.ViewElementDef.DisplayName1.Localize();
                         AgendaHelpers.AddTrackerElement(facility, $"{AgendaConstants.actionRepairing} {name}", facility.Def.ViewElementDef);
-                    }
+                    }*/
 
                     // Recruit training sessions
                     foreach (var session in TrainingFacilityRework.GetActiveRecruitSessions())

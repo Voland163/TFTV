@@ -4,17 +4,21 @@ using Base.Utils.GameConsole;
 using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.View;
+using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
+using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.UI;
@@ -22,7 +26,7 @@ using PhoenixPoint.Tactical.View;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Reflection;
 using UnityEngine;
 
 
@@ -35,6 +39,336 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
+        [HarmonyPatch(typeof(UIStateRosterDeployment))]
+        internal static class UIStateRosterDeploymentLoadLoadoutsPatch
+        {
+            private static readonly FieldInfo DeploymentItemsField = AccessTools.Field(typeof(UIStateRosterDeployment), "_deploymentItems");
+
+            private static readonly MethodInfo ContextGetter = AccessTools.PropertyGetter(typeof(GeoscapeViewState), "Context");
+
+            private static readonly MethodInfo OriginalLoadLoadoutMethod = AccessTools.Method(typeof(UIStateRosterDeployment), "LoadLoadout");
+
+            private static readonly MethodInfo OriginalLoadLoadoutAndManufactureIfNeededSingleMethod = AccessTools.Method(typeof(UIStateRosterDeployment), "LoadLoadoutAndManufactureIfNeeded_Single");
+
+            [HarmonyPostfix]
+            [HarmonyPatch("EnterState")]
+            private static void EnterStatePostfix(UIStateRosterDeployment __instance)
+            {
+                RefreshLoadLoadoutsButton(__instance);
+            }
+
+            [HarmonyPostfix]
+            [HarmonyPatch("OnEnrollmentChanged")]
+            private static void OnEnrollmentChangedPostfix(UIStateRosterDeployment __instance)
+            {
+                RefreshLoadLoadoutsButton(__instance);
+            }
+
+            [HarmonyPrefix]
+            [HarmonyPatch("LoadLoadoutAndManufactureIfNeeded_Multiple")]
+            private static bool LoadLoadoutAndManufactureIfNeededMultiplePrefix(UIStateRosterDeployment __instance, ref IEnumerator<NextUpdate> __result)
+            {
+                __result = LoadSelectedLoadoutsAndManufactureIfNeeded(__instance);
+                return false;
+            }
+
+            [HarmonyPrefix]
+            [HarmonyPatch("DeploySquad")]
+            private static void DeploySquadPrefix(UIStateRosterDeployment __instance)
+            {
+                SyncPreferredLoadoutsForSelectedDeployment(__instance);
+            }
+
+            private static UIModuleGeneralPersonelRoster GetGeoRosterModule(UIStateRosterDeployment instance)
+            {
+                GeoscapeViewContext context = (GeoscapeViewContext)ContextGetter.Invoke(instance, null);
+                return (context != null && context.View != null && context.View.GeoscapeModules != null) ? context.View.GeoscapeModules.GeneralPersonelRosterModule : null;
+            }
+
+            private static List<GeoCharacter> GetSelectedDeploymentCharacters(UIStateRosterDeployment instance)
+            {
+                List<GeoRosterDeploymentItem> deploymentItems = GetDeploymentItems(instance);
+                if (deploymentItems == null)
+                {
+                    return new List<GeoCharacter>();
+                }
+                return (from item in deploymentItems
+                        where item.EnrollForDeployment
+                        select item.Character).ToList<GeoCharacter>();
+            }
+
+            private static List<GeoRosterDeploymentItem> GetDeploymentItems(UIStateRosterDeployment instance)
+            {
+                return DeploymentItemsField.GetValue(instance) as List<GeoRosterDeploymentItem>;
+            }
+
+            private static void SyncPreferredLoadoutsForSelectedDeployment(UIStateRosterDeployment instance)
+            {
+                foreach (GeoCharacter character in GetSelectedDeploymentCharacters(instance))
+                {
+                    LoadoutPatchUtilities.SyncPreferredLoadout(character);
+                }
+            }
+
+            private static void RefreshLoadLoadoutsButton(UIStateRosterDeployment instance)
+            {
+                UIModuleGeneralPersonelRoster geoRosterModule = GetGeoRosterModule(instance);
+                if (geoRosterModule == null || geoRosterModule.LoadLoadoutsButton == null)
+                {
+                    return;
+                }
+                geoRosterModule.LoadLoadoutsButton.onClick.RemoveAllListeners();
+                List<GeoCharacter> selectedDeploymentCharacters = GetSelectedDeploymentCharacters(instance);
+                bool flag = selectedDeploymentCharacters.Any((GeoCharacter character) => !character.IsSavedLoadoutEquipped());
+                geoRosterModule.LoadLoadoutsButton.gameObject.SetActive(flag);
+                if (flag)
+                {
+                    geoRosterModule.LoadLoadoutsButton.onClick.AddListener(delegate ()
+                    {
+                        instance.Timing.Start(LoadSelectedLoadoutsAndManufactureIfNeeded(instance), null);
+                    });
+                }
+            }
+
+            private static IEnumerator<NextUpdate> LoadSelectedLoadoutsAndManufactureIfNeeded(UIStateRosterDeployment instance)
+            {
+                List<GeoCharacter> selectedCharacters = GetSelectedDeploymentCharacters(instance);
+                List<GeoCharacter> allFactionCharacters = (selectedCharacters.Count > 0) ? selectedCharacters[0].Faction.Characters.ToList<GeoCharacter>() : new List<GeoCharacter>();
+                foreach (GeoCharacter character in selectedCharacters)
+                {
+                    OriginalLoadLoadoutMethod.Invoke(instance, new object[]
+                    {
+                    character
+                    });
+                    LoadMissingLoadoutItemsFromOtherCharacters(character, selectedCharacters, allFactionCharacters);
+                    IEnumerator<NextUpdate> singleLoadoutRoutine = (IEnumerator<NextUpdate>)OriginalLoadLoadoutAndManufactureIfNeededSingleMethod.Invoke(instance, new object[]
+                    {
+                    character
+                    });
+                    yield return instance.Timing.Call(singleLoadoutRoutine, null);
+                    LoadoutPatchUtilities.SyncPreferredLoadout(character);
+                }
+                UIModuleGeneralPersonelRoster geoRosterModule = GetGeoRosterModule(instance);
+                foreach (GeoRosterItem geoRosterItem in geoRosterModule.Slots)
+                {
+                    geoRosterItem.UpdateCharacterData();
+                }
+                geoRosterModule.LoadLoadoutsButton.gameObject.SetActive(false);
+                yield break;
+            }
+
+            private static void LoadMissingLoadoutItemsFromOtherCharacters(GeoCharacter character, List<GeoCharacter> selectedCharacters, List<GeoCharacter> allFactionCharacters)
+            {
+                HashSet<GeoCharacter> selectedCharactersSet = new HashSet<GeoCharacter>(selectedCharacters);
+                List<GeoCharacter> donorCharacters = (from donor in allFactionCharacters
+                                                      where donor != character && !selectedCharactersSet.Contains(donor)
+                                                      select donor).ToList<GeoCharacter>();
+                List<GeoItem> armourItems = character.ArmourItems.ToList<GeoItem>();
+                List<GeoItem> equipmentItems = character.EquipmentItems.ToList<GeoItem>();
+                List<GeoItem> inventoryItems = character.InventoryItems.ToList<GeoItem>();
+                LoadMissingItemsFromOtherCharacters(character.ArmourLoadoutItems, armourItems, donorCharacters, character.Faction.ItemStorage);
+                LoadMissingItemsFromOtherCharacters(character.EquipmentLoadoutItems, equipmentItems, donorCharacters, character.Faction.ItemStorage);
+                LoadMissingItemsFromOtherCharacters(character.InventoryLoadoutItems, inventoryItems, donorCharacters, character.Faction.ItemStorage);
+                character.SetItems(armourItems, equipmentItems, inventoryItems, true);
+            }
+
+            private static void LoadMissingItemsFromOtherCharacters(IReadOnlyList<GeoItem> savedLoadoutItems, List<GeoItem> currentItems, List<GeoCharacter> donorCharacters, ItemStorage factionStorage)
+            {
+                foreach (GeoItem savedLoadoutItem in savedLoadoutItems)
+                {
+                    if (CountItems(currentItems, savedLoadoutItem.ItemDef) >= CountItems(savedLoadoutItems, savedLoadoutItem.ItemDef))
+                    {
+                        continue;
+                    }
+                    if (factionStorage.RemoveItem(savedLoadoutItem))
+                    {
+                        currentItems.Add(savedLoadoutItem);
+                        continue;
+                    }
+                    GeoItem geoItem;
+                    if (TryTakeItemFromOtherCharacters(donorCharacters, savedLoadoutItem, factionStorage, out geoItem))
+                    {
+                        currentItems.Add(geoItem);
+                    }
+                }
+            }
+
+            private static int CountItems(IEnumerable<GeoItem> items, ItemDef itemDef)
+            {
+                return items.Count((GeoItem item) => item.ItemDef == itemDef);
+            }
+
+            private static bool TryTakeItemFromOtherCharacters(List<GeoCharacter> donorCharacters, GeoItem requestedItem, ItemStorage factionStorage, out GeoItem transferredItem)
+            {
+                foreach (GeoCharacter donorCharacter in donorCharacters)
+                {
+                    if (TryTakeItemFromCharacter(donorCharacter, requestedItem, factionStorage, out transferredItem))
+                    {
+                        return true;
+                    }
+                }
+                transferredItem = null;
+                return false;
+            }
+
+            private static bool TryTakeItemFromCharacter(GeoCharacter donorCharacter, GeoItem requestedItem, ItemStorage factionStorage, out GeoItem transferredItem)
+            {
+                List<GeoItem> armourItems = donorCharacter.ArmourItems.ToList<GeoItem>();
+                List<GeoItem> equipmentItems = donorCharacter.EquipmentItems.ToList<GeoItem>();
+                List<GeoItem> inventoryItems = donorCharacter.InventoryItems.ToList<GeoItem>();
+                List<GeoItem> detachedItems = new List<GeoItem>();
+                if (!TryRemoveItemFromList(inventoryItems, requestedItem, false, out transferredItem) && !TryRemoveItemFromList(equipmentItems, requestedItem, false, out transferredItem) && !TryRemoveItemFromList(armourItems, requestedItem, true, out transferredItem))
+                {
+                    return false;
+                }
+                detachedItems.Add(transferredItem);
+                DetachUnsupportedItems(donorCharacter, armourItems, equipmentItems, inventoryItems, detachedItems);
+                donorCharacter.SetItems(armourItems, equipmentItems, inventoryItems, true);
+                foreach (GeoItem detachedItem in detachedItems)
+                {
+                    if (detachedItem != transferredItem)
+                    {
+                        factionStorage.AddItem(detachedItem);
+                    }
+                }
+                return true;
+            }
+
+            private static bool TryRemoveItemFromList(List<GeoItem> items, GeoItem requestedItem, bool skipPermanentAugments, out GeoItem removedItem)
+            {
+                removedItem = items.FirstOrDefault((GeoItem item) => item.ItemDef == requestedItem.ItemDef && (!skipPermanentAugments || !item.ItemDef.IsPermanentAugment));
+                if (removedItem == null)
+                {
+                    return false;
+                }
+                items.Remove(removedItem);
+                return true;
+            }
+
+            private static void DetachUnsupportedItems(GeoCharacter character, List<GeoItem> armourItems, List<GeoItem> equipmentItems, List<GeoItem> inventoryItems, List<GeoItem> detachedItems)
+            {
+                bool flag;
+                do
+                {
+                    flag = false;
+                    List<GeoItem> equippedItems = armourItems.Concat(equipmentItems).Concat(inventoryItems).ToList<GeoItem>();
+                    GeoItem unsupportedItem = equippedItems.FirstOrDefault((GeoItem item) => !IsItemSupported(character, item, equippedItems));
+                    if (unsupportedItem != null)
+                    {
+                        if (armourItems.Remove(unsupportedItem) || equipmentItems.Remove(unsupportedItem) || inventoryItems.Remove(unsupportedItem))
+                        {
+                            detachedItems.Add(unsupportedItem);
+                            flag = true;
+                        }
+                    }
+                }
+                while (flag);
+            }
+
+            private static bool IsItemSupported(GeoCharacter character, GeoItem item, List<GeoItem> equippedItems)
+            {
+                AddonDef.RequiredSlotBind[] requiredSlotBinds = item.ItemDef.RequiredSlotBinds;
+                if (requiredSlotBinds == null || requiredSlotBinds.Length == 0)
+                {
+                    return true;
+                }
+                List<AddonDef> slotProviders = GetDefaultSlotProviders(character).Concat(from equippedItem in equippedItems
+                                                                                         where equippedItem != item
+                                                                                         select equippedItem.ItemDef).Cast<AddonDef>().ToList<AddonDef>();
+                return requiredSlotBinds.Any((AddonDef.RequiredSlotBind requiredSlotBind) => slotProviders.Any((AddonDef slotProvider) => requiredSlotBind.IsCompatibleWith(slotProvider)));
+            }
+
+            private static IEnumerable<AddonDef> GetDefaultSlotProviders(GeoCharacter character)
+            {
+                if (character.TemplateDef == null || character.TemplateDef.GetAddonsMangerDef() == null)
+                {
+                    return Enumerable.Empty<AddonDef>();
+                }
+                return character.TemplateDef.GetAddonsMangerDef().SkeletonChassisAddonDef.Cast<AddonDef>();
+            }
+        }
+
+        [HarmonyPatch]
+        internal static class PostmissionReplenishLoadoutIsChangedCountPatch
+        {
+            private static MethodBase TargetMethod()
+            {
+                Type loadoutType = typeof(PostmissionReplenishManager).GetNestedType("Loadout", BindingFlags.NonPublic);
+                return AccessTools.Method(loadoutType, "IsChanged");
+            }
+
+            private static void Postfix(object __instance, GeoCharacter character, ref bool __result)
+            {
+                if (__result)
+                {
+                    return;
+                }
+                if (LoadoutPatchUtilities.HasItemCountMismatch(__instance, character))
+                {
+                    __result = true;
+                }
+            }
+        }
+
+        internal static class LoadoutPatchUtilities
+        {
+            public static void SyncPreferredLoadout(GeoCharacter character)
+            {
+                GeoPhoenixFaction geoPhoenixFaction = (character != null) ? (character.Faction as GeoPhoenixFaction) : null;
+                if (geoPhoenixFaction == null)
+                {
+                    return;
+                }
+                geoPhoenixFaction.UpdatePreferredLoadout(character);
+            }
+
+            public static bool HasItemCountMismatch(object preferredLoadout, GeoCharacter character)
+            {
+                return HasItemCountMismatch(GetLoadoutList(preferredLoadout, "_armourItems"), (character != null) ? character.ArmourItems : null) || HasItemCountMismatch(GetLoadoutList(preferredLoadout, "_equipmentItems"), (character != null) ? character.EquipmentItems : null) || HasItemCountMismatch(GetLoadoutList(preferredLoadout, "_inventoryItems"), (character != null) ? character.InventoryItems : null);
+            }
+
+            private static bool HasItemCountMismatch(IEnumerable<GeoItem> preferredItems, IEnumerable<GeoItem> currentItems)
+            {
+                Dictionary<ItemDef, int> preferredCounts = GetItemCounts(preferredItems);
+                Dictionary<ItemDef, int> currentCounts = GetItemCounts(currentItems);
+                return preferredCounts.Keys.Concat(currentCounts.Keys).Distinct<ItemDef>().Any(delegate (ItemDef itemDef)
+                {
+                    int preferredCount;
+                    int currentCount;
+                    preferredCounts.TryGetValue(itemDef, out preferredCount);
+                    currentCounts.TryGetValue(itemDef, out currentCount);
+                    return preferredCount != currentCount;
+                });
+            }
+
+            private static Dictionary<ItemDef, int> GetItemCounts(IEnumerable<GeoItem> items)
+            {
+                Dictionary<ItemDef, int> counts = new Dictionary<ItemDef, int>();
+                if (items == null)
+                {
+                    return counts;
+                }
+                foreach (GeoItem item in items)
+                {
+                    if (item == null || item.ItemDef == null)
+                    {
+                        continue;
+                    }
+                    int count;
+                    counts.TryGetValue(item.ItemDef, out count);
+                    counts[item.ItemDef] = count + 1;
+                }
+                return counts;
+            }
+
+            private static IEnumerable<GeoItem> GetLoadoutList(object loadout, string fieldName)
+            {
+                FieldInfo fieldInfo = (loadout != null) ? AccessTools.Field(loadout.GetType(), fieldName) : null;
+                return (fieldInfo != null) ? (fieldInfo.GetValue(loadout) as IEnumerable<GeoItem>) : null;
+            }
+        }
+
+
         [HarmonyPatch(typeof(DamageAccumulation), nameof(DamageAccumulation.AddTarget))]
         internal static class DamageAccumulation_AddTarget_PreventDuplicateBodyPartShred
         {
@@ -46,11 +380,11 @@ namespace TFTV
 
             private static void Postfix(DamageAccumulation __instance, IDamageReceiver target)
             {
-               // TFTVLogger.Always($"[DamageAccumulation_AddTarget_PreventDuplicateBodyPartShred] Postfix called for target '{target.GetSlotName()}'");
+                // TFTVLogger.Always($"[DamageAccumulation_AddTarget_PreventDuplicateBodyPartShred] Postfix called for target '{target.GetSlotName()}'");
 
                 if (__instance == null || target == null)
                 {
-                  //  TFTVLogger.Always($"[DamageAccumulation_AddTarget_PreventDuplicateBodyPartShred] __instance or target is null, skipping.");
+                    //  TFTVLogger.Always($"[DamageAccumulation_AddTarget_PreventDuplicateBodyPartShred] __instance or target is null, skipping.");
                     return;
                 }
 
@@ -58,7 +392,7 @@ namespace TFTV
                 // Use the receiver contract instead of concrete item classes.
                 if (!target.IsBodyPart())
                 {
-                   // TFTVLogger.Always($"[DamageAccumulation_AddTarget_PreventDuplicateBodyPartShred] Target '{target.GetSlotName()}' is not a body part, skipping.");
+                    // TFTVLogger.Always($"[DamageAccumulation_AddTarget_PreventDuplicateBodyPartShred] Target '{target.GetSlotName()}' is not a body part, skipping.");
                     return;
                 }
 
@@ -67,20 +401,20 @@ namespace TFTV
                 // Keep this scoped to projectile accumulation, where duplicate cast hits are the problem.
                 if (!(source is Projectile) && !(source is ProjectileLogic))
                 {
-                   // TFTVLogger.Always($"[DamageAccumulation_AddTarget_PreventDuplicateBodyPartShred] Source is not a projectile, skipping.");   
+                    // TFTVLogger.Always($"[DamageAccumulation_AddTarget_PreventDuplicateBodyPartShred] Source is not a projectile, skipping.");   
                     return;
                 }
 
                 List<DamageAccumulation.TargetData> targetsData = TargetsDataRef(__instance);
                 if (targetsData == null || targetsData.Count < 2)
                 {
-                  //  TFTVLogger.Always($"[DamageAccumulation_AddTarget_PreventDuplicateBodyPartShred] Not enough targets in accumulation to have duplicates, skipping.");
+                    //  TFTVLogger.Always($"[DamageAccumulation_AddTarget_PreventDuplicateBodyPartShred] Not enough targets in accumulation to have duplicates, skipping.");
                     return;
                 }
 
                 IDamageReceiver canonicalTarget = target.GetNonTrackerReceiver();
 
-               // TFTVLogger.Always($"[DamageAccumulation_AddTarget_PreventDuplicateBodyPartShred] Checking for duplicate shred on body part '{target.GetSlotName()}' with canonical receiver '{canonicalTarget.GetSlotName()}' across {targetsData.Count} targets in accumulation.");
+                // TFTVLogger.Always($"[DamageAccumulation_AddTarget_PreventDuplicateBodyPartShred] Checking for duplicate shred on body part '{target.GetSlotName()}' with canonical receiver '{canonicalTarget.GetSlotName()}' across {targetsData.Count} targets in accumulation.");
 
                 bool alreadyAppliedShredToThisBodyPart = false;
 
@@ -120,7 +454,7 @@ namespace TFTV
 
                     // Duplicate same-body-part shred in the same projectile accumulation.
                     // Preserve HP damage/statuses/etc.; only remove the extra armor shred.
-                    TFTVLogger.Always($"[DamageAccumulation_AddTarget_PreventDuplicateBodyPartShred] Found duplicate shred on body part '{data.Target.GetSlotName()}' in target data index {i}, removing armor damage.");
+                   // TFTVLogger.Always($"[DamageAccumulation_AddTarget_PreventDuplicateBodyPartShred] Found duplicate shred on body part '{data.Target.GetSlotName()}' in target data index {i}, removing armor damage.");
                     data.DamageResult.ArmorDamage = 0f;
 
                     if (IsNoOpAfterRemovingDuplicateShred(data))
@@ -193,7 +527,7 @@ namespace TFTV
                     return;
                 }
 
-              //  TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Hovering move to position {0} for actor '{1}'", hoveredMove.Position, selectedActor.DisplayName));
+                //  TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Hovering move to position {0} for actor '{1}'", hoveredMove.Position, selectedActor.DisplayName));
 
                 DrawKnownMeleeThreatMarkers(context, selectedActor, hoveredMove.Position);
             }
@@ -209,25 +543,25 @@ namespace TFTV
                         continue;
                     }
 
-                   // TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Evaluating threat actor '{0}' with melee ability '{1}'", threatActor.DisplayName, meleeAbility.TacticalAbilityDef.name));
+                    // TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Evaluating threat actor '{0}' with melee ability '{1}'", threatActor.DisplayName, meleeAbility.TacticalAbilityDef.name));
 
                     float meleeRange = meleeAbility.Weapon.GetMaxRange();
 
-                   // TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Melee range for actor '{0}': {1}", threatActor.DisplayName, meleeRange));
+                    // TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Melee range for actor '{0}': {1}", threatActor.DisplayName, meleeRange));
                     float maxMoveRange = GetFullTurnMoveRange(threatActor);
 
-                  //  TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Full turn move range for actor '{0}': {1}", threatActor.DisplayName, maxMoveRange));
+                    //  TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Full turn move range for actor '{0}': {1}", threatActor.DisplayName, maxMoveRange));
 
 
                     float moveAndAttackRange = GetFullTurnMoveAndAttackRange(threatActor, meleeAbility);
 
-                   // TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Move+attack range for actor '{0}': {1}", threatActor.DisplayName, moveAndAttackRange));
+                    // TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Move+attack range for actor '{0}': {1}", threatActor.DisplayName, moveAndAttackRange));
 
                     foreach (MoveAbilityTargetData threatMove in GetThreatActorMoveTargets(threatActor, maxMoveRange))
                     {
 
-                      //  TFTVLogger.Always($"threatMove.IsPositionInRange(moveAndAttackRange):{threatMove.IsPositionInRange(moveAndAttackRange)};" +
-                      //   $" CanMeleeAttackFrom(threatMove.Position, hoveredMovePosition, meleeRange): {CanMeleeAttackFrom(threatMove.Position, hoveredMovePosition, meleeRange)}");
+                        //  TFTVLogger.Always($"threatMove.IsPositionInRange(moveAndAttackRange):{threatMove.IsPositionInRange(moveAndAttackRange)};" +
+                        //   $" CanMeleeAttackFrom(threatMove.Position, hoveredMovePosition, meleeRange): {CanMeleeAttackFrom(threatMove.Position, hoveredMovePosition, meleeRange)}");
 
 
                         if (!threatMove.IsPositionInRange(moveAndAttackRange) || !CanMeleeAttackFrom(threatMove.Position, hoveredMovePosition, meleeRange) || !markedPositions.Add(threatMove.Position))
@@ -241,7 +575,7 @@ namespace TFTV
                         };
                         context.View.Markers.AddGroundMarker(GroundMarkerGroup.HoverSelection, marker, false);
                         Utils.TiltForTerrain(context, marker, threatActor.TacticalNav.FloorLayers);
-                    } 
+                    }
                 }
             }
 
@@ -260,9 +594,9 @@ namespace TFTV
                     return null;
                 }
 
-               // TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Searching for melee abilities for actor '{0}' with melee weapon tag '{1}'", actor.DisplayName, meleeWeaponTagDef.name));
+                // TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Searching for melee abilities for actor '{0}' with melee weapon tag '{1}'", actor.DisplayName, meleeWeaponTagDef.name));
 
-               // TFTVLogger.Always($"Shoot abilities count: {actor.GetAbilities<ShootAbility>()?.Count()}");
+                // TFTVLogger.Always($"Shoot abilities count: {actor.GetAbilities<ShootAbility>()?.Count()}");
 
                 ShootAbility shootAbility = (from ability in actor.GetAbilities<ShootAbility>()
                                              let weapon = ability.Weapon
@@ -270,7 +604,7 @@ namespace TFTV
                                              orderby weapon.GetMaxRange() descending
                                              select ability).FirstOrDefault();
 
-              //  TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Best melee ability for actor '{0}': {1}", actor.DisplayName, shootAbility != null ? shootAbility.TacticalAbilityDef.name : "<none>"));
+                //  TFTVLogger.Always(string.Format("[KnownMeleeThreatMoveHoverPatch] Best melee ability for actor '{0}': {1}", actor.DisplayName, shootAbility != null ? shootAbility.TacticalAbilityDef.name : "<none>"));
                 return shootAbility;
             }
 

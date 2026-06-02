@@ -14,7 +14,7 @@ namespace TFTV.TFTVUI
             try 
             { 
                 ShowWithoutHelmet.uIModuleSoldierCustomization = null;
-                Loadouts.CharacterLoadouts?.Clear();
+               // Loadouts.CharacterLoadouts?.Clear();
                 Geoscape.Facilities.ClearInternalDataForUIGeo();
             }
             catch (Exception e)

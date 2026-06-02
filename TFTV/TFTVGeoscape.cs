@@ -1,6 +1,7 @@
 using Base.Serialization.General;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.DifficultySystem;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Modding;
@@ -65,6 +66,10 @@ namespace TFTV
         public int InitialManticoreLimitInstance;
         public int InitialScarabLimitInstance;
 
+        public int StartingEnemyForceInstance;
+        public int MaximumEnemyForceInstance;
+        public int EnemyEscalationSpeedInstance;
+
         public bool NewTrainingFacilities;
         public bool BaseRework;
 
@@ -97,7 +102,6 @@ namespace TFTV
 
     public class TFTVGeoscape : ModGeoscape
     {
-
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
 
         /// <summary>
@@ -234,7 +238,7 @@ namespace TFTV
                 PhoenixBasesContainmentBreach = TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttackSchedule,
                 InfestedPhoenixBases = TFTVBaseDefenseGeoscape.PhoenixBasesInfested,
                 SpawnedScyllas = TFTVPandoranProgress.ScyllaCount,
-                CharacterLoadouts = TFTVUI.Personnel.Loadouts.CharacterLoadouts,
+               // CharacterLoadouts = TFTVUI.Personnel.Loadouts.CharacterLoadouts,
                 CharactersDeliriumPerksAndMissions = TFTVDelirium.CharactersDeliriumPerksAndMissions,
                 SuppliesFromProcessedPandas = TFTVCapturePandoransGeoscape.PandasForFoodProcessing,
                 ToxinsInFood = TFTVCapturePandoransGeoscape.ToxinsInCirculation,
@@ -256,6 +260,9 @@ namespace TFTV
                 PersonnelInfluxLevelInstance = TFTVNewGameOptions.PersonnelInfluxLevel,
                 InitialManticoreLimitInstance = TFTVNewGameOptions.InitialManticoreLimit,
                 InitialScarabLimitInstance = TFTVNewGameOptions.InitialScarabLimit,
+                StartingEnemyForceInstance = TFTVNewGameOptions.StartingEnemyForce,
+                MaximumEnemyForceInstance = TFTVNewGameOptions.MaximumEnemyForce,
+                EnemyEscalationSpeedInstance = TFTVNewGameOptions.EnemyEscalationSpeed,
                 PU_Hotspots = TFTVAmbushes.NJ_Purists_Hotspots,
                 FO_Hotspots = TFTVAmbushes.AN_FallenOnes_Hotspots,
                 PandoransContainmentBaseAttack = TFTVBaseDefenseGeoscape.PandoransThatCanEscape,
@@ -305,7 +312,7 @@ namespace TFTV
                 TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttackSchedule = data.PhoenixBasesContainmentBreach;
                 TFTVBaseDefenseGeoscape.PhoenixBasesInfested = data.InfestedPhoenixBases;
                 TFTVPandoranProgress.ScyllaCount = data.SpawnedScyllas;
-                TFTVUI.Personnel.Loadouts.CharacterLoadouts = data.CharacterLoadouts;
+                //TFTVUI.Personnel.Loadouts.CharacterLoadouts = data.CharacterLoadouts;
                 TFTVDelirium.CharactersDeliriumPerksAndMissions = data.CharactersDeliriumPerksAndMissions;
                 TFTVCapturePandoransGeoscape.PandasForFoodProcessing = data.SuppliesFromProcessedPandas;
                 TFTVCapturePandoransGeoscape.ToxinsInCirculation = data.ToxinsInFood;
@@ -391,6 +398,19 @@ namespace TFTV
                     {
                         TFTVLogger.Always("[BaseRework] Old save: RansackResourcesMultiplierInstance not set, deriving BaseRework option defaults from difficulty.");
                         TFTVNewGameOptions.SetBaseReworkOptionDefaults(data.DifficultySetting);
+                    }
+
+                    // Restore enemy force settings; 0 means an old save without these fields.
+                    if (data.StartingEnemyForceInstance > 0)
+                    {
+                        TFTVNewGameOptions.StartingEnemyForce = data.StartingEnemyForceInstance;
+                        TFTVNewGameOptions.MaximumEnemyForce = data.MaximumEnemyForceInstance;
+                        TFTVNewGameOptions.EnemyEscalationSpeed = data.EnemyEscalationSpeedInstance;
+                    }
+                    else
+                    {
+                        // Old save: derive defaults from difficulty so the game behaves sensibly.
+                        TFTVNewGameOptions.SetEnemyForceOptionDefaults(data.DifficultySetting);
                     }
                 }
                 else

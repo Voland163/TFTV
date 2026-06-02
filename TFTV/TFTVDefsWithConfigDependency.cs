@@ -258,7 +258,7 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
                 try
                 {
                     GameTagDef grenadeTag = (GameTagDef)Repo.GetDef("318dd3ff-28f0-1bb4-98bc-39164b7292b6"); // GrenadeItem_TagDef
-                    WeaponDef grenadeLauncher = (WeaponDef)Repo.GetDef("4d5a34b8-48db-f014-1a0f-90ec7eaf881a");
+                  //  WeaponDef grenadeLauncher = (WeaponDef)Repo.GetDef("4d5a34b8-48db-f014-1a0f-90ec7eaf881a");
 
                     foreach (WeaponDef weaponDef in Repo.GetAllDefs<WeaponDef>())
                     {
@@ -267,8 +267,8 @@ DefCache.GetDef<CustomMissionTypeDef>("AmbushSY_CustomMissionTypeDef")
                         {
                             if (!revert)
                             {
-                                weaponDef.SpreadRadius = 2f;
-                                weaponDef.SpreadRadiusDistanceModifier = grenadeLauncher.SpreadRadiusDistanceModifier;
+                                weaponDef.SpreadRadius = 1f;
+                               // weaponDef.SpreadRadiusDistanceModifier = grenadeLauncher.SpreadRadiusDistanceModifier;
                             }
                             else
                             {

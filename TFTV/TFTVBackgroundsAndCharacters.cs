@@ -568,7 +568,15 @@ namespace TFTV
                     }
                     else if (geoEvent.EventID == "PROG_LW1_WIN")
                     {
-                        __result.EventBackground = Helper.CreateSpriteFromImageFile("makeshift_lab.jpg");
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("infested_haven_0.jpg");
+                    }
+                    else if (geoEvent.EventID == "PROG_LW2_WIN")
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("infested_haven_1.jpg");
+                    }
+                    else if (geoEvent.EventID == "PROG_LW3_WIN")
+                    {
+                        __result.EventBackground = Helper.CreateSpriteFromImageFile("infested_haven_2.jpg");
                     }
                     else if (geoEvent.EventID == "LW_EXTRA0")
                     {

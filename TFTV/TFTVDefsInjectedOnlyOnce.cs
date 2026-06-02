@@ -236,7 +236,7 @@ namespace TFTV
 
                 CreateHotkeys();
 
-                DisplayTimerProperties();
+               // DisplayTimerProperties();
 
                 VirophageDamage();
 
@@ -333,8 +333,8 @@ namespace TFTV
                 njFaction.RecruitIntervalCheckDays = 4;
                 synedrionFaction.RecruitIntervalCheckDays = 4;
 
-                synedrionFaction.StartingZones[0].Amount = 18;
-                synedrionFaction.StartingZones[1].Amount = 17;
+               // synedrionFaction.StartingZones[0].Amount = 18;
+                //synedrionFaction.StartingZones[1].Amount = 17;
 
 
                 GeoHavenDef geoHavenDef = DefCache.GetDef<GeoHavenDef>("GeoHavenDef");
@@ -1579,7 +1579,6 @@ namespace TFTV
             try
             {
                 DefCache.GetDef<DamageMultiplierStatusDef>("PsychicWard_StatusDef").ApplicationConditions = new EffectConditionDef[] { };
-
             }
             catch (Exception e)
             {

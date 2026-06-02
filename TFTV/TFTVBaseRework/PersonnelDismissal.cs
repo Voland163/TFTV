@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
@@ -104,7 +105,8 @@ namespace TFTV.TFTVBaseRework
                     return false;
                 }
 
-                TFTVUI.Personnel.Loadouts.UnequipButtonClicked();
+                //  TFTVUI.Personnel.Loadouts.UnequipButtonClicked(); 
+                UnloadLoadout(character);
                 MoveDismissedOperativeToSiteIfNeeded(faction, character);
                 PersonnelRestrictions.MarkDismissedOperative(character);
                 PersonnelRestrictions.MarkHiddenFromOperatives(character);
@@ -120,6 +122,36 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
+
+        private static void UnloadLoadout(GeoCharacter character)
+        {
+            UIModuleSoldierEquip uIModuleSoldierEquip = character.Faction.GeoLevel.View.GeoscapeModules.SoldierEquipModule;
+
+            foreach (GeoItem geoItem in from i in character.ArmourItems
+                                        where !i.ItemDef.IsPermanentAugment
+                                        select i)
+            {
+                if (uIModuleSoldierEquip.ArmorList.RemoveItem(geoItem, null))
+                {
+                    uIModuleSoldierEquip.StorageList.AddItem(geoItem, null, null);
+                }
+            }
+            foreach (GeoItem geoItem2 in character.EquipmentItems)
+            {
+                if (uIModuleSoldierEquip.ReadyList.RemoveItem(geoItem2, null))
+                {
+                    uIModuleSoldierEquip.StorageList.AddItem(geoItem2, null, null);
+                }
+            }
+            foreach (GeoItem geoItem3 in character.InventoryItems)
+            {
+                if (uIModuleSoldierEquip.InventoryList.RemoveItem(geoItem3, null))
+                {
+                    uIModuleSoldierEquip.StorageList.AddItem(geoItem3, null, null);
+                }
+            }
+
+        }
 
 
 

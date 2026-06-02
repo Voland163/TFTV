@@ -56,23 +56,23 @@ namespace TFTVVehicleRework.Aspida
             // Themis.ChargesMax = 32;
             Themis.ChargesMax = 40;
             Themis.ManufacturePointsCost = 250f;
-            Themis.Abilities = new AbilityDef[]
+          /*  Themis.Abilities = new AbilityDef[]
             {
                 AspidaShootAbility()
-            };
+            };*/
             Update_Requirements(Themis);
 
             // "SY_Aspida_Apollo_GroundVehicleWeaponDef"
             GroundVehicleWeaponDef Apollo = (GroundVehicleWeaponDef)Repo.GetDef("f2032edf-1890-7784-a974-6718e2000b16");
-            if (!TFTVAircraftReworkMain.AircraftReworkOn)
+          /*  if (!TFTVAircraftReworkMain.AircraftReworkOn)
             {
                 Apollo.ChargesMax = 20;
-            }
+            }*/
 
-            Apollo.Abilities = new AbilityDef[]
+          /*  Apollo.Abilities = new AbilityDef[]
         {
                 AspidaShootAbility()
-        };
+        };*/
         }
 
         private static void Rebalance_Bodyparts()

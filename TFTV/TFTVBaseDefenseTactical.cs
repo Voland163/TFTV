@@ -1593,7 +1593,7 @@ namespace TFTV
                             FindContainmentBreachPos();
                         }
 
-                        if (controller.IsFromSaveGame)
+                        if (GameUtl.CurrentLevel() !=null && controller.IsFromSaveGame)
                         {
                             return;
                         }

@@ -173,12 +173,12 @@ KEY_AFFINITY_DESC_COMPUTE_2,Text,,Resolve Incidents with COMPUTE approach x6 fas
 KEY_BASE_ACTIVATE_DESCRIPTION,Text,,View inactive Phoenix Project base. Can be used remotely to initiate Scan to detect nearby Points of Interest. Visit with an Aircraft for more options.,,,,,,,,
 KEY_BASE_ACTIVATE_NAME,Text,,INACTIVE PHOENIX BASE,,,,,,,,
 KEY_BASE_ACTIVATE_NOTIFICATION_ACTIVATED,Text,,Phoenix Base is already operational.,,,,,,,,
-KEY_BASE_PING_SCAN_TOOLTIP,Text,,Perform a Scan to detects some of the Points of Interest on the Geoscape within 2000 KM of the base (50% success rate). Takes 12 hours to complete.,,,,,,,,
+KEY_BASE_PING_SCAN_TOOLTIP,Text,,Perform a Scan to detects some of the Points of Interest on the Geoscape within 2000 KM of the base (50% success rate). Takes 12 hours to complete. Need to have an Aircraft within 4000Km of the base.,,,,,,,,
 KEY_BASE_PING_SCAN_OPTION,Text,,Initiate a Scan,,,,,,,,
 KEY_BASE_RANSACK_TOOLTIP,Text,,"Permanently destroys the Phoenix base; receive resources as from demolishing every facility at the base (and a little extra, amount depending on Difficulty).",,,,,,,,
 KEY_BASE_RANSACK_OPTION,Text,,Ransack,,,,,,,,
 KEY_BASE_OUTPOST_OPTION,Text,,Set up an Outpost,,,,,,,,
-KEY_BASE_OUTPOST_TOOLTIP,Text,,"You cannot build any facilities at an Outpost nor receive any income nor other advantages from existing facilities at an Outpost. Aircraft and Units at the Outpost heal, repair and recover Stamina at half the rate they would at a regular Base with the corresponding facilities. Outposts cannot be attacked and can be later upgraded to a regular Base costing half the resources and 3 personnel. Takes 24 hours to complete.",,,,,,,,
+KEY_BASE_OUTPOST_TOOLTIP,Text,,"You cannot build any facilities at an Outpost nor receive any income nor other advantages from existing facilities at an Outpost. Aircraft and Units at the Outpost heal, repair and recover Stamina at half the rate they would at a regular Base with the corresponding facilities. Outposts can also help detecting nearby Pandoran Colonies after an attack on a Haven. Outposts cannot be attacked and can be later upgraded to a regular Base costing half the resources and 3 personnel. Takes 24 hours to complete.",,,,,,,,
 KEY_BASE_OUTPOST_UPGRADE_OPTION,Text,,Upgrade to regular Base,,,,,,,,
 KEY_BASE_ACTIVATE_OPTION,Text,,Activate the Base,,,,,,,,
 KEY_BASE_OUTPOST_UPGRADE_TOOLTIP,Text,,Upgrade the Outpost to a regular Base. Takes 48 hours to complete.,,,,,,,,
@@ -187,7 +187,7 @@ KEY_BASE_ALREADY_LOOTED,Text,,You have already looted this place!,,,,,,,,
 KEY_BASE_VISIT_TO_LOOT,Text,,Explore the base to get valuable loot!,,,,,,,,
 KEY_BASE_LOOT_YOU_FOUND,Text,,You found:,,,,,,,,
 KEY_OUTPOST_ACTIVATED_TITLE,Text,,Outpost operational,,,,,,,,
-KEY_OUTPOST_ACTIVATED_DESCRIPTION,Text,,"You have finished building an Outpost. You cannot build any facilities at an Outpost nor receive any income nor other advantages from existing facilities at an Outpost. Aircraft and Units at the Outpost heal, repair and recover Stamina at half the rate they would at a regular Base with the corresponding facilities. Outposts cannot be attacked and can be later upgraded to a regular Base costing half the resources and 3 personnel.",,,,,,,,
+KEY_OUTPOST_ACTIVATED_DESCRIPTION,Text,,"You have finished building an Outpost. You cannot build any facilities at an Outpost nor receive any income nor other advantages from existing facilities at an Outpost. Aircraft and Units at the Outpost heal, repair and recover Stamina at half the rate they would at a regular Base with the corresponding facilities. Outposts can also help detecting nearby Pandoran Colonies after an attack on a Haven. Outposts cannot be attacked and can be later upgraded to a regular Base costing half the resources and 3 personnel.",,,,,,,,
 KEY_INCIDENT_START_OPTION,Text,,INITIATE INCIDENT RESOLUTION,,,,,,,,
 KEY_INCIDENT_START_OPTION_TOOLTIP,Text,,"Starts the Incident event. After choosing how to approach the Incident, Aircraft must stay at the Haven. Moving the Aircraft before the Incident is resolved will result in Failure. ",,,,,,,,
 KEY_AFFINITY_GEO_DESC_PSYCHO_SOCIOLOGY_OPTION_1,Text,,Geoscape Benefit: Haven Defense rewards +{0}%.,,,,,,,,
@@ -331,7 +331,7 @@ You start the game with some Personnel, the number depending on difficulty (2 on
 
 You gain new Personnel by resolving Incidents; special timed events that occur from time to time at previously visited havens. 
 
-On Hero difficulty and lower you also gain new Personnel periodically (1 on Hero, 3 on Rookie).
+On Hero difficulty and lower you also gain new Personnel periodically (1 on Hero, 3 on Rookie). You can override this setting on New Game start.
 
 You can also dismiss Operatives to add them to the Personnel pool. Previously Dismissed Operatives can be redeployed to the field, but you have to pay 10 Faction SP for each level of the Character above 1. They can also be trained before redeploying. 
 
@@ -341,20 +341,20 @@ TUTORIAL_PERSONNEL_TEXT1,Text,,"You start the game with some Personnel, the numb
 
 You gain new Personnel by resolving Incidents; special timed events that occur from time to time at previously visited havens. 
 
-On Hero difficulty and lower you also gain new Personnel periodically (1 on Hero, 3 on Rookie).
+On Hero difficulty and lower you also gain new Personnel periodically (1 on Hero, 3 on Rookie). You can override this setting on New Game start.
 
 You can also dismiss Operatives to add them to the Personnel pool. Previously Dismissed Operatives can be redeployed to the field, but you have to pay 10 Faction SP for each level of the Character above 1. They can also be trained before redeploying. 
 
 Some Dismissed operatives that have “Just a Grunt” perk, such as Mercenaries, can't be assigned to Research or Manufacturing.",,,,,,,,
 TUTORIAL_ADDITIONAL_BASES_TITLE0,Text,,Additional Phoenix Bases,,,,,,,,
-TUTORIAL_ADDITIONAL_BASES_TEXT0,Text,,"Bases can no longer be remotely activated. However, you can pay 60 mat and 10 tech to initiate remotely a low-quality Scan (same as the one with the Aircraft Marketplace Module, with each POI in range having a 50% of being revealed) from any Phoenix base that hasn’t been fully activated. 
+TUTORIAL_ADDITIONAL_BASES_TEXT0,Text,,"Bases can no longer be remotely activated. However, you can pay 30 mat and 5 tech to initiate remotely a low-quality Scan (same as the one with the Aircraft Marketplace Module, with each POI in range having a 50% of being revealed) from any Phoenix base that hasn’t been fully activated, provided you have an Aircraft that is no further than 4000Km from the base. The cost of each subsequent scan, even from a different base, will be increased by 30 mat and 5 tech. 
 
-Once you arrive at a Phoenix Base for the first time, you immediately receive some loot, the type and amount depending on difficulty level (on Hero and below you can find a damaged Manticore or a Scarab). 
+Once you arrive at a Phoenix Base for the first time, you can Explore it. There is a chance (15% or 30%, depending on whether the base is inside the Mist) that the base might be infested, forcing you to fight a mission to clear. Upon completing the exploration you will receive some loot, the type and amount depending on difficulty level. You can override these settings on New Game start. 
 
 You then have the following options:
 
-1) Ransack the base (destroy the base and get back all the resources as if you demolished every facility at the base, including those that can't be demolished). 
-2) Establish an Outpost (pay 200 mat, 50 tech and 1 Personnel, takes 24 hours). Outposts provide some repair and healing, and cannot be attacked, but their facilities don't generate anything and you can't build or demolish facilities at them. Outposts can be upgraded to Bases. 
+1) Ransack the base: destroy the base, demolishing every facility at the base, including those that can't be demolished. The amount of resources depends on the difficulty setting, and can be overriden on New Game Start. 
+2) Establish an Outpost (pay 200 mat, 50 tech and 1 Personnel, takes 24 hours). Outposts provide some repair and healing, cannot be attacked, and can help detect nearby Pandoran Colonies after an attack on a Haven, but their facilities don't generate anything and you can't build or demolish facilities at them. Outposts can be upgraded to Bases. 
 3) Activate Base (pay 400 mat, 100 tech, 4 personnel, takes 72 hours, cost reduced by price of setting up an Outpost if upgrading from it). Get the regular Phoenix base. ",,,,,,,,
 TUTORIAL_INCIDENTS_TITLE0,Text,,Incidents,,,,,,,,
 TUTORIAL_INCIDENTS_TEXT0,Text,,"Incidents are Geoscape Events that take time to resolve and are the primary way of securing new Personnel. You will get at least 2 Personnel for resolving an Incident successfully (among other rewards, such as Resources, Characters, Improved attitude from Faction and/or Haven Leader), and 1 Personnel if you attempt it but then move the Aircraft away before it is completed. 

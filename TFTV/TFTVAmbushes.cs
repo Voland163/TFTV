@@ -164,11 +164,15 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoSite), "RegisterMission")] //VERIFIED
         public static class GeoSite_RegisterMission_patch
         {
-
             public static void Postfix(GeoSite __instance, GeoMission geoMission)
             {
                 try
                 {
+                    if (geoMission?.MissionDef == null)
+                    {
+                        return;
+                    }
+
                     GeoLevelController controller = __instance.GeoLevel;
 
                     GeoSubFactionDef forsakenDef = DefCache.GetDef<GeoSubFactionDef>("AN_FallenOnes_GeoSubFactionDef");
@@ -177,15 +181,22 @@ namespace TFTV
                     GeoSubFaction forsaken = controller.GetSubFaction(forsakenDef, true);
                     GeoSubFaction pure = controller.GetSubFaction(pureDef, true);
 
-                    if (forsaken != null && geoMission.GetEnemyFaction().PPFactionDef == forsakenDef.PPFactionDef)
+                    IGeoFactionMissionParticipant enemyFaction = geoMission.GetEnemyFaction();
+
+                    if (enemyFaction == null)
                     {
-                        TFTVLogger.Always($"Forsaken mission {geoMission?.MissionName.LocalizeEnglish()} registered, setting hotspot");
+                        return;
+                    }
+
+                    if (forsaken != null && enemyFaction.PPFactionDef == forsakenDef.PPFactionDef)
+                    {
+                        TFTVLogger.Always($"Forsaken mission {geoMission.MissionName.LocalizeEnglish()} registered, setting hotspot");
                         SetFallenHotspotVariable(__instance.SiteId);
                     }
 
-                    if (pure != null && geoMission.GetEnemyFaction().PPFactionDef == pureDef.PPFactionDef)
+                    if (pure != null && enemyFaction.PPFactionDef == pureDef.PPFactionDef)
                     {
-                        TFTVLogger.Always($"Pure mission registered {geoMission?.MissionName.LocalizeEnglish()}, setting hotspot");
+                        TFTVLogger.Always($"Pure mission registered {geoMission.MissionName.LocalizeEnglish()}, setting hotspot");
                         SetPureHotspotVariable(__instance.SiteId);
                     }
                 }

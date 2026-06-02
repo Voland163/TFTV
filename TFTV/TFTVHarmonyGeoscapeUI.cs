@@ -38,7 +38,7 @@ namespace TFTV
                 try
                 {
                     TFTVDelirium.DeliriumPerkRecoveryPrompt(____parentModule);
-                    TFTVUI.Personnel.Loadouts.ShowAndHideHelmetAndLoadoutButtons(____parentModule);
+                   // TFTVUI.Personnel.Loadouts.ShowAndHideHelmetAndLoadoutButtons(____parentModule);
 
                 }
                 catch (Exception e)

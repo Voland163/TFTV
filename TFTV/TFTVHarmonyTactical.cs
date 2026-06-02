@@ -317,7 +317,7 @@ namespace TFTV
                 try
                 {
                     TFTVTouchedByTheVoid.Umbra.UmbraTactical.ImplementUmbraTargeting(ref __result, sourceActor);
-                    TFTVVanillaFixes.Tactical.FixMeleeTooHighAttack(__instance, ref __result, sourceActor, targetData, sourcePosition);
+                   // TFTVVanillaFixes.Tactical.FixMeleeTooHighAttack(__instance, ref __result, sourceActor, targetData, sourcePosition);
                 }
                 catch (Exception e)
                 {
@@ -801,7 +801,7 @@ namespace TFTV
         /// <summary>
         /// Adapted from cfehunter old Modnix Mod. All hail cfehunter!
         /// </summary>
-        [HarmonyPatch(typeof(ShootAbilitySceneViewElement), nameof(ShootAbilitySceneViewElement.DrawHoverMarker))]
+      /*  [HarmonyPatch(typeof(ShootAbilitySceneViewElement), nameof(ShootAbilitySceneViewElement.DrawHoverMarker))]
         private static class WeaponSpreadPatch_DrawHoverMarker_Scatter
         {
             static GroundMarker scatterMarker = null;
@@ -852,7 +852,7 @@ namespace TFTV
                 }
 
             }
-        }
+        }*/
 
     }
 }

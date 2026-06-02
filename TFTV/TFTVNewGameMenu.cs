@@ -53,6 +53,10 @@ namespace TFTV
         private static ArrowPickerController _initialManticoreLimit = null;
         private static ArrowPickerController _initialScarabLimit = null;
 
+        private static ArrowPickerController _startingEnemyForce = null;
+        private static ArrowPickerController _maximumEnemyForce = null;
+        private static ArrowPickerController _enemyEscalationSpeed = null;
+
         // Eldritch warning gate (hardest difficulty confirmation)
         private static bool _eldritchWarningInProgress = false;
         private static bool _eldritchWarningAccepted = false;
@@ -372,6 +376,72 @@ namespace TFTV
                 }
             }
 
+            public static int ConvertDifficultyToIndexStartingEnemyForce()
+            {
+                try
+                {
+                    switch (SelectedDifficulty)
+                    {
+                        case 1: return 0; // Story
+                        case 2: return 0; // Rookie
+                        case 3: return 1; // Veteran
+                        case 4: return 2; // Hero
+                        case 5: return 3; // Legend
+                        case 6: return 4; // Eldritch
+                    }
+                    return 1;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            public static int ConvertDifficultyToIndexMaximumEnemyForce()
+            {
+                try
+                {
+                    switch (SelectedDifficulty)
+                    {
+                        case 1: return 0; // Story
+                        case 2: return 0; // Rookie
+                        case 3: return 1; // Veteran
+                        case 4: return 2; // Hero
+                        case 5: return 3; // Legend
+                        case 6: return 4; // Eldritch
+                    }
+                    return 1;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
+            public static int ConvertDifficultyToIndexEnemyEscalationSpeed()
+            {
+                try
+                {
+                    switch (SelectedDifficulty)
+                    {
+                        case 1: return 0; // Story
+                        case 2: return 0; // Rookie
+                        case 3: return 1; // Veteran
+                        case 4: return 2; // Hero
+                        case 5: return 3; // Legend
+                        case 6: return 4; // Eldritch
+                    }
+                    return 1;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
+
             public static int ConvertDifficultyToIndexInitialLootLevel()
             {
                 try
@@ -540,6 +610,16 @@ namespace TFTV
 
                     MethodInfo initialScarabLimitChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnInitialScarabLimitValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
                     initialScarabLimitChangedCallback.Invoke(gameSettings, new object[] { ConvertDifficultyToIndexScarabLimit(), _initialScarabLimit });
+
+                    MethodInfo startingEnemyForceChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnStartingEnemyForceValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
+                    startingEnemyForceChangedCallback.Invoke(gameSettings, new object[] { ConvertDifficultyToIndexStartingEnemyForce(), _startingEnemyForce });
+
+                    MethodInfo maximumEnemyForceChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnMaximumEnemyForceValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
+                    maximumEnemyForceChangedCallback.Invoke(gameSettings, new object[] { ConvertDifficultyToIndexMaximumEnemyForce(), _maximumEnemyForce });
+
+                    MethodInfo enemyEscalationSpeedChangedCallback = typeof(UIStateNewGeoscapeGameSettings_InitFullContent_patch).GetMethod("OnEnemyEscalationSpeedValueChangedCallback", BindingFlags.NonPublic | BindingFlags.Static);
+                    enemyEscalationSpeedChangedCallback.Invoke(gameSettings, new object[] { ConvertDifficultyToIndexEnemyEscalationSpeed(), _enemyEscalationSpeed });
+
                 }
 
 
@@ -668,6 +748,34 @@ namespace TFTV
 
 
             private static readonly string[] _optionsStartingSquad = { "UNBUFFED", "BUFFED", "RANDOM" };
+
+            private static readonly string[] _optionsStartingEnemyForce =
+{
+                "KEY_STARTING_ENEMY_FORCE_LIGHT", "KEY_STARTING_ENEMY_FORCE_STANDARD",
+                "KEY_STARTING_ENEMY_FORCE_ELEVATED", "KEY_STARTING_ENEMY_FORCE_HEAVY",
+                "KEY_STARTING_ENEMY_FORCE_EXTREME", "KEY_STARTING_ENEMY_FORCE_OVERWHELMING",
+                "KEY_STARTING_ENEMY_FORCE_CRUSHING", "KEY_STARTING_ENEMY_FORCE_NIGHTMARE"
+            };
+            private static readonly int[] _startingEnemyForceValues = { 450, 500, 575, 650, 812, 950, 1100, 1300 };
+
+            private static readonly string[] _optionsMaximumEnemyForce =
+            {
+                "KEY_MAXIMUM_ENEMY_FORCE_LIMITED", "KEY_MAXIMUM_ENEMY_FORCE_MODERATE",
+                "KEY_MAXIMUM_ENEMY_FORCE_STRONG", "KEY_MAXIMUM_ENEMY_FORCE_SEVERE",
+                "KEY_MAXIMUM_ENEMY_FORCE_EXTREME", "KEY_MAXIMUM_ENEMY_FORCE_OVERWHELMING",
+                "KEY_MAXIMUM_ENEMY_FORCE_CATASTROPHIC", "KEY_MAXIMUM_ENEMY_FORCE_APOCALYPTIC"
+            };
+            private static readonly int[] _maximumEnemyForceValues = { 1450, 1650, 1900, 2200, 3125, 3800, 4600, 5500 };
+
+            private static readonly string[] _optionsEnemyEscalationSpeed =
+            {
+                "KEY_ENEMY_ESCALATION_SPEED_GRADUAL", "KEY_ENEMY_ESCALATION_SPEED_MEASURED",
+                "KEY_ENEMY_ESCALATION_SPEED_STEADY", "KEY_ENEMY_ESCALATION_SPEED_FAST",
+                "KEY_ENEMY_ESCALATION_SPEED_RAPID", "KEY_ENEMY_ESCALATION_SPEED_RUTHLESS",
+                "KEY_ENEMY_ESCALATION_SPEED_RELENTLESS", "KEY_ENEMY_ESCALATION_SPEED_IMMEDIATE"
+            };
+            private static readonly int[] _enemyEscalationSpeedValues = { 170, 145, 120, 90, 72, 60, 48, 36 };
+
 
             private static List<ModSettingController> _newStartScavSettings = new List<ModSettingController>();
             private static List<ModSettingController> _additionalStartOptionsSettings = new List<ModSettingController>();
@@ -1126,6 +1234,10 @@ float lengthScale, List<ModSettingController> optionsType = null)
                         HelperMethods.InstantiateArrowPickerController("NoSecondChances", _optionsBool, ConvertBoolToInt(TFTVNewGameOptions.NoSecondChances), OnNoSecondChancesValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("EtermesVulnerabilityResistance", _optionsBool, Math.Max(TFTVNewGameOptions.EtermesResistanceAndVulnerability - 1, 0), OnEtermesVulnerabilityResistanceValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("ResourcesEvents", _amountPercentageResources, DefaultDifficulties.ConvertDifficultyToIndexEventsResources(), OnResourcesEventsValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+
+                        HelperMethods.InstantiateArrowPickerController("StartingEnemyForce", _optionsStartingEnemyForce, DefaultDifficulties.ConvertDifficultyToIndexStartingEnemyForce(), OnStartingEnemyForceValueChangedCallback, 1f, _additionalStartOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("MaximumEnemyForce", _optionsMaximumEnemyForce, DefaultDifficulties.ConvertDifficultyToIndexMaximumEnemyForce(), OnMaximumEnemyForceValueChangedCallback, 1f, _additionalStartOptionsSettings);
+                        HelperMethods.InstantiateArrowPickerController("EnemyEscalationSpeed", _optionsEnemyEscalationSpeed, DefaultDifficulties.ConvertDifficultyToIndexEnemyEscalationSpeed(), OnEnemyEscalationSpeedValueChangedCallback, 1f, _additionalStartOptionsSettings);
 
                         HelperMethods.InstantiateGameOptionViewController(_titleAnytimeOptions, _descriptionAnytimeOptions, "SetAnyTimeOptionsVisibility");
                         HelperMethods.InstantiateArrowPickerController("NoDropReinforcements", _optionsBool, ConvertBoolToInt(config.NoDropReinforcements), OnNoDropValueChangedCallback, 0.5f, _anytimeOptionsSettings);
@@ -2087,6 +2199,63 @@ float lengthScale, List<ModSettingController> optionsType = null)
                         }
                         arrowPickerController.CurrentItemText.text = _optionsVehicleLimit[newValue];
                         _initialScarabLimit = arrowPickerController;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnStartingEnemyForceValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        TFTVNewGameOptions.StartingEnemyForce = _startingEnemyForceValues[newValue];
+                        if (arrowPickerController == null)
+                        {
+                            return;
+                        }
+                        string[] options = _optionsStartingEnemyForce.Select(k => new LocalizedTextBind { LocalizationKey = k }.Localize()).ToArray();
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        _startingEnemyForce = arrowPickerController;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnMaximumEnemyForceValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        TFTVNewGameOptions.MaximumEnemyForce = _maximumEnemyForceValues[newValue];
+                        if (arrowPickerController == null)
+                        {
+                            return;
+                        }
+                        string[] options = _optionsMaximumEnemyForce.Select(k => new LocalizedTextBind { LocalizationKey = k }.Localize()).ToArray();
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        _maximumEnemyForce = arrowPickerController;
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static void OnEnemyEscalationSpeedValueChangedCallback(int newValue, ArrowPickerController arrowPickerController)
+                {
+                    try
+                    {
+                        TFTVNewGameOptions.EnemyEscalationSpeed = _enemyEscalationSpeedValues[newValue];
+                        if (arrowPickerController == null)
+                        {
+                            return;
+                        }
+                        string[] options = _optionsEnemyEscalationSpeed.Select(k => new LocalizedTextBind { LocalizationKey = k }.Localize()).ToArray();
+                        arrowPickerController.CurrentItemText.text = options[newValue];
+                        _enemyEscalationSpeed = arrowPickerController;
                     }
                     catch (Exception e)
                     {

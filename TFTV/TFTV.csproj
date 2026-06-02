@@ -226,6 +226,7 @@
     <Compile Include="TFTVMarketplace\TFTVMercenaries.cs" />
     <Compile Include="TFTVUI\Common\Various.cs" />
     <Compile Include="TFTVUI\Data.cs" />
+    <Compile Include="TFTVUI\Geoscape\AircraftOrder.cs" />
     <Compile Include="TFTVUI\Geoscape\Facilities.cs" />
     <Compile Include="TFTVUI\Geoscape\MissionDeployment.cs" />
     <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitAbilityIconView.cs" />
@@ -256,9 +257,7 @@
     <Compile Include="TFTVTimeScaling.cs" />
     <Compile Include="TFTVUI\Geoscape\TopInforBar.cs" />
     <Compile Include="TFTVUI\Personnel\DeliriumFaceShader.cs" />
-    <Compile Include="TFTVUI\Personnel\EditScreenMain.cs" />
     <Compile Include="TFTVUI\Personnel\Loadouts.cs" />
-    <Compile Include="TFTVUI\Personnel\LoadoutService.cs" />
     <Compile Include="TFTVUI\Personnel\Mutoids.cs" />
     <Compile Include="TFTVUI\Personnel\ShowWithoutHelmet.cs" />
     <Compile Include="TFTVUI\Tactical\Ancients.cs" />

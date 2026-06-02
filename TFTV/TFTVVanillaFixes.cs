@@ -88,6 +88,8 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
+     
+
         [HarmonyPatch(typeof(UIInventoryDropArea), "InitForItem", new Type[]
     {
         typeof(ICommonItem)
@@ -287,7 +289,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIInventorySlot), "UpdateItem")]
+       /* [HarmonyPatch(typeof(UIInventorySlot), "UpdateItem")]
         public static class InventoryStackCounterPatch
         {
             public static void Postfix(UIInventorySlot __instance)
@@ -309,7 +311,7 @@ namespace TFTV
 
                 __instance.NumericField.text = __instance.Item.CommonItemData.Count.ToString();
             }
-        }
+        }*/
 
         [HarmonyPatch(typeof(TacticalActorViewBase), nameof(TacticalActorViewBase.GetStatusesFiltered))]
         public static class TacticalActorViewBase_GetStatusesFiltered_patch
@@ -1749,12 +1751,7 @@ namespace TFTV
         internal class Tactical
         {
 
-            internal class HavenDefendersFullAPFix
-            {
-
-
-
-            }
+          
             internal static class RetrieveDeployedItemAbility_RetrieveTurretCrt_Patch
             {
                 internal static class RetrieveTurretStateStore
@@ -2671,62 +2668,6 @@ namespace TFTV
 
 
 
-            /*  internal class TacticalSavesAIBug
-              {
-                  [HarmonyPatch(typeof(TacticalActor), nameof(TacticalActor.StartTurn))]
-                  internal static class TacticalActorStartTurnPatch
-                  {
-                      private static readonly FieldInfo AbilityUsesThisTurnField = AccessTools.Field(typeof(TacticalActor), "__abilityUsesThisTurn");
-
-
-                      public static void Prefix(TacticalActor __instance, bool ____currentlyDeserializing)
-                      {
-                          try
-                          {
-
-
-
-                              if (__instance == null)
-                              {
-                                  return;
-                              }
-
-                              //  TFTVLogger.Always($"Start Turn for TacticalActor {__instance?.DisplayName}");
-
-                              if (__instance.AbilityTraits.Contains(TacticalActor.DoNotResetThisTurnTrait))
-                              {
-                                  //  TFTVLogger.Always($"TacticalActor has DoNotResetThisTurnTrait");
-
-                                  return;
-                              }
-
-
-
-                              if (!____currentlyDeserializing)
-                              {
-                                  //  TFTVLogger.Always($"TacticalActor is not deserializing");
-                                  return;
-                              }
-
-                              //  TFTVLogger.Always($"AbilityUsesThisTurnField null? {AbilityUsesThisTurnField == null}");
-
-                              if (AbilityUsesThisTurnField.GetValue(__instance) is Dictionary<TacticalAbilityDef, int> abilityUses)
-                              {
-                                  abilityUses.Clear();
-                              }
-
-
-                              return;
-                          }
-                          catch (Exception e)
-                          {
-                              TFTVLogger.Error(e);
-                              throw;
-                          }
-                      }
-                  }
-              }*/
-
             internal class DecimalWillpoints
             {
 
@@ -2856,66 +2797,7 @@ namespace TFTV
 
             }
 
-            /* internal class UmbraFire
-             {
-                 /// <summary>
-                 /// Fixes Umbra appearing when host had fire status
-                 /// </summary>
-                 /// <param name="tacticalActorBase"></param>
-                 /// <returns></returns>
-                 private static bool CheckUmbraEffectAndFire(TacticalActorBase tacticalActorBase)
-                 {
-                     try
-                     {
-                         DeathBelcherAbilityDef umbraCrabDeathBelcher = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef");
-                         DeathBelcherAbilityDef umbraFishDeathBelcher = DefCache.GetDef<DeathBelcherAbilityDef>("Oilfish_Die_DeathBelcher_AbilityDef");
-
-
-                         if (tacticalActorBase is TacticalActor tacticalActor &&
-                             tacticalActor.Status != null && (
-                             tacticalActor.GetAbilityWithDef<DeathBelcherAbility>(umbraCrabDeathBelcher) != null
-                             || tacticalActor.GetAbilityWithDef<DeathBelcherAbility>(umbraFishDeathBelcher) != null) &&
-                             tacticalActor.Status.HasStatus<FireStatus>())
-                         {
-                             return true;
-
-                         }
-                         return false;
-
-
-                     }
-                     catch (Exception e)
-                     {
-                         TFTVLogger.Error(e);
-                         throw;
-                     }
-                 }
-
-                 [HarmonyPatch(typeof(TacticalActorBase), "Die")] //VERIFIED
-                 public static class TacticalActorBase_Die_patch
-                 {
-                     public static void Prefix(TacticalActorBase __instance)
-                     {
-                         try
-                         {
-                             if (CheckUmbraEffectAndFire(__instance))
-                             {
-                                 PropertyInfo propertyInfo = typeof(TacticalActorBase).GetProperty("LastDamageType", BindingFlags.Public | BindingFlags.Instance);
-
-                                 propertyInfo.SetValue(__instance, DefCache.GetDef<StandardDamageTypeEffectDef>("Fire_StandardDamageTypeEffectDef"));
-                                 // TFTVLogger.Always($"Last damage source set to fire for {__instance.name}, check {__instance.LastDamageType.name}");                       
-                             }
-
-                         }
-                         catch (Exception e)
-                         {
-                             TFTVLogger.Error(e);
-                             throw;
-                         }
-                     }
-                 }
-
-             }*/
+           
 
             internal class AI
             {

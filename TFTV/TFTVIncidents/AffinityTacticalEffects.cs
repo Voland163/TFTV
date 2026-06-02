@@ -296,6 +296,14 @@ namespace TFTV.TFTVIncidents
                             return;
                         }
 
+                        // Haven defenders are hostile under Void Omen #5 – boosting their deployment
+                        // count would only benefit the enemy.
+                        if (TFTVVoidOmens.VoidOmensCheck[5])
+                        {
+                            TFTVLogger.Always($"{DiagTag} Skipping Psycho-Sociology haven-defense deployment bonus: haven defenders are hostile (VO#5 active).");
+                            return;
+                        }
+
                         GeoLevelController level = mission.Site.GeoLevel;
                         int bestRank = GetBestGeoRankForTacticalBenefit(
                             level,
@@ -469,6 +477,14 @@ namespace TFTV.TFTVIncidents
                 {
                     if (!IsHavenDefenseMission(level))
                     {
+                        return;
+                    }
+
+                    // Haven defenders are hostile under Void Omen #5 – affinity benefits that rely on
+                    // friendly defenders must not run in that case.
+                    if (TFTVVoidOmens.VoidOmensCheck[5])
+                    {
+                        TFTVLogger.Always($"{DiagTag} Skipping Exploration haven-defense benefit: haven defenders are hostile (VO#5 active).");
                         return;
                     }
 

@@ -40,7 +40,7 @@ namespace TFTV
                         }
 
                         CheckAircraftScannerAbility(vehicle);
-                       
+
                     }
                     catch (Exception e)
                     {
@@ -189,7 +189,7 @@ namespace TFTV
                         }
 
                         GeoSite geoSite = geoVehicle?.CurrentSite;
-                     
+
                         if (geoSite != null)
                         {
                             int geoSiteId = geoSite.SiteId;
@@ -528,7 +528,7 @@ namespace TFTV
 
                             if (scanner == null)
                             {
-                              //  TFTVLogger.Always($"[GeoScanComponent.DetectSite] scanner is null! This is unexpected");
+                                //  TFTVLogger.Always($"[GeoScanComponent.DetectSite] scanner is null! This is unexpected");
                                 return false;
                             }
 
@@ -536,7 +536,7 @@ namespace TFTV
 
                             if (scannerLocationGeoSite == null)
                             {
-                              //  TFTVLogger.Always($"[GeoScanComponent.DetectSite] geoSite is null! This is unexpected");
+                                //  TFTVLogger.Always($"[GeoScanComponent.DetectSite] geoSite is null! This is unexpected");
                                 return false;
                             }
 
@@ -549,7 +549,7 @@ namespace TFTV
 
                             if (!AircraftScanningSites.ContainsKey(scannerLocationGeoSiteId))
                             {
-                               // TFTVLogger.Always($"[GeoScanComponent.DetectSite] ScannerLocationSiteId not in the dictionary! This is unexpected");
+                                // TFTVLogger.Always($"[GeoScanComponent.DetectSite] ScannerLocationSiteId not in the dictionary! This is unexpected");
                                 AircraftScanningSites.Add(scannerLocationGeoSiteId, new List<int>());
                             }
 
@@ -576,11 +576,11 @@ namespace TFTV
                             int num = UnityEngine.Random.Range(0, 100);
                             if (num < chance)
                             {
-                               // TFTVLogger.Always($"rolled {num} Not revealing {site?.name}");
+                                // TFTVLogger.Always($"rolled {num} Not revealing {site?.name}");
                                 return false;
                             }
 
-                           // TFTVLogger.Always($"rolled {num} revealing {site?.name}");
+                            // TFTVLogger.Always($"rolled {num} revealing {site?.name}");
                         }
 
                         return true;
@@ -637,16 +637,17 @@ namespace TFTV
             // ── Context DTO populated in TryRevealAlienBase and consumed by the modal ──
             internal class ColonyDetectionContext
             {
+
                 internal bool SatelliteUplinkInRange;
                 internal bool OutpostToss1Succeeded;
-                internal bool OutpostToss2Succeeded;
-                internal bool OutpostWasInRange;           // true even if both tosses failed
+                internal bool OutpostWasInRange;
                 internal bool ExplorationAffinityTriggered;
                 internal string ExplorationOperativeName;
                 internal int ExplorationAffinityRank;
-                internal int ExplorationAffinityChance;    // detectionChance at roll time
-                internal int PreviousTracingAttempts;      // _baseAttacksCounter BEFORE this call
-                internal float IncrementalRevealChance;    // AlienBaseTypeDef.IncrementalRevealChance
+                internal int ExplorationAffinityChance;
+                internal int PreviousTracingAttempts;
+                internal float IncrementalRevealChance;
+                internal float BaseRevealChance;          // AlienBaseTypeDef.BaseRevealChance
                 internal bool Detected;
 
                 internal static readonly ColonyDetectionContext Last = new ColonyDetectionContext();
@@ -655,7 +656,6 @@ namespace TFTV
                 {
                     SatelliteUplinkInRange = false;
                     OutpostToss1Succeeded = false;
-                    OutpostToss2Succeeded = false;
                     OutpostWasInRange = false;
                     ExplorationAffinityTriggered = false;
                     ExplorationOperativeName = null;
@@ -663,8 +663,10 @@ namespace TFTV
                     ExplorationAffinityChance = 0;
                     PreviousTracingAttempts = 0;
                     IncrementalRevealChance = 0f;
+                    BaseRevealChance = 0f;
                     Detected = false;
                 }
+
             }
 
             [HarmonyPatch(typeof(PandoranBaseRevealDataBind), "ModalShowHandler", new[] { typeof(UIModal) })]
@@ -696,6 +698,14 @@ namespace TFTV
                         sb.AppendLine();
                         sb.AppendLine("Detection contributors:");
 
+                        // Base + effective detection chance
+                        int baseChancePct = (int)(ctx.BaseRevealChance * 100f);
+                        int effectiveChancePct = Math.Min(100,
+                            (int)(ctx.BaseRevealChance * 100f
+                                + ctx.IncrementalRevealChance * 100f * ctx.PreviousTracingAttempts));
+                        sb.AppendLine($"  Base detection chance: {baseChancePct}%  |  Effective chance: {effectiveChancePct}%");
+                        sb.AppendLine();
+
                         // Satellite Uplink
                         if (ctx.SatelliteUplinkInRange)
                             sb.AppendLine("  + Satellite Uplink: in range");
@@ -706,8 +716,7 @@ namespace TFTV
                         if (ctx.OutpostWasInRange)
                         {
                             string toss1 = ctx.OutpostToss1Succeeded ? "success" : "failed";
-                            string toss2 = ctx.OutpostToss2Succeeded ? "success" : "failed";
-                            sb.AppendLine($"  + Outpost: in range (roll 1: {toss1}, roll 2: {toss2})");
+                            sb.AppendLine($"  + Outpost: in range ({toss1})");
                         }
                         else
                         {
@@ -765,6 +774,7 @@ namespace TFTV
                             // Capture counter and reveal chance BEFORE any increments
                             ctx.PreviousTracingAttempts = component.BaseAttacksCounter;
                             ctx.IncrementalRevealChance = component.AlienBaseTypeDef?.IncrementalRevealChance ?? 0f;
+                            ctx.BaseRevealChance = component.AlienBaseTypeDef?.BaseRevealChance ?? 0f;
 
                             if (revealToFaction is GeoPhoenixFaction geoPhoenixFaction)
                             {
@@ -799,10 +809,6 @@ namespace TFTV
                                 {
                                     ctx.OutpostToss1Succeeded = UnityEngine.Random.Range(0, 100) < 50;
                                     if (ctx.OutpostToss1Succeeded)
-                                        component.IncrementBaseAttacksRevealCounter();
-
-                                    ctx.OutpostToss2Succeeded = UnityEngine.Random.Range(0, 100) < 50;
-                                    if (ctx.OutpostToss2Succeeded)
                                         component.IncrementBaseAttacksRevealCounter();
                                 }
 

@@ -45,7 +45,7 @@ namespace PRMBetterClasses.VariousAdjustments
             // Fix Regen Torso to also regenerate health in vehicles
             Fix_RegenTorso();
             // Fix for Triton Elite bloodsucker arms
-            Fix_TritonElite();
+            // Fix_TritonElite(); should be fixed in 1.30.2
             // Change Advanced Laser research to require advanced technician weapons
             Change_AdvancedResearches();
             // Change Stimpack: Restores 2AP, Heal 1HP to every body part. Disabled Body Parts are restored.

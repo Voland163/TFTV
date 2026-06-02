@@ -1,5 +1,10 @@
-﻿using PhoenixPoint.Geoscape.Levels;
+﻿using Base.Core;
+using HarmonyLib;
+using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.DifficultySystem;
+using PhoenixPoint.Geoscape.Levels;
 using System;
+using UnityEngine;
 
 namespace TFTV
 {
@@ -9,6 +14,48 @@ namespace TFTV
         public static bool IsReworkEnabled()
         {
             return TFTVAircraftReworkMain.AircraftReworkOn;
+        }
+
+        [HarmonyPatch(typeof(DynamicDifficultySystem), nameof(DynamicDifficultySystem.GetCalculatedDeployment))]
+        public static class DynamicDifficultySystem_GetCalculatedDeployment_Patch
+        {
+            public static bool Prefix(DynamicDifficultySystem __instance, GeoMission mission, ref int __result)
+            {
+                try
+                {
+                    if (!TFTVNewGameOptions.ConfigImplemented)
+                    {
+                        return true;
+                    }
+
+                    GameThreatLevelDef threatLevelDef = __instance.GetThreatLevelDef(mission.ThreatLevel);
+                    GeoLevelController level = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
+
+                    int days = (level.Timing.Now - level.Timing.StartTime).TimeSpan.Days;
+
+                    int startingForce = TFTVNewGameOptions.StartingEnemyForce;
+                    int maximumForce = TFTVNewGameOptions.MaximumEnemyForce;
+                    int escalationDays = TFTVNewGameOptions.EnemyEscalationSpeed;
+
+                    // Same formula as vanilla, substituting our configurable values for the
+                    // difficulty-def fields (InitialDeploymentPoints, FinalDeploymentPoints,
+                    // DaysToReachFinalDeployment).
+                    float ratePerDay = (float)(maximumForce - startingForce) / (float)escalationDays;
+                    float raw = ((float)startingForce + (float)days * ratePerDay) * threatLevelDef.ThreatLevelModifier;
+
+                    __result = Mathf.CeilToInt(Mathf.Clamp(raw, (float)startingForce, (float)maximumForce));
+
+                    TFTVLogger.Always($"[EnemyForce] day={days} start={startingForce} max={maximumForce} escalDays={escalationDays} " +
+                        $"threat={mission.ThreatLevel} threatMod={threatLevelDef.ThreatLevelModifier:F2} result={__result}");
+
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    return true;
+                }
+            }
         }
 
 
@@ -85,6 +132,9 @@ namespace TFTV
 
         public static int initialScavSites = 8; // 16 on Vanilla
 
+        public static int StartingEnemyForce = 500;   // index 1 = Standard
+        public static int MaximumEnemyForce = 1650;   // index 1 = Moderate
+        public static int EnemyEscalationSpeed = 145; // index 1 = Measured
         public enum ScavengingWeight
         {
             High, Medium, Low, None
@@ -156,6 +206,55 @@ namespace TFTV
             }
         }
 
+
+        public static void SetEnemyForceOptionDefaults(int difficulty)
+        {
+            try
+            {
+                // Story and Rookie share index 0; each step up advances by one index.
+                // Index maps: 0=Light/Limited/Gradual, 1=Standard/Moderate/Measured, ...
+                switch (difficulty)
+                {
+                    case 1: // Story
+                        StartingEnemyForce = 450;
+                        MaximumEnemyForce = 1450;
+                        EnemyEscalationSpeed = 170;
+                        break;
+                    case 2: // Rookie
+                        StartingEnemyForce = 450;
+                        MaximumEnemyForce = 1450;
+                        EnemyEscalationSpeed = 170;
+                        break;
+                    case 3: // Veteran
+                        StartingEnemyForce = 500;
+                        MaximumEnemyForce = 1650;
+                        EnemyEscalationSpeed = 145;
+                        break;
+                    case 4: // Hero
+                        StartingEnemyForce = 575;
+                        MaximumEnemyForce = 1900;
+                        EnemyEscalationSpeed = 120;
+                        break;
+                    case 5: // Legend
+                        StartingEnemyForce = 650;
+                        MaximumEnemyForce = 2200;
+                        EnemyEscalationSpeed = 90;
+                        break;
+                    default: // Eldritch+
+                        StartingEnemyForce = 812;
+                        MaximumEnemyForce = 3125;
+                        EnemyEscalationSpeed = 72;
+                        break;
+                }
+
+                TFTVLogger.Always($"[EnemyForce] SetEnemyForceOptionDefaults for difficulty {difficulty}: " +
+                    $"StartingEnemyForce={StartingEnemyForce} MaximumEnemyForce={MaximumEnemyForce} EnemyEscalationSpeed={EnemyEscalationSpeed}");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
 
         public static void SetInternalConfigOptions(GeoLevelController geoLevelController)
         {
@@ -242,6 +341,8 @@ namespace TFTV
                     LimitedHarvestingSetting = false;
                     NoSecondChances = false;
                 }
+
+                SetEnemyForceOptionDefaults(difficulty);
 
                 ConfigImplemented = true;
             }

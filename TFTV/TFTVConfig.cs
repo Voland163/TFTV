@@ -50,7 +50,7 @@ namespace TFTV
         public bool ShowAmbushExfil = false;
         public bool SkipFSTutorial = false;
         public bool CustomPortraits = false;
-        public bool HandGrenadeScatter = false;
+        public bool HandGrenadeScatter = true;
         public bool EquipBeforeAmbush = true;
         public bool TFTVSuppression = false;
         public bool ShowMeleeThreatMarkers = false;

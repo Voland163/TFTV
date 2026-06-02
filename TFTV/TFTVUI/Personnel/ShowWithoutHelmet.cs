@@ -61,6 +61,10 @@ namespace TFTV.TFTVUI.Personnel
         {
             try
             {
+                // Always sync HelmetsOff from stored preference so early calls (before level loads)
+                // don't leave the icon/label stale once the real value is available
+                HelmetsOff = GetStoredHelmetPreference();
+
                 PhoenixGeneralButton helmetToggleButton = Loadouts.HelmetToggle;
                 Image icon = GetHelmetToggleButtonIcon(helmetToggleButton);
 
@@ -70,12 +74,16 @@ namespace TFTV.TFTVUI.Personnel
                         ? "TFTV_helmet_on_icon.png"
                         : "TFTV_helmet_off_icon.png");
                 }
+
+                Loadouts.UpdateHelmetButtonLabel();
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
         }
+
+
 
         private static bool GetStoredHelmetPreference()
         {
