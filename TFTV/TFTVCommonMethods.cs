@@ -155,8 +155,7 @@ namespace TFTV
 
                 TFTVEvacAll.ClearData();
 
-                TFTVDragandDropFunctionality.VehicleRoster.PlayerVehicles = new List<int>();
-                TFTVDragandDropFunctionality.VehicleRoster.AircraftHotkeysBindingsApplied = false;
+                AircraftOrderWithoutVehicleId.LoadPlayerVehicleOrderIds(null);
                 TFTVVanillaFixes.UI.ShowPerceptionCirclesBindingApplied = false;
 
                 TFTVNJQuestline.IntroMission.ClearDataOnMissionRestartLoadAndStateChange();

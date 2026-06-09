@@ -734,7 +734,7 @@ namespace TFTV
 
 
                     InputAction inputAction = CreateHotkey(keyCode, x.ToString(), $"SelectAircraft{x}", InputAction.ActionCategory.Geoscape, hash, DefCache.GetDef<InputSetDef>("SetVehicleSelectedControls"));
-                    TFTVDragandDropFunctionality.VehicleRoster.ActionsAircraftHotkeys.Add(inputAction);
+                    AircraftOrderWithoutVehicleId.RegisterAircraftHotkeyAction(inputAction, x - 1);
                 }
 
 

@@ -88,7 +88,36 @@ namespace TFTV
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefRepository Repo = TFTVMain.Repo;
 
-     
+
+        [HarmonyPatch(typeof(ResearchRequirement), nameof(ResearchRequirement.Initialize))]
+        internal static class CaptureActorResearchRequirementInitializePatch
+        {
+            private static readonly MethodInfo UpdateProgressMethod = AccessTools.Method(typeof(ResearchRequirement), "UpdateProgress");
+
+            [HarmonyPostfix]
+            private static void ApplyExistingCapturedUnits(ResearchRequirement __instance, ResearchRequirementDef def, GeoFaction faction)
+            {
+                CaptureActorResearchRequirement captureRequirement = __instance as CaptureActorResearchRequirement;
+                GeoPhoenixFaction phoenixFaction = faction as GeoPhoenixFaction;
+                if (captureRequirement == null || phoenixFaction == null || def == null || !def.IsRetroactive || __instance.IsCompleted)
+                {
+                    return;
+                }
+
+                int matchingCapturedUnits = phoenixFaction.CapturedUnits.Count((unit) => captureRequirement.IsValidUnit(unit));
+                int progressToApply = Math.Min(matchingCapturedUnits, __instance.Total) - __instance.Progress;
+                if (progressToApply <= 0)
+                {
+                    return;
+                }
+
+                UpdateProgressMethod.Invoke(__instance, new object[]
+                {
+                progressToApply
+                });
+            }
+        }
+
 
         [HarmonyPatch(typeof(UIInventoryDropArea), "InitForItem", new Type[]
     {
@@ -656,30 +685,7 @@ namespace TFTV
 
 
 
-            //Prevents evacuated characters from spotting enemies
-            //Put in Aircraft rework, Anu Mist Module
-            /*    [HarmonyPatch(typeof(TacticalFactionVision), "ReUpdateVisibilityTowardsActorImpl")]
-                public static class TFTV_TacticalFactionVision_ReUpdateVisibilityTowardsActorImpl_patch
-                {
-                    private static bool Prefix(TacticalActorBase fromActor, TacticalActorBase targetActor, float basePerceptionRange, ref bool __result)
-                    {
-                        try
-                        {
-                            if (fromActor is TacticalActor tacticalActor && tacticalActor.IsEvacuated)
-                            {
-                                __result = false;
-                                return false;
-                            }
-
-                            return true;
-                        }
-                        catch (Exception e)
-                        {
-                            TFTVLogger.Error(e);
-                            throw;
-                        }
-                    }
-                }*/
+          
 
         }
 
@@ -740,68 +746,7 @@ namespace TFTV
                 }
             }
 
-            //Removed as now in base game
-            //Code provided by Codemite
-            /*  [HarmonyPatch(typeof(UIInventorySlot), nameof(UIInventorySlot.UpdateItem))]
-              public static class UIInventorySlot_UpdateItem_patch
-              {
-                  public static void Postfix(UIInventorySlot __instance, ICommonItem ____item)
-                  {
-                      try
-                      {
-                          if (____item == null || ____item.CommonItemData.Count == 1 && (____item.CommonItemData.CurrentCharges == ____item.ItemDef.ChargesMax || ____item.CommonItemData.CurrentCharges == 0))
-                          {
-                              __instance.NumericBackground.gameObject.SetActive(false);
-                          }
-                          else
-                          {
-                              __instance.NumericBackground.gameObject.SetActive(true);
-
-                              if (____item.CommonItemData.CurrentCharges == ____item.ItemDef.ChargesMax)
-                              {
-                                  __instance.NumericField.text = ____item.CommonItemData.Count.ToString();
-                              }
-                              else
-                              {
-                                  string ammoCount = $"{____item.CommonItemData.CurrentCharges}/{____item.ItemDef.ChargesMax}";
-                                  string textToShow;
-                                  string greyColor = "<color=#b6b6b6>";
-
-                                  if (____item.CommonItemData.Count - 1 == 0)
-                                  {
-                                      if (____item.ItemDef.Tags.Contains(Shared.SharedGameTags.AmmoTag))
-                                      {
-                                          textToShow = $"{greyColor}(1) {ammoCount}</color>";
-                                      }
-                                      else
-                                      {
-                                          textToShow = $"{greyColor} {ammoCount}</color>";
-                                      }
-                                  }
-                                  else if (____item.ItemDef is WeaponDef weaponDef)
-                                  {
-                                      textToShow = ____item.CommonItemData.Count.ToString();
-                                  }
-                                  else
-                                  {
-
-                                      textToShow = $"{____item.CommonItemData.Count - 1} {greyColor}+ {____item.CommonItemData.CurrentCharges}/{____item.ItemDef.ChargesMax}</color>";
-                                  }
-
-                                  __instance.NumericField.text = textToShow;
-                                  __instance.NumericField.alignment = TextAnchor.MiddleLeft;
-                              }
-                          }
-
-                          // return false;
-                      }
-                      catch (Exception e)
-                      {
-                          TFTVLogger.Error(e);
-                          throw;
-                      }
-                  }
-              }*/
+          
 
 
 
@@ -1113,7 +1058,7 @@ namespace TFTV
                           }
                           else if (GameUtl.CurrentLevel() != null && GameUtl.CurrentLevel().GetComponent<GeoLevelController>() != null)
                           {
-                              List<InputAction> aircraftSelectKeys = TFTVDragandDropFunctionality.VehicleRoster.ActionsAircraftHotkeys;
+                              List<InputAction> aircraftSelectKeys = AircraftOrderWithoutVehicleId.ActionsAircraftHotkeys;
 
                               foreach (InputAction inputAction in aircraftSelectKeys.Where(ia => !____activeActionsMap.Contains(ia)))
                               {

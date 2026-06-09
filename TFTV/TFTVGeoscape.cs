@@ -92,6 +92,8 @@ namespace TFTV
         public List<BankedAffinitySave> BankedAffinityTransfers;
         public List<string> CompletedIncidentTimers;
         public bool NewPowerManagement;
+
+        public bool RevenantCaptured;
     }
 
 
@@ -154,6 +156,7 @@ namespace TFTV
             }
 
             TFTVBetaSaveGamesFixes.ConvertAncientRefinerySitesToHarvestSites(Controller);
+            AircraftOrderWithoutVehicleId.RestoreVehicleOrder(Controller);
             TFTVLogger.Always($"Geoscape start finished");
             // TFTVExperimental.ResearchCalendarUtility.LogCalendars(Controller);
 
@@ -214,7 +217,6 @@ namespace TFTV
             //  TFTVLogger.Always($"Items currently available in Aircraft inventory {TFTVUI.CurrentlyAvailableInv.Values.Count}");
             //  TFTVLogger.Always($"Items currently hidden in Aircraft inventory {TFTVUI.CurrentlyHiddenInv.Values.Count}");
             TFTVRevenant.RecordUpkeep.UpdateRevenantTimer(Controller);
-            TFTVDragandDropFunctionality.VehicleRoster.RecordVehicleOrder(Controller);
             TFTVBehemothAndRaids.InternalData.JustInCaseBehemothScenicRouteAndTargetClear();
             AffinityInheritance.ReconcileOperativeAffinities(Controller);
 
@@ -268,8 +270,9 @@ namespace TFTV
                 PandoransContainmentBaseAttack = TFTVBaseDefenseGeoscape.PandoransThatCanEscape,
                 BaseDefensePandoranBreach = TFTVBaseDefenseGeoscape.ContainmentBreachSchedule,
                 RevenantPoints = TFTVRevenant.TFTVRevenantResearch.RevenantPoints,
+                RevenantCaptured = TFTVRevenant.TFTVRevenantResearch.RevenantCaptured,
                 CharacterPortraits = TFTVCustomPortraits.CharacterPortrait.characterPics,
-                PlayerVehicles = TFTVDragandDropFunctionality.VehicleRoster.PlayerVehicles,
+                PlayerVehicles = AircraftOrderWithoutVehicleId.GetPlayerVehicleOrderIdsSnapshot(),
                 AircraftScanningSites = AircraftReworkGeoscape.Scanning.AircraftScanningSites,
                 NewTrainingFacilities = TFTVNewGameOptions.NewTrainingFacilities,
                 BaseRework = TFTVNewGameOptions.BaseRework,
@@ -302,6 +305,8 @@ namespace TFTV
                 TFTVBehemothAndRaids.checkHammerfall = data.checkHammerfall;
                 TFTVRevenant.DeadSoldiersDelirium = data.DeadSoldiersDelirium;
                 TFTVRevenant.daysRevenantLastSeen = data.timeRevenantLasteSeenSaveData;
+                TFTVRevenant.TFTVRevenantResearch.RevenantPoints = data.RevenantPoints;       
+                TFTVRevenant.TFTVRevenantResearch.RevenantCaptured = data.RevenantCaptured;   
                 TFTVBehemothAndRaids.behemothScenicRoute = data.behemothScenicRoute;
                 TFTVBehemothAndRaids.behemothTarget = data.behemothTarget;
                 TFTVBehemothAndRaids.behemothWaitHours = data.behemothWaitHours;
@@ -337,7 +342,7 @@ namespace TFTV
 
                 if (data.PlayerVehicles != null)
                 {
-                    TFTVDragandDropFunctionality.VehicleRoster.PlayerVehicles = data.PlayerVehicles;
+                    AircraftOrderWithoutVehicleId.LoadPlayerVehicleOrderIds(data.PlayerVehicles);
                 }
 
                 if (data.PandoransContainmentBaseAttack != null)
@@ -465,7 +470,7 @@ namespace TFTV
                     $"\nBaseRework: {TFTVNewGameOptions.BaseRework}");
 
                 TFTVDefsWithConfigDependency.ImplementConfigChoices();
-                TFTVDragandDropFunctionality.VehicleRoster.RestoreVehicleOrder(Controller);
+                AircraftOrderWithoutVehicleId.RestoreVehicleOrder(Controller);
                 AircraftReworkGeoscape.Scanning.AircraftScanningSites = data.AircraftScanningSites;
                 TFTVBetaSaveGamesFixes.FirebirdGeoFixMissingHarvestingComponentConvertedSites(Controller);
 

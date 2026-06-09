@@ -39,7 +39,7 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
-        [HarmonyPatch(typeof(UIStateRosterDeployment))]
+       /* [HarmonyPatch(typeof(UIStateRosterDeployment))]
         internal static class UIStateRosterDeploymentLoadLoadoutsPatch
         {
             private static readonly FieldInfo DeploymentItemsField = AccessTools.Field(typeof(UIStateRosterDeployment), "_deploymentItems");
@@ -366,7 +366,7 @@ namespace TFTV
                 FieldInfo fieldInfo = (loadout != null) ? AccessTools.Field(loadout.GetType(), fieldName) : null;
                 return (fieldInfo != null) ? (fieldInfo.GetValue(loadout) as IEnumerable<GeoItem>) : null;
             }
-        }
+        }*/
 
 
         [HarmonyPatch(typeof(DamageAccumulation), nameof(DamageAccumulation.AddTarget))]

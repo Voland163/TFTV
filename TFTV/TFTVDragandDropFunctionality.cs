@@ -546,85 +546,14 @@ namespace TFTV
         internal class VehicleRoster
         {
 
-            public static List<InputAction> ActionsAircraftHotkeys = new List<InputAction>();
-            public static bool AircraftHotkeysBindingsApplied = false;
+            public static List<InputAction> ActionsAircraftHotkeys => AircraftOrderWithoutVehicleId.ActionsAircraftHotkeys;
 
-
-            [HarmonyPatch(typeof(UIStateVehicleSelected), "OnInputEvent")] //VERIFIED
-            public static class UIStateVehicleSelected_OnInputEvent_patch
-            {
-
-                public static void Postfix(UIStateVehicleSelected __instance, InputEvent ev)
-                {
-                    try
-                    {
-                        GeoLevelController controller = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-                        MethodInfo method = typeof(UIStateVehicleSelected).GetMethod("SelectVehicle", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                        GeoscapeViewContext geoscapeViewContext = (GeoscapeViewContext)typeof(GeoscapeView).GetField("_context", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(controller.View);
-
-                        InputController inputController = geoscapeViewContext.Input;
-
-                        FieldInfo field = inputController.GetType().GetField("_activeActionsMap", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                        InputAction[] inputActions = (InputAction[])field.GetValue(inputController);
-
-                        if (!AircraftHotkeysBindingsApplied)
-                        {
-                            foreach (InputAction inputAction in ActionsAircraftHotkeys.Where(ia => !inputActions.Contains(ia)))
-                            {
-                                // TFTVLogger.Always($"{inputAction.Name} not found! adding to the list");
-                                inputController.ApplyKeybinding(inputAction);
-
-                            }
-                            AircraftHotkeysBindingsApplied = true;
-                        }
-
-
-                        if (ev.Type == InputEventType.Pressed)
-                        {
-                            // TFTVLogger.Always($"evName: {ev.Name}");
-
-                            if (ActionsAircraftHotkeys.Any(a => a.Name == ev.Name))
-                            {
-                                int id = int.Parse(ActionsAircraftHotkeys.FirstOrDefault(a => a.Name == ev.Name).Chords[0].Keys[0].Name);
-                                GeoVehicle vehicle = controller.PhoenixFaction.Vehicles.FirstOrDefault(v => v.VehicleID == id);
-                                if (vehicle != null)
-                                {
-                                    method.Invoke(__instance, new object[] { vehicle, true });
-                                }
-                            }
-                        }
-
-
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw;
-                    }
-                }
-            }
-
-
-            public static List<int> PlayerVehicles = new List<int>();
-
+          
             public static void RecordVehicleOrder(GeoLevelController controller)
             {
                 try
                 {
-                    PlayerVehicles.Clear();
-                    GeoPhoenixFaction phoenixFaction = controller.PhoenixFaction;
-                    FieldInfo fieldInfo = controller.Map.GetType().GetField("_factionVehiclesCache", BindingFlags.NonPublic | BindingFlags.Instance);
-                    FactionActorCache<GeoVehicle> factionActorCache = (FactionActorCache<GeoVehicle>)fieldInfo.GetValue(phoenixFaction.GeoLevel.Map);
-                    List<GeoVehicle> vehicles = factionActorCache.Cache[phoenixFaction];
-                    for (int x = 0; x < vehicles.Count; x++)
-                    {
-                        vehicles[x].VehicleID = x + 1;
-                        PlayerVehicles.Add(vehicles[x].VehicleID);
-                        TFTVLogger.Always($"Recording {vehicles[x].Name} {vehicles[x].VehicleID}");
-                    }
-
+                    AircraftOrderWithoutVehicleId.RecordVehicleOrder(controller);
                 }
                 catch (Exception e)
                 {
@@ -638,73 +567,8 @@ namespace TFTV
             {
                 try
                 {
-                    if (PlayerVehicles != null && PlayerVehicles.Count > 0)
-                    {
-                        GeoPhoenixFaction phoenixFaction = controller.PhoenixFaction;
-                        FieldInfo fieldInfo = phoenixFaction.GeoLevel.Map.GetType().GetField("_factionVehiclesCache", BindingFlags.NonPublic | BindingFlags.Instance);
 
-                        FactionActorCache<GeoVehicle> factionActorCache = (FactionActorCache<GeoVehicle>)fieldInfo.GetValue(phoenixFaction.GeoLevel.Map);
-
-                        if (factionActorCache == null)
-                        {
-                            TFTVLogger.Always($"factionActorCache was null! aborting");
-                            return;
-                        }
-
-                        if (!factionActorCache.Cache.ContainsKey(phoenixFaction))
-                        {
-                            TFTVLogger.Always($"PhoenixFaction not in factionActorCache.Cache! aborting");
-                            return;
-                        }
-
-                        GeoMap geoMap = phoenixFaction.GeoLevel.Map;
-
-                        if (geoMap == null)
-                        {
-                            TFTVLogger.Always($"geoMap was null! aborting");
-                            return;
-                        }
-
-
-                        List<GeoVehicle> vehicles = new List<GeoVehicle>();
-
-                        /*  if(phoenixFaction.Vehicles.Any(vehicle => vehicle.VehicleID == 0)) 
-                          {
-                              foreach (GeoVehicle geoVehicle in phoenixFaction.Vehicles)
-                              {
-                                  geoVehicle.VehicleID += 1;
-                              }
-                          }*/
-
-                        for (int x = 1; x <= PlayerVehicles.Count; x++)
-                        {
-                            TFTVLogger.Always($"Restoring...");
-                            GeoVehicle geoVehicle = phoenixFaction.Vehicles.FirstOrDefault(vehicle => vehicle.VehicleID == PlayerVehicles[x - 1] && !vehicles.Contains(vehicle));
-                            geoVehicle.VehicleID = x;
-                            vehicles.Add(geoVehicle);
-                            TFTVLogger.Always($"{geoVehicle.Name} {geoVehicle.VehicleID}");
-
-                            if (TFTVAircraftReworkMain.AircraftReworkOn)
-                            {
-                                AircraftReworkGeoscape.Scanning.CheckAircraftScannerAbility(geoVehicle);
-                                // TFTVLogger.Always($"scanner ability added to {geoVehicle.Name}");
-                            }
-                        }
-
-
-
-                        factionActorCache.Cache[phoenixFaction] = vehicles;
-                        fieldInfo.SetValue(geoMap, factionActorCache);
-
-                        //  TFTVLogger.Always($"got here");
-
-                        //   phoenixFaction.GeoLevel.View.GeoscapeModules.VehicleSelectionModule.Uninit();
-                        /*  FieldInfo fieldInfo_context = typeof(GeoscapeView).GetField("_context", BindingFlags.NonPublic | BindingFlags.Instance);
-                          GeoscapeViewContext context = (GeoscapeViewContext)fieldInfo_context.GetValue(controller.View);
-                          phoenixFaction.GeoLevel.View.GeoscapeModules.VehicleSelectionModule.Init(context);*/
-                    }
-
-
+                    AircraftOrderWithoutVehicleId.RestoreVehicleOrder(controller);
 
                 }
                 catch (Exception e)
@@ -715,9 +579,6 @@ namespace TFTV
             }
 
 
-
-
-
             [HarmonyPatch(typeof(UIModuleVehicleRoster))]
             public static class TFTVDragandDropFunctionality
             {
@@ -726,37 +587,8 @@ namespace TFTV
                 public static void InitSlotsPostfix(UIModuleVehicleRoster __instance)
                 {
                     try
-                    {
-                        Debug.Log($"Initializing DragHandlers for {__instance.Slots.Count} slots.");
-
-                        foreach (var slot in __instance.Slots)
-                        {
-                            if (slot == null)
-                            {
-                                Debug.LogWarning("Slot is null during initialization!");
-                                continue;
-                            }
-
-                            var dragHandler = slot.GetComponent<DragHandler>();
-                            if (dragHandler == null)
-                            {
-                                dragHandler = slot.gameObject.AddComponent<DragHandler>();
-                                dragHandler.Init(__instance, slot);
-                                Debug.Log($"Added DragHandler to slot: {slot.name}");
-                            }
-                            else
-                            {
-                                Debug.Log($"DragHandler already exists for slot: {slot.name}");
-                            }
-
-                            //  EnableRaycastTargets(slot.gameObject);
-
-                        }
-
+                    {                    
                         ScrapeButtonFunctionality(__instance);
-
-
-
                     }
                     catch (Exception e)
                     {
@@ -1117,152 +949,6 @@ namespace TFTV
                     }
                 }
             }
-
-            public class DragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
-            {
-                private UIModuleVehicleRoster _roster;
-                private GeoVehicleRosterSlot _slot;
-                private Transform _originalParent;
-                private int _originalIndex;
-
-                public void Init(UIModuleVehicleRoster roster, GeoVehicleRosterSlot slot)
-                {
-                    try
-                    {
-                        _roster = roster;
-                        _slot = slot;
-                        Debug.Log($"DragHandler initialized for slot: {slot.name}");
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                }
-
-                public void OnBeginDrag(PointerEventData eventData)
-                {
-                    try
-                    {
-                        Debug.Log($"OnBeginDrag called for {_slot.name}");
-                        _originalParent = transform.parent;
-                        _originalIndex = transform.GetSiblingIndex();
-
-                        LayoutRebuilder.ForceRebuildLayoutImmediate(_originalParent.GetComponent<RectTransform>());
-                        transform.SetParent(_originalParent.parent);
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                }
-
-                public void OnDrag(PointerEventData eventData)
-                {
-                    try
-                    {
-                        transform.position = eventData.position;
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                }
-
-                public void OnEndDrag(PointerEventData eventData)
-                {
-                    try
-                    {
-                        Debug.Log($"OnEndDrag called for {_slot.name}");
-                        transform.SetParent(_originalParent);
-                        int newIndex = GetNewIndex(eventData.position);
-
-                        transform.SetSiblingIndex(newIndex);
-
-                        int oldIndex = _roster.Slots.IndexOf(_slot);
-
-                        if (newIndex != oldIndex)
-                        {
-                            Debug.Log($"Slot moved: Old Index: {oldIndex}, New Index: {newIndex}");
-                            _roster.Slots.RemoveAt(oldIndex);
-                            _roster.Slots.Insert(newIndex, _slot);
-                            UpdateVehicleOrder();
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                }
-
-                private int GetNewIndex(Vector3 position)
-                {
-                    Vector3 localPosition = _originalParent.InverseTransformPoint(position);
-
-                    for (int i = 0; i < _originalParent.childCount; i++)
-                    {
-                        RectTransform child = _originalParent.GetChild(i) as RectTransform;
-
-                        if (child != null)
-                        {
-                            if (RectTransformUtility.RectangleContainsScreenPoint(child, position))
-                            {
-                                return i;
-                            }
-
-                            if (localPosition.y > child.localPosition.y)
-                            {
-                                return i;
-                            }
-                        }
-                    }
-                    return _originalParent.childCount - 1;
-                }
-
-                private void UpdateVehicleOrder()
-                {
-                    try
-                    {
-                        Debug.Log("Updating vehicle order...");
-
-                        List<GeoVehicleRosterSlot> geoVehicleRosterSlots = _roster.Slots.Where(s => s.Vehicle != null).ToList();
-
-                        _roster.GetType().GetField("_vehicles", BindingFlags.NonPublic | BindingFlags.Instance)
-                            ?.SetValue(_roster, geoVehicleRosterSlots.Select(slot => slot.Vehicle).ToList());
-
-                        List<GeoVehicle> vehicles = geoVehicleRosterSlots.Select(slot => (GeoVehicle)slot.Vehicle.BaseObject).ToList();
-
-                        GeoPhoenixFaction phoenixFaction = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().PhoenixFaction;
-
-
-                        FieldInfo fieldInfo = phoenixFaction.GeoLevel.Map.GetType().GetField("_factionVehiclesCache", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                        FactionActorCache<GeoVehicle> factionActorCache = (FactionActorCache<GeoVehicle>)fieldInfo.GetValue(phoenixFaction.GeoLevel.Map);
-                        factionActorCache.Cache[phoenixFaction] = vehicles;
-                        fieldInfo.SetValue(phoenixFaction.GeoLevel.Map, factionActorCache);
-
-
-                        //  phoenixFaction.GeoLevel.View.GeoscapeModules.VehicleSelectionModule.Uninit();
-                        RecordVehicleOrder(phoenixFaction.GeoLevel);
-
-
-
-                        FieldInfo fieldInfo_context = typeof(GeoscapeView).GetField("_context", BindingFlags.NonPublic | BindingFlags.Instance);
-                        GeoscapeViewContext context = (GeoscapeViewContext)fieldInfo_context.GetValue(GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View);
-                        phoenixFaction.GeoLevel.View.GeoscapeModules.VehicleSelectionModule.Init(context);
-                        // TFTVLogger.Always($"TESTING got here END");
-
-                        //   MethodInfo method = phoenixFaction.GeoLevel.View.GeoscapeModules.VehicleSelectionModule.GetType().GetMethod("Start", BindingFlags.NonPublic | BindingFlags.Instance);
-                        //  method.Invoke(phoenixFaction.GeoLevel.View.GeoscapeModules.VehicleSelectionModule, null);
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                    }
-                }
-
-            }
         }
-
-
     }
 }

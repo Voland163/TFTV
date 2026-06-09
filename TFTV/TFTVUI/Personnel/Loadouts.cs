@@ -276,7 +276,8 @@ namespace TFTV.TFTVUI.Personnel
             {
                 if (HelmetToggle == null)
                 {
-                    Transform toggleLoadoutParent = editUnitButtonsController.ToggleLoadoutButton.transform.parent;
+
+                    Transform toggleLoadoutParent = editUnitButtonsController.UnequipAllButton.transform.parent;
                     Transform saveLoadoutParent = editUnitButtonsController.SaveLoadoutButton.transform.parent;
                     Transform loadoutContainer = toggleLoadoutParent.parent;
 

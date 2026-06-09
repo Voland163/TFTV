@@ -1783,9 +1783,129 @@ namespace TFTV.TFTVDrills
         }
         internal class ShieldedRiposte
         {
-
             private static readonly System.Reflection.FieldInfo SourceEquipmentField =
                 AccessTools.Field(typeof(ShieldDeployedStatus), "_sourceEquipment");
+
+            private static TacticalActor _shieldRiposteSwitchActor;
+            private static Equipment _shieldRiposteSwitchShield;
+
+            private static bool IsShieldRiposteSwitch(TacticalActor actor, Equipment previousEquipment)
+            {
+                return actor != null
+                    && previousEquipment != null
+                    && ReferenceEquals(actor, _shieldRiposteSwitchActor)
+                    && ReferenceEquals(previousEquipment, _shieldRiposteSwitchShield);
+            }
+
+            private static Weapon GetBestRiposteWeapon(TacticalActor tacticalActor)
+            {
+                if (tacticalActor == null)
+                {
+                    return null;
+                }
+
+                List<Weapon> weapons = new List<Weapon>(tacticalActor.Equipments.GetWeapons().Where(
+                    w => w.IsUsable
+                        && w.HasCharges
+                        && w.TacticalItemDef.Tags.Contains(DefCache.GetDef<ItemClassificationTagDef>("GunWeapon_TagDef"))
+                        && !w.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("SpitterWeapon_TagDef"))));
+
+                return weapons
+                    .OrderByDescending(w => w.WeaponDef.EffectiveRange)
+                    .FirstOrDefault();
+            }
+
+            private static bool TryGetDeployedShield(ShieldDeployedStatus status, out Equipment shield)
+            {
+                shield = null;
+
+                TacticalItem sourceItem = SourceEquipmentField?.GetValue(status) as TacticalItem;
+                if (!(sourceItem is Equipment equipment))
+                {
+                    return false;
+                }
+
+                shield = equipment;
+                return true;
+            }
+
+            private static void RemoveSelectedStatModifiersWithoutUpdatingModel(Equipment equipment)
+            {
+                TacticalActor tacticalActor = equipment?.TacticalActor;
+                if (tacticalActor == null)
+                {
+                    return;
+                }
+
+                foreach (EquipmentItemTagStatModification equipmentItemTagStatModification in tacticalActor.ItemTagModifications.Where(
+                    m => m.ItemTag == equipment.ItemTypeTag || m.ItemTag == equipment.ItemClassTag))
+                {
+                    tacticalActor.Status.RemoveStatModification(equipmentItemTagStatModification.GetStatModification(null));
+                }
+            }
+
+            [HarmonyPatch(typeof(ShieldDeployedStatus), nameof(ShieldDeployedStatus.OnApply))]
+            private static class ShieldDeployedStatus_OnApply_Patch
+            {
+                public static void Postfix(ShieldDeployedStatus __instance)
+                {
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
+                    {
+                        return;
+                    }
+
+                    try
+                    {
+                        TacticalActor tacticalActor = __instance?.TacticalActor;
+                        if (tacticalActor == null)
+                        {
+                            return;
+                        }
+
+                        if (tacticalActor.GetAbilityWithDef<PassiveModifierAbility>(_shieldedRiposte) == null)
+                        {
+                            return;
+                        }
+
+                        if (!TryGetDeployedShield(__instance, out Equipment deployedShield))
+                        {
+                            return;
+                        }
+
+                        Weapon bestWeapon = GetBestRiposteWeapon(tacticalActor);
+                        if (bestWeapon == null)
+                        {
+                            return;
+                        }
+
+                        if (tacticalActor.Equipments.SelectedWeapon == bestWeapon)
+                        {
+                            return;
+                        }
+
+                        TFTVLogger.Always($"Getting ready for shield riposte {tacticalActor.name} was holding " +
+                            $"{tacticalActor.Equipments?.SelectedWeapon?.DisplayName}, switching to {bestWeapon.DisplayName}");
+
+                        _shieldRiposteSwitchActor = tacticalActor;
+                        _shieldRiposteSwitchShield = deployedShield;
+                        try
+                        {
+                            tacticalActor.Equipments.SetSelectedEquipment(bestWeapon);
+                        }
+                        finally
+                        {
+                            _shieldRiposteSwitchActor = null;
+                            _shieldRiposteSwitchShield = null;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                        // Do not rethrow from a postfix. The shield has already been applied by
+                        // the original OnApply, so throwing here can destabilize status setup.
+                    }
+                }
+            }
 
             [HarmonyPatch(typeof(ShieldDeployedStatus), nameof(ShieldDeployedStatus.OnUnapply))]
             private static class ShieldDeployedStatus_OnUnapply_Patch
@@ -1802,9 +1922,19 @@ namespace TFTV.TFTVDrills
                         return;
                     }
 
-                    TacticalItem sourceItem = SourceEquipmentField?.GetValue(__instance) as TacticalItem;
-                    if (!(sourceItem is Equipment equipment))
+                    if (!TryGetDeployedShield(__instance, out Equipment equipment))
                     {
+                        return;
+                    }
+
+                    if (__instance.TacticalActor.Equipments?.SelectedEquipment == equipment)
+                    {
+                        AddonSlot drawOutSlot = equipment.FindSuitableAddonSlotsForMeAt(equipment.GetRootAddon());
+                        if (drawOutSlot != null && equipment.ParentSlot != drawOutSlot)
+                        {
+                            equipment.ForceReattachMeTo(drawOutSlot);
+                        }
+                        equipment.UpdateModelVisibility();
                         return;
                     }
 
@@ -1818,10 +1948,6 @@ namespace TFTV.TFTVDrills
                     equipment.UpdateModelVisibility();
                 }
             }
-
-
-
-            private static bool _shieldRiposteDeployingShield = false;
 
             [HarmonyPatch(typeof(PathProcessorUtils), nameof(PathProcessorUtils.UsesTurnAnimations))]
             private static class PathProcessorUtils_UsesTurnAnimations_Patch
@@ -1848,109 +1974,48 @@ namespace TFTV.TFTVDrills
                 }
             }
 
-
-            [HarmonyPatch(typeof(DeployShieldAbility), nameof(DeployShieldAbility.Activate))]
-            public static class Patch_DeployShieldAbility_Activate
-            {
-                public static void Postfix(DeployShieldAbility __instance)
-                {
-
-                    if (!TFTVNewGameOptions.IsReworkEnabled())
-                    {
-                        return;
-                    }
-
-                    try
-                    {
-                        TacticalActor tacticalActor = __instance.TacticalActor;
-
-                        if (tacticalActor.GetAbilityWithDef<PassiveModifierAbility>(_shieldedRiposte) != null)
-                        {
-                            _shieldRiposteDeployingShield = true;
-
-                            /* TFTVLogger.Always($"tacticalActor?.DisplayName: {tacticalActor?.DisplayName} deploying shield, deployed status? " +
-                                 $"{tacticalActor.Status.HasStatus<ShieldDeployedStatus>()}");*/
-
-                            List<Weapon> weapons = new List<Weapon>(tacticalActor.Equipments.GetWeapons().Where(
-                            w => w.IsUsable && w.HasCharges && w.TacticalItemDef.Tags.Contains(DefCache.GetDef<ItemClassificationTagDef>("GunWeapon_TagDef"))
-                            && !w.WeaponDef.Tags.Contains(DefCache.GetDef<GameTagDef>("SpitterWeapon_TagDef"))
-                            ));
-
-                            if (weapons.Count == 0)
-                            {
-                                return;
-                            }
-
-                            Weapon bestWeapon = weapons.OrderByDescending(w => w.WeaponDef.EffectiveRange).ToList().First();
-
-                            if (tacticalActor.Equipments.SelectedWeapon == null || tacticalActor.Equipments.SelectedWeapon != bestWeapon)
-                            {
-                                TFTVLogger.Always($"Getting ready for shield riposte {tacticalActor.name} was holding {tacticalActor.Equipments?.SelectedWeapon?.DisplayName}, switching to {bestWeapon.DisplayName}");
-                                tacticalActor.Equipments.SetSelectedEquipment(bestWeapon);
-                            }
-
-                            _shieldRiposteDeployingShield = false;
-
-                            // TFTVLogger.Always($"at the end, shield now deployed? {tacticalActor.Status.HasStatus<ShieldDeployedStatus>()}");
-
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        TFTVLogger.Error(e);
-                        throw; // Run original
-                    }
-                }
-            }
-
             [HarmonyPatch(typeof(EquipmentComponent), nameof(EquipmentComponent.SetSelectedEquipment))]
             public static class EquipmentComponent_SetSelectedEquipment_Patch
             {
-                static bool IsRiotShield(Equipment equipment) =>
-                    equipment != null && equipment.EquipmentDef == DefCache.GetDef<EquipmentDef>("FS_RiotShield_WeaponDef");
-
-                static bool IsShieldDeployed(TacticalActor actor) =>
-                    actor?.Status != null && actor.Status.HasStatus<ShieldDeployedStatus>();
-
                 public static bool Prefix(EquipmentComponent __instance, Equipment equipment)
                 {
-
                     if (!TFTVNewGameOptions.IsReworkEnabled())
                     {
                         return true;
                     }
 
-                    var actor = __instance.TacticalActor;
-                    var prev = __instance.SelectedEquipment;
+                    TacticalActor actor = __instance.TacticalActor;
+                    Equipment previousEquipment = __instance.SelectedEquipment;
 
-                    //   TFTVLogger.Always($"Set selected equipment for {actor?.DisplayName}. Currently selected equipment: {prev?.ItemDef?.name}. Shield deployed? {_shieldRiposteDeployingShield}");
-
-                    // Only intercept when switching away from a deployed riot shield
-                    if (!(IsRiotShield(prev) && _shieldRiposteDeployingShield))
+                    // Only intercept the exact post-OnApply switch from the deployed shield to the riposte weapon.
+                    // All other equipment changes use the vanilla method.
+                    if (!IsShieldRiposteSwitch(actor, previousEquipment))
+                    {
                         return true;
+                    }
 
-                    // TFTVLogger.Always($"passed the check; shield deployed and was wielding it");
+                    // Set SelectedEquipment via the property because its setter is not public.
+                    AccessTools.Property(typeof(EquipmentComponent), "SelectedEquipment")
+                        ?.SetValue(__instance, equipment, null);
 
-                    // 1) Set SelectedEquipment via the property (non-public setter)
-                    var selProp = AccessTools.Property(typeof(EquipmentComponent), "SelectedEquipment");
-                    selProp?.SetValue(__instance, equipment, null);
-
-                    // Unwire previous selection
-                    if (prev != null)
+                    if (previousEquipment != null)
                     {
                         var handlerMethod = AccessTools.Method(typeof(EquipmentComponent), "SelectedEquipmentIsDisabled");
                         var handler = (DamageReceiverImplementation.DamageReceiverStatusChanged)
                             Delegate.CreateDelegate(typeof(DamageReceiverImplementation.DamageReceiverStatusChanged), __instance, handlerMethod);
 
-                        prev.DamageImplementation.ReachedZeroHealth -= handler;
-                        prev.SetSelected(selected: false);
+                        previousEquipment.DamageImplementation.ReachedZeroHealth -= handler;
 
-                        //TFTVLogger.Always($"Unwired previous equipment {prev.ItemDef.name}");
-
-
+                        // Do not call SetSelected(false) for the deployed shield here.
+                        // SetSelected starts with UpdateModelVisibility(); after SelectedEquipment has already
+                        // been changed to the gun, the shield is no longer selected, so that visibility update
+                        // treats it as holsterable and can reattach/detach it immediately after OnApply.
+                        // That makes the log show ShieldDeployedStatus applied while the shield model/status
+                        // is effectively removed. Remove the selected stat modifiers, but leave the deployed
+                        // shield model attachment alone.
+                        RemoveSelectedStatModifiersWithoutUpdatingModel(previousEquipment);
                     }
 
-                    // Wire new selection
                     if (equipment != null)
                     {
                         var handlerMethod = AccessTools.Method(typeof(EquipmentComponent), "SelectedEquipmentIsDisabled");
@@ -1959,33 +2024,21 @@ namespace TFTV.TFTVDrills
 
                         equipment.DamageImplementation.ReachedZeroHealth += handler;
                         equipment.SetSelected(selected: true);
-
-                        // TFTVLogger.Always($"Wired new equipment {equipment.ItemDef.name}");
                     }
 
-                    // DrawOut as normal if needed
                     if (equipment != null && equipment.HolsterSlot != null && equipment.EquipmentDef.HolsterWhenNotSelected)
                     {
                         AccessTools.Method(typeof(EquipmentComponent), "DrawOut")
                             ?.Invoke(__instance, new object[] { new AnimationEvent() });
-
-                        TFTVLogger.Always($"Drew out new equipment {equipment.ItemDef.name}");
                     }
 
-                    // 2) Invoke the event by fetching the PRIVATE backing field
-                    //    (field-like events compile to a private field with the same name)
                     var evtField = AccessTools.Field(typeof(EquipmentComponent), "EquipmentChangedEvent");
                     var evt = (EquipmentComponent.EquipmentChangedHandler)evtField?.GetValue(__instance);
-
-                    //    TFTVLogger.Always($"Invoking EquipmentChangedEvent, evtField==null: {evtField == null} evt==null: {evt == null}");
-
                     evt?.Invoke(equipment);
 
-                    return false; // skip original
+                    return false;
                 }
             }
-
-
         }
         internal class PackLoyalty
         {

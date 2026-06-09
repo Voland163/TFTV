@@ -24,7 +24,7 @@ namespace TFTV.TFTVBaseRework
     internal static class PhoenixBaseExplorationConfig
     {
 
-        public const int InfestationChancePercent = 15;
+        public const int InfestationChancePercent = 10;
 
         /// <summary>
         /// Sites currently completing exploration.
