@@ -29,31 +29,39 @@ namespace TFTV.TFTVBaseRework
 
         private static void ShowForModal(UIModal modal)
         {
-            GeoMission mission = modal.Data as GeoMission;
-            if (mission == null)
+            try
             {
-                return;
-            }
 
-            List<FallenOperativeInfo> fallenOperatives = GetFallenOperatives(mission);
-            Transform root = modal.transform;
-            Transform panel = root.Find(PanelObjectName) ?? CreatePanel(root);
-            Text header = panel.Find(HeaderObjectName)?.GetComponent<Text>();
-            Transform content = panel.Find(ContentObjectName);
-            if (header == null || content == null)
+                GeoMission mission = modal.Data as GeoMission;
+                if (mission == null)
+                {
+                    return;
+                }
+
+                List<FallenOperativeInfo> fallenOperatives = GetFallenOperatives(mission);
+                Transform root = modal.transform;
+                Transform panel = root.Find(PanelObjectName) ?? CreatePanel(root);
+                Text header = panel.Find(HeaderObjectName)?.GetComponent<Text>();
+                Transform content = panel.Find(ContentObjectName);
+                if (header == null || content == null)
+                {
+                    return;
+                }
+
+                bool active = fallenOperatives.Count > 0;
+                panel.gameObject.SetActive(active);
+                if (!active)
+                {
+                    return;
+                }
+
+                header.text = HeaderText;
+                RebuildEntries(content, fallenOperatives);
+            }
+            catch (Exception e)
             {
-                return;
+                TFTVLogger.Error(e);
             }
-
-            bool active = fallenOperatives.Count > 0;
-            panel.gameObject.SetActive(active);
-            if (!active)
-            {
-                return;
-            }
-
-            header.text = HeaderText;
-            RebuildEntries(content, fallenOperatives);
         }
 
         private static List<FallenOperativeInfo> GetFallenOperatives(GeoMission mission)
@@ -89,39 +97,47 @@ namespace TFTV.TFTVBaseRework
 
         private static FallenOperativeInfo GetOperativeInfo(GeoLevelController geoLevel, PhoenixStatistics gameStats, GeoTacUnitId unitId)
         {
-            if (!geoLevel.DeadSoldiers.TryGetValue(unitId, out GeoUnitDescriptor value) || value.UnitType.IsVehicle)
+            try
             {
-                return null;
-            }
+                if (!geoLevel.DeadSoldiers.TryGetValue(unitId, out GeoUnitDescriptor value) || value.UnitType.IsVehicle)
+                {
+                    return null;
+                }
 
-            FallenOperativeInfo fallenOperativeInfo = new FallenOperativeInfo
-            {
-                Name = value.GetName(),
-                GeoUnitId = (int)unitId,
-                IsPreparingForProjectOsiris = unitId == global::TFTV.TFTVProjectOsiris.IdProjectOsirisCandidate
-            };
+                FallenOperativeInfo fallenOperativeInfo = new FallenOperativeInfo
+                {
+                    Name = value.GetName(),
+                    GeoUnitId = (int)unitId,
+                    IsPreparingForProjectOsiris = unitId == global::TFTV.TFTVProjectOsiris.IdProjectOsirisCandidate
+                };
 
-            List<ViewElementDef> classViewElements = new List<ViewElementDef>
+                List<ViewElementDef> classViewElements = new List<ViewElementDef>
             {
                 value.Progression.MainSpecDef.ViewElementDef
             };
 
-            if (value.Progression.SecondarySpecDef != null)
-            {
-                classViewElements.Add(value.Progression.SecondarySpecDef.ViewElementDef);
+                if (value.Progression.SecondarySpecDef != null)
+                {
+                    classViewElements.Add(value.Progression.SecondarySpecDef.ViewElementDef);
+                }
+
+                fallenOperativeInfo.ClassViewElements = classViewElements.ToArray();
+
+                SoldierStats soldierStat = gameStats?.GetSoldierStat(unitId, false);
+                fallenOperativeInfo.Missions = soldierStat?.MissionsParticipated ?? 0;
+                fallenOperativeInfo.Kills = soldierStat?.EnemiesKilled.Sum(e => e.KillCount) ?? 0;
+                fallenOperativeInfo.SkillPointsReturned = TFTVExperienceDistribution.GetDeathSkillPointRefund(
+                    soldierStat,
+                    geoLevel.CurrentDifficultyLevel);
+                fallenOperativeInfo.FavoriteWeapon = GetFavoriteWeapon(soldierStat);
+                fallenOperativeInfo.FavoriteSkill = GetFavoriteSkill(soldierStat);
+                return fallenOperativeInfo;
             }
-
-            fallenOperativeInfo.ClassViewElements = classViewElements.ToArray();
-
-            SoldierStats soldierStat = gameStats?.GetSoldierStat(unitId, false);
-            fallenOperativeInfo.Missions = soldierStat?.MissionsParticipated ?? 0;
-            fallenOperativeInfo.Kills = soldierStat?.EnemiesKilled.Sum(e => e.KillCount) ?? 0;
-            fallenOperativeInfo.SkillPointsReturned = TFTVExperienceDistribution.GetDeathSkillPointRefund(
-                soldierStat,
-                geoLevel.CurrentDifficultyLevel);
-            fallenOperativeInfo.FavoriteWeapon = GetFavoriteWeapon(soldierStat);
-            fallenOperativeInfo.FavoriteSkill = GetFavoriteSkill(soldierStat);
-            return fallenOperativeInfo;
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
         }
 
         private static string GetFavoriteWeapon(SoldierStats soldierStats)

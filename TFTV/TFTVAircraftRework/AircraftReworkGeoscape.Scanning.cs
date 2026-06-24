@@ -833,6 +833,7 @@ namespace TFTV
                                         ctx.ExplorationAffinityTriggered = true;
                                     }
                                 }
+
                             }
 
                             if (component.CheckForBaseReveal())

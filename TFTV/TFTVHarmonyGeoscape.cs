@@ -187,6 +187,8 @@ namespace TFTV
             {
                 try
                 {
+                    TFTVLogger.Always($"[GeoMission.ApplyMissionResults] invoked for mission {__instance?.MissionDef?.name}");
+
                     TFTVChangesToDLC5.TFTVMercenaries.Tactical.AdjustMercItemsToBeRecoverable(true);
                     TFTVDelirium.RemoveDeliriumPerksGeoMissionApplyMissionResults(__instance, result, squad);
                     AircraftReworkMaintenance.AfterLosingAmbushGeoMissionApplyMissionResults(__instance, result, squad);

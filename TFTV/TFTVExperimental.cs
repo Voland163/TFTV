@@ -1,4 +1,5 @@
-﻿using Base.Core;
+﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
+using Base.Core;
 using Base.Defs;
 using Base.Utils.GameConsole;
 using Base.Utils.Maths;
@@ -8,9 +9,14 @@ using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.Levels.Missions;
+using PhoenixPoint.Common.Levels.Params;
+using PhoenixPoint.Geoscape;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
+using PhoenixPoint.Geoscape.Entities.Sites;
+using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
@@ -25,6 +31,7 @@ using PhoenixPoint.Tactical.UI;
 using PhoenixPoint.Tactical.View;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -39,334 +46,516 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
-       /* [HarmonyPatch(typeof(UIStateRosterDeployment))]
-        internal static class UIStateRosterDeploymentLoadLoadoutsPatch
-        {
-            private static readonly FieldInfo DeploymentItemsField = AccessTools.Field(typeof(UIStateRosterDeployment), "_deploymentItems");
+        
 
-            private static readonly MethodInfo ContextGetter = AccessTools.PropertyGetter(typeof(GeoscapeViewState), "Context");
-
-            private static readonly MethodInfo OriginalLoadLoadoutMethod = AccessTools.Method(typeof(UIStateRosterDeployment), "LoadLoadout");
-
-            private static readonly MethodInfo OriginalLoadLoadoutAndManufactureIfNeededSingleMethod = AccessTools.Method(typeof(UIStateRosterDeployment), "LoadLoadoutAndManufactureIfNeeded_Single");
-
-            [HarmonyPostfix]
-            [HarmonyPatch("EnterState")]
-            private static void EnterStatePostfix(UIStateRosterDeployment __instance)
-            {
-                RefreshLoadLoadoutsButton(__instance);
-            }
-
-            [HarmonyPostfix]
-            [HarmonyPatch("OnEnrollmentChanged")]
-            private static void OnEnrollmentChangedPostfix(UIStateRosterDeployment __instance)
-            {
-                RefreshLoadLoadoutsButton(__instance);
-            }
-
-            [HarmonyPrefix]
-            [HarmonyPatch("LoadLoadoutAndManufactureIfNeeded_Multiple")]
-            private static bool LoadLoadoutAndManufactureIfNeededMultiplePrefix(UIStateRosterDeployment __instance, ref IEnumerator<NextUpdate> __result)
-            {
-                __result = LoadSelectedLoadoutsAndManufactureIfNeeded(__instance);
-                return false;
-            }
-
-            [HarmonyPrefix]
-            [HarmonyPatch("DeploySquad")]
-            private static void DeploySquadPrefix(UIStateRosterDeployment __instance)
-            {
-                SyncPreferredLoadoutsForSelectedDeployment(__instance);
-            }
-
-            private static UIModuleGeneralPersonelRoster GetGeoRosterModule(UIStateRosterDeployment instance)
-            {
-                GeoscapeViewContext context = (GeoscapeViewContext)ContextGetter.Invoke(instance, null);
-                return (context != null && context.View != null && context.View.GeoscapeModules != null) ? context.View.GeoscapeModules.GeneralPersonelRosterModule : null;
-            }
-
-            private static List<GeoCharacter> GetSelectedDeploymentCharacters(UIStateRosterDeployment instance)
-            {
-                List<GeoRosterDeploymentItem> deploymentItems = GetDeploymentItems(instance);
-                if (deploymentItems == null)
-                {
-                    return new List<GeoCharacter>();
-                }
-                return (from item in deploymentItems
-                        where item.EnrollForDeployment
-                        select item.Character).ToList<GeoCharacter>();
-            }
-
-            private static List<GeoRosterDeploymentItem> GetDeploymentItems(UIStateRosterDeployment instance)
-            {
-                return DeploymentItemsField.GetValue(instance) as List<GeoRosterDeploymentItem>;
-            }
-
-            private static void SyncPreferredLoadoutsForSelectedDeployment(UIStateRosterDeployment instance)
-            {
-                foreach (GeoCharacter character in GetSelectedDeploymentCharacters(instance))
-                {
-                    LoadoutPatchUtilities.SyncPreferredLoadout(character);
-                }
-            }
-
-            private static void RefreshLoadLoadoutsButton(UIStateRosterDeployment instance)
-            {
-                UIModuleGeneralPersonelRoster geoRosterModule = GetGeoRosterModule(instance);
-                if (geoRosterModule == null || geoRosterModule.LoadLoadoutsButton == null)
-                {
-                    return;
-                }
-                geoRosterModule.LoadLoadoutsButton.onClick.RemoveAllListeners();
-                List<GeoCharacter> selectedDeploymentCharacters = GetSelectedDeploymentCharacters(instance);
-                bool flag = selectedDeploymentCharacters.Any((GeoCharacter character) => !character.IsSavedLoadoutEquipped());
-                geoRosterModule.LoadLoadoutsButton.gameObject.SetActive(flag);
-                if (flag)
-                {
-                    geoRosterModule.LoadLoadoutsButton.onClick.AddListener(delegate ()
-                    {
-                        instance.Timing.Start(LoadSelectedLoadoutsAndManufactureIfNeeded(instance), null);
-                    });
-                }
-            }
-
-            private static IEnumerator<NextUpdate> LoadSelectedLoadoutsAndManufactureIfNeeded(UIStateRosterDeployment instance)
-            {
-                List<GeoCharacter> selectedCharacters = GetSelectedDeploymentCharacters(instance);
-                List<GeoCharacter> allFactionCharacters = (selectedCharacters.Count > 0) ? selectedCharacters[0].Faction.Characters.ToList<GeoCharacter>() : new List<GeoCharacter>();
-                foreach (GeoCharacter character in selectedCharacters)
-                {
-                    OriginalLoadLoadoutMethod.Invoke(instance, new object[]
-                    {
-                    character
-                    });
-                    LoadMissingLoadoutItemsFromOtherCharacters(character, selectedCharacters, allFactionCharacters);
-                    IEnumerator<NextUpdate> singleLoadoutRoutine = (IEnumerator<NextUpdate>)OriginalLoadLoadoutAndManufactureIfNeededSingleMethod.Invoke(instance, new object[]
-                    {
-                    character
-                    });
-                    yield return instance.Timing.Call(singleLoadoutRoutine, null);
-                    LoadoutPatchUtilities.SyncPreferredLoadout(character);
-                }
-                UIModuleGeneralPersonelRoster geoRosterModule = GetGeoRosterModule(instance);
-                foreach (GeoRosterItem geoRosterItem in geoRosterModule.Slots)
-                {
-                    geoRosterItem.UpdateCharacterData();
-                }
-                geoRosterModule.LoadLoadoutsButton.gameObject.SetActive(false);
-                yield break;
-            }
-
-            private static void LoadMissingLoadoutItemsFromOtherCharacters(GeoCharacter character, List<GeoCharacter> selectedCharacters, List<GeoCharacter> allFactionCharacters)
-            {
-                HashSet<GeoCharacter> selectedCharactersSet = new HashSet<GeoCharacter>(selectedCharacters);
-                List<GeoCharacter> donorCharacters = (from donor in allFactionCharacters
-                                                      where donor != character && !selectedCharactersSet.Contains(donor)
-                                                      select donor).ToList<GeoCharacter>();
-                List<GeoItem> armourItems = character.ArmourItems.ToList<GeoItem>();
-                List<GeoItem> equipmentItems = character.EquipmentItems.ToList<GeoItem>();
-                List<GeoItem> inventoryItems = character.InventoryItems.ToList<GeoItem>();
-                LoadMissingItemsFromOtherCharacters(character.ArmourLoadoutItems, armourItems, donorCharacters, character.Faction.ItemStorage);
-                LoadMissingItemsFromOtherCharacters(character.EquipmentLoadoutItems, equipmentItems, donorCharacters, character.Faction.ItemStorage);
-                LoadMissingItemsFromOtherCharacters(character.InventoryLoadoutItems, inventoryItems, donorCharacters, character.Faction.ItemStorage);
-                character.SetItems(armourItems, equipmentItems, inventoryItems, true);
-            }
-
-            private static void LoadMissingItemsFromOtherCharacters(IReadOnlyList<GeoItem> savedLoadoutItems, List<GeoItem> currentItems, List<GeoCharacter> donorCharacters, ItemStorage factionStorage)
-            {
-                foreach (GeoItem savedLoadoutItem in savedLoadoutItems)
-                {
-                    if (CountItems(currentItems, savedLoadoutItem.ItemDef) >= CountItems(savedLoadoutItems, savedLoadoutItem.ItemDef))
-                    {
-                        continue;
-                    }
-                    if (factionStorage.RemoveItem(savedLoadoutItem))
-                    {
-                        currentItems.Add(savedLoadoutItem);
-                        continue;
-                    }
-                    GeoItem geoItem;
-                    if (TryTakeItemFromOtherCharacters(donorCharacters, savedLoadoutItem, factionStorage, out geoItem))
-                    {
-                        currentItems.Add(geoItem);
-                    }
-                }
-            }
-
-            private static int CountItems(IEnumerable<GeoItem> items, ItemDef itemDef)
-            {
-                return items.Count((GeoItem item) => item.ItemDef == itemDef);
-            }
-
-            private static bool TryTakeItemFromOtherCharacters(List<GeoCharacter> donorCharacters, GeoItem requestedItem, ItemStorage factionStorage, out GeoItem transferredItem)
-            {
-                foreach (GeoCharacter donorCharacter in donorCharacters)
-                {
-                    if (TryTakeItemFromCharacter(donorCharacter, requestedItem, factionStorage, out transferredItem))
-                    {
-                        return true;
-                    }
-                }
-                transferredItem = null;
-                return false;
-            }
-
-            private static bool TryTakeItemFromCharacter(GeoCharacter donorCharacter, GeoItem requestedItem, ItemStorage factionStorage, out GeoItem transferredItem)
-            {
-                List<GeoItem> armourItems = donorCharacter.ArmourItems.ToList<GeoItem>();
-                List<GeoItem> equipmentItems = donorCharacter.EquipmentItems.ToList<GeoItem>();
-                List<GeoItem> inventoryItems = donorCharacter.InventoryItems.ToList<GeoItem>();
-                List<GeoItem> detachedItems = new List<GeoItem>();
-                if (!TryRemoveItemFromList(inventoryItems, requestedItem, false, out transferredItem) && !TryRemoveItemFromList(equipmentItems, requestedItem, false, out transferredItem) && !TryRemoveItemFromList(armourItems, requestedItem, true, out transferredItem))
-                {
-                    return false;
-                }
-                detachedItems.Add(transferredItem);
-                DetachUnsupportedItems(donorCharacter, armourItems, equipmentItems, inventoryItems, detachedItems);
-                donorCharacter.SetItems(armourItems, equipmentItems, inventoryItems, true);
-                foreach (GeoItem detachedItem in detachedItems)
-                {
-                    if (detachedItem != transferredItem)
-                    {
-                        factionStorage.AddItem(detachedItem);
-                    }
-                }
-                return true;
-            }
-
-            private static bool TryRemoveItemFromList(List<GeoItem> items, GeoItem requestedItem, bool skipPermanentAugments, out GeoItem removedItem)
-            {
-                removedItem = items.FirstOrDefault((GeoItem item) => item.ItemDef == requestedItem.ItemDef && (!skipPermanentAugments || !item.ItemDef.IsPermanentAugment));
-                if (removedItem == null)
-                {
-                    return false;
-                }
-                items.Remove(removedItem);
-                return true;
-            }
-
-            private static void DetachUnsupportedItems(GeoCharacter character, List<GeoItem> armourItems, List<GeoItem> equipmentItems, List<GeoItem> inventoryItems, List<GeoItem> detachedItems)
-            {
-                bool flag;
-                do
-                {
-                    flag = false;
-                    List<GeoItem> equippedItems = armourItems.Concat(equipmentItems).Concat(inventoryItems).ToList<GeoItem>();
-                    GeoItem unsupportedItem = equippedItems.FirstOrDefault((GeoItem item) => !IsItemSupported(character, item, equippedItems));
-                    if (unsupportedItem != null)
-                    {
-                        if (armourItems.Remove(unsupportedItem) || equipmentItems.Remove(unsupportedItem) || inventoryItems.Remove(unsupportedItem))
-                        {
-                            detachedItems.Add(unsupportedItem);
-                            flag = true;
-                        }
-                    }
-                }
-                while (flag);
-            }
-
-            private static bool IsItemSupported(GeoCharacter character, GeoItem item, List<GeoItem> equippedItems)
-            {
-                AddonDef.RequiredSlotBind[] requiredSlotBinds = item.ItemDef.RequiredSlotBinds;
-                if (requiredSlotBinds == null || requiredSlotBinds.Length == 0)
-                {
-                    return true;
-                }
-                List<AddonDef> slotProviders = GetDefaultSlotProviders(character).Concat(from equippedItem in equippedItems
-                                                                                         where equippedItem != item
-                                                                                         select equippedItem.ItemDef).Cast<AddonDef>().ToList<AddonDef>();
-                return requiredSlotBinds.Any((AddonDef.RequiredSlotBind requiredSlotBind) => slotProviders.Any((AddonDef slotProvider) => requiredSlotBind.IsCompatibleWith(slotProvider)));
-            }
-
-            private static IEnumerable<AddonDef> GetDefaultSlotProviders(GeoCharacter character)
-            {
-                if (character.TemplateDef == null || character.TemplateDef.GetAddonsMangerDef() == null)
-                {
-                    return Enumerable.Empty<AddonDef>();
-                }
-                return character.TemplateDef.GetAddonsMangerDef().SkeletonChassisAddonDef.Cast<AddonDef>();
-            }
-        }
-
+        /// <summary>
+        /// Harmony-only diagnostic patch for the GeoLevelController.LevelCrt NullReferenceException
+        /// that occurs after MissionScheduler.Init and before Marketplace.AfterMissionComplete.
+        ///
+        /// Install this in your mod project and call Harmony.PatchAll(). The finalizer logs detailed
+        /// context and lets any remaining NullReferenceException continue unchanged.
+        /// </summary>
         [HarmonyPatch]
-        internal static class PostmissionReplenishLoadoutIsChangedCountPatch
+        public static class GeoLevelControllerLevelCrtNreLogger
         {
-            private static MethodBase TargetMethod()
+            public static MethodBase TargetMethod()
             {
-                Type loadoutType = typeof(PostmissionReplenishManager).GetNestedType("Loadout", BindingFlags.NonPublic);
-                return AccessTools.Method(loadoutType, "IsChanged");
+                Type iteratorType = typeof(GeoLevelController).GetNestedType("<LevelCrt>d__205", AccessTools.all);
+                return AccessTools.Method(iteratorType, "MoveNext");
             }
 
-            private static void Postfix(object __instance, GeoCharacter character, ref bool __result)
+            public static Exception Finalizer(object __instance, Exception __exception)
             {
-                if (__result)
+                if (__exception is NullReferenceException)
+                {
+                    try
+                    {
+                        FieldInfo levelField = AccessTools.Field(__instance.GetType(), "<>4__this");
+                        GeoLevelController level = levelField?.GetValue(__instance) as GeoLevelController;
+                        DumpLevelCrtState(level, __exception);
+                    }
+                    catch (Exception loggingException)
+                    {
+                        TFTVLogger.Always($"[LevelCrtNRE] Logger failed: {loggingException}");
+                    }
+                }
+
+                return __exception;
+            }
+
+            private static void DumpLevelCrtState(GeoLevelController level, Exception originalException)
+            {
+                TFTVLogger.Always($"[LevelCrtNRE] Caught NullReferenceException in LevelCrt.MoveNext: {originalException}");
+
+                if (level == null)
+                {
+                    TFTVLogger.Always("[LevelCrtNRE] GeoLevelController instance is null; cannot inspect geoscape state.");
+                    return;
+                }
+
+                object missionToComplete = AccessTools.Property(typeof(GeoLevelController), "_missionToComplete")?.GetValue(level, null);
+                TFTVLogger.Always($"[LevelCrtNRE] HasFesteringSkies={Safe(() => level.HasFesteringSkies)}, HasKaosEngines={Safe(() => level.HasKaosEngines)}, MissionToComplete={DescribeObject(missionToComplete)}");
+                TFTVLogger.Always($"[LevelCrtNRE] FesteringSkiesSettings null={level.FesteringSkiesSettings == null}, BehemothMissionTag={DescribeObject(level.FesteringSkiesSettings?.BehemothMissionTag)}");
+                TFTVLogger.Always($"[LevelCrtNRE] Map null={level.Map == null}, ActiveSites null={level.Map?.ActiveSites == null}");
+
+                if (level.Map?.ActiveSites == null)
                 {
                     return;
                 }
-                if (LoadoutPatchUtilities.HasItemCountMismatch(__instance, character))
+
+                int activeMissionCount = 0;
+                int suspiciousCount = 0;
+
+                foreach (GeoSite site in level.Map.ActiveSites)
                 {
-                    __result = true;
+                    if (site?.ActiveMission == null)
+                    {
+                        continue;
+                    }
+
+                    activeMissionCount++;
+
+                    bool missionDefNull = site.ActiveMission.MissionDef == null;
+                    bool tagsNull = site.ActiveMission.MissionDef?.Tags == null;
+                    bool fsSettingsNull = level.FesteringSkiesSettings == null;
+                    bool behemothTagNull = level.FesteringSkiesSettings?.BehemothMissionTag == null;
+
+                    if (missionDefNull || tagsNull || fsSettingsNull || behemothTagNull)
+                    {
+                        suspiciousCount++;
+                        TFTVLogger.Always(
+                            "[LevelCrtNRE] SUSPICIOUS ActiveMission state: " +
+                            $"Site={GeoLevelControllerLevelCrtNreLogger.DescribeSite(site)}, " +
+                            $"Mission={GeoLevelControllerLevelCrtNreLogger.DescribeObject(site.ActiveMission)}, " +
+                            $"MissionDef null={missionDefNull}, " +
+                            $"MissionDef.Tags null={tagsNull}, " +
+                            $"FesteringSkiesSettings null={fsSettingsNull}, " +
+                            $"BehemothMissionTag null={behemothTagNull}");
+                    }
+                }
+
+                TFTVLogger.Always($"[LevelCrtNRE] Active sites with ActiveMission={activeMissionCount}; suspicious entries={suspiciousCount}");
+            }
+
+            internal static string DescribeSite(GeoSite site)
+            {
+                if (site == null)
+                {
+                    return "<null site>";
+                }
+
+                return $"{site.SiteId}/{site.Type}/{site.LocalizedSiteName ?? site.name}";
+            }
+
+            internal static string DescribeObject(object value)
+            {
+                if (value == null)
+                {
+                    return "<null>";
+                }
+
+                return $"{value.GetType().FullName}: {value}";
+            }
+
+            private static string Safe(Func<object> getter)
+            {
+                try
+                {
+                    return Convert.ToString(getter()) ?? "<null>";
+                }
+                catch (Exception ex)
+                {
+                    return $"<threw {ex.GetType().Name}: {ex.Message}>";
                 }
             }
         }
 
-        internal static class LoadoutPatchUtilities
+
+        /// <summary>
+        /// Repairs the confirmed bad data at the source: the crash log showed a GeoAlienBaseMission whose
+        /// serialized MissionDef is null. LevelCrt later calls ActiveMission.MissionDef.Tags, so repairing
+        /// the MissionDef getter is more reliable than trying to run code before the iterator advances.
+        /// </summary>
+        [HarmonyPatch(typeof(GeoMission), "get_MissionDef")]
+        public static class GeoMissionGetMissionDefNullRepair
         {
-            public static void SyncPreferredLoadout(GeoCharacter character)
+            private static readonly MethodInfo MissionDefSetter = AccessTools.PropertySetter(typeof(GeoMission), "MissionDef");
+
+            public static void Postfix(GeoMission __instance, ref TacMissionTypeDef __result)
             {
-                GeoPhoenixFaction geoPhoenixFaction = (character != null) ? (character.Faction as GeoPhoenixFaction) : null;
-                if (geoPhoenixFaction == null)
+                if (__result != null || !(__instance is GeoAlienBaseMission alienBaseMission))
                 {
                     return;
                 }
-                geoPhoenixFaction.UpdatePreferredLoadout(character);
-            }
 
-            public static bool HasItemCountMismatch(object preferredLoadout, GeoCharacter character)
-            {
-                return HasItemCountMismatch(GetLoadoutList(preferredLoadout, "_armourItems"), (character != null) ? character.ArmourItems : null) || HasItemCountMismatch(GetLoadoutList(preferredLoadout, "_equipmentItems"), (character != null) ? character.EquipmentItems : null) || HasItemCountMismatch(GetLoadoutList(preferredLoadout, "_inventoryItems"), (character != null) ? character.InventoryItems : null);
-            }
-
-            private static bool HasItemCountMismatch(IEnumerable<GeoItem> preferredItems, IEnumerable<GeoItem> currentItems)
-            {
-                Dictionary<ItemDef, int> preferredCounts = GetItemCounts(preferredItems);
-                Dictionary<ItemDef, int> currentCounts = GetItemCounts(currentItems);
-                return preferredCounts.Keys.Concat(currentCounts.Keys).Distinct<ItemDef>().Any(delegate (ItemDef itemDef)
+                try
                 {
-                    int preferredCount;
-                    int currentCount;
-                    preferredCounts.TryGetValue(itemDef, out preferredCount);
-                    currentCounts.TryGetValue(itemDef, out currentCount);
-                    return preferredCount != currentCount;
-                });
-            }
-
-            private static Dictionary<ItemDef, int> GetItemCounts(IEnumerable<GeoItem> items)
-            {
-                Dictionary<ItemDef, int> counts = new Dictionary<ItemDef, int>();
-                if (items == null)
-                {
-                    return counts;
-                }
-                foreach (GeoItem item in items)
-                {
-                    if (item == null || item.ItemDef == null)
+                    GeoSite site = alienBaseMission.Site;
+                    GeoAlienBase alienBase = site?.GetComponent<GeoAlienBase>();
+                    if (site?.GeoLevel?.AvailableMissionTypes == null || alienBase?.AlienBaseTypeDef?.AlienBaseMissionTypeTag == null)
                     {
-                        continue;
+                        TFTVLogger.Always($"[LevelCrtNRE] Site {site.GetComponent<GeoAlienBase>()?.AlienBaseTypeDef?.name}");
+                        TFTVLogger.Always($"[LevelCrtNRE] GeoAlienBaseMission has null MissionDef, but repair data is unavailable. Site={GeoLevelControllerLevelCrtNreLogger.DescribeSite(site)}, Mission={GeoLevelControllerLevelCrtNreLogger.DescribeObject(__instance)}");
+                        TFTVLogger.Always($"[LevelCrtNRE] Repairing by clearing ActiveMission to avoid further NREs.");
+                       
+                        site.ActiveMission = null;
+                        
+                        return;
                     }
-                    int count;
-                    counts.TryGetValue(item.ItemDef, out count);
-                    counts[item.ItemDef] = count + 1;
-                }
-                return counts;
-            }
 
-            private static IEnumerable<GeoItem> GetLoadoutList(object loadout, string fieldName)
-            {
-                FieldInfo fieldInfo = (loadout != null) ? AccessTools.Field(loadout.GetType(), fieldName) : null;
-                return (fieldInfo != null) ? (fieldInfo.GetValue(loadout) as IEnumerable<GeoItem>) : null;
+                    TacMissionTypeDef replacement = site.GeoLevel.AvailableMissionTypes.FirstOrDefault(missionType =>
+                        missionType?.Tags != null &&
+                        missionType.Tags.Contains(alienBase.AlienBaseTypeDef.AlienBaseMissionTypeTag) &&
+                        missionType.ParticipantsData != null &&
+                        missionType.ParticipantsData.Count == 1);
+
+                    if (replacement == null)
+                    {
+                        TFTVLogger.Always($"[LevelCrtNRE] GeoAlienBaseMission has null MissionDef, and no replacement mission type was found. Site={GeoLevelControllerLevelCrtNreLogger.DescribeSite(site)}, AlienBaseType={GeoLevelControllerLevelCrtNreLogger.DescribeObject(alienBase.AlienBaseTypeDef)}");
+                        return;
+                    }
+
+                    MissionDefSetter.Invoke(__instance, new object[] { replacement });
+                    __result = replacement;
+                    TFTVLogger.Always($"[LevelCrtNRE] Repaired null GeoAlienBaseMission.MissionDef. Site={GeoLevelControllerLevelCrtNreLogger.DescribeSite(site)}, Replacement={GeoLevelControllerLevelCrtNreLogger.DescribeObject(replacement)}");
+                }
+                catch (Exception repairException)
+                {
+                    TFTVLogger.Always($"[LevelCrtNRE] GeoAlienBaseMission.MissionDef repair failed: {repairException}");
+                }
             }
-        }*/
+        }
+
+
+
+        /* [HarmonyPatch(typeof(UIStateRosterDeployment))]
+         internal static class UIStateRosterDeploymentLoadLoadoutsPatch
+         {
+             private static readonly FieldInfo DeploymentItemsField = AccessTools.Field(typeof(UIStateRosterDeployment), "_deploymentItems");
+
+             private static readonly MethodInfo ContextGetter = AccessTools.PropertyGetter(typeof(GeoscapeViewState), "Context");
+
+             private static readonly MethodInfo OriginalLoadLoadoutMethod = AccessTools.Method(typeof(UIStateRosterDeployment), "LoadLoadout");
+
+             private static readonly MethodInfo OriginalLoadLoadoutAndManufactureIfNeededSingleMethod = AccessTools.Method(typeof(UIStateRosterDeployment), "LoadLoadoutAndManufactureIfNeeded_Single");
+
+             [HarmonyPostfix]
+             [HarmonyPatch("EnterState")]
+             private static void EnterStatePostfix(UIStateRosterDeployment __instance)
+             {
+                 RefreshLoadLoadoutsButton(__instance);
+             }
+
+             [HarmonyPostfix]
+             [HarmonyPatch("OnEnrollmentChanged")]
+             private static void OnEnrollmentChangedPostfix(UIStateRosterDeployment __instance)
+             {
+                 RefreshLoadLoadoutsButton(__instance);
+             }
+
+             [HarmonyPrefix]
+             [HarmonyPatch("LoadLoadoutAndManufactureIfNeeded_Multiple")]
+             private static bool LoadLoadoutAndManufactureIfNeededMultiplePrefix(UIStateRosterDeployment __instance, ref IEnumerator<NextUpdate> __result)
+             {
+                 __result = LoadSelectedLoadoutsAndManufactureIfNeeded(__instance);
+                 return false;
+             }
+
+             [HarmonyPrefix]
+             [HarmonyPatch("DeploySquad")]
+             private static void DeploySquadPrefix(UIStateRosterDeployment __instance)
+             {
+                 SyncPreferredLoadoutsForSelectedDeployment(__instance);
+             }
+
+             private static UIModuleGeneralPersonelRoster GetGeoRosterModule(UIStateRosterDeployment instance)
+             {
+                 GeoscapeViewContext context = (GeoscapeViewContext)ContextGetter.Invoke(instance, null);
+                 return (context != null && context.View != null && context.View.GeoscapeModules != null) ? context.View.GeoscapeModules.GeneralPersonelRosterModule : null;
+             }
+
+             private static List<GeoCharacter> GetSelectedDeploymentCharacters(UIStateRosterDeployment instance)
+             {
+                 List<GeoRosterDeploymentItem> deploymentItems = GetDeploymentItems(instance);
+                 if (deploymentItems == null)
+                 {
+                     return new List<GeoCharacter>();
+                 }
+                 return (from item in deploymentItems
+                         where item.EnrollForDeployment
+                         select item.Character).ToList<GeoCharacter>();
+             }
+
+             private static List<GeoRosterDeploymentItem> GetDeploymentItems(UIStateRosterDeployment instance)
+             {
+                 return DeploymentItemsField.GetValue(instance) as List<GeoRosterDeploymentItem>;
+             }
+
+             private static void SyncPreferredLoadoutsForSelectedDeployment(UIStateRosterDeployment instance)
+             {
+                 foreach (GeoCharacter character in GetSelectedDeploymentCharacters(instance))
+                 {
+                     LoadoutPatchUtilities.SyncPreferredLoadout(character);
+                 }
+             }
+
+             private static void RefreshLoadLoadoutsButton(UIStateRosterDeployment instance)
+             {
+                 UIModuleGeneralPersonelRoster geoRosterModule = GetGeoRosterModule(instance);
+                 if (geoRosterModule == null || geoRosterModule.LoadLoadoutsButton == null)
+                 {
+                     return;
+                 }
+                 geoRosterModule.LoadLoadoutsButton.onClick.RemoveAllListeners();
+                 List<GeoCharacter> selectedDeploymentCharacters = GetSelectedDeploymentCharacters(instance);
+                 bool flag = selectedDeploymentCharacters.Any((GeoCharacter character) => !character.IsSavedLoadoutEquipped());
+                 geoRosterModule.LoadLoadoutsButton.gameObject.SetActive(flag);
+                 if (flag)
+                 {
+                     geoRosterModule.LoadLoadoutsButton.onClick.AddListener(delegate ()
+                     {
+                         instance.Timing.Start(LoadSelectedLoadoutsAndManufactureIfNeeded(instance), null);
+                     });
+                 }
+             }
+
+             private static IEnumerator<NextUpdate> LoadSelectedLoadoutsAndManufactureIfNeeded(UIStateRosterDeployment instance)
+             {
+                 List<GeoCharacter> selectedCharacters = GetSelectedDeploymentCharacters(instance);
+                 List<GeoCharacter> allFactionCharacters = (selectedCharacters.Count > 0) ? selectedCharacters[0].Faction.Characters.ToList<GeoCharacter>() : new List<GeoCharacter>();
+                 foreach (GeoCharacter character in selectedCharacters)
+                 {
+                     OriginalLoadLoadoutMethod.Invoke(instance, new object[]
+                     {
+                     character
+                     });
+                     LoadMissingLoadoutItemsFromOtherCharacters(character, selectedCharacters, allFactionCharacters);
+                     IEnumerator<NextUpdate> singleLoadoutRoutine = (IEnumerator<NextUpdate>)OriginalLoadLoadoutAndManufactureIfNeededSingleMethod.Invoke(instance, new object[]
+                     {
+                     character
+                     });
+                     yield return instance.Timing.Call(singleLoadoutRoutine, null);
+                     LoadoutPatchUtilities.SyncPreferredLoadout(character);
+                 }
+                 UIModuleGeneralPersonelRoster geoRosterModule = GetGeoRosterModule(instance);
+                 foreach (GeoRosterItem geoRosterItem in geoRosterModule.Slots)
+                 {
+                     geoRosterItem.UpdateCharacterData();
+                 }
+                 geoRosterModule.LoadLoadoutsButton.gameObject.SetActive(false);
+                 yield break;
+             }
+
+             private static void LoadMissingLoadoutItemsFromOtherCharacters(GeoCharacter character, List<GeoCharacter> selectedCharacters, List<GeoCharacter> allFactionCharacters)
+             {
+                 HashSet<GeoCharacter> selectedCharactersSet = new HashSet<GeoCharacter>(selectedCharacters);
+                 List<GeoCharacter> donorCharacters = (from donor in allFactionCharacters
+                                                       where donor != character && !selectedCharactersSet.Contains(donor)
+                                                       select donor).ToList<GeoCharacter>();
+                 List<GeoItem> armourItems = character.ArmourItems.ToList<GeoItem>();
+                 List<GeoItem> equipmentItems = character.EquipmentItems.ToList<GeoItem>();
+                 List<GeoItem> inventoryItems = character.InventoryItems.ToList<GeoItem>();
+                 LoadMissingItemsFromOtherCharacters(character.ArmourLoadoutItems, armourItems, donorCharacters, character.Faction.ItemStorage);
+                 LoadMissingItemsFromOtherCharacters(character.EquipmentLoadoutItems, equipmentItems, donorCharacters, character.Faction.ItemStorage);
+                 LoadMissingItemsFromOtherCharacters(character.InventoryLoadoutItems, inventoryItems, donorCharacters, character.Faction.ItemStorage);
+                 character.SetItems(armourItems, equipmentItems, inventoryItems, true);
+             }
+
+             private static void LoadMissingItemsFromOtherCharacters(IReadOnlyList<GeoItem> savedLoadoutItems, List<GeoItem> currentItems, List<GeoCharacter> donorCharacters, ItemStorage factionStorage)
+             {
+                 foreach (GeoItem savedLoadoutItem in savedLoadoutItems)
+                 {
+                     if (CountItems(currentItems, savedLoadoutItem.ItemDef) >= CountItems(savedLoadoutItems, savedLoadoutItem.ItemDef))
+                     {
+                         continue;
+                     }
+                     if (factionStorage.RemoveItem(savedLoadoutItem))
+                     {
+                         currentItems.Add(savedLoadoutItem);
+                         continue;
+                     }
+                     GeoItem geoItem;
+                     if (TryTakeItemFromOtherCharacters(donorCharacters, savedLoadoutItem, factionStorage, out geoItem))
+                     {
+                         currentItems.Add(geoItem);
+                     }
+                 }
+             }
+
+             private static int CountItems(IEnumerable<GeoItem> items, ItemDef itemDef)
+             {
+                 return items.Count((GeoItem item) => item.ItemDef == itemDef);
+             }
+
+             private static bool TryTakeItemFromOtherCharacters(List<GeoCharacter> donorCharacters, GeoItem requestedItem, ItemStorage factionStorage, out GeoItem transferredItem)
+             {
+                 foreach (GeoCharacter donorCharacter in donorCharacters)
+                 {
+                     if (TryTakeItemFromCharacter(donorCharacter, requestedItem, factionStorage, out transferredItem))
+                     {
+                         return true;
+                     }
+                 }
+                 transferredItem = null;
+                 return false;
+             }
+
+             private static bool TryTakeItemFromCharacter(GeoCharacter donorCharacter, GeoItem requestedItem, ItemStorage factionStorage, out GeoItem transferredItem)
+             {
+                 List<GeoItem> armourItems = donorCharacter.ArmourItems.ToList<GeoItem>();
+                 List<GeoItem> equipmentItems = donorCharacter.EquipmentItems.ToList<GeoItem>();
+                 List<GeoItem> inventoryItems = donorCharacter.InventoryItems.ToList<GeoItem>();
+                 List<GeoItem> detachedItems = new List<GeoItem>();
+                 if (!TryRemoveItemFromList(inventoryItems, requestedItem, false, out transferredItem) && !TryRemoveItemFromList(equipmentItems, requestedItem, false, out transferredItem) && !TryRemoveItemFromList(armourItems, requestedItem, true, out transferredItem))
+                 {
+                     return false;
+                 }
+                 detachedItems.Add(transferredItem);
+                 DetachUnsupportedItems(donorCharacter, armourItems, equipmentItems, inventoryItems, detachedItems);
+                 donorCharacter.SetItems(armourItems, equipmentItems, inventoryItems, true);
+                 foreach (GeoItem detachedItem in detachedItems)
+                 {
+                     if (detachedItem != transferredItem)
+                     {
+                         factionStorage.AddItem(detachedItem);
+                     }
+                 }
+                 return true;
+             }
+
+             private static bool TryRemoveItemFromList(List<GeoItem> items, GeoItem requestedItem, bool skipPermanentAugments, out GeoItem removedItem)
+             {
+                 removedItem = items.FirstOrDefault((GeoItem item) => item.ItemDef == requestedItem.ItemDef && (!skipPermanentAugments || !item.ItemDef.IsPermanentAugment));
+                 if (removedItem == null)
+                 {
+                     return false;
+                 }
+                 items.Remove(removedItem);
+                 return true;
+             }
+
+             private static void DetachUnsupportedItems(GeoCharacter character, List<GeoItem> armourItems, List<GeoItem> equipmentItems, List<GeoItem> inventoryItems, List<GeoItem> detachedItems)
+             {
+                 bool flag;
+                 do
+                 {
+                     flag = false;
+                     List<GeoItem> equippedItems = armourItems.Concat(equipmentItems).Concat(inventoryItems).ToList<GeoItem>();
+                     GeoItem unsupportedItem = equippedItems.FirstOrDefault((GeoItem item) => !IsItemSupported(character, item, equippedItems));
+                     if (unsupportedItem != null)
+                     {
+                         if (armourItems.Remove(unsupportedItem) || equipmentItems.Remove(unsupportedItem) || inventoryItems.Remove(unsupportedItem))
+                         {
+                             detachedItems.Add(unsupportedItem);
+                             flag = true;
+                         }
+                     }
+                 }
+                 while (flag);
+             }
+
+             private static bool IsItemSupported(GeoCharacter character, GeoItem item, List<GeoItem> equippedItems)
+             {
+                 AddonDef.RequiredSlotBind[] requiredSlotBinds = item.ItemDef.RequiredSlotBinds;
+                 if (requiredSlotBinds == null || requiredSlotBinds.Length == 0)
+                 {
+                     return true;
+                 }
+                 List<AddonDef> slotProviders = GetDefaultSlotProviders(character).Concat(from equippedItem in equippedItems
+                                                                                          where equippedItem != item
+                                                                                          select equippedItem.ItemDef).Cast<AddonDef>().ToList<AddonDef>();
+                 return requiredSlotBinds.Any((AddonDef.RequiredSlotBind requiredSlotBind) => slotProviders.Any((AddonDef slotProvider) => requiredSlotBind.IsCompatibleWith(slotProvider)));
+             }
+
+             private static IEnumerable<AddonDef> GetDefaultSlotProviders(GeoCharacter character)
+             {
+                 if (character.TemplateDef == null || character.TemplateDef.GetAddonsMangerDef() == null)
+                 {
+                     return Enumerable.Empty<AddonDef>();
+                 }
+                 return character.TemplateDef.GetAddonsMangerDef().SkeletonChassisAddonDef.Cast<AddonDef>();
+             }
+         }
+
+         [HarmonyPatch]
+         internal static class PostmissionReplenishLoadoutIsChangedCountPatch
+         {
+             private static MethodBase TargetMethod()
+             {
+                 Type loadoutType = typeof(PostmissionReplenishManager).GetNestedType("Loadout", BindingFlags.NonPublic);
+                 return AccessTools.Method(loadoutType, "IsChanged");
+             }
+
+             private static void Postfix(object __instance, GeoCharacter character, ref bool __result)
+             {
+                 if (__result)
+                 {
+                     return;
+                 }
+                 if (LoadoutPatchUtilities.HasItemCountMismatch(__instance, character))
+                 {
+                     __result = true;
+                 }
+             }
+         }
+
+         internal static class LoadoutPatchUtilities
+         {
+             public static void SyncPreferredLoadout(GeoCharacter character)
+             {
+                 GeoPhoenixFaction geoPhoenixFaction = (character != null) ? (character.Faction as GeoPhoenixFaction) : null;
+                 if (geoPhoenixFaction == null)
+                 {
+                     return;
+                 }
+                 geoPhoenixFaction.UpdatePreferredLoadout(character);
+             }
+
+             public static bool HasItemCountMismatch(object preferredLoadout, GeoCharacter character)
+             {
+                 return HasItemCountMismatch(GetLoadoutList(preferredLoadout, "_armourItems"), (character != null) ? character.ArmourItems : null) || HasItemCountMismatch(GetLoadoutList(preferredLoadout, "_equipmentItems"), (character != null) ? character.EquipmentItems : null) || HasItemCountMismatch(GetLoadoutList(preferredLoadout, "_inventoryItems"), (character != null) ? character.InventoryItems : null);
+             }
+
+             private static bool HasItemCountMismatch(IEnumerable<GeoItem> preferredItems, IEnumerable<GeoItem> currentItems)
+             {
+                 Dictionary<ItemDef, int> preferredCounts = GetItemCounts(preferredItems);
+                 Dictionary<ItemDef, int> currentCounts = GetItemCounts(currentItems);
+                 return preferredCounts.Keys.Concat(currentCounts.Keys).Distinct<ItemDef>().Any(delegate (ItemDef itemDef)
+                 {
+                     int preferredCount;
+                     int currentCount;
+                     preferredCounts.TryGetValue(itemDef, out preferredCount);
+                     currentCounts.TryGetValue(itemDef, out currentCount);
+                     return preferredCount != currentCount;
+                 });
+             }
+
+             private static Dictionary<ItemDef, int> GetItemCounts(IEnumerable<GeoItem> items)
+             {
+                 Dictionary<ItemDef, int> counts = new Dictionary<ItemDef, int>();
+                 if (items == null)
+                 {
+                     return counts;
+                 }
+                 foreach (GeoItem item in items)
+                 {
+                     if (item == null || item.ItemDef == null)
+                     {
+                         continue;
+                     }
+                     int count;
+                     counts.TryGetValue(item.ItemDef, out count);
+                     counts[item.ItemDef] = count + 1;
+                 }
+                 return counts;
+             }
+
+             private static IEnumerable<GeoItem> GetLoadoutList(object loadout, string fieldName)
+             {
+                 FieldInfo fieldInfo = (loadout != null) ? AccessTools.Field(loadout.GetType(), fieldName) : null;
+                 return (fieldInfo != null) ? (fieldInfo.GetValue(loadout) as IEnumerable<GeoItem>) : null;
+             }
+         }*/
 
 
         [HarmonyPatch(typeof(DamageAccumulation), nameof(DamageAccumulation.AddTarget))]

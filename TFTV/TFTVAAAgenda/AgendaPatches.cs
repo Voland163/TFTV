@@ -246,7 +246,6 @@ namespace TFTV.AgendaTracker
         [HarmonyPatch(typeof(UIModuleFactionAgendaTracker), "UpdateData", new Type[] { typeof(UIFactionDataTrackerElement) })]
         public static class UIModuleFactionAgendaTracker_UpdateData_Patch
         {
-         
             public static bool Prefix(ref bool __result, UIFactionDataTrackerElement element, GeoscapeViewContext ____context)
             {
                 try
@@ -275,20 +274,6 @@ namespace TFTV.AgendaTracker
                     {
                         AircraftReworkSpeedAndRange.AdjustAircraftSpeed(vehicle);
                         AgendaHelpers.WireClickEvent(element, () => ____context.View.ChaseTarget(vehicle, false));
-
-                       /* if (vehicle.Travelling && AgendaHelpers.GetTravelTime(vehicle, out float travelTime))
-                        {
-                            var arrival = TimeUnit.FromHours(travelTime);
-                            element.UpdateData(arrival, true, null);
-                            __result = arrival <= TimeUnit.Zero;
-                        }
-                        else if (vehicle.IsExploringSite)
-                        {
-                            float hours = AgendaHelpers.GetExplorationTime(vehicle, (float)vehicle.CurrentSite.ExplorationTime.TimeSpan.TotalHours);
-                            var explorationEnd = TimeUnit.FromHours(hours);
-                            element.UpdateData(explorationEnd, true, null);
-                            __result = explorationEnd <= TimeUnit.Zero;
-                        }*/
                         return true;
                     }
                     else if (element.TrackedObject is GeoCharacter character)
@@ -303,18 +288,24 @@ namespace TFTV.AgendaTracker
                             return false;
                         }
                     }
-                   /* else if (element.TrackedObject is GeoPhoenixFacility facility)
+                    else if (element.TrackedObject is GeoPhoenixFacility facility)
                     {
                         AgendaHelpers.WireClickEvent(element, () => ____context.View.ChaseTarget(facility.PxBase.Site, false));
 
                         if (facility.IsRepairing)
                         {
+                            // Vanilla uses (1 - ConstructionPercentage) * ConstructionTime, which always
+                            // multiplies repair progress against the full build time — wrong for partial damage.
+                            // GetTimeLeftToUpdate() returns NextUpdate - Now, i.e. actual remaining repair time.
                             TimeUnit timeLeft = facility.GetTimeLeftToUpdate();
                             element.UpdateData(timeLeft, true, null);
                             __result = timeLeft <= TimeUnit.Zero;
                             return false;
                         }
-                    }*/
+
+                        // UnderConstruction: let vanilla handle it — its formula is correct for building.
+                        return true;
+                    }
                     else if (element.TrackedObject is GeoSite geoSite)
                     {
                         AgendaHelpers.WireClickEvent(element, () => ____context.View.ChaseTarget(geoSite, false));
@@ -373,6 +364,30 @@ namespace TFTV.AgendaTracker
                     TimeUnit attackTime = timer - context.Level.Timing.Now;
                     element.UpdateData(attackTime, true, null);
                     geoSite.RefreshVisuals();
+                }
+            }
+
+            // Vanilla OnFacilityStateChanged adds a tracker element for UnderConstruction but has no
+            // case for Repairing, so repair started mid-session never appears in the tracker until save/load.
+            [HarmonyPatch(typeof(UIModuleFactionAgendaTracker), "OnFacilityStateChanged")]
+            public static class UIModuleFactionAgendaTracker_OnFacilityStateChanged_Patch
+            {
+                public static void Postfix(GeoPhoenixFacility facility, GeoPhoenixFacility.FacilityState prevState)
+                {
+                    try
+                    {
+                        if (AgendaConstants.factionTracker == null) return;
+                        if (facility.State != GeoPhoenixFacility.FacilityState.Repairing) return;
+
+                        // Only add if there is no existing element for this facility.
+                        var existing = AgendaConstants.GetTrackedElements()
+                            ?.FirstOrDefault(e => e.TrackedObject == facility);
+                        if (existing != null) return;
+
+                        string name = facility.Def.ViewElementDef.DisplayName1.Localize();
+                        AgendaHelpers.AddTrackerElement(facility, $"{AgendaConstants.actionRepairing} {name}", facility.Def.ViewElementDef);
+                    }
+                    catch (Exception e) { TFTVLogger.Error(e); }
                 }
             }
         }

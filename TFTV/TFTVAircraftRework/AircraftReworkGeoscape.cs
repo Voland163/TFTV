@@ -48,7 +48,7 @@ namespace TFTV
 
             private static void Prefix(GeoscapeView __instance, ref GeoActor actor)
             {
-                if (!TFTVAircraftReworkMain.AircraftReworkOn) 
+                if (!TFTVAircraftReworkMain.AircraftReworkOn)
                 {
                     return;
                 }

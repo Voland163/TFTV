@@ -299,7 +299,12 @@ namespace TFTV.TFTVBaseRework
                     return;
                 }
 
-             //   TFTVLogger.Always($"[MissionModalDataBind_ModalShowHandler_Patch] got here 0");
+                if (!BaseReworkCheck.BaseReworkEnabled)
+                {
+                    return;
+                }
+
+                //   TFTVLogger.Always($"[MissionModalDataBind_ModalShowHandler_Patch] got here 0");
 
                 GeoMission geoMission = modal.Data as GeoMission;
                 

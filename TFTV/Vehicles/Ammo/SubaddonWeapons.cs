@@ -498,12 +498,17 @@ namespace TFTV.Vehicles.Ammo
                 return null;
             }
 
-            return marketplace.MarketplaceChoices.FirstOrDefault(c =>
-                c != null &&
-                c.Outcome != null &&
-                c.Outcome.Items != null &&
-                c.Outcome.Items.Count > 0 &&
-                c.Outcome.Items[0].ItemDef == ammoDef);
+            return marketplace.MarketplaceChoices
+                .Where(c =>
+                    c != null &&
+                    c.Outcome != null &&
+                    c.Outcome.Items != null &&
+                    c.Outcome.Items.Count > 0 &&
+                    c.Outcome.Items[0].ItemDef == ammoDef)
+                .OrderBy(c => c.Requirments?.Resources != null
+                    ? c.Requirments.Resources.ByResourceType(ResourceType.Materials).RoundedValue
+                    : int.MaxValue)
+                .FirstOrDefault();
         }
 
         private static bool TryGetMarketplaceAmmoCost(TacticalItemDef ammoDef, out ResourcePack cost)

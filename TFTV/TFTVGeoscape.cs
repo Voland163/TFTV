@@ -111,55 +111,62 @@ namespace TFTV
         /// </summary>
         public override void OnGeoscapeStart()
         {
-            TFTVLogger.Always($"OnGeoscapeStart");
-            GeoLevelController gsController = Controller;
-
-            /// ModMain is accesible at any time
-
-            TFTVBetaSaveGamesFixes.OpenBetaSaveGameFixes(gsController);
-            TFTVLogger.Always($"Difficulty level on Geoscape is {Controller.CurrentDifficultyLevel.name}");
-            TFTVBetaSaveGamesFixes.CorrrectPhoenixSaveManagerDifficulty();
-            TFTVCommonMethods.CheckGeoUIfunctionality(gsController);
-            TFTVBackgroundsAndCharacters.PlayIntro(gsController);
-            TFTVVoidOmens.ImplementVoidOmens(gsController);
-            TFTVTouchedByTheVoid.Umbra.UmbraGeoscape.CheckForUmbraResearch(gsController);
-            TFTVTouchedByTheVoid.Umbra.UmbraGeoscape.SetUmbraEvolution(gsController);
-            TFTVBehemothAndRaids.SetBehemothOnRampageMod(gsController);
-            TFTVStamina.CheckBrokenLimbs(gsController.PhoenixFaction.Soldiers.ToList(), gsController);
-            TFTVRevenant.RecordUpkeep.UpdateRevenantTimer(gsController);
-            if (TFTVRevenant.revenantID != 0 && TFTVRevenant.DeadSoldiersDelirium.ContainsKey(TFTVRevenant.revenantID))
+            try
             {
-                TFTVRevenant.DeadSoldiersDelirium[TFTVRevenant.revenantID] += 1;
+
+                TFTVLogger.Always($"OnGeoscapeStart");
+                GeoLevelController gsController = Controller;
+
+                /// ModMain is accesible at any time
+
+                TFTVBetaSaveGamesFixes.OpenBetaSaveGameFixes(gsController);
+                TFTVLogger.Always($"Difficulty level on Geoscape is {Controller.CurrentDifficultyLevel.name}");
+                TFTVBetaSaveGamesFixes.CorrrectPhoenixSaveManagerDifficulty();
+                TFTVCommonMethods.CheckGeoUIfunctionality(gsController);
+                TFTVBackgroundsAndCharacters.PlayIntro(gsController);
+                TFTVVoidOmens.ImplementVoidOmens(gsController);
+                TFTVTouchedByTheVoid.Umbra.UmbraGeoscape.CheckForUmbraResearch(gsController);
+                TFTVTouchedByTheVoid.Umbra.UmbraGeoscape.SetUmbraEvolution(gsController);
+                TFTVBehemothAndRaids.SetBehemothOnRampageMod(gsController);
+                TFTVStamina.CheckBrokenLimbs(gsController.PhoenixFaction.Soldiers.ToList(), gsController);
+                TFTVRevenant.RecordUpkeep.UpdateRevenantTimer(gsController);
+                if (TFTVRevenant.revenantID != 0 && TFTVRevenant.DeadSoldiersDelirium.ContainsKey(TFTVRevenant.revenantID))
+                {
+                    TFTVRevenant.DeadSoldiersDelirium[TFTVRevenant.revenantID] += 1;
+                }
+                TFTVRevenant.TFTVRevenantResearch.CheckRevenantResearchRequirements(Controller);
+                TFTVProjectOsiris.RunProjectOsiris(gsController);
+                Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVTouchedByTheVoid.TBTVVariableName));
+                TFTVLogger.Always("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVTouchedByTheVoid.TBTVVariableName));
+                TFTVAncientsGeo.AncientsResearch.AncientsCheckResearchState(gsController);
+                // TFTVAncientsGeo.ImpossibleWeapons.CheckImpossibleWeaponsAdditionalRequirements(gsController);
+                TFTVAncientsGeo.ExoticResources.EnsureNoHarvesting(gsController);
+                TFTVVoxels.TFTVFire.CheckForFireQuenchers(gsController);
+                TFTVSpecialDifficulties.DefModifying.CheckForSpecialDifficulties();
+                TFTVPandoranProgress.ScyllaCount = 0;
+                TFTVODIandVoidOmenRoll.Calculate_ODI_Level(Controller);
+                TFTVBetaSaveGamesFixes.CheckResearches(Controller);
+                TFTVPassengerModules.ImplementFarMConfig(Controller);
+                TFTVCustomPortraits.CharacterPortrait.PopulatePortraitFileList();
+                TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
+                TFTVUI.Geoscape.Facilities.CheckUnpoweredBasesOnGeoscapeStart();
+                AircraftReworkSpeedAndRange.Init(Controller);
+                if (BaseReworkCheck.BaseReworkEnabled)
+                {
+                    RestoreAssignments(Controller);
+                    TryGrantInitialPersonnel(Controller);
+                    AgendaRefresh.RequestRefreshAfterBaseReworkRestore();
+                }
+
+                TFTVBetaSaveGamesFixes.ConvertAncientRefinerySitesToHarvestSites(Controller);
+                AircraftOrderWithoutVehicleId.RestoreVehicleOrder(Controller);
+                TFTVLogger.Always($"Geoscape start finished");
+                // TFTVExperimental.ResearchCalendarUtility.LogCalendars(Controller);
             }
-            TFTVRevenant.TFTVRevenantResearch.CheckRevenantResearchRequirements(Controller);
-            TFTVProjectOsiris.RunProjectOsiris(gsController);
-            Main.Logger.LogInfo("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVTouchedByTheVoid.TBTVVariableName));
-            TFTVLogger.Always("UmbraEvolution variable is " + Controller.EventSystem.GetVariable(TFTVTouchedByTheVoid.TBTVVariableName));
-            TFTVAncientsGeo.AncientsResearch.AncientsCheckResearchState(gsController);
-            // TFTVAncientsGeo.ImpossibleWeapons.CheckImpossibleWeaponsAdditionalRequirements(gsController);
-            TFTVAncientsGeo.ExoticResources.EnsureNoHarvesting(gsController);
-            TFTVVoxels.TFTVFire.CheckForFireQuenchers(gsController);
-            TFTVSpecialDifficulties.DefModifying.CheckForSpecialDifficulties();
-            TFTVPandoranProgress.ScyllaCount = 0;
-            TFTVODIandVoidOmenRoll.Calculate_ODI_Level(Controller);
-            TFTVBetaSaveGamesFixes.CheckResearches(Controller);
-            TFTVPassengerModules.ImplementFarMConfig(Controller);
-            TFTVCustomPortraits.CharacterPortrait.PopulatePortraitFileList();
-            TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
-            TFTVUI.Geoscape.Facilities.CheckUnpoweredBasesOnGeoscapeStart();
-            AircraftReworkSpeedAndRange.Init(Controller);
-            if (BaseReworkCheck.BaseReworkEnabled)
+            catch (Exception e)
             {
-                RestoreAssignments(Controller);
-                TryGrantInitialPersonnel(Controller);
-                AgendaRefresh.RequestRefreshAfterBaseReworkRestore();
+                TFTVLogger.Error(e);
             }
-
-            TFTVBetaSaveGamesFixes.ConvertAncientRefinerySitesToHarvestSites(Controller);
-            AircraftOrderWithoutVehicleId.RestoreVehicleOrder(Controller);
-            TFTVLogger.Always($"Geoscape start finished");
-            // TFTVExperimental.ResearchCalendarUtility.LogCalendars(Controller);
-
         }
 
         private static void ResetBaseReworkStateForNewGame()
@@ -184,20 +191,31 @@ namespace TFTV
         /// </summary>
         public override void OnGeoscapeEnd()
         {
-            TFTVLogger.Always($"OnGeoscapeEnd");
-            GeoLevelController gsController = Controller;
+            try
+            {
+                TFTVLogger.Always($"OnGeoscapeEnd");
+                GeoLevelController gsController = Controller;
 
-            TFTVTouchedByTheVoid.Umbra.UmbraGeoscape.CheckForUmbraResearch(gsController);
-            TFTVTouchedByTheVoid.Umbra.UmbraGeoscape.SetUmbraEvolution(gsController);
-            TFTVVoidOmens.CheckForVoidOmensRequiringTacticalPatching(gsController);
+                TFTVTouchedByTheVoid.Umbra.UmbraGeoscape.CheckForUmbraResearch(gsController);
+                TFTVTouchedByTheVoid.Umbra.UmbraGeoscape.SetUmbraEvolution(gsController);
+                TFTVVoidOmens.CheckForVoidOmensRequiringTacticalPatching(gsController);
 
-            TFTVRevenant.PrespawnChecks.CheckRevenantTime(gsController);
-            TFTVRevenant.TFTVRevenantResearch.CheckProjectOsiris(gsController);
-            TFTVRevenant.TFTVRevenantResearch.RecordAccumulatedRevenantPoints(gsController);
-            TFTVDiplomacyPenalties.VoidOmensImplemented = false;
-            TFTVAncientsGeo.AncientsResearch.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(gsController);
-            TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
-            AffinityInheritance.ReconcileOperativeAffinities(gsController);
+                TFTVRevenant.PrespawnChecks.CheckRevenantTime(gsController);
+                TFTVRevenant.TFTVRevenantResearch.CheckProjectOsiris(gsController);
+                TFTVRevenant.TFTVRevenantResearch.RecordAccumulatedRevenantPoints(gsController);
+                TFTVDiplomacyPenalties.VoidOmensImplemented = false;
+                TFTVAncientsGeo.AncientsResearch.CheckResearchStateOnGeoscapeEndAndOnTacticalStart(gsController);
+                TFTVCustomPortraits.CharacterPortrait.PopulateCharacterPics(Controller);
+
+                if (TFTVAircraftReworkMain.AircraftReworkOn && BaseReworkCheck.BaseReworkEnabled)
+                {
+                    AffinityInheritance.ReconcileOperativeAffinities(gsController);
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
         }
 
         /// <summary>

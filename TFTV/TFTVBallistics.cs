@@ -197,9 +197,11 @@ namespace TFTV
                         }
 
                         bool isScorpionRuntime = __instance.Projectile != null
-                            && __instance.Projectile.TryGetWeapon().WeaponDef == ScorpionDef;
+     && __instance.Projectile.TryGetWeapon().WeaponDef == ScorpionDef;
 
-                        bool isScorpionPredict = __instance.Predictor != null && !string.IsNullOrEmpty(slotName);
+                        bool isScorpionPredict = __instance.Predictor != null
+                            && __instance.Predictor.Weapon?.WeaponDef == ScorpionDef
+                            && !string.IsNullOrEmpty(slotName);
 
                         if ((isScorpionRuntime || isScorpionPredict) && !string.IsNullOrEmpty(slotName))
                         {

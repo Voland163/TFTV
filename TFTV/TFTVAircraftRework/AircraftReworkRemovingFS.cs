@@ -24,7 +24,7 @@ namespace TFTV.TFTVAircraftRework
                 try
                 {
 
-                    if (!AircraftReworkOn)
+                   if (!AircraftReworkOn)
                     {
                         return;
                     }

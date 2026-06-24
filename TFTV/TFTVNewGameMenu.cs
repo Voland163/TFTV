@@ -1135,14 +1135,7 @@ float lengthScale, List<ModSettingController> optionsType = null)
                         SetAnyTimeOptionsVisibility(show);
                         SetCheatOptionsVisibility(show);
 
-                        if (TFTVNewGameOptions.IsReworkEnabled())
-                        {
-                            HelperMethods.InstantiateArrowPickerController("RansackResources", _optionsRansackResources, DefaultDifficulties.ConvertDifficultyToIndexRansackResources(), OnRansackResourcesValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
-                            HelperMethods.InstantiateArrowPickerController("InitialLootLevel", _optionsInitialLootLevel, DefaultDifficulties.ConvertDifficultyToIndexInitialLootLevel(), OnInitialLootLevelValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
-                            HelperMethods.InstantiateArrowPickerController("PersonnelInfluxLevel", _optionsPersonnelInfluxLevel, DefaultDifficulties.ConvertDifficultyToIndexPersonnelInfluxLevel(), OnPersonnelInfluxLevelValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
-                            HelperMethods.InstantiateArrowPickerController("InitialManticoreLimit", _optionsVehicleLimit, DefaultDifficulties.ConvertDifficultyToIndexManticoreLimit(), OnInitialManticoreLimitValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
-                            HelperMethods.InstantiateArrowPickerController("InitialScarabLimit", _optionsVehicleLimit, DefaultDifficulties.ConvertDifficultyToIndexScarabLimit(), OnInitialScarabLimitValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
-                        }
+                      
                     }
                     catch (Exception e)
                     {
@@ -1239,6 +1232,15 @@ float lengthScale, List<ModSettingController> optionsType = null)
                         HelperMethods.InstantiateArrowPickerController("MaximumEnemyForce", _optionsMaximumEnemyForce, DefaultDifficulties.ConvertDifficultyToIndexMaximumEnemyForce(), OnMaximumEnemyForceValueChangedCallback, 1f, _additionalStartOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("EnemyEscalationSpeed", _optionsEnemyEscalationSpeed, DefaultDifficulties.ConvertDifficultyToIndexEnemyEscalationSpeed(), OnEnemyEscalationSpeedValueChangedCallback, 1f, _additionalStartOptionsSettings);
 
+                        if (TFTVNewGameOptions.IsReworkEnabled())
+                        {
+                            HelperMethods.InstantiateArrowPickerController("RansackResources", _optionsRansackResources, DefaultDifficulties.ConvertDifficultyToIndexRansackResources(), OnRansackResourcesValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+                            HelperMethods.InstantiateArrowPickerController("InitialLootLevel", _optionsInitialLootLevel, DefaultDifficulties.ConvertDifficultyToIndexInitialLootLevel(), OnInitialLootLevelValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+                            HelperMethods.InstantiateArrowPickerController("PersonnelInfluxLevel", _optionsPersonnelInfluxLevel, DefaultDifficulties.ConvertDifficultyToIndexPersonnelInfluxLevel(), OnPersonnelInfluxLevelValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+                            HelperMethods.InstantiateArrowPickerController("InitialManticoreLimit", _optionsVehicleLimit, DefaultDifficulties.ConvertDifficultyToIndexManticoreLimit(), OnInitialManticoreLimitValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+                            HelperMethods.InstantiateArrowPickerController("InitialScarabLimit", _optionsVehicleLimit, DefaultDifficulties.ConvertDifficultyToIndexScarabLimit(), OnInitialScarabLimitValueChangedCallback, 0.5f, _additionalStartOptionsSettings);
+                        }
+
                         HelperMethods.InstantiateGameOptionViewController(_titleAnytimeOptions, _descriptionAnytimeOptions, "SetAnyTimeOptionsVisibility");
                         HelperMethods.InstantiateArrowPickerController("NoDropReinforcements", _optionsBool, ConvertBoolToInt(config.NoDropReinforcements), OnNoDropValueChangedCallback, 0.5f, _anytimeOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("Flinching", _optionsBool, ConvertBoolToInt(config.Flinching), OnFlinchingValueChangedCallback, 0.5f, _anytimeOptionsSettings);
@@ -1275,6 +1277,8 @@ float lengthScale, List<ModSettingController> optionsType = null)
                         HelperMethods.InstantiateArrowPickerController("MultipleVehiclesInAircraftAllowed", _optionsBool, ConvertBoolToInt(config.MultipleVehiclesInAircraftAllowed), OnMultipleVehiclesInAircraftAllowedValueChangedCallback, 0.5f, _cheatOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("EasyAirCombat", _optionsBool, ConvertBoolToInt(config.EasyAirCombat), OnEasyAirCombatValueChangedCallback, 0.5f, _cheatOptionsSettings);
                         HelperMethods.InstantiateArrowPickerController("BehemothSubmergesForever", _optionsBool, ConvertBoolToInt(config.BehemothSubmergesForever), OnBehemothSubmergesForeverValueChangedCallback, 0.5f, _cheatOptionsSettings);
+
+                        
 
                         SetAllVisibility(false);
                         DefaultDifficulties.UpdateOptionsOnSelectingDifficutly();
