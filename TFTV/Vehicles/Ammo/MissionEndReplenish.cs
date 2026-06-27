@@ -6,6 +6,7 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers;
@@ -13,6 +14,8 @@ using PhoenixPoint.Geoscape.View.ViewControllers.Manufacturing;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using static TFTV.Vehicles.Ammo.VehicleModuleAmmoHarmonyPatches;
@@ -27,6 +30,132 @@ namespace TFTV.Vehicles.Ammo
         }
 
         private static readonly ConditionalWeakTable<GeoManufactureItem, AmmoDefHolder> ReplenishAmmoDefs = new ConditionalWeakTable<GeoManufactureItem, AmmoDefHolder>();
+
+        // Vanilla CanManufacture crashes (NRE on ManufacturableItem.ManufacturePrice) for any
+        // ItemDef absent from the faction's manufacture list, because AddMissingItem and
+        // ReplenishList both set ManufacturableItem = GetManufacturableItemByDef(def) without a
+        // null guard before calling CanManufacture. This affects GroundVehicleModuleDef items AND
+        // vehicle-specific ammo clips (e.g. hailstorm_AmmoClipDef) that end up in MissingInventory.
+        // Fix: strip all non-manufacturable items from every missing-items list at the source, and
+        // prune entries that become empty (prevents a ghost soldier header in the replenish UI).
+        [HarmonyPatch]
+        public static class PostmissionReplenishManager_GetMissingItems_Patch
+        {
+            static MethodBase TargetMethod()
+            {
+                return typeof(PostmissionReplenishManager).GetMethod(
+                    "GetMissingItems",
+                    BindingFlags.Public | BindingFlags.Instance,
+                    null,
+                    Type.EmptyTypes,
+                    null);
+            }
+
+            public static void Postfix(List<PostmissionReplenishManager.ReplenishableItems> __result)
+            {
+                try
+                {
+                    if (!TFTVAircraftReworkMain.AircraftReworkOn)
+                        return;
+
+                    TFTVLogger.Always($"[ReplenishFix] GetMissingItems Postfix running; entry count={__result?.Count ?? -1}");
+
+                    if (__result == null)
+                        return;
+
+                    GeoLevelController controller = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                    GeoPhoenixFaction phoenixFaction = controller?.PhoenixFaction;
+
+                    if (phoenixFaction == null)
+                        TFTVLogger.Always($"[ReplenishFix] PhoenixFaction unavailable; falling back to GroundVehicleModuleDef-only filter.");
+
+                    for (int i = __result.Count - 1; i >= 0; i--)
+                    {
+                        PostmissionReplenishManager.ReplenishableItems replenishable = __result[i];
+                        if (replenishable == null)
+                            continue;
+
+                        string charName = replenishable.Character?.DisplayName ?? "null";
+                        TFTVLogger.Always($"[ReplenishFix] Character '{charName}': " +
+                            $"MissingEquip={replenishable.MissingEquipmentItems?.Count ?? 0} " +
+                            $"MissingInv={replenishable.MissingInventoryItems?.Count ?? 0} " +
+                            $"MissingArmour={replenishable.MissingArmourItems?.Count ?? 0} " +
+                            $"Reloadable={replenishable.ReloadableItems?.Count ?? 0}");
+
+                        if (replenishable.MissingEquipmentItems != null)
+                            foreach (ItemDef def in replenishable.MissingEquipmentItems)
+                                TFTVLogger.Always($"[ReplenishFix]   MissingEquip: {def?.name} ({def?.GetType()?.Name})");
+
+                        int removed;
+                        if (phoenixFaction != null)
+                        {
+                            removed = replenishable.MissingEquipmentItems?.RemoveAll(def => phoenixFaction.Manufacture.GetManufacturableItemByDef(def) == null) ?? 0;
+                            removed += replenishable.MissingInventoryItems?.RemoveAll(def => phoenixFaction.Manufacture.GetManufacturableItemByDef(def) == null) ?? 0;
+                            removed += replenishable.MissingArmourItems?.RemoveAll(def => phoenixFaction.Manufacture.GetManufacturableItemByDef(def) == null) ?? 0;
+                        }
+                        else
+                        {
+                            // Faction unavailable: narrow fallback keeps the game safe for module defs.
+                            removed = replenishable.MissingEquipmentItems?.RemoveAll(def => def is GroundVehicleModuleDef) ?? 0;
+                            removed += replenishable.MissingInventoryItems?.RemoveAll(def => def is GroundVehicleModuleDef) ?? 0;
+                            removed += replenishable.MissingArmourItems?.RemoveAll(def => def is GroundVehicleModuleDef) ?? 0;
+                        }
+
+                        if (removed > 0)
+                            TFTVLogger.Always($"[ReplenishFix] Stripped {removed} non-manufacturable item(s) for '{charName}'.");
+
+                        // If nothing remains for this character, remove the entry entirely so no
+                        // ghost soldier header appears in the replenish UI.
+                        if (replenishable.IsEmpty())
+                        {
+                            TFTVLogger.Always($"[ReplenishFix] Entry for '{charName}' is empty after filtering; removing.");
+                            __result.RemoveAt(i);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        // Final safety net: if anything slips through the Postfix filter, block it here rather
+        // than letting vanilla CanManufacture crash on a null ManufacturableItem.
+        [HarmonyPatch]
+        public static class UIModuleReplenish_AddMissingItem_Patch
+        {
+            private static readonly AccessTools.FieldRef<UIModuleReplenish, GeoPhoenixFaction> FactionRef =
+                AccessTools.FieldRefAccess<UIModuleReplenish, GeoPhoenixFaction>("_faction");
+
+            static MethodBase TargetMethod() =>
+                AccessTools.Method(typeof(UIModuleReplenish), "AddMissingItem");
+
+            public static bool Prefix(UIModuleReplenish __instance, GeoCharacter character, ItemDef def, ref bool __result)
+            {
+                try
+                {
+                    if (!TFTVAircraftReworkMain.AircraftReworkOn)
+                        return true;
+
+                    GeoPhoenixFaction faction = FactionRef(__instance);
+                    if (faction != null && faction.Manufacture.GetManufacturableItemByDef(def) == null)
+                    {
+                        TFTVLogger.Always($"[ReplenishFix] AddMissingItem safety-net: blocking '{def?.name}' ({def?.GetType()?.Name})" +
+                            $" for '{character?.DisplayName}' — not in faction.Manufacture.");
+                        __result = false;
+                        return false;
+                    }
+
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    return true;
+                }
+            }
+        }
 
         // Intercept TryReloadItem for GroundVehicleModuleDef items, which vanilla does not handle.
         // Vanilla's non-equipment branch looks for the module def itself in storage (wrong),

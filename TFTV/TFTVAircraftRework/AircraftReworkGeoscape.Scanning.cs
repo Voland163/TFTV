@@ -700,23 +700,30 @@ namespace TFTV
 
                         // Base + effective detection chance
                         int baseChancePct = (int)(ctx.BaseRevealChance * 100f);
+                        int incrementPct = (int)(ctx.IncrementalRevealChance * 100f);
+
+                        // Count the increments that were applied THIS turn before CheckForBaseReveal()
+                        int inRangeIncrements = (ctx.SatelliteUplinkInRange ? 1 : 0)
+                            + (ctx.OutpostToss1Succeeded ? 1 : 0)
+                            + (ctx.ExplorationAffinityTriggered ? 1 : 0);
+
                         int effectiveChancePct = Math.Min(100,
                             (int)(ctx.BaseRevealChance * 100f
-                                + ctx.IncrementalRevealChance * 100f * ctx.PreviousTracingAttempts));
+                                + ctx.IncrementalRevealChance * 100f * (ctx.PreviousTracingAttempts + inRangeIncrements)));
                         sb.AppendLine($"  Base detection chance: {baseChancePct}%  |  Effective chance: {effectiveChancePct}%");
                         sb.AppendLine();
 
                         // Satellite Uplink
                         if (ctx.SatelliteUplinkInRange)
-                            sb.AppendLine("  + Satellite Uplink: in range");
+                            sb.AppendLine($"  + Satellite Uplink: in range (+{incrementPct}%)");
                         else
                             sb.AppendLine("  - Satellite Uplink: not in range");
 
                         // Outpost
                         if (ctx.OutpostWasInRange)
                         {
-                            string toss1 = ctx.OutpostToss1Succeeded ? "success" : "failed";
-                            sb.AppendLine($"  + Outpost: in range ({toss1})");
+                            string toss1 = ctx.OutpostToss1Succeeded ? $"success, +{incrementPct}%" : "failed";
+                            sb.AppendLine($"  {(ctx.OutpostToss1Succeeded ? "+" : "-")} Outpost: in range ({toss1})");
                         }
                         else
                         {
@@ -727,7 +734,7 @@ namespace TFTV
                         if (ctx.ExplorationAffinityRank > 0)
                         {
                             string opName = ctx.ExplorationOperativeName ?? "Unknown";
-                            string triggered = ctx.ExplorationAffinityTriggered ? "triggered" : "did not trigger";
+                            string triggered = ctx.ExplorationAffinityTriggered ? $"triggered (+{incrementPct}%)" : "did not trigger";
                             sb.AppendLine($"  {(ctx.ExplorationAffinityTriggered ? "+" : "-")} Exploration affinity ({opName}, rank {ctx.ExplorationAffinityRank}): {ctx.ExplorationAffinityChance}% chance, {triggered}");
                         }
                         else
@@ -739,7 +746,7 @@ namespace TFTV
                         if (ctx.PreviousTracingAttempts > 0)
                         {
                             float tracingPercent = ctx.IncrementalRevealChance * 100f * ctx.PreviousTracingAttempts;
-                            sb.AppendLine($"  + Previous tracing: {ctx.PreviousTracingAttempts} attempt(s) (+{tracingPercent:F0}% base detection chance)");
+                            sb.AppendLine($"  + Previous tracing: {ctx.PreviousTracingAttempts} attempt(s) (+{tracingPercent:F0}%)");
                         }
                         else
                         {
@@ -775,6 +782,7 @@ namespace TFTV
                             ctx.PreviousTracingAttempts = component.BaseAttacksCounter;
                             ctx.IncrementalRevealChance = component.AlienBaseTypeDef?.IncrementalRevealChance ?? 0f;
                             ctx.BaseRevealChance = component.AlienBaseTypeDef?.BaseRevealChance ?? 0f;
+                            ctx.SatelliteUplinkInRange = false;
 
                             if (revealToFaction is GeoPhoenixFaction geoPhoenixFaction)
                             {
@@ -789,10 +797,9 @@ namespace TFTV
                                         && v.CurrentSite != null
                                         && ____level.Map.SitesInRange(v.CurrentSite, thunderbirdScannerRange, true).Contains(site));
 
-                                ctx.SatelliteUplinkInRange = anyThunderbirdScannerInRange;
-
                                 if (geoPhoenixFaction.IsSiteInBaseScannerRange(site, true) || anyThunderbirdScannerInRange)
                                 {
+                                    ctx.SatelliteUplinkInRange = true;
                                     component.IncrementBaseAttacksRevealCounter();
                                 }
 

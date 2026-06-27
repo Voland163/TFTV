@@ -42,6 +42,15 @@ namespace TFTV
                 try
                 {
                     GeoHavenLeader leader = __instance.Leader;
+
+                    if(leader == null) 
+                    {
+
+                        TFTVLogger.Always("Leader is null for haven " + __instance.Site?.LocalizedSiteName + " in GetRecruitCost");
+
+                        return;
+                    }
+
                     MethodInfo getRelationMethod = AccessTools.Method(typeof(GeoHavenLeader), "GetRelationWith");
                     PartyDiplomacy.Relation relation = (PartyDiplomacy.Relation)getRelationMethod.Invoke(leader, new object[] { forFaction });
                     ResourcePack price = new ResourcePack(__result);

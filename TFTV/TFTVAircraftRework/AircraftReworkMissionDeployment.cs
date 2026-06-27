@@ -32,7 +32,11 @@ namespace TFTV
                 try
                 {
                     UIModuleDeploymentMissionBriefing missionBriefingModule = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.DeploymentMissionBriefingModule;
-                    MethodInfo methodInfoCheckForDeployment = AccessTools.Method(typeof(UIStateRosterDeployment), "CheckForDeployment", new Type[] { typeof(IEnumerable<GeoCharacter>) });
+                    MethodInfo methodInfoCheckForDeployment =
+     AccessTools.Method(
+         typeof(UIStateRosterDeployment),
+         "CheckForDeployment",
+         new Type[] { typeof(List<GeoCharacter>) });
 
                     item.EnrollForDeployment = !item.EnrollForDeployment;
                     item.RefreshCheckVisuals();
