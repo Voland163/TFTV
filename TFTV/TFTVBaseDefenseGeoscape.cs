@@ -521,6 +521,25 @@ namespace TFTV
             }
         }
 
+        [HarmonyPatch(typeof(GeoAlienFaction), "StartPhoenixBaseAssault")]
+        public static class GeoAlienFaction_StartPhoenixBaseAssault_Patch
+        {
+            public static bool Prefix(GeoAlienFaction __instance, SiteAttackSchedule target)
+            {
+                try
+                {
+                    TFTVLogger.Debug($"[StartPhoenixBaseAssault] Base assault on {target.Site.Name} should start");
+                    GeoSite pxBase = target.Site;
+                    var source = __instance.Bases.Where(p => p.SitesInRange.Contains(pxBase));
+                    if (!source.Any())
+                        TFTVLogger.Debug("[StartPhoenixBaseAssault] No alien base in range. Overriding. Starting mission NOW.");
+
+                    pxBase.CreatePhoenixBaseDefenseMission(new PhoenixBaseAttacker(__instance, source.Select(s => s.Site)));
+                    return false;
+                }
+                catch (Exception e) { TFTVLogger.Error(e); return true; }
+            }
+        }
 
         [HarmonyPatch(typeof(GeoAlienFaction), "PhoenixBaseAttackCheck")]
         public static class GeoAlienFaction_PhoenixBaseAttackCheck_patch

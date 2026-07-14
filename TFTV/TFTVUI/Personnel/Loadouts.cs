@@ -49,107 +49,7 @@ namespace TFTV.TFTVUI.Personnel
             _helmetToggleLabel.text = TFTVCommonMethods.ConvertKeyToString(key);
         }
 
-        private static void ShadeMutationBionics(UIModuleActorCycle uIModuleActorCycle)
-        {
-            try
-            {
-                GeoCharacter geoCharacter = uIModuleActorCycle.CurrentCharacter;
-
-                if (geoCharacter == null)
-                {
-                    return;
-                }
-
-                PhoenixGeneralButton mutationButton = uIModuleActorCycle.EditUnitButtonsController.MutationButton;
-                PhoenixGeneralButton bionicsButton = uIModuleActorCycle.EditUnitButtonsController.BionicsButton;
-
-                FieldInfo mutationAvailableFieldInfo = typeof(EditUnitButtonsController).GetField("_mutationAvailable", BindingFlags.NonPublic | BindingFlags.Instance);
-                FieldInfo bionicsAvailableFieldInfo = typeof(EditUnitButtonsController).GetField("_bionicsAvailable", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                bool mutationAvailable = (bool)mutationAvailableFieldInfo.GetValue(uIModuleActorCycle.EditUnitButtonsController);
-                bool bionicsAvailable = (bool)bionicsAvailableFieldInfo.GetValue(uIModuleActorCycle.EditUnitButtonsController);
-
-                if (!mutationAvailable && !bionicsAvailable)
-                {
-                    return;
-                }
-
-                Text bionicsText = null;
-                Text mutateText = null;
-
-                if (bionicsAvailable)
-                {
-                    bionicsText = uIModuleActorCycle.EditUnitButtonsController.GetComponentsInChildren<Text>().FirstOrDefault(c => c.text == TFTVCommonMethods.ConvertKeyToString("KEY_AUMGENTATION_ACTION"));
-
-                    if (bionicsText != null)
-                    {
-                        bionicsButton.SetInteractable(true);
-                        if (bionicsButton.gameObject.GetComponent<UITooltipText>() != null)
-                        {
-                            bionicsButton.gameObject.GetComponent<UITooltipText>().enabled = false;
-                        }
-
-                        bionicsText.color = new Color(0.820f, 0.859f, 0.914f);
-                    }
-                }
-
-                if (mutationAvailable)
-                {
-                    mutateText = uIModuleActorCycle.EditUnitButtonsController.GetComponentsInChildren<Text>().FirstOrDefault(c => c.text == TFTVCommonMethods.ConvertKeyToString("KEY_GEOSCAPE_MUTATE"));
-
-                    if (mutateText != null)
-                    {
-                        mutationButton.SetInteractable(true);
-
-                        if (mutationButton.gameObject.GetComponent<UITooltipText>() != null)
-                        {
-                            mutationButton.gameObject.GetComponent<UITooltipText>().enabled = false;
-                        }
-
-                        mutateText.color = new Color(0.820f, 0.859f, 0.914f);
-                    }
-                }
-
-                TFTVConfig config = TFTVMain.Main.Config;
-
-                if (geoCharacter.TemplateDef.GetGameTags().Contains(TFTVChangesToDLC5.MercenaryTag) && !config.MercsCanBeAugmented)
-                {
-                    if (mutateText != null)
-                    {
-                        mutationButton.SetInteractable(false);
-
-                        if (mutationButton.gameObject.GetComponent<UITooltipText>() != null)
-                        {
-                            mutationButton.gameObject.GetComponent<UITooltipText>().enabled = true;
-                        }
-                        else
-                        {
-                            mutationButton.gameObject.AddComponent<UITooltipText>().TipText = TFTVCommonMethods.ConvertKeyToString("KEY_ABILITY_NOAUGMENTATONS");
-                        }
-                        mutateText.color = Color.gray;
-                    }
-
-                    if (bionicsText != null)
-                    {
-                        bionicsButton.SetInteractable(false);
-
-                        if (bionicsButton.gameObject.GetComponent<UITooltipText>() != null)
-                        {
-                            bionicsButton.gameObject.GetComponent<UITooltipText>().enabled = true;
-                        }
-                        else
-                        {
-                            bionicsButton.gameObject.AddComponent<UITooltipText>().TipText = TFTVCommonMethods.ConvertKeyToString("KEY_ABILITY_NOAUGMENTATONS");
-                        }
-                        bionicsText.color = Color.gray;
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
+       
 
         private static void SetButtonVisibility(PhoenixGeneralButton button, bool visible)
         {
@@ -201,7 +101,6 @@ namespace TFTV.TFTVUI.Personnel
                             ShowWithoutHelmet.SyncCustomHelmetButtonIcon();
                         }
 
-                        ShadeMutationBionics(uIModuleActorCycle);
                         break;
 
                     case UIModuleActorCycle.ActorCycleState.RosterSection:

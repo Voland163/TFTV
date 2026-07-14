@@ -1024,7 +1024,7 @@ namespace TFTV.TFTVDrills
 
                         if (__result) return; // already allowed
 
-                        if (actor?.GetAbilityWithDef<PassiveModifierAbility>(_snapBrace) != null && __instance is DeployShieldAbility)
+                        if (actor?.GetAbilityWithDef<PassiveModifierAbility>(_snapBraceLegacy) != null && __instance is DeployShieldAbility)
                         {
                             __result = true;
                             return;
@@ -1033,9 +1033,36 @@ namespace TFTV.TFTVDrills
                     catch (Exception e) { TFTVLogger.Always($"[TFTV] Desperate CanActivate patch failed: {e}"); }
                 }
 
-
-
             }
+
+
+            //With Snap Brace active, Deploy Shield costs 0 AP
+            [HarmonyPatch(typeof(TacticalAbility), "get_ActionPointCost")] //VERIFIED
+            static class TacticalAbility_ActionPointCost_SnapBrace_Patch
+            {
+                static void Postfix(TacticalAbility __instance, ref float __result)
+                {
+                    if (!TFTVNewGameOptions.IsReworkEnabled())
+                    {
+                        return;
+                    }
+
+                    try
+                    {
+                        if (__instance is DeployShieldAbility)
+                        {
+                            var actor = __instance.TacticalActor;
+
+                            if (actor?.GetAbilityWithDef<PassiveModifierAbility>(_snapBraceLegacy) != null)
+                            {
+                                __result = 0f;
+                            }
+                        }
+                    }
+                    catch (Exception e) { TFTVLogger.Always($"[TFTV] Snap Brace DeployShield AP cost patch failed: {e}"); }
+                }
+            }
+
 
             [HarmonyPatch(typeof(ShootAbility), nameof(ShootAbility.Activate))]
             static class ShootAbility_Activate_PartingShot_Patch
@@ -1949,7 +1976,7 @@ namespace TFTV.TFTVDrills
                 }
             }
 
-            [HarmonyPatch(typeof(PathProcessorUtils), nameof(PathProcessorUtils.UsesTurnAnimations))]
+          /*  [HarmonyPatch(typeof(PathProcessorUtils), nameof(PathProcessorUtils.UsesTurnAnimations))]
             private static class PathProcessorUtils_UsesTurnAnimations_Patch
             {
                 public static bool Prefix(TacticalActor actor, ref bool __result)
@@ -1972,7 +1999,7 @@ namespace TFTV.TFTVDrills
                     __result = false;
                     return false;
                 }
-            }
+            }*/
 
             [HarmonyPatch(typeof(EquipmentComponent), nameof(EquipmentComponent.SetSelectedEquipment))]
             public static class EquipmentComponent_SetSelectedEquipment_Patch

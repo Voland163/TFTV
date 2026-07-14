@@ -1,42 +1,33 @@
-﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
-using Base.Core;
+﻿using Base.Core;
 using Base.Defs;
 using Base.Utils.GameConsole;
 using Base.Utils.Maths;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
-using PhoenixPoint.Common.Entities.Addons;
-using PhoenixPoint.Common.Entities.Equipments;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
-using PhoenixPoint.Common.Entities.Items;
-using PhoenixPoint.Common.Levels.Missions;
-using PhoenixPoint.Common.Levels.Params;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
-using PhoenixPoint.Common.View.ViewModules;
-using PhoenixPoint.Geoscape;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Research;
 using PhoenixPoint.Geoscape.Entities.Research.Reward;
 using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Events;
+using PhoenixPoint.Geoscape.Events.Conditions;
+using PhoenixPoint.Geoscape.Events.Eventus;
+using PhoenixPoint.Geoscape.Events.Eventus.Filters;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
-using PhoenixPoint.Geoscape.View;
-using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
-using PhoenixPoint.Geoscape.View.ViewModules;
-using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using PhoenixPoint.Tactical.Levels;
 using PhoenixPoint.Tactical.UI;
 using PhoenixPoint.Tactical.View;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
 
 
@@ -49,138 +40,323 @@ namespace TFTV
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly SharedData Shared = TFTVMain.Shared;
 
-        internal static class SoldierInventorySaveHelpers
+
+        /*[HarmonyPatch(typeof(GeoInitialWorldSetup), nameof(GeoInitialWorldSetup.SimulateFactions))]
+        public static class ScavengingSiteWorldCreationReportPatch
         {
-            /// <summary>
-            /// Reads the actual visible slot contents instead of UIInventoryList.UnfilteredItems.
-            /// UnfilteredItems can be corrupted by GeoItem.Equals during swaps of duplicate ItemDefs:
-            /// list removal may remove a different equal copy than the slot item being changed.
-            /// </summary>
-            internal static IEnumerable<GeoItem> SlotItems(UIInventoryList list)
+            [HarmonyPostfix]
+            public static void SimulateFactionsPostfix(GeoLevelController level, ref IEnumerator<NextUpdate> __result)
             {
-                if (list == null || list.Slots == null)
+                __result = ReportAfterWorldCreation(__result, level);
+            }
+
+            private static IEnumerator<NextUpdate> ReportAfterWorldCreation(IEnumerator<NextUpdate> simulation, GeoLevelController level)
+            {
+                try
                 {
-                    yield break;
+                    while (simulation.MoveNext())
+                    {
+                        yield return simulation.Current;
+                    }
+                }
+                finally
+                {
+                    simulation.Dispose();
                 }
 
-                foreach (UIInventorySlot slot in list.Slots)
-                {
-                    GeoItem item = slot != null ? slot.Item as GeoItem : null;
-                    if (item == null)
-                    {
-                        continue;
-                    }
+                ReportScavengingSites(level);
+            }
 
-                    foreach (GeoItem expandedItem in ExpandStack(item))
-                    {
-                        yield return expandedItem;
-                    }
+            private static void ReportScavengingSites(GeoLevelController level)
+            {
+                List<GeoScavengingSite> sites = level.Map.AllSites
+                    .Where(site => site.Type == GeoSiteType.Scavenging)
+                    .Select(site => site.GetComponent<GeoScavengingSite>())
+                    .Where(site => site != null)
+                    .ToList();
+
+                int resources = sites.Count(site => site.IsResourceSite);
+                int vehicles = sites.Count(site => site.IsVehicleSite);
+                int recruits = sites.Count(site => site.IsRecruitsSite);
+                int unclassified = sites.Count - resources - vehicles - recruits;
+                int overgrown = sites.Count(site => site.IsOvergrown);
+
+                TFTVLogger.Always(string.Format(
+                    "[Scavenging Site Report] World creation produced {0} scavenging sites: {1} resources, {2} vehicles, {3} recruits, {4} unclassified; {5} are overgrown.",
+                    sites.Count,
+                    resources,
+                    vehicles,
+                    recruits,
+                    unclassified,
+                    overgrown));
+            }
+        }*/
+
+
+        /// <summary>
+        /// Re-evaluates a failed assignment while treating every tag whose name
+        /// contains TFTV_ATTACK as absent.
+        /// Every owner, type, mission, functioning, objective, event-condition, and
+        /// encounter-availability check remains the responsibility of the game.
+        /// </summary>
+        [HarmonyPatch(typeof(GeoscapeEventDef), "CanBeAssignedToSite")]
+        internal static class CanBeAssignedToSitePatch
+        {
+            private const string IgnoredTagNameFragment = "TFTV_ATTACK";
+
+            private static void Postfix(
+                GeoscapeEventDef __instance,
+                GeoSite site,
+                GeoFaction visitingFaction,
+                bool ignoreNonFunctioning,
+                ref bool __result)
+            {
+                if (__result ||
+                    !site.SiteTags.Any(IsIgnoredTag))
+                {
+                    return;
+                }
+
+                bool passesNormalChecks =
+                    !site.HasDiplomaticObjective &&
+                    __instance.SiteFilters.Any(filter => filter.IsValidEventForSite(site, ignoreNonFunctioning)) &&
+                    __instance.GeoscapeEventData.IsValidForSite(site, visitingFaction);
+
+                bool hasOtherTags = site.SiteTags.Any(tag => !IsIgnoredTag(tag));
+                bool hasSiteCondition = __instance.GeoscapeEventData.Conditions.Any(
+                    condition => condition is SiteConditionDef);
+
+                if (passesNormalChecks && (!hasOtherTags || hasSiteCondition))
+                {
+                    __result = true;
+                    Debug.Log(string.Format(
+                        "[TFTV_ATTACK tag eligibility] Event {0} accepted site {1} after ignoring tags [{2}]",
+                        __instance.EventID,
+                        site.name,
+                        string.Join(",", site.SiteTags.Where(IsIgnoredTag).ToArray())));
                 }
             }
 
-            internal static GeoItem FirstSlotItem(UIInventoryList list)
+            private static bool IsIgnoredTag(string tag)
             {
-                return SlotItems(list).FirstOrDefault();
+                return tag != null && tag.IndexOf(IgnoredTagNameFragment, StringComparison.Ordinal) >= 0;
             }
+        }
 
-            /// <summary>
-            /// Defensive fallback: if a slot itself contains a stacked GeoItem, save it as one item per count.
-            /// Normal soldier slots should already be count 1, so this usually returns the original object.
-            /// </summary>
-            private static IEnumerable<GeoItem> ExpandStack(GeoItem item)
+        [HarmonyPatch(typeof(UIInventoryList), "ItemChangingHandler")]
+        internal static class ItemChangingHandlerPatch
+        {
+            private static bool Prefix(
+                UIInventoryList __instance,
+                ICommonItem oldItem,
+                ref bool ____isFiltering)
             {
-                int count = item.CommonItemData.Count;
-                if (count <= 1)
+                if (!____isFiltering && oldItem != null)
                 {
-                    yield return item;
-                    yield break;
+                    RemoveByReference(__instance.UnfilteredItems, oldItem);
                 }
 
-                int totalCharges = item.CommonItemData.TotalAvailableCharges();
-                int chargesMax = item.ItemDef.ChargesMax;
+                // The original uses List.Remove(), which invokes GeoItem.Equals().
+                return false;
+            }
 
-                for (int i = 0; i < count; i++)
+            internal static void RemoveByReference(List<ICommonItem> items, ICommonItem item)
+            {
+                for (int i = 0; i < items.Count; i++)
                 {
-                    int charges = -1;
-                    if (chargesMax > 0)
+                    if (ReferenceEquals(items[i], item))
                     {
-                        charges = i < count - 1 ? chargesMax : totalCharges - chargesMax * (count - 1);
-                        if (charges <= 0)
-                        {
-                            charges = chargesMax;
-                        }
+                        items.RemoveAt(i);
+                        return;
                     }
-
-                    yield return new GeoItem(item.ItemDef, 1, charges, null, item.CommonItemData.Malfunction);
-                }
-            }
-
-            internal static void UpdatePreferredLoadout(GeoCharacter soldier)
-            {
-                GeoPhoenixFaction phoenixFaction = soldier.Faction as GeoPhoenixFaction;
-                if (phoenixFaction != null)
-                {
-                    phoenixFaction.UpdatePreferredLoadout(soldier);
                 }
             }
         }
 
-        [HarmonyPatch(typeof(UIStateEditSoldier), "UpdateSoldierEquipment")]
-        internal static class UIStateEditSoldier_UpdateSoldierEquipment_Patch
+        [HarmonyPatch(typeof(UIInventoryList), "ItemChangedHandler")]
+        internal static class ItemChangedHandlerPatch
         {
-            private static bool Prefix(UIStateEditSoldier __instance, GeoCharacter soldier)
+            private static bool Prefix(
+                UIInventoryList __instance,
+                UIInventorySlot slot,
+                ICommonItem oldItem,
+                ICommonItem newItem,
+                Predicate<TacticalItemDef> ____filter,
+                ref bool ____isFiltering)
             {
-                UIModuleSoldierEquip soldierEquipModule = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.SoldierEquipModule;
-                   
+                if (____isFiltering)
+                {
+                    return false;
+                }
 
-                soldier.SetItems(
-                    SoldierInventorySaveHelpers.SlotItems(soldierEquipModule.ArmorList),
-                    SoldierInventorySaveHelpers.SlotItems(soldierEquipModule.ReadyList),
-                    SoldierInventorySaveHelpers.SlotItems(soldierEquipModule.InventoryList),
-                    false);
+                if (oldItem != null)
+                {
+                    ItemChangingHandlerPatch.RemoveByReference(__instance.UnfilteredItems, oldItem);
+                    ItemChangingHandlerPatch.RemoveByReference(__instance.FilteredItems, oldItem);
+                }
 
-                SoldierInventorySaveHelpers.UpdatePreferredLoadout(soldier);
+                if (newItem == null)
+                {
+                    return false;
+                }
+
+                int index = __instance.Slots.IndexOf(slot);
+                if (index != -1)
+                {
+                    __instance.UnfilteredItems.Insert(Math.Min(index, __instance.UnfilteredItems.Count), newItem);
+                }
+                else
+                {
+                    __instance.UnfilteredItems.Add(newItem);
+                }
+
+                if (____filter == null || ____filter(newItem.ItemDef as TacticalItemDef))
+                {
+                    __instance.FilteredItems.Add(newItem);
+                    return false;
+                }
+
+                ____isFiltering = true;
+                slot.Item = null;
+                slot.UpdateItem();
+                ____isFiltering = false;
                 return false;
             }
         }
 
-        [HarmonyPatch(typeof(UIStateEditVehicle), "UpdateVehicleEquipment")]
-        internal static class UIStateEditVehicle_UpdateVehicleEquipment_Patch
-        {
-            private static bool Prefix(UIStateEditVehicle __instance, GeoCharacter soldier)
-            {
-                UIModuleSoldierEquip soldierEquipModule = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.SoldierEquipModule;
 
-                List<GeoItem> weaponItems = new List<GeoItem>();
-                List<GeoItem> bodyItems = new List<GeoItem>
-            {
-                SoldierInventorySaveHelpers.FirstSlotItem(soldierEquipModule.VehicleHullEquipmentList),
-                SoldierInventorySaveHelpers.FirstSlotItem(soldierEquipModule.VehicleEnginequipmentList)
-            };
+        /* internal static class SoldierInventorySaveHelpers
+         {
+             /// <summary>
+             /// Reads the actual visible slot contents instead of UIInventoryList.UnfilteredItems.
+             /// UnfilteredItems can be corrupted by GeoItem.Equals during swaps of duplicate ItemDefs:
+             /// list removal may remove a different equal copy than the slot item being changed.
+             /// </summary>
+             internal static IEnumerable<GeoItem> SlotItems(UIInventoryList list)
+             {
+                 if (list == null || list.Slots == null)
+                 {
+                     yield break;
+                 }
 
-                GeoItem mainVehicleItem = SoldierInventorySaveHelpers.FirstSlotItem(soldierEquipModule.VehicleWeapomEquipmentList);
-                if (mainVehicleItem != null)
-                {
-                    if (mainVehicleItem.ItemDef is GroundVehicleModuleDef)
-                    {
-                        bodyItems.Add(mainVehicleItem);
-                    }
-                    else
-                    {
-                        weaponItems.Add(mainVehicleItem);
-                    }
-                }
+                 foreach (UIInventorySlot slot in list.Slots)
+                 {
+                     GeoItem item = slot != null ? slot.Item as GeoItem : null;
+                     if (item == null)
+                     {
+                         continue;
+                     }
 
-                soldier.SetItems(
-                    bodyItems.Where(item => item != null),
-                    weaponItems.Where(item => item != null),
-                    SoldierInventorySaveHelpers.SlotItems(soldierEquipModule.InventoryList),
-                    false);
+                     foreach (GeoItem expandedItem in ExpandStack(item))
+                     {
+                         yield return expandedItem;
+                     }
+                 }
+             }
 
-                SoldierInventorySaveHelpers.UpdatePreferredLoadout(soldier);
-                return false;
-            }
-        }
+             internal static GeoItem FirstSlotItem(UIInventoryList list)
+             {
+                 return SlotItems(list).FirstOrDefault();
+             }
+
+             /// <summary>
+             /// Defensive fallback: if a slot itself contains a stacked GeoItem, save it as one item per count.
+             /// Normal soldier slots should already be count 1, so this usually returns the original object.
+             /// </summary>
+             private static IEnumerable<GeoItem> ExpandStack(GeoItem item)
+             {
+                 int count = item.CommonItemData.Count;
+                 if (count <= 1)
+                 {
+                     yield return item;
+                     yield break;
+                 }
+
+                 int totalCharges = item.CommonItemData.TotalAvailableCharges();
+                 int chargesMax = item.ItemDef.ChargesMax;
+
+                 for (int i = 0; i < count; i++)
+                 {
+                     int charges = -1;
+                     if (chargesMax > 0)
+                     {
+                         charges = i < count - 1 ? chargesMax : totalCharges - chargesMax * (count - 1);
+                         if (charges <= 0)
+                         {
+                             charges = chargesMax;
+                         }
+                     }
+
+                     yield return new GeoItem(item.ItemDef, 1, charges, null, item.CommonItemData.Malfunction);
+                 }
+             }
+
+             internal static void UpdatePreferredLoadout(GeoCharacter soldier)
+             {
+                 GeoPhoenixFaction phoenixFaction = soldier.Faction as GeoPhoenixFaction;
+                 if (phoenixFaction != null)
+                 {
+                     phoenixFaction.UpdatePreferredLoadout(soldier);
+                 }
+             }
+         }
+
+         [HarmonyPatch(typeof(UIStateEditSoldier), "UpdateSoldierEquipment")]
+         internal static class UIStateEditSoldier_UpdateSoldierEquipment_Patch
+         {
+             private static bool Prefix(UIStateEditSoldier __instance, GeoCharacter soldier)
+             {
+                 UIModuleSoldierEquip soldierEquipModule = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.SoldierEquipModule;
+
+
+                 soldier.SetItems(
+                     SoldierInventorySaveHelpers.SlotItems(soldierEquipModule.ArmorList),
+                     SoldierInventorySaveHelpers.SlotItems(soldierEquipModule.ReadyList),
+                     SoldierInventorySaveHelpers.SlotItems(soldierEquipModule.InventoryList),
+                     false);
+
+                 SoldierInventorySaveHelpers.UpdatePreferredLoadout(soldier);
+                 return false;
+             }
+         }
+
+         [HarmonyPatch(typeof(UIStateEditVehicle), "UpdateVehicleEquipment")]
+         internal static class UIStateEditVehicle_UpdateVehicleEquipment_Patch
+         {
+             private static bool Prefix(UIStateEditVehicle __instance, GeoCharacter soldier)
+             {
+                 UIModuleSoldierEquip soldierEquipModule = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.SoldierEquipModule;
+
+                 List<GeoItem> weaponItems = new List<GeoItem>();
+                 List<GeoItem> bodyItems = new List<GeoItem>
+             {
+                 SoldierInventorySaveHelpers.FirstSlotItem(soldierEquipModule.VehicleHullEquipmentList),
+                 SoldierInventorySaveHelpers.FirstSlotItem(soldierEquipModule.VehicleEnginequipmentList)
+             };
+
+                 GeoItem mainVehicleItem = SoldierInventorySaveHelpers.FirstSlotItem(soldierEquipModule.VehicleWeapomEquipmentList);
+                 if (mainVehicleItem != null)
+                 {
+                     if (mainVehicleItem.ItemDef is GroundVehicleModuleDef)
+                     {
+                         bodyItems.Add(mainVehicleItem);
+                     }
+                     else
+                     {
+                         weaponItems.Add(mainVehicleItem);
+                     }
+                 }
+
+                 soldier.SetItems(
+                     bodyItems.Where(item => item != null),
+                     weaponItems.Where(item => item != null),
+                     SoldierInventorySaveHelpers.SlotItems(soldierEquipModule.InventoryList),
+                     false);
+
+                 SoldierInventorySaveHelpers.UpdatePreferredLoadout(soldier);
+                 return false;
+             }
+         }*/
 
         //Should not be necessary anymore, as fixed by SG
         /*/// <summary>
@@ -778,7 +954,7 @@ namespace TFTV
 
                     // Duplicate same-body-part shred in the same projectile accumulation.
                     // Preserve HP damage/statuses/etc.; only remove the extra armor shred.
-                   // TFTVLogger.Always($"[DamageAccumulation_AddTarget_PreventDuplicateBodyPartShred] Found duplicate shred on body part '{data.Target.GetSlotName()}' in target data index {i}, removing armor damage.");
+                    // TFTVLogger.Always($"[DamageAccumulation_AddTarget_PreventDuplicateBodyPartShred] Found duplicate shred on body part '{data.Target.GetSlotName()}' in target data index {i}, removing armor damage.");
                     data.DamageResult.ArmorDamage = 0f;
 
                     if (IsNoOpAfterRemovingDuplicateShred(data))

@@ -6,6 +6,7 @@ using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
@@ -84,9 +85,27 @@ namespace TFTV.AgendaTracker
 
         internal static List<UIFactionDataTrackerElement> GetTrackedElements()
         {
-            return factionTracker != null
-                ? (List<UIFactionDataTrackerElement>)CurrentTrackedElementsField.GetValue(factionTracker)
+            return GetTrackedElements(factionTracker);
+        }
+
+        internal static List<UIFactionDataTrackerElement> GetTrackedElements(UIModuleFactionAgendaTracker instance)
+        {
+            return instance != null
+                ? (List<UIFactionDataTrackerElement>)CurrentTrackedElementsField.GetValue(instance)
                 : null;
+        }
+
+        internal static List<UIFactionDataTrackerElement> GetLiveTrackedElements()
+        {
+            return GetLiveTrackedElements(factionTracker);
+        }
+
+        internal static List<UIFactionDataTrackerElement> GetLiveTrackedElements(UIModuleFactionAgendaTracker instance)
+        {
+            var elements = GetTrackedElements(instance);
+            if (elements == null) return null;
+
+            return elements.Where(e => e != null && !PendingPurge.Contains(e)).ToList();
         }
 
         internal static void LocalizeExtendedAgendaUI()
@@ -116,5 +135,13 @@ namespace TFTV.AgendaTracker
         {
             return new LocalizedTextBind() { LocalizationKey = key }.Localize();
         }
+
+        // Elements Dispose()'d but not yet purged from _currentTrackedElements by vanilla's own
+        // deferred _elementsToRemove processing (top of the parameterless UpdateData()). Treated
+        // as "already gone" by our Find*/Reapply helpers without mutating the tracked-elements
+        // list directly, since Dispose() can be called while that list is mid-enumeration
+        // (e.g. InitialSetup()'s own teardown loop).
+        internal static readonly HashSet<UIFactionDataTrackerElement> PendingPurge =
+            new HashSet<UIFactionDataTrackerElement>();
     }
 }

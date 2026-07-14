@@ -154,40 +154,15 @@ namespace TFTV.AgendaTracker
             if (session == null) return null;
 
             string spec = session.TargetSpecialization?.ViewElementDef?.DisplayName1?.Localize();
+            string levelInfo = $"Lvl {session.VirtualLevelAchieved}\u2192{session.TargetLevel}";
+
             return string.IsNullOrEmpty(spec)
-                ? $"{AgendaConstants.actionTrainingOperative} {character.DisplayName}"
-                : $"{AgendaConstants.actionTrainingOperative} {character.DisplayName} ({spec})";
+                ? $"{AgendaConstants.actionTrainingOperative} {character.DisplayName} ({levelInfo})"
+                : $"{AgendaConstants.actionTrainingOperative} {character.DisplayName} ({spec}, {levelInfo})";
         }
 
-        /*  internal static string BuildVehicleText(GeoVehicle vehicle, bool travelling)
-          {
-              if (travelling)
-              {
-                  string siteName = GetSiteName(vehicle.FinalDestination, vehicle.Owner);
-                  return $"{vehicle.Name} {AgendaConstants.actionTraveling} {siteName}";
-              }
-              else
-              {
-                  string siteName = GetSiteName(vehicle.CurrentSite, vehicle.Owner);
-                  return $"{vehicle.Name} {AgendaConstants.actionExploring} {siteName}";
-              }
-          }*/
-
-        internal static string AppendTime(float hours)
-        {
-            return $"   ~ {HoursToText(hours)}";
-        }
-
-        internal static string HoursToText(float hours)
-        {
-            TimeUnit timeUnit = TimeUnit.FromHours(hours);
-            var formatter = new TimeRemainingFormatterDef
-            {
-                DaysText = new LocalizedTextBind("{0}d", true),
-                HoursText = new LocalizedTextBind("{0}h", true)
-            };
-            return UIUtil.FormatTimeRemaining(timeUnit, formatter);
-        }
+        
+        
 
         #endregion
 
@@ -199,30 +174,14 @@ namespace TFTV.AgendaTracker
             var session = TrainingFacilityRework.GetRecruitSession(character);
             if (session == null) return TimeUnit.Zero;
 
-            TimeUnit endAt = TimeUnit.FromHours(session.StartHour + session.DurationHours);
-            TimeUnit remaining = endAt - level.Timing.Now;
-            return remaining <= TimeUnit.Zero ? TimeUnit.Zero : remaining;
+            // Delegate to the same float-hours helper used by IsRecruitTrainingComplete, so the
+            // Agenda Tracker's countdown/removal and the auto-deploy popup always agree on
+            // "time remaining" to the same precision instead of computing it independently.
+            double remainingHours = TrainingFacilityRework.GetRecruitRemainingHours(character, level);
+            return TimeUnit.FromHours((float)remainingHours);
         }
 
-        internal static float GetExplorationTime(GeoVehicle vehicle, float fallbackHours)
-        {
-            try
-            {
-                if (vehicle == null) return fallbackHours;
-
-                object updateable = AgendaConstants.ExplorationUpdateableField?.GetValue(vehicle);
-                if (updateable == null || AgendaConstants.ExplorationUpdateableNextUpdateProperty == null)
-                    return fallbackHours;
-
-                NextUpdate endTime = (NextUpdate)AgendaConstants.ExplorationUpdateableNextUpdateProperty.GetValue(updateable);
-                return (float)-(vehicle.Timing.Now - endTime.NextTime).TimeSpan.TotalHours;
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                return fallbackHours;
-            }
-        }
+       
 
         #endregion
 
@@ -247,89 +206,7 @@ namespace TFTV.AgendaTracker
 
         private static readonly Dictionary<int, TravelTimeCacheEntry> _travelTimeCache = new Dictionary<int, TravelTimeCacheEntry>();
 
-        internal static bool GetTravelTime(GeoVehicle vehicle, out float travelTime, GeoSite target = null)
-        {
-            travelTime = 0f;
-            if (vehicle?.Navigation == null) return false;
-
-            GeoSite dest = target ?? vehicle.FinalDestination;
-            if (dest == null)
-            {
-                if (target == null) _travelTimeCache.Remove(vehicle.VehicleID);
-                return false;
-            }
-
-            float speed = vehicle.Stats?.Speed.Value ?? 0f;
-            if (speed <= 0f)
-            {
-                if (target == null) _travelTimeCache.Remove(vehicle.VehicleID);
-                return false;
-            }
-
-            Vector3 targetPos = dest.WorldPosition;
-            bool cacheResult = target == null;
-
-            if (cacheResult)
-            {
-                if (!vehicle.Travelling)
-                {
-                    _travelTimeCache.Remove(vehicle.VehicleID);
-                }
-                else if (_travelTimeCache.TryGetValue(vehicle.VehicleID, out var entry) && entry.Matches(dest, targetPos, speed))
-                {
-                    var timing = vehicle.GeoLevel?.Timing;
-                    if (entry.HasCalculationTime && timing != null)
-                    {
-                        float elapsed = (float)(timing.Now - entry.CalculatedAt).TimeSpan.TotalHours;
-                        float remaining = Mathf.Max(0f, entry.CachedHours - elapsed);
-                        if (remaining > 0f)
-                        {
-                            entry.CachedHours = remaining;
-                            entry.CalculatedAt = timing.Now;
-                            travelTime = remaining;
-                            return true;
-                        }
-                        _travelTimeCache.Remove(vehicle.VehicleID);
-                    }
-                    else
-                    {
-                        if (timing != null) { entry.HasCalculationTime = true; entry.CalculatedAt = timing.Now; }
-                        travelTime = entry.CachedHours;
-                        return true;
-                    }
-                }
-            }
-
-            Vector3 currentPos = vehicle.CurrentSite?.WorldPosition ?? vehicle.WorldPosition;
-            var path = vehicle.Navigation.FindPath(currentPos, targetPos, out bool hasPath);
-            if (!hasPath || path.Count < 2)
-            {
-                if (cacheResult) _travelTimeCache.Remove(vehicle.VehicleID);
-                return false;
-            }
-
-            float distance = 0f;
-            for (int i = 0, len = path.Count - 1; i < len;)
-                distance += GeoMap.Distance(path[i].Pos.WorldPosition, path[++i].Pos.WorldPosition).Value;
-
-            travelTime = distance / speed;
-
-            if (cacheResult && vehicle.Travelling)
-            {
-                var timing = vehicle.GeoLevel?.Timing;
-                _travelTimeCache[vehicle.VehicleID] = new TravelTimeCacheEntry
-                {
-                    Destination = dest,
-                    DestinationPosition = targetPos,
-                    CachedHours = travelTime,
-                    Speed = speed,
-                    HasCalculationTime = timing != null,
-                    CalculatedAt = timing?.Now ?? TimeUnit.Zero
-                };
-            }
-
-            return true;
-        }
+       
 
         #endregion
 
@@ -381,7 +258,7 @@ namespace TFTV.AgendaTracker
 
         internal static UIFactionDataTrackerElement FindTrackedElement<T>(T obj) where T : class
         {
-            var elements = AgendaConstants.GetTrackedElements();
+            var elements = AgendaConstants.GetLiveTrackedElements();
             if (elements == null) return null;
 
             foreach (var e in elements)
@@ -394,7 +271,7 @@ namespace TFTV.AgendaTracker
 
         internal static UIFactionDataTrackerElement FindTrackedElementById(GeoCharacter character)
         {
-            var elements = AgendaConstants.GetTrackedElements();
+            var elements = AgendaConstants.GetLiveTrackedElements();
             if (elements == null) return null;
 
             foreach (var e in elements)
@@ -405,14 +282,36 @@ namespace TFTV.AgendaTracker
             return null;
         }
 
-        internal static UIFactionDataTrackerElement AddTrackerElement(object trackedObject, string text, ViewElementDef viewElement)
+        internal static UIFactionDataTrackerElement AddTrackerElement(
+      object trackedObject,
+      string text,
+      ViewElementDef viewElement)
         {
-            var tracker = AgendaConstants.factionTracker;
-            if (tracker == null) return null;
+            UIModuleFactionAgendaTracker tracker = AgendaConstants.factionTracker;
+            if (tracker == null
+                || AgendaConstants.GetFreeElement == null
+                || AgendaConstants.OnAddedElement == null)
+            {
+                return null;
+            }
 
-            var freeElement = (UIFactionDataTrackerElement)AgendaConstants.GetFreeElement.Invoke(tracker, null);
+            var freeElement = (UIFactionDataTrackerElement)AgendaConstants.GetFreeElement.Invoke(
+                tracker,
+                null);
+
+            if (freeElement == null)
+            {
+                return null;
+            }
+
+            // Stock Dispose() immediately puts the same UI object back into the pool.
+            // It can therefore be reused before stock removes its old list entry.
+            // A reused active object must no longer be treated as pending removal.
+            AgendaConstants.PendingPurge.Remove(freeElement);
 
             ViewElementDef initViewElement = viewElement;
+
+            // Custom site text/icons are applied by the Init postfix.
             if (trackedObject is GeoSite site && HasCustomSiteTracker(site))
             {
                 initViewElement = null;
@@ -420,22 +319,34 @@ namespace TFTV.AgendaTracker
 
             freeElement.Init(trackedObject, text, initViewElement, false);
             AgendaConstants.OnAddedElement.Invoke(tracker, new object[] { freeElement });
+
             return freeElement;
         }
 
         internal static void RemoveTrackerElement(UIFactionDataTrackerElement element)
         {
-            var tracker = AgendaConstants.factionTracker;
-            if (tracker == null || element == null) return;
+            UIModuleFactionAgendaTracker tracker = AgendaConstants.factionTracker;
+            if (tracker == null || element == null || AgendaConstants.Dispose == null)
+            {
+                return;
+            }
+
+            // Dispose() logically removes the row for this mod through PendingPurge.
+            // Physical removal from vanilla's _currentTrackedElements remains deferred
+            // until the next parameterless UpdateData() processes _elementsToRemove.
             AgendaConstants.Dispose.Invoke(tracker, new object[] { element });
         }
 
         internal static void RefreshTracker()
         {
-            var tracker = AgendaConstants.factionTracker;
-            if (tracker == null) return;
+            UIModuleFactionAgendaTracker tracker = AgendaConstants.factionTracker;
+            if (tracker == null || AgendaConstants.UpdateData == null)
+            {
+                return;
+            }
+
+            // The postfix on parameterless UpdateData already applies custom ordering.
             AgendaConstants.UpdateData.Invoke(tracker, null);
-            AgendaConstants.OrderElements.Invoke(tracker, null);
         }
 
         internal static bool TryUpdateCustomSiteElement(UIFactionDataTrackerElement element, GeoSite site, GeoscapeViewContext context, out bool isExpired)
@@ -484,11 +395,11 @@ namespace TFTV.AgendaTracker
         internal static void ReapplyResolvedTrackerTexts(UIModuleFactionAgendaTracker tracker, GeoFaction viewerFaction)
         {
             if (tracker == null) return;
-            var elements = (List<UIFactionDataTrackerElement>)AgendaConstants.CurrentTrackedElementsField.GetValue(tracker);
+            var elements = AgendaConstants.GetLiveTrackedElements();
+            if (elements == null) return;
 
             foreach (var el in elements)
             {
-                if (el == null) continue;
                 if (el.TrackedObject is GeoSite site && HasCustomSiteTracker(site))
                 {
                     ApplyCustomSiteTrackerText(el, site, viewerFaction);

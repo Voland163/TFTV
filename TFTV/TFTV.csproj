@@ -173,8 +173,11 @@
     <Compile Include="TFTVBaseRework\PersonnelDismissal.cs" />
     <Compile Include="TFTVBaseRework\ResearchAndManufacturing.cs" />
     <Compile Include="TFTVBaseRework\TrainingFacilityRework.cs" />
-    <Compile Include="TFTVBaseRework\UI.cs" />
     <Compile Include="TFTVBaseRework\BaseReworkActiveCheck.cs" />
+    <Compile Include="TFTVBaseRework\UI\Harmony.cs" />
+    <Compile Include="TFTVBaseRework\UI\Helpers.cs" />
+    <Compile Include="TFTVBaseRework\UI\MonoBehaviours.cs" />
+    <Compile Include="TFTVBaseRework\UI\Panel.cs" />
     <Compile Include="TFTVBaseRework\Workers.cs" />
     <Compile Include="TFTVCustomPortraits.cs" />
     <Compile Include="TFTVDrills\CanvasGroupExtensions.cs" />
@@ -258,6 +261,7 @@
     <Compile Include="TFTVUI\Geoscape\TopInforBar.cs" />
     <Compile Include="TFTVUI\Personnel\DeliriumFaceShader.cs" />
     <Compile Include="TFTVUI\Personnel\Loadouts.cs" />
+    <Compile Include="TFTVUI\Personnel\MercenariesNoAugment.cs" />
     <Compile Include="TFTVUI\Personnel\Mutoids.cs" />
     <Compile Include="TFTVUI\Personnel\ShowWithoutHelmet.cs" />
     <Compile Include="TFTVUI\Tactical\Ancients.cs" />

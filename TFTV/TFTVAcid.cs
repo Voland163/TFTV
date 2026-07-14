@@ -68,7 +68,7 @@ namespace TFTV
                             resistanceToAcid *= damageMultiplier.GetMultiplier(__instance, __instance);
                         }
 
-                        TFTVLogger.Always($"Acid damage being applied to {__instance.name}, HP amount: {damageResult.HealthDamage}, resistance to acid: {resistanceToAcid}");
+                       // TFTVLogger.Always($"Acid damage being applied to {__instance.name}, HP amount: {damageResult.HealthDamage}, resistance to acid: {resistanceToAcid}");
 
                         if (resistanceToAcid == 1) 
                         {
@@ -76,7 +76,7 @@ namespace TFTV
                         }
 
                         float adjustedHealthDamage = damageResult.HealthDamage / resistanceToAcid;
-                        TFTVLogger.Always($"reverting damage from acid to {adjustedHealthDamage}");
+                     //   TFTVLogger.Always($"reverting damage from acid to {adjustedHealthDamage}");
                         damageResult.HealthDamage = adjustedHealthDamage;
                     }
 

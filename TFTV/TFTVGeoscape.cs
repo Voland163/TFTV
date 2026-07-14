@@ -1,8 +1,11 @@
 using Base.Serialization.General;
+using LlockhamIndustries.VR;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.DifficultySystem;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases;
+using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Modding;
 using System;
@@ -156,10 +159,12 @@ namespace TFTV
                     RestoreAssignments(Controller);
                     TryGrantInitialPersonnel(Controller);
                     AgendaRefresh.RequestRefreshAfterBaseReworkRestore();
+                    PersonnelManagementUI.HookHourlyDeploymentCheck(Controller);
                 }
 
                 TFTVBetaSaveGamesFixes.ConvertAncientRefinerySitesToHarvestSites(Controller);
                 AircraftOrderWithoutVehicleId.RestoreVehicleOrder(Controller);
+                ReportScavengingSites(Controller, "Geoscape loaded");
                 TFTVLogger.Always($"Geoscape start finished");
                 // TFTVExperimental.ResearchCalendarUtility.LogCalendars(Controller);
             }
@@ -167,6 +172,31 @@ namespace TFTV
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        internal static void ReportScavengingSites(GeoLevelController level, string reportSource)
+        {
+            List<GeoScavengingSite> sites = level.Map.AllSites
+                .Where(site => site.Type == GeoSiteType.Scavenging)
+                .Select(site => site.GetComponent<GeoScavengingSite>())
+                .Where(site => site != null)
+                .ToList();
+
+            int resources = sites.Count(site => site.IsResourceSite);
+            int vehicles = sites.Count(site => site.IsVehicleSite);
+            int recruits = sites.Count(site => site.IsRecruitsSite);
+            int unclassified = sites.Count - resources - vehicles - recruits;
+            int overgrown = sites.Count(site => site.IsOvergrown);
+
+            TFTVLogger.Always(string.Format(
+                "[Scavenging Site Report] {0}: {1} scavenging sites: {2} resources, {3} vehicles, {4} recruits, {5} unclassified; {6} are overgrown.",
+                reportSource,
+                sites.Count,
+                resources,
+                vehicles,
+                recruits,
+                unclassified,
+                overgrown));
         }
 
         private static void ResetBaseReworkStateForNewGame()
@@ -195,6 +225,11 @@ namespace TFTV
             {
                 TFTVLogger.Always($"OnGeoscapeEnd");
                 GeoLevelController gsController = Controller;
+
+                if (BaseReworkCheck.BaseReworkEnabled)
+                {
+                    PersonnelManagementUI.UnhookHourlyDeploymentCheck();
+                }
 
                 TFTVTouchedByTheVoid.Umbra.UmbraGeoscape.CheckForUmbraResearch(gsController);
                 TFTVTouchedByTheVoid.Umbra.UmbraGeoscape.SetUmbraEvolution(gsController);
@@ -323,8 +358,19 @@ namespace TFTV
                 TFTVBehemothAndRaids.checkHammerfall = data.checkHammerfall;
                 TFTVRevenant.DeadSoldiersDelirium = data.DeadSoldiersDelirium;
                 TFTVRevenant.daysRevenantLastSeen = data.timeRevenantLasteSeenSaveData;
-                TFTVRevenant.TFTVRevenantResearch.RevenantPoints = data.RevenantPoints;       
-                TFTVRevenant.TFTVRevenantResearch.RevenantCaptured = data.RevenantCaptured;   
+
+                // Only restore from the (potentially stale, pre-mission) snapshot if a just-finished
+                // tactical mission hasn't already updated these live values via CheckRevenantCapturedOrKilled.
+                if (TFTVRevenant.TFTVRevenantResearch.RevenantPoints == 0)
+                {
+                    TFTVRevenant.TFTVRevenantResearch.RevenantPoints = data.RevenantPoints;
+                }
+
+                if (!TFTVRevenant.TFTVRevenantResearch.RevenantCaptured)
+                {
+                    TFTVRevenant.TFTVRevenantResearch.RevenantCaptured = data.RevenantCaptured;
+                }
+
                 TFTVBehemothAndRaids.behemothScenicRoute = data.behemothScenicRoute;
                 TFTVBehemothAndRaids.behemothTarget = data.behemothTarget;
                 TFTVBehemothAndRaids.behemothWaitHours = data.behemothWaitHours;

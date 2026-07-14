@@ -95,10 +95,19 @@ namespace TFTV
                     }
                 }
 
-                if (component != null && resourceType != ResourceType.None && !component.ResourceTypeOutput.Contains(resourceType))
+                if (component != null)
                 {
-                    component.ResourceTypeOutput.Clear();
-                    component.ResourceTypeOutput.Add(resourceType);
+                    if (resourceType == ResourceType.None)
+                    {
+                        TFTVLogger.Always($"[FirebirdGeoFixes] No matching resource tag found for site {geoSite.SiteId}, defaulting to Materials");
+                        resourceType = ResourceType.Materials; // or whatever safe fallback fits game logic
+                    }
+
+                    if (!component.ResourceTypeOutput.Contains(resourceType))
+                    {
+                        component.ResourceTypeOutput.Clear();
+                        component.ResourceTypeOutput.Add(resourceType);
+                    }
                 }
 
                 geoSite.RefreshVisuals();

@@ -66,33 +66,17 @@ namespace TFTV.AgendaTracker
             }
         }
 
-        [HarmonyPatch(typeof(GeoAlienFaction), "StartPhoenixBaseAssault")]
-        public static class GeoAlienFaction_StartPhoenixBaseAssault_Patch
-        {
-            public static bool Prefix(GeoAlienFaction __instance, SiteAttackSchedule target)
-            {
-                try
-                {
-                    TFTVLogger.Debug($"[StartPhoenixBaseAssault] Base assault on {target.Site.Name} should start");
-                    GeoSite pxBase = target.Site;
-                    var source = __instance.Bases.Where(p => p.SitesInRange.Contains(pxBase));
-                    if (!source.Any())
-                        TFTVLogger.Debug("[StartPhoenixBaseAssault] No alien base in range. Overriding. Starting mission NOW.");
-
-                    pxBase.CreatePhoenixBaseDefenseMission(new PhoenixBaseAttacker(__instance, source.Select(s => s.Site)));
-                    return false;
-                }
-                catch (Exception e) { TFTVLogger.Error(e); return true; }
-            }
-        }
+      
 
 
-       [HarmonyPatch(typeof(UIModuleStatusBarMessages), "Update")]
-        public static class UIModuleStatusBarMessages_Update_Patch
+       [HarmonyPatch(typeof(UIModuleStatusBarMessages), "Start")]
+        public static class UIModuleStatusBarMessages_Start_Patch
         {
             public static void Postfix(UIModuleStatusBarMessages __instance)
             {
-                try { __instance.TimedEventRoot.gameObject.SetActive(false); }
+                try { 
+                    TFTVLogger.Always("Disabling status bar messages");
+                    __instance.TimedEventRoot.gameObject.SetActive(false); }
                 catch (Exception e) { TFTVLogger.Error(e); }
             }
         }
@@ -198,38 +182,11 @@ namespace TFTV.AgendaTracker
             }
         }
 
-        [HarmonyPatch(typeof(UIStateVehicleSelected), "OnVehicleArrived")]
-        public static class UIStateVehicleSelected_OnVehicleArrived_Patch
-        {
-            public static void Postfix(GeoVehicle vehicle, bool justPassing)
-            {
-                try
-                {
-                    if (justPassing) return;
-                    RemoveAllMatchingElements<GeoVehicle>(v => v == vehicle);
-                    AgendaConstants.UpdateData.Invoke(AgendaConstants.factionTracker, null);
-                }
-                catch (Exception e) { TFTVLogger.Error(e); }
-            }
-        }
-
-        [HarmonyPatch(typeof(UIStateVehicleSelected), "OnVehicleSiteExplored")]
-        public static class UIStateVehicleSelected_OnVehicleSiteExplored_Patch
-        {
-            public static void Postfix(GeoVehicle vehicle)
-            {
-                try
-                {
-                    RemoveAllMatchingElements<GeoVehicle>(v => v == vehicle);
-                    AgendaConstants.UpdateData.Invoke(AgendaConstants.factionTracker, null);
-                }
-                catch (Exception e) { TFTVLogger.Error(e); }
-            }
-        }
+        
 
         private static void RemoveAllMatchingElements<T>(Func<T, bool> predicate) where T : class
         {
-            var elements = AgendaConstants.GetTrackedElements();
+            var elements = AgendaConstants.GetLiveTrackedElements();
             if (elements == null) return;
 
             foreach (var el in elements)
@@ -281,6 +238,13 @@ namespace TFTV.AgendaTracker
                         var session = TrainingFacilityRework.GetRecruitSession(character);
                         if (session != null)
                         {
+                            AgendaHelpers.WireClickEvent(element, () =>
+                            {
+                                
+                                    ____context.View.ToPhoenixRecruitsState();
+                                
+                            });
+
                             AgendaHelpers.ApplyRecruitTrainingTrackerText(element, character);
                             TimeUnit remaining = AgendaHelpers.GetRecruitTrainingRemainingTime(character, ____context.Level);
                             element.UpdateData(remaining, true, null);
@@ -411,21 +375,6 @@ namespace TFTV.AgendaTracker
                 {
                     if (!(____faction is GeoPhoenixFaction phoenix)) return;
 
-                    // Travelling/exploring vehicles
-                  /*  foreach (var vehicle in phoenix.Vehicles.Where(v => v.Travelling || v.IsExploringSite))
-                    {
-                        string info = vehicle.Travelling
-                            ? AgendaHelpers.BuildVehicleText(vehicle, true)
-                            : AgendaHelpers.BuildVehicleText(vehicle, false);
-                        AgendaHelpers.AddTrackerElement(vehicle, info, vehicle.VehicleDef.ViewElement);
-                    }
-
-                    // Facilities under repair
-                    foreach (var facility in phoenix.Bases.SelectMany(b => b.Layout.Facilities.Where(f => f.IsRepairing && f.GetTimeLeftToUpdate() != TimeUnit.Zero)))
-                    {
-                        string name = facility.Def.ViewElementDef.DisplayName1.Localize();
-                        AgendaHelpers.AddTrackerElement(facility, $"{AgendaConstants.actionRepairing} {name}", facility.Def.ViewElementDef);
-                    }*/
 
                     // Recruit training sessions
                     foreach (var session in TrainingFacilityRework.GetActiveRecruitSessions())
@@ -673,5 +622,151 @@ namespace TFTV.AgendaTracker
         }
 
         #endregion
+
+        #region Stability (prevent vanilla full-rebuild flicker + stale re-tracked rows) & ordering
+
+        [HarmonyPatch(
+     typeof(UIModuleFactionAgendaTracker),
+     "Dispose",
+     new Type[] { typeof(UIFactionDataTrackerElement) })]
+        public static class UIModuleFactionAgendaTracker_Dispose_Patch
+        {
+            private static readonly FieldInfo NeedsRefreshField =
+                AccessTools.Field(typeof(UIModuleFactionAgendaTracker), "_needsRefresh");
+
+            public static void Postfix(
+                UIModuleFactionAgendaTracker __instance,
+                UIFactionDataTrackerElement element)
+            {
+                try
+                {
+                    if (element != null)
+                    {
+                        // Logical removal for this mod's find/reapply/order helpers.
+                        // Physical list removal is still performed by vanilla's next
+                        // parameterless UpdateData() call.
+                        AgendaConstants.PendingPurge.Add(element);
+                    }
+
+                    // Prevent stock's global InitialSetup rebuild/flicker.
+                    NeedsRefreshField?.SetValue(__instance, false);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+       /* // Vanilla only calls OrderElements() from OnAddedElement() - i.e. once when a row is
+        // created - never on the recurring per-second tick. So as remaining time changes, rows
+        // never get re-sorted relative to each other until something new is added. It also sorts
+        // descending (longest remaining first); we want the opposite (lowest ETA at top), and we
+        // must exclude PendingPurge rows so stale, already-disposed rows still physically present
+        // in _currentTrackedElements don't get mixed into the ordering.
+        [HarmonyPatch(typeof(UIModuleFactionAgendaTracker), "OrderElements")]
+        public static class UIModuleFactionAgendaTracker_OrderElements_Patch
+        {
+            public static bool Prefix(UIModuleFactionAgendaTracker __instance)
+            {
+                try
+                {
+                    AgendaConstants.factionTracker = __instance;
+
+                    var elements = AgendaConstants.GetLiveTrackedElements(__instance);
+                    if (elements == null) return false;
+
+                    var ordered = elements.OrderBy(t => t.CurrentTimeLeft).ToList();
+                    for (int i = 0; i < ordered.Count; i++)
+                    {
+                        ordered[i].transform.SetSiblingIndex(i);
+                    }
+                    return false;
+                }
+                catch (Exception e) { TFTVLogger.Error(e); return true; }
+            }
+        }*/
+
+        // Vanilla's parameterless UpdateData() is the only place that safely removes disposed
+        // elements from _currentTrackedElements (it iterates _elementsToRemove, not the tracked
+        // list itself). Once that has run, PendingPurge entries no longer present in the real
+        // list can be forgotten. This also re-sorts every tick so ETAs that cross each other over
+        // time keep the display in order, not just at row-creation time.
+        [HarmonyPatch(typeof(UIModuleFactionAgendaTracker), "UpdateData", new Type[] { })]
+        public static class UIModuleFactionAgendaTracker_UpdateDataNoArgs_Patch
+        {
+            public static void Postfix(UIModuleFactionAgendaTracker __instance)
+            {
+                try
+                {
+                    var elements = AgendaConstants.GetTrackedElements(__instance);
+                    if (elements != null)
+                    {
+                        var stillPresent = new HashSet<UIFactionDataTrackerElement>(elements);
+                        AgendaConstants.PendingPurge.RemoveWhere(e => !stillPresent.Contains(e));
+                    }
+
+                    AgendaConstants.OrderElements.Invoke(__instance, null);
+                }
+                catch (Exception e) { TFTVLogger.Error(e); }
+            }
+        }
+
+        #endregion
+
+        [HarmonyPatch(
+        typeof(UIModuleFactionAgendaTracker),
+        "OrderElements"
+    )]
+        internal static class UIModuleFactionAgendaTracker_OrderElements_Patch
+        {
+            // ETAs within the same hour are treated as equal.
+            private const long EtaBucketSizeTicks = TimeSpan.TicksPerHour;
+
+            [HarmonyPrefix]
+            private static bool Prefix(
+                GeoscapeViewContext ____context,
+                List<UIFactionDataTrackerElement> ____currentTrackedElements)
+            {
+                long currentGeoscapeTicks =
+                    ____context.Level.Timing.Now.DateTime.Ticks;
+
+                List<UIFactionDataTrackerElement> orderedElements =
+                    ____currentTrackedElements
+                        // Ascending: lowest/soonest ETA appears first.
+                        .OrderBy(element =>
+                            GetCompletionTimeBucket(
+                                element,
+                                currentGeoscapeTicks
+                            ))
+                        // Deterministic ordering within the same ETA bucket.
+                        .ThenBy(
+                            element => element.TrackedName.text,
+                            StringComparer.CurrentCultureIgnoreCase
+                        )
+                        .ToList();
+
+                for (int index = 0; index < orderedElements.Count; index++)
+                {
+                    orderedElements[index].transform.SetSiblingIndex(index);
+                }
+
+                // Fully replace the original OrderElements method.
+                return false;
+            }
+
+            private static long GetCompletionTimeBucket(
+                UIFactionDataTrackerElement element,
+                long currentGeoscapeTicks)
+            {
+                long estimatedCompletionTicks =
+                    currentGeoscapeTicks +
+                    element.CurrentTimeLeft.TimeSpan.Ticks;
+
+                // Round the estimated completion time to the nearest hour.
+                return (estimatedCompletionTicks + EtaBucketSizeTicks / 2L) /
+                       EtaBucketSizeTicks;
+            }
+        }
     }
 }

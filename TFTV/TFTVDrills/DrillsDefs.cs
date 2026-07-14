@@ -59,7 +59,16 @@ namespace TFTV.TFTVDrills
         internal static PassiveModifierAbilityDef _packLoyalty;
         internal static PassiveModifierAbilityDef _shockDiscipline;
         internal static LightStunStatusDef _shockDisciplineStatus;
-        internal static PassiveModifierAbilityDef _snapBrace;
+
+        // Legacy Snap Brace (pre-rework): kept, unmodified, purely for save compatibility with existing characters.
+        // No longer offered via the Drills UI - see _snapBrace below for the replacement.
+        internal static PassiveModifierAbilityDef _snapBraceLegacy;
+
+        // Current Snap Brace: hidden ApplyStatusAbilityDef that grants free (0 AP) Deploy Shield via a ChangeAbilitiesCostStatusDef.
+        internal static ApplyStatusAbilityDef _snapBrace;
+        internal static ChangeAbilitiesCostStatusDef _snapBraceAPCostStatus;
+        internal static SkillTagDef _snapBraceDeployShieldTag;
+
         internal static ShootAbilityDef _partingShot;
         internal static ReloadAbilityDef _ordnanceResupply;
         internal static ShootAbilityDef _heavySharpshot;
@@ -209,7 +218,20 @@ namespace TFTV.TFTVDrills
                 CreateShockDisciplineStatus();
                 _shockDiscipline = CreateDrillNominalAbility("shockdiscipline", "27f8091a-3b4c-5d6e-e7f8-091a2b3c4d5e", "1a0b1c2d-3e4f-5061-7283-9a4b5c6d7e8f", "2b1c2d3e-4f50-6172-839a-4b5c6d7e8f90"); //done
 
-                _snapBrace = CreateDrillNominalAbility("snapbrace", "38091a2b-4c5d-6e7f-f809-1a2b3c4d5e6f", "2c3d4e5f-6172-839a-4b5c-6d7e8f9010ab", "3d4e5f61-7283-9a4b-5c6d-7e8f9010ab1c"); //done
+
+                // Legacy def kept untouched (same GUIDs) for save compatibility, but removed from the Drills offer list below.
+                _snapBraceLegacy = CreateDrillNominalAbility("snapbrace", "38091a2b-4c5d-6e7f-f809-1a2b3c4d5e6f", "2c3d4e5f-6172-839a-4b5c-6d7e8f9010ab", "3d4e5f61-7283-9a4b-5c6d-7e8f9010ab1c"); //legacy, do not modify guids
+                Drills.Remove(_snapBraceLegacy);
+
+                // New Snap Brace, offered via Drills UI going forward.
+                _snapBrace = CreateSnapBraceAbility(
+                    "6a7b8c9d-0e1f-4a2b-8c3d-4e5f60718293",   // ability guid
+                    "7b8c9d0e-1f2a-4b3c-9d4e-5f6071829304",   // progression guid
+                    "8c9d0e1f-2a3b-4c4d-ae5f-607182930415",   // view guid
+                    "9d0e1f2a-3b4c-4d5e-bf60-718293041526",   // skill tag guid
+                    "0e1f2a3b-4c5d-4e6f-c071-829304152637");  // cost status guid
+
+                _shieldedRiposte = CreateDrillNominalAbility("shieldedriposte", "7c3d4e5f-8091-011a-c3d4-e5f60718293a", "9a4b5c6d-7e8f-9010-ab1c-2d3e4f506172", "a94b5c6d-7e8f-9010-ab1c-2d3e4f506173"); //done
                 _shieldedRiposte = CreateDrillNominalAbility("shieldedriposte", "7c3d4e5f-8091-011a-c3d4-e5f60718293a", "9a4b5c6d-7e8f-9010-ab1c-2d3e4f506172", "a94b5c6d-7e8f-9010-ab1c-2d3e4f506173"); //done
 
                 _toxicLink = CreateDrillNominalAbility("toxiclink", "9e5f6071-a2a3-233c-e5f6-0718293a4b5c", "c6d7e8f9-1011-b2c3-d4e5-f60718293a4b", "d6e7f809-1112-c3d4-e5f6-0718293a4b5c"); //done
@@ -1758,6 +1780,97 @@ namespace TFTV.TFTVDrills
                 throw;
             }
 
+        }
+
+        // Snap Brace (current): hidden ApplyStatusAbilityDef (Active = false) used purely as the visible skill entry (icon/name/description).
+        // On being granted to the actor it applies a ChangeAbilitiesCostStatusDef that sets DeployRiotShield_AbilityDef's AP cost to 0,
+        // and the status is removed automatically if the ability is ever removed. Reuses the legacy "snapbrace" icon and localization keys
+        // so the player-facing text/icon is unchanged from the old implementation.
+        private static ApplyStatusAbilityDef CreateSnapBraceAbility(string abilityGuid, string progressionGuid, string viewGuid, string tagGuid, string statusGuid)
+        {
+            try
+            {
+                const string assetName = "snapbrace";
+                string locKeyName = $"TFTV_DRILL_{assetName}_NAME";
+                string locKeyDesc = $"TFTV_DRILL_{assetName}_DESC";
+                Sprite icon = Helper.CreateSpriteFromImageFile($"Drill_{assetName}.png");
+
+                // Tag DeployRiotShield_AbilityDef with a unique SkillTagDef so the cost modification only ever targets that ability
+                TacticalAbilityDef deployRiotShieldAbility = DefCache.GetDef<TacticalAbilityDef>("DeployRiotShield_AbilityDef");
+
+                _snapBraceDeployShieldTag = Helper.CreateDefFromClone(
+                    DefCache.GetDef<SkillTagDef>("AttackAbility_SkillTagDef"),
+                    tagGuid,
+                    "SnapBraceDeployShield_SkillTagDef");
+
+                if (!deployRiotShieldAbility.SkillTags.Contains(_snapBraceDeployShieldTag))
+                {
+                    deployRiotShieldAbility.SkillTags = deployRiotShieldAbility.SkillTags.AddToArray(_snapBraceDeployShieldTag);
+                }
+
+                // Status that sets the AP cost of any ability carrying the tag above to 0
+                _snapBraceAPCostStatus = Helper.CreateDefFromClone(
+                    (ChangeAbilitiesCostStatusDef)Repo.GetDef("e3062779-8f2f-4407-bc4f-a20f5c2d267b"),
+                    statusGuid,
+                    "E_AbilityCostModifier [SnapBrace_AbilityDef]");
+
+                _snapBraceAPCostStatus.EffectName = "SnapBraceFreeDeployShield";
+                _snapBraceAPCostStatus.SingleInstance = true;
+                _snapBraceAPCostStatus.AbilityCostModification.TargetAbilityTagDef = _snapBraceDeployShieldTag;
+                _snapBraceAPCostStatus.AbilityCostModification.SkillTagCullFilter = null;
+                _snapBraceAPCostStatus.AbilityCostModification.EquipmentTagDef = null;
+                _snapBraceAPCostStatus.AbilityCostModification.AbilityCullFilter = null;
+                _snapBraceAPCostStatus.AbilityCostModification.RequiresProficientEquipment = false;
+                _snapBraceAPCostStatus.AbilityCostModification.ActionPointModType = TacticalAbilityModificationType.Set;
+                _snapBraceAPCostStatus.AbilityCostModification.ActionPointMod = 0f;
+                
+
+                // Hidden ability: applies the above status as soon as it is granted, removes it if the ability is ever removed
+                ApplyStatusAbilityDef sourceAbility = DefCache.GetDef<ApplyStatusAbilityDef>("RapidClearance_AbilityDef");
+
+                ApplyStatusAbilityDef newAbility = Helper.CreateDefFromClone(
+                    sourceAbility,
+                    abilityGuid,
+                    "SnapBrace_AbilityDef");
+
+                newAbility.CharacterProgressionData = Helper.CreateDefFromClone(
+                    sourceAbility.CharacterProgressionData,
+                    progressionGuid,
+                    "SnapBrace_AbilityDef");
+
+                newAbility.CharacterProgressionData.SkillPointCost = 10;
+
+                newAbility.ViewElementDef = Helper.CreateDefFromClone(
+                    sourceAbility.ViewElementDef,
+                    viewGuid,
+                    "SnapBrace_AbilityDef");
+
+                newAbility.ViewElementDef.DisplayName1.LocalizationKey = locKeyName;
+                newAbility.ViewElementDef.Description.LocalizationKey = locKeyDesc;
+                newAbility.ViewElementDef.LargeIcon = icon;
+                newAbility.ViewElementDef.SmallIcon = icon;
+
+                newAbility.StatusDef = _snapBraceAPCostStatus;
+                newAbility.Active = false;
+                newAbility.StatusApplicationTrigger = StatusApplicationTrigger.AbilityAdded;
+                newAbility.StatusSource = StatusSource.Ability;
+                newAbility.StatusTarget = StatusTarget.None;
+                newAbility.RemoveStatusOnAbilityRemoving = true;
+                newAbility.ApplyStatusToAllTargets = false;
+                newAbility.CanApplyToOffMapTarget = false;
+                newAbility.TargetApplicationConditions = new EffectConditionDef[0];
+                newAbility.ShowNotificationOnUse = false;
+                newAbility.WillPointCost = 0;
+
+                Drills.Add(newAbility);
+
+                return newAbility;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
         }
 
 
