@@ -3,6 +3,7 @@ using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Tactical.Entities;
+using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.DamageKeywords;
 using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
@@ -555,6 +556,9 @@ namespace TFTV
 
                 MeleeStandardDamageType = newMeleeStandardDamageTypeEffectDef;
                 MeleeDamageKeywordDef = newDamageKeywordDef;
+
+                DamageMultiplierStatusDef closeQuartersStatus = DefCache.GetDef<DamageMultiplierStatusDef>("E_CloseQuatersStatus [CloseQuarters_AbilityDef]");
+                closeQuartersStatus.DamageTypeDefs = closeQuartersStatus.DamageTypeDefs.AddToArray(MeleeStandardDamageType);
             }
             catch (Exception e)
             {

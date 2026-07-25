@@ -65,6 +65,7 @@ namespace TFTV.TFTVIncidents
                     }
                     catch (Exception e)
                     {
+                        TFTVLogger.Error(e);
                         replacement = string.Empty;
                     }
 

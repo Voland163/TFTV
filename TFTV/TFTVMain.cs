@@ -96,7 +96,7 @@ namespace TFTV
                 /// PhoenixGame is accessible at any time.
                 PhoenixGame game = GetGame();
 
-                string version = $"TFTV 1.0, AIRCRAFT REWORK BETA Hotfix 1 for Patch 25 20260628 release #1  v{MetaData.Version}";
+                string version = $"TFTV 1.0, AIRCRAFT REWORK CLOSED BETA Patch 26 20260801 release #1  v{MetaData.Version}";
 
                 //AIRCRAFT REWORK
 
@@ -163,7 +163,7 @@ namespace TFTV
              //   Harmony.DEBUG = true;
                 harmony.PatchAll();
                // TFTVAudio.ExternalAudioInjector.EnsureHooksOnExistingManagers();
-                TFTVVanillaFixes.UI.PatchInternalClassUIStateCharacterSelecter(harmony);
+                TFTVVanillaFixes.Tactical.UICharacterSelectedVanillaFixes.PatchInternalClassUIStateCharacterSelecter(harmony);
 
                
 
@@ -376,7 +376,7 @@ namespace TFTV
                 Harmony harmony = (Harmony)HarmonyInstance;
                 harmony.UnpatchAll(harmony.Id);
                 harmony.PatchAll();
-                TFTVVanillaFixes.UI.PatchInternalClassUIStateCharacterSelecter(harmony);
+                TFTVVanillaFixes.Tactical.UICharacterSelectedVanillaFixes.PatchInternalClassUIStateCharacterSelecter(harmony);
             }
         }
 

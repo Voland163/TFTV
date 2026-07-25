@@ -185,30 +185,7 @@ namespace TFTV.AgendaTracker
 
         #endregion
 
-        #region Travel time cache
-
-        private sealed class TravelTimeCacheEntry
-        {
-            public GeoSite Destination;
-            public Vector3 DestinationPosition;
-            public float CachedHours;
-            public float Speed;
-            public bool HasCalculationTime;
-            public TimeUnit CalculatedAt;
-
-            public bool Matches(GeoSite dest, Vector3 pos, float spd)
-            {
-                return Destination == dest
-                    && (DestinationPosition - pos).sqrMagnitude <= 0.01f
-                    && Mathf.Abs(Speed - spd) <= 0.01f;
-            }
-        }
-
-        private static readonly Dictionary<int, TravelTimeCacheEntry> _travelTimeCache = new Dictionary<int, TravelTimeCacheEntry>();
-
        
-
-        #endregion
 
         #region Sprite loading
 

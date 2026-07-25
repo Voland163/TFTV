@@ -649,6 +649,7 @@ namespace TFTV
                 internal float IncrementalRevealChance;
                 internal float BaseRevealChance;          // AlienBaseTypeDef.BaseRevealChance
                 internal bool Detected;
+                internal bool AlreadyDetected;             // true when the colony was already visible before this attempt
 
                 internal static readonly ColonyDetectionContext Last = new ColonyDetectionContext();
 
@@ -665,6 +666,7 @@ namespace TFTV
                     IncrementalRevealChance = 0f;
                     BaseRevealChance = 0f;
                     Detected = false;
+                    AlreadyDetected = false;
                 }
 
             }
@@ -686,7 +688,14 @@ namespace TFTV
 
                         if (geoSite == null)
                         {
-                            sb.AppendLine("No Pandoran colony was detected after the attack.");
+                            if (ctx.AlreadyDetected)
+                            {
+                                sb.AppendLine("Pandoran Colony already detected.");
+                            }
+                            else
+                            {
+                                sb.AppendLine("No Pandoran colony was detected after the attack.");
+                            }
                         }
                         else
                         {
@@ -852,6 +861,10 @@ namespace TFTV
                             }
                             component.IncrementBaseAttacksRevealCounter();
                         }
+                        else
+                        {
+                            ctx.AlreadyDetected = true;
+                        }
                         __result = false;
                         return false;
                     }
@@ -866,8 +879,3 @@ namespace TFTV
         }
     }
 }
-
-
-
-
-

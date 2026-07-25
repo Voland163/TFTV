@@ -1510,7 +1510,46 @@ namespace TFTV.TFTVDrills
                 }
             }
 
+            [HarmonyPatch(typeof(MindControlStatus), nameof(MindControlStatus.OnApply))]
+            internal static class MindControlStatus_OnApply_Patch
+            {
+                private static void Postfix(
+                    MindControlStatus __instance,
+                    StatusComponent statusComponent)
+                {
+                    try
+                    {
+                        if (!TFTVNewGameOptions.IsReworkEnabled())
+                        {
+                            return;
+                        }
 
+                        TFTVLogger.Always($"MindControlStatus applied to {__instance.TacticalActor?.DisplayName}");
+
+                        // Do not react if this mind-control application was rejected,
+                        // for example because an existing control cannot be overridden.
+                        if (__instance.UnapplyRequested)
+                        {
+                            return;
+                        }
+                        
+                        Status drillStatus =
+                            statusComponent.GetStatus<Status>(_drawfireStatus);
+
+                        TFTVLogger.Always($"MindControlStatus applied to {__instance.TacticalActor?.DisplayName}, checking for drawFireStatus: {(drillStatus != null ? "found" : "not found")}");
+
+                        if (drillStatus != null)
+                        {
+                            statusComponent.UnapplyStatus(drillStatus);
+
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
 
         }
         internal class MentorProtocol

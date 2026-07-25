@@ -758,7 +758,7 @@ namespace TFTV
 
                 InputAction inputAction = CreateHotkey((KeyCode)46, "v", "DisplayPerceptionCircles", InputAction.ActionCategory.Tactical,
                     inputMapDef.Actions.Last().Hash + 1, DefCache.GetDef<InputSetDef>("SetCharacterSelectedControls"));
-                TFTVVanillaFixes.UI.ShowPerceptionCircles = inputAction;
+                TFTVVanillaFixes.Tactical.UICharacterSelectedVanillaFixes.ShowPerceptionCircles = inputAction;
 
 
 
@@ -1392,12 +1392,36 @@ namespace TFTV
                 FixCrateContentsNotVisibleDueToFailedPerceptionCheck();
                 FixBaseInfestationMissionDamageToFacilities();
                 FixBadAcidWormTemplate();
+                FixMutoidGooSpitTargeting();
                 // FixUmbraFire(); doesn't work because status removed before check - implemented differently elsewhere
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
             }
+        }
+
+        private static void FixMutoidGooSpitTargeting() 
+        {
+            try 
+            {
+                ShootAbilityDef mutoidGooSpitShootAbility = DefCache.GetDef<ShootAbilityDef>("Mutoid_GooSpit_ShootAbilityDef");
+
+                TacticalTargetingDataDef mutoidGooSpitTargeting = (TacticalTargetingDataDef)Repo.GetDef("0491f892-4239-06d3-8275-98d1dd6d2022");//"E_TargetingData [GooSpit_ShootAbilityDef]"
+                mutoidGooSpitTargeting.Origin.TargetTags = mutoidGooSpitTargeting.Target.TargetTags;
+                mutoidGooSpitTargeting.Origin.TargetResult = TargetResult.Position;
+                mutoidGooSpitTargeting.Origin.TargetNeutrals = false;
+                mutoidGooSpitTargeting.Origin.TargetEnemies = false;
+
+
+               // TFTVLogger.Always($"mutoidGooSpitShootAbility.TargetingDataDef==mutoidGooSpitTargeting: {mutoidGooSpitShootAbility.TargetingDataDef==mutoidGooSpitTargeting}");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+
         }
 
         private static void FixBadAcidWormTemplate()
@@ -3196,7 +3220,7 @@ namespace TFTV
 
                 List<TacticalAbilityDef> tacticalAbilities = exalted.Data.Abilites.ToList();
 
-
+                DefCache.GetDef<PsychicScreamAbilityDef>("Exalted_PsychicScream_AbilityDef").ActionPointCost = 0.25f;
 
                 ApplyStatusAbilityDef sowerOfChange = DefCache.GetDef<ApplyStatusAbilityDef>("SowerOfChange_AbilityDef");
                 ApplyStatusAbilityDef bioChemist = DefCache.GetDef<ApplyStatusAbilityDef>("BC_Biochemist_AbilityDef");

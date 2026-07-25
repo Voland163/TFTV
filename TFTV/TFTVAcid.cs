@@ -186,7 +186,7 @@ namespace TFTV
                     float armorDamage = num ? accum.Amount : 0f;
                     float num2 = num ? 0f : (accum.Amount * resistanceToAcid);
 
-                    TFTVLogger.Always($"Acid damage being applied: initial {accum.Amount}, after armor/resistance {num2}, resistance to acid {resistanceToAcid}");
+                   // TFTVLogger.Always($"Acid damage being applied: initial {accum.Amount}, after armor/resistance {num2}, resistance to acid {resistanceToAcid}");
 
                     DamageAccumulation.TargetData data = GetDamageData(num2, recv, __instance, armorDamage, damageOrigin, impactForce, impactHit);
 
@@ -200,7 +200,7 @@ namespace TFTV
                     float armorDamage = num ? accum.Amount : 0f;
                     float num2 = (num ? 0f : (accum.Amount * accum.GetSourceDamageMultiplierForReceiver(recv)));
 
-                    TFTVLogger.Always($"Acid damage being applied when recv is null: initial {accum.Amount}, after armor/resistance {num2}, resistance to acid {resistanceToAcid}");
+                    //TFTVLogger.Always($"Acid damage being applied when recv is null: initial {accum.Amount}, after armor/resistance {num2}, resistance to acid {resistanceToAcid}");
 
                     DamageAccumulation.TargetData data = new DamageAccumulation.TargetData
                     {

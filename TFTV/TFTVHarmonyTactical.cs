@@ -108,7 +108,7 @@ namespace TFTV
                 {
                     // TFTVLogger.Always($"running activate exit mission ability for {__instance.TacticalActor.DisplayName}, {__instance.TacticalActor.TacticalFaction.Faction.FactionDef.name} {__instance.TacticalActor.Status?.HasStatus<MindControlStatus>()}");
 
-                    TFTVVanillaFixes.Tactical.XP.FixRescueMissionEvac(__instance.TacticalActor);
+                    TFTVVanillaFixes.Tactical.XPTacticalVanillaFixes.FixRescueMissionEvac(__instance.TacticalActor);
 
 
                 }
@@ -129,7 +129,7 @@ namespace TFTV
                 {
                     //  TFTVLogger.Always($"running activate exit mission ability for {__instance.TacticalActor.DisplayName}, {__instance.TacticalActor.TacticalFaction.Faction.FactionDef.name} {__instance.TacticalActor.Status?.HasStatus<MindControlStatus>()}");
 
-                    TFTVVanillaFixes.Tactical.XP.FixRescueMissionEvac(__instance.TacticalActor);
+                    TFTVVanillaFixes.Tactical.XPTacticalVanillaFixes.FixRescueMissionEvac(__instance.TacticalActor);
                    
                 }
                 catch (Exception e)
@@ -208,7 +208,7 @@ namespace TFTV
                 {
 
 
-                    if (TFTVVanillaFixes.UI.CheckIfEnemyActorTargeted())
+                    if (TFTVVanillaFixes.Tactical.UICharacterSelectedVanillaFixes.CheckIfEnemyActorTargeted())
                     {
                         return true;
                     }
@@ -468,7 +468,7 @@ namespace TFTV
                     TFTVLogger.Always($"TacticalFactionVision.OnFactionStartTurn for faction " +
                         $"{__instance?.Faction?.Faction?.FactionDef?.GetName()}, turn: {__instance?.Faction?.TacticalLevel?.TurnNumber}");
 
-                    TFTVVanillaFixes.Tactical.ParalysisDamage.ClearDataActorsParalysisDamage();
+                    TFTVVanillaFixes.Tactical.ParalysisDamageTacticalVanillaFixes.ClearDataActorsParalysisDamage();
                     TFTVArtOfCrab.SingleAPWeaponsMultipleShots.ClearData();
                     TFTVAncients.AncientsNewTurn.AncientsNewTurnCheck(__instance.Faction);
                     TFTVPalaceMission.PalaceTacticalNewTurn(__instance.Faction);

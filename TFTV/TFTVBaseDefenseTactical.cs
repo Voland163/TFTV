@@ -3395,6 +3395,51 @@ namespace TFTV
             }
 
 
+            private static bool CheckFactionObjectiveForStratRoll(FactionObjective objective, TacticalLevelController controller)
+            {
+                try 
+                {
+                    TFTVLogger.Always($"[CheckFactionObjectiveForStratRoll] the objective is {objective.GetDescription()}; completion is at {objective.GetCompletion()}");
+
+                    UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
+
+                    int roll = UnityEngine.Random.Range(1, 11 + TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order));
+
+                    if (roll >= 7)
+                    {
+                        
+                    }
+                    else
+                    {
+                       TFTVLogger.Always($"strat roll was {roll}, which is below 7! phew!");
+                       return false;
+                    }
+
+
+                    if (objective.Description.LocalizationKey == "BASEDEFENSE_SURVIVE5_OBJECTIVE" && objective.GetCompletion() == 0)
+                    {      
+                        if (controller.TurnNumber < 5)
+                        {
+                            TFTVLogger.Always($"and turn number is {controller.TurnNumber}, so strat can roll");
+                            return true;
+                        }
+                    }
+                    else if ((objective.Description.LocalizationKey == "BASEDEFENSE_INFESTATION_OBJECTIVE"
+                        || objective.Description.LocalizationKey == "BASEDEFENSE_SENTINEL_OBJECTIVE") && objective.GetCompletion() == 0)
+                    {
+                        TFTVLogger.Always($"so strat can roll");
+                        return true;    
+                    }
+
+                    return false;
+
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    throw;
+                }
+            }
 
             public static void StratPicker(TacticalLevelController controller)
             {
@@ -3417,39 +3462,10 @@ namespace TFTV
 
                         foreach (FactionObjective objective in phoenixObjectives)
                         {
-                            TFTVLogger.Always($"Checking objectives {objective.Description.LocalizationKey} {objective.GetCompletion()} " +
-                                $"at turn number {controller.TurnNumber}");
-
-                            if (objective.Description.LocalizationKey == "BASEDEFENSE_SURVIVE5_OBJECTIVE" && objective.GetCompletion() == 0)
+                            if(CheckFactionObjectiveForStratRoll(objective, controller))
                             {
-                                TFTVLogger.Always($"the objective is {objective.GetDescription()}; completion is at {objective.GetCompletion()}");
-                                if (controller.TurnNumber < 5)
-                                {
-                                    PickStrat(controller, objective);
-                                }
-                            }
-                            else if ((objective.Description.LocalizationKey == "BASEDEFENSE_INFESTATION_OBJECTIVE"
-                                || objective.Description.LocalizationKey == "BASEDEFENSE_SENTINEL_OBJECTIVE") && objective.GetCompletion() == 0)
-                            {
-                                TFTVLogger.Always($"the objective is {objective.GetDescription()}; completion is at {objective.GetCompletion()}");
-                                UnityEngine.Random.InitState((int)Stopwatch.GetTimestamp());
-
-                                int roll = UnityEngine.Random.Range(1, 11 + TFTVSpecialDifficulties.DifficultyOrderConverter(controller.Difficulty.Order));
-
-                                if (roll >= 7)
-                                {
-                                    PickStrat(controller, objective);
-                                }
-                                else
-                                {
-                                    TFTVLogger.Always($"roll was {roll}, which is below 7! phew!");
-                                    if (TimeLeft < 6)
-                                    {
-                                        PandoranDeployment.SpawnAdditionalEggs(controller);
-                                        TFTVLogger.Always("But some more eggs should have spawned instead!");
-                                    }
-                                }
-                            }
+                                PickStrat(controller, objective);
+                            }      
                         }
                     }
                 }

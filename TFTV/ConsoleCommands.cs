@@ -1,11 +1,19 @@
 ﻿using Base.Core;
+using Base.Defs;
 using Base.Utils.GameConsole;
 using HarmonyLib;
+using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.GameTags;
+using PhoenixPoint.Common.Entities.GameTagsSharedData;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Research;
+using PhoenixPoint.Geoscape.Entities.Research.Requirement;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Levels;
 using System;
 using System.Collections.Generic;
@@ -14,11 +22,870 @@ using System.Reflection;
 using TFTV;
 using TFTV.TFTVBaseRework;
 using TFTV.TFTVIncidents;
+using UnityEngine;
 
 namespace MadSkunkyTweaks.Tools
 {
     public class ConsoleCommands
     {
+        [ConsoleCommand(
+    Command = "monster_tint_debug",
+    Description = "Usage: monster_tint_debug <actorNameContains> <primary|secondary>")]
+        public static void DebugMonsterTint(
+    IConsole console,
+    string actorNameContains,
+    string colorChannel)
+        {
+            try
+            {
+                TacticalLevelController level =
+                    GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>();
+
+                if (level?.Map == null)
+                {
+                    TFTVLogger.Always(
+                        "[MonsterTint] This command must be used during a tactical mission.");
+                    return;
+                }
+
+                string shaderProperty;
+
+                if (colorChannel.Equals(
+                    "primary",
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    shaderProperty = "_PrimaryColor";
+                }
+                else if (colorChannel.Equals(
+                    "secondary",
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    shaderProperty = "_SecondaryColor";
+                }
+                else
+                {
+                    TFTVLogger.Always(
+                        "[MonsterTint] Use either 'primary' or 'secondary'.");
+                    return;
+                }
+
+                foreach (TacticalActor actor in level.Map
+                    .GetActors<TacticalActor>()
+                    .Where(actor =>
+                        actor != null &&
+                        actor.name != null &&
+                        actor.name.IndexOf(
+                            actorNameContains,
+                            StringComparison.OrdinalIgnoreCase) >= 0))
+                {
+                    if (actor.AddonsManager?.RootAddon == null)
+                    {
+                        continue;
+                    }
+
+                    TFTVLogger.Always(
+                        $"[MonsterTint] Inspecting '{actor.name}' " +
+                        $"property '{shaderProperty}'.");
+
+                    foreach (TacticalItem item in
+                        actor.AddonsManager.RootAddon.OfType<TacticalItem>())
+                    {
+                        if (item.VisualRoot == null)
+                        {
+                            continue;
+                        }
+
+                        foreach (Renderer renderer in
+                            item.VisualRoot.GetComponentsInChildren<Renderer>(true))
+                        {
+                            if (renderer == null ||
+                                renderer is ParticleSystemRenderer)
+                            {
+                                continue;
+                            }
+
+                            MaterialPropertyBlock propertyBlock =
+                                new MaterialPropertyBlock();
+
+                            renderer.GetPropertyBlock(propertyBlock);
+
+                            Color blockColor =
+                                propertyBlock.GetColor(shaderProperty);
+
+                            for (int materialIndex = 0;
+                                materialIndex < renderer.sharedMaterials.Length;
+                                materialIndex++)
+                            {
+                                Material material =
+                                    renderer.sharedMaterials[materialIndex];
+
+                                if (material == null ||
+                                    !material.HasProperty(shaderProperty))
+                                {
+                                    continue;
+                                }
+
+                                Color materialColor =
+                                    material.GetColor(shaderProperty);
+
+                                TFTVLogger.Always(
+                                    $"[MonsterTint] Item='{item.ItemDef?.name}', " +
+                                    $"renderer='{renderer.name}', " +
+                                    $"material[{materialIndex}]=" +
+                                    $"'{material.name}', " +
+                                    $"shader='{material.shader?.name}', " +
+                                    $"materialColor={FormatColor(materialColor)}, " +
+                                    $"propertyBlockColor={FormatColor(blockColor)}.");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static string FormatColor(Color color)
+        {
+            return
+                $"RGBA({color.r:F3}, {color.g:F3}, " +
+                $"{color.b:F3}, {color.a:F3})";
+        }
+
+        [ConsoleCommand(
+    Command = "monster_tint",
+    Description = "Usage: monster_tint <actorNameContains> <primary|secondary> <red 0-255> <green 0-255> <blue 0-255>")]
+        public static void TintMonsterDirectly(
+    IConsole console,
+    string actorNameContains,
+    string colorChannel,
+    int red,
+    int green,
+    int blue,
+    int intensityPercent)
+        {
+            try
+            {
+                TacticalLevelController level =
+                    GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>();
+
+                if (level?.Map == null)
+                {
+                    TFTVLogger.Always(
+                        "[MonsterTint] This command must be used during a tactical mission.");
+                    return;
+                }
+
+                string shaderProperty;
+                bool isEmission;
+
+                if (colorChannel.Equals(
+                    "primary",
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    shaderProperty = "_PrimaryColor";
+                    isEmission = false;
+                }
+                else if (colorChannel.Equals(
+                    "secondary",
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    shaderProperty = "_SecondaryColor";
+                    isEmission = false;
+                }
+                else if (colorChannel.Equals(
+                    "emission",
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    shaderProperty = "_EmissionColor";
+                    isEmission = true;
+                }
+                else
+                {
+                    TFTVLogger.Always(
+                        "[MonsterTint] The color channel must be " +
+                        "'primary', 'secondary', or 'emission'.");
+                    return;
+                }
+
+                red = Mathf.Clamp(red, 0, 255);
+                green = Mathf.Clamp(green, 0, 255);
+                blue = Mathf.Clamp(blue, 0, 255);
+
+                Color tint = new Color(
+                    red / 255f,
+                    green / 255f,
+                    blue / 255f,
+                    1f);
+
+                if (isEmission)
+                {
+                    float intensity =
+                        Mathf.Max(0, intensityPercent) / 100f;
+
+                    tint.r *= intensity;
+                    tint.g *= intensity;
+                    tint.b *= intensity;
+                }
+
+                List<TacticalActor> matchingActors = level.Map
+                    .GetActors<TacticalActor>()
+                    .Where(actor =>
+                        actor != null &&
+                        actor.name != null &&
+                        actor.name.IndexOf(
+                            actorNameContains,
+                            StringComparison.OrdinalIgnoreCase) >= 0)
+                    .ToList();
+
+                if (matchingActors.Count == 0)
+                {
+                    TFTVLogger.Always(
+                        $"[MonsterTint] No tactical actor name contains " +
+                        $"'{actorNameContains}'.");
+                    return;
+                }
+
+                int changedActors = 0;
+                int changedRenderers = 0;
+
+                foreach (TacticalActor actor in matchingActors)
+                {
+                    if (actor.AddonsManager?.RootAddon == null)
+                    {
+                        TFTVLogger.Always(
+                            $"[MonsterTint] Skipping '{actor.name}': " +
+                            "the actor has no initialized root add-on.");
+                        continue;
+                    }
+
+                    int actorChangedRenderers = 0;
+
+                    foreach (TacticalItem item in
+                        actor.AddonsManager.RootAddon.OfType<TacticalItem>())
+                    {
+                        if (item.VisualRoot == null)
+                        {
+                            continue;
+                        }
+
+                        foreach (Renderer renderer in
+                            item.VisualRoot.GetComponentsInChildren<Renderer>(true))
+                        {
+                            if (renderer == null ||
+                                renderer is ParticleSystemRenderer)
+                            {
+                                continue;
+                            }
+
+                            bool supportsProperty = renderer.sharedMaterials.Any(
+                                material =>
+                                    material != null &&
+                                    material.HasProperty(shaderProperty));
+
+                            if (!supportsProperty)
+                            {
+                                continue;
+                            }
+
+                            MaterialPropertyBlock propertyBlock =
+                                new MaterialPropertyBlock();
+
+                            renderer.GetPropertyBlock(propertyBlock);
+                            propertyBlock.SetColor(shaderProperty, tint);
+                            renderer.SetPropertyBlock(propertyBlock);
+
+                            Color appliedColor =
+                                propertyBlock.GetColor(shaderProperty);
+
+                            TFTVLogger.Always(
+                                $"[MonsterTint] Actor='{actor.name}', " +
+                                $"item='{item.ItemDef?.name}', " +
+                                $"renderer='{renderer.name}', " +
+                                $"property='{shaderProperty}', " +
+                                $"requested={FormatColor(tint)}, " +
+                                $"block={FormatColor(appliedColor)}.");
+
+                            actorChangedRenderers++;
+                            changedRenderers++;
+                        }
+                    }
+
+                    if (actorChangedRenderers > 0)
+                    {
+                        changedActors++;
+                    }
+
+                    TFTVLogger.Always(
+                        $"[MonsterTint] '{actor.name}': changed " +
+                        $"{actorChangedRenderers} renderers.");
+                }
+
+                TFTVLogger.Always(
+                    $"[MonsterTint] Finished. Changed {changedRenderers} renderers " +
+                    $"across {changedActors} actors.");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static readonly string[] CandidateAlienColorProperties =
+{
+    "_Color",
+    "_BaseColor",
+    "_TintColor",
+    "_MainColor",
+    "_PrimaryColor",
+    "_SecondaryColor",
+    "_ColorPrimary",
+    "_ColorSecondary",
+    "_SkinColor",
+    "_BodyColor",
+    "_ArmorColor",
+    "_EmissionColor"
+};
+
+        [ConsoleCommand(
+            Command = "monster_shader_props",
+            Description = "Usage: monster_shader_props <actorNameContains>")]
+        public static void ListMonsterShaderProperties(
+            IConsole console,
+            string actorNameContains)
+        {
+            try
+            {
+                TacticalLevelController level =
+                    GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>();
+
+                if (level?.Map == null)
+                {
+                    TFTVLogger.Always(
+                        "[MonsterShader] This command must be used in tactical.");
+                    return;
+                }
+
+                foreach (TacticalActor actor in level.Map
+                    .GetActors<TacticalActor>()
+                    .Where(actor =>
+                        actor != null &&
+                        actor.name != null &&
+                        actor.name.IndexOf(
+                            actorNameContains,
+                            StringComparison.OrdinalIgnoreCase) >= 0))
+                {
+                    if (actor.AddonsManager?.RootAddon == null)
+                    {
+                        TFTVLogger.Always(
+                            $"[MonsterShader] '{actor.name}' has no root add-on.");
+                        continue;
+                    }
+
+                    TFTVLogger.Always(
+                        $"[MonsterShader] Inspecting '{actor.name}'.");
+
+                    foreach (TacticalItem item in
+                        actor.AddonsManager.RootAddon.OfType<TacticalItem>())
+                    {
+                        if (item.VisualRoot == null)
+                        {
+                            continue;
+                        }
+
+                        foreach (Renderer renderer in
+                            item.VisualRoot.GetComponentsInChildren<Renderer>(true))
+                        {
+                            if (renderer is ParticleSystemRenderer)
+                            {
+                                continue;
+                            }
+
+                            foreach (Material material in renderer.sharedMaterials)
+                            {
+                                if (material == null)
+                                {
+                                    continue;
+                                }
+
+                                string matchingProperties = string.Join(
+                                    ", ",
+                                    CandidateAlienColorProperties.Where(
+                                        material.HasProperty));
+
+                                TFTVLogger.Always(
+                                    $"[MonsterShader] Renderer='{renderer.name}', " +
+                                    $"material='{material.name}', " +
+                                    $"shader='{material.shader?.name}', " +
+                                    $"candidate properties=[" +
+                                    $"{matchingProperties}]");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        [ConsoleCommand(
+    Command = "monster_color_debug",
+    Description = "Usage: monster_color_debug <actorNameContains> <colorTagNameContains>")]
+        public static void DebugMonsterColor(
+    IConsole console,
+    string actorNameContains,
+    string colorTagNameContains)
+        {
+            try
+            {
+                TacticalLevelController level =
+                    GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>();
+
+                if (level?.Map == null)
+                {
+                    TFTVLogger.Always(
+                        "[MonsterColor] This command must be used in a tactical mission.");
+                    return;
+                }
+
+                DefRepository repository =
+                    GameUtl.GameComponent<DefRepository>();
+
+                SharedData sharedData =
+                    GameUtl.GameComponent<SharedData>();
+
+                if (repository == null || sharedData?.SharedGameTags == null)
+                {
+                    TFTVLogger.Always(
+                        "[MonsterColor] DefRepository or SharedData is unavailable.");
+                    return;
+                }
+
+                CustomizationColorTagDef colorTag = repository
+                    .GetAllDefs<CustomizationColorTagDef>()
+                    .FirstOrDefault(tag =>
+                        tag != null &&
+                        tag.name.IndexOf(
+                            colorTagNameContains,
+                            StringComparison.OrdinalIgnoreCase) >= 0);
+
+                if (colorTag == null)
+                {
+                    TFTVLogger.Always(
+                        $"[MonsterColor] No color tag contains " +
+                        $"'{colorTagNameContains}'.");
+                    return;
+                }
+
+                List<TacticalActor> actors = level.Map
+                    .GetActors<TacticalActor>()
+                    .Where(actor =>
+                        actor != null &&
+                        actor.name != null &&
+                        actor.name.IndexOf(
+                            actorNameContains,
+                            StringComparison.OrdinalIgnoreCase) >= 0)
+                    .ToList();
+
+                if (actors.Count == 0)
+                {
+                    TFTVLogger.Always(
+                        $"[MonsterColor] No actor name contains " +
+                        $"'{actorNameContains}'.");
+                    return;
+                }
+
+                foreach (TacticalActor actor in actors)
+                {
+                    bool conditional =
+                        actor.GameTags.Contains(
+                            sharedData.SharedGameTags.ConditionalCustomizationTag);
+
+                    TFTVLogger.Always(
+                        $"[MonsterColor] Actor '{actor.name}': " +
+                        $"conditional={conditional}, " +
+                        $"addonsManager={actor.AddonsManager != null}, " +
+                        $"shaderParam='{colorTag.ShaderParamName}'.");
+
+                    if (actor.AddonsManager?.RootAddon == null)
+                    {
+                        continue;
+                    }
+
+                    foreach (TacticalItem item in
+                        actor.AddonsManager.RootAddon.OfType<TacticalItem>())
+                    {
+                        TFTVLogger.Always(
+                            $"[MonsterColor]   Item '{item.ItemDef?.name}', " +
+                            $"AlwaysCustomizeColor=" +
+                            $"{item.ItemDef?.AlwaysCustomizeColor}, " +
+                            $"VisualRoot={item.VisualRoot != null}");
+
+                        if (item.VisualRoot == null)
+                        {
+                            continue;
+                        }
+
+                        foreach (Renderer renderer in
+                            item.VisualRoot.GetComponentsInChildren<Renderer>(true))
+                        {
+                            if (renderer is ParticleSystemRenderer)
+                            {
+                                continue;
+                            }
+
+                            Material[] materials = renderer.sharedMaterials;
+
+                            for (int materialIndex = 0;
+                                materialIndex < materials.Length;
+                                materialIndex++)
+                            {
+                                Material material = materials[materialIndex];
+
+                                if (material == null)
+                                {
+                                    continue;
+                                }
+
+                                bool hasColorProperty =
+                                    !string.IsNullOrEmpty(colorTag.ShaderParamName) &&
+                                    material.HasProperty(colorTag.ShaderParamName);
+
+                                TFTVLogger.Always(
+                                    $"[MonsterColor]     Renderer='{renderer.name}', " +
+                                    $"material[{materialIndex}]=" +
+                                    $"'{material.name}', " +
+                                    $"shader='{material.shader?.name}', " +
+                                    $"has '{colorTag.ShaderParamName}'=" +
+                                    $"{hasColorProperty}");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        [ConsoleCommand(
+    Command = "monster_color",
+    Description = "Usage: monster_color <actorNameContains> <colorTagNameContains> <primary|secondary>")]
+        public static void ChangeMonsterColor(
+    IConsole console,
+    string actorNameContains,
+    string colorTagNameContains,
+    string colorChannel)
+        {
+            try
+            {
+                TacticalLevelController level =
+                    GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>();
+
+                if (level?.Map == null)
+                {
+                    TFTVLogger.Always(
+                        "[MonsterColor] This command must be used during a tactical mission.");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(actorNameContains))
+                {
+                    TFTVLogger.Always(
+                        "[MonsterColor] actorNameContains cannot be empty.");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(colorTagNameContains))
+                {
+                    TFTVLogger.Always(
+                        "[MonsterColor] colorTagNameContains cannot be empty.");
+                    return;
+                }
+
+                bool usePrimaryColor;
+
+                if (colorChannel.Equals(
+                    "primary",
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    usePrimaryColor = true;
+                }
+                else if (colorChannel.Equals(
+                    "secondary",
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    usePrimaryColor = false;
+                }
+                else
+                {
+                    TFTVLogger.Always(
+                        "[MonsterColor] The color channel must be either " +
+                        "'primary' or 'secondary'.");
+                    return;
+                }
+
+                DefRepository repository =
+                    GameUtl.GameComponent<DefRepository>();
+
+                if (repository == null)
+                {
+                    TFTVLogger.Always(
+                        "[MonsterColor] DefRepository is unavailable.");
+                    return;
+                }
+
+                List<CustomizationColorTagDef> matchingColorTags =
+                    usePrimaryColor
+                        ? repository
+                            .GetAllDefs<CustomizationPrimaryColorTagDef>()
+                            .Where(tag =>
+                                tag != null &&
+                                tag.name.IndexOf(
+                                    colorTagNameContains,
+                                    StringComparison.OrdinalIgnoreCase) >= 0)
+                            .Cast<CustomizationColorTagDef>()
+                            .OrderBy(tag => tag.name)
+                            .ToList()
+                        : repository
+                            .GetAllDefs<CustomizationSecondaryColorTagDef>()
+                            .Where(tag =>
+                                tag != null &&
+                                tag.name.IndexOf(
+                                    colorTagNameContains,
+                                    StringComparison.OrdinalIgnoreCase) >= 0)
+                            .Cast<CustomizationColorTagDef>()
+                            .OrderBy(tag => tag.name)
+                            .ToList();
+
+                if (matchingColorTags.Count == 0)
+                {
+                    TFTVLogger.Always(
+                        $"[MonsterColor] No {colorChannel} color tag contains " +
+                        $"'{colorTagNameContains}'.");
+                    return;
+                }
+
+                if (matchingColorTags.Count > 1)
+                {
+                    TFTVLogger.Always(
+                        $"[MonsterColor] '{colorTagNameContains}' matches multiple " +
+                        $"{colorChannel} color tags. Use a more specific name:");
+
+                    foreach (CustomizationColorTagDef matchingTag in matchingColorTags)
+                    {
+                        TFTVLogger.Always(
+                            $"[MonsterColor]   {matchingTag.name} " +
+                            $"(shader parameter: {matchingTag.ShaderParamName})");
+                    }
+
+                    return;
+                }
+
+                CustomizationColorTagDef colorTag = matchingColorTags[0];
+
+                List<TacticalActor> matchingActors = level.Map
+                    .GetActors<TacticalActor>()
+                    .Where(actor =>
+                        actor != null &&
+                        actor.name != null &&
+                        actor.name.IndexOf(
+                            actorNameContains,
+                            StringComparison.OrdinalIgnoreCase) >= 0)
+                    .ToList();
+
+                if (matchingActors.Count == 0)
+                {
+                    TFTVLogger.Always(
+                        $"[MonsterColor] No tactical actor name contains " +
+                        $"'{actorNameContains}'.");
+                    return;
+                }
+
+                int changedActors = 0;
+
+                foreach (TacticalActor actor in matchingActors)
+                {
+                    if (actor.GameTags == null)
+                    {
+                        TFTVLogger.Always(
+                            $"[MonsterColor] Skipping {actor.name}: " +
+                            "the actor has no GameTags list.");
+                        continue;
+                    }
+
+                    if (actor.AddonsManager == null ||
+                        actor.AddonsManager.RootAddon == null)
+                    {
+                        TFTVLogger.Always(
+                            $"[MonsterColor] Skipping {actor.name}: " +
+                            "the actor has no initialized AddonsManager.");
+                        continue;
+                    }
+
+                    SharedGameTagsDataDef sharedTags =
+    GameUtl.GameComponent<SharedData>()?.SharedGameTags;
+
+                    if (sharedTags?.ConditionalCustomizationTag != null &&
+                        actor.GameTags.Contains(sharedTags.ConditionalCustomizationTag))
+                    {
+                        actor.GameTags.Remove(sharedTags.ConditionalCustomizationTag);
+
+                        TFTVLogger.Always(
+                            $"[MonsterColor] Removed ConditionalCustomizationTag from " +
+                            $"'{actor.name}'.");
+                    }
+
+                    actor.GameTags.Add(
+                        colorTag,
+                        GameTagAddMode.ReplaceExistingExclusive);
+
+                    int refreshedItems = 0;
+
+                    foreach (TacticalItem item in
+                        actor.AddonsManager.RootAddon.OfType<TacticalItem>())
+                    {
+                        item.RefreshTags();
+                        refreshedItems++;
+                    }
+
+                    changedActors++;
+
+                    TFTVLogger.Always(
+                        $"[MonsterColor] Applied {colorChannel} tag " +
+                        $"'{colorTag.name}' to '{actor.name}'. " +
+                        $"Refreshed {refreshedItems} tactical items. " +
+                        $"Shader parameter: '{colorTag.ShaderParamName}'.");
+                }
+
+                TFTVLogger.Always(
+                    $"[MonsterColor] Finished. Changed {changedActors} of " +
+                    $"{matchingActors.Count} matching actors.");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        [ConsoleCommand(
+    Command = "monster_color_list_actors",
+    Description = "Lists tactical actors that can be selected by monster_color.")]
+        public static void ListMonsterColorActors(IConsole console)
+        {
+            try
+            {
+                TacticalLevelController level =
+                    GameUtl.CurrentLevel()?.GetComponent<TacticalLevelController>();
+
+                if (level?.Map == null)
+                {
+                    TFTVLogger.Always(
+                        "[MonsterColor] This command must be used during a tactical mission.");
+                    return;
+                }
+
+                foreach (TacticalActor actor in level.Map
+                    .GetActors<TacticalActor>()
+                    .Where(actor => actor != null)
+                    .OrderBy(actor => actor.name))
+                {
+                    int itemCount =
+                        actor.AddonsManager?.RootAddon == null
+                            ? 0
+                            : actor.AddonsManager.RootAddon
+                                .OfType<TacticalItem>()
+                                .Count();
+
+                    TFTVLogger.Always(
+                        $"Actor: '{actor.name}', " +
+$"AddonsManager: {actor.AddonsManager != null}, " +
+$"tactical items: {itemCount}");
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        [ConsoleCommand(
+    Command = "monster_color_list_tags",
+    Description = "Usage: monster_color_list_tags [optionalNameContains]")]
+        public static void ListMonsterColorTags(
+    IConsole console,
+    params string[] nameParts)
+        {
+            try
+            {
+                DefRepository repository =
+                    GameUtl.GameComponent<DefRepository>();
+
+                if (repository == null)
+                {
+                    TFTVLogger.Always(
+                        "[MonsterColor] DefRepository is unavailable.");
+                    return;
+                }
+
+                string filter =
+                    nameParts == null || nameParts.Length == 0
+                        ? string.Empty
+                        : string.Join(" ", nameParts).Trim();
+
+                IEnumerable<CustomizationColorTagDef> tags =
+                    repository
+                        .GetAllDefs<CustomizationColorTagDef>()
+                        .Where(tag =>
+                            tag != null &&
+                            (string.IsNullOrEmpty(filter) ||
+                             tag.name.IndexOf(
+                                 filter,
+                                 StringComparison.OrdinalIgnoreCase) >= 0))
+                        .OrderBy(tag => tag.GetType().Name)
+                        .ThenBy(tag => tag.name);
+
+                int count = 0;
+
+                foreach (CustomizationColorTagDef tag in tags)
+                {
+                    string channel;
+
+                    if (tag is CustomizationPrimaryColorTagDef)
+                    {
+                        channel = "primary";
+                    }
+                    else if (tag is CustomizationSecondaryColorTagDef)
+                    {
+                        channel = "secondary";
+                    }
+                    else
+                    {
+                        channel = tag.GetType().Name;
+                    }
+
+                    TFTVLogger.Always(
+                        $"[MonsterColor] {channel}: '{tag.name}', " +
+                        $"shader parameter: '{tag.ShaderParamName}'");
+
+                    count++;
+                }
+
+                TFTVLogger.Always(
+                    $"[MonsterColor] Listed {count} matching color tags.");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+
         private static readonly LeaderSelection.AffinityApproach[] AllAffinityApproaches =
         {
             LeaderSelection.AffinityApproach.PsychoSociology,

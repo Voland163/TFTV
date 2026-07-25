@@ -97,7 +97,7 @@ namespace TFTV
         {           
             public static void Postfix(GeoEventChoiceOutcome __instance, GeoscapeEventContext context, string eventID, GeoFaction faction, ref GeoFactionReward __result, in ResourcePack __state)
             {
-                TFTVVanillaFixes.Geoscape.ApplyGenerateFactionReward(__instance, eventID, ref __result);
+                TFTVVanillaFixes.Geoscape.GeoscapeVanillaFixes.ApplyGenerateFactionReward(__instance, eventID, ref __result);
                 TFTVAircraftReworkMain.MarketPlace.ApplyGenerateFactionReward(__instance, faction);
                 TFTVIncidents.AffinityGeoscapeEffects.ExplorationGeoscapeBenefits.ApplyExplorationBenefitOption1IncreasedReward(context, eventID, ref __result);
             }
@@ -119,7 +119,7 @@ namespace TFTV
         {
             public static void Postfix(GeoLevelController __instance)
             {
-                TFTVVanillaFixes.Geoscape.ApplyDailyUpdate(__instance);
+                TFTVVanillaFixes.Geoscape.GeoscapeVanillaFixes.ApplyDailyUpdate(__instance);
                 TFTVBaseRework.TrainingFacilityRework.DailyUpdateTraining(__instance);
                 TFTVBaseRework.TrainingFacilityRework.DailyUpdateTrainingDeferredFallback(__instance);
                // TFTVBaseRework.PersonnelData.DailyUpdatePersonnelPool(__instance);

@@ -156,7 +156,7 @@ namespace TFTV
                 TFTVEvacAll.ClearData();
 
                 AircraftOrderWithoutVehicleId.LoadPlayerVehicleOrderIds(null);
-                TFTVVanillaFixes.UI.ShowPerceptionCirclesBindingApplied = false;
+                TFTVVanillaFixes.Tactical.UICharacterSelectedVanillaFixes.ShowPerceptionCirclesBindingApplied = false;
 
                 TFTVNJQuestline.IntroMission.ClearDataOnMissionRestartLoadAndStateChange();
                 TFTVAircraftReworkMain.InternalData.ClearDataOnStateChange();

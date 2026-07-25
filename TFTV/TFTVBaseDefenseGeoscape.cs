@@ -3050,7 +3050,7 @@ namespace TFTV
                                     }
 
                                     geoMission.Site.RefreshVisuals();
-                                    TFTVVanillaFixes.Geoscape.CheckFacilitesNotWorking(geoMission.Site.GetComponent<GeoPhoenixBase>());
+                                    TFTVVanillaFixes.Geoscape.GeoscapeVanillaFixes.CheckFacilitesNotWorking(geoMission.Site.GetComponent<GeoPhoenixBase>());
 
 
                                 }
