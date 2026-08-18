@@ -108,7 +108,7 @@ namespace TFTV
         {
             public static void Postfix(UIStateRosterAliens __instance)
             {
-                TFTVBackgrounds.ContainmentScreen.GetInfoAboutAlien();
+                TFTVUI.Geoscape.ContainmentScreen.GetInfoAboutAlien();
                 TFTVCapturePandoransGeoscape.UpdateResourceInfo(__instance);
             }
         }

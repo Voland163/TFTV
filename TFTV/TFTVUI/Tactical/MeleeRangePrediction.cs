@@ -29,7 +29,7 @@ namespace TFTV.TFTVUI.Tactical
 
             private const string MeleeWeaponTagDefName = "MeleeWeapon_TagDef";
             private const float MovePositionMatchTolerance = 0.2f;
-            private static readonly Color ThreatIconColor = new Color(1f, 0.145f, 0.286f, 1f);
+            private static readonly Color ThreatIconColor = new Color(1f, 0.145f, 0.286f, 0.05f);
             private static GameTagDef _meleeWeaponTagDef;
 
             private static void Postfix(MoveAbilitySceneViewElement __instance, TacticalViewContext context, bool __result)

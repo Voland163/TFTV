@@ -263,7 +263,7 @@ namespace TFTV
             }
         }
 
-        [HarmonyPatch(typeof(UIInventoryList), nameof(UIInventoryList.UpdateList))]
+      /*  [HarmonyPatch(typeof(UIInventoryList), nameof(UIInventoryList.UpdateList))]
         public static class UIInventoryList_UpdateList_patch
         {
             public static bool Prefix(UIInventoryList __instance, TacticalActorBaseDef ____vehicle)
@@ -299,12 +299,6 @@ namespace TFTV
                             {
                                 //TFTVLogger.Always($"Inventory list trying to stack filtered items {item.ItemDef.name}, {firstAvailableSlot.name}, vehicle: {____vehicle?.name}");
 
-                                /*  if (____vehicle != null)
-                                  {
-
-                                      firstAvailableSlot.Item.CommonItemData.AddItem(item);
-                                      list.Add(item);
-                                  }*/
                             }
                             else
                             {
@@ -348,7 +342,7 @@ namespace TFTV
                     throw;
                 }
             }
-        }
+        }*/
 
     }
 }

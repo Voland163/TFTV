@@ -73,6 +73,20 @@ namespace TFTV.AgendaTracker
         internal static readonly MethodInfo Dispose =
             typeof(UIModuleFactionAgendaTracker).GetMethod("Dispose", BindingFlags.NonPublic | BindingFlags.Instance);
 
+        // Vanilla only ever calls these from InitialSetup() - there is no live event hookup in
+        // UIModuleFactionAgendaTracker itself for research/manufacturing/vehicle/facility
+        // changes. Reflected here so EnsureLiveVanillaTrackers() (AgendaPatches.cs) can add a
+        // row the moment the underlying item becomes current, instead of waiting for the next
+        // InitialSetup() rebuild (i.e. the next geoscape selection change).
+        internal static readonly MethodInfo OnResearchStartedMethod =
+            typeof(UIModuleFactionAgendaTracker).GetMethod("OnResearchStarted", BindingFlags.NonPublic | BindingFlags.Instance);
+        internal static readonly MethodInfo OnItemStartedManufacturingMethod =
+            typeof(UIModuleFactionAgendaTracker).GetMethod("OnItemStartedManufacturing", BindingFlags.NonPublic | BindingFlags.Instance);
+        internal static readonly MethodInfo OnVehicleActionMethod =
+            typeof(UIModuleFactionAgendaTracker).GetMethod("OnVehicleAction", BindingFlags.NonPublic | BindingFlags.Instance);
+        internal static readonly MethodInfo OnFacilityBuildingMethod =
+            typeof(UIModuleFactionAgendaTracker).GetMethod("OnFacilityBuilding", BindingFlags.NonPublic | BindingFlags.Instance);
+
         // Cached reflected fields on GeoVehicle for exploration time
         internal static readonly FieldInfo ExplorationUpdateableField =
             typeof(GeoVehicle).GetField("_explorationUpdateable", BindingFlags.NonPublic | BindingFlags.Instance);
