@@ -700,6 +700,13 @@ namespace TFTV.AgendaTracker
             {
                 try
                 {
+                    // Self-heal the cache: this postfix can run (e.g. right after a save load)
+                    // before InitialSetup()'s Prefix has assigned it for the current instance.
+                    if (AgendaConstants.factionTracker != __instance)
+                    {
+                        AgendaConstants.factionTracker = __instance;
+                    }
+
                     var elements = AgendaConstants.GetTrackedElements(__instance);
                     if (elements != null)
                     {
@@ -707,7 +714,7 @@ namespace TFTV.AgendaTracker
                         AgendaConstants.PendingPurge.RemoveWhere(e => !stillPresent.Contains(e));
                     }
 
-                    EnsureLiveVanillaTrackers(____faction);
+                    EnsureLiveVanillaTrackers(__instance, ____faction);
 
                     AgendaConstants.OrderElements.Invoke(__instance, null);
                 }
@@ -728,28 +735,42 @@ namespace TFTV.AgendaTracker
             // This mirrors InitialSetup()'s own conditions and reuses vanilla's own Add methods
             // (skipping any object that already has a live row), so it is idempotent and safe to
             // run every tick; any gap self-heals within about a second.
-            private static void EnsureLiveVanillaTrackers(GeoFaction faction)
+            //
+            // Invoke target must be __instance, not the cached AgendaConstants.factionTracker:
+            // that static cache is only assigned by InitialSetup()'s Prefix, and this UpdateData()
+            // postfix can run (e.g. right after a save load) before that Prefix has ever fired for
+            // the current tracker instance, in which case the cache is still null/stale and
+            // MethodInfo.Invoke(null, ...) throws "Non-static method requires a target".
+            private static void EnsureLiveVanillaTrackers(UIModuleFactionAgendaTracker tracker, GeoFaction faction)
             {
-                if (faction == null) return;
+                if (tracker == null || faction == null) return;
+
+                // Query against this tracker instance directly rather than
+                // AgendaHelpers.FindTrackedElement (which reads the static
+                // AgendaConstants.factionTracker cache) - for the same reason the Invoke
+                // target above is __instance and not that cache.
+                var liveElements = AgendaConstants.GetLiveTrackedElements(tracker);
+                bool IsTracked(object trackedObject) =>
+                    liveElements != null && liveElements.Any(e => ReferenceEquals(e.TrackedObject, trackedObject));
 
                 ResearchElement currentResearch = faction.Research?.Current;
-                if (currentResearch != null && AgendaHelpers.FindTrackedElement(currentResearch) == null)
+                if (currentResearch != null && !IsTracked(currentResearch))
                 {
-                    AgendaConstants.OnResearchStartedMethod?.Invoke(AgendaConstants.factionTracker, new object[] { currentResearch });
+                    AgendaConstants.OnResearchStartedMethod?.Invoke(tracker, new object[] { currentResearch });
                 }
 
                 ItemManufacturing.ManufactureQueueItem currentManufacture = faction.Manufacture?.Current;
-                if (currentManufacture != null && AgendaHelpers.FindTrackedElement(currentManufacture) == null)
+                if (currentManufacture != null && !IsTracked(currentManufacture))
                 {
-                    AgendaConstants.OnItemStartedManufacturingMethod?.Invoke(AgendaConstants.factionTracker, new object[] { currentManufacture });
+                    AgendaConstants.OnItemStartedManufacturingMethod?.Invoke(tracker, new object[] { currentManufacture });
                 }
 
                 foreach (GeoVehicle vehicle in faction.Vehicles)
                 {
                     if (VehicleActionsViewService.GetCurrentActionTime(vehicle) > TimeUnit.Zero
-                        && AgendaHelpers.FindTrackedElement(vehicle) == null)
+                        && !IsTracked(vehicle))
                     {
-                        AgendaConstants.OnVehicleActionMethod?.Invoke(AgendaConstants.factionTracker, new object[] { vehicle });
+                        AgendaConstants.OnVehicleActionMethod?.Invoke(tracker, new object[] { vehicle });
                     }
                 }
 
@@ -760,9 +781,9 @@ namespace TFTV.AgendaTracker
                         foreach (GeoPhoenixFacility facility in pxBase.Layout.Facilities)
                         {
                             if ((facility.IsRepairing || (facility.IsBuilding && facility.ConstructionTime != TimeUnit.Zero))
-                                && AgendaHelpers.FindTrackedElement(facility) == null)
+                                && !IsTracked(facility))
                             {
-                                AgendaConstants.OnFacilityBuildingMethod?.Invoke(AgendaConstants.factionTracker, new object[] { facility });
+                                AgendaConstants.OnFacilityBuildingMethod?.Invoke(tracker, new object[] { facility });
                             }
                         }
                     }
