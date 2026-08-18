@@ -20,6 +20,7 @@ using PhoenixPoint.Geoscape.Levels.Objectives;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Geoscape.View.ViewServices;
 using PhoenixPoint.Geoscape.View.ViewStates;
 using System;
 using System.Collections.Generic;
@@ -695,7 +696,7 @@ namespace TFTV.AgendaTracker
         [HarmonyPatch(typeof(UIModuleFactionAgendaTracker), "UpdateData", new Type[] { })]
         public static class UIModuleFactionAgendaTracker_UpdateDataNoArgs_Patch
         {
-            public static void Postfix(UIModuleFactionAgendaTracker __instance)
+            public static void Postfix(UIModuleFactionAgendaTracker __instance, GeoFaction ____faction)
             {
                 try
                 {
@@ -706,9 +707,66 @@ namespace TFTV.AgendaTracker
                         AgendaConstants.PendingPurge.RemoveWhere(e => !stillPresent.Contains(e));
                     }
 
+                    EnsureLiveVanillaTrackers(____faction);
+
                     AgendaConstants.OrderElements.Invoke(__instance, null);
                 }
                 catch (Exception e) { TFTVLogger.Error(e); }
+            }
+
+            // Vanilla only (re)creates rows for the current research, the current manufacture
+            // item, in-progress vehicle actions and building/repairing facilities from
+            // InitialSetup() - and InitialSetup() only runs when the player changes geoscape
+            // selection (deselecting/selecting a vehicle). There is no live event hookup in
+            // vanilla UIModuleFactionAgendaTracker for any of these. So when e.g. a research or
+            // manufacture item finishes and the next one in queue starts automatically while the
+            // player hasn't touched geoscape selection since (out on a mission, fast-forwarding
+            // time, managing a base, etc.), the old row is disposed by the per-second tick but no
+            // row is ever created for the new current item - from the player's perspective the
+            // agenda entry just vanishes until they next reselect something on the geoscape.
+            //
+            // This mirrors InitialSetup()'s own conditions and reuses vanilla's own Add methods
+            // (skipping any object that already has a live row), so it is idempotent and safe to
+            // run every tick; any gap self-heals within about a second.
+            private static void EnsureLiveVanillaTrackers(GeoFaction faction)
+            {
+                if (faction == null) return;
+
+                ResearchElement currentResearch = faction.Research?.Current;
+                if (currentResearch != null && AgendaHelpers.FindTrackedElement(currentResearch) == null)
+                {
+                    AgendaConstants.OnResearchStartedMethod?.Invoke(AgendaConstants.factionTracker, new object[] { currentResearch });
+                }
+
+                ItemManufacturing.ManufactureQueueItem currentManufacture = faction.Manufacture?.Current;
+                if (currentManufacture != null && AgendaHelpers.FindTrackedElement(currentManufacture) == null)
+                {
+                    AgendaConstants.OnItemStartedManufacturingMethod?.Invoke(AgendaConstants.factionTracker, new object[] { currentManufacture });
+                }
+
+                foreach (GeoVehicle vehicle in faction.Vehicles)
+                {
+                    if (VehicleActionsViewService.GetCurrentActionTime(vehicle) > TimeUnit.Zero
+                        && AgendaHelpers.FindTrackedElement(vehicle) == null)
+                    {
+                        AgendaConstants.OnVehicleActionMethod?.Invoke(AgendaConstants.factionTracker, new object[] { vehicle });
+                    }
+                }
+
+                if (faction is GeoPhoenixFaction phoenixFaction)
+                {
+                    foreach (GeoPhoenixBase pxBase in phoenixFaction.Bases)
+                    {
+                        foreach (GeoPhoenixFacility facility in pxBase.Layout.Facilities)
+                        {
+                            if ((facility.IsRepairing || (facility.IsBuilding && facility.ConstructionTime != TimeUnit.Zero))
+                                && AgendaHelpers.FindTrackedElement(facility) == null)
+                            {
+                                AgendaConstants.OnFacilityBuildingMethod?.Invoke(AgendaConstants.factionTracker, new object[] { facility });
+                            }
+                        }
+                    }
+                }
             }
         }
 
