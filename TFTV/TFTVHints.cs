@@ -360,22 +360,17 @@ namespace TFTV
                 }
             }
 
-            public static void CreateNewTacticalHintInfestationMissionEnd(string name)
+            public static void CreateNewTacticalHintInfestationMissionEnd(string name, string gUID, string gUID2, string gUID3)
             {
                 try
                 {
-                    string gUID = Guid.NewGuid().ToString();
-
                     ContextHelpHintDef newContextHelpHintDef = Helper.CreateDefFromClone(sourceContextHelpHintDef, gUID, name);
                     newContextHelpHintDef.Trigger = HintTrigger.Manual;
 
-                    string gUID2 = Guid.NewGuid().ToString();
                     LevelHasTagHintConditionDef infestedHavenMissionTagCondition = Helper.CreateDefFromClone(sourceInfestationMission, gUID2, name + "_HintConditionDef");
                     infestedHavenMissionTagCondition.GameTagDef = infestationMissionTagDef;
                     newContextHelpHintDef.Conditions[0] = infestedHavenMissionTagCondition;
 
-
-                    string gUID3 = Guid.NewGuid().ToString();
                     HasSeenHintHintConditionDef newHasSeenHintConditionDef = Helper.CreateDefFromClone(sourceHasSeenHintConditionDef, gUID3, name + "HasSeenHintConditionDef");
                     newHasSeenHintConditionDef.HintDef = newContextHelpHintDef;
                     newContextHelpHintDef.Conditions.Add(newHasSeenHintConditionDef);
@@ -384,7 +379,6 @@ namespace TFTV
 
                     alwaysDisplayedTacticalHintsDbDef.Hints.Add(newContextHelpHintDef);
                     _hintDefSpriteFileNameDictionary.Add(newContextHelpHintDef, "px_squad.jpg");
-
                 }
                 catch (Exception e)
                 {
@@ -427,7 +421,7 @@ namespace TFTV
                     oilCrabHint.Conditions.Add(seenFishCrabConditionDef);
                     oilFishHint.Conditions.Add(seenOilCrabConditionDef);
 
-                    CreateNewTacticalHintInfestationMissionEnd("InfestationMissionEnd");
+                    CreateNewTacticalHintInfestationMissionEnd("InfestationMissionEnd", "5C1E9C2E-2F1A-4B0A-8B8B-2B7B7B9C1E10", "D3E4F5A6-1B2C-4D3E-9F0A-1B2C3D4E5F6A", "7A8B9C0D-1E2F-4A3B-8C9D-0E1F2A3B4C5D");
                     CreateStaminaHint();
                     CreateUIDeliriumHint();
 
@@ -1266,12 +1260,6 @@ namespace TFTV
                         {
                             TFTVLogger.Always($"Show hint method invoked, the hint is {hintDef.name}");
                             ChangeHintBackground(__instance, hintDef);
-
-                            TacContextHelpManager contextHelpManager = GameUtl.CurrentLevel()?.GetComponent<TacContextHelpManager>();
-                            if (contextHelpManager != null)
-                            {
-                                AddHintToDisplayedHints(contextHelpManager, hintDef);
-                            }
 
                             foreach (ContextHelpHintDef tacticsHint in TFTVHumanEnemies.TacticsHint)
                             {

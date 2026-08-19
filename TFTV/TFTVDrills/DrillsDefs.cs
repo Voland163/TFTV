@@ -1458,6 +1458,11 @@ namespace TFTV.TFTVDrills
                 newMindControlStatusDef.Visuals = viewElementDef;
                 
                 newMindControlStatusDef.ControlFactionDef = DefCache.GetDef<PPFactionDef>("Phoenix_FactionDef");
+                // Unlike the persistent friendly ManualControl status it's cloned from, Override hijacks an
+                // enemy vehicle only for the turn it's used on - control must revert automatically afterwards
+                // instead of lasting forever (it previously inherited Duration = 0 / never-expiring from source).
+                newMindControlStatusDef.DurationTurns = 1;
+                newMindControlStatusDef.ExpireOnEndOfTurn = true;
 
                 MultiStatusDef multiStatusDef = (MultiStatusDef)newAbility.StatusDef;
 

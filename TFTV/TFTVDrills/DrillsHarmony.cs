@@ -639,10 +639,13 @@ namespace TFTV.TFTVDrills
 
                     AddAttackBoostStatusDef rapidClearanceAttackBoostStatusDef = (AddAttackBoostStatusDef)Repo.GetDef("9385a73f-8d20-4022-acc1-9210e2e29b8f");
                     ChangeAbilitiesCostStatusDef rapidClearanceAPCostReductionStatusDef = (ChangeAbilitiesCostStatusDef)Repo.GetDef("e3062779-8f2f-4407-bc4f-a20f5c2d267b");
-                    Status existingBulletHellStatus = attacker.Status.GetStatusByName(_bulletHellAttackBoostStatus.EffectName);
-                    Status existingRapidClearanceStatus = attacker.Status.GetStatusByName(rapidClearanceAttackBoostStatusDef.EffectName);
-                    Status existingBulletHellAPCostReduction = attacker.Status.GetStatusByName(_bulletHellAPCostReductionStatus.EffectName);
-                    Status existingRapidClearanceAPCostReduction = attacker.Status.GetStatusByName(rapidClearanceAPCostReductionStatusDef.EffectName);
+                    // Looked up by TacStatusDef reference rather than GetStatusByName(EffectName): the AP cost
+                    // reduction child statuses are clones that never got a unique EffectName set, so name-based
+                    // lookup silently found nothing and left them orphaned on the actor.
+                    TacStatus existingBulletHellStatus = attacker.Status.GetStatus<TacStatus>(_bulletHellAttackBoostStatus);
+                    TacStatus existingRapidClearanceStatus = attacker.Status.GetStatus<TacStatus>(rapidClearanceAttackBoostStatusDef);
+                    TacStatus existingBulletHellAPCostReduction = attacker.Status.GetStatus<TacStatus>(_bulletHellAPCostReductionStatus);
+                    TacStatus existingRapidClearanceAPCostReduction = attacker.Status.GetStatus<TacStatus>(rapidClearanceAPCostReductionStatusDef);
 
                     if (existingBulletHellStatus != null)
                     {
@@ -708,9 +711,8 @@ namespace TFTV.TFTVDrills
                         {
                             return;
                         }
-
-                        Status existingBulletHellStatus = attacker.Status.GetStatusByName(_bulletHellAttackBoostStatus.EffectName);
-                        Status existingBulletHellAPCostReduction = attacker.Status.GetStatusByName(_bulletHellAPCostReductionStatus.EffectName);
+                        TacStatus existingBulletHellStatus = attacker.Status.GetStatus<TacStatus>(_bulletHellAttackBoostStatus);
+                        TacStatus existingBulletHellAPCostReduction = attacker.Status.GetStatus<TacStatus>(_bulletHellAPCostReductionStatus);
 
                         if (existingBulletHellStatus != null)
                         {
