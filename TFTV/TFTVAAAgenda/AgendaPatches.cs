@@ -461,6 +461,20 @@ namespace TFTV.AgendaTracker
             {
                 try
                 {
+                    // Init() is the single choke point every add/reuse path goes through -
+                    // AgendaHelpers.AddTrackerElement, and vanilla's own OnResearchStarted /
+                    // OnItemStartedManufacturing / OnVehicleAction / OnFacilityBuilding (called
+                    // both from InitialSetup() and from EnsureLiveVanillaTrackers). Only the
+                    // first of those clears PendingPurge on reuse; the vanilla methods don't.
+                    // If GetFreeElement() hands back an element that's still flagged pending-purge
+                    // from its previous row and one of the vanilla paths reuses it without going
+                    // through AddTrackerElement, EnsureLiveVanillaTrackers' "already tracked?"
+                    // check (which excludes PendingPurge) would keep reporting the new object as
+                    // untracked and add a second, genuinely duplicate row for it every tick until
+                    // the duplicate happens to land on a non-flagged element. Clearing it here,
+                    // unconditionally, on every Init() closes that gap for every path at once.
+                    AgendaConstants.PendingPurge.Remove(__instance);
+
                     __instance.transform.localScale = new Vector3(0.9f, 0.9f, 0.9f);
                     __instance.TrackedTime.alignment = TextAnchor.MiddleRight;
                     __instance.TrackedTime.fontSize = 36;

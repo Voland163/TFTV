@@ -383,6 +383,7 @@ namespace TFTV
                     newContextHelpHintDef.AnyCondition = false;
 
                     alwaysDisplayedTacticalHintsDbDef.Hints.Add(newContextHelpHintDef);
+                    _hintDefSpriteFileNameDictionary.Add(newContextHelpHintDef, "px_squad.jpg");
 
                 }
                 catch (Exception e)
@@ -1265,6 +1266,12 @@ namespace TFTV
                         {
                             TFTVLogger.Always($"Show hint method invoked, the hint is {hintDef.name}");
                             ChangeHintBackground(__instance, hintDef);
+
+                            TacContextHelpManager contextHelpManager = GameUtl.CurrentLevel()?.GetComponent<TacContextHelpManager>();
+                            if (contextHelpManager != null)
+                            {
+                                AddHintToDisplayedHints(contextHelpManager, hintDef);
+                            }
 
                             foreach (ContextHelpHintDef tacticsHint in TFTVHumanEnemies.TacticsHint)
                             {

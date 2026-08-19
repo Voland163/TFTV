@@ -638,9 +638,11 @@ namespace TFTV.TFTVDrills
 
 
                     AddAttackBoostStatusDef rapidClearanceAttackBoostStatusDef = (AddAttackBoostStatusDef)Repo.GetDef("9385a73f-8d20-4022-acc1-9210e2e29b8f");
+                    ChangeAbilitiesCostStatusDef rapidClearanceAPCostReductionStatusDef = (ChangeAbilitiesCostStatusDef)Repo.GetDef("e3062779-8f2f-4407-bc4f-a20f5c2d267b");
                     Status existingBulletHellStatus = attacker.Status.GetStatusByName(_bulletHellAttackBoostStatus.EffectName);
                     Status existingRapidClearanceStatus = attacker.Status.GetStatusByName(rapidClearanceAttackBoostStatusDef.EffectName);
                     Status existingBulletHellAPCostReduction = attacker.Status.GetStatusByName(_bulletHellAPCostReductionStatus.EffectName);
+                    Status existingRapidClearanceAPCostReduction = attacker.Status.GetStatusByName(rapidClearanceAPCostReductionStatusDef.EffectName);
 
                     if (existingBulletHellStatus != null)
                     {
@@ -659,6 +661,15 @@ namespace TFTV.TFTVDrills
                         attacker.Status.UnapplyStatus(existingRapidClearanceStatus);
                     }
 
+                    // Rapid Clearance's own AP cost reduction is a separate status applied alongside its attack
+                    // boost status. Manually unapplying the attack boost status above (instead of letting it expire
+                    // naturally through its attack counter) does not cascade-remove this child status, so it has to
+                    // be cleaned up explicitly here or it lingers on the actor granting free attacks indefinitely.
+                    if (existingRapidClearanceAPCostReduction != null)
+                    {
+                        attacker.Status.UnapplyStatus(existingRapidClearanceAPCostReduction);
+                    }
+
                     TFTVLogger.Always($"Applying Bullet Hell attack boost to {attacker.DisplayName}");
                     attacker.Status.ApplyStatus(_bulletHellAttackBoostStatus);
 
@@ -666,6 +677,56 @@ namespace TFTV.TFTVDrills
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
+                }
+            }
+
+            // Rapid Clearance's kill-triggered boost is applied through the vanilla OnActorDeathEffectStatus
+            // pipeline, which has no awareness of Bullet Hell. Without this patch, killing an enemy while a
+            // Bullet Hell attack boost is active leaves both boosts (and both of their AP cost reduction child
+            // statuses) stacked on the actor, and the Bullet Hell ones are then never cleaned up since nothing
+            // else checks for them, leaving the actor with permanently free attacks.
+            [HarmonyPatch(typeof(OnActorDeathEffectStatus), "ShouldApplyEffect")]
+            internal static class RapidClearance_ShouldApplyEffect_Patch
+            {
+                public static void Postfix(OnActorDeathEffectStatus __instance, ref bool __result)
+                {
+                    try
+                    {
+                        if (!TFTVNewGameOptions.IsReworkEnabled() || !__result || _bulletHell == null)
+                        {
+                            return;
+                        }
+
+                        ApplyStatusAbilityDef rapidClearance = DefCache.GetDef<ApplyStatusAbilityDef>("RapidClearance_AbilityDef");
+                        if (__instance.OnActorDeathEffectStatusDef != rapidClearance.StatusDef)
+                        {
+                            return;
+                        }
+
+                        TacticalActor attacker = __instance.TacticalActorBase as TacticalActor;
+                        if (attacker?.Status == null)
+                        {
+                            return;
+                        }
+
+                        Status existingBulletHellStatus = attacker.Status.GetStatusByName(_bulletHellAttackBoostStatus.EffectName);
+                        Status existingBulletHellAPCostReduction = attacker.Status.GetStatusByName(_bulletHellAPCostReductionStatus.EffectName);
+
+                        if (existingBulletHellStatus != null)
+                        {
+                            TFTVLogger.Always($"Replacing Bullet Hell attack boost with Rapid Clearance for {attacker.DisplayName}");
+                            attacker.Status.UnapplyStatus(existingBulletHellStatus);
+                        }
+
+                        if (existingBulletHellAPCostReduction != null)
+                        {
+                            attacker.Status.UnapplyStatus(existingBulletHellAPCostReduction);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
                 }
             }
 
