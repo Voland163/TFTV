@@ -379,7 +379,24 @@ namespace TFTV.TFTVIncidents
                 // screen) — make sure it is on at the proper intensity for the render.
                 TryEnableCharacterLight(tempBuilder, displayData);
 
-                Texture2D rendered = RenderTextureWithPortraitLights(level, tempBuilder.gameObject, resolution);
+                Texture2D rendered = RenderTextureWithPortraitLights(level, tempBuilder.gameObject, resolution, true, out bool usedIsolation);
+
+                // Layer isolation keeps the surrounding scene out of the portrait, but if it yields an
+                // empty image (nothing matched the camera's single-layer mask) fall back to a plain
+                // render so a portrait always appears.
+                if (usedIsolation && (rendered == null || !HasVisibleContent(rendered)))
+                {
+                    TFTVLogger.Always($"{LogPrefix} Isolated render produced no visible pixels; retrying without isolation.");
+
+                    if (rendered != null)
+                    {
+                        UnityEngine.Object.Destroy(rendered);
+                    }
+
+                    RestoreIsolatedLayers();
+                    rendered = RenderTextureWithPortraitLights(level, tempBuilder.gameObject, resolution, false, out _);
+                }
+
                 if (rendered == null)
                 {
                     onDone?.Invoke(null);
@@ -636,13 +653,20 @@ namespace TFTV.TFTVIncidents
             }
         }
 
-        private static Texture2D RenderTextureWithPortraitLights(GeoLevelController level, GameObject characterObject, Vector2Int resolution)
+        private static Texture2D RenderTextureWithPortraitLights(GeoLevelController level, GameObject characterObject, Vector2Int resolution, bool allowIsolation, out bool usedIsolation)
         {
             LightsPicker lightsPicker = characterObject.GetComponentInChildren<LightsPicker>(true);
 
             // Prefer a private camera that can only see this character; fall back to a shared one.
-            Camera usedCamera = CreateIsolatedPortraitCamera(characterObject, out GameObject ownedCameraObject);
+            GameObject cameraObjectToDestroy = null;
+            Camera usedCamera = null;
+            if (allowIsolation)
+            {
+                usedCamera = CreateIsolatedPortraitCamera(characterObject, out cameraObjectToDestroy);
+            }
+
             bool isolated = usedCamera != null;
+            usedIsolation = isolated;
             if (!isolated)
             {
                 usedCamera = ResolvePortraitCamera(level, lightsPicker, characterObject);
@@ -710,9 +734,9 @@ namespace TFTV.TFTVIncidents
                     RestoreCameraState(usedCamera, cameraState);
                 }
 
-                if (ownedCameraObject != null)
+                if (cameraObjectToDestroy != null)
                 {
-                    UnityEngine.Object.Destroy(ownedCameraObject);
+                    UnityEngine.Object.Destroy(cameraObjectToDestroy);
                 }
 
                 if (syntheticRig != null)
@@ -828,6 +852,73 @@ namespace TFTV.TFTVIncidents
         /// the personnel screen's model and backdrop ended up in the portrait. The clone is destroyed
         /// after the render, so its layers do not need restoring.
         /// </summary>
+        // Original layers of everything moved for an isolated render, so a fallback render can undo it.
+        private static readonly List<KeyValuePair<GameObject, int>> _isolatedLayers = new List<KeyValuePair<GameObject, int>>();
+
+        private static void RecordLayer(GameObject target)
+        {
+            if (target != null)
+            {
+                _isolatedLayers.Add(new KeyValuePair<GameObject, int>(target, target.layer));
+            }
+        }
+
+        private static void RestoreIsolatedLayers()
+        {
+            foreach (KeyValuePair<GameObject, int> entry in _isolatedLayers)
+            {
+                if (entry.Key != null)
+                {
+                    entry.Key.layer = entry.Value;
+                }
+            }
+
+            _isolatedLayers.Clear();
+        }
+
+        /// <summary>
+        /// True when the render actually produced something — sampled sparsely, since a fully
+        /// transparent result means the camera saw nothing.
+        /// </summary>
+        private static bool HasVisibleContent(Texture2D texture)
+        {
+            try
+            {
+                if (texture == null)
+                {
+                    return false;
+                }
+
+                Color32[] pixels = texture.GetPixels32();
+                if (pixels == null || pixels.Length == 0)
+                {
+                    return false;
+                }
+
+                int visible = 0;
+                int step = Mathf.Max(1, pixels.Length / 4096);
+                for (int i = 0; i < pixels.Length; i += step)
+                {
+                    if (pixels[i].a > 16)
+                    {
+                        visible++;
+                        if (visible > 16)
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                TFTVLogger.Always($"{LogPrefix} Render appears empty (visible samples={visible}).");
+                return false;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return true;
+            }
+        }
+
         private static Camera CreateIsolatedPortraitCamera(GameObject characterObject, out GameObject cameraObject)
         {
             cameraObject = null;
@@ -848,11 +939,14 @@ namespace TFTV.TFTVIncidents
                 return null;
             }
 
+            _isolatedLayers.Clear();
+            RecordLayer(characterObject);
             SetLayerRecursively(characterObject, layer);
             foreach (Renderer renderer in renderers)
             {
                 if (renderer != null)
                 {
+                    RecordLayer(renderer.gameObject);
                     renderer.gameObject.layer = layer;
                 }
             }
