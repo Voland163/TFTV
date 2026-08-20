@@ -297,6 +297,8 @@ namespace TFTV.TFTVIncidents
                 yield break;
             }
 
+            LogBuilderTint(sourceBuilder, "source");
+
             AddonsCharacterBuilder tempBuilder = UnityEngine.Object.Instantiate(sourceBuilder);
 
             // Park the clone far away from the capture environment while it builds. Instantiate puts
@@ -690,11 +692,25 @@ namespace TFTV.TFTVIncidents
                 RenderSettings.reflectionIntensity = 0f;
                 ApplyCameraOverrides(usedCamera);
 
-                // When RenderingEnvironment creates the camera internally (the usual case here) it has
-                // no culling restrictions, so anything else standing at the render origin lands in the
-                // portrait - that is the personnel screen model and backdrop. Hide those meanwhile.
+                // RenderingEnvironment stages the subject at a fixed world origin (0, 1500, 0) and,
+                // when it creates the camera itself, renders with no culling restrictions - so anything
+                // else occupying that spot is captured too. Switch off every renderer that is not part
+                // of the subject for the duration of the render.
                 hiddenVisuals = new List<Renderer>();
-                List<Renderer> hidden = hiddenVisuals;
+                foreach (Renderer foreign in UnityEngine.Object.FindObjectsOfType<Renderer>())
+                {
+                    if (foreign == null
+                        || !foreign.enabled
+                        || foreign.transform.IsChildOf(characterObject.transform))
+                    {
+                        continue;
+                    }
+
+                    foreign.enabled = false;
+                    hiddenVisuals.Add(foreign);
+                }
+
+                TFTVLogger.Always($"{LogPrefix} Suppressed {hiddenVisuals.Count} foreign renderer(s) for the portrait render.");
 
                 if (allowIsolation && usedCamera != null && TryIsolateOnFreeLayer(characterObject, out int isolationLayer))
                 {
@@ -928,6 +944,61 @@ namespace TFTV.TFTVIncidents
             {
                 TFTVLogger.Error(e);
                 return true;
+            }
+        }
+
+        private static readonly string[] CustomizationColorParams =
+        {
+            "_PrimaryColor",
+            "_SecondaryColor",
+            "_HairColor",
+            "_IrisColor"
+        };
+
+        /// <summary>
+        /// Diagnostic: dumps the customization colors currently on a builder's items, so the clone can
+        /// be compared against the builder the personnel screen itself uses.
+        /// </summary>
+        private static void LogBuilderTint(AddonsCharacterBuilder builder, string label)
+        {
+            try
+            {
+                AddonsManager manager = builder?.AddonsManager;
+                if (manager?.RootAddon == null)
+                {
+                    TFTVLogger.Always($"{LogPrefix} [{label}] no addons manager/root to inspect.");
+                    return;
+                }
+
+                int logged = 0;
+                foreach (Addon addon in manager.RootAddon)
+                {
+                    Item item = addon as Item;
+                    if (item?.VisualRoot == null || logged >= 4)
+                    {
+                        continue;
+                    }
+
+                    Renderer renderer = item.GetHighlightableRenderers().FirstOrDefault();
+                    if (renderer == null)
+                    {
+                        continue;
+                    }
+
+                    MaterialPropertyBlock block = new MaterialPropertyBlock();
+                    renderer.GetPropertyBlock(block);
+
+                    string values = string.Join(" ", CustomizationColorParams
+                        .Select(param => $"{param}={block.GetColor(param)}")
+                        .ToArray());
+
+                    TFTVLogger.Always($"{LogPrefix} [{label}] item={item.ItemDef?.name ?? "null"} {values}");
+                    logged++;
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
 
