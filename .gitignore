@@ -365,3 +365,8 @@ FodyWeavers.xsd
 /.gitignore
 /Dist/TFTV.dll
 /Dist/TFTV.dll
+/TFTV/TFTVIncidents/IncidentResolutionUI.cs
+/TFTV/TFTVIncidents/PortraitGenerator.cs
+/TFTV/TFTVIncidents/Resolution.cs
+/.gitignore
+/.gitignore
