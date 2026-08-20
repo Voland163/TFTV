@@ -1,6 +1,8 @@
 ﻿using Base.Core;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Addons;
+using PhoenixPoint.Common.Entities.GameTagsSharedData;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
@@ -475,6 +477,7 @@ namespace TFTV.TFTVIncidents
                     $"patternTags={mergeable.Count(t => t is CustomizationPatternTagDef)} " +
                     $"conditionalTag={conditional} addonsRefreshed={refreshed}");
 
+                ForceApplyCustomizationColors(manager, mergeable);
                 LogAddonCustomizationState(manager, mergeable);
             }
             catch (Exception e)
@@ -515,8 +518,8 @@ namespace TFTV.TFTVIncidents
                     // (0,0,0,0), which distinguishes "customization never applied" from
                     // "applied but looks unchanged".
                     string tintReadback = "n/a";
-                    CustomizationColorTagDef colorTag = mergeable?.OfType<CustomizationColorTagDef>().FirstOrDefault();
-                    if (colorTag != null && rendererCount > 0)
+                    List<CustomizationColorTagDef> colorTags = mergeable?.OfType<CustomizationColorTagDef>().ToList();
+                    if (colorTags != null && colorTags.Count > 0 && rendererCount > 0)
                     {
                         try
                         {
@@ -525,7 +528,9 @@ namespace TFTV.TFTVIncidents
                             {
                                 MaterialPropertyBlock readback = new MaterialPropertyBlock();
                                 first.GetPropertyBlock(readback);
-                                tintReadback = $"{colorTag.ShaderParamName}={readback.GetColor(colorTag.ShaderParamName)}";
+                                tintReadback = string.Join(" ", colorTags
+                                    .Select(t => $"{t.ShaderParamName}={readback.GetColor(t.ShaderParamName)}")
+                                    .ToArray());
                             }
                         }
                         catch (Exception readbackError)
@@ -665,6 +670,7 @@ namespace TFTV.TFTVIncidents
 
             HashSet<Light> worldLightsToRestore = new HashSet<Light>();
             GameObject syntheticRig = null;
+            List<GameObject> hiddenVisuals = null;
 
             float ambientIntensityBefore = RenderSettings.ambientIntensity;
             Color ambientLightBefore = RenderSettings.ambientLight;
@@ -683,6 +689,11 @@ namespace TFTV.TFTVIncidents
                 RenderSettings.ambientIntensity = 1f;
                 RenderSettings.reflectionIntensity = 0f;
                 ApplyCameraOverrides(usedCamera);
+
+                // When RenderingEnvironment creates the camera internally (the usual case here) it has
+                // no culling restrictions, so anything else standing at the render origin lands in the
+                // portrait - that is the personnel screen model and backdrop. Hide those meanwhile.
+                hiddenVisuals = HideOtherSceneVisuals(level, characterObject, usedCamera);
 
                 if (allowIsolation && usedCamera != null && TryIsolateOnFreeLayer(characterObject, out int isolationLayer))
                 {
@@ -727,6 +738,17 @@ namespace TFTV.TFTVIncidents
             finally
             {
                 RestoreCameraState(usedCamera, cameraState);
+
+                if (hiddenVisuals != null)
+                {
+                    foreach (GameObject hidden in hiddenVisuals)
+                    {
+                        if (hidden != null)
+                        {
+                            hidden.SetActive(true);
+                        }
+                    }
+                }
 
                 if (syntheticRig != null)
                 {
@@ -905,6 +927,135 @@ namespace TFTV.TFTVIncidents
             {
                 TFTVLogger.Error(e);
                 return true;
+            }
+        }
+
+        /// <summary>
+        /// Temporarily deactivates other character models and the capture environment so they cannot
+        /// appear behind the portrait. Returns what was hidden so it can be switched back on.
+        /// </summary>
+        private static List<GameObject> HideOtherSceneVisuals(GeoLevelController level, GameObject characterObject, Camera usedCamera)
+        {
+            List<GameObject> hidden = new List<GameObject>();
+
+            try
+            {
+                foreach (AddonsCharacterBuilder builder in UnityEngine.Object.FindObjectsOfType<AddonsCharacterBuilder>())
+                {
+                    GameObject candidate = builder?.gameObject;
+                    if (candidate == null
+                        || candidate == characterObject
+                        || candidate.transform.IsChildOf(characterObject.transform)
+                        || !candidate.activeSelf)
+                    {
+                        continue;
+                    }
+
+                    candidate.SetActive(false);
+                    hidden.Add(candidate);
+                }
+
+                GameObject captureEnvironment = level?.SceneReferences?.UICaptureEnvironment?.gameObject;
+                bool cameraLivesThere = usedCamera != null
+                    && captureEnvironment != null
+                    && usedCamera.transform.IsChildOf(captureEnvironment.transform);
+
+                if (captureEnvironment != null
+                    && captureEnvironment.activeSelf
+                    && !cameraLivesThere
+                    && !characterObject.transform.IsChildOf(captureEnvironment.transform))
+                {
+                    captureEnvironment.SetActive(false);
+                    hidden.Add(captureEnvironment);
+                }
+
+                if (hidden.Count > 0)
+                {
+                    TFTVLogger.Always($"{LogPrefix} Hid {hidden.Count} scene object(s) for the portrait render.");
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+            return hidden;
+        }
+
+        /// <summary>
+        /// Applies the customization colors directly to every built item. Item.RefreshTags() skips
+        /// colors whenever the merged tags carry the conditional-customization tag (which this
+        /// character has) unless the item opts in with AlwaysCustomizeColor, which leaves armor
+        /// looking untinted in the portrait.
+        /// </summary>
+        private static void ForceApplyCustomizationColors(AddonsManager manager, List<GameTagDef> mergeable)
+        {
+            try
+            {
+                SharedGameTagsDataDef shared = GameUtl.GameComponent<SharedData>()?.SharedGameTags;
+                HumanCustomizationDef customization = shared?.HumanCustomization;
+                if (customization == null || manager?.RootAddon == null)
+                {
+                    return;
+                }
+
+                bool anyFancy = mergeable.Any(tag => tag is CustomizationFancyTagDef);
+                int customized = 0;
+
+                foreach (Addon addon in manager.RootAddon)
+                {
+                    Item item = addon as Item;
+                    if (item?.VisualRoot == null)
+                    {
+                        continue;
+                    }
+
+                    HighlightControllerComponent controller = item.VisualRoot.gameObject.GetComponent<HighlightControllerComponent>();
+                    if (controller == null)
+                    {
+                        continue;
+                    }
+
+                    controller.StartCustomization();
+
+                    foreach (GameTagDef tag in mergeable)
+                    {
+                        CustomizationColorTagDef colorTag = tag as CustomizationColorTagDef;
+                        if (colorTag != null)
+                        {
+                            Color color = customization.CustomizationPaletteDef.ContainsColor(colorTag)
+                                ? customization.CustomizationPaletteDef.MatchColor(colorTag)
+                                : (anyFancy
+                                    ? customization.FancyVehicleCustomizationPaletteDef.MatchColor(colorTag)
+                                    : customization.NPCPaletteDef.MatchColor(colorTag));
+
+                            controller.CustomizeColor(colorTag.ShaderParamName, color);
+                            continue;
+                        }
+
+                        CustomizationFancyTagDef fancyTag = tag as CustomizationFancyTagDef;
+                        if (fancyTag != null)
+                        {
+                            controller.CustomizeFancy(fancyTag);
+                            continue;
+                        }
+
+                        CustomizationPatternTagDef patternTag = tag as CustomizationPatternTagDef;
+                        if (patternTag != null)
+                        {
+                            controller.CustomizePattern(patternTag);
+                        }
+                    }
+
+                    controller.ApplyCustomization();
+                    customized++;
+                }
+
+                TFTVLogger.Always($"{LogPrefix} Force-applied customization to {customized} item(s).");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
 
