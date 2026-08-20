@@ -362,11 +362,7 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /TFTV/Vehicles/Helper/Helper.cs
-/.gitignore
+
+# Local build artifact — built by TFTV.csproj, deployed to the game's TestMod folder. Not tracked.
 /Dist/TFTV.dll
-/Dist/TFTV.dll
-/TFTV/TFTVIncidents/IncidentResolutionUI.cs
-/TFTV/TFTVIncidents/PortraitGenerator.cs
-/TFTV/TFTVIncidents/Resolution.cs
-/.gitignore
-/.gitignore
+/Dist/TFTV.pdb
