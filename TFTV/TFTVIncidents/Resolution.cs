@@ -999,6 +999,9 @@ namespace TFTV.TFTVIncidents
                     GeoCharacter incidentLeader = LeaderSelection.ResolveLeader(level, vehicle, active.LeaderId);
                     PersonnelData.SetPendingIncidentRecruitAffinity(incidentLeader);
 
+                    // Remember who resolved this incident so the outcome screen can show their portrait.
+                    IncidentOutcomeSummaryUI.RecordIncidentLeader(active.CompletionEventId, active.SiteId, active.VehicleId, active.LeaderId);
+
                     try
                     {
                         level.EventSystem.TriggerGeoscapeEvent(active.CompletionEventId, ctx);
@@ -1323,6 +1326,7 @@ namespace TFTV.TFTVIncidents
                 TFTVLogger.Always("[Incidents] Clearing incident controller state on load/state change.");
 
                 PortraitGenerator.ClearCache();
+                IncidentOutcomeSummaryUI.ClearLeaderPortraitRecords();
                 CompletedTimerIds.Clear();
                 ActiveByTimerId.Clear();
                 MatchedNearbyHavenByExactKey.Clear();
