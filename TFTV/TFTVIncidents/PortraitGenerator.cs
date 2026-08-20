@@ -1,6 +1,7 @@
 using Base.Core;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Addons;
+using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Utils;
 using PhoenixPoint.Geoscape.Entities;
@@ -31,6 +32,11 @@ namespace TFTV.TFTVIncidents
         private static readonly HashSet<int> InProgress = new HashSet<int>();
         private static int _currentRequestId = -1;
 
+        // Module a portrait was last applied to, so the cache can detach its sprite from the
+        // leader image before destroying it (a destroyed texture left assigned to the Image
+        // renders as garbage — typically the last thing rendered, e.g. the personnel screen).
+        private static UIModuleSiteEncounters _appliedModule;
+
         private static readonly PortraitRenderProfile Profile = new PortraitRenderProfile
         {
             CameraFoV = 40f,
@@ -50,6 +56,12 @@ namespace TFTV.TFTVIncidents
         private const int MinPortraitResolution = 128;
         private const int MaxPortraitResolution = 1024;
         private const int FallbackPortraitResolution = 512;
+
+        // Generous: the first rebuild of a session waits on addon assets being loaded from disk.
+        private const float RebuildTimeoutSeconds = 20f;
+
+        // Shader property the corruption (Delirium) face effect is driven by.
+        private const string CorruptionShaderPropertyName = "_MaskContrast";
 
         /// <summary>
         /// Shows the portrait of the given operative in the leader pic slot,
@@ -98,6 +110,10 @@ namespace TFTV.TFTVIncidents
             {
                 _currentRequestId = -1;
 
+                // Detach first: destroying a texture that is still assigned to the leader Image
+                // leaves it drawing freed GPU memory until a new sprite arrives.
+                DetachPortraitFromUI();
+
                 foreach (Sprite sprite in Cache.Values)
                 {
                     if (sprite == null)
@@ -121,6 +137,44 @@ namespace TFTV.TFTVIncidents
             }
         }
 
+        /// <summary>
+        /// Clears the leader picture we put in place and hides the slot, so nothing stale is shown
+        /// while the next portrait renders.
+        /// </summary>
+        private static void DetachPortraitFromUI()
+        {
+            try
+            {
+                if (_appliedModule == null)
+                {
+                    return;
+                }
+
+                if (_appliedModule.EncounterLeaderImage != null)
+                {
+                    _appliedModule.EncounterLeaderImage.sprite = null;
+                }
+
+                if (_appliedModule.EncunterLeaderGroup != null)
+                {
+                    _appliedModule.EncunterLeaderGroup.SetActive(false);
+                }
+
+                if (_appliedModule.EncunterLeaderInkGroup != null)
+                {
+                    _appliedModule.EncunterLeaderInkGroup.SetActive(false);
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+            finally
+            {
+                _appliedModule = null;
+            }
+        }
+
         private static void ApplyPortrait(UIModuleSiteEncounters module, Sprite portrait)
         {
             if (module == null || portrait == null)
@@ -132,6 +186,7 @@ namespace TFTV.TFTVIncidents
             module.EncunterLeaderInkGroup.SetActive(true);
             module.EncounterLeaderImage.sprite = portrait;
             module.EncounterLeaderImage.preserveAspect = true;
+            _appliedModule = module;
         }
 
         private static IEnumerator RenderAndApply(UIModuleSiteEncounters module, GeoCharacter character)
@@ -281,22 +336,31 @@ namespace TFTV.TFTVIncidents
 
                 CommonCharacterUtils.RebuildCharacter(tempBuilder, armourItems, null, null);
 
-                int guardFrames = 0;
-                while (!rebuildDone && guardFrames++ < 120)
+                // The first render of a session usually has to wait on addon assets: when an addon
+                // is not loaded yet, StartRebuildCharacter hands off to the asset loader and only
+                // starts rebuilding once loading finishes, which takes far longer than a couple of
+                // frames. Wait on wall-clock time rather than a frame count.
+                float waitDeadline = Time.realtimeSinceStartup + RebuildTimeoutSeconds;
+                while (!rebuildDone && Time.realtimeSinceStartup < waitDeadline)
                 {
                     yield return null;
                 }
 
                 if (!rebuildDone)
                 {
-                    Debug.LogWarning($"{LogPrefix} Character rebuild timed out.");
+                    Debug.LogWarning($"{LogPrefix} Character rebuild timed out after {RebuildTimeoutSeconds}s.");
                     onDone?.Invoke(null);
                     yield break;
                 }
 
-                // Applies the customization (armor colors/patterns, skin, hair and eye colors) to the
-                // addons that were just built — see the comment above the tag copy.
                 tempBuilder.AddonsManager.SetAutorefreshOnTagsChanged(true);
+
+                // Apply the customization (armor colors/patterns, skin, hair, eye colors) to the addons
+                // that were just built. Re-enabling autorefresh above only replays the deferred tag
+                // change when the tag set actually differs from what the cloned builder already had, so
+                // do the work of AddonsManager.OnGameTagsChanged explicitly instead of relying on it.
+                ApplyCustomizationTags(tempBuilder);
+                ApplyFaceCorruption(tempBuilder, character, level);
 
                 CommonCharacterUtils.ResetCharacterAnimation(tempBuilder);
                 // Let skinned meshes settle (and the customization materials apply) to avoid
@@ -337,6 +401,106 @@ namespace TFTV.TFTVIncidents
             {
                 tempBuilder.OnCharacterRebuilded -= rebuiltCallback;
                 UnityEngine.Object.Destroy(tempBuilder.gameObject);
+            }
+        }
+
+        /// <summary>
+        /// Recomputes the addons manager's merged tag list and refreshes every addon from it —
+        /// the same work AddonsManager.OnGameTagsChanged does. Item.RefreshTags() reads
+        /// MergeWithAddonsTags to tint materials, so without this the model renders with default
+        /// (untinted) materials: no armor colors or patterns, and pale skin/hair/eyes.
+        /// </summary>
+        private static void ApplyCustomizationTags(AddonsCharacterBuilder builder)
+        {
+            try
+            {
+                AddonsManager manager = builder?.AddonsManager;
+                if (manager?.RootAddon == null)
+                {
+                    return;
+                }
+
+                manager.MergeWithAddonsTags.ReplaceRange(manager.GameTags.Where(
+                    tag => tag != null && AddonMergeGameTagsWithManagerAttribute.ShouldAddonMergeTagsWithAddonManager(tag.GetType())));
+
+                foreach (Addon addon in manager.RootAddon)
+                {
+                    addon?.RefreshTags();
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// Applies the corruption (Delirium) face shader, mirroring
+        /// UIModuleActorCycle.SetupFaceCorruptionShader.
+        /// </summary>
+        private static void ApplyFaceCorruption(AddonsCharacterBuilder builder, GeoCharacter character, GeoLevelController level)
+        {
+            try
+            {
+                if (character == null || character.IsMutoid || level == null)
+                {
+                    return;
+                }
+
+                AddonsManager manager = builder?.AddonsManager;
+                if (manager?.RootAddon == null || manager.RigRoot == null)
+                {
+                    return;
+                }
+
+                if ((float)character.CharacterStats.Corruption <= 0f)
+                {
+                    return;
+                }
+
+                TacticalPerceptionDef perception = character.TemplateDef?.ComponentSetDef?.GetComponentDef<TacticalPerceptionDef>();
+                if (perception == null)
+                {
+                    return;
+                }
+
+                AddonSlot headSlot = manager.RootAddon.FindAddonSlot(perception.HeadSlot);
+                if (headSlot == null)
+                {
+                    return;
+                }
+
+                float shaderValue = level.CorruptedHorizonsSettings.CorruptionSettings
+                    .CalculateCorruptionShaderValue(character.CharacterStats.CorruptionProgressRel);
+
+                MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
+                propertyBlock.SetFloat(CorruptionShaderPropertyName, shaderValue);
+
+                foreach (TacticalItem item in ((ItemSlot)headSlot).GetAllDirectItems(onlyBodyparts: true))
+                {
+                    if (item == null)
+                    {
+                        continue;
+                    }
+
+                    bool isFace = item.OwnTags.Count == 0
+                        ? item.GameTags.Any(t => t is FaceTagDef)
+                        : item.OwnTags.Any(t => t is FaceTagDef);
+
+                    if (!isFace)
+                    {
+                        continue;
+                    }
+
+                    foreach (Renderer renderer in item.GetHighlightableRenderers())
+                    {
+                        renderer?.SetPropertyBlock(propertyBlock);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
 
