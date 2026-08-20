@@ -657,20 +657,11 @@ namespace TFTV.TFTVIncidents
         {
             LightsPicker lightsPicker = characterObject.GetComponentInChildren<LightsPicker>(true);
 
-            // Prefer a private camera that can only see this character; fall back to a shared one.
-            GameObject cameraObjectToDestroy = null;
-            Camera usedCamera = null;
-            if (allowIsolation)
-            {
-                usedCamera = CreateIsolatedPortraitCamera(characterObject, out cameraObjectToDestroy);
-            }
-
-            bool isolated = usedCamera != null;
-            usedIsolation = isolated;
-            if (!isolated)
-            {
-                usedCamera = ResolvePortraitCamera(level, lightsPicker, characterObject);
-            }
+            // Always render with the game's own portrait/capture camera: a bare camera created from
+            // scratch renders nothing here. Isolation is done by narrowing THAT camera's culling mask
+            // to a free layer holding only this character, and is undone with the rest of its state.
+            Camera usedCamera = ResolvePortraitCamera(level, lightsPicker, characterObject);
+            usedIsolation = false;
 
             HashSet<Light> worldLightsToRestore = new HashSet<Light>();
             GameObject syntheticRig = null;
@@ -692,6 +683,12 @@ namespace TFTV.TFTVIncidents
                 RenderSettings.ambientIntensity = 1f;
                 RenderSettings.reflectionIntensity = 0f;
                 ApplyCameraOverrides(usedCamera);
+
+                if (allowIsolation && usedCamera != null && TryIsolateOnFreeLayer(characterObject, out int isolationLayer))
+                {
+                    usedCamera.cullingMask = 1 << isolationLayer;
+                    usedIsolation = true;
+                }
 
                 foreach (Light light in UnityEngine.Object.FindObjectsOfType<Light>())
                 {
@@ -729,15 +726,7 @@ namespace TFTV.TFTVIncidents
             }
             finally
             {
-                if (!isolated)
-                {
-                    RestoreCameraState(usedCamera, cameraState);
-                }
-
-                if (cameraObjectToDestroy != null)
-                {
-                    UnityEngine.Object.Destroy(cameraObjectToDestroy);
-                }
+                RestoreCameraState(usedCamera, cameraState);
 
                 if (syntheticRig != null)
                 {
@@ -919,15 +908,18 @@ namespace TFTV.TFTVIncidents
             }
         }
 
-        private static Camera CreateIsolatedPortraitCamera(GameObject characterObject, out GameObject cameraObject)
+        /// <summary>
+        /// Moves the character's renderers onto a free layer so the portrait camera can be narrowed
+        /// to just them. Original layers are recorded BEFORE anything is changed, so they can be put
+        /// back if the isolated render turns out empty.
+        /// </summary>
+        private static bool TryIsolateOnFreeLayer(GameObject characterObject, out int layer)
         {
-            cameraObject = null;
-
-            int layer = ResolveIsolationLayer();
+            layer = ResolveIsolationLayer();
             if (layer < 0)
             {
-                TFTVLogger.Always($"{LogPrefix} No free layer for portrait isolation; falling back to a shared camera.");
-                return null;
+                TFTVLogger.Always($"{LogPrefix} No free layer for portrait isolation; rendering without it.");
+                return false;
             }
 
             // Culling keys off each renderer's own GameObject layer, so move those explicitly rather
@@ -935,38 +927,32 @@ namespace TFTV.TFTVIncidents
             Renderer[] renderers = characterObject.GetComponentsInChildren<Renderer>(true);
             if (renderers == null || renderers.Length == 0)
             {
-                TFTVLogger.Always($"{LogPrefix} No renderers under the builder; falling back to a shared camera.");
-                return null;
+                TFTVLogger.Always($"{LogPrefix} No renderers under the builder; rendering without isolation.");
+                return false;
             }
 
             _isolatedLayers.Clear();
-            RecordLayer(characterObject);
+            foreach (Transform transform in characterObject.GetComponentsInChildren<Transform>(true))
+            {
+                RecordLayer(transform?.gameObject);
+            }
+
+            foreach (Renderer renderer in renderers)
+            {
+                RecordLayer(renderer?.gameObject);
+            }
+
             SetLayerRecursively(characterObject, layer);
             foreach (Renderer renderer in renderers)
             {
                 if (renderer != null)
                 {
-                    RecordLayer(renderer.gameObject);
                     renderer.gameObject.layer = layer;
                 }
             }
 
             TFTVLogger.Always($"{LogPrefix} Isolated {renderers.Length} renderer(s) on layer {layer} for the portrait render.");
-
-            cameraObject = new GameObject("[TFTV]PortraitCamera");
-            Camera camera = cameraObject.AddComponent<Camera>();
-            camera.enabled = false;
-            camera.cullingMask = 1 << layer;
-            camera.clearFlags = CameraClearFlags.Depth;
-            camera.backgroundColor = new Color(0f, 0f, 0f, 0f);
-            camera.orthographic = false;
-            camera.allowHDR = false;
-            camera.allowMSAA = false;
-            camera.useOcclusionCulling = false;
-            camera.nearClipPlane = Profile.MinCameraNearClip;
-            camera.farClipPlane = Profile.MaxCameraFarClip;
-
-            return camera;
+            return true;
         }
 
         /// <summary>
@@ -1036,7 +1022,8 @@ namespace TFTV.TFTVIncidents
                 FieldOfView = camera.fieldOfView,
                 NearClipPlane = camera.nearClipPlane,
                 FarClipPlane = camera.farClipPlane,
-                AllowHDR = camera.allowHDR
+                AllowHDR = camera.allowHDR,
+                CullingMask = camera.cullingMask
             };
         }
 
@@ -1064,6 +1051,7 @@ namespace TFTV.TFTVIncidents
             camera.nearClipPlane = state.NearClipPlane;
             camera.farClipPlane = state.FarClipPlane;
             camera.allowHDR = state.AllowHDR;
+            camera.cullingMask = state.CullingMask;
         }
 
         private static Texture2D ApplyPostProcess(Texture2D source, float gamma, float contrast, float sharpen)
@@ -1182,6 +1170,7 @@ namespace TFTV.TFTVIncidents
             public float NearClipPlane;
             public float FarClipPlane;
             public bool AllowHDR;
+            public int CullingMask;
         }
     }
 }
