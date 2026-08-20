@@ -329,8 +329,11 @@ namespace TFTV.TFTVIncidents
             Camera usedCamera = ResolvePortraitCamera(level, lightsPicker, characterObject);
 
             HashSet<Light> worldLightsToRestore = new HashSet<Light>();
+            GameObject syntheticRig = null;
 
-            float ambientBefore = RenderSettings.ambientIntensity;
+            float ambientIntensityBefore = RenderSettings.ambientIntensity;
+            Color ambientLightBefore = RenderSettings.ambientLight;
+            UnityEngine.Rendering.AmbientMode ambientModeBefore = RenderSettings.ambientMode;
             float reflectionBefore = RenderSettings.reflectionIntensity;
 
             CameraState cameraState = CaptureCameraState(usedCamera);
@@ -338,8 +341,10 @@ namespace TFTV.TFTVIncidents
             try
             {
                 // Mirror the vanilla tactical squad-portrait setup (SquadMemberScrollerController.FinishPortraitCrt):
-                // ambient and reflections fully off, all world lights disabled, and the LightsPicker
-                // enabling one of its portrait rigs at full intensity.
+                // ambient (forced to Flat so this works regardless of the scene's ambient source) and
+                // reflections off, all world lights disabled, and a dedicated portrait rig at full intensity.
+                RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+                RenderSettings.ambientLight = new Color(0.10f, 0.10f, 0.11f);
                 RenderSettings.ambientIntensity = 0f;
                 RenderSettings.reflectionIntensity = 0f;
                 ApplyCameraOverrides(usedCamera);
@@ -353,13 +358,29 @@ namespace TFTV.TFTVIncidents
                     }
                 }
 
-                lightsPicker?.PickLights();
+                if (lightsPicker != null && lightsPicker.LightSet != null && lightsPicker.LightSet.Count > 0)
+                {
+                    // Tactical-style builder: use its own portrait rigs, like vanilla does.
+                    lightsPicker.PickLights();
+                }
+                else
+                {
+                    // The geoscape capture-environment builder carries no LightsPicker (its lighting
+                    // lives in the environment scene, out of reach at the render origin), so light the
+                    // face with a synthetic three-point rig of directional lights instead.
+                    syntheticRig = CreatePortraitLightRig(characterObject.transform);
+                }
 
                 return RenderWithAnchorFallback(characterObject, usedCamera, resolution);
             }
             finally
             {
                 RestoreCameraState(usedCamera, cameraState);
+
+                if (syntheticRig != null)
+                {
+                    UnityEngine.Object.Destroy(syntheticRig);
+                }
 
                 foreach (Light light in worldLightsToRestore)
                 {
@@ -370,9 +391,44 @@ namespace TFTV.TFTVIncidents
                 }
 
                 lightsPicker?.DisableAllControlledLights();
-                RenderSettings.ambientIntensity = ambientBefore;
+                RenderSettings.ambientMode = ambientModeBefore;
+                RenderSettings.ambientLight = ambientLightBefore;
+                RenderSettings.ambientIntensity = ambientIntensityBefore;
                 RenderSettings.reflectionIntensity = reflectionBefore;
             }
+        }
+
+        /// <summary>
+        /// Classic three-point portrait rig out of directional lights, parented to the character so
+        /// the angles stay relative to where the face points. Directional lights are position-independent,
+        /// so they work at the far-away render origin where scene point/spot lights cannot reach.
+        /// </summary>
+        private static GameObject CreatePortraitLightRig(Transform character)
+        {
+            GameObject rig = new GameObject("[TFTV]PortraitLightRig");
+            rig.transform.SetParent(character, false);
+
+            // Key: warm, from the character's front-left, above eye level.
+            AddRigLight(rig.transform, "Key", new Vector3(28f, 205f, 0f), new Color(1f, 0.96f, 0.90f), 1.15f);
+            // Fill: cool and soft, from the front-right, near eye level.
+            AddRigLight(rig.transform, "Fill", new Vector3(8f, 150f, 0f), new Color(0.78f, 0.82f, 0.92f), 0.45f);
+            // Rim: from behind, separates hair/shoulders from the dark background.
+            AddRigLight(rig.transform, "Rim", new Vector3(18f, 15f, 0f), new Color(0.90f, 0.93f, 1f), 0.70f);
+
+            return rig;
+        }
+
+        private static void AddRigLight(Transform rig, string name, Vector3 eulerAngles, Color color, float intensity)
+        {
+            GameObject go = new GameObject(name);
+            go.transform.SetParent(rig, false);
+            go.transform.localRotation = Quaternion.Euler(eulerAngles);
+
+            Light light = go.AddComponent<Light>();
+            light.type = LightType.Directional;
+            light.color = color;
+            light.intensity = intensity;
+            light.shadows = LightShadows.None;
         }
 
         private static Texture2D RenderWithAnchorFallback(GameObject characterObject, Camera usedCamera, Vector2Int resolution)
