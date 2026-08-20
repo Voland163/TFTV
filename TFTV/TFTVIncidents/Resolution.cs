@@ -1322,6 +1322,7 @@ namespace TFTV.TFTVIncidents
 
                 TFTVLogger.Always("[Incidents] Clearing incident controller state on load/state change.");
 
+                PortraitGenerator.ClearCache();
                 CompletedTimerIds.Clear();
                 ActiveByTimerId.Clear();
                 MatchedNearbyHavenByExactKey.Clear();
