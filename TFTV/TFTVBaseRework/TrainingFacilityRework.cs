@@ -46,6 +46,9 @@ namespace TFTV.TFTVBaseRework
         };
 
         private static readonly string AdvancedLevelResearchId = "PX_EliteTraining_ResearchDef";
+
+        private const int ComputeOccultMaxTargetLevel = 5;
+        private const int ExplorationMaxTargetLevel = 6;
         #endregion
 
         #region Data Model (Recruit descriptor training ONLY)
@@ -103,6 +106,32 @@ namespace TFTV.TFTVBaseRework
         }
 
         /// <summary>
+        /// Character-aware max target level: Compute/Occult personnel can always train to 5,
+        /// Exploration personnel to 6, regardless of Elite Training research.
+        /// </summary>
+        public static int GetMaxTargetLevel(GeoPhoenixFaction faction, GeoCharacter character)
+        {
+            int baseMax = GetMaxTargetLevel(faction);
+
+            if (character == null
+                || !TFTVIncidents.LeaderSelection.TryGetCurrentAffinity(character, out TFTVIncidents.LeaderSelection.AffinityApproach approach, out _))
+            {
+                return baseMax;
+            }
+
+            switch (approach)
+            {
+                case TFTVIncidents.LeaderSelection.AffinityApproach.Compute:
+                case TFTVIncidents.LeaderSelection.AffinityApproach.Occult:
+                    return Math.Max(baseMax, ComputeOccultMaxTargetLevel);
+                case TFTVIncidents.LeaderSelection.AffinityApproach.Exploration:
+                    return Math.Max(baseMax, ExplorationMaxTargetLevel);
+                default:
+                    return baseMax;
+            }
+        }
+
+        /// <summary>
         /// Returns the stat gains description string for a given level count (for UI display).
         /// </summary>
         public static string GetStatGainDescription(int levelsGained)
@@ -120,7 +149,7 @@ namespace TFTV.TFTVBaseRework
                 GeoPhoenixFaction faction = level.PhoenixFaction;
                 if (faction == null) return false;
 
-                int maxLevel = GetMaxTargetLevel(faction);
+                int maxLevel = GetMaxTargetLevel(faction, character);
                 if (chosenTargetLevel < MinTargetLevel || chosenTargetLevel > maxLevel)
                 {
                     TFTVLogger.Always($"[Training] Invalid target level {chosenTargetLevel} (allowed {MinTargetLevel}-{maxLevel}).");
@@ -745,6 +774,16 @@ namespace TFTV.TFTVBaseRework
                 phoenix.AddRecruit(operative, targetBase.Site);
                 ApplyCumulativeLevelGains(operative, finalLevel);
                 GeoCharacterFilter.HiddenOperativeMarkerFilter.RemoveHiddenMarker(operative);
+
+                // Carry the civilian's affinity over to the newly created operative
+                // (only Identity is copied above; abilities are not).
+                if (TFTVIncidents.LeaderSelection.TryGetCurrentAffinity(civilian, out TFTVIncidents.LeaderSelection.AffinityApproach affinityApproach, out int affinityRank)
+                    && TFTVIncidents.LeaderSelection.TrySetAffinityRank(operative, affinityApproach, affinityRank))
+                {
+                    TFTVIncidents.AffinityInheritance.RecordOrUpdateOperativeAffinity(operative.Id, affinityApproach, affinityRank);
+                    TFTVIncidents.AffinityInheritance.RemoveOperativeAffinity(civilian.Id);
+                    TFTVLogger.Always($"[Training] Transferred {affinityApproach} rank {affinityRank} from civilian to operative {operative.DisplayName}.");
+                }
 
                 RemoveCivilianPlaceholder(phoenix, civilian);
 

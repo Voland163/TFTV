@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using TFTV.TFTVIncidents;
 using static TFTV.TFTVBaseRework.Workers;
 
 namespace TFTV.TFTVBaseRework
@@ -353,6 +354,24 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
+        private const int PsychoSociologyActivationWeight = 3;
+
+        /// <summary>
+        /// How many personnel this character counts as when consumed for base activation.
+        /// Psycho-Sociology personnel count triple (Administration).
+        /// </summary>
+        internal static int GetActivationWeight(GeoCharacter character)
+        {
+            if (character != null
+                && LeaderSelection.TryGetCurrentAffinity(character, out LeaderSelection.AffinityApproach approach, out _)
+                && approach == LeaderSelection.AffinityApproach.PsychoSociology)
+            {
+                return PsychoSociologyActivationWeight;
+            }
+
+            return 1;
+        }
+
         internal static bool TryConsumePersonnelForBaseActivation(GeoPhoenixFaction faction, int requiredPersonnel)
         {
             if (!BaseReworkCheck.BaseReworkEnabled || faction == null || requiredPersonnel <= 0)
@@ -360,21 +379,67 @@ namespace TFTV.TFTVBaseRework
                 return false;
             }
 
-            List<PersonnelInfo> candidates = _assignments.Values
+            List<PersonnelInfo> eligible = _assignments.Values
                 .Where(person => person?.Character != null && person.Character.Faction == faction)
                 .Where(person => person.Assignment == PersonnelAssignment.Unassigned
                     || person.Assignment == PersonnelAssignment.Research
                     || person.Assignment == PersonnelAssignment.Manufacturing)
-                .OrderBy(person => GetBaseActivationPriority(person.Assignment))
-                .Take(requiredPersonnel)
                 .ToList();
 
-            if (candidates.Count < requiredPersonnel)
+            if (eligible.Sum(person => GetActivationWeight(person.Character)) < requiredPersonnel)
             {
                 return false;
             }
 
-            foreach (PersonnelInfo person in candidates)
+            // Fill by assignment priority (Unassigned, then Research, then Manufacturing).
+            // Within a priority group, spend Psycho-Sociology administrators (weight 3) while their
+            // full weight still fits the remaining requirement, and top up with regular personnel.
+            List<PersonnelInfo> ordered = eligible
+                .OrderBy(person => GetBaseActivationPriority(person.Assignment))
+                .ThenByDescending(person => GetActivationWeight(person.Character))
+                .ThenBy(person => person.Id)
+                .ToList();
+
+            List<PersonnelInfo> toConsume = new List<PersonnelInfo>();
+            int remaining = requiredPersonnel;
+
+            foreach (PersonnelInfo person in ordered)
+            {
+                if (remaining <= 0)
+                {
+                    break;
+                }
+
+                int weight = GetActivationWeight(person.Character);
+                if (weight > remaining)
+                {
+                    continue;
+                }
+
+                toConsume.Add(person);
+                remaining -= weight;
+            }
+
+            // Only Psycho-Sociology personnel are left and the remainder is 1-2:
+            // overshoot with the highest-priority one rather than fail.
+            if (remaining > 0)
+            {
+                PersonnelInfo filler = ordered.FirstOrDefault(person => !toConsume.Contains(person));
+                if (filler == null)
+                {
+                    return false;
+                }
+
+                toConsume.Add(filler);
+                remaining -= GetActivationWeight(filler.Character);
+            }
+
+            if (remaining > 0)
+            {
+                return false;
+            }
+
+            foreach (PersonnelInfo person in toConsume)
             {
                 RemovePersonnel(faction, person);
                 faction.KillCharacter(person.Character, CharacterDeathReason.Dismissed);
@@ -1069,6 +1134,76 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
+        // Affinity the incident leader had when the incident completed. While set, the personnel
+        // gained from that incident inherit it: leader rank 2+ gives the first recruit the leader's
+        // affinity at rank 1; leader rank 3 additionally gives the second recruit a random
+        // different affinity at rank 1.
+        private static bool _pendingRecruitAffinityActive;
+        private static LeaderSelection.AffinityApproach _pendingRecruitAffinityApproach;
+        private static int _pendingRecruitAffinityLeaderRank;
+
+        internal static void SetPendingIncidentRecruitAffinity(GeoCharacter leader)
+        {
+            ClearPendingIncidentRecruitAffinity();
+
+            if (leader == null
+                || !LeaderSelection.TryGetCurrentAffinity(leader, out LeaderSelection.AffinityApproach approach, out int rank)
+                || rank < 2)
+            {
+                return;
+            }
+
+            _pendingRecruitAffinityActive = true;
+            _pendingRecruitAffinityApproach = approach;
+            _pendingRecruitAffinityLeaderRank = rank;
+
+            TFTVLogger.Always($"[PersonnelData] Pending incident recruit affinity set from leader {leader.DisplayName}: {approach} (leader rank {rank}).");
+        }
+
+        internal static void ClearPendingIncidentRecruitAffinity()
+        {
+            _pendingRecruitAffinityActive = false;
+            _pendingRecruitAffinityLeaderRank = 0;
+        }
+
+        private static void ApplyPendingRecruitAffinity(GeoCharacter recruit, int recruitIndex)
+        {
+            if (!_pendingRecruitAffinityActive || recruit == null || recruitIndex > 1)
+            {
+                return;
+            }
+
+            LeaderSelection.AffinityApproach approach;
+
+            if (recruitIndex == 0)
+            {
+                approach = _pendingRecruitAffinityApproach;
+            }
+            else
+            {
+                if (_pendingRecruitAffinityLeaderRank < 3)
+                {
+                    return;
+                }
+
+                List<LeaderSelection.AffinityApproach> otherApproaches = Enum
+                    .GetValues(typeof(LeaderSelection.AffinityApproach))
+                    .Cast<LeaderSelection.AffinityApproach>()
+                    .Where(candidate => candidate != _pendingRecruitAffinityApproach)
+                    .ToList();
+
+                approach = otherApproaches.GetRandomElement();
+            }
+
+            if (!LeaderSelection.TrySetAffinityRank(recruit, approach, 1))
+            {
+                return;
+            }
+
+            AffinityInheritance.RecordOrUpdateOperativeAffinity(recruit.Id, approach, 1);
+            TFTVLogger.Always($"[PersonnelData] Incident recruit {recruit.DisplayName} gained {approach} rank 1 (leader rank {_pendingRecruitAffinityLeaderRank}).");
+        }
+
         internal static int AddIncidentPersonnelReward(GeoPhoenixFaction faction, int count)
         {
             if (!BaseReworkCheck.BaseReworkEnabled || faction == null || count <= 0)
@@ -1105,6 +1240,7 @@ namespace TFTV.TFTVBaseRework
                     continue;
                 }
 
+                ApplyPendingRecruitAffinity(character, added);
                 AttachCharacter(character);
                 added++;
             }
@@ -1164,6 +1300,25 @@ namespace TFTV.TFTVBaseRework
                 .Count(person => person.Assignment == PersonnelAssignment.Unassigned
                     || person.Assignment == PersonnelAssignment.Research
                     || person.Assignment == PersonnelAssignment.Manufacturing);
+        }
+
+        /// <summary>
+        /// Total base-activation weight of available personnel
+        /// (Psycho-Sociology personnel count as 3, everyone else as 1).
+        /// </summary>
+        internal static int GetAvailableActivationWeight(GeoPhoenixFaction faction)
+        {
+            if (!BaseReworkCheck.BaseReworkEnabled || faction == null)
+            {
+                return 0;
+            }
+
+            return _assignments.Values
+                .Where(person => person?.Character != null && person.Character.Faction == faction)
+                .Where(person => person.Assignment == PersonnelAssignment.Unassigned
+                    || person.Assignment == PersonnelAssignment.Research
+                    || person.Assignment == PersonnelAssignment.Manufacturing)
+                .Sum(person => GetActivationWeight(person.Character));
         }
 
         internal static bool AssignPersonnelToTraining(PersonnelInfo person, GeoPhoenixFaction faction, SpecializationDef spec)
