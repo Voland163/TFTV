@@ -1,17 +1,21 @@
 ﻿using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using System;
 using System.Linq;
+using TFTV.TFTVIncidents;
 using UnityEngine;
 
 namespace TFTV.TFTVBaseRework
 {
     internal static class ResearchAndManufacturing
     {
-        internal const float WorkerOutputPerSlot = 4.0f;
+        internal const float RegularWorkerOutputPerSlot = 2.0f;
+        internal const float AffinityWorkerOutputPerSlot = 4.0f;
+        internal const float SpecialistWorkerOutputPerSlot = 6.0f;
 
         private const int UnoccupiedResearchPerSlot = 1;
         private const int UnoccupiedProductionPerSlot = 2;
@@ -61,14 +65,16 @@ namespace TFTV.TFTVBaseRework
             }
 
             PoolAssignmentSnapshot snapshot = BuildPoolAssignmentSnapshot(faction);
-            researchBonus = GetAssignedBonus(snapshot.ResearchAssigned) + GetIdleSlotBonus(faction, snapshot.ResearchCapacity, snapshot.ResearchAssigned, ResourceType.Research, UnoccupiedResearchPerSlot);
+            researchBonus = GetAssignedBonus(faction, PersonnelAssignment.Research, snapshot.ResearchAssigned, ResourceType.Research)
+                + GetIdleSlotBonus(faction, snapshot.ResearchCapacity, snapshot.ResearchAssigned, ResourceType.Research, UnoccupiedResearchPerSlot);
 
             if (TFTVVoidOmens.VoidOmensCheck[6])
             {
                 researchBonus *= 1.5f;
             }
 
-            productionBonus = GetAssignedBonus(snapshot.ManufacturingAssigned) + GetIdleSlotBonus(faction, snapshot.ManufacturingCapacity, snapshot.ManufacturingAssigned, ResourceType.Production, UnoccupiedProductionPerSlot);
+            productionBonus = GetAssignedBonus(faction, PersonnelAssignment.Manufacturing, snapshot.ManufacturingAssigned, ResourceType.Production)
+                + GetIdleSlotBonus(faction, snapshot.ManufacturingCapacity, snapshot.ManufacturingAssigned, ResourceType.Production, UnoccupiedProductionPerSlot);
         }
 
         private static ResourcePack GetProductionReasonOutput(GeoPhoenixFaction faction)
@@ -111,9 +117,41 @@ namespace TFTV.TFTVBaseRework
             };
         }
 
-        private static float GetAssignedBonus(int assignedSlots)
+        private static float GetAssignedBonus(GeoPhoenixFaction faction, PersonnelAssignment assignment, int usedSlots, ResourceType resourceType)
         {
-            return assignedSlots * WorkerOutputPerSlot;
+            if (usedSlots <= 0)
+            {
+                return 0f;
+            }
+
+            return PersonnelData.Assignments.Values
+                .Where(person => person?.Character != null && person.Character.Faction == faction && person.Assignment == assignment)
+                .OrderBy(person => person.Id)
+                .Take(usedSlots)
+                .Sum(person => GetWorkerOutput(person.Character, resourceType));
+        }
+
+        internal static float GetWorkerOutput(GeoCharacter character, ResourceType resourceType)
+        {
+            if (character == null
+                || !LeaderSelection.TryGetCurrentAffinity(character, out LeaderSelection.AffinityApproach approach, out _))
+            {
+                return RegularWorkerOutputPerSlot;
+            }
+
+            switch (approach)
+            {
+                case LeaderSelection.AffinityApproach.Biotech:
+                    return resourceType == ResourceType.Research ? SpecialistWorkerOutputPerSlot : RegularWorkerOutputPerSlot;
+                case LeaderSelection.AffinityApproach.Machinery:
+                    return resourceType == ResourceType.Production ? SpecialistWorkerOutputPerSlot : RegularWorkerOutputPerSlot;
+                case LeaderSelection.AffinityApproach.Compute:
+                case LeaderSelection.AffinityApproach.Occult:
+                case LeaderSelection.AffinityApproach.PsychoSociology:
+                    return AffinityWorkerOutputPerSlot;
+                default:
+                    return RegularWorkerOutputPerSlot;
+            }
         }
 
         private static float GetIdleSlotBonus(GeoPhoenixFaction faction, int capacity, int assigned, ResourceType resourceType, int basePerSlot)

@@ -956,7 +956,7 @@ namespace TFTV.TFTVBaseRework
                     return;
                 }
 
-                int availablePersonnel = PersonnelData.GetAvailablePersonnelCount(faction);
+                int availablePersonnel = PersonnelData.GetAvailableActivationWeight(faction);
                 bool hasPersonnel = availablePersonnel >= requiredPersonnel;
                 Sprite icon = GetPersonnelPlaceholderIcon();
 

@@ -993,7 +993,20 @@ namespace TFTV.TFTVIncidents
 
                     TFTVLogger.Always($"[Incidents][OutcomeRecapDiag] TRIGGER event={active.CompletionEventId}");
                     GeoscapeEventContext ctx = new GeoscapeEventContext(site, level.ViewerFaction, vehicle);
-                    level.EventSystem.TriggerGeoscapeEvent(active.CompletionEventId, ctx);
+
+                    // Personnel rewarded by the outcome event inherit the resolving leader's
+                    // affinity when the leader is rank 2+ (see PersonnelData.AddIncidentPersonnelReward).
+                    GeoCharacter incidentLeader = LeaderSelection.ResolveLeader(level, vehicle, active.LeaderId);
+                    PersonnelData.SetPendingIncidentRecruitAffinity(incidentLeader);
+
+                    try
+                    {
+                        level.EventSystem.TriggerGeoscapeEvent(active.CompletionEventId, ctx);
+                    }
+                    finally
+                    {
+                        PersonnelData.ClearPendingIncidentRecruitAffinity();
+                    }
                 }
 
                 if (site != null)

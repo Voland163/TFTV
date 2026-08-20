@@ -569,7 +569,7 @@ namespace TFTV.TFTVBaseRework
                     return true;
                 }
 
-                return PersonnelData.GetAvailablePersonnelCount(faction) >= personnelRequired;
+                return PersonnelData.GetAvailableActivationWeight(faction) >= personnelRequired;
             }
         }
     }

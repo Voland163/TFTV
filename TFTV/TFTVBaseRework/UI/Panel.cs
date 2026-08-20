@@ -10,6 +10,7 @@ using PhoenixPoint.Geoscape.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TFTV.TFTVIncidents;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -450,6 +451,9 @@ namespace TFTV.TFTVBaseRework
                 badgeRect.offsetMax = new Vector2(-8, 0);
             }
 
+            // Affinity badge — icon in the top-right corner for personnel with an affinity
+            AddAffinityBadge(slotGO, person.Character);
+
             // Ensure there is a background Image for selection highlighting
             Image bgImage = slotGO.GetComponent<Image>();
             if (bgImage == null)
@@ -490,6 +494,43 @@ namespace TFTV.TFTVBaseRework
             if (_selectedIds.Contains(person.Id))
             {
                 bgImage.color = SlotSelectedBg;
+            }
+        }
+
+        private static void AddAffinityBadge(GameObject slotGO, GeoCharacter character)
+        {
+            try
+            {
+                if (slotGO == null
+                    || !LeaderSelection.TryGetCurrentAffinity(character, out LeaderSelection.AffinityApproach approach, out int rank))
+                {
+                    return;
+                }
+
+                Sprite icon = LeaderSelection.GetAffinityAbility(approach, rank)?.ViewElementDef?.SmallIcon;
+                if (icon == null)
+                {
+                    return;
+                }
+
+                var badgeGO = new GameObject("AffinityBadge", typeof(RectTransform));
+                badgeGO.transform.SetParent(slotGO.transform, false);
+
+                var badgeImg = badgeGO.AddComponent<Image>();
+                badgeImg.sprite = icon;
+                badgeImg.preserveAspect = true;
+                badgeImg.raycastTarget = false;
+
+                var badgeRect = badgeGO.GetComponent<RectTransform>();
+                badgeRect.anchorMin = new Vector2(1, 1);
+                badgeRect.anchorMax = new Vector2(1, 1);
+                badgeRect.pivot = new Vector2(1, 1);
+                badgeRect.anchoredPosition = new Vector2(-6, -6);
+                badgeRect.sizeDelta = new Vector2(36, 36);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
 

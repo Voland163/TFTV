@@ -208,7 +208,7 @@ namespace TFTV.TFTVBaseRework
             int usedSlots = TrainingFacilityRework.GetUsedTrainingSlots();
             if (usedSlots < providedSlots)
             {
-                int maxLevel = TrainingFacilityRework.GetMaxTargetLevel(phoenix);
+                int maxLevel = TrainingFacilityRework.GetMaxTargetLevel(phoenix, person.Character);
                 float minDuration = TrainingFacilityRework.GetEffectiveDurationHours(phoenix, 2);
                 float maxDuration = TrainingFacilityRework.GetEffectiveDurationHours(phoenix, maxLevel);
                 int freeSlots = providedSlots - usedSlots;
@@ -443,7 +443,7 @@ namespace TFTV.TFTVBaseRework
             if (level == null || person == null || spec == null) return;
 
             GeoPhoenixFaction faction = level.PhoenixFaction;
-            int maxLevel = TrainingFacilityRework.GetMaxTargetLevel(faction);
+            int maxLevel = TrainingFacilityRework.GetMaxTargetLevel(faction, person.Character);
             bool isDismissed = PersonnelRestrictions.IsDismissedOperative(person.Character);
 
             // Dismissed operatives start from their current level; civilians start from level 1.
