@@ -33,25 +33,23 @@ namespace TFTV.TFTVIncidents
 
         private static readonly PortraitRenderProfile Profile = new PortraitRenderProfile
         {
-            Resolution = 1024,
             CameraFoV = 40f,
             NoseDistance = 0.80f,
             JawDistance = 0.92f,
             HeadDistance = 0.88f,
-            AmbientIntensity = 0.12f,
-            ReflectionIntensity = 0f,
-            DirectionalLightMultiplier = 0.30f,
-            PointLightMultiplier = 0.48f,
-            SpotLightMultiplier = 0.42f,
-            OtherLightMultiplier = 0.42f,
             MinCameraNearClip = 0.02f,
             MaxCameraFarClip = 25f,
             ApplyPostProcess = false,
             PostGamma = 0.95f,
             PostContrast = 1.05f,
-            PostSharpen = 0.08f,
-            LightNameTokens = new[] { "soft", "portrait", "fill" }
+            PostSharpen = 0.08f
         };
+
+        // Render target is sized to the leader pic slot's on-screen size (clamped),
+        // so the portrait matches the display resolution instead of a fixed 1024px.
+        private const int MinPortraitResolution = 128;
+        private const int MaxPortraitResolution = 1024;
+        private const int FallbackPortraitResolution = 512;
 
         /// <summary>
         /// Shows the portrait of the given operative in the leader pic slot,
@@ -139,11 +137,12 @@ namespace TFTV.TFTVIncidents
         private static IEnumerator RenderAndApply(UIModuleSiteEncounters module, GeoCharacter character)
         {
             int characterId = character.Id;
+            Vector2Int resolution = ResolvePortraitResolution(module);
             InProgress.Add(characterId);
             try
             {
                 Sprite portrait = null;
-                yield return RenderPortrait(character, s => portrait = s);
+                yield return RenderPortrait(character, resolution, s => portrait = s);
 
                 if (portrait == null)
                 {
@@ -175,7 +174,54 @@ namespace TFTV.TFTVIncidents
             }
         }
 
-        private static IEnumerator RenderPortrait(GeoCharacter character, Action<Sprite> onDone)
+        /// <summary>
+        /// On-screen pixel size of the leader pic slot, so the render matches the display resolution.
+        /// </summary>
+        private static Vector2Int ResolvePortraitResolution(UIModuleSiteEncounters module)
+        {
+            try
+            {
+                RectTransform rect = module?.EncounterLeaderImage?.rectTransform;
+                if (rect != null)
+                {
+                    Vector3[] corners = new Vector3[4];
+                    rect.GetWorldCorners(corners);
+
+                    float width;
+                    float height;
+
+                    Canvas canvas = module.EncounterLeaderImage.canvas;
+                    if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay && canvas.worldCamera != null)
+                    {
+                        Vector2 min = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, corners[0]);
+                        Vector2 max = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, corners[2]);
+                        width = Mathf.Abs(max.x - min.x);
+                        height = Mathf.Abs(max.y - min.y);
+                    }
+                    else
+                    {
+                        // Screen-space overlay: world corners are already screen pixels.
+                        width = Mathf.Abs(corners[2].x - corners[0].x);
+                        height = Mathf.Abs(corners[2].y - corners[0].y);
+                    }
+
+                    if (width > 1f && height > 1f)
+                    {
+                        return new Vector2Int(
+                            Mathf.Clamp(Mathf.RoundToInt(width), MinPortraitResolution, MaxPortraitResolution),
+                            Mathf.Clamp(Mathf.RoundToInt(height), MinPortraitResolution, MaxPortraitResolution));
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+            return new Vector2Int(FallbackPortraitResolution, FallbackPortraitResolution);
+        }
+
+        private static IEnumerator RenderPortrait(GeoCharacter character, Vector2Int resolution, Action<Sprite> onDone)
         {
             GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
             if (level?.SceneReferences == null)
@@ -245,15 +291,15 @@ namespace TFTV.TFTVIncidents
                 yield return null;
                 yield return null;
 
-                Texture2D rendered = RenderTextureWithPortraitLights(level, tempBuilder.gameObject);
+                Texture2D rendered = RenderTextureWithPortraitLights(level, tempBuilder.gameObject, resolution);
                 if (rendered == null)
                 {
                     onDone?.Invoke(null);
                     yield break;
                 }
 
-                // The render already carries mipmaps; trilinear + anisotropic filtering removes
-                // the aliasing when the 1024px render is displayed at leader-pic size.
+                // The render already carries mipmaps; trilinear + anisotropic filtering keeps it
+                // clean when the UI displays it slightly scaled.
                 rendered.filterMode = FilterMode.Trilinear;
                 rendered.anisoLevel = 4;
 
@@ -277,13 +323,12 @@ namespace TFTV.TFTVIncidents
             }
         }
 
-        private static Texture2D RenderTextureWithPortraitLights(GeoLevelController level, GameObject characterObject)
+        private static Texture2D RenderTextureWithPortraitLights(GeoLevelController level, GameObject characterObject, Vector2Int resolution)
         {
             LightsPicker lightsPicker = characterObject.GetComponentInChildren<LightsPicker>(true);
             Camera usedCamera = ResolvePortraitCamera(level, lightsPicker, characterObject);
 
             HashSet<Light> worldLightsToRestore = new HashSet<Light>();
-            List<KeyValuePair<Light, float>> portraitLightIntensities = new List<KeyValuePair<Light, float>>();
 
             float ambientBefore = RenderSettings.ambientIntensity;
             float reflectionBefore = RenderSettings.reflectionIntensity;
@@ -292,8 +337,11 @@ namespace TFTV.TFTVIncidents
 
             try
             {
-                RenderSettings.ambientIntensity = Profile.AmbientIntensity;
-                RenderSettings.reflectionIntensity = Profile.ReflectionIntensity;
+                // Mirror the vanilla tactical squad-portrait setup (SquadMemberScrollerController.FinishPortraitCrt):
+                // ambient and reflections fully off, all world lights disabled, and the LightsPicker
+                // enabling one of its portrait rigs at full intensity.
+                RenderSettings.ambientIntensity = 0f;
+                RenderSettings.reflectionIntensity = 0f;
                 ApplyCameraOverrides(usedCamera);
 
                 foreach (Light light in UnityEngine.Object.FindObjectsOfType<Light>())
@@ -305,24 +353,9 @@ namespace TFTV.TFTVIncidents
                     }
                 }
 
-                GameObject selectedRig = SelectLightRig(lightsPicker);
-                if (selectedRig != null)
-                {
-                    selectedRig.SetActive(true);
-                    foreach (Light light in selectedRig.GetComponentsInChildren<Light>(true))
-                    {
-                        if (light == null)
-                        {
-                            continue;
-                        }
+                lightsPicker?.PickLights();
 
-                        light.gameObject.SetActive(true);
-                        portraitLightIntensities.Add(new KeyValuePair<Light, float>(light, light.intensity));
-                        light.intensity *= GetLightMultiplier(light);
-                    }
-                }
-
-                return RenderWithAnchorFallback(characterObject, usedCamera);
+                return RenderWithAnchorFallback(characterObject, usedCamera, resolution);
             }
             finally
             {
@@ -336,21 +369,13 @@ namespace TFTV.TFTVIncidents
                     }
                 }
 
-                foreach (var kv in portraitLightIntensities)
-                {
-                    if (kv.Key != null)
-                    {
-                        kv.Key.intensity = kv.Value;
-                    }
-                }
-
                 lightsPicker?.DisableAllControlledLights();
                 RenderSettings.ambientIntensity = ambientBefore;
                 RenderSettings.reflectionIntensity = reflectionBefore;
             }
         }
 
-        private static Texture2D RenderWithAnchorFallback(GameObject characterObject, Camera usedCamera)
+        private static Texture2D RenderWithAnchorFallback(GameObject characterObject, Camera usedCamera, Vector2Int resolution)
         {
             string[] anchors = { "Nose", "Jaw", "Head" };
             float[] distances = { Profile.NoseDistance, Profile.JawDistance, Profile.HeadDistance };
@@ -359,7 +384,7 @@ namespace TFTV.TFTVIncidents
             {
                 var p = new SquadPortraitsDef.RenderPortraitParams
                 {
-                    RenderedPortraitsResolution = new Vector2Int(Profile.Resolution, Profile.Resolution),
+                    RenderedPortraitsResolution = resolution,
                     TargetBoneName = anchors[i],
                     CameraFoV = Profile.CameraFoV,
                     CameraDistance = distances[i],
@@ -377,7 +402,7 @@ namespace TFTV.TFTVIncidents
             // Last chance: explicit head render. SoldierPortraitUtil will fallback to root if bone is missing.
             var fallback = new SquadPortraitsDef.RenderPortraitParams
             {
-                RenderedPortraitsResolution = new Vector2Int(Profile.Resolution, Profile.Resolution),
+                RenderedPortraitsResolution = resolution,
                 TargetBoneName = "Head",
                 CameraFoV = Profile.CameraFoV,
                 CameraDistance = Profile.HeadDistance,
@@ -424,26 +449,6 @@ namespace TFTV.TFTVIncidents
             return null;
         }
 
-        private static float GetLightMultiplier(Light light)
-        {
-            if (light == null)
-            {
-                return Profile.OtherLightMultiplier;
-            }
-
-            switch (light.type)
-            {
-                case LightType.Directional:
-                    return Profile.DirectionalLightMultiplier;
-                case LightType.Point:
-                    return Profile.PointLightMultiplier;
-                case LightType.Spot:
-                    return Profile.SpotLightMultiplier;
-                default:
-                    return Profile.OtherLightMultiplier;
-            }
-        }
-
         private static CameraState CaptureCameraState(Camera camera)
         {
             if (camera == null)
@@ -467,10 +472,10 @@ namespace TFTV.TFTVIncidents
                 return;
             }
 
-            camera.fieldOfView = Profile.CameraFoV;
+            // Only clamp the clip planes for the close-up; FoV comes from the render params
+            // and HDR is left as-is, matching the vanilla portrait path.
             camera.nearClipPlane = Mathf.Min(camera.nearClipPlane, Profile.MinCameraNearClip);
             camera.farClipPlane = Mathf.Min(camera.farClipPlane, Profile.MaxCameraFarClip);
-            camera.allowHDR = false;
         }
 
         private static void RestoreCameraState(Camera camera, CameraState state)
@@ -526,26 +531,6 @@ namespace TFTV.TFTVIncidents
 
             output.Apply(false, false);
             return output;
-        }
-
-        private static GameObject SelectLightRig(LightsPicker lightsPicker)
-        {
-            if (lightsPicker?.LightSet == null || lightsPicker.LightSet.Count == 0)
-            {
-                return null;
-            }
-
-            IEnumerable<GameObject> candidates = lightsPicker.LightSet.Where(go => go != null);
-            foreach (string token in Profile.LightNameTokens)
-            {
-                GameObject match = candidates.FirstOrDefault(go => go.name.IndexOf(token, StringComparison.OrdinalIgnoreCase) >= 0);
-                if (match != null)
-                {
-                    return match;
-                }
-            }
-
-            return candidates.FirstOrDefault();
         }
 
         private static bool IsHelmetOrAttachment(ItemDef armorItem)
@@ -604,24 +589,16 @@ namespace TFTV.TFTVIncidents
 
         private struct PortraitRenderProfile
         {
-            public int Resolution;
             public float CameraFoV;
             public float NoseDistance;
             public float JawDistance;
             public float HeadDistance;
-            public float AmbientIntensity;
-            public float ReflectionIntensity;
-            public float DirectionalLightMultiplier;
-            public float PointLightMultiplier;
-            public float SpotLightMultiplier;
-            public float OtherLightMultiplier;
             public float MinCameraNearClip;
             public float MaxCameraFarClip;
             public bool ApplyPostProcess;
             public float PostGamma;
             public float PostContrast;
             public float PostSharpen;
-            public string[] LightNameTokens;
         }
 
         private struct CameraState
