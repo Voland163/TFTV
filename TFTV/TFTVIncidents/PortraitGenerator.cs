@@ -35,15 +35,15 @@ namespace TFTV.TFTVIncidents
         {
             Resolution = 1024,
             CameraFoV = 40f,
-            NoseDistance = 0.62f,
-            JawDistance = 0.72f,
-            HeadDistance = 0.68f,
-            AmbientIntensity = 0.05f,
+            NoseDistance = 0.80f,
+            JawDistance = 0.92f,
+            HeadDistance = 0.88f,
+            AmbientIntensity = 0.12f,
             ReflectionIntensity = 0f,
-            DirectionalLightMultiplier = 0.24f,
-            PointLightMultiplier = 0.40f,
-            SpotLightMultiplier = 0.34f,
-            OtherLightMultiplier = 0.34f,
+            DirectionalLightMultiplier = 0.30f,
+            PointLightMultiplier = 0.48f,
+            SpotLightMultiplier = 0.42f,
+            OtherLightMultiplier = 0.42f,
             MinCameraNearClip = 0.02f,
             MaxCameraFarClip = 25f,
             ApplyPostProcess = false,
@@ -251,6 +251,11 @@ namespace TFTV.TFTVIncidents
                     onDone?.Invoke(null);
                     yield break;
                 }
+
+                // The render already carries mipmaps; trilinear + anisotropic filtering removes
+                // the aliasing when the 1024px render is displayed at leader-pic size.
+                rendered.filterMode = FilterMode.Trilinear;
+                rendered.anisoLevel = 4;
 
                 if (Profile.ApplyPostProcess)
                 {

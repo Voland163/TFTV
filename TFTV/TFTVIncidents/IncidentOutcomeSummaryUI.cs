@@ -24,6 +24,81 @@ namespace TFTV.TFTVIncidents
         private static readonly Dictionary<string, SummaryData> SummaryByExactKey = new Dictionary<string, SummaryData>(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, SummaryData> SummaryBySiteKey = new Dictionary<string, SummaryData>(StringComparer.OrdinalIgnoreCase);
 
+        // Resolving leader per completion event, so the outcome screen can show their portrait
+        // (kept for success and fail outcomes alike).
+        private static readonly Dictionary<string, int> LeaderByExactKey = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<string, int> LeaderBySiteKey = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+        internal static void RecordIncidentLeader(string completionEventId, int siteId, int vehicleId, int leaderId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(completionEventId) || leaderId <= 0)
+                {
+                    return;
+                }
+
+                LeaderByExactKey[BuildExactKey(completionEventId, siteId, vehicleId)] = leaderId;
+                LeaderBySiteKey[BuildSiteKey(completionEventId, siteId)] = leaderId;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        internal static void ClearLeaderPortraitRecords()
+        {
+            LeaderByExactKey.Clear();
+            LeaderBySiteKey.Clear();
+        }
+
+        private static bool IsIncidentOutcomeEvent(string eventId)
+        {
+            return !string.IsNullOrEmpty(eventId)
+                && eventId.StartsWith("TFTV_INCIDENT_", StringComparison.OrdinalIgnoreCase)
+                && eventId.IndexOf("_OUTCOME_", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        private static void TryShowLeaderPortrait(UIModuleSiteEncounters module, GeoscapeEvent geoEvent)
+        {
+            try
+            {
+                if (module == null || geoEvent?.Context == null)
+                {
+                    return;
+                }
+
+                string eventId = geoEvent.EventID ?? string.Empty;
+                if (!IsIncidentOutcomeEvent(eventId))
+                {
+                    return;
+                }
+
+                int siteId = geoEvent.Context.Site?.SiteId ?? -1;
+                int vehicleId = geoEvent.Context.Vehicle?.VehicleID ?? -1;
+
+                if (!LeaderByExactKey.TryGetValue(BuildExactKey(eventId, siteId, vehicleId), out int leaderId)
+                    && !LeaderBySiteKey.TryGetValue(BuildSiteKey(eventId, siteId), out leaderId))
+                {
+                    return;
+                }
+
+                GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                GeoCharacter leader = LeaderSelection.ResolveLeader(level, geoEvent.Context.Vehicle, leaderId);
+                if (leader == null)
+                {
+                    return;
+                }
+
+                PortraitGenerator.RequestLeaderPortrait(module, leader);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
         private sealed class SummaryData
         {
             public string EventId;
@@ -123,7 +198,14 @@ namespace TFTV.TFTVIncidents
                         ClearInjectedSummaryUI(parent);
                     }
 
-                    if (__instance == null || geoEvent?.Context == null || pagingEvent || !isIncidentSuccess)
+                    if (__instance == null || geoEvent?.Context == null || pagingEvent)
+                    {
+                        return;
+                    }
+
+                    TryShowLeaderPortrait(__instance, geoEvent);
+
+                    if (!isIncidentSuccess)
                     {
                         return;
                     }
@@ -153,7 +235,14 @@ namespace TFTV.TFTVIncidents
                         ClearInjectedSummaryUI(parent);
                     }
 
-                    if (__instance == null || geoEvent?.Context == null || !isIncidentSuccess)
+                    if (__instance == null || geoEvent?.Context == null)
+                    {
+                        return;
+                    }
+
+                    TryShowLeaderPortrait(__instance, geoEvent);
+
+                    if (!isIncidentSuccess)
                     {
                         return;
                     }
