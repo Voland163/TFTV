@@ -257,10 +257,12 @@ namespace TFTV.TFTVIncidents
                 // Mirror UIModuleActorCycle.DisplaySoldier: copy the character's tags (they carry the
                 // customization — armor colors, patterns, face, hair) and pass ONLY armour items to the
                 // rebuild, letting the addons manager derive the customized body parts from the tags.
+                // Autorefresh stays OFF across the rebuild and is re-enabled once it completes: turning
+                // it back on replays the deferred tag change, which is what fills MergeWithAddonsTags and
+                // runs Item.RefreshTags() (the customization pass) on the freshly built addons.
                 tempBuilder.AddonsManager.SetAutorefreshOnTagsChanged(false);
                 tempBuilder.AddonsManager.GameTags.Clear();
                 tempBuilder.AddonsManager.GameTags.AddRange(displayData.GameTags);
-                tempBuilder.AddonsManager.SetAutorefreshOnTagsChanged(true);
 
                 List<ItemDef> armourItems = displayData.ArmourItems
                     .Where(i => i != null && !IsHelmetOrAttachment(i))
@@ -292,16 +294,21 @@ namespace TFTV.TFTVIncidents
                     yield break;
                 }
 
+                // Applies the customization (armor colors/patterns, skin, hair and eye colors) to the
+                // addons that were just built — see the comment above the tag copy.
+                tempBuilder.AddonsManager.SetAutorefreshOnTagsChanged(true);
+
                 CommonCharacterUtils.ResetCharacterAnimation(tempBuilder);
-                // Let skinned meshes settle to avoid one-frame head/helmet ghosting artifacts.
+                // Let skinned meshes settle (and the customization materials apply) to avoid
+                // one-frame ghosting and untextured artifacts.
                 yield return null;
                 yield return null;
 
                 // The rig carries its own character light (what lights the model on the personnel
                 // screen) — make sure it is on at the proper intensity for the render.
-                bool hasCharacterLight = TryEnableCharacterLight(tempBuilder, displayData);
+                TryEnableCharacterLight(tempBuilder, displayData);
 
-                Texture2D rendered = RenderTextureWithPortraitLights(level, tempBuilder.gameObject, resolution, hasCharacterLight);
+                Texture2D rendered = RenderTextureWithPortraitLights(level, tempBuilder.gameObject, resolution);
                 if (rendered == null)
                 {
                     onDone?.Invoke(null);
@@ -370,7 +377,7 @@ namespace TFTV.TFTVIncidents
             }
         }
 
-        private static Texture2D RenderTextureWithPortraitLights(GeoLevelController level, GameObject characterObject, Vector2Int resolution, bool hasCharacterLight)
+        private static Texture2D RenderTextureWithPortraitLights(GeoLevelController level, GameObject characterObject, Vector2Int resolution)
         {
             LightsPicker lightsPicker = characterObject.GetComponentInChildren<LightsPicker>(true);
             Camera usedCamera = ResolvePortraitCamera(level, lightsPicker, characterObject);
@@ -391,8 +398,8 @@ namespace TFTV.TFTVIncidents
                 // ambient (forced to Flat so this works regardless of the scene's ambient source) and
                 // reflections off, all world lights disabled, and a dedicated portrait rig at full intensity.
                 RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-                RenderSettings.ambientLight = new Color(0.10f, 0.10f, 0.11f);
-                RenderSettings.ambientIntensity = 0f;
+                RenderSettings.ambientLight = new Color(0.26f, 0.27f, 0.30f);
+                RenderSettings.ambientIntensity = 1f;
                 RenderSettings.reflectionIntensity = 0f;
                 ApplyCameraOverrides(usedCamera);
 
@@ -421,10 +428,11 @@ namespace TFTV.TFTVIncidents
                 else
                 {
                     // The geoscape capture-environment builder carries no LightsPicker (its lighting
-                    // lives in the environment scene, out of reach at the render origin), so complement
-                    // the rig's character light with a soft directional rig — or replace it entirely
-                    // when the rig has no character light either.
-                    syntheticRig = CreatePortraitLightRig(characterObject.transform, hasCharacterLight);
+                    // lives in the environment scene, out of reach at the render origin), so light the
+                    // character with a synthetic three-point rig. The rig's own character light is far
+                    // too dim to carry the portrait on its own (CharacterLightsIntensity defaults to
+                    // 0.15), so it only ever supplements this rig.
+                    syntheticRig = CreatePortraitLightRig(characterObject.transform);
                 }
 
                 return RenderWithAnchorFallback(characterObject, usedCamera, resolution);
@@ -455,28 +463,23 @@ namespace TFTV.TFTVIncidents
         }
 
         /// <summary>
-        /// Portrait rig out of directional lights, parented to the character so the angles stay
-        /// relative to where the face points. Directional lights are position-independent, so they
-        /// work at the far-away render origin where scene point/spot lights cannot reach.
-        /// When the rig's own character light is active it acts as the key, and this only adds a
-        /// soft fill and rim; otherwise a full three-point setup is created. Angles are kept close
-        /// to horizontal so the top of the head does not blow out.
+        /// Three-point portrait rig out of directional lights, parented to the character so the angles
+        /// stay relative to where the face points. Directional lights are position-independent, so they
+        /// work at the far-away render origin where scene point/spot lights cannot reach. Angles are
+        /// kept close to horizontal so the top of the head does not blow out.
         /// </summary>
-        private static GameObject CreatePortraitLightRig(Transform character, bool hasCharacterLight)
+        private static GameObject CreatePortraitLightRig(Transform character)
         {
             GameObject rig = new GameObject("[TFTV]PortraitLightRig");
             rig.transform.SetParent(character, false);
 
-            if (!hasCharacterLight)
-            {
-                // Key: warm, from the character's front-left, slightly above eye level.
-                AddRigLight(rig.transform, "Key", new Vector3(15f, 205f, 0f), new Color(1f, 0.96f, 0.90f), 1.10f);
-            }
-
+            // Key: warm, from the character's front-left, slightly above eye level.
+            AddRigLight(rig.transform, "Key", new Vector3(15f, 205f, 0f), new Color(1f, 0.96f, 0.90f), 1.05f);
             // Fill: cool and soft, from the front-right, at eye level — also lifts the armor.
-            AddRigLight(rig.transform, "Fill", new Vector3(5f, 150f, 0f), new Color(0.78f, 0.82f, 0.92f), hasCharacterLight ? 0.35f : 0.45f);
+            AddRigLight(rig.transform, "Fill", new Vector3(5f, 150f, 0f), new Color(0.78f, 0.82f, 0.92f), 0.55f);
             // Rim: from behind at eye level, separates hair/shoulders from the dark background.
-            AddRigLight(rig.transform, "Rim", new Vector3(0f, 15f, 0f), new Color(0.90f, 0.93f, 1f), 0.25f);
+            // Kept low so it does not burn bright edges onto the face.
+            AddRigLight(rig.transform, "Rim", new Vector3(0f, 20f, 0f), new Color(0.90f, 0.93f, 1f), 0.20f);
 
             return rig;
         }
