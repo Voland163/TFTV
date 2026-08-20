@@ -670,7 +670,7 @@ namespace TFTV.TFTVIncidents
 
             HashSet<Light> worldLightsToRestore = new HashSet<Light>();
             GameObject syntheticRig = null;
-            List<GameObject> hiddenVisuals = null;
+            List<Renderer> hiddenVisuals = null;
 
             float ambientIntensityBefore = RenderSettings.ambientIntensity;
             Color ambientLightBefore = RenderSettings.ambientLight;
@@ -693,7 +693,8 @@ namespace TFTV.TFTVIncidents
                 // When RenderingEnvironment creates the camera internally (the usual case here) it has
                 // no culling restrictions, so anything else standing at the render origin lands in the
                 // portrait - that is the personnel screen model and backdrop. Hide those meanwhile.
-                hiddenVisuals = HideOtherSceneVisuals(level, characterObject, usedCamera);
+                hiddenVisuals = new List<Renderer>();
+                List<Renderer> hidden = hiddenVisuals;
 
                 if (allowIsolation && usedCamera != null && TryIsolateOnFreeLayer(characterObject, out int isolationLayer))
                 {
@@ -741,11 +742,11 @@ namespace TFTV.TFTVIncidents
 
                 if (hiddenVisuals != null)
                 {
-                    foreach (GameObject hidden in hiddenVisuals)
+                    foreach (Renderer restored in hiddenVisuals)
                     {
-                        if (hidden != null)
+                        if (restored != null)
                         {
-                            hidden.SetActive(true);
+                            restored.enabled = true;
                         }
                     }
                 }
@@ -931,70 +932,80 @@ namespace TFTV.TFTVIncidents
         }
 
         /// <summary>
-        /// Temporarily deactivates other character models and the capture environment so they cannot
-        /// appear behind the portrait. Returns what was hidden so it can be switched back on.
+        /// Finds the first palette that actually knows this tag. Vanilla picks a single palette up
+        /// front and takes its fallback when the tag is absent, which is what leaves faction-coloured
+        /// armor flat grey.
         /// </summary>
-        private static List<GameObject> HideOtherSceneVisuals(GeoLevelController level, GameObject characterObject, Camera usedCamera)
+        private static bool TryResolveCustomizationColor(HumanCustomizationDef customization, CustomizationColorTagDef colorTag, out Color color)
         {
-            List<GameObject> hidden = new List<GameObject>();
-
-            try
+            CustomizationColorPaletteDef[] palettes =
             {
-                foreach (AddonsCharacterBuilder builder in UnityEngine.Object.FindObjectsOfType<AddonsCharacterBuilder>())
-                {
-                    GameObject candidate = builder?.gameObject;
-                    if (candidate == null
-                        || candidate == characterObject
-                        || candidate.transform.IsChildOf(characterObject.transform)
-                        || !candidate.activeSelf)
-                    {
-                        continue;
-                    }
+                customization.CustomizationPaletteDef,
+                customization.NPCPaletteDef,
+                customization.FancyVehicleCustomizationPaletteDef
+            };
 
-                    candidate.SetActive(false);
-                    hidden.Add(candidate);
+            foreach (CustomizationColorPaletteDef palette in palettes)
+            {
+                if (palette == null)
+                {
+                    continue;
                 }
 
-                // The capture environment and the squad bay both hold character models and scenery.
-                // The squad bay matters most here: it is where the personnel screen builds its
-                // soldiers, and it is the builder we clone from when the capture environment is
-                // absent, so its contents are exactly what bleeds into the portrait.
-                TryHideSceneRoot(level?.SceneReferences?.UICaptureEnvironment?.gameObject, characterObject, usedCamera, hidden);
-                TryHideSceneRoot(level?.SceneReferences?.SquadBay?.gameObject, characterObject, usedCamera, hidden);
-
-                if (hidden.Count > 0)
+                Color candidate = palette.MatchColor(colorTag);
+                if (candidate != palette.FallbackColor)
                 {
-                    TFTVLogger.Always($"{LogPrefix} Hid {hidden.Count} scene object(s) for the portrait render.");
+                    color = candidate;
+                    return true;
                 }
             }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
 
-            return hidden;
+            color = Color.white;
+            return false;
         }
 
-        private static void TryHideSceneRoot(GameObject root, GameObject characterObject, Camera usedCamera, List<GameObject> hidden)
+        /// <summary>
+        /// Writes each renderer's own material color back into its property block for the given
+        /// parameters, undoing a fallback tint that was applied for a tag no palette matched.
+        /// </summary>
+        private static void RestoreMaterialColors(Item item, List<CustomizationColorTagDef> colorTags)
         {
-            if (root == null || !root.activeSelf)
+            if (colorTags == null || colorTags.Count == 0)
             {
                 return;
             }
 
-            // Never hide something the render itself depends on.
-            if (characterObject.transform.IsChildOf(root.transform))
+            foreach (Renderer renderer in item.GetHighlightableRenderers())
             {
-                return;
-            }
+                if (renderer == null || renderer is ParticleSystemRenderer)
+                {
+                    continue;
+                }
 
-            if (usedCamera != null && usedCamera.transform.IsChildOf(root.transform))
-            {
-                return;
-            }
+                Material material = renderer.sharedMaterial;
+                if (material == null)
+                {
+                    continue;
+                }
 
-            root.SetActive(false);
-            hidden.Add(root);
+                MaterialPropertyBlock block = new MaterialPropertyBlock();
+                renderer.GetPropertyBlock(block);
+
+                bool changed = false;
+                foreach (CustomizationColorTagDef colorTag in colorTags)
+                {
+                    if (!string.IsNullOrEmpty(colorTag.ShaderParamName) && material.HasProperty(colorTag.ShaderParamName))
+                    {
+                        block.SetColor(colorTag.ShaderParamName, material.GetColor(colorTag.ShaderParamName));
+                        changed = true;
+                    }
+                }
+
+                if (changed)
+                {
+                    renderer.SetPropertyBlock(block);
+                }
+            }
         }
 
         /// <summary>
@@ -1033,29 +1044,26 @@ namespace TFTV.TFTVIncidents
                     }
 
                     controller.StartCustomization();
+                    List<CustomizationColorTagDef> unmatched = new List<CustomizationColorTagDef>();
 
                     foreach (GameTagDef tag in mergeable)
                     {
                         CustomizationColorTagDef colorTag = tag as CustomizationColorTagDef;
                         if (colorTag != null)
                         {
-                            CustomizationColorPaletteDef palette = customization.CustomizationPaletteDef.ContainsColor(colorTag)
-                                ? customization.CustomizationPaletteDef
-                                : (anyFancy
-                                    ? customization.FancyVehicleCustomizationPaletteDef
-                                    : customization.NPCPaletteDef);
-
-                            Color color = palette.MatchColor(colorTag);
-
-                            // A fallback result means this palette has no entry for the tag; writing it
-                            // would paint the item flat grey rather than customize it.
-                            if (color == palette.FallbackColor)
+                            if (TryResolveCustomizationColor(customization, colorTag, out Color color))
                             {
+                                controller.CustomizeColor(colorTag.ShaderParamName, color);
+                            }
+                            else
+                            {
+                                // No palette knows this tag. Item.RefreshTags has already written the
+                                // palette fallback (flat grey) for it, so put the material's own color
+                                // back rather than leaving the armor washed out.
+                                unmatched.Add(colorTag);
                                 skipped++;
-                                continue;
                             }
 
-                            controller.CustomizeColor(colorTag.ShaderParamName, color);
                             continue;
                         }
 
@@ -1074,6 +1082,7 @@ namespace TFTV.TFTVIncidents
                     }
 
                     controller.ApplyCustomization();
+                    RestoreMaterialColors(item, unmatched);
                     customized++;
                 }
 
