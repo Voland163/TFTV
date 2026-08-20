@@ -448,11 +448,57 @@ namespace TFTV.TFTVIncidents
                     refreshed++;
                 }
 
+                // Item.RefreshTags() skips color customization entirely when the merged tags contain
+                // the conditional-customization tag, unless the item opts in via AlwaysCustomizeColor.
+                bool conditional = mergeable.Any(t => t is ConditionalCustomizationTagDef);
+
                 TFTVLogger.Always($"{LogPrefix} Customization for {character.DisplayName}: " +
                     $"characterTags={character.GameTags.Count} mergeable={mergeable.Count} " +
                     $"colorTags={mergeable.Count(t => t is CustomizationColorTagDef)} " +
                     $"patternTags={mergeable.Count(t => t is CustomizationPatternTagDef)} " +
-                    $"addonsRefreshed={refreshed}");
+                    $"conditionalTag={conditional} addonsRefreshed={refreshed}");
+
+                LogAddonCustomizationState(manager);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// Diagnostic: reports, per built item, whether it is in a state where the customization pass
+        /// can tint it (visual root present, highlightable renderers found, AlwaysCustomizeColor).
+        /// </summary>
+        private static void LogAddonCustomizationState(AddonsManager manager)
+        {
+            try
+            {
+                int logged = 0;
+                foreach (Addon addon in manager.RootAddon)
+                {
+                    Item item = addon as Item;
+                    if (item == null || logged >= 8)
+                    {
+                        continue;
+                    }
+
+                    int rendererCount = 0;
+                    try
+                    {
+                        IEnumerable<Renderer> renderers = item.GetHighlightableRenderers();
+                        rendererCount = renderers == null ? -1 : renderers.Count();
+                    }
+                    catch
+                    {
+                        rendererCount = -2;
+                    }
+
+                    TFTVLogger.Always($"{LogPrefix}   item={item.ItemDef?.name ?? "null"} " +
+                        $"visualRoot={(item.VisualRoot != null)} renderers={rendererCount} " +
+                        $"alwaysCustomize={item.ItemDef?.AlwaysCustomizeColor}");
+                    logged++;
+                }
             }
             catch (Exception e)
             {
@@ -570,7 +616,14 @@ namespace TFTV.TFTVIncidents
         private static Texture2D RenderTextureWithPortraitLights(GeoLevelController level, GameObject characterObject, Vector2Int resolution)
         {
             LightsPicker lightsPicker = characterObject.GetComponentInChildren<LightsPicker>(true);
-            Camera usedCamera = ResolvePortraitCamera(level, lightsPicker, characterObject);
+
+            // Prefer a private camera that can only see this character; fall back to a shared one.
+            Camera usedCamera = CreateIsolatedPortraitCamera(characterObject, out GameObject ownedCameraObject);
+            bool isolated = usedCamera != null;
+            if (!isolated)
+            {
+                usedCamera = ResolvePortraitCamera(level, lightsPicker, characterObject);
+            }
 
             HashSet<Light> worldLightsToRestore = new HashSet<Light>();
             GameObject syntheticRig = null;
@@ -629,7 +682,15 @@ namespace TFTV.TFTVIncidents
             }
             finally
             {
-                RestoreCameraState(usedCamera, cameraState);
+                if (!isolated)
+                {
+                    RestoreCameraState(usedCamera, cameraState);
+                }
+
+                if (ownedCameraObject != null)
+                {
+                    UnityEngine.Object.Destroy(ownedCameraObject);
+                }
 
                 if (syntheticRig != null)
                 {
@@ -735,6 +796,73 @@ namespace TFTV.TFTVIncidents
 
             Debug.LogWarning($"{LogPrefix} UICaptureEnvironment is missing; falling back to SquadBay.CharacterBuilder.");
             return level.SceneReferences.SquadBay?.CharacterBuilder;
+        }
+
+        /// <summary>
+        /// Moves the character (and everything under it) onto an isolated layer and returns a private
+        /// camera that renders only that layer. RenderingEnvironment never restricts the culling mask,
+        /// so a shared camera captures whatever else happens to sit at the render origin — which is how
+        /// the personnel screen's model and backdrop ended up in the portrait. The clone is destroyed
+        /// after the render, so its layers do not need restoring.
+        /// </summary>
+        private static Camera CreateIsolatedPortraitCamera(GameObject characterObject, out GameObject cameraObject)
+        {
+            cameraObject = null;
+
+            int layer = ResolveIsolationLayer();
+            if (layer < 0)
+            {
+                TFTVLogger.Always($"{LogPrefix} No free layer for portrait isolation; falling back to a shared camera.");
+                return null;
+            }
+
+            SetLayerRecursively(characterObject, layer);
+
+            cameraObject = new GameObject("[TFTV]PortraitCamera");
+            Camera camera = cameraObject.AddComponent<Camera>();
+            camera.enabled = false;
+            camera.cullingMask = 1 << layer;
+            camera.clearFlags = CameraClearFlags.Depth;
+            camera.backgroundColor = new Color(0f, 0f, 0f, 0f);
+            camera.orthographic = false;
+            camera.allowHDR = false;
+            camera.allowMSAA = false;
+            camera.useOcclusionCulling = false;
+            camera.nearClipPlane = Profile.MinCameraNearClip;
+            camera.farClipPlane = Profile.MaxCameraFarClip;
+
+            return camera;
+        }
+
+        /// <summary>
+        /// Highest layer with no name assigned — unnamed layers are unused by the project, so nothing
+        /// else in the scene renders on it.
+        /// </summary>
+        private static int ResolveIsolationLayer()
+        {
+            for (int layer = 31; layer >= 8; layer--)
+            {
+                if (string.IsNullOrEmpty(LayerMask.LayerToName(layer)))
+                {
+                    return layer;
+                }
+            }
+
+            return -1;
+        }
+
+        private static void SetLayerRecursively(GameObject target, int layer)
+        {
+            if (target == null)
+            {
+                return;
+            }
+
+            target.layer = layer;
+            foreach (Transform child in target.transform)
+            {
+                SetLayerRecursively(child.gameObject, layer);
+            }
         }
 
         private static Camera ResolvePortraitCamera(GeoLevelController level, LightsPicker lightsPicker, GameObject characterObject)
