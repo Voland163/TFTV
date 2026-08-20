@@ -1,4 +1,4 @@
-using Base.Core;
+﻿using Base.Core;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.GameTags;
@@ -458,7 +458,7 @@ namespace TFTV.TFTVIncidents
                     $"patternTags={mergeable.Count(t => t is CustomizationPatternTagDef)} " +
                     $"conditionalTag={conditional} addonsRefreshed={refreshed}");
 
-                LogAddonCustomizationState(manager);
+                LogAddonCustomizationState(manager, mergeable);
             }
             catch (Exception e)
             {
@@ -470,7 +470,7 @@ namespace TFTV.TFTVIncidents
         /// Diagnostic: reports, per built item, whether it is in a state where the customization pass
         /// can tint it (visual root present, highlightable renderers found, AlwaysCustomizeColor).
         /// </summary>
-        private static void LogAddonCustomizationState(AddonsManager manager)
+        private static void LogAddonCustomizationState(AddonsManager manager, List<GameTagDef> mergeable)
         {
             try
             {
@@ -494,9 +494,32 @@ namespace TFTV.TFTVIncidents
                         rendererCount = -2;
                     }
 
+                    // Read the tint back off the first renderer: an unset property reads as
+                    // (0,0,0,0), which distinguishes "customization never applied" from
+                    // "applied but looks unchanged".
+                    string tintReadback = "n/a";
+                    CustomizationColorTagDef colorTag = mergeable?.OfType<CustomizationColorTagDef>().FirstOrDefault();
+                    if (colorTag != null && rendererCount > 0)
+                    {
+                        try
+                        {
+                            Renderer first = item.GetHighlightableRenderers().FirstOrDefault();
+                            if (first != null)
+                            {
+                                MaterialPropertyBlock readback = new MaterialPropertyBlock();
+                                first.GetPropertyBlock(readback);
+                                tintReadback = $"{colorTag.ShaderParamName}={readback.GetColor(colorTag.ShaderParamName)}";
+                            }
+                        }
+                        catch (Exception readbackError)
+                        {
+                            tintReadback = "error:" + readbackError.GetType().Name;
+                        }
+                    }
+
                     TFTVLogger.Always($"{LogPrefix}   item={item.ItemDef?.name ?? "null"} " +
                         $"visualRoot={(item.VisualRoot != null)} renderers={rendererCount} " +
-                        $"alwaysCustomize={item.ItemDef?.AlwaysCustomizeColor}");
+                        $"alwaysCustomize={item.ItemDef?.AlwaysCustomizeColor} tint[{tintReadback}]");
                     logged++;
                 }
             }
@@ -816,7 +839,25 @@ namespace TFTV.TFTVIncidents
                 return null;
             }
 
+            // Culling keys off each renderer's own GameObject layer, so move those explicitly rather
+            // than trusting that every visual is a transform child of the builder.
+            Renderer[] renderers = characterObject.GetComponentsInChildren<Renderer>(true);
+            if (renderers == null || renderers.Length == 0)
+            {
+                TFTVLogger.Always($"{LogPrefix} No renderers under the builder; falling back to a shared camera.");
+                return null;
+            }
+
             SetLayerRecursively(characterObject, layer);
+            foreach (Renderer renderer in renderers)
+            {
+                if (renderer != null)
+                {
+                    renderer.gameObject.layer = layer;
+                }
+            }
+
+            TFTVLogger.Always($"{LogPrefix} Isolated {renderers.Length} renderer(s) on layer {layer} for the portrait render.");
 
             cameraObject = new GameObject("[TFTV]PortraitCamera");
             Camera camera = cameraObject.AddComponent<Camera>();
