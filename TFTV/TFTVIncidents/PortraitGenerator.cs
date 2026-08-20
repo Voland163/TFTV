@@ -1,6 +1,7 @@
 using Base.Core;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Addons;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Utils;
@@ -295,6 +296,12 @@ namespace TFTV.TFTVIncidents
             }
 
             AddonsCharacterBuilder tempBuilder = UnityEngine.Object.Instantiate(sourceBuilder);
+
+            // Park the clone far away from the capture environment while it builds. Instantiate puts
+            // it exactly where the source builder stands — the spot the personnel screen renders — so
+            // leaving it there lets it show up in that view (vanilla's portrait builder does the same).
+            tempBuilder.transform.position = new Vector3(1000f, 1000f, 1000f);
+            tempBuilder.ProcessRigidbodiesAndJoints = false;
             tempBuilder.gameObject.SetActive(true);
 
             bool rebuildDone = false;
@@ -359,7 +366,7 @@ namespace TFTV.TFTVIncidents
                 // that were just built. Re-enabling autorefresh above only replays the deferred tag
                 // change when the tag set actually differs from what the cloned builder already had, so
                 // do the work of AddonsManager.OnGameTagsChanged explicitly instead of relying on it.
-                ApplyCustomizationTags(tempBuilder);
+                ApplyCustomizationTags(tempBuilder, character);
                 ApplyFaceCorruption(tempBuilder, character, level);
 
                 CommonCharacterUtils.ResetCharacterAnimation(tempBuilder);
@@ -410,23 +417,42 @@ namespace TFTV.TFTVIncidents
         /// MergeWithAddonsTags to tint materials, so without this the model renders with default
         /// (untinted) materials: no armor colors or patterns, and pale skin/hair/eyes.
         /// </summary>
-        private static void ApplyCustomizationTags(AddonsCharacterBuilder builder)
+        private static void ApplyCustomizationTags(AddonsCharacterBuilder builder, GeoCharacter character)
         {
             try
             {
                 AddonsManager manager = builder?.AddonsManager;
-                if (manager?.RootAddon == null)
+                if (manager?.RootAddon == null || character == null)
                 {
                     return;
                 }
 
-                manager.MergeWithAddonsTags.ReplaceRange(manager.GameTags.Where(
-                    tag => tag != null && AddonMergeGameTagsWithManagerAttribute.ShouldAddonMergeTagsWithAddonManager(tag.GetType())));
+                // Source the tags from the character rather than from manager.GameTags: the rebuild
+                // manipulates the manager's tag list, so by this point it may no longer carry the
+                // identity's customization tags.
+                List<GameTagDef> mergeable = character.GameTags
+                    .Where(tag => tag != null && AddonMergeGameTagsWithManagerAttribute.ShouldAddonMergeTagsWithAddonManager(tag.GetType()))
+                    .ToList();
 
+                manager.MergeWithAddonsTags.ReplaceRange(mergeable);
+
+                int refreshed = 0;
                 foreach (Addon addon in manager.RootAddon)
                 {
-                    addon?.RefreshTags();
+                    if (addon == null)
+                    {
+                        continue;
+                    }
+
+                    addon.RefreshTags();
+                    refreshed++;
                 }
+
+                TFTVLogger.Always($"{LogPrefix} Customization for {character.DisplayName}: " +
+                    $"characterTags={character.GameTags.Count} mergeable={mergeable.Count} " +
+                    $"colorTags={mergeable.Count(t => t is CustomizationColorTagDef)} " +
+                    $"patternTags={mergeable.Count(t => t is CustomizationPatternTagDef)} " +
+                    $"addonsRefreshed={refreshed}");
             }
             catch (Exception e)
             {
