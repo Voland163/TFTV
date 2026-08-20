@@ -955,19 +955,12 @@ namespace TFTV.TFTVIncidents
                     hidden.Add(candidate);
                 }
 
-                GameObject captureEnvironment = level?.SceneReferences?.UICaptureEnvironment?.gameObject;
-                bool cameraLivesThere = usedCamera != null
-                    && captureEnvironment != null
-                    && usedCamera.transform.IsChildOf(captureEnvironment.transform);
-
-                if (captureEnvironment != null
-                    && captureEnvironment.activeSelf
-                    && !cameraLivesThere
-                    && !characterObject.transform.IsChildOf(captureEnvironment.transform))
-                {
-                    captureEnvironment.SetActive(false);
-                    hidden.Add(captureEnvironment);
-                }
+                // The capture environment and the squad bay both hold character models and scenery.
+                // The squad bay matters most here: it is where the personnel screen builds its
+                // soldiers, and it is the builder we clone from when the capture environment is
+                // absent, so its contents are exactly what bleeds into the portrait.
+                TryHideSceneRoot(level?.SceneReferences?.UICaptureEnvironment?.gameObject, characterObject, usedCamera, hidden);
+                TryHideSceneRoot(level?.SceneReferences?.SquadBay?.gameObject, characterObject, usedCamera, hidden);
 
                 if (hidden.Count > 0)
                 {
@@ -980,6 +973,28 @@ namespace TFTV.TFTVIncidents
             }
 
             return hidden;
+        }
+
+        private static void TryHideSceneRoot(GameObject root, GameObject characterObject, Camera usedCamera, List<GameObject> hidden)
+        {
+            if (root == null || !root.activeSelf)
+            {
+                return;
+            }
+
+            // Never hide something the render itself depends on.
+            if (characterObject.transform.IsChildOf(root.transform))
+            {
+                return;
+            }
+
+            if (usedCamera != null && usedCamera.transform.IsChildOf(root.transform))
+            {
+                return;
+            }
+
+            root.SetActive(false);
+            hidden.Add(root);
         }
 
         /// <summary>
@@ -1001,6 +1016,7 @@ namespace TFTV.TFTVIncidents
 
                 bool anyFancy = mergeable.Any(tag => tag is CustomizationFancyTagDef);
                 int customized = 0;
+                int skipped = 0;
 
                 foreach (Addon addon in manager.RootAddon)
                 {
@@ -1023,11 +1039,21 @@ namespace TFTV.TFTVIncidents
                         CustomizationColorTagDef colorTag = tag as CustomizationColorTagDef;
                         if (colorTag != null)
                         {
-                            Color color = customization.CustomizationPaletteDef.ContainsColor(colorTag)
-                                ? customization.CustomizationPaletteDef.MatchColor(colorTag)
+                            CustomizationColorPaletteDef palette = customization.CustomizationPaletteDef.ContainsColor(colorTag)
+                                ? customization.CustomizationPaletteDef
                                 : (anyFancy
-                                    ? customization.FancyVehicleCustomizationPaletteDef.MatchColor(colorTag)
-                                    : customization.NPCPaletteDef.MatchColor(colorTag));
+                                    ? customization.FancyVehicleCustomizationPaletteDef
+                                    : customization.NPCPaletteDef);
+
+                            Color color = palette.MatchColor(colorTag);
+
+                            // A fallback result means this palette has no entry for the tag; writing it
+                            // would paint the item flat grey rather than customize it.
+                            if (color == palette.FallbackColor)
+                            {
+                                skipped++;
+                                continue;
+                            }
 
                             controller.CustomizeColor(colorTag.ShaderParamName, color);
                             continue;
@@ -1051,7 +1077,7 @@ namespace TFTV.TFTVIncidents
                     customized++;
                 }
 
-                TFTVLogger.Always($"{LogPrefix} Force-applied customization to {customized} item(s).");
+                TFTVLogger.Always($"{LogPrefix} Force-applied customization to {customized} item(s); skipped {skipped} unmatched color(s), anyFancy={anyFancy}.");
             }
             catch (Exception e)
             {
