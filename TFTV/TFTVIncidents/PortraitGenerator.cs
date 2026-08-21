@@ -3,7 +3,6 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.GameTags;
-using PhoenixPoint.Common.Entities.GameTagsSharedData;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.Utils;
@@ -351,6 +350,15 @@ namespace TFTV.TFTVIncidents
                 manager.GameTags.Clear();
                 manager.GameTags.AddRange(displayData.GameTags);
 
+                // A character's own tag list can still be carrying the template's default
+                // customization - flat grey armour, no pattern - because GeoCharacter.ReinitTags
+                // applies the identity's tags last and only runs when the character's stats are
+                // recalculated. Opening the personnel screen is one of the things that triggers it,
+                // which is why a portrait taken beforehand came out uncustomized and the same
+                // operative looked right afterwards. Merge the identity over the character's tags
+                // the way ReinitTags does, on our own builder's list rather than on the character.
+                character.Identity?.ApplyGameTags(manager.GameTags);
+
                 // Helmets and head attachments hide the face the portrait is about; this is vanilla's
                 // showHelmet: false. The body itself comes from the armour items, exactly as on the
                 // personnel screen - an unarmoured operative carries their bare body parts there.
@@ -384,8 +392,8 @@ namespace TFTV.TFTVIncidents
                 // One line per portrait: what the operative is actually made of. Anything unexpected
                 // in here (a bare body part next to the armour that covers it, a missing armour piece)
                 // is what a wrong-looking portrait will be made of too.
-                TFTVLogger.Always($"{LogPrefix} {character.DisplayName} built from {string.Join(", ", VisibleItemNames(manager))}");
-                LogCustomizationState(manager, character);
+                TFTVLogger.Always($"{LogPrefix} {character.DisplayName} built from {string.Join(", ", VisibleItemNames(manager))} " +
+                    $"| customization {string.Join(", ", CustomizationTagNames(manager))}");
 
                 // Let the skinned meshes settle into the pose before the render.
                 yield return null;
@@ -466,97 +474,6 @@ namespace TFTV.TFTVIncidents
             }
         }
 
-        /// TEMPORARY. Answers one question: does the customization the game's own pass should have
-        /// applied actually end up on the armour's renderers? Logs, per visible item, the gate vanilla
-        /// applies (conditional customization tag vs AlwaysCustomizeColor / permanent augment), the
-        /// colour vanilla's palette rule resolves for each colour tag, and the colour actually sitting
-        /// in the renderer's property block afterwards. Also dumps the same readback from the squad bay
-        /// builder when it happens to hold a character, since that is the personnel screen's own state.
-        /// Remove once the customization question is settled.
-        private static void LogCustomizationState(AddonsManager manager, GeoCharacter character)
-        {
-            try
-            {
-                SharedGameTagsDataDef shared = GameUtl.GameComponent<SharedData>()?.SharedGameTags;
-                HumanCustomizationDef customization = shared?.HumanCustomization;
-                if (customization == null || manager?.RootAddon == null)
-                {
-                    return;
-                }
-
-                bool conditional = manager.MergeWithAddonsTags.Contains(shared.ConditionalCustomizationTag);
-                bool unconditional = manager.MergeWithAddonsTags.Contains(shared.UnconditionalCustomizationTag);
-                List<CustomizationColorTagDef> colorTags = manager.MergeWithAddonsTags.OfType<CustomizationColorTagDef>().ToList();
-                bool anyFancy = manager.MergeWithAddonsTags.Any(tag => tag is CustomizationFancyTagDef);
-
-                string resolved = string.Join(" ", colorTags
-                    .Select(tag => $"{tag.name}({tag.ShaderParamName})->{ResolveVanillaColor(customization, tag, anyFancy)}")
-                    .ToArray());
-
-                TFTVLogger.Always($"{LogPrefix} [diag] {character.DisplayName} conditionalTag={conditional} unconditionalTag={unconditional} " +
-                    $"anyFancy={anyFancy} patterns={manager.MergeWithAddonsTags.Count(t => t is CustomizationPatternTagDef)} resolved[{resolved}]");
-
-                LogItemTints(manager, "subject", colorTags);
-
-                AddonsManager squadBay = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()?
-                    .SceneReferences?.SquadBay?.CharacterBuilder?.AddonsManager;
-                if (squadBay?.RootAddon != null)
-                {
-                    LogItemTints(squadBay, "squadbay", colorTags);
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
-        /// TEMPORARY. See LogCustomizationState.
-        private static void LogItemTints(AddonsManager manager, string label, List<CustomizationColorTagDef> colorTags)
-        {
-            int logged = 0;
-            foreach (Item item in manager.RootAddon.OfType<Item>())
-            {
-                if (item.VisualRoot == null || !item.VisualRoot.gameObject.activeSelf || logged >= 3)
-                {
-                    continue;
-                }
-
-                Renderer renderer = item.GetHighlightableRenderers()?.FirstOrDefault(r => r != null && !(r is ParticleSystemRenderer));
-                if (renderer == null)
-                {
-                    continue;
-                }
-
-                MaterialPropertyBlock block = new MaterialPropertyBlock();
-                renderer.GetPropertyBlock(block);
-                Material material = renderer.sharedMaterial;
-
-                string tints = string.Join(" ", colorTags
-                    .Select(tag => $"{tag.ShaderParamName}={block.GetColor(tag.ShaderParamName)}" +
-                                   $"{(material != null && material.HasProperty(tag.ShaderParamName) ? "" : "[noProp]")}")
-                    .ToArray());
-
-                TFTVLogger.Always($"{LogPrefix} [diag:{label}] {item.ItemDef?.name} always={(item.ItemDef as TacticalItemDef)?.AlwaysCustomizeColor} " +
-                    $"augment={(item.ItemDef as TacticalItemDef)?.IsPermanentAugment} shader={material?.shader?.name} {tints}");
-                logged++;
-            }
-        }
-
-        /// TEMPORARY. The colour Item.RefreshTags would pick for a tag, so the log can be compared
-        /// against what is actually on the renderer.
-        private static Color ResolveVanillaColor(HumanCustomizationDef customization, CustomizationColorTagDef tag, bool anyFancy)
-        {
-            if (customization.CustomizationPaletteDef.ContainsColor(tag))
-            {
-                return customization.CustomizationPaletteDef.MatchColor(tag);
-            }
-
-            return anyFancy
-                ? customization.FancyVehicleCustomizationPaletteDef.MatchColor(tag)
-                : customization.NPCPaletteDef.MatchColor(tag);
-        }
-
         /// <summary>
         /// Item defs the subject actually shows, for the build log line.
         /// </summary>
@@ -571,6 +488,18 @@ namespace TFTV.TFTVIncidents
                 .OfType<Item>()
                 .Where(item => item.VisualRoot != null && item.VisualRoot.gameObject.activeSelf)
                 .Select(item => item.ItemDef?.name ?? "?")
+                .ToArray();
+        }
+
+        /// <summary>
+        /// Customization tags the subject was built with, for the build log line. A portrait that
+        /// comes out uncustomized is a portrait whose tags were the template's defaults.
+        /// </summary>
+        private static string[] CustomizationTagNames(AddonsManager manager)
+        {
+            return manager.MergeWithAddonsTags
+                .Where(tag => tag is CustomizationColorTagDef || tag is CustomizationPatternTagDef)
+                .Select(tag => tag.name)
                 .ToArray();
         }
 
@@ -675,11 +604,6 @@ namespace TFTV.TFTVIncidents
 
                 EnableCharacterLight(builder, displayData.CharacterLightObjectName);
                 lightRig = CreatePortraitLightRig(subject.transform);
-
-                // TEMPORARY: same readback as after the build, so a tint that was applied and then
-                // lost during the frame in between is distinguishable from one never applied.
-                LogItemTints(builder.AddonsManager, "at-render",
-                    builder.AddonsManager.MergeWithAddonsTags.OfType<CustomizationColorTagDef>().ToList());
 
                 bool hasNose = builder.AddonsManager?.FindTransform("Nose", rigBonesOnly: true) != null;
                 SquadPortraitsDef.RenderPortraitParams renderParams = new SquadPortraitsDef.RenderPortraitParams
