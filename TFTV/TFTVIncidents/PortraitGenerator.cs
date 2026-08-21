@@ -676,6 +676,11 @@ namespace TFTV.TFTVIncidents
                 EnableCharacterLight(builder, displayData.CharacterLightObjectName);
                 lightRig = CreatePortraitLightRig(subject.transform);
 
+                // TEMPORARY: same readback as after the build, so a tint that was applied and then
+                // lost during the frame in between is distinguishable from one never applied.
+                LogItemTints(builder.AddonsManager, "at-render",
+                    builder.AddonsManager.MergeWithAddonsTags.OfType<CustomizationColorTagDef>().ToList());
+
                 bool hasNose = builder.AddonsManager?.FindTransform("Nose", rigBonesOnly: true) != null;
                 SquadPortraitsDef.RenderPortraitParams renderParams = new SquadPortraitsDef.RenderPortraitParams
                 {
