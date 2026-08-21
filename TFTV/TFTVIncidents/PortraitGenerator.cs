@@ -351,12 +351,23 @@ namespace TFTV.TFTVIncidents
                 manager.GameTags.AddRange(displayData.GameTags);
 
                 // A character's own tag list can still be carrying the template's default
-                // customization - flat grey armour, no pattern - because GeoCharacter.ReinitTags
-                // applies the identity's tags last and only runs when the character's stats are
-                // recalculated. Opening the personnel screen is one of the things that triggers it,
-                // which is why a portrait taken beforehand came out uncustomized and the same
-                // operative looked right afterwards. Merge the identity over the character's tags
-                // the way ReinitTags does, on our own builder's list rather than on the character.
+                // customization - flat grey armour - because GeoCharacter.ReinitTags composes it as
+                // template tags, then the faction's unit tags, then the identity's, and only runs
+                // when the character's stats are recalculated. An operative whose list was last
+                // built before its faction was known keeps the template's grey, which is what the
+                // portrait was rendering; opening the personnel screen forces a recalculation, which
+                // is why the same operative looked right there and afterwards here too.
+                //
+                // Redo those last two steps in the same order on our own list, leaving the character
+                // untouched. The faction supplies the armour colours for an ordinary soldier; the
+                // identity overrides them for anyone actually customized, and an authored character
+                // (whose colours are template tags) keeps what they came with.
+                GeoFactionDef factionDef = character.Faction?.Def;
+                if (factionDef != null)
+                {
+                    manager.GameTags.MergeRange(factionDef.UnitsAdditionalTags, GameTagAddMode.ReplaceExistingExclusive);
+                }
+
                 character.Identity?.ApplyGameTags(manager.GameTags);
 
                 // Helmets and head attachments hide the face the portrait is about; this is vanilla's
@@ -393,6 +404,8 @@ namespace TFTV.TFTVIncidents
                 // in here (a bare body part next to the armour that covers it, a missing armour piece)
                 // is what a wrong-looking portrait will be made of too.
                 TFTVLogger.Always($"{LogPrefix} {character.DisplayName} built from {string.Join(", ", VisibleItemNames(manager))} " +
+                    $"| faction {factionDef?.name ?? "none"} (customization tags: " +
+                    $"{factionDef?.UnitsAdditionalTags?.Count(tag => tag is CustomizationTagDef) ?? 0}) " +
                     $"| customization {string.Join(", ", CustomizationTagNames(manager))}");
 
                 // Let the skinned meshes settle into the pose before the render.
