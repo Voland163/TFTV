@@ -291,6 +291,8 @@ namespace TFTV.TFTVIncidents
                 rendered.filterMode = FilterMode.Trilinear;
                 rendered.anisoLevel = 4;
 
+                DumpPortraitForInspection(rendered, character);
+
                 onDone?.Invoke(Sprite.Create(
                     rendered,
                     new Rect(0f, 0f, rendered.width, rendered.height),
@@ -300,6 +302,32 @@ namespace TFTV.TFTVIncidents
             finally
             {
                 UnityEngine.Object.Destroy(builder.gameObject);
+            }
+        }
+
+        // TEMPORARY - writes the finished portrait to disk so the render can be looked at directly
+        // instead of described. Every theory so far has been argued from log numbers; this shows what
+        // the camera actually produced: the framing, what is in shot, and what colour it came out.
+        private const bool DumpPortraitsEnabled = true;
+
+        private static void DumpPortraitForInspection(Texture2D portrait, GeoCharacter character)
+        {
+            if (!DumpPortraitsEnabled || portrait == null)
+            {
+                return;
+            }
+
+            try
+            {
+                string name = string.Join("_", (character.DisplayName ?? "unknown")
+                    .Split(System.IO.Path.GetInvalidFileNameChars()));
+                string path = System.IO.Path.Combine(Application.persistentDataPath, $"TFTV_Portrait_{name}.png");
+                System.IO.File.WriteAllBytes(path, portrait.EncodeToPNG());
+                TFTVLogger.Always($"{LogPrefix} [test] wrote {path}");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
 
