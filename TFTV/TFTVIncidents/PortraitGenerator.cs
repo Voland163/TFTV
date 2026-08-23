@@ -2,6 +2,7 @@
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Addons;
+using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Entities.Items;
@@ -345,30 +346,19 @@ namespace TFTV.TFTVIncidents
             {
                 CommonCharacterUtils.DisplayCharacter(builder, displayData, out bool _);
 
+                // Colour 1, colour 2 and the pattern live on the character's identity, and its own
+                // tag list only picks them up when something asks it to. The customization screen
+                // updates its model with exactly this pair (UIStateSoldierCustomization.
+                // RefreshUnitDisplay): RefreshTags to merge the identity into the character's tags,
+                // then rebuild the builder from that list. Do the same rather than an imitation of
+                // it on a copy - that merged the same tags into our own list and still came out with
+                // the template's grey.
+                character.RefreshTags();
+
                 AddonsManager manager = builder.AddonsManager;
                 manager.SetAutorefreshOnTagsChanged(false);
                 manager.GameTags.Clear();
                 manager.GameTags.AddRange(displayData.GameTags);
-
-                // A character's own tag list can still be carrying the template's default
-                // customization - flat grey armour - because GeoCharacter.ReinitTags composes it as
-                // template tags, then the faction's unit tags, then the identity's, and only runs
-                // when the character's stats are recalculated. An operative whose list was last
-                // built before its faction was known keeps the template's grey, which is what the
-                // portrait was rendering; opening the personnel screen forces a recalculation, which
-                // is why the same operative looked right there and afterwards here too.
-                //
-                // Redo those last two steps in the same order on our own list, leaving the character
-                // untouched. The faction supplies the armour colours for an ordinary soldier; the
-                // identity overrides them for anyone actually customized, and an authored character
-                // (whose colours are template tags) keeps what they came with.
-                GeoFactionDef factionDef = character.Faction?.Def;
-                if (factionDef != null)
-                {
-                    manager.GameTags.MergeRange(factionDef.UnitsAdditionalTags, GameTagAddMode.ReplaceExistingExclusive);
-                }
-
-                character.Identity?.ApplyGameTags(manager.GameTags);
 
                 // Helmets and head attachments hide the face the portrait is about; this is vanilla's
                 // showHelmet: false. The body itself comes from the armour items, exactly as on the
@@ -404,8 +394,7 @@ namespace TFTV.TFTVIncidents
                 // in here (a bare body part next to the armour that covers it, a missing armour piece)
                 // is what a wrong-looking portrait will be made of too.
                 TFTVLogger.Always($"{LogPrefix} {character.DisplayName} built from {string.Join(", ", VisibleItemNames(manager))} " +
-                    $"| faction {factionDef?.name ?? "none"} (customization tags: " +
-                    $"{factionDef?.UnitsAdditionalTags?.Count(tag => tag is CustomizationTagDef) ?? 0}) " +
+                    $"| identity {IdentityCustomization(character)} " +
                     $"| customization {string.Join(", ", CustomizationTagNames(manager))}");
 
                 // Let the skinned meshes settle into the pose before the render.
@@ -502,6 +491,22 @@ namespace TFTV.TFTVIncidents
                 .Where(item => item.VisualRoot != null && item.VisualRoot.gameObject.activeSelf)
                 .Select(item => item.ItemDef?.name ?? "?")
                 .ToArray();
+        }
+
+        /// <summary>
+        /// Colour 1, colour 2 and the pattern as they stand on the character's identity - the values
+        /// the customization screen edits. If these read as defaults while the screen shows something
+        /// else, the portrait is reading a different identity than that screen is.
+        /// </summary>
+        private static string IdentityCustomization(GeoCharacter character)
+        {
+            CharacterIdentity identity = character.Identity;
+            if (identity == null)
+            {
+                return "none";
+            }
+
+            return $"{identity.PrimaryColorTag?.name ?? "-"}/{identity.SecondaryColorTag?.name ?? "-"}/{identity.PatternTag?.name ?? "-"}";
         }
 
         /// <summary>
