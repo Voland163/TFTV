@@ -624,13 +624,10 @@ namespace TFTV.TFTVIncidents
                 EnableCharacterLight(builder, displayData.CharacterLightObjectName);
                 lightRig = CreatePortraitLightRig(subject.transform);
 
-                // Apply the customization as the very last thing before the shutter. It is applied
-                // once already when the build finishes, but anything that re-creates an item's
-                // visuals after that point - a rebuild pass finishing late, a skin swapped when the
-                // merged tags changed - brings in fresh renderers with no property block on them, and
-                // the operative renders untinted. Forcing colours in a frame earlier proved to change
-                // nothing on screen while switching renderers off at this point blanked the portrait,
-                // which is what the gap between those two moments looks like.
+                // Belt and braces, not the fix: the customization is already applied when the build
+                // finishes, and this re-applies it in case anything re-created an item's visuals
+                // since - a rebuild pass finishing late, a skin swapped when the merged tags changed
+                // - which would leave fresh renderers with no property block on them.
                 RefreshAddonTags(builder.AddonsManager);
                 HideCoveredAddonVisuals(builder.AddonsManager);
                 return CapturePortrait(builder, resolution);
