@@ -660,6 +660,14 @@ namespace TFTV.TFTVIncidents
                 // which is what the gap between those two moments looks like.
                 RefreshAddonTags(builder.AddonsManager);
                 HideCoveredAddonVisuals(builder.AddonsManager);
+                LogPatternState(builder.AddonsManager, "subject");
+
+                AddonsManager squadBay = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()?
+                    .SceneReferences?.SquadBay?.CharacterBuilder?.AddonsManager;
+                if (squadBay != null)
+                {
+                    LogPatternState(squadBay, "squadbay");
+                }
 
                 bool hasNose = builder.AddonsManager?.FindTransform("Nose", rigBonesOnly: true) != null;
                 SquadPortraitsDef.RenderPortraitParams renderParams = new SquadPortraitsDef.RenderPortraitParams
@@ -693,6 +701,70 @@ namespace TFTV.TFTVIncidents
                 RenderSettings.ambientLight = ambientLightBefore;
                 RenderSettings.ambientIntensity = ambientIntensityBefore;
                 RenderSettings.reflectionIntensity = reflectionBefore;
+            }
+        }
+
+        // TEMPORARY - the customization screen shows this operative with a dark, patterned armour and
+        // the portrait shows the pale factory texture, from the same tags. Writing _PrimaryColor
+        // changed nothing even on the material, so the colours are almost certainly gated behind the
+        // pattern. Dump what the pattern tag carries and what actually reached the torso material and
+        // its property block, for our subject and for the squad bay builder when it holds a character
+        // (that one is the personnel screen's own model, the one that looks right).
+        private static void LogPatternState(AddonsManager manager, string label)
+        {
+            try
+            {
+                if (manager?.RootAddon == null)
+                {
+                    return;
+                }
+
+                CustomizationPatternTagDef pattern = manager.MergeWithAddonsTags.OfType<CustomizationPatternTagDef>().FirstOrDefault();
+                if (pattern == null)
+                {
+                    TFTVLogger.Always($"{LogPrefix} [pattern:{label}] no pattern tag in the merged tags.");
+                    return;
+                }
+
+                TFTVLogger.Always($"{LogPrefix} [pattern:{label}] tag={pattern.name} param={pattern.ShaderParamName} " +
+                    $"texture={(pattern.PatternTexture != null ? pattern.PatternTexture.name : "NULL")} " +
+                    $"tiling={pattern.TilingXName}/{pattern.TilingYName} extra={pattern.AdditionalParamName}");
+
+                foreach (Item item in manager.RootAddon.OfType<Item>())
+                {
+                    if (item.VisualRoot == null || !item.VisualRoot.gameObject.activeSelf)
+                    {
+                        continue;
+                    }
+
+                    Renderer renderer = item.GetHighlightableRenderers()?.FirstOrDefault(r => r != null && !(r is ParticleSystemRenderer));
+                    Material material = renderer != null ? renderer.sharedMaterial : null;
+                    if (material == null)
+                    {
+                        continue;
+                    }
+
+                    MaterialPropertyBlock block = new MaterialPropertyBlock();
+                    renderer.GetPropertyBlock(block);
+
+                    Texture blockTexture = block.GetTexture(pattern.ShaderParamName);
+                    Texture materialTexture = material.HasProperty(pattern.ShaderParamName)
+                        ? material.GetTexture(pattern.ShaderParamName)
+                        : null;
+
+                    TFTVLogger.Always($"{LogPrefix} [pattern:{label}] {item.ItemDef?.name} " +
+                        $"materialHasParam={material.HasProperty(pattern.ShaderParamName)} " +
+                        $"materialTex={(materialTexture != null ? materialTexture.name : "-")} " +
+                        $"blockTex={(blockTexture != null ? blockTexture.name : "-")} " +
+                        $"blockPrimary={block.GetColor("_PrimaryColor")} " +
+                        $"blockTilingX={block.GetFloat(pattern.TilingXName)} " +
+                        $"materialPrimary={(material.HasProperty("_PrimaryColor") ? material.GetColor("_PrimaryColor").ToString() : "-")}");
+                    break;
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
             }
         }
 
