@@ -20,6 +20,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TFTV.TFTVUI.Personnel;
 using UnityEngine;
 
 namespace TFTV.TFTVIncidents
@@ -530,7 +531,7 @@ namespace TFTV.TFTVIncidents
         {
             try
             {
-                if (character == null || character.IsMutoid || level == null || (float)character.CharacterStats.Corruption <= 0f)
+                if (character == null || character.IsMutoid || level == null)
                 {
                     return;
                 }
@@ -549,8 +550,7 @@ namespace TFTV.TFTVIncidents
                 }
 
                 MaterialPropertyBlock propertyBlock = new MaterialPropertyBlock();
-                propertyBlock.SetFloat(CorruptionShaderPropertyName, level.CorruptedHorizonsSettings.CorruptionSettings
-                    .CalculateCorruptionShaderValue(character.CharacterStats.CorruptionProgressRel));
+                propertyBlock.SetFloat(CorruptionShaderPropertyName, ResolveCorruptionShaderValue(character, level));
 
                 foreach (TacticalItem item in ((ItemSlot)headSlot).GetAllDirectItems(onlyBodyparts: true))
                 {
@@ -651,6 +651,30 @@ namespace TFTV.TFTVIncidents
                 RenderSettings.ambientLight = ambientLightBefore;
                 RenderSettings.ambientIntensity = ambientIntensityBefore;
                 RenderSettings.reflectionIntensity = reflectionBefore;
+            }
+        }
+
+        /// <summary>
+        /// How much Delirium shows on the face, by the mod's reckoning rather than the game's.
+        ///
+        /// TFTV tones the effect down and folds stamina into it, and it does so by patching
+        /// CharacterStats.CorruptionProgressRel - but only while DeliriumFaceShader's hook names the
+        /// character being drawn, which is how the personnel screen and the tactical squad portraits
+        /// get the reduced value. Set the same hook around the read so an incident portrait shows the
+        /// same face as those screens instead of the untouched vanilla amount.
+        /// </summary>
+        private static float ResolveCorruptionShaderValue(GeoCharacter character, GeoLevelController level)
+        {
+            GeoCharacter previousHook = DeliriumFaceShader.HookToCharacterForDeliriumShader;
+            DeliriumFaceShader.HookToCharacterForDeliriumShader = character;
+            try
+            {
+                return level.CorruptedHorizonsSettings.CorruptionSettings
+                    .CalculateCorruptionShaderValue(character.CharacterStats.CorruptionProgressRel);
+            }
+            finally
+            {
+                DeliriumFaceShader.HookToCharacterForDeliriumShader = previousHook;
             }
         }
 
