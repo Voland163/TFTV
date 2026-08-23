@@ -386,7 +386,6 @@ namespace TFTV.TFTVIncidents
 
                 manager.SetAutorefreshOnTagsChanged(true);
                 RefreshAddonTags(manager);
-                ForceTestColours(manager);
                 HideCoveredAddonVisuals(manager);
                 ApplyFaceCorruption(builder, character, level);
                 CommonCharacterUtils.ResetCharacterAnimation(builder);
@@ -492,43 +491,6 @@ namespace TFTV.TFTVIncidents
                 .Where(item => item.VisualRoot != null && item.VisualRoot.gameObject.activeSelf)
                 .Select(item => item.ItemDef?.name ?? "?")
                 .ToArray();
-        }
-
-        // TEMPORARY EXPERIMENT - not a fix. Paints every built item in colours nothing in the game
-        // would ever choose, through the same HighlightController calls Item.RefreshTags uses. If the
-        // portrait comes out magenta and green, the customization pipeline reaches the pixels and the
-        // argument is only ever about which colour the tags resolve to. If it comes out unchanged, the
-        // paint is being ignored or overwritten somewhere after we apply it, and the material on the
-        // renderer is the next thing to look at rather than the tags. Set to false to disable.
-        private const bool ForceTestColoursEnabled = true;
-
-        private static void ForceTestColours(AddonsManager manager)
-        {
-            if (!ForceTestColoursEnabled || manager?.RootAddon == null)
-            {
-                return;
-            }
-
-            int painted = 0;
-            foreach (Item item in manager.RootAddon.OfType<Item>())
-            {
-                HighlightControllerComponent controller = item.VisualRoot != null
-                    ? item.VisualRoot.gameObject.GetComponent<HighlightControllerComponent>()
-                    : null;
-
-                if (controller == null)
-                {
-                    continue;
-                }
-
-                controller.StartCustomization();
-                controller.CustomizeColor("_PrimaryColor", Color.magenta);
-                controller.CustomizeColor("_SecondaryColor", Color.green);
-                controller.ApplyCustomization();
-                painted++;
-            }
-
-            TFTVLogger.Always($"{LogPrefix} [test] forced magenta/green onto {painted} item(s).");
         }
 
         /// <summary>
@@ -661,6 +623,8 @@ namespace TFTV.TFTVIncidents
                 EnableCharacterLight(builder, displayData.CharacterLightObjectName);
                 lightRig = CreatePortraitLightRig(subject.transform);
 
+                BlankSubjectForTest(subject);
+
                 bool hasNose = builder.AddonsManager?.FindTransform("Nose", rigBonesOnly: true) != null;
                 SquadPortraitsDef.RenderPortraitParams renderParams = new SquadPortraitsDef.RenderPortraitParams
                 {
@@ -694,6 +658,34 @@ namespace TFTV.TFTVIncidents
                 RenderSettings.ambientIntensity = ambientIntensityBefore;
                 RenderSettings.reflectionIntensity = reflectionBefore;
             }
+        }
+
+        // TEMPORARY EXPERIMENT - not a fix. Switches off every renderer on the subject in the instant
+        // before it is handed to the portrait renderer. Forcing magenta onto the built items changed
+        // nothing on screen, which leaves a blunter question: is the image we get actually this
+        // subject? A blank portrait means it is, and the paint is being ignored somewhere between the
+        // property block and the draw. A portrait that still shows the operative means the image comes
+        // from something else entirely, and nothing done to this subject was ever going to matter.
+        private const bool BlankSubjectForTestEnabled = true;
+
+        private static void BlankSubjectForTest(GameObject subject)
+        {
+            if (!BlankSubjectForTestEnabled)
+            {
+                return;
+            }
+
+            int disabled = 0;
+            foreach (Renderer renderer in subject.GetComponentsInChildren<Renderer>(true))
+            {
+                if (renderer != null && renderer.enabled)
+                {
+                    renderer.enabled = false;
+                    disabled++;
+                }
+            }
+
+            TFTVLogger.Always($"{LogPrefix} [test] disabled {disabled} renderer(s) on the subject before rendering.");
         }
 
         /// <summary>
