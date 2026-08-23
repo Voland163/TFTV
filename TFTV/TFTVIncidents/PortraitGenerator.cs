@@ -1,4 +1,6 @@
-﻿using Base.Core;
+﻿using Base.Cameras;
+
+using Base.Core;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Addons;
@@ -14,7 +16,6 @@ using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Animations;
 using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.UI.SoldierPortraits;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -623,18 +624,13 @@ namespace TFTV.TFTVIncidents
                 EnableCharacterLight(builder, displayData.CharacterLightObjectName);
                 lightRig = CreatePortraitLightRig(subject.transform);
 
-                bool hasNose = builder.AddonsManager?.FindTransform("Nose", rigBonesOnly: true) != null;
-                SquadPortraitsDef.RenderPortraitParams renderParams = new SquadPortraitsDef.RenderPortraitParams
-                {
-                    RenderedPortraitsResolution = resolution,
-                    TargetBoneName = hasNose ? "Nose" : "Head",
-                    CameraFoV = CameraFoV,
-                    CameraDistance = hasNose ? NoseDistance : HeadDistance,
-                    CameraHeight = 0f,
-                    CameraSide = 0f
-                };
-
-                return SoldierPortraitUtil.RenderSoldierNoCopy(subject, renderParams, null);
+                // Belt and braces, not the fix: the customization is already applied when the build
+                // finishes, and this re-applies it in case anything re-created an item's visuals
+                // since - a rebuild pass finishing late, a skin swapped when the merged tags changed
+                // - which would leave fresh renderers with no property block on them.
+                RefreshAddonTags(builder.AddonsManager);
+                HideCoveredAddonVisuals(builder.AddonsManager);
+                return CapturePortrait(builder, resolution);
             }
             finally
             {
@@ -655,6 +651,69 @@ namespace TFTV.TFTVIncidents
                 RenderSettings.ambientLight = ambientLightBefore;
                 RenderSettings.ambientIntensity = ambientIntensityBefore;
                 RenderSettings.reflectionIntensity = reflectionBefore;
+            }
+        }
+
+        /// <summary>
+        /// Renders the subject with a camera copied from the one the game draws the world with.
+        ///
+        /// The game's own capture path (SoldierPortraitUtil -> RenderingEnvironment) builds a bare
+        /// camera and forces RenderingPath.Forward on it, and the character shader's customization -
+        /// armour colour and pattern - does not survive that: vanilla's own rendered tactical
+        /// portraits come out in factory colours for the same reason. Copying the live camera keeps
+        /// the shader on the path it takes in the scene, which is where the customization shows.
+        /// </summary>
+        private static Texture2D CapturePortrait(AddonsCharacterBuilder builder, Vector2Int resolution)
+        {
+            Transform target = builder.AddonsManager?.FindTransform("Nose", rigBonesOnly: true)
+                ?? builder.AddonsManager?.FindTransform("Head", rigBonesOnly: true)
+                ?? builder.transform;
+
+            float distance = target.name == "Head" ? HeadDistance : NoseDistance;
+
+            RenderTexture renderTexture = RenderTexture.GetTemporary(
+                resolution.x, resolution.y, 24, RenderTextureFormat.ARGB32);
+
+            GameObject cameraHost = new GameObject("[TFTV]PortraitCamera");
+            RenderTexture previouslyActive = RenderTexture.active;
+
+            try
+            {
+                Camera camera = cameraHost.AddComponent<Camera>();
+                Camera sceneCamera = GameUtl.GameComponent<CameraManager>()?.Camera;
+                if (sceneCamera != null)
+                {
+                    camera.CopyFrom(sceneCamera);
+                }
+
+                camera.enabled = false;
+                camera.targetTexture = renderTexture;
+                camera.cullingMask = 1 << LayerMask.NameToLayer("Characters");
+                camera.clearFlags = CameraClearFlags.SolidColor;
+                camera.backgroundColor = new Color(0f, 0f, 0f, 0f);
+                camera.allowHDR = false;
+                camera.allowMSAA = false;
+                camera.orthographic = false;
+                camera.fieldOfView = CameraFoV;
+                camera.nearClipPlane = 0.01f;
+                camera.farClipPlane = 2.5f;
+
+                camera.transform.position = target.position + target.forward * distance;
+                camera.transform.LookAt(target.position);
+
+                camera.Render();
+
+                RenderTexture.active = renderTexture;
+                Texture2D portrait = new Texture2D(resolution.x, resolution.y, TextureFormat.RGBA32, mipChain: true);
+                portrait.ReadPixels(new Rect(0f, 0f, resolution.x, resolution.y), 0, 0, recalculateMipMaps: true);
+                portrait.Apply();
+                return portrait;
+            }
+            finally
+            {
+                RenderTexture.active = previouslyActive;
+                UnityEngine.Object.Destroy(cameraHost);
+                RenderTexture.ReleaseTemporary(renderTexture);
             }
         }
 
