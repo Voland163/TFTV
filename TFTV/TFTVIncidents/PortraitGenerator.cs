@@ -1,4 +1,6 @@
-﻿using Base.Core;
+﻿using Base.Cameras;
+
+using Base.Core;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Addons;
@@ -14,7 +16,6 @@ using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Animations;
 using PhoenixPoint.Tactical.Entities.Equipments;
-using PhoenixPoint.Tactical.UI.SoldierPortraits;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -291,8 +292,6 @@ namespace TFTV.TFTVIncidents
                 rendered.filterMode = FilterMode.Trilinear;
                 rendered.anisoLevel = 4;
 
-                DumpPortraitForInspection(rendered, character);
-
                 onDone?.Invoke(Sprite.Create(
                     rendered,
                     new Rect(0f, 0f, rendered.width, rendered.height),
@@ -302,32 +301,6 @@ namespace TFTV.TFTVIncidents
             finally
             {
                 UnityEngine.Object.Destroy(builder.gameObject);
-            }
-        }
-
-        // TEMPORARY - writes the finished portrait to disk so the render can be looked at directly
-        // instead of described. Every theory so far has been argued from log numbers; this shows what
-        // the camera actually produced: the framing, what is in shot, and what colour it came out.
-        private const bool DumpPortraitsEnabled = true;
-
-        private static void DumpPortraitForInspection(Texture2D portrait, GeoCharacter character)
-        {
-            if (!DumpPortraitsEnabled || portrait == null)
-            {
-                return;
-            }
-
-            try
-            {
-                string name = string.Join("_", (character.DisplayName ?? "unknown")
-                    .Split(System.IO.Path.GetInvalidFileNameChars()));
-                string path = System.IO.Path.Combine(Application.persistentDataPath, $"TFTV_Portrait_{name}.png");
-                System.IO.File.WriteAllBytes(path, portrait.EncodeToPNG());
-                TFTVLogger.Always($"{LogPrefix} [test] wrote {path}");
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
             }
         }
 
@@ -660,27 +633,7 @@ namespace TFTV.TFTVIncidents
                 // which is what the gap between those two moments looks like.
                 RefreshAddonTags(builder.AddonsManager);
                 HideCoveredAddonVisuals(builder.AddonsManager);
-                LogPatternState(builder.AddonsManager, "subject");
-
-                AddonsManager squadBay = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()?
-                    .SceneReferences?.SquadBay?.CharacterBuilder?.AddonsManager;
-                if (squadBay != null)
-                {
-                    LogPatternState(squadBay, "squadbay");
-                }
-
-                bool hasNose = builder.AddonsManager?.FindTransform("Nose", rigBonesOnly: true) != null;
-                SquadPortraitsDef.RenderPortraitParams renderParams = new SquadPortraitsDef.RenderPortraitParams
-                {
-                    RenderedPortraitsResolution = resolution,
-                    TargetBoneName = hasNose ? "Nose" : "Head",
-                    CameraFoV = CameraFoV,
-                    CameraDistance = hasNose ? NoseDistance : HeadDistance,
-                    CameraHeight = 0f,
-                    CameraSide = 0f
-                };
-
-                return SoldierPortraitUtil.RenderSoldierNoCopy(subject, renderParams, null);
+                return CapturePortrait(builder, resolution);
             }
             finally
             {
@@ -704,67 +657,66 @@ namespace TFTV.TFTVIncidents
             }
         }
 
-        // TEMPORARY - the customization screen shows this operative with a dark, patterned armour and
-        // the portrait shows the pale factory texture, from the same tags. Writing _PrimaryColor
-        // changed nothing even on the material, so the colours are almost certainly gated behind the
-        // pattern. Dump what the pattern tag carries and what actually reached the torso material and
-        // its property block, for our subject and for the squad bay builder when it holds a character
-        // (that one is the personnel screen's own model, the one that looks right).
-        private static void LogPatternState(AddonsManager manager, string label)
+        /// <summary>
+        /// Renders the subject with a camera copied from the one the game draws the world with.
+        ///
+        /// The game's own capture path (SoldierPortraitUtil -> RenderingEnvironment) builds a bare
+        /// camera and forces RenderingPath.Forward on it, and the character shader's customization -
+        /// armour colour and pattern - does not survive that: vanilla's own rendered tactical
+        /// portraits come out in factory colours for the same reason. Copying the live camera keeps
+        /// the shader on the path it takes in the scene, which is where the customization shows.
+        /// </summary>
+        private static Texture2D CapturePortrait(AddonsCharacterBuilder builder, Vector2Int resolution)
         {
+            Transform target = builder.AddonsManager?.FindTransform("Nose", rigBonesOnly: true)
+                ?? builder.AddonsManager?.FindTransform("Head", rigBonesOnly: true)
+                ?? builder.transform;
+
+            float distance = target.name == "Head" ? HeadDistance : NoseDistance;
+
+            RenderTexture renderTexture = RenderTexture.GetTemporary(
+                resolution.x, resolution.y, 24, RenderTextureFormat.ARGB32);
+
+            GameObject cameraHost = new GameObject("[TFTV]PortraitCamera");
+            RenderTexture previouslyActive = RenderTexture.active;
+
             try
             {
-                if (manager?.RootAddon == null)
+                Camera camera = cameraHost.AddComponent<Camera>();
+                Camera sceneCamera = GameUtl.GameComponent<CameraManager>()?.Camera;
+                if (sceneCamera != null)
                 {
-                    return;
+                    camera.CopyFrom(sceneCamera);
                 }
 
-                CustomizationPatternTagDef pattern = manager.MergeWithAddonsTags.OfType<CustomizationPatternTagDef>().FirstOrDefault();
-                if (pattern == null)
-                {
-                    TFTVLogger.Always($"{LogPrefix} [pattern:{label}] no pattern tag in the merged tags.");
-                    return;
-                }
+                camera.enabled = false;
+                camera.targetTexture = renderTexture;
+                camera.cullingMask = 1 << LayerMask.NameToLayer("Characters");
+                camera.clearFlags = CameraClearFlags.SolidColor;
+                camera.backgroundColor = new Color(0f, 0f, 0f, 0f);
+                camera.allowHDR = false;
+                camera.allowMSAA = false;
+                camera.orthographic = false;
+                camera.fieldOfView = CameraFoV;
+                camera.nearClipPlane = 0.01f;
+                camera.farClipPlane = 2.5f;
 
-                TFTVLogger.Always($"{LogPrefix} [pattern:{label}] tag={pattern.name} param={pattern.ShaderParamName} " +
-                    $"texture={(pattern.PatternTexture != null ? pattern.PatternTexture.name : "NULL")} " +
-                    $"tiling={pattern.TilingXName}/{pattern.TilingYName} extra={pattern.AdditionalParamName}");
+                camera.transform.position = target.position + target.forward * distance;
+                camera.transform.LookAt(target.position);
 
-                foreach (Item item in manager.RootAddon.OfType<Item>())
-                {
-                    if (item.VisualRoot == null || !item.VisualRoot.gameObject.activeSelf)
-                    {
-                        continue;
-                    }
+                camera.Render();
 
-                    Renderer renderer = item.GetHighlightableRenderers()?.FirstOrDefault(r => r != null && !(r is ParticleSystemRenderer));
-                    Material material = renderer != null ? renderer.sharedMaterial : null;
-                    if (material == null)
-                    {
-                        continue;
-                    }
-
-                    MaterialPropertyBlock block = new MaterialPropertyBlock();
-                    renderer.GetPropertyBlock(block);
-
-                    Texture blockTexture = block.GetTexture(pattern.ShaderParamName);
-                    Texture materialTexture = material.HasProperty(pattern.ShaderParamName)
-                        ? material.GetTexture(pattern.ShaderParamName)
-                        : null;
-
-                    TFTVLogger.Always($"{LogPrefix} [pattern:{label}] {item.ItemDef?.name} " +
-                        $"materialHasParam={material.HasProperty(pattern.ShaderParamName)} " +
-                        $"materialTex={(materialTexture != null ? materialTexture.name : "-")} " +
-                        $"blockTex={(blockTexture != null ? blockTexture.name : "-")} " +
-                        $"blockPrimary={block.GetColor("_PrimaryColor")} " +
-                        $"blockTilingX={block.GetFloat(pattern.TilingXName)} " +
-                        $"materialPrimary={(material.HasProperty("_PrimaryColor") ? material.GetColor("_PrimaryColor").ToString() : "-")}");
-                    break;
-                }
+                RenderTexture.active = renderTexture;
+                Texture2D portrait = new Texture2D(resolution.x, resolution.y, TextureFormat.RGBA32, mipChain: true);
+                portrait.ReadPixels(new Rect(0f, 0f, resolution.x, resolution.y), 0, 0, recalculateMipMaps: true);
+                portrait.Apply();
+                return portrait;
             }
-            catch (Exception e)
+            finally
             {
-                TFTVLogger.Error(e);
+                RenderTexture.active = previouslyActive;
+                UnityEngine.Object.Destroy(cameraHost);
+                RenderTexture.ReleaseTemporary(renderTexture);
             }
         }
 
