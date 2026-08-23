@@ -623,7 +623,15 @@ namespace TFTV.TFTVIncidents
                 EnableCharacterLight(builder, displayData.CharacterLightObjectName);
                 lightRig = CreatePortraitLightRig(subject.transform);
 
-                BlankSubjectForTest(subject);
+                // Apply the customization as the very last thing before the shutter. It is applied
+                // once already when the build finishes, but anything that re-creates an item's
+                // visuals after that point - a rebuild pass finishing late, a skin swapped when the
+                // merged tags changed - brings in fresh renderers with no property block on them, and
+                // the operative renders untinted. Forcing colours in a frame earlier proved to change
+                // nothing on screen while switching renderers off at this point blanked the portrait,
+                // which is what the gap between those two moments looks like.
+                RefreshAddonTags(builder.AddonsManager);
+                HideCoveredAddonVisuals(builder.AddonsManager);
 
                 bool hasNose = builder.AddonsManager?.FindTransform("Nose", rigBonesOnly: true) != null;
                 SquadPortraitsDef.RenderPortraitParams renderParams = new SquadPortraitsDef.RenderPortraitParams
@@ -658,34 +666,6 @@ namespace TFTV.TFTVIncidents
                 RenderSettings.ambientIntensity = ambientIntensityBefore;
                 RenderSettings.reflectionIntensity = reflectionBefore;
             }
-        }
-
-        // TEMPORARY EXPERIMENT - not a fix. Switches off every renderer on the subject in the instant
-        // before it is handed to the portrait renderer. Forcing magenta onto the built items changed
-        // nothing on screen, which leaves a blunter question: is the image we get actually this
-        // subject? A blank portrait means it is, and the paint is being ignored somewhere between the
-        // property block and the draw. A portrait that still shows the operative means the image comes
-        // from something else entirely, and nothing done to this subject was ever going to matter.
-        private const bool BlankSubjectForTestEnabled = true;
-
-        private static void BlankSubjectForTest(GameObject subject)
-        {
-            if (!BlankSubjectForTestEnabled)
-            {
-                return;
-            }
-
-            int disabled = 0;
-            foreach (Renderer renderer in subject.GetComponentsInChildren<Renderer>(true))
-            {
-                if (renderer != null && renderer.enabled)
-                {
-                    renderer.enabled = false;
-                    disabled++;
-                }
-            }
-
-            TFTVLogger.Always($"{LogPrefix} [test] disabled {disabled} renderer(s) on the subject before rendering.");
         }
 
         /// <summary>
