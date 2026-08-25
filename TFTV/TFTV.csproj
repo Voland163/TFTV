@@ -215,6 +215,7 @@
     <Compile Include="TFTVIncidents\GeoUIAdjustments.cs" />
     <Compile Include="TFTVIncidents\IncidentOutcomeSummaryUI.cs" />
     <Compile Include="TFTVIncidents\IncidentResolutionUI.cs" />
+    <Compile Include="TFTVIncidents\LeaderAbilityIcons.cs" />
     <Compile Include="TFTVIncidents\LeaderSelection.cs" />
     <Compile Include="TFTVIncidents\MachineryRepairDefs.cs" />
     <Compile Include="TFTVIncidents\PortraitGenerator.cs" />

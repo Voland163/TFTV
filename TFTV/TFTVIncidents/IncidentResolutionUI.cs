@@ -394,6 +394,7 @@ namespace TFTV.TFTVIncidents
 
                 ResetSelectedLeaderContext(geoEvent, vehicle);
                 PortraitGenerator.ClearCache();
+                LeaderAbilityIcons.Clear();
 
                 List<GeoCharacter> crew = ResolveCrew(vehicle);
                 if (crew.Count == 0)
@@ -485,6 +486,7 @@ namespace TFTV.TFTVIncidents
                         SetSelectedRow(selectedRow);
                         SetSelectedLeader(selectedCharacter, geoEvent, vehicle);
                         PortraitGenerator.RequestLeaderPortrait(__instance, selectedCharacter);
+                        LeaderAbilityIcons.Show(__instance, selectedCharacter);
                         UpdateHeaderForSelectedOperative(header, selectedCharacter, geoEvent, vehicle);
                         UpdateChoiceButtonsForSelectedOperative(__instance, geoEvent, vehicle, selectedCharacter);
                         RefreshHeaderGainDisplay();
@@ -512,6 +514,7 @@ namespace TFTV.TFTVIncidents
                     SetSelectedRow(selectedRow);
                     SetSelectedLeader(selectedCharacter, geoEvent, vehicle);
                     PortraitGenerator.RequestLeaderPortrait(__instance, selectedCharacter);
+                    LeaderAbilityIcons.Show(__instance, selectedCharacter);
                     UpdateHeaderForSelectedOperative(header, selectedCharacter, geoEvent, vehicle);
                     UpdateChoiceButtonsForSelectedOperative(__instance, geoEvent, vehicle, selectedCharacter);
                     RefreshHeaderGainDisplay();
