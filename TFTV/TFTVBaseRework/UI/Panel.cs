@@ -105,8 +105,12 @@ namespace TFTV.TFTVBaseRework
 
                 // Create 4 columns
                 CreateColumn(columnsContainer.transform, PersonnelAssignment.Unassigned, "Unassigned", null, level, phoenix, slotPrefab);
-                CreateColumn(columnsContainer.transform, PersonnelAssignment.Research, $"Research ({pools.Research.UsedSlots}/{pools.Research.ProvidedSlots})", pools.Research, level, phoenix, slotPrefab);
-                CreateColumn(columnsContainer.transform, PersonnelAssignment.Manufacturing, $"Manufacturing ({pools.Manufacturing.UsedSlots}/{pools.Manufacturing.ProvidedSlots})", pools.Manufacturing, level, phoenix, slotPrefab);
+                // Occupied counts come from the personnel records, matching the info bar and the income.
+                int researchUsed = ResearchAndManufacturing.GetOccupiedSlots(phoenix, PersonnelAssignment.Research);
+                int manufacturingUsed = ResearchAndManufacturing.GetOccupiedSlots(phoenix, PersonnelAssignment.Manufacturing);
+
+                CreateColumn(columnsContainer.transform, PersonnelAssignment.Research, $"Research ({researchUsed}/{pools.Research.ProvidedSlots})", pools.Research, level, phoenix, slotPrefab);
+                CreateColumn(columnsContainer.transform, PersonnelAssignment.Manufacturing, $"Manufacturing ({manufacturingUsed}/{pools.Manufacturing.ProvidedSlots})", pools.Manufacturing, level, phoenix, slotPrefab);
                 CreateColumn(columnsContainer.transform, PersonnelAssignment.Training, $"Deploy / Train ({trainUsed}/{trainProvided})", null, level, phoenix, slotPrefab);
             }
             catch (Exception e)
