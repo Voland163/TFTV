@@ -92,8 +92,17 @@ namespace TFTV.TFTVBaseRework
 
                     ResearchAndManufacturing.GetOutputBonuses(phoenix, out float researchBonus, out float productionBonus);
 
-                    __instance.ProductionLabel.text = FormatSlotString(Mathf.RoundToInt(totalProduction), Mathf.RoundToInt(productionBonus), slotPools.Manufacturing);
-                    __instance.ResearchLabel.text = FormatSlotString(Mathf.RoundToInt(totalResearch), Mathf.RoundToInt(researchBonus), slotPools.Research);
+                    __instance.ProductionLabel.text = FormatSlotString(
+                        Mathf.RoundToInt(totalProduction),
+                        Mathf.RoundToInt(productionBonus),
+                        slotPools.Manufacturing.ProvidedSlots,
+                        ResearchAndManufacturing.GetOccupiedSlots(phoenix, PersonnelAssignment.Manufacturing));
+
+                    __instance.ResearchLabel.text = FormatSlotString(
+                        Mathf.RoundToInt(totalResearch),
+                        Mathf.RoundToInt(researchBonus),
+                        slotPools.Research.ProvidedSlots,
+                        ResearchAndManufacturing.GetOccupiedSlots(phoenix, PersonnelAssignment.Research));
 
                     // Override SoldiersLabel to show living space used vs capacity,
                     // since our living-space accounting differs from vanilla's Soldiers.Count().
@@ -110,10 +119,11 @@ namespace TFTV.TFTVBaseRework
                 }
             }
 
-            private static string FormatSlotString(int totalPerHour, int bonus, FacilitySlotPool pool)
+            // Slots used are counted from the personnel records, the same source the income figure uses,
+            // so the two halves of the label can never disagree.
+            private static string FormatSlotString(int totalPerHour, int bonus, int provided, int occupied)
             {
-                int provided = pool.ProvidedSlots;
-                int used = provided > 0 ? pool.UsedSlots : 0;
+                int used = provided > 0 ? occupied : 0;
 
                 if (bonus > 0)
                 {

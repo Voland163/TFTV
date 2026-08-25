@@ -671,14 +671,18 @@ namespace TFTV.TFTVBaseRework
                 return false;
             }
 
-            if (!ResearchManufacturingSlotsManager.IncrementUsedSlot(faction, slotType))
-            {
-                return false;
-            }
-
+            // Assign before reserving the slot: reserving refreshes the info bar, which recalculates
+            // income from these records and would not yet see this person.
             person.Assignment = slotType == FacilitySlotType.Research
                 ? PersonnelAssignment.Research
                 : PersonnelAssignment.Manufacturing;
+
+            if (!ResearchManufacturingSlotsManager.IncrementUsedSlot(faction, slotType))
+            {
+                person.Assignment = PersonnelAssignment.Unassigned;
+                return false;
+            }
+
             person.TrainingSpec = null;
 
             TFTVLogger.Always($"{LogPrefix} Auto-assigned {person.Character.DisplayName} to {person.Assignment}.");
@@ -795,9 +799,14 @@ namespace TFTV.TFTVBaseRework
 
             TFTVLogger.Always($"{LogPrefix} RemovePersonnel requested Name={name} RequestedId={requestedId} CharacterId={characterId} Assignment={person.Assignment}");
 
-            if (person.Assignment == PersonnelAssignment.Research || person.Assignment == PersonnelAssignment.Manufacturing)
+            // Clear the assignment before releasing the slot, so the income recalculation the release
+            // triggers no longer counts this person's output.
+            PersonnelAssignment vacatedAssignment = person.Assignment;
+            person.Assignment = PersonnelAssignment.Unassigned;
+
+            if (vacatedAssignment == PersonnelAssignment.Research || vacatedAssignment == PersonnelAssignment.Manufacturing)
             {
-                ReleaseWorkSlotIfNeeded(faction, person.Assignment);
+                ReleaseWorkSlotIfNeeded(faction, vacatedAssignment);
             }
 
             bool removed = _assignments.Remove(requestedId);
@@ -876,15 +885,18 @@ namespace TFTV.TFTVBaseRework
                 return false;
             }
 
-            bool slotAdded = ResearchManufacturingSlotsManager.IncrementUsedSlot(faction, slotType);
-            if (!slotAdded)
+            // Move the person first. Both slot counters refresh the info bar, which recalculates income
+            // from these records, so they have to see the new assignment or the figure comes out stale.
+            person.Assignment = desired;
+
+            if (!ResearchManufacturingSlotsManager.IncrementUsedSlot(faction, slotType))
             {
+                person.Assignment = previous;
                 TFTVLogger.Always($"{LogPrefix} No free {slotType} slots available (used >= provided).");
                 return false;
             }
 
             ReleaseWorkSlotIfNeeded(faction, previous);
-            person.Assignment = desired;
 
             GeoLevelController level = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
             UIModuleInfoBar infoBar = level.View.GeoscapeModules.ResourcesModule;
@@ -1403,13 +1415,16 @@ namespace TFTV.TFTVBaseRework
             }
 
             PersonnelAssignment previous = person.Assignment;
+
+            // Move to Training before releasing the work slot, so the income recalculation the release
+            // triggers already sees this person off research/manufacturing duty.
+            person.Assignment = PersonnelAssignment.Training;
+            person.TrainingSpec = spec;
+
             if (previous == PersonnelAssignment.Research || previous == PersonnelAssignment.Manufacturing)
             {
                 ReleaseWorkSlotIfNeeded(faction, previous);
             }
-
-            person.Assignment = PersonnelAssignment.Training;
-            person.TrainingSpec = spec;
 
             TryAutoAssignUnassignedPersonnel(faction, "AssignPersonnelToTraining");
             return true;
@@ -1423,12 +1438,15 @@ namespace TFTV.TFTVBaseRework
             PersonnelAssignment previous = person.Assignment;
             if (previous == PersonnelAssignment.Unassigned) return;
 
+            // Clear the assignment before releasing the slot: releasing refreshes the info bar, which
+            // recalculates income from these records and would otherwise still count this person.
+            person.Assignment = PersonnelAssignment.Unassigned;
+
             if (previous == PersonnelAssignment.Research || previous == PersonnelAssignment.Manufacturing)
             {
                 ReleaseWorkSlotIfNeeded(faction, previous);
             }
 
-            person.Assignment = PersonnelAssignment.Unassigned;
             TFTVLogger.Always($"{LogPrefix} Unassigned {person.Character.DisplayName} from {previous} to Unassigned.");
 
             try
@@ -1492,8 +1510,9 @@ namespace TFTV.TFTVBaseRework
                         break;
                     }
 
-                    ReleaseWorkSlotIfNeeded(faction, person.Assignment);
+                    PersonnelAssignment vacated = person.Assignment;
                     person.Assignment = PersonnelAssignment.Unassigned;
+                    ReleaseWorkSlotIfNeeded(faction, vacated);
                     over--;
 
                     TFTVLogger.Always($"{LogPrefix} Evicted {person.Character.DisplayName} from {targetAssignment} due to living capacity.");

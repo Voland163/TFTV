@@ -1,13 +1,19 @@
-﻿using PhoenixPoint.Common.Core;
+using HarmonyLib;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.PhoenixBases;
 using PhoenixPoint.Geoscape.Entities.PhoenixBases.FacilityComponents;
+using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using TFTV.TFTVIncidents;
 using UnityEngine;
+using static TFTV.TFTVBaseRework.BaseActivation;
 
 namespace TFTV.TFTVBaseRework
 {
@@ -17,9 +23,8 @@ namespace TFTV.TFTVBaseRework
         internal const float AffinityWorkerOutputPerSlot = 4.0f;
         internal const float SpecialistWorkerOutputPerSlot = 6.0f;
 
-        private const int UnoccupiedResearchPerSlot = 1;
-        private const int UnoccupiedProductionPerSlot = 2;
-        private const string CentralizedAIResearchId = "NJ_CentralizedAI_ResearchDef";
+        private static readonly MethodInfo OnIncomeChangedMethod =
+            AccessTools.Method(typeof(GeoFaction), "OnIncomeChanged");
 
         internal static void ApplyProductionAdjustments(GeoFaction faction)
         {
@@ -29,29 +34,67 @@ namespace TFTV.TFTVBaseRework
             }
 
             GeoPhoenixFaction phoenixFaction = faction as GeoPhoenixFaction;
-            if (phoenixFaction == null)
+            if (phoenixFaction?.ResourceIncome == null)
             {
                 return;
             }
 
-            ResourcePack baseProductionOutput = GetProductionReasonOutput(phoenixFaction);
+            // Recompute the raw site production the same way GeoFaction.UpdateProduction does, rather
+            // than reading back whatever is currently stored. Reading the stored value would fold our
+            // own bonus back in every time this runs outside the UpdateProduction postfix.
+            ResourcePack sitePack = GetSiteProduction(phoenixFaction);
 
-            float baseResearch = baseProductionOutput.ByResourceType(ResourceType.Research).Value;
-            float baseProduction = baseProductionOutput.ByResourceType(ResourceType.Production).Value;
-            //   float baseSupplies = baseProductionOutput.ByResourceType(ResourceType.Supplies).Value;
-            //   float baseMutagen = baseProductionOutput.ByResourceType(ResourceType.Mutagen).Value;
-
-            // TFTVLogger.Always($"Base production output - Research: {baseResearch}, Production: {baseProduction}, Supplies: {baseSupplies}, Mutagen: {baseMutagen}");
+            float baseResearch = sitePack.ByResourceType(ResourceType.Research).Value;
+            float baseProduction = sitePack.ByResourceType(ResourceType.Production).Value;
 
             GetOutputBonuses(phoenixFaction, out float researchBonus, out float productionBonus);
 
-            phoenixFaction.ResourceIncome.SetOutput(OperationReason.Production, new ResourcePack(new ResourceUnit[]
+            float newResearch = Mathf.Max(0f, baseResearch + researchBonus);
+            float newProduction = Mathf.Max(0f, baseProduction + productionBonus);
+
+            // Keep every other resource the bases generate (food, mutagen, ...) exactly as the sites
+            // reported it. SetOutput replaces the whole pack, so anything omitted here is lost income.
+            List<ResourceUnit> units = sitePack.Values
+                .Where(unit => unit.Type != ResourceType.Research && unit.Type != ResourceType.Production)
+                .ToList();
+
+            units.Add(new ResourceUnit(ResourceType.Research, newResearch));
+            units.Add(new ResourceUnit(ResourceType.Production, newProduction));
+
+            float previousResearch = phoenixFaction.ResourceIncome.GetTotalResouce(ResourceType.Research).Value;
+            float previousProduction = phoenixFaction.ResourceIncome.GetTotalResouce(ResourceType.Production).Value;
+
+            phoenixFaction.ResourceIncome.SetOutput(OperationReason.Production, new ResourcePack(units));
+
+            // UpdateProduction raises IncomeChanged before this postfix runs, so the info bar would
+            // otherwise keep showing the unadjusted figure until something else refreshes it.
+            if (!Mathf.Approximately(previousResearch, newResearch) || !Mathf.Approximately(previousProduction, newProduction))
             {
-                new ResourceUnit(ResourceType.Research, Mathf.Max(0f, baseResearch + researchBonus)),
-                new ResourceUnit(ResourceType.Production, Mathf.Max(0f, baseProduction + productionBonus)),
-               // new ResourceUnit(ResourceType.Supplies, baseSupplies),
-               // new ResourceUnit(ResourceType.Mutagen, baseMutagen)
-            }));
+                try
+                {
+                    OnIncomeChangedMethod?.Invoke(phoenixFaction, null);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        private static ResourcePack GetSiteProduction(GeoPhoenixFaction faction)
+        {
+            try
+            {
+                return new ResourcePack(faction.Sites
+                    .Select(site => site.SiteProduction)
+                    .Where(production => production != null)
+                    .SelectMany(production => production.Values));
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return new ResourcePack();
+            }
         }
 
         internal static void GetOutputBonuses(GeoPhoenixFaction faction, out float researchBonus, out float productionBonus)
@@ -65,69 +108,85 @@ namespace TFTV.TFTVBaseRework
             }
 
             PoolAssignmentSnapshot snapshot = BuildPoolAssignmentSnapshot(faction);
-            researchBonus = GetAssignedBonus(faction, PersonnelAssignment.Research, snapshot.ResearchAssigned, ResourceType.Research)
-                + GetIdleSlotBonus(faction, snapshot.ResearchCapacity, snapshot.ResearchAssigned, ResourceType.Research, UnoccupiedResearchPerSlot);
+
+            researchBonus = GetAssignedBonus(faction, PersonnelAssignment.Research, snapshot.ResearchCapacity, ResourceType.Research)
+                + GetIdleSlotBonus(faction, snapshot.ResearchCapacity, snapshot.ResearchAssigned, ResourceType.Research);
 
             if (TFTVVoidOmens.VoidOmensCheck[6])
             {
                 researchBonus *= 1.5f;
             }
 
-            productionBonus = GetAssignedBonus(faction, PersonnelAssignment.Manufacturing, snapshot.ManufacturingAssigned, ResourceType.Production)
-                + GetIdleSlotBonus(faction, snapshot.ManufacturingCapacity, snapshot.ManufacturingAssigned, ResourceType.Production, UnoccupiedProductionPerSlot);
+            productionBonus = GetAssignedBonus(faction, PersonnelAssignment.Manufacturing, snapshot.ManufacturingCapacity, ResourceType.Production)
+                + GetIdleSlotBonus(faction, snapshot.ManufacturingCapacity, snapshot.ManufacturingAssigned, ResourceType.Production);
         }
 
-        private static ResourcePack GetProductionReasonOutput(GeoPhoenixFaction faction)
-        {
-            if (faction?.ResourceIncome == null)
-            {
-                return new ResourcePack();
-            }
-
-            try
-            {
-
-                return new ResourcePack(new ResourceUnit[]
-                {
-                new ResourceUnit(ResourceType.Research, faction.ResourceIncome.GetTotalResouce(ResourceType.Research).Value),
-                new ResourceUnit(ResourceType.Production, faction.ResourceIncome.GetTotalResouce(ResourceType.Production).Value),
-                    //  new ResourceUnit(ResourceType.Supplies, faction.ResourceIncome.GetTotalResouce(ResourceType.Supplies).Value),
-                    //  new ResourceUnit(ResourceType.Mutagen, faction.ResourceIncome.GetTotalResouce(ResourceType.Mutagen).Value)
-
-                });
-
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-                throw;
-            }
-        }
-
+        /// <summary>
+        /// Capacity comes from the facilities, the assigned count from the personnel records. The
+        /// running slot counters are display state and drift from the records mid-assignment, so they
+        /// must not feed the income.
+        /// </summary>
         private static PoolAssignmentSnapshot BuildPoolAssignmentSnapshot(GeoPhoenixFaction faction)
         {
             Workers.FacilitySlotPools pools = Workers.ResearchManufacturingSlotsManager.RecalculateSlots(faction);
 
+            int researchCapacity = pools.Research.ProvidedSlots;
+            int manufacturingCapacity = pools.Manufacturing.ProvidedSlots;
+
             return new PoolAssignmentSnapshot
             {
-                ResearchAssigned = pools.Research.UsedSlots,
-                ResearchCapacity = pools.Research.ProvidedSlots,
-                ManufacturingAssigned = pools.Manufacturing.UsedSlots,
-                ManufacturingCapacity = pools.Manufacturing.ProvidedSlots
+                ResearchCapacity = researchCapacity,
+                ResearchAssigned = Math.Min(researchCapacity, CountAssigned(faction, PersonnelAssignment.Research)),
+                ManufacturingCapacity = manufacturingCapacity,
+                ManufacturingAssigned = Math.Min(manufacturingCapacity, CountAssigned(faction, PersonnelAssignment.Manufacturing))
             };
         }
 
-        private static float GetAssignedBonus(GeoPhoenixFaction faction, PersonnelAssignment assignment, int usedSlots, ResourceType resourceType)
+        /// <summary>
+        /// Slots actually being worked: the personnel assigned to this duty, capped at the slots the
+        /// facilities provide. Same source the income uses, so displays cannot disagree with it.
+        /// </summary>
+        internal static int GetOccupiedSlots(GeoPhoenixFaction faction, PersonnelAssignment assignment)
         {
-            if (usedSlots <= 0)
+            if (faction == null)
+            {
+                return 0;
+            }
+
+            Workers.FacilitySlotPools pools = Workers.ResearchManufacturingSlotsManager.GetOrCreatePools(faction);
+
+            int capacity = assignment == PersonnelAssignment.Research
+                ? pools.Research.ProvidedSlots
+                : pools.Manufacturing.ProvidedSlots;
+
+            return Math.Min(capacity, CountAssigned(faction, assignment));
+        }
+
+        private static int CountAssigned(GeoPhoenixFaction faction, PersonnelAssignment assignment)
+        {
+            return PersonnelData.Assignments.Values
+                .Count(person => person?.Character != null
+                    && person.Character.Faction == faction
+                    && person.Assignment == assignment);
+        }
+
+        /// <summary>
+        /// Output of the personnel working this assignment, capped at the number of slots the
+        /// facilities provide. When more are assigned than there are slots, the most productive ones
+        /// take the slots.
+        /// </summary>
+        private static float GetAssignedBonus(GeoPhoenixFaction faction, PersonnelAssignment assignment, int capacity, ResourceType resourceType)
+        {
+            if (capacity <= 0)
             {
                 return 0f;
             }
 
             return PersonnelData.Assignments.Values
                 .Where(person => person?.Character != null && person.Character.Faction == faction && person.Assignment == assignment)
-                .OrderBy(person => person.Id)
-                .Take(usedSlots)
+                .OrderByDescending(person => GetWorkerOutput(person.Character, resourceType))
+                .ThenBy(person => person.Id)
+                .Take(capacity)
                 .Sum(person => GetWorkerOutput(person.Character, resourceType));
         }
 
@@ -154,51 +213,116 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
-        private static float GetIdleSlotBonus(GeoPhoenixFaction faction, int capacity, int assigned, ResourceType resourceType, int basePerSlot)
+        /// <summary>
+        /// Gives idle slots the facility upgrades that Workers.GeoFactionFacilityBuffCollection_GetValue_Patch
+        /// strips from every research and manufacturing facility. Without this, researched upgrades would do
+        /// nothing at all; an occupied slot does not get them because the personnel in it is the upgrade.
+        /// </summary>
+        private static float GetIdleSlotBonus(GeoPhoenixFaction faction, int capacity, int assigned, ResourceType resourceType)
         {
             int idleSlots = Math.Max(0, capacity - assigned);
-            if (idleSlots <= 0 || !HasFacilityBuff(faction, resourceType))
+            if (idleSlots <= 0 || capacity <= 0)
             {
                 return 0f;
             }
 
-            int perSlot = basePerSlot;
-            if (HasCentralizedAI(faction))
+            float strippedTotal = GetStrippedBuffTotal(faction, resourceType);
+            if (strippedTotal <= 0f)
             {
-                perSlot++;
+                return 0f;
             }
 
-            return idleSlots * perSlot;
+            // strippedTotal covers every providing facility; hand out only the idle share of it.
+            return strippedTotal * idleSlots / capacity;
         }
 
-        private static bool HasCentralizedAI(GeoPhoenixFaction faction)
+        /// <summary>
+        /// Sum, over every working research/manufacturing facility, of the buff value our GetValue patch
+        /// discards: vanilla would return baseValue * (multiplier + buffs + global) + added, the patch
+        /// returns baseValue * multiplier + added, so the difference is what researched upgrades are worth.
+        /// </summary>
+        private static float GetStrippedBuffTotal(GeoPhoenixFaction faction, ResourceType resourceType)
         {
-            return faction?.Research != null && faction.Research.HasCompleted(CentralizedAIResearchId);
-        }
-
-        private static bool HasFacilityBuff(GeoPhoenixFaction faction, ResourceType resourceType)
-        {
-            return faction?.FacilityBuffs?.FacilityBuffs != null
-                && faction.FacilityBuffs.FacilityBuffs.Any(buff => buff?.FacilityDef != null && FacilityProvidesOutput(buff.FacilityDef, resourceType));
-        }
-
-        private static bool FacilityProvidesOutput(PhoenixFacilityDef facilityDef, ResourceType resourceType)
-        {
-            if (facilityDef?.GeoFacilityComponentDefs == null)
+            GeoFactionFacilityBuffCollection buffs = faction?.FacilityBuffs;
+            if (buffs?.FacilityBuffs == null || faction.Bases == null)
             {
-                return false;
+                return 0f;
             }
 
-            foreach (GeoFacilityComponentDef component in facilityDef.GeoFacilityComponentDefs)
+            float total = 0f;
+
+            foreach (GeoPhoenixBase geoBase in faction.Bases)
             {
-                ResourceGeneratorFacilityComponentDef generator = component as ResourceGeneratorFacilityComponentDef;
-                if (generator != null && generator.BaseResourcesOutput.ByResourceType(resourceType).Value > 0f)
+                if (geoBase?.Layout?.Facilities == null)
                 {
-                    return true;
+                    continue;
+                }
+
+                // Outposts provide no slots, so they get no make-up bonus either.
+                if (geoBase.Site != null && geoBase.Site.SiteTags.Contains(PhoenixBaseReworkState.OutpostTag))
+                {
+                    continue;
+                }
+
+                foreach (GeoPhoenixFacility facility in geoBase.Layout.Facilities)
+                {
+                    if (facility == null || !facility.IsWorking || facility.Def?.GeoFacilityComponentDefs == null)
+                    {
+                        continue;
+                    }
+
+                    foreach (GeoFacilityComponentDef component in facility.Def.GeoFacilityComponentDefs)
+                    {
+                        if (!(component is ResourceGeneratorFacilityComponentDef generator))
+                        {
+                            continue;
+                        }
+
+                        float baseValue = generator.BaseResourcesOutput.ByResourceType(resourceType).Value;
+                        if (baseValue <= 0f)
+                        {
+                            continue;
+                        }
+
+                        total += GetStrippedBuffValue(buffs, facility.Def, baseValue);
+                    }
                 }
             }
 
-            return false;
+            return total;
+        }
+
+        private static float GetStrippedBuffValue(GeoFactionFacilityBuffCollection buffs, PhoenixFacilityDef facilityDef, float baseValue)
+        {
+            List<GeoFactionFacilityBuff> forFacility = buffs.FacilityBuffs
+                .Where(buff => buff != null && buff.FacilityDef == facilityDef)
+                .ToList();
+
+            // A Set buff overrides everything in vanilla, including the base value.
+            GeoFactionFacilityBuff set = forFacility
+                .FirstOrDefault(buff => buff.ModificationType == GeoFactionFacilityBuff.FacilityComponentModificationType.Set);
+            if (set != null)
+            {
+                return Mathf.Max(0f, set.Amount - baseValue);
+            }
+
+            float added = 0f;
+            float multiplier = buffs.GlobalProductionMultiplier;
+
+            foreach (GeoFactionFacilityBuff buff in forFacility)
+            {
+                switch (buff.ModificationType)
+                {
+                    case GeoFactionFacilityBuff.FacilityComponentModificationType.Add:
+                        added += buff.Amount;
+                        break;
+                    case GeoFactionFacilityBuff.FacilityComponentModificationType.Multiply:
+                        multiplier += buff.Amount;
+                        break;
+                }
+            }
+
+            return Mathf.Max(0f, baseValue * multiplier + added);
         }
 
         private struct PoolAssignmentSnapshot

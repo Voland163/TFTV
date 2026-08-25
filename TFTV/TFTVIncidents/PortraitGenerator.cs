@@ -20,7 +20,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using TFTV.TFTVUI.Personnel;
+using TFTV.TFTVUI.Personnel;
+
 using UnityEngine;
 
 namespace TFTV.TFTVIncidents
