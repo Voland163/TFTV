@@ -519,7 +519,9 @@ namespace TFTV.TFTVBaseRework
                 var badgeImg = badgeGO.AddComponent<Image>();
                 badgeImg.sprite = icon;
                 badgeImg.preserveAspect = true;
-                badgeImg.raycastTarget = false;
+                // Raycasts have to reach the badge for the hover tooltip. Clicks and drags still
+                // bubble up to the slot, which is where the selector and drag handler live.
+                badgeImg.raycastTarget = true;
 
                 var badgeRect = badgeGO.GetComponent<RectTransform>();
                 badgeRect.anchorMin = new Vector2(1, 1);
@@ -527,6 +529,10 @@ namespace TFTV.TFTVBaseRework
                 badgeRect.pivot = new Vector2(1, 1);
                 badgeRect.anchoredPosition = new Vector2(-6, -6);
                 badgeRect.sizeDelta = new Vector2(36, 36);
+
+                var tooltip = badgeGO.AddComponent<AffinityBadgeTooltip>();
+                tooltip.Approach = approach;
+                tooltip.Rank = rank;
             }
             catch (Exception e)
             {

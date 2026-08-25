@@ -249,7 +249,7 @@ namespace TFTV.TFTVBaseRework
             });
 
 
-            internal static bool TryQueueFullBaseFromActivationUI(GeoSite site, GeoPhoenixFaction faction, bool fromOutpost)
+            internal static bool TryQueueFullBaseFromActivationUI(GeoSite site, GeoPhoenixFaction faction, bool fromOutpost, IList<PersonnelInfo> chosenPersonnel = null)
             {
                 try
                 {
@@ -261,7 +261,7 @@ namespace TFTV.TFTVBaseRework
                         return false;
                     }
 
-                    return EstablishBase(site, faction, fromOutpost);
+                    return EstablishBase(site, faction, fromOutpost, chosenPersonnel);
                 }
                 catch (Exception ex)
                 {
@@ -270,7 +270,7 @@ namespace TFTV.TFTVBaseRework
                 }
             }
 
-            internal static bool TrySetOutpostFromActivationUI(GeoSite site, GeoPhoenixFaction faction)
+            internal static bool TrySetOutpostFromActivationUI(GeoSite site, GeoPhoenixFaction faction, IList<PersonnelInfo> chosenPersonnel = null)
             {
                 try
                 {
@@ -282,7 +282,7 @@ namespace TFTV.TFTVBaseRework
                         return false;
                     }
 
-                    return SetOutpost(site, faction);
+                    return SetOutpost(site, faction, chosenPersonnel);
                 }
                 catch (Exception ex)
                 {
@@ -313,11 +313,11 @@ namespace TFTV.TFTVBaseRework
                 }
             }
 
-            private static bool SetOutpost(GeoSite site, GeoPhoenixFaction faction)
+            private static bool SetOutpost(GeoSite site, GeoPhoenixFaction faction, IList<PersonnelInfo> chosenPersonnel)
             {
                 try
                 {
-                    if (!TryPayAndConsumePersonnel(faction, site, OutpostCost, 1))
+                    if (!TryPayAndConsumePersonnel(faction, site, OutpostCost, GetOutpostPersonnelCost(), chosenPersonnel))
                     {
                         return false;
                     }
@@ -332,13 +332,13 @@ namespace TFTV.TFTVBaseRework
                 }
             }
 
-            private static bool EstablishBase(GeoSite site, GeoPhoenixFaction faction, bool fromOutpost)
+            private static bool EstablishBase(GeoSite site, GeoPhoenixFaction faction, bool fromOutpost, IList<PersonnelInfo> chosenPersonnel)
             {
                 try
                 {
-                    int personnel = fromOutpost ? 3 : 4;
-                    ResourcePack cost = fromOutpost ? OutpostCost : FullBaseAdditionalCost;
-                    if (!TryPayAndConsumePersonnel(faction, site, cost, personnel))
+                    int personnel = GetBaseQueuePersonnelCost(fromOutpost);
+                    ResourcePack cost = GetBaseQueueCostPack(fromOutpost);
+                    if (!TryPayAndConsumePersonnel(faction, site, cost, personnel, chosenPersonnel))
                     {
                         return false;
                     }
@@ -353,7 +353,7 @@ namespace TFTV.TFTVBaseRework
                 }
             }
 
-            private static bool TryPayAndConsumePersonnel(GeoPhoenixFaction faction, GeoSite site, ResourcePack cost, int requiredPersonnel)
+            private static bool TryPayAndConsumePersonnel(GeoPhoenixFaction faction, GeoSite site, ResourcePack cost, int requiredPersonnel, IList<PersonnelInfo> chosenPersonnel)
             {
                 try
                 {
@@ -364,7 +364,11 @@ namespace TFTV.TFTVBaseRework
 
                     if (BaseReworkCheck.BaseReworkEnabled)
                     {
-                        if (!PersonnelData.TryConsumePersonnelForBaseActivation(faction, requiredPersonnel))
+                        bool consumed = chosenPersonnel != null && chosenPersonnel.Count > 0
+                            ? PersonnelData.TryConsumeSelectedPersonnelForBaseActivation(faction, chosenPersonnel, requiredPersonnel)
+                            : PersonnelData.TryConsumePersonnelForBaseActivation(faction, requiredPersonnel);
+
+                        if (!consumed)
                         {
                             return false;
                         }

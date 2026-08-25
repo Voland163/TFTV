@@ -259,7 +259,12 @@ namespace TFTV.TFTVBaseRework
                             root,
                             TFTVCommonMethods.ConvertKeyToString("KEY_BASE_OUTPOST_OPTION"),
                             hasAircraftWithSoldiers && isExplored && PhoenixBaseVisitFlow.CanAffordOutpost(faction),
-                            () => ExecuteAndCloseOnSuccess(modal, () => PhoenixBaseVisitFlow.TrySetOutpostFromActivationUI(site, faction)));
+                            () => SelectPersonnelThenExecute(
+                                __instance,
+                                faction,
+                                PhoenixBaseVisitFlow.GetOutpostPersonnelCost(),
+                                TFTVCommonMethods.ConvertKeyToString("KEY_BASE_OUTPOST_OPTION"),
+                                chosen => ExecuteAndCloseOnSuccess(modal, () => PhoenixBaseVisitFlow.TrySetOutpostFromActivationUI(site, faction, chosen))));
                         ApplyCostRow(outpostBtn, faction, PhoenixBaseVisitFlow.GetOutpostCostPack(), PhoenixBaseVisitFlow.GetOutpostPersonnelCost());
                         SetButtonTooltip(outpostBtn,
                             $"{exploreFirstPrefix}{TFTVCommonMethods.ConvertKeyToString("KEY_BASE_OUTPOST_TOOLTIP")}");
@@ -274,7 +279,12 @@ namespace TFTV.TFTVBaseRework
                         root,
                         activateLabel,
                         hasAircraftWithSoldiers && isExplored && PhoenixBaseVisitFlow.CanAffordBaseQueue(faction, fromOutpost),
-                        () => ExecuteAndCloseOnSuccess(modal, () => PhoenixBaseVisitFlow.TryQueueFullBaseFromActivationUI(site, faction, fromOutpost)));
+                        () => SelectPersonnelThenExecute(
+                            __instance,
+                            faction,
+                            PhoenixBaseVisitFlow.GetBaseQueuePersonnelCost(fromOutpost),
+                            activateLabel,
+                            chosen => ExecuteAndCloseOnSuccess(modal, () => PhoenixBaseVisitFlow.TryQueueFullBaseFromActivationUI(site, faction, fromOutpost, chosen))));
                     ApplyCostRow(activateBaseBtn, faction, PhoenixBaseVisitFlow.GetBaseQueueCostPack(fromOutpost), PhoenixBaseVisitFlow.GetBaseQueuePersonnelCost(fromOutpost));
                     SetButtonTooltip(activateBaseBtn, fromOutpost
                         ? $"{exploreFirstPrefix}{TFTVCommonMethods.ConvertKeyToString("KEY_BASE_OUTPOST_UPGRADE_TOOLTIP")}"
@@ -533,6 +543,32 @@ namespace TFTV.TFTVBaseRework
                     bind.InsufficientResources?.gameObject.SetActive(false);
                 }
                 catch (Exception ex) { TFTVLogger.Error(ex); }
+            }
+
+            /// <summary>
+            /// Asks the player which personnel to spend before running the action. If the picker
+            /// cannot be shown, the action runs with no selection and the game picks for them.
+            /// </summary>
+            private static void SelectPersonnelThenExecute(
+                PXBaseActivationDataBind bind,
+                GeoPhoenixFaction faction,
+                int requiredPersonnel,
+                string actionLabel,
+                Action<List<PersonnelInfo>> execute)
+            {
+                try
+                {
+                    Transform anchor = bind?.Confirm?.transform;
+
+                    if (!BaseActivationPersonnelSelection.TryShow(anchor, faction, requiredPersonnel, actionLabel, execute))
+                    {
+                        execute(null);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
             }
 
             private static void ExecuteAndCloseOnSuccess(UIModal modal, Func<bool> action)

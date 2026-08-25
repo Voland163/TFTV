@@ -556,6 +556,37 @@ namespace TFTV.TFTVIncidents
             }
         }
 
+        internal static string GetApproachDisplayName(AffinityApproach approach)
+        {
+            switch (approach)
+            {
+                case AffinityApproach.PsychoSociology: return "Psycho-Sociology";
+                case AffinityApproach.Exploration: return "Exploration";
+                case AffinityApproach.Occult: return "Occult";
+                case AffinityApproach.Biotech: return "Biotech";
+                case AffinityApproach.Machinery: return "Machinery";
+                case AffinityApproach.Compute: return "Compute";
+                default: return approach.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Localization key listing every benefit of the Affinity, Geoscape, Tactical and base duty alike.
+        /// </summary>
+        internal static string GetAllBenefitsLocalizationKey(AffinityApproach approach)
+        {
+            switch (approach)
+            {
+                case AffinityApproach.PsychoSociology: return "KEY_AFFINITY_PSYCHO_SOCIOLOGY_ALL_BENEFITS";
+                case AffinityApproach.Exploration: return "KEY_AFFINITY_EXPLORATION_ALL_BENEFITS";
+                case AffinityApproach.Occult: return "KEY_AFFINITY_OCCULT_ALL_BENEFITS";
+                case AffinityApproach.Biotech: return "KEY_AFFINITY_BIOTECH_ALL_BENEFITS";
+                case AffinityApproach.Machinery: return "KEY_AFFINITY_MACHINERY_ALL_BENEFITS";
+                case AffinityApproach.Compute: return "KEY_AFFINITY_COMPUTE_ALL_BENEFITS";
+                default: return null;
+            }
+        }
+
         internal static GeoCharacter SelectFallbackLeader(GeoVehicle vehicle)
         {
             IEnumerable<GeoCharacter> characters = vehicle?.GetAllCharacters() ?? Enumerable.Empty<GeoCharacter>();
