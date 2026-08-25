@@ -311,29 +311,10 @@ namespace TFTV.TFTVIncidents
 
                 private static string BuildContent(LeaderSelection.AffinityApproach approach)
                 {
-                    string key;
-                    switch (approach)
+                    string key = LeaderSelection.GetAllBenefitsLocalizationKey(approach);
+                    if (string.IsNullOrEmpty(key))
                     {
-                        case LeaderSelection.AffinityApproach.PsychoSociology:
-                            key = "KEY_AFFINITY_PSYCHO_SOCIOLOGY_ALL_BENEFITS";
-                            break;
-                        case LeaderSelection.AffinityApproach.Exploration:
-                            key = "KEY_AFFINITY_EXPLORATION_ALL_BENEFITS";
-                            break;
-                        case LeaderSelection.AffinityApproach.Occult:
-                            key = "KEY_AFFINITY_OCCULT_ALL_BENEFITS";
-                            break;
-                        case LeaderSelection.AffinityApproach.Biotech:
-                            key = "KEY_AFFINITY_BIOTECH_ALL_BENEFITS";
-                            break;
-                        case LeaderSelection.AffinityApproach.Machinery:
-                            key = "KEY_AFFINITY_MACHINERY_ALL_BENEFITS";
-                            break;
-                        case LeaderSelection.AffinityApproach.Compute:
-                            key = "KEY_AFFINITY_COMPUTE_ALL_BENEFITS";
-                            break;
-                        default:
-                            return approach.ToString();
+                        return approach.ToString();
                     }
 
                     return new LocalizedTextBind() { LocalizationKey = key }.Localize();

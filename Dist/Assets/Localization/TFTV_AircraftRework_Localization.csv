@@ -178,16 +178,16 @@ KEY_BASE_PING_SCAN_OPTION,Text,,Initiate a Scan,,,,,,,,
 KEY_BASE_RANSACK_TOOLTIP,Text,,"Permanently destroys the Phoenix base; receive resources as from demolishing every facility at the base (and a little extra, amount depending on Difficulty).",,,,,,,,
 KEY_BASE_RANSACK_OPTION,Text,,Ransack,,,,,,,,
 KEY_BASE_OUTPOST_OPTION,Text,,Set up an Outpost,,,,,,,,
-KEY_BASE_OUTPOST_TOOLTIP,Text,,"You cannot build any facilities at an Outpost nor receive any income nor other advantages from existing facilities at an Outpost. Aircraft and Units at the Outpost heal, repair and recover Stamina at half the rate they would at a regular Base with the corresponding facilities. Outposts can also help detecting nearby Pandoran Colonies after an attack on a Haven. Outposts cannot be attacked and can be later upgraded to a regular Base costing half the resources and 3 personnel. Takes 24 hours to complete.",,,,,,,,
+KEY_BASE_OUTPOST_TOOLTIP,Text,,"You cannot build any facilities at an Outpost nor receive any income nor other advantages from existing facilities at an Outpost. Aircraft and Units at the Outpost heal, repair and recover Stamina at half the rate they would at a regular Base with the corresponding facilities. Outposts can also help detecting nearby Pandoran Colonies after an attack on a Haven. Outposts cannot be attacked and can be later upgraded to a regular Base costing half the resources and 3 personnel. Takes 24 hours to complete. Personnel with the Psycho-Sociology Affinity count as 3 Personnel toward the Personnel cost.",,,,,,,,
 KEY_BASE_OUTPOST_UPGRADE_OPTION,Text,,Upgrade to regular Base,,,,,,,,
 KEY_BASE_ACTIVATE_OPTION,Text,,Activate the Base,,,,,,,,
-KEY_BASE_OUTPOST_UPGRADE_TOOLTIP,Text,,Upgrade the Outpost to a regular Base. Takes 48 hours to complete.,,,,,,,,
-KEY_BASE_ACTIVATE_OPTION_TOOLTIP,Text,,Activate the Base. Any damaged Facilities will still need to be repaired after the activation. Takes 72 hours to complete.,,,,,,,,
+KEY_BASE_OUTPOST_UPGRADE_TOOLTIP,Text,,Upgrade the Outpost to a regular Base. Takes 48 hours to complete. Personnel with the Psycho-Sociology Affinity count as 3 Personnel toward the Personnel cost.,,,,,,,,
+KEY_BASE_ACTIVATE_OPTION_TOOLTIP,Text,,Activate the Base. Any damaged Facilities will still need to be repaired after the activation. Takes 72 hours to complete. Personnel with the Psycho-Sociology Affinity count as 3 Personnel toward the Personnel cost.,,,,,,,,
 KEY_BASE_ALREADY_LOOTED,Text,,You have already looted this place!,,,,,,,,
 KEY_BASE_VISIT_TO_LOOT,Text,,Explore the base to get valuable loot!,,,,,,,,
 KEY_BASE_LOOT_YOU_FOUND,Text,,You found:,,,,,,,,
 KEY_OUTPOST_ACTIVATED_TITLE,Text,,Outpost operational,,,,,,,,
-KEY_OUTPOST_ACTIVATED_DESCRIPTION,Text,,"You have finished building an Outpost. You cannot build any facilities at an Outpost nor receive any income nor other advantages from existing facilities at an Outpost. Aircraft and Units at the Outpost heal, repair and recover Stamina at half the rate they would at a regular Base with the corresponding facilities. Outposts can also help detecting nearby Pandoran Colonies after an attack on a Haven. Outposts cannot be attacked and can be later upgraded to a regular Base costing half the resources and 3 personnel.",,,,,,,,
+KEY_OUTPOST_ACTIVATED_DESCRIPTION,Text,,"You have finished building an Outpost. You cannot build any facilities at an Outpost nor receive any income nor other advantages from existing facilities at an Outpost. Aircraft and Units at the Outpost heal, repair and recover Stamina at half the rate they would at a regular Base with the corresponding facilities. Outposts can also help detecting nearby Pandoran Colonies after an attack on a Haven. Outposts cannot be attacked and can be later upgraded to a regular Base costing half the resources and 3 personnel. Personnel with the Psycho-Sociology Affinity count as 3 Personnel toward the Personnel cost.",,,,,,,,
 KEY_INCIDENT_START_OPTION,Text,,INITIATE INCIDENT RESOLUTION,,,,,,,,
 KEY_INCIDENT_START_OPTION_TOOLTIP,Text,,"Starts the Incident event. After choosing how to approach the Incident, Aircraft must stay at the Haven. Moving the Aircraft before the Incident is resolved will result in Failure. ",,,,,,,,
 KEY_AFFINITY_GEO_DESC_PSYCHO_SOCIOLOGY_OPTION_1,Text,,Geoscape Benefit: Haven Defense rewards +{0}%.,,,,,,,,
@@ -235,10 +235,10 @@ KEY_BASE_DISMISS_PERSON_PROMPT,Text,,"Are you sure you want to dismiss {0} from 
 KEY_GEOSCAPE_SOLDIERS_TT,Text,,Phoenix operatives on active field duty,,,,,,,,
 KEY_SOLDIERS_COUNT_TT,Text,,PERSONNEL - recruited / living quarters capacity,,,,,,,,
 KEY_RESEARCH_TOTAL_TT,Text,,"Research per hour generated (+ Research from personnel assigned to Research)
-(Research slots used/Research slots available). Each Research Lab generates 2 Research and provides 1 Slot to which Personnel not on active field duty can be assigned. Each Personnel assigned to Research generates 4 Research. 
+(Research slots used/Research slots available). Each Research Lab generates 2 Research and provides 1 Slot to which Personnel not on active field duty can be assigned. Each Personnel assigned to Research generates 2 Research, or more if they have an Affinity: 6 for Biotech, 4 for Compute, Occult and Psycho-Sociology. 
 The higher the number, the faster Technologies will be researched.",,,,,,,,
 KEY_PRODUCTION_TOTAL_TT,Text,,"Manufacturing per hour generated (+ Manufacturing from personnel assigned to Manufacturing)
-(Manufacturing slots used/Manufacturing slots available). Each Manufacturing Plant generates 2 Manufacturing and provides 1 Slot to which Personnel not on active field duty can be assigned. Each Personnel assigned to Manufacturing generates 4 Manufacturing. 
+(Manufacturing slots used/Manufacturing slots available). Each Manufacturing Plant generates 2 Manufacturing and provides 1 Slot to which Personnel not on active field duty can be assigned. Each Personnel assigned to Manufacturing generates 2 Manufacturing, or more if they have an Affinity: 6 for Machinery, 4 for Compute, Occult and Psycho-Sociology. 
 The higher the number, the faster the production of Equipment, Armor, Ground Vehicles and Aircraft.",,,,,,,,
 TFTV_TBTV_OCCULT_AFFINITY_REDUCTION,Text,,Occult affinity: {0} reduces Touched by the Void chance by {1}.,,,,,,,,
 KEY_BASE_RECRUITS_SPAWNED,Text,,"New personnel has arrived. Can be assigned to Manufacturing or Research, or deployed.",,,,,,,,
@@ -260,7 +260,12 @@ Tactical Benefits (choose one globally):
 
 - Allies recover +2 WP per Affinity Rank when activating Recovery.
 OR
-- Increase friendly Haven deployment by 50% per Affinity Rank.",,,,,,,,
+- Increase friendly Haven deployment by 50% per Affinity Rank.
+
+Base Duty Benefits (always active, do not scale with rank):
+
+- Generates 4 Research or 4 Manufacturing when assigned to a worker slot.
+- Counts as 3 Personnel when spent to set up an Outpost or to activate a Base.",,,,,,,,
 KEY_AFFINITY_EXPLORATION_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
 
 - Exploration is 1 hour faster per Affinity Rank.
@@ -271,7 +276,11 @@ Tactical Benefits (choose one globally):
 
 - Enemies are 15% per Affinity Rank more likely to drop loot.
 OR
-- Gain immediate control of friendly Haven Defenders at mission start, and WP when extracting civilians (1 of each per Affinity Rank).",,,,,,,,
+- Gain immediate control of friendly Haven Defenders at mission start, and WP when extracting civilians (1 of each per Affinity Rank).
+
+Base Duty Benefits (always active, do not scale with rank):
+
+- Can be trained up to Level 6.",,,,,,,,
 KEY_AFFINITY_OCCULT_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
 
 - Receive a 1 day per Affinity Rank warning before an attack on a Phoenix Base.
@@ -282,7 +291,12 @@ Tactical Benefits (choose one globally):
 
 - Reduce TBTV chance by 5% per Affinity Rank.
 OR
-- For all Allies, effect of Stamina on Delirium increased by 50% per Affinity Rank.",,,,,,,,
+- For all Allies, effect of Stamina on Delirium increased by 50% per Affinity Rank.
+
+Base Duty Benefits (always active, do not scale with rank):
+
+- Generates 4 Research or 4 Manufacturing when assigned to a worker slot.
+- Can be trained up to Level 5.",,,,,,,,
 KEY_AFFINITY_BIOTECH_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
 
 - Operatives recover 30 HP per Affinity Rank after mission.
@@ -293,7 +307,11 @@ Tactical Benefits (choose one globally):
 
 - Gain passive ability: Using a Medkit or a Virophage Kit gives the target Ignore Pain status for 1 turn per Affinity Rank, allowing the target to ignore disabled limbs for that duration
 OR
-- Gain passive ability: Using any healing item or ability restores up to 3 WP per Affinity Rank that the target had lost to Delirium; lasts only for the duration of the mission.",,,,,,,,
+- Gain passive ability: Using any healing item or ability restores up to 3 WP per Affinity Rank that the target had lost to Delirium; lasts only for the duration of the mission.
+
+Base Duty Benefits (always active, do not scale with rank):
+
+- Generates 6 Research when assigned to a Research slot (2 Manufacturing on a Manufacturing slot).",,,,,,,,
 KEY_AFFINITY_MACHINERY_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
 
 - Vehicles recover 150 HP per Affinity Rank after mission.
@@ -304,7 +322,11 @@ Tactical Benefits (choose one globally):
 
 - Gain active ability: Overdrive - restore 1 AP per Affinity Rank to a Vehicle or Operative with Bionics, but giving a 50% vulnerability to all damage types until the end of next turn (1 AP, 3 WP)
 OR
-- Gain passive ability: Using any healing item or ability restores up to 4 Armor per Affinity Rank on each body part of the target.",,,,,,,,
+- Gain passive ability: Using any healing item or ability restores up to 4 Armor per Affinity Rank on each body part of the target.
+
+Base Duty Benefits (always active, do not scale with rank):
+
+- Generates 6 Manufacturing when assigned to a Manufacturing slot (2 Research on a Research slot).",,,,,,,,
 KEY_AFFINITY_COMPUTE_ALL_BENEFITS,Text,,"Geoscape Benefits (choose one globally):
 
 - Aircraft speed increased by 10% per Affinity Rank.
@@ -315,21 +337,37 @@ Tactical Benefits (choose one globally):
 
 - Gain passive ability: Ground vehicles with character inside gain +3 movement and +10% accuracy per Affinity Rank.
 OR
-- For all Allies, Perception vs Pandorans increased by 1 per Affinity Rank out of 3 of the total amount of Delirium in the squad, up to +10 per Affinity Rank.",,,,,,,,
+- For all Allies, Perception vs Pandorans increased by 1 per Affinity Rank out of 3 of the total amount of Delirium in the squad, up to +10 per Affinity Rank.
+
+Base Duty Benefits (always active, do not scale with rank):
+
+- Generates 4 Research or 4 Manufacturing when assigned to a worker slot.
+- Can be trained up to Level 5.",,,,,,,,
 ALISTAIR_ON_INCIDENTS_0_TITLE,Text,,Incident,,,,,,,,
 ALISTAIR_ON_INCIDENTS_0_TEXT,Text,,"Director, we just learned of an incident taking place at a haven that we have visited previously. If we resolve it, perhaps we will learn something valuable, and it can't hurt to show the havens and the factions that we are trying to help.",,,,,,,,
 ALISTAIR_ON_INCIDENTS_1_TITLE,Text,,Human Resources,,,,,,,,
 ALISTAIR_ON_INCIDENTS_1_TEXT,Text,,"Director, we desperately need additional personnel, individuals who have what it takes to be in the Phoenix Project: ingenuity, intellectual curiosity and courage. It turns out that resolving incidents like this one might be the best way to attract new members; wanting to join up after seeing us at work attracts exactly the kind of people we are looking for.",,,,,,,,
 TUTORIAL_PERSONNEL_TITLE0,Text,,Personnel Management,,,,,,,,
-TUTORIAL_PERSONNEL_TEXT0,Text,,"Personnel can be assigned to generate additional Research or Manufacturing. Each Research Lab or Manufacturing Plant generates 2 Research or 2 Manufacturing and provides 1 worker slot. Each Personnel assigned to a worker slot generates 4 Research or 4 Manufacturing. 
+TUTORIAL_PERSONNEL_TEXT0,Text,,"Personnel can be assigned to generate additional Research or Manufacturing. Each Research Lab or Manufacturing Plant generates 2 Research or 2 Manufacturing and provides 1 worker slot. Each Personnel assigned to a worker slot generates 2 Research or 2 Manufacturing. 
+
+Personnel who have an Affinity may be better at this kind of work:
+
+- Biotech: 6 Research (2 Manufacturing).
+- Machinery: 6 Manufacturing (2 Research).
+- Compute, Occult or Psycho-Sociology: 4 Research or 4 Manufacturing.
+- Exploration: 2 Research or 2 Manufacturing, the same as Personnel without an Affinity.
+
+The Affinity of each Personnel is shown as an icon in the top right corner of their entry in the ASSIGNMENTS screen. Affinity benefits on base duty are always active and do not scale with the Affinity’s rank.
+
+Psycho-Sociology Personnel are trained administrators: they count as 3 Personnel when spent to set up an Outpost or to activate a Base.
 
 Personnel can also be deployed as regular Level 1 Operatives of the Class of your choosing. 
 
-If you have a Training Facility you can train Personnel up to Level 4 before deploying them. They will gain +2 Strength, + 1 Willpower and + 1 Speed per level trained. Training costs 10 Faction SP per final level trained. Training takes time, which can be shortened by acquiring certain Technologies, and can be terminated early, in which case you will be refunded the corresponding SP. 
+If you have a Training Facility you can train Personnel up to Level 4 before deploying them. Compute and Occult Personnel can be trained up to Level 5, and Exploration Personnel up to Level 6. They will gain +2 Strength, + 1 Willpower and + 1 Speed per level trained. Training costs 10 Faction SP per final level trained. Training takes time, which can be shortened by acquiring certain Technologies, and can be terminated early, in which case you will be refunded the corresponding SP. 
 
 You start the game with some Personnel, the number depending on difficulty (2 on Legend, 6 on Rookie). 
 
-You gain new Personnel by resolving Incidents; special timed events that occur from time to time at previously visited havens. 
+You gain new Personnel by resolving Incidents; special timed events that occur from time to time at previously visited havens. If the Operative leading the Incident has Rank 2 in an Affinity, one of the Personnel gained will have that same Affinity at Rank 1; if the leader has Rank 3, a second Personnel will also gain a different, randomly chosen Affinity at Rank 1. 
 
 On Hero difficulty and lower you also gain new Personnel periodically (1 on Hero, 3 on Rookie). You can override this setting on New Game start.
 
@@ -339,7 +377,7 @@ Some Dismissed operatives that have “Just a Grunt” perk, such as Mercenaries
 TUTORIAL_PERSONNEL_TITLE1,Text,,Acquiring New Personnel,,,,,,,,
 TUTORIAL_PERSONNEL_TEXT1,Text,,"You start the game with some Personnel, the number depending on difficulty (2 on Legend, 6 on Rookie). 
 
-You gain new Personnel by resolving Incidents; special timed events that occur from time to time at previously visited havens. 
+You gain new Personnel by resolving Incidents; special timed events that occur from time to time at previously visited havens. If the Operative leading the Incident has Rank 2 in an Affinity, one of the Personnel gained will have that same Affinity at Rank 1; if the leader has Rank 3, a second Personnel will also gain a different, randomly chosen Affinity at Rank 1. 
 
 On Hero difficulty and lower you also gain new Personnel periodically (1 on Hero, 3 on Rookie). You can override this setting on New Game start.
 
@@ -355,9 +393,13 @@ You then have the following options:
 
 1) Ransack the base: destroy the base, demolishing every facility at the base, including those that can't be demolished. The amount of resources depends on the difficulty setting, and can be overriden on New Game Start. 
 2) Establish an Outpost (pay 200 mat, 50 tech and 1 Personnel, takes 24 hours). Outposts provide some repair and healing, cannot be attacked, and can help detect nearby Pandoran Colonies after an attack on a Haven, but their facilities don't generate anything and you can't build or demolish facilities at them. Outposts can be upgraded to Bases. 
-3) Activate Base (pay 400 mat, 100 tech, 4 personnel, takes 72 hours, cost reduced by price of setting up an Outpost if upgrading from it). Get the regular Phoenix base. ",,,,,,,,
+3) Activate Base (pay 400 mat, 100 tech, 4 personnel, takes 72 hours, cost reduced by price of setting up an Outpost if upgrading from it). Get the regular Phoenix base. 
+
+Personnel with the Psycho-Sociology Affinity are trained administrators and count as 3 Personnel toward the Personnel cost of setting up an Outpost or activating a Base. ",,,,,,,,
 TUTORIAL_INCIDENTS_TITLE0,Text,,Incidents,,,,,,,,
 TUTORIAL_INCIDENTS_TEXT0,Text,,"Incidents are Geoscape Events that take time to resolve and are the primary way of securing new Personnel. You will get at least 2 Personnel for resolving an Incident successfully (among other rewards, such as Resources, Characters, Improved attitude from Faction and/or Haven Leader), and 1 Personnel if you attempt it but then move the Aircraft away before it is completed. 
+
+If the Operative leading the Incident has Rank 2 in an Affinity, one of the Personnel gained will have that same Affinity at Rank 1. If the leader has Rank 3, a second Personnel will also gain a different, randomly chosen Affinity at Rank 1. 
 
 Every 4-6 days, an Incident will occur at a previously visited haven, inviting you to resolve it within the next 5 days.
 
@@ -365,6 +407,8 @@ To initiate the Incident, you must travel to the haven with an Aircraft with at 
 TUTORIAL_INCIDENTS_TEXT1,Text,,"Every Incident can be resolved in two different ways. One of the choices will correspond to one Approach, and the other choice will allow 2 different Approaches. You have to select one of them. 
 
 You must also choose the Operative to lead the team. Completing the Incident successfully will give the Leading Operative the Affinity corresponding to the Approach taken, or increase the Rank in that Affinity. 
+
+Leading with an Operative who already has Rank 2 or Rank 3 in an Affinity also shapes the Personnel you gain: at Rank 2 one of them will have the leader’s Affinity at Rank 1, and at Rank 3 a second one will gain a different, randomly chosen Affinity at Rank 1. 
 
 You can also Cancel to return to the Incident later. 
 
@@ -377,5 +421,15 @@ TUTORIAL_AFFINITIES_TEXT0,Text,,"- Affinities are gained and advanced in rank by
 - All benefits are multiplied by the Affinity’s rank.
 - Affinity bonuses do not stack — only the highest-ranked specialist’s bonus applies.
 - Geoscape benefits apply to the Aircraft on which the Character is currently a passenger, Benefits in Tactical grant an ability to the Character with the Affinity.
-- Each Character can have only one Affinity.",,,,,,,,
+- Each Character can have only one Affinity.
+- Affinities also matter on base duty. They determine how much Research or Manufacturing a Personnel generates when assigned to a worker slot (Biotech 6 Research, Machinery 6 Manufacturing, Compute / Occult / Psycho-Sociology 4 of either, everyone else 2), how far they can be trained (Compute and Occult to Level 5, Exploration to Level 6), and how many Personnel they count as when spent on an Outpost or a Base activation (Psycho-Sociology counts as 3).
+- Unlike the Geoscape and Tactical benefits, these base duty benefits are always active and do not scale with the Affinity’s rank.
+- Resolving an Incident with a leader of Rank 2 gives one of the Personnel gained the leader’s Affinity at Rank 1; with a leader of Rank 3, a second Personnel gains a different, randomly chosen Affinity at Rank 1.",,,,,,,,
 KEY_BASE_EXPLORE_FIRST,Text,,Explore the base first to unlock these options.,,,,,,,,
+KEY_BASE_PERSONNEL_SELECT_TITLE,Text,,ASSIGN PERSONNEL,,,,,,,,
+KEY_BASE_PERSONNEL_SELECT_REQUIRED,Text,,{0} requires {1} Personnel. Pick who is posted to the site.,,,,,,,,
+KEY_BASE_PERSONNEL_SELECT_WARNING,Text,,Personnel posted to a site stay there for good. They leave the Phoenix Project roster and cannot normally be recovered.,,,,,,,,
+KEY_BASE_PERSONNEL_SELECT_COUNTER,Text,,Selected: {0} / {1},,,,,,,,
+KEY_BASE_PERSONNEL_SELECT_COUNTS_AS,Text,,"Administrator, counts as {0}",,,,,,,,
+KEY_BASE_PERSONNEL_SELECT_CONFIRM,Text,,CONFIRM,,,,,,,,
+KEY_BASE_PERSONNEL_SELECT_CANCEL,Text,,CANCEL,,,,,,,,

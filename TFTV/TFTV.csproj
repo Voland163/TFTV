@@ -156,6 +156,7 @@
     <Compile Include="TFTVAnniversaryCheats.cs" />
     <Compile Include="TFTVBackgrounds.cs" />
     <Compile Include="TFTVBaseRework\BaseActivation.cs" />
+    <Compile Include="TFTVBaseRework\BaseActivationPersonnelSelection.cs" />
     <Compile Include="TFTVBaseRework\BaseActivationUI.cs" />
     <Compile Include="TFTVBaseRework\BaseConstructionVisuals.cs" />
     <Compile Include="TFTVBaseRework\BaseExploration.cs" />
@@ -174,6 +175,7 @@
     <Compile Include="TFTVBaseRework\ResearchAndManufacturing.cs" />
     <Compile Include="TFTVBaseRework\TrainingFacilityRework.cs" />
     <Compile Include="TFTVBaseRework\BaseReworkActiveCheck.cs" />
+    <Compile Include="TFTVBaseRework\UI\AffinityBadgeTooltip.cs" />
     <Compile Include="TFTVBaseRework\UI\Harmony.cs" />
     <Compile Include="TFTVBaseRework\UI\Helpers.cs" />
     <Compile Include="TFTVBaseRework\UI\MonoBehaviours.cs" />

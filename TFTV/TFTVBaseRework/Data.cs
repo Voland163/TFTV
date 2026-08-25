@@ -372,35 +372,50 @@ namespace TFTV.TFTVBaseRework
             return 1;
         }
 
-        internal static bool TryConsumePersonnelForBaseActivation(GeoPhoenixFaction faction, int requiredPersonnel)
+        /// <summary>
+        /// Personnel that may be spent on setting up an Outpost or activating a Base:
+        /// everyone who is not on field duty and not already in training.
+        /// </summary>
+        internal static List<PersonnelInfo> GetPersonnelEligibleForBaseActivation(GeoPhoenixFaction faction)
         {
-            if (!BaseReworkCheck.BaseReworkEnabled || faction == null || requiredPersonnel <= 0)
+            if (!BaseReworkCheck.BaseReworkEnabled || faction == null)
             {
-                return false;
+                return new List<PersonnelInfo>();
             }
 
-            List<PersonnelInfo> eligible = _assignments.Values
+            return _assignments.Values
                 .Where(person => person?.Character != null && person.Character.Faction == faction)
                 .Where(person => person.Assignment == PersonnelAssignment.Unassigned
                     || person.Assignment == PersonnelAssignment.Research
                     || person.Assignment == PersonnelAssignment.Manufacturing)
+                .OrderBy(person => GetBaseActivationPriority(person.Assignment))
+                .ThenByDescending(person => GetActivationWeight(person.Character))
+                .ThenBy(person => person.Id)
                 .ToList();
+        }
 
-            if (eligible.Sum(person => GetActivationWeight(person.Character)) < requiredPersonnel)
+        /// <summary>
+        /// The set the game would spend on its own, used to pre-fill the selection dialog and as the
+        /// fallback when no selection is made. Returns null when the requirement cannot be met.
+        /// </summary>
+        internal static List<PersonnelInfo> PickDefaultPersonnelForBaseActivation(GeoPhoenixFaction faction, int requiredPersonnel)
+        {
+            if (requiredPersonnel <= 0)
             {
-                return false;
+                return null;
+            }
+
+            List<PersonnelInfo> ordered = GetPersonnelEligibleForBaseActivation(faction);
+
+            if (ordered.Sum(person => GetActivationWeight(person.Character)) < requiredPersonnel)
+            {
+                return null;
             }
 
             // Fill by assignment priority (Unassigned, then Research, then Manufacturing).
             // Within a priority group, spend Psycho-Sociology administrators (weight 3) while their
             // full weight still fits the remaining requirement, and top up with regular personnel.
-            List<PersonnelInfo> ordered = eligible
-                .OrderBy(person => GetBaseActivationPriority(person.Assignment))
-                .ThenByDescending(person => GetActivationWeight(person.Character))
-                .ThenBy(person => person.Id)
-                .ToList();
-
-            List<PersonnelInfo> toConsume = new List<PersonnelInfo>();
+            List<PersonnelInfo> picked = new List<PersonnelInfo>();
             int remaining = requiredPersonnel;
 
             foreach (PersonnelInfo person in ordered)
@@ -416,7 +431,7 @@ namespace TFTV.TFTVBaseRework
                     continue;
                 }
 
-                toConsume.Add(person);
+                picked.Add(person);
                 remaining -= weight;
             }
 
@@ -424,28 +439,75 @@ namespace TFTV.TFTVBaseRework
             // overshoot with the highest-priority one rather than fail.
             if (remaining > 0)
             {
-                PersonnelInfo filler = ordered.FirstOrDefault(person => !toConsume.Contains(person));
+                PersonnelInfo filler = ordered.FirstOrDefault(person => !picked.Contains(person));
                 if (filler == null)
                 {
-                    return false;
+                    return null;
                 }
 
-                toConsume.Add(filler);
+                picked.Add(filler);
                 remaining -= GetActivationWeight(filler.Character);
             }
 
-            if (remaining > 0)
+            return remaining > 0 ? null : picked;
+        }
+
+        /// <summary>
+        /// Spends exactly the personnel the player picked. They are dismissed for good, as with the
+        /// automatic selection.
+        /// </summary>
+        internal static bool TryConsumeSelectedPersonnelForBaseActivation(
+            GeoPhoenixFaction faction,
+            IList<PersonnelInfo> selection,
+            int requiredPersonnel)
+        {
+            if (!BaseReworkCheck.BaseReworkEnabled || faction == null || requiredPersonnel <= 0 || selection == null)
             {
                 return false;
             }
 
+            HashSet<int> eligibleIds = new HashSet<int>(GetPersonnelEligibleForBaseActivation(faction).Select(person => person.Id));
+
+            List<PersonnelInfo> toConsume = selection
+                .Where(person => person?.Character != null && eligibleIds.Contains(person.Id))
+                .Distinct()
+                .ToList();
+
+            if (toConsume.Count != selection.Count
+                || toConsume.Sum(person => GetActivationWeight(person.Character)) < requiredPersonnel)
+            {
+                TFTVLogger.Always($"[PersonnelData] Rejected personnel selection for base activation: {toConsume.Count}/{selection.Count} still eligible, {requiredPersonnel} required.");
+                return false;
+            }
+
+            ConsumePersonnelForBaseActivation(faction, toConsume);
+            return true;
+        }
+
+        internal static bool TryConsumePersonnelForBaseActivation(GeoPhoenixFaction faction, int requiredPersonnel)
+        {
+            if (!BaseReworkCheck.BaseReworkEnabled || faction == null)
+            {
+                return false;
+            }
+
+            List<PersonnelInfo> toConsume = PickDefaultPersonnelForBaseActivation(faction, requiredPersonnel);
+            if (toConsume == null)
+            {
+                return false;
+            }
+
+            ConsumePersonnelForBaseActivation(faction, toConsume);
+            return true;
+        }
+
+        private static void ConsumePersonnelForBaseActivation(GeoPhoenixFaction faction, IEnumerable<PersonnelInfo> toConsume)
+        {
             foreach (PersonnelInfo person in toConsume)
             {
                 RemovePersonnel(faction, person);
                 faction.KillCharacter(person.Character, CharacterDeathReason.Dismissed);
             }
-
-            return true;
         }
 
         private static int GetBaseActivationPriority(PersonnelAssignment assignment)
