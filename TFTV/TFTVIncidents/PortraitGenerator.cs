@@ -20,7 +20,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using TFTV.TFTVUI.Personnel;
+using TFTV.TFTVUI.Personnel;
+
 using UnityEngine;
 
 namespace TFTV.TFTVIncidents
@@ -54,10 +55,13 @@ namespace TFTV.TFTVIncidents
         private const int MaxPortraitResolution = 1024;
         private const int FallbackPortraitResolution = 512;
 
-        // Framing of the head close-up.
+        // Framing. The camera sits off to one side of the face rather than square in front of it, a
+        // little above eye level, and far enough back for the shoulders and armour to read.
         private const float CameraFoV = 40f;
-        private const float NoseDistance = 0.80f;
-        private const float HeadDistance = 0.88f;
+        private const float NoseDistance = 1.10f;
+        private const float HeadDistance = 1.20f;
+        private const float CameraYawDegrees = 28f;
+        private const float CameraHeight = 0.06f;
 
         // Generous: the first build of a session waits on addon assets being loaded from disk.
         private const float RebuildTimeoutSeconds = 20f;
@@ -292,6 +296,17 @@ namespace TFTV.TFTVIncidents
                 // clean when the UI displays it slightly scaled.
                 rendered.filterMode = FilterMode.Trilinear;
                 rendered.anisoLevel = 4;
+
+                // TEMPORARY - lets the new framing be checked directly. Remove once it is settled.
+                try
+                {
+                    System.IO.File.WriteAllBytes(System.IO.Path.Combine(Application.persistentDataPath,
+                        $"TFTV_Portrait_{character.Id}.png"), rendered.EncodeToPNG());
+                }
+                catch (Exception dumpError)
+                {
+                    TFTVLogger.Error(dumpError);
+                }
 
                 onDone?.Invoke(Sprite.Create(
                     rendered,
@@ -722,7 +737,13 @@ namespace TFTV.TFTVIncidents
                 camera.nearClipPlane = 0.01f;
                 camera.farClipPlane = 2.5f;
 
-                camera.transform.position = target.position + target.forward * distance;
+                // Swing the camera around the head for a three-quarter view. The yaw is taken about
+                // world up rather than the bone's, since rig bones do not carry a dependable up, and
+                // the look-at levels the shot so the portrait is never tilted.
+                Vector3 viewDirection = Quaternion.AngleAxis(CameraYawDegrees, Vector3.up) * target.forward;
+                camera.transform.position = target.position
+                    + viewDirection.normalized * distance
+                    + Vector3.up * CameraHeight;
                 camera.transform.LookAt(target.position);
 
                 camera.Render();
