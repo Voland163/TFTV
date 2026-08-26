@@ -1,4 +1,6 @@
 ﻿using Base;
+using Base.Cameras;
+using Base.Core;
 using Base.Rendering.ObjectRendering;
 using HarmonyLib;
 using PhoenixPoint.Tactical.UI.SoldierPortraits;
@@ -221,7 +223,8 @@ namespace TFTV.TFTVVanillaFixes.Tactical
         [HarmonyPatch(typeof(SoldierPortraitUtil), nameof(SoldierPortraitUtil.RenderSoldierNoCopy))]
         public static class SoldierPortraitUtil_RenderSoldierNoCopy_patch
         {
-
+            // usedCamera (LightsPicker.UsedCamera) is no longer used - CaptureSoldier makes its own
+            // camera - but Harmony needs the signature to keep matching the original.
             public static bool Prefix(GameObject soldierToRender, RenderPortraitParams renderParams, Camera usedCamera, ref Texture2D __result)
             {
                 try
@@ -240,50 +243,21 @@ namespace TFTV.TFTVVanillaFixes.Tactical
                     //   AdjustPortraitLightsCold(lights[0], lights[1], lights[2], lights[3]);
                     //  AdjustLovecraftianPortraitLights(lights[0], lights[1], lights[2], lights[3]);
 
-                    Texture2D texture2D = new Texture2D(renderParams.RenderedPortraitsResolution.x, renderParams.RenderedPortraitsResolution.y, TextureFormat.RGBA32, mipChain: true);
-                    texture2D.filterMode = FilterMode.Trilinear;
-
-
-                    RenderingEnvironment renderingEnvironment = new RenderingEnvironment(renderParams.RenderedPortraitsResolution, RenderingEnvironmentOption.NoBackground, null, usedCamera);
-
-                    if (CheckOSX())
-                    {
-                        renderingEnvironment = new RenderingEnvironment(renderParams.RenderedPortraitsResolution, RenderingEnvironmentOption.NoBackground, Color.black, usedCamera);
-                    }
-
-                    //  TFTVLogger.Always($"QualitySettings.antiAliasing: {QualitySettings.antiAliasing}");
-
-                    //  renderingEnvironment.RenderTexture.antiAliasing = (QualitySettings.antiAliasing > 0) ? QualitySettings.antiAliasing : 4;
-
                     float cameraDistance = renderParams.CameraDistance;
 
-                    Transform transform = soldierToRender.transform.FindTransformInChildren("Nose");
-                    if (transform == null)
+                    Transform targetBone = soldierToRender.transform.FindTransformInChildren("Nose");
+                    if (targetBone == null)
                     {
-                        transform = soldierToRender.transform.FindTransformInChildren("Jaw");//Head");
+                        targetBone = soldierToRender.transform.FindTransformInChildren("Jaw");//Head");
                         cameraDistance = 0.63f;
 
-                        if (transform == null)
+                        if (targetBone == null)
                         {
-                            transform = soldierToRender.transform;
+                            targetBone = soldierToRender.transform;
                         }
-                        ;
                     }
 
-                    Transform transform2 = soldierToRender.transform;
-                    Vector3 position = transform2.position;
-                    Quaternion rotation = transform2.rotation;
-                    transform2.position = renderingEnvironment.OriginPosition;
-                    transform2.rotation = renderingEnvironment.OriginRotation;
-
-                    SoldierFrame cameraFrameLogic = new SoldierFrame(transform, renderParams.CameraFoV, cameraDistance, renderParams.CameraHeight, renderParams.CameraSide);
-                    renderingEnvironment.Render(cameraFrameLogic, useOrigin: false);
-                    renderingEnvironment.WriteResultsToTexture(texture2D);
-                    texture2D.Apply(updateMipmaps: true);
-
-                    transform2.position = position;
-                    transform2.rotation = rotation;
-                    __result = texture2D;
+                    __result = CaptureSoldier(targetBone, renderParams, cameraDistance);
 
                     return false;
                 }
@@ -292,6 +266,82 @@ namespace TFTV.TFTVVanillaFixes.Tactical
                     TFTVLogger.Error(e);
                     throw;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Renders the staged soldier with a camera copied from the one the game draws the world with.
+        ///
+        /// The game's own path (SoldierPortraitUtil -> RenderingEnvironment) builds a bare camera and
+        /// forces RenderingPath.Forward on it, and the character shader's customization - armour
+        /// colour and pattern, which live in per-renderer MaterialPropertyBlocks set on the body
+        /// part's own material by HighlightControllerComponent - does not survive that path: the
+        /// armour renders in its factory texture. Copying the live camera keeps the shader on the
+        /// path it takes in the scene, which is where the customization shows. Same fix as
+        /// TFTVIncidents.PortraitGenerator.CapturePortrait.
+        ///
+        /// The subject is framed where it stands, at the char builder's own staging position: vanilla
+        /// moved it to the RenderingEnvironment origin, but it passed useOrigin: false, so SoldierFrame
+        /// framed off the bone's own axes either way. SoldierFrame also culls to the Characters layer
+        /// and clips 2.5m out, which is what keeps the rest of the scene out of the picture.
+        /// </summary>
+        private static Texture2D CaptureSoldier(Transform targetBone, RenderPortraitParams renderParams, float cameraDistance)
+        {
+            Vector2Int resolution = renderParams.RenderedPortraitsResolution;
+
+            RenderTexture renderTexture = RenderTexture.GetTemporary(
+                resolution.x, resolution.y, 24, RenderTextureFormat.ARGB32);
+
+            GameObject cameraHost = new GameObject("_TFTVPortraitCamera_");
+            RenderTexture previouslyActive = RenderTexture.active;
+
+            try
+            {
+                Camera camera = cameraHost.AddComponent<Camera>();
+                Camera sceneCamera = GameUtl.GameComponent<CameraManager>()?.Camera;
+                if (sceneCamera != null)
+                {
+                    camera.CopyFrom(sceneCamera);
+                }
+                else
+                {
+                    camera.renderingPath = RenderingPath.UsePlayerSettings;
+                }
+
+                camera.enabled = false;
+                camera.targetTexture = renderTexture;
+                camera.clearFlags = CameraClearFlags.SolidColor;
+                // Codemite's fix for pink portrait backgrounds on Macs: OSX cannot carry the
+                // transparent clear, so clear to black there instead.
+                camera.backgroundColor = CheckOSX() ? Color.black : new Color(0f, 0f, 0f, 0f);
+                camera.allowHDR = false;
+                camera.allowMSAA = false;
+                camera.allowDynamicResolution = false;
+                camera.usePhysicalProperties = false;
+                camera.orthographic = false;
+                camera.nearClipPlane = 0.01f;
+
+                // Vanilla framing, unchanged: position off the bone, LookAt, FoV, the Characters-only
+                // culling mask and the 2.5m far clip.
+                CameraFrameLogic cameraFrameLogic = new SoldierFrame(targetBone, renderParams.CameraFoV,
+                    cameraDistance, renderParams.CameraHeight, renderParams.CameraSide);
+                cameraFrameLogic.FrameCamera(camera, null);
+
+                camera.Render();
+
+                RenderTexture.active = renderTexture;
+                Texture2D texture2D = new Texture2D(resolution.x, resolution.y, TextureFormat.RGBA32, mipChain: true);
+                texture2D.ReadPixels(new Rect(0f, 0f, resolution.x, resolution.y), 0, 0, recalculateMipMaps: true);
+                texture2D.Apply(updateMipmaps: true);
+                texture2D.filterMode = FilterMode.Trilinear;
+                texture2D.anisoLevel = 4;
+                return texture2D;
+            }
+            finally
+            {
+                RenderTexture.active = previouslyActive;
+                UnityEngine.Object.Destroy(cameraHost);
+                RenderTexture.ReleaseTemporary(renderTexture);
             }
         }
     }
