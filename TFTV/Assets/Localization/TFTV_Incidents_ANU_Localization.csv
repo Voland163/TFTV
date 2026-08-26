@@ -1,4 +1,4 @@
-Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
+﻿Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
 TFTV_INCIDENT_0_TITLE_AN,Text,"Requirements: Advanced Training Zone, 
 Haven Leader >24",The Divergent Dream,,,,,,,,
 TFTV_INCIDENT_0_DESC,Text,,"The Exarch of [HavenName], friendly to the Phoenix Project has contacted us about a neophyte Priest of Yearning, Nahia Girvane. She recently participated in a major communion rite, but her vision differed from the congregation’s. They fear that the Archierus of her order will expel her—or worse.",,,,,,,,
@@ -9,32 +9,32 @@ TFTV_INCIDENT_0_OUTCOME_0_SUCCESS,Text,"Reward: Nahia Grivane, LVL2 Priest","She
 There is no place for her at [HavenName] and she wishes to join the Phoenix Project.",,,,,,,,
 TFTV_INCIDENT_0_OUTCOME_1_SUCCESS,Text,"Reward: Nahia Grivane, LVL2 Priest","The scan revealed an anomalous resistance to oneiric influence, possibly tied to a childhood concussion. Her neural patterns diverge significantly from those of her congregation.
 There is no place for her at [HavenName] and she wishes to join the Phoenix Project.",,,,,,,,
-TFTV_INCIDENT_0_OUTCOME_0_FAIL,Text,,"Her story was disjointed—images of collapsing stone, a black tide, a voice that wasn't hers. She’s afraid of what it means. She asked us not to tell the others.",,,,,,,,
+TFTV_INCIDENT_0_OUTCOME_0_FAIL,Text,,"Her story was disjointed—images of collapsing stone, a black tide, a voice that wasn't hers. She’s afraid of what it means. She asked [OperativeName] not to tell the others.",,,,,,,,
 TFTV_INCIDENT_0_OUTCOME_1_FAIL,Text,,The examination failed to yield any significant results and the procedure has made Nahia scared and distrustful.,,,,,,,,
 TFTV_INCIDENT_1_TITLE_AN,Text,,The Molt Beneath the Flesh,,,,,,,,
 TFTV_INCIDENT_1_DESC,Text,,"Director, the mutated here are shedding skin in waves of pain and delirium. Some call it holy transformation. Others are dying. Synod followers have barred outsiders from interfering. A few junior priests claim this is sickness, but the Syndod’s representatives claim it’s evolution.",,,,,,,,
 TFTV_INCIDENT_1_CHOICE_0_B,Text,,Treat and observe the molting victims. (Biotech),,,,,,,,
 TFTV_INCIDENT_1_CHOICE_1_E_O,Text,,Collect samples and withdraw. (Exploration/Occult),,,,,,,,
 TFTV_INCIDENT_1_CHOICE_2,Text,,Best not to interfere in Anu matters. [END],,,,,,,,
-TFTV_INCIDENT_1_OUTCOME_0_SUCCESS,Text,Reward: +4 Anu +8 Haven Leader,We saved lives and collected data pointing to failure of mutations to fully take hold. One priestess thanked us—then vanished.,,,,,,,,
+TFTV_INCIDENT_1_OUTCOME_0_SUCCESS,Text,Reward: +4 Anu +8 Haven Leader,[OperativeName] saved lives and collected data pointing to failure of mutations to fully take hold. One priestess thanked us—then vanished.,,,,,,,,
 TFTV_INCIDENT_1_OUTCOME_1_SUCCESS,Text,Reward:  +200 Mutagens + 200 Research,Samples secured. Early analysis suggests exogenous instigation of an accelerated mutation cycle.,,,,,,,,
-TFTV_INCIDENT_1_OUTCOME_0_FAIL,Text,,We treated several before Synod loyalists intervened. Survivors are whispering of a ‘false evolution.,,,,,,,,
-TFTV_INCIDENT_1_OUTCOME_1_FAIL,Text,,We got what we came for—but were seen. The Synod accused us of sacrilege and we had to return the samples to avoid a diplomatic incident.,,,,,,,,
+TFTV_INCIDENT_1_OUTCOME_0_FAIL,Text,,[OperativeName] treated several before Synod loyalists intervened. Survivors are whispering of a ‘false evolution.,,,,,,,,
+TFTV_INCIDENT_1_OUTCOME_1_FAIL,Text,,[OperativeName] got what we came for—but was seen. The Synod accused us of sacrilege and we had to return the samples to avoid a diplomatic incident.,,,,,,,,
 TFTV_INCIDENT_2_TITLE_AN,Text,,The Delusional Taxiarch ,,,,,,,,
 TFTV_INCIDENT_2_DESC,Text,,"Director, a Taxiarch has sealed himself inside a meditation chamber, claiming to hear a voice ‘rising from the roots of the flesh.’ The Synod calls it a blessing. But others whisper he screams through the night, and that what he’s channeling may not be divine.",,,,,,,,
 TFTV_INCIDENT_2_CHOICE_0_B_P,Text,,Try to speak with the Taxiarch. (Biotech/Psycho-Sociology),,,,,,,,
 TFTV_INCIDENT_2_CHOICE_1_E,Text,,Set up surveillance to gather data. (Exploration),,,,,,,,
 TFTV_INCIDENT_2_CHOICE_2,Text,,Best not to interfere. [END],,,,,,,,
 TFTV_INCIDENT_2_OUTCOME_0_SUCCESS,Text,Reward: +4 Anu +8 Haven Leader,"[OperativeName] managed to calm him long enough to speak—if not to make sense. The Taxiarch appeared lucid, but his beliefs had collapsed. He claimed partial mutation was punishment, not salvation, and called the Pandoran creatures ‘the chosen.’ We’ve withdrawn. The Synod will handle the fallout.",,,,,,,,
-TFTV_INCIDENT_2_OUTCOME_1_SUCCESS,Text,Reward:  +8 Haven Leader +200 research,We captured hours of audio. His speech mimicked Pandoran patterns—though oddly articulate. He spoke of ‘the Creator’ and begged for a final stage he called ‘completion.’ The Synod remains silent.,,,,,,,,
-TFTV_INCIDENT_2_OUTCOME_0_FAIL,Text,,"He attacked our operative mid-sentence, issuing an inhuman hiss. We were expelled from the haven immediately.",,,,,,,,
+TFTV_INCIDENT_2_OUTCOME_1_SUCCESS,Text,Reward:  +8 Haven Leader +200 research,[OperativeName] captured hours of audio. His speech mimicked Pandoran patterns—though oddly articulate. He spoke of ‘the Creator’ and begged for a final stage he called ‘completion.’ The Synod remains silent.,,,,,,,,
+TFTV_INCIDENT_2_OUTCOME_0_FAIL,Text,,"He attacked [OperativeName] mid-sentence, issuing an inhuman hiss. We were expelled from the haven immediately.",,,,,,,,
 TFTV_INCIDENT_2_OUTCOME_1_FAIL,Text,,"The feed ended with a burst of static—and then silence. When the chamber was opened, the Taxiarch was dead. No cause could be determined.",,,,,,,,
 TFTV_INCIDENT_3_TITLE_AN,Text,Requirement: Rep with Anu >24,Echoes of Resonance,,,,,,,,
 TFTV_INCIDENT_3_DESC,Text,,A representative of the Blind Legate has extended an invitation— access to a sacred retreat close to the Haven: a pre-Pandoravirus site where early disciples sought 'resonance of the flesh.' The Legate claims it still holds echoes of collective vision. They trust us enough to enter… if we're willing.,,,,,,,,
 TFTV_INCIDENT_3_CHOICE_0_E,Text,,Send a team to explore and document the retreat. (Exploration),,,,,,,,
 TFTV_INCIDENT_3_CHOICE_1_M_O,Text,,"Attempt to recreate the experience of the early disciples, interacting with the devices they left behind (Machinery/Occult)",,,,,,,,
 TFTV_INCIDENT_3_CHOICE_2,Text,,Avoid religious entanglement. [END],,,,,,,,
-TFTV_INCIDENT_3_OUTCOME_0_SUCCESS,Text,Reward: +5 Anu ,"The retreat was intact—stone walls covered in hand-drawn neuro-symbolic patterns. We found logs describing synchronized trance rituals predating the first outbreak. The site was secured and sealed by a government agency shortly after the outbreak of the World War, and the members of the cult were prosecuted for ‘anti-patriotic subversion.",,,,,,,,
+TFTV_INCIDENT_3_OUTCOME_0_SUCCESS,Text,Reward: +5 Anu ,"The retreat was intact—stone walls covered in hand-drawn neuro-symbolic patterns. [OperativeName] found logs describing synchronized trance rituals predating the first outbreak. The site was secured and sealed by a government agency shortly after the outbreak of the World War, and the members of the cult were prosecuted for ‘anti-patriotic subversion.",,,,,,,,
 TFTV_INCIDENT_3_OUTCOME_1_SUCCESS,Text,Reward: +5 Anu ,"[OperativeName] emerged deeply affected but composed. Described feeling ‘connected to something vast, unfinished.’ Neural scans show brief cortical resonance.",,,,,,,,
 TFTV_INCIDENT_3_OUTCOME_0_FAIL,Text,,Our presence disturbed something. [OperativeName] suffered acute migraine mid-mapping. No physical cause.,,,,,,,,
 TFTV_INCIDENT_3_OUTCOME_1_FAIL,Text,,"[OperativeName] collapsed after exiting. No injuries—just repeating the words, ‘We never reached the same frequency.’ No memory of the event.",,,,,,,,
@@ -49,13 +49,13 @@ TFTV_INCIDENT_4_OUTCOME_0_SUCCESS,Text,Reward: +4 Anu +8 Haven Leader + 400 food
 To many, the killings are divine retribution—the return of justice in flesh and blood.
 One zealot, proud and trembling, claims to possess a “trophy” from one of the victims: a dried Arthron claw.
 Apparently at least some in the slums of [HavenName] believe their leaders are Pandorans in disguise.
-The Exarch appreciates our analysis.",,,,,,,,
+The Exarch appreciates [OperativeName]’s analysis.",,,,,,,,
 TFTV_INCIDENT_4_OUTCOME_1_SUCCESS,Text,Reward: +4 Anu +8 Haven Leader + Mutog,"The autopsies reveal no consistent pattern in the mutilations—no ritual marks, no surgical precision, no clear motive.
 Yet the wounds bear signs of feeding. Tissue has been torn away, devoured by something with immense strength and no apparent need for tools.
 When confronted, the Exarch swears by the Dead God that all Mutogs are <i>now</i> accounted for.",,,,,,,,
 TFTV_INCIDENT_4_OUTCOME_0_FAIL,Text,,"The slums are hostile and fearful. Most residents refuse to speak; others denounce the Phoenix operatives as blasphemers.
 A crowd gathers, chanting prayers for “purification.”
-The team is forced to withdraw under escort, learning nothing—except that fear and faith have become indistinguishable.",,,,,,,,
+[OperativeName] is forced to withdraw under escort, learning nothing—except that fear and faith have become indistinguishable.",,,,,,,,
 TFTV_INCIDENT_4_OUTCOME_1_FAIL,Text,,"The examination is obstructed at every turn. Priests of the Circle of Life forbid invasive procedures, declaring the bodies “returned to the Flow.”
 By the time permission is granted, the remains have been cremated.
 The investigation ends with a sermon: “The flesh is not for comprehension, but for transcendence.”
@@ -67,7 +67,7 @@ TFTV_INCIDENT_5_CHOICE_0_E_P,Text,,"Explore the slums and speak with recent conv
 TFTV_INCIDENT_5_CHOICE_1_O,Text,,"Engage the sect’s leaders in theological debate.
 (Occult)",,,,,,,,
 TFTV_INCIDENT_5_CHOICE_2,Text,,We ought to stay as far away from this as possible [END],,,,,,,,
-TFTV_INCIDENT_5_OUTCOME_0_SUCCESS,Text,Extra personnel,"The Phoenix team spends some time in the lower district, speaking with artisans, traders, and refugees. The slums are filled not only with the dispossessed, but with skilled workers and small merchants—people who contribute to the haven yet remain excluded from advancement.
+TFTV_INCIDENT_5_OUTCOME_0_SUCCESS,Text,Extra personnel,"[OperativeName] spends some time in the lower district, speaking with artisans, traders, and refugees. The slums are filled not only with the dispossessed, but with skilled workers and small merchants—people who contribute to the haven yet remain excluded from advancement.
 
 The schism, lead by one Brad Huxley, offers them dignity and a voice.",,,,,,,,
 TFTV_INCIDENT_5_OUTCOME_1_SUCCESS,Text,Extra personnel,"The sect’s leader, Brad Huxley—a Synedrion exile—is articulate and pragmatic.
@@ -75,12 +75,12 @@ TFTV_INCIDENT_5_OUTCOME_1_SUCCESS,Text,Extra personnel,"The sect’s leader, Bra
 He shows little interest in dismantling the Disciples of Anu. What he seeks is recognition.
 
 “Faith without dialogue becomes stagnation,” he says. “We only ask to be taken into account.”",,,,,,,,
-TFTV_INCIDENT_5_OUTCOME_0_FAIL,Text,,"The presence of Phoenix operatives causes doors to close and conversations to die mid-sentence.
+TFTV_INCIDENT_5_OUTCOME_0_FAIL,Text,,"[OperativeName]’s presence causes doors to close and conversations to die mid-sentence.
 
 Many believe the team has come as agents of the Disciples’ hierarchy.
 
 The slums retreat into silence, and whatever truths they hold remain carefully hidden.",,,,,,,,
-TFTV_INCIDENT_5_OUTCOME_1_FAIL,Text,,"The operatives’ arguments are met with thin smiles and sharper words.
+TFTV_INCIDENT_5_OUTCOME_1_FAIL,Text,,"[OperativeName]’s arguments are met with thin smiles and sharper words.
 
 Scriptural references are dismantled, logic turned against itself.
 
@@ -97,7 +97,7 @@ TFTV_INCIDENT_6_CHOICE_1_B,Text,,"Perform a thorough examination of the alleged 
 TFTV_INCIDENT_6_CHOICE_2,Text,,Do not get involved [END],,,,,,,,
 TFTV_INCIDENT_6_OUTCOME_0_SUCCESS,Text,Reward: +8 Anu +16 Haven Leader + 600 food,"Huxley fears losing face among his followers if he appears to simply submit to the Exarch’s demands, but he lacks the strength to resist Anu authority outright.
 
-With Phoenix Project overseeing the transfer of the fugitive, the surrender is framed as a matter of undeniable guilt rather than capitulation.",,,,,,,,
+With [OperativeName] overseeing the transfer of the fugitive, the surrender is framed as a matter of undeniable guilt rather than capitulation.",,,,,,,,
 TFTV_INCIDENT_6_OUTCOME_1_SUCCESS,Text,Reward: +8 Anu +16 Haven Leader + 400 mutagens,"The apostate is a Hiereus—an Anu warrior-priest—who passed the Water of Life ritual less than a week ago.
 
 Unlike most observed cases, the mutations have spread rapidly across nearly his entire body. The subject is barely coherent when the examination begins, and further neural deterioration becomes evident even before it concludes.
@@ -105,7 +105,7 @@ Unlike most observed cases, the mutations have spread rapidly across nearly his 
 Aggression escalates alongside the breakdown.",,,,,,,,
 TFTV_INCIDENT_6_OUTCOME_0_FAIL,Text,,"The discussion falters.
 
-Huxley grows defensive, sensing that Phoenix’s involvement makes his compromise too visible. Word spreads quickly that he is yielding under pressure.
+Huxley grows defensive, sensing that [OperativeName]’s involvement makes his compromise too visible. Word spreads quickly that he is yielding under pressure.
 
 His followers begin to question his resolve, while Anu officials interpret the hesitation as defiance.",,,,,,,,
 TFTV_INCIDENT_6_OUTCOME_1_FAIL,Text,,"The examination is disrupted when the subject becomes violently unstable.
@@ -186,7 +186,7 @@ The suspect responds politely but minimally, repeating herself until the questio
 
 Attempts to provoke stress responses fail.
 
-The Anu observers interpret Phoenix’s inability to extract a confession as confirmation of guilt.",,,,,,,,
+The Anu observers interpret [OperativeName]’s inability to extract a confession as confirmation of guilt.",,,,,,,,
 TFTV_INCIDENT_9_TITLE_AN,Text,Requirements: Anu haven near liberated infested Synedrion haven ,Those Who Remain,,,,,,,,
 TFTV_INCIDENT_9_DESC,Text,,"Hundreds of refugees from the Synedrion haven of [RequirementHavenName], recently lost to Pandoran infestation, have been living at the Anu haven of [HavenName].
 
@@ -212,7 +212,7 @@ TFTV_INCIDENT_9_OUTCOME_0_FAIL,Text,,"Conversations remain superficial.
 
 Complaints about conditions drown out subtler patterns.
 
-Phoenix withdraws with the impression that tensions are mounting—though no clear source can be identified.",,,,,,,,
+[OperativeName] withdraws with the impression that tensions are mounting—though no clear source can be identified.",,,,,,,,
 TFTV_INCIDENT_9_OUTCOME_1_FAIL,Text,,"It all looks like chaos and neglect; if there is some pattern or direction, it remains hidden from us.",,,,,,,,
 TFTV_INCIDENT_10_TITLE_AN,Text,,Voices in the Engine,,,,,,,,
 TFTV_INCIDENT_10_DESC,Text,,"Maintenance personnel at the power plant of [HavenName] report seeing shapes in the shadows and hearing voices where none should be.
@@ -236,7 +236,7 @@ TFTV_INCIDENT_10_OUTCOME_1_SUCCESS,Text,"Reward: Anu +4, Haven leader +8, Resear
 
 Yet the ritualized way she maintains the plant—fixed routes, repeated gestures, and areas avoided without explicit explanation—reveals an unspoken structure.
 
-Following these patterns leads Phoenix operatives to sections of the facility that are rarely inspected.
+Following these patterns leads [OperativeName] to sections of the facility that are rarely inspected.
 
 In these neglected spaces, an unfamiliar organic presence is discovered, clinging to conduits and shielding.",,,,,,,,
 TFTV_INCIDENT_10_OUTCOME_0_FAIL,Text,,"The investigation yields little more than shadows and noise.
@@ -264,7 +264,7 @@ TFTV_INCIDENT_11_CHOICE_0_M,Text,,"Monitor outgoing communications from the have
 TFTV_INCIDENT_11_CHOICE_1_E_O,Text,,"Explore the slums and speak with the locals under pretext of religious interest. 
 (Exploration / Occult)",,,,,,,,
 TFTV_INCIDENT_11_CHOICE_2,Text,,We are not Synedrion's hounds [END],,,,,,,,
-TFTV_INCIDENT_11_OUTCOME_0_SUCCESS,Text,"Reward: + 5 Syn, 100 tech","Traffic analysis reveals an unusual pattern: brief, irregular data bursts routed through public access relays. Most of the traffic is trivial—provocations, mockery, deliberately irritating intrusions into Synedrion networks. Tracking the source of the trolling leads Phoenix to a single terminal and its operator.
+TFTV_INCIDENT_11_OUTCOME_0_SUCCESS,Text,"Reward: + 5 Syn, 100 tech","Traffic analysis reveals an unusual pattern: brief, irregular data bursts routed through public access relays. Most of the traffic is trivial—provocations, mockery, deliberately irritating intrusions into Synedrion networks. Tracking the source of the trolling leads [OperativeName] to a single terminal and its operator.
 
 The man appears amused rather than alarmed. “I know what you’re looking for,” he says.
 
@@ -275,7 +275,7 @@ TFTV_INCIDENT_11_OUTCOME_1_SUCCESS,Text,"Reward: + 5 Syn, 100 tech","The trail l
 
 Among chemical diversions and virtual indulgences, illicit data work is common enough to attract little attention.
 
-One individual greets Phoenix without surprise.
+One individual greets [OperativeName] without surprise.
 
 “I heard you coming,” he says. “So I took care of it.”
 
@@ -293,7 +293,7 @@ TFTV_INCIDENT_11_OUTCOME_1_FAIL,Text,,"Conversations go nowhere.
 
 Some locals pretend ignorance. Others offer misleading directions for a price.
 
-The slums absorb Phoenix’s attention without yielding results.
+The slums absorb [OperativeName]’s attention without yielding results.
 
 By the time a credible lead emerges, the opportunity has passed.",,,,,,,,
 TFTV_INCIDENT_12_TITLE_AN,Text,Requirements: haven surived attack,First to Burn,,,,,,,,
