@@ -1,4 +1,4 @@
-using Base.Core;
+﻿using Base.Core;
 using HarmonyLib;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Events;
@@ -29,6 +29,10 @@ namespace TFTV.TFTVIncidents
         private static readonly Dictionary<string, int> LeaderByExactKey = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, int> LeaderBySiteKey = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
+        // Keyed without the event id, so [OperativeName] can find the leader from a
+        // GeoscapeEventContext alone (that context carries no event id of its own).
+        private static readonly Dictionary<string, int> LeaderBySiteVehicleKey = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
         internal static void RecordIncidentLeader(string completionEventId, int siteId, int vehicleId, int leaderId)
         {
             try
@@ -40,6 +44,7 @@ namespace TFTV.TFTVIncidents
 
                 LeaderByExactKey[BuildExactKey(completionEventId, siteId, vehicleId)] = leaderId;
                 LeaderBySiteKey[BuildSiteKey(completionEventId, siteId)] = leaderId;
+                LeaderBySiteVehicleKey[BuildSiteVehicleKey(siteId, vehicleId)] = leaderId;
             }
             catch (Exception e)
             {
@@ -51,6 +56,39 @@ namespace TFTV.TFTVIncidents
         {
             LeaderByExactKey.Clear();
             LeaderBySiteKey.Clear();
+            LeaderBySiteVehicleKey.Clear();
+        }
+
+        /// <summary>
+        /// Id of the operative who led the incident resolved at this site/vehicle, if one was recorded.
+        /// The event id is optional: outcome text is tokenised from a GeoscapeEventContext, which does
+        /// not expose the event it belongs to.
+        /// </summary>
+        internal static bool TryGetRecordedLeaderId(string eventId, int siteId, int vehicleId, out int leaderId)
+        {
+            leaderId = -1;
+
+            if (!string.IsNullOrEmpty(eventId))
+            {
+                if (vehicleId > 0 && LeaderByExactKey.TryGetValue(BuildExactKey(eventId, siteId, vehicleId), out leaderId))
+                {
+                    return leaderId > 0;
+                }
+
+                if (LeaderBySiteKey.TryGetValue(BuildSiteKey(eventId, siteId), out leaderId))
+                {
+                    return leaderId > 0;
+                }
+            }
+
+            if (siteId > 0 && vehicleId > 0
+                && LeaderBySiteVehicleKey.TryGetValue(BuildSiteVehicleKey(siteId, vehicleId), out leaderId))
+            {
+                return leaderId > 0;
+            }
+
+            leaderId = -1;
+            return false;
         }
 
         private static bool IsIncidentOutcomeEvent(string eventId)
@@ -714,6 +752,15 @@ namespace TFTV.TFTVIncidents
             return string.Join("|", new[]
             {
                 eventId ?? string.Empty,
+                siteId.ToString(CultureInfo.InvariantCulture),
+                vehicleId.ToString(CultureInfo.InvariantCulture)
+            });
+        }
+
+        private static string BuildSiteVehicleKey(int siteId, int vehicleId)
+        {
+            return string.Join("|", new[]
+            {
                 siteId.ToString(CultureInfo.InvariantCulture),
                 vehicleId.ToString(CultureInfo.InvariantCulture)
             });

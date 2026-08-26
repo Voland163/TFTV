@@ -204,6 +204,37 @@ namespace TFTV.TFTVIncidents
                     && Definitions.Any(d => string.Equals(d.CompletionEventId, eventId, StringComparison.OrdinalIgnoreCase));
             }
 
+            /// <summary>
+            /// Leader of the incident still running at this site/vehicle, used by [OperativeName]
+            /// while the incident is in progress (before the outcome record exists).
+            /// </summary>
+            internal static bool TryGetActiveIncidentLeaderId(int siteId, int vehicleId, out int leaderId)
+            {
+                leaderId = -1;
+                if (siteId <= 0)
+                {
+                    return false;
+                }
+
+                foreach (ActiveTimedProblem active in ActiveByTimerId.Values)
+                {
+                    if (active == null || active.SiteId != siteId || active.LeaderId <= 0)
+                    {
+                        continue;
+                    }
+
+                    if (vehicleId > 0 && active.VehicleId > 0 && active.VehicleId != vehicleId)
+                    {
+                        continue;
+                    }
+
+                    leaderId = active.LeaderId;
+                    return true;
+                }
+
+                return false;
+            }
+
             internal static bool TryGetStoredMatchedNearbyHavenSiteId(string eventId, int siteId, int vehicleId, out int matchedNearbyHavenSiteId)
             {
                 matchedNearbyHavenSiteId = -1;

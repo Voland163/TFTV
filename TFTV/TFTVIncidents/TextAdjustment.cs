@@ -31,7 +31,8 @@ namespace TFTV.TFTVIncidents
                 {
                     { "[RequirementOperativeName]", GetRequirementOperativeName },
                     { "[RequirementHavenName]", GetRequirementHavenName },
-                    { "[OperativeName]", GetOperativeName }
+                    { "[OperativeName]", GetOperativeName },
+                    { "[OperativeFullName]", GetOperativeFullName }
                 };
 
 
@@ -87,7 +88,10 @@ namespace TFTV.TFTVIncidents
                         return GetRequirementHavenName(context, eventIdOverride);
 
                     case "[OperativeName]":
-                        return GetOperativeName(context);
+                        return GetOperativeName(context, eventIdOverride);
+
+                    case "[OperativeFullName]":
+                        return GetOperativeFullName(context, eventIdOverride);
 
                     default:
                         return string.Empty;
@@ -251,19 +255,112 @@ namespace TFTV.TFTVIncidents
 
             private static string GetOperativeName(GeoscapeEventContext context)
             {
+                return GetOperativeName(context, null);
+            }
+
+            private static string GetOperativeFullName(GeoscapeEventContext context)
+            {
+                return GetOperativeFullName(context, null);
+            }
+
+            /// <summary>
+            /// The operative who led the incident, shortened to one half of their name when the full
+            /// name is too long to sit comfortably in prose. Use [OperativeFullName] where the whole
+            /// name is wanted.
+            /// </summary>
+            private static string GetOperativeName(GeoscapeEventContext context, string eventIdOverride)
+            {
+                return GetShortFormName(GetOperative(context, eventIdOverride));
+            }
+
+            private static string GetOperativeFullName(GeoscapeEventContext context, string eventIdOverride)
+            {
+                return GetCharacterName(GetOperative(context, eventIdOverride));
+            }
+
+            /// <summary>
+            /// The leader recorded when the outcome fired, or the leader of the incident still running
+            /// here. Falls back to the first Phoenix operative on site so the token never renders empty
+            /// outside incident text.
+            /// </summary>
+            private static GeoCharacter GetOperative(GeoscapeEventContext context, string eventIdOverride)
+            {
                 GeoSite site = GetContextSite(context);
                 GeoPhoenixFaction phoenixFaction = GetPhoenixFaction(context);
                 if (site == null || phoenixFaction == null)
                 {
-                    return string.Empty;
+                    return null;
                 }
 
-                GeoCharacter operative = site.Vehicles
+                GeoCharacter leader = GetIncidentLeader(context, site, eventIdOverride);
+                if (leader != null)
+                {
+                    return leader;
+                }
+
+                return site.Vehicles
                     ?.Where(v => v != null && v.Owner == phoenixFaction)
                     .SelectMany(v => v.GetAllCharacters())
                     .FirstOrDefault(IsHumanGeoCharacter);
+            }
 
-                return GetCharacterName(operative);
+            /// <summary>
+            /// Full names read stiff in flowing incident text ("Aleksandra Kowalski recovered logs and
+            /// audio fragments."). Past <see cref="FullNameLengthLimit"/> characters we drop to either
+            /// the forename or the surname.
+            ///
+            /// The half is picked from the operative's id rather than at random, so a soldier is always
+            /// called the same thing: within one screen, across the texts of one incident, and for the
+            /// rest of the campaign. A genuinely random pick would let the same person appear as
+            /// "Aleksandra" in one line and "Kowalski" in the next, or change on a panel redraw.
+            /// </summary>
+            // 10 rather than something longer: sampled rosters average ~13 characters, and a higher
+            // limit leaves a large minority of soldiers on their full name while the rest are
+            // shortened, so the prose reads inconsistently from one incident to the next.
+            private const int FullNameLengthLimit = 10;
+
+            private static string GetShortFormName(GeoCharacter character)
+            {
+                string fullName = GetCharacterName(character);
+                if (string.IsNullOrEmpty(fullName) || fullName.Length <= FullNameLengthLimit)
+                {
+                    return fullName;
+                }
+
+                string[] parts = fullName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length < 2)
+                {
+                    return fullName;
+                }
+
+                return PrefersForename(character.Id) ? parts[0] : parts[parts.Length - 1];
+            }
+
+            private static bool PrefersForename(int characterId)
+            {
+                // Character ids are handed out in sequence, so mix them before taking a bit: a raw
+                // (id & 1) would alternate forename/surname down the roster.
+                unchecked
+                {
+                    uint mixed = (uint)characterId * 2654435761u;
+                    return ((mixed >> 13) & 1u) == 0u;
+                }
+            }
+
+            private static GeoCharacter GetIncidentLeader(GeoscapeEventContext context, GeoSite site, string eventIdOverride)
+            {
+                GeoVehicle vehicle = GetContextVehicle(context);
+                int siteId = site.SiteId;
+                int vehicleId = vehicle?.VehicleID ?? -1;
+                string eventId = GetEventId(context, eventIdOverride);
+
+                if (!IncidentOutcomeSummaryUI.TryGetRecordedLeaderId(eventId, siteId, vehicleId, out int leaderId)
+                    && !Resolution.IncidentController.TryGetActiveIncidentLeaderId(siteId, vehicleId, out leaderId))
+                {
+                    return null;
+                }
+
+                return LeaderSelection.ResolveLeader(GetGeoLevel(context), vehicle, leaderId);
             }
 
             private static GeoHaven GetFirstNearbyEligibleHaven(
