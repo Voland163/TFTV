@@ -618,10 +618,11 @@ namespace TFTV.TFTVIncidents
         /// leader portrait sits, so the fixed top margin lands on top of it. Push the panel down far
         /// enough to clear the portrait.
         ///
-        /// The portrait is tall enough that fully clearing it would run the panel off the bottom of
-        /// the screen, so the drop is clamped to whatever keeps the panel completely visible. The
-        /// fixed margin is the floor, so a failed measurement leaves the panel exactly where it was
-        /// and never higher.
+        /// Measured in game, the portrait rect is taller than the module itself (1758 vs 1603), so no
+        /// vertical position clears it and "below the portrait" is unreachable. What actually decides
+        /// the position is the clamp: as low as the panel can sit while staying fully on screen, which
+        /// puts it under the operative's face. The fixed margin is the floor, so a failed measurement
+        /// leaves the panel exactly where it was and never higher.
         /// </summary>
         private static void ApplyVerticalPosition(RectTransform rootRect, UIModuleSiteEncounters module)
         {
@@ -644,6 +645,22 @@ namespace TFTV.TFTVIncidents
                     return;
                 }
 
+                // rect.height reads 0 here: the nested content size fitters have not settled after a
+                // single rebuild pass. The preferred height is already correct at this point.
+                float panelHeight = LayoutUtility.GetPreferredHeight(rootRect);
+                if (panelHeight <= 1f)
+                {
+                    panelHeight = rootRect.rect.height;
+                }
+
+                if (panelHeight <= 1f)
+                {
+                    // Without a height there is no way to know what stays on screen, and guessing
+                    // wrong pushes the panel off the bottom. Leave it where it was.
+                    TFTVLogger.Always($"{DiagTag} panel position: panel height unknown, keeping fixed {PanelTopMargin}");
+                    return;
+                }
+
                 Vector3[] corners = new Vector3[4];
                 portrait.GetWorldCorners(corners);
 
@@ -651,15 +668,17 @@ namespace TFTV.TFTVIncidents
                 float portraitBottom = parentRect.InverseTransformPoint(corners[0]).y;
                 float desired = parentRect.rect.yMax - portraitBottom + PortraitClearanceGap;
 
-                // Lowest top margin that still leaves the whole panel on screen.
-                float lowestTop = parentRect.rect.height - rootRect.rect.height - PanelBottomSafeMargin;
+                // The portrait is taller than the module, so `desired` always overshoots and this
+                // clamp is what actually decides the position: as low as the panel can sit while
+                // remaining fully on screen, which clears the operative's face.
+                float lowestTop = parentRect.rect.height - panelHeight - PanelBottomSafeMargin;
                 float margin = Mathf.Clamp(desired, PanelTopMargin, Mathf.Max(PanelTopMargin, lowestTop));
 
                 rootRect.anchoredPosition = new Vector2(-PanelRightMargin, -margin);
 
                 TFTVLogger.Always(
                     $"{DiagTag} panel position: fixed={PanelTopMargin} desired={desired:0.#} lowestTop={lowestTop:0.#} " +
-                    $"applied={margin:0.#} (parentH={parentRect.rect.height:0.#} panelH={rootRect.rect.height:0.#} portraitH={portrait.rect.height:0.#})");
+                    $"applied={margin:0.#} (parentH={parentRect.rect.height:0.#} panelH={panelHeight:0.#} portraitH={portrait.rect.height:0.#})");
             }
             catch (Exception e)
             {
