@@ -587,6 +587,48 @@ namespace TFTV.TFTVIncidents
             }
         }
 
+        /// <summary>
+        /// Operative names are full "Firstname Lastname" strings, which are too long for prose and
+        /// for the crew slots in the resolution UI. Past <see cref="FullNameLengthLimit"/> characters
+        /// we fall back to either the forename or the surname.
+        ///
+        /// The half is picked from the operative's id rather than at random, so a soldier is always
+        /// called the same thing: in the crew list, in the outcome text, and for the rest of the
+        /// campaign. A random pick would let the same person appear as "Aleksandra" in one place and
+        /// "Kowalski" in another, or change on a redraw.
+        /// </summary>
+        // 10 rather than something longer: sampled rosters average ~13 characters, and a higher
+        // limit leaves a large minority of soldiers on their full name while the rest are
+        // shortened, so the result reads inconsistently.
+        internal const int FullNameLengthLimit = 10;
+
+        internal static string ShortenOperativeName(string fullName, int characterId)
+        {
+            if (string.IsNullOrEmpty(fullName) || fullName.Length <= FullNameLengthLimit)
+            {
+                return fullName;
+            }
+
+            string[] parts = fullName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length < 2)
+            {
+                return fullName;
+            }
+
+            return PrefersForename(characterId) ? parts[0] : parts[parts.Length - 1];
+        }
+
+        private static bool PrefersForename(int characterId)
+        {
+            // Character ids are handed out in sequence, so mix them before taking a bit: a raw
+            // (id & 1) would alternate forename/surname down the roster.
+            unchecked
+            {
+                uint mixed = (uint)characterId * 2654435761u;
+                return ((mixed >> 13) & 1u) == 0u;
+            }
+        }
+
         internal static GeoCharacter SelectFallbackLeader(GeoVehicle vehicle)
         {
             IEnumerable<GeoCharacter> characters = vehicle?.GetAllCharacters() ?? Enumerable.Empty<GeoCharacter>();

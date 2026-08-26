@@ -469,6 +469,7 @@ namespace TFTV.TFTVIncidents
 
                     NormalizeRowRect(row.transform as RectTransform);
                     row.SetSoldierData((ICommonActor)character);
+                    ApplyShortNameToRow(row, character);
                     ResetRowSelectionVisualState(row);
 
                     Sprite abilityIcon = ResolveAbilityIcon(character);
@@ -1641,6 +1642,34 @@ namespace TFTV.TFTVIncidents
                 }
 
                 return null;
+            }
+
+            /// <summary>
+            /// SetSoldierData writes the full "Firstname Lastname" into the slot, which overflows the
+            /// crew boxes for longer names. Reuse the same shortening the incident texts use, so an
+            /// operative is called the same thing in the crew list and in the outcome prose.
+            /// </summary>
+            private static void ApplyShortNameToRow(SoldierSlotController row, GeoCharacter character)
+            {
+                try
+                {
+                    if (row?.NameLabel == null || character == null)
+                    {
+                        return;
+                    }
+
+                    string shortName = LeaderSelection.ShortenOperativeName(character.DisplayName, character.Id);
+                    if (string.IsNullOrEmpty(shortName))
+                    {
+                        return;
+                    }
+
+                    row.NameLabel.text = row.CapitalizedName ? shortName.ToUpper() : shortName;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
             }
 
             private static void SetAffinityIconAfterName(SoldierSlotController row, Sprite icon)

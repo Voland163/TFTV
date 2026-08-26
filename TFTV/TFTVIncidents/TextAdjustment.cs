@@ -304,47 +304,9 @@ namespace TFTV.TFTVIncidents
                     .FirstOrDefault(IsHumanGeoCharacter);
             }
 
-            /// <summary>
-            /// Full names read stiff in flowing incident text ("Aleksandra Kowalski recovered logs and
-            /// audio fragments."). Past <see cref="FullNameLengthLimit"/> characters we drop to either
-            /// the forename or the surname.
-            ///
-            /// The half is picked from the operative's id rather than at random, so a soldier is always
-            /// called the same thing: within one screen, across the texts of one incident, and for the
-            /// rest of the campaign. A genuinely random pick would let the same person appear as
-            /// "Aleksandra" in one line and "Kowalski" in the next, or change on a panel redraw.
-            /// </summary>
-            // 10 rather than something longer: sampled rosters average ~13 characters, and a higher
-            // limit leaves a large minority of soldiers on their full name while the rest are
-            // shortened, so the prose reads inconsistently from one incident to the next.
-            private const int FullNameLengthLimit = 10;
-
             private static string GetShortFormName(GeoCharacter character)
             {
-                string fullName = GetCharacterName(character);
-                if (string.IsNullOrEmpty(fullName) || fullName.Length <= FullNameLengthLimit)
-                {
-                    return fullName;
-                }
-
-                string[] parts = fullName.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length < 2)
-                {
-                    return fullName;
-                }
-
-                return PrefersForename(character.Id) ? parts[0] : parts[parts.Length - 1];
-            }
-
-            private static bool PrefersForename(int characterId)
-            {
-                // Character ids are handed out in sequence, so mix them before taking a bit: a raw
-                // (id & 1) would alternate forename/surname down the roster.
-                unchecked
-                {
-                    uint mixed = (uint)characterId * 2654435761u;
-                    return ((mixed >> 13) & 1u) == 0u;
-                }
+                return LeaderSelection.ShortenOperativeName(GetCharacterName(character), character?.Id ?? 0);
             }
 
             private static GeoCharacter GetIncidentLeader(GeoscapeEventContext context, GeoSite site, string eventIdOverride)

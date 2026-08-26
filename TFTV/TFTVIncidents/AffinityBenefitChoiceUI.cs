@@ -30,6 +30,9 @@ namespace TFTV.TFTVIncidents
         private const float PanelRightMargin = 100f;
         private const float PanelTopMargin = 170f;
 
+        // Clearance left between the bottom of the leader portrait and the top of the panel.
+        private const float PortraitClearanceGap = 16f;
+
         private struct BenefitTrack
         {
             internal BenefitTrack(string localizationKey, bool isGeoscape)
@@ -358,7 +361,7 @@ namespace TFTV.TFTVIncidents
             layoutElement.ignoreLayout = true;
 
             RectTransform rootRect = root.GetComponent<RectTransform>();
-            ConfigurePanelRect(rootRect);
+            ConfigurePanelRect(rootRect, module);
 
             Image background = root.GetComponent<Image>();
             background.raycastTarget = false;
@@ -590,7 +593,7 @@ namespace TFTV.TFTVIncidents
 
         }
 
-        private static void ConfigurePanelRect(RectTransform rootRect)
+        private static void ConfigurePanelRect(RectTransform rootRect, UIModuleSiteEncounters module)
         {
             if (rootRect == null)
             {
@@ -602,8 +605,45 @@ namespace TFTV.TFTVIncidents
             rootRect.pivot = new Vector2(1f, 1f);
             rootRect.localScale = Vector3.one;
             rootRect.sizeDelta = new Vector2(PanelWidth, 0f);
-            rootRect.anchoredPosition = new Vector2(-PanelRightMargin, -PanelTopMargin);
+            rootRect.anchoredPosition = new Vector2(-PanelRightMargin, -ResolveTopMargin(rootRect, module));
+        }
 
+        /// <summary>
+        /// The panel is pinned to the top-right of the encounter module, which is also where the
+        /// leader portrait sits, so a fixed top margin lands on top of it. Measure the portrait and
+        /// drop the panel below it instead.
+        ///
+        /// The old fixed margin stays as a floor: if the portrait cannot be measured - not shown, or
+        /// laid out after this runs - the panel ends up exactly where it used to, never higher.
+        /// </summary>
+        private static float ResolveTopMargin(RectTransform rootRect, UIModuleSiteEncounters module)
+        {
+            try
+            {
+                RectTransform parentRect = rootRect.parent as RectTransform;
+                RectTransform portrait = module?.EncounterLeaderImage?.rectTransform;
+
+                if (parentRect == null || portrait == null || !portrait.gameObject.activeInHierarchy)
+                {
+                    TFTVLogger.Always($"{DiagTag} panel top margin: portrait unavailable, using fixed {PanelTopMargin}");
+                    return PanelTopMargin;
+                }
+
+                Vector3[] corners = new Vector3[4];
+                portrait.GetWorldCorners(corners);
+
+                // corners[0] is the bottom-left corner; measure how far it sits below the parent's top edge.
+                float portraitBottom = parentRect.InverseTransformPoint(corners[0]).y;
+                float derived = parentRect.rect.yMax - portraitBottom + PortraitClearanceGap;
+
+                TFTVLogger.Always($"{DiagTag} panel top margin: fixed={PanelTopMargin} portraitDerived={derived:0.#} using={Mathf.Max(PanelTopMargin, derived):0.#}");
+                return Mathf.Max(PanelTopMargin, derived);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return PanelTopMargin;
+            }
         }
 
         private static void RemoveExistingPanel(Transform parent)
