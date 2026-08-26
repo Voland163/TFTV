@@ -28,13 +28,24 @@ namespace TFTV.TFTVIncidents
 
         private const float PanelWidth = 820f;
         private const float PanelRightMargin = 100f;
-        private const float PanelTopMargin = 170f;
-
-        // Clearance left between the bottom of the leader portrait and the top of the panel.
-        private const float PortraitClearanceGap = 16f;
-
-        // Kept free below the panel so pushing it down can never run it off the bottom edge.
-        private const float PanelBottomSafeMargin = 40f;
+        // Pushed down from 170 to clear the leader portrait's head, which the panel used to cover.
+        //
+        // Hardcoded on purpose. Measuring the portrait and clamping to the panel's own height was
+        // tried and abandoned: the portrait rect is taller than the module that contains it
+        // (1758.6 vs 1603.1 measured in game), so no position actually clears it, and the panel's
+        // height reads as zero from rect.height, from LayoutUtility, and from a coroutine deferred
+        // past the layout pass - which never ran, because the module is not running coroutines when
+        // the panel is built.
+        //
+        // Calibrated from observed positions: margin 170 put the panel top at y=235 on a 1123px
+        // screen and margin 1475.9 put it at y=910, giving y = 147 + 0.517 * margin (margin 900 then
+        // measured at y=617 against a predicted 612, so the fit holds). 700 lands the top at y~509,
+        // level with the Incident Recap box on the opposite side and still clear of the portrait's
+        // face.
+        //
+        // Only approximately level: the recap box is anchored bottom-left with a content-sized
+        // height, so its top edge rises and falls with the length of the incident's intro text.
+        private const float PanelTopMargin = 700f;
 
         private struct BenefitTrack
         {
@@ -415,9 +426,6 @@ namespace TFTV.TFTVIncidents
             }
 
             LayoutRebuilder.ForceRebuildLayoutImmediate(rootRect);
-
-            // Only now does the panel have a real height, which the portrait clearance below needs.
-            ApplyVerticalPosition(rootRect, module);
         }
 
         private static void CreateBenefitSelector(
@@ -611,60 +619,6 @@ namespace TFTV.TFTVIncidents
             rootRect.localScale = Vector3.one;
             rootRect.sizeDelta = new Vector2(PanelWidth, 0f);
             rootRect.anchoredPosition = new Vector2(-PanelRightMargin, -PanelTopMargin);
-        }
-
-        /// <summary>
-        /// The panel is pinned to the top-right of the encounter module, which is also where the
-        /// leader portrait sits, so the fixed top margin lands on top of it. Push the panel down far
-        /// enough to clear the portrait.
-        ///
-        /// The portrait is tall enough that fully clearing it would run the panel off the bottom of
-        /// the screen, so the drop is clamped to whatever keeps the panel completely visible. The
-        /// fixed margin is the floor, so a failed measurement leaves the panel exactly where it was
-        /// and never higher.
-        /// </summary>
-        private static void ApplyVerticalPosition(RectTransform rootRect, UIModuleSiteEncounters module)
-        {
-            try
-            {
-                if (rootRect == null)
-                {
-                    return;
-                }
-
-                RectTransform parentRect = rootRect.parent as RectTransform;
-                RectTransform portrait = module?.EncounterLeaderImage?.rectTransform;
-
-                // Deliberately no activeInHierarchy check: the game keeps EncunterLeaderGroup
-                // inactive until a portrait is applied, which can happen after this runs. The
-                // RectTransform is authored on the prefab and measures correctly either way.
-                if (parentRect == null || portrait == null || portrait.rect.height <= 1f)
-                {
-                    TFTVLogger.Always($"{DiagTag} panel position: portrait unmeasurable (parent={parentRect != null} portrait={portrait != null} h={portrait?.rect.height ?? -1f:0.#}), keeping fixed {PanelTopMargin}");
-                    return;
-                }
-
-                Vector3[] corners = new Vector3[4];
-                portrait.GetWorldCorners(corners);
-
-                // corners[0] is the bottom-left corner; measure how far it sits below the parent's top edge.
-                float portraitBottom = parentRect.InverseTransformPoint(corners[0]).y;
-                float desired = parentRect.rect.yMax - portraitBottom + PortraitClearanceGap;
-
-                // Lowest top margin that still leaves the whole panel on screen.
-                float lowestTop = parentRect.rect.height - rootRect.rect.height - PanelBottomSafeMargin;
-                float margin = Mathf.Clamp(desired, PanelTopMargin, Mathf.Max(PanelTopMargin, lowestTop));
-
-                rootRect.anchoredPosition = new Vector2(-PanelRightMargin, -margin);
-
-                TFTVLogger.Always(
-                    $"{DiagTag} panel position: fixed={PanelTopMargin} desired={desired:0.#} lowestTop={lowestTop:0.#} " +
-                    $"applied={margin:0.#} (parentH={parentRect.rect.height:0.#} panelH={rootRect.rect.height:0.#} portraitH={portrait.rect.height:0.#})");
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
         }
 
         private static void RemoveExistingPanel(Transform parent)
