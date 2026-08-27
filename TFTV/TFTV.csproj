@@ -225,6 +225,7 @@
     <Compile Include="TFTVLaserWeapons\LaserWeaponsBatteryTooltip.cs" />
     <Compile Include="TFTVLaserWeapons\LaserWeaponsFilter.cs" />
     <Compile Include="TFTVLaserWeapons\LaserWeaponsReplenishPatches.cs" />
+    <Compile Include="TFTVMarketplace\MarketplaceButton.cs" />
     <Compile Include="TFTVMarketplace\TFTVKaosGuns.cs" />
     <Compile Include="TFTVMarketplace\TFTVMarketPlaceGenerateOffers.cs" />
     <Compile Include="TFTVMarketplace\TFTVMarketPlaceItems.cs" />

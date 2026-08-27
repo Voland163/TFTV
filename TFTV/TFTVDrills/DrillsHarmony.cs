@@ -683,6 +683,168 @@ namespace TFTV.TFTVDrills
                 }
             }
 
+            /// <summary>
+            /// The Flinching option lets targets keep animating while they are being shot, which makes the
+            /// later shots of a burst miss in free aim. Bullet Hell is nothing but one very long burst, so
+            /// while the Bullet Hell operative is the one shooting, the target slowdown is put back to the
+            /// no-flinching value. Anyone else shooting - including the same turn, after switching soldiers -
+            /// gets the player's Flinching setting back.
+            ///
+            /// The slowdown is a plain field on the level controller that the shooting code both adds and
+            /// removes by value, so it must never change while a shot is in flight. Every write is therefore
+            /// gated on FiringSlowdownActive, and it is only ever written from a shot's Activate (before that
+            /// shot has taken its own copy) or once the Bullet Hell status is gone.
+            /// </summary>
+            internal static class FlinchingSuppression
+            {
+                private const float NoFlinchingFireTargetTimeScale = 0.1f;
+
+                private static TacticalLevelController _suppressedLevel;
+                private static float _timeScaleBeforeSuppression;
+
+                /// <summary>
+                /// Called as a shot begins, with whether its shooter is running Bullet Hell.
+                /// </summary>
+                internal static void OnShotStarting(TacticalActor shooter, bool shooterHasBulletHell)
+                {
+                    TacticalLevelController controller = shooter?.TacticalLevel;
+
+                    if (controller == null || !TFTVMain.Main.Config.Flinching)
+                    {
+                        return;
+                    }
+
+                    ForgetStaleLevel(controller);
+
+                    // A shot is already playing (return fire, overwatch): its target has taken a copy of the
+                    // current value and will hand exactly that back, so leave the field alone.
+                    if (controller.FiringSlowdownActive)
+                    {
+                        return;
+                    }
+
+                    if (shooterHasBulletHell)
+                    {
+                        Suppress(controller, shooter);
+                    }
+                    else
+                    {
+                        Restore(controller);
+                    }
+                }
+
+                /// <summary>
+                /// End of the Bullet Hell turn. Nothing is shooting at this point, so the field can go back.
+                /// </summary>
+                internal static void OnBulletHellStatusUnapplied(TacticalActorBase actor)
+                {
+                    TacticalLevelController controller = actor?.TacticalLevel;
+
+                    if (controller == null)
+                    {
+                        return;
+                    }
+
+                    ForgetStaleLevel(controller);
+
+                    if (controller.FiringSlowdownActive)
+                    {
+                        return;
+                    }
+
+                    Restore(controller);
+                }
+
+                private static void Suppress(TacticalLevelController controller, TacticalActor shooter)
+                {
+                    if (_suppressedLevel != null)
+                    {
+                        return;
+                    }
+
+                    _suppressedLevel = controller;
+                    _timeScaleBeforeSuppression = controller.FireTargetTimeScale;
+                    controller.FireTargetTimeScale = NoFlinchingFireTargetTimeScale;
+
+                    TFTVLogger.Always($"Bullet Hell shot by {shooter.DisplayName ?? shooter.name}: suppressing flinching (FireTargetTimeScale {_timeScaleBeforeSuppression} -> {NoFlinchingFireTargetTimeScale}).");
+                }
+
+                private static void Restore(TacticalLevelController controller)
+                {
+                    if (_suppressedLevel == null)
+                    {
+                        return;
+                    }
+
+                    controller.FireTargetTimeScale = _timeScaleBeforeSuppression;
+                    _suppressedLevel = null;
+
+                    TFTVLogger.Always($"Restoring flinching (FireTargetTimeScale -> {_timeScaleBeforeSuppression}).");
+                }
+
+                // A mission that ends mid-Bullet Hell would otherwise leave the suppressed level behind; the
+                // next mission gets its own controller, which starts from the config value anyway.
+                private static void ForgetStaleLevel(TacticalLevelController controller)
+                {
+                    if (_suppressedLevel != null && _suppressedLevel != controller)
+                    {
+                        _suppressedLevel = null;
+                    }
+                }
+            }
+
+            [HarmonyPatch(typeof(ShootAbility), nameof(ShootAbility.Activate))]
+            internal static class ShootAbility_Activate_BulletHellFlinching_Patch
+            {
+                public static void Prefix(ShootAbility __instance)
+                {
+                    try
+                    {
+                        if (!TFTVNewGameOptions.IsReworkEnabled() || _bulletHellSlowStatus == null)
+                        {
+                            return;
+                        }
+
+                        TacticalActor shooter = __instance?.TacticalActor;
+                        if (shooter == null)
+                        {
+                            return;
+                        }
+
+                        bool shooterHasBulletHell = shooter.Status != null && shooter.Status.HasStatus(_bulletHellSlowStatus);
+
+                        FlinchingSuppression.OnShotStarting(shooter, shooterHasBulletHell);
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+
+            [HarmonyPatch(typeof(TacStatus), nameof(TacStatus.OnUnapply))]
+            internal static class TacStatus_OnUnapply_BulletHellFlinching_Patch
+            {
+                public static void Prefix(TacStatus __instance)
+                {
+                    try
+                    {
+                        if (!TFTVNewGameOptions.IsReworkEnabled()
+                            || _bulletHellSlowStatus == null
+                            || __instance?.TacStatusDef != _bulletHellSlowStatus)
+                        {
+                            return;
+                        }
+
+                        FlinchingSuppression.OnBulletHellStatusUnapplied(__instance.TacticalActorBase);
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+
             // Rapid Clearance's kill-triggered boost is applied through the vanilla OnActorDeathEffectStatus
             // pipeline, which has no awareness of Bullet Hell. Without this patch, killing an enemy while a
             // Bullet Hell attack boost is active leaves both boosts (and both of their AP cost reduction child

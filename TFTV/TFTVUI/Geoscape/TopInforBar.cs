@@ -778,5 +778,189 @@ namespace TFTV.TFTVUI.Geoscape
 
 
         }
+
+        /// <summary>
+        /// Extra lines on the two info bar tooltips that the mod changes the meaning of: the daily food
+        /// balance behind the Food counter, and - with the base rework on - the fact that idle personnel
+        /// are free to keep.
+        ///
+        /// UITooltipText builds its widget on the first hover and reuses it afterwards, so the text has to
+        /// be refreshed on every hover (TipText for the first one, UpdateText for the rest) or the numbers
+        /// freeze at whatever they were the first time the player looked.
+        ///
+        /// The hook sits on every tooltip in the game, so the two info bar tooltips are located once per
+        /// info bar and then recognised by reference; every other tooltip in every other screen costs two
+        /// reference comparisons and nothing else.
+        /// </summary>
+        internal static class ResourceTooltips
+        {
+            private static UIModuleInfoBar _resolvedAgainst;
+
+            private static UITooltipText _foodTooltip;
+            private static string _foodBaseText;
+
+            private static UITooltipText _personnelTooltip;
+            private static string _personnelBaseText;
+
+            [HarmonyPatch(typeof(UITooltipText), nameof(UITooltipText.OnMouseEnter))]
+            public static class UITooltipText_OnMouseEnter_patch
+            {
+                public static void Prefix(UITooltipText __instance)
+                {
+                    try
+                    {
+                        if (__instance == null)
+                        {
+                            return;
+                        }
+
+                        bool isFood = __instance == _foodTooltip;
+                        bool isPersonnel = !isFood && __instance == _personnelTooltip;
+
+                        if (!isFood && !isPersonnel)
+                        {
+                            // Unknown tooltip. Unless the info bar we last resolved against is gone (new
+                            // geoscape), there is nothing to look for, and this is where every other
+                            // tooltip in the game stops.
+                            if (_resolvedAgainst != null || !TryResolveTooltips())
+                            {
+                                return;
+                            }
+
+                            isFood = __instance == _foodTooltip;
+                            isPersonnel = __instance == _personnelTooltip;
+
+                            if (!isFood && !isPersonnel)
+                            {
+                                return;
+                            }
+                        }
+
+                        if (isPersonnel && !TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled)
+                        {
+                            return;
+                        }
+
+                        GeoPhoenixFaction faction = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()?.PhoenixFaction;
+
+                        if (faction == null)
+                        {
+                            return;
+                        }
+
+                        if (isFood)
+                        {
+                            Apply(__instance, _foodBaseText, CreateFoodBalanceText(faction));
+                            return;
+                        }
+
+                        Apply(__instance, _personnelBaseText, TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_PERSONNEL_TOOLTIP_UNASSIGNED_NO_FOOD"));
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Finds both info bar tooltips in one sweep and remembers the info bar they came from. Returns
+            /// false while there is no geoscape info bar to search, so a later hover tries again.
+            /// </summary>
+            private static bool TryResolveTooltips()
+            {
+                UIModuleInfoBar infoBar = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()?.View?.GeoscapeModules?.ResourcesModule;
+
+                if (infoBar == null)
+                {
+                    return false;
+                }
+
+                _foodTooltip = FindTooltipUnder(infoBar.FoodController?.transform?.parent);
+                _personnelTooltip = FindTooltipUnder(infoBar.SoldiersLabel?.transform?.parent);
+
+                _foodBaseText = _foodTooltip != null ? CaptureBaseText(_foodTooltip) : null;
+                _personnelBaseText = _personnelTooltip != null ? CaptureBaseText(_personnelTooltip) : null;
+
+                _resolvedAgainst = infoBar;
+
+                TFTVLogger.Always("[TopInfoBar] Resource tooltips resolved: food "
+                    + (_foodTooltip != null ? "found" : "MISSING")
+                    + ", personnel "
+                    + (_personnelTooltip != null ? "found" : "MISSING")
+                    + ".");
+
+                return true;
+            }
+
+            private static UITooltipText FindTooltipUnder(Transform root)
+            {
+                return root != null ? root.GetComponentInChildren<UITooltipText>(true) : null;
+            }
+
+            /// <summary>
+            /// The vanilla text, before we start appending to it. Taken from the localization key when the
+            /// tooltip has one, because that is what the widget would have shown.
+            /// </summary>
+            private static string CaptureBaseText(UITooltipText tooltip)
+            {
+                if (tooltip.TipKey != null && !string.IsNullOrEmpty(tooltip.TipKey.LocalizationKey))
+                {
+                    return tooltip.TipKey.Localize();
+                }
+
+                return tooltip.TipText ?? string.Empty;
+            }
+
+            private static void Apply(UITooltipText tooltip, string baseText, string extraText)
+            {
+                if (string.IsNullOrEmpty(extraText))
+                {
+                    return;
+                }
+
+                string fullText = string.IsNullOrEmpty(baseText) ? extraText : $"{baseText}\n\n{extraText}";
+
+                // The key wins over TipText when the widget is first built, so it has to go.
+                tooltip.TipKey = null;
+                tooltip.TipText = fullText;
+                tooltip.UpdateText(fullText);
+            }
+
+            /// <summary>
+            /// Food is booked as income entries on the faction: production from havens and facilities is
+            /// positive, everything that eats (maintenance) is negative. Both are per hour.
+            /// </summary>
+            private static string CreateFoodBalanceText(GeoPhoenixFaction faction)
+            {
+                float producedPerHour = 0f;
+                float consumedPerHour = 0f;
+
+                if (faction.ResourceIncome != null)
+                {
+                    foreach (FactionResourceOutput.ResourceOutputEntry entry in faction.ResourceIncome.GetEntriesForResource(ResourceType.Supplies))
+                    {
+                        float value = entry.Resources.ByResourceType(ResourceType.Supplies).Value;
+
+                        if (value > 0f)
+                        {
+                            producedPerHour += value;
+                        }
+                        else
+                        {
+                            consumedPerHour -= value;
+                        }
+                    }
+                }
+
+                int producedPerDay = Mathf.RoundToInt(producedPerHour * 24f);
+                int consumedPerDay = Mathf.RoundToInt(consumedPerHour * 24f);
+
+                string produced = string.Format(TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_FOOD_TOOLTIP_PRODUCED"), producedPerDay);
+                string consumed = string.Format(TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_FOOD_TOOLTIP_CONSUMED"), consumedPerDay);
+
+                return $"{produced}\n{consumed}";
+            }
+        }
     }
 }
