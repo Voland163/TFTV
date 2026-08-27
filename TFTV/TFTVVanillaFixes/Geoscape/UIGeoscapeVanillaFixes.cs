@@ -1,9 +1,12 @@
-﻿using Base.Entities.Statuses;
+﻿using Base.Core;
+using Base.Entities.Statuses;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using System;
 using System.Collections.Generic;
@@ -98,7 +101,67 @@ namespace TFTV.TFTVVanillaFixes.Geoscape
         }
 
 
+        /// <summary>
+        /// Vanilla bug: raising a stat and then buying an ability silently throws the stat purchase away.
+        ///
+        /// A stat bought in the edit soldier screen is only pending inside UIModuleCharacterProgression
+        /// (_currentStrengthStat and friends) until CommitStatChanges runs. Opening the buy-ability
+        /// confirmation pushes a modal view state, and UIStateEditSoldier.ExitState deliberately skips its
+        /// commit while a dialog is up. Closing the modal then runs, in this order:
+        ///
+        ///   UIStateGeoModal.FinishDialog
+        ///     -> FinishQueriedState  -> UIStateEditSoldier.EnterState -> SetCharacterProgression
+        ///                                                            -> RefreshStats  (pending stat lost)
+        ///     -> the dialog callback -> BuyAbility -> CommitStatChanges (deltas are now zero)
+        ///
+        /// RefreshStats re-reads both the starting and the current values off the character, so by the time
+        /// the confirmation callback commits, there is nothing left to commit: the ability is bought and
+        /// paid for, the stat is not. Cancelling the dialog loses the stat the same way, as does any other
+        /// modal opened from this screen.
+        ///
+        /// Committing before EnterState refreshes the module keeps the purchase. This is what vanilla
+        /// already does on its other refresh path, which guards SelectCharacterProgression with
+        /// "if (IsCharacterChanged()) CommitStatChanges();" - EnterState simply never got the same guard.
+        /// </summary>
+        [HarmonyPatch(typeof(UIStateEditSoldier), "EnterState")]
+        public static class Patch_UIStateEditSoldier_EnterState_KeepPendingStatPurchase
+        {
+            private static readonly AccessTools.FieldRef<UIModuleCharacterProgression, GeoCharacter> ModuleCharacter =
+                AccessTools.FieldRefAccess<UIModuleCharacterProgression, GeoCharacter>("_character");
+
+            // _characterProgressionModule on the state is a property, not a field, so it cannot be
+            // injected by Harmony; it reads straight off the shared geoscape modules, which is what we do.
+            public static void Prefix(GeoCharacter ____currentCharacter)
+            {
+                try
+                {
+                    UIModuleCharacterProgression module = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()
+                        ?.View?.GeoscapeModules?.CharacterProgressionModule;
+
+                    if (module == null || ____currentCharacter == null || !module.IsCharacterChanged())
+                    {
+                        return;
+                    }
+
+                    // Only ever commit what belongs to the operative this screen is showing. On the very
+                    // first EnterState the module can still be holding another character, and those
+                    // deltas are not ours to apply.
+                    if (ModuleCharacter(module) != ____currentCharacter)
+                    {
+                        return;
+                    }
+
+                    module.CommitStatChanges();
+
+                    TFTVLogger.Always($"[EditSoldier] Committed pending stat purchase for {____currentCharacter.DisplayName} before the progression panel refreshed.");
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
     }
 
 }
-
