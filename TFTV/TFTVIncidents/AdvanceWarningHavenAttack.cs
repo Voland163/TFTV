@@ -7,6 +7,7 @@ using PhoenixPoint.Geoscape.View;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace TFTV.TFTVIncidents
@@ -66,7 +67,7 @@ namespace TFTV.TFTVIncidents
 
             public static RiskWindow GetRisk(GeoSite site)
             {
-                if (site == null)
+                if (site == null || SiteRiskById.Count == 0)
                 {
                     return RiskWindow.None;
                 }
@@ -91,7 +92,7 @@ namespace TFTV.TFTVIncidents
             {
                 SiteRiskById.Clear();
 
-               
+
 
                 Dictionary<GeoSite, int> minCounterByHaven = new Dictionary<GeoSite, int>();
 
@@ -180,7 +181,106 @@ namespace TFTV.TFTVIncidents
         {
             private const string MarkerRootName = "HavenAttackRiskMarker";
 
+            private static readonly Color Hours4Color = new Color(1f, 0.2f, 0.2f, 1f);
+            private static readonly Color Hours8Color = new Color(1f, 0.6f, 0.1f, 1f);
+            private static readonly Color Hours12Color = new Color(1f, 0.92f, 0.2f, 1f);
+
+            /// <summary>
+            /// Per-controller marker bookkeeping. This runs from GeoSiteVisualsController.Update, i.e.
+            /// once per site visual per frame, so nothing here may re-discover or re-style the marker
+            /// on every call: Transform.Find is a native child-name search, and assigning TextMesh.text
+            /// or fontSize regenerates the glyph mesh even when the value is unchanged.
+            /// </summary>
+            private sealed class MarkerState
+            {
+                public int SiteId = int.MinValue;
+                public bool Probed;
+                public Transform Marker;
+                public TextMesh Text;
+                public RiskWindow AppliedRisk = RiskWindow.None;
+                public bool AlignedFromTemplate;
+            }
+
+            private static readonly ConditionalWeakTable<GeoSiteVisualsController, MarkerState> MarkerStates =
+                new ConditionalWeakTable<GeoSiteVisualsController, MarkerState>();
+
+            private static Camera _cachedCamera;
+
             public static void RefreshMarker(GeoSiteVisualsController controller, RiskWindow risk)
+            {
+                MarkerState state = MarkerStates.GetOrCreateValue(controller);
+
+                GeoSite site = controller.Site;
+                int siteId = site != null ? site.SiteId : int.MinValue;
+
+                // Site visuals are recycled between sites, so a marker left over from a previous
+                // occupant has to be re-discovered when the controller changes hands.
+                if (state.SiteId != siteId)
+                {
+                    state.SiteId = siteId;
+                    state.Probed = false;
+                }
+
+                if (!state.Probed)
+                {
+                    state.Probed = true;
+                    Transform iconParent = controller.LocationIconParent;
+                    AdoptMarker(state, iconParent != null ? iconParent.Find(MarkerRootName) : null);
+                }
+
+                if (risk == RiskWindow.None)
+                {
+                    DestroyMarker(state);
+                    return;
+                }
+
+                if (state.Marker == null)
+                {
+                    CreateMarker(controller, state);
+                    if (state.Marker == null)
+                    {
+                        return;
+                    }
+                }
+
+                // Re-align until a template transform is actually available: on the frame the marker
+                // is created the site visual's text objects may not be wired up yet.
+                if (!state.AlignedFromTemplate || state.AppliedRisk != risk)
+                {
+                    state.AlignedFromTemplate = AlignMarkerTransform(controller, state.Marker);
+                }
+
+                if (state.AppliedRisk != risk)
+                {
+                    state.AppliedRisk = risk;
+                    EnsureTextVisibility(state.Text);
+                    ApplyRiskStyle(state.Text, risk);
+                }
+
+                // The camera moves every frame so the billboard genuinely has to update every frame,
+                // but only havens that are actually flagged ever get here.
+                FaceMarkerTowardsCamera(state.Marker);
+            }
+
+            private static void AdoptMarker(MarkerState state, Transform existing)
+            {
+                if (existing == null)
+                {
+                    state.Marker = null;
+                    state.Text = null;
+                    state.AppliedRisk = RiskWindow.None;
+                    state.AlignedFromTemplate = false;
+                    return;
+                }
+
+                state.Marker = existing;
+                state.Text = existing.GetComponent<TextMesh>() ?? existing.gameObject.AddComponent<TextMesh>();
+                // The adopted marker's styling is unknown, so force a re-apply on the next refresh.
+                state.AppliedRisk = RiskWindow.None;
+                state.AlignedFromTemplate = false;
+            }
+
+            private static void CreateMarker(GeoSiteVisualsController controller, MarkerState state)
             {
                 Transform iconParent = controller.LocationIconParent;
                 if (iconParent == null)
@@ -188,57 +288,62 @@ namespace TFTV.TFTVIncidents
                     return;
                 }
 
-                Transform existing = iconParent.Find(MarkerRootName);
-                if (risk == RiskWindow.None)
-                {
-                    if (existing != null)
-                    {
-                        UnityEngine.Object.Destroy(existing.gameObject);
-                    }
+                GameObject markerRoot = new GameObject(MarkerRootName);
+                markerRoot.transform.SetParent(iconParent, false);
 
+                TextMesh textMesh = markerRoot.AddComponent<TextMesh>();
+                textMesh.anchor = TextAnchor.MiddleCenter;
+                textMesh.alignment = TextAlignment.Center;
+                textMesh.characterSize = 0.1f;
+                textMesh.fontSize = 64;
+
+                state.Marker = markerRoot.transform;
+                state.Text = textMesh;
+                state.AppliedRisk = RiskWindow.None;
+                state.AlignedFromTemplate = false;
+            }
+
+            private static void DestroyMarker(MarkerState state)
+            {
+                if (state.Marker != null)
+                {
+                    UnityEngine.Object.Destroy(state.Marker.gameObject);
+                }
+
+                state.Marker = null;
+                state.Text = null;
+                state.AppliedRisk = RiskWindow.None;
+                state.AlignedFromTemplate = false;
+            }
+
+            private static void ApplyRiskStyle(TextMesh textMesh, RiskWindow risk)
+            {
+                if (textMesh == null)
+                {
                     return;
                 }
-
-                GameObject markerRoot;
-                TextMesh textMesh;
-                if (existing == null)
-                {
-                    markerRoot = new GameObject(MarkerRootName);
-                    markerRoot.transform.SetParent(iconParent, false);
-
-                    textMesh = markerRoot.AddComponent<TextMesh>();
-                    textMesh.anchor = TextAnchor.MiddleCenter;
-                    textMesh.alignment = TextAlignment.Center;
-                    textMesh.characterSize = 0.1f;
-                    textMesh.fontSize = 64;
-                }
-                else
-                {
-                    markerRoot = existing.gameObject;
-                    textMesh = markerRoot.GetComponent<TextMesh>() ?? markerRoot.AddComponent<TextMesh>();
-                }
-
-                AlignMarkerTransform(controller, markerRoot.transform);
-                EnsureTextVisibility(textMesh);
 
                 switch (risk)
                 {
                     case RiskWindow.Hours4:
                         textMesh.text = "[4h]";
-                        textMesh.color = new Color(1f, 0.2f, 0.2f, 1f);
+                        textMesh.color = Hours4Color;
                         break;
                     case RiskWindow.Hours8:
                         textMesh.text = "[8h]";
-                        textMesh.color = new Color(1f, 0.6f, 0.1f, 1f);
+                        textMesh.color = Hours8Color;
                         break;
                     default:
                         textMesh.text = "[12h]";
-                        textMesh.color = new Color(1f, 0.92f, 0.2f, 1f);
+                        textMesh.color = Hours12Color;
                         break;
                 }
             }
 
-            private static void AlignMarkerTransform(GeoSiteVisualsController controller, Transform marker)
+            /// <summary>
+            /// Returns true when a template transform was found and used.
+            /// </summary>
+            private static bool AlignMarkerTransform(GeoSiteVisualsController controller, Transform marker)
             {
                 Transform template = null;
                 if (controller.SoldiersAvailableCountText != null)
@@ -263,11 +368,16 @@ namespace TFTV.TFTVIncidents
                 float scale = template != null ? Mathf.Max(0.14f, Mathf.Abs(template.localScale.x) * 2.4f) : 0.18f;
                 marker.localScale = new Vector3(scale, scale, scale);
 
-                FaceMarkerTowardsCamera(marker);
+                return template != null;
             }
 
             private static void EnsureTextVisibility(TextMesh textMesh)
             {
+                if (textMesh == null)
+                {
+                    return;
+                }
+
                 textMesh.characterSize = Mathf.Max(textMesh.characterSize, 0.14f);
                 textMesh.fontSize = Mathf.Max(textMesh.fontSize, 90);
                 textMesh.fontStyle = FontStyle.Bold;
@@ -281,13 +391,18 @@ namespace TFTV.TFTVIncidents
 
             private static void FaceMarkerTowardsCamera(Transform marker)
             {
-                Camera mainCamera = Camera.main;
-                if (mainCamera == null)
+                // Camera.main is a tagged-object search on this Unity version, so hold on to it.
+                if (_cachedCamera == null)
+                {
+                    _cachedCamera = Camera.main;
+                }
+
+                if (_cachedCamera == null)
                 {
                     return;
                 }
 
-                Vector3 viewDirection = mainCamera.transform.position - marker.position;
+                Vector3 viewDirection = _cachedCamera.transform.position - marker.position;
                 if (viewDirection.sqrMagnitude < 0.0001f)
                 {
                     return;

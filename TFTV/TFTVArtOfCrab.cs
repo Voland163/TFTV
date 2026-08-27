@@ -1303,7 +1303,66 @@ namespace TFTV
      
         internal class TargetCulling
         {
-            
+            /// <summary>
+            /// Defs used by the target-culling helpers below.
+            ///
+            /// These helpers hang off AI consideration evaluation and off TacticalAbility.GetTargetActors,
+            /// i.e. they run per actor x per candidate position x per enemy during an AI turn, and once
+            /// per candidate target whenever targeting is recomputed. Resolving the defs by name on every
+            /// call (which is what they used to do - eleven lookups per target in IsValidTarget alone)
+            /// is pure overhead: these are all fixed defs that exist for the whole session.
+            ///
+            /// They are resolved on first use rather than in a static initialiser so that def injection
+            /// has definitely finished by the time we look them up.
+            /// </summary>
+            internal static class CachedDefs
+            {
+                private static bool _resolved;
+
+                internal static AIClosestEnemyConsiderationDef UmbraClosestPathToEnemy;
+                internal static AIClosestEnemyConsiderationDef QueenClosestEnemy;
+                internal static AIClosestEnemyConsiderationDef ChironClosestEnemy;
+                internal static AIClosestEnemyConsiderationDef AcheronClosestLineToEnemy;
+
+                internal static ClassTagDef QueenTag;
+                internal static ClassTagDef AcheronTag;
+                internal static ClassTagDef ChironTag;
+                internal static ClassTagDef CyclopsTag;
+
+                internal static GameTagDef CaterpillarDamageTag;
+
+                internal static DamageKeywordDef ParalysingKeyword;
+                internal static DamageKeywordDef ViralKeyword;
+
+                internal static void Ensure()
+                {
+                    if (_resolved)
+                    {
+                        return;
+                    }
+
+                    UmbraClosestPathToEnemy = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Umbra_ClosestPathToEnemy_AIConsiderationDef");
+                    QueenClosestEnemy = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Queen_ClosestEnemy_AIConsiderationDef");
+                    ChironClosestEnemy = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Chiron_ClosestEnemy_AIConsiderationDef");
+                    AcheronClosestLineToEnemy = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Acheron_ClosestLineToEnemy_AIConsiderationDef");
+
+                    // Note: IsValidTarget also used to resolve Swarmer/Crabman/Siren/Fishman/Human/
+                    // MeleeWeapon defs on every call without ever reading them; those are dropped.
+                    QueenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
+                    AcheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
+                    ChironTag = DefCache.GetDef<ClassTagDef>("Chiron_ClassTagDef");
+                    CyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
+
+                    CaterpillarDamageTag = DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef");
+
+                    SharedDamageKeywordsDataDef sharedKeywords = GameUtl.GameComponent<SharedData>().SharedDamageKeywords;
+                    ParalysingKeyword = sharedKeywords.ParalysingKeyword;
+                    ViralKeyword = sharedKeywords.ViralKeyword;
+
+                    _resolved = true;
+                }
+            }
+
             [HarmonyPatch(typeof(AIClosestEnemyConsideration), nameof(AIClosestEnemyConsideration.Evaluate))]
             public static class AIClosestEnemyConsideration_Evaluate_patch
             {
@@ -1342,7 +1401,9 @@ namespace TFTV
                 {
                     try
                     {
-                        AIClosestEnemyConsiderationDef aIClosestEnemyConsiderationDef = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Umbra_ClosestPathToEnemy_AIConsiderationDef");
+                        CachedDefs.Ensure();
+
+                        AIClosestEnemyConsiderationDef aIClosestEnemyConsiderationDef = CachedDefs.UmbraClosestPathToEnemy;
 
                         if (__instance.BaseDef != aIClosestEnemyConsiderationDef)
                         {
@@ -1752,15 +1813,13 @@ namespace TFTV
                 {
                     try
                     {
-                        AIClosestEnemyConsiderationDef queenConsideration = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Queen_ClosestEnemy_AIConsiderationDef");
-                        AIClosestEnemyConsiderationDef chironConsideration = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Chiron_ClosestEnemy_AIConsiderationDef");
-                        AIClosestEnemyConsiderationDef acheronConsideration = DefCache.GetDef<AIClosestEnemyConsiderationDef>("Acheron_ClosestLineToEnemy_AIConsiderationDef");
+                        CachedDefs.Ensure();
 
-                        List<AIClosestEnemyConsiderationDef> aIClosestEnemyConsiderationDefs = new List<AIClosestEnemyConsiderationDef>() { queenConsideration, chironConsideration, acheronConsideration };
+                        GameTagDef caterpillarDamage = CachedDefs.CaterpillarDamageTag;
 
-                        GameTagDef caterpillarDamage = DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef");
-
-                        if (aIClosestEnemyConsiderationDefs.Contains(closestEnemyConsiderationDef))
+                        if (closestEnemyConsiderationDef == CachedDefs.QueenClosestEnemy
+                            || closestEnemyConsiderationDef == CachedDefs.ChironClosestEnemy
+                            || closestEnemyConsiderationDef == CachedDefs.AcheronClosestLineToEnemy)
                         {
 
                             TacticalActor tacticalActor = (TacticalActor)actor;
@@ -1849,30 +1908,45 @@ namespace TFTV
                 {
                     public static IEnumerable<TacticalAbilityTarget> Postfix(IEnumerable<TacticalAbilityTarget> results, TacticalActorBase sourceActor, TacticalAbility __instance)
                     {
-                        foreach (TacticalAbilityTarget target in results)
+                        // Both the mass-stomp check and the weapon lookup are per-ability, not per-target,
+                        // so hoist them out of the loop instead of redoing them for every candidate.
+                        if (__instance.AbilityDef == BehemothMassStompAbility)
                         {
-                            if (__instance.AbilityDef == DefCache.GetDef<TacticalAbilityDef>("BehemothMassStomp_ApplyEffectAbilityDef"))
+                            foreach (TacticalAbilityTarget target in results)
                             {
-                                // TFTVLogger.Always($"got here for {__instance.AbilityDef?.name}");
                                 yield return target;
                             }
-                            else
-                            {
-                                Weapon weapon = null;
 
-                                if (__instance.SelectedEquipment != null && __instance.SelectedEquipment is Weapon)
-                                {
-                                    weapon = __instance.SelectedEquipment as Weapon;
-                                }
-
-                                if (IsValidTarget(__instance.TacticalActor, target, weapon))
-                                {
-                                    yield return target;
-                                }
-                            }
-
+                            yield break;
                         }
 
+                        Weapon weapon = __instance.SelectedEquipment as Weapon;
+                        TacticalActor tacticalActor = __instance.TacticalActor;
+
+                        foreach (TacticalAbilityTarget target in results)
+                        {
+                            if (IsValidTarget(tacticalActor, target, weapon))
+                            {
+                                yield return target;
+                            }
+                        }
+                    }
+
+                    private static TacticalAbilityDef _behemothMassStompAbility;
+                    private static bool _behemothMassStompResolved;
+
+                    private static TacticalAbilityDef BehemothMassStompAbility
+                    {
+                        get
+                        {
+                            if (!_behemothMassStompResolved)
+                            {
+                                _behemothMassStompAbility = DefCache.GetDef<TacticalAbilityDef>("BehemothMassStomp_ApplyEffectAbilityDef");
+                                _behemothMassStompResolved = true;
+                            }
+
+                            return _behemothMassStompAbility;
+                        }
                     }
                 }
 
@@ -1899,20 +1973,14 @@ namespace TFTV
                         }
 
 
-                        ClassTagDef swarmerTag = DefCache.GetDef<ClassTagDef>("Swarmer_ClassTagDef");
-                        ClassTagDef crabTag = DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef");
-                        ClassTagDef sirenTag = DefCache.GetDef<ClassTagDef>("Siren_ClassTagDef");
-                        ClassTagDef queenTag = DefCache.GetDef<ClassTagDef>("Queen_ClassTagDef");
-                        ClassTagDef tritonTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
-                        ClassTagDef acheronTag = DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef");
-                        ClassTagDef chironTag = DefCache.GetDef<ClassTagDef>("Chiron_ClassTagDef");
-                        ClassTagDef cyclopsTag = DefCache.GetDef<ClassTagDef>("MediumGuardian_ClassTagDef");
+                        CachedDefs.Ensure();
 
-                        GameTagDef humanTag = DefCache.GetDef<GameTagDef>("Human_TagDef");
-                        GameTagDef caterpillarDamage = DefCache.GetDef<GameTagDef>("DamageByCaterpillarTracks_TagDef");
-                        ItemClassificationTagDef meleeTag = DefCache.GetDef<ItemClassificationTagDef>("MeleeWeapon_TagDef");
+                        GameTagDef caterpillarDamage = CachedDefs.CaterpillarDamageTag;
 
-                        if (actor.GameTags.Contains(queenTag) || actor.GameTags.Contains(acheronTag) || actor.GameTags.Contains(chironTag) || actor.GameTags.Contains(cyclopsTag))
+                        if (actor.GameTags.Contains(CachedDefs.QueenTag)
+                            || actor.GameTags.Contains(CachedDefs.AcheronTag)
+                            || actor.GameTags.Contains(CachedDefs.ChironTag)
+                            || actor.GameTags.Contains(CachedDefs.CyclopsTag))
                         {
                             if (targetActor.GameTags.Contains(caterpillarDamage) && targetActor.TacticalFaction != actor.TacticalFaction)
                             {
@@ -1927,20 +1995,11 @@ namespace TFTV
                             }
                         }
 
-                        DamageKeywordDef[] excludeDamageDefs =
+                        // The drone/turret name test is checked first because GetDamagePayload() builds a
+                        // payload, and almost no target is a drone or a turret.
+                        if (weapon != null && IsDroneOrTurret(targetActor) && HasExcludedDamageKeyword(weapon))
                         {
-                    GameUtl.GameComponent<SharedData>().SharedDamageKeywords.ParalysingKeyword,
-                    GameUtl.GameComponent<SharedData>().SharedDamageKeywords.ViralKeyword
-                        };
-
-
-                        if (weapon != null && weapon.GetDamagePayload().DamageKeywords.Any(damageKeyordPair => excludeDamageDefs.Contains(damageKeyordPair.DamageKeywordDef)))
-                        {
-                            if (targetActor.ActorDef.name.Equals("SpiderDrone_ActorDef") ||
-                                    targetActor.ActorDef.name.Contains("Turret_ActorDef"))
-                            {
-                                return false;
-                            }
+                            return false;
                         }
 
                         return true;
@@ -1953,11 +2012,38 @@ namespace TFTV
                     }
                 }
 
+                private static bool IsDroneOrTurret(TacticalActor targetActor)
+                {
+                    string actorDefName = targetActor.ActorDef?.name;
+                    if (actorDefName == null)
+                    {
+                        return false;
+                    }
+
+                    return actorDefName.Equals("SpiderDrone_ActorDef") || actorDefName.Contains("Turret_ActorDef");
+                }
+
+                private static bool HasExcludedDamageKeyword(Weapon weapon)
+                {
+                    foreach (DamageKeywordPair damageKeywordPair in weapon.GetDamagePayload().DamageKeywords)
+                    {
+                        DamageKeywordDef keyword = damageKeywordPair.DamageKeywordDef;
+                        if (keyword == CachedDefs.ParalysingKeyword || keyword == CachedDefs.ViralKeyword)
+                        {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+
                 public static bool CheckIfTargetingAcheron(TacticalAbilityTarget target)
                 {
                     try
                     {
-                        if (target.Actor != null && !target.Actor.IsDead && target.Actor is TacticalActor tacticalActor && tacticalActor.GameTags != null && tacticalActor.HasGameTag(DefCache.GetDef<ClassTagDef>("Acheron_ClassTagDef")))
+                        CachedDefs.Ensure();
+
+                        if (target.Actor != null && !target.Actor.IsDead && target.Actor is TacticalActor tacticalActor && tacticalActor.GameTags != null && tacticalActor.HasGameTag(CachedDefs.AcheronTag))
                         {
 
                             return true;

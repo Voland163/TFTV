@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using TFTV.TFTVIncidents;
 using static TFTV.TFTVBaseRework.Workers;
 
@@ -171,14 +172,78 @@ namespace TFTV.TFTVBaseRework
             return DismissedOperativeAbility;
         }
 
+        /// <summary>
+        /// Memo of marker lookups per character.
+        ///
+        /// HasMarkerAbility is reached from the GeoPhoenixFaction.Soldiers postfix, so it runs for
+        /// every soldier on every enumeration of that property - which the geoscape UI does
+        /// constantly. Scanning the character's whole ability list each time (with a case-insensitive
+        /// string compare per ability that is not reference-equal) was costing thousands of string
+        /// comparisons per enumeration.
+        ///
+        /// The memo is keyed on the character object, so it disappears by itself when a save is
+        /// loaded, and it is rechecked whenever the character's ability count changes - which covers
+        /// both the marker add/remove paths below and any external change to the ability list.
+        /// </summary>
+        private sealed class MarkerAbilityMemo
+        {
+            public int AbilityCount = -1;
+            public readonly Dictionary<TacticalAbilityDef, bool> Results = new Dictionary<TacticalAbilityDef, bool>();
+        }
+
+        private static readonly ConditionalWeakTable<GeoCharacter, MarkerAbilityMemo> _markerMemos =
+            new ConditionalWeakTable<GeoCharacter, MarkerAbilityMemo>();
+
         private static bool HasMarkerAbility(GeoCharacter character, TacticalAbilityDef marker)
         {
-            if (character?.Progression?.Abilities == null || marker == null)
+            IReadOnlyList<TacticalAbilityDef> abilities = character?.Progression?.Abilities;
+            if (abilities == null || marker == null)
             {
                 return false;
             }
 
-            return character.Progression.Abilities.Any(ability => AbilityMatches(ability, marker));
+            MarkerAbilityMemo memo = _markerMemos.GetOrCreateValue(character);
+
+            if (memo.AbilityCount != abilities.Count)
+            {
+                memo.AbilityCount = abilities.Count;
+                memo.Results.Clear();
+            }
+            else if (memo.Results.TryGetValue(marker, out bool cached))
+            {
+                return cached;
+            }
+
+            bool found = false;
+            for (int i = 0; i < abilities.Count; i++)
+            {
+                if (AbilityMatches(abilities[i], marker))
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            memo.Results[marker] = found;
+            return found;
+        }
+
+        /// <summary>
+        /// Drops the memo for a character whose marker abilities were just changed in place, i.e.
+        /// without the ability count moving.
+        /// </summary>
+        private static void InvalidateMarkerMemo(GeoCharacter character)
+        {
+            if (character == null)
+            {
+                return;
+            }
+
+            if (_markerMemos.TryGetValue(character, out MarkerAbilityMemo memo))
+            {
+                memo.AbilityCount = -1;
+                memo.Results.Clear();
+            }
         }
 
         private static bool AddMarkerAbility(GeoCharacter character, PassiveModifierAbilityDef marker, string markerName)
@@ -194,6 +259,7 @@ namespace TFTV.TFTVBaseRework
             }
 
             character.Progression.AddAbility(marker);
+            InvalidateMarkerMemo(character);
             TFTVLogger.Always($"[{markerName}] Added marker to {character.DisplayName}.");
             return true;
         }
@@ -217,6 +283,7 @@ namespace TFTV.TFTVBaseRework
             int removed = abilities.RemoveAll(ability => AbilityMatches(ability, marker));
             if (removed > 0)
             {
+                InvalidateMarkerMemo(character);
                 TFTVLogger.Always($"[{markerName}] Removed marker from {character.DisplayName}.");
                 return true;
             }

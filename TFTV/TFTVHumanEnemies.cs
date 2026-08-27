@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using static PhoenixPoint.Tactical.View.ViewModules.UIModuleCharacterStatus;
 using static PhoenixPoint.Tactical.View.ViewModules.UIModuleCharacterStatus.CharacterData;
@@ -851,15 +852,38 @@ namespace TFTV
         [HarmonyPatch(typeof(TacticalActorBase), "get_DisplayName")]
         public static class TacticalActorBase_GetDisplayName_HumanEnemiesGenerator_Patch
         {
+            private sealed class RankedNameCache
+            {
+                public bool Computed;
+                // null means this actor has no human-enemy rank, which is the case for every
+                // Pandoran and every player soldier.
+                public string RankedName;
+            }
+
+            // DisplayName is read constantly by the tactical UI - health bars, hover, tooltips, the
+            // combat log. The old body allocated a List of the actor's tags (twice, plus two 3-element
+            // arrays and two string Splits) on every single read, including for actors that have no
+            // rank at all. An actor's faction and tier tags are fixed at spawn, so the result is
+            // computed once per actor and reused.
+            private static readonly ConditionalWeakTable<TacticalActorBase, RankedNameCache> _rankedNames =
+                new ConditionalWeakTable<TacticalActorBase, RankedNameCache>();
+
             public static void Postfix(TacticalActorBase __instance, ref string __result)
             {
                 try
                 {
-                    if (GetFactionTierAndClassTags(__instance.GameTags.ToList())[0] != null)
+                    RankedNameCache cache = _rankedNames.GetOrCreateValue(__instance);
+
+                    if (!cache.Computed)
                     {
-                        __result = __instance.name + GetRankName(GetFactionTierAndClassTags(__instance.GameTags.ToList()));
+                        cache.Computed = true;
+                        cache.RankedName = BuildRankedName(__instance);
                     }
 
+                    if (cache.RankedName != null)
+                    {
+                        __result = cache.RankedName;
+                    }
                 }
 
                 catch (Exception e)
@@ -868,8 +892,20 @@ namespace TFTV
                 }
 
             }
+
+            private static string BuildRankedName(TacticalActorBase actor)
+            {
+                GameTagDef[] factionTierAndClass = GetFactionTierAndClassTags(actor.GameTags);
+
+                if (factionTierAndClass[0] == null)
+                {
+                    return null;
+                }
+
+                return actor.name + GetRankName(factionTierAndClass);
+            }
         }
-        public static GameTagDef[] GetFactionTierAndClassTags(List<GameTagDef> data)
+        public static GameTagDef[] GetFactionTierAndClassTags(IEnumerable<GameTagDef> data)
         {
             try
             {
@@ -987,7 +1023,7 @@ namespace TFTV
 
                     //  __instance.ClassIcon.MainClassIcon.color = _regularIconColor;
 
-                    GameTagDef[] factionAndTier = GetFactionTierAndClassTags(data.Tags.ToList());
+                    GameTagDef[] factionAndTier = GetFactionTierAndClassTags(data.Tags);
                     TFTVUI.Tactical.TargetIcons.RemoveRankFromInfoPanel(actorClassIconElement);
 
                     if (factionAndTier[0] != null)
@@ -1177,7 +1213,7 @@ namespace TFTV
             {
                 int startingLevel = tacticalActor.LevelProgression.Level;
                 TFTVLogger.Always("Starting level is " + startingLevel);
-                GameTagDef tierTagDef = GetFactionTierAndClassTags(tacticalActor.GameTags.ToList())[1];
+                GameTagDef tierTagDef = GetFactionTierAndClassTags(tacticalActor.GameTags)[1];
 
                 string rank = tierTagDef.name.Split('_')[1];
                 int rankOrder = int.Parse(rank);
@@ -1427,7 +1463,7 @@ namespace TFTV
                 }
 
                 int level = GetAdjustedLevel(tacticalActor);
-                GameTagDef classTagDef = GetFactionTierAndClassTags(tacticalActor.GameTags.ToList())[2];
+                GameTagDef classTagDef = GetFactionTierAndClassTags(tacticalActor.GameTags)[2];
 
                 AdjustStats(tacticalActor, classTagDef);
 
@@ -1594,7 +1630,7 @@ namespace TFTV
 
             try
             {
-                GameTagDef tierTagDef = GetFactionTierAndClassTags(tacticalActor.GameTags.ToList())[1];
+                GameTagDef tierTagDef = GetFactionTierAndClassTags(tacticalActor.GameTags)[1];
                 string rank = tierTagDef.name.Split('_')[1];
                 int rankOrder = int.Parse(rank);
 

@@ -1,7 +1,7 @@
-﻿using Base.Core;
+using Base.Core;
 using Base.UI.MessageBox;
 using System;
-using System.IO;
+using TFTV;
 
 namespace PRMBetterClasses
 {
@@ -12,6 +12,8 @@ namespace PRMBetterClasses
         private static string _modName;
         private static bool _awake;
 
+        private static readonly TFTVLogPrefix _prefix = new TFTVLogPrefix();
+
         public static void Initialize(string logPath, int debugLevel, string modDirectory, string modName)
         {
             _logPath = logPath;
@@ -19,10 +21,13 @@ namespace PRMBetterClasses
             _modName = modName;
             _awake = true;
 
+            TFTVLogFile.SetPath(logPath);
+            _prefix.SetModName(modName);
+
             Cleanup();
-            Always("----------------------------------------------------------------------------------------------------", false);
+            Always(TFTVLogFile.Separator, false);
             Always($"Logger.Initialize({logPath}, {debugLevel}, {modDirectory}, {modName})");
-            Always("----------------------------------------------------------------------------------------------------", false);
+            Always(TFTVLogFile.Separator, false);
         }
 
 
@@ -39,12 +44,10 @@ namespace PRMBetterClasses
 
         public static void Cleanup()
         {
-            using (StreamWriter writer = new StreamWriter(_logPath, false))
-            {
-                writer.WriteLine("----------------------------------------------------------------------------------------------------", false);
-                writer.WriteLine($"[{_modName} @ {DateTime.Now}] CLEANED UP");
-                writer.WriteLine("----------------------------------------------------------------------------------------------------", false);
-            }
+            TFTVLogFile.Truncate();
+            TFTVLogFile.WriteLine(null, TFTVLogFile.Separator);
+            TFTVLogFile.WriteLine(null, $"[{_modName} @ {DateTime.Now}] CLEANED UP");
+            TFTVLogFile.WriteLine(null, TFTVLogFile.Separator);
         }
 
 
@@ -52,13 +55,11 @@ namespace PRMBetterClasses
         {
             if (_awake && _debugLevel >= 1)
             {
-                using (StreamWriter writer = new StreamWriter(_logPath, true))
-                {
-                    writer.WriteLine("----------------------------------------------------------------------------------------------------", false);
-                    writer.WriteLine($"[{_modName} @ {DateTime.Now}] EXCEPTION:");
-                    writer.WriteLine("Message: " + ex.Message + "<br/>" + Environment.NewLine + "StackTrace: " + ex.StackTrace);
-                    writer.WriteLine("----------------------------------------------------------------------------------------------------", false);
-                }
+                TFTVLogFile.WriteLine(null, TFTVLogFile.Separator);
+                TFTVLogFile.WriteLine(null, $"[{_modName} @ {DateTime.Now}] EXCEPTION:");
+                TFTVLogFile.WriteLine(null, "Message: " + ex.Message + "<br/>" + Environment.NewLine + "StackTrace: " + ex.StackTrace);
+                TFTVLogFile.WriteLine(null, TFTVLogFile.Separator);
+
                 GameUtl.GetMessageBox().ShowSimplePrompt($"<b>An error has occurred in the BetterClasses mod!</b>\nPlease check {_logPath} for further information.\n\n<b>CAUTION:</b>\nContinuing this run may result in unstable behavior or even cause the game to crash.", MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
             }
         }
@@ -68,11 +69,7 @@ namespace PRMBetterClasses
         {
             if (_awake && _debugLevel >= 2)
             {
-                using (StreamWriter writer = new StreamWriter(_logPath, true))
-                {
-                    string prefix = showPrefix ? $"[{_modName} @ {DateTime.Now}] " : "";
-                    writer.WriteLine(prefix + line);
-                }
+                TFTVLogFile.WriteLine(showPrefix ? _prefix.Get() : null, line);
             }
         }
 
@@ -88,11 +85,7 @@ namespace PRMBetterClasses
 
         public static void Always(string line, bool showPrefix = true)
         {
-            using (StreamWriter writer = new StreamWriter(_logPath, true))
-            {
-                string prefix = showPrefix ? $"[{_modName} @ {DateTime.Now}] " : "";
-                writer.WriteLine(prefix + line);
-            }
+            TFTVLogFile.WriteLine(showPrefix ? _prefix.Get() : null, line);
         }
     }
 }

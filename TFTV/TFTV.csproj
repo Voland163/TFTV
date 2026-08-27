@@ -353,6 +353,7 @@
     <Compile Include="TFTVHumanEnemies.cs" />
     <Compile Include="TFTVHumanEnemiesNames.cs" />
     <Compile Include="TFTVInfestation.cs" />
+    <Compile Include="TFTVLogFile.cs" />
     <Compile Include="TFTVLogger.cs" />
     <Compile Include="TFTVMain.cs" />
     <Compile Include="TFTVNewGameMenu.cs" />
