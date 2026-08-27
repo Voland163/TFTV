@@ -70,29 +70,49 @@ internal class LivingQuarters
             }
 
             // ── Heal / stamina rework ────────────────────────────────────────
-            List<HealFacilityComponent> healComponents = layout
-                .QueryFacilitiesWithComponent<HealFacilityComponent>(onlyWorking: true)
-                .Where(component => component.HealSoldier)
-                .ToList();
+            // Single pass: the previous version built three intermediate lists and evaluated
+            // IsLivingQuartersComponent (a Unity GetComponent) twice per facility. This runs on
+            // every base and roster change, so it is worth keeping allocation-free.
+            int livingQuartersCount = 0;
+            int livingQuartersStaminaTotal = 0;
+            int livingQuartersStaminaMax = 0;
 
-            if (healComponents.Count == 0)
+            int medicalCount = 0;
+            int medicalHpTotal = 0;
+            int medicalHpMax = 0;
+
+            foreach (HealFacilityComponent component in layout.QueryFacilitiesWithComponent<HealFacilityComponent>(onlyWorking: true))
             {
-                return;
+                if (component == null || !component.HealSoldier)
+                {
+                    continue;
+                }
+
+                if (IsLivingQuartersComponent(component))
+                {
+                    int stamina = (int)component.StaminaHealOutput;
+                    livingQuartersCount++;
+                    livingQuartersStaminaTotal += stamina;
+                    if (stamina > livingQuartersStaminaMax)
+                    {
+                        livingQuartersStaminaMax = stamina;
+                    }
+                }
+                else
+                {
+                    int hp = (int)component.HealOutput;
+                    medicalCount++;
+                    medicalHpTotal += hp;
+                    if (hp > medicalHpMax)
+                    {
+                        medicalHpMax = hp;
+                    }
+                }
             }
 
-            List<HealFacilityComponent> livingQuarters = healComponents
-                .Where(IsLivingQuartersComponent)
-                .ToList();
-
-            List<HealFacilityComponent> medicalFacilities = healComponents
-                .Where(component => !IsLivingQuartersComponent(component))
-                .ToList();
-
-            if (livingQuarters.Count > 1)
+            if (livingQuartersCount > 1)
             {
-                int totalStamina = livingQuarters.Sum(c => (int)c.StaminaHealOutput);
-                int maxStamina = livingQuarters.Max(c => (int)c.StaminaHealOutput);
-                int reduction = totalStamina - maxStamina;
+                int reduction = livingQuartersStaminaTotal - livingQuartersStaminaMax;
                 if (reduction > 0)
                 {
                     int current = HealSoldiersStaminaField(__instance);
@@ -100,7 +120,15 @@ internal class LivingQuarters
                 }
             }
 
-            AdjustMedicalHealing(__instance, medicalFacilities);
+            if (medicalCount > 1)
+            {
+                int reduction = medicalHpTotal - medicalHpMax;
+                if (reduction > 0)
+                {
+                    int current = HealSoldiersHPField(__instance);
+                    HealSoldiersHPField(__instance) = Math.Max(0, current - reduction);
+                }
+            }
         }
 
         private static bool IsLivingQuartersComponent(HealFacilityComponent component)
@@ -118,25 +146,6 @@ internal class LivingQuarters
 
             ContainerFacilityComponent container = facility.GetComponent<ContainerFacilityComponent>();
             return container != null && container.SoldiersCapacity > 0;
-        }
-
-        private static void AdjustMedicalHealing(PhoenixBaseStats stats, List<HealFacilityComponent> medicalFacilities)
-        {
-            if (medicalFacilities == null || medicalFacilities.Count <= 1)
-            {
-                return;
-            }
-
-            int totalHp = medicalFacilities.Sum(component => (int)component.HealOutput);
-            int maxHp = medicalFacilities.Max(component => (int)component.HealOutput);
-            int reduction = totalHp - maxHp;
-            if (reduction <= 0)
-            {
-                return;
-            }
-
-            int current = HealSoldiersHPField(stats);
-            HealSoldiersHPField(stats) = Math.Max(0, current - reduction);
         }
     }
 }

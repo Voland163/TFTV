@@ -104,11 +104,17 @@ namespace TFTV.TFTVBaseRework
                 return;
             }
 
-            foreach (GeoEventTimer timer in timers.Values.Where(t => t != null))
+            foreach (GeoEventTimer timer in timers.Values)
             {
+                if (timer == null)
+                {
+                    continue;
+                }
+
                 if (!ActivePendingByTimerId.ContainsKey(timer.ID) && TryParsePendingTimer(timer, out PendingActionInfo active))
                 {
                     ActivePendingByTimerId[active.TimerId] = active;
+                    InvalidatePendingVisuals();
 
                     GeoSite site = level?.Map?.AllSites?.FirstOrDefault(s => s.SiteId == active.SiteId);
                     if (site != null && site.ExpiringTimerAt != timer.EndAt)
@@ -119,9 +125,12 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
+        // Reused so the per-frame tick does not allocate.
+        private static readonly List<string> _toCompleteBuffer = new List<string>();
+
         private static void TickPendingActions(GeoscapeEventSystem eventSystem)
         {
-            GeoLevelController level = eventSystem?.gameObject?.GetComponent<GeoLevelController>();
+            GeoLevelController level = ResolveLevel(eventSystem);
             if (eventSystem == null
                 || level == null
                 || level.Map == null
@@ -134,22 +143,35 @@ namespace TFTV.TFTVBaseRework
 
             RehydratePendingActions(eventSystem, level);
 
-            List<string> toComplete = new List<string>();
+            if (ActivePendingByTimerId.Count == 0)
+            {
+                return;
+            }
+
+            List<string> toComplete = _toCompleteBuffer;
+            toComplete.Clear();
+
             foreach (KeyValuePair<string, PendingActionInfo> kv in ActivePendingByTimerId)
             {
-              //  TFTVLogger.Always($"Checking pending action timer {kv.Key} for site {kv.Value.SiteId} and action {kv.Value.Action}. Now={level.Timing.Now}, EndAt={kv.Value.EndAt}");
-                GeoEventTimer timer = eventSystem.GetTimerById(kv.Key);
-              //  TFTVLogger.Always($"Timer exists: {(timer != null)}, TimerEndAt={(timer != null ? timer.EndAt.ToString() : "null")}");
                 if (level.Timing.Now >= kv.Value.EndAt)
                 {
                     toComplete.Add(kv.Key);
                 }
             }
 
+            if (toComplete.Count == 0)
+            {
+                return;
+            }
+
             foreach (string timerId in toComplete)
             {
                 CompletePendingActionFromTimer(level, timerId);
             }
+
+            // Marked afterwards so the rescan is guaranteed to see the completed state, even though
+            // the completion path already refreshes on its own.
+            InvalidatePendingVisuals();
         }
 
         private static bool CompletePendingActionFromTimer(GeoLevelController level, string timerId)
@@ -247,8 +269,13 @@ namespace TFTV.TFTVBaseRework
                 try
                 {
                     TickPendingActions(__instance);
-                    GeoLevelController level = __instance?.gameObject?.GetComponent<GeoLevelController>();
-                    RefreshPendingConstructionVisuals(level);
+
+                    if (!ShouldRescanVisuals())
+                    {
+                        return;
+                    }
+
+                    RefreshPendingConstructionVisuals(ResolveLevel(__instance));
                 }
                 catch (Exception ex)
                 {
@@ -257,6 +284,60 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
+        /// <summary>
+        /// GeoscapeEventSystem is a MonoBehaviour, so its Update runs every frame. Scanning every
+        /// site on the map at that rate is wasted work: pending actions only start and finish on
+        /// discrete events, and the progression visuals animate themselves from their own Update.
+        /// The scan is therefore invalidated explicitly and otherwise throttled to a safety net.
+        /// </summary>
+        private const int VisualRescanFrameInterval = 30;
+
+        private static int _lastVisualScanFrame = int.MinValue;
+        private static bool _visualsDirty = true;
+
+        internal static void InvalidatePendingVisuals()
+        {
+            _visualsDirty = true;
+        }
+
+        private static bool ShouldRescanVisuals()
+        {
+            return _visualsDirty
+                || UnityEngine.Time.frameCount - _lastVisualScanFrame >= VisualRescanFrameInterval;
+        }
+
+        // GeoscapeEventSystem and GeoLevelController live on the same GameObject, so the lookup only
+        // has to happen once per event system rather than on every frame.
+        private static GeoscapeEventSystem _cachedLevelOwner;
+        private static GeoLevelController _cachedLevel;
+
+        private static GeoLevelController ResolveLevel(GeoscapeEventSystem eventSystem)
+        {
+            if (eventSystem == null)
+            {
+                return null;
+            }
+
+            if (!ReferenceEquals(_cachedLevelOwner, eventSystem) || _cachedLevel == null)
+            {
+                _cachedLevelOwner = eventSystem;
+                _cachedLevel = eventSystem.gameObject != null
+                    ? eventSystem.gameObject.GetComponent<GeoLevelController>()
+                    : null;
+            }
+
+            return _cachedLevel;
+        }
+
+        // Reused across scans so the refresh does not allocate on the geoscape.
+        private static readonly HashSet<int> _activeSiteIdsBuffer = new HashSet<int>();
+        private static readonly List<int> _staleSiteIdsBuffer = new List<int>();
+
+        // Progression ranges already pushed into each visual. SetProgression touches renderer
+        // materials, so it must only be called when the range actually changes.
+        private static readonly Dictionary<int, KeyValuePair<TimeUnit, TimeUnit>> AppliedProgression =
+            new Dictionary<int, KeyValuePair<TimeUnit, TimeUnit>>();
+
         public static void RefreshPendingConstructionVisuals(GeoLevelController level)
         {
             if (level?.Map?.AllSites == null)
@@ -264,9 +345,20 @@ namespace TFTV.TFTVBaseRework
                 return;
             }
 
-            HashSet<int> activeSiteIds = new HashSet<int>();
-            foreach (GeoSite site in level.Map.AllSites.Where(s => s != null && PhoenixBaseVisitFlow.HasPendingActionPublic(s)))
+            // Also resets the throttle for callers that refresh directly after a player action.
+            _visualsDirty = false;
+            _lastVisualScanFrame = UnityEngine.Time.frameCount;
+
+            HashSet<int> activeSiteIds = _activeSiteIdsBuffer;
+            activeSiteIds.Clear();
+
+            foreach (GeoSite site in level.Map.AllSites)
             {
+                if (site == null || !PhoenixBaseVisitFlow.HasPendingActionPublic(site))
+                {
+                    continue;
+                }
+
                 if (site.ExpiringTimerAt == TimeUnit.Zero || site.ExpiringTimerAt <= level.Timing.Now)
                 {
                     if (!PendingVisualMissingLogged.Contains(site.SiteId))
@@ -321,16 +413,41 @@ namespace TFTV.TFTVBaseRework
 
                 float durationHours = PhoenixBaseVisitFlow.GetPendingDurationHours(site);
                 TimeUnit startAt = site.ExpiringTimerAt - TimeUnit.FromHours(durationHours);
-                controller.SetProgression(startAt, site.ExpiringTimerAt, level.Timing);
-                controller.gameObject.SetActive(true);
+
+                // SetProgression writes to the renderer's material, and the controller animates
+                // itself from its own Update, so only push the range when it has actually changed.
+                if (!AppliedProgression.TryGetValue(site.SiteId, out KeyValuePair<TimeUnit, TimeUnit> applied)
+                    || applied.Key != startAt
+                    || applied.Value != site.ExpiringTimerAt)
+                {
+                    controller.SetProgression(startAt, site.ExpiringTimerAt, level.Timing);
+                    AppliedProgression[site.SiteId] = new KeyValuePair<TimeUnit, TimeUnit>(startAt, site.ExpiringTimerAt);
+                }
+
+                if (!controller.gameObject.activeSelf)
+                {
+                    controller.gameObject.SetActive(true);
+                }
             }
 
-            foreach (int staleId in PendingConstructionVisuals.Keys.Where(id => !activeSiteIds.Contains(id)).ToList())
+            List<int> staleSiteIds = _staleSiteIdsBuffer;
+            staleSiteIds.Clear();
+
+            foreach (int id in PendingConstructionVisuals.Keys)
+            {
+                if (!activeSiteIds.Contains(id))
+                {
+                    staleSiteIds.Add(id);
+                }
+            }
+
+            foreach (int staleId in staleSiteIds)
             {
                 GeoActorProgressionVisualController controller = PendingConstructionVisuals[staleId];
                 PendingConstructionVisuals.Remove(staleId);
                 PendingVisualCreationLogged.Remove(staleId);
                 PendingVisualMissingLogged.Remove(staleId);
+                AppliedProgression.Remove(staleId);
 
                 if (controller != null)
                 {
