@@ -1,4 +1,4 @@
-Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
+﻿Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
 KEY_DLC3_MOUNTEGG_NAME,Text,,HAMMERFALL CRATER,,CRATÈRE HAMMERFALL,Hammerfall-Krater,,KRATER HAMMERFALL,КРАТЕР «УДАР МОЛОТА»,CRÁTER CAÍDA DEL MARTILLO,
 KEY_DLC3_THE_GIFT,Text,,AURORA,,AURORA,AURORA,,AURORA,АВРОРА,AURORA,
 KEY_MARKETPLACE_HAVEN_ADDITIONAL_HEADER,Text,,The Bazaar,,Le Bazar,Der Basar,,Bazar,Рынок,El Bazar,
@@ -291,3 +291,8 @@ KEY_HAVEN_INFO_UNDERFED_POPULATION,Text,,FOOD-INSECURE POPULATION,,POPULATION AF
 Haven Screen/KEY_HAVEN_MIST,Text,,INCREASES ATTRITION RATE AND THE RISK OF PANDORAN ATTACK,,ACCÉLÈRE LE DÉCLIN ET AUGMENTE LE RISQUE D'ATTAQUE PANDORIENNE,,,ZWIĘKSZA TEMPO UBYTKU LUDNOŚCI I RYZYKO ATAKU PANDORAN,ПОВЫШАЕТ УБЫЛЬ НАСЕЛЕНИЯ И РИСК НАПАДЕНИЯ ПАНДОРАНОВ,,
 KEY_UI_EDIT_SCREEN_TOGGLEFACE,Text,,SHOW FACE,,,,,,,,
 KEY_UI_EDIT_SCREEN_TOGGLEHELMET,Text,,SHOW HELMET,,,,,,,,
+KEY_TFTV_FOOD_TOOLTIP_PRODUCED,Text,,Food produced: {0} per day,,,,,,,,
+KEY_TFTV_FOOD_TOOLTIP_CONSUMED,Text,,Food consumed: {0} per day,,,,,,,,
+KEY_TFTV_PERSONNEL_TOOLTIP_UNASSIGNED_NO_FOOD,Text,,"Unassigned personnel do not consume food. Only field operatives and personnel assigned to research, manufacturing or training need feeding.",,,,,,,,
+KEY_TFTV_MARKETPLACE_BUTTON_TOP,Text,,MARKET,,,,,,,,
+KEY_TFTV_MARKETPLACE_BUTTON_BOTTOM,Text,,PLACE,,,,,,,,

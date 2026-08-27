@@ -167,7 +167,20 @@ namespace TFTV
                         return;
                     }
 
-                    if (!____actor.Status.HasStatus<MindControlStatus>() || ____actor.Status.GetStatus<MindControlStatus>().ControllerActor == null)
+                    // Vehicles are excluded from the mission XP split, so contribution they earn is
+                    // normally thrown away. An operative riding along with the Compute "Mounted Driver"
+                    // benefit is the one making the vehicle perform, so credit them with it in full.
+                    TacticalActor mountedDriver = TFTVIncidents.ComputeMountedAbility.GetBuffingMountedDriver(____actor);
+
+                    if (mountedDriver != null)
+                    {
+                        AddContributionTo(mountedDriver, cp);
+                        Debug.Log($"+{cp} cp for {mountedDriver.name} (through Mounted Driver vehicle {____actor.name}).");
+                    }
+
+                    if (____actor.Status == null
+                        || !____actor.Status.HasStatus<MindControlStatus>()
+                        || ____actor.Status.GetStatus<MindControlStatus>().ControllerActor == null)
                     {
                         return;
                     }
@@ -176,13 +189,7 @@ namespace TFTV
 
                     // TFTVLogger.Always($"{controllingActor.name} has {controllingActor.Contribution.Contribution} CP");
 
-                    FieldInfo contributionFieldInfo = typeof(TacticalContribution).GetField("_contribution", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                    TacticalContribution controllingActorContribution = controllingActor.Contribution;
-
-                    int controllingActorContributionValue = controllingActorContribution.Contribution + cp / 2;
-
-                    contributionFieldInfo.SetValue(controllingActorContribution, controllingActorContributionValue);
+                    AddContributionTo(controllingActor, cp / 2);
 
                     // TFTVLogger.Always($"{controllingActor.name} now has {controllingActor.Contribution.Contribution} CP");
 
@@ -195,6 +202,24 @@ namespace TFTV
                     TFTVLogger.Error(e);
                     throw;
                 }
+            }
+
+            /// <summary>
+            /// Adds to an actor's contribution without going back through AddContribution, which would
+            /// re-enter this patch.
+            /// </summary>
+            private static void AddContributionTo(TacticalActorBase actor, int cp)
+            {
+                if (actor?.Contribution == null || cp <= 0)
+                {
+                    return;
+                }
+
+                FieldInfo contributionFieldInfo = typeof(TacticalContribution).GetField("_contribution", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                TacticalContribution contribution = actor.Contribution;
+
+                contributionFieldInfo.SetValue(contribution, contribution.Contribution + cp);
             }
         }
     }

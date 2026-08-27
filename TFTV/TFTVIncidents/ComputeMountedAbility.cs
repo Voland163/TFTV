@@ -3,6 +3,7 @@ using Base.Entities.Statuses;
 using Base.Serialization.General;
 using Base.UI;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Entities.Equipments;
@@ -18,6 +19,7 @@ namespace TFTV.TFTVIncidents
         private const string DiagTag = "[Incidents][ComputeMountedAbility]";
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
+        private static readonly GameTagDef VehicleTag = TFTVMain.Shared.SharedGameTags.VehicleTag;
 
         internal static class Defs
         {
@@ -149,9 +151,71 @@ namespace TFTV.TFTVIncidents
             public ItemStatModification[] StatModifications;
         }
 
+        /// <summary>
+        /// The operative whose Mounted Driver passive is currently buffing <paramref name="vehicleActor"/>,
+        /// or null when nobody with the benefit is riding it. Only one driver buffs a vehicle at a time,
+        /// so this is also the operative that should be credited for what the vehicle does.
+        ///
+        /// Called once per contribution event, so it has to stay cheap: the vehicle tag rejects every
+        /// ordinary actor outright, and only the vehicle's own handful of passengers are looked at.
+        /// </summary>
+        internal static TacticalActor GetBuffingMountedDriver(TacticalActorBase vehicleActor)
+        {
+            try
+            {
+                TacticalActor vehicle = vehicleActor as TacticalActor;
+
+                if (vehicle == null
+                    || vehicle.GameTags == null
+                    || !vehicle.GameTags.Contains(VehicleTag))
+                {
+                    return null;
+                }
+
+                VehicleComponent vehicleComponent = vehicle.Vehicle;
+
+                if (vehicleComponent == null)
+                {
+                    return null;
+                }
+
+                foreach (TacticalActorBase passengerBase in vehicleComponent.Passengers)
+                {
+                    TacticalActor passenger = passengerBase as TacticalActor;
+                    if (passenger == null)
+                    {
+                        continue;
+                    }
+
+                    foreach (MountedDriverPassiveAbility ability in passenger.GetAbilities<MountedDriverPassiveAbility>())
+                    {
+                        if (ability != null && ability.BuffedVehicleActor == vehicle)
+                        {
+                            return passenger;
+                        }
+                    }
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+                return null;
+            }
+        }
+
         [SerializeType(InheritCustomCreateFrom = typeof(TacticalAbility))]
         public class MountedDriverPassiveAbility : TacticalAbility
         {
+            internal TacticalActor BuffedVehicleActor
+            {
+                get
+                {
+                    return this._buffedVehicleActor;
+                }
+            }
+
             public MountedDriverPassiveAbilityDef MountedDriverPassiveAbilityDef
             {
                 get

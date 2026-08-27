@@ -258,6 +258,15 @@ namespace TFTV.TFTVBaseRework
         {
             return character != null && !HasJustAGrunt(character);
         }
+
+        /// <summary>
+        /// Grunts are rank and file: they can be housed and fed, but they cannot be spent on
+        /// standing up an Outpost or activating a Base.
+        /// </summary>
+        internal static bool CanBeUsedForBaseActivation(GeoCharacter character)
+        {
+            return character != null && !HasJustAGrunt(character);
+        }
     }
 
     internal static class PersonnelData
@@ -374,7 +383,7 @@ namespace TFTV.TFTVBaseRework
 
         /// <summary>
         /// Personnel that may be spent on setting up an Outpost or activating a Base:
-        /// everyone who is not on field duty and not already in training.
+        /// everyone who is not on field duty, not already in training, and not just a grunt.
         /// </summary>
         internal static List<PersonnelInfo> GetPersonnelEligibleForBaseActivation(GeoPhoenixFaction faction)
         {
@@ -385,6 +394,7 @@ namespace TFTV.TFTVBaseRework
 
             return _assignments.Values
                 .Where(person => person?.Character != null && person.Character.Faction == faction)
+                .Where(person => PersonnelRestrictions.CanBeUsedForBaseActivation(person.Character))
                 .Where(person => person.Assignment == PersonnelAssignment.Unassigned
                     || person.Assignment == PersonnelAssignment.Research
                     || person.Assignment == PersonnelAssignment.Manufacturing)
@@ -1389,6 +1399,7 @@ namespace TFTV.TFTVBaseRework
 
             return _assignments.Values
                 .Where(person => person?.Character != null && person.Character.Faction == faction)
+                .Where(person => PersonnelRestrictions.CanBeUsedForBaseActivation(person.Character))
                 .Where(person => person.Assignment == PersonnelAssignment.Unassigned
                     || person.Assignment == PersonnelAssignment.Research
                     || person.Assignment == PersonnelAssignment.Manufacturing)
