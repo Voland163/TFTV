@@ -86,6 +86,7 @@ namespace TFTV.TFTVUI.Tactical
                 SecondaryObjectivesTactical.ClearDataOnGameLoadAndStateChange();
                 OpposingHumanoidForceWidget.ClearData();
                 Ancients.ClearData();
+                TacticalTooltipCycler.Reset();
             }
             catch (Exception e)
             {
@@ -102,6 +103,7 @@ namespace TFTV.TFTVUI.Tactical
                 CaptureTacticalWidget.ClearData();
                 OpposingHumanoidForceWidget.ClearData();
                 Ancients.ClearData();
+                TacticalTooltipCycler.Reset();
             }
             catch (Exception e)
             {

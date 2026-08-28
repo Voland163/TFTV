@@ -281,6 +281,7 @@
     <Compile Include="TFTVUI\Tactical\MeleeRangePrediction.cs" />
     <Compile Include="TFTVUI\Tactical\OpposingHumanoidForceWidget.cs" />
     <Compile Include="TFTVUI\Tactical\SecondaryObjectives.cs" />
+    <Compile Include="TFTVUI\Tactical\TacticalTooltipCycler.cs" />
     <Compile Include="TFTVUI\Tactical\TargetIcons.cs" />
     <Compile Include="TFTVUI\Tactical\Various.cs" />
     <Compile Include="TFTVVanillaFixes\Geoscape\GeoscapeVanillaFixes.cs" />

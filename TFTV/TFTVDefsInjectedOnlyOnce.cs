@@ -748,11 +748,167 @@ namespace TFTV
             }
         }
 
+        /// <summary>
+        /// Creates the rebindable action that cycles the mod's tactical HUD tooltips.
+        ///
+        /// The gamepad default is chosen by scanning every existing binding for joystick buttons already
+        /// in use and taking the first one that is free, so it cannot silently steal a vanilla control on
+        /// any pad layout. It is registered as a normal action, so it shows up in Options and the player
+        /// can rebind it.
+        /// </summary>
+        private static void CreateTacticalTooltipHotkey()
+        {
+            try
+            {
+                InputMapDef inputMapDef = DefCache.GetDef<InputMapDef>("PhoenixInput");
+
+                // Every input set that drives tactical play, identified by content rather than by asset
+                // name so this does not depend on knowing what they are called.
+                List<InputSetDef> tacticalSets = new List<InputSetDef>();
+                HashSet<string> tacticalActionNames = new HashSet<string>();
+
+                foreach (InputSetDef inputSetDef in Repo.GetAllDefs<InputSetDef>())
+                {
+                    if (inputSetDef?.ActionNames == null || !inputSetDef.ActionNames.Contains("EndTurn"))
+                    {
+                        continue;
+                    }
+
+                    tacticalSets.Add(inputSetDef);
+                    foreach (string actionName in inputSetDef.ActionNames)
+                    {
+                        tacticalActionNames.Add(actionName);
+                    }
+                }
+
+                // Bindings are copied wholesale from keys the game already uses, never invented. A key is
+                // identified by Name (InputCache rewrites Hash from a name lookup, inventing a hash for
+                // an unknown name), but Hash also has to be a real one: RefreshActions indexes a key
+                // value array by it, so a placeholder throws IndexOutOfRange the moment keybindings are
+                // reapplied. Copying an existing key gives a matching, in-range pair.
+                //
+                // Values only, never InputKey references: InputKey overloads == and dereferences both
+                // sides without a null check, so any comparison against null throws.
+                Dictionary<string, int> knownKeyboardKeys = new Dictionary<string, int>();
+                HashSet<string> keysUsedInTactical = new HashSet<string>();
+
+                foreach (InputAction action in inputMapDef.Actions)
+                {
+                    bool actionIsTactical = tacticalActionNames.Contains(action?.Name);
+
+                    foreach (InputChord chord in action?.Chords ?? new InputChord[0])
+                    {
+                        foreach (InputKey key in chord?.Keys ?? new InputKey[0])
+                        {
+                            if (ReferenceEquals(key, null)
+                                || key.InputSource != InputSource.Key
+                                || key.Hash < 0
+                                || key.GetInputType() == InputType.Joystick)
+                            {
+                                continue;
+                            }
+
+                            knownKeyboardKeys[key.Name] = key.Hash;
+
+                            if (actionIsTactical)
+                            {
+                                keysUsedInTactical.Add(key.Name);
+                            }
+                        }
+                    }
+                }
+
+                // Keyboard only. A mod-added gamepad chord was tried and never fired on any button, and a
+                // binding that does nothing is not harmless here: chords are added as OverridingHidden,
+                // so a stray one can shadow a real action. The pad reaches the tooltips through
+                // TacticalTooltipCycler instead, which cycles on B when there is nothing to cancel.
+                string keyboardKeyName = FindFreeKey(knownKeyboardKeys, keysUsedInTactical);
+
+                List<InputChord> chords = new List<InputChord>();
+
+                if (!string.IsNullOrEmpty(keyboardKeyName))
+                {
+                    chords.Add(MakeChord(keyboardKeyName, knownKeyboardKeys[keyboardKeyName]));
+                }
+
+                if (chords.Count == 0)
+                {
+                    TFTVLogger.Always("[TacticalTooltips] No unused key found; cycle action not created.");
+                    return;
+                }
+
+                InputAction inputAction = new InputAction
+                {
+                    Name = TFTVUI.Tactical.TacticalTooltipCycler.ActionName,
+                    ActionSection = InputAction.ActionCategory.Tactical,
+                    ActionDisplayText = new LocalizedTextBind(),
+                    Chords = chords.ToArray(),
+                    // InputCache assigns hashes by position, so the action's hash is its index.
+                    Hash = inputMapDef.Actions.Length
+                };
+
+                inputMapDef.Actions = inputMapDef.Actions.AddToArray(inputAction);
+
+                foreach (InputSetDef inputSetDef in tacticalSets)
+                {
+                    if (!inputSetDef.ActionNames.Contains(inputAction.Name))
+                    {
+                        inputSetDef.ActionNames = inputSetDef.ActionNames.AddToArray(inputAction.Name);
+                    }
+                }
+
+                TFTVLogger.Always($"[TacticalTooltips] Cycle action hash {inputAction.Hash}, " +
+                    $"key '{keyboardKeyName ?? "none"}', added to {tacticalSets.Count} tactical set(s). " +
+                    $"Gamepad uses Cancel when nothing else consumes it.");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        /// <summary>Returns the first key in <paramref name="candidates"/> that tactical does not use.</summary>
+        private static string FindFreeKey(Dictionary<string, int> candidates, HashSet<string> used)
+        {
+            foreach (KeyValuePair<string, int> candidate in candidates)
+            {
+                if (!used.Contains(candidate.Key))
+                {
+                    return candidate.Key;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Builds a single-key chord from a name and hash copied off an existing binding, so both halves
+        /// are values the input system already knows.
+        /// </summary>
+        private static InputChord MakeChord(string keyName, int keyHash)
+        {
+            return new InputChord
+            {
+                OverridingBehavior = InputChord.ActionOverriding.OverridingHidden,
+                Keys = new InputKey[]
+                {
+                    new InputKey
+                    {
+                        Name = keyName,
+                        Hash = keyHash,
+                        InputSource = InputSource.Key,
+                        DeadzoneOverride = -1.0f
+                    }
+                }
+            };
+        }
+
         private static void CreateHotkeys()
         {
             try
             {
                 CreateAircraftHotkeys();
+                CreateTacticalTooltipHotkey();
 
                 InputMapDef inputMapDef = DefCache.GetDef<InputMapDef>("PhoenixInput");
 
