@@ -430,6 +430,7 @@
     <Compile Include="Vehicles\Effects\AddedRotationParticleEffectDef.cs" />
     <Compile Include="Vehicles\HarmonyPatches\GeoCharacter_Patches.cs" />
     <Compile Include="Vehicles\HarmonyPatches\MoveAbilityTargetData_Patches.cs" />
+    <Compile Include="Vehicles\HarmonyPatches\SceneViewElement_Patches.cs" />
     <Compile Include="Vehicles\HarmonyPatches\SwitchStanceAbility_Patches.cs" />
     <Compile Include="Vehicles\HarmonyPatches\TacticalAbility_Patches.cs" />
     <Compile Include="Vehicles\HarmonyPatches\TacticalActor_Patches.cs" />
