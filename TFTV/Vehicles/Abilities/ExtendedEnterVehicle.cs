@@ -115,6 +115,39 @@ namespace TFTVVehicleRework.Abilities
         }
 
         /// <summary>
+        /// True when any boardable friendly vehicle grants an entry discount, wherever it stands.
+        ///
+        /// Deliberately not position-aware: this answers only "is there somewhere worth walking
+        /// to", which is what SceneViewElement.IsValid() needs in order to let the marker pass
+        /// run at all. Which tiles actually light up is decided per tile afterwards, by
+        /// MoveAbilityTargetData_IsActorInActionRange_Patch.
+        /// </summary>
+        internal bool HasEntryDiscountSomewhere()
+        {
+            TacticalActor actor = this.TacticalActor;
+            if (actor == null || actor.IsMounted)
+            {
+                return false;
+            }
+
+            TacticalFaction faction = this.TacticalActorBase.TacticalFaction;
+            if (faction == null)
+            {
+                return false;
+            }
+
+            foreach (TacticalActor vehicleActor in faction.TacticalActors)
+            {
+                if (GetEntryCostModification(vehicleActor) != null)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// The entry discount granted by one vehicle, or null.
         /// </summary>
         private static TacticalAbilityCostModification GetEntryCostModification(TacticalActorBase vehicleActorBase)
