@@ -44,30 +44,50 @@ namespace TFTVVehicleRework.HarmonyPatches
                     return true;
                 }
 
-                // GetTargetsAt() casts for line of sight, and this runs once per candidate
-                // tile, so only ask about tiles close enough to a vehicle to be one of its
-                // entry points.
-                if (!IsNearAVehicle(actor, __instance.Position))
+                // What ShouldDisplay has put on the operative reflects where they stand right
+                // now, not this candidate tile. Once they are parked on a discounted vehicle's
+                // entry point that registration prices every other tile too, which is what lit
+                // up the neighbouring Armadillo's entry tile as if boarding it were free.
+                TacticalAbilityCostModification registered = enterVehicle.RegisteredAccessCostModification;
+
+                // GetTargetsAt() casts for line of sight and this runs once per candidate tile,
+                // so only ask about tiles close enough to a vehicle to be one of its entry points.
+                TacticalAbilityCostModification atTile = IsNearAVehicle(actor, __instance.Position)
+                    ? enterVehicle.GetEntryCostModificationAt(__instance.Position)
+                    : null;
+
+                if (atTile == registered)
                 {
+                    // The operative already carries exactly what this tile grants, so vanilla
+                    // prices it correctly on its own.
                     return true;
                 }
 
-                TacticalAbilityCostModification modification =
-                    enterVehicle.GetEntryCostModificationAt(__instance.Position);
-
-                if (modification == null)
+                if (registered != null)
                 {
-                    return true;
+                    actor.RemoveAbilityCostModification(registered);
                 }
 
-                actor.AddAbilityCostModification(modification);
+                if (atTile != null)
+                {
+                    actor.AddAbilityCostModification(atTile);
+                }
+
                 try
                 {
                     __result = __instance.IsPositionInRange(actor.GetMaxMoveAndActRange(ability));
                 }
                 finally
                 {
-                    actor.RemoveAbilityCostModification(modification);
+                    if (atTile != null)
+                    {
+                        actor.RemoveAbilityCostModification(atTile);
+                    }
+
+                    if (registered != null)
+                    {
+                        actor.AddAbilityCostModification(registered);
+                    }
                 }
 
                 return false;
