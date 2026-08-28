@@ -1282,6 +1282,10 @@ float lengthScale, List<ModSettingController> optionsType = null)
 
                         SetAllVisibility(false);
                         DefaultDifficulties.UpdateOptionsOnSelectingDifficutly();
+
+                        // Called from here rather than a second postfix so it is guaranteed to run after
+                        // every row above has been created; Harmony does not order postfixes on its own.
+                        TFTVUI.Home.NewGameOptionsNav.Setup(__instance, rectTransform);
                     }
                     catch (Exception e)
                     {

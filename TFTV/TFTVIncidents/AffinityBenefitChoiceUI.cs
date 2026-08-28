@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using TFTV.TFTVUI.Common;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -426,6 +427,47 @@ namespace TFTV.TFTVIncidents
             }
 
             LayoutRebuilder.ForceRebuildLayoutImmediate(rootRect);
+
+            SetupControllerNavigation(root);
+        }
+
+        /// <summary>
+        /// The benefit choice is the active decision while this panel is up, so its buttons outrank the
+        /// encounter screen's own holder underneath and take focus on open. The panel is destroyed when
+        /// the choice is made, which unregisters the holder and hands navigation back.
+        /// </summary>
+        private static void SetupControllerNavigation(GameObject panelRoot)
+        {
+            try
+            {
+                List<Selectable> buttons = new List<Selectable>();
+                foreach (Button button in panelRoot.GetComponentsInChildren<Button>(includeInactive: false))
+                {
+                    if (button != null)
+                    {
+                        buttons.Add(button);
+                    }
+                }
+
+                if (buttons.Count == 0)
+                {
+                    return;
+                }
+
+                GameObject holderObject = new GameObject("TFTV_AffinityChoiceNav", typeof(RectTransform));
+                holderObject.SetActive(false);
+                holderObject.transform.SetParent(panelRoot.transform, false);
+                holderObject.AddComponent<LayoutElement>().ignoreLayout = true;
+
+                UINavigationalElementsHolder holder = ControllerNav.EnsureHolder(holderObject);
+                holderObject.SetActive(true);
+
+                if (ControllerNav.Apply(holder, buttons, NavigationHolderMode.Vertical, rootPriority: 200, loop: false))
+                {
+                    ControllerNav.Focus(holder);
+                }
+            }
+            catch (Exception ex) { TFTVLogger.Error(ex); }
         }
 
         private static void CreateBenefitSelector(

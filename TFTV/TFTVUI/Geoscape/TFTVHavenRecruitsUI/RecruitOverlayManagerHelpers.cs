@@ -31,8 +31,25 @@ namespace TFTV
 
             for (int i = transform.childCount - 1; i >= 0; i--)
             {
-                Object.Destroy(transform.GetChild(i).gameObject);
+                DetachAndDestroy(transform.GetChild(i));
             }
+        }
+
+        /// <summary>
+        /// Unparents before destroying. Object.Destroy only takes effect at the end of the frame, so a
+        /// container cleared this way would otherwise still report its dead children for the rest of the
+        /// frame - and anything that walks the hierarchy in between (gamepad navigation builds its rows
+        /// there) would pick them up and hold references that go null a frame later.
+        /// </summary>
+        internal static void DetachAndDestroy(Transform child)
+        {
+            if (child == null)
+            {
+                return;
+            }
+
+            child.SetParent(null, false);
+            Object.Destroy(child.gameObject);
         }
 
         internal static Image MakeFixedIcon(Transform parent, Sprite sp, int px, Sprite backgroundSprite = null)

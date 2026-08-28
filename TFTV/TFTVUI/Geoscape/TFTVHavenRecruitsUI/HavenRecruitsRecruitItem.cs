@@ -1,7 +1,10 @@
 ﻿using PhoenixPoint.Common.Entities.Items;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using TFTV.TFTVUI.Common;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static TFTV.HavenRecruitsMain;
 using static TFTV.HavenRecruitsMain.RecruitOverlayManager;
@@ -170,6 +173,14 @@ namespace TFTV.TFTVHavenRecruitsUI
                 {
                     click.OnSingle = () =>
                     {
+                        // The free cursor always reports clickCount 1, so a gamepad can never reach the
+                        // double-click path. Activating an already-selected card stands in for it there.
+                        if (ControllerNav.IsUsingController() && RecruitOverlayManager._currentSelectedCard == card)
+                        {
+                            OnCardDoubleClick?.Invoke(data.Recruit, data.Site);
+                            return;
+                        }
+
                         HavenRecruitsGeoscapeInteractions.FocusOnSite(data.Site);
                         HandleRecruitSelected(card, data);
                     };
@@ -306,6 +317,129 @@ namespace TFTV.TFTVHavenRecruitsUI
             t.color = new Color(0.85f, 0.85f, 0.9f, 0.9f);
             var rt = go.GetComponent<RectTransform>();
             rt.sizeDelta = new Vector2(0, 48);
+        }
+
+        /// <summary>
+        /// Describes one card as a left-to-right run of gamepad targets: the recruit's name first, so
+        /// moving up and down the list parks the cursor on the name, then every icon on the line that
+        /// shows a tooltip on hover. The free cursor raycasts wherever it is snapped, so landing on an
+        /// icon fires that icon's existing pointer-enter tooltip with no extra wiring.
+        /// </summary>
+        internal static List<Selectable> BuildNavigationRow(RecruitCardView cardView)
+        {
+            var row = new List<Selectable>();
+
+            try
+            {
+                if (cardView == null || cardView.gameObject == null)
+                {
+                    return row;
+                }
+
+                var card = cardView.gameObject;
+                var clickHandler = card.GetComponent<CardClickHandler>();
+
+                if (cardView.NameLabel != null)
+                {
+                    var head = EnsureNavTarget(cardView.NameLabel.gameObject, clickHandler);
+                    if (head != null)
+                    {
+                        row.Add(head);
+                    }
+                }
+
+                var icons = new List<Selectable>();
+                CollectHoverTargets(cardView.AbilityContainer, clickHandler, icons);
+                CollectHoverTargets(cardView.CostRow, clickHandler, icons);
+
+                // The two containers are positioned independently, so screen order is the only reliable
+                // way to know what sits left of what.
+                icons.Sort((a, b) => a.transform.position.x.CompareTo(b.transform.position.x));
+                row.AddRange(icons);
+
+                if (row.Count == 0)
+                {
+                    var cardButton = card.GetComponent<Button>();
+                    if (cardButton != null)
+                    {
+                        row.Add(cardButton);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+            }
+
+            return row;
+        }
+
+        private static void CollectHoverTargets(Transform container, CardClickHandler clickHandler, List<Selectable> into)
+        {
+            if (container == null || !container.gameObject.activeSelf)
+            {
+                return;
+            }
+
+            for (int i = 0; i < container.childCount; i++)
+            {
+                var child = container.GetChild(i);
+                if (child == null || !child.gameObject.activeSelf)
+                {
+                    continue;
+                }
+
+                // Search children too: an ability icon carries its tooltip trigger on the inner image,
+                // but the frame is what should be navigated to.
+                if (child.GetComponentInChildren<IPointerEnterHandler>() == null)
+                {
+                    continue;
+                }
+
+                var target = EnsureNavTarget(child.gameObject, clickHandler);
+                if (target != null)
+                {
+                    into.Add(target);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Makes one object navigable, reusing whatever Selectable it already has. A click forwarder is
+        /// only attached when this adds the Selectable itself and the object had no click behaviour of its
+        /// own, so inventory slots keep handling their own clicks exactly as they do with a mouse.
+        /// </summary>
+        private static Selectable EnsureNavTarget(GameObject go, CardClickHandler clickHandler)
+        {
+            if (go == null)
+            {
+                return null;
+            }
+
+            var existing = go.GetComponent<Selectable>();
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            bool hadClickHandler = go.GetComponent<IPointerClickHandler>() != null;
+
+            var button = go.AddComponent<Button>();
+            button.transition = Selectable.Transition.None;
+
+            var graphic = go.GetComponent<Graphic>();
+            if (graphic != null)
+            {
+                button.targetGraphic = graphic;
+            }
+
+            if (!hadClickHandler && clickHandler != null)
+            {
+                var forwarder = go.GetComponent<CardClickForwarder>() ?? go.AddComponent<CardClickForwarder>();
+                forwarder.Target = clickHandler;
+            }
+
+            return button;
         }
     }
 }

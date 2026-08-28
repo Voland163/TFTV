@@ -1,4 +1,5 @@
 ﻿using Base.Core;
+using Base.UI;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
@@ -19,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using TFTV.TFTVUI.Common;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -218,7 +220,15 @@ namespace TFTV.TFTVBaseRework
 
                     Transform root = EnsureButtonsRoot(__instance);
 
+                    // Unregister the navigation holder before the buttons it points at are destroyed.
+                    UINavigationalElementsHolder navHolder = root != null
+                        ? root.GetComponent<UINavigationalElementsHolder>()
+                        : null;
+                    ControllerNav.Release(navHolder);
+
                     ClearChildren(root);
+
+                    List<PhoenixGeneralButton> actionButtons = new List<PhoenixGeneralButton>();
 
                     // Exploration-gate prefix: prepended to tooltips when the base is not yet explored.
                     string exploreFirstPrefix = !isExplored
@@ -237,6 +247,7 @@ namespace TFTV.TFTVBaseRework
                         () => ExecuteAndCloseOnSuccess(modal, () => BaseLowQualityScanning.TryStartLowQualityScan(site, faction)));
                     ApplyCostRow(scanBtn, faction, BaseLowQualityScanning.GetScanCostPack(site), 0);
                     SetButtonTooltip(scanBtn, TFTVCommonMethods.ConvertKeyToString("KEY_BASE_PING_SCAN_TOOLTIP"));
+                    actionButtons.Add(scanBtn);
 
                     PhoenixGeneralButton ransackBtn = CreateClonedActionButton(
                         __instance.Confirm,
@@ -251,6 +262,7 @@ namespace TFTV.TFTVBaseRework
                     }
                     SetButtonTooltip(ransackBtn,
                         $"{exploreFirstPrefix}{TFTVCommonMethods.ConvertKeyToString("KEY_BASE_RANSACK_TOOLTIP")}");
+                    actionButtons.Add(ransackBtn);
 
                     if (!isOutpost)
                     {
@@ -268,6 +280,7 @@ namespace TFTV.TFTVBaseRework
                         ApplyCostRow(outpostBtn, faction, PhoenixBaseVisitFlow.GetOutpostCostPack(), PhoenixBaseVisitFlow.GetOutpostPersonnelCost());
                         SetButtonTooltip(outpostBtn,
                             $"{exploreFirstPrefix}{TFTVCommonMethods.ConvertKeyToString("KEY_BASE_OUTPOST_TOOLTIP")}");
+                        actionButtons.Add(outpostBtn);
                     }
 
                     bool fromOutpost = isOutpost;
@@ -289,8 +302,17 @@ namespace TFTV.TFTVBaseRework
                     SetButtonTooltip(activateBaseBtn, fromOutpost
                         ? $"{exploreFirstPrefix}{TFTVCommonMethods.ConvertKeyToString("KEY_BASE_OUTPOST_UPGRADE_TOOLTIP")}"
                         : $"{exploreFirstPrefix}{TFTVCommonMethods.ConvertKeyToString("KEY_BASE_ACTIVATE_OPTION_TOOLTIP")}");
+                    actionButtons.Add(activateBaseBtn);
 
                     __instance.Confirm.gameObject.SetActive(false);
+
+                    // Register the freshly built buttons so a gamepad can reach them. The vanilla modal
+                    // already owns a nav holder for its facility icons, which would otherwise pin the
+                    // virtual cursor to those and leave these unreachable.
+                    ControllerNav.Apply(
+                        navHolder,
+                        ControllerNav.SelectablesOf(actionButtons),
+                        NavigationHolderMode.Vertical);
 
                     site.RefreshVisuals();
                 }
@@ -618,10 +640,15 @@ namespace TFTV.TFTVBaseRework
                     Transform root = parent.Find(ExtraButtonsRootName);
                     if (root != null)
                     {
+                        ControllerNav.EnsureHolder(root.gameObject);
                         return root;
                     }
 
                     GameObject go = new GameObject(ExtraButtonsRootName, typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+
+                    // Built inactive so the navigation holder can be attached without its OnEnable
+                    // registering an empty element list with UIGlobalNavigationController.
+                    go.SetActive(false);
                     go.transform.SetParent(parent, false);
 
                     RectTransform rt = go.GetComponent<RectTransform>();
@@ -639,6 +666,10 @@ namespace TFTV.TFTVBaseRework
                     ContentSizeFitter fitter = go.GetComponent<ContentSizeFitter>();
                     fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
                     fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+
+                    ControllerNav.EnsureHolder(go);
+
+                    go.SetActive(true);
 
                     return go.transform;
                 }

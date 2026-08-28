@@ -1,6 +1,7 @@
 ﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
 using Base;
 using Base.Core;
+using Base.UI;
 using com.ootii.Collections;
 using HarmonyLib;
 using PhoenixPoint.Common.View.ViewControllers;
@@ -14,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using TFTV.TFTVUI.Common;
 using TFTV.Vehicles.Ammo;
 using UnityEngine;
 using UnityEngine.UI;
@@ -390,12 +392,127 @@ namespace TFTV
                         otherToggle.GetComponent<RectTransform>().sizeDelta = new Vector2(allToggle.GetComponent<RectTransform>().sizeDelta.x, allToggle.GetComponent<RectTransform>().sizeDelta.y);
                         otherToggle.transform.GetComponentsInChildren<Image>().FirstOrDefault(c => c.name == "Icon").sprite = Helper.CreateSpriteFromImageFile("Geoscape_Icon_Research.png");
 
+                        // Records the toggles in screen order (top row left to right, then bottom row) and
+                        // arms the guard above - without this assignment the guard never fires and every
+                        // UpdateVisuals stacks another four toggles on top of the previous set.
+                        _filterToggles.Clear();
+                        _filterToggles.Add(vehicleToggle);
+                        _filterToggles.Add(equipmentToggle);
+                        _filterToggles.Add(otherToggle);
+                        _filterToggles.Add(allToggle);
+                        MarketToggleButton = allToggle;
                     }
 
+                    AppendFiltersToNavigation();
                 }
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
+                }
+            }
+
+            private static readonly List<PhoenixGeneralButton> _filterToggles = new List<PhoenixGeneralButton>();
+
+            private static UINavigationalElementsHolder _filterNavHolder;
+
+            /// <summary>
+            /// The filter toggles sit as a 2x2 block to the right of the offer list, so they get their own
+            /// holder linked to the right of the Marketplace's: pressing right from any offer moves onto
+            /// the filters, pressing left goes back to the list. Within the block, left and right run along
+            /// a row and up and down move between the two rows, matching the layout on screen.
+            ///
+            /// The offer list itself keeps the vanilla holder - retargeted so each offer is its own row,
+            /// which is what makes running off its right edge hand over to the filters.
+            ///
+            /// The filter holder is deliberately not a root: it must never take focus when the screen
+            /// opens, only when the player navigates into it.
+            /// </summary>
+            internal static void AppendFiltersToNavigation()
+            {
+                try
+                {
+                    UIModuleTheMarketplace marketplaceUI =
+                        GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()?.View?.GeoscapeModules?.TheMarketplaceModule;
+
+                    UINavigationalElementsHolder offersHolder = marketplaceUI?.InteractableElementsHolder;
+                    if (offersHolder == null || offersHolder.GlobalNavigation == null)
+                    {
+                        return;
+                    }
+
+                    List<Selectable> filters = new List<Selectable>();
+                    foreach (PhoenixGeneralButton toggle in _filterToggles)
+                    {
+                        Selectable selectable = toggle != null
+                            ? (toggle.BaseButton ?? toggle.GetComponent<Selectable>())
+                            : null;
+
+                        if (selectable != null && selectable.gameObject.activeInHierarchy)
+                        {
+                            filters.Add(selectable);
+                        }
+                    }
+
+                    if (filters.Count == 0)
+                    {
+                        return;
+                    }
+
+                    // One row per offer, so left and right fall off the edge and reach the filters.
+                    List<IList<Selectable>> offerRows = new List<IList<Selectable>>();
+                    if (offersHolder.InteractiveList != null)
+                    {
+                        foreach (Selectable offer in offersHolder.InteractiveList)
+                        {
+                            if (offer != null && !filters.Contains(offer))
+                            {
+                                offerRows.Add(new List<Selectable> { offer });
+                            }
+                        }
+                    }
+
+                    if (offerRows.Count > 0)
+                    {
+                        ControllerNav.ApplyRowsToExistingHolder(offersHolder, offerRows);
+                    }
+
+                    if (_filterNavHolder == null)
+                    {
+                        GameObject holderObject = new GameObject("TFTV_MarketplaceFilterNav", typeof(RectTransform));
+                        holderObject.SetActive(false);
+                        holderObject.transform.SetParent(marketplaceUI.transform, false);
+                        holderObject.AddComponent<LayoutElement>().ignoreLayout = true;
+
+                        _filterNavHolder = ControllerNav.EnsureHolder(holderObject);
+                        holderObject.SetActive(true);
+                    }
+
+                    // A real 2x2 grid of equivalent cells, so up and down keep the column rather than
+                    // dropping onto the row head: down from EQUIPMENT reaches ALL, not OTHER.
+                    ControllerNav.ApplyRows(
+                        _filterNavHolder,
+                        ControllerNav.GroupIntoRowsByPosition(filters),
+                        isRoot: false,
+                        verticalLinking: RowVerticalLinking.SameColumn);
+
+                    ControllerNav.LinkHorizontally(offersHolder, _filterNavHolder);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            /// <summary>
+            /// Vanilla rebuilds the holder's element list here from the offer buttons alone, which drops
+            /// the filter toggles; they have to be put back after every encounter change.
+            /// </summary>
+            [HarmonyPatch(typeof(UIModuleTheMarketplace), "SetEncounter")]
+            public static class UIModuleTheMarketplace_SetEncounter_FilterNav_patch
+            {
+                public static void Postfix()
+                {
+                    AppendFiltersToNavigation();
                 }
             }
 
