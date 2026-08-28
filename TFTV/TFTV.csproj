@@ -293,6 +293,7 @@
     <Compile Include="TFTVVanillaFixes\Tactical\DamageTacticalVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Tactical\DecimalWPTacticalVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Tactical\InventoryDupeTacticalVanillaFixes.cs" />
+    <Compile Include="TFTVVanillaFixes\Tactical\FirePathCostTacticalVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Tactical\MadSkunkyFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Tactical\MindControlTacticalVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Tactical\OWNotTriggeringTacticalVanillaFixes.cs" />
@@ -304,6 +305,7 @@
     <Compile Include="TFTVVanillaFixes\Tactical\TurretAmmoRefillTacticalVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Tactical\UICharacterSelectedVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Tactical\UITacticalVanillaFixes.cs" />
+    <Compile Include="TFTVVanillaFixes\Tactical\VehicleHulkCrateTacticalVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Tactical\WPtoMistLossTacticalVanillaFixes.cs" />
     <Compile Include="TFTVVanillaFixes\Tactical\XPTacticalVanillaFixes.cs" />
     <Compile Include="TFTVVehicleFixes.cs" />
