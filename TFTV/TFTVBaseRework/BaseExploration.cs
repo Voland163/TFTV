@@ -149,7 +149,7 @@ namespace TFTV.TFTVBaseRework
 
 
     /// <summary>
-    /// Roll the 15% infestation chance when explicit exploration completes.
+    /// Roll the infestation chance when explicit exploration completes.
     ///
     /// If the roll passes, CreatePhoenixBaseInfestationMission() is called immediately.
     /// Vanilla then marks the site visited and the UI's normal VehicleVisitedSite flow
@@ -259,7 +259,7 @@ namespace TFTV.TFTVBaseRework
     /// Disable vanilla activation-time infestation.
     ///
     /// Vanilla BaseInfestationCheck uses campaign day, mist, and base infestation
-    /// counter. This mod wants the only infestation roll to be the 15% exploration
+    /// counter. This mod wants the only infestation roll to be the exploration
     /// completion roll above.
     /// </summary>
     [HarmonyPatch(typeof(GeoPhoenixBase), nameof(GeoPhoenixBase.BaseInfestationCheck))]

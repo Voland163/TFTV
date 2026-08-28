@@ -387,7 +387,7 @@ Some Dismissed operatives that have “Just a Grunt” perk, such as Mercenaries
 TUTORIAL_ADDITIONAL_BASES_TITLE0,Text,,Additional Phoenix Bases,,,,,,,,
 TUTORIAL_ADDITIONAL_BASES_TEXT0,Text,,"Bases can no longer be remotely activated. However, you can pay 30 mat and 5 tech to initiate remotely a low-quality Scan (same as the one with the Aircraft Marketplace Module, with each POI in range having a 50% of being revealed) from any Phoenix base that hasn’t been fully activated, provided you have an Aircraft that is no further than 4000Km from the base. The cost of each subsequent scan, even from a different base, will be increased by 30 mat and 5 tech. 
 
-Once you arrive at a Phoenix Base for the first time, you can Explore it. There is a chance (15% or 30%, depending on whether the base is inside the Mist) that the base might be infested, forcing you to fight a mission to clear. Upon completing the exploration you will receive some loot, the type and amount depending on difficulty level. You can override these settings on New Game start. 
+Once you arrive at a Phoenix Base for the first time, you can Explore it. There is a chance (10% or 20%, depending on whether the base is inside the Mist) that the base might be infested, forcing you to fight a mission to clear. Upon completing the exploration you will receive some loot, the type and amount depending on difficulty level. You can override these settings on New Game start. 
 
 You then have the following options:
 

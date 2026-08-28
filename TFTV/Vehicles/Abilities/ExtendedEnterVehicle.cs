@@ -26,38 +26,92 @@ namespace TFTVVehicleRework.Abilities
         {
             get
             {
-                if (base.ShouldDisplay)
-                {
-                    IEnumerable<TacticalAbilityTarget> targets = base.GetTargets();
-                    foreach (TacticalAbilityTarget tacticalAbilityTarget in targets)
-                    {
-                        VehicleComponent vehicle = tacticalAbilityTarget.Actor.Vehicle;
-                        AdjustAccessCostStatus AdjustAccessCost = vehicle.TacticalActorBase.Status.GetStatus<AdjustAccessCostStatus>();
-                        if (!AdjustAccessCost.IsDefaultValue() && AdjustAccessCost.AdjustAccessCostStatusDef.AccessDirection == AdjustAccessCostStatusDef.Direction.Entry)
-                        {
-                            if(this.APCostModification == null)
-                            {   
-                                this.APCostModification = AdjustAccessCost.AdjustAccessCostStatusDef.AccessCostModification;
-                                this.TacticalActor.AddAbilityCostModification(this.APCostModification);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    if (this.APCostModification != null)
-                    {
-                        this.TacticalActor.RemoveAbilityCostModification(this.APCostModification);
-                        this.APCostModification = null;
-                    }
-                }
+                this.UpdateAccessCostModification();
                 return base.ShouldDisplay;
             }
+        }
+
+        /// <summary>
+        /// Registers the entry AP discount granted by a vehicle module (the Armadillo's
+        /// Lightweight Alloy, for one) on the operative.
+        ///
+        /// This can't wait for ShouldDisplay to become true. EnterVehicleAbility.ShouldDisplay
+        /// only turns true once the operative already stands on the vehicle's entry point,
+        /// whereas the entry tile marker is drawn earlier: TacUtil filters the operative's move
+        /// targets through TacticalActor.GetMaxMoveAndActRange(), which prices this ability from
+        /// the cost modifications registered on the operative at that moment. With the discount
+        /// still unregistered the ability was priced at its full cost, so an operative with less
+        /// than 1 AP got no marker on a tile they could in fact board from.
+        /// </summary>
+        private void UpdateAccessCostModification()
+        {
+            TacticalActor actor = this.TacticalActor;
+            if (actor == null)
+            {
+                return;
+            }
+
+            TacticalAbilityCostModification modification = actor.IsMounted ? null : this.FindEntryCostModification();
+            if (modification == this.APCostModification)
+            {
+                return;
+            }
+
+            if (this.APCostModification != null)
+            {
+                actor.RemoveAbilityCostModification(this.APCostModification);
+                this.APCostModification = null;
+            }
+
+            if (modification != null)
+            {
+                this.APCostModification = modification;
+                actor.AddAbilityCostModification(modification);
+            }
+        }
+
+        /// <summary>
+        /// The entry discount of the first boardable friendly vehicle that grants one, or null.
+        /// </summary>
+        private TacticalAbilityCostModification FindEntryCostModification()
+        {
+            TacticalFaction faction = this.TacticalActorBase.TacticalFaction;
+            if (faction == null)
+            {
+                return null;
+            }
+
+            foreach (TacticalActor vehicleActor in faction.TacticalActors)
+            {
+                VehicleComponent vehicle = (vehicleActor != null) ? vehicleActor.Vehicle : null;
+                if (vehicle == null || vehicle.IsFull || !vehicleActor.IsAlive)
+                {
+                    continue;
+                }
+
+                foreach (AdjustAccessCostStatus adjustAccessCost in vehicleActor.Status.GetStatuses<AdjustAccessCostStatus>())
+                {
+                    if (adjustAccessCost.IsDefaultValue()
+                        || adjustAccessCost.AdjustAccessCostStatusDef.AccessDirection != AdjustAccessCostStatusDef.Direction.Entry)
+                    {
+                        continue;
+                    }
+
+                    return adjustAccessCost.AdjustAccessCostStatusDef.AccessCostModification;
+                }
+            }
+
+            return null;
         }
 
         public override void Activate(object parameter = null)
         {
             base.Activate(parameter);
+            if (this.APCostModification != null)
+            {
+                this.TacticalActor.RemoveAbilityCostModification(this.APCostModification);
+                this.APCostModification = null;
+            }
             if (this.ExtendedEnterVehicleAbilityDef.StealthStatus != null)
             {
                 this.TacticalActor.Status.ApplyStatus(this.ExtendedEnterVehicleAbilityDef.StealthStatus);

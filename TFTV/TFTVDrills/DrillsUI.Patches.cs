@@ -127,22 +127,31 @@ namespace TFTV.TFTVDrills
                     var ability = __instance.AbilityDef ?? ElementHelpers.FindSlot(__instance)?.Ability;
                     var availableImage = __instance.Available;
 
+                    if (availableImage == null)
+                    {
+                        return;
+                    }
 
                     bool shouldShowIndicator = DrillIndicator.ShouldShow(character, phoenixFaction, ability, availableImage);
+
+                    // Remember the vanilla corner triangle before it is ever swapped out. Caching
+                    // it only on the drill branch left it null whenever the first entry examined
+                    // wanted no drill indicator, and the else branch then wrote that null onto the
+                    // Image - an Image with no sprite draws as a plain flashing square.
+                    if (_originalAvailableImage == null
+                        && availableImage.sprite != null
+                        && availableImage.sprite != DrillsDefs._drillAvailable)
+                    {
+                        _originalAvailableImage = availableImage.sprite;
+                    }
 
                     if (_originalAvailableImage != null)
                     {
                         availableImage.sprite = _originalAvailableImage;
                     }
-                   
 
                     if (shouldShowIndicator)
                     {
-                        if (_originalAvailableImage == null)
-                        {
-                            _originalAvailableImage = availableImage.sprite;
-                        }
-
                         availableImage.sprite = DrillsDefs._drillAvailable;
                         availableImage.gameObject.SetActive(true);
                         __instance.AvailableSkill = true;
@@ -153,7 +162,6 @@ namespace TFTV.TFTVDrills
                     {
                         availableImage.gameObject.SetActive(isAvailable && isBuyable);
                         __instance.AvailableSkill = isAvailable;
-                        availableImage.sprite = _originalAvailableImage;
                         // TFTVLogger.Always($"should show indicator for ability {ability?.name} false");
                     }
 

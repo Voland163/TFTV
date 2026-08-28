@@ -2,6 +2,7 @@
 using Base.Utils;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Entities.Sites;
@@ -124,6 +125,65 @@ namespace TFTV.TFTVVanillaFixes.Geoscape
                 }
 
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// GeoCharacter.GetMissingLoadoutItems() decides what "Equip loadout" still has to
+        /// find for an operative, and it miscounts duplicates.
+        ///
+        /// It tallies the equipped items and the saved loadout items into one shared counter
+        /// per ItemDef and then reports an item as missing only when that combined tally is
+        /// exactly 1. That reads correctly only while no ItemDef appears more than once in
+        /// either list. An operative whose saved loadout holds two of the same item - two
+        /// deployable turrets in the ready slots, say - tallies 2 with nothing equipped at
+        /// all, so the item is never reported missing. Nothing is then gathered from outside
+        /// the squad and nothing is manufactured, and the loadout silently stays unequipped.
+        ///
+        /// Replaced with a plain multiset difference: every saved item that has no equipped
+        /// counterpart left to pair off with is missing.
+        /// </summary>
+        [HarmonyPatch(typeof(GeoCharacter), nameof(GeoCharacter.GetMissingLoadoutItems))]
+        internal static class GetMissingLoadoutItemsDuplicateCountPatch
+        {
+            private static bool Prefix(GeoCharacter __instance, ref List<GeoItem> __result)
+            {
+                List<GeoItem> missing = new List<GeoItem>();
+                AddMissingItems(__instance.ArmourItems, __instance.ArmourLoadoutItems, missing);
+                AddMissingItems(__instance.EquipmentItems, __instance.EquipmentLoadoutItems, missing);
+                AddMissingItems(__instance.InventoryItems, __instance.InventoryLoadoutItems, missing);
+                __result = missing;
+
+                // Skip the original combined-tally implementation.
+                return false;
+            }
+
+            private static void AddMissingItems(
+                IReadOnlyList<GeoItem> equippedItems,
+                IReadOnlyList<GeoItem> savedLoadoutItems,
+                List<GeoItem> missing)
+            {
+                Dictionary<ItemDef, int> unmatchedEquipped = new Dictionary<ItemDef, int>();
+                foreach (GeoItem equippedItem in equippedItems)
+                {
+                    int count;
+                    unmatchedEquipped.TryGetValue(equippedItem.ItemDef, out count);
+                    unmatchedEquipped[equippedItem.ItemDef] = count + 1;
+                }
+
+                foreach (GeoItem savedItem in savedLoadoutItems)
+                {
+                    int count;
+                    if (unmatchedEquipped.TryGetValue(savedItem.ItemDef, out count) && count > 0)
+                    {
+                        // This saved copy is already covered by an equipped one.
+                        unmatchedEquipped[savedItem.ItemDef] = count - 1;
+                    }
+                    else
+                    {
+                        missing.Add(savedItem);
+                    }
+                }
             }
         }
 
