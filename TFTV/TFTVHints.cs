@@ -751,6 +751,120 @@ namespace TFTV
         {
             internal static Sprite CustomGeoHintImage;
 
+            /// <summary>One panel of a custom geoscape hint.</summary>
+            internal class CustomHintPanel
+            {
+                public readonly string TitleKey;
+                public readonly string TextKey;
+                public readonly string ImageFile;
+
+                public CustomHintPanel(string titleKey, string textKey, string imageFile)
+                {
+                    TitleKey = titleKey;
+                    TextKey = textKey;
+                    ImageFile = imageFile;
+                }
+            }
+
+            /// <summary>
+            /// Panels still to show after the one currently on screen. Custom hints all share a
+            /// single slot on GeoscapeTutorialStepsDef, so a multi-panel hint cannot be built up
+            /// front - each panel has to be written into the slot as its turn comes.
+            /// </summary>
+            private static readonly Queue<CustomHintPanel> PendingCustomHintPanels = new Queue<CustomHintPanel>();
+
+            /// <summary>
+            /// Set only while a sequence is putting up one of its own panels. Any other custom
+            /// hint clears whatever is queued, so a sequence abandoned half way - the geoscape
+            /// unloaded before the second panel was reached, say - cannot later chain itself onto
+            /// an unrelated hint.
+            /// </summary>
+            private static bool _advancingCustomHintSequence;
+
+            /// <summary>
+            /// Shows the panels in order, one per confirm click.
+            ///
+            /// GeoscapeView queues tutorial steps through QueryStateSwitch rather than showing
+            /// them outright, so asking for the next panel while the current one is closing is
+            /// enough to have it presented straight after.
+            /// </summary>
+            internal static void PlayCustomGeoHintSequence(GeoLevelController controller, params CustomHintPanel[] panels)
+            {
+                try
+                {
+                    PendingCustomHintPanels.Clear();
+
+                    if (panels == null || panels.Length == 0)
+                    {
+                        return;
+                    }
+
+                    for (int i = 1; i < panels.Length; i++)
+                    {
+                        PendingCustomHintPanels.Enqueue(panels[i]);
+                    }
+
+                    ShowSequencePanel(controller, panels[0]);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void ShowSequencePanel(GeoLevelController controller, CustomHintPanel panel)
+            {
+                _advancingCustomHintSequence = true;
+                try
+                {
+                    CreateCustomGeoHint(panel.TitleKey, panel.TextKey, panel.ImageFile);
+                    PlayCustomGeoHint(controller, forceShow: true);
+                }
+                finally
+                {
+                    _advancingCustomHintSequence = false;
+                }
+            }
+
+            /// <summary>
+            /// Advances a multi-panel custom hint when its OK button is clicked.
+            /// </summary>
+            [HarmonyPatch(typeof(UIModuleTutorialModal), "ConfirmClicked")]
+            internal static class UIModuleTutorialModal_ConfirmClicked_CustomHintSequence_Patch
+            {
+                private static void Postfix(GeoscapeTutorialStep ____currentStep)
+                {
+                    try
+                    {
+                        if (PendingCustomHintPanels.Count == 0)
+                        {
+                            return;
+                        }
+
+                        // Only our own hints chain; every other tutorial modal is left alone.
+                        if (____currentStep == null
+                            || ____currentStep.StepType != GeoscapeTutorialStepType.AlienReconRaid)
+                        {
+                            return;
+                        }
+
+                        GeoLevelController controller = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+
+                        if (controller == null)
+                        {
+                            PendingCustomHintPanels.Clear();
+                            return;
+                        }
+
+                        ShowSequencePanel(controller, PendingCustomHintPanels.Dequeue());
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+
             public static void TriggerBaseDefenseHint(GeoLevelController controller)
             {
                 try
@@ -812,6 +926,11 @@ namespace TFTV
             {
                 try
                 {
+                    if (!_advancingCustomHintSequence)
+                    {
+                        PendingCustomHintPanels.Clear();
+                    }
+
                     GeoscapeTutorialStepType stepType = GeoscapeTutorialStepType.AlienReconRaid;
                     GeoscapeTutorial geoscapeTutorial = controller.Tutorial;
 
@@ -1320,8 +1439,12 @@ namespace TFTV
 
                     if (eventSystem.GetVariable(VarPersonnel) > 0) return;
 
-                    GeoscapeHints.CreateCustomGeoHint("TUTORIAL_PERSONNEL_TITLE0", "TUTORIAL_PERSONNEL_TEXT0", null);
-                    GeoscapeHints.PlayCustomGeoHint(controller, forceShow: true);
+                    // Two panels: assigning Personnel to base duty, then where new ones come from.
+                    GeoscapeHints.PlayCustomGeoHintSequence(
+                        controller,
+                        new GeoscapeHints.CustomHintPanel("TUTORIAL_PERSONNEL_TITLE0", "TUTORIAL_PERSONNEL_TEXT0", null),
+                        new GeoscapeHints.CustomHintPanel("TUTORIAL_PERSONNEL_TITLE1", "TUTORIAL_PERSONNEL_TEXT1", null));
+
                     eventSystem.SetVariable(VarPersonnel, 1);
                 }
                 catch (Exception e) { TFTVLogger.Error(e); }
