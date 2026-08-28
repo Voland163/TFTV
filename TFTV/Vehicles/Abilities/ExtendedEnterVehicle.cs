@@ -14,6 +14,16 @@ namespace TFTVVehicleRework.Abilities
 
         private TacticalAbilityCostModification APCostModification;
 
+        // While an activation is in flight the boarding target is known, so the target-based
+        // decision made in Activate() must not be overwritten by the position-based one.
+        private bool _resolvingActivation;
+
+        /// <summary>The discount currently registered on the operative by this ability, or null.</summary>
+        internal TacticalAbilityCostModification RegisteredAccessCostModification
+        {
+            get { return this.APCostModification; }
+        }
+
         public ExtendedEnterVehicleAbilityDef ExtendedEnterVehicleAbilityDef
         {
             get
@@ -26,7 +36,15 @@ namespace TFTVVehicleRework.Abilities
         {
             get
             {
-                this.UpdateAccessCostModification();
+                // Activating fires events that refresh the ability bar, which lands back here.
+                // ActionPointCost is read live when ApplyCosts() runs, so re-registering by
+                // position at that moment would silently undo Activate()'s target-based choice
+                // and hand the operative a free boarding of whatever else is parked alongside.
+                if (!this._resolvingActivation)
+                {
+                    this.UpdateAccessCostModification();
+                }
+
                 return base.ShouldDisplay;
             }
         }
@@ -127,12 +145,20 @@ namespace TFTVVehicleRework.Abilities
             // actually being boarded first. One tile can be an entry point for two vehicles,
             // and the cost modification carries no target that could tell them apart.
             TacticalAbilityTarget target = parameter as TacticalAbilityTarget;
-            this.SetAccessCostModification(
-                (target != null) ? GetEntryCostModification(target.Actor) : null);
 
-            base.Activate(parameter);
+            this._resolvingActivation = true;
+            try
+            {
+                this.SetAccessCostModification(
+                    (target != null) ? GetEntryCostModification(target.Actor) : null);
 
-            this.SetAccessCostModification(null);
+                base.Activate(parameter);
+            }
+            finally
+            {
+                this._resolvingActivation = false;
+                this.SetAccessCostModification(null);
+            }
             if (this.ExtendedEnterVehicleAbilityDef.StealthStatus != null)
             {
                 this.TacticalActor.Status.ApplyStatus(this.ExtendedEnterVehicleAbilityDef.StealthStatus);
