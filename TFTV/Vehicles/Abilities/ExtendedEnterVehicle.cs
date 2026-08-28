@@ -4,7 +4,7 @@ using Base.Serialization.General;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using PhoenixPoint.Tactical.Levels;
-using System.Collections.Generic;
+using UnityEngine;
 
 namespace TFTVVehicleRework.Abilities 
 {
@@ -32,16 +32,17 @@ namespace TFTVVehicleRework.Abilities
         }
 
         /// <summary>
-        /// Registers the entry AP discount granted by a vehicle module (the Armadillo's
-        /// Lightweight Alloy, for one) on the operative.
+        /// Registers the entry AP discount granted by the vehicle the operative is in position
+        /// to board (the Armadillo's Lightweight Alloy, for one).
         ///
-        /// This can't wait for ShouldDisplay to become true. EnterVehicleAbility.ShouldDisplay
-        /// only turns true once the operative already stands on the vehicle's entry point,
-        /// whereas the entry tile marker is drawn earlier: TacUtil filters the operative's move
-        /// targets through TacticalActor.GetMaxMoveAndActRange(), which prices this ability from
-        /// the cost modifications registered on the operative at that moment. With the discount
-        /// still unregistered the ability was priced at its full cost, so an operative with less
-        /// than 1 AP got no marker on a tile they could in fact board from.
+        /// A TacticalAbilityCostModification carries no target of its own - AbilityQualifies()
+        /// matches on the ability's skill tags - so any registered discount applies to every
+        /// vehicle the operative boards. Keeping it tied to what is boardable from the
+        /// operative's own tile is therefore the only thing stopping a second, module-less
+        /// vehicle from being boarded for free.
+        ///
+        /// The entry tile marker is priced before the operative is in position and is handled
+        /// separately, per candidate tile, by MoveAbilityTargetData_IsActorInActionRange_Patch.
         /// </summary>
         private void UpdateAccessCostModification()
         {
@@ -51,8 +52,14 @@ namespace TFTVVehicleRework.Abilities
                 return;
             }
 
-            TacticalAbilityCostModification modification = actor.IsMounted ? null : this.FindEntryCostModification();
-            if (modification == this.APCostModification)
+            this.SetAccessCostModification(
+                actor.IsMounted ? null : this.GetEntryCostModificationAt(actor.Pos));
+        }
+
+        private void SetAccessCostModification(TacticalAbilityCostModification modification)
+        {
+            TacticalActor actor = this.TacticalActor;
+            if (actor == null || modification == this.APCostModification)
             {
                 return;
             }
@@ -71,51 +78,15 @@ namespace TFTVVehicleRework.Abilities
         }
 
         /// <summary>
-        /// The entry discount that currently applies to this operative, or null.
-        ///
-        /// A TacticalAbilityCostModification carries no target of its own - AbilityQualifies()
-        /// matches on the ability's skill tags - so once registered it discounts boarding any
-        /// vehicle. The discount belongs to the vehicle carrying the module ("Entering the
-        /// vehicle does not cost any Action Points"), which forces two regimes.
+        /// The entry discount granted by a vehicle boardable from <paramref name="position"/>,
+        /// or null. Only vehicles this operative could actually board from that exact tile are
+        /// consulted, so the discount never reaches a vehicle without the module.
         /// </summary>
-        private TacticalAbilityCostModification FindEntryCostModification()
+        internal TacticalAbilityCostModification GetEntryCostModificationAt(Vector3 position)
         {
-            // Standing on an entry point: the boarding target is settled, so price the exact
-            // vehicle being boarded. This is the regime that governs whether the ability is
-            // affordable and what Activate() actually charges, so a second vehicle parked
-            // nearby never gets boarded on the Armadillo's discount.
-            bool atEntryPoint = false;
-            foreach (TacticalAbilityTarget target in base.GetTargets())
+            foreach (TacticalAbilityTarget target in base.GetTargetsAt(position))
             {
-                atEntryPoint = true;
-
                 TacticalAbilityCostModification modification = GetEntryCostModification(target.Actor);
-                if (modification != null)
-                {
-                    return modification;
-                }
-            }
-
-            if (atEntryPoint)
-            {
-                return null;
-            }
-
-            // Out of position, so no boarding target exists yet. The entry tile marker is
-            // priced right now - TacUtil runs the operative's move targets through
-            // GetMaxMoveAndActRange(), which knows the ability but not the destination - so
-            // the discount has to be registered for any boardable vehicle that grants one or
-            // the tile is never highlighted at all. Planning only: by the time the operative
-            // reaches an entry point the exact regime above takes over.
-            TacticalFaction faction = this.TacticalActorBase.TacticalFaction;
-            if (faction == null)
-            {
-                return null;
-            }
-
-            foreach (TacticalActor vehicleActor in faction.TacticalActors)
-            {
-                TacticalAbilityCostModification modification = GetEntryCostModification(vehicleActor);
                 if (modification != null)
                 {
                     return modification;
@@ -126,7 +97,7 @@ namespace TFTVVehicleRework.Abilities
         }
 
         /// <summary>
-        /// The entry discount granted by one boardable vehicle, or null.
+        /// The entry discount granted by one vehicle, or null.
         /// </summary>
         private static TacticalAbilityCostModification GetEntryCostModification(TacticalActorBase vehicleActorBase)
         {
@@ -152,12 +123,16 @@ namespace TFTVVehicleRework.Abilities
 
         public override void Activate(object parameter = null)
         {
+            // base.Activate() charges the AP, so settle the discount against the vehicle
+            // actually being boarded first. One tile can be an entry point for two vehicles,
+            // and the cost modification carries no target that could tell them apart.
+            TacticalAbilityTarget target = parameter as TacticalAbilityTarget;
+            this.SetAccessCostModification(
+                (target != null) ? GetEntryCostModification(target.Actor) : null);
+
             base.Activate(parameter);
-            if (this.APCostModification != null)
-            {
-                this.TacticalActor.RemoveAbilityCostModification(this.APCostModification);
-                this.APCostModification = null;
-            }
+
+            this.SetAccessCostModification(null);
             if (this.ExtendedEnterVehicleAbilityDef.StealthStatus != null)
             {
                 this.TacticalActor.Status.ApplyStatus(this.ExtendedEnterVehicleAbilityDef.StealthStatus);
