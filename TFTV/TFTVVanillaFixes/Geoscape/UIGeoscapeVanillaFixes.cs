@@ -5,6 +5,7 @@ using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using PhoenixPoint.Geoscape.View.ViewStates;
 using PhoenixPoint.Tactical.Entities.Equipments;
@@ -154,6 +155,57 @@ namespace TFTV.TFTVVanillaFixes.Geoscape
                     module.CommitStatChanges();
 
                     TFTVLogger.Always($"[EditSoldier] Committed pending stat purchase for {____currentCharacter.DisplayName} before the progression panel refreshed.");
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Vanilla bug: backing out of a deployment screen leaves the geoscape stuck in
+        /// "deployment mode", after which the Bases / Personnel / Air Force row stops responding
+        /// to clicks and then disappears.
+        ///
+        /// GeoscapeView.ToDeploymentState() sets SetUiInDeploymentMode, and the only place that
+        /// ever clears it is GeoscapeView.ResetViewState(). UIStateRosterDeployment's single exit
+        /// point, ToPreviousScreen(), calls ResetViewState() only on its shouldResetStateOnReturn
+        /// branch; the other branch calls SwitchToPreviousState() and leaves the flag standing.
+        /// Two vanilla callers take that branch - HavenFacilityController.OnInfiltrateBriefResult()
+        /// and StealAircraftAbility - so opening a deployment that way and leaving without
+        /// deploying strands the flag for the rest of the session.
+        ///
+        /// Everything that draws the section bar keys off it. UIStateVehicleSelected.EnterState()
+        /// first calls Show(true), which activates SectionsRoot, and then ShowTabModules(), which
+        /// sets that bar's CanvasGroup to interactable = false, alpha = 0 and blocksRaycasts = false
+        /// - the row is present but dead. UIStateRosterDeployment.ExitState() calls
+        /// Show(!SetUiInDeploymentMode), which deactivates SectionsRoot outright, so the row later
+        /// vanishes on whichever state redraws it next. No exception is thrown anywhere, which is
+        /// why nothing shows up in the logs.
+        ///
+        /// Deployment mode is over whichever way the screen is left, so clear it on the way out.
+        /// Running before the original also means ExitState() sees the cleared flag and restores
+        /// the bar itself.
+        /// </summary>
+        [HarmonyPatch(typeof(UIStateRosterDeployment), "ToPreviousScreen")]
+        public static class Patch_UIStateRosterDeployment_ToPreviousScreen_ClearDeploymentUiMode
+        {
+            public static void Prefix()
+            {
+                try
+                {
+                    GeoscapeView view = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()?.View;
+
+                    if (view == null || !view.SetUiInDeploymentMode)
+                    {
+                        return;
+                    }
+
+                    view.SetUiInDeploymentMode = false;
+
+                    TFTVLogger.Always("[RosterDeployment] Cleared SetUiInDeploymentMode on leaving the deployment screen, so the geoscape section bar comes back.");
                 }
                 catch (Exception e)
                 {
