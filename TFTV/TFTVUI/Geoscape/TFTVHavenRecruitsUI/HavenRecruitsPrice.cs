@@ -159,7 +159,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                         continue;
                     }
 
-                    Object.Destroy(child.gameObject);
+                    RecruitOverlayManagerHelpers.DetachAndDestroy(child);
                 }
             }
 

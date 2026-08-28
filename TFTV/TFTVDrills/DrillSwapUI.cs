@@ -334,6 +334,8 @@ namespace TFTV.TFTVDrills
 
                 controller.ConfigureContent(viewportRect, contentRect, MenuWidth, MenuMaxHeight);
                 overlay.transform.SetAsLastSibling();
+
+                ControllerNavigation.Setup(overlay, panelRect, contentRect, gridRect, controller);
             }
 
             private static HeaderContext BuildHeaderContext(UIModuleCharacterProgression ui, AbilityTrackSlot slot, TacticalAbilityDef original, bool baseAbilityLearned, AbilityTrack track, int abilityLevel, int baseAbilityCost, AbilityTrackSkillEntryElement entry)

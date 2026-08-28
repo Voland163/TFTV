@@ -1,5 +1,8 @@
 ﻿using Base.Core;
+using Base.Input;
+using Base.UI;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
@@ -11,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using TFTV.TFTVHavenRecruitsUI;
+using TFTV.TFTVUI.Common;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -336,7 +340,7 @@ namespace TFTV
                             var mutationSlot = child.GetComponent<UIInventorySlot>();
                             if (mutationSlot != null)
                             {
-                                Object.Destroy(child.gameObject);
+                                RecruitOverlayManagerHelpers.DetachAndDestroy(child);
                                 continue;
                             }
 
@@ -347,7 +351,7 @@ namespace TFTV
                                 continue;
                             }
 
-                            Object.Destroy(child.gameObject);
+                            RecruitOverlayManagerHelpers.DetachAndDestroy(child);
                         }
                         AbilityContainer.gameObject.SetActive(false);
                     }
@@ -372,11 +376,11 @@ namespace TFTV
                             var slot = child.GetComponent<UIInventorySlot>();
                             if (slot != null)
                             {
-                                Object.Destroy(child.gameObject);
+                                RecruitOverlayManagerHelpers.DetachAndDestroy(child);
                                 continue;
                             }
 
-                            Object.Destroy(child.gameObject);
+                            RecruitOverlayManagerHelpers.DetachAndDestroy(child);
                         }
                     }
 
@@ -414,6 +418,13 @@ namespace TFTV
                     if (pendingSingle != null) { StopCoroutine(pendingSingle); pendingSingle = null; }
                     OnDouble?.Invoke();
                 }
+                else if (ControllerNav.IsUsingController())
+                {
+                    // The delay only exists to disambiguate a double-click, and the free cursor always
+                    // reports clickCount 1 - so on a pad it would just add lag to every selection.
+                    if (pendingSingle != null) { StopCoroutine(pendingSingle); pendingSingle = null; }
+                    OnSingle?.Invoke();
+                }
                 else
                 {
                     if (pendingSingle != null) StopCoroutine(pendingSingle);
@@ -426,6 +437,29 @@ namespace TFTV
                 yield return new WaitForSecondsRealtime(doubleClickDelay);
                 OnSingle?.Invoke();
                 pendingSingle = null;
+            }
+        }
+
+        /// <summary>
+        /// Relays a click on a child of a card - the name, an ability icon - back to the card itself.
+        /// Those children need their own Selectable to be gamepad-navigable, and a Selectable is an
+        /// IPointerClickHandler, so ExecuteHierarchy would otherwise stop there and never reach the card.
+        /// The original event is passed through so the mouse's double-click still registers.
+        /// </summary>
+        internal sealed class CardClickForwarder : MonoBehaviour, IPointerClickHandler
+        {
+            public CardClickHandler Target;
+
+            public void OnPointerClick(PointerEventData e)
+            {
+                try
+                {
+                    Target?.OnPointerClick(e);
+                }
+                catch (Exception ex)
+                {
+                    TFTVLogger.Error(ex);
+                }
             }
         }
 
@@ -452,6 +486,13 @@ namespace TFTV
             private static readonly Queue<RecruitCardView> _cardPool = new Queue<RecruitCardView>();
             private static readonly List<RecruitCardView> _activeCards = new List<RecruitCardView>();
             private static Transform _cardPoolRoot;
+
+            // Gamepad navigation. Three sections, chained top to bottom so the right stick moves between
+            // them; the cards section is rebuilt on every RefreshColumns. See ControllerNav.
+            internal static UINavigationalElementsHolder _sortNavHolder;
+            internal static UINavigationalElementsHolder _factionTabsNavHolder;
+            internal static UINavigationalElementsHolder _cardsNavHolder;
+            private static VerticalScrollRectScroller _cardsScroller;
 
             private static readonly Queue<AbilityIconView> _abilityIconPool = new Queue<AbilityIconView>();
             private static Transform _abilityPoolRoot;
@@ -542,6 +583,10 @@ namespace TFTV
                     OverlayAbilityTooltip = null;
                     OverlayRootRect = null;
                     OverlayCanvas = null;
+                    _sortNavHolder = null;
+                    _factionTabsNavHolder = null;
+                    _cardsNavHolder = null;
+                    _cardsScroller = null;
                     _overlayAnimator = null;
                     _detailAnimator = null;
                     _isOverlayVisible = false;
@@ -647,6 +692,23 @@ namespace TFTV
                     }
 
                     _isOverlayVisible = show;
+
+                    // The geoscape map keeps holder navigation suppressed so the free cursor can roam it.
+                    // The overlay's own navigation cannot work while that is on, and it has to be restored
+                    // on close - unless the geoscape button row still holds focus behind us.
+                    UIGlobalNavigationController globalNavigation =
+                        GameUtl.CurrentLevel()?.GetComponent<UIGlobalNavigationController>();
+                    if (globalNavigation != null)
+                    {
+                        if (show)
+                        {
+                            globalNavigation.SupressInputEvents = false;
+                        }
+                        else if (!TFTVUI.Geoscape.SiteManagementNav.IsFocused)
+                        {
+                            globalNavigation.SupressInputEvents = true;
+                        }
+                    }
 
                     if (!show)
                     {
@@ -768,10 +830,70 @@ namespace TFTV
 
 
                     overlayPanel.SetActive(false);
+
+                    // After the panel is inactive: attaching the holders now means their OnEnable does not
+                    // fire until the overlay is actually shown, so nothing registers with the global
+                    // navigation controller while the overlay is hidden.
+                    SetupControllerNavigation();
+
                     EnsureOverlayLayout(force: true);
                 }
                 catch (Exception ex) { TFTVLogger.Error(ex); }
             }
+
+            /// <summary>
+            /// Splits the overlay into three gamepad-navigable sections - sort toggles, faction tabs, and
+            /// the recruit list - chained in visual order so the right stick moves between them. The cards
+            /// holder is left empty here; RefreshColumns fills it each time the list is rebuilt.
+            /// </summary>
+            private static void SetupControllerNavigation()
+            {
+                try
+                {
+                    if (overlayPanel == null)
+                    {
+                        return;
+                    }
+
+                    Transform toolbar = overlayPanel.transform.Find("Toolbar");
+                    Transform factionTabs = overlayPanel.transform.Find("FactionTabs");
+
+                    _sortNavHolder = toolbar != null ? ControllerNav.EnsureHolder(toolbar.gameObject) : null;
+                    _factionTabsNavHolder = factionTabs != null ? ControllerNav.EnsureHolder(factionTabs.gameObject) : null;
+                    _cardsNavHolder = _recruitListRoot != null ? ControllerNav.EnsureHolder(_recruitListRoot.gameObject) : null;
+
+                    Transform recruitList = overlayPanel.transform.Find("RecruitList");
+                    _cardsScroller = recruitList != null
+                        ? ControllerNav.EnsureVerticalScroller(recruitList.GetComponent<ScrollRect>())
+                        : null;
+
+                    List<Selectable> sortSelectables = new List<Selectable>();
+                    foreach (var kvp in _sortToggles)
+                    {
+                        if (kvp.Value != null)
+                        {
+                            sortSelectables.Add(kvp.Value);
+                        }
+                    }
+
+                    List<Selectable> tabSelectables = new List<Selectable>();
+                    foreach (FactionFilter filter in new[] { FactionFilter.Anu, FactionFilter.NewJericho, FactionFilter.Synedrion })
+                    {
+                        if (_factionTabs.TryGetValue(filter, out var tab) && tab?.Toggle != null)
+                        {
+                            tabSelectables.Add(tab.Toggle);
+                        }
+                    }
+
+                    // The cards holder outranks the other two so opening the overlay lands on the list.
+                    ControllerNav.Apply(_sortNavHolder, sortSelectables, NavigationHolderMode.Horizontal, rootPriority: 100);
+                    ControllerNav.Apply(_factionTabsNavHolder, tabSelectables, NavigationHolderMode.Horizontal, rootPriority: 110);
+
+                    ControllerNav.LinkSections(_sortNavHolder, _factionTabsNavHolder, _cardsNavHolder);
+                }
+                catch (Exception ex) { TFTVLogger.Error(ex); }
+            }
+
             internal static GeoRosterAbilityDetailTooltip EnsureOverlayTooltip()
             {
                 try
@@ -1292,6 +1414,55 @@ namespace TFTV
             }
             internal sealed class OverlayRightClickDismissWatcher : MonoBehaviour
             {
+                private InputController _input;
+
+                private void OnEnable()
+                {
+                    try
+                    {
+                        // Right-click has no gamepad equivalent, so the overlay also closes on the Cancel
+                        // action (B / Escape). Ahead of the free cursor (-100) and the global navigation
+                        // controller (-90) so the overlay closes before anything underneath reacts.
+                        _input = GameUtl.GameComponent<InputController>();
+                        _input?.EventHandlers.AddUnique(HandleInput, -110);
+                    }
+                    catch (Exception ex)
+                    {
+                        TFTVLogger.Error(ex);
+                    }
+                }
+
+                private void OnDisable()
+                {
+                    try
+                    {
+                        _input?.EventHandlers.Remove(HandleInput);
+                    }
+                    catch (Exception ex)
+                    {
+                        TFTVLogger.Error(ex);
+                    }
+                }
+
+                private bool HandleInput(InputEvent ev)
+                {
+                    try
+                    {
+                        if (!_isOverlayVisible || ev.Type != InputEventType.Pressed || ev.Name != "Cancel")
+                        {
+                            return false;
+                        }
+
+                        SetOverlayVisible(false);
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        TFTVLogger.Error(ex);
+                        return false;
+                    }
+                }
+
                 private void Update()
                 {
                     try
@@ -1853,6 +2024,9 @@ namespace TFTV
 
                     ClearSelection();
 
+                    // Unregister before the cards it points at go back to the pool.
+                    ControllerNav.Release(_cardsNavHolder);
+
                     RecycleActiveCards();
                     RecruitOverlayManagerHelpers.ClearTransformChildren(_recruitListRoot);
 
@@ -1895,6 +2069,7 @@ namespace TFTV
                     HavenRecruitsUtils.SortRecruits(recruits);
 
                     bool collapse = recruits.Count > 4;   // show compact by default if many
+                    List<RecruitCardView> builtCards = new List<RecruitCardView>();
                     foreach (var r in recruits)
                     {
                         var cardView = GetCard(_recruitListRoot);
@@ -1904,7 +2079,31 @@ namespace TFTV
                         }
 
                         HavenRecruitsRecruitItem.PopulateRecruitItem(cardView, r, collapse);
+                        builtCards.Add(cardView);
                     }
+
+                    // The rows have to be measured after a layout pass: BuildNavigationRow orders each
+                    // card's icons by screen position, and the layout groups have not run yet.
+                    if (_recruitListRoot is RectTransform listRect)
+                    {
+                        LayoutRebuilder.ForceRebuildLayoutImmediate(listRect);
+                    }
+
+                    List<IList<Selectable>> navRows = new List<IList<Selectable>>();
+                    foreach (var cardView in builtCards)
+                    {
+                        var navRow = HavenRecruitsRecruitItem.BuildNavigationRow(cardView);
+                        if (navRow.Count > 0)
+                        {
+                            navRows.Add(navRow);
+                        }
+                    }
+
+                    ControllerNav.ApplyRows(
+                        _cardsNavHolder,
+                        navRows,
+                        rootPriority: 120,
+                        scrollController: _cardsScroller);
                 }
                 catch (Exception ex)
                 {

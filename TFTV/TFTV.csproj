@@ -190,6 +190,7 @@
     <Compile Include="TFTVDrills\DrillsPublicClasses.cs" />
     <Compile Include="TFTVDrills\DrillsHarmony.cs" />
     <Compile Include="TFTVDrills\DrillsUI.cs" />
+    <Compile Include="TFTVDrills\DrillsUI.ControllerNav.cs" />
     <Compile Include="TFTVDrills\DrillsUI.HeaderContext.cs" />
     <Compile Include="TFTVDrills\DrillsUI.Helpers.cs" />
     <Compile Include="TFTVDrills\DrillsUI.InputHelper.cs" />
@@ -231,12 +232,15 @@
     <Compile Include="TFTVMarketplace\TFTVMarketPlaceItems.cs" />
     <Compile Include="TFTVMarketplace\TFTVMarketPlaceUI.cs" />
     <Compile Include="TFTVMarketplace\TFTVMercenaries.cs" />
+    <Compile Include="TFTVUI\Common\ControllerNav.cs" />
     <Compile Include="TFTVUI\Common\Various.cs" />
     <Compile Include="TFTVUI\Data.cs" />
     <Compile Include="TFTVUI\Geoscape\AircraftOrder.cs" />
     <Compile Include="TFTVUI\Geoscape\ContainmentScreen.cs" />
     <Compile Include="TFTVUI\Geoscape\Facilities.cs" />
     <Compile Include="TFTVUI\Geoscape\MissionDeployment.cs" />
+    <Compile Include="TFTVUI\Geoscape\SiteManagementNav.cs" />
+    <Compile Include="TFTVUI\Home\NewGameOptionsNav.cs" />
     <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitAbilityIconView.cs" />
     <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitAbilityTooltipTrigger.cs" />
     <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitResourceChipView.cs" />

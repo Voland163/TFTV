@@ -1,9 +1,14 @@
+using Base.Core;
+using Base.Input;
+using Base.UI;
+using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using TFTV.TFTVIncidents;
+using TFTV.TFTVUI.Common;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
@@ -206,7 +211,7 @@ namespace TFTV.TFTVBaseRework
                 },
                 out confirmImage);
 
-            CreateButton(
+            Button cancelButton = CreateButton(
                 buttonRow.transform,
                 TFTVCommonMethods.ConvertKeyToString("KEY_BASE_PERSONNEL_SELECT_CANCEL"),
                 CancelColor,
@@ -215,6 +220,126 @@ namespace TFTV.TFTVBaseRework
 
             RefreshFooter(rows, requiredPersonnel, counter, confirmImage, confirmButton);
             LayoutRebuilder.ForceRebuildLayoutImmediate(panelRect);
+
+            SetupControllerNavigation(panel.transform, listContent, confirmButton, cancelButton);
+            _overlay.AddComponent<CancelToCloseWatcher>();
+        }
+
+        /// <summary>
+        /// Two navigable sections - the personnel list, then the Confirm/Cancel row - chained so up and
+        /// down move between them. Both outrank the activation modal underneath (which sits at
+        /// <see cref="ControllerNav.DefaultRootPriority"/>), and the list outranks the buttons so the
+        /// overlay opens with the list focused.
+        /// </summary>
+        private static void SetupControllerNavigation(
+            Transform panel,
+            Transform listContent,
+            Button confirmButton,
+            Button cancelButton)
+        {
+            try
+            {
+                List<Selectable> rowSelectables = new List<Selectable>();
+                for (int i = 0; i < listContent.childCount; i++)
+                {
+                    Button rowButton = listContent.GetChild(i)?.GetComponent<Button>();
+                    if (rowButton != null)
+                    {
+                        rowSelectables.Add(rowButton);
+                    }
+                }
+
+                VerticalScrollRectScroller scroller =
+                    ControllerNav.EnsureVerticalScroller(listContent.GetComponentInParent<ScrollRect>());
+
+                UINavigationalElementsHolder listHolder = CreateHolderObject(panel, "TFTV_PersonnelNav_List");
+                UINavigationalElementsHolder buttonsHolder = CreateHolderObject(panel, "TFTV_PersonnelNav_Buttons");
+
+                ControllerNav.Apply(
+                    buttonsHolder,
+                    new List<Selectable> { confirmButton, cancelButton },
+                    NavigationHolderMode.Horizontal,
+                    rootPriority: 190);
+
+                ControllerNav.Apply(
+                    listHolder,
+                    rowSelectables,
+                    NavigationHolderMode.Vertical,
+                    rootPriority: 200,
+                    loop: false,
+                    scrollController: scroller);
+
+                ControllerNav.LinkSections(listHolder, buttonsHolder);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// Holders navigate an explicit element list, so they need no children of their own - but the
+        /// panel is a vertical layout group, so the host object has to opt out of the layout or it would
+        /// add an empty row.
+        /// </summary>
+        private static UINavigationalElementsHolder CreateHolderObject(Transform panel, string name)
+        {
+            GameObject go = new GameObject(name, typeof(RectTransform));
+            go.SetActive(false);
+            go.transform.SetParent(panel, false);
+            go.AddComponent<LayoutElement>().ignoreLayout = true;
+
+            UINavigationalElementsHolder holder = ControllerNav.EnsureHolder(go);
+            go.SetActive(true);
+            return holder;
+        }
+
+        /// <summary>
+        /// Closes the overlay on the Cancel action, matching what the Cancel button does. Sits ahead of
+        /// the free cursor and the global navigation controller so the modal underneath does not also
+        /// react to the same press.
+        /// </summary>
+        private sealed class CancelToCloseWatcher : MonoBehaviour
+        {
+            private InputController _input;
+
+            private void OnEnable()
+            {
+                try
+                {
+                    _input = GameUtl.GameComponent<InputController>();
+                    _input?.EventHandlers.AddUnique(HandleInput, -110);
+                }
+                catch (Exception e) { TFTVLogger.Error(e); }
+            }
+
+            private void OnDisable()
+            {
+                try
+                {
+                    _input?.EventHandlers.Remove(HandleInput);
+                }
+                catch (Exception e) { TFTVLogger.Error(e); }
+            }
+
+            private bool HandleInput(InputEvent ev)
+            {
+                try
+                {
+                    if (ev.Type != InputEventType.Pressed || ev.Name != "Cancel" || _overlay == null)
+                    {
+                        return false;
+                    }
+
+                    Close();
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    return false;
+                }
+            }
         }
 
         private static void RefreshFooter(

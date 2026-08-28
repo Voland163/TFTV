@@ -17,6 +17,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using TFTV.TFTVBaseRework;
+using TFTV.TFTVUI.Common;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -522,9 +523,243 @@ namespace TFTV.TFTVIncidents
 
                     // Shrink choice buttons after approach data is populated to make room for icons.
                     AdjustChoiceButtons(__instance, geoEvent);
+
+                    SetupApproachIconNavigation(__instance);
                 }
 
                 IncidentIntroTutorialPanel.TryShowPanel(__instance, geoEvent);   // ADD THIS LINE after crew list is built, before AdjustChoiceButtons
+            }
+
+            /// <summary>
+            /// Makes the approach icons reachable with a gamepad by laying the encounter screen's own
+            /// navigation holder out as rows: each row is a choice button followed by its approach icons,
+            /// so up and down move between choices and left and right run along a choice's approaches.
+            ///
+            /// This retargets the vanilla holder rather than registering a competing one, so it keeps its
+            /// place in the navigation order and the module's own ForceJoystickCursorToPosition still
+            /// works. It only takes over when there are icons to reach - without them the vanilla grid
+            /// layout is left completely alone.
+            /// </summary>
+            private static void SetupApproachIconNavigation(UIModuleSiteEncounters module)
+            {
+                try
+                {
+                    UINavigationalElementsHolder holder = module?.InteractableElementsHolder;
+                    if (holder == null || module.ChoiceButtonsContainer == null)
+                    {
+                        return;
+                    }
+
+                    List<IList<Selectable>> rows = new List<IList<Selectable>>();
+                    List<int> heads = new List<int>();
+
+                    // Crew list first - it sits above the choices, and picking the operative is the first
+                    // decision. Without it the leader can only be chosen with a mouse.
+                    AddCrewRows(module, rows, heads);
+
+                    bool anyIcons = AddChoiceRows(module, rows, heads);
+
+                    // Nothing mod-specific to reach: leave vanilla's own grid layout completely alone.
+                    if (!anyIcons && rows.Count == 0)
+                    {
+                        return;
+                    }
+
+                    ControllerNav.ApplyRowsToExistingHolder(holder, rows, heads);
+                }
+                catch (Exception ex) { TFTVLogger.Error(ex); }
+            }
+
+            /// <summary>
+            /// The crew grid, chunked into navigation rows the same way it is laid out on screen.
+            /// </summary>
+            private static void AddCrewRows(
+                UIModuleSiteEncounters module,
+                List<IList<Selectable>> rows,
+                List<int> heads)
+            {
+                Transform grid = FindDeepChild(module.transform, CrewGridName);
+
+                // Deliberately not gated on activeInHierarchy: the crew list is built here but its
+                // container is not switched on until the encounter is actually presented, so requiring it
+                // to be live at this point drops every row. Listing not-yet-active elements is what the
+                // game's own holders do - the navigation code skips inactive ones at selection time and
+                // picks them up once they appear.
+                if (grid == null)
+                {
+                    return;
+                }
+
+                List<Selectable> current = new List<Selectable>();
+
+                for (int i = 0; i < grid.childCount; i++)
+                {
+                    Transform child = grid.GetChild(i);
+                    if (child == null || !child.gameObject.activeSelf)
+                    {
+                        continue;
+                    }
+
+                    SoldierSlotController slot = child.GetComponent<SoldierSlotController>();
+                    if (slot == null)
+                    {
+                        continue;
+                    }
+
+                    Selectable selectable = EnsureCrewRowSelectable(slot);
+                    if (selectable == null)
+                    {
+                        continue;
+                    }
+
+                    current.Add(selectable);
+
+                    if (current.Count == GridColumns)
+                    {
+                        rows.Add(current);
+                        heads.Add(0);
+                        current = new List<Selectable>();
+                    }
+                }
+
+                if (current.Count > 0)
+                {
+                    rows.Add(current);
+                    heads.Add(0);
+                }
+            }
+
+            /// <summary>
+            /// Returns the Selectable the cursor should snap to for a crew row, which has to be the row
+            /// root so the cursor lands on the whole row rather than some sub-element of the vanilla
+            /// prefab. If the root carries no Selectable of its own, one is added and wired straight to
+            /// the row's ActorSelected callback - the prefab's own click handler is private, so relying on
+            /// it being reachable from wherever the cursor happens to land is not safe.
+            /// </summary>
+            private static Selectable EnsureCrewRowSelectable(SoldierSlotController slot)
+            {
+                Selectable existing = slot.GetComponent<Selectable>();
+                if (existing != null)
+                {
+                    return existing;
+                }
+
+                Button button = slot.gameObject.AddComponent<Button>();
+                button.transition = Selectable.Transition.None;
+
+                Graphic graphic = slot.GetComponent<Graphic>();
+                if (graphic != null)
+                {
+                    button.targetGraphic = graphic;
+                }
+
+                SoldierSlotController captured = slot;
+                button.onClick.AddListener(() =>
+                {
+                    try
+                    {
+                        captured.ActorSelected?.Invoke(captured.Soldier);
+                    }
+                    catch (Exception ex) { TFTVLogger.Error(ex); }
+                });
+
+                return button;
+            }
+
+            /// <summary>
+            /// One row per choice: the choice button plus its approach icons, ordered by where they
+            /// actually sit on screen. Choice 0 wears its icons on the left and choice 1 on the right, so
+            /// a fixed order would send the stick the wrong way for one of them. The choice button stays
+            /// the row's head regardless, so vertical movement always lands back on the choice itself.
+            /// </summary>
+            /// <returns>True if any approach icon was found.</returns>
+            private static bool AddChoiceRows(
+                UIModuleSiteEncounters module,
+                List<IList<Selectable>> rows,
+                List<int> heads)
+            {
+                SiteBaseChoiceButton[] buttons =
+                    module.ChoiceButtonsContainer.GetComponentsInChildren<SiteBaseChoiceButton>(includeInactive: false);
+
+                List<Selectable> all = new List<Selectable>();
+                HashSet<Selectable> choiceSelectables = new HashSet<Selectable>();
+                bool anyIcons = false;
+
+                foreach (SiteBaseChoiceButton button in buttons)
+                {
+                    if (button == null)
+                    {
+                        continue;
+                    }
+
+                    Selectable choiceSelectable = button.Button != null
+                        ? (button.Button.BaseButton ?? button.Button.GetComponent<Selectable>())
+                        : button.GetComponent<Selectable>();
+
+                    if (choiceSelectable != null)
+                    {
+                        all.Add(choiceSelectable);
+                        choiceSelectables.Add(choiceSelectable);
+                    }
+
+                    Transform iconsRoot = button.transform.Find(ChoiceIconsRootName);
+                    if (iconsRoot == null || !iconsRoot.gameObject.activeSelf)
+                    {
+                        continue;
+                    }
+
+                    for (int i = 0; i < iconsRoot.childCount; i++)
+                    {
+                        Transform icon = iconsRoot.GetChild(i);
+                        if (icon == null || !icon.gameObject.activeSelf)
+                        {
+                            continue;
+                        }
+
+                        Button iconButton = icon.GetComponent<Button>();
+                        if (iconButton != null && iconButton.interactable)
+                        {
+                            all.Add(iconButton);
+                            anyIcons = true;
+                        }
+                    }
+                }
+
+                // Grouped by screen position, not by which button owns what: two choices sit side by side
+                // on one line, each wearing its approach icons on its outer edge, so the whole line is one
+                // navigation row - icons, choice, choice, icons - and left/right walks it in visual order.
+                foreach (IList<Selectable> row in ControllerNav.GroupIntoRowsByPosition(all))
+                {
+                    // The row's head is its first actual choice, so vertical movement always lands on a
+                    // choice rather than on one of the approach icons flanking it.
+                    int head = 0;
+                    for (int i = 0; i < row.Count; i++)
+                    {
+                        if (choiceSelectables.Contains(row[i]))
+                        {
+                            head = i;
+                            break;
+                        }
+                    }
+
+                    rows.Add(row);
+                    heads.Add(head);
+                }
+
+                return anyIcons;
+            }
+
+            private static Transform FindDeepChild(Transform root, string name)
+            {
+                foreach (Transform child in root.GetComponentsInChildren<Transform>(includeInactive: true))
+                {
+                    if (child != null && child.name == name)
+                    {
+                        return child;
+                    }
+                }
+
+                return null;
             }
 
             private static void UpdateChoiceButtonsForSelectedOperative(
@@ -581,6 +816,11 @@ namespace TFTV.TFTVIncidents
 
                     ApplyChoiceIcons(button, i);
                 }
+
+                // ApplyChoiceIcons resets every icon's navigation to Mode.None, which strips the row links
+                // and leaves the cursor with nowhere to go once it lands on an icon. This runs on every
+                // leader change, so the layout has to be rewritten each time.
+                SetupApproachIconNavigation(module);
             }
 
             private static ChoiceButtonVisualState EnsureChoiceButtonVisualState(SiteBaseChoiceButton button)
