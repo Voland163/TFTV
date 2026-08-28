@@ -3263,6 +3263,10 @@ namespace TFTV
 
                         StratToBeImplemented = 0;
                         TFTVLogger.Always($"Strat to be implemented now {StratToBeImplemented}, should be 0");
+
+                        // The widget reads StratToBeImplemented, so clearing it without a refresh leaves
+                        // the strat that just fired on screen until something else happens to update it.
+                        ActivateUpdateBaseDefenseWidget();
                     }
                 }
                 catch (Exception e)

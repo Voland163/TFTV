@@ -215,6 +215,10 @@ namespace TFTV.TFTVUI.Tactical
                     hoverTrigger.triggers.Add(pointerExit);
 
                     tooltipObj.SetActive(false);
+
+                    // Gamepads cannot hover the tactical HUD, so the cycler drives this same trigger.
+                    GameObject hoverTarget = backgroundImage;
+                    TacticalTooltipCycler.Register("Ancients", () => hoverTarget);
                 }
                 catch (Exception e)
                 {

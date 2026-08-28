@@ -137,7 +137,8 @@ namespace TFTV.TFTVUI.Tactical
                     entryExit.callback.AddListener((_) => HideTooltip());
                     trigger.triggers.Add(entryExit);
 
-
+                    // Gamepads cannot hover the tactical HUD, so the cycler drives this same trigger.
+                    TacticalTooltipCycler.Register("HumanEnemies", () => _uIElement);
                 }
                 catch (Exception e)
                 {
