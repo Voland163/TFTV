@@ -71,10 +71,42 @@ namespace TFTVVehicleRework.Abilities
         }
 
         /// <summary>
-        /// The entry discount of the first boardable friendly vehicle that grants one, or null.
+        /// The entry discount that currently applies to this operative, or null.
+        ///
+        /// A TacticalAbilityCostModification carries no target of its own - AbilityQualifies()
+        /// matches on the ability's skill tags - so once registered it discounts boarding any
+        /// vehicle. The discount belongs to the vehicle carrying the module ("Entering the
+        /// vehicle does not cost any Action Points"), which forces two regimes.
         /// </summary>
         private TacticalAbilityCostModification FindEntryCostModification()
         {
+            // Standing on an entry point: the boarding target is settled, so price the exact
+            // vehicle being boarded. This is the regime that governs whether the ability is
+            // affordable and what Activate() actually charges, so a second vehicle parked
+            // nearby never gets boarded on the Armadillo's discount.
+            bool atEntryPoint = false;
+            foreach (TacticalAbilityTarget target in base.GetTargets())
+            {
+                atEntryPoint = true;
+
+                TacticalAbilityCostModification modification = GetEntryCostModification(target.Actor);
+                if (modification != null)
+                {
+                    return modification;
+                }
+            }
+
+            if (atEntryPoint)
+            {
+                return null;
+            }
+
+            // Out of position, so no boarding target exists yet. The entry tile marker is
+            // priced right now - TacUtil runs the operative's move targets through
+            // GetMaxMoveAndActRange(), which knows the ability but not the destination - so
+            // the discount has to be registered for any boardable vehicle that grants one or
+            // the tile is never highlighted at all. Planning only: by the time the operative
+            // reaches an entry point the exact regime above takes over.
             TacticalFaction faction = this.TacticalActorBase.TacticalFaction;
             if (faction == null)
             {
@@ -83,22 +115,36 @@ namespace TFTVVehicleRework.Abilities
 
             foreach (TacticalActor vehicleActor in faction.TacticalActors)
             {
-                VehicleComponent vehicle = (vehicleActor != null) ? vehicleActor.Vehicle : null;
-                if (vehicle == null || vehicle.IsFull || !vehicleActor.IsAlive)
+                TacticalAbilityCostModification modification = GetEntryCostModification(vehicleActor);
+                if (modification != null)
+                {
+                    return modification;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// The entry discount granted by one boardable vehicle, or null.
+        /// </summary>
+        private static TacticalAbilityCostModification GetEntryCostModification(TacticalActorBase vehicleActorBase)
+        {
+            VehicleComponent vehicle = (vehicleActorBase != null) ? vehicleActorBase.Vehicle : null;
+            if (vehicle == null || vehicle.IsFull || !vehicleActorBase.IsAlive)
+            {
+                return null;
+            }
+
+            foreach (AdjustAccessCostStatus adjustAccessCost in vehicleActorBase.Status.GetStatuses<AdjustAccessCostStatus>())
+            {
+                if (adjustAccessCost.IsDefaultValue()
+                    || adjustAccessCost.AdjustAccessCostStatusDef.AccessDirection != AdjustAccessCostStatusDef.Direction.Entry)
                 {
                     continue;
                 }
 
-                foreach (AdjustAccessCostStatus adjustAccessCost in vehicleActor.Status.GetStatuses<AdjustAccessCostStatus>())
-                {
-                    if (adjustAccessCost.IsDefaultValue()
-                        || adjustAccessCost.AdjustAccessCostStatusDef.AccessDirection != AdjustAccessCostStatusDef.Direction.Entry)
-                    {
-                        continue;
-                    }
-
-                    return adjustAccessCost.AdjustAccessCostStatusDef.AccessCostModification;
-                }
+                return adjustAccessCost.AdjustAccessCostStatusDef.AccessCostModification;
             }
 
             return null;
