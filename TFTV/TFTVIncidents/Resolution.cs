@@ -1267,7 +1267,11 @@ namespace TFTV.TFTVIncidents
                 "TFTV_INCIDENT_42_SY_OUTCOME_0_SUCCESS",
                 "TFTV_INCIDENT_42_SY_OUTCOME_1_SUCCESS",
                 "TFTV_INCIDENT_43_SY_OUTCOME_0_SUCCESS",
-                "TFTV_INCIDENT_43_SY_OUTCOME_1_SUCCESS"
+                "TFTV_INCIDENT_43_SY_OUTCOME_1_SUCCESS",
+                "TFTV_INCIDENT_45_ANY_OUTCOME_0_SUCCESS",
+                "TFTV_INCIDENT_45_ANY_OUTCOME_1_SUCCESS",
+                "TFTV_INCIDENT_46_ANY_OUTCOME_0_SUCCESS",
+                "TFTV_INCIDENT_46_ANY_OUTCOME_1_SUCCESS"
             };
 
                 private static void Postfix(string eventId, GeoscapeEventSystem __instance, GeoscapeEventContext context)
