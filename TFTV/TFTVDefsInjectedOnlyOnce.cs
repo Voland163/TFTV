@@ -1852,6 +1852,7 @@ namespace TFTV
             {
                 TFTVBetterEnemies.BECreateAIActionDefs();
                 TFTVBetterEnemies.BEFixesToAI();
+                TFTVAICombatAbilities.CreateAIActionDefs();
                 IncreaseRangeClosestEnemyConsideration();
                 ModifyChironWormAndAoETargeting();
                 GiveNewActorAIToUmbra();

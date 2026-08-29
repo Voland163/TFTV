@@ -293,6 +293,7 @@ namespace TFTV
                     try
                     {
                         RevertAdjustForMultipleSingleAPAttack();
+                        TFTVAICombatAbilities.SpiderDroneLauncherAI.LogTurnDiagnostics(__instance?.TacticalActor);
                     }
                     catch (Exception e)
                     {
@@ -433,6 +434,16 @@ namespace TFTV
                         if (!ability.IsEnabled(IgnoredAbilityDisabledStatesFilter.IgnoreNoValidTargetsAndEquipmentNotSelected))
                         {
                             __result = null;
+                            return false;
+                        }
+
+                        // The spider drone launcher aims at open ground short of the enemy rather than at
+                        // the enemy itself; null for everything else, and when no drop point works out.
+                        TacticalAbilityTarget launchTarget = TFTVAICombatAbilities.SpiderDroneLauncherAI.TryGetLaunchTarget(__instance, ability, aiTarget);
+
+                        if (launchTarget != null)
+                        {
+                            __result = launchTarget;
                             return false;
                         }
 
@@ -1672,7 +1683,8 @@ namespace TFTV
                 public static class AIMindControlPickAvailableTargetConsideration_Evaluate_patch
                 {
 
-                    private static float CheckActorSuitability(TacticalActor actor)
+                    //internal so that TFTVAICombatAbilities.MindControlReservations can predict the same pick
+                    internal static float CheckActorSuitability(TacticalActor actor)
                     {
                         try
                         {
