@@ -888,7 +888,13 @@ namespace TFTV.TFTVBaseRework
         /// reaches the highest total available: specialists claim their own field first, the flat-4
         /// affinities take what is left, and nobody is ever seated somewhere that costs another
         /// Personnel a better slot, because a displaced specialist is worth no more than a regular
-        /// worker anywhere but their own field. Checked against exhaustive search.
+        /// worker anywhere but their own field.
+        ///
+        /// Values come from GetEffectiveWorkerOutput, not the raw table, so the comparison is made
+        /// on the scale the player actually receives - Void Omen 6 multiplies the whole research
+        /// bonus by 1.5, which can make a Biotech in Research worth more than a Machinery in
+        /// Manufacturing despite the raw figures tying. Checked against exhaustive search with and
+        /// without that multiplier.
         ///
         /// Ties keep roster order and prefer Research, so an unchanged roster always produces the
         /// same answer and nobody is reseated for nothing.
@@ -915,7 +921,7 @@ namespace TFTV.TFTVBaseRework
                 {
                     if (freeResearch > 0)
                     {
-                        float research = ResearchAndManufacturing.GetWorkerOutput(person.Character, ResourceType.Research);
+                        float research = ResearchAndManufacturing.GetEffectiveWorkerOutput(person.Character, ResourceType.Research);
                         if (research > bestOutput)
                         {
                             bestOutput = research;
@@ -926,7 +932,7 @@ namespace TFTV.TFTVBaseRework
 
                     if (freeManufacturing > 0)
                     {
-                        float manufacturing = ResearchAndManufacturing.GetWorkerOutput(person.Character, ResourceType.Production);
+                        float manufacturing = ResearchAndManufacturing.GetEffectiveWorkerOutput(person.Character, ResourceType.Production);
                         if (manufacturing > bestOutput)
                         {
                             bestOutput = manufacturing;
