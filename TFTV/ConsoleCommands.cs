@@ -1086,6 +1086,433 @@ $"tactical items: {itemCount}");
             }
         }
 
+        // -------------------------------------------------------------------------------------------
+        // Incident portrait tuning. These write PortraitGenerator's live tunables and re-render the
+        // operative currently shown in the encounter window, so framing and render quality can be
+        // compared in place. Every render is also dumped to a PNG named after the settings behind it
+        // (persistentDataPath, next to Player.log), which is what makes a side-by-side possible.
+        // -------------------------------------------------------------------------------------------
+
+        [ConsoleCommand(
+            Command = "portrait_settings",
+            Description = "Prints the current incident portrait render settings.")]
+        public static void PortraitSettings(IConsole console)
+        {
+            try
+            {
+                TFTVLogger.Always($"[Portrait] {PortraitGenerator.DescribeSettings()}");
+                TFTVLogger.Always($"[Portrait] {PortraitGenerator.DescribeLighting()}");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        [ConsoleCommand(
+            Command = "portrait_preset",
+            Description = "Usage: portrait_preset <legacy|bust|shoulders|head>")]
+        public static void PortraitPreset(IConsole console, params string[] args)
+        {
+            try
+            {
+                string preset = args != null && args.Length > 0 ? args[0].Trim().ToLowerInvariant() : string.Empty;
+
+                switch (preset)
+                {
+                    // What the mod rendered before this pass: head and torso to the waist, with the
+                    // head filling under a third of the frame height.
+                    case "legacy":
+                        PortraitGenerator.NoseDistance = 1.10f;
+                        PortraitGenerator.HeadDistance = 1.20f;
+                        PortraitGenerator.CameraFoV = 40f;
+                        PortraitGenerator.CameraYawDegrees = 28f;
+                        PortraitGenerator.CameraHeight = 0.06f;
+                        PortraitGenerator.LookAtVerticalOffset = 0f;
+                        break;
+
+                    // Default: head and shoulder armour, on a long lens held back a metre.
+                    case "bust":
+                        PortraitGenerator.NoseDistance = 1.00f;
+                        PortraitGenerator.HeadDistance = 1.10f;
+                        PortraitGenerator.CameraFoV = 25f;
+                        PortraitGenerator.CameraYawDegrees = -20f;
+                        PortraitGenerator.CameraHeight = 0.10f;
+                        PortraitGenerator.LookAtVerticalOffset = 0.04f;
+                        break;
+
+                    // Tighter: collar and shoulder tops only, same lens.
+                    case "shoulders":
+                        PortraitGenerator.NoseDistance = 0.85f;
+                        PortraitGenerator.HeadDistance = 0.95f;
+                        PortraitGenerator.CameraFoV = 25f;
+                        PortraitGenerator.CameraYawDegrees = -20f;
+                        PortraitGenerator.CameraHeight = 0.08f;
+                        PortraitGenerator.LookAtVerticalOffset = 0.02f;
+                        break;
+
+                    // Head filling the frame, the crop the tactical squad portrait uses.
+                    case "head":
+                        PortraitGenerator.NoseDistance = 0.65f;
+                        PortraitGenerator.HeadDistance = 0.75f;
+                        PortraitGenerator.CameraFoV = 25f;
+                        PortraitGenerator.CameraYawDegrees = -15f;
+                        PortraitGenerator.CameraHeight = 0.06f;
+                        PortraitGenerator.LookAtVerticalOffset = 0f;
+                        break;
+
+                    default:
+                        TFTVLogger.Always("[Portrait] Usage: portrait_preset <legacy|bust|shoulders|head>");
+                        return;
+                }
+
+                ApplyPortraitChange($"preset '{preset}'");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        [ConsoleCommand(
+            Command = "portrait_quality",
+            Description = "Usage: portrait_quality <supersample 1-4> [msaa 1|2|4|8] [maxres]")]
+        public static void PortraitQuality(IConsole console, params string[] args)
+        {
+            try
+            {
+                if (args == null || args.Length == 0)
+                {
+                    TFTVLogger.Always("[Portrait] Usage: portrait_quality <supersample 1-4> [msaa 1|2|4|8] [maxres]");
+                    return;
+                }
+
+                if (TryParse(args, 0, out float supersample))
+                {
+                    PortraitGenerator.Supersample = Mathf.Clamp(Mathf.RoundToInt(supersample), 1, 4);
+                }
+
+                if (TryParse(args, 1, out float msaa))
+                {
+                    PortraitGenerator.MsaaSamples = Mathf.RoundToInt(msaa);
+                }
+
+                if (TryParse(args, 2, out float maxResolution))
+                {
+                    PortraitGenerator.MaxPortraitResolution = Mathf.Clamp(Mathf.RoundToInt(maxResolution), 128, 2048);
+                }
+
+                ApplyPortraitChange("quality");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        [ConsoleCommand(
+            Command = "portrait_frame",
+            Description = "Usage: portrait_frame <distance> [fov] [yaw] [height] [lookoffset]")]
+        public static void PortraitFrame(IConsole console, params string[] args)
+        {
+            try
+            {
+                if (args == null || args.Length == 0)
+                {
+                    TFTVLogger.Always("[Portrait] Usage: portrait_frame <distance> [fov] [yaw] [height] [lookoffset]");
+                    return;
+                }
+
+                if (TryParse(args, 0, out float distance))
+                {
+                    // The head-bone fallback sits further back than the nose by the same margin the
+                    // presets use, so a bare distance still frames sensibly on rigs with no nose bone.
+                    PortraitGenerator.NoseDistance = distance;
+                    PortraitGenerator.HeadDistance = distance + 0.10f;
+                }
+
+                if (TryParse(args, 1, out float fov))
+                {
+                    PortraitGenerator.CameraFoV = Mathf.Clamp(fov, 5f, 120f);
+                }
+
+                if (TryParse(args, 2, out float yaw))
+                {
+                    PortraitGenerator.CameraYawDegrees = yaw;
+                }
+
+                if (TryParse(args, 3, out float height))
+                {
+                    PortraitGenerator.CameraHeight = height;
+                }
+
+                if (TryParse(args, 4, out float lookOffset))
+                {
+                    PortraitGenerator.LookAtVerticalOffset = lookOffset;
+                }
+
+                ApplyPortraitChange("framing");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        [ConsoleCommand(
+            Command = "portrait_size",
+            Description = "Usage: portrait_size <scale> - shrinks the leader picture slot the portrait is drawn in (1 = full).")]
+        public static void PortraitSize(IConsole console, params string[] args)
+        {
+            try
+            {
+                if (!TryParse(args, 0, out float scale))
+                {
+                    TFTVLogger.Always("[Portrait] Usage: portrait_size <scale> (e.g. 0.7)");
+                    return;
+                }
+
+                PortraitGenerator.DisplayScale = Mathf.Clamp(scale, 0.2f, 1.5f);
+                ApplyPortraitChange("display size");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        [ConsoleCommand(
+            Command = "portrait_refresh",
+            Description = "Re-renders the incident portrait currently shown.")]
+        public static void PortraitRefresh(IConsole console)
+        {
+            try
+            {
+                ApplyPortraitChange("refresh");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        [ConsoleCommand(
+            Command = "portrait_dump",
+            Description = "Usage: portrait_dump <on|off> - writes each render to a PNG in persistentDataPath.")]
+        public static void PortraitDump(IConsole console, params string[] args)
+        {
+            try
+            {
+                string value = args != null && args.Length > 0 ? args[0].Trim().ToLowerInvariant() : string.Empty;
+                PortraitGenerator.DumpRenderToDisk = value != "off" && value != "0" && value != "false";
+                TFTVLogger.Always($"[Portrait] PNG dump {(PortraitGenerator.DumpRenderToDisk ? "on" : "off")}.");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        [ConsoleCommand(
+            Command = "portrait_yaw",
+            Description = "Usage: portrait_yaw <degrees> - swings the camera around the face. 0 is straight on.")]
+        public static void PortraitYaw(IConsole console, params string[] args)
+        {
+            try
+            {
+                if (!TryParse(args, 0, out float yaw))
+                {
+                    TFTVLogger.Always("[Portrait] Usage: portrait_yaw <degrees> (0 = facing front, 25 = three-quarter)");
+                    return;
+                }
+
+                PortraitGenerator.CameraYawDegrees = yaw;
+                ApplyPortraitChange($"yaw {yaw:0.#}");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        [ConsoleCommand(
+            Command = "portrait_set",
+            Description = "Usage: portrait_set <yaw|distance|fov|height|lookoffset|supersample|msaa|maxres|size|ambient|shadowstrength|shadowdist|shadowbias|shadownormalbias|charlight> <value>")]
+        public static void PortraitSet(IConsole console, params string[] args)
+        {
+            try
+            {
+                string key = args != null && args.Length > 0 ? args[0].Trim().ToLowerInvariant() : string.Empty;
+
+                if (!TryParse(args, 1, out float value))
+                {
+                    TFTVLogger.Always("[Portrait] Usage: portrait_set <name> <value>. Names: yaw, distance, fov, height, " +
+                        "lookoffset, supersample, msaa, maxres, size, ambient, shadowstrength, shadowdist, shadowbias, " +
+                        "shadownormalbias, charlight.");
+                    return;
+                }
+
+                switch (key)
+                {
+                    case "yaw": PortraitGenerator.CameraYawDegrees = value; break;
+                    case "distance":
+                        PortraitGenerator.NoseDistance = value;
+                        PortraitGenerator.HeadDistance = value + 0.10f;
+                        break;
+                    case "fov": PortraitGenerator.CameraFoV = Mathf.Clamp(value, 5f, 120f); break;
+                    case "height": PortraitGenerator.CameraHeight = value; break;
+                    case "lookoffset": PortraitGenerator.LookAtVerticalOffset = value; break;
+                    case "supersample": PortraitGenerator.Supersample = Mathf.Clamp(Mathf.RoundToInt(value), 1, 4); break;
+                    case "msaa": PortraitGenerator.MsaaSamples = Mathf.RoundToInt(value); break;
+                    case "maxres": PortraitGenerator.MaxPortraitResolution = Mathf.Clamp(Mathf.RoundToInt(value), 128, 2048); break;
+                    case "size": PortraitGenerator.DisplayScale = Mathf.Clamp(value, 0.2f, 1.5f); break;
+                    case "ambient": PortraitGenerator.AmbientIntensity = Mathf.Max(0f, value); break;
+                    case "shadowstrength": PortraitGenerator.ShadowStrength = Mathf.Clamp01(value); break;
+                    case "shadowdist": PortraitGenerator.ShadowDistance = Mathf.Max(0.5f, value); break;
+                    case "shadowbias": PortraitGenerator.ShadowBias = value; break;
+                    case "shadownormalbias": PortraitGenerator.ShadowNormalBias = value; break;
+                    case "charlight": PortraitGenerator.UseCharacterLight = value > 0f; break;
+
+                    default:
+                        TFTVLogger.Always($"[Portrait] Unknown setting '{key}'.");
+                        return;
+                }
+
+                ApplyPortraitChange($"{key} = {value:0.###}");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        [ConsoleCommand(
+            Command = "portrait_lightpreset",
+            Description = "Usage: portrait_lightpreset <flat|studio|vanilla|dramatic>")]
+        public static void PortraitLightPreset(IConsole console, params string[] args)
+        {
+            try
+            {
+                string preset = args != null && args.Length > 0 ? args[0].Trim().ToLowerInvariant() : string.Empty;
+
+                if (!PortraitGenerator.ApplyLightPreset(preset))
+                {
+                    TFTVLogger.Always("[Portrait] Usage: portrait_lightpreset <flat|studio|vanilla|dramatic>");
+                    return;
+                }
+
+                ApplyPortraitChange($"light preset '{preset}'");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        [ConsoleCommand(
+            Command = "portrait_light",
+            Description = "Usage: portrait_light <key|fill|rim> <intensity> [pitch] [yaw] - yaw 180 is in front of the face.")]
+        public static void PortraitLight(IConsole console, params string[] args)
+        {
+            try
+            {
+                string which = args != null && args.Length > 0 ? args[0].Trim().ToLowerInvariant() : string.Empty;
+                PortraitGenerator.RigLight light = PortraitGenerator.FindRigLight(which);
+
+                if (light == null || !TryParse(args, 1, out float intensity))
+                {
+                    TFTVLogger.Always("[Portrait] Usage: portrait_light <key|fill|rim> <intensity> [pitch] [yaw]");
+                    return;
+                }
+
+                light.Intensity = Mathf.Max(0f, intensity);
+
+                if (TryParse(args, 2, out float pitch))
+                {
+                    light.Pitch = pitch;
+                }
+
+                if (TryParse(args, 3, out float yaw))
+                {
+                    light.Yaw = yaw;
+                }
+
+                ApplyPortraitChange($"{which} light");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        [ConsoleCommand(
+            Command = "portrait_shadows",
+            Description = "Usage: portrait_shadows <off|hard|soft> [strength 0-1] [distance] [casters: key,fill,rim]")]
+        public static void PortraitShadows(IConsole console, params string[] args)
+        {
+            try
+            {
+                string mode = args != null && args.Length > 0 ? args[0].Trim().ToLowerInvariant() : string.Empty;
+
+                switch (mode)
+                {
+                    case "off": PortraitGenerator.ShadowMode = LightShadows.None; break;
+                    case "hard": PortraitGenerator.ShadowMode = LightShadows.Hard; break;
+                    case "soft": PortraitGenerator.ShadowMode = LightShadows.Soft; break;
+
+                    default:
+                        TFTVLogger.Always("[Portrait] Usage: portrait_shadows <off|hard|soft> [strength 0-1] [distance] [casters: key,fill,rim]");
+                        return;
+                }
+
+                if (TryParse(args, 1, out float strength))
+                {
+                    PortraitGenerator.ShadowStrength = Mathf.Clamp01(strength);
+                }
+
+                if (TryParse(args, 2, out float distance))
+                {
+                    PortraitGenerator.ShadowDistance = Mathf.Max(0.5f, distance);
+                }
+
+                // Which lights cast, as a comma separated list. Left alone when not given, since the
+                // usual edit here is the mode or the strength rather than the set of casters.
+                if (args.Length > 3)
+                {
+                    string casters = args[3].ToLowerInvariant();
+                    PortraitGenerator.KeyLight.CastsShadows = casters.Contains("key");
+                    PortraitGenerator.FillLight.CastsShadows = casters.Contains("fill");
+                    PortraitGenerator.RimLight.CastsShadows = casters.Contains("rim");
+                }
+
+                ApplyPortraitChange($"shadows {mode}");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void ApplyPortraitChange(string what)
+        {
+            bool refreshed = PortraitGenerator.RefreshCurrent();
+            TFTVLogger.Always($"[Portrait] {what} -> {PortraitGenerator.DescribeSettings()}");
+            TFTVLogger.Always($"[Portrait] {PortraitGenerator.DescribeLighting()}");
+
+            if (!refreshed)
+            {
+                TFTVLogger.Always("[Portrait] No incident portrait on screen; the new settings apply to the next one.");
+            }
+        }
+
+        private static bool TryParse(string[] args, int index, out float value)
+        {
+            value = 0f;
+            return args != null
+                && index < args.Length
+                && float.TryParse(args[index], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out value);
+        }
+
         private static bool EnsureIncidentDefinitionsAvailable()
         {
             if (GeoscapeEvents.IncidentDefinitions != null && GeoscapeEvents.IncidentDefinitions.Count > 0)
