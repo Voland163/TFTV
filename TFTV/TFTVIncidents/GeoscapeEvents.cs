@@ -32,7 +32,8 @@ namespace TFTV.TFTVIncidents
         {
             "TFTV_Incidents_Anu_Localization.csv",
             "TFTV_Incidents_NJ_Localization.csv",
-            "TFTV_Incidents_SY_Localization.csv"
+            "TFTV_Incidents_SY_Localization.csv",
+            "TFTV_Incidents_ANY_Localization.csv"
         };
 
         public static readonly List<Objects.GeoIncidentDefinition> IncidentDefinitions = new List<Objects.GeoIncidentDefinition>();
@@ -115,6 +116,9 @@ namespace TFTV.TFTVIncidents
                     return NewJerichoFactionDef;
                 case "SY":
                     return SynedrionFactionDef;
+                case "ANY":
+                    // Faction-agnostic incident: a null FactionDef lets it roll at any haven.
+                    return null;
                 default:
                     return null;
             }
@@ -159,7 +163,7 @@ namespace TFTV.TFTVIncidents
         private static List<IncidentKeys> LoadIncidentKeys()
         {
             HashSet<string> keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            Regex titleRegex = new Regex(@"^TFTV_INCIDENT_(\d+)_TITLE_(AN|NJ|SY)$", RegexOptions.IgnoreCase);
+            Regex titleRegex = new Regex(@"^TFTV_INCIDENT_(\d+)_TITLE_(ANY|AN|NJ|SY)$", RegexOptions.IgnoreCase);
             Dictionary<string, IncidentKeys> incidents = new Dictionary<string, IncidentKeys>(StringComparer.OrdinalIgnoreCase);
 
             foreach (string file in IncidentLocalizationFiles)
@@ -376,6 +380,9 @@ namespace TFTV.TFTVIncidents
                     break;
                 case "SY":
                     ApplyOutcomeRewardsSy(outcomeKey, outcome);
+                    break;
+                case "ANY":
+                    ApplyOutcomeRewardsAny(outcomeKey, outcome);
                     break;
             }
         }
@@ -659,6 +666,20 @@ namespace TFTV.TFTVIncidents
             }
         }
 
+        private static void ApplyOutcomeRewardsAny(string outcomeKey, GeoEventChoiceOutcome outcome)
+        {
+            switch (outcomeKey)
+            {
+                // Incidents 45 and 46 reward doubled personnel instead of resources; see
+                // Resolution.GeoscapeEventSystem_TriggerGeoscapeEvent_IncidentPersonnelReward_Patch.
+                case "TFTV_INCIDENT_47_OUTCOME_0_SUCCESS":
+                case "TFTV_INCIDENT_47_OUTCOME_1_SUCCESS":
+                    AddResource(outcome, ResourceType.Materials, 400);
+                    AddResource(outcome, ResourceType.Orichalcum, 100);
+                    break;
+            }
+        }
+
         private static void AddFactionDiplomacy(GeoEventChoiceOutcome outcome, GeoFactionDef partyFaction, GeoFactionDef targetFaction, int value)
         {
             if (outcome?.Diplomacy == null || partyFaction == null || targetFaction == null)
@@ -830,6 +851,33 @@ namespace TFTV.TFTVIncidents
                     break;
                 case "SY":
                     ApplyIncidentRequirementsSy(incident);
+                    break;
+                case "ANY":
+                    ApplyIncidentRequirementsAny(incident);
+                    break;
+            }
+        }
+
+        private static void ApplyIncidentRequirementsAny(IncidentKeys incident)
+        {
+            switch (incident.Id)
+            {
+                case 45:
+                    RequireHavenInMist(incident);
+                    break;
+                case 46:
+                    ForbidFaction(incident, AnuFactionDef);
+                    RequireNearbyHaven(incident, new List<Objects.GeoIncidentEligibilityCondition>
+                    {
+                        new Objects.GeoIncidentEligibilityCondition
+                        {
+                            RequiredFaction = AnuFactionDef,
+                            RequiredZoneDefName = "MissionaryCentre_GeoHavenZoneDef"
+                        }
+                    });
+                    break;
+                case 47:
+                    RequireResearch(incident, "PX_AntediluvianArchaeology_ResearchDef");
                     break;
             }
         }
@@ -1102,6 +1150,14 @@ namespace TFTV.TFTVIncidents
             AddIncidentEligibilityCondition(incident.Id, new Objects.GeoIncidentEligibilityCondition
             {
                 RequiredZoneDefName = zoneDefName
+            });
+        }
+
+        private static void ForbidFaction(IncidentKeys incident, GeoFactionDef faction)
+        {
+            AddIncidentEligibilityCondition(incident.Id, new Objects.GeoIncidentEligibilityCondition
+            {
+                ForbiddenFaction = faction
             });
         }
 
