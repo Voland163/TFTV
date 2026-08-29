@@ -89,6 +89,14 @@ namespace TFTV.TFTVIncidents
                         return false;
                     }
                 }
+                if (this.ForbiddenFaction != null)
+                {
+                    GeoFaction owner = (haven.Site != null) ? haven.Site.Owner : null;
+                    if (owner == null || owner.Def == this.ForbiddenFaction)
+                    {
+                        return false;
+                    }
+                }
                 if (this.PopulationComparison != GeoEventVariationConditionDef.ComparisonOperator.None && !GeoEventVariationConditionDef.Compare(haven.Population, this.PopulationThreshold, this.PopulationComparison))
                 {
                     return false;
@@ -359,6 +367,8 @@ namespace TFTV.TFTVIncidents
             public string ForbiddenZoneDefName;
 
             public GeoFactionDef RequiredFaction;
+
+            public GeoFactionDef ForbiddenFaction;
 
             public EarthUnits NearbyHavenRange;
 

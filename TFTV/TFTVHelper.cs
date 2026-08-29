@@ -40,6 +40,7 @@ namespace TFTV
         public static readonly string ANUIncidents = "TFTV_Incidents_ANU_Localization.csv";
         public static readonly string NJIncidents = "TFTV_Incidents_NJ_Localization.csv";
         public static readonly string SYIncidents = "TFTV_Incidents_SY_Localization.csv";
+        public static readonly string ANYIncidents = "TFTV_Incidents_ANY_Localization.csv";
 
         public static void Initialize()
         {
@@ -127,6 +128,11 @@ namespace TFTV
                 if (File.Exists(Path.Combine(LocalizationDirectory, SYIncidents)))
                 {
                     localizationChanged |= AddLocalizationFromCSV(SYIncidents, null, false);
+                }
+
+                if (File.Exists(Path.Combine(LocalizationDirectory, ANYIncidents)))
+                {
+                    localizationChanged |= AddLocalizationFromCSV(ANYIncidents, null, false);
                 }
 
                 if (localizationChanged)
