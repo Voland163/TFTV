@@ -313,6 +313,7 @@
     <Compile Include="TFTVAmbushes.cs" />
     <Compile Include="TFTVAncients.cs" />
     <Compile Include="TFTVAncientsGeo.cs" />
+    <Compile Include="TFTVAICombatAbilities.cs" />
     <Compile Include="TFTVArtOfCrab.cs" />
     <Compile Include="TFTVAudio.cs" />
     <Compile Include="TFTVAugmentations.cs" />
