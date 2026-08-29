@@ -304,17 +304,22 @@ namespace TFTV
             {
                 try
                 {
+                    UIModuleTheMarketplace marketplaceUI = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.TheMarketplaceModule;
+
+                    // The filter toggles are parented under MissionRewardDescriptionText, and vanilla
+                    // UpdateVisuals() deactivates that object - along with MissionRewardHeaderText -
+                    // whenever every marketplace mission is done, then rewrites their text otherwise.
+                    // Both have to be reclaimed on every refresh rather than only when the toggles are
+                    // first built: skipping it on later openings left the toggles alive but parented to
+                    // a deactivated object, which is why they were there once and gone afterwards.
+                    marketplaceUI.MissionRewardHeaderText.gameObject.SetActive(true);
+                    marketplaceUI.MissionRewardDescriptionText.gameObject.SetActive(true);
+
+                    marketplaceUI.MissionRewardHeaderText.text = "";
+                    marketplaceUI.MissionRewardDescriptionText.text = "";
+
                     if (MarketToggleButton == null)
                     {
-
-                        UIModuleTheMarketplace marketplaceUI = GameUtl.CurrentLevel().GetComponent<GeoLevelController>().View.GeoscapeModules.TheMarketplaceModule;
-
-                        marketplaceUI.MissionRewardHeaderText.gameObject.SetActive(true);
-                        marketplaceUI.MissionRewardDescriptionText.gameObject.SetActive(true);
-
-                        marketplaceUI.MissionRewardHeaderText.text = "";
-                        marketplaceUI.MissionRewardDescriptionText.text = "";
-
                         Resolution resolution = Screen.currentResolution;
 
 

@@ -389,8 +389,6 @@ Personnel with the Psycho-Sociology Affinity are trained administrators and coun
 TUTORIAL_INCIDENTS_TITLE0,Text,,Incidents,,,,,,,,
 TUTORIAL_INCIDENTS_TEXT0,Text,,"Incidents are Geoscape Events that take time to resolve and are the primary way of securing new Personnel. You will get at least 2 Personnel for resolving an Incident successfully (among other rewards, such as Resources, Characters, Improved attitude from Faction and/or Haven Leader), and 1 Personnel if you attempt it but then move the Aircraft away before it is completed. 
 
-If the Operative leading the Incident has Rank 2 in an Affinity, one of the Personnel gained will have that same Affinity at Rank 1. If the leader has Rank 3, a second Personnel will also gain a different, randomly chosen Affinity at Rank 1. 
-
 Every 4-6 days, an Incident will occur at a previously visited haven, inviting you to resolve it within the next 5 days.
 
 To initiate the Incident, you must travel to the haven with an Aircraft with at least one Operative without the “Just a Grunt” perk.",,,,,,,,
@@ -412,8 +410,7 @@ TUTORIAL_AFFINITIES_TEXT0,Text,,"- Affinities are gained and advanced in rank by
 - Affinity bonuses do not stack — only the highest-ranked specialist’s bonus applies.
 - Geoscape benefits apply to the Aircraft on which the Character is currently a passenger, Benefits in Tactical grant an ability to the Character with the Affinity.
 - Each Character can have only one Affinity.
-- Affinities also matter on base duty. They determine how much Research or Manufacturing a Personnel generates when assigned to a worker slot (Biotech 6 Research, Machinery 6 Manufacturing, Compute / Occult / Psycho-Sociology 4 of either, everyone else 2), how far they can be trained (Compute and Occult to Level 5, Exploration to Level 6), and how many Personnel they count as when spent on an Outpost or a Base activation (Psycho-Sociology counts as 3).
-- Unlike the Geoscape and Tactical benefits, these base duty benefits are always active and do not scale with the Affinity’s rank.
+- Affinities also decide how useful a Personnel is on base duty; the ASSIGNMENTS screen explains that in full.
 - Resolving an Incident with a leader of Rank 2 gives one of the Personnel gained the leader’s Affinity at Rank 1; with a leader of Rank 3, a second Personnel gains a different, randomly chosen Affinity at Rank 1.",,,,,,,,
 KEY_BASE_EXPLORE_FIRST,Text,,Explore the base first to unlock these options.,,,,,,,,
 KEY_BASE_PERSONNEL_SELECT_TITLE,Text,,ASSIGN PERSONNEL,,,,,,,,
