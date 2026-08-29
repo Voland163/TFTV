@@ -1,4 +1,4 @@
-using Base;
+﻿using Base;
 using Base.Defs;
 using Base.Serialization.General;
 using PhoenixPoint.Tactical.Entities;
@@ -30,6 +30,51 @@ namespace TFTVVehicleRework.Abilities
             {
                 return this.Def<ExtendedEnterVehicleAbilityDef>();
             }
+        }
+
+        public override void AbilityAdded()
+        {
+            base.AbilityAdded();
+
+            if (this.TacticalActor != null)
+            {
+                this.TacticalActor.AbilityExecutedEvent += this.OnActorAbilityExecuted;
+            }
+        }
+
+        public override void AbilityRemovingStart()
+        {
+            base.AbilityRemovingStart();
+
+            if (this.TacticalActor != null)
+            {
+                this.TacticalActor.AbilityExecutedEvent -= this.OnActorAbilityExecuted;
+            }
+        }
+
+        /// <summary>
+        /// Keeps the discount registered as soon as the operative arrives, rather than waiting for
+        /// the UI to ask.
+        ///
+        /// Registration is a side effect of ShouldDisplay, which only the UI drives. When a move
+        /// finishes, TacticalView.OnAbilityExecuted asks IsEnabled() whether to offer the "enter
+        /// vehicle" prompt, and nothing has queried ShouldDisplay at the new tile by then - so an
+        /// operative who spent their last action point walking onto the entry point was still
+        /// priced at the full entry cost, failed that check, and got no prompt; boarding worked but
+        /// only by selecting the ability by hand.
+        ///
+        /// TacticalAbility raises the actor's event from OnAbilityExecuteFinished immediately
+        /// before handing the same ability to TacticalLevel.AbilityExecuted, which is what the
+        /// prompt is built from, so refreshing here lands in time.
+        /// </summary>
+        private void OnActorAbilityExecuted(TacticalAbility ability)
+        {
+            if (!(ability is IMoveAbility) || this._resolvingActivation)
+            {
+                return;
+            }
+
+            this.UpdateAccessCostModification();
         }
 
         public override bool ShouldDisplay
