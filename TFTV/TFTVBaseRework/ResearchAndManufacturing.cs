@@ -1,4 +1,4 @@
-using HarmonyLib;
+﻿using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Geoscape.Entities;
@@ -112,10 +112,7 @@ namespace TFTV.TFTVBaseRework
             researchBonus = GetAssignedBonus(faction, PersonnelAssignment.Research, snapshot.ResearchCapacity, ResourceType.Research)
                 + GetIdleSlotBonus(faction, snapshot.ResearchCapacity, snapshot.ResearchAssigned, ResourceType.Research);
 
-            if (TFTVVoidOmens.VoidOmensCheck[6])
-            {
-                researchBonus *= 1.5f;
-            }
+            researchBonus *= GetResearchOutputMultiplier();
 
             productionBonus = GetAssignedBonus(faction, PersonnelAssignment.Manufacturing, snapshot.ManufacturingCapacity, ResourceType.Production)
                 + GetIdleSlotBonus(faction, snapshot.ManufacturingCapacity, snapshot.ManufacturingAssigned, ResourceType.Production);
@@ -188,6 +185,31 @@ namespace TFTV.TFTVBaseRework
                 .ThenBy(person => person.Id)
                 .Take(capacity)
                 .Sum(person => GetWorkerOutput(person.Character, resourceType));
+        }
+
+        internal const float VoidOmen6ResearchMultiplier = 1.5f;
+
+        /// <summary>
+        /// What the research bonus is multiplied by before it reaches the player. Anything ranking
+        /// worker placements has to apply this too, or it compares research against manufacturing
+        /// on the wrong scale.
+        /// </summary>
+        internal static float GetResearchOutputMultiplier()
+        {
+            return TFTVVoidOmens.VoidOmensCheck[6] ? VoidOmen6ResearchMultiplier : 1f;
+        }
+
+        /// <summary>
+        /// Worker output as it actually reaches the player, after the modifiers GetOutputBonuses
+        /// applies. Use this to compare placements; GetWorkerOutput alone is the unmodified figure.
+        /// </summary>
+        internal static float GetEffectiveWorkerOutput(GeoCharacter character, ResourceType resourceType)
+        {
+            float output = GetWorkerOutput(character, resourceType);
+
+            return resourceType == ResourceType.Research
+                ? output * GetResearchOutputMultiplier()
+                : output;
         }
 
         internal static float GetWorkerOutput(GeoCharacter character, ResourceType resourceType)
