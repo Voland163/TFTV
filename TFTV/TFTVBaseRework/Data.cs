@@ -832,25 +832,89 @@ namespace TFTV.TFTVBaseRework
             ResearchManufacturingSlotsManager.RecalculateSlots(faction);
 
             int assignedResearch = 0;
-            foreach (PersonnelInfo person in GetAutoAssignablePersonnel(faction).ToList())
-            {
-                if (!TryAssignUnassignedWorkerToSlot(person, faction, FacilitySlotType.Research))
-                {
-                    break;
-                }
-
-                assignedResearch++;
-            }
-
             int assignedManufacturing = 0;
-            foreach (PersonnelInfo person in GetAutoAssignablePersonnel(faction).ToList())
+
+            // Filling every Research slot first and only then Manufacturing ignored what each
+            // Personnel is actually good at: with two slots of each kind and two Machinery plus
+            // two Biotech waiting, it could seat both Machinery in Research and both Biotech in
+            // Manufacturing - 2 output apiece where 6 was available.
+            //
+            // Take instead, repeatedly, the best remaining pairing of a Personnel with a kind of
+            // slot. Against this mod's output table - a specialist makes 6 in their own field and
+            // the regular 2 anywhere else, Compute/Occult/Psycho-Sociology make 4 in either, and
+            // everyone else 2 - that reaches the highest total available: specialists claim their
+            // own field first, the flat-4 affinities take what is left, and nobody is ever seated
+            // somewhere that costs another Personnel a better slot, because a displaced specialist
+            // is worth no more than a regular worker anywhere but their own field.
+            List<PersonnelInfo> pool = GetAutoAssignablePersonnel(faction).ToList();
+
+            bool researchExhausted = false;
+            bool manufacturingExhausted = false;
+
+            while (pool.Count > 0 && (!researchExhausted || !manufacturingExhausted))
             {
-                if (!TryAssignUnassignedWorkerToSlot(person, faction, FacilitySlotType.Manufacturing))
+                PersonnelInfo bestPerson = null;
+                FacilitySlotType bestSlot = FacilitySlotType.Research;
+                float bestOutput = float.NegativeInfinity;
+
+                // Ties keep the order GetAutoAssignablePersonnel returns, and prefer Research, so
+                // the same roster always produces the same assignment.
+                foreach (PersonnelInfo person in pool)
+                {
+                    if (!researchExhausted)
+                    {
+                        float research = ResearchAndManufacturing.GetWorkerOutput(person.Character, ResourceType.Research);
+                        if (research > bestOutput)
+                        {
+                            bestOutput = research;
+                            bestPerson = person;
+                            bestSlot = FacilitySlotType.Research;
+                        }
+                    }
+
+                    if (!manufacturingExhausted)
+                    {
+                        float manufacturing = ResearchAndManufacturing.GetWorkerOutput(person.Character, ResourceType.Production);
+                        if (manufacturing > bestOutput)
+                        {
+                            bestOutput = manufacturing;
+                            bestPerson = person;
+                            bestSlot = FacilitySlotType.Manufacturing;
+                        }
+                    }
+                }
+
+                if (bestPerson == null)
                 {
                     break;
                 }
 
-                assignedManufacturing++;
+                if (!TryAssignUnassignedWorkerToSlot(bestPerson, faction, bestSlot))
+                {
+                    // That pool just ran out of slots - or living quarters are full, in which case
+                    // the other kind fails next time round and the loop ends.
+                    if (bestSlot == FacilitySlotType.Research)
+                    {
+                        researchExhausted = true;
+                    }
+                    else
+                    {
+                        manufacturingExhausted = true;
+                    }
+
+                    continue;
+                }
+
+                pool.Remove(bestPerson);
+
+                if (bestSlot == FacilitySlotType.Research)
+                {
+                    assignedResearch++;
+                }
+                else
+                {
+                    assignedManufacturing++;
+                }
             }
 
             if (assignedResearch > 0 || assignedManufacturing > 0)
