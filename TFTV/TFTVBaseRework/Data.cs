@@ -721,51 +721,6 @@ namespace TFTV.TFTVBaseRework
             TryAutoAssignUnassignedPersonnel(character.Faction as GeoPhoenixFaction, "AttachCharacter");
         }
 
-        private static IEnumerable<PersonnelInfo> GetAutoAssignablePersonnel(GeoPhoenixFaction faction)
-        {
-            return _assignments.Values
-                .Where(person => person?.Character != null && person.Character.Faction == faction)
-                .Where(person => person.Assignment == PersonnelAssignment.Unassigned)
-                .Where(person => PersonnelRestrictions.CanBeAssignedToManufacturingOrResearch(person.Character))
-                .OrderBy(person => person.Id);
-        }
-
-        private static bool TryAssignUnassignedWorkerToSlot(PersonnelInfo person, GeoPhoenixFaction faction, FacilitySlotType slotType)
-        {
-            if (person?.Character == null || faction == null)
-            {
-                return false;
-            }
-
-            if (person.Assignment != PersonnelAssignment.Unassigned)
-            {
-                return false;
-            }
-
-            // Block assignment if living quarters are full.
-            if (IsLivingCapacityFull(faction))
-            {
-                return false;
-            }
-
-            // Assign before reserving the slot: reserving refreshes the info bar, which recalculates
-            // income from these records and would not yet see this person.
-            person.Assignment = slotType == FacilitySlotType.Research
-                ? PersonnelAssignment.Research
-                : PersonnelAssignment.Manufacturing;
-
-            if (!ResearchManufacturingSlotsManager.IncrementUsedSlot(faction, slotType))
-            {
-                person.Assignment = PersonnelAssignment.Unassigned;
-                return false;
-            }
-
-            person.TrainingSpec = null;
-
-            TFTVLogger.Always($"{LogPrefix} Auto-assigned {person.Character.DisplayName} to {person.Assignment}.");
-            return true;
-        }
-
         private const string AutoAssignEnabledVariableName = "TFTV_BaseRework_AutoAssignEnabled";
         private const string AutoAssignInitializedVariableName = "TFTV_BaseRework_AutoAssignInitialized";
 
@@ -831,37 +786,176 @@ namespace TFTV.TFTVBaseRework
 
             ResearchManufacturingSlotsManager.RecalculateSlots(faction);
 
-            int assignedResearch = 0;
-            foreach (PersonnelInfo person in GetAutoAssignablePersonnel(faction).ToList())
+            // Everyone is fair game this pass: those already working can be reseated, not just the
+            // idle. Training is a deliberate choice with a duration attached, so it is left alone,
+            // and so is anyone the restrictions bar from base duty - if such a person somehow holds
+            // a slot, that slot counts as taken rather than being emptied under them.
+            List<PersonnelInfo> movable = new List<PersonnelInfo>();
+            int lockedResearch = 0;
+            int lockedManufacturing = 0;
+
+            foreach (PersonnelInfo person in _assignments.Values
+                .Where(candidate => candidate?.Character != null && candidate.Character.Faction == faction)
+                .OrderBy(candidate => candidate.Id))
             {
-                if (!TryAssignUnassignedWorkerToSlot(person, faction, FacilitySlotType.Research))
+                if (person.Assignment == PersonnelAssignment.Training)
+                {
+                    continue;
+                }
+
+                if (!PersonnelRestrictions.CanBeAssignedToManufacturingOrResearch(person.Character))
+                {
+                    if (person.Assignment == PersonnelAssignment.Research)
+                    {
+                        lockedResearch++;
+                    }
+                    else if (person.Assignment == PersonnelAssignment.Manufacturing)
+                    {
+                        lockedManufacturing++;
+                    }
+
+                    continue;
+                }
+
+                movable.Add(person);
+            }
+
+            if (movable.Count == 0)
+            {
+                return;
+            }
+
+            FacilitySlotPools slotPools = ResearchManufacturingSlotsManager.GetOrCreatePools(faction);
+            int freeResearch = Math.Max(0, slotPools.Research.ProvidedSlots - lockedResearch);
+            int freeManufacturing = Math.Max(0, slotPools.Manufacturing.ProvidedSlots - lockedManufacturing);
+
+            // Living space counts assigned Personnel only, so reseating costs nothing and only
+            // putting more of them to work does. Whatever headroom is left is what the working
+            // roster may grow by.
+            int alreadyWorking = movable.Count(person => person.Assignment != PersonnelAssignment.Unassigned);
+            int livingHeadroom = Math.Max(0, faction.SoldierCapacity - FoodAndLivingSpacePolicy.GetTotalLivingSpaceUsed(faction));
+            int workerBudget = alreadyWorking + livingHeadroom;
+
+            Dictionary<int, PersonnelAssignment> target = BuildBestAssignment(
+                movable, freeResearch, freeManufacturing, workerBudget);
+
+            List<PersonnelInfo> moved = movable
+                .Where(person => target[person.Id] != person.Assignment)
+                .ToList();
+
+            if (moved.Count == 0)
+            {
+                return;
+            }
+
+            foreach (PersonnelInfo person in moved)
+            {
+                person.Assignment = target[person.Id];
+
+                if (person.Assignment != PersonnelAssignment.Unassigned)
+                {
+                    person.TrainingSpec = null;
+                }
+            }
+
+            // Rebuild both counters from the records in one go rather than tracking every move: the
+            // setters refresh the info bar, which recalculates income from these same records.
+            ResearchManufacturingSlotsManager.SetUsedSlots(faction, FacilitySlotType.Research,
+                CountAssignedForFaction(faction, PersonnelAssignment.Research));
+            ResearchManufacturingSlotsManager.SetUsedSlots(faction, FacilitySlotType.Manufacturing,
+                CountAssignedForFaction(faction, PersonnelAssignment.Manufacturing));
+
+            FacilitySlotPools pools = ResearchManufacturingSlotsManager.GetOrCreatePools(faction);
+            TFTVLogger.Always(
+                $"{LogPrefix} Auto-assignment from {source}: {moved.Count} Personnel reseated. " +
+                $"Research {pools.Research.UsedSlots}/{pools.Research.ProvidedSlots}, " +
+                $"Manufacturing {pools.Manufacturing.UsedSlots}/{pools.Manufacturing.ProvidedSlots}");
+        }
+
+        private static int CountAssignedForFaction(GeoPhoenixFaction faction, PersonnelAssignment assignment)
+        {
+            return _assignments.Values.Count(person => person?.Character != null
+                && person.Character.Faction == faction
+                && person.Assignment == assignment);
+        }
+
+        /// <summary>
+        /// Works out where each Personnel should sit to get the most out of the roster.
+        ///
+        /// Repeatedly takes the best remaining pairing of a Personnel with a kind of slot. Against
+        /// this mod's output table - a specialist makes 6 in their own field and the regular 2
+        /// anywhere else, Compute/Occult/Psycho-Sociology make 4 in either, everyone else 2 - that
+        /// reaches the highest total available: specialists claim their own field first, the flat-4
+        /// affinities take what is left, and nobody is ever seated somewhere that costs another
+        /// Personnel a better slot, because a displaced specialist is worth no more than a regular
+        /// worker anywhere but their own field. Checked against exhaustive search.
+        ///
+        /// Ties keep roster order and prefer Research, so an unchanged roster always produces the
+        /// same answer and nobody is reseated for nothing.
+        /// </summary>
+        private static Dictionary<int, PersonnelAssignment> BuildBestAssignment(
+            List<PersonnelInfo> movable, int freeResearch, int freeManufacturing, int workerBudget)
+        {
+            Dictionary<int, PersonnelAssignment> target = new Dictionary<int, PersonnelAssignment>();
+            foreach (PersonnelInfo person in movable)
+            {
+                target[person.Id] = PersonnelAssignment.Unassigned;
+            }
+
+            List<PersonnelInfo> pool = new List<PersonnelInfo>(movable);
+            int seated = 0;
+
+            while (pool.Count > 0 && seated < workerBudget && (freeResearch > 0 || freeManufacturing > 0))
+            {
+                PersonnelInfo bestPerson = null;
+                PersonnelAssignment bestSlot = PersonnelAssignment.Research;
+                float bestOutput = float.NegativeInfinity;
+
+                foreach (PersonnelInfo person in pool)
+                {
+                    if (freeResearch > 0)
+                    {
+                        float research = ResearchAndManufacturing.GetWorkerOutput(person.Character, ResourceType.Research);
+                        if (research > bestOutput)
+                        {
+                            bestOutput = research;
+                            bestPerson = person;
+                            bestSlot = PersonnelAssignment.Research;
+                        }
+                    }
+
+                    if (freeManufacturing > 0)
+                    {
+                        float manufacturing = ResearchAndManufacturing.GetWorkerOutput(person.Character, ResourceType.Production);
+                        if (manufacturing > bestOutput)
+                        {
+                            bestOutput = manufacturing;
+                            bestPerson = person;
+                            bestSlot = PersonnelAssignment.Manufacturing;
+                        }
+                    }
+                }
+
+                if (bestPerson == null)
                 {
                     break;
                 }
 
-                assignedResearch++;
-            }
+                target[bestPerson.Id] = bestSlot;
+                pool.Remove(bestPerson);
+                seated++;
 
-            int assignedManufacturing = 0;
-            foreach (PersonnelInfo person in GetAutoAssignablePersonnel(faction).ToList())
-            {
-                if (!TryAssignUnassignedWorkerToSlot(person, faction, FacilitySlotType.Manufacturing))
+                if (bestSlot == PersonnelAssignment.Research)
                 {
-                    break;
+                    freeResearch--;
                 }
-
-                assignedManufacturing++;
+                else
+                {
+                    freeManufacturing--;
+                }
             }
 
-            if (assignedResearch > 0 || assignedManufacturing > 0)
-            {
-                FacilitySlotPools pools = ResearchManufacturingSlotsManager.GetOrCreatePools(faction);
-                TFTVLogger.Always(
-                    $"{LogPrefix} Auto-assignment from {source}: " +
-                    $"Research +{assignedResearch}, Manufacturing +{assignedManufacturing}. " +
-                    $"Research {pools.Research.UsedSlots}/{pools.Research.ProvidedSlots}, " +
-                    $"Manufacturing {pools.Manufacturing.UsedSlots}/{pools.Manufacturing.ProvidedSlots}");
-            }
+            return target;
         }
         internal static void RemovePersonnel(GeoPhoenixFaction faction, PersonnelInfo person)
         {
