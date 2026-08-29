@@ -3,13 +3,18 @@ using Base.Defs;
 using Base.Lighting;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
+using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Entities.Sites;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Geoscape.View.ViewStates;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using static PhoenixPoint.Geoscape.Levels.GeoSceneReferences;
@@ -33,8 +38,33 @@ namespace TFTV
                 Night
             }
 
+            private const string BackgroundsFolder = "TFTVMissionDeploymentBackgrounds";
+
             private static readonly Dictionary<string, Dictionary<LightCondition, Sprite>> MissionBackgrounds =
                 new Dictionary<string, Dictionary<LightCondition, Sprite>>(StringComparer.OrdinalIgnoreCase);
+
+            /// File name (without folder or extension) to sprite, including nulls for art we do not have yet.
+            private static readonly Dictionary<string, Sprite> LoadedBackgrounds =
+                new Dictionary<string, Sprite>(StringComparer.OrdinalIgnoreCase);
+
+            /// Haven zone defs to the file name fragment their artwork uses.
+            private static readonly Dictionary<string, string> ZoneCodes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Research_GeoHavenZoneDef", "research" },
+                { "Factory_GeoHavenZoneDef", "factory" },
+                { "FoodProduction_GeoHavenZoneDef", "food" },
+                { "Residential_GeoHavenZoneDef", "living" },
+                { "ResidentialElite_GeoHavenZoneDef", "eliteliving" },
+                { "Training_GeoHavenZoneDef", "training" },
+                { "TrainingElite_GeoHavenZoneDef", "elitetraining" },
+                { "Energy_GeoHavenZoneDef", "energy" },
+                { "MistRepeller_GeoHavenZoneDef", "repeller" },
+                { "SatelliteUplink_GeoHavenZoneDef", "uplink" },
+                { "MissionaryCentre_GeoHavenZoneDef", "missionary" },
+                { "LeviathanChamber_GeoHavenZoneDef", "leviathan" },
+                { "MoonLaunch_GeoHavenZoneDef", "moonlaunch" },
+                { "TWFortress_GeoHavenZoneDef", "fortress" },
+            };
 
             private static Sprite _defaultDayBackground;
             private static Sprite _defaultNightBackground;
@@ -76,9 +106,251 @@ namespace TFTV
                     return background;
                 }
 
-                return lightCondition == LightCondition.Night
+                foreach (string candidate in GetCandidateNames(mission, lightCondition))
+                {
+                    background = LoadBackground(candidate);
+
+                    if (background != null)
+                    {
+                        // One line per deployment screen, so the log shows which artwork a mission
+                        // resolved to when tuning the mapping.
+                        TFTVLogger.Always($"Deployment background for {missionDefName} ({lightCondition}): {candidate}");
+                        return background;
+                    }
+                }
+
+                TFTVLogger.Always($"Deployment background for {missionDefName} ({lightCondition}): no match, using default");
+
+                return DefaultFor(lightCondition);
+            }
+
+            /// Anything with no artwork of its own falls back to open wasteland, which reads as
+            /// "somewhere out there" for every mission type. deployment_a/b are the last resort,
+            /// used only if the wasteland art is missing from the install.
+            private static Sprite DefaultFor(LightCondition lightCondition)
+            {
+                bool night = lightCondition == LightCondition.Night;
+
+                Sprite wasteland = night
+                    ? LoadBackground("wasteland_normal_night") ?? LoadBackground("wasteland_normal_day")
+                    : LoadBackground("wasteland_normal_day") ?? LoadBackground("wasteland_normal_night");
+
+                if (wasteland != null)
+                {
+                    return wasteland;
+                }
+
+                Sprite fallback = night
                     ? _defaultNightBackground ?? _defaultDayBackground
                     : _defaultDayBackground ?? _defaultNightBackground;
+
+                return fallback ?? LoadBackground(null, night ? "deployment_b" : "deployment_a");
+            }
+
+            /// Art file names, best match first. The mission's own location beats the time of day:
+            /// the player recognises "this is the NJ research haven" long before they notice the sun
+            /// is in the wrong place, so a same-place/wrong-light image is preferred over a generic one.
+            private static IEnumerable<string> GetCandidateNames(GeoMission mission, LightCondition lightCondition)
+            {
+                if (mission == null || mission.MissionDef == null)
+                {
+                    yield break;
+                }
+
+                HashSet<string> tags = GetTagNames(mission);
+
+                string alienBase = GetAlienBaseCode(tags);
+
+                if (alienBase != null)
+                {
+                    // Pandoran interiors have no sky, so they are shared between day and night.
+                    foreach (string name in WithVariants("ALN_" + alienBase, mission))
+                    {
+                        yield return name;
+                    }
+
+                    yield break;
+                }
+
+                string faction = GetFactionCode(mission);
+                string light = lightCondition == LightCondition.Night ? "night" : "day";
+                string otherLight = lightCondition == LightCondition.Night ? "day" : "night";
+
+                if (faction != null && tags.Contains("HavenInfestation_MissionTypeTagDef"))
+                {
+                    foreach (string name in WithVariants(faction + "_infested", mission))
+                    {
+                        yield return name;
+                    }
+
+                    yield break;
+                }
+
+                string zone = GetZoneCode(mission, tags);
+
+                if (faction != null && zone != null)
+                {
+                    foreach (string prefix in new[] { faction + "_" + zone + "_" + light, faction + "_" + zone, faction + "_" + zone + "_" + otherLight })
+                    {
+                        foreach (string name in WithVariants(prefix, mission))
+                        {
+                            yield return name;
+                        }
+                    }
+                }
+
+                string wasteland = GetWastelandCode(tags);
+
+                if (wasteland != null)
+                {
+                    // Open ground is the one place where the light wins: overgrown and bare wasteland
+                    // are close enough that plain terrain at the right hour beats the right terrain
+                    // lit by the wrong sky.
+                    string[] prefixes = wasteland == "normal"
+                        ? new[] { "wasteland_normal_" + light, "wasteland_normal", "wasteland_normal_" + otherLight }
+                        : new[]
+                        {
+                            "wasteland_" + wasteland + "_" + light,
+                            "wasteland_" + wasteland,
+                            "wasteland_normal_" + light,
+                            "wasteland_" + wasteland + "_" + otherLight,
+                            "wasteland_normal_" + otherLight,
+                        };
+
+                    foreach (string prefix in prefixes)
+                    {
+                        foreach (string name in WithVariants(prefix, mission))
+                        {
+                            yield return name;
+                        }
+                    }
+                }
+            }
+
+            /// A slot may have a second painting under an "_alt" suffix. Which one a mission gets is
+            /// derived from its site, so re-entering the deployment screen does not reshuffle the art.
+            private static IEnumerable<string> WithVariants(string baseName, GeoMission mission)
+            {
+                bool preferAlt = LoadBackground(baseName + "_alt") != null
+                    && mission.Site != null
+                    && (Math.Abs(mission.Site.SiteId * 31 + baseName.Length) & 1) == 1;
+
+                if (preferAlt)
+                {
+                    yield return baseName + "_alt";
+                }
+
+                yield return baseName;
+                yield return baseName + "_alt";
+            }
+
+            private static HashSet<string> GetTagNames(GeoMission mission)
+            {
+                HashSet<string> tags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                if (mission.MissionDef.Tags != null)
+                {
+                    foreach (GameTagDef tag in mission.MissionDef.Tags)
+                    {
+                        if (tag != null && !string.IsNullOrEmpty(tag.name))
+                        {
+                            tags.Add(tag.name);
+                        }
+                    }
+                }
+
+                return tags;
+            }
+
+            private static string GetAlienBaseCode(HashSet<string> tags)
+            {
+                if (tags.Contains("MissionTypeAlienNestAssault_MissionTagDef")) return "nest";
+                if (tags.Contains("MissionTypeAlienLairAssault_MissionTagDef")) return "lair";
+                if (tags.Contains("MissionTypeAlienCitadelAssault_MissionTagDef")) return "citadel";
+
+                return null;
+            }
+
+            /// Havens keep their original owner's architecture once the Pandorans move in, so an
+            /// infested haven is matched on who built it rather than on who holds it now.
+            private static string GetFactionCode(GeoMission mission)
+            {
+                GeoSite site = mission.Site;
+
+                if (site == null || site.GeoLevel == null)
+                {
+                    return null;
+                }
+
+                GeoHaven haven = site.GetComponent<GeoHaven>();
+                GeoFaction owner = haven != null ? haven.UninfestedOwner : site.Owner;
+
+                if (owner == null)
+                {
+                    return null;
+                }
+
+                if (owner == site.GeoLevel.AnuFaction) return "ANU";
+                if (owner == site.GeoLevel.NewJerichoFaction) return "NJ";
+                if (owner == site.GeoLevel.SynedrionFaction) return "SY";
+
+                return null;
+            }
+
+            private static string GetZoneCode(GeoMission mission, HashSet<string> tags)
+            {
+                // Stealing an aircraft is fought over the landing pad whatever zone holds it.
+                if (tags.Contains("MissionTypeStealAircraft_MissionTagDef"))
+                {
+                    return "aircraft";
+                }
+
+                GeoHavenZoneDef zoneDef = mission.MissionData?.Targets?.OfType<GeoHavenZoneDef>().FirstOrDefault();
+                string zone;
+
+                return zoneDef != null && ZoneCodes.TryGetValue(zoneDef.name, out zone) ? zone : null;
+            }
+
+            private static string GetWastelandCode(HashSet<string> tags)
+            {
+                if (!tags.Any(tag => tag.StartsWith("MissionTypeScavenging", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return null;
+                }
+
+                return tags.Any(tag => tag.IndexOf("Overgrown", StringComparison.OrdinalIgnoreCase) >= 0) ? "overgrown" : "normal";
+            }
+
+            /// Backgrounds are full-screen artwork, so they are decoded the first time a mission asks
+            /// for one rather than all at once on load. Misses are cached too, to keep the candidate
+            /// walk above from hitting the disk on every deployment.
+            private static Sprite LoadBackground(string fileName)
+            {
+                return LoadBackground(BackgroundsFolder, fileName);
+            }
+
+            private static Sprite LoadBackground(string folder, string fileName)
+            {
+                if (string.IsNullOrEmpty(fileName))
+                {
+                    return null;
+                }
+
+                string relativePath = string.IsNullOrEmpty(folder) ? fileName + ".jpg" : Path.Combine(folder, fileName + ".jpg");
+                Sprite background;
+
+                if (LoadedBackgrounds.TryGetValue(relativePath, out background))
+                {
+                    return background;
+                }
+
+                background = File.Exists(Path.Combine(TFTVMain.TexturesDirectory, relativePath))
+                    ? Helper.CreateSpriteFromImageFile(relativePath)
+                    : null;
+
+                LoadedBackgrounds.Add(relativePath, background);
+
+                return background;
             }
 
             internal static void FitFullHeight(RectTransform imageTransform, Sprite background)
@@ -120,8 +392,14 @@ namespace TFTV
                     return LightCondition.Day;
                 }
 
-                int localHour = mission.Site.LocalTime.DateTime.Hour;
-                return localHour >= 6 && localHour < 18 ? LightCondition.Day : LightCondition.Night;
+                return IsDayTime(mission.Site.LocalTime.DateTime.Hour) ? LightCondition.Day : LightCondition.Night;
+            }
+
+            /// Shared with the sun/moon icon on the same screen (TFTVUI.Geoscape.MissionDeployment), so
+            /// the icon and the artwork behind it never disagree about whether it is night.
+            internal static bool IsDayTime(int hourOfDay)
+            {
+                return hourOfDay >= 6 && hourOfDay <= 20;
             }
         }
 
@@ -136,7 +414,6 @@ namespace TFTV
         private static Sprite _backgroundMemorial = null;
         private static Sprite _backgroundAirForce = null;
         private static Sprite _backgroundDeployment = null;
-        private static Sprite _backgroundDeploymentNight = null;
 
         private static CharacterClassWorldDisplay _copyCharacterClassWorldDisplayMain = null;
 
@@ -522,9 +799,9 @@ namespace TFTV
                 _backgroundAirForce = Helper.CreateSpriteFromImageFile("sceneairforce.jpg");
 
 
-                _backgroundDeployment = Helper.CreateSpriteFromImageFile("deployment_a.jpg");
-                _backgroundDeploymentNight = Helper.CreateSpriteFromImageFile("deployment_b.jpg");
-                TFTVBackgroundDeploymentSelector.SetDefaults(_backgroundDeployment, _backgroundDeploymentNight);
+                // The per-mission backgrounds are picked and decoded on demand by the selector, which
+                // also falls back to deployment_a/b if the artwork folder is missing. Decoding those
+                // two here as well would keep a pair of full-size textures resident for nothing.
 
             }
             catch (Exception e)

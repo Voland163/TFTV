@@ -67,7 +67,7 @@ namespace TFTV.TFTVUI.Geoscape
 
                             int hourOfTheDay = geoSite.LocalTime.DateTime.Hour;
                             int minuteOfTheHour = geoSite.LocalTime.DateTime.Minute;
-                            bool dayTimeMission = hourOfTheDay >= 6 && hourOfTheDay <= 20;
+                            bool dayTimeMission = TFTVBackgrounds.TFTVBackgroundDeploymentSelector.IsDayTime(hourOfTheDay);
 
                             TFTVLogger.Always($"LocalTime: {hourOfTheDay:00}:{minuteOfTheHour:00}");
 
