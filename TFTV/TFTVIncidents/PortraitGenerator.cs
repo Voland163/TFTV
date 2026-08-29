@@ -49,19 +49,168 @@ namespace TFTV.TFTVIncidents
         // renders as garbage).
         private static UIModuleSiteEncounters _appliedModule;
 
+        // Character the last request was for, so a settings change can re-render it in place.
+        private static GeoCharacter _currentCharacter;
+
         // Render target is sized to the leader pic slot's on-screen size (clamped), so the
         // portrait matches the display resolution instead of a fixed 1024px.
         private const int MinPortraitResolution = 128;
-        private const int MaxPortraitResolution = 1024;
         private const int FallbackPortraitResolution = 512;
+
+        // Hard ceiling on what a single supersampled render may cost. 4096 x 4096 is 64MB of
+        // readback and about a tenth of a second of downsampling - past that it stops being free.
+        private const int MaxRenderDimension = 4096;
+
+        // ---------------------------------------------------------------------------------------
+        // Tunables. All of these are live: the portrait_* console commands write them and re-render,
+        // so framing and quality can be compared in the encounter window itself without a rebuild.
+        // The defaults here are the ones the mod ships with.
+        // ---------------------------------------------------------------------------------------
+
+        /// <summary>
+        /// Supersampling factor. The subject is rendered at this multiple of the display resolution
+        /// and box-filtered down to it.
+        ///
+        /// This is the single biggest quality lever, because the capture path has no anti-aliasing at
+        /// all: a 1024px dump of the old settings had three partially-transparent pixels in the whole
+        /// image. Everything the character shader alpha-tests - hair, facial hair, the worn edges of
+        /// armour - therefore came out as a ragged one-pixel stair-step. Averaging N x N samples per
+        /// output pixel is what turns those back into soft edges.
+        /// </summary>
+        internal static int Supersample = 4;
+
+        /// <summary>
+        /// MSAA sample count on the render target (1 = off; 2, 4 or 8 otherwise). Mostly redundant
+        /// next to supersampling, and the driver ignores it when the copied scene camera is on a
+        /// deferred path, but it costs nothing to be able to try it.
+        /// </summary>
+        internal static int MsaaSamples = 1;
+
+        /// <summary>
+        /// Cap on the displayed portrait's pixel size. The render is sized to the leader slot's own
+        /// on-screen size and scaled down to fit this, preserving the slot's aspect ratio.
+        /// </summary>
+        internal static int MaxPortraitResolution = 1024;
+
+        /// <summary>
+        /// Uniform scale applied to the leader picture slot and its ink frame. Below 1 the portrait
+        /// is shown smaller than the event-leader artwork space it borrows, which raises the number
+        /// of rendered pixels per displayed pixel.
+        /// </summary>
+        internal static float DisplayScale = 0.70f;
 
         // Framing. The camera sits off to one side of the face rather than square in front of it, a
         // little above eye level, and far enough back for the shoulders and armour to read.
-        private const float CameraFoV = 40f;
-        private const float NoseDistance = 1.10f;
-        private const float HeadDistance = 1.20f;
-        private const float CameraYawDegrees = 28f;
-        private const float CameraHeight = 0.06f;
+        //
+        // Framing is the second big quality lever. At the original 40 degrees and 1.10m the head
+        // filled less than a third of the frame height and the top third of the image was empty, so a
+        // 1024px render spent about 300px on the face. Holding the distance and narrowing the lens to
+        // 25 degrees crops to a bust and flattens the perspective, which stops the nose and brow from
+        // being pushed forward the way a wide lens close to a face does.
+        internal static float CameraFoV = 25f;
+        internal static float NoseDistance = 1.00f;
+        internal static float HeadDistance = 1.10f;
+        internal static float CameraYawDegrees = -20f;
+        internal static float CameraHeight = 0.10f;
+
+        /// <summary>
+        /// Vertical offset, in metres, of the point the camera aims at relative to the target bone.
+        /// Negative aims below the face, which lifts the head into the upper half of the frame and
+        /// leaves the shoulders and armour underneath it - the shape a bust portrait wants.
+        /// </summary>
+        internal static float LookAtVerticalOffset = 0.04f;
+
+        /// <summary>
+        /// Writes every render to persistentDataPath as a PNG named after the settings that produced
+        /// it, which is how framing and quality changes get compared side by side.
+        /// </summary>
+        internal static bool DumpRenderToDisk = true;
+
+        // ---------------------------------------------------------------------------------------
+        // Lighting. One directional light per role, angled relative to the subject (the rig is
+        // parented to it, so the angles stay put however the subject is turned).
+        //
+        // The vanilla tactical portrait has more shape to it than this one did for two reasons, both
+        // visible in SquadMemberScrollerController.FinishPortraitCrt: it renders with
+        // RenderSettings.ambientIntensity at zero, and its light sets - authored prefabs picked at
+        // random by LightsPicker, which only exist under the tactical char builder - cast shadows.
+        // Ours was drowning the subject in a flat ambient of 1.0 and casting no shadows at all, which
+        // is the whole of the difference in modelling.
+        // ---------------------------------------------------------------------------------------
+
+        /// <summary>One directional light of the portrait rig.</summary>
+        internal sealed class RigLight
+        {
+            /// <summary>Downward tilt in degrees; larger drops the light towards the top of the head.</summary>
+            internal float Pitch;
+
+            /// <summary>Rotation about the subject's up axis. 180 is straight ahead of the face.</summary>
+            internal float Yaw;
+
+            internal Color Color;
+            internal float Intensity;
+
+            /// <summary>Only the key light casts shadows by default; two shadow casters fight each other.</summary>
+            internal bool CastsShadows;
+
+            internal RigLight(float pitch, float yaw, Color color, float intensity, bool castsShadows)
+            {
+                Pitch = pitch;
+                Yaw = yaw;
+                Color = color;
+                Intensity = intensity;
+                CastsShadows = castsShadows;
+            }
+        }
+
+        // The defaults below are the "dramatic" preset with the rim light switched off, which is
+        // where tuning in-game landed. Steep warm key well off to the side doing nearly all the work,
+        // a fill low enough to leave the shadow side dark, and next to no ambient under it.
+
+        // Key: warm, high and well round to the front-left, so the brow and nose lay shadow on the face.
+        internal static readonly RigLight KeyLight = new RigLight(32f, 230f, new Color(1f, 0.94f, 0.86f), 1.6f, true);
+
+        // Fill: cool and very low, from the front-right at eye level. This is what decides how much
+        // of the shadow side survives; raising it flattens the modelling straight back out.
+        internal static readonly RigLight FillLight = new RigLight(5f, 140f, new Color(0.55f, 0.62f, 0.80f), 0.12f, false);
+
+        // Rim: from behind, to separate hair and shoulders from the background. Off by default - at
+        // zero intensity no light object is created at all, so its angles do nothing until it is
+        // given some intensity back.
+        internal static readonly RigLight RimLight = new RigLight(100f, 10f, new Color(0.80f, 0.88f, 1f), 0f, false);
+
+        /// <summary>
+        /// Flat ambient during the render. Vanilla's tactical portrait uses zero; anything approaching
+        /// 1 washes the shadows out completely, which is what the old value did.
+        /// </summary>
+        internal static float AmbientIntensity = 0.10f;
+
+        internal static Color AmbientColor = new Color(0.26f, 0.27f, 0.30f);
+
+        /// <summary>Shadow mode for whichever rig lights cast: LightShadows.None, Hard or Soft.</summary>
+        internal static LightShadows ShadowMode = LightShadows.Soft;
+
+        /// <summary>How dark a cast shadow gets, 0 to 1.</summary>
+        internal static float ShadowStrength = 1f;
+
+        /// <summary>
+        /// Shadow distance forced during the render, in metres.
+        ///
+        /// This matters more than it looks. The global value is set from the graphics options and is
+        /// tens of metres, so the cascade covering a head one metre from the camera gets a handful of
+        /// texels and the shadow arrives as a blocky mess. Pulling it in to a couple of metres spends
+        /// the whole shadow map on the subject.
+        /// </summary>
+        internal static float ShadowDistance = 3f;
+
+        internal static float ShadowNormalBias = 0.05f;
+        internal static float ShadowBias = 0.02f;
+
+        /// <summary>
+        /// Turns on the light the character rig carries. It is far too dim to carry a portrait, and it
+        /// is the personnel screen's light rather than a portrait one, so it is off by default now.
+        /// </summary>
+        internal static bool UseCharacterLight = false;
 
         // Generous: the first build of a session waits on addon assets being loaded from disk.
         private const float RebuildTimeoutSeconds = 20f;
@@ -87,6 +236,7 @@ namespace TFTV.TFTVIncidents
                 }
 
                 _currentRequestId = character.Id;
+                _currentCharacter = character;
 
                 if (Cache.TryGetValue(character.Id, out Sprite cached) && cached != null)
                 {
@@ -115,6 +265,7 @@ namespace TFTV.TFTVIncidents
             try
             {
                 _currentRequestId = -1;
+                _currentCharacter = null;
 
                 // Detach first: destroying a texture that is still assigned to the leader Image
                 // leaves it drawing freed GPU memory until a new sprite arrives.
@@ -161,6 +312,7 @@ namespace TFTV.TFTVIncidents
                     _appliedModule.EncounterLeaderImage.sprite = null;
                 }
 
+                RestoreDisplayScale(_appliedModule);
                 _appliedModule.EncunterLeaderGroup?.SetActive(false);
                 _appliedModule.EncunterLeaderInkGroup?.SetActive(false);
             }
@@ -185,7 +337,79 @@ namespace TFTV.TFTVIncidents
             module.EncunterLeaderInkGroup.SetActive(true);
             module.EncounterLeaderImage.sprite = portrait;
             module.EncounterLeaderImage.preserveAspect = true;
+            ApplyDisplayScale(module);
             _appliedModule = module;
+        }
+
+        // Scale the leader slot's transforms were found at, so DisplayScale can be undone rather
+        // than compounded every time a portrait is applied.
+        private static readonly Dictionary<Transform, Vector3> OriginalScales = new Dictionary<Transform, Vector3>();
+
+        /// <summary>
+        /// Shrinks (or grows) the leader picture slot and the ink frame drawn around it.
+        ///
+        /// The slot the portrait borrows is sized for event-leader artwork, which is far larger than
+        /// a rendered head wants to be shown at: the smaller it is drawn, the more rendered pixels
+        /// land on each displayed one. Scaling the transforms leaves the layout that positions them
+        /// alone, so nothing else in the encounter window moves.
+        /// </summary>
+        private static void ApplyDisplayScale(UIModuleSiteEncounters module)
+        {
+            try
+            {
+                foreach (Transform target in ScaledTransforms(module))
+                {
+                    if (!OriginalScales.TryGetValue(target, out Vector3 original))
+                    {
+                        original = target.localScale;
+                        OriginalScales[target] = original;
+                    }
+
+                    target.localScale = original * DisplayScale;
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void RestoreDisplayScale(UIModuleSiteEncounters module)
+        {
+            try
+            {
+                foreach (Transform target in ScaledTransforms(module))
+                {
+                    if (OriginalScales.TryGetValue(target, out Vector3 original))
+                    {
+                        target.localScale = original;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// The leader picture group and its ink frame - skipping the ink group when it sits under the
+        /// picture group, since scaling both would then square the factor.
+        /// </summary>
+        private static IEnumerable<Transform> ScaledTransforms(UIModuleSiteEncounters module)
+        {
+            Transform picture = module?.EncunterLeaderGroup != null ? module.EncunterLeaderGroup.transform : null;
+            Transform ink = module?.EncunterLeaderInkGroup != null ? module.EncunterLeaderInkGroup.transform : null;
+
+            if (picture != null)
+            {
+                yield return picture;
+            }
+
+            if (ink != null && (picture == null || !ink.IsChildOf(picture)))
+            {
+                yield return ink;
+            }
         }
 
         private static IEnumerator RenderAndApply(UIModuleSiteEncounters module, GeoCharacter character)
@@ -250,9 +474,21 @@ namespace TFTV.TFTVIncidents
 
                     if (width > 1f && height > 1f)
                     {
-                        return new Vector2Int(
-                            Mathf.Clamp(Mathf.RoundToInt(width), MinPortraitResolution, MaxPortraitResolution),
-                            Mathf.Clamp(Mathf.RoundToInt(height), MinPortraitResolution, MaxPortraitResolution));
+                        // The slot is drawn at DisplayScale, so that is the size the portrait is
+                        // actually seen at - measure against that, not the unscaled rect.
+                        width *= DisplayScale;
+                        height *= DisplayScale;
+
+                        // Scale both axes by the same factor. Clamping them independently, as this
+                        // used to, changes the render's aspect ratio away from the slot's, and the
+                        // Image then letterboxes the result and throws the difference away.
+                        float fit = Mathf.Min(1f, MaxPortraitResolution / Mathf.Max(width, height));
+                        Vector2Int resolution = new Vector2Int(
+                            Mathf.Max(MinPortraitResolution, Mathf.RoundToInt(width * fit)),
+                            Mathf.Max(MinPortraitResolution, Mathf.RoundToInt(height * fit)));
+
+                        TFTVLogger.Always($"{LogPrefix} Leader slot measures {width:F0}x{height:F0} on screen -> portrait {resolution.x}x{resolution.y}.");
+                        return resolution;
                     }
                 }
             }
@@ -297,16 +533,7 @@ namespace TFTV.TFTVIncidents
                 rendered.filterMode = FilterMode.Trilinear;
                 rendered.anisoLevel = 4;
 
-                // TEMPORARY - lets the new framing be checked directly. Remove once it is settled.
-                try
-                {
-                    System.IO.File.WriteAllBytes(System.IO.Path.Combine(Application.persistentDataPath,
-                        $"TFTV_Portrait_{character.Id}.png"), rendered.EncodeToPNG());
-                }
-                catch (Exception dumpError)
-                {
-                    TFTVLogger.Error(dumpError);
-                }
+                DumpRender(character, rendered);
 
                 onDone?.Invoke(Sprite.Create(
                     rendered,
@@ -317,6 +544,95 @@ namespace TFTV.TFTVIncidents
             finally
             {
                 UnityEngine.Object.Destroy(builder.gameObject);
+            }
+        }
+
+        /// <summary>
+        /// Writes the render to persistentDataPath under a name carrying the settings that produced
+        /// it, so a run of portrait_* variations leaves a directory that can be compared file by file.
+        /// </summary>
+        private static void DumpRender(GeoCharacter character, Texture2D rendered)
+        {
+            if (!DumpRenderToDisk)
+            {
+                return;
+            }
+
+            try
+            {
+                string name = $"TFTV_Portrait_{character.Id}_{SettingsSlug()}.png";
+                System.IO.File.WriteAllBytes(System.IO.Path.Combine(Application.persistentDataPath, name), rendered.EncodeToPNG());
+                TFTVLogger.Always($"{LogPrefix} Wrote {name} ({rendered.width}x{rendered.height}).");
+            }
+            catch (Exception dumpError)
+            {
+                TFTVLogger.Error(dumpError);
+            }
+        }
+
+        private static string SettingsSlug()
+        {
+            return $"ss{Mathf.Clamp(Supersample, 1, 4)}_msaa{ResolveMsaaSamples()}_res{MaxPortraitResolution}" +
+                $"_d{NoseDistance:0.00}_fov{CameraFoV:0}_yaw{CameraYawDegrees:0}_h{CameraHeight:0.00}_look{LookAtVerticalOffset:0.00}" +
+                $"_amb{AmbientIntensity:0.00}_key{KeyLight.Intensity:0.00}_fill{FillLight.Intensity:0.00}_rim{RimLight.Intensity:0.00}" +
+                $"_sh{(ShadowMode == LightShadows.None ? "off" : ShadowMode.ToString().ToLowerInvariant())}";
+        }
+
+        /// <summary>
+        /// Current settings as one line, for the portrait_settings console command.
+        /// </summary>
+        internal static string DescribeSettings()
+        {
+            return $"supersample {Mathf.Clamp(Supersample, 1, 4)} | msaa {ResolveMsaaSamples()} | maxres {MaxPortraitResolution} | " +
+                $"displayscale {DisplayScale:0.00} | distance {NoseDistance:0.00} (head bone {HeadDistance:0.00}) | " +
+                $"fov {CameraFoV:0.#} | yaw {CameraYawDegrees:0.#} | height {CameraHeight:0.00} | lookoffset {LookAtVerticalOffset:0.00} | " +
+                $"dump {(DumpRenderToDisk ? "on" : "off")}";
+        }
+
+        /// <summary>
+        /// Current lighting as one line, for the portrait_settings console command.
+        /// </summary>
+        internal static string DescribeLighting()
+        {
+            return $"ambient {AmbientIntensity:0.00} | shadows {ShadowMode} strength {ShadowStrength:0.00} dist {ShadowDistance:0.0} | " +
+                $"key {DescribeRigLight(KeyLight)} | fill {DescribeRigLight(FillLight)} | rim {DescribeRigLight(RimLight)} | " +
+                $"charlight {(UseCharacterLight ? "on" : "off")}";
+        }
+
+        private static string DescribeRigLight(RigLight light)
+        {
+            return $"i{light.Intensity:0.00}/p{light.Pitch:0}/y{light.Yaw:0}{(light.CastsShadows ? "+shadow" : string.Empty)}";
+        }
+
+        /// <summary>
+        /// Throws away every rendered portrait and renders the selected operative again with whatever
+        /// the tunables now say. This is what makes a settings change visible without leaving the
+        /// encounter window.
+        /// </summary>
+        internal static bool RefreshCurrent()
+        {
+            try
+            {
+                UIModuleSiteEncounters module = _appliedModule;
+                GeoCharacter character = _currentCharacter;
+
+                if (module == null || character == null)
+                {
+                    return false;
+                }
+
+                // ClearCache detaches from the module and forgets the character, so hold both first.
+                ClearCache();
+
+                _currentRequestId = character.Id;
+                _currentCharacter = character;
+                GetCoroutineRunner()?.StartCoroutine(RenderAndApply(module, character));
+                return true;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return false;
             }
         }
 
@@ -615,14 +931,32 @@ namespace TFTV.TFTVIncidents
             float ambientIntensityBefore = RenderSettings.ambientIntensity;
             float reflectionBefore = RenderSettings.reflectionIntensity;
 
+            ShadowQuality shadowQualityBefore = QualitySettings.shadows;
+            float shadowDistanceBefore = QualitySettings.shadowDistance;
+            ShadowResolution shadowResolutionBefore = QualitySettings.shadowResolution;
+            int shadowCascadesBefore = QualitySettings.shadowCascades;
+
             try
             {
                 // Mirror the vanilla tactical squad-portrait setup (SquadMemberScrollerController):
                 // flat ambient, no reflections, no world lights, a dedicated portrait rig.
                 RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-                RenderSettings.ambientLight = new Color(0.26f, 0.27f, 0.30f);
-                RenderSettings.ambientIntensity = 1f;
+                RenderSettings.ambientLight = AmbientColor;
+                RenderSettings.ambientIntensity = AmbientIntensity;
                 RenderSettings.reflectionIntensity = 0f;
+
+                if (ShadowMode != LightShadows.None)
+                {
+                    // The player's graphics options may have shadows off entirely, and their shadow
+                    // distance is sized for a battlefield rather than a head. Both are restored below.
+                    QualitySettings.shadows = ShadowQuality.All;
+                    QualitySettings.shadowDistance = Mathf.Max(0.5f, ShadowDistance);
+                    QualitySettings.shadowResolution = ShadowResolution.VeryHigh;
+
+                    // One cascade: the whole shadow map goes on the subject rather than being split
+                    // across distance bands that nothing else occupies.
+                    QualitySettings.shadowCascades = 1;
+                }
 
                 foreach (Light light in UnityEngine.Object.FindObjectsOfType<Light>())
                 {
@@ -636,7 +970,11 @@ namespace TFTV.TFTVIncidents
                     disabledLights.Add(light);
                 }
 
-                EnableCharacterLight(builder, displayData.CharacterLightObjectName);
+                if (UseCharacterLight)
+                {
+                    EnableCharacterLight(builder, displayData.CharacterLightObjectName);
+                }
+
                 lightRig = CreatePortraitLightRig(subject.transform);
 
                 // Belt and braces, not the fix: the customization is already applied when the build
@@ -666,6 +1004,11 @@ namespace TFTV.TFTVIncidents
                 RenderSettings.ambientLight = ambientLightBefore;
                 RenderSettings.ambientIntensity = ambientIntensityBefore;
                 RenderSettings.reflectionIntensity = reflectionBefore;
+
+                QualitySettings.shadows = shadowQualityBefore;
+                QualitySettings.shadowDistance = shadowDistanceBefore;
+                QualitySettings.shadowResolution = shadowResolutionBefore;
+                QualitySettings.shadowCascades = shadowCascadesBefore;
             }
         }
 
@@ -710,11 +1053,19 @@ namespace TFTV.TFTVIncidents
 
             float distance = target.name == "Head" ? HeadDistance : NoseDistance;
 
+            // Render bigger than the portrait is shown at, then average the extra samples down.
+            // Nothing in this path anti-aliases on its own, so this is where edge quality comes from.
+            int factor = ResolveSupersampleFactor(resolution);
+            Vector2Int renderResolution = new Vector2Int(resolution.x * factor, resolution.y * factor);
+            int msaa = ResolveMsaaSamples();
+
             RenderTexture renderTexture = RenderTexture.GetTemporary(
-                resolution.x, resolution.y, 24, RenderTextureFormat.ARGB32);
+                renderResolution.x, renderResolution.y, 24, RenderTextureFormat.ARGB32,
+                RenderTextureReadWrite.Default, msaa);
 
             GameObject cameraHost = new GameObject("[TFTV]PortraitCamera");
             RenderTexture previouslyActive = RenderTexture.active;
+            Texture2D supersampled = null;
 
             try
             {
@@ -731,11 +1082,16 @@ namespace TFTV.TFTVIncidents
                 camera.clearFlags = CameraClearFlags.SolidColor;
                 camera.backgroundColor = new Color(0f, 0f, 0f, 0f);
                 camera.allowHDR = false;
-                camera.allowMSAA = false;
+                camera.allowMSAA = msaa > 1;
                 camera.orthographic = false;
                 camera.fieldOfView = CameraFoV;
                 camera.nearClipPlane = 0.01f;
                 camera.farClipPlane = 2.5f;
+
+                // CopyFrom brings the scene camera's aspect across with it, and assigning a target
+                // texture does not clear it. Set it from the render target, or a non-square portrait
+                // comes out stretched.
+                camera.aspect = (float)renderResolution.x / renderResolution.y;
 
                 // Swing the camera around the head for a three-quarter view. The yaw is taken about
                 // world up rather than the bone's, since rig bones do not carry a dependable up, and
@@ -744,22 +1100,179 @@ namespace TFTV.TFTVIncidents
                 camera.transform.position = target.position
                     + viewDirection.normalized * distance
                     + Vector3.up * CameraHeight;
-                camera.transform.LookAt(target.position);
+
+                // Aiming below the face rather than straight at it lifts the head out of the middle
+                // of the frame and leaves the shoulders under it.
+                camera.transform.LookAt(target.position + Vector3.up * LookAtVerticalOffset);
 
                 camera.Render();
 
                 RenderTexture.active = renderTexture;
-                Texture2D portrait = new Texture2D(resolution.x, resolution.y, TextureFormat.RGBA32, mipChain: true);
-                portrait.ReadPixels(new Rect(0f, 0f, resolution.x, resolution.y), 0, 0, recalculateMipMaps: true);
-                portrait.Apply();
-                return portrait;
+                // At factor 1 this texture is the portrait itself, so it wants the mip chain the UI
+                // samples from; at higher factors it is a scratch buffer the downsample reads once.
+                bool direct = factor == 1;
+                supersampled = new Texture2D(renderResolution.x, renderResolution.y, TextureFormat.RGBA32, mipChain: direct);
+                supersampled.ReadPixels(new Rect(0f, 0f, renderResolution.x, renderResolution.y), 0, 0, recalculateMipMaps: direct);
+                supersampled.Apply(updateMipmaps: direct);
+
+                if (direct)
+                {
+                    Texture2D portrait = supersampled;
+                    supersampled = null;
+                    return portrait;
+                }
+
+                return Downsample(supersampled, resolution, factor);
             }
             finally
             {
+                if (supersampled != null)
+                {
+                    UnityEngine.Object.Destroy(supersampled);
+                }
+
                 RenderTexture.active = previouslyActive;
                 UnityEngine.Object.Destroy(cameraHost);
                 RenderTexture.ReleaseTemporary(renderTexture);
             }
+        }
+
+        /// <summary>
+        /// Supersampling factor for this portrait, cut back when the requested resolution times the
+        /// factor would exceed what a single readback should cost.
+        /// </summary>
+        private static int ResolveSupersampleFactor(Vector2Int resolution)
+        {
+            int factor = Mathf.Clamp(Supersample, 1, 4);
+            int longest = Mathf.Max(resolution.x, resolution.y);
+
+            while (factor > 1 && longest * factor > MaxRenderDimension)
+            {
+                factor--;
+            }
+
+            return factor;
+        }
+
+        private static int ResolveMsaaSamples()
+        {
+            if (MsaaSamples >= 8)
+            {
+                return 8;
+            }
+
+            if (MsaaSamples >= 4)
+            {
+                return 4;
+            }
+
+            return MsaaSamples >= 2 ? 2 : 1;
+        }
+
+        /// <summary>
+        /// Box-filters a factor x factor block of rendered samples into each portrait pixel.
+        ///
+        /// Two things stop this from being a plain average. Colour is averaged in linear light when
+        /// the game renders in linear space, because averaging sRGB bytes darkens every edge it
+        /// touches. And RGB is weighted by each sample's alpha, so the transparent background - which
+        /// is cleared to black - cannot bleed a dark fringe into the silhouette.
+        /// </summary>
+        private static Texture2D Downsample(Texture2D source, Vector2Int resolution, int factor)
+        {
+            Color32[] samples = source.GetPixels32();
+            int sourceWidth = source.width;
+            Color32[] output = new Color32[resolution.x * resolution.y];
+
+            bool linear = QualitySettings.activeColorSpace == ColorSpace.Linear;
+            float[] toLinear = linear ? SrgbToLinearTable() : null;
+            float perPixel = factor * factor;
+
+            for (int y = 0; y < resolution.y; y++)
+            {
+                for (int x = 0; x < resolution.x; x++)
+                {
+                    float red = 0f;
+                    float green = 0f;
+                    float blue = 0f;
+                    float alpha = 0f;
+
+                    for (int sampleY = 0; sampleY < factor; sampleY++)
+                    {
+                        int row = (y * factor + sampleY) * sourceWidth + x * factor;
+
+                        for (int sampleX = 0; sampleX < factor; sampleX++)
+                        {
+                            Color32 sample = samples[row + sampleX];
+                            float weight = sample.a;
+
+                            if (weight <= 0f)
+                            {
+                                continue;
+                            }
+
+                            alpha += weight;
+                            red += (linear ? toLinear[sample.r] : sample.r / 255f) * weight;
+                            green += (linear ? toLinear[sample.g] : sample.g / 255f) * weight;
+                            blue += (linear ? toLinear[sample.b] : sample.b / 255f) * weight;
+                        }
+                    }
+
+                    int index = y * resolution.x + x;
+
+                    if (alpha <= 0f)
+                    {
+                        output[index] = new Color32(0, 0, 0, 0);
+                        continue;
+                    }
+
+                    red /= alpha;
+                    green /= alpha;
+                    blue /= alpha;
+
+                    if (linear)
+                    {
+                        red = LinearToSrgb(red);
+                        green = LinearToSrgb(green);
+                        blue = LinearToSrgb(blue);
+                    }
+
+                    output[index] = new Color32(
+                        (byte)Mathf.Clamp(Mathf.RoundToInt(red * 255f), 0, 255),
+                        (byte)Mathf.Clamp(Mathf.RoundToInt(green * 255f), 0, 255),
+                        (byte)Mathf.Clamp(Mathf.RoundToInt(blue * 255f), 0, 255),
+                        (byte)Mathf.Clamp(Mathf.RoundToInt(alpha / perPixel), 0, 255));
+                }
+            }
+
+            Texture2D portrait = new Texture2D(resolution.x, resolution.y, TextureFormat.RGBA32, mipChain: true);
+            portrait.SetPixels32(output);
+            portrait.Apply(updateMipmaps: true);
+            return portrait;
+        }
+
+        private static float[] _srgbToLinear;
+
+        private static float[] SrgbToLinearTable()
+        {
+            if (_srgbToLinear != null)
+            {
+                return _srgbToLinear;
+            }
+
+            float[] table = new float[256];
+            for (int i = 0; i < 256; i++)
+            {
+                float value = i / 255f;
+                table[i] = value <= 0.04045f ? value / 12.92f : Mathf.Pow((value + 0.055f) / 1.055f, 2.4f);
+            }
+
+            _srgbToLinear = table;
+            return table;
+        }
+
+        private static float LinearToSrgb(float value)
+        {
+            return value <= 0.0031308f ? value * 12.92f : 1.055f * Mathf.Pow(value, 1f / 2.4f) - 0.055f;
         }
 
         /// <summary>
@@ -806,27 +1319,110 @@ namespace TFTV.TFTVIncidents
             GameObject rig = new GameObject("[TFTV]PortraitLightRig");
             rig.transform.SetParent(subject, false);
 
-            // Key: warm, from the front-left, slightly above eye level.
-            AddRigLight(rig.transform, "Key", new Vector3(15f, 205f, 0f), new Color(1f, 0.96f, 0.90f), 1.05f);
-            // Fill: cool and soft, from the front-right, at eye level - also lifts the armour.
-            AddRigLight(rig.transform, "Fill", new Vector3(5f, 150f, 0f), new Color(0.78f, 0.82f, 0.92f), 0.55f);
-            // Rim: from behind at eye level, separating hair and shoulders from the dark background.
-            AddRigLight(rig.transform, "Rim", new Vector3(0f, 20f, 0f), new Color(0.90f, 0.93f, 1f), 0.20f);
+            AddRigLight(rig.transform, "Key", KeyLight);
+            AddRigLight(rig.transform, "Fill", FillLight);
+            AddRigLight(rig.transform, "Rim", RimLight);
 
             return rig;
         }
 
-        private static void AddRigLight(Transform rig, string name, Vector3 eulerAngles, Color color, float intensity)
+        private static void AddRigLight(Transform rig, string name, RigLight settings)
         {
+            if (settings.Intensity <= 0f)
+            {
+                return;
+            }
+
             GameObject go = new GameObject(name);
             go.transform.SetParent(rig, false);
-            go.transform.localRotation = Quaternion.Euler(eulerAngles);
+            go.transform.localRotation = Quaternion.Euler(settings.Pitch, settings.Yaw, 0f);
 
             Light light = go.AddComponent<Light>();
             light.type = LightType.Directional;
-            light.color = color;
-            light.intensity = intensity;
-            light.shadows = LightShadows.None;
+            light.color = settings.Color;
+            light.intensity = settings.Intensity;
+            light.shadows = settings.CastsShadows ? ShadowMode : LightShadows.None;
+            light.shadowStrength = Mathf.Clamp01(ShadowStrength);
+
+            // A head is roughly a fifth of a metre across, so the default biases - sized for terrain -
+            // push the shadow far enough off the surface to detach it from what casts it.
+            light.shadowBias = ShadowBias;
+            light.shadowNormalBias = ShadowNormalBias;
+            light.shadowNearPlane = 0.05f;
+        }
+
+        /// <summary>
+        /// Named lighting rigs, for the portrait_lightpreset console command.
+        /// </summary>
+        internal static bool ApplyLightPreset(string preset)
+        {
+            switch (preset)
+            {
+                // What the mod rendered before this pass: heavy flat ambient, no shadows anywhere.
+                case "flat":
+                    Set(KeyLight, 15f, 205f, new Color(1f, 0.96f, 0.90f), 1.05f, false);
+                    Set(FillLight, 5f, 150f, new Color(0.78f, 0.82f, 0.92f), 0.55f, false);
+                    Set(RimLight, 0f, 20f, new Color(0.90f, 0.93f, 1f), 0.20f, false);
+                    AmbientIntensity = 1f;
+                    ShadowMode = LightShadows.None;
+                    ShadowStrength = 0.75f;
+                    return true;
+
+                // Default: a proper key/fill/rim with the key casting, ambient pulled well down.
+                case "studio":
+                    Set(KeyLight, 28f, 205f, new Color(1f, 0.96f, 0.90f), 1.25f, true);
+                    Set(FillLight, 5f, 150f, new Color(0.78f, 0.82f, 0.92f), 0.35f, false);
+                    Set(RimLight, 0f, 20f, new Color(0.90f, 0.93f, 1f), 0.45f, false);
+                    AmbientIntensity = 0.30f;
+                    ShadowMode = LightShadows.Soft;
+                    ShadowStrength = 0.75f;
+                    return true;
+
+                // Ambient at zero, exactly as SquadMemberScrollerController renders the tactical
+                // squad portraits, with a strong rim to carry the silhouette.
+                case "vanilla":
+                    Set(KeyLight, 25f, 210f, new Color(1f, 0.97f, 0.92f), 1.35f, true);
+                    Set(FillLight, 8f, 145f, new Color(0.72f, 0.78f, 0.90f), 0.30f, false);
+                    Set(RimLight, 5f, 15f, new Color(0.85f, 0.90f, 1f), 0.55f, false);
+                    AmbientIntensity = 0f;
+                    ShadowMode = LightShadows.Soft;
+                    ShadowStrength = 1f;
+                    return true;
+
+                // Hard side key, almost no fill - the shadow side of the face goes nearly black.
+                case "dramatic":
+                    Set(KeyLight, 32f, 230f, new Color(1f, 0.94f, 0.86f), 1.6f, true);
+                    Set(FillLight, 5f, 140f, new Color(0.55f, 0.62f, 0.80f), 0.12f, false);
+                    Set(RimLight, 8f, 10f, new Color(0.80f, 0.88f, 1f), 0.65f, false);
+                    AmbientIntensity = 0.10f;
+                    ShadowMode = LightShadows.Soft;
+                    ShadowStrength = 1f;
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        private static void Set(RigLight light, float pitch, float yaw, Color color, float intensity, bool castsShadows)
+        {
+            light.Pitch = pitch;
+            light.Yaw = yaw;
+            light.Color = color;
+            light.Intensity = intensity;
+            light.CastsShadows = castsShadows;
+        }
+
+        /// <summary>Named rig light, for the portrait_light console command.</summary>
+        internal static RigLight FindRigLight(string name)
+        {
+            switch (name)
+            {
+                case "key": return KeyLight;
+                case "fill": return FillLight;
+                case "rim": return RimLight;
+                default: return null;
+            }
         }
 
         private static void SetLayerRecursively(GameObject target, int layer)
