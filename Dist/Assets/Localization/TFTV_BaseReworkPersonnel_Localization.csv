@@ -1,4 +1,4 @@
-Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
+﻿Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
 KEY_TFTV_PERSONNEL_ROSTER_TITLE,Text,,PHOENIX PERSONNEL,,,,,,,,
 KEY_TFTV_PERSONNEL_ROSTER_EMPTY,Text,,Nobody here.,,,,,,,,
 KEY_TFTV_PERSONNEL_FILTER_ALL,Text,,ALL,,,,,,,,
@@ -107,3 +107,15 @@ KEY_TFTV_PERSONNEL_STAT_NOTE_TRAINING,Text,,The figure in brackets is what this 
 KEY_TFTV_PERSONNEL_STAT_NOTE_PERCEPTION,Text,,Sight range added by armour and passive abilities.,,,,,,,,
 KEY_TFTV_PERSONNEL_STAT_NOTE_ACCURACY,Text,,Accuracy added by armour and passive abilities.,,,,,,,,
 KEY_TFTV_PERSONNEL_STAT_NOTE_STEALTH,Text,,Stealth added by armour and passive abilities.,,,,,,,,
+KEY_TFTV_BASE_ACTIVATION_FAILED,Text,,"Cannot start this action. Check resources, personnel, and site state.",,,,,,,,
+KEY_TFTV_BASE_AMBUSH_CHANCE,Text,,Ambush chance during base exploration,,,,,,,,
+KEY_TFTV_BASE_RANSACK_PAYOUT,Text,,"You gained from ransacking: {0} Materials, {1} Tech.",,,,,,,,
+KEY_TFTV_BASE_LOOT_RANDOM_EQUIPMENT,Text,,Random equipment,,,,,,,,
+KEY_TFTV_BASE_TRAINING_NO_STAT_GAINS,Text,,No stat gains,,,,,,,,
+KEY_TFTV_BASE_TRAINING_STAT_GAINS,Text,,+{0} STR / +{1} WP / +{2} SPD,,,,,,,,
+KEY_TFTV_BASE_FALLEN_HEADER,Text,,FALLEN OPERATIVES,,,,,,,,
+KEY_TFTV_BASE_FALLEN_PROJECT_OSIRIS,Text,,Preparing for PROJECT OSIRIS,,,,,,,,
+KEY_TFTV_BASE_FALLEN_MISSIONS_KILLS,Text,,Missions: {0}  |  Kills: {1},,,,,,,,
+KEY_TFTV_BASE_FALLEN_FAVOURITE_WEAPON,Text,,Favorite Weapon: {0},,,,,,,,
+KEY_TFTV_BASE_FALLEN_FAVOURITE_SKILL,Text,,Favorite Skill: {0},,,,,,,,
+KEY_TFTV_BASE_FALLEN_SP_RETURNED,Text,,SP Returned: {0},,,,,,,,

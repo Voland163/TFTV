@@ -196,6 +196,7 @@
     <Compile Include="TFTVDrills\DrillsExplosiveShoot.cs" />
     <Compile Include="TFTVDrills\DrillsPublicClasses.cs" />
     <Compile Include="TFTVDrills\DrillsHarmony.cs" />
+    <Compile Include="TFTVDrills\DrillsLocalization.cs" />
     <Compile Include="TFTVDrills\DrillsUI.cs" />
     <Compile Include="TFTVDrills\DrillsUI.ControllerNav.cs" />
     <Compile Include="TFTVDrills\DrillsUI.HeaderContext.cs" />

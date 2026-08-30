@@ -85,26 +85,6 @@ KEY_MUTAGENS_FROM_FACILITIES_TFTV,Text,,-Mutagens from facilities:,,- Mutagènes
 KEY_MUTAGENS_FROM_PANDORANS_TFTV,Text,,-Mutagens from Pandorans:,,- Mutagènes provenant des Pandoriens :,• Von Pandoranern:,,-Mutageny z Pandoran:,- Мутагены из Пандоранов:,-Mutágenos de los Pandoras:,
 KEY_MAX_EXTRACTION_PER_DAY_TFTV,Text,,-Max extraction per day:,,- Extraction max par jour :,• Max. Extraktion / Tag:,,-Maks. ekstrakcja na dzień:,- Максимальная добыча в день:,-Extracción máxima por día:,
 KEY_FOOD_PROCESSING_WARNING_TFTV,Text,,Food processing facilities storage capacity almost reached! Rendering this Pandoran for food will waste,,La capacité de stockage des installations de transformation alimentaire est presque atteinte ! Transformer ce Pandorien en nourriture serait du gaspillage.,Die Lagerkapazität der Lebensmittelverarbeitungsanlagen ist fast erschöpft! Die Umwandlung dieses Pandoraners in Lebensmittel wird Verschwendung sein.,,Pojemność magazynowa obiektów przetwarzania żywności jest prawie wyczerpana! Przetworzenie tego Pandorana na żywność spowoduje stratę,Склады пищевых комбинатов почти полностью заполнены! Переработка этого Пандорана в пищу приведет к ее утере.,¡La capacidad de almacenamiento de las instalaciones de procesamiento de alimentos casi alcanzada! Procesar a este Pandora para alimentos será un desperdicio.,
-KEY_DELIRIUM_PERK_PROMPT_CONNECTOR,Text,,is afflicted with,,est atteint de «,ist betroffen von,,cierpi na,страдает от побочного эффекта,es afectado por,
-KEY_DELIRIUM_PERK_PROMPT_RULES,Text,,"as a result of the experimental mutagen treatment. The subject may overcome this condition as they continue to be deployed in the field. However, acquiring additional afflictions from this experimental treatment will reset any progress made in adjusting to this condition.",,"» à la suite du traitement expérimental aux mutagènes. Le sujet peut surmonter cet état au fil de ses déploiements sur le terrain. Cependant, subir d'autres effets secondaires liées à ce traitement réinitialisera tout les progrès.","als Folge der experimentellen Mutagenbehandlung kann der Betroffene diesen Zustand möglicherweise überwinden, solange er weiterhin im Einsatz ist. Das Auftreten weiterer Beeinträchtigungen durch diese experimentelle Behandlung würde jedoch jeglichen Fortschritt bei der Anpassung an diesen Zustand zunichtemachen.",,w wyniku eksperymentalnego leczenia mutagenowego. Badany może przezwyciężyć ten stan wraz z dalszym udziałem w misjach polowych. Jednak uzyskanie kolejnych dolegliwości z tego eksperymentalnego leczenia zresetuje wszelkie postępy w przystosowaniu się do tego stanu.,"Причина - экспериментальное лечение мутагенами. Субъект постепенно сможет избавиться от этого состояния в течение некоторого времени, однако повторное экспериментальное лечение и получение других болезненных состояний обнулит прогресс исцеления, достигнутый в ходе выздоровления.","como resultado de un tratamiento experimental con mutágeno. El sujeto puede superar esta condición a medida que continúa desplegado en el campo. Sin embargo, la aparición de afecciones adicionales a raíz de este tratamiento experimental revertirá cualquier progreso en la adaptación a esta condición.",
-KEY_DELIRIUM_PERK_PROMPT_NO_PERK,Text,,"did not suffer any lasting side effects, but had to be heavily sedated.
-
-
-<i>STAMINA reduced to zero</i>",,"n’a subi aucun effet secondaire durable, mais a dû être fortement sédaté.
-
-
-<i>ENDURANCE réduite à zéro</i>","es traten keine bleibenden Nebenwirkungen auf, jedoch musste er stark sediert werden.
-
-<i>Die Ausdauer war auf null reduziert.</i>",,"nie doznał żadnych trwałych skutków ubocznych, ale musiał zostać silnie uspokojony.
-
-<i>WYTRZYMAŁOŚĆ zredukowana do zera</i>","
-«Никаких длительных побочных эффектов не выявлено, но пришлось накачать сильным... э... успокоительным.»
-
-«<i>Выносливость снижена до нуля</i>»","no sufrió ningún efecto secundario permanente, pero tuvo que ser muy sedado.
-
-
-<i>el AGUANTE se redujo a cero</i>",
-KEY_DELIRIUM_PERK_RECOVERY,Text,,has fully recovered from the effects caused by the experimental Delirium Treatment!,,s’est complètement remis des effets du traitement expérimental contre le Delirium !,hat sich vollständig von den Auswirkungen der experimentellen Deliriumsbehandlung erholt!,,w pełni wyzdrowiał z efektów wywołanych eksperymentalnym Leczeniem Delirium!,"полностью оправился от последствий, вызванных экспериментальным лечением Сонного Безумия!",se ha recuperado de los efectos causados por el tratamiento experimental contra el Delirio.,
 KEY_LOG_ENTRY_SUCCUMB_INFESTATION,Text,,has succumbed to Pandoran infestation!,,a succombé à l’infestation pandorienne !,ist dem pandoranischen Befall zum Opfer gefallen!,,uległo pandorańskiej infestacji!,жертва Пандоранской инфекции!,ha sucumbido a la infestación Pandora.,
 KEY_INFESTATION_AROUND,Text,,Around,,Environ,Etwa,,Około,Некоторому количеству жителей убежища удалось выжить:,Alrededor,
 KEY_INFESTATION_FORTUNATE,Text,,of them were fortunate enough to survive and have relocated to friendly nearby havens.,,d’entre eux ont eu la chance de survivre et ont trouvé refuge à proximité.,"einige von ihnen hatten das Glück zu überleben und sind in freundliche, nahegelegene Zufluchten umgesiedelt.",,z nich miało szczęście przeżyć i przeniosło się do pobliskich zaprzyjaźnionych przystani.,. Вскоре они перебрались в соседние дружественные убежища.,uno de ellos tuvo la suerte de sobrevivir y fue realojado a uno de los refugios aliados cercanos.,
@@ -118,10 +98,7 @@ KEY_GRAMMAR_PRONOUNS_HE,Text,,he,,il,er,,on,он,él,
 KEY_GRAMMAR_PRONOUNS_HIM,Text,,him,,le,ihn,,jemu,его,él,
 KEY_GRAMMAR_PRONOUNS_THEY,Text,,they,,ils,sie,,oni,они,ellos,
 KEY_GRAMMAR_PRONOUNS_THEM,Text,,them,,eux,ihnen,,ich,их,ellos,
-KEY_GRAMMAR_PLURAL_SUFFIX,Text,,s,,,s,,y, ,s,
-KEY_GRAMMAR_SINGLE_SUFFIX,Text,,,,,,,,,,
 KEY_GRAMMAR_AND,Text,,and,,et,und,,i,и,y,
-KEY_GRAMMAR_INDEFINITEARTICLE,Text,,a ,,un(e) ,ein ,,, ,un,
 KEY_TEXT_PHOENIX_OPERATIVES,Text,,Phoenix operatives,,Agents Phoenix,Phoenix-Einheiten,,Operatorzy Feniksa,бойцы Феникса,Operativo Phoenix,
 KEY_TEXT_DIRECTOR,Text,,Director,,Directeur,Direktor,,Dyrektor,Директор,Director,
 KEY_UI_EDIT_SCREEN_TOGGLEHELMET_TIP,Text,,Toggles helmet visibility on/off.,,Active/désactive l’affichage du casque.,Schaltet die Helmsichtbarkeit ein/aus.,,Przełącza widoczność hełmu.,Включение/выключение отображения шлема,Activa o desactiva la visibilidad del casco.,
@@ -296,3 +273,72 @@ KEY_TFTV_FOOD_TOOLTIP_CONSUMED,Text,,Food consumed: {0} per day,,,,,,,,
 KEY_TFTV_PERSONNEL_TOOLTIP_UNASSIGNED_NO_FOOD,Text,,"Unassigned personnel do not consume food. Only field operatives and personnel assigned to research, manufacturing or training need feeding.",,,,,,,,
 KEY_TFTV_MARKETPLACE_BUTTON_TOP,Text,,MARKET,,,,,,,,
 KEY_TFTV_MARKETPLACE_BUTTON_BOTTOM,Text,,PLACE,,,,,,,,
+KEY_TFTV_HAVEN_RECRUITS_DETAILS_TITLE,Text,,RECRUIT DETAILS,,,,,,,,
+KEY_TFTV_HAVEN_RECRUITS_DETAILS_PLACEHOLDER,Text,,Select a recruit to view details.,,,,,,,,
+KEY_TFTV_HAVEN_RECRUITS_DELIRIUM,Text,,Delirium {0},,,,,,,,
+KEY_TFTV_HAVEN_RECRUITS_UNKNOWN_NAME,Text,,Unknown,,,,,,,,
+KEY_TFTV_INCIDENT_NO_ELIGIBLE_OPERATIVE,Text,,No eligible operative available.,,,,,,,,
+KEY_TFTV_INCIDENT_SELECT_LEADER,Text,,Select Leading Operative for the Incident.,,,,,,,,
+KEY_TFTV_INCIDENT_CHOICE_GAIN_LABEL,Text,,Choice {0}: Leading operative will gain:,,,,,,,,
+KEY_TFTV_INCIDENT_APPROACH_HOURS,Text,,{0} ({1}),,,,,,,,
+KEY_TFTV_INCIDENT_REWARD_AFFINITY,Text,,Affinity gained/increased: {0},,,,,,,,
+KEY_TFTV_INCIDENT_REWARD_PERSONNEL,Text,,Personnel obtained: {0},,,,,,,,
+KEY_TFTV_INCIDENT_EXPLORATION_TIME,Text,,"{0}
+
+Exploration time: {1}",,,,,,,,
+KEY_TFTV_HAVEN_ATTACK_RISK_HOURS,Text,,[{0}h],,,,,,,,
+KEY_TFTV_MOUNTED_DRIVER_NAME,Text,,Mounted Driver,,,,,,,,
+KEY_TFTV_MOUNTED_DRIVER_DESC,Text,,Ground vehicles with this character inside gain +{0} Speed and +{1}% accuracy.,,,,,,,,
+EXTENDED_AGENDA_KEY_RESOLVING_INCIDENT,Text,,RESOLVING INCIDENT:,,,,,,,,
+EXTENDED_AGENDA_KEY_ACTIVATING_OUTPOST,Text,,ACTIVATING OUTPOST:,,,,,,,,
+EXTENDED_AGENDA_KEY_ACTIVATING_BASE,Text,,ACTIVATING BASE:,,,,,,,,
+EXTENDED_AGENDA_KEY_UPGRADING_BASE,Text,,UPGRADING BASE:,,,,,,,,
+EXTENDED_AGENDA_KEY_TRAINING,Text,,TRAINING:,,,,,,,,
+KEY_TFTV_DEPLOYMENT_LOCAL_TIME,Text,,Local time is {0}:{1},,,,,,,,
+KEY_TFTV_INCIDENT_LEADER_UNKNOWN,Text,,Unknown,,,,,,,,
+KEY_TFTV_INCIDENT_RECAP_BODY,Text,,"<b>Incident Recap</b>
+Intro: {0}
+Chosen approach: {1}
+Leading operative: {2}",,,,,,,,
+KEY_TFTV_INCIDENT_APPROACH_GENERIC,Text,,Approach,,,,,,,,
+KEY_TFTV_INCIDENT_APPROACH_A,Text,,Approach A,,,,,,,,
+KEY_TFTV_INCIDENT_APPROACH_B,Text,,Approach B,,,,,,,,
+KEY_TFTV_INCIDENT_APPROACH_WITH_TOKENS,Text,,{0} ({1}),,,,,,,,
+KEY_TFTV_HAVEN_RECRUITS_UNKNOWN_CLASS,Text,,Unknown Class,,,,,,,,
+KEY_TFTV_SAVE_DATA_MISSING_WARNING,Text,,TFTV save data is null! This save is borked! Please load an earlier save.,,,,,,,,
+KEY_TFTV_BASE_DEFENSE_ESCAPED_TO,Text,,{0} escaped to {1}.,,,,,,,,
+KEY_TFTV_BEHEMOTH_SUBMERGED,Text,,Behemoth is submerged!,,,,,,,,
+KEY_GRAMMAR_LIST_SEPARATOR,Text,,", ",,,,,,,,
+KEY_GRAMMAR_LIST_LAST,Text,,{0} {1} {2},,,,,,,,
+KEY_DELIRIUM_PERK_PROMPT,Text,Composed from the old fragment keys - please re-read as one sentence,"{0} is afflicted with <b>{1}</b> as a result of the experimental mutagen treatment. The subject may overcome this condition as they continue to be deployed in the field. However, acquiring additional afflictions from this experimental treatment will reset any progress made in adjusting to this condition.
+
+ <i>{2}</i>","","{0} est atteint de « <b>{1}</b> » à la suite du traitement expérimental aux mutagènes. Le sujet peut surmonter cet état au fil de ses déploiements sur le terrain. Cependant, subir d'autres effets secondaires liées à ce traitement réinitialisera tout les progrès.
+
+ <i>{2}</i>","{0} ist betroffen von <b>{1}</b> als Folge der experimentellen Mutagenbehandlung kann der Betroffene diesen Zustand möglicherweise überwinden, solange er weiterhin im Einsatz ist. Das Auftreten weiterer Beeinträchtigungen durch diese experimentelle Behandlung würde jedoch jeglichen Fortschritt bei der Anpassung an diesen Zustand zunichtemachen.
+
+ <i>{2}</i>","","{0} cierpi na <b>{1}</b> w wyniku eksperymentalnego leczenia mutagenowego. Badany może przezwyciężyć ten stan wraz z dalszym udziałem w misjach polowych. Jednak uzyskanie kolejnych dolegliwości z tego eksperymentalnego leczenia zresetuje wszelkie postępy w przystosowaniu się do tego stanu.
+
+ <i>{2}</i>","{0} страдает от побочного эффекта <b>{1}</b> Причина - экспериментальное лечение мутагенами. Субъект постепенно сможет избавиться от этого состояния в течение некоторого времени, однако повторное экспериментальное лечение и получение других болезненных состояний обнулит прогресс исцеления, достигнутый в ходе выздоровления.
+
+ <i>{2}</i>","{0} es afectado por <b>{1}</b> como resultado de un tratamiento experimental con mutágeno. El sujeto puede superar esta condición a medida que continúa desplegado en el campo. Sin embargo, la aparición de afecciones adicionales a raíz de este tratamiento experimental revertirá cualquier progreso en la adaptación a esta condición.
+
+ <i>{2}</i>",""
+KEY_DELIRIUM_PERK_PROMPT_NO_PERK,Text,Composed from the old fragment keys - please re-read as one sentence,"{0} did not suffer any lasting side effects, but had to be heavily sedated.
+
+
+<i>STAMINA reduced to zero</i>","","{0} n’a subi aucun effet secondaire durable, mais a dû être fortement sédaté.
+
+
+<i>ENDURANCE réduite à zéro</i>","{0} es traten keine bleibenden Nebenwirkungen auf, jedoch musste er stark sediert werden.
+
+<i>Die Ausdauer war auf null reduziert.</i>","","{0} nie doznał żadnych trwałych skutków ubocznych, ale musiał zostać silnie uspokojony.
+
+<i>WYTRZYMAŁOŚĆ zredukowana do zera</i>","{0} 
+«Никаких длительных побочных эффектов не выявлено, но пришлось накачать сильным... э... успокоительным.»
+
+«<i>Выносливость снижена до нуля</i>»","{0} no sufrió ningún efecto secundario permanente, pero tuvo que ser muy sedado.
+
+
+<i>el AGUANTE se redujo a cero</i>",""
+KEY_DELIRIUM_PERK_RECOVERY,Text,Composed from the old fragment keys - please re-read as one sentence,{0} has fully recovered from the effects caused by the experimental Delirium Treatment!,"",{0} s’est complètement remis des effets du traitement expérimental contre le Delirium !,{0} hat sich vollständig von den Auswirkungen der experimentellen Deliriumsbehandlung erholt!,"",{0} w pełni wyzdrowiał z efektów wywołanych eksperymentalnym Leczeniem Delirium!,"{0} полностью оправился от последствий, вызванных экспериментальным лечением Сонного Безумия!",{0} se ha recuperado de los efectos causados por el tratamiento experimental contra el Delirio.,""
+KEY_VEHICLE_AMMO_CANCEL,Text,,CANCEL,,,,,,,,

@@ -1,4 +1,4 @@
-using Base.Serialization.General;
+﻿using Base.Serialization.General;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Characters;
@@ -148,8 +148,12 @@ namespace TFTV.TFTVBaseRework
 
         public static string GetStatGainDescription(int levelsGained)
         {
-            if (levelsGained <= 0) return "No stat gains";
-            return $"+{levelsGained * EndurancePerLevel} STR / +{levelsGained * WillpowerPerLevel} WP / +{levelsGained * SpeedPerLevel} SPD";
+            if (levelsGained <= 0) return BaseReworkText.Get(BaseReworkText.TrainingNoStatGains);
+            return BaseReworkText.Format(
+                BaseReworkText.TrainingStatGains,
+                levelsGained * EndurancePerLevel,
+                levelsGained * WillpowerPerLevel,
+                levelsGained * SpeedPerLevel);
         }
 
         public static bool QueueCharacterTraining(GeoLevelController level, GeoCharacter character, SpecializationDef spec, int chosenTargetLevel)

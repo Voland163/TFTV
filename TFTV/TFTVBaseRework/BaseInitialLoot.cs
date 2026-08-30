@@ -332,7 +332,7 @@ namespace TFTV.TFTVBaseRework
                 return string.Join(" / ", vehicleCandidates);
             }
 
-            return "Random equipment";
+            return BaseReworkText.Get(BaseReworkText.LootRandomEquipment);
         }
 
         // ── Core loot roll ────────────────────────────────────────────────────

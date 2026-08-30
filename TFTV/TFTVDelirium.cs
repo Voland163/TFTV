@@ -604,11 +604,11 @@ namespace TFTV
 
                             __instance.Progression.AddAbility(abilityToAdd);
 
-                            string afflictedWithConnector = new LocalizedTextBind() { LocalizationKey = "KEY_DELIRIUM_PERK_PROMPT_CONNECTOR" }.Localize();
-                            string afflictionRules = new LocalizedTextBind() { LocalizationKey = "KEY_DELIRIUM_PERK_PROMPT_RULES" }.Localize();
-
-                            string messagePrompt = $"{__instance.GetName()} {afflictedWithConnector} <b>{abilityToAdd.ViewElementDef.DisplayName1.Localize()}</b> {afflictionRules}"
-                                + $"\n\n <i>{abilityToAdd.ViewElementDef.Description.Localize()}</i>";
+                            string messagePrompt = TFTVCommonMethods.FormatKey(
+                                "KEY_DELIRIUM_PERK_PROMPT",
+                                __instance.GetName(),
+                                abilityToAdd.ViewElementDef.DisplayName1.Localize(),
+                                abilityToAdd.ViewElementDef.Description.Localize());
 
 
                             GameUtl.GetMessageBox().ShowSimplePrompt(messagePrompt, MessageBoxIcon.None, MessageBoxButtons.OK, null);
@@ -634,9 +634,11 @@ namespace TFTV
                     else if (num > 50 && num <= 125)
                     {
                         TFTVCommonMethods.SetStaminaToZero(__instance);
-                        string messagePromptNoPerk = new LocalizedTextBind() { LocalizationKey = "KEY_DELIRIUM_PERK_PROMPT_NO_PERK" }.Localize();
+                        string messagePromptNoPerk = TFTVCommonMethods.FormatKey(
+                            "KEY_DELIRIUM_PERK_PROMPT_NO_PERK",
+                            __instance.GetName());
 
-                        GameUtl.GetMessageBox().ShowSimplePrompt($"{__instance.GetName()} {messagePromptNoPerk}", MessageBoxIcon.None, MessageBoxButtons.OK, null);
+                        GameUtl.GetMessageBox().ShowSimplePrompt(messagePromptNoPerk, MessageBoxIcon.None, MessageBoxButtons.OK, null);
                     }
                 }
 
@@ -776,8 +778,10 @@ namespace TFTV
                 if (CharactersDeliriumPerksAndMissions != null && uIModuleActorCycle.CurrentCharacter != null && uIModuleActorCycle.CurrentCharacter.Id != null && CharactersDeliriumPerksAndMissions.ContainsKey(uIModuleActorCycle.CurrentCharacter.Id) &&
                     CharactersDeliriumPerksAndMissions[uIModuleActorCycle.CurrentCharacter.Id] == -1)
                 {
-                    string messagePrompt = new LocalizedTextBind() { LocalizationKey = "KEY_DELIRIUM_PERK_RECOVERY" }.Localize();
-                    GameUtl.GetMessageBox().ShowSimplePrompt($"{uIModuleActorCycle.CurrentCharacter.GetName()} {messagePrompt}", MessageBoxIcon.None, MessageBoxButtons.OK, null);
+                    string messagePrompt = TFTVCommonMethods.FormatKey(
+                        "KEY_DELIRIUM_PERK_RECOVERY",
+                        uIModuleActorCycle.CurrentCharacter.GetName());
+                    GameUtl.GetMessageBox().ShowSimplePrompt(messagePrompt, MessageBoxIcon.None, MessageBoxButtons.OK, null);
                     CharactersDeliriumPerksAndMissions.Remove(uIModuleActorCycle.CurrentCharacter.Id);
                 }
             }

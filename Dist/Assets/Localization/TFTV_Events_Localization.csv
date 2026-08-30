@@ -1,4 +1,4 @@
-Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
+﻿Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
 PROG_LE1_WIN_CHOICE_2_OUTCOME_GENERAL,Text,,"MESSAGE 
 From:Colonel Jack Harlson (New Jericho) 
 To: Phoenix Point
@@ -1695,107 +1695,6 @@ FOOD_POISONING_DESCRIPTION_2,Text,,"Another case of mass food poisoning, and thi
 FOOD_POISONING_TITLE_2,Text,,Project Cornucopia Assessment #2,,Projet Cornucopia – Évaluation n°2,Projekt Cornucopia – Bewertung Nr. 2,,Ocena Projektu Cornucopia #2,"Оценка проекта ""Рог Изобилия"" №2",Proyecto Cornucopia Evaluación #2,
 FOOD_POISONING_DESCRIPTION_3,Text,,"Director, I fear that the latest incident... Our people, they are changing.",,"Directeur, je crains que le dernier incident... Nos gens, ils changent.","Direktor, ich fürchte, der jüngste Vorfall... Unsere Leute... sie verändern sich.",,"Dyrektorze, obawiam się, że ostatni incydent... Nasi ludzie, oni się zmieniają.","Директор, я боюсь, что последний инцидент... Наши люди... они меняются.","Director, lamento decir que en el último incidente... Nuestra gente ha empezado a cambiar.",
 FOOD_POISONING_TITLE_3,Text,,Project Cornucopia Assessment #3,,Projet Cornucopia – Évaluation n°3,Projekt Cornucopia – Bewertung Nr. 3,,Ocena Projektu Cornucopia #3,"Оценка проекта ""Рог Изобилия"" №3",Proyecto Cornucopia Evaluación #3,
-KEY_INFESTATION_FIRST_HAVEN0,Text,,As your team searches for survivors and salvage in,,Pendant que votre équipe cherche des survivants et du butin dans,Während dein Team nach Überlebenden und verwertbaren Funden in,,Gdy twój zespół przeszukuje w poszukiwaniu ocalałych i łupów ,Во время поиска выживших и сбора уцелевшего оборудование в окрестностях,Mientras tu equipo busca supervivientes en,
-KEY_INFESTATION_FIRST_HAVEN1,Text,,", they come across a former clinic. It is full of horrors: mutilated bodies litter the floor, and the walls are covered in incomprehensible symbols scrawled in thick, dark blood. 
-
-One of the exam tables draws the attention of ",,", ils tombent sur une ancienne clinique. Elle est remplie d’horreurs : des corps mutilés jonchent le sol, et les murs sont couverts de symboles incompréhensibles tracés dans un sang épais et sombre.
-
-Une des tables d’examen attire l’attention de","sucht, stoßen sie auf eine ehemalige Klinik. Sie ist voller Grauen: Verstümmelte Leichen bedecken den Boden, und die Wände sind mit unbegreiflichen Symbolen übersät, hastig hingeschmiert mit dickem, dunklem Blut.
-
-Einer der Untersuchungstische erregt die Aufmerksamkeit von",,", natrafia na dawną klinikę. To miejsce pełne grozy: po podłodze walają się okaleczone ciała, a ściany pokrywają niezrozumiałe symbole nabazgrane gęstą, ciemną krwią.
-
-Jeden ze stołów zabiegowych przyciąga uwagę ",", ваша команда натыкается на заброшенную больницу. Она полна ужасов: на полу разбросаны изуродованные тела, а стены покрыты непонятными символами, нацарапанными густой темной кровью.
-
-Один из смотровых столов привлекает внимание ",", viene a través de la antigua clínica. Está llena de horrores: cuerpos mutilados llenan el suelo y las paredes está cubiertos por símbolos incomprensibles escritos con sangre.
-
-Una de las tablas de examen llama la atención de",
-KEY_INFESTATION_FIRST_HAVEN2,Text,,"""It looks like an altar in a temple... Is this an offering? Whoa, it's alive!""
-
-It turns out to be a remarkable armored suit: a mutated, living organism bio-engineered using some unknown technology.",,"« Ça ressemble à un autel dans un temple... Est-ce une offrande ? Whoa, c’est vivant ! »
-
-Il s’avère qu’il s’agit d’une combinaison blindée exceptionnelle : un organisme vivant muté, bio‑ingénieré grâce à une technologie inconnue.","<i>„Sieht aus wie ein Altar in einem Tempel... Ist das eine Opfergabe? Wow – das lebt!“</i>
-
-Es entpuppt sich als ein bemerkenswerter Kampfanzug: Ein mutierter, lebender Organismus, der mithilfe einer unbekannten Technologie gentechnisch verändert wurde.",,"„To wygląda jak ołtarz w świątyni... Czy to ofiara? Łał, to żyje!”
-
-Okazuje się, że to niezwykły pancerz: zmutowany, żywy organizm bioinżynieryjny stworzony przy użyciu nieznanej technologii.","""Это похоже на алтарь в храме... А это что, жертвоприношение? Ого, да оно живое!""
-
-Однако оказывается, что это удивительный бронекостюм: мутировавший живой организм, продукт сумрачной биоинженерии с использованием какой-то неизвестной технологии.","""Parece un altar en un templo... ¿Es una ofrenda? ¡Dios mío, está vivo!""
-
-Resulta ser un traje de armadura: un organismo mutado producto de bioingeniería usando tecnología desconocida.",
-KEY_INFESTATION_SECOND_HAVEN0,Text,,"As with the first infested haven, your operatives encounter another temple to the horrors that took possession of the infected; this time in an underground warehouse.
-
-In a corner on the floor there sits a man, seemingly lost in thought, a strange weapon lying in front of him. As",,"Comme pour le premier refuge infesté, vos agents découvrent un autre temple dédié aux horreurs qui ont pris possession des infectés, cette fois dans un entrepôt souterrain.
-
-Dans un coin, au sol, se tient un homme, apparemment perdu dans ses pensées, une étrange arme posée devant lui. Alors que","Wie schon in der ersten befallenen Zuflucht stoßen deine Einheiten auf einen weiteren Tempel des Grauens, das von den Infizierten Besitz ergriffen hat – diesmal in einem unterirdischen Lagerhaus.
-
-In einer Ecke sitzt ein Mann auf dem Boden, scheinbar in Gedanken versunken, eine seltsame Waffe liegt vor ihm. Als",,"Podobnie jak w pierwszej zainfestowanej ostoi, twoi operatorzy natrafiają na kolejną świątynię grozy, którą wznieśli opętani przez infekcję; tym razem w podziemnym magazynie.
-
-W kącie na podłodze siedzi mężczyzna, najwyraźniej pogrążony w myślach, a przed nim leży dziwna broń. Gdy ","Как и в случае с первым зараженным убежищем, ваши бойцы сталкиваются с еще одним храмом ужасов созданным зараженными, на этот раз, на подземном складе.
-
-В углу на полу сидит человек, по-видимому, погруженный в свои мысли, а перед ним лежит странное оружие. Как только ","Igual que en el primer refugio infestado, tus operativos encuentran otro templo a los horrores que poseyeron a los infectados; esta vez en un cobertizo subterráneo.
-
-En una esquina en el suelo hay un hombre sentado, perdido en sus pensamientos, un arma extraña está enfrente de él. Cuando",
-KEY_INFESTATION_SECOND_HAVEN1,Text,,come,,arrive,du,,podchodzą,и другие бойцы подошли,se acerca,
-KEY_INFESTATION_SECOND_HAVEN2,Text,,"nearer,",,"se rapproche,","näher kommst,",,"bliżej,","поближе,","más,",
-KEY_INFESTATION_SECOND_HAVEN3,Text,,notice,,remarque alors,bemerkst,,zauważają,"и остальные поняли, ",te das cuenta,
-KEY_INFESTATION_SECOND_HAVEN4,Text,,that the man is covered in acid burns and is completely catatonic. By the rags of the uniform he must have been a janitor once.,,"que l’homme est couvert de brûlures d’acide et complètement catatonique. À en juger par les lambeaux de son uniforme, il a dû être concierge autrefois.","bemerkst du, dass der Mann von Säureverätzungen übersät ist und völlig erstarrt wirkt. An den Uniformfetzen zu urteilen, muss er einmal ein Hausmeister gewesen sein.",,"że mężczyzna jest pokryty oparzeniami kwasowymi i całkowicie katatoniczny. Po strzępach munduru widać, że kiedyś musiał być dozorcą.","что перед ними мужчина, весь в кислотных ожогах, застывший в невообразимой позе в полном ступоре. Судя по лохмотьям униформы, когда-то он, должно быть, был уборщиком.","de que el hombre está cubierto en ácido y completamente catatónico. Por su uniforme, era un conserje.",
-KEY_INFESTATION_THIRD_HAVEN0,Text,,"A man comes running, stumbling and falling through the ruins of",,"Un homme arrive en courant, trébuchant et tombant à travers les ruines de","Ein Mann rennt heran, stolpert und stürzt durch die Ruinen von",,"Mężczyzna biegnie, potykając się i przewracając, przez ruiny ","Человек бежит, спотыкаясь и падая, сквозь развалины","Un hombre se acerca corriendo, tropezand y cayendo a través de las ruinas",
-KEY_INFESTATION_THIRD_HAVEN1,Text,,towards your team. At first,,en direction de votre équipe. Au début,auf dein Team zu. Zuerst,,w stronę twojego zespołu. Początkowo ,"к вашей команде. Сначала, ",hacia tu equipo. Al principio,
-KEY_INFESTATION_THIRD_HAVEN2,Text,,mistake,,se trompe,verwechselst du,,bierze,"испугавшись, ",confundes,
-KEY_INFESTATION_THIRD_HAVEN3,Text,,"his eagerness for madness and hostile intent, and almost shoot",,"sur son empressement à sombrer dans la folie et son intention hostile, et manque de peu de tirer",seinen Eifer mit Wahnsinn und feindseliger Absicht - und willst beinahe erschießen,,jego zapał za obłęd i wrogie zamiary i omal go nie ,"что, это нападение безумца, они чуть не подстрелили","su energía por locura y hostilidad, y casi le",
-KEY_INFESTATION_THIRD_HAVEN4,Text,,"him.
- 
-“I have something for you, I have something for you! You <i>must</i> take it! Come with me!”",,"sur lui.
-« J’ai quelque chose pour vous, j’ai quelque chose pour vous ! Vous <i>devez</i> le prendre ! Venez avec moi ! »
-","ihn.
-
-„Ich habe etwas für dich, ich habe etwas für dich! Du <i>musst</i> es nehmen! Komm mit mir!“",,"zastrzeliwuje.
-
-„Mam coś dla was, mam coś dla was! <i>Musicie</i> to wziąć! Chodźcie ze mną!”","его.
-
-""У меня есть кое-что для вас, у меня есть кое-что для вас! Вы <i>должны</i> это взять! Пойдемте со мной!""","disparas.
- 
-“Tengo algo para vosotros, ¡tengo algo para vosotros! ¡Vosotros <i>debéis</i> cogerlo! ¡Venid conmigo!”",
-KEY_INFESTATION_THIRD_HAVEN5,Text,,"As your operatives walk after him, he keeps running ahead and coming back, all the while repeating “You have to take it! You have to take it! Yes! Take it, and Malachi Constant shall be free! Free!”
-
-Malachi takes your team to a workshop behind the haven’s main generator. On a workbench is another mysterious device that looks like a multi-projectile heavy weapon. He looks pleadingly at ",,"« Alors que vos agents le suivent, il continue de courir devant eux puis de revenir, répétant sans cesse : « Vous devez le prendre ! Vous devez le prendre ! Oui ! Prenez-le, et Malachi Constant sera libre ! Libre ! »
-
-Malachi conduit votre équipe jusqu’à un atelier derrière le générateur principal du refuge. Sur un établi se trouve un autre dispositif mystérieux ressemblant à une arme lourde multi-projectiles. Il regarde votre équipe avec un air suppliant.","Während deine Einheiten hinter ihm hergehen, rennt er immer wieder voraus und kommt zurück – und wiederholt dabei unaufhörlich: „Du musst es nehmen! Du musst es nehmen! Ja! Nimm es, und Malachi Constant wird frei sein! Frei!“
-
-Malachi führt dein Team zu einer Werkstatt hinter dem Hauptgenerator der Zuflucht. Auf einer Werkbank liegt ein weiteres mysteriöses Gerät, das wie eine schwere Mehrfachprojektilwaffe aussieht. Flehend blickt er",,"Gdy operatorzy idą za nim, on ciągle wybiega do przodu i wraca, przez cały czas powtarzając „Musicie to wziąć! Musicie to wziąć! Tak! Weźcie to, a Malachi Constant będzie wolny! Wolny!”
-
-Malachi prowadzi zespół do warsztatu za głównym generatorem ostoi. Na stole warsztatowym leży kolejne tajemnicze urządzenie przypominające ciężką broń wielopociskową. Błagalnie patrzy na ","Пока ваши бойцы следуют за ним, он продолжает забегать вперед и возвращаться, все время повторяя: ""Вы должны взять это! Вы должны взять это! Да! Возьмите это, и Малачи Констант будет свободен! Свободен!""
-
-Малачи проводит вашу команду в мастерскую, расположенную за главным генератором убежища. На рабочем столе лежит еще одно загадочное устройство, похожее на многозарядное тяжелое оружие. Он умоляюще смотрит на ","Tus operativos ke siguen, él sigue corriendo por delante y volviendo mientras repite “¡Debéis llevároslo! ¡Debéis llevároslo! ¡Sí! ¡Lleváoslo y Malachi Constant será libre! ¡Libre!”
-
-Malachi lleva a tu equipo al taller detrás del generador principal del refugio. En un banco de trabajo hay otro dispositivo que parece un arma pesada de varios proyectiles. Parece desesperado",
-KEY_INFESTATION_THIRD_HAVEN6,Text,,", begging",,", suppliant",", bettelnd",,", prosząc",словно призывая ,", suplicante",
-KEY_INFESTATION_THIRD_HAVEN7,Text,,"to take the weapon.
-
-When",,"pour prendre l’arme.
-
-Lorsque","die Waffe zu nehmen.
-
-Als",,"o zabranie broni.
-
-Kiedy ","взять это оружие. 
-
-Как только ","para coger el arma.
-
-Cuando",
-KEY_INFESTATION_THIRD_HAVEN8,Text,,"does, Malachi erupts in boundless joy “They chose me to give it to you! Somebody up there really likes me!”
- 
-Unfortunately, this exertion was too much for him. He collapses, dead, but with a smile of bliss on his face.",,"Lorsqu’il le fait, Malachi éclate de joie sans limite : « Ils m’ont choisi pour vous le donner ! Quelqu’un là-haut m’aime vraiment ! »
-
-Malheureusement, cet effort fut trop pour lui. Il s’effondre, mort, mais avec un sourire de béatitude sur le visage.","du es tust, bricht Malachi in grenzenlose Freude aus: „Sie haben mich auserwählt, es dir zu geben! Irgendjemand da oben mag mich wirklich!“
-
-Leider war diese Anstrengung zu viel für ihn. Er bricht zusammen – tot, aber mit einem seligen Lächeln im Gesicht.",,"to robi, Malachi wybucha bezgraniczną radością: „Wybrali mnie, żebym wam to dał! Ktoś tam naprawdę mnie lubi!”
-
-Niestety ten wysiłek okazał się dla niego zbyt wielki. Upada martwy, ale z błogim uśmiechem na twarzy."," взял его в руки, Малачи вспыхивает от безграничной радости - ""Они выбрали меня, чтобы подарить это вам! Я действительно нравлюсь кому-то там, наверху!""
-
-К сожалению, эти усилия оказались для него непосильными. Он падает замертво, с улыбкой блаженства на лице.","lo hace, Malachi lleno de alegría suelta “¡Me eligieron para dároslo! ¡Alguien ahí arriba de verdad me quiere!”
- 
-Desafortunadamente, él colapsa tras decir esas palabras. Ha muerto con una sonrisa.",
 KEY_INFESTATION_REPEAT_OUTCOME,Text,,We have recovered the artifact.,,Nous avons récupéré l’artefact.,Wir haben das Artefakt geborgen.,,Odzyskaliśmy artefakt.,Мы нашли артефакт.,Hemos recuperado el artefacto.,
 KEY_INFESTATION_REPEAT_LW_TITLE,Text,,Someone somewhere must really like you.,,Quelqu’un quelque part doit vraiment t’apprécier.,Irgendjemand da draußen muss dich wirklich mögen,,Ktoś gdzieś naprawdę cię lubi.,"Должно быть, вы действительно нравитесь кому-то где-то там.",Alguien en algún lugar debe quererte mucho.,
 KEY_INFESTATION_REPEAT_LW,Text,,"Following an exhaustive search of [HavenName], your operatives have discovered yet another peculiar artifact.",,"À la suite d’une fouille exhaustive de [HavenName], vos agents ont découvert un nouvel artefact pour le moins étrange.",Nach einer gründlichen Durchsuchung von [HavenName] haben deine Einheiten ein weiteres merkwürdiges Artefakt entdeckt.,,Po wyczerpującym przeszukaniu [HavenName] twoi operatorzy odkryli kolejny osobliwy artefakt.,"После тщательного обыска [HavenName], ваши бойцы обнаружили еще один необычный артефакт.","Tras una búsqueda exahustiva de [HavenName], tus operativos descubren otro artefacto peculiar.",
@@ -1810,44 +1709,7 @@ KEY_OSIRIS_NEW_MUTATION,Text,,new mutation,,nouvelle mutation,neue Mutation,,now
 KEY_OSIRIS_TO_ENHANCE0,Text,,To enhance Project Osiris and increase our options we should,,"Pour améliorer le Projet Osiris et élargir nos options, nous devrions","Um Projekt Osiris voranzubringen und unsere Handlungsmöglichkeiten zu erweitern, sollten wir",,"Aby rozwinąć Projekt Osiris i zwiększyć nasze możliwości, powinniśmy","Чтобы улучшить Проект Осирис и расширить наши возможности, мы должны",Para mejorar el Proyecto Osiris y aumentar nuestras opciones debemos:,
 KEY_OSIRIS_ACQUIRE,Text,,acquire,,acquérir,erwerben,,pozyskać,выполнить,adquirir,
 KEY_OSIRIS_RESEARCH,Text,,research.,,recherches.,Forschung.,,badania.,исследование,investigaciones.,
-KEY_OSIRIS_TEXT0,Text,,"<i>-''I'm... a mess.''
--''They will fix you. They fix everything.''</i>
-
-We have recovered",,"<i>– « Je... suis un désastre. » – « Ils vont te réparer. Ils réparent tout. »</i>
-
-Nous avons récupéré","<i>- „Ich bin... ein Wrack.“
-- „Sie werden dich wieder reparieren. Sie reparieren alles.“</i>
-
-Wir haben uns erholt.",,"<i>-„Jestem... wrakiem.”
--„Naprawią cię. Naprawiają wszystko.”</i>
-
-Odzyskaliśmy ","<i> - ""Я... что-то мне нехорошо.""
-- ""Они тебя вылечат. Они все исправят"".</i>
-
-Мы нашли бойца по имени ","<i>-''Soy... un desastre.''
--''Ellos te arreglarán. Lo arreglarán todo.''</i>
-
-Hemos recuperado",
-KEY_OSIRIS_TEXT1,Text,,from the battlefield.,,sur le champ de bataille.,vom Schlachtfeld.,,z pola bitwy.,на поле боя.,del campo de batalla.,
-KEY_OSIRIS_TEXT2,Text,,"is clinically dead, but with the Project Osiris now operational we can bring",,"est cliniquement mort, mais avec le Projet Osiris maintenant opérationnel, nous pouvons le ramener","ist klinisch tot, aber da das Projekt Osiris nun einsatzbereit ist, können wir",,"jest klinicznie martwy, ale teraz, gdy Projekt Osiris działa, możemy przywrócić ","находится в состоянии клинической смерти, но с запущенным Проектом Осирис мы можем вернуть ","está clínicamente muerto, pero con el Proyecto Osiris podemos",
-KEY_OSIRIS_TEXT3,Text,,back with a new body,,dans un nouveau corps,zurück mit einem neuen Körper,, do życia w nowym ciele,назад с новым телом,traerlo de vida en un nuevo cuerpo,
 KEY_OSIRIS_NEW_BODY,Text,,Project Osiris has given a new body to,,Le Projet Osiris a donné un nouveau corps à,Das Projekt Osiris hat einen neuen Körper gegeben,,Projekt Osiris dał nowe ciało ,Благодаря Проекту Осирис новое тело получил,El Proyecto Osiris le ha dado un nuevo cuerpo a,
-KEY_FACTION_START_INTROTEXT0,Text,,"After all these years, you finally got the call. It meant that Symes and his deputies were dead or unreachable. Phoenix Project had gone dark. You had spent many years waiting, dreading that this would happen, living a discrete and simple life at ",,"Après toutes ces années, vous avez enfin reçu l’appel. Cela signifiait que Symes et ses adjoints étaient morts ou injoignables. Le Projet Phoenix avait sombré dans le silence. Vous aviez passé de nombreuses années à attendre, redoutant que cela arrive, vivant une vie discrète et simple à","Jahrelang herrschte Stille. Dann kam der Notruf.
-Wenn Phoenix Point dich rief, war Symes entweder gefallen – oder abgeschnitten. Das Phoenix-Projekt existierte nur noch als Schatten seiner selbst. Du hast viele Jahre gewartet, diese Entwicklung befürchtet und ein zurückgezogenes, einfaches Leben geführt.",,"Po tych wszystkich latach wreszcie nadeszło wezwanie. Oznaczało to, że Symes i jego zastępcy nie żyją albo są nieosiągalni. Projekt Phoenix zamilkł. Przez wiele lat czekałeś, obawiając się, że to się stanie, prowadząc skromne i dyskretne życie w ostoi ","После стольких лет вам наконец позвонили. Это означало, что Саймс и его помощники мертвы или недоступны. Проект Феникс остался без руководства. Вы провели много лет в ожидании и страхе, что это случится, живя простой и незаметной жизнью в убежище ","Tras todos estos años, has respondido a la llamada. Significa que Symes y sus ayegados están muertos o desaparecidos. El Proyecto Phoenix ha fallado. Has pasado muchos años esperando temiendo que este día llegara, viviendo una vida simple y discreta en",
-KEY_FACTION_START_INTROTEXT1,Text,,"haven.
-
-The trek to Phoenix Point was long and dangerous, and you wouldn't have made it without ",,"refuge.
-
-Le voyage jusqu’au Projet Phoenix fut long et dangereux, et vous ne l’auriez pas accompli sans","Zuflucht.
-
-Der Marsch nach Phoenix Point war lang und gefährlich, und du hättest es nicht geschafft ohne ",,".
-
-Droga do Phoenix Point była długa i niebezpieczna, i nie dotarłbyś tam bez ",".
-
-Переход в Феникс-Пойнт был долгим и опасным, и вы бы не справились без помощи бойца по имени ","El refugio.
-
-El periplo de Phoenix Point fue largo y peligroso, y no lo hubieras conocido sin",
-KEY_FACTION_START_INTROTEXT2,Text,,"When you reached Phoenix Point, somebody was already home...",,"Lorsque vous êtes arrivé au Projet Phoenix, quelqu’un était déjà sur place...","Als du Phoenix Point erreicht hast, war bereits jemand zu Hause...",,"Kiedy dotarłeś do Phoenix Point, ktoś już tam był...","Когда вы добрались до Феникс-Пойнт, кто-то уже вас там ждал...","Cuando llegaste a Phoenix Point, alguien ya estaba en casa…",
 KEY_OSIRIS_MORE_MUTATION_LAB,Text,,To enhance Project Osiris and increase our options we should build a mutation lab.,,"Pour améliorer le Projet Osiris et élargir nos options, nous devrions construire un laboratoire de mutations.","Um Projekt Osiris voranzubringen und unsere Möglichkeiten zu erweitern, sollten wir ein Mutationslabor errichten.",,"Aby rozwinąć Projekt Osiris i zwiększyć nasze możliwości, powinniśmy zbudować laboratorium mutacji.","Чтобы улучшить Проект Осирис и расширить наши возможности, мы должны построить лабораторию мутаций.",Para mejorar el Proyecto Osiris y aumentar nuestras opciones deberíamos construir un laboratorio de mutaciones.,
 KEY_OSIRIS_MORE_BIONICS_LAB,Text,,To enhance Project Osiris and increase our options we should build a bionics lab.,,"Pour améliorer le Projet Osiris et élargir nos options, nous devrions construire un laboratoire cybernétique.","Um Projekt Osiris voranzubringen und unsere Möglichkeiten zu erweitern, sollten wir ein Bioniklabor errichten.",,"Aby rozwinąć Projekt Osiris i zwiększyć nasze możliwości, powinniśmy zbudować laboratorium bioniki.","Чтобы улучшить Проект Осирис и расширить наши возможности, мы должны построить лабораторию бионики.",Para mejorar el Proyecto Osiris y aumentar nuestras opciones deberíamos construir un laboratorio de biónica.,
 KEY_OSIRIS_MORE_MUTATION_LAB_MUTATION_RESEARCH,Text,,To enhance Project Osiris and increase our options we should build a mutation lab and acquire new mutation research.,,"Pour améliorer le Projet Osiris et élargir nos options, nous devrions construire un laboratoire de mutations et acquérir de nouvelles recherches sur les mutations.","Um Projekt Osiris weiterzuentwickeln, sollten wir ein Mutationslabor errichten und neue Mutationsforschung starten.",,"Aby rozwinąć Projekt Osiris i zwiększyć nasze możliwości, powinniśmy zbudować laboratorium mutacji i pozyskać badania nad nową mutacją.","Чтобы улучшить Проект Осирис и расширить наши возможности, мы должны построить лабораторию мутаций и выполнить новые исследования мутаций.",Para mejorar el Proyecto Osiris y aumentar nuestras opciones deberíamos construir un laboratorio de mutaciones y hacer más investigaciones con mutaciones.,
@@ -1923,3 +1785,304 @@ EX91_TEXT_GENERAL_0,Text,,The [AircraftName] has landed at an abandoned military
 Hier befindet sich viel Ausrüstung, die wir nutzen können.",," [AircraftName] wylądował w opuszczonej bazie wojskowej. Tego miejsca nie ma na starych mapach ani w bazach danych. Wygląda na to, że służyło do szkolenia i rozwijania jakiejś jednostki operacji specjalnych przeznaczonej do walki z najeźdźcami. Jest tu sporo wyposażenia, z którego możemy skorzystać.","Самолет [AircraftName] приземлился на заброшенной военной базе. Этого места нет на старых картах и в базах данных. Похоже, что здесь проводились учения, и создавалось какое-то подразделение специального назначения, предназначенное для борьбы с захватчиками. Здесь осталось много оборудования, которое мы можем использовать.",El [AircraftName] ha aterrizado en una base militar abandonada. Este lugar no aparece en mapas antiguos o en bases de datos. Parece que era usado para entrenar y desarrolar alguna clase  de unidades de operaciones especiales dedicada a la defensa contra los invasores. Hay mucho equipamiento que podemos usar.,
 TFTV_KEY_FIVE_DELIRIUM_REACHED_DESC,Text,,"We have at least one operative, {Name}, who is reporting symptoms associated with Oneiric Delirium—even when fully rested. We should allocate resources to developing at least a palliative treatment for {her/his} condition. Since OD was first reported in Mist‐covered areas, perhaps we should start by capturing a Pandoran capable of generating it. I remind you that we do not have the capability to capture Sentinels—they are literally rooted to the ground—so we’ll need to target a different type of creature.",,"Nous avons au moins un agent, {Name}, qui présente des symptômes associés au Delirium — même complètement reposé(e). Nous devrions allouer des ressources pour développer au moins un traitement palliatif pour son état. Étant donné que le Delirium a été signalé pour la première fois dans les zones couvertes de Brume, nous devrions peut-être commencer par capturer un Pandorien capable de la générer. Je vous rappelle que nous n’avons pas la capacité de capturer les Sentinelles, elles sont littéralement ancrées au sol, nous devrons donc viser un autre type de créature.","Wir haben mindestens eine Einheit, {Name}, die Symptome eines Oneirischen Deliriums aufweist – selbst im vollständig ausgeruhten Zustand. Wir sollten Ressourcen bereitstellen für die Entwicklung einer zumindest palliativen Behandlung dieser Erkrankung. Da das Oneirische Delirium erstmals in nebelbedeckten Gebieten beobachtet wurde, sollten wir damit beginnen, einen Pandoraner gefangen zu nehmen, der Nebel erzeugen kann. Ich erinnere daran, dass wir keine Wächter fangen können – sie sind buchstäblich am Boden verankert –, daher müssen wir eine andere Kreaturenart ins Visier nehmen.",,"Mamy co najmniej jednego operatora, {Name}, który zgłasza objawy związane z Onirycznym Delirium, nawet po pełnym wypoczynku. Powinniśmy przeznaczyć zasoby na opracowanie przynajmniej leczenia paliatywnego dla {her/his} stanu. Skoro OD po raz pierwszy zgłoszono w obszarach pokrytych Mgłą, być może powinniśmy zacząć od schwytania Pandorana zdolnego do jego wytwarzania. Przypominam, że nie mamy możliwości chwytania Strażników, są dosłownie zakorzenieni w ziemi, więc będziemy musieli obrać za cel inny typ stworzenia.","У нас есть по меньшей мере один боец, {Name}, с симптомами Сонного Безумия, не исчезающими даже после полного отдыха. Нам необходимо направить ресурсы на разработку лечения, пусть даже лишь паллиативного. Так как Сонное Безумие впервые обнаружено на территориях, покрытых Туманом, скорее всего стоит начать с захвата Пандорана, умеющего испускать Туман. Напоминаю, что захватить Стража не возможно - они буквально врастают в землю, ищите других подходящих Пандоранов.","Tenemos al menos un operativo, {Name}, que manifiesta síntomas relacionados con el Delirio Onírico incluso estando completamente descansado. Deberíamos destinar recursos para desarrollar un tratamiento paleativopara {su/su} condición. Como el DO se manifestó en áreas cubiertas por la Niebla, puede que debamos empezar por capturar Pandoras capaces de generarla. Le recuerdo que no tenemos forma de capturar Centinelas al están tan arraigados al suelo, por lo que buscaremos otros tipos de criatura.",
 TFTV_KEY_FIVE_DELIRIUM_REACHED_TITLE,Text,,Oneiric Delirium is getting worse,,Le Delirium s’aggrave,Das Oneirische Delirium verschlimmert sich,,Oniryczne Delirium się pogarsza,Сонное Безумие становится все хуже,El Delirio Onírico está empeorando,
+KEY_INFESTATION_LW1_DESCRIPTION,Text,Composed from the old fragment keys - please re-read as one sentence,"As your team searches for survivors and salvage in {0}, they come across a former clinic. It is full of horrors: mutilated bodies litter the floor, and the walls are covered in incomprehensible symbols scrawled in thick, dark blood. 
+
+One of the exam tables draws the attention of {1} 
+ ""It looks like an altar in a temple... Is this an offering? Whoa, it's alive!""
+
+It turns out to be a remarkable armored suit: a mutated, living organism bio-engineered using some unknown technology.","","Pendant que votre équipe cherche des survivants et du butin dans {0} , ils tombent sur une ancienne clinique. Elle est remplie d’horreurs : des corps mutilés jonchent le sol, et les murs sont couverts de symboles incompréhensibles tracés dans un sang épais et sombre.
+
+Une des tables d’examen attire l’attention de {1} 
+ « Ça ressemble à un autel dans un temple... Est-ce une offrande ? Whoa, c’est vivant ! »
+
+Il s’avère qu’il s’agit d’une combinaison blindée exceptionnelle : un organisme vivant muté, bio‑ingénieré grâce à une technologie inconnue.","Während dein Team nach Überlebenden und verwertbaren Funden in {0} sucht, stoßen sie auf eine ehemalige Klinik. Sie ist voller Grauen: Verstümmelte Leichen bedecken den Boden, und die Wände sind mit unbegreiflichen Symbolen übersät, hastig hingeschmiert mit dickem, dunklem Blut.
+
+Einer der Untersuchungstische erregt die Aufmerksamkeit von {1} 
+ <i>„Sieht aus wie ein Altar in einem Tempel... Ist das eine Opfergabe? Wow – das lebt!“</i>
+
+Es entpuppt sich als ein bemerkenswerter Kampfanzug: Ein mutierter, lebender Organismus, der mithilfe einer unbekannten Technologie gentechnisch verändert wurde.","","Gdy twój zespół przeszukuje w poszukiwaniu ocalałych i łupów  {0} , natrafia na dawną klinikę. To miejsce pełne grozy: po podłodze walają się okaleczone ciała, a ściany pokrywają niezrozumiałe symbole nabazgrane gęstą, ciemną krwią.
+
+Jeden ze stołów zabiegowych przyciąga uwagę  {1} 
+ „To wygląda jak ołtarz w świątyni... Czy to ofiara? Łał, to żyje!”
+
+Okazuje się, że to niezwykły pancerz: zmutowany, żywy organizm bioinżynieryjny stworzony przy użyciu nieznanej technologii.","Во время поиска выживших и сбора уцелевшего оборудование в окрестностях {0} , ваша команда натыкается на заброшенную больницу. Она полна ужасов: на полу разбросаны изуродованные тела, а стены покрыты непонятными символами, нацарапанными густой темной кровью.
+
+Один из смотровых столов привлекает внимание  {1} 
+ ""Это похоже на алтарь в храме... А это что, жертвоприношение? Ого, да оно живое!""
+
+Однако оказывается, что это удивительный бронекостюм: мутировавший живой организм, продукт сумрачной биоинженерии с использованием какой-то неизвестной технологии.","Mientras tu equipo busca supervivientes en {0} , viene a través de la antigua clínica. Está llena de horrores: cuerpos mutilados llenan el suelo y las paredes está cubiertos por símbolos incomprensibles escritos con sangre.
+
+Una de las tablas de examen llama la atención de {1} 
+ ""Parece un altar en un templo... ¿Es una ofrenda? ¡Dios mío, está vivo!""
+
+Resulta ser un traje de armadura: un organismo mutado producto de bioingeniería usando tecnología desconocida.",""
+KEY_INFESTATION_LW2_DESCRIPTION_PLURAL,Text,Composed from the old fragment keys - please re-read as one sentence,"As with the first infested haven, your operatives encounter another temple to the horrors that took possession of the infected; this time in an underground warehouse.
+
+In a corner on the floor there sits a man, seemingly lost in thought, a strange weapon lying in front of him. As {0} come nearer, they notice that the man is covered in acid burns and is completely catatonic. By the rags of the uniform he must have been a janitor once.","","Comme pour le premier refuge infesté, vos agents découvrent un autre temple dédié aux horreurs qui ont pris possession des infectés, cette fois dans un entrepôt souterrain.
+
+Dans un coin, au sol, se tient un homme, apparemment perdu dans ses pensées, une étrange arme posée devant lui. Alors que {0} arrive se rapproche, ils remarque alors que l’homme est couvert de brûlures d’acide et complètement catatonique. À en juger par les lambeaux de son uniforme, il a dû être concierge autrefois.","Wie schon in der ersten befallenen Zuflucht stoßen deine Einheiten auf einen weiteren Tempel des Grauens, das von den Infizierten Besitz ergriffen hat – diesmal in einem unterirdischen Lagerhaus.
+
+In einer Ecke sitzt ein Mann auf dem Boden, scheinbar in Gedanken versunken, eine seltsame Waffe liegt vor ihm. Als {0} du näher kommst, sie bemerkst bemerkst du, dass der Mann von Säureverätzungen übersät ist und völlig erstarrt wirkt. An den Uniformfetzen zu urteilen, muss er einmal ein Hausmeister gewesen sein.","","Podobnie jak w pierwszej zainfestowanej ostoi, twoi operatorzy natrafiają na kolejną świątynię grozy, którą wznieśli opętani przez infekcję; tym razem w podziemnym magazynie.
+
+W kącie na podłodze siedzi mężczyzna, najwyraźniej pogrążony w myślach, a przed nim leży dziwna broń. Gdy  {0} podchodzą bliżej, oni zauważają że mężczyzna jest pokryty oparzeniami kwasowymi i całkowicie katatoniczny. Po strzępach munduru widać, że kiedyś musiał być dozorcą.","Как и в случае с первым зараженным убежищем, ваши бойцы сталкиваются с еще одним храмом ужасов созданным зараженными, на этот раз, на подземном складе.
+
+В углу на полу сидит человек, по-видимому, погруженный в свои мысли, а перед ним лежит странное оружие. Как только  {0} и другие бойцы подошли поближе, они и остальные поняли,  что перед ними мужчина, весь в кислотных ожогах, застывший в невообразимой позе в полном ступоре. Судя по лохмотьям униформы, когда-то он, должно быть, был уборщиком.","Igual que en el primer refugio infestado, tus operativos encuentran otro templo a los horrores que poseyeron a los infectados; esta vez en un cobertizo subterráneo.
+
+En una esquina en el suelo hay un hombre sentado, perdido en sus pensamientos, un arma extraña está enfrente de él. Cuando {0} se acerca más, ellos te das cuenta de que el hombre está cubierto en ácido y completamente catatónico. Por su uniforme, era un conserje.",""
+KEY_INFESTATION_LW3_DESCRIPTION_PLURAL,Text,Composed from the old fragment keys - please re-read as one sentence,"A man comes running, stumbling and falling through the ruins of {0} towards your team. At first {1} mistake his eagerness for madness and hostile intent, and almost shoot him.
+ 
+“I have something for you, I have something for you! You <i>must</i> take it! Come with me!”","","Un homme arrive en courant, trébuchant et tombant à travers les ruines de {0} en direction de votre équipe. Au début {1} se trompe sur son empressement à sombrer dans la folie et son intention hostile, et manque de peu de tirer sur lui.
+« J’ai quelque chose pour vous, j’ai quelque chose pour vous ! Vous <i>devez</i> le prendre ! Venez avec moi ! »
+","Ein Mann rennt heran, stolpert und stürzt durch die Ruinen von {0} auf dein Team zu. Zuerst {1} verwechselst du seinen Eifer mit Wahnsinn und feindseliger Absicht - und willst beinahe erschießen ihn.
+
+„Ich habe etwas für dich, ich habe etwas für dich! Du <i>musst</i> es nehmen! Komm mit mir!“","","Mężczyzna biegnie, potykając się i przewracając, przez ruiny  {0} w stronę twojego zespołu. Początkowo  {1} bierze jego zapał za obłęd i wrogie zamiary i omal go nie  zastrzeliwuje.
+
+„Mam coś dla was, mam coś dla was! <i>Musicie</i> to wziąć! Chodźcie ze mną!”","Человек бежит, спотыкаясь и падая, сквозь развалины {0} к вашей команде. Сначала,  {1} испугавшись,  что, это нападение безумца, они чуть не подстрелили его.
+
+""У меня есть кое-что для вас, у меня есть кое-что для вас! Вы <i>должны</i> это взять! Пойдемте со мной!""","Un hombre se acerca corriendo, tropezand y cayendo a través de las ruinas {0} hacia tu equipo. Al principio {1} confundes su energía por locura y hostilidad, y casi le disparas.
+ 
+“Tengo algo para vosotros, ¡tengo algo para vosotros! ¡Vosotros <i>debéis</i> cogerlo! ¡Venid conmigo!”",""
+KEY_INFESTATION_LW3_OUTCOME_PLURAL,Text,Composed from the old fragment keys - please re-read as one sentence,"As your operatives walk after him, he keeps running ahead and coming back, all the while repeating “You have to take it! You have to take it! Yes! Take it, and Malachi Constant shall be free! Free!”
+
+Malachi takes your team to a workshop behind the haven’s main generator. On a workbench is another mysterious device that looks like a multi-projectile heavy weapon. He looks pleadingly at {0}, begging them to take the weapon.
+
+When they do, Malachi erupts in boundless joy “They chose me to give it to you! Somebody up there really likes me!”
+ 
+Unfortunately, this exertion was too much for him. He collapses, dead, but with a smile of bliss on his face.","","« Alors que vos agents le suivent, il continue de courir devant eux puis de revenir, répétant sans cesse : « Vous devez le prendre ! Vous devez le prendre ! Oui ! Prenez-le, et Malachi Constant sera libre ! Libre ! »
+
+Malachi conduit votre équipe jusqu’à un atelier derrière le générateur principal du refuge. Sur un établi se trouve un autre dispositif mystérieux ressemblant à une arme lourde multi-projectiles. Il regarde votre équipe avec un air suppliant. {0}, suppliant eux pour prendre l’arme.
+
+Lorsque ils Lorsqu’il le fait, Malachi éclate de joie sans limite : « Ils m’ont choisi pour vous le donner ! Quelqu’un là-haut m’aime vraiment ! »
+
+Malheureusement, cet effort fut trop pour lui. Il s’effondre, mort, mais avec un sourire de béatitude sur le visage.","Während deine Einheiten hinter ihm hergehen, rennt er immer wieder voraus und kommt zurück – und wiederholt dabei unaufhörlich: „Du musst es nehmen! Du musst es nehmen! Ja! Nimm es, und Malachi Constant wird frei sein! Frei!“
+
+Malachi führt dein Team zu einer Werkstatt hinter dem Hauptgenerator der Zuflucht. Auf einer Werkbank liegt ein weiteres mysteriöses Gerät, das wie eine schwere Mehrfachprojektilwaffe aussieht. Flehend blickt er {0}, bettelnd ihnen die Waffe zu nehmen.
+
+Als sie du es tust, bricht Malachi in grenzenlose Freude aus: „Sie haben mich auserwählt, es dir zu geben! Irgendjemand da oben mag mich wirklich!“
+
+Leider war diese Anstrengung zu viel für ihn. Er bricht zusammen – tot, aber mit einem seligen Lächeln im Gesicht.","","Gdy operatorzy idą za nim, on ciągle wybiega do przodu i wraca, przez cały czas powtarzając „Musicie to wziąć! Musicie to wziąć! Tak! Weźcie to, a Malachi Constant będzie wolny! Wolny!”
+
+Malachi prowadzi zespół do warsztatu za głównym generatorem ostoi. Na stole warsztatowym leży kolejne tajemnicze urządzenie przypominające ciężką broń wielopociskową. Błagalnie patrzy na  {0}, prosząc ich o zabranie broni.
+
+Kiedy  oni to robi, Malachi wybucha bezgraniczną radością: „Wybrali mnie, żebym wam to dał! Ktoś tam naprawdę mnie lubi!”
+
+Niestety ten wysiłek okazał się dla niego zbyt wielki. Upada martwy, ale z błogim uśmiechem na twarzy.","Пока ваши бойцы следуют за ним, он продолжает забегать вперед и возвращаться, все время повторяя: ""Вы должны взять это! Вы должны взять это! Да! Возьмите это, и Малачи Констант будет свободен! Свободен!""
+
+Малачи проводит вашу команду в мастерскую, расположенную за главным генератором убежища. На рабочем столе лежит еще одно загадочное устройство, похожее на многозарядное тяжелое оружие. Он умоляюще смотрит на  {0}словно призывая  их взять это оружие. 
+
+Как только  они  взял его в руки, Малачи вспыхивает от безграничной радости - ""Они выбрали меня, чтобы подарить это вам! Я действительно нравлюсь кому-то там, наверху!""
+
+К сожалению, эти усилия оказались для него непосильными. Он падает замертво, с улыбкой блаженства на лице.","Tus operativos ke siguen, él sigue corriendo por delante y volviendo mientras repite “¡Debéis llevároslo! ¡Debéis llevároslo! ¡Sí! ¡Lleváoslo y Malachi Constant será libre! ¡Libre!”
+
+Malachi lleva a tu equipo al taller detrás del generador principal del refugio. En un banco de trabajo hay otro dispositivo que parece un arma pesada de varios proyectiles. Parece desesperado {0}, suplicante ellos para coger el arma.
+
+Cuando ellos lo hace, Malachi lleno de alegría suelta “¡Me eligieron para dároslo! ¡Alguien ahí arriba de verdad me quiere!”
+ 
+Desafortunadamente, él colapsa tras decir esas palabras. Ha muerto con una sonrisa.",""
+KEY_INFESTATION_LW3_OUTCOME_F,Text,Composed from the old fragment keys - please re-read as one sentence,"As your operatives walk after him, he keeps running ahead and coming back, all the while repeating “You have to take it! You have to take it! Yes! Take it, and Malachi Constant shall be free! Free!”
+
+Malachi takes your team to a workshop behind the haven’s main generator. On a workbench is another mysterious device that looks like a multi-projectile heavy weapon. He looks pleadingly at {0}, begging her to take the weapon.
+
+When she does, Malachi erupts in boundless joy “They chose me to give it to you! Somebody up there really likes me!”
+ 
+Unfortunately, this exertion was too much for him. He collapses, dead, but with a smile of bliss on his face.","","« Alors que vos agents le suivent, il continue de courir devant eux puis de revenir, répétant sans cesse : « Vous devez le prendre ! Vous devez le prendre ! Oui ! Prenez-le, et Malachi Constant sera libre ! Libre ! »
+
+Malachi conduit votre équipe jusqu’à un atelier derrière le générateur principal du refuge. Sur un établi se trouve un autre dispositif mystérieux ressemblant à une arme lourde multi-projectiles. Il regarde votre équipe avec un air suppliant. {0}, suppliant la pour prendre l’arme.
+
+Lorsque elle Lorsqu’il le fait, Malachi éclate de joie sans limite : « Ils m’ont choisi pour vous le donner ! Quelqu’un là-haut m’aime vraiment ! »
+
+Malheureusement, cet effort fut trop pour lui. Il s’effondre, mort, mais avec un sourire de béatitude sur le visage.","Während deine Einheiten hinter ihm hergehen, rennt er immer wieder voraus und kommt zurück – und wiederholt dabei unaufhörlich: „Du musst es nehmen! Du musst es nehmen! Ja! Nimm es, und Malachi Constant wird frei sein! Frei!“
+
+Malachi führt dein Team zu einer Werkstatt hinter dem Hauptgenerator der Zuflucht. Auf einer Werkbank liegt ein weiteres mysteriöses Gerät, das wie eine schwere Mehrfachprojektilwaffe aussieht. Flehend blickt er {0}, bettelnd ihr die Waffe zu nehmen.
+
+Als sie du es tust, bricht Malachi in grenzenlose Freude aus: „Sie haben mich auserwählt, es dir zu geben! Irgendjemand da oben mag mich wirklich!“
+
+Leider war diese Anstrengung zu viel für ihn. Er bricht zusammen – tot, aber mit einem seligen Lächeln im Gesicht.","","Gdy operatorzy idą za nim, on ciągle wybiega do przodu i wraca, przez cały czas powtarzając „Musicie to wziąć! Musicie to wziąć! Tak! Weźcie to, a Malachi Constant będzie wolny! Wolny!”
+
+Malachi prowadzi zespół do warsztatu za głównym generatorem ostoi. Na stole warsztatowym leży kolejne tajemnicze urządzenie przypominające ciężką broń wielopociskową. Błagalnie patrzy na  {0}, prosząc jej o zabranie broni.
+
+Kiedy  ona to robi, Malachi wybucha bezgraniczną radością: „Wybrali mnie, żebym wam to dał! Ktoś tam naprawdę mnie lubi!”
+
+Niestety ten wysiłek okazał się dla niego zbyt wielki. Upada martwy, ale z błogim uśmiechem na twarzy.","Пока ваши бойцы следуют за ним, он продолжает забегать вперед и возвращаться, все время повторяя: ""Вы должны взять это! Вы должны взять это! Да! Возьмите это, и Малачи Констант будет свободен! Свободен!""
+
+Малачи проводит вашу команду в мастерскую, расположенную за главным генератором убежища. На рабочем столе лежит еще одно загадочное устройство, похожее на многозарядное тяжелое оружие. Он умоляюще смотрит на  {0}словно призывая  ее взять это оружие. 
+
+Как только  она  взял его в руки, Малачи вспыхивает от безграничной радости - ""Они выбрали меня, чтобы подарить это вам! Я действительно нравлюсь кому-то там, наверху!""
+
+К сожалению, эти усилия оказались для него непосильными. Он падает замертво, с улыбкой блаженства на лице.","Tus operativos ke siguen, él sigue corriendo por delante y volviendo mientras repite “¡Debéis llevároslo! ¡Debéis llevároslo! ¡Sí! ¡Lleváoslo y Malachi Constant será libre! ¡Libre!”
+
+Malachi lleva a tu equipo al taller detrás del generador principal del refugio. En un banco de trabajo hay otro dispositivo que parece un arma pesada de varios proyectiles. Parece desesperado {0}, suplicante ella para coger el arma.
+
+Cuando ella lo hace, Malachi lleno de alegría suelta “¡Me eligieron para dároslo! ¡Alguien ahí arriba de verdad me quiere!”
+ 
+Desafortunadamente, él colapsa tras decir esas palabras. Ha muerto con una sonrisa.",""
+KEY_INFESTATION_LW3_OUTCOME_M,Text,Composed from the old fragment keys - please re-read as one sentence,"As your operatives walk after him, he keeps running ahead and coming back, all the while repeating “You have to take it! You have to take it! Yes! Take it, and Malachi Constant shall be free! Free!”
+
+Malachi takes your team to a workshop behind the haven’s main generator. On a workbench is another mysterious device that looks like a multi-projectile heavy weapon. He looks pleadingly at {0}, begging him to take the weapon.
+
+When he does, Malachi erupts in boundless joy “They chose me to give it to you! Somebody up there really likes me!”
+ 
+Unfortunately, this exertion was too much for him. He collapses, dead, but with a smile of bliss on his face.","","« Alors que vos agents le suivent, il continue de courir devant eux puis de revenir, répétant sans cesse : « Vous devez le prendre ! Vous devez le prendre ! Oui ! Prenez-le, et Malachi Constant sera libre ! Libre ! »
+
+Malachi conduit votre équipe jusqu’à un atelier derrière le générateur principal du refuge. Sur un établi se trouve un autre dispositif mystérieux ressemblant à une arme lourde multi-projectiles. Il regarde votre équipe avec un air suppliant. {0}, suppliant le pour prendre l’arme.
+
+Lorsque il Lorsqu’il le fait, Malachi éclate de joie sans limite : « Ils m’ont choisi pour vous le donner ! Quelqu’un là-haut m’aime vraiment ! »
+
+Malheureusement, cet effort fut trop pour lui. Il s’effondre, mort, mais avec un sourire de béatitude sur le visage.","Während deine Einheiten hinter ihm hergehen, rennt er immer wieder voraus und kommt zurück – und wiederholt dabei unaufhörlich: „Du musst es nehmen! Du musst es nehmen! Ja! Nimm es, und Malachi Constant wird frei sein! Frei!“
+
+Malachi führt dein Team zu einer Werkstatt hinter dem Hauptgenerator der Zuflucht. Auf einer Werkbank liegt ein weiteres mysteriöses Gerät, das wie eine schwere Mehrfachprojektilwaffe aussieht. Flehend blickt er {0}, bettelnd ihn die Waffe zu nehmen.
+
+Als er du es tust, bricht Malachi in grenzenlose Freude aus: „Sie haben mich auserwählt, es dir zu geben! Irgendjemand da oben mag mich wirklich!“
+
+Leider war diese Anstrengung zu viel für ihn. Er bricht zusammen – tot, aber mit einem seligen Lächeln im Gesicht.","","Gdy operatorzy idą za nim, on ciągle wybiega do przodu i wraca, przez cały czas powtarzając „Musicie to wziąć! Musicie to wziąć! Tak! Weźcie to, a Malachi Constant będzie wolny! Wolny!”
+
+Malachi prowadzi zespół do warsztatu za głównym generatorem ostoi. Na stole warsztatowym leży kolejne tajemnicze urządzenie przypominające ciężką broń wielopociskową. Błagalnie patrzy na  {0}, prosząc jemu o zabranie broni.
+
+Kiedy  on to robi, Malachi wybucha bezgraniczną radością: „Wybrali mnie, żebym wam to dał! Ktoś tam naprawdę mnie lubi!”
+
+Niestety ten wysiłek okazał się dla niego zbyt wielki. Upada martwy, ale z błogim uśmiechem na twarzy.","Пока ваши бойцы следуют за ним, он продолжает забегать вперед и возвращаться, все время повторяя: ""Вы должны взять это! Вы должны взять это! Да! Возьмите это, и Малачи Констант будет свободен! Свободен!""
+
+Малачи проводит вашу команду в мастерскую, расположенную за главным генератором убежища. На рабочем столе лежит еще одно загадочное устройство, похожее на многозарядное тяжелое оружие. Он умоляюще смотрит на  {0}словно призывая  его взять это оружие. 
+
+Как только  он  взял его в руки, Малачи вспыхивает от безграничной радости - ""Они выбрали меня, чтобы подарить это вам! Я действительно нравлюсь кому-то там, наверху!""
+
+К сожалению, эти усилия оказались для него непосильными. Он падает замертво, с улыбкой блаженства на лице.","Tus operativos ke siguen, él sigue corriendo por delante y volviendo mientras repite “¡Debéis llevároslo! ¡Debéis llevároslo! ¡Sí! ¡Lleváoslo y Malachi Constant será libre! ¡Libre!”
+
+Malachi lleva a tu equipo al taller detrás del generador principal del refugio. En un banco de trabajo hay otro dispositivo que parece un arma pesada de varios proyectiles. Parece desesperado {0}, suplicante él para coger el arma.
+
+Cuando él lo hace, Malachi lleno de alegría suelta “¡Me eligieron para dároslo! ¡Alguien ahí arriba de verdad me quiere!”
+ 
+Desafortunadamente, él colapsa tras decir esas palabras. Ha muerto con una sonrisa.",""
+KEY_INFESTATION_REFUGEES_FLED,Text,Composed from the old fragment keys - please re-read as one sentence,{0} survivors from {1} have fled to {2},"",{0} survivants de {1} se sont réfugiés à {2},{0} Überlebende von {1} sind geflohen nach {2},"",{0} ocalali z {1} uciekli do {2},{0} выжившие из {1} сбежали в {2},{0} supervivientes de {1} ha huido a {2},""
+KEY_OSIRIS_BODY_AVAILABLE_PLURAL,Text,Composed from KEY_OSIRIS_TEXT0-3 - please re-read as one sentence,"<i>-''I'm... a mess.''
+-''They will fix you. They fix everything.''</i>
+
+We have recovered {0} ({1}) from the battlefield. They are clinically dead, but with the Project Osiris now operational we can bring them back with a new body {2}.","","<i>– « Je... suis un désastre. » – « Ils vont te réparer. Ils réparent tout. »</i>
+
+Nous avons récupéré {0} ({1}) sur le champ de bataille. Ils est cliniquement mort, mais avec le Projet Osiris maintenant opérationnel, nous pouvons le ramener eux dans un nouveau corps {2}.","<i>- „Ich bin... ein Wrack.“
+- „Sie werden dich wieder reparieren. Sie reparieren alles.“</i>
+
+Wir haben uns erholt. {0} ({1}) vom Schlachtfeld. Sie ist klinisch tot, aber da das Projekt Osiris nun einsatzbereit ist, können wir ihnen zurück mit einem neuen Körper {2}.","","<i>-„Jestem... wrakiem.”
+-„Naprawią cię. Naprawiają wszystko.”</i>
+
+Odzyskaliśmy  {0} ({1}) z pola bitwy. Oni jest klinicznie martwy, ale teraz, gdy Projekt Osiris działa, możemy przywrócić  ich  do życia w nowym ciele {2}.","<i> - ""Я... что-то мне нехорошо.""
+- ""Они тебя вылечат. Они все исправят"".</i>
+
+Мы нашли бойца по имени  {0} ({1}) на поле боя. Они находится в состоянии клинической смерти, но с запущенным Проектом Осирис мы можем вернуть  их назад с новым телом {2}.","<i>-''Soy... un desastre.''
+-''Ellos te arreglarán. Lo arreglarán todo.''</i>
+
+Hemos recuperado {0} ({1}) del campo de batalla. Ellos está clínicamente muerto, pero con el Proyecto Osiris podemos ellos traerlo de vida en un nuevo cuerpo {2}.",""
+KEY_OSIRIS_BODY_AVAILABLE_F,Text,Composed from KEY_OSIRIS_TEXT0-3 - please re-read as one sentence,"<i>-''I'm... a mess.''
+-''They will fix you. They fix everything.''</i>
+
+We have recovered {0} ({1}) from the battlefield. She is clinically dead, but with the Project Osiris now operational we can bring her back with a new body {2}.","","<i>– « Je... suis un désastre. » – « Ils vont te réparer. Ils réparent tout. »</i>
+
+Nous avons récupéré {0} ({1}) sur le champ de bataille. Elle est cliniquement mort, mais avec le Projet Osiris maintenant opérationnel, nous pouvons le ramener la dans un nouveau corps {2}.","<i>- „Ich bin... ein Wrack.“
+- „Sie werden dich wieder reparieren. Sie reparieren alles.“</i>
+
+Wir haben uns erholt. {0} ({1}) vom Schlachtfeld. Sie ist klinisch tot, aber da das Projekt Osiris nun einsatzbereit ist, können wir ihr zurück mit einem neuen Körper {2}.","","<i>-„Jestem... wrakiem.”
+-„Naprawią cię. Naprawiają wszystko.”</i>
+
+Odzyskaliśmy  {0} ({1}) z pola bitwy. Ona jest klinicznie martwy, ale teraz, gdy Projekt Osiris działa, możemy przywrócić  jej  do życia w nowym ciele {2}.","<i> - ""Я... что-то мне нехорошо.""
+- ""Они тебя вылечат. Они все исправят"".</i>
+
+Мы нашли бойца по имени  {0} ({1}) на поле боя. Она находится в состоянии клинической смерти, но с запущенным Проектом Осирис мы можем вернуть  ее назад с новым телом {2}.","<i>-''Soy... un desastre.''
+-''Ellos te arreglarán. Lo arreglarán todo.''</i>
+
+Hemos recuperado {0} ({1}) del campo de batalla. Ella está clínicamente muerto, pero con el Proyecto Osiris podemos ella traerlo de vida en un nuevo cuerpo {2}.",""
+KEY_OSIRIS_BODY_AVAILABLE_M,Text,Composed from KEY_OSIRIS_TEXT0-3 - please re-read as one sentence,"<i>-''I'm... a mess.''
+-''They will fix you. They fix everything.''</i>
+
+We have recovered {0} ({1}) from the battlefield. He is clinically dead, but with the Project Osiris now operational we can bring him back with a new body {2}.","","<i>– « Je... suis un désastre. » – « Ils vont te réparer. Ils réparent tout. »</i>
+
+Nous avons récupéré {0} ({1}) sur le champ de bataille. Il est cliniquement mort, mais avec le Projet Osiris maintenant opérationnel, nous pouvons le ramener le dans un nouveau corps {2}.","<i>- „Ich bin... ein Wrack.“
+- „Sie werden dich wieder reparieren. Sie reparieren alles.“</i>
+
+Wir haben uns erholt. {0} ({1}) vom Schlachtfeld. Er ist klinisch tot, aber da das Projekt Osiris nun einsatzbereit ist, können wir ihn zurück mit einem neuen Körper {2}.","","<i>-„Jestem... wrakiem.”
+-„Naprawią cię. Naprawiają wszystko.”</i>
+
+Odzyskaliśmy  {0} ({1}) z pola bitwy. On jest klinicznie martwy, ale teraz, gdy Projekt Osiris działa, możemy przywrócić  jemu  do życia w nowym ciele {2}.","<i> - ""Я... что-то мне нехорошо.""
+- ""Они тебя вылечат. Они все исправят"".</i>
+
+Мы нашли бойца по имени  {0} ({1}) на поле боя. Он находится в состоянии клинической смерти, но с запущенным Проектом Осирис мы можем вернуть  его назад с новым телом {2}.","<i>-''Soy... un desastre.''
+-''Ellos te arreglarán. Lo arreglarán todo.''</i>
+
+Hemos recuperado {0} ({1}) del campo de batalla. Él está clínicamente muerto, pero con el Proyecto Osiris podemos él traerlo de vida en un nuevo cuerpo {2}.",""
+KEY_INFESTATION_LW2_DESCRIPTION_F,Text,Composed from the old fragment keys - please re-read as one sentence,"As with the first infested haven, your operatives encounter another temple to the horrors that took possession of the infected; this time in an underground warehouse.
+
+In a corner on the floor there sits a man, seemingly lost in thought, a strange weapon lying in front of him. As {0} comes nearer, she notices that the man is covered in acid burns and is completely catatonic. By the rags of the uniform he must have been a janitor once.","","Comme pour le premier refuge infesté, vos agents découvrent un autre temple dédié aux horreurs qui ont pris possession des infectés, cette fois dans un entrepôt souterrain.
+
+Dans un coin, au sol, se tient un homme, apparemment perdu dans ses pensées, une étrange arme posée devant lui. Alors que {0} arrive se rapproche, elle remarque alors que l’homme est couvert de brûlures d’acide et complètement catatonique. À en juger par les lambeaux de son uniforme, il a dû être concierge autrefois.","Wie schon in der ersten befallenen Zuflucht stoßen deine Einheiten auf einen weiteren Tempel des Grauens, das von den Infizierten Besitz ergriffen hat – diesmal in einem unterirdischen Lagerhaus.
+
+In einer Ecke sitzt ein Mann auf dem Boden, scheinbar in Gedanken versunken, eine seltsame Waffe liegt vor ihm. Als {0} dus näher kommst, sie bemerksts bemerkst du, dass der Mann von Säureverätzungen übersät ist und völlig erstarrt wirkt. An den Uniformfetzen zu urteilen, muss er einmal ein Hausmeister gewesen sein.","","Podobnie jak w pierwszej zainfestowanej ostoi, twoi operatorzy natrafiają na kolejną świątynię grozy, którą wznieśli opętani przez infekcję; tym razem w podziemnym magazynie.
+
+W kącie na podłodze siedzi mężczyzna, najwyraźniej pogrążony w myślach, a przed nim leży dziwna broń. Gdy  {0} podchodząy bliżej, ona zauważająy że mężczyzna jest pokryty oparzeniami kwasowymi i całkowicie katatoniczny. Po strzępach munduru widać, że kiedyś musiał być dozorcą.","Как и в случае с первым зараженным убежищем, ваши бойцы сталкиваются с еще одним храмом ужасов созданным зараженными, на этот раз, на подземном складе.
+
+В углу на полу сидит человек, по-видимому, погруженный в свои мысли, а перед ним лежит странное оружие. Как только  {0} и другие бойцы подошли  поближе, она и остальные поняли,   что перед ними мужчина, весь в кислотных ожогах, застывший в невообразимой позе в полном ступоре. Судя по лохмотьям униформы, когда-то он, должно быть, был уборщиком.","Igual que en el primer refugio infestado, tus operativos encuentran otro templo a los horrores que poseyeron a los infectados; esta vez en un cobertizo subterráneo.
+
+En una esquina en el suelo hay un hombre sentado, perdido en sus pensamientos, un arma extraña está enfrente de él. Cuando {0} se acercas más, ella te das cuentas de que el hombre está cubierto en ácido y completamente catatónico. Por su uniforme, era un conserje.",""
+KEY_INFESTATION_LW3_DESCRIPTION_F,Text,Composed from the old fragment keys - please re-read as one sentence,"A man comes running, stumbling and falling through the ruins of {0} towards your team. At first {1} mistakes his eagerness for madness and hostile intent, and almost shoots him.
+ 
+“I have something for you, I have something for you! You <i>must</i> take it! Come with me!”","","Un homme arrive en courant, trébuchant et tombant à travers les ruines de {0} en direction de votre équipe. Au début {1} se trompe sur son empressement à sombrer dans la folie et son intention hostile, et manque de peu de tirer sur lui.
+« J’ai quelque chose pour vous, j’ai quelque chose pour vous ! Vous <i>devez</i> le prendre ! Venez avec moi ! »
+","Ein Mann rennt heran, stolpert und stürzt durch die Ruinen von {0} auf dein Team zu. Zuerst {1} verwechselst dus seinen Eifer mit Wahnsinn und feindseliger Absicht - und willst beinahe erschießens ihn.
+
+„Ich habe etwas für dich, ich habe etwas für dich! Du <i>musst</i> es nehmen! Komm mit mir!“","","Mężczyzna biegnie, potykając się i przewracając, przez ruiny  {0} w stronę twojego zespołu. Początkowo  {1} bierzey jego zapał za obłęd i wrogie zamiary i omal go nie y zastrzeliwuje.
+
+„Mam coś dla was, mam coś dla was! <i>Musicie</i> to wziąć! Chodźcie ze mną!”","Человек бежит, спотыкаясь и падая, сквозь развалины {0} к вашей команде. Сначала,  {1} испугавшись,   что, это нападение безумца, они чуть не подстрелили  его.
+
+""У меня есть кое-что для вас, у меня есть кое-что для вас! Вы <i>должны</i> это взять! Пойдемте со мной!""","Un hombre se acerca corriendo, tropezand y cayendo a través de las ruinas {0} hacia tu equipo. Al principio {1} confundess su energía por locura y hostilidad, y casi les disparas.
+ 
+“Tengo algo para vosotros, ¡tengo algo para vosotros! ¡Vosotros <i>debéis</i> cogerlo! ¡Venid conmigo!”",""
+KEY_INFESTATION_LW2_DESCRIPTION_M,Text,Composed from the old fragment keys - please re-read as one sentence,"As with the first infested haven, your operatives encounter another temple to the horrors that took possession of the infected; this time in an underground warehouse.
+
+In a corner on the floor there sits a man, seemingly lost in thought, a strange weapon lying in front of him. As {0} comes nearer, he notices that the man is covered in acid burns and is completely catatonic. By the rags of the uniform he must have been a janitor once.","","Comme pour le premier refuge infesté, vos agents découvrent un autre temple dédié aux horreurs qui ont pris possession des infectés, cette fois dans un entrepôt souterrain.
+
+Dans un coin, au sol, se tient un homme, apparemment perdu dans ses pensées, une étrange arme posée devant lui. Alors que {0} arrive se rapproche, il remarque alors que l’homme est couvert de brûlures d’acide et complètement catatonique. À en juger par les lambeaux de son uniforme, il a dû être concierge autrefois.","Wie schon in der ersten befallenen Zuflucht stoßen deine Einheiten auf einen weiteren Tempel des Grauens, das von den Infizierten Besitz ergriffen hat – diesmal in einem unterirdischen Lagerhaus.
+
+In einer Ecke sitzt ein Mann auf dem Boden, scheinbar in Gedanken versunken, eine seltsame Waffe liegt vor ihm. Als {0} dus näher kommst, er bemerksts bemerkst du, dass der Mann von Säureverätzungen übersät ist und völlig erstarrt wirkt. An den Uniformfetzen zu urteilen, muss er einmal ein Hausmeister gewesen sein.","","Podobnie jak w pierwszej zainfestowanej ostoi, twoi operatorzy natrafiają na kolejną świątynię grozy, którą wznieśli opętani przez infekcję; tym razem w podziemnym magazynie.
+
+W kącie na podłodze siedzi mężczyzna, najwyraźniej pogrążony w myślach, a przed nim leży dziwna broń. Gdy  {0} podchodząy bliżej, on zauważająy że mężczyzna jest pokryty oparzeniami kwasowymi i całkowicie katatoniczny. Po strzępach munduru widać, że kiedyś musiał być dozorcą.","Как и в случае с первым зараженным убежищем, ваши бойцы сталкиваются с еще одним храмом ужасов созданным зараженными, на этот раз, на подземном складе.
+
+В углу на полу сидит человек, по-видимому, погруженный в свои мысли, а перед ним лежит странное оружие. Как только  {0} и другие бойцы подошли  поближе, он и остальные поняли,   что перед ними мужчина, весь в кислотных ожогах, застывший в невообразимой позе в полном ступоре. Судя по лохмотьям униформы, когда-то он, должно быть, был уборщиком.","Igual que en el primer refugio infestado, tus operativos encuentran otro templo a los horrores que poseyeron a los infectados; esta vez en un cobertizo subterráneo.
+
+En una esquina en el suelo hay un hombre sentado, perdido en sus pensamientos, un arma extraña está enfrente de él. Cuando {0} se acercas más, él te das cuentas de que el hombre está cubierto en ácido y completamente catatónico. Por su uniforme, era un conserje.",""
+KEY_INFESTATION_LW3_DESCRIPTION_M,Text,Composed from the old fragment keys - please re-read as one sentence,"A man comes running, stumbling and falling through the ruins of {0} towards your team. At first {1} mistakes his eagerness for madness and hostile intent, and almost shoots him.
+ 
+“I have something for you, I have something for you! You <i>must</i> take it! Come with me!”","","Un homme arrive en courant, trébuchant et tombant à travers les ruines de {0} en direction de votre équipe. Au début {1} se trompe sur son empressement à sombrer dans la folie et son intention hostile, et manque de peu de tirer sur lui.
+« J’ai quelque chose pour vous, j’ai quelque chose pour vous ! Vous <i>devez</i> le prendre ! Venez avec moi ! »
+","Ein Mann rennt heran, stolpert und stürzt durch die Ruinen von {0} auf dein Team zu. Zuerst {1} verwechselst dus seinen Eifer mit Wahnsinn und feindseliger Absicht - und willst beinahe erschießens ihn.
+
+„Ich habe etwas für dich, ich habe etwas für dich! Du <i>musst</i> es nehmen! Komm mit mir!“","","Mężczyzna biegnie, potykając się i przewracając, przez ruiny  {0} w stronę twojego zespołu. Początkowo  {1} bierzey jego zapał za obłęd i wrogie zamiary i omal go nie y zastrzeliwuje.
+
+„Mam coś dla was, mam coś dla was! <i>Musicie</i> to wziąć! Chodźcie ze mną!”","Человек бежит, спотыкаясь и падая, сквозь развалины {0} к вашей команде. Сначала,  {1} испугавшись,   что, это нападение безумца, они чуть не подстрелили  его.
+
+""У меня есть кое-что для вас, у меня есть кое-что для вас! Вы <i>должны</i> это взять! Пойдемте со мной!""","Un hombre se acerca corriendo, tropezand y cayendo a través de las ruinas {0} hacia tu equipo. Al principio {1} confundess su energía por locura y hostilidad, y casi les disparas.
+ 
+“Tengo algo para vosotros, ¡tengo algo para vosotros! ¡Vosotros <i>debéis</i> cogerlo! ¡Venid conmigo!”",""
+KEY_FACTION_START_INTRO,Text,Composed from the old fragment keys - please re-read as one sentence,"After all these years, you finally got the call. It meant that Symes and his deputies were dead or unreachable. Phoenix Project had gone dark. You had spent many years waiting, dreading that this would happen, living a discrete and simple life at {0}, a {1} haven.
+
+The trek to Phoenix Point was long and dangerous, and you wouldn't have made it without {2}, a {1} {3}.
+
+When you reached Phoenix Point, somebody was already home...","","Après toutes ces années, vous avez enfin reçu l’appel. Cela signifiait que Symes et ses adjoints étaient morts ou injoignables. Le Projet Phoenix avait sombré dans le silence. Vous aviez passé de nombreuses années à attendre, redoutant que cela arrive, vivant une vie discrète et simple à {0}, un(e) {1} refuge.
+
+Le voyage jusqu’au Projet Phoenix fut long et dangereux, et vous ne l’auriez pas accompli sans{2}, un(e) {1} {3}.
+
+Lorsque vous êtes arrivé au Projet Phoenix, quelqu’un était déjà sur place...","Jahrelang herrschte Stille. Dann kam der Notruf.
+Wenn Phoenix Point dich rief, war Symes entweder gefallen – oder abgeschnitten. Das Phoenix-Projekt existierte nur noch als Schatten seiner selbst. Du hast viele Jahre gewartet, diese Entwicklung befürchtet und ein zurückgezogenes, einfaches Leben geführt. {0}, ein {1} Zuflucht.
+
+Der Marsch nach Phoenix Point war lang und gefährlich, und du hättest es nicht geschafft ohne {2}, ein {1} {3}.
+
+Als du Phoenix Point erreicht hast, war bereits jemand zu Hause...","","Po tych wszystkich latach wreszcie nadeszło wezwanie. Oznaczało to, że Symes i jego zastępcy nie żyją albo są nieosiągalni. Projekt Phoenix zamilkł. Przez wiele lat czekałeś, obawiając się, że to się stanie, prowadząc skromne i dyskretne życie w ostoi  {0}, {1} .
+
+Droga do Phoenix Point była długa i niebezpieczna, i nie dotarłbyś tam bez {2}, {1} {3}.
+
+Kiedy dotarłeś do Phoenix Point, ktoś już tam był...","После стольких лет вам наконец позвонили. Это означало, что Саймс и его помощники мертвы или недоступны. Проект Феникс остался без руководства. Вы провели много лет в ожидании и страхе, что это случится, живя простой и незаметной жизнью в убежище  {0},  {1} .
+
+Переход в Феникс-Пойнт был долгим и опасным, и вы бы не справились без помощи бойца по имени {2},  {1} {3}.
+
+Когда вы добрались до Феникс-Пойнт, кто-то уже вас там ждал...","Tras todos estos años, has respondido a la llamada. Significa que Symes y sus ayegados están muertos o desaparecidos. El Proyecto Phoenix ha fallado. Has pasado muchos años esperando temiendo que este día llegara, viviendo una vida simple y discreta en {0}, un{1} El refugio.
+
+El periplo de Phoenix Point fue largo y peligroso, y no lo hubieras conocido sin{2}, un{1} {3}.
+
+Cuando llegaste a Phoenix Point, alguien ya estaba en casa…",""

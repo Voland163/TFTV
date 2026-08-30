@@ -1251,9 +1251,8 @@ namespace TFTV
                         newSpec.ClassTag = _scumTag;
                         newSpec.IsDominantSpecialization = true;
                         newSpec.ViewElementDef.SmallIcon = icon;
-                        newSpec.ViewElementDef.DisplayName1 = new Base.UI.LocalizedTextBind("testing displayName1", true);
-                        newSpec.ViewElementDef.DisplayName2 = new Base.UI.LocalizedTextBind("testing displayName2", true);
-                        newSpec.ViewElementDef.Description = new Base.UI.LocalizedTextBind("testing description", true);
+                        // Name, short name and description stay as cloned from the Berserker
+                        // specialization, the same way the three raider specs above leave theirs.
 
                         _scumSpecialization = newSpec;
                     }

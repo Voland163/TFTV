@@ -17,6 +17,8 @@ namespace TFTV.TFTVIncidents
     internal class ComputeMountedAbility
     {
         private const string DiagTag = "[Incidents][ComputeMountedAbility]";
+        private const string MountedDriverNameKey = "KEY_TFTV_MOUNTED_DRIVER_NAME";
+        private const string MountedDriverDescriptionKey = "KEY_TFTV_MOUNTED_DRIVER_DESC";
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly GameTagDef VehicleTag = TFTVMain.Shared.SharedGameTags.VehicleTag;
@@ -105,10 +107,10 @@ namespace TFTV.TFTVIncidents
                         ViewGuids[index],
                         skillName);
 
-                    mountedDriverPassiveAbility.ViewElementDef.DisplayName1 = new LocalizedTextBind("Mounted Driver", true);
+                    mountedDriverPassiveAbility.ViewElementDef.DisplayName1 = new LocalizedTextBind(MountedDriverNameKey);
                     mountedDriverPassiveAbility.ViewElementDef.Description = new LocalizedTextBind(
-                        string.Format(
-                            "Ground vehicles with this character inside gain +{0} Speed and +{1}% accuracy.",
+                        TFTVCommonMethods.FormatKey(
+                            MountedDriverDescriptionKey,
                             3 * rank,
                             10 * rank),
                         true);

@@ -1,4 +1,4 @@
-using Base.Core;
+﻿using Base.Core;
 using Base.Entities.Abilities;
 using Base.UI.MessageBox;
 using HarmonyLib;
@@ -244,11 +244,11 @@ namespace TFTV.TFTVDrills
 
                 if (DrillsUnlock.WouldBreakWeaponProficiencyRequirement(character, original, out var blockingDrills))
                 {
-                    string abilityName = original?.ViewElementDef?.DisplayName1?.Localize() ?? original?.name ?? "the selected ability";
+                    string abilityName = original?.ViewElementDef?.DisplayName1?.Localize() ?? original?.name ?? DrillsText.Get(DrillsText.UnnamedAbility);
                     string drillNames = string.Join(", ", blockingDrills.Distinct().Where(name => !string.IsNullOrEmpty(name)));
                     string message = string.IsNullOrEmpty(drillNames)
-                        ? $"Cannot replace {abilityName} because it is required for an acquired drill."
-                        : $"Cannot replace {abilityName} because it is required for: {drillNames}.";
+                        ? DrillsText.Format(DrillsText.CannotReplaceForAcquiredDrill, abilityName)
+                        : DrillsText.Format(DrillsText.CannotReplaceForNamedDrills, abilityName, drillNames);
 
                     GameUtl.GetMessageBox()?.ShowSimplePrompt(message, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
                     Reflection.CallPrivate(ui, "RefreshAbilityTracks");
@@ -258,10 +258,10 @@ namespace TFTV.TFTVDrills
 
                 if (DrillsUnlock.TargetDrillLosesWeaponProficiencyRequirement(character, replacement, original, out var targetDrillName))
                 {
-                    string abilityName = original?.ViewElementDef?.DisplayName1?.Localize() ?? original?.name ?? "the selected ability";
+                    string abilityName = original?.ViewElementDef?.DisplayName1?.Localize() ?? original?.name ?? DrillsText.Get(DrillsText.UnnamedAbility);
                     string message = string.IsNullOrEmpty(targetDrillName)
-                        ? $"Cannot replace {abilityName} because it is required for the selected drill."
-                        : $"Cannot replace {abilityName} because it is required for: {targetDrillName}.";
+                        ? DrillsText.Format(DrillsText.CannotReplaceForSelectedDrill, abilityName)
+                        : DrillsText.Format(DrillsText.CannotReplaceForNamedDrills, abilityName, targetDrillName);
 
                     GameUtl.GetMessageBox()?.ShowSimplePrompt(message, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
                     Reflection.CallPrivate(ui, "RefreshAbilityTracks");
@@ -277,7 +277,7 @@ namespace TFTV.TFTVDrills
                 if (skillPointCost > 0 && (currSP + currFP) < skillPointCost)
                 {
                     Debug.LogWarning("[TFTV] Not enough SP/FS for swap; aborting.");
-                    GameUtl.GetMessageBox()?.ShowSimplePrompt("Not enough Skill Points.", MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                    GameUtl.GetMessageBox()?.ShowSimplePrompt(DrillsText.Get(DrillsText.NotEnoughSkillPointsPrompt), MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
                     Reflection.CallPrivate(ui, "RefreshAbilityTracks");
                     ui.RefreshStatPanel();
                     return;

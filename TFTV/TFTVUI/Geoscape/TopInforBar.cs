@@ -956,8 +956,8 @@ namespace TFTV.TFTVUI.Geoscape
                 int producedPerDay = Mathf.RoundToInt(producedPerHour * 24f);
                 int consumedPerDay = Mathf.RoundToInt(consumedPerHour * 24f);
 
-                string produced = string.Format(TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_FOOD_TOOLTIP_PRODUCED"), producedPerDay);
-                string consumed = string.Format(TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_FOOD_TOOLTIP_CONSUMED"), consumedPerDay);
+                string produced = TFTVCommonMethods.FormatKey("KEY_TFTV_FOOD_TOOLTIP_PRODUCED", producedPerDay);
+                string consumed = TFTVCommonMethods.FormatKey("KEY_TFTV_FOOD_TOOLTIP_CONSUMED", consumedPerDay);
 
                 return $"{produced}\n{consumed}";
             }

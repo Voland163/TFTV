@@ -149,4 +149,38 @@ namespace TFTV.TFTVBaseRework
 
         #endregion
     }
+
+    /// <summary>
+    /// Text the rest of the base rework shows the player - base activation, ransacking,
+    /// the initial loot preview, the training facility and the fallen operatives panel.
+    ///
+    /// Same rule as <see cref="PersonnelText"/>: the strings live in
+    /// TFTV_BaseReworkPersonnel_Localization.csv, never as literals here.
+    /// </summary>
+    internal static class BaseReworkText
+    {
+        internal static string Get(string key)
+        {
+            return TFTVCommonMethods.ConvertKeyToString(key);
+        }
+
+        internal static string Format(string key, params object[] arguments)
+        {
+            return string.Format(Get(key), arguments);
+        }
+
+        internal const string ActivationFailed = "KEY_TFTV_BASE_ACTIVATION_FAILED";
+        internal const string AmbushChance = "KEY_TFTV_BASE_AMBUSH_CHANCE";
+        internal const string RansackPayout = "KEY_TFTV_BASE_RANSACK_PAYOUT";
+        internal const string LootRandomEquipment = "KEY_TFTV_BASE_LOOT_RANDOM_EQUIPMENT";
+        internal const string TrainingNoStatGains = "KEY_TFTV_BASE_TRAINING_NO_STAT_GAINS";
+        internal const string TrainingStatGains = "KEY_TFTV_BASE_TRAINING_STAT_GAINS";
+
+        internal const string FallenHeader = "KEY_TFTV_BASE_FALLEN_HEADER";
+        internal const string FallenProjectOsiris = "KEY_TFTV_BASE_FALLEN_PROJECT_OSIRIS";
+        internal const string FallenMissionsAndKills = "KEY_TFTV_BASE_FALLEN_MISSIONS_KILLS";
+        internal const string FallenFavouriteWeapon = "KEY_TFTV_BASE_FALLEN_FAVOURITE_WEAPON";
+        internal const string FallenFavouriteSkill = "KEY_TFTV_BASE_FALLEN_FAVOURITE_SKILL";
+        internal const string FallenSkillPointsReturned = "KEY_TFTV_BASE_FALLEN_SP_RETURNED";
+    }
 }

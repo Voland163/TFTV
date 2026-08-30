@@ -138,7 +138,7 @@ namespace TFTV
 
                         if (modData == null && mod.Main.Instance.Entry.LocalizedName == "TFTV")
                         {
-                            string warning = "TFTV save data is null! This save is borked! Please load an earlier save.";
+                            string warning = TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_SAVE_DATA_MISSING_WARNING");
 
                             GameUtl.GetMessageBox().ShowSimplePrompt(warning, MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
                         }

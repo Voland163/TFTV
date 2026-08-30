@@ -137,8 +137,11 @@ namespace TFTV.TFTVBaseRework
                 progressionGuid,
                 abilityName);
 
+            // Developer-facing names: the marker is bookkeeping, not something the player is
+            // meant to read, so keep it out of the status screen rather than translating it.
             marker.ViewElementDef.DisplayName1 = new LocalizedTextBind(displayName, true);
             marker.ViewElementDef.Description = new LocalizedTextBind(description, true);
+            marker.ViewElementDef.ShowInStatusScreen = false;
             marker.StatModifications = new ItemStatModification[0];
             marker.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
 

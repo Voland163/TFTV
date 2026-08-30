@@ -182,6 +182,8 @@ namespace TFTV.TFTVIncidents
             private const string MarkerRootName = "HavenAttackRiskMarker";
 
             private static readonly Color Hours4Color = new Color(1f, 0.2f, 0.2f, 1f);
+
+            private const string RiskWindowHoursKey = "KEY_TFTV_HAVEN_ATTACK_RISK_HOURS";
             private static readonly Color Hours8Color = new Color(1f, 0.6f, 0.1f, 1f);
             private static readonly Color Hours12Color = new Color(1f, 0.92f, 0.2f, 1f);
 
@@ -326,15 +328,15 @@ namespace TFTV.TFTVIncidents
                 switch (risk)
                 {
                     case RiskWindow.Hours4:
-                        textMesh.text = "[4h]";
+                        textMesh.text = TFTVCommonMethods.FormatKey(RiskWindowHoursKey, 4);
                         textMesh.color = Hours4Color;
                         break;
                     case RiskWindow.Hours8:
-                        textMesh.text = "[8h]";
+                        textMesh.text = TFTVCommonMethods.FormatKey(RiskWindowHoursKey, 8);
                         textMesh.color = Hours8Color;
                         break;
                     default:
-                        textMesh.text = "[12h]";
+                        textMesh.text = TFTVCommonMethods.FormatKey(RiskWindowHoursKey, 12);
                         textMesh.color = Hours12Color;
                         break;
                 }

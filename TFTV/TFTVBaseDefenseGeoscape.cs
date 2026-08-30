@@ -3129,24 +3129,11 @@ namespace TFTV
                                             //  description.text += $" {geoCharacter.DisplayName} escaped to {phoenixBases.First().LocalizedSiteName}.";
                                         }
 
-                                        for (int x = 0; x < charactersToMove.Count; x++)
-                                        {
-                                            if (x < charactersToMove.Count - 2)
-                                            {
-                                                description.text += $" {charactersToMove[x].DisplayName},";
-                                            }
-                                            else if (x == charactersToMove.Count - 2)
-                                            {
-                                                description.text += $" {charactersToMove[x].DisplayName} and";
-                                            }
-                                            else if (x == charactersToMove.Count - 1)
-                                            {
-                                                description.text += $" {charactersToMove[x].DisplayName} ";
-                                            }
-
-                                        }
-
-                                        description.text += $"escaped to {phoenixBases.First().LocalizedSiteName}.";
+                                        description.text += " " + TFTVCommonMethods.FormatKey(
+                                            "KEY_TFTV_BASE_DEFENSE_ESCAPED_TO",
+                                            TFTVCommonMethods.JoinNames(
+                                                charactersToMove.Select(c => c.DisplayName)),
+                                            phoenixBases.First().LocalizedSiteName);
                                     }
 
                                 }

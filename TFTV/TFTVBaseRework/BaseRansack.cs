@@ -99,7 +99,7 @@ namespace TFTV.TFTVBaseRework
                 site.DestroySite();
 
                 GameUtl.GetMessageBox().ShowSimplePrompt(
-                    $"You gained from ransacking: {mats} Materials, {tech} Tech.",
+                    BaseReworkText.Format(BaseReworkText.RansackPayout, mats, tech),
                     MessageBoxIcon.Information,
                     MessageBoxButtons.OK,
                     null);

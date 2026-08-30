@@ -1,4 +1,4 @@
-Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
+﻿Key,Type,Desc,English,Chinese (Simplified),French,German,Italian,Polish,Russian,Spanish,UI_Tester
 TFTV_CRUISE_CONTROL_MODULE_DESCRIPTION,Text,,Provides +4 passenger slots and increases aircraft speed,,Offre +4 emplacements passagers et augmente la vitesse de l'appareil.,Gewährt +4 Truppplätze und erhöht die Fluggeschwindigkeit.,,Zapewnia +4 miejsca pasażerskie i zwiększa prędkość statku powietrznego,+4 места для бойцов и увеличение скорости самолета,Añade +4 espacios de pasajeros y aumenta la velocidad de la aeronave.,
 TFTV_CRUISE_CONTROL_MODULE_NAME,Text,,Quick response passenger module,,Module passager à intervention rapide,Reaktions- & Transportmodul,,Moduł pasażerski szybkiej reakcji,Модуль перехвата и вместимости,Módulo de respuesta rápida del pasajero.,
 TFTV_FUEL_TANK_MODULE_DESCRIPTION,Text,,Provides +4 passenger slots and increases aircraft range,,Offre +4 emplacements passagers et augmente la portée de l'appareil.,Gewährt +4 Truppplätze und erhöht die Reichweite des Fluggeräts.,,Zapewnia +4 miejsca pasażerskie i zwiększa zasięg statku powietrznego,+4 места для бойцов и увелечение дальности полета самолета,Añade +4 espacios de pasajeros y aumenta la velocidad de la aeronave.,
@@ -249,3 +249,5 @@ TFTV_LASER_BATTERY_PARTIAL,Text,,PARTIAL CHARGE,,CHARGE PARTIELLE,TEILLADUNG,,CZ
 TFTV_LASER_BATTERY_MAX_CHARGES,Text,,MAX CHARGES,,CHARGES MAX,MAX. LADUNGEN,,MAKSYMALNE ŁADUNKI,МАКС. ЗАРЯДОВ,,
 TFTV_LASER_BATTERY_PER_PACK_CHARGES,Text,,RELOADS PER PACK,,RECHARGES PAR PACK,NACHLADEN / PACK,,PRZEŁADOWANIA NA PAKIET,РЕСУРС ПЕРЕЗАРЯДКИ БАТАРЕИ,,
 KEY_REPAIR_KIT_DESCRIPTION,Text,,Repairs {bodyparthealamount} Hit Points (bionic and vehicle parts only).,,,,,,,,
+KEY_TFTV_PX_PHOENIX_GUARD,Text,,Phoenix Guard,,,,,,,,
+KEY_TFTV_NAHIA_GRIVANE,Text,,Nahia Grivane,,,,,,,,

@@ -1,4 +1,4 @@
-using PhoenixPoint.Common.Entities.Characters;
+﻿using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View.ViewControllers;
@@ -294,8 +294,8 @@ namespace TFTV.TFTVDrills
                     if (acquired)
                     {
                         missingRequirements = string.IsNullOrEmpty(missingRequirements)
-                            ? "Already acquired"
-                            : missingRequirements + "\nAlready acquired";
+                            ? DrillsText.Get(DrillsText.AlreadyAcquired)
+                            : missingRequirements + "\n" + DrillsText.Get(DrillsText.AlreadyAcquired);
                     }
 
                     Action onChoose = null;
@@ -329,7 +329,7 @@ namespace TFTV.TFTVDrills
 
                 if (optionCount == 0)
                 {
-                    UIBuilder.AddEmptyLabel(contentRect, "No drills available");
+                    UIBuilder.AddEmptyLabel(contentRect, DrillsText.Get(DrillsText.NoDrillsAvailable));
                 }
 
                 controller.ConfigureContent(viewportRect, contentRect, MenuWidth, MenuMaxHeight);
@@ -360,17 +360,17 @@ namespace TFTV.TFTVDrills
                 {
                     if (!slotUnlocked)
                     {
-                        missingDetails.Add("Level requirement not met");
+                        missingDetails.Add(DrillsText.Get(DrillsText.LevelRequirementNotMet));
                     }
 
                     if (!canAfford)
                     {
-                        missingDetails.Add("Not enough Skill Points");
+                        missingDetails.Add(DrillsText.Get(DrillsText.NotEnoughSkillPoints));
                     }
 
                     if (!canLearn && slotUnlocked)
                     {
-                        missingDetails.Add("Requirements not met");
+                        missingDetails.Add(DrillsText.Get(DrillsText.RequirementsNotMet));
                     }
                 }
 
@@ -383,7 +383,7 @@ namespace TFTV.TFTVDrills
                     SlotUnlocked = slotUnlocked,
                     CanLearnBaseAbility = canLearn,
                     CanAffordBaseAbility = canAfford,
-                    HeaderLabel = baseAbilityLearned ? $"Replace: {abilityName}" : $"Acquire: {abilityName}",
+                    HeaderLabel = DrillsText.Format(baseAbilityLearned ? DrillsText.HeaderReplaceAbilityNamed : DrillsText.HeaderAcquireAbilityNamed, abilityName),
                     MissingRequirements = missingDetails.Count > 0 ? string.Join("\n", missingDetails.Distinct()) : string.Empty,
                     Track = track,
                     EntryElement = entry,
