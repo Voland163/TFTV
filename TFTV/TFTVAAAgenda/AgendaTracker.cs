@@ -97,6 +97,32 @@ namespace TFTV.AgendaTracker
         internal static readonly FieldInfo CurrentTrackedElementsField =
             AccessTools.Field(typeof(UIModuleFactionAgendaTracker), "_currentTrackedElements");
 
+        // Stock's queue of elements Dispose()'d but not yet taken out of _currentTrackedElements.
+        // Vanilla drains it at the top of the parameterless UpdateData(); until then an element can be
+        // in the reuse pool, in the tracked list and in here all at once.
+        internal static readonly FieldInfo ElementsToRemoveField =
+            AccessTools.Field(typeof(UIModuleFactionAgendaTracker), "_elementsToRemove");
+
+        internal static List<UIFactionDataTrackerElement> GetElementsQueuedForRemoval(UIModuleFactionAgendaTracker instance)
+        {
+            return instance != null && ElementsToRemoveField != null
+                ? ElementsToRemoveField.GetValue(instance) as List<UIFactionDataTrackerElement>
+                : null;
+        }
+
+        internal static bool IsQueuedForRemoval(UIModuleFactionAgendaTracker instance, UIFactionDataTrackerElement element)
+        {
+            List<UIFactionDataTrackerElement> queued = GetElementsQueuedForRemoval(instance);
+            if (queued == null || element == null) return false;
+
+            foreach (UIFactionDataTrackerElement queuedElement in queued)
+            {
+                if (ReferenceEquals(queuedElement, element)) return true;
+            }
+
+            return false;
+        }
+
         internal static List<UIFactionDataTrackerElement> GetTrackedElements()
         {
             return GetTrackedElements(factionTracker);

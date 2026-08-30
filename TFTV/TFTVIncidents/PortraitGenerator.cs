@@ -1,4 +1,5 @@
 ﻿using Base.Cameras;
+using HarmonyLib;
 
 using Base.Core;
 using PhoenixPoint.Common.Core;
@@ -51,6 +52,12 @@ namespace TFTV.TFTVIncidents
 
         // Character the last request was for, so a settings change can re-render it in place.
         private static GeoCharacter _currentCharacter;
+
+        // preserveAspect as the leader Image ships it, captured the first time a portrait is
+        // applied. A rendered head needs it on; the painted event-leader artwork of every other
+        // geoscape event is authored for the slot as-is, so the flag has to go back.
+        private static bool _capturedPreserveAspect;
+        private static bool _originalPreserveAspect;
 
         // Render target is sized to the leader pic slot's on-screen size (clamped), so the
         // portrait matches the display resolution instead of a fixed 1024px.
@@ -295,6 +302,55 @@ namespace TFTV.TFTVIncidents
         }
 
         /// <summary>
+        /// Puts the encounter's leader slot back the way the game ships it.
+        ///
+        /// The slot is shared by every geoscape event, and the adjustments a rendered portrait needs
+        /// (the DisplayScale shrink and preserveAspect) are not adjustments the painted event-leader
+        /// artwork wants - left in place they follow the player into the next, unrelated encounter.
+        /// Called before each encounter is shown, so whatever that encounter then puts in the slot
+        /// starts from the vanilla state.
+        /// </summary>
+        internal static void ResetLeaderSlot(UIModuleSiteEncounters module)
+        {
+            try
+            {
+                if (module == null)
+                {
+                    return;
+                }
+
+                // Nothing in flight should paint over the encounter that is being shown now.
+                _currentRequestId = -1;
+                _currentCharacter = null;
+
+                RestoreDisplayScale(module);
+
+                if (module.EncounterLeaderImage != null)
+                {
+                    if (_capturedPreserveAspect)
+                    {
+                        module.EncounterLeaderImage.preserveAspect = _originalPreserveAspect;
+                    }
+
+                    // Only our own rendered head is cleared; artwork the game put there is left alone.
+                    if (_appliedModule == module)
+                    {
+                        module.EncounterLeaderImage.sprite = null;
+                    }
+                }
+
+                if (_appliedModule == module)
+                {
+                    _appliedModule = null;
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        /// <summary>
         /// Clears the leader picture we put in place and hides the slot, so nothing stale is shown
         /// while the next portrait renders.
         /// </summary>
@@ -335,6 +391,13 @@ namespace TFTV.TFTVIncidents
 
             module.EncunterLeaderGroup.SetActive(true);
             module.EncunterLeaderInkGroup.SetActive(true);
+
+            if (!_capturedPreserveAspect && module.EncounterLeaderImage != null)
+            {
+                _originalPreserveAspect = module.EncounterLeaderImage.preserveAspect;
+                _capturedPreserveAspect = true;
+            }
+
             module.EncounterLeaderImage.sprite = portrait;
             module.EncounterLeaderImage.preserveAspect = true;
             ApplyDisplayScale(module);
@@ -1474,6 +1537,22 @@ namespace TFTV.TFTVIncidents
 
         private sealed class CoroutineRunner : MonoBehaviour
         {
+        }
+
+        /// <summary>
+        /// Hands every encounter a leader slot in its shipped state.
+        ///
+        /// ShowEncounter is the single entry point the game displays a geoscape event through, and it
+        /// runs before the event's own leader artwork is assigned, so resetting here neither fights
+        /// the game for the slot nor undoes the portrait an incident applies afterwards.
+        /// </summary>
+        [HarmonyPatch(typeof(UIModuleSiteEncounters), "ShowEncounter")]
+        internal static class UIModuleSiteEncounters_ShowEncounter_ResetLeaderSlot_Patch
+        {
+            public static void Prefix(UIModuleSiteEncounters __instance)
+            {
+                ResetLeaderSlot(__instance);
+            }
         }
     }
 }

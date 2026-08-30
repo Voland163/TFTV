@@ -115,7 +115,7 @@ namespace TFTV.TFTVIncidents
                             10 * rank),
                         true);
 
-                    mountedDriverPassiveAbility.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile($"UI_AffinityIcon_COMPUTE_0.png");
+                    mountedDriverPassiveAbility.ViewElementDef.LargeIcon = Affinities.CreateAffinityIcon($"UI_AffinityIcon_COMPUTE_0.png");
                     mountedDriverPassiveAbility.ViewElementDef.SmallIcon = mountedDriverPassiveAbility.ViewElementDef.LargeIcon;
 
                     mountedDriverPassiveAbility.Rank = rank;

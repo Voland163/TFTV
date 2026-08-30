@@ -333,10 +333,29 @@ namespace TFTV.TFTVBaseRework
         private static readonly HashSet<int> _activeSiteIdsBuffer = new HashSet<int>();
         private static readonly List<int> _staleSiteIdsBuffer = new List<int>();
 
-        // Progression ranges already pushed into each visual. SetProgression touches renderer
-        // materials, so it must only be called when the range actually changes.
-        private static readonly Dictionary<int, KeyValuePair<TimeUnit, TimeUnit>> AppliedProgression =
-            new Dictionary<int, KeyValuePair<TimeUnit, TimeUnit>>();
+        /// <summary>
+        /// The progression range already pushed into a site's visual, and the controller it was pushed
+        /// into. SetProgression touches renderer materials, so it is only called when something has
+        /// actually changed - but the controller has to be part of "something". A tactical mission
+        /// tears the geoscape down and destroys these GameObjects, so the site gets a brand new
+        /// controller on return while its pending timer is unchanged; keyed on the range alone the
+        /// refresh reads "already applied" and leaves the new controller untouched, showing the
+        /// prefab's own default material (a full red ring) instead of the shrinking orange one.
+        /// </summary>
+        private sealed class AppliedProgressionState
+        {
+            public GeoActorProgressionVisualController Controller;
+            public TimeUnit Start;
+            public TimeUnit End;
+
+            public bool Matches(GeoActorProgressionVisualController controller, TimeUnit start, TimeUnit end)
+            {
+                return ReferenceEquals(Controller, controller) && Start == start && End == end;
+            }
+        }
+
+        private static readonly Dictionary<int, AppliedProgressionState> AppliedProgression =
+            new Dictionary<int, AppliedProgressionState>();
 
         public static void RefreshPendingConstructionVisuals(GeoLevelController level)
         {
@@ -375,6 +394,12 @@ namespace TFTV.TFTVBaseRework
 
                 if (!PendingConstructionVisuals.TryGetValue(site.SiteId, out GeoActorProgressionVisualController controller) || controller == null)
                 {
+                    // The previous controller is gone (never made, or destroyed with the geoscape while
+                    // the player was in a mission), so the site is starting over: let it be logged again
+                    // and make sure nothing claims its progression is still applied.
+                    PendingVisualCreationLogged.Remove(site.SiteId);
+                    AppliedProgression.Remove(site.SiteId);
+
                     GeoVehicle vehicle = ResolveVehicleForSite(site, level);
                     GeoActorProgressionVisualController prefab = vehicle?.VehicleDef?.ExplorationVisualsPrefab
                         ?? level?.PhoenixFaction?.Vehicles?.FirstOrDefault()?.VehicleDef?.ExplorationVisualsPrefab;
@@ -414,14 +439,21 @@ namespace TFTV.TFTVBaseRework
                 float durationHours = PhoenixBaseVisitFlow.GetPendingDurationHours(site);
                 TimeUnit startAt = site.ExpiringTimerAt - TimeUnit.FromHours(durationHours);
 
-                // SetProgression writes to the renderer's material, and the controller animates
-                // itself from its own Update, so only push the range when it has actually changed.
-                if (!AppliedProgression.TryGetValue(site.SiteId, out KeyValuePair<TimeUnit, TimeUnit> applied)
-                    || applied.Key != startAt
-                    || applied.Value != site.ExpiringTimerAt)
+                // SetProgression writes to the renderer's material, and the controller animates itself
+                // from its own Update, so only push the range when this controller has not already been
+                // given it.
+                if (!AppliedProgression.TryGetValue(site.SiteId, out AppliedProgressionState applied)
+                    || applied == null
+                    || !applied.Matches(controller, startAt, site.ExpiringTimerAt))
                 {
                     controller.SetProgression(startAt, site.ExpiringTimerAt, level.Timing);
-                    AppliedProgression[site.SiteId] = new KeyValuePair<TimeUnit, TimeUnit>(startAt, site.ExpiringTimerAt);
+
+                    AppliedProgression[site.SiteId] = new AppliedProgressionState
+                    {
+                        Controller = controller,
+                        Start = startAt,
+                        End = site.ExpiringTimerAt
+                    };
                 }
 
                 if (!controller.gameObject.activeSelf)
