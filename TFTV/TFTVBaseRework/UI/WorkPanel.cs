@@ -82,32 +82,32 @@ namespace TFTV.TFTVBaseRework
 
             GameObject buttons = CreateUIObject("SlotButtons", column.transform);
             var buttonsLayout = buttons.AddComponent<HorizontalLayoutGroup>();
-            buttonsLayout.spacing = 10f;
+            buttonsLayout.spacing = 14f;
             buttonsLayout.childAlignment = TextAnchor.MiddleCenter;
             buttonsLayout.childControlWidth = true;
             buttonsLayout.childControlHeight = true;
             buttonsLayout.childForceExpandWidth = false;
             buttonsLayout.childForceExpandHeight = false;
-            SetSize(buttons, 0f, 62f);
+            SetSize(buttons, 0f, 82f);
 
             bool canRemove = occupied > 0;
             bool canAdd = occupied < provided && Assignments.Values.Any(p => p != null && p.Character != null
                 && p.Assignment == PersonnelAssignment.Unassigned
                 && PersonnelRestrictions.CanBeAssignedToManufacturingOrResearch(p.Character));
 
-            CreateIconButton(buttons.transform, "Remove", null, () =>
+            CreateStepperButton(buttons.transform, "Remove", "-", () =>
             {
                 OnMinusClicked(assignment, level, phoenix);
-            }, size: 58f, enabled: canRemove, fallbackCaption: "-");
+            }, enabled: canRemove);
 
-            CreateIconButton(buttons.transform, "Add", null, () =>
+            CreateStepperButton(buttons.transform, "Add", "+", () =>
             {
                 OnPlusClicked(assignment, level, phoenix);
-            }, size: 58f, enabled: canAdd, fallbackCaption: "+");
+            }, enabled: canAdd);
 
-            Text counter = CreateLabel(column.transform, "Counter", $"{occupied} / {provided}", 44, TextPrimaryColor,
-                TextAnchor.MiddleCenter);
-            SetSize(counter.gameObject, 0f, 56f);
+            Text counter = CreateLabel(column.transform, "Counter", $"{occupied} / {provided}", 56,
+                occupied > 0 ? AccentOrangeColor : TextPrimaryColor, TextAnchor.MiddleCenter);
+            SetSize(counter.gameObject, 0f, 68f);
 
             Text facilityLabel = CreateLabel(column.transform, "Facilities", facilityLine, SmallFontSize,
                 facilities > 0 ? TextDimColor : TextDisabledColor, TextAnchor.MiddleCenter);

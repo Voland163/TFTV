@@ -74,22 +74,26 @@ namespace TFTV.TFTVBaseRework
         private static void CreateSkillpointsReadout(Transform parent, GeoPhoenixFaction phoenix)
         {
             GameObject box = CreateUIObject("Skillpoints", parent);
-            var layout = box.AddComponent<VerticalLayoutGroup>();
-            layout.spacing = 0f;
+            box.AddComponent<Image>().color = RowFillColor;
+
+            var layout = box.AddComponent<HorizontalLayoutGroup>();
+            layout.spacing = 12f;
+            layout.padding = new RectOffset(12, 12, 0, 0);
             layout.childAlignment = TextAnchor.MiddleCenter;
             layout.childControlWidth = true;
             layout.childControlHeight = true;
-            layout.childForceExpandWidth = true;
+            layout.childForceExpandWidth = false;
             layout.childForceExpandHeight = false;
-            SetSize(box, 0f, 92f);
+            SetSize(box, 0f, 64f);
 
-            Text caption = CreateLabel(box.transform, "Caption", "PHOENIX SP", SmallFontSize, TextDimColor,
-                TextAnchor.MiddleCenter);
-            SetSize(caption.gameObject, 0f, 28f);
+            Text caption = CreateLabel(box.transform, "Caption", "PHOENIX SP", BodyFontSize, TextDimColor,
+                TextAnchor.MiddleRight);
+            LayoutElement captionElement = SetSize(caption.gameObject, 0f, 64f);
+            captionElement.flexibleWidth = 1f;
 
-            Text value = CreateLabel(box.transform, "Value", phoenix.Skillpoints.ToString(), 52, AccentOrangeColor,
-                TextAnchor.MiddleCenter);
-            SetSize(value.gameObject, 0f, 60f);
+            Text value = CreateLabel(box.transform, "Value", phoenix.Skillpoints.ToString(), 44, AccentOrangeColor,
+                TextAnchor.MiddleLeft);
+            SetSize(value.gameObject, 110f, 64f);
         }
 
         private static void CreateTraineeRow(Transform parent, PersonnelInfo person, int index, GeoLevelController level,

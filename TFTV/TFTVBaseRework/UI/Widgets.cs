@@ -68,6 +68,13 @@ namespace TFTV.TFTVBaseRework
             return label;
         }
 
+        /// <summary>
+        /// Fixes an element's size along the dimensions given. The flexible size on a fixed dimension
+        /// is pinned to zero: an object carrying a layout group of its own otherwise reports the
+        /// group's flexible size (1 whenever the group force-expands its children) and competes with
+        /// the scroll lists for the leftover space, which stretches headers and tab rows to hundreds
+        /// of pixels and squeezes whatever sits below them.
+        /// </summary>
         internal static LayoutElement SetSize(GameObject go, float width, float height)
         {
             LayoutElement element = go.GetComponent<LayoutElement>() ?? go.AddComponent<LayoutElement>();
@@ -75,11 +82,13 @@ namespace TFTV.TFTVBaseRework
             {
                 element.minWidth = width;
                 element.preferredWidth = width;
+                element.flexibleWidth = 0f;
             }
             if (height > 0f)
             {
                 element.minHeight = height;
                 element.preferredHeight = height;
+                element.flexibleHeight = 0f;
             }
             return element;
         }
@@ -268,6 +277,48 @@ namespace TFTV.TFTVBaseRework
                     enabled ? (iconColor ?? TextPrimaryColor) : TextDisabledColor, TextAnchor.MiddleCenter);
                 Stretch(label.rectTransform);
             }
+
+            return button;
+        }
+
+        /// <summary>
+        /// The large square step buttons that seat and unseat a worker, carrying the orange edge the
+        /// vanilla screens use to mark an active control.
+        /// </summary>
+        internal static Button CreateStepperButton(Transform parent, string name, string caption, Action onClick,
+            float size = 76f, bool enabled = true)
+        {
+            GameObject go = CreateUIObject(name, parent);
+            var background = go.AddComponent<Image>();
+            background.color = enabled ? ButtonFillColor : ButtonFillDisabledColor;
+
+            var button = go.AddComponent<Button>();
+            button.targetGraphic = background;
+            button.interactable = enabled;
+            if (enabled && onClick != null)
+            {
+                button.onClick.AddListener(() =>
+                {
+                    try { onClick(); } catch (Exception e) { TFTVLogger.Error(e); }
+                });
+            }
+
+            SetSize(go, size, size);
+
+            GameObject edge = CreateUIObject("Edge", go.transform);
+            var edgeImage = edge.AddComponent<Image>();
+            edgeImage.color = enabled ? AccentOrangeColor : TextDisabledColor;
+            edgeImage.raycastTarget = false;
+            RectTransform edgeRect = edge.GetComponent<RectTransform>();
+            edgeRect.anchorMin = new Vector2(0f, 0f);
+            edgeRect.anchorMax = new Vector2(0f, 1f);
+            edgeRect.pivot = new Vector2(0f, 0.5f);
+            edgeRect.offsetMin = Vector2.zero;
+            edgeRect.offsetMax = new Vector2(5f, 0f);
+
+            Text label = CreateLabel(go.transform, "Text", caption, (int)(size * 0.62f),
+                enabled ? TextPrimaryColor : TextDisabledColor, TextAnchor.MiddleCenter);
+            Stretch(label.rectTransform);
 
             return button;
         }

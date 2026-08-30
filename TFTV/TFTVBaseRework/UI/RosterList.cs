@@ -106,7 +106,7 @@ namespace TFTV.TFTVBaseRework
             layout.childControlWidth = true;
             layout.childControlHeight = true;
             layout.childForceExpandWidth = true;
-            layout.childForceExpandHeight = true;
+            layout.childForceExpandHeight = false;
             SetSize(row, 0f, 48f);
 
             CreateFilterTab(row.transform, RosterFilter.All, "ALL", entries.Count);
