@@ -446,7 +446,8 @@ namespace TFTV.TFTVBaseRework
                     ProjectedStats projected = BuildProjectedStats(person.Character, levelsGained);
 
                     ShowConfirmation(confirmMsg,
-                        details => CreateCharacterSummary(details, person.Character, null, projected),
+                        details => CreateCharacterSummary(details, person.Character, null, projected,
+                            showClassAndAbilities: isDismissed),
                         () =>
                     {
                         if (TrainingFacilityRework.QueueCharacterTrainingAutoFacility(level, person.Character, spec, capturedLevel))

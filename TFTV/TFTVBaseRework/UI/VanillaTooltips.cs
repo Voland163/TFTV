@@ -1,14 +1,17 @@
 using Base.Core;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Common.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Tactical.Entities.Abilities;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using TFTV.TFTVHavenRecruitsUI;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
@@ -98,12 +101,58 @@ namespace TFTV.TFTVBaseRework
                 element.ignoreLayout = true;
 
                 _itemTooltip = clone.GetComponent<UIGeoItemTooltip>();
+                EnsureAbilityRows(_itemTooltip);
+
+                // Keeps the vanilla fade-in from nudging the tooltip's parent around, the same fix
+                // the Haven Recruits panel applies to its own copy.
+                TooltipLayoutFixes.RegisterTooltip(_itemTooltip);
+
                 return _itemTooltip;
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// The item tooltip lays each of an item's abilities into a fixed pool of rows carried by the
+        /// prefab - UIInventoryTooltipItemPanel.SetAbilities indexes straight into it, with no bounds
+        /// check - so gear carrying more abilities than the pool holds throws. Growing the pool once,
+        /// on our own copy, is cheaper than discovering the limit item by item.
+        /// </summary>
+        private static void EnsureAbilityRows(UIGeoItemTooltip tooltip, int rows = 12)
+        {
+            if (tooltip == null)
+            {
+                return;
+            }
+
+            foreach (UIInventoryTooltipItemPanel panel in tooltip.GetComponentsInChildren<UIInventoryTooltipItemPanel>(true))
+            {
+                if (panel?.AbilityPrefab == null)
+                {
+                    continue;
+                }
+
+                if (panel.AbilitiesObjects == null)
+                {
+                    panel.AbilitiesObjects = new List<UIInventoryTooltipItemAbility>();
+                }
+
+                Transform rowParent = panel.AbilitiesObjects.Count > 0
+                    ? panel.AbilitiesObjects[0].transform.parent
+                    : panel.AbilitiesHeader != null
+                        ? panel.AbilitiesHeader.transform.parent
+                        : panel.transform;
+
+                while (panel.AbilitiesObjects.Count < rows)
+                {
+                    UIInventoryTooltipItemAbility row = Object.Instantiate(panel.AbilityPrefab, rowParent, false);
+                    row.gameObject.SetActive(false);
+                    panel.AbilitiesObjects.Add(row);
+                }
             }
         }
 
@@ -119,23 +168,28 @@ namespace TFTV.TFTVBaseRework
             GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
             GeoscapeView view = level?.View;
 
+            // Other TFTV screens keep their own clones under the same view; cloning one of those
+            // inherits whatever it was set up for, scale included.
+            bool IsUsable(T candidate) =>
+                candidate != null
+                && isNotOurs(candidate)
+                && candidate.hideFlags == HideFlags.None
+                && !candidate.gameObject.name.StartsWith("TFTV_", StringComparison.Ordinal);
+
             T template = null;
             if (view != null)
             {
-                template = view.GetComponentsInChildren<T>(true)
-                    .FirstOrDefault(t => t != null && isNotOurs(t) && t.hideFlags == HideFlags.None);
+                template = view.GetComponentsInChildren<T>(true).FirstOrDefault(IsUsable);
             }
 
             if (template == null)
             {
-                template = Object.FindObjectsOfType<T>()
-                    .FirstOrDefault(t => t != null && isNotOurs(t) && t.hideFlags == HideFlags.None);
+                template = Object.FindObjectsOfType<T>().FirstOrDefault(IsUsable);
             }
 
             if (template == null)
             {
-                template = Resources.FindObjectsOfTypeAll<T>()
-                    .FirstOrDefault(t => t != null && isNotOurs(t) && t.hideFlags == HideFlags.None);
+                template = Resources.FindObjectsOfTypeAll<T>().FirstOrDefault(IsUsable);
             }
 
             return template;
@@ -212,6 +266,14 @@ namespace TFTV.TFTVBaseRework
                 }
 
                 tooltip.Show(Ability, View, useMutagens: false, cost: 0);
+
+                // Show fills the text; the tooltip has to be laid out before its size is known, or it
+                // is placed against a stale rect and ends up pinned to the edge of the screen.
+                if (tooltip.transform is RectTransform rect)
+                {
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
+                }
+
                 PersonnelVanillaTooltips.PositionNextTo(tooltip.transform, transform);
             }
             catch (Exception e)

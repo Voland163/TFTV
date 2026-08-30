@@ -31,9 +31,10 @@ namespace TFTV.TFTVBaseRework
         private const float StatCaptionWidth = 200f;
         private const float StatValueWidth = 130f;
 
-        private static readonly Color StatValueColor = new Color(1.00f, 0.72f, 0.25f, 1f);
-        private static readonly Color StatGainColor = new Color(0.45f, 0.90f, 0.45f, 1f);
-        private static readonly Color StatLossColor = new Color(0.95f, 0.45f, 0.40f, 1f);
+        // The Haven Recruits palette: amber for a value, green or red for what changes it.
+        private static readonly Color StatValueColor = new Color32(0xD0, 0xA4, 0x56, 0xFF);
+        private static readonly Color StatGainColor = Color.green;
+        private static readonly Color StatLossColor = Color.red;
         private static readonly Color AbilityLockedColor = new Color(0.45f, 0.45f, 0.45f, 0.7f);
 
         // The violet the Haven Recruits panel marks delirium with.
@@ -45,9 +46,14 @@ namespace TFTV.TFTVBaseRework
         /// <summary>
         /// Optional <paramref name="projectedStats"/> shows what training would leave the character
         /// with, as "21 (26)" against the current figure.
+        ///
+        /// <paramref name="showClassAndAbilities"/> is false for personnel who have never served: the
+        /// class they carry is a placeholder and their background perks are only rolled when they
+        /// deploy, so showing either before that would promise something the game has not decided.
         /// </summary>
         internal static void CreateCharacterSummary(Transform parent, GeoCharacter character,
-            IEnumerable<GeoItem> itemsGoingToStorage, ProjectedStats projectedStats = null)
+            IEnumerable<GeoItem> itemsGoingToStorage, ProjectedStats projectedStats = null,
+            bool showClassAndAbilities = true)
         {
             if (character == null)
             {
@@ -61,11 +67,16 @@ namespace TFTV.TFTVBaseRework
                 LayoutElement panelElement = panel.GetComponent<LayoutElement>() ?? panel.AddComponent<LayoutElement>();
                 panelElement.flexibleHeight = 0f;
 
-                CreateSummaryIdentity(content, character);
+                CreateSummaryIdentity(content, character, showClassAndAbilities);
                 CreateSummaryProgress(content, character);
                 CreateSummaryStats(content, character, projectedStats);
-                CreateSummaryAbilities(content, character);
-                CreateSummaryStorage(content, itemsGoingToStorage);
+
+                if (showClassAndAbilities)
+                {
+                    CreateSummaryAbilities(content, character);
+                }
+
+                CreateSummaryStorage(content, character, itemsGoingToStorage);
             }
             catch (Exception e)
             {
@@ -104,7 +115,7 @@ namespace TFTV.TFTVBaseRework
 
         #region Identity
 
-        private static void CreateSummaryIdentity(Transform parent, GeoCharacter character)
+        private static void CreateSummaryIdentity(Transform parent, GeoCharacter character, bool showClass)
         {
             GameObject row = CreateUIObject("Identity", parent);
             var layout = row.AddComponent<HorizontalLayoutGroup>();
@@ -116,7 +127,7 @@ namespace TFTV.TFTVBaseRework
             layout.childForceExpandHeight = false;
             SetSize(row, 0f, 64f);
 
-            ICollection<ViewElementDef> classViews = character.ClassViewElementDefs;
+            ICollection<ViewElementDef> classViews = showClass ? character.ClassViewElementDefs : null;
             if (classViews != null)
             {
                 foreach (ViewElementDef classView in classViews)
@@ -135,9 +146,12 @@ namespace TFTV.TFTVBaseRework
                 }
             }
 
-            Text level = CreateLabel(row.transform, "Level", (character.LevelProgression?.Level ?? 1).ToString(),
-                TitleFontSize, AccentOrangeColor);
-            SetSize(level.gameObject, 44f, 64f);
+            if (showClass)
+            {
+                Text level = CreateLabel(row.transform, "Level", (character.LevelProgression?.Level ?? 1).ToString(),
+                    TitleFontSize, AccentOrangeColor);
+                SetSize(level.gameObject, 44f, 64f);
+            }
 
             // Identity.Name is the character's full name; DisplayName is the same string.
             string fullName = character.Identity?.Name ?? character.DisplayName;
@@ -145,9 +159,12 @@ namespace TFTV.TFTVBaseRework
             LayoutElement nameElement = SetSize(name.gameObject, 0f, 64f);
             nameElement.flexibleWidth = 1f;
 
-            Text classLine = CreateLabel(row.transform, "Class", DescribeClass(character), BodyFontSize, TextDimColor,
-                TextAnchor.MiddleRight);
-            SetSize(classLine.gameObject, 0f, 64f);
+            if (showClass)
+            {
+                Text classLine = CreateLabel(row.transform, "Class", DescribeClass(character), BodyFontSize, TextDimColor,
+                    TextAnchor.MiddleRight);
+                SetSize(classLine.gameObject, 0f, 64f);
+            }
         }
 
         private static string DescribeClass(GeoCharacter character)
@@ -282,7 +299,7 @@ namespace TFTV.TFTVBaseRework
             if (deliriumValue > 0)
             {
                 Transform row4 = CreateStatRow(grid.transform, "StatRow4");
-                CreateDeliriumCell(row4, deliriumValue, stats.Willpower.IntValue);
+                CreateDeliriumCell(row4, deliriumValue, Mathf.RoundToInt(TFTVDelirium.CalculateMaxCorruption(character)));
                 CreateStatCell(row4, null, string.Empty, null, null, null, null);
             }
         }
@@ -463,7 +480,7 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
-        private static void CreateDeliriumCell(Transform parent, int delirium, int willpower)
+        private static void CreateDeliriumCell(Transform parent, int delirium, int maxDelirium)
         {
             GameObject cell = CreateUIObject("Stat_Delirium", parent);
             var background = cell.AddComponent<Image>();
@@ -494,10 +511,10 @@ namespace TFTV.TFTVBaseRework
             Text label = CreateLabel(cell.transform, "Label", "Delirium:", BodyFontSize, DeliriumColor);
             SetSize(label.gameObject, StatCaptionWidth, SummaryStatRowHeight);
 
-            Text value = CreateLabel(cell.transform, "Value", $"{delirium} / {willpower}", BodyFontSize, DeliriumColor);
+            Text value = CreateLabel(cell.transform, "Value", $"{delirium} / {maxDelirium}", BodyFontSize, DeliriumColor);
             SetSize(value.gameObject, StatValueWidth, SummaryStatRowHeight);
 
-            AddTextTooltip(cell, $"Delirium\n\nAt {willpower} delirium - this operative's willpower - they are lost to madness.");
+            AddTextTooltip(cell, $"Delirium\n\nAt {maxDelirium} this operative is lost to madness.");
         }
 
         private static string FormatPercent(float ratio)
@@ -531,28 +548,89 @@ namespace TFTV.TFTVBaseRework
 
         #region Abilities and gear
 
+        /// <summary>
+        /// One row per source, as the recruit panel splits them: the class track, the second class,
+        /// the personal perks, and everything else the operative has picked up along the way -
+        /// delirium perks, affinities, the grunt marker.
+        /// </summary>
         private static void CreateSummaryAbilities(Transform parent, GeoCharacter character)
         {
-            List<AbilityTrackSlot> slots = CollectAbilitySlots(character);
-            if (slots.Count == 0)
+            CharacterProgression progression = character.Progression;
+            if (progression == null)
+            {
+                return;
+            }
+
+            var learned = new HashSet<TacticalAbilityDef>(progression.Abilities ?? new List<TacticalAbilityDef>());
+            var accounted = new HashSet<TacticalAbilityDef>();
+
+            List<AbilityTrackSlot> mainClass = SlotsOf(progression.MainSpecDef?.AbilityTrack?.AbilitiesByLevel, accounted);
+            List<AbilityTrackSlot> secondClass = SlotsOf(progression.SecondarySpecDef?.AbilityTrack?.AbilitiesByLevel, accounted);
+            List<AbilityTrackSlot> personal = SlotsOf(progression.PersonalAbilityTrack?.AbilitiesByLevel, accounted);
+
+            // Whatever the tracks do not account for: perks the campaign handed out rather than ones
+            // the operative trained into.
+            List<TacticalAbilityDef> other = learned
+                .Where(ability => ability != null && !accounted.Contains(ability))
+                .Where(ability => ability.ViewElementDef?.SmallIcon != null)
+                .ToList();
+
+            if (mainClass.Count == 0 && secondClass.Count == 0 && personal.Count == 0 && other.Count == 0)
             {
                 CreateSummaryTextRow(parent, "ABILITIES AND PERKS", "none");
                 return;
             }
 
-            var learned = new HashSet<TacticalAbilityDef>(character.Progression?.Abilities ?? new List<TacticalAbilityDef>());
+            Text caption = CreateLabel(parent, "Caption_Abilities", "ABILITIES AND PERKS", SmallFontSize, TextDimColor);
+            SetSize(caption.gameObject, 0f, 32f);
 
-            Transform grid = CreateSummaryIconRow(parent, "ABILITIES AND PERKS", SummaryAbilityIconSize);
+            CreateAbilityRow(parent, "ClassAbilities", mainClass.Select(slot => slot.Ability), learned);
+            CreateAbilityRow(parent, "SecondClassAbilities", secondClass.Select(slot => slot.Ability), learned);
+            CreateAbilityRow(parent, "PersonalAbilities", personal.Select(slot => slot.Ability), learned);
+            CreateAbilityRow(parent, "OtherAbilities", other, learned);
+        }
 
-            foreach (AbilityTrackSlot slot in slots)
+        private static List<AbilityTrackSlot> SlotsOf(AbilityTrackSlot[] trackSlots, HashSet<TacticalAbilityDef> accounted)
+        {
+            var slots = new List<AbilityTrackSlot>();
+            if (trackSlots == null)
             {
-                ViewElementDef view = slot.Ability?.ViewElementDef;
-                if (view?.SmallIcon == null)
+                return slots;
+            }
+
+            foreach (AbilityTrackSlot slot in trackSlots)
+            {
+                if (slot?.Ability?.ViewElementDef?.SmallIcon == null)
                 {
                     continue;
                 }
 
-                Image icon = RecruitOverlayManagerHelpers.MakeFixedIcon(grid, view.SmallIcon, SummaryAbilityIconSize,
+                slots.Add(slot);
+                accounted.Add(slot.Ability);
+            }
+
+            return slots;
+        }
+
+        private static void CreateAbilityRow(Transform parent, string name, IEnumerable<TacticalAbilityDef> abilities,
+            HashSet<TacticalAbilityDef> learned)
+        {
+            List<TacticalAbilityDef> list = abilities?
+                .Where(ability => ability?.ViewElementDef?.SmallIcon != null)
+                .ToList() ?? new List<TacticalAbilityDef>();
+
+            if (list.Count == 0)
+            {
+                return;
+            }
+
+            Transform row = CreateSummaryIconStrip(parent, name, SummaryAbilityIconSize);
+
+            foreach (TacticalAbilityDef ability in list)
+            {
+                ViewElementDef view = ability.ViewElementDef;
+
+                Image icon = RecruitOverlayManagerHelpers.MakeFixedIcon(row, view.SmallIcon, SummaryAbilityIconSize,
                     EnsureAbilityFrameSprite());
                 if (icon == null)
                 {
@@ -560,62 +638,55 @@ namespace TFTV.TFTVBaseRework
                 }
 
                 // Abilities the operative has not earned are dimmed, as on the recruit panel.
-                icon.color = learned.Contains(slot.Ability) ? Color.white : AbilityLockedColor;
+                icon.color = learned.Contains(ability) ? Color.white : AbilityLockedColor;
 
                 GameObject triggerTarget = icon.transform.parent != null
                     ? icon.transform.parent.gameObject
                     : icon.gameObject;
 
                 var trigger = triggerTarget.AddComponent<PersonnelAbilityTooltipTrigger>();
-                trigger.Ability = slot.Ability;
+                trigger.Ability = ability;
                 trigger.View = view;
             }
         }
 
         /// <summary>
-        /// Class track first, then the personal one - the order the recruit panel shows them in.
+        /// Armour, ready slots and inventory each get their own row, as they do on the recruit panel.
         /// </summary>
-        private static List<AbilityTrackSlot> CollectAbilitySlots(GeoCharacter character)
+        private static void CreateSummaryStorage(Transform parent, GeoCharacter character,
+            IEnumerable<GeoItem> itemsGoingToStorage)
         {
-            var slots = new List<AbilityTrackSlot>();
-
-            AbilityTrackSlot[] classTrack = character.Progression?.MainSpecDef?.AbilityTrack?.AbilitiesByLevel;
-            if (classTrack != null)
-            {
-                slots.AddRange(classTrack.Where(slot => slot?.Ability != null));
-            }
-
-            AbilityTrackSlot[] personalTrack = character.Progression?.PersonalAbilityTrack?.AbilitiesByLevel;
-            if (personalTrack != null)
-            {
-                slots.AddRange(personalTrack.Where(slot => slot?.Ability != null));
-            }
-
-            return slots;
-        }
-
-        private static void CreateSummaryStorage(Transform parent, IEnumerable<GeoItem> itemsGoingToStorage)
-        {
-            List<GeoItem> items = itemsGoingToStorage?.ToList() ?? new List<GeoItem>();
+            var items = new HashSet<GeoItem>(itemsGoingToStorage ?? Enumerable.Empty<GeoItem>());
             if (items.Count == 0)
             {
                 CreateSummaryTextRow(parent, "RETURNED TO STORAGE", "nothing");
                 return;
             }
 
-            Transform grid = CreateSummaryIconRow(parent, "RETURNED TO STORAGE", SummaryInventorySlotSize);
-            UIGeoItemTooltip tooltip = PersonnelVanillaTooltips.EnsureItemTooltip(grid);
+            Text caption = CreateLabel(parent, "Caption_Storage", "RETURNED TO STORAGE", SmallFontSize, TextDimColor);
+            SetSize(caption.gameObject, 0f, 32f);
 
-            foreach (GeoItem item in items)
+            CreateItemRow(parent, "ArmourRow", character.ArmourItems.Where(items.Contains));
+            CreateItemRow(parent, "ReadyRow", character.EquipmentItems.Where(items.Contains));
+            CreateItemRow(parent, "InventoryRow", character.InventoryItems.Where(items.Contains));
+        }
+
+        private static void CreateItemRow(Transform parent, string name, IEnumerable<GeoItem> items)
+        {
+            List<GeoItem> list = items?.Where(item => item?.ItemDef != null).ToList() ?? new List<GeoItem>();
+            if (list.Count == 0)
             {
-                if (item?.ItemDef == null)
-                {
-                    continue;
-                }
+                return;
+            }
 
+            Transform row = CreateSummaryIconStrip(parent, name, SummaryInventorySlotSize);
+            UIGeoItemTooltip tooltip = PersonnelVanillaTooltips.EnsureItemTooltip(row);
+
+            foreach (GeoItem item in list)
+            {
                 // The game's own inventory slot, so the gear looks and explains itself exactly as it
                 // does everywhere else.
-                RecruitOverlayManagerHelpers.MakeInventorySlot(grid, item.ItemDef, SummaryInventorySlotSize,
+                RecruitOverlayManagerHelpers.MakeInventorySlot(row, item.ItemDef, SummaryInventorySlotSize,
                     "PersonnelStorage", tooltip);
             }
         }
@@ -655,14 +726,11 @@ namespace TFTV.TFTVBaseRework
         }
 
         /// <summary>
-        /// A captioned grid of icons that wraps onto as many rows as it needs.
+        /// One line of icons, wrapping only if it runs out of width.
         /// </summary>
-        private static Transform CreateSummaryIconRow(Transform parent, string caption, int cellSize)
+        private static Transform CreateSummaryIconStrip(Transform parent, string name, int cellSize)
         {
-            Text captionLabel = CreateLabel(parent, $"Caption_{caption}", caption, SmallFontSize, TextDimColor);
-            SetSize(captionLabel.gameObject, 0f, 32f);
-
-            GameObject grid = CreateUIObject($"Grid_{caption}", parent);
+            GameObject grid = CreateUIObject($"Grid_{name}", parent);
             var layout = grid.AddComponent<GridLayoutGroup>();
             layout.cellSize = new Vector2(cellSize, cellSize);
             layout.spacing = new Vector2(8f, 8f);
