@@ -181,6 +181,7 @@
     <Compile Include="TFTVBaseRework\UI\CharacterSummary.cs" />
     <Compile Include="TFTVBaseRework\UI\Panel.cs" />
     <Compile Include="TFTVBaseRework\UI\Tooltip.cs" />
+    <Compile Include="TFTVBaseRework\UI\VanillaTooltips.cs" />
     <Compile Include="TFTVBaseRework\UI\RosterList.cs" />
     <Compile Include="TFTVBaseRework\UI\TrainingPanel.cs" />
     <Compile Include="TFTVBaseRework\UI\Widgets.cs" />

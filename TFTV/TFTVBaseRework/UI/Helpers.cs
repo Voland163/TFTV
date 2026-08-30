@@ -441,7 +441,13 @@ namespace TFTV.TFTVBaseRework
                         confirmMsg += "\n\nThis operative is dismissed. Completing training will clear the dismissed status.";
                     }
 
-                    ShowConfirmation(confirmMsg, () =>
+                    // The dossier is shown with the stats training would leave them with, so the
+                    // gain can be read against what they have now rather than in the abstract.
+                    ProjectedStats projected = BuildProjectedStats(person.Character, levelsGained);
+
+                    ShowConfirmation(confirmMsg,
+                        details => CreateCharacterSummary(details, person.Character, null, projected),
+                        () =>
                     {
                         if (TrainingFacilityRework.QueueCharacterTrainingAutoFacility(level, person.Character, spec, capturedLevel))
                         {

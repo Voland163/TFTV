@@ -1,10 +1,10 @@
 using Base.UI;
 using PhoenixPoint.Common.Entities;
-using PhoenixPoint.Common.Entities.Items;
+using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.View.ViewControllers.Inventory;
 using PhoenixPoint.Tactical.Entities.Abilities;
-using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,17 +14,31 @@ using UnityEngine.UI;
 namespace TFTV.TFTVBaseRework
 {
     /// <summary>
-    /// The dossier shown before a decision about a character is taken: who they are, what they are
-    /// carrying, and what the decision costs them. Built in the same idiom as the Haven Recruits
-    /// panel - stat chips on one line, everything else as icons that explain themselves on hover.
+    /// The dossier shown before a decision about a character is taken: who they are, what they can
+    /// do, and what the decision costs them. Laid out like the Haven Recruits details panel and
+    /// using the same pieces - its stat icons, its ability frames, the game's own inventory slots -
+    /// so a soldier reads the same way wherever the player meets them.
     /// </summary>
     public static partial class PersonnelManagementUI
     {
-        private const float SummaryIconSize = 58f;
-        private const float SummaryRowLabelWidth = 250f;
+        private const int SummaryAbilityIconSize = 52;
+        private const int SummaryInventorySlotSize = 70;
+        private const float SummaryStatRowHeight = 46f;
 
+        private static readonly Color StatValueColor = new Color(1.00f, 0.72f, 0.25f, 1f);
+        private static readonly Color StatGainColor = new Color(0.45f, 0.90f, 0.45f, 1f);
+        private static readonly Color StatLossColor = new Color(0.95f, 0.45f, 0.40f, 1f);
+        private static readonly Color AbilityLockedColor = new Color(0.45f, 0.45f, 0.45f, 0.7f);
+
+        private static readonly Dictionary<string, Sprite> _statIcons = new Dictionary<string, Sprite>(StringComparer.OrdinalIgnoreCase);
+        private static Sprite _abilityFrameSprite;
+
+        /// <summary>
+        /// Optional <paramref name="projectedStats"/> shows what training would leave the character
+        /// with, as "21 (26)" against the current figure.
+        /// </summary>
         internal static void CreateCharacterSummary(Transform parent, GeoCharacter character,
-            IEnumerable<GeoItem> itemsGoingToStorage)
+            IEnumerable<GeoItem> itemsGoingToStorage, ProjectedStats projectedStats = null)
         {
             if (character == null)
             {
@@ -34,16 +48,13 @@ namespace TFTV.TFTVBaseRework
             try
             {
                 GameObject panel = CreateFramedPanel(parent, "CharacterSummary", out Transform content,
-                    borderThickness: 2f, padding: 10, spacing: 8f);
+                    borderThickness: 2f, padding: 12, spacing: 8f);
                 LayoutElement panelElement = panel.GetComponent<LayoutElement>() ?? panel.AddComponent<LayoutElement>();
                 panelElement.flexibleHeight = 0f;
 
-                var fitter = panel.AddComponent<ContentSizeFitter>();
-                fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
                 CreateSummaryIdentity(content, character);
-                CreateSummaryStats(content, character);
-                CreateSummaryWeapons(content, character);
+                CreateSummaryProgress(content, character);
+                CreateSummaryStats(content, character, projectedStats);
                 CreateSummaryAbilities(content, character);
                 CreateSummaryStorage(content, itemsGoingToStorage);
             }
@@ -53,7 +64,36 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
-        #region Identity and stats
+        /// <summary>What a character's three trained stats would become; null when nothing is pending.</summary>
+        internal sealed class ProjectedStats
+        {
+            public int Strength;
+            public int Willpower;
+            public int Speed;
+        }
+
+        /// <summary>
+        /// The stats a character would hold after gaining <paramref name="levelsGained"/> levels of
+        /// training, taken from the same per-level figures the training itself applies.
+        /// </summary>
+        internal static ProjectedStats BuildProjectedStats(GeoCharacter character, int levelsGained)
+        {
+            if (character?.Progression == null || levelsGained <= 0)
+            {
+                return null;
+            }
+
+            TrainingFacilityRework.GetStatGains(levelsGained, out int strength, out int willpower, out int speed);
+
+            return new ProjectedStats
+            {
+                Strength = character.Progression.Strength + strength,
+                Willpower = character.Progression.Will + willpower,
+                Speed = character.Progression.Speed + speed,
+            };
+        }
+
+        #region Identity
 
         private static void CreateSummaryIdentity(Transform parent, GeoCharacter character)
         {
@@ -68,26 +108,35 @@ namespace TFTV.TFTVBaseRework
             SetSize(row, 0f, 64f);
 
             ICollection<ViewElementDef> classViews = character.ClassViewElementDefs;
-            foreach (ViewElementDef classView in classViews ?? (ICollection<ViewElementDef>)new List<ViewElementDef>())
+            if (classViews != null)
             {
-                if (classView?.SmallIcon == null)
+                foreach (ViewElementDef classView in classViews)
                 {
-                    continue;
-                }
+                    if (classView?.SmallIcon == null)
+                    {
+                        continue;
+                    }
 
-                GameObject iconGO = CreateUIObject("ClassIcon", row.transform);
-                var image = iconGO.AddComponent<Image>();
-                image.sprite = classView.SmallIcon;
-                image.preserveAspect = true;
-                image.raycastTarget = false;
-                SetSize(iconGO, 52f, 52f);
+                    GameObject iconGO = CreateUIObject("ClassIcon", row.transform);
+                    var image = iconGO.AddComponent<Image>();
+                    image.sprite = classView.SmallIcon;
+                    image.preserveAspect = true;
+                    image.raycastTarget = false;
+                    SetSize(iconGO, 48f, 48f);
+                }
             }
 
-            Text name = CreateLabel(row.transform, "Name", character.DisplayName, TitleFontSize, TextPrimaryColor);
+            Text level = CreateLabel(row.transform, "Level", (character.LevelProgression?.Level ?? 1).ToString(),
+                TitleFontSize, AccentOrangeColor);
+            SetSize(level.gameObject, 44f, 64f);
+
+            // Identity.Name is the character's full name; DisplayName is the same string.
+            string fullName = character.Identity?.Name ?? character.DisplayName;
+            Text name = CreateLabel(row.transform, "Name", fullName, 38, TextPrimaryColor);
             LayoutElement nameElement = SetSize(name.gameObject, 0f, 64f);
             nameElement.flexibleWidth = 1f;
 
-            Text classLine = CreateLabel(row.transform, "Class", DescribeClass(character), BodyFontSize, AccentOrangeColor,
+            Text classLine = CreateLabel(row.transform, "Class", DescribeClass(character), BodyFontSize, TextDimColor,
                 TextAnchor.MiddleRight);
             SetSize(classLine.gameObject, 0f, 64f);
         }
@@ -108,139 +157,356 @@ namespace TFTV.TFTVBaseRework
                 parts.Add(secondClass);
             }
 
-            int level = character.LevelProgression?.Level ?? 1;
-            parts.Add($"Level {level}");
-
-            return string.Join(" / ", parts);
+            return parts.Count > 0 ? string.Join(" / ", parts) : "No class";
         }
 
-        private static void CreateSummaryStats(Transform parent, GeoCharacter character)
+        /// <summary>
+        /// The character's own skill points and experience - what they have to spend, and how far
+        /// they are through their level.
+        /// </summary>
+        private static void CreateSummaryProgress(Transform parent, GeoCharacter character)
         {
-            GameObject row = CreateUIObject("Stats", parent);
+            GameObject row = CreateUIObject("Progress", parent);
             var layout = row.AddComponent<HorizontalLayoutGroup>();
+            layout.spacing = 24f;
+            layout.padding = new RectOffset(4, 4, 0, 0);
+            layout.childAlignment = TextAnchor.MiddleLeft;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = false;
+            layout.childForceExpandHeight = false;
+            SetSize(row, 0f, 44f);
+
+            int skillPoints = character.Progression?.SkillPoints ?? 0;
+            int experience = character.LevelProgression?.Experience ?? 0;
+
+            CreateSummaryInlineValue(row.transform, "SP", skillPoints.ToString(),
+                "Skill points this operative has to spend on their own abilities.");
+            CreateSummaryInlineValue(row.transform, "XP", experience.ToString(),
+                "Experience earned so far.");
+        }
+
+        private static void CreateSummaryInlineValue(Transform parent, string caption, string value, string tooltip)
+        {
+            GameObject cell = CreateUIObject($"Progress_{caption}", parent);
+            var background = cell.AddComponent<Image>();
+            background.color = new Color(0f, 0f, 0f, 0.01f);
+
+            var layout = cell.AddComponent<HorizontalLayoutGroup>();
             layout.spacing = 8f;
             layout.childAlignment = TextAnchor.MiddleLeft;
             layout.childControlWidth = true;
             layout.childControlHeight = true;
-            layout.childForceExpandWidth = true;
+            layout.childForceExpandWidth = false;
             layout.childForceExpandHeight = false;
-            SetSize(row, 0f, 74f);
+            SetSize(cell, 0f, 44f);
 
+            Text captionLabel = CreateLabel(cell.transform, "Caption", caption, SmallFontSize, TextDimColor);
+            SetSize(captionLabel.gameObject, 46f, 44f);
+
+            Text valueLabel = CreateLabel(cell.transform, "Value", value, BodyFontSize, StatValueColor);
+            SetSize(valueLabel.gameObject, 0f, 44f);
+
+            AddTextTooltip(cell, $"{caption}\n\n{tooltip}");
+        }
+
+        #endregion
+
+        #region Stats
+
+        private static void CreateSummaryStats(Transform parent, GeoCharacter character, ProjectedStats projected)
+        {
             CharacterStats stats = character.CharacterStats;
+            CharacterProgression progression = character.Progression;
             if (stats == null)
             {
                 return;
             }
 
-            CreateStatChip(row.transform, "HP", $"{stats.Health?.IntValue ?? 0}", TextPrimaryColor,
-                "Health. What the operative can take before going down.");
-            CreateStatChip(row.transform, "STR", $"{stats.Endurance?.IntValue ?? 0}", TextPrimaryColor,
-                "Strength. Carrying capacity and the base for health.");
-            CreateStatChip(row.transform, "WILL", $"{stats.Willpower?.IntValue ?? 0}", TextPrimaryColor,
-                "Willpower. Resistance to panic and the pool that pays for abilities.");
-            CreateStatChip(row.transform, "SPD", $"{stats.Speed?.IntValue ?? 0}", TextPrimaryColor,
-                "Speed. Distance covered per action point.");
-            CreateStatChip(row.transform, "ACC", $"{stats.Accuracy?.IntValue ?? 0}%", TextPrimaryColor,
-                "Accuracy. Applied to every shot the operative takes.");
+            string modifierNote = projected != null
+                ? "The figure in brackets is what training would leave them with."
+                : "The figure in brackets is the value after armour and augmentations.";
+
+            // Left column carries the trained stats, right column the ones gear and class decide -
+            // the same split the Haven Recruits panel uses.
+            GameObject grid = CreateUIObject("Stats", parent);
+            var gridLayout = grid.AddComponent<VerticalLayoutGroup>();
+            gridLayout.spacing = 4f;
+            gridLayout.childControlWidth = true;
+            gridLayout.childControlHeight = true;
+            gridLayout.childForceExpandWidth = true;
+            gridLayout.childForceExpandHeight = false;
+            SetSize(grid, 0f, (SummaryStatRowHeight + 4f) * 3f);
+
+            Transform row1 = CreateStatRow(grid.transform, "StatRow1");
+            CreateStatCell(row1, "Strength", "Strength", progression?.Strength ?? stats.Endurance.IntValue,
+                projected?.Strength ?? stats.Endurance.IntValue, modifierNote);
+            CreateStatCell(row1, "Perception", "Perception", stats.Perception.IntValue.ToString(), null, null, null);
+
+            Transform row2 = CreateStatRow(grid.transform, "StatRow2");
+            CreateStatCell(row2, "Willpower", "Willpower", progression?.Will ?? stats.Willpower.IntValue,
+                projected?.Willpower ?? stats.Willpower.IntValue, modifierNote);
+            CreateStatCell(row2, "Accuracy", "Accuracy", null, FormatPercent(stats.Accuracy.Value), null, null);
+
+            Transform row3 = CreateStatRow(grid.transform, "StatRow3");
+            CreateStatCell(row3, "Speed", "Speed", progression?.Speed ?? stats.Speed.IntValue,
+                projected?.Speed ?? stats.Speed.IntValue, modifierNote);
+            CreateStatCell(row3, "Stealth", "Stealth", null, FormatPercent(stats.Stealth.Value), null, null);
 
             int delirium = stats.Corruption?.IntValue ?? 0;
-            CreateStatChip(row.transform, "DELIRIUM", $"{delirium}/{stats.Willpower?.IntValue ?? 0}",
-                delirium > 0 ? AccentOrangeColor : TextDimColor,
-                "Delirium against willpower. At willpower the operative is lost to madness.");
+            if (delirium > 0)
+            {
+                Transform row4 = CreateStatRow(grid.transform, "StatRow4");
+                LayoutElement gridElement = grid.GetComponent<LayoutElement>();
+                gridElement.minHeight += SummaryStatRowHeight + 4f;
+                gridElement.preferredHeight = gridElement.minHeight;
+
+                CreateDeliriumCell(row4, delirium, stats.Willpower.IntValue);
+                CreateStatCell(row4, null, string.Empty, null, string.Empty, null, null);
+            }
         }
 
-        private static void CreateStatChip(Transform parent, string caption, string value, Color valueColor, string tooltip)
+        private static Transform CreateStatRow(Transform parent, string name)
         {
-            GameObject chip = CreateUIObject($"Stat_{caption}", parent);
-            var background = chip.AddComponent<Image>();
-            background.color = RowFillColor;
-
-            var layout = chip.AddComponent<VerticalLayoutGroup>();
-            layout.spacing = 0f;
-            layout.padding = new RectOffset(6, 6, 4, 4);
-            layout.childAlignment = TextAnchor.MiddleCenter;
+            GameObject row = CreateUIObject(name, parent);
+            var layout = row.AddComponent<HorizontalLayoutGroup>();
+            layout.spacing = 16f;
+            layout.childAlignment = TextAnchor.MiddleLeft;
             layout.childControlWidth = true;
             layout.childControlHeight = true;
             layout.childForceExpandWidth = true;
             layout.childForceExpandHeight = false;
-            SetSize(chip, 0f, 74f);
-            chip.GetComponent<LayoutElement>().flexibleWidth = 1f;
-
-            Text captionLabel = CreateLabel(chip.transform, "Caption", caption, SmallFontSize, TextDimColor,
-                TextAnchor.MiddleCenter);
-            SetSize(captionLabel.gameObject, 0f, 26f);
-
-            Text valueLabel = CreateLabel(chip.transform, "Value", value, TitleFontSize, valueColor,
-                TextAnchor.MiddleCenter);
-            SetSize(valueLabel.gameObject, 0f, 40f);
-
-            AddTooltip(chip, $"{caption}\n\n{tooltip}");
+            SetSize(row, 0f, SummaryStatRowHeight);
+            return row.transform;
         }
 
-        #endregion
-
-        #region Weapons, abilities and gear
-
-        private static void CreateSummaryWeapons(Transform parent, GeoCharacter character)
+        private static void CreateStatCell(Transform parent, string statIcon, string caption, int baseValue,
+            int finalValue, string tooltip)
         {
-            List<GeoItem> weapons = character.EquipmentItems
-                .Where(item => item?.ItemDef is WeaponDef)
-                .ToList();
-
-            string primary = weapons.Count > 0 ? DescribeItem(weapons[0]) : "none";
-            string secondary = weapons.Count > 1 ? DescribeItem(weapons[1]) : "none";
-
-            CreateSummaryTextRow(parent, "WEAPONS", $"Primary: {primary}    Secondary: {secondary}");
+            string finalText = finalValue != baseValue ? finalValue.ToString() : null;
+            Color finalColor = finalValue > baseValue ? StatGainColor : StatLossColor;
+            CreateStatCell(parent, statIcon, caption, baseValue.ToString(), finalText, finalColor, tooltip);
         }
 
-        private static void CreateSummaryAbilities(Transform parent, GeoCharacter character)
+        private static void CreateStatCell(Transform parent, string statIcon, string caption, string baseText,
+            string finalText, Color? finalColor, string tooltip)
         {
-            List<TacticalAbilityDef> abilities = (character.Progression?.Abilities ?? new List<TacticalAbilityDef>())
-                .Where(ability => ability?.ViewElementDef?.SmallIcon != null)
-                .Where(ability => !string.IsNullOrEmpty(ability.ViewElementDef.DisplayName1?.Localize()))
-                .ToList();
+            GameObject cell = CreateUIObject($"Stat_{caption}", parent);
+            var background = cell.AddComponent<Image>();
+            background.color = new Color(0f, 0f, 0f, 0.01f);
 
-            Transform grid = CreateSummaryGridRow(parent, "ABILITIES AND PERKS", abilities.Count);
-            if (grid == null)
+            var layout = cell.AddComponent<HorizontalLayoutGroup>();
+            layout.spacing = 8f;
+            layout.childAlignment = TextAnchor.MiddleLeft;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = false;
+            layout.childForceExpandHeight = false;
+            LayoutElement cellElement = SetSize(cell, 0f, SummaryStatRowHeight);
+            cellElement.flexibleWidth = 1f;
+
+            if (string.IsNullOrEmpty(caption))
             {
                 return;
             }
 
-            foreach (TacticalAbilityDef ability in abilities)
+            Sprite icon = GetStatIcon(statIcon);
+            if (icon != null)
             {
-                string title = ability.ViewElementDef.DisplayName1.Localize();
-                string description = ability.ViewElementDef.Description?.Localize();
-                CreateSummaryIcon(grid, ability.ViewElementDef.SmallIcon, title,
-                    string.IsNullOrEmpty(description) ? title : $"{title}\n\n{description}");
+                GameObject iconGO = CreateUIObject("Icon", cell.transform);
+                var image = iconGO.AddComponent<Image>();
+                image.sprite = icon;
+                image.preserveAspect = true;
+                image.raycastTarget = false;
+                SetSize(iconGO, 34f, 34f);
             }
+
+            Text label = CreateLabel(cell.transform, "Label", $"{caption}:", BodyFontSize, TextPrimaryColor);
+            SetSize(label.gameObject, 0f, SummaryStatRowHeight);
+
+            Text value = CreateLabel(cell.transform, "Value", baseText ?? finalText, BodyFontSize, StatValueColor);
+            SetSize(value.gameObject, 0f, SummaryStatRowHeight);
+
+            if (baseText != null && finalText != null)
+            {
+                Text final = CreateLabel(cell.transform, "Final", $"({finalText})", BodyFontSize,
+                    finalColor ?? StatGainColor);
+                SetSize(final.gameObject, 0f, SummaryStatRowHeight);
+            }
+
+            if (!string.IsNullOrEmpty(tooltip))
+            {
+                AddTextTooltip(cell, $"{caption}\n\n{tooltip}");
+            }
+        }
+
+        private static void CreateDeliriumCell(Transform parent, int delirium, int willpower)
+        {
+            GameObject cell = CreateUIObject("Stat_Delirium", parent);
+            var background = cell.AddComponent<Image>();
+            background.color = new Color(0f, 0f, 0f, 0.01f);
+
+            var layout = cell.AddComponent<HorizontalLayoutGroup>();
+            layout.spacing = 8f;
+            layout.childAlignment = TextAnchor.MiddleLeft;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = false;
+            layout.childForceExpandHeight = false;
+            LayoutElement cellElement = SetSize(cell, 0f, SummaryStatRowHeight);
+            cellElement.flexibleWidth = 1f;
+
+            Sprite icon = DefCache.GetDef<ViewElementDef>("E_Visuals [Corruption_StatusDef]")?.SmallIcon;
+            if (icon != null)
+            {
+                GameObject iconGO = CreateUIObject("Icon", cell.transform);
+                var image = iconGO.AddComponent<Image>();
+                image.sprite = icon;
+                image.color = AccentOrangeColor;
+                image.preserveAspect = true;
+                image.raycastTarget = false;
+                SetSize(iconGO, 34f, 34f);
+            }
+
+            Text label = CreateLabel(cell.transform, "Label", $"Delirium: {delirium}", BodyFontSize, AccentOrangeColor);
+            SetSize(label.gameObject, 0f, SummaryStatRowHeight);
+
+            AddTextTooltip(cell, $"Delirium\n\nAt {willpower} delirium - this operative's willpower - they are lost to madness.");
+        }
+
+        private static string FormatPercent(float ratio)
+        {
+            return Mathf.RoundToInt(ratio * 100f) + "%";
+        }
+
+        private static Sprite GetStatIcon(string statName)
+        {
+            if (string.IsNullOrEmpty(statName))
+            {
+                return null;
+            }
+
+            if (_statIcons.TryGetValue(statName, out Sprite cached) && cached != null)
+            {
+                return cached;
+            }
+
+            // The same Stat_*.png assets the Haven Recruits panel draws.
+            Sprite icon = Helper.CreateSpriteFromImageFile($"Stat_{statName}.png");
+            if (icon != null)
+            {
+                _statIcons[statName] = icon;
+            }
+
+            return icon;
+        }
+
+        #endregion
+
+        #region Abilities and gear
+
+        private static void CreateSummaryAbilities(Transform parent, GeoCharacter character)
+        {
+            List<AbilityTrackSlot> slots = CollectAbilitySlots(character);
+            if (slots.Count == 0)
+            {
+                CreateSummaryTextRow(parent, "ABILITIES AND PERKS", "none");
+                return;
+            }
+
+            var learned = new HashSet<TacticalAbilityDef>(character.Progression?.Abilities ?? new List<TacticalAbilityDef>());
+
+            Transform grid = CreateSummaryIconRow(parent, "ABILITIES AND PERKS", SummaryAbilityIconSize);
+
+            foreach (AbilityTrackSlot slot in slots)
+            {
+                ViewElementDef view = slot.Ability?.ViewElementDef;
+                if (view?.SmallIcon == null)
+                {
+                    continue;
+                }
+
+                Image icon = RecruitOverlayManagerHelpers.MakeFixedIcon(grid, view.SmallIcon, SummaryAbilityIconSize,
+                    EnsureAbilityFrameSprite());
+                if (icon == null)
+                {
+                    continue;
+                }
+
+                // Abilities the operative has not earned are dimmed, as on the recruit panel.
+                icon.color = learned.Contains(slot.Ability) ? Color.white : AbilityLockedColor;
+
+                GameObject triggerTarget = icon.transform.parent != null
+                    ? icon.transform.parent.gameObject
+                    : icon.gameObject;
+
+                var trigger = triggerTarget.AddComponent<PersonnelAbilityTooltipTrigger>();
+                trigger.Ability = slot.Ability;
+                trigger.View = view;
+            }
+        }
+
+        /// <summary>
+        /// Class track first, then the personal one - the order the recruit panel shows them in.
+        /// </summary>
+        private static List<AbilityTrackSlot> CollectAbilitySlots(GeoCharacter character)
+        {
+            var slots = new List<AbilityTrackSlot>();
+
+            AbilityTrackSlot[] classTrack = character.Progression?.MainSpecDef?.AbilityTrack?.AbilitiesByLevel;
+            if (classTrack != null)
+            {
+                slots.AddRange(classTrack.Where(slot => slot?.Ability != null));
+            }
+
+            AbilityTrackSlot[] personalTrack = character.Progression?.PersonalAbilityTrack?.AbilitiesByLevel;
+            if (personalTrack != null)
+            {
+                slots.AddRange(personalTrack.Where(slot => slot?.Ability != null));
+            }
+
+            return slots;
         }
 
         private static void CreateSummaryStorage(Transform parent, IEnumerable<GeoItem> itemsGoingToStorage)
         {
             List<GeoItem> items = itemsGoingToStorage?.ToList() ?? new List<GeoItem>();
-
-            Transform grid = CreateSummaryGridRow(parent, "RETURNED TO STORAGE", items.Count);
-            if (grid == null)
+            if (items.Count == 0)
             {
+                CreateSummaryTextRow(parent, "RETURNED TO STORAGE", "nothing");
                 return;
             }
 
+            Transform grid = CreateSummaryIconRow(parent, "RETURNED TO STORAGE", SummaryInventorySlotSize);
+            UIGeoItemTooltip tooltip = PersonnelVanillaTooltips.EnsureItemTooltip(grid);
+
             foreach (GeoItem item in items)
             {
-                ViewElementDef view = item?.ItemDef?.ViewElementDef;
-                string title = DescribeItem(item);
-                string description = view?.Description?.Localize();
-                CreateSummaryIcon(grid, view?.InventoryIcon ?? view?.SmallIcon, title,
-                    string.IsNullOrEmpty(description) ? title : $"{title}\n\n{description}");
+                if (item?.ItemDef == null)
+                {
+                    continue;
+                }
+
+                // The game's own inventory slot, so the gear looks and explains itself exactly as it
+                // does everywhere else.
+                RecruitOverlayManagerHelpers.MakeInventorySlot(grid, item.ItemDef, SummaryInventorySlotSize,
+                    "PersonnelStorage", tooltip);
             }
         }
 
-        private static string DescribeItem(GeoItem item)
+        private static Sprite EnsureAbilityFrameSprite()
         {
-            return item?.ItemDef?.ViewElementDef?.DisplayName1?.Localize()
-                   ?? item?.ItemDef?.name
-                   ?? "unknown";
+            if (_abilityFrameSprite == null)
+            {
+                _abilityFrameSprite = Helper.CreateSpriteFromImageFile("UI_ButtonFrame_Main_Sliced.png");
+            }
+
+            return _abilityFrameSprite;
         }
+
+        #endregion
+
+        #region Row helpers
 
         private static void CreateSummaryTextRow(Transform parent, string caption, string value)
         {
@@ -252,35 +518,28 @@ namespace TFTV.TFTVBaseRework
             layout.childControlHeight = true;
             layout.childForceExpandWidth = false;
             layout.childForceExpandHeight = false;
-            SetSize(row, 0f, 44f);
+            SetSize(row, 0f, 40f);
 
             Text captionLabel = CreateLabel(row.transform, "Caption", caption, SmallFontSize, TextDimColor);
-            SetSize(captionLabel.gameObject, SummaryRowLabelWidth, 44f);
+            SetSize(captionLabel.gameObject, 320f, 40f);
 
-            Text valueLabel = CreateLabel(row.transform, "Value", value, BodyFontSize, TextPrimaryColor);
-            LayoutElement valueElement = SetSize(valueLabel.gameObject, 0f, 44f);
+            Text valueLabel = CreateLabel(row.transform, "Value", value, BodyFontSize, TextDimColor);
+            LayoutElement valueElement = SetSize(valueLabel.gameObject, 0f, 40f);
             valueElement.flexibleWidth = 1f;
         }
 
         /// <summary>
-        /// A captioned row of icons. Returns the grid to fill, or null when there is nothing to show -
-        /// an empty heading is worse than no heading.
+        /// A captioned grid of icons that wraps onto as many rows as it needs.
         /// </summary>
-        private static Transform CreateSummaryGridRow(Transform parent, string caption, int iconCount)
+        private static Transform CreateSummaryIconRow(Transform parent, string caption, int cellSize)
         {
-            if (iconCount <= 0)
-            {
-                CreateSummaryTextRow(parent, caption, "none");
-                return null;
-            }
-
             Text captionLabel = CreateLabel(parent, $"Caption_{caption}", caption, SmallFontSize, TextDimColor);
             SetSize(captionLabel.gameObject, 0f, 32f);
 
             GameObject grid = CreateUIObject($"Grid_{caption}", parent);
             var layout = grid.AddComponent<GridLayoutGroup>();
-            layout.cellSize = new Vector2(SummaryIconSize, SummaryIconSize);
-            layout.spacing = new Vector2(6f, 6f);
+            layout.cellSize = new Vector2(cellSize, cellSize);
+            layout.spacing = new Vector2(8f, 8f);
             layout.padding = new RectOffset(2, 2, 2, 2);
 
             var fitter = grid.AddComponent<ContentSizeFitter>();
@@ -288,36 +547,12 @@ namespace TFTV.TFTVBaseRework
 
             LayoutElement element = grid.AddComponent<LayoutElement>();
             element.flexibleHeight = 0f;
+            element.minHeight = cellSize + 8f;
 
             return grid.transform;
         }
 
-        private static void CreateSummaryIcon(Transform parent, Sprite icon, string name, string tooltip)
-        {
-            GameObject cell = CreateUIObject($"Icon_{name}", parent);
-            var background = cell.AddComponent<Image>();
-            background.color = RowFillColor;
-
-            if (icon != null)
-            {
-                GameObject iconGO = CreateUIObject("Img", cell.transform);
-                var image = iconGO.AddComponent<Image>();
-                image.sprite = icon;
-                image.preserveAspect = true;
-                image.raycastTarget = false;
-                Stretch(image.rectTransform, 5f);
-            }
-            else
-            {
-                Text initial = CreateLabel(cell.transform, "Text", name.Substring(0, 1), BodyFontSize, TextPrimaryColor,
-                    TextAnchor.MiddleCenter);
-                Stretch(initial.rectTransform);
-            }
-
-            AddTooltip(cell, tooltip);
-        }
-
-        private static void AddTooltip(GameObject target, string content)
+        private static void AddTextTooltip(GameObject target, string content)
         {
             Image raycastTarget = target.GetComponent<Image>();
             if (raycastTarget != null)
