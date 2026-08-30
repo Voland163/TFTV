@@ -17,7 +17,7 @@ namespace TFTV.TFTVBaseRework
     /// </summary>
     public static partial class PersonnelManagementUI
     {
-        private const float TrainingRowHeight = 54f;
+        private const float TrainingRowHeight = 62f;
 
         internal static void CreateTrainingPanel(Transform parent, GeoLevelController level, GeoPhoenixFaction phoenix,
             SoldierSlotController slotPrefab)
@@ -120,14 +120,14 @@ namespace TFTV.TFTVBaseRework
             string remaining = complete
                 ? "Ready"
                 : FormatDuration(TrainingFacilityRework.GetRecruitRemainingHours(person.Character, level));
-            Text time = CreateLabel(row.transform, "Remaining", remaining, SmallFontSize,
+            Text time = CreateLabel(row.transform, "Remaining", remaining, BodyFontSize,
                 complete ? AccentOrangeColor : AccentCyanColor, TextAnchor.MiddleRight);
-            SetSize(time.gameObject, 150f, TrainingRowHeight);
+            SetSize(time.gameObject, 170f, TrainingRowHeight);
 
             // Pulling someone out of training finalises them early and takes them straight to the
             // deployment prompt, with the partial refund the deployment flow already calculates.
             CreateIconButton(row.transform, "Finalize", null, () => ShowSlotContextMenu(person),
-                size: 40f, fallbackCaption: "X");
+                size: 48f, fallbackCaption: "X");
         }
 
         #region Candidate pickers

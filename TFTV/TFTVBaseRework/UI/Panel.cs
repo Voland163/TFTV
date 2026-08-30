@@ -101,7 +101,7 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
-        private static void AddAffinityBadge(GameObject slotGO, GeoCharacter character)
+        private static void AddAffinityBadge(GameObject slotGO, GeoCharacter character, float size = 46f)
         {
             try
             {
@@ -131,7 +131,7 @@ namespace TFTV.TFTVBaseRework
                 badgeRect.anchorMax = new Vector2(0.5f, 0.5f);
                 badgeRect.pivot = new Vector2(0.5f, 0.5f);
                 badgeRect.anchoredPosition = Vector2.zero;
-                badgeRect.sizeDelta = new Vector2(36, 36);
+                badgeRect.sizeDelta = new Vector2(size, size);
 
                 var tooltip = badgeGO.AddComponent<AffinityBadgeTooltip>();
                 tooltip.Approach = approach;

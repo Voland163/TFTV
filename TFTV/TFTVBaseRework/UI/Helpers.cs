@@ -81,6 +81,11 @@ namespace TFTV.TFTVBaseRework
             canvas.sortingOrder = 100;
             modal.AddComponent<GraphicRaycaster>();
             modal.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.78f);
+
+            // The personnel panel arranges its children in a row. Without this the dialog is treated
+            // as a fourth column and lands off the right edge of the screen, which is exactly where
+            // it went. Ignoring the layout lets the anchors below cover the panel instead.
+            modal.AddComponent<LayoutElement>().ignoreLayout = true;
             Stretch(modal.GetComponent<RectTransform>());
 
             GameObject frame = CreateFramedPanel(modal.transform, "ModalFrame", out Transform content,

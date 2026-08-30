@@ -16,7 +16,7 @@ namespace TFTV.TFTVBaseRework
     /// </summary>
     public static partial class PersonnelManagementUI
     {
-        private const float WorkRowHeight = 50f;
+        private const float WorkRowHeight = 58f;
 
         internal static void CreateWorkPanel(Transform parent, PersonnelAssignment assignment, GeoLevelController level,
             GeoPhoenixFaction phoenix, SoldierSlotController slotPrefab, FacilitySlotPools pools)
@@ -136,7 +136,7 @@ namespace TFTV.TFTVBaseRework
 
             if (workers.Count == 0)
             {
-                Text empty = CreateLabel(list, "Empty", "No one assigned.", SmallFontSize, TextDimColor, TextAnchor.MiddleCenter);
+                Text empty = CreateLabel(list, "Empty", "No one assigned.", BodyFontSize, TextDimColor, TextAnchor.MiddleCenter);
                 SetSize(empty.gameObject, 0f, WorkRowHeight);
                 return;
             }
@@ -168,14 +168,14 @@ namespace TFTV.TFTVBaseRework
             CreateNameCell(row.transform, entry, slotPrefab);
 
             GameObject affinityCell = CreateUIObject("AffinityCell", row.transform);
-            SetSize(affinityCell, 40f, WorkRowHeight);
-            AddAffinityBadge(affinityCell, person.Character);
+            SetSize(affinityCell, 48f, WorkRowHeight);
+            AddAffinityBadge(affinityCell, person.Character, 42f);
 
             CreateIconButton(row.transform, "Unassign", null, () =>
             {
                 UnassignFromWork(person, phoenix);
                 RefreshPanel();
-            }, size: 40f, fallbackCaption: "X");
+            }, size: 48f, fallbackCaption: "X");
         }
 
         private static void UnassignAllFrom(PersonnelAssignment assignment, GeoPhoenixFaction phoenix)

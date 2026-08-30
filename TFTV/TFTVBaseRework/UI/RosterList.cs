@@ -35,8 +35,9 @@ namespace TFTV.TFTVBaseRework
         /// <summary>Character id of the row whose action strip is open; 0 when none is.</summary>
         private static int _expandedCharacterId;
 
-        private const float RosterRowHeight = 62f;
-        private const float RosterActionSize = 56f;
+        private const float RosterRowHeight = 68f;
+        private const float RosterActionSize = 64f;
+        private const float RosterBadgeSize = 46f;
 
         /// <summary>The vanilla slot's class icon is drawn for a much larger row than this one.</summary>
         private const float ClassIconScale = 0.6f;
@@ -245,15 +246,15 @@ namespace TFTV.TFTVBaseRework
 
             CreateNameCell(line.transform, entry, slotPrefab);
 
-            Text status = CreateLabel(line.transform, "Status", GetRosterStatusText(entry, level), SmallFontSize,
+            Text status = CreateLabel(line.transform, "Status", GetRosterStatusText(entry, level), BodyFontSize,
                 GetRosterStatusColor(entry), TextAnchor.MiddleRight);
-            SetSize(status.gameObject, 230f, RosterRowHeight);
+            SetSize(status.gameObject, 260f, RosterRowHeight);
 
-            // The badge anchors itself to its parent's top-right corner, so it gets a cell of its own
-            // rather than being laid out as a sibling of the name and status.
+            // The badge centres itself on its parent, so it gets a cell of its own rather than being
+            // laid out as a sibling of the name and status.
             GameObject affinityCell = CreateUIObject("AffinityCell", line.transform);
-            SetSize(affinityCell, 40f, RosterRowHeight);
-            AddAffinityBadge(affinityCell, entry.Character);
+            SetSize(affinityCell, RosterBadgeSize + 6f, RosterRowHeight);
+            AddAffinityBadge(affinityCell, entry.Character, RosterBadgeSize);
 
             CreateIconButton(line.transform, "Expand", null, () =>
             {
