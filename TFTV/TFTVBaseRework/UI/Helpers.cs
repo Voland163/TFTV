@@ -22,7 +22,7 @@ namespace TFTV.TFTVBaseRework
         private static string GetPersonnelName(PersonnelInfo person)
         {
             return person?.Character?.DisplayName
-                   ?? $"Personnel {person?.Id}";
+                   ?? PersonnelText.Get(PersonnelText.StatusUnknownName);
         }
 
         /// <summary>Interior of the modal's framed panel; header, options and buttons hang off this.</summary>
@@ -128,7 +128,7 @@ namespace TFTV.TFTVBaseRework
         private static void AddModalCloseButton()
         {
             if (_modalPanelContent == null) return;
-            CreateTextButton(_modalPanelContent, "Close", "CLOSE", () => CloseModal(),
+            CreateTextButton(_modalPanelContent, "Close", PersonnelText.Get(PersonnelText.DialogClose), () => CloseModal(),
                 height: ModalRowHeight, fontSize: BodyFontSize);
         }
 
@@ -152,14 +152,14 @@ namespace TFTV.TFTVBaseRework
 
             CloseModal();
             _modalRoot = CreateModalRoot("DeployOrTrainModal");
-            AddModalHeader($"Choose Action for {GetPersonnelName(person)}");
+            AddModalHeader(PersonnelText.Format(PersonnelText.ChooseAction, GetPersonnelName(person)));
             var content = CreateModalContentArea();
 
             var specs = ResolveAvailableMainSpecs(level);
             bool isDismissed = PersonnelRestrictions.IsDismissedOperative(person.Character);
 
             // Option 1: Deploy Now (immediate class selection + base selection)
-            AddModalOptionButton(content, "Deploy Now", () =>
+            AddModalOptionButton(content, PersonnelText.Get(PersonnelText.DeployNow), () =>
             {
                 ShowDeploymentSelection(level, person, phoenix, specs, refresh);
             });
@@ -176,7 +176,7 @@ namespace TFTV.TFTVBaseRework
                 string durationLabel = minDuration == maxDuration
      ? FormatDuration(minDuration)
      : $"{FormatDuration(minDuration)}–{FormatDuration(maxDuration)}";
-                AddModalOptionButton(content, $"Train First ({durationLabel}, {freeSlots} slot{(freeSlots != 1 ? "s" : "")} free)", () =>
+                AddModalOptionButton(content, PersonnelText.Format(PersonnelText.TrainFirst, durationLabel, freeSlots), () =>
                 {
                     if (isDismissed)
                     {
@@ -188,7 +188,7 @@ namespace TFTV.TFTVBaseRework
                         }
                         else
                         {
-                            ShowMessage($"Could not determine class for {person.Character?.DisplayName}.");
+                            ShowMessage(PersonnelText.Format(PersonnelText.ClassUnknown, person.Character?.DisplayName));
                         }
                     }
                     else
@@ -199,7 +199,7 @@ namespace TFTV.TFTVBaseRework
             }
             else
             {
-                AddDisabledLabel(content, "Train First (no training slots available)");
+                AddDisabledLabel(content, PersonnelText.Get(PersonnelText.TrainFirstNoSlots));
             }
 
             AddModalCloseButton();
@@ -240,7 +240,7 @@ namespace TFTV.TFTVBaseRework
 
             CloseModal();
             _modalRoot = CreateModalRoot("DeploymentSelectionModal");
-            AddModalHeader("Select Deployment Base");
+            AddModalHeader(PersonnelText.Get(PersonnelText.SelectBase));
             var content = CreateModalContentArea();
 
             foreach (var baseObj in faction.Bases)
@@ -270,13 +270,14 @@ namespace TFTV.TFTVBaseRework
                         {
                             int currentLevel = session?.VirtualLevelAchieved ?? 1;
                             int refund = session != null ? Math.Max(0, session.SpPaid - (10 * Math.Max(0, currentLevel - 1))) : 0;
-                            string earlyMsg = $"Training incomplete for {person.Character?.DisplayName}.\nCurrent level: {currentLevel}\nSP refund: {refund}";
+                            string earlyMsg = PersonnelText.Format(PersonnelText.EarlyDeploy,
+                                person.Character?.DisplayName, currentLevel, refund);
                             if (wasDismissed)
                             {
                                 int redeployCost = PersonnelRestrictions.GetRedeployCost(person.Character);
-                                earlyMsg += $"\n\nRedeploy cost: {redeployCost} SP";
+                                earlyMsg += "\n\n" + PersonnelText.Format(PersonnelText.EarlyDeployRedeployCost, redeployCost);
                             }
-                            earlyMsg += "\n\nDeploy early?";
+                            earlyMsg += "\n\n" + PersonnelText.Get(PersonnelText.EarlyDeployConfirm);
                             ShowConfirmation(earlyMsg, finalize, () => CloseModal());
                         }
                         else
@@ -289,12 +290,13 @@ namespace TFTV.TFTVBaseRework
                         int cost = PersonnelRestrictions.GetRedeployCost(person.Character);
                         if (faction.Skillpoints < cost)
                         {
-                            ShowMessage($"Not enough shared skill points to redeploy {person.Character?.DisplayName}.\nRequired: {cost}\nAvailable: {faction.Skillpoints}");
+                            ShowMessage(PersonnelText.Format(PersonnelText.NotEnoughSpRedeploy,
+                                person.Character?.DisplayName, cost, faction.Skillpoints));
                             return;
                         }
 
                         ShowConfirmation(
-                            $"Redeploy {person.Character?.DisplayName} to {label} for {cost} shared skill points?",
+                            PersonnelText.Format(PersonnelText.RedeployConfirm, person.Character?.DisplayName, label, cost),
                             () =>
                             {
                                 var character = TrainingFacilityRework.RedeployDismissedOperative(level, person.Character, geoBase);
@@ -334,7 +336,7 @@ namespace TFTV.TFTVBaseRework
         {
             CloseModal();
             _modalRoot = CreateModalRoot("MessageModal");
-            AddModalHeader("Notice");
+            AddModalHeader(PersonnelText.Get(PersonnelText.DialogNotice));
             var content = CreateModalContentArea();
 
             AddModalMessage(content, message);
@@ -366,7 +368,7 @@ namespace TFTV.TFTVBaseRework
 
             CloseModal();
             _modalRoot = CreateModalRoot("TrainingSelectionModal");
-            AddModalHeader("Select Class");
+            AddModalHeader(PersonnelText.Get(PersonnelText.SelectClass));
             var content = CreateModalContentArea();
 
             int providedSlots = TrainingFacilityRework.GetProvidedTrainingSlots(level.PhoenixFaction);
@@ -375,7 +377,7 @@ namespace TFTV.TFTVBaseRework
 
             if (!anyFacilityAvailable)
             {
-                AddModalOptionButton(content, "No training facility slot available", () => CloseModal());
+                AddModalOptionButton(content, PersonnelText.Get(PersonnelText.NoFacilitySlot), () => CloseModal());
             }
             else
             {
@@ -407,12 +409,13 @@ namespace TFTV.TFTVBaseRework
 
             CloseModal();
             _modalRoot = CreateModalRoot("TrainingLevelSelectionModal");
-            AddModalHeader("Select Training Level");
+            AddModalHeader(PersonnelText.Get(PersonnelText.SelectLevel));
             var content = CreateModalContentArea();
 
             if (minTargetLevel > maxLevel)
             {
-                ShowMessage($"{person.Character?.DisplayName} is already at level {currentCharLevel} and cannot train further.");
+                ShowMessage(PersonnelText.Format(PersonnelText.AlreadyMaxLevel,
+                    person.Character?.DisplayName, currentCharLevel));
                 return;
             }
 
@@ -422,23 +425,27 @@ namespace TFTV.TFTVBaseRework
                 int spCost = TrainingFacilityRework.GetTrainingSpCost(targetLevel);
                 float duration = TrainingFacilityRework.GetEffectiveDurationHours(faction, targetLevel, currentCharLevel);
                 string statGains = TrainingFacilityRework.GetStatGainDescription(levelsGained);
-                string label = $"Level {targetLevel} — {spCost} SP — {FormatDuration(duration)}\n{statGains}";
+                string label = PersonnelText.Format(PersonnelText.TrainOption, targetLevel, spCost,
+                    FormatDuration(duration), statGains);
 
                 bool canAfford = faction.Skillpoints >= spCost;
                 int capturedLevel = targetLevel;
 
-                AddModalOptionButton(content, canAfford ? label : $"{label}\n(Not enough SP)", () =>
+                AddModalOptionButton(content,
+                    canAfford ? label : PersonnelText.Format(PersonnelText.TrainOptionUnaffordable, label), () =>
                 {
                     if (!canAfford)
                     {
-                        ShowMessage($"Not enough shared skill points.\nRequired: {spCost}\nAvailable: {faction.Skillpoints}");
+                        ShowMessage(PersonnelText.Format(PersonnelText.NotEnoughSp, spCost, faction.Skillpoints));
                         return;
                     }
 
-                    string confirmMsg = $"Train {person.Character?.DisplayName} as {spec.ViewElementDef.DisplayName1.Localize()} to Level {capturedLevel}?\nCost: {spCost} SP ({FormatDuration(duration)})\n{statGains}";
+                    string confirmMsg = PersonnelText.Format(PersonnelText.TrainConfirm,
+                        person.Character?.DisplayName, spec.ViewElementDef.DisplayName1.Localize(), capturedLevel,
+                        spCost, FormatDuration(duration), statGains);
                     if (isDismissed)
                     {
-                        confirmMsg += "\n\nThis operative is dismissed. Completing training will clear the dismissed status.";
+                        confirmMsg += "\n\n" + PersonnelText.Get(PersonnelText.TrainConfirmDismissed);
                     }
 
                     // The dossier is shown with the stats training would leave them with, so the
@@ -479,7 +486,7 @@ namespace TFTV.TFTVBaseRework
         {
             CloseModal();
             _modalRoot = CreateModalRoot("ConfirmationModal");
-            AddModalHeader("Confirm");
+            AddModalHeader(PersonnelText.Get(PersonnelText.DialogConfirm));
             var content = CreateModalContentArea();
 
             AddModalMessage(content, message);
@@ -497,11 +504,13 @@ namespace TFTV.TFTVBaseRework
             layout.childForceExpandHeight = false;
             SetSize(buttonsRow, 0f, ModalRowHeight + 8f);
 
-            CreateTextButton(buttonsRow.transform, "Yes", "YES", () => onConfirm?.Invoke(),
+            CreateTextButton(buttonsRow.transform, "Yes", PersonnelText.Get(PersonnelText.DialogYes),
+                () => onConfirm?.Invoke(),
                 width: 260f, height: ModalRowHeight, fontSize: BodyFontSize,
                 fillColor: AccentOrangeColor, captionColor: Color.black);
 
-            CreateTextButton(buttonsRow.transform, "No", "NO", () => onCancel?.Invoke(),
+            CreateTextButton(buttonsRow.transform, "No", PersonnelText.Get(PersonnelText.DialogNo),
+                () => onCancel?.Invoke(),
                 width: 260f, height: ModalRowHeight, fontSize: ModalOptionFontSize);
         }
 
@@ -509,7 +518,7 @@ namespace TFTV.TFTVBaseRework
         {
             CloseModal();
             _modalRoot = CreateModalRoot("ClassSelectionForDeploy");
-            AddModalHeader("Select Class");
+            AddModalHeader(PersonnelText.Get(PersonnelText.SelectClass));
             var content = CreateModalContentArea();
 
             foreach (var spec in specs)

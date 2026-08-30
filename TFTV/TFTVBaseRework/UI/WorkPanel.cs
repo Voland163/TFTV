@@ -23,7 +23,7 @@ namespace TFTV.TFTVBaseRework
         {
             bool isResearch = assignment == PersonnelAssignment.Research;
 
-            string title = isResearch ? "RESEARCH" : "FABRICATION";
+            string title = PersonnelText.Get(isResearch ? PersonnelText.ResearchTitle : PersonnelText.FabricationTitle);
             Color accent = isResearch ? AccentCyanColor : AccentOrangeColor;
             FacilitySlotPool pool = isResearch ? pools.Research : pools.Manufacturing;
             int occupied = ResearchAndManufacturing.GetOccupiedSlots(phoenix, assignment);
@@ -34,8 +34,8 @@ namespace TFTV.TFTVBaseRework
             ResearchManufacturingSlotsManager.CountFacilityProviders(phoenix, out int researchFacilities, out int manufacturingFacilities);
             int facilities = isResearch ? researchFacilities : manufacturingFacilities;
             string facilityLine = isResearch
-                ? $"Research Labs built: {researchFacilities}"
-                : $"Fabrication Plants built: {manufacturingFacilities}";
+                ? PersonnelText.Format(PersonnelText.LabsBuilt, researchFacilities)
+                : PersonnelText.Format(PersonnelText.PlantsBuilt, manufacturingFacilities);
 
             GameObject panel = CreateFramedPanel(parent, $"WorkPanel_{assignment}", out Transform content);
             LayoutElement panelElement = panel.GetComponent<LayoutElement>() ?? panel.AddComponent<LayoutElement>();
@@ -43,7 +43,8 @@ namespace TFTV.TFTVBaseRework
             panelElement.flexibleHeight = 1f;
 
             Transform header = CreateSectionHeader(content, title, GetColumnIconSprite(assignment), accent);
-            CreateTextButton(header, "UnassignAll", "UNASSIGN ALL", () => UnassignAllFrom(assignment, phoenix),
+            CreateTextButton(header, "UnassignAll", PersonnelText.Get(PersonnelText.UnassignAll),
+                () => UnassignAllFrom(assignment, phoenix),
                 width: 240f, height: 44f, fontSize: SmallFontSize, enabled: occupied > 0);
 
             GameObject body = CreateUIObject("Body", content.transform);
@@ -75,9 +76,11 @@ namespace TFTV.TFTVBaseRework
             LayoutElement columnElement = column.AddComponent<LayoutElement>();
             columnElement.flexibleWidth = 1f;
 
-            string boostWord = assignment == PersonnelAssignment.Research ? "research" : "manufacturing";
-            Text boost = CreateLabel(column.transform, "Boost", $"+{bonus:0.#} {boostWord} boost", 46, accent,
-                TextAnchor.MiddleCenter);
+            string boostText = PersonnelText.Format(
+                assignment == PersonnelAssignment.Research ? PersonnelText.ResearchBoost : PersonnelText.ManufacturingBoost,
+                bonus.ToString("0.#"));
+
+            Text boost = CreateLabel(column.transform, "Boost", boostText, 46, accent, TextAnchor.MiddleCenter);
             SetSize(boost.gameObject, 0f, 62f);
 
             GameObject buttons = CreateUIObject("SlotButtons", column.transform);
@@ -136,7 +139,8 @@ namespace TFTV.TFTVBaseRework
 
             if (workers.Count == 0)
             {
-                Text empty = CreateLabel(list, "Empty", "No one assigned.", BodyFontSize, TextDimColor, TextAnchor.MiddleCenter);
+                Text empty = CreateLabel(list, "Empty", PersonnelText.Get(PersonnelText.NoWorkers), BodyFontSize,
+                    TextDimColor, TextAnchor.MiddleCenter);
                 SetSize(empty.gameObject, 0f, WorkRowHeight);
                 return;
             }

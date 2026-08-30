@@ -1,3 +1,6 @@
+using Base.Entities.Abilities;
+using PhoenixPoint.Common.Entities.Addons;
+using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
 using HarmonyLib;
 using Base.Core;
@@ -35,6 +38,11 @@ namespace TFTV.TFTVBaseRework
 
         private static GeoRosterAbilityDetailTooltip _abilityTooltip;
         private static UIGeoItemTooltip _itemTooltip;
+
+        /// <summary>The tooltips as they stand, without building one. Used when hiding.</summary>
+        internal static GeoRosterAbilityDetailTooltip PeekAbilityTooltip() => _abilityTooltip;
+
+        internal static UIGeoItemTooltip PeekItemTooltip() => _itemTooltip;
 
         internal static GeoRosterAbilityDetailTooltip EnsureAbilityTooltip(Transform host)
         {
@@ -259,6 +267,11 @@ namespace TFTV.TFTVBaseRework
     [HarmonyPatch(typeof(UIInventoryTooltipItemPanel), nameof(UIInventoryTooltipItemPanel.SetAbilities))]
     internal static class UIInventoryTooltipItemPanel_SetAbilities_Capacity
     {
+        private static bool IsPersonnelTooltip(UIInventoryTooltipItemPanel panel)
+        {
+            return panel.GetComponentInParent<UIGeoItemTooltip>()?.gameObject.name == "TFTV_PersonnelItemTooltip";
+        }
+
         private static void Prefix(UIInventoryTooltipItemPanel __instance, List<ItemAbilityTooltipData> abilityData)
         {
             try
@@ -273,6 +286,15 @@ namespace TFTV.TFTVBaseRework
                     __instance.AbilitiesObjects = new List<UIInventoryTooltipItemAbility>();
                 }
 
+                if (IsPersonnelTooltip(__instance))
+                {
+                    // The personnel screen draws an item's abilities itself: the rows this prefab
+                    // carries are laid out for the screens it was built for, and a row borrowed from
+                    // elsewhere in the game arrives at 760x250 and hangs out of the tooltip.
+                    abilityData.Clear();
+                    return;
+                }
+
                 int needed = abilityData.Count;
                 if (__instance.AbilitiesObjects.Count >= needed)
                 {
@@ -281,17 +303,15 @@ namespace TFTV.TFTVBaseRework
 
                 UIInventoryTooltipItemAbility source = __instance.AbilitiesObjects.FirstOrDefault(row => row != null)
                     ?? __instance.AbilityPrefab
-                    ?? __instance.AbilitiesHeader
-                    ?? Resources.FindObjectsOfTypeAll<UIInventoryTooltipItemAbility>()
-                        .FirstOrDefault(row => row != null && row.hideFlags == HideFlags.None);
+                    ?? __instance.AbilitiesHeader;
 
                 if (source != null)
                 {
-                    // Rows have to join the container the existing ones live in, or they are drawn
+                    // Rows have to join the container the stat rows live in, or they are drawn
                     // outside the tooltip's own background.
-                    Transform rowParent = __instance.AbilitiesObjects.FirstOrDefault(row => row != null)?.transform.parent
+                    Transform rowParent = __instance.StatEntries
+                        ?? __instance.AbilitiesObjects.FirstOrDefault(row => row != null)?.transform.parent
                         ?? __instance.AbilitiesHeader?.transform.parent
-                        ?? __instance.StatEntries
                         ?? __instance.transform;
 
                     while (__instance.AbilitiesObjects.Count < needed)
@@ -331,6 +351,12 @@ namespace TFTV.TFTVBaseRework
         internal GeoItem Item;
         internal string FallbackText;
 
+        private const string AbilityLineName = "TFTV_AbilityLine";
+        private const float AbilityLineIconSize = 44f;
+        private const float AbilityLineFallbackWidth = 380f;
+
+        private static readonly Color AbilityNameColor = new Color32(0xC1, 0x7F, 0xE8, 0xFF);
+
         public void OnPointerEnter(PointerEventData eventData)
         {
             try
@@ -351,7 +377,17 @@ namespace TFTV.TFTVBaseRework
                 // operative is carrying and using.
                 tooltip.ShowStats(Item, transform, isProficient: true);
 
-                if (tooltip.transform is RectTransform rect)
+                var rect = tooltip.transform as RectTransform;
+                if (rect != null)
+                {
+                    // Lay the stats out first: the ability lines are sized against the container they
+                    // go into, and its width is not known until then.
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
+                }
+
+                AppendAbilityLines(tooltip, Item);
+
+                if (rect != null)
                 {
                     LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
                 }
@@ -374,16 +410,185 @@ namespace TFTV.TFTVBaseRework
             Hide();
         }
 
+        /// <summary>
+        /// Draws the item's abilities into the tooltip's stat list: an icon, the name and what it
+        /// does, in the arrangement the game uses. The tooltip's own rows are left out of it, being
+        /// laid out for the screens this prefab was built for and far too large here.
+        /// </summary>
+        private static void AppendAbilityLines(UIGeoItemTooltip tooltip, GeoItem item)
+        {
+            UIInventoryTooltipItemPanel panel = tooltip
+                .GetComponentsInChildren<UIInventoryTooltipItemPanel>(true)
+                .FirstOrDefault(p => p != null && p.gameObject.activeInHierarchy && p.StatEntries != null);
+
+            if (panel == null)
+            {
+                return;
+            }
+
+            for (int i = panel.StatEntries.childCount - 1; i >= 0; i--)
+            {
+                Transform child = panel.StatEntries.GetChild(i);
+                if (child.name == AbilityLineName)
+                {
+                    Object.Destroy(child.gameObject);
+                }
+            }
+
+            foreach (TacticalAbilityDef ability in CollectItemAbilities(item?.ItemDef))
+            {
+                CreateAbilityLine(panel.StatEntries, ability);
+            }
+        }
+
+        private static List<TacticalAbilityDef> CollectItemAbilities(ItemDef itemDef)
+        {
+            var abilities = new List<TacticalAbilityDef>();
+            if (itemDef == null)
+            {
+                return abilities;
+            }
+
+            // Sub-addons first, as the game's own gathering does.
+            if (itemDef.SubAddons != null)
+            {
+                foreach (AddonDef.SubaddonBind bind in itemDef.SubAddons)
+                {
+                    if (bind.SubAddon is ItemDef subItem)
+                    {
+                        foreach (TacticalAbilityDef subAbility in CollectItemAbilities(subItem))
+                        {
+                            if (!abilities.Contains(subAbility))
+                            {
+                                abilities.Add(subAbility);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (itemDef.Abilities != null)
+            {
+                foreach (AbilityDef abilityDef in itemDef.Abilities)
+                {
+                    if (abilityDef is TacticalAbilityDef ability
+                        && ability.ViewElementDef != null
+                        && ability.ViewElementDef.ShowInInventoryItemTooltip
+                        && !abilities.Contains(ability))
+                    {
+                        abilities.Add(ability);
+                    }
+                }
+            }
+
+            return abilities;
+        }
+
+        private static void CreateAbilityLine(Transform parent, TacticalAbilityDef ability)
+        {
+            ViewElementDef view = ability.ViewElementDef;
+
+            float width = (parent as RectTransform)?.rect.width ?? 0f;
+            if (width < 1f)
+            {
+                width = AbilityLineFallbackWidth;
+            }
+
+            var line = new GameObject(AbilityLineName, typeof(RectTransform));
+            line.transform.SetParent(parent, false);
+            line.transform.SetAsLastSibling();
+
+            var layout = line.AddComponent<HorizontalLayoutGroup>();
+            layout.spacing = 8f;
+            layout.padding = new RectOffset(0, 0, 6, 0);
+            layout.childAlignment = TextAnchor.UpperLeft;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = false;
+            layout.childForceExpandHeight = false;
+
+            var lineElement = line.AddComponent<LayoutElement>();
+            lineElement.flexibleHeight = 0f;
+            lineElement.minWidth = width;
+            lineElement.preferredWidth = width;
+
+            var lineRect = line.GetComponent<RectTransform>();
+            lineRect.sizeDelta = new Vector2(width, 0f);
+
+            if (view.SmallIcon != null)
+            {
+                var iconGO = new GameObject("Icon", typeof(RectTransform));
+                iconGO.transform.SetParent(line.transform, false);
+
+                var icon = iconGO.AddComponent<Image>();
+                icon.sprite = view.SmallIcon;
+                icon.preserveAspect = true;
+                icon.raycastTarget = false;
+
+                var iconElement = iconGO.AddComponent<LayoutElement>();
+                iconElement.minWidth = AbilityLineIconSize;
+                iconElement.preferredWidth = AbilityLineIconSize;
+                iconElement.minHeight = AbilityLineIconSize;
+                iconElement.preferredHeight = AbilityLineIconSize;
+                iconElement.flexibleWidth = 0f;
+            }
+
+            var textColumn = new GameObject("Text", typeof(RectTransform));
+            textColumn.transform.SetParent(line.transform, false);
+
+            var textLayout = textColumn.AddComponent<VerticalLayoutGroup>();
+            textLayout.spacing = 2f;
+            textLayout.childControlWidth = true;
+            textLayout.childControlHeight = true;
+            textLayout.childForceExpandWidth = true;
+            textLayout.childForceExpandHeight = false;
+
+            var textElement = textColumn.AddComponent<LayoutElement>();
+            textElement.flexibleWidth = 1f;
+
+            CreateAbilityLineText(textColumn.transform, "Name", view.DisplayName1?.Localize(), AbilityNameColor, 26);
+            CreateAbilityLineText(textColumn.transform, "Description", view.Description?.Localize(), Color.white, 22);
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(lineRect);
+            float height = Mathf.Max(AbilityLineIconSize, LayoutUtility.GetPreferredHeight(lineRect));
+
+            lineRect.sizeDelta = new Vector2(width, height);
+            lineElement.minHeight = height;
+            lineElement.preferredHeight = height;
+        }
+
+        private static void CreateAbilityLineText(Transform parent, string name, string content, Color color, int fontSize)
+        {
+            if (string.IsNullOrEmpty(content) || content.IndexOf("NEEDS TEXT", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return;
+            }
+
+            var go = new GameObject(name, typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+
+            var text = go.AddComponent<Text>();
+            text.font = PersonnelManagementUI.PuristaSemibold;
+            text.text = content;
+            text.fontSize = fontSize;
+            text.color = color;
+            text.alignment = TextAnchor.UpperLeft;
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
+            text.raycastTarget = false;
+        }
+
         private void Hide()
         {
             try
             {
                 PersonnelTooltip.Hide();
 
-                UIGeoItemTooltip tooltip = PersonnelVanillaTooltips.EnsureItemTooltip(transform);
+                // Deactivate rather than HideStats: that walks state the tooltip only has while it is
+                // showing something, and threw for every slot as the dialog came down.
+                UIGeoItemTooltip tooltip = PersonnelVanillaTooltips.PeekItemTooltip();
                 if (tooltip != null)
                 {
-                    tooltip.HideStats();
                     tooltip.gameObject.SetActive(false);
                 }
             }
@@ -486,20 +691,33 @@ namespace TFTV.TFTVBaseRework
                 return;
             }
 
-            if (!string.IsNullOrEmpty(title.text) && title.text.IndexOf("NEEDS TEXT", StringComparison.OrdinalIgnoreCase) < 0)
-            {
-                return;
-            }
-
             ViewElementDef view = View ?? Ability.ViewElementDef;
-            string name = view?.DisplayName1?.Localize();
 
-            if (string.IsNullOrEmpty(name) || name.IndexOf("NEEDS TEXT", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (IsPlaceholder(title.text))
             {
-                name = string.IsNullOrEmpty(view?.Name) ? Ability.name : view.Name;
+                string name = view?.DisplayName1?.Localize();
+                if (IsPlaceholder(name))
+                {
+                    name = string.IsNullOrEmpty(view?.Name) ? Ability.name : view.Name;
+                }
+
+                title.text = name;
             }
 
-            title.text = name;
+            Text description = tooltip.AbilityDescription;
+            if (description != null && IsPlaceholder(description.text))
+            {
+                // Show puts the interpolated description in, which comes back as the placeholder for
+                // some abilities even where the plain localisation is fine.
+                string text = view?.Description?.Localize();
+                description.text = IsPlaceholder(text) ? string.Empty : text;
+            }
+        }
+
+        private static bool IsPlaceholder(string text)
+        {
+            return string.IsNullOrEmpty(text)
+                || text.IndexOf("NEEDS TEXT", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         private void Hide()
@@ -508,8 +726,11 @@ namespace TFTV.TFTVBaseRework
             {
                 PersonnelTooltip.Hide();
 
-                GeoRosterAbilityDetailTooltip tooltip = PersonnelVanillaTooltips.EnsureAbilityTooltip(transform);
-                tooltip?.Hide();
+                GeoRosterAbilityDetailTooltip tooltip = PersonnelVanillaTooltips.PeekAbilityTooltip();
+                if (tooltip != null)
+                {
+                    tooltip.gameObject.SetActive(false);
+                }
             }
             catch (Exception e)
             {

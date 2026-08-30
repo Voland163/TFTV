@@ -219,9 +219,7 @@ namespace TFTV.TFTVBaseRework
                     }
                     if (currentAssignment == PersonnelAssignment.Unassigned && PersonnelData.IsLivingCapacityFull(phoenix))
                     {
-                        GameUtl.GetMessageBox().ShowSimplePrompt(
-                            "Living quarters are full.\nBuild or repair a Living Quarters facility to assign more personnel to Research.",
-                            MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                        ShowLivingQuartersFull(PersonnelText.DutyResearch);
                         return;
                     }
                     AssignWorker(person, phoenix, FacilitySlotType.Research);
@@ -235,9 +233,7 @@ namespace TFTV.TFTVBaseRework
                     }
                     if (currentAssignment == PersonnelAssignment.Unassigned && PersonnelData.IsLivingCapacityFull(phoenix))
                     {
-                        GameUtl.GetMessageBox().ShowSimplePrompt(
-                            "Living quarters are full.\nBuild or repair a Living Quarters facility to assign more personnel to Manufacturing.",
-                            MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                        ShowLivingQuartersFull(PersonnelText.DutyManufacturing);
                         return;
                     }
                     AssignWorker(person, phoenix, FacilitySlotType.Manufacturing);
@@ -246,14 +242,19 @@ namespace TFTV.TFTVBaseRework
                 case PersonnelAssignment.Training:
                     if (currentAssignment == PersonnelAssignment.Unassigned && PersonnelData.IsLivingCapacityFull(phoenix))
                     {
-                        GameUtl.GetMessageBox().ShowSimplePrompt(
-                            "Living quarters are full.\nBuild or repair a Living Quarters facility to assign more personnel to Training.",
-                            MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
+                        ShowLivingQuartersFull(PersonnelText.DutyTraining);
                         return;
                     }
                     ShowDeployOrTrainSelection(level, person, phoenix, () => RefreshPanel());
                     return; // Don't refresh yet — modal is open
             }
+        }
+
+        private static void ShowLivingQuartersFull(string dutyKey)
+        {
+            GameUtl.GetMessageBox().ShowSimplePrompt(
+                PersonnelText.Format(PersonnelText.LivingQuartersFull, PersonnelText.Get(dutyKey)),
+                MessageBoxIcon.Warning, MessageBoxButtons.OK, null);
         }
 
         #endregion
@@ -263,27 +264,32 @@ namespace TFTV.TFTVBaseRework
         {
             if (person?.Character == null)
             {
-                return person?.Assignment.ToString() ?? "Unknown";
+                return PersonnelText.Get(PersonnelText.StatusUnknownName);
             }
 
             if (person.Assignment == PersonnelAssignment.Unassigned && PersonnelRestrictions.IsDismissedOperative(person.Character))
             {
-                return "Dismissed";
+                return PersonnelText.Get(PersonnelText.StatusDismissed);
             }
 
             switch (person.Assignment)
             {
                 case PersonnelAssignment.Training:
                     var session = TrainingFacilityRework.GetRecruitSession(person.Character);
-                    if (session == null) return "Training (queued)";
+                    if (session == null) return PersonnelText.Get(PersonnelText.AssignmentTrainingQueued);
                     bool complete = TrainingFacilityRework.IsRecruitTrainingComplete(person.Character, level);
                     double remainingHours = TrainingFacilityRework.GetRecruitRemainingHours(person.Character, level);
-                    string specName = person.TrainingSpec?.ViewElementDef.DisplayName1.Localize() ?? person.TrainingSpec?.name ?? "Class";
+                    string specName = person.TrainingSpec?.ViewElementDef.DisplayName1.Localize()
+                        ?? person.TrainingSpec?.name
+                        ?? PersonnelText.Get(PersonnelText.ClassFallback);
+
                     if (complete)
                     {
-                        return $"Complete ({specName})";
+                        return PersonnelText.Format(PersonnelText.AssignmentTrainingComplete, specName);
                     }
-                    return $"{specName} (Lv {session.VirtualLevelAchieved}/{session.TargetLevel}, {FormatDuration(remainingHours)})";
+
+                    return PersonnelText.Format(PersonnelText.AssignmentTrainingProgress, specName,
+                        session.VirtualLevelAchieved, session.TargetLevel, FormatDuration(remainingHours));
                 default:
                     return person.Assignment.ToString();
             }

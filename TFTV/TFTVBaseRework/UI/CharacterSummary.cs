@@ -27,7 +27,7 @@ namespace TFTV.TFTVBaseRework
     public static partial class PersonnelManagementUI
     {
         private const int SummaryAbilityIconSize = 52;
-        private const int SummaryInventorySlotSize = 70;
+        private const int SummaryInventorySlotSize = 105;
         private const float SummaryStatRowHeight = 46f;
 
         private const float StatCaptionWidth = 200f;
@@ -190,7 +190,7 @@ namespace TFTV.TFTVBaseRework
                 parts.Add(secondClass);
             }
 
-            return parts.Count > 0 ? string.Join(" / ", parts) : "No class";
+            return parts.Count > 0 ? string.Join(" / ", parts) : PersonnelText.Get(PersonnelText.DossierNoClass);
         }
 
         /// <summary>
@@ -213,10 +213,10 @@ namespace TFTV.TFTVBaseRework
             int skillPoints = character.Progression?.SkillPoints ?? 0;
             int experience = character.LevelProgression?.Experience ?? 0;
 
-            CreateSummaryInlineValue(row.transform, "SP", skillPoints.ToString(),
-                "Skill points this operative has to spend on their own abilities.");
-            CreateSummaryInlineValue(row.transform, "XP", experience.ToString(),
-                "Experience earned so far.");
+            CreateSummaryInlineValue(row.transform, PersonnelText.Get(PersonnelText.DossierSkillPoints),
+                skillPoints.ToString(), PersonnelText.Get(PersonnelText.DossierSkillPointsTooltip));
+            CreateSummaryInlineValue(row.transform, PersonnelText.Get(PersonnelText.DossierExperience),
+                experience.ToString(), PersonnelText.Get(PersonnelText.DossierExperienceTooltip));
         }
 
         private static void CreateSummaryInlineValue(Transform parent, string caption, string value, string tooltip)
@@ -270,9 +270,9 @@ namespace TFTV.TFTVBaseRework
 
             GetDisplayBonuses(character, out int perception, out float accuracy, out float stealth);
 
-            string trainedNote = projected != null
-                ? "The figure in brackets is what this training would leave them with."
-                : "Current value against the highest this operative can reach.";
+            string trainedNote = PersonnelText.Get(projected != null
+                ? PersonnelText.StatNoteTraining
+                : PersonnelText.StatNoteTrained);
 
             // Gear and perks on top of the trained attribute, the figure the recruit panel puts in
             // brackets. Personnel who have never served have no real perks yet, so nothing is added
@@ -307,31 +307,31 @@ namespace TFTV.TFTVBaseRework
             SetSize(grid, 0f, (SummaryStatRowHeight + 4f) * rows);
 
             Transform row1 = CreateStatRow(grid.transform, "StatRow1");
-            CreateTrainedStatCell(row1, "Strength", strength,
+            CreateTrainedStatCell(row1, "Strength", PersonnelText.Get(PersonnelText.StatStrength), strength,
                 progression.GetMaxBaseStat(CharacterBaseAttribute.Strength), projected?.Strength, strengthBonus, strengthNote);
-            CreateStatCell(row1, "Perception", "Perception", $"+{perception}", null, null,
+            string perceptionNote = PersonnelText.Get(PersonnelText.StatNotePerception);
+            CreateStatCell(row1, "Perception", PersonnelText.Get(PersonnelText.StatPerception), $"+{perception}", null, null,
                 includeModifiers
-                    ? AppendModifiers("Sight range added by armour and passive abilities.", character,
-                        StatModificationTarget.Perception, aspect => aspect.Perception)
-                    : "Sight range added by armour and passive abilities.");
+                    ? AppendModifiers(perceptionNote, character, StatModificationTarget.Perception, aspect => aspect.Perception)
+                    : perceptionNote);
 
             Transform row2 = CreateStatRow(grid.transform, "StatRow2");
-            CreateTrainedStatCell(row2, "Willpower", willpower,
+            CreateTrainedStatCell(row2, "Willpower", PersonnelText.Get(PersonnelText.StatWillpower), willpower,
                 progression.GetMaxBaseStat(CharacterBaseAttribute.Will), projected?.Willpower, willBonus, willNote);
-            CreateStatCell(row2, "Accuracy", "Accuracy", FormatBonusPercent(accuracy), null, null,
+            string accuracyNote = PersonnelText.Get(PersonnelText.StatNoteAccuracy);
+            CreateStatCell(row2, "Accuracy", PersonnelText.Get(PersonnelText.StatAccuracy), FormatBonusPercent(accuracy), null, null,
                 includeModifiers
-                    ? AppendModifiers("Accuracy added by armour and passive abilities.", character,
-                        StatModificationTarget.Accuracy, aspect => aspect.Accuracy, asPercent: true)
-                    : "Accuracy added by armour and passive abilities.");
+                    ? AppendModifiers(accuracyNote, character, StatModificationTarget.Accuracy, aspect => aspect.Accuracy, asPercent: true)
+                    : accuracyNote);
 
             Transform row3 = CreateStatRow(grid.transform, "StatRow3");
-            CreateTrainedStatCell(row3, "Speed", speed,
+            CreateTrainedStatCell(row3, "Speed", PersonnelText.Get(PersonnelText.StatSpeed), speed,
                 progression.GetMaxBaseStat(CharacterBaseAttribute.Speed), projected?.Speed, speedBonus, speedNote);
-            CreateStatCell(row3, "Stealth", "Stealth", FormatBonusPercent(stealth), null, null,
+            string stealthNote = PersonnelText.Get(PersonnelText.StatNoteStealth);
+            CreateStatCell(row3, "Stealth", PersonnelText.Get(PersonnelText.StatStealth), FormatBonusPercent(stealth), null, null,
                 includeModifiers
-                    ? AppendModifiers("Stealth added by armour and passive abilities.", character,
-                        StatModificationTarget.Stealth, aspect => aspect.Stealth, asPercent: true)
-                    : "Stealth added by armour and passive abilities.");
+                    ? AppendModifiers(stealthNote, character, StatModificationTarget.Stealth, aspect => aspect.Stealth, asPercent: true)
+                    : stealthNote);
 
             if (deliriumValue > 0)
             {
@@ -349,7 +349,7 @@ namespace TFTV.TFTVBaseRework
         /// "21 / 35" for the trained attribute, with the figure in brackets being what training would
         /// make of it when one is pending, and otherwise what gear and perks already make of it.
         /// </summary>
-        private static void CreateTrainedStatCell(Transform parent, string statName, int current, int max,
+        private static void CreateTrainedStatCell(Transform parent, string statIcon, string caption, int current, int max,
             int? projected, float gearBonus, string tooltip)
         {
             int? bracketed = projected;
@@ -364,7 +364,7 @@ namespace TFTV.TFTVBaseRework
 
             Color bracketedColor = bracketed.HasValue && bracketed.Value < current ? StatLossColor : StatGainColor;
 
-            CreateStatCell(parent, statName, statName, $"{current} / {max}", bracketedText, bracketedColor, tooltip);
+            CreateStatCell(parent, statIcon, caption, $"{current} / {max}", bracketedText, bracketedColor, tooltip);
         }
 
         /// <summary>
@@ -613,7 +613,10 @@ namespace TFTV.TFTVBaseRework
             layout.childControlHeight = true;
             layout.childForceExpandWidth = false;
             layout.childForceExpandHeight = false;
+            // Zero preferred width, so the two cells split the row evenly: a left cell carrying a
+            // bracketed figure is wider than one without, and pushed the right column along.
             LayoutElement cellElement = SetSize(cell, 0f, SummaryStatRowHeight);
+            cellElement.preferredWidth = 0f;
             cellElement.flexibleWidth = 1f;
 
             if (string.IsNullOrEmpty(caption))
@@ -666,6 +669,7 @@ namespace TFTV.TFTVBaseRework
             layout.childForceExpandWidth = false;
             layout.childForceExpandHeight = false;
             LayoutElement cellElement = SetSize(cell, 0f, SummaryStatRowHeight);
+            cellElement.preferredWidth = 0f;
             cellElement.flexibleWidth = 1f;
 
             Sprite icon = DefCache.GetDef<ViewElementDef>("E_Visuals [Corruption_StatusDef]")?.SmallIcon;
@@ -680,7 +684,8 @@ namespace TFTV.TFTVBaseRework
                 SetSize(iconGO, 34f, 34f);
             }
 
-            Text label = CreateLabel(cell.transform, "Label", "Delirium:", BodyFontSize, DeliriumColor);
+            Text label = CreateLabel(cell.transform, "Label", PersonnelText.Get(PersonnelText.StatDelirium) + ":",
+                BodyFontSize, DeliriumColor);
             SetSize(label.gameObject, StatCaptionWidth, SummaryStatRowHeight);
 
             Text value = CreateLabel(cell.transform, "Value", $"{delirium} / {maxDelirium}", BodyFontSize, DeliriumColor);
@@ -751,21 +756,34 @@ namespace TFTV.TFTVBaseRework
             List<TacticalAbilityDef> other = learned
                 .Where(ability => ability != null && !accounted.Contains(ability))
                 .Where(ability => ability.ViewElementDef?.SmallIcon != null)
+                .Where(ability => !IsBookkeepingMarker(ability))
                 .ToList();
 
             if (mainClass.Count == 0 && secondClass.Count == 0 && personal.Count == 0 && other.Count == 0)
             {
-                CreateSummaryTextRow(parent, "ABILITIES AND PERKS", "none");
+                CreateSummaryTextRow(parent, PersonnelText.Get(PersonnelText.DossierAbilities),
+                    PersonnelText.Get(PersonnelText.DossierNone));
                 return;
             }
 
-            Text caption = CreateLabel(parent, "Caption_Abilities", "ABILITIES AND PERKS", SmallFontSize, TextDimColor);
+            Text caption = CreateLabel(parent, "Caption_Abilities", PersonnelText.Get(PersonnelText.DossierAbilities),
+                SmallFontSize, TextDimColor);
             SetSize(caption.gameObject, 0f, 32f);
 
             CreateAbilityRow(parent, "ClassAbilities", mainClass.Select(slot => slot.Ability), learned);
             CreateAbilityRow(parent, "SecondClassAbilities", secondClass.Select(slot => slot.Ability), learned);
             CreateAbilityRow(parent, "PersonalAbilities", personal.Select(slot => slot.Ability), learned);
             CreateAbilityRow(parent, "OtherAbilities", other, learned);
+        }
+
+        /// <summary>
+        /// Markers this rework hangs on characters to track their state - dismissed, hidden from the
+        /// operative lists - rather than anything the player earned or should see.
+        /// </summary>
+        private static bool IsBookkeepingMarker(TacticalAbilityDef ability)
+        {
+            string name = ability?.name;
+            return name == "DismissedOperative_AbilityDef" || name == "HiddenFromOperatives_AbilityDef";
         }
 
         private static List<AbilityTrackSlot> SlotsOf(AbilityTrackSlot[] trackSlots, HashSet<TacticalAbilityDef> accounted)
@@ -834,14 +852,23 @@ namespace TFTV.TFTVBaseRework
         private static void CreateSummaryStorage(Transform parent, GeoCharacter character,
             IEnumerable<GeoItem> itemsGoingToStorage)
         {
-            var items = new HashSet<GeoItem>(itemsGoingToStorage ?? Enumerable.Empty<GeoItem>());
-            if (items.Count == 0)
+            if (itemsGoingToStorage == null)
             {
-                CreateSummaryTextRow(parent, "RETURNED TO STORAGE", "nothing");
+                // Nothing is being handed back - training, for one - so the section has no business
+                // on the dossier at all.
                 return;
             }
 
-            Text caption = CreateLabel(parent, "Caption_Storage", "RETURNED TO STORAGE", SmallFontSize, TextDimColor);
+            var items = new HashSet<GeoItem>(itemsGoingToStorage);
+            if (items.Count == 0)
+            {
+                CreateSummaryTextRow(parent, PersonnelText.Get(PersonnelText.DossierStorage),
+                    PersonnelText.Get(PersonnelText.DossierNothing));
+                return;
+            }
+
+            Text caption = CreateLabel(parent, "Caption_Storage", PersonnelText.Get(PersonnelText.DossierStorage),
+                SmallFontSize, TextDimColor);
             SetSize(caption.gameObject, 0f, 32f);
 
             CreateItemRow(parent, "ArmourRow", character.ArmourItems.Where(items.Contains));
