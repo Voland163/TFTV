@@ -238,7 +238,7 @@ namespace TFTV
                 {
                     List<string> mutationBenefits = new List<string>();
                     AddTieredBenefit(mutationBenefits, "TFTV_BLIMP_MUTATIONLAB_MODULE_BENEFIT", _blimpMutationLabFrenzyPresent);
-                    mutationBenefits.Add("• Instills Frenzy on mutated operatives at mission start.");
+                    mutationBenefits.Add(TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_AIRCRAFT_MODULE_FRENZY_BENEFIT"));
                     AddModuleTooltip(moduleBlocks, _blimpMutationLabModule, mutationBenefits);
                 }
 
@@ -254,7 +254,7 @@ namespace TFTV
                 }
 
                 return moduleBlocks.Count == 0
-                    ? "No aircraft modules in play."
+                    ? TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_AIRCRAFT_NO_MODULES")
                     : string.Join("\n\n", moduleBlocks);
             }
             catch (Exception e)
@@ -292,7 +292,7 @@ namespace TFTV
 
             if (lines.Count == 0)
             {
-                lines.Add("No active tactical effects.");
+                lines.Add(TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_AIRCRAFT_NO_TACTICAL_EFFECTS"));
             }
 
             moduleBlocks.Add($"<b>{moduleName}</b>\n{string.Join("\n", lines)}");

@@ -1509,7 +1509,7 @@ namespace TFTV.Vehicles.Ammo
             {
                 { MessageBoxButtons.Yes, ammoName1 },
                 { MessageBoxButtons.No, ammoName2 },
-                { MessageBoxButtons.Cancel, "CANCEL" }
+                { MessageBoxButtons.Cancel, TFTVCommonMethods.ConvertKeyToString("KEY_VEHICLE_AMMO_CANCEL") }
             };
 
             GameUtl.GetMessageBox().ShowSimplePrompt(
@@ -1563,7 +1563,7 @@ namespace TFTV.Vehicles.Ammo
             {
                 { MessageBoxButtons.Yes, ammoName1 },
                 { MessageBoxButtons.No, ammoName2 },
-                { MessageBoxButtons.Cancel, "CANCEL" }
+                { MessageBoxButtons.Cancel, TFTVCommonMethods.ConvertKeyToString("KEY_VEHICLE_AMMO_CANCEL") }
             };
 
             GameUtl.GetMessageBox().ShowSimplePrompt(

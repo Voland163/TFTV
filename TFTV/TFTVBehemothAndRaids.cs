@@ -533,7 +533,7 @@ namespace TFTV
                         {
                             if (__instance.GeoAbility is LaunchBehemothMissionAbility)
                             {
-                                __result = "Behemoth is submerged!";
+                                __result = TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_BEHEMOTH_SUBMERGED");
                             }
                         }
 

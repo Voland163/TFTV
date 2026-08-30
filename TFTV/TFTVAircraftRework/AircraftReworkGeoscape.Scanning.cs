@@ -690,22 +690,22 @@ namespace TFTV
                         {
                             if (ctx.AlreadyDetected)
                             {
-                                sb.AppendLine("Pandoran Colony already detected.");
+                                sb.AppendLine(TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_SCAN_COLONY_ALREADY_DETECTED"));
                             }
                             else
                             {
-                                sb.AppendLine("No Pandoran colony was detected after the attack.");
+                                sb.AppendLine(TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_SCAN_COLONY_NOT_DETECTED"));
                             }
                         }
                         else
                         {
                             string baseType = geoSite.GetComponent<GeoAlienBase>()
-                                ?.AlienBaseTypeDef?.Name?.Localize(null) ?? "Pandoran Colony";
-                            sb.AppendLine($"Pandoran colony located: {baseType}.");
+                                ?.AlienBaseTypeDef?.Name?.Localize(null) ?? TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_SCAN_COLONY_GENERIC_NAME");
+                            sb.AppendLine(TFTVCommonMethods.FormatKey("TFTV_KEY_SCAN_COLONY_LOCATED", baseType));
                         }
 
                         sb.AppendLine();
-                        sb.AppendLine("Detection contributors:");
+                        sb.AppendLine(TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_SCAN_CONTRIBUTORS"));
 
                         // Base + effective detection chance
                         int baseChancePct = (int)(ctx.BaseRevealChance * 100f);
@@ -719,47 +719,66 @@ namespace TFTV
                         int effectiveChancePct = Math.Min(100,
                             (int)(ctx.BaseRevealChance * 100f
                                 + ctx.IncrementalRevealChance * 100f * (ctx.PreviousTracingAttempts + inRangeIncrements)));
-                        sb.AppendLine($"  Base detection chance: {baseChancePct}%  |  Effective chance: {effectiveChancePct}%");
+                        sb.AppendLine(TFTVCommonMethods.FormatKey(
+                            "TFTV_KEY_SCAN_CHANCES",
+                            baseChancePct,
+                            effectiveChancePct));
                         sb.AppendLine();
 
                         // Satellite Uplink
                         if (ctx.SatelliteUplinkInRange)
-                            sb.AppendLine($"  + Satellite Uplink: in range (+{incrementPct}%)");
+                            sb.AppendLine(TFTVCommonMethods.FormatKey("TFTV_KEY_SCAN_UPLINK_IN_RANGE", incrementPct));
                         else
-                            sb.AppendLine("  - Satellite Uplink: not in range");
+                            sb.AppendLine(TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_SCAN_UPLINK_OUT_OF_RANGE"));
 
                         // Outpost
                         if (ctx.OutpostWasInRange)
                         {
-                            string toss1 = ctx.OutpostToss1Succeeded ? $"success, +{incrementPct}%" : "failed";
-                            sb.AppendLine($"  {(ctx.OutpostToss1Succeeded ? "+" : "-")} Outpost: in range ({toss1})");
+                            string toss1 = ctx.OutpostToss1Succeeded
+                                ? TFTVCommonMethods.FormatKey("TFTV_KEY_SCAN_OUTPOST_SUCCESS", incrementPct)
+                                : TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_SCAN_OUTPOST_FAILED");
+                            sb.AppendLine(TFTVCommonMethods.FormatKey(
+                                "TFTV_KEY_SCAN_OUTPOST_IN_RANGE",
+                                ctx.OutpostToss1Succeeded ? "+" : "-",
+                                toss1));
                         }
                         else
                         {
-                            sb.AppendLine("  - Outpost: not in range");
+                            sb.AppendLine(TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_SCAN_OUTPOST_OUT_OF_RANGE"));
                         }
 
                         // Exploration Affinity
                         if (ctx.ExplorationAffinityRank > 0)
                         {
-                            string opName = ctx.ExplorationOperativeName ?? "Unknown";
-                            string triggered = ctx.ExplorationAffinityTriggered ? $"triggered (+{incrementPct}%)" : "did not trigger";
-                            sb.AppendLine($"  {(ctx.ExplorationAffinityTriggered ? "+" : "-")} Exploration affinity ({opName}, rank {ctx.ExplorationAffinityRank}): {ctx.ExplorationAffinityChance}% chance, {triggered}");
+                            string opName = ctx.ExplorationOperativeName ?? TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_SCAN_OPERATIVE_UNKNOWN");
+                            string triggered = ctx.ExplorationAffinityTriggered
+                                ? TFTVCommonMethods.FormatKey("TFTV_KEY_SCAN_AFFINITY_TRIGGERED", incrementPct)
+                                : TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_SCAN_AFFINITY_NOT_TRIGGERED");
+                            sb.AppendLine(TFTVCommonMethods.FormatKey(
+                                "TFTV_KEY_SCAN_AFFINITY_LINE",
+                                ctx.ExplorationAffinityTriggered ? "+" : "-",
+                                opName,
+                                ctx.ExplorationAffinityRank,
+                                ctx.ExplorationAffinityChance,
+                                triggered));
                         }
                         else
                         {
-                            sb.AppendLine("  - Exploration affinity: no operative");
+                            sb.AppendLine(TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_SCAN_AFFINITY_NONE"));
                         }
 
                         // Previous tracing attempts
                         if (ctx.PreviousTracingAttempts > 0)
                         {
                             float tracingPercent = ctx.IncrementalRevealChance * 100f * ctx.PreviousTracingAttempts;
-                            sb.AppendLine($"  + Previous tracing: {ctx.PreviousTracingAttempts} attempt(s) (+{tracingPercent:F0}%)");
+                            sb.AppendLine(TFTVCommonMethods.FormatKey(
+                                "TFTV_KEY_SCAN_TRACING_SOME",
+                                ctx.PreviousTracingAttempts,
+                                tracingPercent.ToString("F0")));
                         }
                         else
                         {
-                            sb.AppendLine("  - Previous tracing: none");
+                            sb.AppendLine(TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_SCAN_TRACING_NONE"));
                         }
 
                         __instance.Description.text = sb.ToString();

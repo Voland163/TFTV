@@ -311,8 +311,9 @@ namespace TFTV
                     new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.Add, Value = 2},
                     };
                     revenantAssault.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                    revenantAssault.ViewElementDef.DisplayName1 = new LocalizedTextBind("Assault Revenant", true);
-                    revenantAssault.ViewElementDef.Description = new LocalizedTextBind("+5% Damage", true);
+                    revenantAssault.ViewElementDef.DisplayName1 = new LocalizedTextBind("KEY_REVENANT_BUFF_NAME_ASSAULT");
+                    revenantAssault.ViewElementDef.Description = new LocalizedTextBind(
+                        TFTVCommonMethods.FormatKey("KEY_REVENANT_BUFF_DAMAGE", 5), true);
 
                     revenantAssault.ViewElementDef.LargeIcon = VoidIcon;
                     revenantAssault.ViewElementDef.SmallIcon = VoidIcon;
@@ -349,8 +350,9 @@ namespace TFTV
                 new ItemStatModification {TargetStat = StatModificationTarget.Speed, Modification = StatModificationType.Add, Value = 4},
                     };
                     revenantBerserker.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                    revenantBerserker.ViewElementDef.DisplayName1 = new LocalizedTextBind("Berserker Revenant", true);
-                    revenantBerserker.ViewElementDef.Description = new LocalizedTextBind("+4 Speed", true);
+                    revenantBerserker.ViewElementDef.DisplayName1 = new LocalizedTextBind("KEY_REVENANT_BUFF_NAME_BERSERKER");
+                    revenantBerserker.ViewElementDef.Description = new LocalizedTextBind(
+                        TFTVCommonMethods.FormatKey("KEY_REVENANT_BUFF_SPEED", 4), true);
 
                     revenantBerserker.ViewElementDef.LargeIcon = VoidIcon;
                     revenantBerserker.ViewElementDef.SmallIcon = VoidIcon;
@@ -387,8 +389,9 @@ namespace TFTV
                   new ItemStatModification {TargetStat = StatModificationTarget.Health, Modification = StatModificationType.Add, Value = 100},
                     };
                     heavy.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                    heavy.ViewElementDef.DisplayName1 = new LocalizedTextBind("Heavy Revenant", true);
-                    heavy.ViewElementDef.Description = new LocalizedTextBind("+5 Strength", true);
+                    heavy.ViewElementDef.DisplayName1 = new LocalizedTextBind("KEY_REVENANT_BUFF_NAME_HEAVY");
+                    heavy.ViewElementDef.Description = new LocalizedTextBind(
+                        TFTVCommonMethods.FormatKey("KEY_REVENANT_BUFF_STRENGTH", 5), true);
 
                     heavy.ViewElementDef.LargeIcon = VoidIcon;
                     heavy.ViewElementDef.SmallIcon = VoidIcon;
@@ -423,8 +426,9 @@ namespace TFTV
                     { new ItemStatModification {TargetStat = StatModificationTarget.Stealth, Modification = StatModificationType.Add, Value = 0.15f},
                     };
                     infiltrator.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                    infiltrator.ViewElementDef.DisplayName1 = new LocalizedTextBind("Infiltrator Revenant", true);
-                    infiltrator.ViewElementDef.Description = new LocalizedTextBind("+15% Stealth", true);
+                    infiltrator.ViewElementDef.DisplayName1 = new LocalizedTextBind("KEY_REVENANT_BUFF_NAME_INFILTRATOR");
+                    infiltrator.ViewElementDef.Description = new LocalizedTextBind(
+                        TFTVCommonMethods.FormatKey("KEY_REVENANT_BUFF_STEALTH", 15), true);
 
                     infiltrator.ViewElementDef.LargeIcon = VoidIcon;
                     infiltrator.ViewElementDef.SmallIcon = VoidIcon;
@@ -460,8 +464,9 @@ namespace TFTV
                 new ItemStatModification {TargetStat = StatModificationTarget.Willpower, Modification = StatModificationType.AddMax, Value = 10},
                     };
                     priest.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                    priest.ViewElementDef.DisplayName1 = new LocalizedTextBind("Priest Revenant", true);
-                    priest.ViewElementDef.Description = new LocalizedTextBind("+10 Willpower", true);
+                    priest.ViewElementDef.DisplayName1 = new LocalizedTextBind("KEY_REVENANT_BUFF_NAME_PRIEST");
+                    priest.ViewElementDef.Description = new LocalizedTextBind(
+                        TFTVCommonMethods.FormatKey("KEY_REVENANT_BUFF_WILLPOWER", 10), true);
 
                     priest.ViewElementDef.LargeIcon = VoidIcon;
                     priest.ViewElementDef.SmallIcon = VoidIcon;
@@ -498,8 +503,9 @@ namespace TFTV
                     { new ItemStatModification {TargetStat = StatModificationTarget.Perception, Modification = StatModificationType.Add, Value = 10},
                     };
                     sniper.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                    sniper.ViewElementDef.DisplayName1 = new LocalizedTextBind("Sniper Revenant", true);
-                    sniper.ViewElementDef.Description = new LocalizedTextBind("+10 Perception", true);
+                    sniper.ViewElementDef.DisplayName1 = new LocalizedTextBind("KEY_REVENANT_BUFF_NAME_SNIPER");
+                    sniper.ViewElementDef.Description = new LocalizedTextBind(
+                        TFTVCommonMethods.FormatKey("KEY_REVENANT_BUFF_PERCEPTION", 10), true);
 
                     sniper.ViewElementDef.LargeIcon = VoidIcon;
                     sniper.ViewElementDef.SmallIcon = VoidIcon;
@@ -537,8 +543,9 @@ namespace TFTV
                  new ItemStatModification {TargetStat = StatModificationTarget.Willpower, Modification = StatModificationType.AddMax, Value = 5}
                     };
                     technician.ItemTagStatModifications = new EquipmentItemTagStatModification[0];
-                    technician.ViewElementDef.DisplayName1 = new LocalizedTextBind("Technician Revenant", true);
-                    technician.ViewElementDef.Description = new LocalizedTextBind("+5 Strength, +5 Willpower", true);
+                    technician.ViewElementDef.DisplayName1 = new LocalizedTextBind("KEY_REVENANT_BUFF_NAME_TECHNICIAN");
+                    technician.ViewElementDef.Description = new LocalizedTextBind(
+                                TFTVCommonMethods.FormatKey("KEY_REVENANT_BUFF_STRENGTH_WILLPOWER", 5, 5), true);
 
                     technician.ViewElementDef.LargeIcon = VoidIcon;
                     technician.ViewElementDef.SmallIcon = VoidIcon;
@@ -950,7 +957,8 @@ namespace TFTV
                             new ItemStatModification {TargetStat = StatModificationTarget.Willpower, Modification = StatModificationType.AddMax, Value = 10}
                             };
 
-                            _revenantTechnician.ViewElementDef.Description = new LocalizedTextBind("+5 Strength, +10 Willpower", true);
+                            _revenantTechnician.ViewElementDef.Description = new LocalizedTextBind(
+                                TFTVCommonMethods.FormatKey("KEY_REVENANT_BUFF_STRENGTH_WILLPOWER", 5, 10), true);
                         }
                         else if (tacticalActor.GameTags.Contains(RevenantTier3GameTag))
                         {
@@ -963,7 +971,8 @@ namespace TFTV
                             new ItemStatModification {TargetStat = StatModificationTarget.Willpower, Modification = StatModificationType.AddMax, Value = 10}
                             };
 
-                            _revenantTechnician.ViewElementDef.Description = new LocalizedTextBind("+10 Strength, +10 Willpower", true);
+                            _revenantTechnician.ViewElementDef.Description = new LocalizedTextBind(
+                                TFTVCommonMethods.FormatKey("KEY_REVENANT_BUFF_STRENGTH_WILLPOWER", 10, 10), true);
                         }
                     }
 

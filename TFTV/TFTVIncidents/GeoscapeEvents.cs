@@ -788,7 +788,7 @@ namespace TFTV.TFTVIncidents
             TacCharacterDef source = DefCache.GetDef<TacCharacterDef>("S_SY_Eileen_CharacterTemplateDef");
             TacCharacterDef nahia = Helper.CreateDefFromClone(source, "{C40430EB-1A4E-4B0C-B148-F57EB9939628}", "TFTV_NahiaGrivane_CharacterDef");
 
-            nahia.Data.Name = "Nahia Grivane";
+            nahia.Data.Name = "KEY_TFTV_NAHIA_GRIVANE";
             nahia.Data.LocalizeName = false;
 
             List <GameTagDef> tagDefs =  nahia.Data.GameTags.ToList();

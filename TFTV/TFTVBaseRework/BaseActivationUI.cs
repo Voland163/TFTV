@@ -160,7 +160,7 @@ namespace TFTV.TFTVBaseRework
                             ambushChance *= 2;
                         }
 
-                        __instance.InfestationDesc.text = "Ambush chance during base exploration";
+                        __instance.InfestationDesc.text = BaseReworkText.Get(BaseReworkText.AmbushChance);
                         __instance.InfestationThreat.text = $"{ambushChance}%";
                     }
 
@@ -614,7 +614,7 @@ namespace TFTV.TFTVBaseRework
                     else
                     {
                         GameUtl.GetMessageBox().ShowSimplePrompt(
-                            "Cannot start this action. Check resources, personnel, and site state.",
+                            BaseReworkText.Get(BaseReworkText.ActivationFailed),
                             MessageBoxIcon.Warning,
                             MessageBoxButtons.OK,
                             null);

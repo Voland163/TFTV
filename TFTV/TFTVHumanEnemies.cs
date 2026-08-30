@@ -547,7 +547,9 @@ namespace TFTV
                         fileNameSquadPic = "syn_squad.jpg";
                     }
 
-                    unitType = $"{TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_INDEFINITEARTICLE")}{factionName} {TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_UNIT_TYPE_SQUAD")}";
+                    unitType = TFTVCommonMethods.FormatKey(
+                        "TFTV_HUMAN_ENEMIES_UNIT_TYPE_FACTION_SQUAD",
+                        factionName);
                 }
                 else if (enemyHumanFaction.TacticalFactionDef.ShortName.Equals("FallenOnes"))
                 {
@@ -607,16 +609,17 @@ namespace TFTV
 
                 string descriptionHint = "";
 
-                string youAreFacing = TFTVCommonMethods.ConvertKeyToString("KEY_HUMAN_ENEMIES_FACING");
-                string called = TFTVCommonMethods.ConvertKeyToString("KEY_HUMAN_ENEMIES_GANG_CALLED");
-                string leaderIs = TFTVCommonMethods.ConvertKeyToString("KEY_HUMAN_ENEMIES_LEADER_IS");
-                string usingTactic = TFTVCommonMethods.ConvertKeyToString("KEY_HUMAN_ENEMIES_USING_TACTIC");
-
                 string pureArrayDescription = TFTVCommonMethods.ConvertKeyToString("KEY_HUMAN_ENEMIES_SUBJECT24_ARRAY_DESCRIPTION");
 
                 if (nameOfLeader != "Subject 24")
                 {
-                    descriptionHint = $"{youAreFacing} {unitType}{called} {nameOfGang}{leaderIs} {nameOfLeader}{usingTactic} {nameOfTactic}: {descriptionOfTactic}";
+                    descriptionHint = TFTVCommonMethods.FormatKey(
+                        "KEY_HUMAN_ENEMIES_SIGHTED",
+                        unitType,
+                        nameOfGang,
+                        nameOfLeader,
+                        nameOfTactic,
+                        descriptionOfTactic);
                 }
                 else
                 {

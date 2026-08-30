@@ -493,12 +493,13 @@ namespace TFTV.TFTVDrills
 
             if (abilityNames == null || abilityNames.Count == 0)
             {
-                abilityNames = new List<string> { "required weapon proficiency" };
+                abilityNames = new List<string> { DrillsText.Get(DrillsText.ProficiencyRequirementFallback) };
             }
 
-            string abilityRequirement = abilityNames.Count == 1 ? abilityNames[0] : string.Join(" or ", abilityNames);
-            string subject = "Selected operative";
-            return $"{subject} must have {abilityRequirement}.";
+            string abilityRequirement = abilityNames.Count == 1
+                ? abilityNames[0]
+                : string.Join(DrillsText.Get(DrillsText.ProficiencyRequirementSeparator), abilityNames);
+            return DrillsText.Format(DrillsText.ProficiencyRequirement, abilityRequirement);
         }
 
         internal static void ConfigureUnlockConditions()

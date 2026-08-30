@@ -729,7 +729,7 @@ namespace TFTV.TFTVUI.Tactical
 
                         Sprite factionIcon = geoFactionViewDef.FactionIcon;
                         string factionName = geoFactionViewDef.Name.Localize();
-                        string squadName = "INGLOURIOUS BASTERDS";
+                        string squadName = TFTVCommonMethods.ConvertKeyToString("TFTV_HUMAN_ENEMIES_SQUAD_NAME_FALLBACK");
 
                         if (TFTVHumanEnemies.HumanEnemiesGangNames != null && TFTVHumanEnemies.HumanEnemiesGangNames.Count > 0)
                         {

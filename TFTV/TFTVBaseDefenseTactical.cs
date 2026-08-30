@@ -572,7 +572,7 @@ namespace TFTV
                     TacCharacterDef newCharacter = Helper.CreateDefFromClone(characterSource, gUID, name);
 
                     newCharacter.SpawnCommandId = name;
-                    newCharacter.Data.Name = "Phoenix Guard";
+                    newCharacter.Data.Name = "KEY_TFTV_PX_PHOENIX_GUARD";
 
                     newCharacter.Data.Abilites = newCharacter.Data.Abilites.AddToArray(DefCache.GetDef<ApplyStatusAbilityDef>("InfestedWithMindfragger_StatusAbilityDef"));
                     //newCharacter.DefaultDeploymentTags = new ActorDeploymentTagDef[] {DefCache.GetDef<ActorDeploymentTagDef>("1x1_MindfraggedGrunt_DeploymentTagDef") };

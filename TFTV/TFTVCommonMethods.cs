@@ -5,6 +5,7 @@ using Base.UI;
 using Base.UI.MessageBox;
 using HarmonyLib;
 using PhoenixPoint.Common.ContextHelp;
+using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.GameTagsTypes;
 using PhoenixPoint.Common.Saves;
@@ -92,6 +93,97 @@ namespace TFTV
                 throw;
             }
 
+        }
+
+        /// <summary>
+        /// Localise <paramref name="key"/> and fill its {0}, {1}... holes.
+        ///
+        /// The template comes from a translator, so a stray brace in any language would
+        /// otherwise throw a FormatException in the middle of an event. Here it degrades to the
+        /// unfilled sentence and a log line naming the key, which is a legible bug report
+        /// instead of a broken screen.
+        /// </summary>
+        public static string FormatKey(string key, params object[] arguments)
+        {
+            string template = ConvertKeyToString(key);
+
+            try
+            {
+                return string.Format(template, arguments);
+            }
+            catch (FormatException e)
+            {
+                TFTVLogger.Always($"Localisation key {key} has a malformed placeholder: {e.Message}");
+                return template;
+            }
+        }
+
+        /// <summary>
+        /// The key suffix for the grammatical case a sentence about <paramref name="character"/>
+        /// needs: PLURAL when there is no single subject (or the subject takes singular "they"),
+        /// F or M otherwise.
+        ///
+        /// Sentences that talk about an operative are written out once per case rather than
+        /// assembled around a {pronoun} hole, because a pronoun on its own does not carry the
+        /// verb, article and adjective agreement most languages also need.
+        /// </summary>
+        public static string GrammaticalSubject(GeoCharacter character)
+        {
+            if (character?.Identity == null)
+            {
+                return "PLURAL";
+            }
+
+            switch (character.Identity.Sex)
+            {
+                case GeoCharacterSex.Female:
+                    return "F";
+                case GeoCharacterSex.Male:
+                    return "M";
+                default:
+                    return "PLURAL";
+            }
+        }
+
+        /// <summary>
+        /// Writes a run of names the way the current language writes a list: "A, B and C".
+        ///
+        /// The separator and the final conjunction are localisation keys, so a translator can
+        /// change the punctuation and the word for "and" without the code assuming English.
+        /// </summary>
+        public static string JoinNames(IEnumerable<string> names)
+        {
+            try
+            {
+                List<string> list = names?.Where(n => !string.IsNullOrEmpty(n)).ToList()
+                    ?? new List<string>();
+
+                if (list.Count == 0)
+                {
+                    return string.Empty;
+                }
+
+                if (list.Count == 1)
+                {
+                    return list[0];
+                }
+
+                string separator = ConvertKeyToString("KEY_GRAMMAR_LIST_SEPARATOR");
+                string and = ConvertKeyToString("KEY_GRAMMAR_AND");
+
+                string head = string.Join(separator, list.Take(list.Count - 1));
+
+                return FormatKey(
+                    "KEY_GRAMMAR_LIST_LAST",
+                    head,
+                    and,
+                    list[list.Count - 1]);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                throw;
+            }
         }
 
         public static void ClearInternalVariablesOnStateChangeAndLoad()

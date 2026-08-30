@@ -186,30 +186,37 @@ namespace TFTV
             }
         }
 
+        /// <summary>
+        /// Same three cases as <see cref="TFTVCommonMethods.GrammaticalSubject"/>, read off a
+        /// unit descriptor instead of a live character.
+        /// </summary>
+        private static string GrammaticalSubjectOf(GeoUnitDescriptor descriptor)
+        {
+            if (descriptor?.Identity == null)
+            {
+                return "PLURAL";
+            }
+
+            switch (descriptor.Identity.Sex)
+            {
+                case GeoCharacterSex.Female:
+                    return "F";
+                case GeoCharacterSex.Male:
+                    return "M";
+                default:
+                    return "PLURAL";
+            }
+        }
+
         public static string CreateDescriptionForEvent(GeoLevelController controller, GeoUnitDescriptor deadSoldierDescriptor)
         {
             try
             {
                 string name = deadSoldierDescriptor.Identity.Name;
-                string pronoun = "";
-                string possesivePronoun = "";
-                if (deadSoldierDescriptor.Identity.Sex == GeoCharacterSex.Male)
-                {
-                    pronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_HE");// He";
-                    possesivePronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_HIM"); //"him";
-                }
-                else if (deadSoldierDescriptor.Identity.Sex == GeoCharacterSex.Female)
-                {
-                    pronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_SHE"); //"She";
-                    possesivePronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_HER"); //"She";"her";
-                }
-                else
-                {
-                    pronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_THEY"); //"They";
-                    pronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_THEM"); //"them";
-                }
 
-                pronoun = char.ToUpper(pronoun[0]) + pronoun.Substring(1);
+                // One whole sentence per grammatical case, so the pronoun is not glued into a
+                // template that cannot carry the verb agreement around it.
+                string subject = GrammaticalSubjectOf(deadSoldierDescriptor);
 
                 string typeOfBodyAvailable = "";
                 string increaseOptionsKeyString = "KEY_OSIRIS_MORE";
@@ -239,13 +246,11 @@ namespace TFTV
                     increaseOptionsKeyString += "_BIONICS_RESEARCH";
                 }
 
-                string osirisText0 = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_TEXT0");
-                string osirisText1 = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_TEXT1");
-                string osirisText2 = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_TEXT2");
-                string osirisText3 = TFTVCommonMethods.ConvertKeyToString("KEY_OSIRIS_TEXT3");
-
-                string modularEventText = $"{osirisText0} {name} ({deadSoldierDescriptor.GetClassViewElementDefs().First().Name}) {osirisText1} " +
-                    $"{pronoun} {osirisText2} {possesivePronoun} {osirisText3} {typeOfBodyAvailable}.";
+                string modularEventText = TFTVCommonMethods.FormatKey(
+                    $"KEY_OSIRIS_BODY_AVAILABLE_{subject}",
+                    name,
+                    deadSoldierDescriptor.GetClassViewElementDefs().First().Name,
+                    typeOfBodyAvailable);
 
                 if (increaseOptionsKeyString != "KEY_OSIRIS_MORE")
                 {

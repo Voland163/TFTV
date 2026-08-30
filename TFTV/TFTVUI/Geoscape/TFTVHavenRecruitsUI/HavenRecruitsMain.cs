@@ -39,6 +39,10 @@ namespace TFTV
         internal static string UiHeaderTitleTextHavenRecruits = "HAVEN RECRUITS";
         internal static string UiButtonTopTextHaven = "HAVEN";
         internal static string UiButtonBottomTextRecruits = "RECRUITS";
+        internal static string UiDetailsTitleText = "RECRUIT DETAILS";
+        internal static string UiDetailsPlaceholderText = "Select a recruit to view details.";
+        internal static string UiDetailsDeliriumFormat = "Delirium {0}";
+        internal static string UiUnknownRecruitText = "Unknown";
 
         private static bool _localizedStringsInitialized;
 
@@ -59,6 +63,10 @@ namespace TFTV
                 string KeyHavenRecruitsSortClosestAircraft = "KEY_TFTV_HAVEN_RECRUITS_SORT_CLOSEST_AIRCRAFT";
                 string KeyHavenRecruitsHaven = "KEY_MISSION_HAVEN";
                 string KeyHavenRecruitsRecruits = "KEY_BASE_RECRUITS_ROSTER_NAME";
+                string KeyHavenRecruitsDetailsTitle = "KEY_TFTV_HAVEN_RECRUITS_DETAILS_TITLE";
+                string KeyHavenRecruitsDetailsPlaceholder = "KEY_TFTV_HAVEN_RECRUITS_DETAILS_PLACEHOLDER";
+                string KeyHavenRecruitsDelirium = "KEY_TFTV_HAVEN_RECRUITS_DELIRIUM";
+                string KeyHavenRecruitsUnknownName = "KEY_TFTV_HAVEN_RECRUITS_UNKNOWN_NAME";
 
 
                 UiEmptyListText = TFTVCommonMethods.ConvertKeyToString(KeyHavenRecruitsEmptyList);
@@ -69,6 +77,10 @@ namespace TFTV
                 UiButtonTopTextHaven = TFTVCommonMethods.ConvertKeyToString(KeyHavenRecruitsHaven);
                 UiButtonBottomTextRecruits = TFTVCommonMethods.ConvertKeyToString(KeyHavenRecruitsRecruits);
                 UiHeaderTitleTextHavenRecruits = $"{UiButtonTopTextHaven} {UiButtonBottomTextRecruits}";
+                UiDetailsTitleText = TFTVCommonMethods.ConvertKeyToString(KeyHavenRecruitsDetailsTitle);
+                UiDetailsPlaceholderText = TFTVCommonMethods.ConvertKeyToString(KeyHavenRecruitsDetailsPlaceholder);
+                UiDetailsDeliriumFormat = TFTVCommonMethods.ConvertKeyToString(KeyHavenRecruitsDelirium);
+                UiUnknownRecruitText = TFTVCommonMethods.ConvertKeyToString(KeyHavenRecruitsUnknownName);
 
             }
             catch (Exception ex)

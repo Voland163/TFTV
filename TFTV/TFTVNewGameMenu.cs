@@ -2458,7 +2458,7 @@ float lengthScale, List<ModSettingController> optionsType = null)
                     if (dlcsMissing.Count > 0)
                     {
                         IEnumerable<string> values = dlcsMissing.Select((EntitlementDef d) => d.Name.Localize());
-                        string content = string.Format(TFTVCommonMethods.ConvertKeyToString("KEY_MISSING_DLC_TFTV"), string.Join(", ", values));
+                        string content = TFTVCommonMethods.FormatKey("KEY_MISSING_DLC_TFTV", string.Join(", ", values));
 
                         GameUtl.GetMessageBox().ShowSimplePrompt(content, MessageBoxIcon.Error, MessageBoxButtons.OK, OnDLCRequiredResult);
 

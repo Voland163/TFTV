@@ -232,7 +232,7 @@ namespace TFTV
                 var (titleGO, _) = RecruitOverlayManagerHelpers.NewUI("Title", headerGO.transform);
                 var title = CreateDetailText(titleGO.transform, "Title", TextFontSize + 2, Color.white, TextAnchor.MiddleLeft);
 
-                title.text = "RECRUIT DETAILS";
+                title.text = HavenRecruitsMain.UiDetailsTitleText;
                 title.horizontalOverflow = HorizontalWrapMode.Overflow;
 
             }
@@ -994,7 +994,7 @@ namespace TFTV
 
             if (_detailDeliriumLabel != null)
             {
-                _detailDeliriumLabel.text = $"Delirium {deliriumValue}";
+                _detailDeliriumLabel.text = string.Format(HavenRecruitsMain.UiDetailsDeliriumFormat, deliriumValue);
                 _detailDeliriumLabel.color = DetailDeliriumHighlightColor;
             }
 
@@ -1646,7 +1646,7 @@ namespace TFTV
         internal static GameObject CreateDetailPlaceholder(Transform parent)
         {
             var placeholder = CreateDetailText(parent, "Placeholder", TextFontSize, DetailSubTextColor, TextAnchor.MiddleCenter);
-            placeholder.text = "Select a recruit to view details.";
+            placeholder.text = HavenRecruitsMain.UiDetailsPlaceholderText;
             var le = placeholder.gameObject.AddComponent<LayoutElement>();
             le.flexibleHeight = 1f;
             return placeholder.gameObject;

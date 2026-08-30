@@ -23,24 +23,20 @@ namespace TFTV
             {
                 GeoscapeEventDef intro =DefCache.GetDef<GeoscapeEventDef>("IntroBetterGeo_0");
 
-                string factionStartIntroText0 = TFTVCommonMethods.ConvertKeyToString("KEY_FACTION_START_INTROTEXT0");
-                string factionStartIntroText1 = TFTVCommonMethods.ConvertKeyToString("KEY_FACTION_START_INTROTEXT1");
-                string a = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_INDEFINITEARTICLE");
-                string factionStartIntroText2 = TFTVCommonMethods.ConvertKeyToString("KEY_FACTION_START_INTROTEXT2");
+                // One sentence with named holes: the indefinite article that used to be glued
+                // on in code now lives inside the sentence, where the translator can see the
+                // noun it has to agree with.
+                GeoCharacter startingSoldier =
+                    geoFaction.GeoLevel.PhoenixFaction.Vehicles.First().Soldiers.Last();
 
-                string factionName = geoFaction.Name.Localize();
-                string factionNameWithArticle = $"{a}{factionName}";
-
-                if (a == "") 
-                { 
-                    factionNameWithArticle=factionName;
-                }
-
-                intro.GeoscapeEventData.Description[0].General = new LocalizedTextBind($"{factionStartIntroText0} " +
-                    $"{FindNearestHaven(geoFaction, site)}, {factionNameWithArticle} {factionStartIntroText1}" +
-                    $"{geoFaction.GeoLevel.PhoenixFaction.Vehicles.First().Soldiers.Last().DisplayName}, {factionNameWithArticle} " +
-                    $"{geoFaction.GeoLevel.PhoenixFaction.Vehicles.First().Soldiers.Last().ClassTag.className}." +
-                    $"\n\n{factionStartIntroText2}", true);
+                intro.GeoscapeEventData.Description[0].General = new LocalizedTextBind(
+                    TFTVCommonMethods.FormatKey(
+                        "KEY_FACTION_START_INTRO",
+                        FindNearestHaven(geoFaction, site),
+                        geoFaction.Name.Localize(),
+                        startingSoldier.DisplayName,
+                        startingSoldier.ClassTag.className),
+                    true);
 
             }
 

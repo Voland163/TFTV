@@ -347,17 +347,17 @@ namespace TFTV
 
                             string name = "InfestationMissionIntro";
                             string title = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY_INTRO_TITLE");//"Search and Rescue";
-                            string director = TFTVCommonMethods.ConvertKeyToString("KEY_TEXT_DIRECTOR");
-                            string infestationStory0 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY0");
-                            string infestationStory1 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY1");
-
-                            string text = $"{director}, {characterName} {infestationStory0} {geoMission.Site.LocalizedSiteName}{infestationStory1}";
+                            string text = TFTVCommonMethods.FormatKey(
+                                "KEY_INFESTATION_STORY_BRIEFING",
+                                characterName,
+                                geoMission.Site.LocalizedSiteName);
 
                             // _nameOfTopCharacter = characterName;
 
-                            string infestationStory2 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY2");
-                            string infestationStory3 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY3");
-                            string reply = $"{characterName} {infestationStory2} {orderedOperatives[0].DisplayName} {infestationStory3}";
+                            string reply = TFTVCommonMethods.FormatKey(
+                                "KEY_INFESTATION_STORY_REPLY",
+                                characterName,
+                                orderedOperatives[0].DisplayName);
 
                             ContextHelpHintDef infestationIntro2 = DefCache.GetDef<ContextHelpHintDef>(name + "2");
                             ContextHelpHintDef infestationIntro = DefCache.GetDef<ContextHelpHintDef>(name);
@@ -400,10 +400,9 @@ namespace TFTV
                             string nameOfOperative = tacticalActors[0].DisplayName;
                             string title = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY_OUTRO_TITLE"); //"Awakening";
 
-                            // string infestationStory3 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY3");
-                            string infestationStory4 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_STORY4");
-
-                            string text = $"{infestationStory4}\n{nameOfOperative}";
+                            string text = TFTVCommonMethods.FormatKey(
+                                "KEY_INFESTATION_STORY_OUTRO",
+                                nameOfOperative);
 
                             ContextHelpHintDef infestationOutro = DefCache.GetDef<ContextHelpHintDef>("InfestationMissionEnd");
                             infestationOutro.Trigger = HintTrigger.MissionOver;
@@ -790,13 +789,15 @@ namespace TFTV
                                         {
                                             haven.Population += refugeesToHaven;
 
-                                            string survivorsFrom = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_SURVIVORS_FROM");
-                                            string haveFledTo = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_FLED_TO");
-
-
                                             GeoscapeLogEntry entry = new GeoscapeLogEntry
                                             {
-                                                Text = new LocalizedTextBind($"{refugeesToHaven} {survivorsFrom} {site.LocalizedSiteName} {haveFledTo} {haven.Site.LocalizedSiteName}", true)
+                                                Text = new LocalizedTextBind(
+                                                    TFTVCommonMethods.FormatKey(
+                                                        "KEY_INFESTATION_REFUGEES_FLED",
+                                                        refugeesToHaven,
+                                                        site.LocalizedSiteName,
+                                                        haven.Site.LocalizedSiteName),
+                                                    true)
                                             };
                                             typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(site.GeoLevel.Log, new object[] { entry, null });
 
@@ -809,70 +810,42 @@ namespace TFTV
                                 OriginalOwner = "";
                                 TFTVLogger.Always("LivingWeaponsAcquired variables is " + site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired));
 
-                                /*
-                                 * KEY_GRAMMAR_PRONOUNS_SHE
-                                 * KEY_GRAMMAR_PRONOUNS_HER
-                                 * KEY_GRAMMAR_PRONOUNS_HE
-                                 * KEY_GRAMMAR_PRONOUNS_HIM
-                                 * KEY_GRAMMAR_PRONOUNS_THEY
-                                 * KEY_GRAMMAR_PRONOUNS_THEM
-                                 * KEY_GRAMMAR_PLURAL_SUFFIX
-                                 * KEY_GRAMMAR_SINGLE_SUFFIX
-                                 */
+                                // Each of these events is one sentence per grammatical case, not a
+                                // string of fragments: a translator sees the whole thing and can put
+                                // the name and the haven wherever their language needs them.
+                                GeoCharacter mainCharacter = FindCharactersOnSite(site).FirstOrDefault();
 
-                                string pronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_THEY");//"they";
-                                string nameMainCharacter = TFTVCommonMethods.ConvertKeyToString("KEY_TEXT_PHOENIX_OPERATIVES"); //"Phoenix operatives";
-                                string plural = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_SINGLE_SUFFIX");
-                                string possesivePronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_THEM"); ;
+                                string nameMainCharacter = mainCharacter != null
+                                    ? mainCharacter.DisplayName
+                                    : TFTVCommonMethods.ConvertKeyToString("KEY_TEXT_PHOENIX_OPERATIVES");
+                                string subject = TFTVCommonMethods.GrammaticalSubject(mainCharacter);
                                 string havenName = site.LocalizedSiteName;
 
-                                if (FindCharactersOnSite(site).Count() > 0)
-                                {
-                                    if (FindCharactersOnSite(site).First().Identity.Sex == GeoCharacterSex.Female)
-                                    {
-                                        pronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_SHE");
-                                        possesivePronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_HER");
-                                    }
-                                    else
-                                    {
-                                        pronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_HE");
-                                        possesivePronoun = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PRONOUNS_HIM");
-                                    }
-                                    nameMainCharacter = FindCharactersOnSite(site).First().DisplayName;
-                                    plural = TFTVCommonMethods.ConvertKeyToString("KEY_GRAMMAR_PLURAL_SUFFIX");
-                                }
+                                LocalizedTextBind lWDescription1 = new LocalizedTextBind(
+                                    TFTVCommonMethods.FormatKey(
+                                        "KEY_INFESTATION_LW1_DESCRIPTION",
+                                        havenName,
+                                        nameMainCharacter),
+                                    true);
 
+                                LocalizedTextBind lWDescription2 = new LocalizedTextBind(
+                                    TFTVCommonMethods.FormatKey(
+                                        $"KEY_INFESTATION_LW2_DESCRIPTION_{subject}",
+                                        nameMainCharacter),
+                                    true);
 
+                                LocalizedTextBind lWDescription3text = new LocalizedTextBind(
+                                    TFTVCommonMethods.FormatKey(
+                                        $"KEY_INFESTATION_LW3_DESCRIPTION_{subject}",
+                                        havenName,
+                                        nameMainCharacter),
+                                    true);
 
-
-                                string firstHavenDescription0 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_FIRST_HAVEN0");
-                                string firstHavenDescription1 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_FIRST_HAVEN1");
-                                string firstHavenDescription2 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_FIRST_HAVEN2");
-
-
-                                LocalizedTextBind lWDescription1 = new LocalizedTextBind($"{firstHavenDescription0} {havenName} {firstHavenDescription1} {nameMainCharacter} \n {firstHavenDescription2}", true);
-
-                                string secondHavenDescription0 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_SECOND_HAVEN0");
-                                string secondHavenDescription1 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_SECOND_HAVEN1");
-                                string secondHavenDescription2 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_SECOND_HAVEN2");
-                                string secondHavenDescription3 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_SECOND_HAVEN3");
-                                string secondHavenDescription4 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_SECOND_HAVEN4");
-
-                                LocalizedTextBind lWDescription2 = new LocalizedTextBind($"{secondHavenDescription0} {nameMainCharacter} {secondHavenDescription1}{plural} {secondHavenDescription2} {pronoun} {secondHavenDescription3}{plural} {secondHavenDescription4}", true);
-
-                                string thirdHavenDescription0 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_THIRD_HAVEN0");
-                                string thirdHavenDescription1 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_THIRD_HAVEN1");
-                                string thirdHavenDescription2 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_THIRD_HAVEN2");
-                                string thirdHavenDescription3 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_THIRD_HAVEN3");
-                                string thirdHavenDescription4 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_THIRD_HAVEN4");
-                                string thirdHavenDescription5 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_THIRD_HAVEN5");
-                                string thirdHavenDescription6 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_THIRD_HAVEN6");
-                                string thirdHavenDescription7 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_THIRD_HAVEN7");
-                                string thirdHavenDescription8 = TFTVCommonMethods.ConvertKeyToString("KEY_INFESTATION_THIRD_HAVEN8");
-
-                                LocalizedTextBind lWDescription3text = new LocalizedTextBind($"{thirdHavenDescription0} {havenName} {thirdHavenDescription1} {nameMainCharacter} {thirdHavenDescription2}{plural} {thirdHavenDescription3}{plural} {thirdHavenDescription4}", true);
-
-                                LocalizedTextBind lWDescription3outcome = new LocalizedTextBind($"{thirdHavenDescription5} {nameMainCharacter}{thirdHavenDescription6} {possesivePronoun} {thirdHavenDescription7} {pronoun} {thirdHavenDescription8}", true);
+                                LocalizedTextBind lWDescription3outcome = new LocalizedTextBind(
+                                    TFTVCommonMethods.FormatKey(
+                                        $"KEY_INFESTATION_LW3_OUTCOME_{subject}",
+                                        nameMainCharacter),
+                                    true);
 
 
                                 if (site.GeoLevel.EventSystem.GetVariable(LivingWeaponsAcquired) == 0)

@@ -123,7 +123,7 @@ namespace TFTV.TFTVHavenRecruitsUI
 
         internal static string GetClassName(GeoUnitDescriptor recruit)
         {
-            if (recruit == null) return "Unknown Class";
+            if (recruit == null) return TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_HAVEN_RECRUITS_UNKNOWN_CLASS");
             try
             {
                 // Fallback: from tags
@@ -131,7 +131,7 @@ namespace TFTV.TFTVHavenRecruitsUI
                 return tagName.className;
             }
             catch (Exception ex) { TFTVLogger.Error(ex); }
-            return "Unknown Class";
+            return TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_HAVEN_RECRUITS_UNKNOWN_CLASS");
         }
 
         internal static bool IsVehicleOrMutog(GeoUnitDescriptor recruit)

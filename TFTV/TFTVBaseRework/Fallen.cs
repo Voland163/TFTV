@@ -22,8 +22,9 @@ namespace TFTV.TFTVBaseRework
         private const string PanelObjectName = "FallenOperativesPanel_Harmony";
         private const string HeaderObjectName = "FallenOperativesHeader_Harmony";
         private const string ContentObjectName = "FallenOperativesContent_Harmony";
-        private const string HeaderText = "FALLEN OPERATIVES";
-        private const string ProjectOsirisPreparationText = "Preparing for PROJECT OSIRIS";
+        private static string HeaderText => BaseReworkText.Get(BaseReworkText.FallenHeader);
+        private static string ProjectOsirisPreparationText =>
+            BaseReworkText.Get(BaseReworkText.FallenProjectOsiris);
 
         private static readonly Color TextColor = new Color(0.95f, 0.95f, 0.95f, 1f);
 
@@ -246,14 +247,18 @@ namespace TFTV.TFTVBaseRework
                 PopulateClassIcons(classIconRoot.transform, fallenOperativeInfo.ClassViewElements);
 
                 CreateInfoLine(entry.transform, fallenOperativeInfo.Name, 40, FontStyle.Bold);
-                CreateInfoLine(entry.transform, $"Missions: {fallenOperativeInfo.Missions}  |  Kills: {fallenOperativeInfo.Kills}", 28, FontStyle.Normal);
-                CreateInfoLine(entry.transform, $"Favorite Weapon: {fallenOperativeInfo.FavoriteWeapon}", 28, FontStyle.Normal);
-                CreateInfoLine(entry.transform, $"Favorite Skill: {fallenOperativeInfo.FavoriteSkill}", 28, FontStyle.Normal);
+                CreateInfoLine(entry.transform, BaseReworkText.Format(BaseReworkText.FallenMissionsAndKills,
+                    fallenOperativeInfo.Missions, fallenOperativeInfo.Kills), 28, FontStyle.Normal);
+                CreateInfoLine(entry.transform, BaseReworkText.Format(BaseReworkText.FallenFavouriteWeapon,
+                    fallenOperativeInfo.FavoriteWeapon), 28, FontStyle.Normal);
+                CreateInfoLine(entry.transform, BaseReworkText.Format(BaseReworkText.FallenFavouriteSkill,
+                    fallenOperativeInfo.FavoriteSkill), 28, FontStyle.Normal);
                 CreateInfoLine(
                     entry.transform,
                     fallenOperativeInfo.IsPreparingForProjectOsiris
                         ? ProjectOsirisPreparationText
-                        : $"SP Returned: {fallenOperativeInfo.SkillPointsReturned}",
+                        : BaseReworkText.Format(BaseReworkText.FallenSkillPointsReturned,
+                            fallenOperativeInfo.SkillPointsReturned),
                     30,
                     FontStyle.Normal);
 

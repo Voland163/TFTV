@@ -1,4 +1,4 @@
-using Base.Entities.Abilities;
+﻿using Base.Entities.Abilities;
 using Base.UI;
 using PhoenixPoint.Common.Entities.Characters;
 using PhoenixPoint.Common.UI;
@@ -66,16 +66,16 @@ namespace TFTV.TFTVDrills
             {
                 if (isReplacement)
                 {
-                    return "REPLACE ABILITY";
+                    return DrillsText.Get(DrillsText.HeaderReplaceAbility);
                 }
                 else 
                 {
-                    return "ACQUIRE DRILL";
+                    return DrillsText.Get(DrillsText.HeaderAcquireDrill);
                 }
             }
             
 
-            return "REPLACE DRILL";
+            return DrillsText.Get(DrillsText.HeaderReplaceDrill);
         }
 
         private static Text ResolveConfirmationHeaderText(ConfirmBuyAbilityDataBind bind, UIModal modal)

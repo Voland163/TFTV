@@ -100,6 +100,7 @@ namespace TFTV.TFTVIncidents
             {
                 private const string TimeSeparator = " ~ ";
                 private const string TimeFormat = "{0}H";
+                private const string ExplorationTimeKey = "KEY_TFTV_INCIDENT_EXPLORATION_TIME";
 
                 [HarmonyPatch("SetMenuItems")]
                 [HarmonyPostfix]
@@ -172,7 +173,7 @@ namespace TFTV.TFTVIncidents
                         {
                             return;
                         }
-                        __instance.DescriptionBox.DescriptionText.text = string.Format("{0}\n\nExploration time: {1}", text, string.Format(TimeFormat, hours));
+                        __instance.DescriptionBox.DescriptionText.text = TFTVCommonMethods.FormatKey(ExplorationTimeKey, text, string.Format(TimeFormat, hours));
                     }
                     catch (Exception e)
                     {

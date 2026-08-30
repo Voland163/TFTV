@@ -328,7 +328,9 @@ namespace TFTV
                         {
                             GeoscapeLogEntry entry = new GeoscapeLogEntry
                             {
-                                Text = new LocalizedTextBind($"{vehicle.Name} Maintenance has fallen to 50% or below. Speed halved! Geoscape paused.", true)
+                                Text = new LocalizedTextBind(TFTVCommonMethods.FormatKey(
+                                    "TFTV_KEY_AIRCRAFT_MAINTENANCE_LOW",
+                                    vehicle.Name), true)
                             };
 
                             typeof(GeoscapeLog).GetMethod("AddEntry", BindingFlags.NonPublic | BindingFlags.Instance)

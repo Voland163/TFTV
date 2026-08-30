@@ -137,6 +137,11 @@ namespace TFTV.AgendaTracker
                 actionAcquire = Localize("EXTENDED_AGENDA_KEY_SECURE");
                 actionAttack = Localize("EXTENDED_AGENDA_KEY_WILL_ATTACK");
                 actionAttackOnPX = Localize("EXTENDED_AGENDA_KEY_WILL_COMPLETE_ATTACK_ON");
+                actionResolvingIncident = Localize("EXTENDED_AGENDA_KEY_RESOLVING_INCIDENT");
+                actionActivatingOutpost = Localize("EXTENDED_AGENDA_KEY_ACTIVATING_OUTPOST");
+                actionActivatingBase = Localize("EXTENDED_AGENDA_KEY_ACTIVATING_BASE");
+                actionUpgradingBase = Localize("EXTENDED_AGENDA_KEY_UPGRADING_BASE");
+                actionTrainingOperative = Localize("EXTENDED_AGENDA_KEY_TRAINING");
 
             }
             catch (Exception e)

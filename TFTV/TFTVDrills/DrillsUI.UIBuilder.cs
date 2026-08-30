@@ -1,4 +1,4 @@
-using Base.Core;
+﻿using Base.Core;
 using Base.Entities.Abilities;
 using Base.UI;
 using PhoenixPoint.Common.Core;
@@ -379,8 +379,8 @@ namespace TFTV.TFTVDrills
                 placeholderText.color = new Color(0.8f, 0.8f, 0.8f, 0.8f);
                 placeholderText.raycastTarget = false;
 
-                AddTrainingFacilityOverlayLabel(messageRect, "REQUIRES A FUNCTIONING", FacilityRequirementTextColor, 40);
-                AddTrainingFacilityOverlayLabel(messageRect, "TRAINING FACILITY", Color.white, 50);
+                AddTrainingFacilityOverlayLabel(messageRect, DrillsText.Get(DrillsText.RequiresTrainingFacilityLine1), FacilityRequirementTextColor, 40);
+                AddTrainingFacilityOverlayLabel(messageRect, DrillsText.Get(DrillsText.RequiresTrainingFacilityLine2), Color.white, 50);
 
                 return overlayRect.gameObject;
             }

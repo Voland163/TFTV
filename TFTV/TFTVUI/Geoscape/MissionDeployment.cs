@@ -82,7 +82,10 @@ namespace TFTV.TFTVUI.Geoscape
                             newIcon.GetComponentInChildren<Image>().sprite = lightConditions;
                             newIcon.GetComponentInChildren<Image>().color = color;
 
-                            string text = $"Local time is {hourOfTheDay:00}:{minuteOfTheHour:00}";
+                            string text = TFTVCommonMethods.FormatKey(
+                                "KEY_TFTV_DEPLOYMENT_LOCAL_TIME",
+                                hourOfTheDay.ToString("00"),
+                                minuteOfTheHour.ToString("00"));
                             newIcon.gameObject.AddComponent<UITooltipText>().TipText = text;
 
                           //  CreateBestEquipmentButton(geoSite);

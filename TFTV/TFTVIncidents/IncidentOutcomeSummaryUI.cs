@@ -20,6 +20,8 @@ namespace TFTV.TFTVIncidents
         private const string DiagTag = "[Incidents][OutcomeRecapDiag]";
         private const string AffinityRewardLineName = "[Mod]IncidentAffinityRewardLine";
         private const string PersonnelRewardLineName = "[Mod]IncidentPersonnelRewardLine";
+        private const string AffinityRewardTextKey = "KEY_TFTV_INCIDENT_REWARD_AFFINITY";
+        private const string PersonnelRewardTextKey = "KEY_TFTV_INCIDENT_REWARD_PERSONNEL";
 
         private static readonly Dictionary<string, SummaryData> SummaryByExactKey = new Dictionary<string, SummaryData>(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, SummaryData> SummaryBySiteKey = new Dictionary<string, SummaryData>(StringComparer.OrdinalIgnoreCase);
@@ -201,7 +203,7 @@ namespace TFTV.TFTVIncidents
                     VehicleId = active.VehicleId,
                     IntroText = ResolveIntroText(active.CompletionEventId),
                     ChosenApproach = ResolveChosenApproachText(active.CompletionEventId, active.ApproachTokens),
-                    LeaderName = leader != null ? leader.DisplayName : "Unknown",
+                    LeaderName = leader != null ? leader.DisplayName : TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_INCIDENT_LEADER_UNKNOWN"),
                     PersonnelCount = ResolvePersonnelCount(active.CompletionEventId),
                     AffinityResultText = string.IsNullOrEmpty(affinityResultText) ? "No change" : affinityResultText,
                     CreatedUtc = DateTime.UtcNow
@@ -353,11 +355,11 @@ namespace TFTV.TFTVIncidents
                 chosenApproach = geoEvent.Context.ReplaceEventTokens(chosenApproach);
             }
 
-            string summaryBody =
-                "<b>Incident Recap</b>\n" +
-                $"Intro: {introText}\n" +
-                $"Chosen approach: {chosenApproach}\n" +
-                $"Leading operative: {data.LeaderName}";
+            string summaryBody = TFTVCommonMethods.FormatKey(
+                "KEY_TFTV_INCIDENT_RECAP_BODY",
+                introText,
+                chosenApproach,
+                data.LeaderName);
 
             CreateOrUpdateSummaryPanel(parent, module, summaryBody);
             AddPersonnelToRewards(module, parent, data);
@@ -414,7 +416,7 @@ namespace TFTV.TFTVIncidents
             }
 
             rewardText.supportRichText = true;
-            rewardText.text = "Affinity gained/increased: " + valueText;
+            rewardText.text = TFTVCommonMethods.FormatKey(AffinityRewardTextKey, valueText);
         }
 
         private static void RemoveExistingAffinityRewardLine(Transform parent)
@@ -644,14 +646,20 @@ namespace TFTV.TFTVIncidents
             }
 
             // Fallback label
-            string approachLabel = "Approach";
+            string approachLabel = TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_INCIDENT_APPROACH_GENERIC");
             if (TryParseChoiceIndex(successEventId, out int fallbackChoiceIndex))
             {
-                approachLabel = fallbackChoiceIndex == 0 ? "Approach A" : (fallbackChoiceIndex == 1 ? "Approach B" : "Approach");
+                approachLabel = fallbackChoiceIndex == 0
+                    ? TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_INCIDENT_APPROACH_A")
+                    : (fallbackChoiceIndex == 1
+                        ? TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_INCIDENT_APPROACH_B")
+                        : TFTVCommonMethods.ConvertKeyToString("KEY_TFTV_INCIDENT_APPROACH_GENERIC"));
             }
 
             string tokens = FormatApproachTokens(approachTokens);
-            return string.IsNullOrEmpty(tokens) ? approachLabel : $"{approachLabel} ({tokens})";
+            return string.IsNullOrEmpty(tokens)
+                ? approachLabel
+                : TFTVCommonMethods.FormatKey("KEY_TFTV_INCIDENT_APPROACH_WITH_TOKENS", approachLabel, tokens);
         }
 
         private static bool TryGetIncidentDefinitionBySuccessEvent(string successEventId, out Objects.GeoIncidentDefinition incident, out int choiceIndex)
@@ -995,7 +1003,7 @@ namespace TFTV.TFTVIncidents
             }
 
             rewardText.supportRichText = true;
-            rewardText.text = "Personnel obtained: " + valueText;
+            rewardText.text = TFTVCommonMethods.FormatKey(PersonnelRewardTextKey, valueText);
         }
     }
 }

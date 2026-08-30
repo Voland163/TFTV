@@ -204,7 +204,7 @@ namespace TFTV.TFTVHavenRecruitsUI
 
                 if (cardView.NameLabel != null)
                 {
-                    cardView.NameLabel.text = data.Recruit?.GetName() ?? "Unknown Recruit";
+                    cardView.NameLabel.text = data.Recruit?.GetName() ?? HavenRecruitsMain.UiUnknownRecruitText;
                     cardView.NameLabel.color = cardView.NameDefaultColor;
                 }
 

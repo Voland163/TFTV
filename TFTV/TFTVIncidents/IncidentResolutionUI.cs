@@ -39,6 +39,11 @@ namespace TFTV.TFTVIncidents
             private const string ChoiceIconsRootName = "[Mod]ChoiceApproachIcons";
             private const string ChoiceIconNamePrefix = "[Mod]ChoiceApproachIcon_";
 
+            private const string NoEligibleOperativeKey = "KEY_TFTV_INCIDENT_NO_ELIGIBLE_OPERATIVE";
+            private const string SelectLeaderKey = "KEY_TFTV_INCIDENT_SELECT_LEADER";
+            private const string ChoiceGainLabelKey = "KEY_TFTV_INCIDENT_CHOICE_GAIN_LABEL";
+            private const string ApproachHoursKey = "KEY_TFTV_INCIDENT_APPROACH_HOURS";
+
             private const float CrewPanelTopPadding = 8f;
             private const float GridSpacingX = 10f;
             private const float GridSpacingY = 6f;
@@ -400,7 +405,7 @@ namespace TFTV.TFTVIncidents
                 List<GeoCharacter> crew = ResolveCrew(vehicle);
                 if (crew.Count == 0)
                 {
-                    DisableChoiceButtons(__instance, "No eligible operative available.");
+                    DisableChoiceButtons(__instance, TFTVCommonMethods.ConvertKeyToString(NoEligibleOperativeKey));
                     return;
                 }
                 // Resolve SoldierSlotController prefab
@@ -812,7 +817,7 @@ namespace TFTV.TFTVIncidents
 
                     string baseText = string.IsNullOrEmpty(state.BaseText) ? (state.Label.text ?? string.Empty) : state.BaseText;
                     string hoursText = ResolveApproachHoursText(geoEvent, vehicle, i, selectedCharacter);
-                    state.Label.text = $"{baseText} ({hoursText})";
+                    state.Label.text = TFTVCommonMethods.FormatKey(ApproachHoursKey, baseText, hoursText);
 
                     ApplyChoiceIcons(button, i);
                 }
@@ -1610,7 +1615,7 @@ namespace TFTV.TFTVIncidents
                     return;
                 }
 
-                header.text = "Select Leading Operative for the Incident.";
+                header.text = TFTVCommonMethods.ConvertKeyToString(SelectLeaderKey);
                 _currentSelectedCharacter = selectedCharacter;
             }
 
@@ -1637,7 +1642,7 @@ namespace TFTV.TFTVIncidents
                 for (int i = 0; i < 2; i++)
                 {
                     int capturedIndex = i;
-                    string choiceLabel = $"Choice {i + 1}:";
+                    string choiceLabel = TFTVCommonMethods.FormatKey(ChoiceGainLabelKey, i + 1);
 
                     GameObject subRow = new GameObject($"[Mod]GainSubRow_{i}", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
                     subRow.transform.SetParent(outerRow.transform, false);
@@ -1658,7 +1663,7 @@ namespace TFTV.TFTVIncidents
                     GameObject labelGO = new GameObject($"[Mod]GainLabel_{i}", typeof(RectTransform), typeof(Text));
                     labelGO.transform.SetParent(subRow.transform, false);
                     _choiceGainLabel[i] = labelGO.GetComponent<Text>();
-                    _choiceGainLabel[i].text = $"{choiceLabel} Leading operative will gain:";
+                    _choiceGainLabel[i].text = choiceLabel;
                     _choiceGainLabel[i].alignment = TextAnchor.MiddleRight;
                     _choiceGainLabel[i].horizontalOverflow = HorizontalWrapMode.Overflow;
                     _choiceGainLabel[i].verticalOverflow = VerticalWrapMode.Overflow;

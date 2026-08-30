@@ -218,7 +218,9 @@ namespace TFTV.TFTVUI.Tactical
 
                     _reinforcementTitle.text = reinforcementTitle;
                     _reinforcementDescription.text = reinforcementDescription;
-                    _generatorsHealth.text = $"Generators at {powerGeneratorHP}%, can be vented {consolesLeft} times";
+                    _generatorsHealth.text = TFTVCommonMethods.ConvertKeyToString("TFTV_KEY_BASE_DEFENSE_GENERATORS")
+                        .Replace("{0}", powerGeneratorHP.ToString())
+                        .Replace("{1}", consolesLeft.ToString());
                     _generatorsHealth.color = color;
                     _iconImage.color = color;
 
