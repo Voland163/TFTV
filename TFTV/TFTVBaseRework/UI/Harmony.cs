@@ -75,30 +75,9 @@ namespace TFTV.TFTVBaseRework
         private static GameObject _modalRoot;
         private static bool _deploymentUIActive;
 
-        // Multi-select state: personnel IDs currently selected.
-        private static readonly HashSet<int> _selectedIds = new HashSet<int>();
-        // Track which column the selection originated from.
-        private static PersonnelAssignment _selectionSourceColumn = PersonnelAssignment.Unassigned;
-
-        // Cached state/level for refresh inside MonoBehaviours.
+        // Cached state/level so button handlers can rebuild the panel.
         private static UIStateRosterRecruits _cachedState;
         private static GeoLevelController _cachedLevel;
-
-        // Colors
-        private static readonly Color ColHeaderBg = new Color(0.10f, 0.12f, 0.16f, 0.95f);
-        private static readonly Color ColBodyBg = new Color(0.06f, 0.07f, 0.10f, 0.70f);
-        private static readonly Color SlotNormalBg = new Color(0.12f, 0.14f, 0.18f, 0.85f);
-        private static readonly Color SlotSelectedBg = new Color(0.25f, 0.45f, 0.70f, 0.90f);
-        private static readonly Color DropHighlightColor = new Color(0.20f, 0.55f, 0.20f, 0.40f);
-        private static readonly Color BtnColor = new Color(0.25f, 0.35f, 0.55f, 0.9f);
-        private static readonly Color ToggleOnColor = new Color(0.20f, 0.50f, 0.20f, 0.9f);
-        private static readonly Color ToggleOffColor = new Color(0.50f, 0.20f, 0.20f, 0.9f);
-
-        private const float ColumnHeaderHeight = 100f;
-        private const float ColumnHeaderIconSize = 75f;
-        private const float ColumnHeaderLabelHeight = 75f;
-        private const float ColumnHeaderButtonSize = 75;
-        private const int ColumnFontSize = 40;
 
         #region Column Icon Placeholder
         /// <summary>
@@ -416,7 +395,7 @@ namespace TFTV.TFTVBaseRework
                     if (_personnelPanel != null) { Object.Destroy(_personnelPanel); _personnelPanel = null; }
                     CloseModal();
                     _deploymentUIActive = false;
-                    _selectedIds.Clear();
+                    _expandedCharacterId = 0;
                     _cachedState = null;
                     _cachedLevel = null;
                     _puristaSemibold = null; // reset so it re-resolves from live level on next open

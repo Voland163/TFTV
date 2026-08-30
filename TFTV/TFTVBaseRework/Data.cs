@@ -767,7 +767,41 @@ namespace TFTV.TFTVBaseRework
             if (level != null)
             {
                 EnsureAutoAssignSettingInitialized(level);
+                EnsurePrioritizeCiviliansSettingInitialized(level);
             }
+        }
+
+        private const string PrioritizeCiviliansVariableName = "TFTV_BaseRework_PrioritizeCivilians";
+
+        /// <summary>
+        /// When set, auto-assignment fills the work slots with civilians before it reaches for
+        /// dismissed operatives, so trained personnel stay free to be redeployed to the field.
+        /// Off by default: the plain setting seats whoever produces most.
+        /// </summary>
+        internal static bool PrioritizeCiviliansEnabled = false;
+
+        internal static void EnsurePrioritizeCiviliansSettingInitialized(GeoLevelController level)
+        {
+            if (!BaseReworkCheck.BaseReworkEnabled || level?.EventSystem == null)
+            {
+                return;
+            }
+
+            PrioritizeCiviliansEnabled = level.EventSystem.GetVariable(PrioritizeCiviliansVariableName) != 0;
+        }
+
+        internal static void SetPrioritizeCiviliansEnabled(GeoLevelController level, bool enabled)
+        {
+            PrioritizeCiviliansEnabled = enabled;
+
+            if (level?.EventSystem == null)
+            {
+                return;
+            }
+
+            level.EventSystem.SetVariable(PrioritizeCiviliansVariableName, enabled ? 1 : 0);
+
+            TFTVLogger.Always($"{LogPrefix} Prioritize-civilians setting saved to Geoscape variable: {(enabled ? "ON" : "OFF")}.");
         }
 
         internal static void TryAutoAssignUnassignedPersonnel(GeoPhoenixFaction faction, string source)
@@ -837,7 +871,7 @@ namespace TFTV.TFTVBaseRework
             int workerBudget = alreadyWorking + livingHeadroom;
 
             Dictionary<int, PersonnelAssignment> target = BuildBestAssignment(
-                movable, freeResearch, freeManufacturing, workerBudget);
+                movable, freeResearch, freeManufacturing, workerBudget, PrioritizeCiviliansEnabled);
 
             List<PersonnelInfo> moved = movable
                 .Where(person => target[person.Id] != person.Assignment)
@@ -900,7 +934,8 @@ namespace TFTV.TFTVBaseRework
         /// same answer and nobody is reseated for nothing.
         /// </summary>
         private static Dictionary<int, PersonnelAssignment> BuildBestAssignment(
-            List<PersonnelInfo> movable, int freeResearch, int freeManufacturing, int workerBudget)
+            List<PersonnelInfo> movable, int freeResearch, int freeManufacturing, int workerBudget,
+            bool prioritizeCivilians)
         {
             Dictionary<int, PersonnelAssignment> target = new Dictionary<int, PersonnelAssignment>();
             foreach (PersonnelInfo person in movable)
@@ -917,8 +952,19 @@ namespace TFTV.TFTVBaseRework
                 PersonnelAssignment bestSlot = PersonnelAssignment.Research;
                 float bestOutput = float.NegativeInfinity;
 
+                // With the civilians-first setting on, dismissed operatives are only considered once
+                // no civilian is left to seat: the point is to leave trained people redeployable,
+                // even where they would out-produce the civilian taking the slot.
+                bool civiliansStillAvailable = prioritizeCivilians
+                    && pool.Any(candidate => !PersonnelRestrictions.IsDismissedOperative(candidate.Character));
+
                 foreach (PersonnelInfo person in pool)
                 {
+                    if (civiliansStillAvailable && PersonnelRestrictions.IsDismissedOperative(person.Character))
+                    {
+                        continue;
+                    }
+
                     if (freeResearch > 0)
                     {
                         float research = ResearchAndManufacturing.GetEffectiveWorkerOutput(person.Character, ResourceType.Research);
