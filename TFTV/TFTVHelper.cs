@@ -34,6 +34,7 @@ namespace TFTV
         public static readonly string VoidOmensAndODIyLocalizationFileName = "TFTV_VoidOmensAndODI_Localization.csv";
         public static readonly string NJStoryLocalizationFileName = "TFTV_NJStoryMissions_Localization.csv";
         public static readonly string AircraftReworkLocalizationFileName = "TFTV_AircraftRework_Localization.csv";
+        public static readonly string BaseReworkPersonnelLocalizationFileName = "TFTV_BaseReworkPersonnel_Localization.csv";
         internal static string VehiclesReworkLocalizationFileName = "Vehicles.csv";
         public static readonly string SkillLocalizationFileName = "PR_BC_Localization.csv";
         public static readonly string PhoenixPaediaFileName = "TFTV_Phoenixpedia.csv";
@@ -100,6 +101,11 @@ namespace TFTV
                 if (TFTVAircraftReworkMain.AircraftReworkOn && File.Exists(Path.Combine(LocalizationDirectory, AircraftReworkLocalizationFileName)))
                 {
                     localizationChanged |= AddLocalizationFromCSV(AircraftReworkLocalizationFileName, null, false);
+                }
+
+                if (File.Exists(Path.Combine(LocalizationDirectory, BaseReworkPersonnelLocalizationFileName)))
+                {
+                    localizationChanged |= AddLocalizationFromCSV(BaseReworkPersonnelLocalizationFileName, null, false);
                 }
 
                 if (File.Exists(Path.Combine(LocalizationDirectory, VehiclesReworkLocalizationFileName)))

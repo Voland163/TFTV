@@ -48,7 +48,7 @@ namespace TFTV.TFTVBaseRework
             public PersonnelInfo Personnel;
             public bool IsFieldOperative;
 
-            public string Name => Character?.DisplayName ?? "Unknown";
+            public string Name => Character?.DisplayName ?? PersonnelText.Get(PersonnelText.StatusUnknownName);
 
             public PersonnelAssignment Assignment =>
                 Personnel?.Assignment ?? PersonnelAssignment.Unassigned;
@@ -74,7 +74,7 @@ namespace TFTV.TFTVBaseRework
             List<RosterEntry> entries = BuildRosterEntries(phoenix);
             List<RosterEntry> visible = FilterEntries(entries, _rosterFilter);
 
-            Transform header = CreateSectionHeader(content, "PHOENIX PERSONNEL",
+            Transform header = CreateSectionHeader(content, PersonnelText.Get(PersonnelText.RosterTitle),
                 GetColumnIconSprite(PersonnelAssignment.Unassigned), TextPrimaryColor);
             Text count = CreateLabel(header, "Count", visible.Count.ToString(), TitleFontSize, AccentOrangeColor,
                 TextAnchor.MiddleRight);
@@ -94,7 +94,8 @@ namespace TFTV.TFTVBaseRework
 
             if (visible.Count == 0)
             {
-                Text empty = CreateLabel(list, "Empty", "Nobody here.", BodyFontSize, TextDimColor, TextAnchor.MiddleCenter);
+                Text empty = CreateLabel(list, "Empty", PersonnelText.Get(PersonnelText.RosterEmpty), BodyFontSize,
+                    TextDimColor, TextAnchor.MiddleCenter);
                 SetSize(empty.gameObject, 0f, RosterRowHeight);
             }
 
@@ -113,15 +114,19 @@ namespace TFTV.TFTVBaseRework
             layout.childForceExpandHeight = false;
             SetSize(row, 0f, 48f);
 
-            CreateFilterTab(row.transform, RosterFilter.All, "ALL", entries.Count);
-            CreateFilterTab(row.transform, RosterFilter.Assigned, "ASSIGNED", entries.Count(e => e.IsAssigned));
-            CreateFilterTab(row.transform, RosterFilter.Unassigned, "UNASSIGNED", entries.Count(e => !e.IsAssigned));
+            CreateFilterTab(row.transform, RosterFilter.All, PersonnelText.FilterAll, entries.Count);
+            CreateFilterTab(row.transform, RosterFilter.Assigned, PersonnelText.FilterAssigned,
+                entries.Count(e => e.IsAssigned));
+            CreateFilterTab(row.transform, RosterFilter.Unassigned, PersonnelText.FilterUnassigned,
+                entries.Count(e => !e.IsAssigned));
         }
 
-        private static void CreateFilterTab(Transform parent, RosterFilter filter, string caption, int count)
+        private static void CreateFilterTab(Transform parent, RosterFilter filter, string captionKey, int count)
         {
             bool active = _rosterFilter == filter;
-            Button button = CreateTextButton(parent, $"Tab_{filter}", $"{caption} ({count})", () =>
+            string caption = PersonnelText.Format(PersonnelText.FilterCount, PersonnelText.Get(captionKey), count);
+
+            Button button = CreateTextButton(parent, $"Tab_{filter}", caption, () =>
             {
                 _rosterFilter = filter;
                 _expandedCharacterId = 0;
@@ -140,7 +145,7 @@ namespace TFTV.TFTVBaseRework
         {
             EnsureAutoAssignSettingInitialized(level);
 
-            CreateCheckbox(parent, "AutoAssignToggle", "Auto-assign", AutoAssignEnabled, () =>
+            CreateCheckbox(parent, "AutoAssignToggle", PersonnelText.Get(PersonnelText.AutoAssign), AutoAssignEnabled, () =>
                 {
                     SetAutoAssignEnabled(level, !AutoAssignEnabled);
                     if (AutoAssignEnabled)
@@ -335,19 +340,21 @@ namespace TFTV.TFTVBaseRework
         {
             if (entry.IsFieldOperative)
             {
-                return "Field duty";
+                return PersonnelText.Get(PersonnelText.StatusFieldDuty);
             }
 
             switch (entry.Assignment)
             {
                 case PersonnelAssignment.Research:
-                    return "Research";
+                    return PersonnelText.Get(PersonnelText.StatusResearch);
                 case PersonnelAssignment.Manufacturing:
-                    return "Fabrication";
+                    return PersonnelText.Get(PersonnelText.StatusFabrication);
                 case PersonnelAssignment.Training:
                     return GetAssignmentDisplay(entry.Personnel, level);
                 default:
-                    return PersonnelRestrictions.IsDismissedOperative(entry.Character) ? "Dismissed" : "Idle";
+                    return PersonnelText.Get(PersonnelRestrictions.IsDismissedOperative(entry.Character)
+                        ? PersonnelText.StatusDismissed
+                        : PersonnelText.StatusIdle);
             }
         }
 
@@ -390,7 +397,7 @@ namespace TFTV.TFTVBaseRework
 
             if (entry.IsFieldOperative)
             {
-                CreateTextButton(strip.transform, "Dismiss", "DISMISS FROM FIELD DUTY",
+                CreateTextButton(strip.transform, "Dismiss", PersonnelText.Get(PersonnelText.ActionDismiss),
                     () => ConfirmDismissFromFieldDuty(entry.Character, level, phoenix),
                     width: 430f, height: RosterActionSize, fontSize: SmallFontSize,
                     fillColor: ButtonFillDangerColor);
@@ -405,7 +412,8 @@ namespace TFTV.TFTVBaseRework
 
             if (entry.Assignment == PersonnelAssignment.Training)
             {
-                CreateTextButton(strip.transform, "Deploy", "DEPLOY", () => ShowSlotContextMenu(person),
+                CreateTextButton(strip.transform, "Deploy", PersonnelText.Get(PersonnelText.ActionDeploy),
+                    () => ShowSlotContextMenu(person),
                     width: 220f, height: RosterActionSize, fontSize: SmallFontSize, fillColor: AccentOrangeColor,
                     captionColor: Color.black);
                 return;
@@ -473,18 +481,17 @@ namespace TFTV.TFTVBaseRework
             int maxTrainingLevel = TrainingFacilityRework.GetMaxTargetLevel(phoenix, character);
             int spPerLevel = TrainingFacilityRework.GetTrainingSpCost(2);
 
-            string message = $"Dismiss {character.DisplayName} from field duty?\n\n"
-                + $"Redeploying them to a base later costs {redeployCost} shared skill points.";
+            string message = PersonnelText.Format(PersonnelText.DismissPrompt, character.DisplayName)
+                + "\n\n"
+                + PersonnelText.Format(PersonnelText.DismissRedeployCost, redeployCost);
 
             string trainingLine = currentLevel >= maxTrainingLevel
-                ? "They cannot be trained any further."
-                : $"They can be trained further in their class up to level {maxTrainingLevel}, "
-                  + $"at {spPerLevel} shared skill points per level.";
+                ? PersonnelText.Get(PersonnelText.DismissTrainingCapped)
+                : PersonnelText.Format(PersonnelText.DismissTrainingAvailable, maxTrainingLevel, spPerLevel);
 
-            message += isGrunt
-                ? $"\n\n{character.DisplayName} is rank and file: they cannot be assigned to research or "
-                  + $"manufacturing, and cannot be used to activate an outpost or a base. {trainingLine}"
-                : $"\n\nThey join base personnel and can be assigned to research or manufacturing. {trainingLine}";
+            message += "\n\n" + (isGrunt
+                ? PersonnelText.Format(PersonnelText.DismissGrunt, character.DisplayName, trainingLine)
+                : PersonnelText.Format(PersonnelText.DismissCivilian, trainingLine));
 
             string name = character.DisplayName;
             List<GeoItem> returnedToStorage = PersonnelDismissal.GetLoadoutReturnedToStorage(character);
@@ -501,7 +508,7 @@ namespace TFTV.TFTVBaseRework
                     if (!dismissed)
                     {
                         // Refreshing the panel destroys the modal it owns, so the report comes after.
-                        ShowMessage($"{name} could not be dismissed from field duty. They are still on the roster; see TFTV.log for the reason.");
+                        ShowMessage(PersonnelText.Format(PersonnelText.DismissFailed, name));
                     }
                 },
                 () => CloseModal());

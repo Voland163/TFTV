@@ -30,7 +30,8 @@ namespace TFTV.TFTVBaseRework
             panelElement.flexibleWidth = 26f;
             panelElement.flexibleHeight = 1f;
 
-            CreateSectionHeader(content, "TRAINING", GetColumnIconSprite(PersonnelAssignment.Training), TextPrimaryColor);
+            CreateSectionHeader(content, PersonnelText.Get(PersonnelText.TrainingTitle),
+                GetColumnIconSprite(PersonnelAssignment.Training), TextPrimaryColor);
 
             Text counter = CreateLabel(content, "Counter", $"{used} / {provided}", 84,
                 provided > 0 ? AccentOrangeColor : TextDisabledColor, TextAnchor.MiddleCenter);
@@ -46,8 +47,8 @@ namespace TFTV.TFTVBaseRework
 
             if (trainees.Count == 0)
             {
-                Text empty = CreateLabel(list, "Empty", "Nobody in training.", BodyFontSize, TextDimColor,
-                    TextAnchor.MiddleCenter);
+                Text empty = CreateLabel(list, "Empty", PersonnelText.Get(PersonnelText.TrainingEmpty), BodyFontSize,
+                    TextDimColor, TextAnchor.MiddleCenter);
                 SetSize(empty.gameObject, 0f, TrainingRowHeight);
             }
             else
@@ -62,11 +63,13 @@ namespace TFTV.TFTVBaseRework
             CreateSkillpointsReadout(content, phoenix);
 
             bool trainingSlotFree = used < provided;
-            CreateTextButton(content, "TrainButton", "TRAIN", () => ShowTrainingCandidateSelection(level, phoenix),
+            CreateTextButton(content, "TrainButton", PersonnelText.Get(PersonnelText.ButtonTrain),
+                () => ShowTrainingCandidateSelection(level, phoenix),
                 height: 76f, fontSize: TitleFontSize, enabled: trainingSlotFree,
                 fillColor: ButtonFillColor);
 
-            CreateTextButton(content, "DeployButton", "DEPLOY", () => ShowDeployCandidateSelection(level, phoenix),
+            CreateTextButton(content, "DeployButton", PersonnelText.Get(PersonnelText.ButtonDeploy),
+                () => ShowDeployCandidateSelection(level, phoenix),
                 height: 92f, fontSize: 44,
                 fillColor: AccentOrangeColor, captionColor: Color.black);
         }
@@ -86,7 +89,8 @@ namespace TFTV.TFTVBaseRework
             layout.childForceExpandHeight = false;
             SetSize(box, 0f, 80f);
 
-            Text caption = CreateLabel(box.transform, "Caption", "PHOENIX SP", TitleFontSize, TextDimColor,
+            Text caption = CreateLabel(box.transform, "Caption", PersonnelText.Get(PersonnelText.PhoenixSkillPoints),
+                TitleFontSize, TextDimColor,
                 TextAnchor.MiddleRight);
             LayoutElement captionElement = SetSize(caption.gameObject, 0f, 80f);
             captionElement.flexibleWidth = 1f;
@@ -118,7 +122,7 @@ namespace TFTV.TFTVBaseRework
             CreateNameCell(row.transform, entry, slotPrefab);
 
             string remaining = complete
-                ? "Ready"
+                ? PersonnelText.Get(PersonnelText.TrainingReady)
                 : FormatDuration(TrainingFacilityRework.GetRecruitRemainingHours(person.Character, level));
             Text time = CreateLabel(row.transform, "Remaining", remaining, BodyFontSize,
                 complete ? AccentOrangeColor : AccentCyanColor, TextAnchor.MiddleRight);
@@ -146,18 +150,19 @@ namespace TFTV.TFTVBaseRework
 
             CloseModal();
             _modalRoot = CreateModalRoot("TrainingCandidateModal");
-            AddModalHeader("Who should train?");
+            AddModalHeader(PersonnelText.Get(PersonnelText.WhoTrains));
             Transform content = CreateModalContentArea();
 
             if (candidates.Count == 0)
             {
-                AddDisabledLabel(content, "No personnel available to train.");
+                AddDisabledLabel(content, PersonnelText.Get(PersonnelText.NoTrainCandidates));
             }
 
             foreach (PersonnelInfo person in candidates)
             {
                 string label = PersonnelRestrictions.IsDismissedOperative(person.Character)
-                    ? $"{GetPersonnelName(person)} (level {person.Character.LevelProgression?.Level ?? 1})"
+                    ? PersonnelText.Format(PersonnelText.CandidateLevel, GetPersonnelName(person),
+                        person.Character.LevelProgression?.Level ?? 1)
                     : GetPersonnelName(person);
 
                 AddModalOptionButton(content, label, () => StartTrainingFlow(level, person));
@@ -181,7 +186,7 @@ namespace TFTV.TFTVBaseRework
             SpecializationDef existingSpec = ResolveExistingSpecialization(person.Character);
             if (existingSpec == null)
             {
-                ShowMessage($"Could not determine class for {person.Character?.DisplayName}.");
+                ShowMessage(PersonnelText.Format(PersonnelText.ClassUnknown, person.Character?.DisplayName));
                 return;
             }
 
@@ -197,23 +202,33 @@ namespace TFTV.TFTVBaseRework
 
             CloseModal();
             _modalRoot = CreateModalRoot("DeployCandidateModal");
-            AddModalHeader("Who should deploy?");
+            AddModalHeader(PersonnelText.Get(PersonnelText.WhoDeploys));
             Transform content = CreateModalContentArea();
 
             if (candidates.Count == 0)
             {
-                AddDisabledLabel(content, "No personnel available to deploy.");
+                AddDisabledLabel(content, PersonnelText.Get(PersonnelText.NoDeployCandidates));
             }
 
             foreach (PersonnelInfo person in candidates)
             {
-                string suffix = person.Assignment == PersonnelAssignment.Training
-                    ? $" - {GetAssignmentDisplay(person, level)}"
-                    : PersonnelRestrictions.IsDismissedOperative(person.Character)
-                        ? $" - dismissed, {PersonnelRestrictions.GetRedeployCost(person.Character)} SP"
-                        : string.Empty;
+                string label;
+                if (person.Assignment == PersonnelAssignment.Training)
+                {
+                    label = PersonnelText.Format(PersonnelText.CandidateTraining, GetPersonnelName(person),
+                        GetAssignmentDisplay(person, level));
+                }
+                else if (PersonnelRestrictions.IsDismissedOperative(person.Character))
+                {
+                    label = PersonnelText.Format(PersonnelText.CandidateDismissed, GetPersonnelName(person),
+                        PersonnelRestrictions.GetRedeployCost(person.Character));
+                }
+                else
+                {
+                    label = GetPersonnelName(person);
+                }
 
-                AddModalOptionButton(content, $"{GetPersonnelName(person)}{suffix}", () => ShowSlotContextMenu(person));
+                AddModalOptionButton(content, label, () => ShowSlotContextMenu(person));
             }
 
             AddModalCloseButton();
