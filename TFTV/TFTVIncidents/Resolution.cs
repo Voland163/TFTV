@@ -330,14 +330,26 @@ namespace TFTV.TFTVIncidents
                 return matchedNearbyHaven?.Site?.SiteId ?? -1;
             }
 
+            /// <summary>
+            /// The incident being resolved at this site, if any. The Agenda Tracker asks this of every
+            /// site it knows about once a second, so it is kept free of LINQ and its per-call closure.
+            /// </summary>
             internal static ActiveTimedProblem GetActiveTimedProblem(GeoSite site)
             {
-                if (site == null)
+                if (site == null || ActiveByTimerId.Count == 0)
                 {
                     return null;
                 }
 
-                return ActiveByTimerId.Values.FirstOrDefault(v => v.SiteId == site.SiteId);
+                foreach (ActiveTimedProblem active in ActiveByTimerId.Values)
+                {
+                    if (active != null && active.SiteId == site.SiteId)
+                    {
+                        return active;
+                    }
+                }
+
+                return null;
             }
 
 

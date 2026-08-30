@@ -614,14 +614,14 @@ namespace TFTV.TFTVIncidents
 
                 // PsychoSociology option 1: handled via ResourceMissionOutcomeDef_ApplyOutcome_AffinityHavenDefenseReward_Patch
 
-                // PsychoSociology option 2: all operatives in the aircraft recover 2 Stamina after a mission
+                // PsychoSociology option 2: all operatives in the aircraft recover Stamina after a mission
                 int psychoSociologyRank = GetActiveGeoscapeRank(level, squadSoldiers, LeaderSelection.AffinityApproach.PsychoSociology, requiredOption: 2);
 
                 TFTVLogger.Always($"{DiagTag} PsychoSociology post-mission stamina recovery rank: {psychoSociologyRank}.");
 
                 if (psychoSociologyRank > 0 && squad.Soldiers != null)
                 {
-                    float staminaAmount = 2f * psychoSociologyRank;
+                    float staminaAmount = Affinities.AffinityBenefitsChoices.PsychoSociologyStaminaPerRank * psychoSociologyRank;
                     foreach (GeoCharacter soldier in squad.Soldiers)
                     {
                         soldier.Fatigue?.Stamina?.AddRestrictedToMax(staminaAmount);
@@ -1006,7 +1006,7 @@ namespace TFTV.TFTVIncidents
     GeoLevelController level,
     List<GeoCharacter> operativesInvolved)
         {
-            // PsychoSociology option 2 is now: all operatives recover 2 Stamina after a mission (handled in ApplyPostMissionRecovery).
+            // PsychoSociology option 2 is now: all operatives recover Stamina after a mission (handled in ApplyPostMissionRecovery).
             // Delirium recovery bonus has been removed. Returning 0 to neutralise the call in TFTVDelirium.RemoveDeliriumPerks.
             return 0;
 

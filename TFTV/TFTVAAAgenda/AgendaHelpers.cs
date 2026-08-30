@@ -3,13 +3,16 @@ using Base.UI;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Geoscape.Core;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.Levels.Factions.Archeology;
 using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers;
 using PhoenixPoint.Geoscape.View.ViewModules;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TFTV.TFTVBaseRework;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -82,6 +85,182 @@ namespace TFTV.AgendaTracker
         internal static bool HasCustomSiteTracker(GeoSite site)
         {
             return GetPendingBaseAction(site).HasValue || GetActiveIncident(site) != null;
+        }
+
+        /// <summary>
+        /// Whether this site still has anything for the Agenda Tracker to report - the union of every
+        /// reason a site row is ever created, so it doubles as the row's lifetime: the row lives while
+        /// this is true and is disposed once it is not.
+        ///
+        /// A row must not be disposed on a zeroed countdown alone. An incident's countdown reaches zero
+        /// a moment before the event system's own tick completes it, and disposing on the countdown
+        /// would drop the row only for the next sweep to put it straight back.
+        /// </summary>
+        internal static bool HasAnySiteTrackerReason(GeoSite site, GeoscapeViewContext context)
+        {
+            try
+            {
+                GeoLevelController level = context != null ? context.Level : null;
+                if (site == null || level == null)
+                {
+                    return false;
+                }
+
+                if (HasCustomSiteTracker(site))
+                {
+                    return true;
+                }
+
+                if (level.PhoenixFaction != null && level.PhoenixFaction.ExcavatingSites != null)
+                {
+                    foreach (SiteExcavationState excavation in level.PhoenixFaction.ExcavatingSites)
+                    {
+                        if (excavation != null && excavation.Site == site && !excavation.IsExcavated)
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                foreach (GeoFaction faction in level.Factions)
+                {
+                    if (faction.IsViewerFaction || faction.IsEnvironmentFaction || faction.IsNeutralFaction || faction.IsInactiveFaction)
+                    {
+                        continue;
+                    }
+
+                    if (HasAttackScheduledFor(faction.AncientSiteAttackSchedule, site)
+                        || HasAttackScheduledFor(faction.PhoenixBaseAttackSchedule, site))
+                    {
+                        return true;
+                    }
+                }
+
+                if (site.Type == GeoSiteType.PhoenixBase
+                    && TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.ContainsKey(site.SiteId))
+                {
+                    return true;
+                }
+
+                // Anything else the game hung a countdown on - haven defence timers reach the tracker
+                // through GeoscapeLog.ShowSiteDefenseTimer and are tracked by nothing else.
+                return site.ExpiringTimerAt > level.Timing.Now;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+
+                // Never let a bad read take a row away.
+                return true;
+            }
+        }
+
+        private static bool HasAttackScheduledFor(IEnumerable<SiteAttackSchedule> schedules, GeoSite site)
+        {
+            if (schedules == null)
+            {
+                return false;
+            }
+
+            foreach (SiteAttackSchedule schedule in schedules)
+            {
+                if (schedule != null && schedule.HasAttackScheduled && schedule.Site == site)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Time left on whatever this site is being tracked for, in the order the reasons take
+        /// precedence. False when the site has no countdown to show, which is not the same as having
+        /// no reason to be listed - see <see cref="HasAnySiteTrackerReason"/>.
+        /// </summary>
+        internal static bool TryResolveSiteTimer(GeoSite site, GeoscapeViewContext context, out TimeUnit remaining)
+        {
+            remaining = TimeUnit.Zero;
+
+            try
+            {
+                GeoLevelController level = context != null ? context.Level : null;
+                if (site == null || level == null)
+                {
+                    return false;
+                }
+
+                TimeUnit now = level.Timing.Now;
+
+                if (GetPendingBaseAction(site).HasValue && site.ExpiringTimerAt > TimeUnit.Zero)
+                {
+                    remaining = site.ExpiringTimerAt - now;
+                    return true;
+                }
+
+                Resolution.ActiveTimedProblem incident = GetActiveIncident(site);
+                if (incident != null)
+                {
+                    remaining = incident.EndAt - now;
+                    return true;
+                }
+
+                if (site.IsArcheologySite)
+                {
+                    if (site.IsOwnedByViewer)
+                    {
+                        foreach (GeoFaction faction in level.Factions)
+                        {
+                            if (faction.IsViewerFaction || faction.IsEnvironmentFaction || faction.IsNeutralFaction || faction.IsInactiveFaction)
+                            {
+                                continue;
+                            }
+
+                            foreach (SiteAttackSchedule schedule in faction.AncientSiteAttackSchedule)
+                            {
+                                if (schedule.HasAttackScheduled && schedule.Site == site)
+                                {
+                                    remaining = schedule.ScheduledFor - now;
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                    else if (level.PhoenixFaction != null && level.PhoenixFaction.ExcavatingSites != null)
+                    {
+                        foreach (SiteExcavationState excavation in level.PhoenixFaction.ExcavatingSites)
+                        {
+                            if (excavation != null && excavation.Site == site)
+                            {
+                                remaining = excavation.ExcavationEndDate - now;
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+                if (site.Type == GeoSiteType.PhoenixBase
+                    && TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.ContainsKey(site.SiteId))
+                {
+                    TimeUnit attackAt = TimeUnit.FromSeconds(
+                        (float)(3600 * TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack[site.SiteId].First().Value));
+                    remaining = attackAt - now;
+                    return true;
+                }
+
+                if (site.ExpiringTimerAt > TimeUnit.Zero)
+                {
+                    remaining = site.ExpiringTimerAt - now;
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return false;
+            }
         }
 
         #endregion
@@ -308,6 +487,14 @@ namespace TFTV.AgendaTracker
                 return;
             }
 
+            // Disposing the same element twice would queue it for removal twice and put it into the
+            // reuse pool twice - the second copy then gets handed to a new row while the first is
+            // still drawing one, and one of the two rows is lost.
+            if (AgendaConstants.IsQueuedForRemoval(tracker, element))
+            {
+                return;
+            }
+
             // Dispose() logically removes the row for this mod through PendingPurge.
             // Physical removal from vanilla's _currentTrackedElements remains deferred
             // until the next parameterless UpdateData() processes _elementsToRemove.
@@ -324,33 +511,6 @@ namespace TFTV.AgendaTracker
 
             // The postfix on parameterless UpdateData already applies custom ordering.
             AgendaConstants.UpdateData.Invoke(tracker, null);
-        }
-
-        internal static bool TryUpdateCustomSiteElement(UIFactionDataTrackerElement element, GeoSite site, GeoscapeViewContext context, out bool isExpired)
-        {
-            isExpired = false;
-
-            ApplyCustomSiteTrackerText(element, site, context?.ViewerFaction);
-
-            var pendingAction = GetPendingBaseAction(site);
-            if (pendingAction.HasValue && site.ExpiringTimerAt > TimeUnit.Zero)
-            {
-                TimeUnit remaining = site.ExpiringTimerAt - context.Level.Timing.Now;
-                element.UpdateData(remaining, true, null);
-                isExpired = remaining <= TimeUnit.Zero;
-                return true;
-            }
-
-            var incident = GetActiveIncident(site);
-            if (incident != null)
-            {
-                TimeUnit remaining = incident.EndAt - context.Level.Timing.Now;
-                element.UpdateData(remaining, true, null);
-                isExpired = remaining <= TimeUnit.Zero;
-                return true;
-            }
-
-            return false;
         }
 
         internal static void ApplyCustomSiteTrackerText(UIFactionDataTrackerElement element, GeoSite site, GeoFaction viewerFaction)

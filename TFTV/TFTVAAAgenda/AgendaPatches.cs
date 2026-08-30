@@ -274,14 +274,24 @@ namespace TFTV.AgendaTracker
                     else if (element.TrackedObject is GeoSite geoSite)
                     {
                         AgendaHelpers.WireClickEvent(element, () => ____context.View.ChaseTarget(geoSite, false));
+                        AgendaHelpers.ApplyCustomSiteTrackerText(element, geoSite, ____context?.ViewerFaction);
 
-                        if (AgendaHelpers.TryUpdateCustomSiteElement(element, geoSite, ____context, out bool customExpired))
+                        if (AgendaHelpers.TryResolveSiteTimer(geoSite, ____context, out TimeUnit remaining))
                         {
-                            __result = customExpired;
-                            return false;
+                            element.UpdateData(remaining, true, null);
                         }
 
-                        UpdateSiteTimers(element, geoSite, ____context);
+                        if (geoSite.Type == GeoSiteType.PhoenixBase
+                            && TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.ContainsKey(geoSite.SiteId))
+                        {
+                            geoSite.RefreshVisuals();
+                        }
+
+                        // A site row lives for as long as the site has something to report, not until
+                        // its countdown hits zero: the incident that owns the countdown is completed by
+                        // the event system's own tick a moment later, and disposing on zero first would
+                        // drop the row only for the next sweep to add it straight back.
+                        __result = !AgendaHelpers.HasAnySiteTrackerReason(geoSite, ____context);
                         return false;
                     }
 
@@ -291,44 +301,6 @@ namespace TFTV.AgendaTracker
                 {
                     TFTVLogger.Error(e);
                     return true;
-                }
-            }
-
-            private static void UpdateSiteTimers(UIFactionDataTrackerElement element, GeoSite geoSite, GeoscapeViewContext context)
-            {
-                if (geoSite.IsArcheologySite)
-                {
-                    if (geoSite.IsOwnedByViewer)
-                    {
-                        foreach (GeoFaction f in context.Level.Factions)
-                        {
-                            if (f.IsViewerFaction || f.IsEnvironmentFaction || f.IsNeutralFaction || f.IsInactiveFaction) continue;
-                            foreach (var schedule in f.AncientSiteAttackSchedule)
-                            {
-                                if (schedule.HasAttackScheduled && schedule.Site == geoSite)
-                                {
-                                    TimeUnit attackTime = TimeUnit.FromHours((float)(schedule.ScheduledFor - context.Level.Timing.Now).TimeSpan.TotalHours);
-                                    element.UpdateData(attackTime, true, null);
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        var excavation = geoSite.GeoLevel.PhoenixFaction.ExcavatingSites.FirstOrDefault(s => s.Site == geoSite);
-                        if (excavation != null)
-                        {
-                            TimeUnit timeLeft = TimeUnit.FromHours((float)(excavation.ExcavationEndDate - context.Level.Timing.Now).TimeSpan.TotalHours);
-                            element.UpdateData(timeLeft, true, null);
-                        }
-                    }
-                }
-                else if (geoSite.Type == GeoSiteType.PhoenixBase && TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.ContainsKey(geoSite.SiteId))
-                {
-                    TimeUnit timer = TimeUnit.FromSeconds((float)(3600 * TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack[geoSite.SiteId].First().Value));
-                    TimeUnit attackTime = timer - context.Level.Timing.Now;
-                    element.UpdateData(attackTime, true, null);
-                    geoSite.RefreshVisuals();
                 }
             }
 
@@ -374,42 +346,128 @@ namespace TFTV.AgendaTracker
             {
                 try
                 {
-                    if (!(____faction is GeoPhoenixFaction phoenix)) return;
-
-
-                    // Recruit training sessions
-                    foreach (var session in TrainingFacilityRework.GetActiveRecruitSessions())
-                    {
-                        string text = AgendaHelpers.GetRecruitTrainingTrackerText(session.Character);
-                        var el = AgendaHelpers.AddTrackerElement(session.Character, text, AgendaHelpers.GetTrainingViewElement());
-                        AgendaHelpers.ApplyRecruitTrainingTrackerText(el, session.Character);
-                    }
-
-                    // Excavations
-                    foreach (var excavation in phoenix.ExcavatingSites.Where(s => !s.IsExcavated))
-                    {
-                        string info = $"{AgendaConstants.actionExcavating} {excavation.Site.Name}";
-                        AgendaHelpers.AddTrackerElement(excavation.Site, info, AgendaHelpers.GetGenericSiteViewElement());
-                    }
-
-                    // Custom site trackers (incidents, base activation)
-                    foreach (var site in ____context.Level.Map.AllSites.Where(s => s != null && AgendaHelpers.HasCustomSiteTracker(s)))
-                    {
-                        string info = AgendaHelpers.GetCustomSiteTrackerText(site, ____context.ViewerFaction);
-                        var el = AgendaHelpers.AddTrackerElement(site, info, AgendaHelpers.GetCustomSiteViewElement(site));
-                        AgendaHelpers.ApplyCustomSiteTrackerText(el, site, ____context.ViewerFaction);
-                    }
-
-                    // Base defense and ancient site attacks
-                    AddAttackTrackers(__instance, ____faction, ____context);
-
+                    EnsureCustomTrackers(__instance, ____faction, ____context);
                     AgendaHelpers.ReapplyResolvedTrackerTexts(__instance, ____context.ViewerFaction);
                     AgendaRefresh.TryApplyPendingRefreshAfterBaseReworkRestore();
                 }
                 catch (Exception e) { TFTVLogger.Error(e); }
             }
 
-            private static void AddAttackTrackers(UIModuleFactionAgendaTracker tracker, GeoFaction faction, GeoscapeViewContext context)
+            /// <summary>
+            /// Adds a row for every incident, pending base activation, excavation, scheduled attack and
+            /// recruit training session that does not already have one.
+            ///
+            /// Vanilla only ever builds the tracker from InitialSetup(), which runs when the player
+            /// changes geoscape selection, so a row lost between two of those - to a recycled pooled
+            /// element, a stray Dispose, or a throw part-way through the rebuild - stayed lost until the
+            /// player happened to click something. Every group here is keyed off the tracked object and
+            /// skips objects that already have a live row, so the same call is also made once a second
+            /// from UpdateData() and any gap closes on its own within a tick.
+            /// </summary>
+            internal static void EnsureCustomTrackers(UIModuleFactionAgendaTracker tracker, GeoFaction faction, GeoscapeViewContext context)
+            {
+                if (tracker == null || context == null || context.Level == null) return;
+                if (!(faction is GeoPhoenixFaction phoenix)) return;
+
+                List<UIFactionDataTrackerElement> live = AgendaConstants.GetLiveTrackedElements(tracker);
+                if (live == null) return;
+
+                List<object> tracked = new List<object>(live.Count);
+                foreach (UIFactionDataTrackerElement element in live)
+                {
+                    if (element.TrackedObject != null)
+                    {
+                        tracked.Add(element.TrackedObject);
+                    }
+                }
+
+                bool IsTracked(object trackedObject)
+                {
+                    foreach (object candidate in tracked)
+                    {
+                        if (ReferenceEquals(candidate, trackedObject)) return true;
+                    }
+                    return false;
+                }
+
+                UIFactionDataTrackerElement Add(object trackedObject, string text, ViewElementDef viewElement)
+                {
+                    if (trackedObject == null || IsTracked(trackedObject)) return null;
+
+                    UIFactionDataTrackerElement added = AgendaHelpers.AddTrackerElement(trackedObject, text, viewElement);
+                    if (added != null)
+                    {
+                        tracked.Add(trackedObject);
+                    }
+                    return added;
+                }
+
+                // Each group is guarded on its own: one bad entry must not cost the tracker every row
+                // that would have been added after it.
+                try
+                {
+                    foreach (var session in TrainingFacilityRework.GetActiveRecruitSessions())
+                    {
+                        if (session?.Character == null || IsTracked(session.Character)) continue;
+
+                        // Training that has run out its clock but has not been marked complete yet is
+                        // disposed by UpdateData as finished; adding it back here would have the row
+                        // blink in and out once a second until the session closes.
+                        if (AgendaHelpers.GetRecruitTrainingRemainingTime(session.Character, context.Level) <= TimeUnit.Zero) continue;
+
+                        UIFactionDataTrackerElement added = Add(
+                            session.Character,
+                            AgendaHelpers.GetRecruitTrainingTrackerText(session.Character),
+                            AgendaHelpers.GetTrainingViewElement());
+
+                        AgendaHelpers.ApplyRecruitTrainingTrackerText(added, session.Character);
+                    }
+                }
+                catch (Exception e) { TFTVLogger.Error(e); }
+
+                try
+                {
+                    foreach (SiteExcavationState excavation in phoenix.ExcavatingSites)
+                    {
+                        if (excavation == null || excavation.IsExcavated || excavation.Site == null) continue;
+                        if (IsTracked(excavation.Site)) continue;
+
+                        Add(
+                            excavation.Site,
+                            $"{AgendaConstants.actionExcavating} {excavation.Site.Name}",
+                            AgendaHelpers.GetGenericSiteViewElement());
+                    }
+                }
+                catch (Exception e) { TFTVLogger.Error(e); }
+
+                try
+                {
+                    foreach (GeoSite site in context.Level.Map.AllSites)
+                    {
+                        if (site == null || IsTracked(site) || !AgendaHelpers.HasCustomSiteTracker(site)) continue;
+
+                        UIFactionDataTrackerElement added = Add(
+                            site,
+                            AgendaHelpers.GetCustomSiteTrackerText(site, context.ViewerFaction),
+                            AgendaHelpers.GetCustomSiteViewElement(site));
+
+                        AgendaHelpers.ApplyCustomSiteTrackerText(added, site, context.ViewerFaction);
+                    }
+                }
+                catch (Exception e) { TFTVLogger.Error(e); }
+
+                try
+                {
+                    AddAttackTrackers(faction, context, IsTracked, Add);
+                }
+                catch (Exception e) { TFTVLogger.Error(e); }
+            }
+
+            private static void AddAttackTrackers(
+                GeoFaction faction,
+                GeoscapeViewContext context,
+                Func<object, bool> isTracked,
+                Func<object, string, ViewElementDef, UIFactionDataTrackerElement> add)
             {
                 foreach (GeoFaction geoFaction in context.Level.Factions)
                 {
@@ -428,10 +486,10 @@ namespace TFTV.AgendaTracker
                             foreach (int siteId in TFTVBaseDefenseGeoscape.PhoenixBasesUnderAttack.Keys)
                             {
                                 GeoSite pxBase = TFTVBaseDefenseGeoscape.InitAttack.FindPhoenixBase(siteId, controller);
-                                if (pxBase.HasActiveMission)
+                                if (pxBase != null && pxBase.HasActiveMission && !isTracked(pxBase))
                                 {
                                     string info = $"{geoFaction.Name.Localize().ToUpperInvariant()} {AgendaConstants.actionAttackOnPX} {pxBase.Name}";
-                                    AgendaHelpers.AddTrackerElement(pxBase, info, AgendaHelpers.GetCrabmanViewElement());
+                                    add(pxBase, info, AgendaHelpers.GetCrabmanViewElement());
                                 }
                             }
                         }
@@ -440,10 +498,10 @@ namespace TFTV.AgendaTracker
                     // Ancient site attacks
                     foreach (var schedule in geoFaction.AncientSiteAttackSchedule)
                     {
-                        if (schedule.HasAttackScheduled && schedule.Site.Owner == context.ViewerFaction)
+                        if (schedule.HasAttackScheduled && schedule.Site != null && schedule.Site.Owner == context.ViewerFaction && !isTracked(schedule.Site))
                         {
                             string info = $"{geoFaction.Name.Localize().ToUpperInvariant()} {AgendaConstants.actionAttack} {schedule.Site.Name}";
-                            AgendaHelpers.AddTrackerElement(schedule.Site, info, AgendaHelpers.GetGenericSiteViewElement());
+                            add(schedule.Site, info, AgendaHelpers.GetGenericSiteViewElement());
                         }
                     }
                 }
@@ -640,6 +698,41 @@ namespace TFTV.AgendaTracker
 
         #region Stability (prevent vanilla full-rebuild flicker + stale re-tracked rows) & ordering
 
+        // Vanilla's Dispose() puts an element straight back into the pool while still leaving it in
+        // _currentTrackedElements and queued in _elementsToRemove; the two are only reconciled at the
+        // top of the next parameterless UpdateData(). GetFreeElement() can therefore hand out an
+        // element the tracker still believes it has to delete, and that pending delete then lands on
+        // the row just built from it - the row vanishes a second or so after appearing. An element
+        // disposed twice is worse: it sits in the pool twice, so a later row is handed a GameObject a
+        // live row is already drawing with, and one of the two rows is lost.
+        //
+        // Every add path - ours and vanilla's OnResearchStarted / OnItemStartedManufacturing /
+        // OnVehicleAction / OnFacilityBuilding alike - goes through GetFreeElement(), so reconciling
+        // the recycled element here means an element handed out is always a clean slate. Safe to
+        // mutate the tracked list from here: no caller reaches GetFreeElement() while that list is
+        // being enumerated (InitialSetup's teardown loop finishes before it re-adds, and UpdateData()'s
+        // per-element loop never adds).
+        [HarmonyPatch(typeof(UIModuleFactionAgendaTracker), "GetFreeElement")]
+        public static class UIModuleFactionAgendaTracker_GetFreeElement_Patch
+        {
+            public static void Postfix(UIModuleFactionAgendaTracker __instance, UIFactionDataTrackerElement __result)
+            {
+                try
+                {
+                    if (__result == null) return;
+
+                    var pendingRemoval = AgendaConstants.GetElementsQueuedForRemoval(__instance);
+                    pendingRemoval?.RemoveAll(e => ReferenceEquals(e, __result));
+
+                    var tracked = AgendaConstants.GetTrackedElements(__instance);
+                    tracked?.RemoveAll(e => ReferenceEquals(e, __result));
+
+                    AgendaConstants.PendingPurge.Remove(__result);
+                }
+                catch (Exception e) { TFTVLogger.Error(e); }
+            }
+        }
+
         [HarmonyPatch(
      typeof(UIModuleFactionAgendaTracker),
      "Dispose",
@@ -710,7 +803,7 @@ namespace TFTV.AgendaTracker
         [HarmonyPatch(typeof(UIModuleFactionAgendaTracker), "UpdateData", new Type[] { })]
         public static class UIModuleFactionAgendaTracker_UpdateDataNoArgs_Patch
         {
-            public static void Postfix(UIModuleFactionAgendaTracker __instance, GeoFaction ____faction)
+            public static void Postfix(UIModuleFactionAgendaTracker __instance, GeoFaction ____faction, GeoscapeViewContext ____context)
             {
                 try
                 {
@@ -729,6 +822,7 @@ namespace TFTV.AgendaTracker
                     }
 
                     EnsureLiveVanillaTrackers(__instance, ____faction);
+                    UIModuleFactionAgendaTracker_InitialSetup_Patch.EnsureCustomTrackers(__instance, ____faction, ____context);
 
                     AgendaConstants.OrderElements.Invoke(__instance, null);
                 }

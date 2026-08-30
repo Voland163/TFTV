@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TFTV.TFTVBaseRework;
+using UnityEngine;
 
 namespace TFTV.TFTVIncidents
 {
@@ -26,6 +27,55 @@ namespace TFTV.TFTVIncidents
         public static PassiveModifierAbilityDef[] Compute = new PassiveModifierAbilityDef[] { };
 
         public static SkillTagDef AffinityTag;
+
+        /// <summary>
+        /// Phoenix Project's own red-orange, which the affinity glyphs are drawn in.
+        /// </summary>
+        internal static readonly Color AffinityIconColor = new Color32(0xED, 0x6E, 0x2B, 0xFF);
+
+        /// <summary>
+        /// Loads an affinity glyph and multiplies it by <see cref="AffinityIconColor"/>.
+        ///
+        /// The source PNGs are a white glyph on a black plate, so multiplying paints the glyph and
+        /// leaves the plate black. Baking the colour into the sprite rather than tinting Image.color
+        /// at each use means every place the icon appears - our incident screens and the game's own
+        /// ability panels and tooltips alike - shows it in the same colour.
+        /// </summary>
+        internal static Sprite CreateAffinityIcon(string imageFileName)
+        {
+            try
+            {
+                Sprite sprite = Helper.CreateSpriteFromImageFile(imageFileName);
+                Texture2D texture = sprite != null ? sprite.texture : null;
+                if (texture == null)
+                {
+                    return sprite;
+                }
+
+                Color tint = AffinityIconColor;
+                Color32[] pixels = texture.GetPixels32();
+
+                for (int i = 0; i < pixels.Length; i++)
+                {
+                    Color32 pixel = pixels[i];
+                    pixels[i] = new Color32(
+                        (byte)(pixel.r * tint.r),
+                        (byte)(pixel.g * tint.g),
+                        (byte)(pixel.b * tint.b),
+                        pixel.a);
+                }
+
+                texture.SetPixels32(pixels);
+                texture.Apply();
+
+                return sprite;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return Helper.CreateSpriteFromImageFile(imageFileName);
+            }
+        }
 
         internal class Defs
         {
@@ -134,7 +184,7 @@ namespace TFTV.TFTVIncidents
 
                         newAbility.ViewElementDef.DisplayName1.LocalizationKey = titleKeyBase + x.ToString();
                         newAbility.ViewElementDef.Description.LocalizationKey = descKeyBase + x.ToString();
-                        newAbility.ViewElementDef.LargeIcon = Helper.CreateSpriteFromImageFile($"UI_AffinityIcon_{nameToken}_0.png");//{x}.png");
+                        newAbility.ViewElementDef.LargeIcon = CreateAffinityIcon($"UI_AffinityIcon_{nameToken}_0.png");//{x}.png");
                         newAbility.ViewElementDef.SmallIcon = newAbility.ViewElementDef.LargeIcon;
 
                         newAbility.CharacterProgressionData = Helper.CreateDefFromClone(
@@ -242,6 +292,14 @@ namespace TFTV.TFTVIncidents
         {
             private const string GeoBenefitVariablePrefix = "TFTV_AFFINITY_GEO_OPTION_";
             private const string TacticalBenefitVariablePrefix = "TFTV_AFFINITY_TAC_OPTION_";
+
+            /// <summary>
+            /// Stamina every operative aboard recovers after a mission, per Psycho-Sociology rank,
+            /// for that approach's second geoscape benefit. Shared with the code that actually
+            /// grants it (AffinityGeoscapeEffects.ApplyPostMissionRecovery) so the description
+            /// and the effect cannot drift apart.
+            /// </summary>
+            internal const int PsychoSociologyStaminaPerRank = 3;
 
             private const string KeyPsychoGeoOpt1 = "KEY_AFFINITY_GEO_DESC_PSYCHO_SOCIOLOGY_OPTION_1";
             private const string KeyPsychoGeoOpt2 = "KEY_AFFINITY_GEO_DESC_PSYCHO_SOCIOLOGY_OPTION_2";
@@ -702,7 +760,7 @@ int option)
                     case LeaderSelection.AffinityApproach.PsychoSociology:
                         return option == 1
                             ? LocalizeAndFormat(KeyPsychoGeoOpt1, 15 * r)
-                            : LocalizeAndFormat(KeyPsychoGeoOpt2, 2 * r);    // 2 Stamina per rank
+                            : LocalizeAndFormat(KeyPsychoGeoOpt2, PsychoSociologyStaminaPerRank * r);
 
                     case LeaderSelection.AffinityApproach.Exploration:
                         return option == 1
