@@ -481,8 +481,10 @@ namespace TFTV.TFTVBaseRework
                 : "\n\nThey join base personnel and can be assigned to research or manufacturing.";
 
             string name = character.DisplayName;
+            List<GeoItem> returnedToStorage = PersonnelDismissal.GetLoadoutReturnedToStorage(character);
 
             ShowConfirmation(message,
+                details => CreateCharacterSummary(details, character, returnedToStorage),
                 () =>
                 {
                     bool dismissed = DismissFromFieldDuty(character, phoenix);

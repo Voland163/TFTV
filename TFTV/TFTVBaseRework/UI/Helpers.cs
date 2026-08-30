@@ -28,12 +28,14 @@ namespace TFTV.TFTVBaseRework
         /// <summary>Interior of the modal's framed panel; header, options and buttons hang off this.</summary>
         private static Transform _modalPanelContent;
 
-        private const float ModalRowHeight = 64f;
+        private const float ModalRowHeight = 68f;
+        private const int ModalMessageFontSize = 34;
+        private const int ModalOptionFontSize = 30;
 
         private static void AddSimpleButton(Transform parent, string caption, Action onClick)
         {
             CreateTextButton(parent, $"Btn_{caption}", caption, onClick,
-                width: 260f, height: ModalRowHeight, fontSize: BodyFontSize);
+                width: 260f, height: ModalRowHeight, fontSize: ModalOptionFontSize);
         }
 
         /// <summary>
@@ -46,13 +48,13 @@ namespace TFTV.TFTVBaseRework
             float height = ModalRowHeight + extraLines * 34f;
 
             CreateTextButton(parent, $"Option_{caption}", caption, onClick,
-                height: height, fontSize: BodyFontSize);
+                height: height, fontSize: ModalOptionFontSize);
         }
 
         private static void AddDisabledLabel(Transform parent, string caption)
         {
             CreateTextButton(parent, $"Disabled_{caption}", caption, null,
-                height: ModalRowHeight, fontSize: BodyFontSize, enabled: false);
+                height: ModalRowHeight, fontSize: ModalOptionFontSize, enabled: false);
         }
 
         private static void CloseModal()
@@ -136,7 +138,7 @@ namespace TFTV.TFTVBaseRework
         /// </summary>
         private static void AddModalMessage(Transform parent, string message)
         {
-            Text label = CreateLabel(parent, "Message", message, BodyFontSize, TextPrimaryColor,
+            Text label = CreateLabel(parent, "Message", message, ModalMessageFontSize, TextPrimaryColor,
                 TextAnchor.UpperCenter, wrap: true);
             LayoutElement element = label.gameObject.AddComponent<LayoutElement>();
             element.flexibleHeight = 0f;
@@ -459,12 +461,22 @@ namespace TFTV.TFTVBaseRework
 
         private static void ShowConfirmation(string message, Action onConfirm, Action onCancel)
         {
+            ShowConfirmation(message, null, onConfirm, onCancel);
+        }
+
+        /// <summary>
+        /// <paramref name="buildDetails"/> fills the scrolling area under the message - the character
+        /// dossier on a dismissal, for one - so the decision can be taken on what is actually at stake.
+        /// </summary>
+        private static void ShowConfirmation(string message, Action<Transform> buildDetails, Action onConfirm, Action onCancel)
+        {
             CloseModal();
             _modalRoot = CreateModalRoot("ConfirmationModal");
             AddModalHeader("Confirm");
             var content = CreateModalContentArea();
 
             AddModalMessage(content, message);
+            buildDetails?.Invoke(content);
 
             // The answer buttons sit under the scrolling body, where they cannot be scrolled away
             // from a long warning.
@@ -483,7 +495,7 @@ namespace TFTV.TFTVBaseRework
                 fillColor: AccentOrangeColor, captionColor: Color.black);
 
             CreateTextButton(buttonsRow.transform, "No", "NO", () => onCancel?.Invoke(),
-                width: 260f, height: ModalRowHeight, fontSize: BodyFontSize);
+                width: 260f, height: ModalRowHeight, fontSize: ModalOptionFontSize);
         }
 
         private static void ShowClassSelectionForImmediateDeploy(GeoLevelController level, PersonnelInfo person, GeoPhoenixBase baseObj, List<SpecializationDef> specs, Action refresh)

@@ -150,11 +150,7 @@ namespace TFTV.TFTVBaseRework
                     .Where(item => item.ItemDef.IsPermanentAugment)
                     .ToList();
 
-                List<GeoItem> returned = character.ArmourItems
-                    .Where(item => !item.ItemDef.IsPermanentAugment)
-                    .Concat(character.EquipmentItems)
-                    .Concat(character.InventoryItems)
-                    .ToList();
+                List<GeoItem> returned = GetLoadoutReturnedToStorage(character);
 
                 if (returned.Count == 0)
                 {
@@ -182,6 +178,26 @@ namespace TFTV.TFTVBaseRework
                 TFTVLogger.Always($"{LogPrefix} Could not return the loadout of {character?.DisplayName} to storage; dismissal continues.");
                 TFTVLogger.Error(e);
             }
+        }
+
+        /// <summary>
+        /// Everything a dismissal would take off the character and hand back to storage: their gear,
+        /// their inventory, and all armour except permanent augments. The dismissal prompt lists this
+        /// so the player can see what they are giving back before they agree to it.
+        /// </summary>
+        internal static List<GeoItem> GetLoadoutReturnedToStorage(GeoCharacter character)
+        {
+            if (character == null)
+            {
+                return new List<GeoItem>();
+            }
+
+            return character.ArmourItems
+                .Where(item => item?.ItemDef != null && !item.ItemDef.IsPermanentAugment)
+                .Concat(character.EquipmentItems)
+                .Concat(character.InventoryItems)
+                .Where(item => item?.ItemDef != null)
+                .ToList();
         }
 
         /// <summary>
