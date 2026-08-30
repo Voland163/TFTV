@@ -36,6 +36,11 @@ namespace TFTV.TFTVBaseRework
         private static GeoRosterAbilityDetailTooltip _abilityTooltip;
         private static UIGeoItemTooltip _itemTooltip;
 
+        /// <summary>The tooltips as they stand, without building one. Used when hiding.</summary>
+        internal static GeoRosterAbilityDetailTooltip PeekAbilityTooltip() => _abilityTooltip;
+
+        internal static UIGeoItemTooltip PeekItemTooltip() => _itemTooltip;
+
         internal static GeoRosterAbilityDetailTooltip EnsureAbilityTooltip(Transform host)
         {
             try
@@ -259,13 +264,6 @@ namespace TFTV.TFTVBaseRework
     [HarmonyPatch(typeof(UIInventoryTooltipItemPanel), nameof(UIInventoryTooltipItemPanel.SetAbilities))]
     internal static class UIInventoryTooltipItemPanel_SetAbilities_Capacity
     {
-        private static bool IsPersonnelTooltip(UIInventoryTooltipItemPanel panel)
-        {
-            Transform root = panel.transform.root;
-            return panel.GetComponentInParent<UIGeoItemTooltip>()?.gameObject.name == "TFTV_PersonnelItemTooltip"
-                || (root != null && root.name == "TFTV_PersonnelItemTooltip");
-        }
-
         private static void Prefix(UIInventoryTooltipItemPanel __instance, List<ItemAbilityTooltipData> abilityData)
         {
             try
@@ -291,26 +289,6 @@ namespace TFTV.TFTVBaseRework
                     ?? __instance.AbilitiesHeader
                     ?? Resources.FindObjectsOfTypeAll<UIInventoryTooltipItemAbility>()
                         .FirstOrDefault(row => row != null && row.hideFlags == HideFlags.None);
-
-                // Ability rows are re-ordered into the stat list as they are filled, so on our own
-                // copy they are moved there up front: left where the prefab parks them they are drawn
-                // outside the tooltip's background, beside it.
-                if (IsPersonnelTooltip(__instance) && __instance.StatEntries != null)
-                {
-                    foreach (UIInventoryTooltipItemAbility row in __instance.AbilitiesObjects)
-                    {
-                        if (row != null && row.transform.parent != __instance.StatEntries)
-                        {
-                            row.transform.SetParent(__instance.StatEntries, false);
-                        }
-                    }
-
-                    if (__instance.AbilitiesHeader != null
-                        && __instance.AbilitiesHeader.transform.parent != __instance.StatEntries)
-                    {
-                        __instance.AbilitiesHeader.transform.SetParent(__instance.StatEntries, false);
-                    }
-                }
 
                 if (source != null)
                 {
@@ -378,6 +356,8 @@ namespace TFTV.TFTVBaseRework
                 // operative is carrying and using.
                 tooltip.ShowStats(Item, transform, isProficient: true);
 
+                MoveAbilityRowsIntoStatList(tooltip);
+
                 if (tooltip.transform is RectTransform rect)
                 {
                     LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
@@ -401,16 +381,56 @@ namespace TFTV.TFTVBaseRework
             Hide();
         }
 
+        /// <summary>
+        /// An item's abilities are listed by rows the tooltip prefab keeps outside its stat list, and
+        /// the vanilla screens re-order them in as part of their own layout. On this screen they were
+        /// left where the prefab parks them, which is beside the tooltip rather than inside it, so
+        /// once the tooltip has filled itself the rows it used are moved into the stat list.
+        /// </summary>
+        private static void MoveAbilityRowsIntoStatList(UIGeoItemTooltip tooltip)
+        {
+            foreach (UIInventoryTooltipItemPanel panel in tooltip.GetComponentsInChildren<UIInventoryTooltipItemPanel>(true))
+            {
+                if (panel?.StatEntries == null)
+                {
+                    continue;
+                }
+
+                if (panel.AbilitiesHeader != null && panel.AbilitiesHeader.gameObject.activeSelf)
+                {
+                    panel.AbilitiesHeader.transform.SetParent(panel.StatEntries, false);
+                    panel.AbilitiesHeader.transform.SetAsLastSibling();
+                }
+
+                if (panel.AbilitiesObjects == null)
+                {
+                    continue;
+                }
+
+                foreach (UIInventoryTooltipItemAbility row in panel.AbilitiesObjects)
+                {
+                    if (row == null || !row.gameObject.activeSelf)
+                    {
+                        continue;
+                    }
+
+                    row.transform.SetParent(panel.StatEntries, false);
+                    row.transform.SetAsLastSibling();
+                }
+            }
+        }
+
         private void Hide()
         {
             try
             {
                 PersonnelTooltip.Hide();
 
-                UIGeoItemTooltip tooltip = PersonnelVanillaTooltips.EnsureItemTooltip(transform);
+                // Deactivate rather than HideStats: that walks state the tooltip only has while it is
+                // showing something, and threw for every slot as the dialog came down.
+                UIGeoItemTooltip tooltip = PersonnelVanillaTooltips.PeekItemTooltip();
                 if (tooltip != null)
                 {
-                    tooltip.HideStats();
                     tooltip.gameObject.SetActive(false);
                 }
             }
@@ -548,8 +568,11 @@ namespace TFTV.TFTVBaseRework
             {
                 PersonnelTooltip.Hide();
 
-                GeoRosterAbilityDetailTooltip tooltip = PersonnelVanillaTooltips.EnsureAbilityTooltip(transform);
-                tooltip?.Hide();
+                GeoRosterAbilityDetailTooltip tooltip = PersonnelVanillaTooltips.PeekAbilityTooltip();
+                if (tooltip != null)
+                {
+                    tooltip.gameObject.SetActive(false);
+                }
             }
             catch (Exception e)
             {
