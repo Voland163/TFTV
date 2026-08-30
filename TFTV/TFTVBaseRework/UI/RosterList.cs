@@ -482,17 +482,26 @@ namespace TFTV.TFTVBaseRework
                   + $"trained further in their class, up to level {maxTrainingLevel}."
                 : "\n\nThey join base personnel and can be assigned to research or manufacturing.";
 
+            string name = character.DisplayName;
+
             ShowConfirmation(message,
                 () =>
                 {
-                    DismissFromFieldDuty(character, phoenix);
+                    bool dismissed = DismissFromFieldDuty(character, phoenix);
+
                     CloseModal();
                     RefreshPanel();
+
+                    if (!dismissed)
+                    {
+                        // Refreshing the panel destroys the modal it owns, so the report comes after.
+                        ShowMessage($"{name} could not be dismissed from field duty. They are still on the roster; see TFTV.log for the reason.");
+                    }
                 },
                 () => CloseModal());
         }
 
-        private static void DismissFromFieldDuty(GeoCharacter character, GeoPhoenixFaction phoenix)
+        private static bool DismissFromFieldDuty(GeoCharacter character, GeoPhoenixFaction phoenix)
         {
             try
             {
@@ -500,11 +509,18 @@ namespace TFTV.TFTVBaseRework
                 // into base personnel rather than letting the character be killed off.
                 phoenix.KillCharacter(character, CharacterDeathReason.Dismissed);
                 RefreshResourceInfo(phoenix);
-                TFTVLogger.Always($"{LogPrefix} Dismissed {character.DisplayName} from field duty.");
+
+                bool converted = PersonnelRestrictions.IsDismissedOperative(character);
+                TFTVLogger.Always(converted
+                    ? $"{LogPrefix} Dismissed {character.DisplayName} from field duty."
+                    : $"{LogPrefix} Dismissal of {character.DisplayName} did not convert them to personnel.");
+
+                return converted;
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
+                return false;
             }
         }
 
