@@ -28,7 +28,9 @@ namespace TFTV.TFTVBaseRework
     /// </summary>
     internal static class PersonnelVanillaTooltips
     {
-        private const float TooltipScale = 0.5f;
+        // The Haven overlay halves these; at that size they are hard to read on this screen, so ours
+        // are shown at the size the game itself uses.
+        private const float TooltipScale = 1f;
         private const float TooltipMargin = 8f;
 
         private static GeoRosterAbilityDetailTooltip _abilityTooltip;
@@ -337,7 +339,9 @@ namespace TFTV.TFTVBaseRework
                     return;
                 }
 
-                tooltip.ShowStats(Item, transform);
+                // Without this the tooltip stamps a red "not proficient" warning across gear the
+                // operative is carrying and using.
+                tooltip.ShowStats(Item, transform, isProficient: true);
 
                 if (tooltip.transform is RectTransform rect)
                 {
@@ -391,6 +395,7 @@ namespace TFTV.TFTVBaseRework
         internal ViewElementDef View;
 
         private static bool _logged;
+        private static bool _primed;
 
         public void OnPointerEnter(PointerEventData eventData)
         {
@@ -413,6 +418,15 @@ namespace TFTV.TFTVBaseRework
                 }
 
                 tooltip.Show(Ability, View, useMutagens: false, cost: 0);
+
+                // The first showing of a fresh clone comes up as "NEEDS TEXT": the localisation is
+                // resolved as it is displayed, so it is shown once, hidden, and shown again.
+                if (!_primed)
+                {
+                    _primed = true;
+                    tooltip.Hide();
+                    tooltip.Show(Ability, View, useMutagens: false, cost: 0);
+                }
 
                 // Show fills the text; the tooltip has to be laid out before its size is known, or it
                 // is placed against a stale rect and ends up pinned to the edge of the screen.
