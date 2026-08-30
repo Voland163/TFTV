@@ -32,6 +32,7 @@ namespace TFTV.TFTVBaseRework
 
         private const float StatCaptionWidth = 200f;
         private const float StatValueWidth = 130f;
+        private const string SlotFactoryName = "TFTV_PersonnelSlotFactory";
 
         // The Haven Recruits palette: amber for a value, green or red for what changes it.
         private static readonly Color StatValueColor = new Color32(0xD0, 0xA4, 0x56, 0xFF);
@@ -296,14 +297,14 @@ namespace TFTV.TFTVBaseRework
                 progression.GetMaxBaseStat(CharacterBaseAttribute.Will), projected?.Willpower, willNote);
             CreateStatCell(row2, "Accuracy", "Accuracy", FormatBonusPercent(accuracy), null, null,
                 AppendModifiers("Accuracy added by armour and passive abilities.", character,
-                    StatModificationTarget.Accuracy, aspect => aspect.Accuracy));
+                    StatModificationTarget.Accuracy, aspect => aspect.Accuracy, asPercent: true));
 
             Transform row3 = CreateStatRow(grid.transform, "StatRow3");
             CreateTrainedStatCell(row3, "Speed", speed,
                 progression.GetMaxBaseStat(CharacterBaseAttribute.Speed), projected?.Speed, speedNote);
             CreateStatCell(row3, "Stealth", "Stealth", FormatBonusPercent(stealth), null, null,
                 AppendModifiers("Stealth added by armour and passive abilities.", character,
-                    StatModificationTarget.Stealth, aspect => aspect.Stealth));
+                    StatModificationTarget.Stealth, aspect => aspect.Stealth, asPercent: true));
 
             if (deliriumValue > 0)
             {
@@ -416,14 +417,14 @@ namespace TFTV.TFTVBaseRework
         /// passive ability that moves this stat, and by how much.
         /// </summary>
         private static string AppendModifiers(string note, GeoCharacter character, StatModificationTarget target,
-            Func<BodyPartAspectDef, float> fromArmour)
+            Func<BodyPartAspectDef, float> fromArmour, bool asPercent = false)
         {
-            string breakdown = BuildModifierBreakdown(character, target, fromArmour);
+            string breakdown = BuildModifierBreakdown(character, target, fromArmour, asPercent);
             return string.IsNullOrEmpty(breakdown) ? note : $"{note}\n\n{breakdown}";
         }
 
         private static string BuildModifierBreakdown(GeoCharacter character, StatModificationTarget target,
-            Func<BodyPartAspectDef, float> fromArmour)
+            Func<BodyPartAspectDef, float> fromArmour, bool asPercent)
         {
             var lines = new List<string>();
 
@@ -436,7 +437,7 @@ namespace TFTV.TFTVBaseRework
                 }
 
                 AddModifierLine(lines, itemDef.ViewElementDef?.DisplayName1?.Localize() ?? itemDef.name,
-                    fromArmour(itemDef.BodyPartAspectDef));
+                    fromArmour(itemDef.BodyPartAspectDef), asPercent);
             }
 
             var passives = new List<PassiveModifierAbilityDef>();
@@ -461,13 +462,13 @@ namespace TFTV.TFTVBaseRework
                         && modification.Modification == StatModificationType.Add)
                     .Sum(modification => modification.Value);
 
-                AddModifierLine(lines, passive.ViewElementDef?.DisplayName1?.Localize() ?? passive.name, total);
+                AddModifierLine(lines, passive.ViewElementDef?.DisplayName1?.Localize() ?? passive.name, total, asPercent);
             }
 
             return string.Join("\n", lines);
         }
 
-        private static void AddModifierLine(List<string> lines, string source, float value)
+        private static void AddModifierLine(List<string> lines, string source, float value, bool asPercent)
         {
             if (Mathf.Approximately(value, 0f))
             {
@@ -476,7 +477,14 @@ namespace TFTV.TFTVBaseRework
 
             string colour = value > 0f ? "#00FF00" : "#FF0000";
             string sign = value > 0f ? "+" : "-";
-            lines.Add($"{source}: <color={colour}>{sign}{Mathf.Abs(value):0.#}</color>");
+
+            // Perception, accuracy and stealth are carried as ratios: 0.1 is ten percentage points,
+            // and printing it raw is what produced a list of "+0.1" against a +15% stat.
+            string amount = asPercent
+                ? $"{Mathf.Abs(Mathf.RoundToInt(value * 100f))}%"
+                : $"{Mathf.Abs(value):0.#}";
+
+            lines.Add($"{source}: <color={colour}>{sign}{amount}</color>");
         }
 
         private static string FormatBonusPercent(float ratio)
@@ -765,12 +773,22 @@ namespace TFTV.TFTVBaseRework
             Transform row = CreateSummaryIconStrip(parent, name, SummaryInventorySlotSize);
             UIGeoItemTooltip tooltip = PersonnelVanillaTooltips.EnsureItemTooltip(row);
 
+            // MakeInventorySlot parks its slot template under whichever transform it is handed, and
+            // moves it there again on every call. Handing it a hidden holder keeps that template out
+            // of the gear rows, where it took up a cell and pushed the last row along.
+            Transform factory = EnsureSlotFactory(parent);
+
             foreach (GeoItem item in list)
             {
                 // The game's own inventory slot, so the gear looks and explains itself exactly as it
                 // does everywhere else.
-                UIInventorySlot slot = RecruitOverlayManagerHelpers.MakeInventorySlot(row, item.ItemDef,
+                UIInventorySlot slot = RecruitOverlayManagerHelpers.MakeInventorySlot(factory, item.ItemDef,
                     SummaryInventorySlotSize, "PersonnelStorage", tooltip);
+
+                if (slot != null)
+                {
+                    slot.transform.SetParent(row, false);
+                }
 
                 if (slot != null && tooltip == null)
                 {
@@ -782,6 +800,28 @@ namespace TFTV.TFTVBaseRework
                         string.IsNullOrEmpty(description) ? title : $"{title}\n\n{description}");
                 }
             }
+        }
+
+        /// <summary>
+        /// A zero-sized, layout-ignored holder that inventory slots are built in before being moved
+        /// into their row.
+        /// </summary>
+        private static Transform EnsureSlotFactory(Transform parent)
+        {
+            Transform existing = parent.Find(SlotFactoryName);
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            GameObject factory = CreateUIObject(SlotFactoryName, parent);
+            LayoutElement element = factory.AddComponent<LayoutElement>();
+            element.ignoreLayout = true;
+
+            RectTransform rect = factory.GetComponent<RectTransform>();
+            rect.sizeDelta = Vector2.zero;
+
+            return factory.transform;
         }
 
         private static Sprite EnsureAbilityFrameSprite()

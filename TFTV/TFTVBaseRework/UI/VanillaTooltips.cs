@@ -221,13 +221,11 @@ namespace TFTV.TFTVBaseRework
     [HarmonyPatch(typeof(UIInventoryTooltipItemPanel), nameof(UIInventoryTooltipItemPanel.SetAbilities))]
     internal static class UIInventoryTooltipItemPanel_SetAbilities_Capacity
     {
-        private const int MinimumRows = 12;
-
-        private static void Prefix(UIInventoryTooltipItemPanel __instance)
+        private static void Prefix(UIInventoryTooltipItemPanel __instance, List<ItemAbilityTooltipData> abilityData)
         {
             try
             {
-                if (__instance == null)
+                if (__instance == null || abilityData == null)
                 {
                     return;
                 }
@@ -237,28 +235,41 @@ namespace TFTV.TFTVBaseRework
                     __instance.AbilitiesObjects = new List<UIInventoryTooltipItemAbility>();
                 }
 
-                if (__instance.AbilitiesObjects.Count >= MinimumRows)
+                int needed = abilityData.Count;
+                if (__instance.AbilitiesObjects.Count >= needed)
                 {
                     return;
                 }
 
                 UIInventoryTooltipItemAbility source = __instance.AbilitiesObjects.FirstOrDefault(row => row != null)
                     ?? __instance.AbilityPrefab
-                    ?? __instance.AbilitiesHeader;
+                    ?? __instance.AbilitiesHeader
+                    ?? Resources.FindObjectsOfTypeAll<UIInventoryTooltipItemAbility>()
+                        .FirstOrDefault(row => row != null && row.hideFlags == HideFlags.None);
 
-                if (source == null)
+                if (source != null)
                 {
+                    Transform rowParent = __instance.AbilitiesObjects.FirstOrDefault(row => row != null)?.transform.parent
+                        ?? __instance.AbilitiesHeader?.transform.parent
+                        ?? __instance.transform;
+
+                    while (__instance.AbilitiesObjects.Count < needed)
+                    {
+                        UIInventoryTooltipItemAbility row = Object.Instantiate(source, rowParent, false);
+                        row.gameObject.SetActive(false);
+                        __instance.AbilitiesObjects.Add(row);
+                    }
+
                     return;
                 }
 
-                Transform rowParent = source.transform.parent ?? __instance.transform;
+                // Nothing to clone from: show what fits rather than letting the vanilla loop run off
+                // the end of the list.
+                TFTVLogger.Always($"[PersonnelUI] Item tooltip has {__instance.AbilitiesObjects.Count} ability rows for "
+                    + $"{needed} abilities and no row to clone; trimming the list.");
 
-                while (__instance.AbilitiesObjects.Count < MinimumRows)
-                {
-                    UIInventoryTooltipItemAbility row = Object.Instantiate(source, rowParent, false);
-                    row.gameObject.SetActive(false);
-                    __instance.AbilitiesObjects.Add(row);
-                }
+                abilityData.RemoveRange(__instance.AbilitiesObjects.Count,
+                    needed - __instance.AbilitiesObjects.Count);
             }
             catch (Exception e)
             {
@@ -274,6 +285,8 @@ namespace TFTV.TFTVBaseRework
     {
         internal TacticalAbilityDef Ability;
         internal ViewElementDef View;
+
+        private static bool _logged;
 
         public void OnPointerEnter(PointerEventData eventData)
         {
@@ -305,6 +318,17 @@ namespace TFTV.TFTVBaseRework
                 }
 
                 PersonnelVanillaTooltips.PositionNextTo(tooltip.transform, transform);
+
+                if (!_logged)
+                {
+                    // One line, once per session: whether the tooltip exists and where it ended up.
+                    _logged = true;
+                    var rectTransform = tooltip.transform as RectTransform;
+                    TFTVLogger.Always($"[PersonnelUI] Ability tooltip '{tooltip.gameObject.name}' "
+                        + $"active={tooltip.gameObject.activeInHierarchy} parent={tooltip.transform.parent?.name} "
+                        + $"pos={rectTransform?.anchoredPosition} size={rectTransform?.rect.size} "
+                        + $"scale={tooltip.transform.localScale}");
+                }
             }
             catch (Exception e)
             {
