@@ -27,7 +27,7 @@ namespace TFTV.TFTVBaseRework
     public static partial class PersonnelManagementUI
     {
         private const int SummaryAbilityIconSize = 52;
-        private const int SummaryInventorySlotSize = 70;
+        private const int SummaryInventorySlotSize = 105;
         private const float SummaryStatRowHeight = 46f;
 
         private const float StatCaptionWidth = 200f;

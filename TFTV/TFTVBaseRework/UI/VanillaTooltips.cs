@@ -336,6 +336,8 @@ namespace TFTV.TFTVBaseRework
         internal GeoItem Item;
         internal string FallbackText;
 
+        private static bool _loggedRows;
+
         public void OnPointerEnter(PointerEventData eventData)
         {
             try
@@ -389,6 +391,8 @@ namespace TFTV.TFTVBaseRework
         /// </summary>
         private static void MoveAbilityRowsIntoStatList(UIGeoItemTooltip tooltip)
         {
+            LogHierarchyOnce(tooltip);
+
             foreach (UIInventoryTooltipItemPanel panel in tooltip.GetComponentsInChildren<UIInventoryTooltipItemPanel>(true))
             {
                 if (panel?.StatEntries == null)
@@ -418,6 +422,75 @@ namespace TFTV.TFTVBaseRework
                     row.transform.SetAsLastSibling();
                 }
             }
+        }
+
+        /// <summary>
+        /// One dump, once per session, of where the ability rows actually sit relative to the tooltip
+        /// - which is the piece still unaccounted for when they draw outside it.
+        /// </summary>
+        private static void LogHierarchyOnce(UIGeoItemTooltip tooltip)
+        {
+            if (_loggedRows)
+            {
+                return;
+            }
+
+            _loggedRows = true;
+
+            try
+            {
+                foreach (UIInventoryTooltipItemPanel panel in tooltip.GetComponentsInChildren<UIInventoryTooltipItemPanel>(true))
+                {
+                    if (panel == null)
+                    {
+                        continue;
+                    }
+
+                    TFTVLogger.Always($"[PersonnelUI] panel '{Path(panel.transform, tooltip.transform)}' "
+                        + $"active={panel.gameObject.activeInHierarchy} "
+                        + $"statEntries='{(panel.StatEntries == null ? "null" : Path(panel.StatEntries, tooltip.transform))}' "
+                        + $"rows={panel.AbilitiesObjects?.Count ?? -1} "
+                        + $"header='{(panel.AbilitiesHeader == null ? "null" : Path(panel.AbilitiesHeader.transform, tooltip.transform))}'");
+
+                    if (panel.AbilitiesObjects == null)
+                    {
+                        continue;
+                    }
+
+                    foreach (UIInventoryTooltipItemAbility row in panel.AbilitiesObjects)
+                    {
+                        if (row == null || !row.gameObject.activeSelf)
+                        {
+                            continue;
+                        }
+
+                        var rect = row.transform as RectTransform;
+                        TFTVLogger.Always($"[PersonnelUI]   row '{Path(row.transform, tooltip.transform)}' "
+                            + $"pos={rect?.anchoredPosition} size={rect?.rect.size} world={rect?.position}");
+                    }
+                }
+
+                var tooltipRect = tooltip.transform as RectTransform;
+                TFTVLogger.Always($"[PersonnelUI] tooltip world={tooltipRect?.position} size={tooltipRect?.rect.size}");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static string Path(Transform transform, Transform stopAt)
+        {
+            string path = transform.name;
+            Transform current = transform.parent;
+
+            while (current != null && current != stopAt)
+            {
+                path = current.name + "/" + path;
+                current = current.parent;
+            }
+
+            return path;
         }
 
         private void Hide()
