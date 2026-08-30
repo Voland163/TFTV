@@ -469,16 +469,22 @@ namespace TFTV.TFTVBaseRework
 
             int redeployCost = PersonnelRestrictions.GetRedeployCost(character);
             bool isGrunt = !PersonnelRestrictions.CanBeAssignedToManufacturingOrResearch(character);
+            int currentLevel = character.LevelProgression?.Level ?? 1;
             int maxTrainingLevel = TrainingFacilityRework.GetMaxTargetLevel(phoenix, character);
+            int spPerLevel = TrainingFacilityRework.GetTrainingSpCost(2);
 
             string message = $"Dismiss {character.DisplayName} from field duty?\n\n"
                 + $"Redeploying them to a base later costs {redeployCost} shared skill points.";
 
+            string trainingLine = currentLevel >= maxTrainingLevel
+                ? "They cannot be trained any further."
+                : $"They can be trained further in their class up to level {maxTrainingLevel}, "
+                  + $"at {spPerLevel} shared skill points per level.";
+
             message += isGrunt
                 ? $"\n\n{character.DisplayName} is rank and file: they cannot be assigned to research or "
-                  + "manufacturing, and cannot be used to activate an outpost or a base. They can only be "
-                  + $"trained further in their class, up to level {maxTrainingLevel}."
-                : "\n\nThey join base personnel and can be assigned to research or manufacturing.";
+                  + $"manufacturing, and cannot be used to activate an outpost or a base. {trainingLine}"
+                : $"\n\nThey join base personnel and can be assigned to research or manufacturing. {trainingLine}";
 
             string name = character.DisplayName;
             List<GeoItem> returnedToStorage = PersonnelDismissal.GetLoadoutReturnedToStorage(character);

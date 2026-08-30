@@ -1,3 +1,5 @@
+using PhoenixPoint.Common.View.ViewControllers.Inventory;
+using PhoenixPoint.Geoscape.Levels;
 using Base.Entities;
 using Base.Entities.Statuses;
 using Base.UI;
@@ -266,6 +268,10 @@ namespace TFTV.TFTVBaseRework
                 ? "The figure in brackets is what this training would leave them with."
                 : "Current value against the highest this operative can reach.";
 
+            string strengthNote = AppendModifiers(trainedNote, character, StatModificationTarget.Endurance, aspect => aspect.Endurance);
+            string willNote = AppendModifiers(trainedNote, character, StatModificationTarget.Willpower, aspect => aspect.WillPower);
+            string speedNote = AppendModifiers(trainedNote, character, StatModificationTarget.Speed, aspect => aspect.Speed);
+
             GameObject grid = CreateUIObject("Stats", parent);
             var gridLayout = grid.AddComponent<VerticalLayoutGroup>();
             gridLayout.spacing = 4f;
@@ -280,26 +286,29 @@ namespace TFTV.TFTVBaseRework
 
             Transform row1 = CreateStatRow(grid.transform, "StatRow1");
             CreateTrainedStatCell(row1, "Strength", strength,
-                progression.GetMaxBaseStat(CharacterBaseAttribute.Strength), projected?.Strength, trainedNote);
+                progression.GetMaxBaseStat(CharacterBaseAttribute.Strength), projected?.Strength, strengthNote);
             CreateStatCell(row1, "Perception", "Perception", $"+{perception}", null, null,
-                "Sight range added by armour and passive abilities.");
+                AppendModifiers("Sight range added by armour and passive abilities.", character,
+                    StatModificationTarget.Perception, aspect => aspect.Perception));
 
             Transform row2 = CreateStatRow(grid.transform, "StatRow2");
             CreateTrainedStatCell(row2, "Willpower", willpower,
-                progression.GetMaxBaseStat(CharacterBaseAttribute.Will), projected?.Willpower, trainedNote);
+                progression.GetMaxBaseStat(CharacterBaseAttribute.Will), projected?.Willpower, willNote);
             CreateStatCell(row2, "Accuracy", "Accuracy", FormatBonusPercent(accuracy), null, null,
-                "Accuracy added by armour and passive abilities.");
+                AppendModifiers("Accuracy added by armour and passive abilities.", character,
+                    StatModificationTarget.Accuracy, aspect => aspect.Accuracy));
 
             Transform row3 = CreateStatRow(grid.transform, "StatRow3");
             CreateTrainedStatCell(row3, "Speed", speed,
-                progression.GetMaxBaseStat(CharacterBaseAttribute.Speed), projected?.Speed, trainedNote);
+                progression.GetMaxBaseStat(CharacterBaseAttribute.Speed), projected?.Speed, speedNote);
             CreateStatCell(row3, "Stealth", "Stealth", FormatBonusPercent(stealth), null, null,
-                "Stealth added by armour and passive abilities.");
+                AppendModifiers("Stealth added by armour and passive abilities.", character,
+                    StatModificationTarget.Stealth, aspect => aspect.Stealth));
 
             if (deliriumValue > 0)
             {
                 Transform row4 = CreateStatRow(grid.transform, "StatRow4");
-                CreateDeliriumCell(row4, deliriumValue, Mathf.RoundToInt(TFTVDelirium.CalculateMaxCorruption(character)));
+                CreateDeliriumCell(row4, character, deliriumValue, Mathf.RoundToInt(TFTVDelirium.CalculateMaxCorruption(character)));
                 CreateStatCell(row4, null, string.Empty, null, null, null, null);
             }
         }
@@ -402,6 +411,74 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
+        /// <summary>
+        /// Adds the Haven Recruits style breakdown to a stat's tooltip: one line per armour piece or
+        /// passive ability that moves this stat, and by how much.
+        /// </summary>
+        private static string AppendModifiers(string note, GeoCharacter character, StatModificationTarget target,
+            Func<BodyPartAspectDef, float> fromArmour)
+        {
+            string breakdown = BuildModifierBreakdown(character, target, fromArmour);
+            return string.IsNullOrEmpty(breakdown) ? note : $"{note}\n\n{breakdown}";
+        }
+
+        private static string BuildModifierBreakdown(GeoCharacter character, StatModificationTarget target,
+            Func<BodyPartAspectDef, float> fromArmour)
+        {
+            var lines = new List<string>();
+
+            foreach (GeoItem armourItem in character.ArmourItems)
+            {
+                var itemDef = armourItem?.ItemDef as TacticalItemDef;
+                if (itemDef?.BodyPartAspectDef == null)
+                {
+                    continue;
+                }
+
+                AddModifierLine(lines, itemDef.ViewElementDef?.DisplayName1?.Localize() ?? itemDef.name,
+                    fromArmour(itemDef.BodyPartAspectDef));
+            }
+
+            var passives = new List<PassiveModifierAbilityDef>();
+            if (character.Progression?.Abilities != null)
+            {
+                passives.AddRange(character.Progression.Abilities.OfType<PassiveModifierAbilityDef>());
+            }
+            if (character.PassiveModifiers != null)
+            {
+                passives.AddRange(character.PassiveModifiers);
+            }
+
+            foreach (PassiveModifierAbilityDef passive in passives)
+            {
+                if (passive?.StatModifications == null)
+                {
+                    continue;
+                }
+
+                float total = passive.StatModifications
+                    .Where(modification => modification.TargetStat == target
+                        && modification.Modification == StatModificationType.Add)
+                    .Sum(modification => modification.Value);
+
+                AddModifierLine(lines, passive.ViewElementDef?.DisplayName1?.Localize() ?? passive.name, total);
+            }
+
+            return string.Join("\n", lines);
+        }
+
+        private static void AddModifierLine(List<string> lines, string source, float value)
+        {
+            if (Mathf.Approximately(value, 0f))
+            {
+                return;
+            }
+
+            string colour = value > 0f ? "#00FF00" : "#FF0000";
+            string sign = value > 0f ? "+" : "-";
+            lines.Add($"{source}: <color={colour}>{sign}{Mathf.Abs(value):0.#}</color>");
+        }
+
         private static string FormatBonusPercent(float ratio)
         {
             if (Mathf.Approximately(ratio, 0f))
@@ -480,7 +557,7 @@ namespace TFTV.TFTVBaseRework
             }
         }
 
-        private static void CreateDeliriumCell(Transform parent, int delirium, int maxDelirium)
+        private static void CreateDeliriumCell(Transform parent, GeoCharacter character, int delirium, int maxDelirium)
         {
             GameObject cell = CreateUIObject("Stat_Delirium", parent);
             var background = cell.AddComponent<Image>();
@@ -514,7 +591,13 @@ namespace TFTV.TFTVBaseRework
             Text value = CreateLabel(cell.transform, "Value", $"{delirium} / {maxDelirium}", BodyFontSize, DeliriumColor);
             SetSize(value.gameObject, StatValueWidth, SummaryStatRowHeight);
 
-            AddTextTooltip(cell, $"Delirium\n\nAt {maxDelirium} this operative is lost to madness.");
+            // The same explanation the character screen gives, tied to the campaign's delirium level.
+            GeoLevelController level = character?.Faction?.GeoLevel;
+            string explanation = level != null
+                ? $"{TFTVCommonMethods.ConvertKeyToString("KEY_UI_DELIRIUM_EXPLANATION")} {TFTVDelirium.CurrentDeliriumLevel(level)}."
+                : TFTVCommonMethods.ConvertKeyToString("KEY_UI_DELIRIUM_EXPLANATION");
+
+            AddTextTooltip(cell, explanation);
         }
 
         private static string FormatPercent(float ratio)
@@ -686,8 +769,18 @@ namespace TFTV.TFTVBaseRework
             {
                 // The game's own inventory slot, so the gear looks and explains itself exactly as it
                 // does everywhere else.
-                RecruitOverlayManagerHelpers.MakeInventorySlot(row, item.ItemDef, SummaryInventorySlotSize,
-                    "PersonnelStorage", tooltip);
+                UIInventorySlot slot = RecruitOverlayManagerHelpers.MakeInventorySlot(row, item.ItemDef,
+                    SummaryInventorySlotSize, "PersonnelStorage", tooltip);
+
+                if (slot != null && tooltip == null)
+                {
+                    // No game tooltip to hand: name the item at least.
+                    ViewElementDef view = item.ItemDef.ViewElementDef;
+                    string title = view?.DisplayName1?.Localize() ?? item.ItemDef.name;
+                    string description = view?.Description?.Localize();
+                    AddTextTooltip(slot.gameObject,
+                        string.IsNullOrEmpty(description) ? title : $"{title}\n\n{description}");
+                }
             }
         }
 
@@ -735,6 +828,10 @@ namespace TFTV.TFTVBaseRework
             layout.cellSize = new Vector2(cellSize, cellSize);
             layout.spacing = new Vector2(8f, 8f);
             layout.padding = new RectOffset(2, 2, 2, 2);
+            // Without this a short row is centred against the panel and reads as indented.
+            layout.childAlignment = TextAnchor.UpperLeft;
+            layout.startCorner = GridLayoutGroup.Corner.UpperLeft;
+            layout.startAxis = GridLayoutGroup.Axis.Horizontal;
 
             var fitter = grid.AddComponent<ContentSizeFitter>();
             fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;

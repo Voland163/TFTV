@@ -1,3 +1,4 @@
+using HarmonyLib;
 using Base.Core;
 using PhoenixPoint.Common.UI;
 using PhoenixPoint.Common.View.ViewControllers.Inventory;
@@ -101,7 +102,6 @@ namespace TFTV.TFTVBaseRework
                 element.ignoreLayout = true;
 
                 _itemTooltip = clone.GetComponent<UIGeoItemTooltip>();
-                EnsureAbilityRows(_itemTooltip);
 
                 // Keeps the vanilla fade-in from nudging the tooltip's parent around, the same fix
                 // the Haven Recruits panel applies to its own copy.
@@ -117,46 +117,6 @@ namespace TFTV.TFTVBaseRework
         }
 
         /// <summary>
-        /// The item tooltip lays each of an item's abilities into a fixed pool of rows carried by the
-        /// prefab - UIInventoryTooltipItemPanel.SetAbilities indexes straight into it, with no bounds
-        /// check - so gear carrying more abilities than the pool holds throws. Growing the pool once,
-        /// on our own copy, is cheaper than discovering the limit item by item.
-        /// </summary>
-        private static void EnsureAbilityRows(UIGeoItemTooltip tooltip, int rows = 12)
-        {
-            if (tooltip == null)
-            {
-                return;
-            }
-
-            foreach (UIInventoryTooltipItemPanel panel in tooltip.GetComponentsInChildren<UIInventoryTooltipItemPanel>(true))
-            {
-                if (panel?.AbilityPrefab == null)
-                {
-                    continue;
-                }
-
-                if (panel.AbilitiesObjects == null)
-                {
-                    panel.AbilitiesObjects = new List<UIInventoryTooltipItemAbility>();
-                }
-
-                Transform rowParent = panel.AbilitiesObjects.Count > 0
-                    ? panel.AbilitiesObjects[0].transform.parent
-                    : panel.AbilitiesHeader != null
-                        ? panel.AbilitiesHeader.transform.parent
-                        : panel.transform;
-
-                while (panel.AbilitiesObjects.Count < rows)
-                {
-                    UIInventoryTooltipItemAbility row = Object.Instantiate(panel.AbilityPrefab, rowParent, false);
-                    row.gameObject.SetActive(false);
-                    panel.AbilitiesObjects.Add(row);
-                }
-            }
-        }
-
-        /// <summary>
         /// Finds a tooltip to clone, preferring one that is actually part of the live geoscape view.
         ///
         /// Resources.FindObjectsOfTypeAll also returns prefab assets, and a prefab's item tooltip has
@@ -168,28 +128,38 @@ namespace TFTV.TFTVBaseRework
             GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
             GeoscapeView view = level?.View;
 
-            // Other TFTV screens keep their own clones under the same view; cloning one of those
-            // inherits whatever it was set up for, scale included.
+            // A pristine copy is preferred - cloning another TFTV screen's tooltip inherits whatever
+            // it was set up for, scale included - but one of those beats having no tooltip at all.
             bool IsUsable(T candidate) =>
-                candidate != null
-                && isNotOurs(candidate)
-                && candidate.hideFlags == HideFlags.None
-                && !candidate.gameObject.name.StartsWith("TFTV_", StringComparison.Ordinal);
+                candidate != null && isNotOurs(candidate) && candidate.hideFlags == HideFlags.None;
+
+            bool IsVanilla(T candidate) =>
+                IsUsable(candidate) && !candidate.gameObject.name.StartsWith("TFTV_", StringComparison.Ordinal);
 
             T template = null;
             if (view != null)
             {
-                template = view.GetComponentsInChildren<T>(true).FirstOrDefault(IsUsable);
+                template = view.GetComponentsInChildren<T>(true).FirstOrDefault(IsVanilla);
             }
 
             if (template == null)
             {
-                template = Object.FindObjectsOfType<T>().FirstOrDefault(IsUsable);
+                template = Object.FindObjectsOfType<T>().FirstOrDefault(IsVanilla);
+            }
+
+            if (template == null)
+            {
+                template = Resources.FindObjectsOfTypeAll<T>().FirstOrDefault(IsVanilla);
             }
 
             if (template == null)
             {
                 template = Resources.FindObjectsOfTypeAll<T>().FirstOrDefault(IsUsable);
+            }
+
+            if (template == null)
+            {
+                TFTVLogger.Always($"[PersonnelUI] No {typeof(T).Name} to clone for the personnel screen tooltips.");
             }
 
             return template;
@@ -243,6 +213,61 @@ namespace TFTV.TFTVBaseRework
     }
 
     /// <summary>
+    /// UIInventoryTooltipItemPanel.SetAbilities writes an item's abilities into a pool of rows the
+    /// prefab carries, indexing straight into it: gear with more abilities than the pool has rows
+    /// throws ArgumentOutOfRange and the tooltip never appears. The pool is grown here, from an
+    /// existing row or the panel's own prefab, before the vanilla method runs.
+    /// </summary>
+    [HarmonyPatch(typeof(UIInventoryTooltipItemPanel), nameof(UIInventoryTooltipItemPanel.SetAbilities))]
+    internal static class UIInventoryTooltipItemPanel_SetAbilities_Capacity
+    {
+        private const int MinimumRows = 12;
+
+        private static void Prefix(UIInventoryTooltipItemPanel __instance)
+        {
+            try
+            {
+                if (__instance == null)
+                {
+                    return;
+                }
+
+                if (__instance.AbilitiesObjects == null)
+                {
+                    __instance.AbilitiesObjects = new List<UIInventoryTooltipItemAbility>();
+                }
+
+                if (__instance.AbilitiesObjects.Count >= MinimumRows)
+                {
+                    return;
+                }
+
+                UIInventoryTooltipItemAbility source = __instance.AbilitiesObjects.FirstOrDefault(row => row != null)
+                    ?? __instance.AbilityPrefab
+                    ?? __instance.AbilitiesHeader;
+
+                if (source == null)
+                {
+                    return;
+                }
+
+                Transform rowParent = source.transform.parent ?? __instance.transform;
+
+                while (__instance.AbilitiesObjects.Count < MinimumRows)
+                {
+                    UIInventoryTooltipItemAbility row = Object.Instantiate(source, rowParent, false);
+                    row.gameObject.SetActive(false);
+                    __instance.AbilitiesObjects.Add(row);
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+    }
+
+    /// <summary>
     /// Raises the game's ability tooltip - name, description, costs - for one ability icon.
     /// </summary>
     internal sealed class PersonnelAbilityTooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
@@ -262,6 +287,11 @@ namespace TFTV.TFTVBaseRework
                 GeoRosterAbilityDetailTooltip tooltip = PersonnelVanillaTooltips.EnsureAbilityTooltip(transform);
                 if (tooltip == null)
                 {
+                    // Better a plain description than nothing when the game's tooltip cannot be had.
+                    ViewElementDef view = View ?? Ability.ViewElementDef;
+                    string title = view?.DisplayName1?.Localize();
+                    string description = view?.Description?.Localize();
+                    PersonnelTooltip.Show(string.IsNullOrEmpty(description) ? title : $"{title}\n\n{description}", transform);
                     return;
                 }
 
@@ -296,6 +326,8 @@ namespace TFTV.TFTVBaseRework
         {
             try
             {
+                PersonnelTooltip.Hide();
+
                 GeoRosterAbilityDetailTooltip tooltip = PersonnelVanillaTooltips.EnsureAbilityTooltip(transform);
                 tooltip?.Hide();
             }
