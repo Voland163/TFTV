@@ -221,7 +221,9 @@ namespace TFTV.TFTVBaseRework
 
             Vector3[] corners = new Vector3[4];
             anchorRect.GetWorldCorners(corners);
-            Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(cam, corners[1]);
+            // corners[2] is the anchor's top-right: the dossier's icons sit on the left of the dialog,
+            // so the tooltip opens into the empty space beside them.
+            Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(cam, corners[2]);
 
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPoint, cam, out Vector2 localPoint))
             {
@@ -230,15 +232,18 @@ namespace TFTV.TFTVBaseRework
 
             tooltip.anchorMin = new Vector2(0.5f, 0.5f);
             tooltip.anchorMax = new Vector2(0.5f, 0.5f);
-            tooltip.pivot = new Vector2(1f, 1f);
+            // Pivot top-left: the tooltip hangs down and to the right of the anchor point.
+            tooltip.pivot = new Vector2(0f, 1f);
 
             float halfWidth = canvasRect.rect.width * 0.5f;
             float halfHeight = canvasRect.rect.height * 0.5f;
             float width = tooltip.rect.width * TooltipScale;
             float height = tooltip.rect.height * TooltipScale;
 
-            float x = Mathf.Clamp(localPoint.x, -halfWidth + width + TooltipMargin, halfWidth - TooltipMargin);
-            float y = Mathf.Clamp(localPoint.y, -halfHeight + height + TooltipMargin, halfHeight - TooltipMargin);
+            float x = Mathf.Clamp(localPoint.x + TooltipMargin, -halfWidth + TooltipMargin,
+                Mathf.Max(-halfWidth + TooltipMargin, halfWidth - width - TooltipMargin));
+            float y = Mathf.Clamp(localPoint.y, Mathf.Min(halfHeight - TooltipMargin, -halfHeight + height + TooltipMargin),
+                halfHeight - TooltipMargin);
 
             tooltip.anchoredPosition = new Vector2(x, y);
             tooltip.SetAsLastSibling();
@@ -282,8 +287,11 @@ namespace TFTV.TFTVBaseRework
 
                 if (source != null)
                 {
+                    // Rows have to join the container the existing ones live in, or they are drawn
+                    // outside the tooltip's own background.
                     Transform rowParent = __instance.AbilitiesObjects.FirstOrDefault(row => row != null)?.transform.parent
                         ?? __instance.AbilitiesHeader?.transform.parent
+                        ?? __instance.StatEntries
                         ?? __instance.transform;
 
                     while (__instance.AbilitiesObjects.Count < needed)
@@ -437,6 +445,8 @@ namespace TFTV.TFTVBaseRework
 
                 PersonnelVanillaTooltips.PositionNextTo(tooltip.transform, transform);
 
+                RepairPlaceholderTitle(tooltip);
+
                 if (!_logged)
                 {
                     // One line, once per session: whether the tooltip exists and where it ended up.
@@ -462,6 +472,34 @@ namespace TFTV.TFTVBaseRework
         private void OnDisable()
         {
             Hide();
+        }
+
+        /// <summary>
+        /// Some abilities still come up with the localisation placeholder for a title even after the
+        /// tooltip has been primed. The name is known here, so it is written in directly.
+        /// </summary>
+        private void RepairPlaceholderTitle(GeoRosterAbilityDetailTooltip tooltip)
+        {
+            Text title = tooltip.AbilityTitleText;
+            if (title == null)
+            {
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(title.text) && title.text.IndexOf("NEEDS TEXT", StringComparison.OrdinalIgnoreCase) < 0)
+            {
+                return;
+            }
+
+            ViewElementDef view = View ?? Ability.ViewElementDef;
+            string name = view?.DisplayName1?.Localize();
+
+            if (string.IsNullOrEmpty(name) || name.IndexOf("NEEDS TEXT", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                name = string.IsNullOrEmpty(view?.Name) ? Ability.name : view.Name;
+            }
+
+            title.text = name;
         }
 
         private void Hide()

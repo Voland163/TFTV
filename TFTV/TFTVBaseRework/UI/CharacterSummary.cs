@@ -72,7 +72,7 @@ namespace TFTV.TFTVBaseRework
 
                 CreateSummaryIdentity(content, character, showClassAndAbilities);
                 CreateSummaryProgress(content, character);
-                CreateSummaryStats(content, character, projectedStats);
+                CreateSummaryStats(content, character, projectedStats, includeModifiers: showClassAndAbilities);
 
                 if (showClassAndAbilities)
                 {
@@ -108,11 +108,15 @@ namespace TFTV.TFTVBaseRework
 
             TrainingFacilityRework.GetStatGains(levelsGained, out int strength, out int willpower, out int speed);
 
+            // Against the attributes as the character screen reports them, not Progression.Strength,
+            // which counts upgrades bought and would read as a fall from 21 to 7.
+            BaseCharacterStats baseStats = character.GetProgressionBaseStats();
+
             return new ProjectedStats
             {
-                Strength = character.Progression.Strength + strength,
-                Willpower = character.Progression.Will + willpower,
-                Speed = character.Progression.Speed + speed,
+                Strength = (int)(baseStats.Endurance + character.BonusStrength) + strength,
+                Willpower = (int)(baseStats.Willpower + character.BonusWillpower) + willpower,
+                Speed = (int)(baseStats.Speed + character.BonusSpeed) + speed,
             };
         }
 
@@ -249,7 +253,8 @@ namespace TFTV.TFTVBaseRework
         /// passive abilities contribute. CharacterStats holds tactical values that do not match what
         /// the player is shown on the geoscape, which is why an operative's accuracy came out as 0%.
         /// </summary>
-        private static void CreateSummaryStats(Transform parent, GeoCharacter character, ProjectedStats projected)
+        private static void CreateSummaryStats(Transform parent, GeoCharacter character, ProjectedStats projected,
+            bool includeModifiers)
         {
             CharacterStats stats = character.CharacterStats;
             CharacterProgression progression = character.Progression;
@@ -269,9 +274,25 @@ namespace TFTV.TFTVBaseRework
                 ? "The figure in brackets is what this training would leave them with."
                 : "Current value against the highest this operative can reach.";
 
-            string strengthNote = AppendModifiers(trainedNote, character, StatModificationTarget.Endurance, aspect => aspect.Endurance);
-            string willNote = AppendModifiers(trainedNote, character, StatModificationTarget.Willpower, aspect => aspect.WillPower);
-            string speedNote = AppendModifiers(trainedNote, character, StatModificationTarget.Speed, aspect => aspect.Speed);
+            // Gear and perks on top of the trained attribute, the figure the recruit panel puts in
+            // brackets. Personnel who have never served have no real perks yet, so nothing is added
+            // for them and their tooltips stay quiet about it.
+            float strengthBonus = includeModifiers
+                ? GetModifierTotal(character, StatModificationTarget.Endurance, aspect => aspect.Endurance) : 0f;
+            float willBonus = includeModifiers
+                ? GetModifierTotal(character, StatModificationTarget.Willpower, aspect => aspect.WillPower) : 0f;
+            float speedBonus = includeModifiers
+                ? GetModifierTotal(character, StatModificationTarget.Speed, aspect => aspect.Speed) : 0f;
+
+            string strengthNote = includeModifiers
+                ? AppendModifiers(trainedNote, character, StatModificationTarget.Endurance, aspect => aspect.Endurance)
+                : trainedNote;
+            string willNote = includeModifiers
+                ? AppendModifiers(trainedNote, character, StatModificationTarget.Willpower, aspect => aspect.WillPower)
+                : trainedNote;
+            string speedNote = includeModifiers
+                ? AppendModifiers(trainedNote, character, StatModificationTarget.Speed, aspect => aspect.Speed)
+                : trainedNote;
 
             GameObject grid = CreateUIObject("Stats", parent);
             var gridLayout = grid.AddComponent<VerticalLayoutGroup>();
@@ -287,24 +308,30 @@ namespace TFTV.TFTVBaseRework
 
             Transform row1 = CreateStatRow(grid.transform, "StatRow1");
             CreateTrainedStatCell(row1, "Strength", strength,
-                progression.GetMaxBaseStat(CharacterBaseAttribute.Strength), projected?.Strength, strengthNote);
+                progression.GetMaxBaseStat(CharacterBaseAttribute.Strength), projected?.Strength, strengthBonus, strengthNote);
             CreateStatCell(row1, "Perception", "Perception", $"+{perception}", null, null,
-                AppendModifiers("Sight range added by armour and passive abilities.", character,
-                    StatModificationTarget.Perception, aspect => aspect.Perception));
+                includeModifiers
+                    ? AppendModifiers("Sight range added by armour and passive abilities.", character,
+                        StatModificationTarget.Perception, aspect => aspect.Perception)
+                    : "Sight range added by armour and passive abilities.");
 
             Transform row2 = CreateStatRow(grid.transform, "StatRow2");
             CreateTrainedStatCell(row2, "Willpower", willpower,
-                progression.GetMaxBaseStat(CharacterBaseAttribute.Will), projected?.Willpower, willNote);
+                progression.GetMaxBaseStat(CharacterBaseAttribute.Will), projected?.Willpower, willBonus, willNote);
             CreateStatCell(row2, "Accuracy", "Accuracy", FormatBonusPercent(accuracy), null, null,
-                AppendModifiers("Accuracy added by armour and passive abilities.", character,
-                    StatModificationTarget.Accuracy, aspect => aspect.Accuracy, asPercent: true));
+                includeModifiers
+                    ? AppendModifiers("Accuracy added by armour and passive abilities.", character,
+                        StatModificationTarget.Accuracy, aspect => aspect.Accuracy, asPercent: true)
+                    : "Accuracy added by armour and passive abilities.");
 
             Transform row3 = CreateStatRow(grid.transform, "StatRow3");
             CreateTrainedStatCell(row3, "Speed", speed,
-                progression.GetMaxBaseStat(CharacterBaseAttribute.Speed), projected?.Speed, speedNote);
+                progression.GetMaxBaseStat(CharacterBaseAttribute.Speed), projected?.Speed, speedBonus, speedNote);
             CreateStatCell(row3, "Stealth", "Stealth", FormatBonusPercent(stealth), null, null,
-                AppendModifiers("Stealth added by armour and passive abilities.", character,
-                    StatModificationTarget.Stealth, aspect => aspect.Stealth, asPercent: true));
+                includeModifiers
+                    ? AppendModifiers("Stealth added by armour and passive abilities.", character,
+                        StatModificationTarget.Stealth, aspect => aspect.Stealth, asPercent: true)
+                    : "Stealth added by armour and passive abilities.");
 
             if (deliriumValue > 0)
             {
@@ -318,16 +345,26 @@ namespace TFTV.TFTVBaseRework
         /// One of the three trained attributes: "21 / 35", with what training would make of it in
         /// green beside it.
         /// </summary>
+        /// <summary>
+        /// "21 / 35" for the trained attribute, with the figure in brackets being what training would
+        /// make of it when one is pending, and otherwise what gear and perks already make of it.
+        /// </summary>
         private static void CreateTrainedStatCell(Transform parent, string statName, int current, int max,
-            int? projected, string tooltip)
+            int? projected, float gearBonus, string tooltip)
         {
-            string projectedText = projected.HasValue && projected.Value != current
-                ? projected.Value.ToString()
+            int? bracketed = projected;
+            if (!bracketed.HasValue && !Mathf.Approximately(gearBonus, 0f))
+            {
+                bracketed = current + Mathf.RoundToInt(gearBonus);
+            }
+
+            string bracketedText = bracketed.HasValue && bracketed.Value != current
+                ? bracketed.Value.ToString()
                 : null;
 
-            Color projectedColor = projected.HasValue && projected.Value < current ? StatLossColor : StatGainColor;
+            Color bracketedColor = bracketed.HasValue && bracketed.Value < current ? StatLossColor : StatGainColor;
 
-            CreateStatCell(parent, statName, statName, $"{current} / {max}", projectedText, projectedColor, tooltip);
+            CreateStatCell(parent, statName, statName, $"{current} / {max}", bracketedText, bracketedColor, tooltip);
         }
 
         /// <summary>
@@ -421,6 +458,56 @@ namespace TFTV.TFTVBaseRework
         {
             string breakdown = BuildModifierBreakdown(character, target, fromArmour, asPercent);
             return string.IsNullOrEmpty(breakdown) ? note : $"{note}\n\n{breakdown}";
+        }
+
+        /// <summary>
+        /// What armour and passive abilities add to a stat, all together.
+        /// </summary>
+        private static float GetModifierTotal(GeoCharacter character, StatModificationTarget target,
+            Func<BodyPartAspectDef, float> fromArmour)
+        {
+            float total = 0f;
+
+            foreach (GeoItem armourItem in character.ArmourItems)
+            {
+                var itemDef = armourItem?.ItemDef as TacticalItemDef;
+                if (itemDef?.BodyPartAspectDef != null)
+                {
+                    total += fromArmour(itemDef.BodyPartAspectDef);
+                }
+            }
+
+            foreach (PassiveModifierAbilityDef passive in CollectPassiveModifiers(character))
+            {
+                if (passive?.StatModifications == null)
+                {
+                    continue;
+                }
+
+                total += passive.StatModifications
+                    .Where(modification => modification.TargetStat == target
+                        && modification.Modification == StatModificationType.Add)
+                    .Sum(modification => modification.Value);
+            }
+
+            return total;
+        }
+
+        private static List<PassiveModifierAbilityDef> CollectPassiveModifiers(GeoCharacter character)
+        {
+            var passives = new List<PassiveModifierAbilityDef>();
+
+            if (character.Progression?.Abilities != null)
+            {
+                passives.AddRange(character.Progression.Abilities.OfType<PassiveModifierAbilityDef>());
+            }
+
+            if (character.PassiveModifiers != null)
+            {
+                passives.AddRange(character.PassiveModifiers);
+            }
+
+            return passives;
         }
 
         private static string BuildModifierBreakdown(GeoCharacter character, StatModificationTarget target,
