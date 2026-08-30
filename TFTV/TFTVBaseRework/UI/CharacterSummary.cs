@@ -1,3 +1,5 @@
+using Base.Entities;
+using Base.Entities.Statuses;
 using Base.UI;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.Entities.Characters;
@@ -5,6 +7,7 @@ using PhoenixPoint.Common.UI;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.View.ViewControllers.Inventory;
 using PhoenixPoint.Tactical.Entities.Abilities;
+using PhoenixPoint.Tactical.Entities.Equipments;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,10 +28,16 @@ namespace TFTV.TFTVBaseRework
         private const int SummaryInventorySlotSize = 70;
         private const float SummaryStatRowHeight = 46f;
 
+        private const float StatCaptionWidth = 200f;
+        private const float StatValueWidth = 130f;
+
         private static readonly Color StatValueColor = new Color(1.00f, 0.72f, 0.25f, 1f);
         private static readonly Color StatGainColor = new Color(0.45f, 0.90f, 0.45f, 1f);
         private static readonly Color StatLossColor = new Color(0.95f, 0.45f, 0.40f, 1f);
         private static readonly Color AbilityLockedColor = new Color(0.45f, 0.45f, 0.45f, 0.7f);
+
+        // The violet the Haven Recruits panel marks delirium with.
+        private static readonly Color DeliriumColor = new Color32(0xA2, 0x48, 0xD1, 0xFF);
 
         private static readonly Dictionary<string, Sprite> _statIcons = new Dictionary<string, Sprite>(StringComparer.OrdinalIgnoreCase);
         private static Sprite _abilityFrameSprite;
@@ -214,21 +223,32 @@ namespace TFTV.TFTVBaseRework
 
         #region Stats
 
+        /// <summary>
+        /// Read exactly as the character screen reads them: the three trained attributes as current
+        /// against their ceiling, and perception, accuracy and stealth as the bonuses that armour and
+        /// passive abilities contribute. CharacterStats holds tactical values that do not match what
+        /// the player is shown on the geoscape, which is why an operative's accuracy came out as 0%.
+        /// </summary>
         private static void CreateSummaryStats(Transform parent, GeoCharacter character, ProjectedStats projected)
         {
             CharacterStats stats = character.CharacterStats;
             CharacterProgression progression = character.Progression;
-            if (stats == null)
+            if (stats == null || progression == null)
             {
                 return;
             }
 
-            string modifierNote = projected != null
-                ? "The figure in brackets is what training would leave them with."
-                : "The figure in brackets is the value after armour and augmentations.";
+            BaseCharacterStats baseStats = character.GetProgressionBaseStats();
+            int strength = (int)(baseStats.Endurance + character.BonusStrength);
+            int willpower = (int)(baseStats.Willpower + character.BonusWillpower);
+            int speed = (int)(baseStats.Speed + character.BonusSpeed);
 
-            // Left column carries the trained stats, right column the ones gear and class decide -
-            // the same split the Haven Recruits panel uses.
+            GetDisplayBonuses(character, out int perception, out float accuracy, out float stealth);
+
+            string trainedNote = projected != null
+                ? "The figure in brackets is what this training would leave them with."
+                : "Current value against the highest this operative can reach.";
+
             GameObject grid = CreateUIObject("Stats", parent);
             var gridLayout = grid.AddComponent<VerticalLayoutGroup>();
             gridLayout.spacing = 4f;
@@ -236,34 +256,144 @@ namespace TFTV.TFTVBaseRework
             gridLayout.childControlHeight = true;
             gridLayout.childForceExpandWidth = true;
             gridLayout.childForceExpandHeight = false;
-            SetSize(grid, 0f, (SummaryStatRowHeight + 4f) * 3f);
+
+            int deliriumValue = stats.Corruption?.IntValue ?? 0;
+            int rows = deliriumValue > 0 ? 4 : 3;
+            SetSize(grid, 0f, (SummaryStatRowHeight + 4f) * rows);
 
             Transform row1 = CreateStatRow(grid.transform, "StatRow1");
-            CreateStatCell(row1, "Strength", "Strength", progression?.Strength ?? stats.Endurance.IntValue,
-                projected?.Strength ?? stats.Endurance.IntValue, modifierNote);
-            CreateStatCell(row1, "Perception", "Perception", stats.Perception.IntValue.ToString(), null, null, null);
+            CreateTrainedStatCell(row1, "Strength", strength,
+                progression.GetMaxBaseStat(CharacterBaseAttribute.Strength), projected?.Strength, trainedNote);
+            CreateStatCell(row1, "Perception", "Perception", $"+{perception}", null, null,
+                "Sight range added by armour and passive abilities.");
 
             Transform row2 = CreateStatRow(grid.transform, "StatRow2");
-            CreateStatCell(row2, "Willpower", "Willpower", progression?.Will ?? stats.Willpower.IntValue,
-                projected?.Willpower ?? stats.Willpower.IntValue, modifierNote);
-            CreateStatCell(row2, "Accuracy", "Accuracy", null, FormatPercent(stats.Accuracy.Value), null, null);
+            CreateTrainedStatCell(row2, "Willpower", willpower,
+                progression.GetMaxBaseStat(CharacterBaseAttribute.Will), projected?.Willpower, trainedNote);
+            CreateStatCell(row2, "Accuracy", "Accuracy", FormatBonusPercent(accuracy), null, null,
+                "Accuracy added by armour and passive abilities.");
 
             Transform row3 = CreateStatRow(grid.transform, "StatRow3");
-            CreateStatCell(row3, "Speed", "Speed", progression?.Speed ?? stats.Speed.IntValue,
-                projected?.Speed ?? stats.Speed.IntValue, modifierNote);
-            CreateStatCell(row3, "Stealth", "Stealth", null, FormatPercent(stats.Stealth.Value), null, null);
+            CreateTrainedStatCell(row3, "Speed", speed,
+                progression.GetMaxBaseStat(CharacterBaseAttribute.Speed), projected?.Speed, trainedNote);
+            CreateStatCell(row3, "Stealth", "Stealth", FormatBonusPercent(stealth), null, null,
+                "Stealth added by armour and passive abilities.");
 
-            int delirium = stats.Corruption?.IntValue ?? 0;
-            if (delirium > 0)
+            if (deliriumValue > 0)
             {
                 Transform row4 = CreateStatRow(grid.transform, "StatRow4");
-                LayoutElement gridElement = grid.GetComponent<LayoutElement>();
-                gridElement.minHeight += SummaryStatRowHeight + 4f;
-                gridElement.preferredHeight = gridElement.minHeight;
-
-                CreateDeliriumCell(row4, delirium, stats.Willpower.IntValue);
-                CreateStatCell(row4, null, string.Empty, null, string.Empty, null, null);
+                CreateDeliriumCell(row4, deliriumValue, stats.Willpower.IntValue);
+                CreateStatCell(row4, null, string.Empty, null, null, null, null);
             }
+        }
+
+        /// <summary>
+        /// One of the three trained attributes: "21 / 35", with what training would make of it in
+        /// green beside it.
+        /// </summary>
+        private static void CreateTrainedStatCell(Transform parent, string statName, int current, int max,
+            int? projected, string tooltip)
+        {
+            string projectedText = projected.HasValue && projected.Value != current
+                ? projected.Value.ToString()
+                : null;
+
+            Color projectedColor = projected.HasValue && projected.Value < current ? StatLossColor : StatGainColor;
+
+            CreateStatCell(parent, statName, statName, $"{current} / {max}", projectedText, projectedColor, tooltip);
+        }
+
+        /// <summary>
+        /// The character screen writes these as bonuses and shows "---" when there is none.
+        /// </summary>
+        private static void GetDisplayBonuses(GeoCharacter character, out int perception, out float accuracy, out float stealth)
+        {
+            float perceptionValue = 0f;
+            float accuracyValue = 0f;
+            float stealthValue = 0f;
+            float perceptionMultiplier = 1f;
+            float accuracyMultiplier = 1f;
+            float stealthMultiplier = 1f;
+
+            PerceptionComponentDef perceptionComponent = character.TemplateDef?.ComponentSetDef?.GetComponentDef<PerceptionComponentDef>();
+            if (perceptionComponent != null)
+            {
+                perceptionValue += perceptionComponent.PerceptionRange;
+            }
+
+            foreach (GeoItem armourItem in character.ArmourItems)
+            {
+                var itemDef = armourItem?.ItemDef as TacticalItemDef;
+                if (itemDef?.BodyPartAspectDef == null)
+                {
+                    continue;
+                }
+
+                perceptionValue += itemDef.BodyPartAspectDef.Perception;
+                accuracyValue += itemDef.BodyPartAspectDef.Accuracy;
+                stealthValue += itemDef.BodyPartAspectDef.Stealth;
+            }
+
+            var modifiers = new List<PassiveModifierAbilityDef>();
+            if (character.Progression?.Abilities != null)
+            {
+                modifiers.AddRange(character.Progression.Abilities.OfType<PassiveModifierAbilityDef>());
+            }
+            if (character.PassiveModifiers != null)
+            {
+                modifiers.AddRange(character.PassiveModifiers);
+            }
+
+            foreach (PassiveModifierAbilityDef modifier in modifiers)
+            {
+                if (modifier?.StatModifications == null)
+                {
+                    continue;
+                }
+
+                foreach (ItemStatModification modification in modifier.StatModifications)
+                {
+                    switch (modification.TargetStat)
+                    {
+                        case StatModificationTarget.Perception:
+                            ApplyModification(modification, ref perceptionValue, ref perceptionMultiplier);
+                            break;
+                        case StatModificationTarget.Accuracy:
+                            ApplyModification(modification, ref accuracyValue, ref accuracyMultiplier);
+                            break;
+                        case StatModificationTarget.Stealth:
+                            ApplyModification(modification, ref stealthValue, ref stealthMultiplier);
+                            break;
+                    }
+                }
+            }
+
+            perception = (int)(perceptionValue * perceptionMultiplier);
+            accuracy = accuracyValue * accuracyMultiplier;
+            stealth = stealthValue * stealthMultiplier;
+        }
+
+        private static void ApplyModification(ItemStatModification modification, ref float value, ref float multiplier)
+        {
+            if (modification.Modification == StatModificationType.Add)
+            {
+                value += modification.Value;
+            }
+            else if (modification.Modification == StatModificationType.Multiply)
+            {
+                multiplier += modification.Value;
+            }
+        }
+
+        private static string FormatBonusPercent(float ratio)
+        {
+            if (Mathf.Approximately(ratio, 0f))
+            {
+                return "---";
+            }
+
+            int percent = Mathf.RoundToInt(ratio * 100f);
+            return percent > 0 ? $"+{percent}%" : $"{percent}%";
         }
 
         private static Transform CreateStatRow(Transform parent, string name)
@@ -278,14 +408,6 @@ namespace TFTV.TFTVBaseRework
             layout.childForceExpandHeight = false;
             SetSize(row, 0f, SummaryStatRowHeight);
             return row.transform;
-        }
-
-        private static void CreateStatCell(Transform parent, string statIcon, string caption, int baseValue,
-            int finalValue, string tooltip)
-        {
-            string finalText = finalValue != baseValue ? finalValue.ToString() : null;
-            Color finalColor = finalValue > baseValue ? StatGainColor : StatLossColor;
-            CreateStatCell(parent, statIcon, caption, baseValue.ToString(), finalText, finalColor, tooltip);
         }
 
         private static void CreateStatCell(Transform parent, string statIcon, string caption, string baseText,
@@ -321,11 +443,12 @@ namespace TFTV.TFTVBaseRework
                 SetSize(iconGO, 34f, 34f);
             }
 
+            // Fixed label and value columns, so every row in the block lines up with the others.
             Text label = CreateLabel(cell.transform, "Label", $"{caption}:", BodyFontSize, TextPrimaryColor);
-            SetSize(label.gameObject, 0f, SummaryStatRowHeight);
+            SetSize(label.gameObject, StatCaptionWidth, SummaryStatRowHeight);
 
             Text value = CreateLabel(cell.transform, "Value", baseText ?? finalText, BodyFontSize, StatValueColor);
-            SetSize(value.gameObject, 0f, SummaryStatRowHeight);
+            SetSize(value.gameObject, StatValueWidth, SummaryStatRowHeight);
 
             if (baseText != null && finalText != null)
             {
@@ -362,14 +485,17 @@ namespace TFTV.TFTVBaseRework
                 GameObject iconGO = CreateUIObject("Icon", cell.transform);
                 var image = iconGO.AddComponent<Image>();
                 image.sprite = icon;
-                image.color = AccentOrangeColor;
+                image.color = DeliriumColor;
                 image.preserveAspect = true;
                 image.raycastTarget = false;
                 SetSize(iconGO, 34f, 34f);
             }
 
-            Text label = CreateLabel(cell.transform, "Label", $"Delirium: {delirium}", BodyFontSize, AccentOrangeColor);
-            SetSize(label.gameObject, 0f, SummaryStatRowHeight);
+            Text label = CreateLabel(cell.transform, "Label", "Delirium:", BodyFontSize, DeliriumColor);
+            SetSize(label.gameObject, StatCaptionWidth, SummaryStatRowHeight);
+
+            Text value = CreateLabel(cell.transform, "Value", $"{delirium} / {willpower}", BodyFontSize, DeliriumColor);
+            SetSize(value.gameObject, StatValueWidth, SummaryStatRowHeight);
 
             AddTextTooltip(cell, $"Delirium\n\nAt {willpower} delirium - this operative's willpower - they are lost to madness.");
         }

@@ -1,4 +1,7 @@
+using Base.Core;
 using PhoenixPoint.Common.UI;
+using PhoenixPoint.Geoscape.Levels;
+using PhoenixPoint.Geoscape.View;
 using PhoenixPoint.Geoscape.View.ViewControllers.Inventory;
 using PhoenixPoint.Geoscape.View.ViewControllers.Roster;
 using PhoenixPoint.Tactical.Entities.Abilities;
@@ -41,9 +44,7 @@ namespace TFTV.TFTVBaseRework
                     return null;
                 }
 
-                GeoRosterAbilityDetailTooltip template = Resources.FindObjectsOfTypeAll<GeoRosterAbilityDetailTooltip>()
-                    .FirstOrDefault(t => t != null && t != _abilityTooltip && t.hideFlags == HideFlags.None);
-
+                GeoRosterAbilityDetailTooltip template = FindTemplate<GeoRosterAbilityDetailTooltip>(t => t != _abilityTooltip);
                 if (template == null)
                 {
                     return null;
@@ -82,9 +83,7 @@ namespace TFTV.TFTVBaseRework
                     return null;
                 }
 
-                UIGeoItemTooltip template = Resources.FindObjectsOfTypeAll<UIGeoItemTooltip>()
-                    .FirstOrDefault(t => t != null && t != _itemTooltip && t.hideFlags == HideFlags.None);
-
+                UIGeoItemTooltip template = FindTemplate<UIGeoItemTooltip>(t => t != _itemTooltip);
                 if (template == null)
                 {
                     return null;
@@ -106,6 +105,40 @@ namespace TFTV.TFTVBaseRework
                 TFTVLogger.Error(e);
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Finds a tooltip to clone, preferring one that is actually part of the live geoscape view.
+        ///
+        /// Resources.FindObjectsOfTypeAll also returns prefab assets, and a prefab's item tooltip has
+        /// no ability rows instantiated yet: the vanilla SetAbilities indexes straight into that list
+        /// and threw as soon as gear with abilities was hovered.
+        /// </summary>
+        private static T FindTemplate<T>(Func<T, bool> isNotOurs) where T : MonoBehaviour
+        {
+            GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+            GeoscapeView view = level?.View;
+
+            T template = null;
+            if (view != null)
+            {
+                template = view.GetComponentsInChildren<T>(true)
+                    .FirstOrDefault(t => t != null && isNotOurs(t) && t.hideFlags == HideFlags.None);
+            }
+
+            if (template == null)
+            {
+                template = Object.FindObjectsOfType<T>()
+                    .FirstOrDefault(t => t != null && isNotOurs(t) && t.hideFlags == HideFlags.None);
+            }
+
+            if (template == null)
+            {
+                template = Resources.FindObjectsOfTypeAll<T>()
+                    .FirstOrDefault(t => t != null && isNotOurs(t) && t.hideFlags == HideFlags.None);
+            }
+
+            return template;
         }
 
         /// <summary>
