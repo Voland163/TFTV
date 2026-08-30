@@ -785,20 +785,30 @@ namespace TFTV.TFTVBaseRework
                 UIInventorySlot slot = RecruitOverlayManagerHelpers.MakeInventorySlot(factory, item.ItemDef,
                     SummaryInventorySlotSize, "PersonnelStorage", tooltip);
 
-                if (slot != null)
+                if (slot == null)
                 {
-                    slot.transform.SetParent(row, false);
+                    continue;
                 }
 
-                if (slot != null && tooltip == null)
+                slot.transform.SetParent(row, false);
+
+                // The helper's own tooltip forwarder places the tooltip where the Haven overlay wants
+                // it, which on this screen is a corner of the dialog. Ours goes beside the slot.
+                foreach (MonoBehaviour behaviour in slot.GetComponents<MonoBehaviour>())
                 {
-                    // No game tooltip to hand: name the item at least.
-                    ViewElementDef view = item.ItemDef.ViewElementDef;
-                    string title = view?.DisplayName1?.Localize() ?? item.ItemDef.name;
-                    string description = view?.Description?.Localize();
-                    AddTextTooltip(slot.gameObject,
-                        string.IsNullOrEmpty(description) ? title : $"{title}\n\n{description}");
+                    if (behaviour != null && behaviour.GetType().Name == "TacticalItemSlotTooltipForwarder")
+                    {
+                        UnityEngine.Object.Destroy(behaviour);
+                    }
                 }
+
+                ViewElementDef view = item.ItemDef.ViewElementDef;
+                string title = view?.DisplayName1?.Localize() ?? item.ItemDef.name;
+                string description = view?.Description?.Localize();
+
+                var trigger = slot.gameObject.AddComponent<PersonnelItemTooltipTrigger>();
+                trigger.Item = item;
+                trigger.FallbackText = string.IsNullOrEmpty(description) ? title : $"{title}\n\n{description}";
             }
         }
 

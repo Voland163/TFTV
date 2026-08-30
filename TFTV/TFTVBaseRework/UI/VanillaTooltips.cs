@@ -1,3 +1,4 @@
+using PhoenixPoint.Geoscape.Entities;
 using HarmonyLib;
 using Base.Core;
 using PhoenixPoint.Common.UI;
@@ -62,6 +63,8 @@ namespace TFTV.TFTVBaseRework
                 LayoutElement element = clone.GetComponent<LayoutElement>() ?? clone.AddComponent<LayoutElement>();
                 element.ignoreLayout = true;
 
+                RaiseAboveHost(clone, canvas);
+
                 _abilityTooltip = clone.GetComponent<GeoRosterAbilityDetailTooltip>();
                 return _abilityTooltip;
             }
@@ -100,6 +103,8 @@ namespace TFTV.TFTVBaseRework
 
                 LayoutElement element = clone.GetComponent<LayoutElement>() ?? clone.AddComponent<LayoutElement>();
                 element.ignoreLayout = true;
+
+                RaiseAboveHost(clone, canvas);
 
                 _itemTooltip = clone.GetComponent<UIGeoItemTooltip>();
 
@@ -166,6 +171,26 @@ namespace TFTV.TFTVBaseRework
         }
 
         /// <summary>
+        /// Puts a freshly cloned tooltip above the screen that hosts it. These prefabs carry their
+        /// own Canvas, which sorts on its own order - left alone, the tooltip renders underneath the
+        /// dialog it belongs to and looks like it never appeared.
+        /// </summary>
+        private static void RaiseAboveHost(GameObject clone, Canvas host)
+        {
+            Canvas ownCanvas = clone.GetComponent<Canvas>();
+            if (ownCanvas == null || host == null)
+            {
+                return;
+            }
+
+            ownCanvas.overrideSorting = true;
+            if (ownCanvas.sortingOrder <= host.sortingOrder)
+            {
+                ownCanvas.sortingOrder = host.sortingOrder + 1;
+            }
+        }
+
+        /// <summary>
         /// Places a tooltip beside the element that raised it, kept inside the canvas.
         /// </summary>
         internal static void PositionNextTo(Transform tooltipTransform, Transform anchor)
@@ -177,7 +202,13 @@ namespace TFTV.TFTVBaseRework
                 return;
             }
 
-            Canvas canvas = tooltip.GetComponentInParent<Canvas>();
+            // From the parent: these tooltips have a Canvas of their own, and measuring against that
+            // means measuring the tooltip against itself - which clamped every tooltip to the same
+            // spot a few pixels off the middle of the dialog.
+            Canvas canvas = tooltip.parent != null
+                ? tooltip.parent.GetComponentInParent<Canvas>()
+                : tooltip.GetComponentInParent<Canvas>();
+
             RectTransform canvasRect = canvas?.transform as RectTransform;
             if (canvasRect == null)
             {
@@ -270,6 +301,79 @@ namespace TFTV.TFTVBaseRework
 
                 abilityData.RemoveRange(__instance.AbilitiesObjects.Count,
                     needed - __instance.AbilitiesObjects.Count);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Raises the game's item tooltip for one gear slot.
+    ///
+    /// The Haven Recruits slot helper attaches a forwarder of its own, but that one drops the tooltip
+    /// at a fixed spot chosen for its overlay - on this screen that is off in a corner of the dialog.
+    /// This trigger replaces it and places the tooltip beside the slot.
+    /// </summary>
+    internal sealed class PersonnelItemTooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+    {
+        internal GeoItem Item;
+        internal string FallbackText;
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            try
+            {
+                if (Item == null)
+                {
+                    return;
+                }
+
+                UIGeoItemTooltip tooltip = PersonnelVanillaTooltips.EnsureItemTooltip(transform);
+                if (tooltip == null)
+                {
+                    PersonnelTooltip.Show(FallbackText, transform);
+                    return;
+                }
+
+                tooltip.ShowStats(Item, transform);
+
+                if (tooltip.transform is RectTransform rect)
+                {
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
+                }
+
+                PersonnelVanillaTooltips.PositionNextTo(tooltip.transform, transform);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            Hide();
+        }
+
+        private void OnDisable()
+        {
+            Hide();
+        }
+
+        private void Hide()
+        {
+            try
+            {
+                PersonnelTooltip.Hide();
+
+                UIGeoItemTooltip tooltip = PersonnelVanillaTooltips.EnsureItemTooltip(transform);
+                if (tooltip != null)
+                {
+                    tooltip.HideStats();
+                    tooltip.gameObject.SetActive(false);
+                }
             }
             catch (Exception e)
             {
