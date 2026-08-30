@@ -32,9 +32,9 @@ namespace TFTV.TFTVBaseRework
 
             CreateSectionHeader(content, "TRAINING", GetColumnIconSprite(PersonnelAssignment.Training), TextPrimaryColor);
 
-            Text counter = CreateLabel(content, "Counter", $"{used} / {provided}", 44,
+            Text counter = CreateLabel(content, "Counter", $"{used} / {provided}", 84,
                 provided > 0 ? AccentOrangeColor : TextDisabledColor, TextAnchor.MiddleCenter);
-            SetSize(counter.gameObject, 0f, 56f);
+            SetSize(counter.gameObject, 0f, 104f);
 
             CreateScrollList(content, "TraineeList", out Transform list);
 
@@ -46,7 +46,7 @@ namespace TFTV.TFTVBaseRework
 
             if (trainees.Count == 0)
             {
-                Text empty = CreateLabel(list, "Empty", "Nobody in training.", SmallFontSize, TextDimColor,
+                Text empty = CreateLabel(list, "Empty", "Nobody in training.", BodyFontSize, TextDimColor,
                     TextAnchor.MiddleCenter);
                 SetSize(empty.gameObject, 0f, TrainingRowHeight);
             }
@@ -63,11 +63,11 @@ namespace TFTV.TFTVBaseRework
 
             bool trainingSlotFree = used < provided;
             CreateTextButton(content, "TrainButton", "TRAIN", () => ShowTrainingCandidateSelection(level, phoenix),
-                height: 64f, enabled: trainingSlotFree,
+                height: 76f, fontSize: TitleFontSize, enabled: trainingSlotFree,
                 fillColor: ButtonFillColor);
 
             CreateTextButton(content, "DeployButton", "DEPLOY", () => ShowDeployCandidateSelection(level, phoenix),
-                height: 78f, fontSize: TitleFontSize,
+                height: 92f, fontSize: 44,
                 fillColor: AccentOrangeColor, captionColor: Color.black);
         }
 
@@ -84,16 +84,16 @@ namespace TFTV.TFTVBaseRework
             layout.childControlHeight = true;
             layout.childForceExpandWidth = false;
             layout.childForceExpandHeight = false;
-            SetSize(box, 0f, 64f);
+            SetSize(box, 0f, 80f);
 
-            Text caption = CreateLabel(box.transform, "Caption", "PHOENIX SP", BodyFontSize, TextDimColor,
+            Text caption = CreateLabel(box.transform, "Caption", "PHOENIX SP", TitleFontSize, TextDimColor,
                 TextAnchor.MiddleRight);
-            LayoutElement captionElement = SetSize(caption.gameObject, 0f, 64f);
+            LayoutElement captionElement = SetSize(caption.gameObject, 0f, 80f);
             captionElement.flexibleWidth = 1f;
 
-            Text value = CreateLabel(box.transform, "Value", phoenix.Skillpoints.ToString(), 44, AccentOrangeColor,
+            Text value = CreateLabel(box.transform, "Value", phoenix.Skillpoints.ToString(), 56, AccentOrangeColor,
                 TextAnchor.MiddleLeft);
-            SetSize(value.gameObject, 110f, 64f);
+            SetSize(value.gameObject, 130f, 80f);
         }
 
         private static void CreateTraineeRow(Transform parent, PersonnelInfo person, int index, GeoLevelController level,

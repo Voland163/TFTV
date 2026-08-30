@@ -35,8 +35,11 @@ namespace TFTV.TFTVBaseRework
         /// <summary>Character id of the row whose action strip is open; 0 when none is.</summary>
         private static int _expandedCharacterId;
 
-        private const float RosterRowHeight = 54f;
-        private const float RosterActionSize = 46f;
+        private const float RosterRowHeight = 62f;
+        private const float RosterActionSize = 56f;
+
+        /// <summary>The vanilla slot's class icon is drawn for a much larger row than this one.</summary>
+        private const float ClassIconScale = 0.6f;
 
         private sealed class RosterEntry
         {
@@ -135,18 +138,6 @@ namespace TFTV.TFTVBaseRework
         private static void CreateRosterOptions(Transform parent, GeoLevelController level, GeoPhoenixFaction phoenix)
         {
             EnsureAutoAssignSettingInitialized(level);
-            EnsurePrioritizeCiviliansSettingInitialized(level);
-
-            CreateCheckbox(parent, "PrioritizeCiviliansToggle", "Prioritise civilians when assigning",
-                PrioritizeCiviliansEnabled, () =>
-                {
-                    SetPrioritizeCiviliansEnabled(level, !PrioritizeCiviliansEnabled);
-                    if (AutoAssignEnabled)
-                    {
-                        TryAutoAssignUnassignedPersonnel(phoenix, "PrioritizeCiviliansToggle");
-                    }
-                    RefreshPanel();
-                }, fontSize: SmallFontSize);
 
             CreateCheckbox(parent, "AutoAssignToggle", "Auto-assign", AutoAssignEnabled, () =>
                 {
@@ -156,7 +147,7 @@ namespace TFTV.TFTVBaseRework
                         TryAutoAssignUnassignedPersonnel(phoenix, "AutoAssignToggle");
                     }
                     RefreshPanel();
-                }, fontSize: SmallFontSize);
+                }, height: 58f, fontSize: TitleFontSize);
         }
 
         #endregion
@@ -313,6 +304,12 @@ namespace TFTV.TFTVBaseRework
                     {
                         slot.LevelLabel.gameObject.SetActive(false);
                     }
+                }
+                else if (slot.IconElement != null)
+                {
+                    // The prefab sizes its icon through its own layout, so scaling is what actually
+                    // takes effect here.
+                    slot.IconElement.transform.localScale = new Vector3(ClassIconScale, ClassIconScale, 1f);
                 }
 
                 RectTransform slotRect = slot.GetComponent<RectTransform>();

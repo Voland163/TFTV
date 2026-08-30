@@ -76,9 +76,9 @@ namespace TFTV.TFTVBaseRework
             columnElement.flexibleWidth = 1f;
 
             string boostWord = assignment == PersonnelAssignment.Research ? "research" : "manufacturing";
-            Text boost = CreateLabel(column.transform, "Boost", $"+{bonus:0.#} {boostWord} boost", TitleFontSize, accent,
+            Text boost = CreateLabel(column.transform, "Boost", $"+{bonus:0.#} {boostWord} boost", 46, accent,
                 TextAnchor.MiddleCenter);
-            SetSize(boost.gameObject, 0f, 46f);
+            SetSize(boost.gameObject, 0f, 62f);
 
             GameObject buttons = CreateUIObject("SlotButtons", column.transform);
             var buttonsLayout = buttons.AddComponent<HorizontalLayoutGroup>();
@@ -88,7 +88,7 @@ namespace TFTV.TFTVBaseRework
             buttonsLayout.childControlHeight = true;
             buttonsLayout.childForceExpandWidth = false;
             buttonsLayout.childForceExpandHeight = false;
-            SetSize(buttons, 0f, 82f);
+            SetSize(buttons, 0f, 112f);
 
             bool canRemove = occupied > 0;
             bool canAdd = occupied < provided && Assignments.Values.Any(p => p != null && p.Character != null
@@ -98,20 +98,20 @@ namespace TFTV.TFTVBaseRework
             CreateStepperButton(buttons.transform, "Remove", "-", () =>
             {
                 OnMinusClicked(assignment, level, phoenix);
-            }, enabled: canRemove);
+            }, size: 104f, enabled: canRemove);
 
             CreateStepperButton(buttons.transform, "Add", "+", () =>
             {
                 OnPlusClicked(assignment, level, phoenix);
-            }, enabled: canAdd);
+            }, size: 104f, enabled: canAdd);
 
-            Text counter = CreateLabel(column.transform, "Counter", $"{occupied} / {provided}", 56,
+            Text counter = CreateLabel(column.transform, "Counter", $"{occupied} / {provided}", 84,
                 occupied > 0 ? AccentOrangeColor : TextPrimaryColor, TextAnchor.MiddleCenter);
-            SetSize(counter.gameObject, 0f, 68f);
+            SetSize(counter.gameObject, 0f, 104f);
 
-            Text facilityLabel = CreateLabel(column.transform, "Facilities", facilityLine, SmallFontSize,
+            Text facilityLabel = CreateLabel(column.transform, "Facilities", facilityLine, BodyFontSize,
                 facilities > 0 ? TextDimColor : TextDisabledColor, TextAnchor.MiddleCenter);
-            SetSize(facilityLabel.gameObject, 0f, 32f);
+            SetSize(facilityLabel.gameObject, 0f, 40f);
         }
 
         private static void CreateWorkerList(Transform parent, PersonnelAssignment assignment, GeoLevelController level,

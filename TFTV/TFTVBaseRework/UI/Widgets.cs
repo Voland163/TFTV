@@ -63,7 +63,10 @@ namespace TFTV.TFTVBaseRework
             label.color = color;
             label.alignment = alignment;
             label.horizontalOverflow = wrap ? HorizontalWrapMode.Wrap : HorizontalWrapMode.Overflow;
-            label.verticalOverflow = VerticalWrapMode.Truncate;
+            // Truncating drops a whole line once its line height passes the rect height - at 56pt in
+            // a 68px box the slot counters simply disappeared - and every label here is sized by its
+            // own layout element anyway, so overflow is the safe setting.
+            label.verticalOverflow = VerticalWrapMode.Overflow;
             label.raycastTarget = false;
             return label;
         }
