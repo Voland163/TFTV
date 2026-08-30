@@ -259,6 +259,13 @@ namespace TFTV.TFTVBaseRework
     [HarmonyPatch(typeof(UIInventoryTooltipItemPanel), nameof(UIInventoryTooltipItemPanel.SetAbilities))]
     internal static class UIInventoryTooltipItemPanel_SetAbilities_Capacity
     {
+        private static bool IsPersonnelTooltip(UIInventoryTooltipItemPanel panel)
+        {
+            Transform root = panel.transform.root;
+            return panel.GetComponentInParent<UIGeoItemTooltip>()?.gameObject.name == "TFTV_PersonnelItemTooltip"
+                || (root != null && root.name == "TFTV_PersonnelItemTooltip");
+        }
+
         private static void Prefix(UIInventoryTooltipItemPanel __instance, List<ItemAbilityTooltipData> abilityData)
         {
             try
@@ -285,13 +292,33 @@ namespace TFTV.TFTVBaseRework
                     ?? Resources.FindObjectsOfTypeAll<UIInventoryTooltipItemAbility>()
                         .FirstOrDefault(row => row != null && row.hideFlags == HideFlags.None);
 
+                // Ability rows are re-ordered into the stat list as they are filled, so on our own
+                // copy they are moved there up front: left where the prefab parks them they are drawn
+                // outside the tooltip's background, beside it.
+                if (IsPersonnelTooltip(__instance) && __instance.StatEntries != null)
+                {
+                    foreach (UIInventoryTooltipItemAbility row in __instance.AbilitiesObjects)
+                    {
+                        if (row != null && row.transform.parent != __instance.StatEntries)
+                        {
+                            row.transform.SetParent(__instance.StatEntries, false);
+                        }
+                    }
+
+                    if (__instance.AbilitiesHeader != null
+                        && __instance.AbilitiesHeader.transform.parent != __instance.StatEntries)
+                    {
+                        __instance.AbilitiesHeader.transform.SetParent(__instance.StatEntries, false);
+                    }
+                }
+
                 if (source != null)
                 {
-                    // Rows have to join the container the existing ones live in, or they are drawn
+                    // Rows have to join the container the stat rows live in, or they are drawn
                     // outside the tooltip's own background.
-                    Transform rowParent = __instance.AbilitiesObjects.FirstOrDefault(row => row != null)?.transform.parent
+                    Transform rowParent = __instance.StatEntries
+                        ?? __instance.AbilitiesObjects.FirstOrDefault(row => row != null)?.transform.parent
                         ?? __instance.AbilitiesHeader?.transform.parent
-                        ?? __instance.StatEntries
                         ?? __instance.transform;
 
                     while (__instance.AbilitiesObjects.Count < needed)
@@ -486,20 +513,33 @@ namespace TFTV.TFTVBaseRework
                 return;
             }
 
-            if (!string.IsNullOrEmpty(title.text) && title.text.IndexOf("NEEDS TEXT", StringComparison.OrdinalIgnoreCase) < 0)
-            {
-                return;
-            }
-
             ViewElementDef view = View ?? Ability.ViewElementDef;
-            string name = view?.DisplayName1?.Localize();
 
-            if (string.IsNullOrEmpty(name) || name.IndexOf("NEEDS TEXT", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (IsPlaceholder(title.text))
             {
-                name = string.IsNullOrEmpty(view?.Name) ? Ability.name : view.Name;
+                string name = view?.DisplayName1?.Localize();
+                if (IsPlaceholder(name))
+                {
+                    name = string.IsNullOrEmpty(view?.Name) ? Ability.name : view.Name;
+                }
+
+                title.text = name;
             }
 
-            title.text = name;
+            Text description = tooltip.AbilityDescription;
+            if (description != null && IsPlaceholder(description.text))
+            {
+                // Show puts the interpolated description in, which comes back as the placeholder for
+                // some abilities even where the plain localisation is fine.
+                string text = view?.Description?.Localize();
+                description.text = IsPlaceholder(text) ? string.Empty : text;
+            }
+        }
+
+        private static bool IsPlaceholder(string text)
+        {
+            return string.IsNullOrEmpty(text)
+                || text.IndexOf("NEEDS TEXT", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         private void Hide()

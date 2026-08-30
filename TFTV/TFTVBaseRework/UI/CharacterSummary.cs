@@ -613,7 +613,10 @@ namespace TFTV.TFTVBaseRework
             layout.childControlHeight = true;
             layout.childForceExpandWidth = false;
             layout.childForceExpandHeight = false;
+            // Zero preferred width, so the two cells split the row evenly: a left cell carrying a
+            // bracketed figure is wider than one without, and pushed the right column along.
             LayoutElement cellElement = SetSize(cell, 0f, SummaryStatRowHeight);
+            cellElement.preferredWidth = 0f;
             cellElement.flexibleWidth = 1f;
 
             if (string.IsNullOrEmpty(caption))
@@ -666,6 +669,7 @@ namespace TFTV.TFTVBaseRework
             layout.childForceExpandWidth = false;
             layout.childForceExpandHeight = false;
             LayoutElement cellElement = SetSize(cell, 0f, SummaryStatRowHeight);
+            cellElement.preferredWidth = 0f;
             cellElement.flexibleWidth = 1f;
 
             Sprite icon = DefCache.GetDef<ViewElementDef>("E_Visuals [Corruption_StatusDef]")?.SmallIcon;
@@ -751,6 +755,7 @@ namespace TFTV.TFTVBaseRework
             List<TacticalAbilityDef> other = learned
                 .Where(ability => ability != null && !accounted.Contains(ability))
                 .Where(ability => ability.ViewElementDef?.SmallIcon != null)
+                .Where(ability => !IsBookkeepingMarker(ability))
                 .ToList();
 
             if (mainClass.Count == 0 && secondClass.Count == 0 && personal.Count == 0 && other.Count == 0)
@@ -766,6 +771,16 @@ namespace TFTV.TFTVBaseRework
             CreateAbilityRow(parent, "SecondClassAbilities", secondClass.Select(slot => slot.Ability), learned);
             CreateAbilityRow(parent, "PersonalAbilities", personal.Select(slot => slot.Ability), learned);
             CreateAbilityRow(parent, "OtherAbilities", other, learned);
+        }
+
+        /// <summary>
+        /// Markers this rework hangs on characters to track their state - dismissed, hidden from the
+        /// operative lists - rather than anything the player earned or should see.
+        /// </summary>
+        private static bool IsBookkeepingMarker(TacticalAbilityDef ability)
+        {
+            string name = ability?.name;
+            return name == "DismissedOperative_AbilityDef" || name == "HiddenFromOperatives_AbilityDef";
         }
 
         private static List<AbilityTrackSlot> SlotsOf(AbilityTrackSlot[] trackSlots, HashSet<TacticalAbilityDef> accounted)
@@ -834,7 +849,14 @@ namespace TFTV.TFTVBaseRework
         private static void CreateSummaryStorage(Transform parent, GeoCharacter character,
             IEnumerable<GeoItem> itemsGoingToStorage)
         {
-            var items = new HashSet<GeoItem>(itemsGoingToStorage ?? Enumerable.Empty<GeoItem>());
+            if (itemsGoingToStorage == null)
+            {
+                // Nothing is being handed back - training, for one - so the section has no business
+                // on the dossier at all.
+                return;
+            }
+
+            var items = new HashSet<GeoItem>(itemsGoingToStorage);
             if (items.Count == 0)
             {
                 CreateSummaryTextRow(parent, "RETURNED TO STORAGE", "nothing");
