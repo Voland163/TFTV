@@ -353,6 +353,7 @@ namespace TFTV.TFTVBaseRework
 
         private const string AbilityLineName = "TFTV_AbilityLine";
         private const float AbilityLineIconSize = 44f;
+        private const float AbilityLineFallbackWidth = 380f;
 
         private static readonly Color AbilityNameColor = new Color32(0xC1, 0x7F, 0xE8, 0xFF);
 
@@ -376,9 +377,17 @@ namespace TFTV.TFTVBaseRework
                 // operative is carrying and using.
                 tooltip.ShowStats(Item, transform, isProficient: true);
 
+                var rect = tooltip.transform as RectTransform;
+                if (rect != null)
+                {
+                    // Lay the stats out first: the ability lines are sized against the container they
+                    // go into, and its width is not known until then.
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
+                }
+
                 AppendAbilityLines(tooltip, Item);
 
-                if (tooltip.transform is RectTransform rect)
+                if (rect != null)
                 {
                     LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
                 }
@@ -479,6 +488,12 @@ namespace TFTV.TFTVBaseRework
         {
             ViewElementDef view = ability.ViewElementDef;
 
+            float width = (parent as RectTransform)?.rect.width ?? 0f;
+            if (width < 1f)
+            {
+                width = AbilityLineFallbackWidth;
+            }
+
             var line = new GameObject(AbilityLineName, typeof(RectTransform));
             line.transform.SetParent(parent, false);
             line.transform.SetAsLastSibling();
@@ -494,6 +509,11 @@ namespace TFTV.TFTVBaseRework
 
             var lineElement = line.AddComponent<LayoutElement>();
             lineElement.flexibleHeight = 0f;
+            lineElement.minWidth = width;
+            lineElement.preferredWidth = width;
+
+            var lineRect = line.GetComponent<RectTransform>();
+            lineRect.sizeDelta = new Vector2(width, 0f);
 
             if (view.SmallIcon != null)
             {
@@ -528,6 +548,13 @@ namespace TFTV.TFTVBaseRework
 
             CreateAbilityLineText(textColumn.transform, "Name", view.DisplayName1?.Localize(), AbilityNameColor, 26);
             CreateAbilityLineText(textColumn.transform, "Description", view.Description?.Localize(), Color.white, 22);
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(lineRect);
+            float height = Mathf.Max(AbilityLineIconSize, LayoutUtility.GetPreferredHeight(lineRect));
+
+            lineRect.sizeDelta = new Vector2(width, height);
+            lineElement.minHeight = height;
+            lineElement.preferredHeight = height;
         }
 
         private static void CreateAbilityLineText(Transform parent, string name, string content, Color color, int fontSize)
