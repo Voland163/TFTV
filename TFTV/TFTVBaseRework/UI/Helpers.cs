@@ -25,97 +25,36 @@ namespace TFTV.TFTVBaseRework
                    ?? $"Personnel {person?.Id}";
         }
 
+        /// <summary>Interior of the modal's framed panel; header, options and buttons hang off this.</summary>
+        private static Transform _modalPanelContent;
+
+        private const float ModalRowHeight = 68f;
+        private const int ModalMessageFontSize = 34;
+        private const int ModalOptionFontSize = 30;
+
         private static void AddSimpleButton(Transform parent, string caption, Action onClick)
         {
-            var go = new GameObject($"Btn_{caption}", typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            var img = go.AddComponent<Image>();
-            img.color = new Color(0.35f, 0.35f, 0.55f, 0.9f);
-            var btn = go.AddComponent<Button>();
-            btn.onClick.AddListener(() => onClick?.Invoke());
-            var le = go.AddComponent<LayoutElement>();
-
-            var txtGO = new GameObject("Text", typeof(RectTransform));
-            txtGO.transform.SetParent(go.transform, false);
-            var txt = txtGO.AddComponent<Text>();
-            txt.font = PuristaSemibold;
-            txt.text = caption;
-            txt.fontSize = 30;
-            txt.color = Color.white;
-            txt.alignment = TextAnchor.MiddleCenter;
-            txt.horizontalOverflow = HorizontalWrapMode.Overflow;
-            txt.verticalOverflow = VerticalWrapMode.Truncate;
-            txt.resizeTextForBestFit = true;
-            txt.resizeTextMinSize = 18;
-            txt.resizeTextMaxSize = 36;
-
-            Canvas.ForceUpdateCanvases();
-            float padX = 48f, padY = 24f;
-            float w = Mathf.CeilToInt(txt.preferredWidth + padX);
-            float h = Mathf.CeilToInt(Mathf.Max(48f, txt.preferredHeight + padY));
-            le.minWidth = w;
-            le.preferredWidth = w;
-            le.minHeight = h;
-            le.preferredHeight = h;
+            CreateTextButton(parent, $"Btn_{caption}", caption, onClick,
+                width: 260f, height: ModalRowHeight, fontSize: ModalOptionFontSize);
         }
 
+        /// <summary>
+        /// One selectable row in a modal. Captions carrying their own line breaks - the training
+        /// levels list, for one - get the extra height they need.
+        /// </summary>
         private static void AddModalOptionButton(Transform parent, string caption, Action onClick)
         {
-            var go = new GameObject($"Option_{caption}", typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            var img = go.AddComponent<Image>();
-            img.color = new Color(0.25f, 0.25f, 0.45f, 0.9f);
-            var btn = go.AddComponent<Button>();
-            btn.onClick.AddListener(() => onClick?.Invoke());
-            var le = go.AddComponent<LayoutElement>();
+            int extraLines = caption?.Split('\n').Length - 1 ?? 0;
+            float height = ModalRowHeight + extraLines * 34f;
 
-            var txtGO = new GameObject("Text", typeof(RectTransform));
-            txtGO.transform.SetParent(go.transform, false);
-            var txt = txtGO.AddComponent<Text>();
-            txt.font = PuristaSemibold;
-            txt.text = caption;
-            txt.fontSize = 28;
-            txt.color = Color.white;
-            txt.alignment = TextAnchor.MiddleCenter;
-            txt.horizontalOverflow = HorizontalWrapMode.Overflow;
-            txt.verticalOverflow = VerticalWrapMode.Truncate;
-            txt.resizeTextForBestFit = true;
-            txt.resizeTextMinSize = 18;
-            txt.resizeTextMaxSize = 36;
-
-            Canvas.ForceUpdateCanvases();
-            float padX = 48f, padY = 24f;
-            float w = Mathf.CeilToInt(txt.preferredWidth + padX);
-            float h = Mathf.CeilToInt(Mathf.Max(48f, txt.preferredHeight + padY));
-            le.minWidth = w;
-            le.preferredWidth = w;
-            le.minHeight = h;
-            le.preferredHeight = h;
+            CreateTextButton(parent, $"Option_{caption}", caption, onClick,
+                height: height, fontSize: ModalOptionFontSize);
         }
 
         private static void AddDisabledLabel(Transform parent, string caption)
         {
-            var go = new GameObject($"Disabled_{caption}", typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            var img = go.AddComponent<Image>();
-            img.color = new Color(0.20f, 0.20f, 0.25f, 0.6f);
-            var le = go.AddComponent<LayoutElement>();
-            le.minHeight = 48;
-            le.preferredHeight = 48;
-
-            var txtGO = new GameObject("Text", typeof(RectTransform));
-            txtGO.transform.SetParent(go.transform, false);
-            var txt = txtGO.AddComponent<Text>();
-            txt.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            txt.text = caption;
-            txt.fontSize = 24;
-            txt.color = new Color(0.5f, 0.5f, 0.5f, 0.8f);
-            txt.alignment = TextAnchor.MiddleCenter;
-            var txtRect = txtGO.GetComponent<RectTransform>();
-            txtRect.anchorMin = Vector2.zero;
-            txtRect.anchorMax = Vector2.one;
-            txtRect.offsetMin = Vector2.zero;
-            txtRect.offsetMax = Vector2.zero;
+            CreateTextButton(parent, $"Disabled_{caption}", caption, null,
+                height: ModalRowHeight, fontSize: ModalOptionFontSize, enabled: false);
         }
 
         private static void CloseModal()
@@ -124,63 +63,85 @@ namespace TFTV.TFTVBaseRework
             {
                 UnityEngine.Object.Destroy(_modalRoot);
                 _modalRoot = null;
+                _modalPanelContent = null;
             }
         }
 
+        /// <summary>
+        /// A dimmed backdrop over the whole screen with one framed panel centred on it, built from
+        /// the same widgets as the panels behind it so the two read as one screen.
+        /// </summary>
         private static GameObject CreateModalRoot(string name)
         {
             if (_personnelPanel == null) return null;
+
             var modal = new GameObject(name, typeof(RectTransform));
             modal.transform.SetParent(_personnelPanel.transform, false);
+
             var canvas = modal.AddComponent<Canvas>();
             canvas.overrideSorting = true;
             canvas.sortingOrder = 100;
             modal.AddComponent<GraphicRaycaster>();
-            modal.AddComponent<Image>().color = new Color(0, 0, 0, 0.65f);
-            var rect = modal.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0.15f, 0.15f);
-            rect.anchorMax = new Vector2(0.85f, 0.85f);
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
+            modal.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.78f);
 
-            var layout = modal.AddComponent<VerticalLayoutGroup>();
-            layout.padding = new RectOffset(20, 20, 20, 20);
-            layout.spacing = 20;
-            layout.childAlignment = TextAnchor.UpperCenter;
+            // The personnel panel arranges its children in a row. Without this the dialog is treated
+            // as a fourth column and lands off the right edge of the screen, which is exactly where
+            // it went. Ignoring the layout lets the anchors below cover the panel instead.
+            modal.AddComponent<LayoutElement>().ignoreLayout = true;
+            Stretch(modal.GetComponent<RectTransform>());
 
+            GameObject frame = CreateFramedPanel(modal.transform, "ModalFrame", out Transform content,
+                borderThickness: 3f, padding: 14, spacing: 8f);
+
+            RectTransform frameRect = frame.GetComponent<RectTransform>();
+            frameRect.anchorMin = new Vector2(0.24f, 0.06f);
+            frameRect.anchorMax = new Vector2(0.76f, 0.94f);
+            frameRect.offsetMin = Vector2.zero;
+            frameRect.offsetMax = Vector2.zero;
+
+            _modalPanelContent = content;
             return modal;
         }
 
         private static void AddModalHeader(string title)
         {
-            if (_modalRoot == null) return;
-            var header = new GameObject("Header", typeof(RectTransform));
-            header.transform.SetParent(_modalRoot.transform, false);
-            var txt = header.AddComponent<Text>();
-            txt.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            txt.text = title;
-            txt.fontSize = 42;
-            txt.color = Color.yellow;
-            txt.alignment = TextAnchor.MiddleCenter;
-            header.AddComponent<LayoutElement>().minHeight = 70;
+            if (_modalPanelContent == null) return;
+
+            Text header = CreateLabel(_modalPanelContent, "Header", title, 44, AccentOrangeColor, TextAnchor.MiddleCenter);
+            SetSize(header.gameObject, 0f, 72f);
+
+            GameObject rule = CreateUIObject("Rule", _modalPanelContent);
+            rule.AddComponent<Image>().color = PanelBorderColor;
+            SetSize(rule, 0f, 2f);
         }
 
+        /// <summary>
+        /// Options go in a scroll list: the deploy picker can list the whole roster, which used to
+        /// run off the bottom of the dialog.
+        /// </summary>
         private static Transform CreateModalContentArea()
         {
-            var content = new GameObject("ContentArea", typeof(RectTransform));
-            content.transform.SetParent(_modalRoot.transform, false);
-            var layout = content.AddComponent<VerticalLayoutGroup>();
-            layout.spacing = 15;
-            layout.childAlignment = TextAnchor.UpperCenter;
-            layout.childForceExpandWidth = true;
-            content.AddComponent<LayoutElement>().flexibleHeight = 1;
-            return content.transform;
+            CreateScrollList(_modalPanelContent, "ModalOptions", out Transform content, spacing: 6f, padding: 6);
+            return content;
         }
 
         private static void AddModalCloseButton()
         {
-            if (_modalRoot == null) return;
-            AddSimpleButton(_modalRoot.transform, "Close", () => CloseModal());
+            if (_modalPanelContent == null) return;
+            CreateTextButton(_modalPanelContent, "Close", "CLOSE", () => CloseModal(),
+                height: ModalRowHeight, fontSize: BodyFontSize);
+        }
+
+        /// <summary>
+        /// Wrapped body text for the message and confirmation dialogs. Its height comes from the text
+        /// itself, so a five-line dismissal warning is as readable as a one-line notice.
+        /// </summary>
+        private static void AddModalMessage(Transform parent, string message)
+        {
+            Text label = CreateLabel(parent, "Message", message, ModalMessageFontSize, TextPrimaryColor,
+                TextAnchor.UpperCenter, wrap: true);
+            LayoutElement element = label.gameObject.AddComponent<LayoutElement>();
+            element.flexibleHeight = 0f;
         }
         #endregion
 
@@ -376,15 +337,7 @@ namespace TFTV.TFTVBaseRework
             AddModalHeader("Notice");
             var content = CreateModalContentArea();
 
-            var msgGO = new GameObject("Message", typeof(RectTransform));
-            msgGO.transform.SetParent(content, false);
-            var txt = msgGO.AddComponent<Text>();
-            txt.font = PuristaSemibold;
-            txt.text = message;
-            txt.fontSize = 28;
-            txt.color = Color.white;
-            txt.alignment = TextAnchor.MiddleCenter;
-            msgGO.AddComponent<LayoutElement>().minHeight = 120;
+            AddModalMessage(content, message);
 
             AddModalCloseButton();
         }
@@ -488,7 +441,14 @@ namespace TFTV.TFTVBaseRework
                         confirmMsg += "\n\nThis operative is dismissed. Completing training will clear the dismissed status.";
                     }
 
-                    ShowConfirmation(confirmMsg, () =>
+                    // The dossier is shown with the stats training would leave them with, so the
+                    // gain can be read against what they have now rather than in the abstract.
+                    ProjectedStats projected = BuildProjectedStats(person.Character, levelsGained);
+
+                    ShowConfirmation(confirmMsg,
+                        details => CreateCharacterSummary(details, person.Character, null, projected,
+                            showClassAndAbilities: isDismissed),
+                        () =>
                     {
                         if (TrainingFacilityRework.QueueCharacterTrainingAutoFacility(level, person.Character, spec, capturedLevel))
                         {
@@ -508,29 +468,41 @@ namespace TFTV.TFTVBaseRework
 
         private static void ShowConfirmation(string message, Action onConfirm, Action onCancel)
         {
+            ShowConfirmation(message, null, onConfirm, onCancel);
+        }
+
+        /// <summary>
+        /// <paramref name="buildDetails"/> fills the scrolling area under the message - the character
+        /// dossier on a dismissal, for one - so the decision can be taken on what is actually at stake.
+        /// </summary>
+        private static void ShowConfirmation(string message, Action<Transform> buildDetails, Action onConfirm, Action onCancel)
+        {
             CloseModal();
             _modalRoot = CreateModalRoot("ConfirmationModal");
             AddModalHeader("Confirm");
             var content = CreateModalContentArea();
 
-            var msgGO = new GameObject("Message", typeof(RectTransform));
-            msgGO.transform.SetParent(content, false);
-            var txt = msgGO.AddComponent<Text>();
-            txt.font = PuristaSemibold;
-            txt.text = message;
-            txt.fontSize = 28;
-            txt.color = Color.white;
-            txt.alignment = TextAnchor.MiddleCenter;
-            msgGO.AddComponent<LayoutElement>().minHeight = 120;
+            AddModalMessage(content, message);
+            buildDetails?.Invoke(content);
 
-            var buttonsRow = new GameObject("ButtonsRow", typeof(RectTransform));
-            buttonsRow.transform.SetParent(content, false);
-            var h = buttonsRow.AddComponent<HorizontalLayoutGroup>();
-            h.spacing = 30;
-            h.childAlignment = TextAnchor.MiddleCenter;
+            // The answer buttons sit under the scrolling body, where they cannot be scrolled away
+            // from a long warning.
+            GameObject buttonsRow = CreateUIObject("ButtonsRow", _modalPanelContent);
+            var layout = buttonsRow.AddComponent<HorizontalLayoutGroup>();
+            layout.spacing = 20f;
+            layout.childAlignment = TextAnchor.MiddleCenter;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = false;
+            layout.childForceExpandHeight = false;
+            SetSize(buttonsRow, 0f, ModalRowHeight + 8f);
 
-            AddSimpleButton(buttonsRow.transform, "Yes", () => { onConfirm?.Invoke(); });
-            AddSimpleButton(buttonsRow.transform, "No", () => { onCancel?.Invoke(); });
+            CreateTextButton(buttonsRow.transform, "Yes", "YES", () => onConfirm?.Invoke(),
+                width: 260f, height: ModalRowHeight, fontSize: BodyFontSize,
+                fillColor: AccentOrangeColor, captionColor: Color.black);
+
+            CreateTextButton(buttonsRow.transform, "No", "NO", () => onCancel?.Invoke(),
+                width: 260f, height: ModalRowHeight, fontSize: ModalOptionFontSize);
         }
 
         private static void ShowClassSelectionForImmediateDeploy(GeoLevelController level, PersonnelInfo person, GeoPhoenixBase baseObj, List<SpecializationDef> specs, Action refresh)

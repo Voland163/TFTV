@@ -134,6 +134,18 @@ namespace TFTV.TFTVBaseRework
         /// <summary>
         /// Returns the stat gains description string for a given level count (for UI display).
         /// </summary>
+        /// <summary>
+        /// The stat gains a given number of levels buys, for screens that show what training would
+        /// leave a character with rather than describing the gain in words.
+        /// </summary>
+        public static void GetStatGains(int levelsGained, out int strength, out int willpower, out int speed)
+        {
+            int levels = Math.Max(0, levelsGained);
+            strength = levels * EndurancePerLevel;
+            willpower = levels * WillpowerPerLevel;
+            speed = levels * SpeedPerLevel;
+        }
+
         public static string GetStatGainDescription(int levelsGained)
         {
             if (levelsGained <= 0) return "No stat gains";

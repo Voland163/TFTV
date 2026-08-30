@@ -4,6 +4,7 @@ using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace TFTV.TFTVBaseRework
@@ -105,8 +106,8 @@ namespace TFTV.TFTVBaseRework
                     return false;
                 }
 
-                //  TFTVUI.Personnel.Loadouts.UnequipButtonClicked(); 
-                UnloadLoadout(character);
+                //  TFTVUI.Personnel.Loadouts.UnequipButtonClicked();
+                TryReturnLoadoutToStorage(faction, character);
                 MoveDismissedOperativeToSiteIfNeeded(faction, character);
                 PersonnelRestrictions.MarkDismissedOperative(character);
                 PersonnelRestrictions.MarkHiddenFromOperatives(character);
@@ -123,34 +124,99 @@ namespace TFTV.TFTVBaseRework
         }
 
 
-        private static void UnloadLoadout(GeoCharacter character)
+        /// <summary>
+        /// Returns the operative's gear to storage through the data model rather than through the
+        /// soldier equip screen's inventory lists.
+        ///
+        /// Those lists are only filled while that screen is showing a character; dismissing from
+        /// anywhere else - the personnel screen, for one - left UIInventoryList.UnfilteredItems null
+        /// and RemoveItem threw on it. The throw was swallowed one level up, the conversion reported
+        /// failure, and the dismissal patch then let vanilla KillCharacter run: the operative was
+        /// deleted instead of becoming personnel.
+        ///
+        /// Failing to hand the gear back is never worth losing the person over, so this reports
+        /// trouble and lets the conversion carry on.
+        /// </summary>
+        private static void TryReturnLoadoutToStorage(GeoPhoenixFaction faction, GeoCharacter character)
         {
-            UIModuleSoldierEquip uIModuleSoldierEquip = character.Faction.GeoLevel.View.GeoscapeModules.SoldierEquipModule;
+            try
+            {
+                if (faction == null || character == null)
+                {
+                    return;
+                }
 
-            foreach (GeoItem geoItem in from i in character.ArmourItems
-                                        where !i.ItemDef.IsPermanentAugment
-                                        select i)
-            {
-                if (uIModuleSoldierEquip.ArmorList.RemoveItem(geoItem, null))
+                List<GeoItem> keptArmour = character.ArmourItems
+                    .Where(item => item.ItemDef.IsPermanentAugment)
+                    .ToList();
+
+                List<GeoItem> returned = GetLoadoutReturnedToStorage(character);
+
+                if (returned.Count == 0)
                 {
-                    uIModuleSoldierEquip.StorageList.AddItem(geoItem, null, null);
+                    return;
                 }
+
+                ItemStorage storage = ResolveStorageFor(faction, character);
+                if (storage == null)
+                {
+                    TFTVLogger.Always($"{LogPrefix} No item storage found for {character.DisplayName}; leaving their loadout on them.");
+                    return;
+                }
+
+                character.SetItems(keptArmour, Enumerable.Empty<GeoItem>(), Enumerable.Empty<GeoItem>());
+
+                foreach (GeoItem item in returned)
+                {
+                    storage.AddItem(item);
+                }
+
+                TFTVLogger.Always($"{LogPrefix} Returned {returned.Count} items from {character.DisplayName} to storage.");
             }
-            foreach (GeoItem geoItem2 in character.EquipmentItems)
+            catch (Exception e)
             {
-                if (uIModuleSoldierEquip.ReadyList.RemoveItem(geoItem2, null))
-                {
-                    uIModuleSoldierEquip.StorageList.AddItem(geoItem2, null, null);
-                }
+                TFTVLogger.Always($"{LogPrefix} Could not return the loadout of {character?.DisplayName} to storage; dismissal continues.");
+                TFTVLogger.Error(e);
             }
-            foreach (GeoItem geoItem3 in character.InventoryItems)
+        }
+
+        /// <summary>
+        /// Everything a dismissal would take off the character and hand back to storage: their gear,
+        /// their inventory, and all armour except permanent augments. The dismissal prompt lists this
+        /// so the player can see what they are giving back before they agree to it.
+        /// </summary>
+        internal static List<GeoItem> GetLoadoutReturnedToStorage(GeoCharacter character)
+        {
+            if (character == null)
             {
-                if (uIModuleSoldierEquip.InventoryList.RemoveItem(geoItem3, null))
-                {
-                    uIModuleSoldierEquip.StorageList.AddItem(geoItem3, null, null);
-                }
+                return new List<GeoItem>();
             }
 
+            return character.ArmourItems
+                .Where(item => item?.ItemDef != null && !item.ItemDef.IsPermanentAugment)
+                .Concat(character.EquipmentItems)
+                .Concat(character.InventoryItems)
+                .Where(item => item?.ItemDef != null)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Phoenix keeps one shared storage, but a faction that does not gets the storage of the site
+        /// the character is standing in.
+        /// </summary>
+        private static ItemStorage ResolveStorageFor(GeoPhoenixFaction faction, GeoCharacter character)
+        {
+            GeoSite site = faction.Bases?
+                .FirstOrDefault(phoenixBase => phoenixBase?.Site != null
+                    && phoenixBase.Site.GetAllCharacters().Any(c => c == character))?.Site;
+
+            if (site == null)
+            {
+                site = faction.Vehicles?
+                    .FirstOrDefault(vehicle => vehicle?.Units != null && vehicle.Units.Contains(character))?.CurrentSite;
+            }
+
+            return site != null ? faction.GetItemStorage(site) : faction.ItemStorage;
         }
 
 
@@ -178,7 +244,15 @@ namespace TFTV.TFTVBaseRework
                     }
 
                     bool converted = ConvertDismissedOperativeToCivilian(__instance, unit);
-                    return !converted;
+
+                    if (!converted)
+                    {
+                        // Letting vanilla run here would delete an operative the player only meant to
+                        // take off field duty. Leaving them where they are is the recoverable failure.
+                        TFTVLogger.Always($"{LogPrefix} Conversion of {unit?.DisplayName} failed; blocking the vanilla dismissal so the operative is not lost.");
+                    }
+
+                    return false;
                 }
                 catch (Exception e)
                 {

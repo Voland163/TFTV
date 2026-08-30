@@ -225,8 +225,27 @@ namespace TFTV.TFTVBaseRework
             public static FacilitySlotPools RecalculateSlots(GeoPhoenixFaction faction)
             {
                 FacilitySlotPools pools = GetOrCreatePools(faction);
-                int researchProviders = 0;
-                int manufacturingProviders = 0;
+                CountFacilityProviders(faction, out int researchProviders, out int manufacturingProviders);
+
+                pools.Research.SetProvidedSlots(researchProviders * SlotsPerFacility);
+                pools.Manufacturing.SetProvidedSlots(manufacturingProviders * SlotsPerFacility);
+                return pools;
+            }
+
+            /// <summary>
+            /// Counts the working facilities that provide research and manufacturing slots. The slot
+            /// pools are derived from these figures, and the personnel screen names them directly
+            /// ("Research Labs built: 3").
+            /// </summary>
+            public static void CountFacilityProviders(GeoPhoenixFaction faction, out int researchProviders, out int manufacturingProviders)
+            {
+                researchProviders = 0;
+                manufacturingProviders = 0;
+
+                if (faction?.Bases == null)
+                {
+                    return;
+                }
 
                 foreach (GeoPhoenixBase geoBase in faction.Bases)
                 {
@@ -284,10 +303,6 @@ namespace TFTV.TFTVBaseRework
                         }
                     }
                 }
-
-                pools.Research.SetProvidedSlots(researchProviders * SlotsPerFacility);
-                pools.Manufacturing.SetProvidedSlots(manufacturingProviders * SlotsPerFacility);
-                return pools;
             }
 
             public static bool IncrementUsedSlot(GeoPhoenixFaction faction, FacilitySlotType type)

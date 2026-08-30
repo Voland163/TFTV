@@ -178,8 +178,14 @@
     <Compile Include="TFTVBaseRework\UI\AffinityBadgeTooltip.cs" />
     <Compile Include="TFTVBaseRework\UI\Harmony.cs" />
     <Compile Include="TFTVBaseRework\UI\Helpers.cs" />
-    <Compile Include="TFTVBaseRework\UI\MonoBehaviours.cs" />
+    <Compile Include="TFTVBaseRework\UI\CharacterSummary.cs" />
     <Compile Include="TFTVBaseRework\UI\Panel.cs" />
+    <Compile Include="TFTVBaseRework\UI\Tooltip.cs" />
+    <Compile Include="TFTVBaseRework\UI\VanillaTooltips.cs" />
+    <Compile Include="TFTVBaseRework\UI\RosterList.cs" />
+    <Compile Include="TFTVBaseRework\UI\TrainingPanel.cs" />
+    <Compile Include="TFTVBaseRework\UI\Widgets.cs" />
+    <Compile Include="TFTVBaseRework\UI\WorkPanel.cs" />
     <Compile Include="TFTVBaseRework\Workers.cs" />
     <Compile Include="TFTVCustomPortraits.cs" />
     <Compile Include="TFTVDrills\CanvasGroupExtensions.cs" />
