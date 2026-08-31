@@ -162,6 +162,10 @@ namespace TFTV
                // HarmonyPatchValidator.ValidatePatchTargets();
              //   Harmony.DEBUG = true;
                 harmony.PatchAll();
+
+                // After PatchAll, and after every def change above: this reads and rewrites the
+                // achievement checklists through its own patches, so they have to be live first.
+                TFTVAchievements.ReconcileWithModdedDefs();
                // TFTVAudio.ExternalAudioInjector.EnsureHooksOnExistingManagers();
                 TFTVVanillaFixes.Tactical.UICharacterSelectedVanillaFixes.PatchInternalClassUIStateCharacterSelecter(harmony);
 
@@ -360,6 +364,13 @@ namespace TFTV
         {
             // TFTVLogger.Always($"level is {level.name}");
 
+            // A second chance at recovering capture progress from the campaign's statistics, for
+            // any load path that reaches the geoscape without going through SetStatistics. Adds
+            // only, and only what the checklist already asks for, so running twice costs nothing.
+            if (level != null && level.GetComponent<PhoenixPoint.Geoscape.Levels.GeoLevelController>() != null)
+            {
+                TFTVAchievements.SeedCaptureProgressFromCampaignStats();
+            }
         }
 
         /// <summary>
