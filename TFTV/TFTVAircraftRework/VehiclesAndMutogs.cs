@@ -151,6 +151,7 @@ namespace TFTV
             [HarmonyPatch("CurrentOccupiedSpace", MethodType.Getter)]
             public static class GeoVehicle_CurrentOccupiedSpace_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 public static void Postfix(GeoVehicle __instance, ref int __result)
                 {
                     try
@@ -169,6 +170,7 @@ namespace TFTV
             [HarmonyPatch(typeof(GeoVehicle), "get_UsedCharacterSpace")]
             public static class GeoVehicle_get_UsedCharacterSpace_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 public static void Postfix(GeoVehicle __instance, ref int __result)
                 {
                     try
@@ -186,6 +188,7 @@ namespace TFTV
             [HarmonyPatch(typeof(GeoVehicle), "get_FreeCharacterSpace")]
             public static class GeoVehicle_get_FreeCharacterSpace_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 public static void Postfix(GeoVehicle __instance, ref int __result)
                 {
                     try
@@ -203,6 +206,7 @@ namespace TFTV
             [HarmonyPatch(typeof(GeoCharacter), "get_OccupingSpace")]
             public static class GeoCharacter_get_OccupingSpace_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 public static void Postfix(GeoCharacter __instance, ref int __result)
                 {
                     try
@@ -256,6 +260,7 @@ namespace TFTV
             [HarmonyPatch(typeof(TransferActionMenuElement), "Init")]
             public static class TransferActionMenuElement_Init_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 public static bool Prefix(TransferActionMenuElement __instance, IGeoCharacterContainer targetContainer, GeoRosterItem targetItem)
                 {
                     try

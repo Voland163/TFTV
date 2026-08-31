@@ -19,6 +19,7 @@ namespace TFTV.TFTVAircraftRework
         [HarmonyPatch(typeof(GeoLevelController), "get_HasFesteringSkies")]
         public static class GeoLevelController_get_HasFesteringSkies_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(GeoLevelController __instance, ref bool __result)
             {
                 try
@@ -44,6 +45,7 @@ namespace TFTV.TFTVAircraftRework
         [HarmonyPatch(typeof(GeoscapeTutorial), "UnlockUIForStep")]
         public static class GeoscapeTutorial_UnlockUIForStep_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(GeoscapeTutorial __instance, GeoscapeTutorialStepType step)
             {
                 try
@@ -78,6 +80,7 @@ namespace TFTV.TFTVAircraftRework
         [HarmonyPatch(typeof(UIModuleGeoSectionBar), "Show")]
         public static class UIModuleGeoSectionBar_Show_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static bool Prefix(UIModuleGeoSectionBar __instance, bool showSections)
             {
                 try
@@ -104,6 +107,7 @@ namespace TFTV.TFTVAircraftRework
         [HarmonyPatch(typeof(UIModuleGeoSectionBar), "ActivateVehicleRosterContent")]
         public static class UIModuleGeoSectionBar_ActivateVehicleRosterContent_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static bool Prefix(UIModuleGeoSectionBar __instance, GeoscapeViewContext ____context, UIGeoSection ____section)
             {
                 try
@@ -137,6 +141,7 @@ namespace TFTV.TFTVAircraftRework
         [HarmonyPatch(typeof(GeoscapeView), "InitView")]
         public static class GeoscapeView_InitView_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(GeoscapeView __instance)
             {
                 try

@@ -25,6 +25,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoPhoenixFaction), nameof(GeoPhoenixFaction.UpdateBasesHourly))]
         internal static class GeoPhoenixFaction_UpdateBasesHourly_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(GeoPhoenixFaction __instance)
             {
                 if (!BaseReworkCheck.BaseReworkEnabled)
@@ -41,6 +42,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoFactionFacilityBuffCollection), nameof(GeoFactionFacilityBuffCollection.GetValue))]
         internal static class GeoFactionFacilityBuffCollection_GetValue_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static bool Prefix(PhoenixFacilityDef facility, GeoFacilityComponentDef component, float baseValue, float addedValue, float multiplier, ref float __result)
             {
                 if (!BaseReworkCheck.BaseReworkEnabled || component == null)
@@ -60,6 +62,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(UIModuleInfoBar), "UpdateResourceInfo")]
         internal static class UIModuleInfoBar_UpdateResourceInfo_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(UIModuleInfoBar __instance, GeoFaction faction)
             {
                 try

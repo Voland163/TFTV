@@ -1,4 +1,4 @@
-using Base.Core;
+﻿using Base.Core;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities;
@@ -163,6 +163,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoPhoenixFaction), "UpdateFeeding")]
         internal static class GeoPhoenixFaction_UpdateFeeding_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static readonly MethodInfo EvaluateSoldiersStateMethod =
                 AccessTools.Method(typeof(GeoPhoenixFaction), "EvaluateSoldiersState");
 
@@ -201,6 +202,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoPhoenixFaction), "FeedSoldiers")]
         internal static class GeoPhoenixFaction_FeedSoldiers_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static bool Prefix(GeoPhoenixFaction __instance, int totalFood)
             {
                 if (!BaseReworkCheck.BaseReworkEnabled)
@@ -248,6 +250,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoPhoenixFaction), "EvaluateSoldiersState")]
         internal static class GeoPhoenixFaction_EvaluateSoldiersState_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static readonly AccessTools.FieldRef<GeoPhoenixFaction, bool> LowOnFoodField =
                 AccessTools.FieldRefAccess<GeoPhoenixFaction, bool>("<LowOnFood>k__BackingField");
 
@@ -299,6 +302,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoPhoenixFaction), "get_LivingQuarterFreeSpace")]
         internal static class GeoPhoenixFaction_LivingQuarterFreeSpace_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static bool Prefix(GeoPhoenixFaction __instance, ref int __result)
             {
                 if (!BaseReworkCheck.BaseReworkEnabled)
@@ -314,6 +318,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoPhoenixFaction), nameof(GeoPhoenixFaction.CanRecruitCharacter))]
         internal static class GeoPhoenixFaction_CanRecruitCharacter_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static bool Prefix(GeoPhoenixFaction __instance, GeoUnitDescriptor character, ResourcePack cost, ref bool __result)
             {
                 if (!BaseReworkCheck.BaseReworkEnabled)

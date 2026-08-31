@@ -206,6 +206,7 @@ namespace TFTV.TFTVIncidents
             [HarmonyPatch(typeof(DeploymentRuleData), "CalculateDeployment")]
             public static class DeploymentRuleData_CalculateDeployment_PsychoSociologyBonus_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
 
                 private static int GetAffinityRankForApproach(GeoCharacter character, LeaderSelection.AffinityApproach approach)
                 {

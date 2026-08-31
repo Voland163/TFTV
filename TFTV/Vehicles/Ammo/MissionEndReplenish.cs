@@ -43,6 +43,7 @@ namespace TFTV.Vehicles.Ammo
         [HarmonyPatch]
         public static class PostmissionReplenishManager_GetMissingItems_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             static MethodBase TargetMethod()
             {
                 return typeof(PostmissionReplenishManager).GetMethod(
@@ -124,6 +125,7 @@ namespace TFTV.Vehicles.Ammo
         [HarmonyPatch]
         public static class UIModuleReplenish_AddMissingItem_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static readonly AccessTools.FieldRef<UIModuleReplenish, GeoPhoenixFaction> FactionRef =
                 AccessTools.FieldRefAccess<UIModuleReplenish, GeoPhoenixFaction>("_faction");
 
@@ -165,6 +167,7 @@ namespace TFTV.Vehicles.Ammo
         [HarmonyPatch(typeof(GeoMission), "TryReloadItem")]
         public static class GeoMission_TryReloadItem_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static bool Prefix(GeoItem item, ItemStorage storage, string storageName, ref bool __result)
             {
                 if (!TFTVAircraftReworkMain.AircraftReworkOn)
@@ -242,6 +245,7 @@ namespace TFTV.Vehicles.Ammo
         [HarmonyPatch(typeof(UIModuleReplenish), "AddMissingAmmo")]
         public static class UIModuleReplenish_AddMissingAmmo_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static readonly AccessTools.FieldRef<UIModuleReplenish, GeoscapeViewContext> ReplenishContext =
                 AccessTools.FieldRefAccess<UIModuleReplenish, GeoscapeViewContext>("_context");
             private static readonly AccessTools.FieldRef<UIModuleReplenish, GeoPhoenixFaction> ReplenishFaction =
@@ -542,6 +546,7 @@ namespace TFTV.Vehicles.Ammo
         [HarmonyPatch(typeof(UIModuleReplenish), "SingleItemReloadAndRefresh")]
         public static class UIModuleReplenish_SingleItemReloadAndRefresh_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static bool Prefix(UIModuleReplenish __instance, GeoManufactureItem item)
             {
                 try
@@ -581,6 +586,7 @@ namespace TFTV.Vehicles.Ammo
         [HarmonyPatch(typeof(UIModuleReplenish), "SingleItemReload")]
         public static class UIModuleReplenish_SingleItemReload_ModuleAmmo_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static bool Prefix(GeoItem geoItem, ref bool __result)
             {
                 try

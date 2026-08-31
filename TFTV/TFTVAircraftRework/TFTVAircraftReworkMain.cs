@@ -20,6 +20,22 @@ namespace TFTV
 {
     internal class TFTVAircraftReworkMain
     {
+        /// <summary>
+        /// The master switch for the aircraft rework, the base rework and incidents. False on the
+        /// main branch, true for the closed beta.
+        ///
+        /// Every Harmony patch class belonging to those systems carries
+        /// <c>static bool Prepare() =&gt; AircraftReworkOn;</c>. Harmony calls Prepare before it
+        /// patches and skips the class when it returns false, so with this off those patches are
+        /// never applied at all - not applied and then made to no-op, which is what a guard inside
+        /// each method would give, and which relies on every one of them remembering to check.
+        ///
+        /// BaseReworkCheck.BaseReworkEnabled also requires this flag, so a save made during the
+        /// beta cannot switch the base rework back on when loaded on a main-branch build.
+        ///
+        /// Ground vehicle rework (TFTVVehicleRework) is deliberately not gated: ReworkVehicles is
+        /// called unconditionally and ships on main. Only Vehicles/Ammo belongs to the beta.
+        /// </summary>
         public static bool AircraftReworkOn = true;
         internal static readonly float _mistSpeedMalus = 0.2f;
         //  internal static readonly float _mistSpeedBuff = 0.5f;

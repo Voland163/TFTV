@@ -50,6 +50,7 @@ namespace TFTV
             [HarmonyPatch(typeof(GeoPhoenixFaction), "UpdateCharactersInVehicles")]
             public static class GeoPhoenixFaction_UpdateCharactersInVehicles_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 static void Postfix(GeoPhoenixFaction __instance)
                 {
                     try

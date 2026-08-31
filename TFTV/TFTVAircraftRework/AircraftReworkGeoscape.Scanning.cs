@@ -30,6 +30,7 @@ namespace TFTV
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             public static class GeoPhoenixFaction_OnVehicleAdded_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 static void Postfix(GeoPhoenixFaction __instance, GeoVehicle vehicle)
                 {
                     try
@@ -54,6 +55,7 @@ namespace TFTV
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             public static class GeoAbility_GetTargetDisabledState_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 static void Postfix(GeoAbility __instance, ref GeoFaction __result)
                 {
                     try
@@ -81,6 +83,7 @@ namespace TFTV
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             public static class GeoAbilityView_CanActivate_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 static void Postfix(GeoAbilityView __instance, GeoAbilityTarget target, ref bool __result)
                 {
                     try
@@ -115,6 +118,7 @@ namespace TFTV
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             public static class UIModuleActionsBar_UpdateAbilityInformation_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 static void Postfix(UIModuleActionsBar __instance, GeoAbility geoAbility, bool showAbilityState)
                 {
                     try
@@ -147,6 +151,7 @@ namespace TFTV
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             public static class ScanAbility_GetCharges_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 static void Postfix(ScanAbility __instance, ref int __result)
                 {
                     try
@@ -172,6 +177,7 @@ namespace TFTV
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             public static class ScanAbility_GetDisabledStateInternal_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 static void Postfix(ScanAbility __instance, ref GeoAbilityDisabledState __result)
                 {
                     try
@@ -212,6 +218,7 @@ namespace TFTV
              [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
              public static class ScanAbility_GetTargetDisabledStateInternal_Patch
              {
+                 static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                  static void Postfix(ScanAbility __instance, GeoAbilityTarget target, GeoAbilityTargetDisabledState __result)
                  {
                      try
@@ -238,6 +245,7 @@ namespace TFTV
               [HarmonyPatch("Init")]
               public static class GeoscapeRegionDrawer_Init_Patch
               {
+                  static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                   static void Postfix(PhoenixPoint.Geoscape.Levels.GeoscapeRegionDrawer __instance)
                   {
                       try
@@ -370,6 +378,7 @@ namespace TFTV
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             public static class ScanAbility_ActivateInternal_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 static void Prefix(ScanAbility __instance)
                 {
                     try
@@ -440,6 +449,7 @@ namespace TFTV
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             public static class GeoScanner_CompleteScan_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 static void Prefix(GeoScanner __instance)
                 {
                     try
@@ -487,6 +497,7 @@ namespace TFTV
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
             public static class GeoScanComponent_DetectSite_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
 
                 static bool Prefix(GeoScanComponent __instance, GeoSite site, GeoActor ____actor)
                 {
@@ -674,6 +685,7 @@ namespace TFTV
             [HarmonyPatch(typeof(PandoranBaseRevealDataBind), "ModalShowHandler", new[] { typeof(UIModal) })]
             public static class Patch_PandoranBaseRevealDataBind_ModalShowHandler
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 public static void Postfix(PandoranBaseRevealDataBind __instance, UIModal modal)
                 {
                     try
@@ -794,6 +806,7 @@ namespace TFTV
             [HarmonyPatch(typeof(GeoAlienFaction), "TryRevealAlienBase")]
             internal static class BC_GeoAlienFaction_TryRevealAlienBase_patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051")]
                 private static bool Prefix(ref bool __result, GeoSite site, GeoFaction revealToFaction, GeoLevelController ____level)
                 {

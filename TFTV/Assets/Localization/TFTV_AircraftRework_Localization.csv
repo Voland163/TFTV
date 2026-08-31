@@ -362,13 +362,13 @@ TUTORIAL_INCIDENTS_TEXT0,Text,,"Incidents are Geoscape Events that take time to 
 Every 4-6 days, an Incident will occur at a previously visited haven, inviting you to resolve it within the next 5 days.
 
 To initiate the Incident, you must travel to the haven with an Aircraft with at least one Operative without the “Just a Grunt” perk.",,,,,,,,
-TUTORIAL_INCIDENTS_TEXT1,Text,,"Every Incident can be resolved in two different ways. One of the choices will correspond to one Approach, and the other choice will allow 2 different Approaches. You have to select one of them. 
+TUTORIAL_INCIDENTS_TEXT1,Text,,"Each Incident can be resolved two ways: one choice uses a single Approach, the other lets you pick between two.
 
-You must also choose the Operative to lead the team. Completing the Incident successfully will give the Leading Operative the Affinity corresponding to the Approach taken, or increase the Rank in that Affinity. 
+Choose an Operative to lead. On success they gain that Approach’s Affinity, or rise a Rank in it.
 
-You can also Cancel to return to the Incident later. 
+A leader at Rank 2 passes their Affinity to one of the Personnel you gain; at Rank 3 a second gains a different one at random.
 
-The time it will take to resolve an Incident depends on 1) Whether the Leading Operative has an Affinity corresponding to one of the chosen Approaches, and 2) how many Operatives there are in the Aircraft.",,,,,,,,
+Resolution time depends on whether the leader already has one of the chosen Approaches, and on how many Operatives are aboard. Cancel returns you to the Incident later.",,,,,,,,
 TUTORIAL_AFFINITIES_TITLE0,Text,,Affinities,,,,,,,,
 TUTORIAL_AFFINITIES_TEXT0,Text,,"- Affinities are gained and advanced in rank by resolving Incidents or inherited from a dead operative with an Affinity. 
 - There are three ranks.

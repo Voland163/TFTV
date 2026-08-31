@@ -30,6 +30,7 @@ namespace TFTV
             [HarmonyPatch(typeof(GeoVehicle), "RepairAircraftHp")]
             public static class GeoVehicle_RepairAircraftHp_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 public static void Prefix(GeoVehicle __instance, ref int points)
                 {
                     try
@@ -204,6 +205,7 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoVehicle), "SetHitpoints")]
         public static class GeoVehicle_SetHitpoints_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(GeoVehicle __instance)
             {
                 try
@@ -252,6 +254,7 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoVehicle), "OnAircraftBreakingDown")]
         public static class GeoVehicle_OnAircraftBreakingDown_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static bool Prefix(GeoVehicle __instance)
             {
                 try
@@ -308,6 +311,7 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoscapeLog), "OnFactionVehicleMaintenaceChanged")]
         public static class GeoscapeLog_OnFactionVehicleMaintenaceChanged
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static bool Prefix(GeoscapeLog __instance, GeoFaction faction, GeoVehicle vehicle, int oldValue, int newValue)
             {
                 try

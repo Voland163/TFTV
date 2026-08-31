@@ -15,6 +15,7 @@ namespace TFTV.Vehicles.Ammo
         [HarmonyPatch(typeof(UIInventoryList), "TryLoadAmmo")]
         public static class UIInventoryListTryLoadAmmoLoggingPatch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static bool Prefix(UIInventoryList __instance, ICommonItem item, UIInventorySlot itemSlot, UIInventoryList sourceList)
             {
                 try

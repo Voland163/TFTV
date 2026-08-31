@@ -1201,6 +1201,7 @@ namespace TFTV
         /* [HarmonyPatch(typeof(GeoRangeComponent), "OnActorInitialized")]
             public static class GeoRangeComponent_OnActorInitialized_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 static bool Prefix(GeoRangeComponent __instance, ActorComponent actor, ref Transform ____rangeIndicator, ref GameObject ____rangeEffect)
               {
                     try

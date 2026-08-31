@@ -230,6 +230,7 @@ namespace TFTV.TFTVIncidents
         [HarmonyPatch(typeof(UIModuleSiteEncounters), "SetEncounter")]
         private static class UIModuleSiteEncounters_SetEncounter_OutcomeSummary_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(UIModuleSiteEncounters __instance, GeoscapeEvent geoEvent, bool pagingEvent)
             {
                 try
@@ -267,6 +268,7 @@ namespace TFTV.TFTVIncidents
         [HarmonyPatch(typeof(UIModuleSiteEncounters), "SetClosingEncounter")]
         private static class UIModuleSiteEncounters_SetClosingEncounter_OutcomeSummary_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(UIModuleSiteEncounters __instance, GeoscapeEvent geoEvent, GeoEventChoice closingChoice, bool useEventTexts)
             {
                 try

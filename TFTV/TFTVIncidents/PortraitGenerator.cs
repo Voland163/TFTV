@@ -1549,6 +1549,7 @@ namespace TFTV.TFTVIncidents
         [HarmonyPatch(typeof(UIModuleSiteEncounters), "ShowEncounter")]
         internal static class UIModuleSiteEncounters_ShowEncounter_ResetLeaderSlot_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Prefix(UIModuleSiteEncounters __instance)
             {
                 ResetLeaderSlot(__instance);

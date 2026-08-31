@@ -24,6 +24,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoVehicle), "TeleportToSite")]
         internal static class GeoVehicle_TeleportToSite_OpenActivationUI_patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Prefix(GeoVehicle __instance, GeoSite site)
             {
                 try

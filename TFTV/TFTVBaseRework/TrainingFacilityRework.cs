@@ -975,6 +975,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoPhoenixFaction), "AddRecruit")]
         internal static class GeoPhoenixFaction_AddRecruit_TrainingStats_Postfix
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(GeoPhoenixFaction __instance, GeoCharacter recruit, IGeoCharacterContainer toContainer)
             {
                 if (!BaseReworkCheck.BaseReworkEnabled)
@@ -1037,6 +1038,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(PostmissionReplenishManager), "AddPreferredLoadout")]
         internal static class TFTV_PostmissionReplenishManager_AddPreferredLoadout_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static readonly FieldInfo PreferredLoadoutsField = AccessTools.Field(typeof(PostmissionReplenishManager), "_preferredLoadouts");
             private static readonly MethodInfo UpdatePreferredLoadoutMethod = AccessTools.Method(typeof(PostmissionReplenishManager), "UpdatePreferredLoadout");
 

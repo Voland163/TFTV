@@ -901,6 +901,7 @@ int option)
             })]
             public static class DynamicAbilityDescriptionPatch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 /// <summary>
                 /// Assign this from your mod entry to supply dynamic descriptions.
                 /// Return null or empty to keep vanilla text.

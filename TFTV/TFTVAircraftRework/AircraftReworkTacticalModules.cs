@@ -620,6 +620,7 @@ namespace TFTV
             /* [HarmonyPatch(typeof(DamageOverTimeStatus), "LowerDamageOverTimeLevelProportional")]
              public static class DamageOverTimeStatus_LowerDamageOverTimeLevelProportional_Patch
              {
+                 static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                  public static void Prefix(DamageOverTimeStatus __instance, ref float multiplier)
                  {
                      try
@@ -656,6 +657,7 @@ namespace TFTV
              [HarmonyPatch(typeof(DamageOverTimeStatus), "LowerDamageOverTimeLevel")]
              public static class DamageOverTimeStatus_LowerDamageOverTimeLevel_Patch
              {
+                 static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                  public static void Prefix(DamageOverTimeStatus __instance, ref float amount)
                  {
                      try
@@ -1046,6 +1048,7 @@ namespace TFTV
             [HarmonyPatch(typeof(TacticalPerceptionBase), "get_MistBlobPerceptionRangeCost")]
             public static class TacticalPerceptionBase_get_MistBlobPerceptionRangeCost_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 public static void Postfix(TacticalPerceptionBase __instance, ref float __result)
                 {
                     try
@@ -1114,6 +1117,7 @@ namespace TFTV
             [HarmonyPatch(typeof(TacticalActor), "ApplyMistEffects")]
             public static class TacticalActor_ApplyMistEffects_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 public static bool Prefix(TacticalActor __instance)
                 {
                     try
@@ -1159,6 +1163,7 @@ namespace TFTV
             [HarmonyPatch(typeof(TacticalFactionVision))]
             public static class TacticalFactionVision_PrefixPatch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 //────────────────────────────────────────────────────────────
                 // 1. Replacement for GatherKnowableActors
                 //────────────────────────────────────────────────────────────
@@ -1447,10 +1452,12 @@ namespace TFTV
         }
         internal class CaptureDrones
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
 
             [HarmonyPatch(typeof(UIStateRosterDeployment), "EnterState")]
             public static class UIStateRosterDeployment_EnterState_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 public static void Prefix(UIStateRosterDeployment __instance)
                 {
                     try
@@ -1508,6 +1515,7 @@ namespace TFTV
             /*  [HarmonyPatch(typeof(GeoMission), "GetItemsOnTheGround")]
               public static class GeoMission_GetItemsOnTheGround2_Patch
               {
+                  static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                   public static void Postfix(GeoMission __instance, TacMissionResult result, ref IEnumerable<GeoItem> __result)
                   {
                       try
@@ -1541,6 +1549,7 @@ namespace TFTV
             [HarmonyPatch(typeof(CrateComponent), "Open")]
             internal static class CrateComponent_Open_Postfix
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 // Postfix: after crate opens, reassign its faction if capture drones are present.
                 static void Postfix(CrateComponent __instance)
                 {
@@ -1580,6 +1589,7 @@ namespace TFTV
             [HarmonyPatch(typeof(GeoMission), "ManageGear")]
             public static class GeoMission_ManageGear_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 public static void Prefix(GeoMission __instance, TacMissionResult result, GeoSquad squad, out bool __state)
                 {
                     try
@@ -1641,6 +1651,7 @@ namespace TFTV
             [HarmonyPatch(typeof(TacticalLevelController), "GetMissionResult")]
             internal static class TacticalLevelController_GetMissionResult_Prefix
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 // Prefix fully replaces original; __result is set and we return false.
                 static void Prefix(TacticalLevelController __instance)
                 {
@@ -1695,6 +1706,7 @@ namespace TFTV
             /*      [HarmonyPatch(typeof(GeoMission), "GetItemsOnTheGround")]
               internal static class GeoMission_GetItemsOnTheGround_Prefix
               {
+                  static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                   // Prefix fully replaces original; __result is set and we return false.
                   static bool Prefix(GeoMission __instance, TacMissionResult result, ref IEnumerable<GeoItem> __result)
                   {
@@ -1975,6 +1987,7 @@ namespace TFTV
             [HarmonyPatch(typeof(DamageOverTimeStatus), "OnApply")]
             public static class DamageOverTimeStatus_OnApply_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 public static void Postfix(DamageOverTimeStatus __instance, StatusComponent statusComponent)
                 {
                     try
@@ -2011,6 +2024,7 @@ namespace TFTV
             [HarmonyPatch(typeof(FireStatus), "CalculateFireDamage")]
             public static class FireStatus_CalculateFireDamage_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 public static void Postfix(FireStatus __instance)
                 {
                     try
@@ -2045,6 +2059,7 @@ namespace TFTV
             /*  [HarmonyPatch(typeof(DamageOverTimeResistanceStatus), "ApplyResistance")]
               public static class DamageOverTimeResistanceStatus_ApplyResistance_Patch
               {
+                  static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                   static void Postfix(DamageOverTimeResistanceStatus __instance)
                   {
                       try
@@ -2080,6 +2095,7 @@ namespace TFTV
             [HarmonyPatch(typeof(TacticalLevelController), "OnLevelStart")]//OnLevelStateChanged")]
             public static class OnLevelStart_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 public static void Postfix(TacticalLevelController __instance) //Level.State prevState, Level.State state, )
                 {
                     try
@@ -2150,6 +2166,7 @@ namespace TFTV
         [HarmonyPatch(typeof(SurviveTurnsFactionObjectiveDef), "GenerateObjective")]
         public static class SurviveTurnsFactionObjectiveDef_GenerateObjective_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Prefix(SurviveTurnsFactionObjectiveDef __instance, TacticalLevelController level, TacticalFaction faction, out int? __state)//, int ____squadMaxDeployment)
             {
                 try

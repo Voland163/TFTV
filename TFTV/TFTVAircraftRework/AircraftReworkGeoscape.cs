@@ -44,6 +44,7 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoscapeView), "SetSelectedActor")]
         internal static class GeoscapeViewSelectionPatch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static readonly FieldInfo ContextField = AccessTools.Field(typeof(GeoscapeView), "_context");
 
             private static void Prefix(GeoscapeView __instance, ref GeoActor actor)

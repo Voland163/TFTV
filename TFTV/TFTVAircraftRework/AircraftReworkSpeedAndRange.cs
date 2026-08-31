@@ -114,6 +114,7 @@ namespace TFTV
             /* [HarmonyPatch(typeof(GeoVehicle), "UpdateVehicleBonusCache")]
              internal static class GeoVehicle_UpdateVehicleBonusCache_patch
              {
+                 static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                  private static void Prefix(GeoVehicle __instance)
                  {
                      try
@@ -146,6 +147,7 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoVehicle), "UpdateVehicleStats")]
         public static class GeoVehicle_UpdateVehicleStats_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             static void Postfix(GeoVehicle __instance)
             {
 

@@ -229,6 +229,7 @@ namespace TFTV.TFTVBaseRework
         /* [HarmonyPatch(typeof(UIModuleSiteContextualMenu), "SetMenuItems")]
          internal static class UIModuleSiteContextualMenu_SetMenuItems_patch
          {
+             static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
              private static void Prefix(ref List<GeoAbility> rawAbilities)
              {
                  if (rawAbilities == null)
@@ -246,6 +247,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoscapeEventSystem), "OnLevelStart")]
         internal static class GeoscapeEventSystem_OnLevelStart_patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(GeoscapeEventSystem __instance)
             {
                 try
@@ -264,6 +266,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoscapeEventSystem), "Update")]
         internal static class GeoscapeEventSystem_Update_patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(GeoscapeEventSystem __instance)
             {
                 try

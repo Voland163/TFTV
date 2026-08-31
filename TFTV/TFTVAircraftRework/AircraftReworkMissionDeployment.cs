@@ -26,6 +26,7 @@ namespace TFTV
         [HarmonyPatch(typeof(UIStateRosterDeployment), "OnEnrollmentChanged")]
         public static class UIStateRosterDeployment_OnEnrollmentChanged_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
 
             private static void NoVehicleMutogWarning(UIStateRosterDeployment __instance, GeoRosterDeploymentItem item, MessageBox ____confirmationBox, List<GeoCharacter> ____selectedDeployment, List<GeoRosterDeploymentItem> ____deploymentItems)
             {
@@ -137,6 +138,7 @@ namespace TFTV
         [HarmonyPatch(typeof(UIStateRosterDeployment), "CheckForDeployment")]
         public static class UIStateRosterDeployment_CheckForDeployment_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static bool Prefix(UIStateRosterDeployment __instance, IEnumerable<GeoCharacter> squad, GeoMission ____mission)
             {
                 try
@@ -186,6 +188,7 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoMission), "GetDeploymentSources")]
         public static class GeoMission_GetDeploymentSource_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(GeoMission __instance, GeoFaction faction, IGeoCharacterContainer priorityContainer, ref List<IGeoCharacterContainer> __result)
             {
                 try

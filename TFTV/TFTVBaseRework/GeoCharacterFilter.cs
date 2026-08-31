@@ -74,6 +74,7 @@ namespace TFTV.TFTVBaseRework
             [HarmonyPatch(typeof(UIModuleGeneralPersonelRoster), "InitRosterSlots")]
             internal static class Patch_UIModuleGeneralPersonelRoster_InitRosterSlots_HideRows
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 static void Postfix(UIModuleGeneralPersonelRoster __instance)
                 {
                     if (__instance?.Slots == null) return;
@@ -96,6 +97,7 @@ namespace TFTV.TFTVBaseRework
             [HarmonyPatch(new Type[] { typeof(GeoCharacter), typeof(IEnumerable<GeoCharacter>), typeof(StateStackAction) })]
             internal static class Patch_GeoscapeView_ToEditUnitState_FilterCharacters
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 static void Prefix(
                     GeoscapeView __instance,
                     ref GeoCharacter initCharacter,
@@ -124,6 +126,7 @@ namespace TFTV.TFTVBaseRework
     new Type[] { typeof(IEnumerable<GeoCharacter>), typeof(GeoCharacter), typeof(GeoscapeViewContext) })]
             internal static class Patch_UIModuleActorCycle_Init_FilterCharacters
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 static void Prefix(
                     ref IEnumerable<GeoCharacter> characters,
                     ref GeoCharacter initialCharacter)
@@ -148,6 +151,7 @@ namespace TFTV.TFTVBaseRework
             [HarmonyPatch(typeof(GeoSiteVisualsController), "RefreshSiteVisuals")]
             public static class GeoSiteVisualsController_BaseIconAbilityFilterPatch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
 
                 private static readonly MethodInfo RefreshAvailableSoldiersCountMethod = AccessTools.Method(typeof(GeoSiteVisualsController), "RefreshAvailableSoldiersCount");
 
@@ -183,6 +187,7 @@ namespace TFTV.TFTVBaseRework
             [HarmonyPatch(typeof(GeoPhoenixFaction), "get_Soldiers")]
             private static class GeoPhoenixFaction_GetSoldiers_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 private static void Postfix(GeoPhoenixFaction __instance, ref IEnumerable<GeoCharacter> __result)
                 {
                     if (!Enabled || __result == null)
@@ -254,6 +259,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(UIStateEditSoldier), "OnDismissSoldierDialogCallback")]
         internal static class UIStateEditSoldier_OnDismissSoldierDialogCallback_HiddenOperativeCleanup_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(UIStateEditSoldier __instance, MessageBoxCallbackResult msgResult, ref List<GeoCharacter> ____characters)
             {
                 if (msgResult.DialogResult != MessageBoxResult.Yes)
@@ -273,6 +279,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoMission), nameof(GeoMission.GetDefaultDeploymentSetup), new Type[] { typeof(IEnumerable<GeoCharacter>) })]
         internal static class GeoMission_GetDefaultDeploymentSetup_FromEnumerable_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(ref IEnumerable<GeoCharacter> __result)
             {
                 if (!Enabled)
@@ -287,6 +294,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoMission), nameof(GeoMission.GetDefaultDeploymentSetup), new Type[] { typeof(GeoFaction), typeof(IGeoCharacterContainer) })]
         internal static class GeoMission_GetDefaultDeploymentSetup_FromFaction_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(ref IEnumerable<GeoCharacter> __result)
             {
                 if (!Enabled)
@@ -308,6 +316,7 @@ namespace TFTV.TFTVBaseRework
         })]
         internal static class UIStateRosterDeployment_Ctor_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static readonly AccessTools.FieldRef<UIStateRosterDeployment, List<GeoCharacter>> SelectedDeploymentField = AccessTools.FieldRefAccess<UIStateRosterDeployment, List<GeoCharacter>>("_selectedDeployment");
             private static readonly AccessTools.FieldRef<UIStateRosterDeployment, GeoCharacter> InitialCharacterField = AccessTools.FieldRefAccess<UIStateRosterDeployment, GeoCharacter>("_initialCharacter");
 
@@ -332,6 +341,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(SiteManagementRow), "ShowSiteStats")]
         internal static class Patch_SiteManagementRow_ShowSiteStats
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(SiteManagementRow __instance)
             {
 
@@ -357,6 +367,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(UIModuleBaseLayout), "SetLeftSideInfo")]
         internal static class Patch_UIModuleBaseLayout_SetLeftSideInfo
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(UIModuleBaseLayout __instance)
             {
                 if (!Enabled)

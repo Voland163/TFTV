@@ -383,48 +383,56 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(AlienBaseOutcomeDataBind), "ModalShowHandler")]
         private static class AlienBaseOutcomeDataBindPatch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(UIModal modal) => ShowForModal(modal);
         }
 
         [HarmonyPatch(typeof(AmbushOutcomeDataBind), "ModalShowHandler")]
         private static class AmbushOutcomeDataBindPatch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(UIModal modal) => ShowForModal(modal);
         }
 
         [HarmonyPatch(typeof(AncientSiteOutcomeDataBind), "ModalShowHandler")]
         private static class AncientSiteOutcomeDataBindPatch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(UIModal modal) => ShowForModal(modal);
         }
 
         [HarmonyPatch(typeof(HavenDefenceOutcomeDataBind), "ModalShowHandler")]
         private static class HavenDefenceOutcomeDataBindPatch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(UIModal modal) => ShowForModal(modal);
         }
 
         [HarmonyPatch(typeof(HavenInfiltrateMissionOutcomeDataBind), "ModalShowHandler")]
         private static class HavenInfiltrateMissionOutcomeDataBindPatch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(UIModal modal) => ShowForModal(modal);
         }
 
         [HarmonyPatch(typeof(InfestedHavenOutcomeDataBind), "ModalShowHandler")]
         private static class InfestedHavenOutcomeDataBindPatch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(UIModal modal) => ShowForModal(modal);
         }
 
         [HarmonyPatch(typeof(PhoenixBaseDefenseOutcomeDataBind), "ModalShowHandler")]
         private static class PhoenixBaseDefenseOutcomeDataBindPatch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(UIModal modal) => ShowForModal(modal);
         }
 
         [HarmonyPatch(typeof(ScavengeOutcomeDataBind), "ModalShowHandler")]
         private static class ScavengeOutcomeDataBindPatch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(UIModal modal) => ShowForModal(modal);
         }
 

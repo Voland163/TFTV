@@ -26,6 +26,7 @@ namespace TFTV.TFTVBaseRework
     [HarmonyPatch(typeof(UIModuleGeoRosterTabs), nameof(UIModuleGeoRosterTabs.CheckAvailableTabs))]
     public static class UIModuleGeoRosterTabs_CheckAvailableTabs_Patch
     {
+        static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
         private static void Postfix(UIModuleGeoRosterTabs __instance)
         {
 
@@ -284,6 +285,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(UIStateAssetDeployment), "EnterState")]
         internal static class UIStateAssetDeployment_EnterState_PersonnelManagement
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix()
             {
                 if (!BaseReworkEnabled)
@@ -362,6 +364,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(UIStateRosterRecruits), "EnterState")]
         internal static class UIStateRosterRecruits_EnterState_PersonnelManagement
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(UIStateRosterRecruits __instance)
             {
                 if (!BaseReworkEnabled)
@@ -382,6 +385,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(UIStateRosterRecruits), "ExitState")]
         internal static class UIStateRosterRecruits_ExitState_PersonnelManagement
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix()
             {
                 if (!BaseReworkEnabled)
@@ -410,6 +414,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(UIStateAssetDeployment), "ExitState")]
         internal static class UIStateAssetDeployment_ExitState_PersonnelManagement
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix()
             {
                 if (!BaseReworkEnabled)
@@ -435,6 +440,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(UIModuleRecruitsList), nameof(UIModuleRecruitsList.SetRecruitsList))]
         public static class PersonnelManagementPatch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(UIModuleRecruitsList __instance)
             {
                 if (!BaseReworkEnabled)
