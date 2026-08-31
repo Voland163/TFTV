@@ -319,6 +319,7 @@
     <Compile Include="TFTVVehicleFixes.cs" />
     <Compile Include="TFTVBehemothAndRaids.cs" />
     <Compile Include="TFTVAmbushes.cs" />
+    <Compile Include="TFTVAchievements.cs" />
     <Compile Include="TFTVAncients.cs" />
     <Compile Include="TFTVAncientsGeo.cs" />
     <Compile Include="TFTVAICombatAbilities.cs" />
