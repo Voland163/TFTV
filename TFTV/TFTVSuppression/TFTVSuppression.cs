@@ -160,17 +160,21 @@ namespace TFTV
                 state.CurrentLevel = penalty.Level;
 
                 // TacticalActor.StartTurn has just put action points back to max, so the whole
-                // penalty for the new level has to be charged here. Measuring it as a delta against
-                // last turn's level would let an actor suppressed to the same level two turns
-                // running keep a full turn the second time. Capping rather than subtracting keeps
-                // this correct when the refill was skipped (abilities tagged DoNotResetThisTurn)
-                // or when the penalty was already taken mid-turn by RegisterSuppressionEvent.
+                // penalty for the new level is charged here. Measuring it as a delta against last
+                // turn's level would let an actor suppressed to the same level two turns running
+                // keep a full turn the second time.
+                //
+                // Charged as a share of max rather than as a ceiling on the actor's current action
+                // points, so it stacks with stun and paralysis the way StunStatus.ReduceActionPoints
+                // does - those run earlier in StartTurn, and a ceiling would let them swallow the
+                // suppression penalty whole. CurrentLevel, set just above, is the record of how much
+                // suppression has been charged since the refill; RegisterSuppressionEvent bills the
+                // difference against it if more suppression lands during the actor's own turn.
                 float penaltyFraction = SuppressionSettings.GetPenaltyFraction(state.CurrentLevel);
 
                 if (actor.IsAlive && penalty.HasPenalty && penaltyFraction > 0f)
                 {
-                    float allowedActionPoints = actor.CharacterStats.ActionPoints.Max * (1f - penaltyFraction);
-                    float apToRemove = (float)actor.CharacterStats.ActionPoints - allowedActionPoints;
+                    float apToRemove = actor.CharacterStats.ActionPoints.Max * penaltyFraction;
                     if (apToRemove > 0f)
                     {
                         actor.CharacterStats.ActionPoints.Subtract(apToRemove);
