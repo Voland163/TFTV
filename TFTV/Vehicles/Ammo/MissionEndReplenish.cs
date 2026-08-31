@@ -1,4 +1,5 @@
-﻿using Base.Core;
+﻿using Assets.Code.PhoenixPoint.Geoscape.Entities.Sites.TheMarketplace;
+using Base.Core;
 using HarmonyLib;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.Entities.Equipments;
@@ -6,6 +7,7 @@ using PhoenixPoint.Common.Entities.GameTags;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
+using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
 using PhoenixPoint.Geoscape.View;
@@ -58,8 +60,6 @@ namespace TFTV.Vehicles.Ammo
                     if (!TFTVAircraftReworkMain.AircraftReworkOn)
                         return;
 
-                    TFTVLogger.Always($"[ReplenishFix] GetMissingItems Postfix running; entry count={__result?.Count ?? -1}");
-
                     if (__result == null)
                         return;
 
@@ -69,22 +69,16 @@ namespace TFTV.Vehicles.Ammo
                     if (phoenixFaction == null)
                         TFTVLogger.Always($"[ReplenishFix] PhoenixFaction unavailable; falling back to GroundVehicleModuleDef-only filter.");
 
+                    // Runs on every refresh of the replenish screen, so it reports what it changed and
+                    // nothing else - a per-character, per-item trace here buried the log.
+                    int strippedTotal = 0;
+                    int emptiedEntries = 0;
+
                     for (int i = __result.Count - 1; i >= 0; i--)
                     {
                         PostmissionReplenishManager.ReplenishableItems replenishable = __result[i];
                         if (replenishable == null)
                             continue;
-
-                        string charName = replenishable.Character?.DisplayName ?? "null";
-                        TFTVLogger.Always($"[ReplenishFix] Character '{charName}': " +
-                            $"MissingEquip={replenishable.MissingEquipmentItems?.Count ?? 0} " +
-                            $"MissingInv={replenishable.MissingInventoryItems?.Count ?? 0} " +
-                            $"MissingArmour={replenishable.MissingArmourItems?.Count ?? 0} " +
-                            $"Reloadable={replenishable.ReloadableItems?.Count ?? 0}");
-
-                        if (replenishable.MissingEquipmentItems != null)
-                            foreach (ItemDef def in replenishable.MissingEquipmentItems)
-                                TFTVLogger.Always($"[ReplenishFix]   MissingEquip: {def?.name} ({def?.GetType()?.Name})");
 
                         int removed;
                         if (phoenixFaction != null)
@@ -101,16 +95,21 @@ namespace TFTV.Vehicles.Ammo
                             removed += replenishable.MissingArmourItems?.RemoveAll(def => def is GroundVehicleModuleDef) ?? 0;
                         }
 
-                        if (removed > 0)
-                            TFTVLogger.Always($"[ReplenishFix] Stripped {removed} non-manufacturable item(s) for '{charName}'.");
+                        strippedTotal += removed;
 
                         // If nothing remains for this character, remove the entry entirely so no
                         // ghost soldier header appears in the replenish UI.
                         if (replenishable.IsEmpty())
                         {
-                            TFTVLogger.Always($"[ReplenishFix] Entry for '{charName}' is empty after filtering; removing.");
+                            emptiedEntries++;
                             __result.RemoveAt(i);
                         }
+                    }
+
+                    if (strippedTotal > 0 || emptiedEntries > 0)
+                    {
+                        TFTVLogger.Always($"[ReplenishFix] Stripped {strippedTotal} non-manufacturable item(s); " +
+                            $"removed {emptiedEntries} now-empty entr(y/ies).");
                     }
                 }
                 catch (Exception e)
@@ -141,8 +140,10 @@ namespace TFTV.Vehicles.Ammo
                     GeoPhoenixFaction faction = FactionRef(__instance);
                     if (faction != null && faction.Manufacture.GetManufacturableItemByDef(def) == null)
                     {
-                        TFTVLogger.Always($"[ReplenishFix] AddMissingItem safety-net: blocking '{def?.name}' ({def?.GetType()?.Name})" +
-                            $" for '{character?.DisplayName}' — not in faction.Manufacture.");
+                        // A genuine safety net: reaching here means the postfix filter above missed
+                        // something, which is worth knowing about, and it should be rare.
+                        TFTVLogger.Always($"[ReplenishFix] AddMissingItem safety-net blocked '{def?.name}' ({def?.GetType()?.Name})" +
+                            $" for '{character?.DisplayName}' - not in faction.Manufacture.");
                         __result = false;
                         return false;
                     }
@@ -179,6 +180,8 @@ namespace TFTV.Vehicles.Ammo
                     return false;
                 }
 
+                AmmoDiagnostics.Trace("PostMission", $"Reloading from {storageName}: {AmmoDiagnostics.DescribeAmmo(item)}");
+
                 bool allFull = true;
                 foreach (TacticalItemDef ammoDef in GetModuleAmmoDefs(moduleDef))
                 {
@@ -192,6 +195,8 @@ namespace TFTV.Vehicles.Ammo
 
                     if (!storage.Items.ContainsKey(ammoDef))
                     {
+                        AmmoDiagnostics.Trace("PostMission",
+                            $"{ammoDef.name} short at {currentCharges}/{maxCharges} but none in {storageName}; left as is.");
                         Debug.Log($"POSTMISSION RELOAD: Trying to reload {item} ({ammoDef.name}) but there is no ammo available in {storageName}!");
                         allFull = false;
                         continue;
@@ -216,6 +221,7 @@ namespace TFTV.Vehicles.Ammo
                     }
 
                     int finalCharges = GetAmmoChargesForDef(item.CommonItemData, ammoDef);
+                    AmmoDiagnostics.Trace("PostMission", $"{ammoDef.name} now {finalCharges}/{maxCharges} from {storageName}.");
                     Debug.Log($"POSTMISSION RELOAD: Reloaded {item} ({ammoDef.name}) now at {finalCharges}/{maxCharges} from {storageName}!");
 
                     if (storageAmmo.CommonItemData.IsEmpty())
@@ -268,15 +274,11 @@ namespace TFTV.Vehicles.Ammo
                     return true;
                 }
 
-                TFTVLogger.Always($"UIModuleReplenish_AddMissingAmmo_Patch Prefix called for item {item.ItemDef.name}");
-
                 var moduleDef = (item != null) ? (item.ItemDef as GroundVehicleModuleDef) : null;
                 if (moduleDef == null)
                 {
                     return true;
                 }
-
-                TFTVLogger.Always($"UIModuleReplenish_AddMissingAmmo_Patch got past here for {item.ItemDef.name}");
 
                 if (!EnsureModuleAmmo(item.CommonItemData, moduleDef))
                 {
@@ -293,15 +295,23 @@ namespace TFTV.Vehicles.Ammo
                     }
                     int currentCharges = GetAmmoChargesForDef(item.CommonItemData, tacticalItemDef);
 
-                    TFTVLogger.Always($"UIModuleReplenish_AddMissingAmmo_Patch current charges for {tacticalItemDef.name} {currentCharges}, max charges {maxCharges}");
-
                     if (currentCharges >= maxCharges)
                     {
                         continue;
                     }
                     float num = (float)currentCharges / (float)maxCharges;
 
-                    ResourcePack repairCost = GeoCharacter.GetRepairCost(tacticalItemDef, num);
+                    // Buy-only ammunition is priced at a whole magazine from the marketplace; anything
+                    // the player can manufacture keeps vanilla's proportional repair cost.
+                    bool marketplaceOnly = IsMarketplaceOnlyAmmo(tacticalItemDef);
+                    ResourcePack marketplaceCost = null;
+                    bool magazineOnSale = marketplaceOnly &&
+                        CanBuyMagazine(ReplenishFaction(__instance), tacticalItemDef, out marketplaceCost);
+
+                    ResourcePack repairCost = marketplaceOnly
+                        ? (marketplaceCost ?? MarketplacePrice(0))
+                        : GeoCharacter.GetRepairCost(tacticalItemDef, num);
+
                     GeoManufactureItem geoManufactureItem = UnityEngine.Object.Instantiate<GeoManufactureItem>(__instance.ItemListPrefab, __instance.ItemListContainer);
                     GeoManufactureItem geoManufactureItem2 = geoManufactureItem;
                     InteractHandler interactHandler = GetInteractHandler(__instance, "OnEnterSlot");
@@ -333,7 +343,21 @@ namespace TFTV.Vehicles.Ammo
                     __instance.Items.Add(geoManufactureItem);
                     GameTagDef manufacturableTag = GameUtl.GameComponent<SharedData>().SharedGameTags.ManufacturableTag;
                     GeoPhoenixFaction geoPhoenixFaction = ReplenishFaction(__instance);
-                    bool flag2 = geoPhoenixFaction.Wallet.HasResources(repairCost) && tacticalItemDef.Tags.Contains(manufacturableTag) && geoPhoenixFaction.Manufacture.Contains(tacticalItemDef);
+
+                    // Buy-only ammunition is never in the faction's manufacture list, so asking whether
+                    // it can be built would disable every one of these rows. What gates it instead is
+                    // whether a magazine is actually on sale and affordable.
+                    bool flag2 = marketplaceOnly
+                        ? magazineOnSale
+                        : geoPhoenixFaction.Wallet.HasResources(repairCost)
+                            && tacticalItemDef.Tags.Contains(manufacturableTag)
+                            && geoPhoenixFaction.Manufacture.Contains(tacticalItemDef);
+
+                    AmmoDiagnostics.Trace("ReplenishScreen",
+                        $"Row for {tacticalItemDef.name} on {moduleDef.name} ({currentCharges}/{maxCharges}), " +
+                        $"{(marketplaceOnly ? "marketplace" : "manufacture")} priced " +
+                        $"{repairCost.ByResourceType(ResourceType.Materials).RoundedValue} materials, " +
+                        $"{(flag2 ? "buyable" : "not buyable")}.");
                     PhoenixGeneralButton component = geoManufactureItem.AddToQueueButton.GetComponent<PhoenixGeneralButton>();
                     if (component != null)
                     {
@@ -352,33 +376,247 @@ namespace TFTV.Vehicles.Ammo
             }
         }
 
-        /*     [HarmonyPatch(typeof(UIModuleReplenish), "SingleItemReloadAndRefresh")]
-             public static class UIModuleReplenish_SingleItemReloadAndRefresh_Patch
-             {
-                 public static bool Prefix(UIModuleReplenish __instance, GeoManufactureItem item)
-                 {
-                     if (!TFTVAircraftReworkMain.AircraftReworkOn)
-                     {
-                         return true;
-                     }
+        #region Buying module ammunition from the marketplace
 
-                     if (item == null)
-                     {
-                         return true;
-                     }
-                     AmmoDefHolder ammoDefHolder;
-                     if (!ReplenishAmmoDefs.TryGetValue(item, out ammoDefHolder))
-                     {
-                         return true;
-                     }
-                     GeoItem item2 = item.GetComponent<ReplenishmentElementController>().Item;
-                     if (ReloadModuleAmmo(item2, ammoDefHolder.AmmoDef))
-                     {
-                         AccessTools.Method(typeof(UIModuleReplenish), "RemoveFromList")?.Invoke(__instance, new object[] { item, true });
-                         AccessTools.Method(typeof(UIModuleReplenish), "RefreshItemList")?.Invoke(__instance, null);
-                     }
-                     return false;
-                 }
-             }*/
+        // Ground vehicle module ammunition is Kaos kit: it is never manufacturable, so the replenish
+        // screen's usual "pay the repair cost, conjure the clip" route does not apply to it. A module
+        // magazine is bought from the marketplace at the going rate for a whole magazine, and whatever
+        // the weapon cannot hold goes into faction storage rather than being thrown away.
+
+        /// <summary>
+        /// The cheapest magazine of this ammunition currently on sale, or null when the marketplace is
+        /// not offering any. Deliberately has no fallback price: ammunition that is not on sale cannot
+        /// be bought, and the replenish row stays disabled until the next restock.
+        /// </summary>
+        private static GeoEventChoice FindCheapestListing(GeoMarketplace marketplace, TacticalItemDef ammoDef, out int price)
+        {
+            price = 0;
+            if (marketplace?.MarketplaceChoices == null || ammoDef == null)
+            {
+                return null;
+            }
+
+            GeoEventChoice cheapest = null;
+            int cheapestPrice = int.MaxValue;
+
+            foreach (GeoEventChoice choice in marketplace.MarketplaceChoices)
+            {
+                if (choice?.Outcome?.Items == null || choice.Outcome.Items.Count == 0) continue;
+                if (choice.Outcome.Items[0].ItemDef != ammoDef) continue;
+                if (choice.Requirments?.Resources == null) continue;
+
+                int choicePrice = choice.Requirments.Resources.ByResourceType(ResourceType.Materials).RoundedValue;
+                if (choicePrice < cheapestPrice)
+                {
+                    cheapestPrice = choicePrice;
+                    cheapest = choice;
+                }
+            }
+
+            if (cheapest == null)
+            {
+                return null;
+            }
+
+            price = cheapestPrice;
+            return cheapest;
+        }
+
+        /// <summary>
+        /// Ammunition that can only ever be bought, never built - the Junker's magazines and the
+        /// Purgatory's. Everything else a vehicle fires is Phoenix, New Jericho or Synedrion kit that
+        /// the manufacture-cost route already prices correctly, and is left alone.
+        /// </summary>
+        internal static bool IsMarketplaceOnlyAmmo(TacticalItemDef ammoDef)
+        {
+            return ammoDef != null && VehiclesAmmoMain.MarketplaceAmmoDefsAndOptions.ContainsKey(ammoDef);
+        }
+
+        internal static ResourcePack MarketplacePrice(int price)
+        {
+            return new ResourcePack(new ResourceUnit(ResourceType.Materials, price));
+        }
+
+        /// <summary>
+        /// Whether a magazine of this ammunition could be bought right now: one is on sale and the
+        /// faction can afford the cheapest.
+        /// </summary>
+        internal static bool CanBuyMagazine(GeoPhoenixFaction faction, TacticalItemDef ammoDef, out ResourcePack cost)
+        {
+            cost = null;
+
+            GeoLevelController controller = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+            if (controller == null || faction == null) return false;
+
+            int price;
+            if (FindCheapestListing(controller.Marketplace, ammoDef, out price) == null) return false;
+
+            cost = MarketplacePrice(price);
+            return faction.Wallet.HasResources(cost);
+        }
+
+        /// <summary>
+        /// Buys one whole magazine of this ammunition at the cheapest price on sale, loads the module
+        /// with as much of it as the weapon can hold, and banks the rest in faction storage.
+        ///
+        /// The listing is consumed, so a single cheap magazine cannot be used to refill a whole fleet -
+        /// buying it here is the same transaction as buying it at the marketplace, and removes it from
+        /// the offers for the same reason.
+        /// </summary>
+        private static bool TryBuyMagazineAndLoad(GeoItem moduleItem, TacticalItemDef ammoDef)
+        {
+            try
+            {
+                GroundVehicleModuleDef moduleDef = moduleItem?.ItemDef as GroundVehicleModuleDef;
+                if (moduleDef == null || ammoDef == null || ammoDef.ChargesMax <= 0) return false;
+                if (!EnsureModuleAmmo(moduleItem.CommonItemData, moduleDef)) return false;
+
+                GeoLevelController controller = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                GeoPhoenixFaction faction = controller?.PhoenixFaction;
+                if (faction == null) return false;
+
+                int needed = GetAmmoCapacityForDef(moduleDef, ammoDef) - GetAmmoChargesForDef(moduleItem.CommonItemData, ammoDef);
+                if (needed <= 0)
+                {
+                    AmmoDiagnostics.Trace("Purchase", $"{ammoDef.name} already full on {moduleDef.name}; nothing bought.");
+                    return true;
+                }
+
+                int price;
+                GeoEventChoice listing = FindCheapestListing(controller.Marketplace, ammoDef, out price);
+                if (listing == null)
+                {
+                    TFTVLogger.Always($"[ModuleAmmo] No {ammoDef.name} on sale; cannot replenish {moduleDef.name}.");
+                    return false;
+                }
+
+                ResourcePack cost = MarketplacePrice(price);
+                if (!faction.Wallet.HasResources(cost))
+                {
+                    AmmoDiagnostics.Trace("Purchase",
+                        $"Cheapest {ammoDef.name} is {price} materials; faction cannot afford it.");
+                    return false;
+                }
+
+                faction.Wallet.Take(cost, OperationReason.Purchase);
+                controller.Marketplace.MarketplaceChoices.Remove(listing);
+
+                // The magazine is bought whole: the weapon takes what it has room for and the balance
+                // is banked, so nothing the player paid for is lost.
+                int loaded = Math.Min(needed, ammoDef.ChargesMax);
+                int leftover = ammoDef.ChargesMax - loaded;
+
+                GeoItem magazine = new GeoItem(ammoDef, 1, -1, null, -100);
+                magazine.CommonItemData.ModifyCharges(-magazine.CommonItemData.CurrentCharges, false);
+                magazine.CommonItemData.ModifyCharges(loaded, false);
+                moduleItem.CommonItemData.Ammo.LoadMagazine(magazine);
+
+                if (leftover > 0)
+                {
+                    GeoItem remainder = new GeoItem(ammoDef, 1, -1, null, -100);
+                    remainder.CommonItemData.ModifyCharges(-remainder.CommonItemData.CurrentCharges, false);
+                    remainder.CommonItemData.ModifyCharges(leftover, false);
+                    faction.ItemStorage.AddItem(remainder);
+                }
+
+                TFTVLogger.Always($"[ModuleAmmo] Bought a {ammoDef.name} magazine for {price} materials; " +
+                    $"{loaded} into {moduleDef.name}, {leftover} to storage.");
+
+                AmmoDiagnostics.Trace("Purchase",
+                    $"Listing consumed; marketplace now holds " +
+                    $"{controller.Marketplace.MarketplaceChoices.Count} choice(s). Module: {AmmoDiagnostics.DescribeAmmo(moduleItem)}");
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// The row-level buy button. Each row stands for one of the module's ammunition types, and
+        /// only that type is bought.
+        /// </summary>
+        [HarmonyPatch(typeof(UIModuleReplenish), "SingleItemReloadAndRefresh")]
+        public static class UIModuleReplenish_SingleItemReloadAndRefresh_Patch
+        {
+            public static bool Prefix(UIModuleReplenish __instance, GeoManufactureItem item)
+            {
+                try
+                {
+                    if (!TFTVAircraftReworkMain.AircraftReworkOn || item == null) return true;
+
+                    AmmoDefHolder holder;
+                    if (!ReplenishAmmoDefs.TryGetValue(item, out holder)) return true;
+
+                    GeoItem moduleItem = item.GetComponent<ReplenishmentElementController>()?.Item;
+                    if (moduleItem == null) return true;
+
+                    AmmoDiagnostics.Trace("ReplenishScreen",
+                        $"Row clicked for {holder.AmmoDef?.name}: {AmmoDiagnostics.DescribeAmmo(moduleItem)}");
+
+                    if (TryBuyMagazineAndLoad(moduleItem, holder.AmmoDef))
+                    {
+                        AccessTools.Method(typeof(UIModuleReplenish), "RemoveFromList")?.Invoke(__instance, new object[] { item, true });
+                        AccessTools.Method(typeof(UIModuleReplenish), "RefreshItemList")?.Invoke(__instance, null);
+                    }
+
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    return true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Replenish All routes every reloadable item through SingleItemReload, which cannot read a
+        /// module - vanilla resolves CompatibleAmmunition on the module def, finds none, and gives up.
+        /// A module is reloaded here instead, buying a magazine for each of its ammunition types.
+        /// </summary>
+        [HarmonyPatch(typeof(UIModuleReplenish), "SingleItemReload")]
+        public static class UIModuleReplenish_SingleItemReload_ModuleAmmo_Patch
+        {
+            public static bool Prefix(GeoItem geoItem, ref bool __result)
+            {
+                try
+                {
+                    if (!TFTVAircraftReworkMain.AircraftReworkOn) return true;
+
+                    GroundVehicleModuleDef moduleDef = geoItem?.ItemDef as GroundVehicleModuleDef;
+                    if (moduleDef == null) return true;
+
+                    AmmoDiagnostics.Trace("ReplenishAll", $"Reloading {AmmoDiagnostics.DescribeAmmo(geoItem)}");
+
+                    bool allFull = true;
+                    foreach (TacticalItemDef ammoDef in GetModuleAmmoDefs(moduleDef))
+                    {
+                        int missing = GetAmmoCapacityForDef(moduleDef, ammoDef) - GetAmmoChargesForDef(geoItem.CommonItemData, ammoDef);
+                        if (missing <= 0) continue;
+
+                        if (!TryBuyMagazineAndLoad(geoItem, ammoDef))
+                        {
+                            allFull = false;
+                        }
+                    }
+
+                    // Only reports success when the module is genuinely full, so a row for ammunition
+                    // that could not be bought stays on the list instead of quietly disappearing.
+                    __result = allFull;
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    return true;
+                }
+            }
+        }
+
+        #endregion
     }
 }

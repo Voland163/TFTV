@@ -412,6 +412,7 @@
     <Compile Include="Vehicles\Abilities\HealPassengersStatusDef.cs" />
     <Compile Include="Vehicles\Abilities\InvertedDamageMultiplierStatus.cs" />
     <Compile Include="Vehicles\Abilities\InvertedDamageMultiplierStatusDef.cs" />
+    <Compile Include="Vehicles\Ammo\AmmoDiagnostics.cs" />
     <Compile Include="Vehicles\Ammo\MissionEndReplenish.cs" />
     <Compile Include="Vehicles\Ammo\SubaddonWeapons.cs" />
     <Compile Include="Vehicles\Ammo\SubaddonWeaponsLoadAmmoPatch.cs" />

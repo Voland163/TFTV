@@ -165,7 +165,10 @@ namespace TFTV
                     newAmmo.Tags.Remove(phoenixFactionTag);
                     newAmmo.Tags.Add(neutralFactionTag);
                     newAmmo.Tags.Remove(DefCache.GetDef<ClassTagDef>("Assault_ClassTagDef"));
-                    newAmmo.Tags.Add(classTagDef);
+                    if (classTagDef != null)
+                    {
+                        newAmmo.Tags.Add(classTagDef);
+                    }
                     //  newAmmo.CombineWhenStacking = false;
                     newAmmo.ManufactureTech = 0;
                     newAmmo.ManufactureMaterials = minPrice;
@@ -207,7 +210,17 @@ namespace TFTV
                     AmmoWeaponDatabase.AmmoToWeaponDictionary.Add(newAmmo, new List<TacticalItemDef>() { weaponDef });
                     GeoMarketplaceItemOptionDef weaponMarketPlaceOption = (GeoMarketplaceItemOptionDef)geoMarketplaceItemOptionDefs.Find(o => o is GeoMarketplaceItemOptionDef marketOption && marketOption.ItemDef == weaponDef);
 
-                    _kGWeaponsAndAmmo.Add(weaponMarketPlaceOption, newMarketplaceItem);
+                    // Find returns null when no marketplace option exists for this weapon, and a null
+                    // key throws on Add - so the pairing is only recorded when there is something to
+                    // pair. Offer generation copes with the weapon being absent from the map.
+                    if (weaponMarketPlaceOption != null)
+                    {
+                        _kGWeaponsAndAmmo[weaponMarketPlaceOption] = newMarketplaceItem;
+                    }
+                    else
+                    {
+                        TFTVLogger.Always($"[KaosGuns] No marketplace option found for {weaponDef.name}; its ammunition will not be bundled with it.");
+                    }
 
                     GeoFactionDef neutralFaction = DefCache.GetDef<GeoFactionDef>("Neutral_GeoFactionDef");
 
