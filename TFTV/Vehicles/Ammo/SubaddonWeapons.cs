@@ -1224,6 +1224,10 @@ namespace TFTV.Vehicles.Ammo
                     UIInventorySlot owningSlot = OwningSlot(__instance);
                     ICommonItem owningItem = owningSlot?.Item;
 
+                    AmmoDiagnostics.Trace("EquipScreen",
+                        $"Side button {state.Action} pressed on {AmmoDiagnostics.DescribeAmmo(owningItem)}" +
+                        $", itemToProduce {ItemToProduce(__instance)?.name ?? "<none>"}");
+
                     WeaponDef weaponDef;
                     TacticalItemDef weaponAmmoDef;
                     if (owningItem != null && IsKaosGunWeapon(owningItem.ItemDef, out weaponDef, out weaponAmmoDef))
@@ -1643,6 +1647,9 @@ namespace TFTV.Vehicles.Ammo
             {
                 return false;
             }
+
+            AmmoDiagnostics.Trace("FreeReload",
+                $"Filling {ammoDef.name} on {AmmoDiagnostics.DescribeAmmo(item)} without cost");
             var moduleDef = item.ItemDef as GroundVehicleModuleDef;
             if (moduleDef == null || !EnsureModuleAmmo(item.CommonItemData, moduleDef))
             {

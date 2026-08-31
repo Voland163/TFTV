@@ -6,6 +6,7 @@ using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Weapons;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TFTV.Vehicles.Ammo
 {
@@ -76,7 +77,9 @@ namespace TFTV.Vehicles.Ammo
                     return false;
                 }
 
-                HashSet<TacticalItemDef> ammoDefs = new HashSet<TacticalItemDef>();
+                // A list in sub-weapon order, not a HashSet: which of a two-ammo module's types went
+                // in first was otherwise unspecified, so the same press behaved differently run to run.
+                List<TacticalItemDef> ammoDefs = new List<TacticalItemDef>();
                 foreach (WeaponDef weaponDef in subWeapons)
                 {
                     if (weaponDef == null || weaponDef.CompatibleAmmunition == null)
@@ -86,7 +89,7 @@ namespace TFTV.Vehicles.Ammo
 
                     foreach (TacticalItemDef ammoDef in weaponDef.CompatibleAmmunition)
                     {
-                        if (ammoDef != null)
+                        if (ammoDef != null && !ammoDefs.Contains(ammoDef))
                         {
                             ammoDefs.Add(ammoDef);
                         }
@@ -98,8 +101,18 @@ namespace TFTV.Vehicles.Ammo
                     return false;
                 }
 
+                AmmoDiagnostics.Trace("EquipScreen",
+                    $"Loading module ammo: {AmmoDiagnostics.DescribeAmmo(item)}, " +
+                    $"types [{string.Join(", ", ammoDefs.Select(a => a.name))}]");
+
+                // Every ammunition type the module takes, in one press. Returning after the first
+                // success meant a Junker module needed two clicks to fill both its weapons.
+                bool loadedAny = false;
+
                 foreach (TacticalItemDef ammoDef in ammoDefs)
                 {
+                    bool loadedThisType = false;
+
                     foreach (UIInventorySlot slot in sourceList.Slots)
                     {
                         if (slot.Empty || slot.Item == null || slot.Item.ItemDef != ammoDef)
@@ -109,37 +122,46 @@ namespace TFTV.Vehicles.Ammo
 
                         if (list.TryLoadItemWithItem(item, slot.Item, slot))
                         {
-                            if (itemSlot != null)
-                            {
-                                itemSlot.UpdateItem();
-                            }
-                            return false;
+                            loadedThisType = true;
+                            break;
                         }
                     }
 
-                    for (int i = 0; i < sourceList.UnfilteredItems.Count; i++)
+                    if (!loadedThisType)
                     {
-                        ICommonItem commonItem = sourceList.UnfilteredItems[i];
-                        if (commonItem == null || commonItem.ItemDef != ammoDef)
+                        for (int i = 0; i < sourceList.UnfilteredItems.Count; i++)
                         {
-                            continue;
-                        }
-
-                        if (list.TryLoadItemWithItem(item, commonItem, null))
-                        {
-                            if (itemSlot != null)
+                            ICommonItem commonItem = sourceList.UnfilteredItems[i];
+                            if (commonItem == null || commonItem.ItemDef != ammoDef)
                             {
-                                itemSlot.UpdateItem();
+                                continue;
                             }
 
-                            if (commonItem.CommonItemData.IsEmpty())
+                            if (list.TryLoadItemWithItem(item, commonItem, null))
                             {
-                                sourceList.UnfilteredItems.RemoveAt(i);
+                                loadedThisType = true;
+
+                                if (commonItem.CommonItemData.IsEmpty())
+                                {
+                                    sourceList.UnfilteredItems.RemoveAt(i);
+                                }
+                                break;
                             }
-                            return false;
                         }
                     }
+
+                    loadedAny |= loadedThisType;
                 }
+
+                if (loadedAny && itemSlot != null)
+                {
+                    itemSlot.UpdateItem();
+                }
+
+                AmmoDiagnostics.Trace("EquipScreen",
+                    loadedAny
+                        ? $"Loaded: {AmmoDiagnostics.DescribeAmmo(item)}"
+                        : $"Nothing loaded - no matching ammo in the list for {AmmoDiagnostics.DescribeAmmo(item)}");
 
                 return false;
             }

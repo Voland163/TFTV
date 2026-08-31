@@ -407,6 +407,11 @@ namespace TFTV
                     GenerateMercenaryChoices(currentlyPossibleOptions, Math.Min(numberOfOffers / 4, 6), geoMarketPlace, voPriceMultiplier);
                     GenerateResearchChoices(currentlyPossibleOptions, Math.Min(numberOfOffers / 4, 8), geoMarketPlace, voPriceMultiplier);
 
+                    if (TFTVAircraftReworkMain.AircraftReworkOn)
+                    {
+                        StockAmmoForSeenWeaponModules(controller, geoMarketPlace, voPriceMultiplier);
+                    }
+
                     if (TFTVAircraftReworkMain.AircraftReworkOn) //&& controller.EventSystem.GetVariable(_marketPlaceStockRotated) > 3)
                     {
                         TFTVAircraftReworkMain.MarketPlace.GenerateMarketPlaceModules(geoMarketPlace, voPriceMultiplier);
@@ -484,19 +489,24 @@ namespace TFTV
                         int price = (int)(UnityEngine.Random.Range(weaponOffer.MinPrice, weaponOffer.MaxPrice) * priceModifier);
 
                         GeoEventChoice item = GenerateItemChoice(weaponOffer.ItemDef, price);
-                        GeoMarketplaceItemOptionDef ammoOffer = TFTVKaosGuns._kGWeaponsAndAmmo[weaponOffer];
+                        geoMarketplace.MarketplaceChoices.Add(item);
+
+                        // TryGetValue, not the indexer: a Kaos weapon whose marketplace option went
+                        // missing would otherwise throw KeyNotFoundException out of here and take the
+                        // entire restock with it, leaving the player an empty marketplace.
+                        GeoMarketplaceItemOptionDef ammoOffer;
+                        if (!TFTVKaosGuns._kGWeaponsAndAmmo.TryGetValue(weaponOffer, out ammoOffer) || ammoOffer?.ItemDef == null)
+                        {
+                            TFTVLogger.Always($"[Marketplace] {weaponOffer.name} has no ammunition option; offering the weapon alone.");
+                            continue;
+                        }
 
                         int ammoPrice = (int)(UnityEngine.Random.Range(ammoOffer.MinPrice, ammoOffer.MaxPrice) * priceModifier);
 
-                        List<GeoEventChoice> ammo = new List<GeoEventChoice>()
-                    {
-                        GenerateItemChoice(ammoOffer.ItemDef, ammoPrice),
-                        GenerateItemChoice(ammoOffer.ItemDef, ammoPrice),
-                        GenerateItemChoice(ammoOffer.ItemDef, ammoPrice),
-                    };
-
-                        geoMarketplace.MarketplaceChoices.Add(item);
-                        geoMarketplace.MarketplaceChoices.AddRange(ammo);
+                        for (int ammoCount = 0; ammoCount < 3; ammoCount++)
+                        {
+                            geoMarketplace.MarketplaceChoices.Add(GenerateItemChoice(ammoOffer.ItemDef, ammoPrice));
+                        }
                         //  TFTVLogger.Always($"should have added {weaponOffer.name} and 3 ammo for it");
                     }
 
@@ -553,6 +563,8 @@ namespace TFTV
 
                         if (TFTVAircraftReworkMain.AircraftReworkOn)
                         {
+                            RememberWeaponModuleOffered(vehicleItemToOffer);
+
                             List<GeoMarketplaceItemOptionDef> ammoOffers = GetMarketplaceAmmoOffersForVehicleItem(vehicleItemToOffer);
 
                             foreach (GeoMarketplaceItemOptionDef ammoOffer in ammoOffers)
@@ -569,6 +581,92 @@ namespace TFTV
                 {
                     TFTVLogger.Error(e);
                     throw;
+                }
+            }
+
+            /// <summary>
+            /// The Junker's weapon modules, each of which carries two ammunition types.
+            /// </summary>
+            private static readonly string[] JunkerWeaponModuleDefNames =
+            {
+                "KS_Buggy_The_Vishnu_Gun_GroundVehicleModuleDef",
+                "KS_Buggy_Fullstop_GroundVehicleModuleDef",
+                "KS_Buggy_The_Screamer_GroundVehicleModuleDef",
+            };
+
+            private static string SeenVariableFor(string moduleDefName)
+            {
+                return "TFTV_MarketOffered_" + moduleDefName;
+            }
+
+            /// <summary>
+            /// Notes that a weapon module has been put on sale, so its ammunition can be stocked from
+            /// now on.
+            ///
+            /// The Junker itself is always offer zero and bundles minigun and Vishnu ammunition with
+            /// it, but the Fullstop and Screamer modules are drawn at random from a pool of some
+            /// fifteen vehicle options - roughly a one-in-three chance each restock. Their ammunition
+            /// rode along with that draw, so a player running either of those had a far worse resupply
+            /// cadence than one running the Vishnu, for no reason they could see.
+            /// </summary>
+            private static void RememberWeaponModuleOffered(GeoMarketplaceItemOptionDef offer)
+            {
+                try
+                {
+                    GroundVehicleModuleDef moduleDef = offer?.ItemDef as GroundVehicleModuleDef;
+                    if (moduleDef == null || !JunkerWeaponModuleDefNames.Contains(moduleDef.name)) return;
+
+                    GeoLevelController controller = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                    if (controller?.EventSystem == null) return;
+
+                    string variable = SeenVariableFor(moduleDef.name);
+                    if (controller.EventSystem.GetVariable(variable) > 0) return;
+
+                    controller.EventSystem.SetVariable(variable, 1);
+                    TFTVLogger.Always($"[Marketplace] {moduleDef.name} offered for the first time; its ammunition will be stocked from now on.");
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            /// <summary>
+            /// Stocks ammunition for every Junker weapon module the marketplace has offered at least
+            /// once, whether or not that module is on sale this time round.
+            ///
+            /// Gated on having been offered rather than being unconditional, so ammunition never
+            /// appears for a weapon the player has had no chance to see. AddMarketplaceAmmoChoices caps
+            /// the count per ammunition type, so this tops up rather than piling on.
+            /// </summary>
+            private static void StockAmmoForSeenWeaponModules(GeoLevelController controller, GeoMarketplace geoMarketplace, float priceModifier)
+            {
+                try
+                {
+                    if (controller?.EventSystem == null || geoMarketplace == null) return;
+
+                    foreach (string moduleDefName in JunkerWeaponModuleDefNames)
+                    {
+                        if (controller.EventSystem.GetVariable(SeenVariableFor(moduleDefName)) <= 0) continue;
+
+                        GroundVehicleModuleDef moduleDef = DefCache.GetDef<GroundVehicleModuleDef>(moduleDefName);
+                        if (moduleDef == null) continue;
+
+                        foreach (TacticalItemDef ammoDef in VehicleModuleAmmoHarmonyPatches.GetModuleAmmoDefs(moduleDef))
+                        {
+                            GeoMarketplaceItemOptionDef ammoOffer;
+                            if (VehiclesAmmoMain.MarketplaceAmmoDefsAndOptions.TryGetValue(ammoDef, out ammoOffer) && ammoOffer != null)
+                            {
+                                AddMarketplaceAmmoChoices(geoMarketplace, ammoOffer, priceModifier);
+                                AmmoDiagnostics.Trace("Restock",
+                                    $"Stocked {ammoDef.name} for {moduleDefName}, which has been offered before.");
+                            }
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
                 }
             }
 

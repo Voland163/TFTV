@@ -332,7 +332,10 @@ namespace TFTV.Vehicles.Ammo
                     newAmmo.CrateSpawnWeight = 1000;
                     newAmmo.Tags.Remove(DefCache.GetDef<FactionTagDef>("NewJerico_FactionTagDef"));
                     newAmmo.Tags.Remove(DefCache.GetDef<ClassTagDef>("Heavy_ClassTagDef"));
-                    newAmmo.Tags.Add(classTagDef);
+                    if (classTagDef != null)
+                    {
+                        newAmmo.Tags.Add(classTagDef);
+                    }
                     newAmmo.Tags.Add(vehicleTag);
 
                     newAmmo.ManufactureTech = techPrice;
@@ -422,16 +425,22 @@ namespace TFTV.Vehicles.Ammo
                         );
                     // "vehicles_ammo_purgatory.png"
 
+                    // These two share the Vishnu minigun's magazine rather than getting one of their
+                    // own, so they are wired up by hand instead of through CreateAmmoForJunkerWeapon -
+                    // which means they also have to be given the reload ability by hand. Without it the
+                    // weapon can be fired dry in tactical with no way to reload it.
                     WeaponDef junkerMinigunFullstop = DefCache.GetDef<WeaponDef>("KS_Buggy_Minigun_Fullstop_WeaponDef");
                     junkerMinigunFullstop.CompatibleAmmunition = new TacticalItemDef[] { junkerMinigun.CompatibleAmmunition[0] };
                     junkerMinigunFullstop.FreeReloadOnMissionEnd = false;
                     junkerMinigunFullstop.ViewElementDef.SmallIcon = junkerMinigunFullstop.ViewElementDef.InventoryIcon;
+                    AddReloadAbilityIfMissing(junkerMinigunFullstop);
                     AmmoWeaponDatabase.AmmoToWeaponDictionary[junkerMinigun.CompatibleAmmunition[0]].Add(junkerMinigunFullstop);
 
                     WeaponDef junkerMinigunScreamer = DefCache.GetDef<WeaponDef>("KS_Buggy_Minigun_Screamer_WeaponDef");
                     junkerMinigunScreamer.CompatibleAmmunition = new TacticalItemDef[] { junkerMinigun.CompatibleAmmunition[0] };
                     junkerMinigunScreamer.FreeReloadOnMissionEnd = false;
                     junkerMinigunScreamer.ViewElementDef.SmallIcon = junkerMinigunScreamer.ViewElementDef.InventoryIcon;
+                    AddReloadAbilityIfMissing(junkerMinigunScreamer);
                     AmmoWeaponDatabase.AmmoToWeaponDictionary[junkerMinigun.CompatibleAmmunition[0]].Add(junkerMinigunScreamer);
 
                 }
