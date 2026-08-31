@@ -63,6 +63,7 @@ namespace TFTV.TFTVBaseRework
             [HarmonyPatch]
             public static class HideDestroyedPhoenixBaseTooltipPatch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 // Patch both states that can display the short Phoenix base tooltip.
                 static System.Collections.Generic.IEnumerable<System.Reflection.MethodBase> TargetMethods()
                 {
@@ -85,6 +86,7 @@ namespace TFTV.TFTVBaseRework
             [HarmonyPatch(typeof(ActivateBaseAbility), "GetDisabledStateInternal")]
             internal static class ActivateBaseAbility_GetDisabledStateInternal_patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 public static bool Prefix(ActivateBaseAbility __instance, ref GeoAbilityDisabledState __result)
                 {
                     try
@@ -139,6 +141,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoVehicle), "OnArrivedAtDestination")]
         internal static class GeoVehicle_OnArrivedAtDestination_OpenActivationUI_patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
          
             public static void Postfix(GeoVehicle __instance, bool justPassing)
             {

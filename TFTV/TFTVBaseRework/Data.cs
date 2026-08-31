@@ -391,6 +391,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(UIModuleGeoRosterTabs), "CheckAvailableTabs")]
         public static class AlwaysUnlockRecruitTabPatch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static readonly AccessTools.FieldRef<UIModuleGeoRosterTabs, bool> RecruitsUnlockedRef =
                 AccessTools.FieldRefAccess<UIModuleGeoRosterTabs, bool>("_recruitsUnlocked");
 
@@ -414,6 +415,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoPhoenixFaction), "GetNextRecruitRegeneration")]
         public static class SafeRecruitRegenerationTimePatch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static readonly AccessTools.FieldRef<GeoPhoenixFaction, TimeUnit> LastNakedRecruitRefreshRef =
                 AccessTools.FieldRefAccess<GeoPhoenixFaction, TimeUnit>("_lastNakedRecruitRefresh");
 
@@ -1246,6 +1248,7 @@ namespace TFTV.TFTVBaseRework
 
         internal static class Patch_GeoscapeLog_PhoenixFaction_OnRecruitsRegenerated
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             static bool Prefix(IEnumerable<GeoUnitDescriptor> nakedRecruits, GeoLevelController ____level)
             {
                 if (!BaseReworkCheck.BaseReworkEnabled)
@@ -1282,6 +1285,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoPhoenixFaction), nameof(GeoPhoenixFaction.RegenerateNakedRecruits))]
         internal static class GeoPhoenixFaction_RegenerateNakedRecruits_PersonnelSync
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
 
             private static void Postfix(GeoPhoenixFaction __instance, ref TimeUnit ____lastNakedRecruitRefresh, ref Dictionary<GeoUnitDescriptor, ResourcePack> ____nakedRecruits)
             {

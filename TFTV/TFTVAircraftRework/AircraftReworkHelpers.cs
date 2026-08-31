@@ -288,6 +288,7 @@ namespace TFTV
         [HarmonyPatch(typeof(ItemDef), "GetDetailedImage")]
         public static class ItemDef_GetDetailedImage_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(ItemDef __instance, ref Sprite __result)
             {
                 try
@@ -314,6 +315,7 @@ namespace TFTV
         [HarmonyPatch(typeof(ItemDef), "GetSmallIcon")]
         public static class ItemDef_GetSmallIcon_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(ItemDef __instance, ref Sprite __result)
             {
                 try

@@ -417,6 +417,7 @@ namespace TFTV.TFTVIncidents
         [HarmonyPatch(typeof(GeoSiteVisualsController), "Update")]
         internal static class GeoSiteVisualsController_Update_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(GeoSiteVisualsController __instance)
             {
                 GeoSite site = __instance.Site;

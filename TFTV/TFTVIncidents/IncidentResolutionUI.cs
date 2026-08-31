@@ -29,6 +29,7 @@ namespace TFTV.TFTVIncidents
         [HarmonyPatch(typeof(UIModuleSiteEncounters), "SetEncounter")]
         internal static class GeoscapeEventCrewListPatch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private const string CrewRootName = "[Mod]EventCrewListRoot";
             private const string HeaderName = "[Mod]EventCrewListHeader";
             private const string CrewGridName = "[Mod]EventCrewListGrid";

@@ -25,6 +25,7 @@ namespace TFTV.TFTVIncidents
             [HarmonyPatch(typeof(UIModuleSiteContextualMenu), nameof(UIModuleSiteContextualMenu.SetMenuItems))]
             private static class UIModuleSiteContextualMenu_SetMenuItems_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 private static void Prefix(List<GeoAbility> rawAbilities)
                 {
 
@@ -78,6 +79,7 @@ namespace TFTV.TFTVIncidents
             [HarmonyPatch(typeof(UIModuleSiteContextualMenu), "OnAbilityHover")]
             private static class UIModuleSiteContextualMenu_OnAbilityHover_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 public static void Postfix(UIModuleSiteContextualMenu __instance, bool isHovered, SiteContextualMenuItem menuItem)
                 {
                     GeoSite site = __instance?.SelectedSite;

@@ -40,6 +40,7 @@ namespace TFTV.TFTVIncidents
             [HarmonyPatch(typeof(ResourceMissionOutcomeDef), nameof(ResourceMissionOutcomeDef.ApplyOutcome))]
             private static class ResourceMissionOutcomeDef_ApplyOutcome_AffinityHavenDefenseReward_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 private static void Postfix(GeoMission mission, ref MissionRewardDescription rewardDescription)
                 {
                     try
@@ -98,6 +99,7 @@ namespace TFTV.TFTVIncidents
             [HarmonyPatch(typeof(UIModuleSiteContextualMenu))]
             internal static class UIModuleSiteContextualMenu_ExploreSiteTimePatch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 private const string TimeSeparator = " ~ ";
                 private const string TimeFormat = "{0}H";
                 private const string ExplorationTimeKey = "KEY_TFTV_INCIDENT_EXPLORATION_TIME";
@@ -227,6 +229,7 @@ namespace TFTV.TFTVIncidents
             [HarmonyPatch(typeof(GeoVehicle), "StartExploringCurrentSite")]
             private static class GeoVehicle_StartExploringCurrentSite_AffinityExplorationBonus_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 private static void Prefix(GeoVehicle __instance)
                 {
                     try
@@ -257,6 +260,7 @@ namespace TFTV.TFTVIncidents
             [HarmonyPatch(typeof(GeoSite), "get_ExplorationTime")]
             private static class GeoSite_get_ExplorationTime_AffinityExplorationBonus_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 public static void Postfix(GeoSite __instance, ref TimeUnit __result)
                 {
                     try

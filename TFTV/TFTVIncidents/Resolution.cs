@@ -1144,6 +1144,7 @@ namespace TFTV.TFTVIncidents
             [HarmonyPatch(typeof(GeoscapeEventSystem), "OnLevelStart")]
             internal static class GeoscapeEventSystem_OnLevelStart_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 private static void Postfix(GeoscapeEventSystem __instance)
                 {
                     IncidentController.OnGeoscapeLevelStart(__instance);
@@ -1153,6 +1154,7 @@ namespace TFTV.TFTVIncidents
             [HarmonyPatch(typeof(UIModuleSiteEncounters), "SelectChoice")]
             internal static class UIModuleSiteEncounters_SelectChoice_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 private static void Postfix(UIModuleSiteEncounters __instance, GeoEventChoice choice)
                 {
                     IncidentController.OnChoiceResolved(__instance, choice);
@@ -1162,6 +1164,7 @@ namespace TFTV.TFTVIncidents
             [HarmonyPatch(typeof(GeoscapeEventSystem), "Update")]
             internal static class GeoscapeEventSystem_Update_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 private static void Postfix(GeoscapeEventSystem __instance)
                 {
                     IncidentController.Tick(__instance);
@@ -1171,6 +1174,7 @@ namespace TFTV.TFTVIncidents
             [HarmonyPatch(typeof(MoveVehicleAbility), "GetDisabledStateInternal")]
             internal static class MoveVehicleAbility_GetDisabledStateInternal_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 private static void Postfix(MoveVehicleAbility __instance, ref GeoAbilityDisabledState __result)
                 {
                     if (!BaseReworkCheck.BaseReworkEnabled) return;
@@ -1192,6 +1196,7 @@ namespace TFTV.TFTVIncidents
             [HarmonyPatch(typeof(MoveVehicleAbility), "ActivateInternal")]
             internal static class MoveVehicleAbility_ActivateInternal_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 private static void Prefix(MoveVehicleAbility __instance)
                 {
                     if (!BaseReworkCheck.BaseReworkEnabled) return;
@@ -1210,6 +1215,7 @@ namespace TFTV.TFTVIncidents
             [HarmonyPatch(typeof(GeoVehicle), nameof(GeoVehicle.CanTransferBetweenContainer))]
             internal static class GeoVehicle_CanTransferBetweenContainer_BlockIncidentTransfer_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 private static void Postfix(GeoVehicle __instance, IGeoCharacterContainer container, ref bool __result)
                 {
                     if (!__result) return;
@@ -1235,6 +1241,7 @@ namespace TFTV.TFTVIncidents
             [HarmonyPatch(typeof(GeoscapeEventSystem), nameof(GeoscapeEventSystem.TriggerGeoscapeEvent))]
             internal static class GeoscapeEventSystem_TriggerGeoscapeEvent_IncidentPersonnelReward_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 private sealed class SameHavenTagInfo
                 {
                     public int IncidentId;

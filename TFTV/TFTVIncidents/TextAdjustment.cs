@@ -23,6 +23,7 @@ namespace TFTV.TFTVIncidents
         [HarmonyPatch(typeof(GeoscapeEventContext), nameof(GeoscapeEventContext.ReplaceEventTokens))]
         public static class GeoscapeEventTokenPostfixPatch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             // Register any custom tokens you want to support.
             private static readonly Regex IncidentIdRegex = new Regex(@"TFTV_INCIDENT_(\d+)_", RegexOptions.IgnoreCase);
 

@@ -16,6 +16,7 @@ internal class LivingQuarters
     [HarmonyPatch]
     internal static class LivingQuartersReworkPatches
     {
+        static bool Prepare() => TFTV.TFTVAircraftReworkMain.AircraftReworkOn;
         private static readonly AccessTools.FieldRef<PhoenixBaseStats, GeoPhoenixBaseLayout> LayoutField =
             AccessTools.FieldRefAccess<PhoenixBaseStats, GeoPhoenixBaseLayout>("_layout");
 

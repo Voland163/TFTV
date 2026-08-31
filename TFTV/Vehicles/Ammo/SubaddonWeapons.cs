@@ -30,6 +30,7 @@ namespace TFTV.Vehicles.Ammo
     [HarmonyPatch(typeof(UIStateEditVehicle), "SoldierSlotItemChangedHandler")]
     public static class UIStateEditVehicle_SoldierSlotItemChangedHandler_patch
     {
+        static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
         public static bool Prefix(UIStateEditVehicle __instance, UIInventorySlot slot)
         {
             try
@@ -53,6 +54,7 @@ namespace TFTV.Vehicles.Ammo
     [HarmonyPatch]
     public static class VehicleModuleAmmoHarmonyPatches
     {
+        static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
        
 
         private sealed class TooltipOverrideHolder
@@ -593,6 +595,7 @@ namespace TFTV.Vehicles.Ammo
         [HarmonyPatch(typeof(UIInventorySlotSideButton), "GetState")]
         public static class UIInventorySlotSideButton_GetState_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static readonly AccessTools.FieldRef<UIInventorySlotSideButton, bool> ButtonPossible =
                 AccessTools.FieldRefAccess<UIInventorySlotSideButton, bool>("_buttonPossible");
             private static readonly AccessTools.FieldRef<UIInventorySlotSideButton, UIInventorySlot> OwningSlot =
@@ -877,6 +880,7 @@ namespace TFTV.Vehicles.Ammo
         [HarmonyPatch(typeof(UIInventorySlotSideButton), "RefreshState")]
         public static class UIInventorySlotSideButton_RefreshState_MarketplaceTooltipOverride_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static readonly AccessTools.FieldRef<UIInventorySlotSideButton, UIInventorySlotSideButton.GeneralState> CurrentState =
                 AccessTools.FieldRefAccess<UIInventorySlotSideButton, UIInventorySlotSideButton.GeneralState>("_currentState");
 
@@ -1195,6 +1199,7 @@ namespace TFTV.Vehicles.Ammo
         [HarmonyPatch(typeof(UIInventorySlotSideButton), "OnSideButtonPressed")]
         public static class UIInventorySlotSideButton_OnSideButtonPressed_MarketplaceAmmoFallback_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static readonly AccessTools.FieldRef<UIInventorySlotSideButton, UIInventorySlotSideButton.GeneralState> CurrentState =
                 AccessTools.FieldRefAccess<UIInventorySlotSideButton, UIInventorySlotSideButton.GeneralState>("_currentState");
             private static readonly AccessTools.FieldRef<UIInventorySlotSideButton, UIModuleSoldierEquip> ParentModule =
@@ -1677,6 +1682,7 @@ namespace TFTV.Vehicles.Ammo
         [HarmonyPatch(typeof(CommonItemData), "SetOwnerItem")]
         public static class CommonItemData_SetOwnerItem_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(CommonItemData __instance)
             {
                 if (!TFTVAircraftReworkMain.AircraftReworkOn)
@@ -1700,6 +1706,7 @@ namespace TFTV.Vehicles.Ammo
         [HarmonyPatch(typeof(UIInventorySlot), "UpdateItem")]
         public static class UIInventorySlot_UpdateItem_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(UIInventorySlot __instance)
             {
                 if (!TFTVAircraftReworkMain.AircraftReworkOn)
@@ -1770,6 +1777,7 @@ namespace TFTV.Vehicles.Ammo
         [HarmonyPatch(typeof(UIInventoryList), "TryLoadItemWithItem")]
         public static class UIInventoryList_TryLoadItemWithItem_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static bool Prefix(UIInventoryList __instance, ICommonItem item, ICommonItem ammoItem, UIInventorySlot ammoSlot, ref bool __result)
             {
                 if (!TFTVAircraftReworkMain.AircraftReworkOn)
@@ -1832,6 +1840,7 @@ namespace TFTV.Vehicles.Ammo
         [HarmonyPatch(typeof(UIInventoryList), "TryStripAmmo")]
         public static class UIInventoryList_TryStripAmmo_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static bool Prefix(UIInventoryList __instance, ICommonItem item, UIInventorySlot itemSlot)
             {
                 if (!TFTVAircraftReworkMain.AircraftReworkOn)
@@ -1888,6 +1897,7 @@ namespace TFTV.Vehicles.Ammo
         [HarmonyPatch(typeof(TacticalItem), "ToItemData")]
         public static class TacticalItem_ToItemData_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Prefix(TacticalItem __instance)
             {
                 if (!TFTVAircraftReworkMain.AircraftReworkOn)
@@ -1932,6 +1942,7 @@ namespace TFTV.Vehicles.Ammo
         [HarmonyPatch(typeof(TacticalActor), "ProcessInstanceData")]
         public static class TacticalActor_ProcessInstanceData_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(TacticalActor __instance)
             {
                 if (!TFTVAircraftReworkMain.AircraftReworkOn)

@@ -71,6 +71,7 @@ namespace TFTV.TFTVBaseRework
     [HarmonyPatch(typeof(GeoFaction), "UpdateVehicleSite")]
     internal static class GeoFaction_UpdateVehicleSite_BlockAutoVisit_Patch
     {
+        static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
         private static bool Prefix(GeoFaction __instance, GeoVehicle vehicle, GeoSite site)
         {
             if (!BaseReworkCheck.BaseReworkEnabled)
@@ -104,6 +105,7 @@ namespace TFTV.TFTVBaseRework
     [HarmonyPatch(typeof(ExploreSiteAbility), "GetTargetDisabledStateInternal")]
     internal static class ExploreSiteAbility_GetTargetDisabledStateInternal_Patch
     {
+        static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
         private static bool Prefix(
             ExploreSiteAbility __instance,
             GeoAbilityTarget target,
@@ -158,6 +160,7 @@ namespace TFTV.TFTVBaseRework
     [HarmonyPatch(typeof(GeoFaction), "OnVehicleSiteExplored")]
     internal static class GeoFaction_OnVehicleSiteExplored_PhoenixBaseInfestation_Patch
     {
+        static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
         private static void Prefix(GeoFaction __instance, GeoVehicle vehicle)
         {
             if (!BaseReworkCheck.BaseReworkEnabled)
@@ -265,6 +268,7 @@ namespace TFTV.TFTVBaseRework
     [HarmonyPatch(typeof(GeoPhoenixBase), nameof(GeoPhoenixBase.BaseInfestationCheck))]
     internal static class GeoPhoenixBase_BaseInfestationCheck_DisableVanilla_Patch
     {
+        static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
         private static bool Prefix(GeoPhoenixBase __instance, ref bool __result)
         {
             if (!BaseReworkCheck.BaseReworkEnabled)
@@ -287,6 +291,7 @@ namespace TFTV.TFTVBaseRework
     [HarmonyPatch(typeof(MissionModalDataBind), nameof(MissionModalDataBind.ModalShowHandler))]
     internal static class MissionModalDataBind_ModalShowHandler_Patch
     {
+        static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
 
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
         private static void Postfix(MissionModalDataBind __instance, UIModal modal)
@@ -367,6 +372,7 @@ namespace TFTV.TFTVBaseRework
     [HarmonyPatch(typeof(GeoscapeView), "GetMissionBriefModal")]
     internal static class GeoscapeView_BaseInfestationCheck_DisableVanilla_Patch
     {
+        static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
         private static void Postfix(GeoscapeView __instance, GeoMission mission, ref ModalType __result)
         {
             if (!BaseReworkCheck.BaseReworkEnabled)
@@ -392,6 +398,7 @@ namespace TFTV.TFTVBaseRework
     [HarmonyPatch(typeof(UIModuleShortPhoenixBaseTooltip), "SetTooltipData")]
     internal static class UIModuleShortPhoenixBaseTooltip_SetTooltipData_ExplorationChance_Patch
     {
+        static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
         private static void Postfix(UIModuleShortPhoenixBaseTooltip __instance, PhoenixBaseShortInfoData baseData)
         {
             try
@@ -467,6 +474,7 @@ namespace TFTV.TFTVBaseRework
     [HarmonyPatch(typeof(GeoPhoenixFaction), "ActivateBaseFromExploration")]
     public static class GeoPhoenixFaction_ActivateBaseFromExploration_Patch
     {
+        static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
 
         public static bool Prefix(GeoPhoenixFaction __instance, GeoSite site)
         {

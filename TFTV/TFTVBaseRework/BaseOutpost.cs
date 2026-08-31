@@ -42,6 +42,7 @@ namespace TFTV.TFTVBaseRework
     [HarmonyPatch(typeof(UIModuleGeoAssetDeployment), "SetBaseButtonElement")]
     internal static class Patch_UIModuleGeoAssetDeployment_SetBaseButtonElement
     {
+        static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
 
         // private void SetBaseButtonElement(GeoDeployAssetBaseElementController element, GeoSite site, GeoDeployAssetFactionCharacterBind bind)
         private static void Postfix(
@@ -92,6 +93,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoSiteVisualsController), "RefreshSiteVisuals")]
         private static class GeoSiteVisualsController_RefreshSiteVisuals_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(GeoSiteVisualsController __instance, GeoSite site)
             {
                 if (!BaseReworkCheck.BaseReworkEnabled) return;
@@ -151,6 +153,7 @@ namespace TFTV.TFTVBaseRework
     [HarmonyPatch(typeof(GeoscapeView), "PxFaction_OnBaseActivated")]
     public static class Patch_CaptureActivatedBase
     {
+        static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
         static void Postfix(GeoPhoenixBase @base, bool activatedFromExploration)
         {
             if (!BaseReworkCheck.BaseReworkEnabled) return;
@@ -170,6 +173,7 @@ namespace TFTV.TFTVBaseRework
     [HarmonyPatch(typeof(UIModuleModal), "Show")]
     public static class Patch_EditBaseOutcomeModalText
     {
+        static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
         static void Postfix(UIModuleModal __instance, ModalType modal)
         {
             if (!BaseReworkCheck.BaseReworkEnabled) return;
@@ -226,6 +230,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoPhoenixFaction), "GetTotalAvailableStorage")]
         internal static class GeoPhoenixFaction_GetTotalAvailableStorage_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(GeoPhoenixFaction __instance, ref int __result)
             {
                 if (!BaseReworkCheck.BaseReworkEnabled) return;
@@ -244,6 +249,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoPhoenixFaction), "UpdateStats")]
         internal static class GeoPhoenixFaction_UpdateStats_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static readonly AccessTools.FieldRef<GeoPhoenixFaction, int> SoldierCapacityField =
                 AccessTools.FieldRefAccess<GeoPhoenixFaction, int>("<SoldierCapacity>k__BackingField");
 
@@ -286,6 +292,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoPhoenixBase), "UpdateStats")]
         internal static class GeoPhoenixBase_UpdateStats_patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(GeoPhoenixBase __instance)
             {
                 if (!BaseReworkCheck.BaseReworkEnabled) return;
@@ -300,6 +307,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoPhoenixBase), "BaseHourlyUpdate")]
         internal static class GeoPhoenixBase_BaseHourlyUpdate_patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static bool Prefix(GeoPhoenixBase __instance)
             {
                 if (!BaseReworkCheck.BaseReworkEnabled) return true;
@@ -369,6 +377,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(UIModuleBaseLayout), "SetupChangeBaseButtons")]
         internal static class UIModuleBaseLayout_SetupChangeBaseButtons_patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(UIModuleBaseLayout __instance)
             {
                 try
@@ -406,6 +415,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(UIStatePhoenixBaseLayout), "EnterState")]
         internal static class UIStatePhoenixBaseLayout_EnterState_patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static void Postfix(UIStatePhoenixBaseLayout __instance)
             {
                 try

@@ -228,6 +228,7 @@ namespace TFTV.TFTVBaseRework
         })]
         internal static class GeoPhoenixFaction_KillCharacter_DismissedOperativeToCivilian_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static bool Prefix(GeoPhoenixFaction __instance, GeoCharacter unit, CharacterDeathReason reason)
             {
                 try

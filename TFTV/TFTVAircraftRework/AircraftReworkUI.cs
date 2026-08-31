@@ -37,6 +37,7 @@ namespace TFTV
         [HarmonyPatch(typeof(AircraftCrewController), nameof(AircraftCrewController.SetCrew))]
         internal static class AircraftCrewController_SetCrew_ZeroSpacePatch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private static readonly FieldInfo CrewField = AccessTools.Field(typeof(AircraftCrewController), "_crew");
             private static readonly FieldInfo UnitsField = AccessTools.Field(typeof(AircraftCrewController), "_unitsOnBoardElements");
             private static readonly MethodInfo RefreshCrewBarsMethod = AccessTools.Method(typeof(AircraftCrewController), "RefreshCrewBars");
@@ -297,6 +298,7 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoRosterContainterItem), nameof(GeoRosterContainterItem.Refresh))]
         internal static class GeoRosterContainterItem_Refresh_ZeroSpacePatch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             static void Postfix(GeoRosterContainterItem __instance)
             {
                 if (__instance == null)
@@ -330,6 +332,7 @@ namespace TFTV
         [HarmonyPatch(typeof(VehicleSelectionAircraftElementController), "SetItem")]
         public static class VehicleSelectionAircraftElementController_SetItem_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(VehicleSelectionAircraftElementController __instance, GeoVehicle vehicle)
             {
                 try
@@ -359,6 +362,7 @@ namespace TFTV
         [HarmonyPatch(typeof(ShortEquipmentInfoButton), "SetEquipment")]
         public static class ShortEquipmentInfoButton_SetEquipment_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(ShortEquipmentInfoButton __instance, GeoVehicleEquipment equipment)
             {
                 try
@@ -385,6 +389,7 @@ namespace TFTV
         [HarmonyPatch(typeof(AircraftEquipmentViewController), "SetEquipmentUIData")]
         public static class AircraftEquipmentViewController_SetEquipmentUIData_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(AircraftEquipmentViewController __instance, GeoVehicleEquipmentUIData data)
             {
 
@@ -432,6 +437,7 @@ namespace TFTV
         [HarmonyPatch(typeof(UIAircraftEquipmentTooltip), "DisplayAllStats")]
         public static class Patch_UIAircraftEquipmentTooltip_DisplayAllStats
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static bool Prefix(UIAircraftEquipmentTooltip __instance)
             {
                 try
@@ -544,6 +550,7 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoVehicleRosterEquipmentSlot), "SetItem")]
         public static class GeoVehicleRosterEquipmentSlot_SetItem_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(GeoVehicleRosterEquipmentSlot __instance, GeoVehicleEquipmentUIData item)
             {
 
@@ -576,6 +583,7 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleSoldierEquip), "DoFilter")]
         public static class UIModuleSoldierEquip_DoFilter_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Prefix(UIModuleSoldierEquip __instance)
             {
                 try
@@ -647,6 +655,7 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleSelectionInfoBox), "SetActorInfo")]
         public static class UIModuleSelectionInfoBox_SetActorInfo_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static bool Prefix(UIModuleSelectionInfoBox __instance,
                 GeoscapeViewContext context, GeoActor actor, Vector3 tooltipPosition, float fov,
                 ref GeoscapeViewContext ____context, ref RectTransform ____moduleRect, ref RectTransform ____panelRect, ref bool ____showTooltip)
@@ -738,6 +747,7 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleSelectionInfoBox), "SetExtendedGeoVehicleInfo")]
         public static class UIModuleSelectionInfoBox_SetExtendedGeoVehicleInfo_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static bool Prefix(UIModuleSelectionInfoBox __instance, GeoVehicle vehicle)
             {
                 try
@@ -854,6 +864,7 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleVehicleSelection), "RefreshVehicleBars")]
         public static class UIModuleVehicleSelection_RefreshVehicleBars_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(UIModuleVehicleSelection __instance)
             {
                 try
@@ -894,6 +905,7 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleActionsBar), "Awake")]
         public static class UIModuleActionsBar_Awake_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(UIModuleActionsBar __instance, ref List<ShortEquipmentInfoButton> ____shortEquipmentInfoButtons)
             {
                 try
@@ -920,6 +932,7 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleActionsBar), "SetEquipment")]
         public static class UIModuleActionsBar_SetEquipment_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Prefix(ref List<GeoVehicleEquipment> equipments, ref List<ShortEquipmentInfoButton> ____shortEquipmentInfoButtons)
             {
                 try
@@ -959,6 +972,7 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleVehicleSelection), "Init")]
         public static class UIModuleVehicleSelection_Init_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Prefix(UIModuleVehicleSelection __instance, GeoscapeViewContext context)
             {
                 try
@@ -982,6 +996,7 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleVehicleSelection), "SetActiveAircraftListTab")]
         public static class UIModuleVehicleSelection_SetActiveAircraftListTab_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static bool Prefix(UIModuleVehicleSelection __instance)
             {
                 try
@@ -1012,6 +1027,7 @@ namespace TFTV
         [HarmonyPatch(typeof(AircraftInfoController), "SetInfo")]
         public static class AircraftInfoController_SetInfo_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Prefix(AircraftInfoController __instance, List<GeoVehicleEquipmentUIData> modules, AircraftInfoData aircraftInfoData)
             {
                 try
@@ -1094,6 +1110,7 @@ namespace TFTV
         [HarmonyPatch(typeof(AircraftStatsController), "SetInfo")]
         public static class AircraftStatsController_SetInfo_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(AircraftStatsController __instance, AircraftInfoData aircraftInfoData)
             {
                 try
@@ -1187,6 +1204,7 @@ namespace TFTV
         [HarmonyPatch(typeof(GeoVehicleRosterSlot), "UpdateVehicleEquipments")]
         public static class GeoVehicleRosterSlot_UpdateVehicleEquipments_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             static bool Prefix(GeoVehicleRosterSlot __instance)
             {
 
@@ -1294,6 +1312,7 @@ namespace TFTV
         [HarmonyPatch(typeof(UIVehicleEquipmentInventoryList), "Init")]
         public static class UIVehicleEquipmentInventoryList_Init_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             static void Prefix(UIVehicleEquipmentInventoryList __instance, ref IEnumerable<GeoVehicleEquipmentUIData> equipments)
             {
 
@@ -1339,6 +1358,7 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleVehicleEquip), "UpdateData")]
         public static class UIModuleVehicleEquip_UpdateData_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
 
             static void Postfix(UIModuleVehicleEquip __instance, IEnumerable<GeoVehicleEquipmentUIData> modules, bool ____inPhoenixBase)
             {
@@ -1432,6 +1452,7 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleVehicleEquip), "AttemptSlotSwap")]
         public static class PreventDuplicateModule_DragDrop_Patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
 
 
             static bool Prefix(UIModuleVehicleEquip __instance, UIVehicleEquipmentInventorySlot sourceSlot, UIVehicleEquipmentInventorySlot destinationSlot, ref bool __result)
@@ -1476,6 +1497,7 @@ namespace TFTV
         [HarmonyPatch(typeof(UIModuleVehicleEquip), "HandleDoubleclickOnSlot")]
         public static class ModuleDoubleClickRefinedPatch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             static bool Prefix(UIVehicleEquipmentInventorySlot clickedSlot, UIModuleVehicleEquip __instance, ref bool __result)
             {
                 try

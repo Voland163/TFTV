@@ -48,6 +48,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(GeoAbility), "GetTargetDisabledState")]
         internal static class GeoAbility_GetTargetDisabledState_ActivateBaseIgnoreResourceGate_patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(GeoAbility __instance, GeoAbilityTarget target, ref GeoAbilityTargetDisabledState __result)
             {
                 try
@@ -72,6 +73,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(ActivateBaseAbilityView), "PayResourcementCost")]
         internal static class ActivateBaseAbilityView_PayResourcementCost_patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static bool Prefix(ActivateBaseAbilityView __instance, ModalResult result)
             {
                 try
@@ -106,6 +108,7 @@ namespace TFTV.TFTVBaseRework
         [HarmonyPatch(typeof(PXBaseActivationDataBind), "ModalShowHandler", new Type[] { typeof(UIModal) })]
         internal static class PXBaseActivationDataBind_ModalShowHandler_CustomPanel_patch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             public static void Postfix(PXBaseActivationDataBind __instance, UIModal modal, PhoenixBaseActivationData ____data)
             {
                 try

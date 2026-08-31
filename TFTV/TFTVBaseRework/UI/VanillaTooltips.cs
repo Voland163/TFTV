@@ -1,4 +1,4 @@
-using Base.Entities.Abilities;
+﻿using Base.Entities.Abilities;
 using PhoenixPoint.Common.Entities.Addons;
 using PhoenixPoint.Common.Entities.Items;
 using PhoenixPoint.Geoscape.Entities;
@@ -267,6 +267,7 @@ namespace TFTV.TFTVBaseRework
     [HarmonyPatch(typeof(UIInventoryTooltipItemPanel), nameof(UIInventoryTooltipItemPanel.SetAbilities))]
     internal static class UIInventoryTooltipItemPanel_SetAbilities_Capacity
     {
+        static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
         private static bool IsPersonnelTooltip(UIInventoryTooltipItemPanel panel)
         {
             return panel.GetComponentInParent<UIGeoItemTooltip>()?.gameObject.name == "TFTV_PersonnelItemTooltip";

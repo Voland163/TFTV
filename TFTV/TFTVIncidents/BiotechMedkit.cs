@@ -103,6 +103,7 @@ namespace TFTV.TFTVIncidents
         [HarmonyPatch(typeof(HealAbility))]
         internal static class HealAbility_BiotechMedkitPatch
         {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private const string DiagTag = "[Incidents][BiotechMedkit]";
             private const float BaseDeliriumWillRestoreAmount = 3f;
             private const string DeliriumRestoreSourceName = "BiotechMedkit_DeliriumRestore";
@@ -115,6 +116,7 @@ namespace TFTV.TFTVIncidents
             [HarmonyPatch(typeof(TacticalLevelController), "OnLevelStart")]
             private static class TacticalLevelController_OnLevelStart_ClearBiotechRestore_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 private static void Postfix()
                 {
                     Option2RestoreAppliedByActorId.Clear();
@@ -127,6 +129,7 @@ namespace TFTV.TFTVIncidents
             [HarmonyPatch(typeof(TacStatus), "OnUnapply")]
             private static class TacStatus_OnUnapply_BiotechIgnorePain_Patch
             {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
                 private static void Postfix(TacStatus __instance)
                 {
                     try
