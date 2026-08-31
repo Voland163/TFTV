@@ -1710,6 +1710,17 @@ namespace TFTV
                                     HoplitesAbilities.HoplitesAutoRepair.ApplyAutoRepairAbilityStatusOrHealNearbyHoplites(faction, actor);
                                     ReduceCyclopsResistance(faction, actor);
                                 }
+
+                                // Failsafe Protocol is written as a consequence of the Cyclops dying,
+                                // so it has to be checked on the deaths that can make it true - the
+                                // Cyclops itself, and any hoplite death that brings the survivors down
+                                // to three. Checking only at the start of the Ancients' next turn meant
+                                // it read as simply not working: with the Cyclops down and a handful of
+                                // hoplites left the mission is usually over before that turn arrives.
+                                if (actor.HasGameTag(hopliteTag) || actor.HasGameTag(cyclopsTag))
+                                {
+                                    StuckHopliteVanillaFix.CheckHopliteKillList(faction);
+                                }
                             }
                         }
 
@@ -2092,10 +2103,20 @@ namespace TFTV
 
         internal class StuckHopliteVanillaFix
         {
+            /// <summary>
+            /// Guards against re-entry: this is now called from the ActorDied postfix, and the
+            /// hoplites it destroys each report their own death straight back into it.
+            /// </summary>
+            private static bool _resolvingFailsafe;
+
             public static void CheckHopliteKillList(TacticalFaction tacticalFaction)
             {
                 try
                 {
+                    if (_resolvingFailsafe || tacticalFaction == null)
+                    {
+                        return;
+                    }
 
                     if (!tacticalFaction.TacticalFactionDef.ShortNames.Contains("anc"))
                     {
@@ -2120,11 +2141,18 @@ namespace TFTV
 
                     TFTVLogger.Always($"Cyclops is dead and no more than 3 hoplites alive. Destroying them.");
 
-                    foreach (TacticalActor tacticalActor in aliveHoplites)
+                    _resolvingFailsafe = true;
+                    try
                     {
-                        tacticalActor.ApplyDamage(new DamageResult { HealthDamage = 500, Source = tacticalActor });
+                        foreach (TacticalActor tacticalActor in aliveHoplites)
+                        {
+                            tacticalActor.ApplyDamage(new DamageResult { HealthDamage = 500, Source = tacticalActor });
+                        }
                     }
-
+                    finally
+                    {
+                        _resolvingFailsafe = false;
+                    }
                 }
                 catch (Exception e)
                 {

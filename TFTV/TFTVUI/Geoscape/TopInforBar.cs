@@ -40,6 +40,61 @@ namespace TFTV.TFTVUI.Geoscape
         internal static Color syn = new Color(0.160784319f, 0.8862745f, 0.145098045f, 1.0f);
 
 
+        /// <summary>
+        /// Keeps the three exotic material counters on screen once Exotic Materials is researched,
+        /// even while the player holds none.
+        ///
+        /// Vanilla shows each of them only while the wallet holds some or something is producing it:
+        ///
+        ///   bool value2 = wallet[ResourceType.LivingCrystals].RoundedValue > 0 || totalOutput...Value > 0f;
+        ///   SetActive(LivingCrystalsController.transform.parent.gameObject, value2);
+        ///
+        /// so a counter that has been earned appears and disappears as the balance passes zero,
+        /// and a player who has just finished the research sees nothing at all. Once the research is
+        /// done these are permanent parts of the economy and should read zero rather than vanish.
+        ///
+        /// Goes through the module's own SetActive rather than setting the GameObject directly,
+        /// because that is what re-enables the layout group and lets the bar close the gap.
+        /// </summary>
+        [HarmonyPatch(typeof(UIModuleInfoBar), "UpdateResourceInfo")]
+        public static class UIModuleInfoBar_UpdateResourceInfo_ExoticMaterials_Patch
+        {
+            private const string ExoticMaterialsResearchId = "ExoticMaterialsResearch";
+
+            private static readonly System.Reflection.MethodInfo SetActiveMethod =
+                AccessTools.Method(typeof(UIModuleInfoBar), "SetActive", new Type[] { typeof(GameObject), typeof(bool) });
+
+            public static void Postfix(UIModuleInfoBar __instance, GeoFaction faction)
+            {
+                try
+                {
+                    if (__instance == null || SetActiveMethod == null) return;
+                    if (!(faction is GeoPhoenixFaction phoenix)) return;
+                    if (phoenix.Research == null || !phoenix.Research.HasCompleted(ExoticMaterialsResearchId)) return;
+
+                    Show(__instance, __instance.LivingCrystalsController);
+                    Show(__instance, __instance.OrichalcumController);
+                    Show(__instance, __instance.ProteanMutaneController);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private static void Show(UIModuleInfoBar infoBar, UIAnimatedResourceController controller)
+            {
+                GameObject row = controller != null && controller.transform.parent != null
+                    ? controller.transform.parent.gameObject
+                    : null;
+
+                if (row != null)
+                {
+                    SetActiveMethod.Invoke(infoBar, new object[] { row, true });
+                }
+            }
+        }
+
         [HarmonyPatch(typeof(UIAnimatedResourceController), "DisplayValue")] //VERIFIED
         public static class UIAnimatedResourceController_DisplayValue_patch
         {
