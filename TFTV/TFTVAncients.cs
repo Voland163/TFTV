@@ -1612,23 +1612,23 @@ namespace TFTV
                                   baseMultiplier = 0.25f; //adjusted on 22/12 from 0.0f
                               }*/
 
-                            IEnumerable<TacticalActor> allHoplites = from x in controller.Map.GetActors<TacticalActor>()
-                                                                     where x.HasGameTag(hopliteTag)
-                                                                     where x.IsAlive
-                                                                     select x;
+                            // Every hoplite the map knows about, the dead included: the resistance is
+                            // the proportion of the squad that is still standing, so filtering the
+                            // dead out here would leave nothing to count them from. Dead actors stay
+                            // on the map after a mid-mission load - the game's own graveyard seeds
+                            // itself from exactly this query - so the roster survives a save/load.
+                            List<TacticalActor> allHoplites = controller.Map.GetActors<TacticalActor>()
+                                .Where(x => x.HasGameTag(hopliteTag))
+                                .ToList();
 
+                            int deadHoplites = allHoplites.Count(h => h.IsDead);
 
-
-                            int deadHoplites = allHoplites.Where(h => h.IsDead).Count();
-                            float proportion = ((float)deadHoplites / (float)(allHoplites.Count()));
-
-                            if (allHoplites.Count() == 0)
-                            {
-                                proportion = 1;
-                            }
+                            float proportion = allHoplites.Count > 0
+                                ? (float)deadHoplites / allHoplites.Count
+                                : 1f;
 
                             CyclopsDefenseStatus.Multiplier = baseMultiplier + proportion * 0.5f; //+ HoplitesKilled * 0.1f;
-                            TFTVLogger.Always($"There are {allHoplites.Count()} hoplites in total, {deadHoplites} are dead. Proportion is {proportion} and base multiplier is {baseMultiplier}. Cyclops Defense level is {CyclopsDefenseStatus.Multiplier}");
+                            TFTVLogger.Always($"There are {allHoplites.Count} hoplites in total, {deadHoplites} are dead. Proportion is {proportion} and base multiplier is {baseMultiplier}. Cyclops Defense level is {CyclopsDefenseStatus.Multiplier}");
                         }
                     }
                     catch (Exception e)
