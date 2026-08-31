@@ -59,6 +59,7 @@ namespace TFTV
 
         private static readonly ClassTagDef crabTag = DefCache.GetDef<ClassTagDef>("Crabman_ClassTagDef");
         private static readonly ClassTagDef fishTag = DefCache.GetDef<ClassTagDef>("Fishman_ClassTagDef");
+        private static readonly GameTagDef umbraClassTag = DefCache.GetDef<GameTagDef>("Umbra_ClassTagDef");
 
         private static readonly DeathBelcherAbilityDef oilcrabDeathBelcherAbility = DefCache.GetDef<DeathBelcherAbilityDef>("Oilcrab_Die_DeathBelcher_AbilityDef");
         private static readonly DeathBelcherAbilityDef oilfishDeathBelcherAbility = DefCache.GetDef<DeathBelcherAbilityDef>("Oilfish_Die_DeathBelcher_AbilityDef");
@@ -759,6 +760,61 @@ namespace TFTV
                     {
                         TFTVLogger.Error(e);
                     }
+                }
+            }
+
+            /// <summary>
+            /// An Umbra bursts out of the Pandoran that was Touched by the Void, spawned by that
+            /// actor's death belcher - and it arrives unalerted. TacAIActor.GetEnemyMask narrows an
+            /// unalerted actor's target mask down to NonAlertingEnemiesMask, so on the turn it
+            /// appears the Umbra can see nobody, falls through to MoveToRandomWaypoint and wanders
+            /// off instead of attacking the squad it just spawned into. Alert it on the way in.
+            /// </summary>
+            [HarmonyPatch(typeof(TacticalLevelController), nameof(TacticalLevelController.ActorEnteredPlay))]
+            public static class TacticalLevelController_ActorEnteredPlay_AlertUmbra_Patch
+            {
+                public static void Postfix(TacticalActorBase actor)
+                {
+                    try
+                    {
+                        if (!(actor is TacticalActor tacticalActor) || !tacticalActor.IsAlive)
+                        {
+                            return;
+                        }
+
+                        // Turn 0 is deployment: leave anything placed by the mission def to be
+                        // woken by the usual alert radius, and only touch Umbras that burst out
+                        // mid-mission.
+                        if (tacticalActor.TacticalLevel == null
+                            || tacticalActor.TacticalLevel.IsLoadingSavedGame
+                            || tacticalActor.TacticalLevel.TurnNumber <= 0)
+                        {
+                            return;
+                        }
+
+                        if (!IsUmbra(tacticalActor) || tacticalActor.AIActor == null || tacticalActor.AIActor.IsAlerted)
+                        {
+                            return;
+                        }
+
+                        tacticalActor.AIActor.IsAlerted = true;
+
+                        TFTVLogger.Always($"{tacticalActor.name} entered play; alerted it so it engages on the turn it spawns.");
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+
+                private static bool IsUmbra(TacticalActor actor)
+                {
+                    if (actor.ActorDef?.name == "Oilcrab_ActorDef" || actor.ActorDef?.name == "Oilfish_ActorDef")
+                    {
+                        return true;
+                    }
+
+                    return umbraClassTag != null && actor.GameTags != null && actor.GameTags.Contains(umbraClassTag);
                 }
             }
         }

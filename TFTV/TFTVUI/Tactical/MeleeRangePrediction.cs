@@ -27,9 +27,12 @@ namespace TFTV.TFTVUI.Tactical
             [ConsoleVariable(Alias = "move_melee_threat_range_tolerance", Description = "Extra distance tolerance for known melee enemy threat tile markers.")]
             public static float RangeTolerance = 0.25f;
 
+            [ConsoleVariable(Alias = "move_melee_threat_icon_alpha", Description = "Opacity of the melee enemy threat tile icons.")]
+            public static float ThreatIconAlpha = 0.1f;
+
             private const string MeleeWeaponTagDefName = "MeleeWeapon_TagDef";
             private const float MovePositionMatchTolerance = 0.2f;
-            private static readonly Color ThreatIconColor = new Color(1f, 0.145f, 0.286f, 0.05f);
+            private static readonly Color ThreatIconColor = new Color(1f, 0.145f, 0.286f);
             private static GameTagDef _meleeWeaponTagDef;
 
             private static void Postfix(MoveAbilitySceneViewElement __instance, TacticalViewContext context, bool __result)
@@ -128,7 +131,10 @@ namespace TFTV.TFTVUI.Tactical
                         visual = marker.VisualObject.AddComponent<MeleeThreatMarkerVisual>();
                     }
 
-                    visual.ShowIcons(icons, ThreatIconColor);
+                    Color iconColor = ThreatIconColor;
+                    iconColor.a = Mathf.Clamp01(ThreatIconAlpha);
+
+                    visual.ShowIcons(icons, iconColor);
                     Utils.TiltForTerrain(context, marker, firstThreat.TacticalNav.FloorLayers);
                 }
             }
@@ -240,6 +246,12 @@ namespace TFTV.TFTVUI.Tactical
                     float paralysisRatio = paralysis.FullDamageValue / endurance;
                     actionPoints -= maxActionPoints * GetParalysisActionPointReduction(paralysisRatio);
                 }
+
+                // Suppression accumulated this turn is only cashed in when the actor's own turn
+                // starts, so the marker has to look at what it is about to lose, not at what it
+                // has already lost.
+                actionPoints -= maxActionPoints
+                    * TFTVSuppression.SuppressionRuntime.GetNextTurnActionPointLossFraction(actor);
 
                 return Mathf.Max(0f, actionPoints);
             }

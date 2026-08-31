@@ -157,14 +157,24 @@ namespace TFTV
 
                 ActorSuppressionState state = GetActorState(actor);
                 SuppressionPenalty penalty = state.Tracker.ConsumePendingPenalty(actor);
-                float previousFraction = SuppressionSettings.GetPenaltyFraction(state.CurrentLevel);
                 state.CurrentLevel = penalty.Level;
-                float desiredFraction = SuppressionSettings.GetPenaltyFraction(state.CurrentLevel);
-                float fractionDelta = desiredFraction - previousFraction;
 
-                if (actor.IsAlive && penalty.HasPenalty && fractionDelta > 0f)
+                // TacticalActor.StartTurn has just put action points back to max, so the whole
+                // penalty for the new level is charged here. Measuring it as a delta against last
+                // turn's level would let an actor suppressed to the same level two turns running
+                // keep a full turn the second time.
+                //
+                // Charged as a share of max rather than as a ceiling on the actor's current action
+                // points, so it stacks with stun and paralysis the way StunStatus.ReduceActionPoints
+                // does - those run earlier in StartTurn, and a ceiling would let them swallow the
+                // suppression penalty whole. CurrentLevel, set just above, is the record of how much
+                // suppression has been charged since the refill; RegisterSuppressionEvent bills the
+                // difference against it if more suppression lands during the actor's own turn.
+                float penaltyFraction = SuppressionSettings.GetPenaltyFraction(state.CurrentLevel);
+
+                if (actor.IsAlive && penalty.HasPenalty && penaltyFraction > 0f)
                 {
-                    float apToRemove = actor.CharacterStats.ActionPoints.Max * fractionDelta;
+                    float apToRemove = actor.CharacterStats.ActionPoints.Max * penaltyFraction;
                     if (apToRemove > 0f)
                     {
                         actor.CharacterStats.ActionPoints.Subtract(apToRemove);
@@ -173,6 +183,32 @@ namespace TFTV
 
                 UpdateSuppressionStatus(actor, state);
                 return penalty;
+            }
+
+            /// <summary>
+            /// Fraction of maximum action points the actor will lose when its next turn begins.
+            /// Mirrors what <see cref="ApplySuppressionPenalty"/> is going to subtract, so UI that
+            /// predicts an enemy's next turn agrees with what the enemy actually gets.
+            /// </summary>
+            public static float GetNextTurnActionPointLossFraction(TacticalActor actor)
+            {
+                if (!IsSuppressionEnabled || actor == null || IsSuppressionExcluded(actor))
+                {
+                    return 0f;
+                }
+
+                if (!ActorStates.TryGetValue(actor, out ActorSuppressionState state))
+                {
+                    return 0f;
+                }
+
+                SuppressionPenalty penalty = SuppressionSettings.GetPenaltyFor(state.Tracker.PendingSuppression, actor);
+                if (!penalty.HasPenalty)
+                {
+                    return 0f;
+                }
+
+                return SuppressionSettings.GetPenaltyFraction(penalty.Level);
             }
 
             /// <summary>

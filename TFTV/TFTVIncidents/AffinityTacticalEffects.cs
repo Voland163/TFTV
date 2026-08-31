@@ -285,6 +285,17 @@ namespace TFTV.TFTVIncidents
                             return;
                         }
 
+                        // The site owner check below identifies the defenders of the attacked site.
+                        // On havens that is the human faction, but on alien nests, lairs and citadels
+                        // the site owner is the Pandoran faction, so without this tag check the bonus
+                        // would double the enemy deployment instead.
+                        if (mission?.MissionDef?.Tags == null
+                            || HavenDefenseTag == null
+                            || !mission.MissionDef.Tags.Contains(HavenDefenseTag))
+                        {
+                            return;
+                        }
+
                         TFTVLogger.Always($"{DiagTag} Calculating Psycho-Sociology bonus for haven defense deployment. Initial deployment: {__result}, participant: {participant?.ParticipantKind.ToString() ?? "null"}");
 
                         if (__result <= 0 || participant == null || mission?.Site?.Owner?.Def == null)
