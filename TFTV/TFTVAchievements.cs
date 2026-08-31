@@ -1009,6 +1009,15 @@ namespace TFTV
                             TFTVLogger.Always(LogPrefix + $"{achievement.Id}: platform reconcile left {before} entries, {after} after restoring from our own copy.");
                         }
                     }
+
+                    // Also from here, for two reasons. The platform's achievement list arrives
+                    // asynchronously and can land after this mod has loaded, in which case the push
+                    // attempted during reconciliation found Achievements still null and returned
+                    // without doing anything - this is the only callback that runs afterwards. And
+                    // the restore just above can itself be what completes a checklist, which leaves
+                    // _OldNormalizedProgress equal to NormalizedProgress and so invisible to the
+                    // tracker's own publish.
+                    PushCompletedAchievementsToPlatform(__instance);
                 }
                 catch (Exception e)
                 {
