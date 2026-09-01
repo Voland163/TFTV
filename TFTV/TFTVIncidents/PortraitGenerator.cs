@@ -128,10 +128,76 @@ namespace TFTV.TFTVIncidents
         internal static float LookAtVerticalOffset = 0.04f;
 
         /// <summary>
+        /// Where the camera stands for one portrait.
+        ///
+        /// The incident leader picture and the recruit panel take different crops out of the same
+        /// subject: the incident slot is large and wants a bust, with the armour and shoulders under
+        /// the head reading as part of the picture, while the recruit slot is small enough that a
+        /// bust reduces the face to a smudge - there it is the face that carries the portrait.
+        /// </summary>
+        internal struct PortraitFraming
+        {
+            internal float NoseDistance;
+            internal float HeadDistance;
+            internal float FieldOfView;
+            internal float YawDegrees;
+            internal float Height;
+            internal float LookAtVerticalOffset;
+        }
+
+        /// <summary>
+        /// The incident leader picture's framing - the live portrait_* tunables above, read fresh so
+        /// a console change still takes effect on the next render.
+        /// </summary>
+        private static PortraitFraming IncidentFraming => new PortraitFraming
+        {
+            NoseDistance = NoseDistance,
+            HeadDistance = HeadDistance,
+            FieldOfView = CameraFoV,
+            YawDegrees = CameraYawDegrees,
+            Height = CameraHeight,
+            LookAtVerticalOffset = LookAtVerticalOffset,
+        };
+
+        /// <summary>
+        /// The recruit panel's framing: the same shot pulled in until the face fills the frame.
+        ///
+        /// At the incident distance of 1.00m a 25 degree lens covers 0.44m at the subject, which is a
+        /// head and most of a chest - in a slot this small the head lands in the top third and the
+        /// armour takes the rest. 0.60m covers 0.27m, and the 20 degree lens brings that to 0.21m:
+        /// a head, a jaw and a collar.
+        ///
+        /// The crop is tightened by narrowing the lens rather than walking the camera in. Both fill
+        /// the frame equally, but a camera closer to a face exaggerates whatever is nearest it - the
+        /// nose and the brow - while a longer lens at the same distance flattens the face the way a
+        /// portrait lens is meant to.
+        /// </summary>
+        internal static PortraitFraming RecruitFraming = new PortraitFraming
+        {
+            NoseDistance = 0.60f,
+            HeadDistance = 0.68f,
+            FieldOfView = 20f,
+            YawDegrees = -20f,
+
+            // Level with the point being looked at, so the lens is not tilted down into the top of
+            // the skull - a tilt foreshortens the crown, which is the part with least room to spare.
+            Height = 0.05f,
+
+            // Aims above the nose, which drops the subject in the frame. The half-frame at this lens
+            // and distance reaches 0.106m, so 0.045 puts the top of the frame about 0.15m above the
+            // nose - clear of the crown - while the bottom still falls below the chin.
+            LookAtVerticalOffset = 0.045f,
+        };
+
+        /// <summary>
         /// Writes every render to persistentDataPath as a PNG named after the settings that produced
         /// it, which is how framing and quality changes get compared side by side.
+        ///
+        /// A tuning aid, not something to ship on: encoding and writing a PNG happens inline with the
+        /// render, so leaving it on costs every portrait a synchronous disk write and litters the
+        /// player's data folder. Turn it on for a tuning session with portrait_dump on.
         /// </summary>
-        internal static bool DumpRenderToDisk = true;
+        internal static bool DumpRenderToDisk = false;
 
         // ---------------------------------------------------------------------------------------
         // Lighting. One directional light per role, angled relative to the subject (the rig is
@@ -509,70 +575,242 @@ namespace TFTV.TFTVIncidents
         /// </summary>
         private static Vector2Int ResolvePortraitResolution(UIModuleSiteEncounters module)
         {
-            try
+            Vector2Int measured = ResolveSlotResolution(module?.EncounterLeaderImage?.rectTransform, DisplayScale, MaxPortraitResolution);
+            if (measured.x > 0 && measured.y > 0)
             {
-                RectTransform rect = module?.EncounterLeaderImage?.rectTransform;
-                if (rect != null)
-                {
-                    Vector3[] corners = new Vector3[4];
-                    rect.GetWorldCorners(corners);
-
-                    float width;
-                    float height;
-
-                    Canvas canvas = module.EncounterLeaderImage.canvas;
-                    if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay && canvas.worldCamera != null)
-                    {
-                        Vector2 min = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, corners[0]);
-                        Vector2 max = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, corners[2]);
-                        width = Mathf.Abs(max.x - min.x);
-                        height = Mathf.Abs(max.y - min.y);
-                    }
-                    else
-                    {
-                        // Screen-space overlay: world corners are already screen pixels.
-                        width = Mathf.Abs(corners[2].x - corners[0].x);
-                        height = Mathf.Abs(corners[2].y - corners[0].y);
-                    }
-
-                    if (width > 1f && height > 1f)
-                    {
-                        // The slot is drawn at DisplayScale, so that is the size the portrait is
-                        // actually seen at - measure against that, not the unscaled rect.
-                        width *= DisplayScale;
-                        height *= DisplayScale;
-
-                        // Scale both axes by the same factor. Clamping them independently, as this
-                        // used to, changes the render's aspect ratio away from the slot's, and the
-                        // Image then letterboxes the result and throws the difference away.
-                        float fit = Mathf.Min(1f, MaxPortraitResolution / Mathf.Max(width, height));
-                        Vector2Int resolution = new Vector2Int(
-                            Mathf.Max(MinPortraitResolution, Mathf.RoundToInt(width * fit)),
-                            Mathf.Max(MinPortraitResolution, Mathf.RoundToInt(height * fit)));
-
-                        TFTVLogger.Always($"{LogPrefix} Leader slot measures {width:F0}x{height:F0} on screen -> portrait {resolution.x}x{resolution.y}.");
-                        return resolution;
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
+                TFTVLogger.Always($"{LogPrefix} Leader slot -> portrait {measured.x}x{measured.y}.");
+                return measured;
             }
 
             return new Vector2Int(FallbackPortraitResolution, FallbackPortraitResolution);
         }
 
+        /// <summary>
+        /// Portrait resolution for a UI slot: the slot's own on-screen pixel size, scaled down to fit
+        /// <paramref name="maxResolution"/> without changing its aspect ratio. Rendering to anything
+        /// else means the Image either throws rendered pixels away or magnifies them.
+        ///
+        /// Returns zero when the slot cannot be measured - a rect with no layout pass behind it yet -
+        /// so the caller can decide between a fallback and waiting a frame.
+        /// </summary>
+        internal static Vector2Int ResolveSlotResolution(RectTransform rect, float displayScale, int maxResolution)
+        {
+            try
+            {
+                if (rect == null)
+                {
+                    return Vector2Int.zero;
+                }
+
+                Vector3[] corners = new Vector3[4];
+                rect.GetWorldCorners(corners);
+
+                float width;
+                float height;
+
+                Canvas canvas = rect.GetComponentInParent<Canvas>();
+                if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay && canvas.worldCamera != null)
+                {
+                    Vector2 min = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, corners[0]);
+                    Vector2 max = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, corners[2]);
+                    width = Mathf.Abs(max.x - min.x);
+                    height = Mathf.Abs(max.y - min.y);
+                }
+                else
+                {
+                    // Screen-space overlay: world corners are already screen pixels.
+                    width = Mathf.Abs(corners[2].x - corners[0].x);
+                    height = Mathf.Abs(corners[2].y - corners[0].y);
+                }
+
+                if (width <= 1f || height <= 1f)
+                {
+                    return Vector2Int.zero;
+                }
+
+                // The slot may be drawn at a scale, and that is the size the portrait is actually
+                // seen at - measure against that, not the unscaled rect.
+                width *= displayScale;
+                height *= displayScale;
+
+                // Scale both axes by the same factor. Clamping them independently changes the
+                // render's aspect ratio away from the slot's, and the Image then letterboxes the
+                // result and throws the difference away.
+                float fit = Mathf.Min(1f, maxResolution / Mathf.Max(width, height));
+                return new Vector2Int(
+                    Mathf.Max(MinPortraitResolution, Mathf.RoundToInt(width * fit)),
+                    Mathf.Max(MinPortraitResolution, Mathf.RoundToInt(height * fit)));
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return Vector2Int.zero;
+            }
+        }
+
         private static IEnumerator RenderPortrait(GeoCharacter character, Vector2Int resolution, Action<Sprite> onDone)
         {
-            GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
-            if (level == null)
+            yield return RenderPortrait(
+                new UnitDisplayData(character, GameUtl.GameComponent<SharedData>()),
+                character,
+                resolution,
+                IncidentFraming,
+                requireFaceBone: false,
+                dumpToDisk: DumpRenderToDisk,
+                onDone: onDone);
+        }
+
+        /// <summary>
+        /// Renders a portrait of a recruit - a unit the player does not own yet, and which therefore
+        /// exists only as a GeoUnitDescriptor rather than a GeoCharacter.
+        ///
+        /// The descriptor overload of UnitDisplayData is the one vanilla's own recruit screen builds
+        /// its 3D model from (UIModuleActorCycle.Init), so the same appearance tags reach the builder
+        /// here. Two things differ from the GeoCharacter path: there is no character to refresh tags
+        /// on - the descriptor's identity carries them directly - and no Delirium, since a recruit has
+        /// no corruption until they are hired.
+        ///
+        /// A descriptor with no face bone (a Scarab, an Aspida) renders nothing rather than a
+        /// close-up of a hull: the framing below is a face framing and nothing else.
+        ///
+        /// The face, hair and eyes are the recruit's own; the armour is painted in the one fixed
+        /// pair of colours every portrait uses. See <see cref="ApplyPortraitArmourColours"/> for why
+        /// the recruit's own armour colours are not what a portrait wants.
+        /// </summary>
+        internal static IEnumerator RenderPortrait(GeoUnitDescriptor recruit, Vector2Int resolution, Action<Sprite> onDone)
+        {
+            if (recruit == null)
             {
                 onDone?.Invoke(null);
                 yield break;
             }
 
-            UnitDisplayData displayData = new UnitDisplayData(character, GameUtl.GameComponent<SharedData>());
+            UnitDisplayData displayData = new UnitDisplayData(recruit, GameUtl.GameComponent<SharedData>());
+            displayData.GameTags = ApplyPortraitArmourColours(displayData.GameTags);
+            LogRecruitCustomization(recruit);
+
+            yield return RenderPortrait(
+                displayData,
+                null,
+                resolution,
+                RecruitFraming,
+                requireFaceBone: true,
+                dumpToDisk: false,
+                onDone: onDone);
+        }
+
+
+        /// <summary>
+        /// The armour colours every recruit portrait is painted in.
+        ///
+        /// A recruit's own colours are randomised per recruit when their identity is first asked for
+        /// (GeoUnitDescriptor.GenerateIdentity, under the randomized-initial-customization campaign
+        /// option), so a haven's offers came out in a scatter of unrelated colours. One fixed pair
+        /// makes the panel read as a set of portraits rather than a paint chart.
+        ///
+        /// Palette entries, by def name. Armour palette entry N supplies both a
+        /// CustomizationColorTagDef_N for the primary channel and a
+        /// CustomizationSecondaryColorTagDef_N for the secondary one, so these two names are entry 1
+        /// for the primary and entry 2 for the secondary.
+        /// </summary>
+        private const string PortraitPrimaryColorDefName = "CustomizationColorTagDef_1";
+        private const string PortraitSecondaryColorDefName = "CustomizationSecondaryColorTagDef_2";
+
+        /// <summary>
+        /// Swaps the armour colours in a recruit's tag list for the two fixed portrait colours.
+        ///
+        /// Only the armour channels: hair and eye colour are CustomizationColorTagDefs as well, but
+        /// they are their own subtypes, so selecting on the primary and secondary subtypes leaves a
+        /// recruit's own head colouring alone. The pattern is left alone too.
+        ///
+        /// Only the tags handed to the builder are changed - the recruit's identity is untouched, so
+        /// hiring them still produces the operative the rest of the game agreed on.
+        /// </summary>
+        private static IEnumerable<GameTagDef> ApplyPortraitArmourColours(IEnumerable<GameTagDef> tags)
+        {
+            try
+            {
+                if (tags == null)
+                {
+                    return tags;
+                }
+
+                DefCache defCache = TFTVMain.Main.DefCache;
+                CustomizationPrimaryColorTagDef primary = defCache.GetDef<CustomizationPrimaryColorTagDef>(PortraitPrimaryColorDefName);
+                CustomizationSecondaryColorTagDef secondary = defCache.GetDef<CustomizationSecondaryColorTagDef>(PortraitSecondaryColorDefName);
+
+                if (primary == null && secondary == null)
+                {
+                    TFTVLogger.Always($"{LogPrefix} Neither {PortraitPrimaryColorDefName} nor {PortraitSecondaryColorDefName} exists - " +
+                        "portraits keep the recruit's own colours.");
+                    return tags;
+                }
+
+                // Each channel is only dropped when there is something to put back in its place.
+                List<GameTagDef> result = tags
+                    .Where(tag => !(primary != null && tag is CustomizationPrimaryColorTagDef)
+                        && !(secondary != null && tag is CustomizationSecondaryColorTagDef))
+                    .ToList();
+
+                if (primary != null)
+                {
+                    result.Add(primary);
+                }
+
+                if (secondary != null)
+                {
+                    result.Add(secondary);
+                }
+
+                return result;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return tags;
+            }
+        }
+
+        /// <summary>
+        /// The colours a recruit's portrait is about to be built with. Worth a line each: a portrait
+        /// whose armour looks wrong is otherwise indistinguishable from one that rendered wrongly.
+        /// </summary>
+        private static void LogRecruitCustomization(GeoUnitDescriptor recruit)
+        {
+            try
+            {
+                CharacterIdentity identity = recruit.GetIdentity();
+                TFTVLogger.Always($"{LogPrefix} {recruit.GetName()} customization: " +
+                    $"armour {PortraitPrimaryColorDefName}/{PortraitSecondaryColorDefName} (fixed) | " +
+                    $"pattern {identity?.PatternTag?.name ?? "-"} | conditional {identity?.ConditionalCustiomizationTag?.name ?? "-"} | " +
+                    $"own armour was {identity?.PrimaryColorTag?.name ?? "-"}/{identity?.SecondaryColorTag?.name ?? "-"}");
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// Builds the subject, renders it and hands back the sprite. The one place a portrait is
+        /// actually made; every caller above is a way of describing the subject to it.
+        /// </summary>
+        private static IEnumerator RenderPortrait(
+            UnitDisplayData displayData,
+            GeoCharacter character,
+            Vector2Int resolution,
+            PortraitFraming framing,
+            bool requireFaceBone,
+            bool dumpToDisk,
+            Action<Sprite> onDone)
+        {
+            GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+            if (level == null || displayData == null)
+            {
+                onDone?.Invoke(null);
+                yield break;
+            }
+
             AddonsCharacterBuilder builder = CreateSubjectBuilder();
             try
             {
@@ -584,7 +822,7 @@ namespace TFTV.TFTVIncidents
                     yield break;
                 }
 
-                Texture2D rendered = RenderSubject(builder, displayData, resolution);
+                Texture2D rendered = RenderSubject(builder, displayData, resolution, framing, requireFaceBone);
                 if (rendered == null)
                 {
                     onDone?.Invoke(null);
@@ -596,7 +834,10 @@ namespace TFTV.TFTVIncidents
                 rendered.filterMode = FilterMode.Trilinear;
                 rendered.anisoLevel = 4;
 
-                DumpRender(character, rendered);
+                if (dumpToDisk)
+                {
+                    DumpRender(displayData.Name, rendered);
+                }
 
                 onDone?.Invoke(Sprite.Create(
                     rendered,
@@ -614,16 +855,11 @@ namespace TFTV.TFTVIncidents
         /// Writes the render to persistentDataPath under a name carrying the settings that produced
         /// it, so a run of portrait_* variations leaves a directory that can be compared file by file.
         /// </summary>
-        private static void DumpRender(GeoCharacter character, Texture2D rendered)
+        private static void DumpRender(string subjectName, Texture2D rendered)
         {
-            if (!DumpRenderToDisk)
-            {
-                return;
-            }
-
             try
             {
-                string name = $"TFTV_Portrait_{character.Id}_{SettingsSlug()}.png";
+                string name = $"TFTV_Portrait_{SanitizeFileName(subjectName)}_{SettingsSlug()}.png";
                 System.IO.File.WriteAllBytes(System.IO.Path.Combine(Application.persistentDataPath, name), rendered.EncodeToPNG());
                 TFTVLogger.Always($"{LogPrefix} Wrote {name} ({rendered.width}x{rendered.height}).");
             }
@@ -631,6 +867,24 @@ namespace TFTV.TFTVIncidents
             {
                 TFTVLogger.Error(dumpError);
             }
+        }
+
+        /// <summary>
+        /// Operative names reach the dump file name, and they can carry anything the player typed.
+        /// </summary>
+        private static string SanitizeFileName(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return "unnamed";
+            }
+
+            foreach (char invalid in System.IO.Path.GetInvalidFileNameChars())
+            {
+                value = value.Replace(invalid, '_');
+            }
+
+            return value;
         }
 
         private static string SettingsSlug()
@@ -732,6 +986,10 @@ namespace TFTV.TFTVIncidents
         /// its OnCharacterRebuilded step: tags first with autorefresh off, rebuild, then autorefresh
         /// back on - which is what applies the customization (armour colours and patterns, skin, hair,
         /// eyes) to the addons that were just built.
+        ///
+        /// <paramref name="character"/> is null when the subject is a recruit: a GeoUnitDescriptor's
+        /// display data already reads its appearance tags straight off the identity, so there is
+        /// nothing to refresh and no corruption to apply.
         /// </summary>
         private static IEnumerator BuildSubject(AddonsCharacterBuilder builder, GeoCharacter character, UnitDisplayData displayData, GeoLevelController level, Action<bool> onDone)
         {
@@ -749,7 +1007,7 @@ namespace TFTV.TFTVIncidents
                 // then rebuild the builder from that list. Do the same rather than an imitation of
                 // it on a copy - that merged the same tags into our own list and still came out with
                 // the template's grey.
-                character.RefreshTags();
+                character?.RefreshTags();
 
                 AddonsManager manager = builder.AddonsManager;
                 manager.SetAutorefreshOnTagsChanged(false);
@@ -760,7 +1018,7 @@ namespace TFTV.TFTVIncidents
                 // showHelmet: false. The body itself comes from the armour items, exactly as on the
                 // personnel screen - an unarmoured operative carries their bare body parts there.
                 List<ItemDef> armour = displayData.ArmourItems
-                    .Where(item => item != null && !IsHelmetOrAttachment(item))
+                    .Where(item => item != null && !IsRemovableHeadCover(item))
                     .ToList();
 
                 CommonCharacterUtils.RebuildCharacter(builder, armour, null);
@@ -775,7 +1033,7 @@ namespace TFTV.TFTVIncidents
 
                 if (!rebuilt)
                 {
-                    TFTVLogger.Always($"{LogPrefix} Rebuild of {character.DisplayName} timed out after {RebuildTimeoutSeconds}s.");
+                    TFTVLogger.Always($"{LogPrefix} Rebuild of {displayData.Name} timed out after {RebuildTimeoutSeconds}s.");
                     onDone?.Invoke(false);
                     yield break;
                 }
@@ -789,7 +1047,7 @@ namespace TFTV.TFTVIncidents
                 // One line per portrait: what the operative is actually made of. Anything unexpected
                 // in here (a bare body part next to the armour that covers it, a missing armour piece)
                 // is what a wrong-looking portrait will be made of too.
-                TFTVLogger.Always($"{LogPrefix} {character.DisplayName} built from {string.Join(", ", VisibleItemNames(manager))} " +
+                TFTVLogger.Always($"{LogPrefix} {displayData.Name} built from {string.Join(", ", VisibleItemNames(manager))} " +
                     $"| identity {IdentityCustomization(character)} " +
                     $"| customization {string.Join(", ", CustomizationTagNames(manager))}");
 
@@ -896,7 +1154,7 @@ namespace TFTV.TFTVIncidents
         /// </summary>
         private static string IdentityCustomization(GeoCharacter character)
         {
-            CharacterIdentity identity = character.Identity;
+            CharacterIdentity identity = character?.Identity;
             if (identity == null)
             {
                 return "none";
@@ -912,7 +1170,9 @@ namespace TFTV.TFTVIncidents
         private static string[] CustomizationTagNames(AddonsManager manager)
         {
             return manager.MergeWithAddonsTags
-                .Where(tag => tag is CustomizationColorTagDef || tag is CustomizationPatternTagDef)
+                .Where(tag => tag is CustomizationColorTagDef
+                    || tag is CustomizationPatternTagDef
+                    || tag is ConditionalCustomizationTagDef)
                 .Select(tag => tag.name)
                 .ToArray();
         }
@@ -981,7 +1241,7 @@ namespace TFTV.TFTVIncidents
         /// to the Characters layer and clipped 2.5m out, so nothing else in the scene can reach the
         /// image - all we have to do is light the subject and make sure it is on that layer.
         /// </summary>
-        private static Texture2D RenderSubject(AddonsCharacterBuilder builder, UnitDisplayData displayData, Vector2Int resolution)
+        private static Texture2D RenderSubject(AddonsCharacterBuilder builder, UnitDisplayData displayData, Vector2Int resolution, PortraitFraming framing, bool requireFaceBone)
         {
             GameObject subject = builder.gameObject;
             SetLayerRecursively(subject, LayerMask.NameToLayer("Characters"));
@@ -1046,7 +1306,7 @@ namespace TFTV.TFTVIncidents
                 // - which would leave fresh renderers with no property block on them.
                 RefreshAddonTags(builder.AddonsManager);
                 HideCoveredAddonVisuals(builder.AddonsManager);
-                return CapturePortrait(builder, resolution);
+                return CapturePortrait(builder, resolution, framing, requireFaceBone);
             }
             finally
             {
@@ -1108,13 +1368,25 @@ namespace TFTV.TFTVIncidents
         /// portraits come out in factory colours for the same reason. Copying the live camera keeps
         /// the shader on the path it takes in the scene, which is where the customization shows.
         /// </summary>
-        private static Texture2D CapturePortrait(AddonsCharacterBuilder builder, Vector2Int resolution)
+        private static Texture2D CapturePortrait(AddonsCharacterBuilder builder, Vector2Int resolution, PortraitFraming framing, bool requireFaceBone)
         {
             Transform target = builder.AddonsManager?.FindTransform("Nose", rigBonesOnly: true)
-                ?? builder.AddonsManager?.FindTransform("Head", rigBonesOnly: true)
-                ?? builder.transform;
+                ?? builder.AddonsManager?.FindTransform("Head", rigBonesOnly: true);
 
-            float distance = target.name == "Head" ? HeadDistance : NoseDistance;
+            if (target == null)
+            {
+                // Nothing with a face: a vehicle chassis, or a rig whose bones are named otherwise.
+                // The framing below is a head-and-shoulders framing, so pointing it at the object
+                // root gives a close-up of whatever happens to sit at the origin.
+                if (requireFaceBone)
+                {
+                    return null;
+                }
+
+                target = builder.transform;
+            }
+
+            float distance = target.name == "Head" ? framing.HeadDistance : framing.NoseDistance;
 
             // Render bigger than the portrait is shown at, then average the extra samples down.
             // Nothing in this path anti-aliases on its own, so this is where edge quality comes from.
@@ -1147,7 +1419,7 @@ namespace TFTV.TFTVIncidents
                 camera.allowHDR = false;
                 camera.allowMSAA = msaa > 1;
                 camera.orthographic = false;
-                camera.fieldOfView = CameraFoV;
+                camera.fieldOfView = framing.FieldOfView;
                 camera.nearClipPlane = 0.01f;
                 camera.farClipPlane = 2.5f;
 
@@ -1159,14 +1431,14 @@ namespace TFTV.TFTVIncidents
                 // Swing the camera around the head for a three-quarter view. The yaw is taken about
                 // world up rather than the bone's, since rig bones do not carry a dependable up, and
                 // the look-at levels the shot so the portrait is never tilted.
-                Vector3 viewDirection = Quaternion.AngleAxis(CameraYawDegrees, Vector3.up) * target.forward;
+                Vector3 viewDirection = Quaternion.AngleAxis(framing.YawDegrees, Vector3.up) * target.forward;
                 camera.transform.position = target.position
                     + viewDirection.normalized * distance
-                    + Vector3.up * CameraHeight;
+                    + Vector3.up * framing.Height;
 
                 // Aiming below the face rather than straight at it lifts the head out of the middle
                 // of the frame and leaves the shoulders under it.
-                camera.transform.LookAt(target.position + Vector3.up * LookAtVerticalOffset);
+                camera.transform.LookAt(target.position + Vector3.up * framing.LookAtVerticalOffset);
 
                 camera.Render();
 
@@ -1505,9 +1777,21 @@ namespace TFTV.TFTVIncidents
         /// <summary>
         /// Same test as UIModuleActorCycle.IsHelmetOrAttachment.
         /// </summary>
-        private static bool IsHelmetOrAttachment(ItemDef armourItem)
+        /// <summary>
+        /// Whether an item covers the head and can simply be taken off for the portrait.
+        ///
+        /// A helmet can. A mutated or bionic head cannot: it is not worn over the face, it *is* the
+        /// face, and stripping it leaves the portrait showing the plain human head the augment
+        /// replaced - a face the operative does not have. Vanilla draws the same line, by whether the
+        /// head slot holds a permanent augment (UIStateMemorial's showHelmet, and the customization
+        /// screen's _hasMutatedHead, which greys out the hide-helmet toggle for exactly this case).
+        ///
+        /// Vanilla decides it once for the whole unit; this decides it per item, so an operative
+        /// wearing a helmet over an augmented head still loses the helmet and keeps the augment.
+        /// </summary>
+        private static bool IsRemovableHeadCover(ItemDef armourItem)
         {
-            if (armourItem?.RequiredSlotBinds == null)
+            if (armourItem?.RequiredSlotBinds == null || armourItem.IsPermanentAugment)
             {
                 return false;
             }
@@ -1524,6 +1808,35 @@ namespace TFTV.TFTVIncidents
             return false;
         }
 
+        /// <summary>
+        /// Runs a portrait coroutine on the geoscape level's own runner, which is where every render
+        /// in this file happens. Returns null when there is no geoscape to run it on.
+        /// </summary>
+        internal static Coroutine RunPortraitCoroutine(IEnumerator routine)
+        {
+            try
+            {
+                if (routine == null)
+                {
+                    return null;
+                }
+
+                CoroutineRunner runner = GetCoroutineRunner();
+                if (runner == null)
+                {
+                    TFTVLogger.Always($"{LogPrefix} No coroutine runner - there is no geoscape to render on.");
+                    return null;
+                }
+
+                return runner.StartCoroutine(routine);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return null;
+            }
+        }
+
         private static CoroutineRunner GetCoroutineRunner()
         {
             GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
@@ -1532,7 +1845,11 @@ namespace TFTV.TFTVIncidents
                 return null;
             }
 
-            return level.GetComponent<CoroutineRunner>() ?? level.gameObject.AddComponent<CoroutineRunner>();
+            // Deliberately not ??: a destroyed component is a live C# reference that only Unity's
+            // own == knows is dead, so ?? would hand back the previous level's runner and every
+            // StartCoroutine on it would throw.
+            CoroutineRunner existing = level.GetComponent<CoroutineRunner>();
+            return existing != null ? existing : level.gameObject.AddComponent<CoroutineRunner>();
         }
 
         private sealed class CoroutineRunner : MonoBehaviour

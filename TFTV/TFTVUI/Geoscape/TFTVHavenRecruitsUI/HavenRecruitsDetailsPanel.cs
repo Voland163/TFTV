@@ -312,6 +312,7 @@ namespace TFTV
                 rt.offsetMax = Vector2.zero;
 
                 CreateDetailHeader(_detailPanel.transform);
+                HavenRecruitPortrait.Create(_detailPanel.transform);
 
                 var (contentGO, contentRT) = RecruitOverlayManagerHelpers.NewUI("Content", _detailPanel.transform);
                 contentRT.anchorMin = new Vector2(0f, 0f);
@@ -725,6 +726,8 @@ namespace TFTV
                 _detailInfoRoot?.gameObject.SetActive(false);
 
                 _detailEmptyState?.SetActive(true);
+
+                HavenRecruitPortrait.Hide();
 
                 if (_detailClassIconImage != null)
                 {
@@ -1328,6 +1331,16 @@ namespace TFTV
                 {
                     string factionName = GetFactionDisplayName(data?.HavenOwner);
                     string location = data?.Site?.LocalizedSiteName;
+
+                    // Shortened before the colour markup goes on, and each line on its own: this
+                    // label is two coloured lines, and there is no prefix of the finished string that
+                    // is both short enough and still valid markup. The label's own left edge does not
+                    // move with its text - the faction icon beside it is a fixed size - so the room
+                    // can be measured now rather than after a rebuild.
+                    float room = RoomBeforePortrait(_detailFactionNameLabel);
+                    factionName = HavenRecruitsUtils.Ellipsize(_detailFactionNameLabel, factionName, room);
+                    location = HavenRecruitsUtils.Ellipsize(_detailFactionNameLabel, location, room);
+
                     _detailFactionNameLabel.text = BuildFactionHeaderText(factionName, location, factionHeaderColor);
                 }
 
@@ -1370,11 +1383,66 @@ namespace TFTV
                 PopulateArmorSlots(data.Recruit);
                 PopulateEquipmentSlots(data.Recruit);
 
+                // Sits outside the layout below, so it is deliberately not followed by a rebuild.
+                HavenRecruitPortrait.Show(data.Recruit);
+
                 var infoRect = _detailInfoRoot as RectTransform;
                 if (infoRect != null)
                 {
                     LayoutRebuilder.ForceRebuildLayoutImmediate(infoRect);
                 }
+
+                // After the rebuild: the label's left edge follows the class icon beside it, and only
+                // the settled layout knows where that put it.
+                FitHeaderTextToPortrait();
+            }
+            catch (Exception ex) { TFTVLogger.Error(ex); }
+        }
+
+        /// <summary>
+        /// Space left between the shortened text and the portrait slot.
+        /// </summary>
+        private const float DetailPortraitGutter = 16f;
+
+        /// <summary>
+        /// Room a label in the panel has before it reaches the portrait slot, in the label's own
+        /// units. Zero when there is no slot, which the shortening reads as "no limit known".
+        /// </summary>
+        private static float RoomBeforePortrait(Text label)
+        {
+            RectTransform portrait = HavenRecruitPortrait.SlotRect;
+            if (portrait == null || label == null)
+            {
+                return 0f;
+            }
+
+            return HavenRecruitsUtils.MeasureRoomBefore(
+                label.rectTransform,
+                HavenRecruitsUtils.WorldLeft(portrait),
+                DetailPortraitGutter);
+        }
+
+        /// <summary>
+        /// Shortens the level and name line so it stops before the portrait.
+        ///
+        /// It is set to overflow rather than wrap - a recruit's name is one line by design - so
+        /// nothing else would stop it, and a three-part name at a two-digit level is comfortably
+        /// wider than the room left beside a portrait. Unlike the faction line above, this one is
+        /// plain text, so the finished string can be cut directly.
+        /// </summary>
+        private static void FitHeaderTextToPortrait()
+        {
+            try
+            {
+                if (_detailLevelNameLabel == null)
+                {
+                    return;
+                }
+
+                HavenRecruitsUtils.SetEllipsizedText(
+                    _detailLevelNameLabel,
+                    _detailLevelNameLabel.text,
+                    RoomBeforePortrait(_detailLevelNameLabel));
             }
             catch (Exception ex) { TFTVLogger.Error(ex); }
         }

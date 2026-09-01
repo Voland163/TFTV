@@ -296,6 +296,46 @@ namespace TFTV.TFTVHavenRecruitsUI
             }
         }
 
+        /// <summary>
+        /// Space left between a shortened name and whatever it was about to run into.
+        /// </summary>
+        private const float NameGutter = 12f;
+
+        /// <summary>
+        /// Shortens the card's name until it stops before the ability icons.
+        ///
+        /// Those icons are pinned to the card's right edge and ignore the layout, so the layout does
+        /// not know they are there and will not stop the name reaching them - a long name simply
+        /// draws underneath them, which is what the list did before this.
+        ///
+        /// Must be called only once the list's layout has run: during PopulateRecruitItem the card
+        /// has no width yet, so there would be nothing to measure against. RefreshColumns rebuilds
+        /// the list for its own reasons, and this rides on that pass.
+        /// </summary>
+        internal static void FitNameToCard(RecruitCardView cardView)
+        {
+            try
+            {
+                Text label = cardView?.NameLabel;
+                RectTransform cardRect = cardView?.transform as RectTransform;
+                if (label == null || cardRect == null)
+                {
+                    return;
+                }
+
+                // With no abilities (a vehicle) nothing is pinned over the name, so the card's own
+                // right edge is the limit.
+                RectTransform abilities = cardView.AbilityContainer as RectTransform;
+                float boundary = abilities != null && abilities.gameObject.activeSelf
+                    ? HavenRecruitsUtils.WorldLeft(abilities)
+                    : HavenRecruitsUtils.WorldRight(cardRect);
+
+                float room = HavenRecruitsUtils.MeasureRoomBefore(label.rectTransform, boundary, NameGutter);
+                HavenRecruitsUtils.SetEllipsizedText(label, label.text, room);
+            }
+            catch (Exception ex) { TFTVLogger.Error(ex); }
+        }
+
         internal static RecruitCardView CreateRecruitItem(Transform parent, RecruitAtSite data, bool collapse)
         {
             var cardView = EnsureCardHierarchy(parent);

@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.UI;
 using static TFTV.HavenRecruitsMain;
 using static TFTV.TFTVHavenRecruitsUI.HavenRecruitsPrice;
 
@@ -45,6 +46,141 @@ namespace TFTV.TFTVHavenRecruitsUI
             catch (Exception ex)
             {
                 TFTVLogger.Error(ex);
+            }
+        }
+
+        private const string Ellipsis = "...";
+
+        /// <summary>
+        /// Sets a label's text, cut short with an ellipsis if it would be wider than
+        /// <paramref name="maxWidth"/>.
+        ///
+        /// Unity's Text has no truncation of its own worth using: HorizontalWrapMode.Wrap moves the
+        /// overflow to a second line, Truncate cuts it mid-word with no ellipsis to say it did, and
+        /// Overflow - what the recruit labels use - simply draws the rest of the name over whatever
+        /// is next to it. Recruit names are three parts long (given name, nickname in quotes, family
+        /// name) and routinely outrun the space they have.
+        ///
+        /// The measurement is the label's own font metrics, which is what Text.preferredWidth is
+        /// built on, so it accounts for the font and size actually in use.
+        /// </summary>
+        internal static void SetEllipsizedText(Text label, string value, float maxWidth)
+        {
+            if (label == null)
+            {
+                return;
+            }
+
+            label.text = Ellipsize(label, value, maxWidth);
+        }
+
+        /// <summary>
+        /// The shortened string on its own, measured with <paramref name="metrics"/>'s font.
+        ///
+        /// Use this rather than <see cref="SetEllipsizedText"/> whenever the label's text is built up
+        /// out of parts with rich-text markup around them: cutting the finished string can land in
+        /// the middle of a colour tag, whereas cutting each part before it is wrapped cannot. Markup
+        /// costs no width, so measuring the bare part is also the honest measurement.
+        /// </summary>
+        internal static string Ellipsize(Text metrics, string value, float maxWidth)
+        {
+            try
+            {
+                value = value ?? string.Empty;
+
+                if (metrics == null || maxWidth <= 0f || value.Length == 0 || MeasureTextWidth(metrics, value) <= maxWidth)
+                {
+                    return value;
+                }
+
+                // Longest prefix that still fits once the ellipsis is on it. Width grows with every
+                // character kept, so the answer can be bisected instead of walked.
+                int shortest = 0;
+                int longest = value.Length - 1;
+                string best = Ellipsis;
+
+                while (shortest <= longest)
+                {
+                    int keep = (shortest + longest) / 2;
+                    string candidate = value.Substring(0, keep).TrimEnd() + Ellipsis;
+
+                    if (MeasureTextWidth(metrics, candidate) <= maxWidth)
+                    {
+                        best = candidate;
+                        shortest = keep + 1;
+                    }
+                    else
+                    {
+                        longest = keep - 1;
+                    }
+                }
+
+                return best;
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+                return value ?? string.Empty;
+            }
+        }
+
+        private static float MeasureTextWidth(Text label, string value)
+        {
+            TextGenerationSettings settings = label.GetGenerationSettings(Vector2.zero);
+
+            // Measuring, not laying out: let the generator report the width the string wants rather
+            // than the width the label currently has.
+            settings.horizontalOverflow = HorizontalWrapMode.Overflow;
+            settings.verticalOverflow = VerticalWrapMode.Overflow;
+            settings.updateBounds = false;
+
+            return label.cachedTextGeneratorForLayout.GetPreferredWidth(value, settings) / label.pixelsPerUnit;
+        }
+
+        /// <summary>
+        /// World-space x of a rect's left and right edges. Rects that overlap in a UI are only
+        /// comparable in world space - they can sit under different parents, anchors and pivots.
+        /// </summary>
+        internal static float WorldLeft(RectTransform rect) => WorldEdge(rect, 0);
+
+        internal static float WorldRight(RectTransform rect) => WorldEdge(rect, 2);
+
+        private static float WorldEdge(RectTransform rect, int corner)
+        {
+            Vector3[] corners = new Vector3[4];
+            rect.GetWorldCorners(corners);
+            return corners[corner].x;
+        }
+
+        /// <summary>
+        /// Horizontal room a label has before it reaches <paramref name="boundaryWorldX"/>, in the
+        /// label's own units - the world distance converted back through the label's scale, so the
+        /// answer is right whatever the canvas is scaled to.
+        ///
+        /// Returns zero when the label has no scale yet, which <see cref="SetEllipsizedText"/> reads
+        /// as "no limit known" and leaves the text whole.
+        /// </summary>
+        internal static float MeasureRoomBefore(RectTransform label, float boundaryWorldX, float gutter)
+        {
+            try
+            {
+                if (label == null)
+                {
+                    return 0f;
+                }
+
+                float scale = Mathf.Abs(label.lossyScale.x);
+                if (scale <= 0.0001f)
+                {
+                    return 0f;
+                }
+
+                return (boundaryWorldX - WorldLeft(label)) / scale - gutter;
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+                return 0f;
             }
         }
 
