@@ -576,6 +576,10 @@ namespace TFTV.TFTVVanillaFixes.Tactical
                                 item.ValueContent = string.Format("{0}", statusInfo.Value);
                             }
                             data.Entries.Add(item);
+
+                            // Acid is a sum across body parts; break it out under its own row so the
+                            // single number does not read as one pool.
+                            TFTVUI.Tactical.AcidReadout.AppendAcidBreakdown(data.Entries, actor, statusInfo.Def);
                         }
                         else
                         {

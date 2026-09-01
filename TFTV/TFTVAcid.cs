@@ -13,6 +13,7 @@ using PhoenixPoint.Tactical.Entities.Effects;
 using PhoenixPoint.Tactical.Entities.Effects.DamageTypes;
 using PhoenixPoint.Tactical.Entities.Equipments;
 using PhoenixPoint.Tactical.Entities.Statuses;
+using PhoenixPoint.Common.Entities.Characters;
 using PRMBetterClasses.SkillModifications;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,168 @@ namespace TFTV
         private static readonly DefRepository Repo = TFTVMain.Repo;
         private static readonly SharedData Shared = TFTVMain.Shared;
         private static readonly DefCache DefCache = TFTVMain.Main.DefCache;
+
+        internal static DamageOverTimeDamageTypeEffectDef AcidDamageTypeDef
+            => DefCache.GetDef<DamageOverTimeDamageTypeEffectDef>("Acid_DamageOverTimeDamageTypeEffectDef");
+
+        /// <summary>
+        /// One turn of acid on one body part, resolved the same way whether it is being applied for
+        /// real or predicted for the UI.
+        ///
+        /// Acid never splits a tick: while the part still has armour the whole amount goes to armour
+        /// and health takes nothing; only once the plate is gone does health take the hit. Both the
+        /// damage path and the readout call this, so a forecast cannot drift away from what the
+        /// character actually suffers.
+        /// </summary>
+        internal struct AcidTick
+        {
+            internal float ArmourDamage;
+            internal float HealthDamage;
+
+            internal static AcidTick Resolve(float amount, float armour, float resistance)
+            {
+                bool armoured = armour > 1E-05f;
+
+                return new AcidTick
+                {
+                    ArmourDamage = armoured ? amount : 0f,
+                    HealthDamage = armoured ? 0f : amount * resistance,
+                };
+            }
+        }
+
+        /// <summary>
+        /// The acid a character is carrying, one entry per affected body part.
+        ///
+        /// The healthbar and the tooltip both show the sum of these, which is a number the game never
+        /// works with: each part is its own AcidStatus with its own DamageAccumulation, corroding its
+        /// own plate on its own clock, and each one bills the character's health separately once its
+        /// plate is gone.
+        /// </summary>
+        internal class LimbAcid
+        {
+            internal string SlotName;
+            internal string DisplayName;
+            internal float Acid;
+            internal float AcidAfter;
+            internal float Armour;
+            internal float ArmourAfter;
+            internal float HealthDamage;
+
+            internal bool WillCostHealth => HealthDamage > 1E-05f;
+        }
+
+        /// <summary>
+        /// The product of every acid multiplier the engine would apply, using the same filter as
+        /// TacticalActorBase.GetDamageMultiplierFor so several sources - an acid vest plus the Lab
+        /// Assistant background, say - compound exactly as they do in the damage path.
+        /// </summary>
+        internal static float GetAcidResistance(TacticalActorBase actor)
+        {
+            if (actor == null)
+            {
+                return 1f;
+            }
+
+            return actor.GetDamageMultiplierFor(AcidDamageTypeDef);
+        }
+
+        /// <summary>
+        /// How many separate abilities or statuses are contributing to that product. Two sources of
+        /// 0.5 multiply to 0.25, so the count is worth stating alongside the number.
+        /// </summary>
+        internal static int GetAcidResistanceSourceCount(TacticalActorBase actor)
+        {
+            if (actor == null)
+            {
+                return 0;
+            }
+
+            return actor.GetDamageMultipliers(
+                DamageMultiplierType.Incoming,
+                AcidDamageTypeDef,
+                m => !(m is TacStatus status) || !status.GetTargetSlotsNames().Any()).Count();
+        }
+
+        internal static List<LimbAcid> GetLimbAcid(TacticalActor actor)
+        {
+            List<LimbAcid> limbs = new List<LimbAcid>();
+
+            try
+            {
+                if (actor?.Status == null)
+                {
+                    return limbs;
+                }
+
+                CharacterBodyState bodyState = actor.GetComponent<CharacterBodyState>();
+                if (bodyState == null)
+                {
+                    return limbs;
+                }
+
+                float resistance = GetAcidResistance(actor);
+
+                // Any resistance at all doubles the burn-off; the engine tests the multiplier
+                // against 1 rather than scaling by it, so a second source adds nothing here.
+                float decayFactor = resistance < 1f ? 2f : 1f;
+
+                foreach (AcidStatus status in actor.Status.GetStatuses<AcidStatus>())
+                {
+                    foreach (string slotName in status.GetTargetSlotsNames())
+                    {
+                        ItemSlot slot = bodyState.GetSlot(slotName);
+                        if (slot == null)
+                        {
+                            continue;
+                        }
+
+                        float armour = (float)slot.GetArmor().Value;
+
+                        // Status.Value is the number the UI prints; the accumulation carries it
+                        // scaled by the effect's per-point damage, which is what a tick spends.
+                        AcidTick tick = AcidTick.Resolve(status.Value * status.DamagePerTurn, armour, resistance);
+
+                        float decay = status.DamageOverTimeStatusDef.LowerLevelPerTurn * decayFactor;
+
+                        limbs.Add(new LimbAcid
+                        {
+                            SlotName = slotName,
+                            DisplayName = slot.DisplayName,
+                            Acid = status.Value,
+                            AcidAfter = Mathf.Max(0f, status.Value - decay),
+                            Armour = armour,
+                            ArmourAfter = Mathf.Max(0f, armour - tick.ArmourDamage),
+                            HealthDamage = tick.HealthDamage,
+                        });
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+            return limbs;
+        }
+
+        /// <summary>
+        /// How far the acid level drops at the end of each turn. Any resistance at all doubles it -
+        /// the engine tests the multiplier rather than scaling by it, so a second source of
+        /// resistance buys more damage reduction but no extra burn-off.
+        /// </summary>
+        internal static float GetAcidDecayPerTurn(TacticalActor actor)
+        {
+            AcidStatus status = actor?.Status?.GetStatuses<AcidStatus>()?.FirstOrDefault();
+            if (status == null)
+            {
+                return 0f;
+            }
+
+            float perTurn = status.DamageOverTimeStatusDef.LowerLevelPerTurn;
+
+            return GetAcidResistance(actor) < 1f ? perTurn * 2f : perTurn;
+        }
 
 
         /// <summary>
@@ -182,9 +345,9 @@ namespace TFTV
                     }
 
 
-                    bool num = (float)recv.GetArmor().Value > 1E-05f;
-                    float armorDamage = num ? accum.Amount : 0f;
-                    float num2 = num ? 0f : (accum.Amount * resistanceToAcid);
+                    AcidTick tick = AcidTick.Resolve(accum.Amount, (float)recv.GetArmor().Value, resistanceToAcid);
+                    float armorDamage = tick.ArmourDamage;
+                    float num2 = tick.HealthDamage;
 
                    // TFTVLogger.Always($"Acid damage being applied: initial {accum.Amount}, after armor/resistance {num2}, resistance to acid {resistanceToAcid}");
 

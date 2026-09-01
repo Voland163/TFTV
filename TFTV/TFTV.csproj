@@ -285,6 +285,8 @@
     <Compile Include="TFTVUI\Tactical\BaseDefense.cs" />
     <Compile Include="TFTVUI\Tactical\CaptureTacticalWidget.cs" />
     <Compile Include="TFTVUI\Tactical\DamagePrediction.cs" />
+    <Compile Include="TFTVUI\Tactical\AcidReadout.cs" />
+    <Compile Include="TFTVUI\Tactical\StatusForecast.cs" />
     <Compile Include="TFTVUI\Tactical\DeliriumWidget.cs" />
     <Compile Include="TFTVUI\Tactical\MeleeRangePrediction.cs" />
     <Compile Include="TFTVUI\Tactical\OpposingHumanoidForceWidget.cs" />
