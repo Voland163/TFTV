@@ -330,6 +330,14 @@ namespace TFTV.TFTVUI.Personnel
             {
                 try
                 {
+                    // Vanilla DisplaySoldier tolerates a null character - it just logs that the
+                    // character is not in the module and returns - and the roster hands it one when
+                    // there is nobody left to show, which the base rework makes easy to reach by
+                    // dismissing every operative.
+                    if (character == null)
+                    {
+                        return true;
+                    }
 
                     if (character.CharacterStats.Corruption > 0f && character.Fatigue == null)
                     {
@@ -342,7 +350,7 @@ namespace TFTV.TFTVUI.Personnel
                         return true;
                     }
 
-                    if (character != null && character.TemplateDef.IsHuman && !character.IsMutoid && !character.TemplateDef.IsMutog && !character.TemplateDef.IsVehicle)
+                    if (character.TemplateDef.IsHuman && !character.IsMutoid && !character.TemplateDef.IsMutog && !character.TemplateDef.IsVehicle)
                     {
                         bool hasAugmentedHead = HasAugmentedHead(character, bionicalTag, mutationTag, headSlot);
 

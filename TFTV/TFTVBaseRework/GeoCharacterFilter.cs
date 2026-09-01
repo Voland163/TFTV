@@ -147,6 +147,40 @@ namespace TFTV.TFTVBaseRework
                 }
             }
 
+            /// <summary>
+            /// The roster screen keeps its own character list and only the actor cycle module was
+            /// being filtered, so the two disagreed once operatives had been dismissed into
+            /// personnel: _characters still held them, the module was initialised with none, and
+            /// EnterState then handed OnActorCycled a non-null _initialCharacter while the module's
+            /// CurrentCharacter was null. Vanilla dereferences that in RefreshUnitStatsModule, and
+            /// the mod's own DisplaySoldier patch went down with it.
+            ///
+            /// Filtering the list at its source keeps the empty-roster path vanilla already has -
+            /// null initial character, OnActorCycled returning early - reachable once every
+            /// operative has been dismissed.
+            /// </summary>
+            [HarmonyPatch(typeof(UIStateGeoRoster), "RefreshCharacters")]
+            internal static class Patch_UIStateGeoRoster_RefreshCharacters_FilterCharacters
+            {
+                static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
+                static void Postfix(List<GeoCharacter> ____characters)
+                {
+                    try
+                    {
+                        if (!Enabled || ____characters == null)
+                        {
+                            return;
+                        }
+
+                        ____characters.RemoveAll(c => RosterFilterPolicy.ShouldHide(c));
+                    }
+                    catch (Exception e)
+                    {
+                        TFTVLogger.Error(e);
+                    }
+                }
+            }
+
 
             [HarmonyPatch(typeof(GeoSiteVisualsController), "RefreshSiteVisuals")]
             public static class GeoSiteVisualsController_BaseIconAbilityFilterPatch
