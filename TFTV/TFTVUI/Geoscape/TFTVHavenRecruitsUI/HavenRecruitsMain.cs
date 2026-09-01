@@ -580,6 +580,10 @@ namespace TFTV
                         _resourcePoolRoot = null;
                     }
 
+                    // Before the panel goes: the cached portraits are textures of our own, and the
+                    // slot they are shown in is a child of it.
+                    HavenRecruitPortrait.ResetState();
+
                     if (_detailPanel != null)
                     {
                         Object.Destroy(_detailPanel);
@@ -2096,8 +2100,19 @@ namespace TFTV
 
                     // The rows have to be measured after a layout pass: BuildNavigationRow orders each
                     // card's icons by screen position, and the layout groups have not run yet.
-                    if (_recruitListRoot is RectTransform listRect)
+                    RectTransform listRect = _recruitListRoot as RectTransform;
+                    if (listRect != null)
                     {
+                        LayoutRebuilder.ForceRebuildLayoutImmediate(listRect);
+
+                        // Names are shortened against the ability icons they would otherwise run
+                        // under, which needs the pass above; shortening one changes its width, so the
+                        // pass below settles the cards again before the navigation rows read them.
+                        foreach (var cardView in builtCards)
+                        {
+                            HavenRecruitsRecruitItem.FitNameToCard(cardView);
+                        }
+
                         LayoutRebuilder.ForceRebuildLayoutImmediate(listRect);
                     }
 

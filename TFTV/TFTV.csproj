@@ -250,6 +250,7 @@
     <Compile Include="TFTVUI\Geoscape\SiteManagementNav.cs" />
     <Compile Include="TFTVUI\Home\NewGameOptionsNav.cs" />
     <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitAbilityIconView.cs" />
+    <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitPortrait.cs" />
     <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitAbilityTooltipTrigger.cs" />
     <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitResourceChipView.cs" />
     <Compile Include="TFTVUI\Geoscape\TFTVHavenRecruitsUI\HavenRecruitsButton.cs" />
