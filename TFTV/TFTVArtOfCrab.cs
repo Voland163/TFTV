@@ -227,8 +227,8 @@ namespace TFTV
                     foreach (TacticalActorBase enemy in tacticalActor.TacticalFaction.AIBlackboard.GetEnemies(tacticalActor.AIActor.GetEnemyMask(ActorType.Combatant)))
                     {
 
-                        if (!((tacAITarget.Pos - enemy.Pos).sqrMagnitude < adjustedPerception
-                            || !TacticalFactionVision.CheckVisibleLineBetweenActors(enemy, enemy.Pos, tacticalActor, checkAllPoints: true, tacAITarget.Pos)))
+                        if (!((tacAITarget.Pos - enemy.Pos).sqrMagnitude < perceptionRange
+                            && TacticalFactionVision.CheckVisibleLineBetweenActors(enemy, enemy.Pos, tacticalActor, checkAllPoints: true, tacAITarget.Pos)))
                         {
                             continue;
                         }
@@ -249,9 +249,9 @@ namespace TFTV
                         return false;
                     }
 
-                    relevantEnemies.OrderBy(kvp => kvp.Value);
-
-                    TacticalActorBase closestRelevantEnemy = relevantEnemies.Keys.FirstOrDefault();
+                    TacticalActorBase closestRelevantEnemy = relevantEnemies
+                        .OrderBy(kvp => kvp.Value.sqrMagnitude)
+                        .First().Key;
 
                     Vector3 coverDirection = tacticalActor.TacticalPerception.GetCoverDirection(tacAITarget.Pos, relevantEnemies[closestRelevantEnemy]);
 
@@ -661,6 +661,9 @@ namespace TFTV
                     //  TFTVLogger.Always("test 2");
                     foreach (TacticalActor tacticalActor in tacticalActors)
                     {
+                        // Overrides persist on TacAIActor until explicitly reset. Recompute the
+                        // current turn's priority from scratch rather than retaining last turn's role.
+                        tacticalActor.AIActor.ResetTurnOrderPriority();
 
 
                        
@@ -811,7 +814,7 @@ namespace TFTV
                             {
                                 //  TFTVLogger.Always("the weapon is " + weapon.DisplayName);
 
-                                if (weapon.WeaponDef.APToUsePerc < 75)
+                                if (actor == tacticalActor && weapon.WeaponDef.APToUsePerc < 75)
                                 {
                                     TFTVLogger.Always(actor.DisplayName + " has perception of " + actor.GetAdjustedPerceptionValue() + " and no 3AP weapon, so would make for a good scout");
                                     return true;
@@ -1383,13 +1386,16 @@ namespace TFTV
                     try
                     {
 
-                        if (Umbra.UmbraAIClosestEnemyConsideration(__instance, actor, target, context, ref __result))
+                        // The helper returns false when it has supplied Umbra's custom score; in
+                        // that case vanilla must not immediately overwrite the result.
+                        if (!Umbra.UmbraAIClosestEnemyConsideration(__instance, actor, target, context, ref __result))
                         {
-                            if (BadTargets.CullSmallCrittersForBigAndMedMonsters(__instance.BaseDef as AIClosestEnemyConsiderationDef, actor, target, context, ref __result))
-                            {
-                                return false;
-                            }
+                            return false;
+                        }
 
+                        if (BadTargets.CullSmallCrittersForBigAndMedMonsters(__instance.BaseDef as AIClosestEnemyConsiderationDef, actor, target, context, ref __result))
+                        {
+                            return false;
                         }
 
                         return true;
