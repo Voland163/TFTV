@@ -1,11 +1,14 @@
-﻿using HarmonyLib;
+﻿using Base.UI.MessageBox;
+using HarmonyLib;
 using PhoenixPoint.Common.View.ViewModules;
 using PhoenixPoint.Geoscape.Entities;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.Levels.Factions;
+using PhoenixPoint.Geoscape.View.ViewStates;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace TFTV.TFTVBaseRework
 {
@@ -220,6 +223,59 @@ namespace TFTV.TFTVBaseRework
         }
 
 
+
+        /// <summary>
+        /// The soldier equip screen commits its own inventory lists back over the data model when it
+        /// closes: ExitState calls UpdateStorage(), which trims faction storage down to whatever its
+        /// storage list holds, and UpdateSoldierEquipment(), which re-equips the character from its
+        /// armour, ready and inventory lists.
+        ///
+        /// Vanilla gets away with that because a dismissed soldier is dropped from LivingSoldiers by
+        /// the CharacterDied event, and ExitState skips both calls for a character that is no longer
+        /// living. Our conversion never lets the character be killed, so the soldier stays in
+        /// LivingSoldiers, both calls run, and between them they put the loadout back on the dismissed
+        /// operative and prune the copies the conversion had just added to storage - the gear vanished
+        /// from storage even though the conversion reported it returned.
+        ///
+        /// Running vanilla's own UnloadLoadout before the dismissal moves the gear across the screen's
+        /// lists first, so the lists already agree with what the conversion is about to do to the data
+        /// model and the commit on exit is a no-op.
+        /// </summary>
+        [HarmonyPatch(typeof(UIStateEditSoldier), "OnDismissSoldierDialogCallback")]
+        internal static class UIStateEditSoldier_OnDismissSoldierDialogCallback_UnloadLoadoutFirst_Patch
+        {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
+
+            private static readonly MethodInfo _unloadLoadout = AccessTools.Method(
+                typeof(UIStateEditSoldier),
+                "UnloadLoadout",
+                new Type[] { typeof(GeoCharacter) });
+
+            private static void Prefix(UIStateEditSoldier __instance, MessageBoxCallbackResult msgResult, GeoCharacter ____currentCharacter)
+            {
+                try
+                {
+                    if (msgResult.DialogResult != MessageBoxResult.Yes || _unloadLoadout == null)
+                    {
+                        return;
+                    }
+
+                    GeoPhoenixFaction faction = ____currentCharacter?.Faction as GeoPhoenixFaction;
+
+                    if (!ShouldConvertDismissedOperativeToCivilian(faction, ____currentCharacter, CharacterDeathReason.Dismissed))
+                    {
+                        return;
+                    }
+
+                    _unloadLoadout.Invoke(__instance, new object[] { ____currentCharacter });
+                    TFTVLogger.Always($"{LogPrefix} Emptied the equip screen's loadout lists for {____currentCharacter.DisplayName} before dismissing them.");
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+        }
 
         [HarmonyPatch(typeof(GeoPhoenixFaction), "KillCharacter", new Type[]
         {
