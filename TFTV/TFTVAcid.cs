@@ -164,7 +164,7 @@ namespace TFTV
                         // scaled by the effect's per-point damage, which is what a tick spends.
                         AcidTick tick = AcidTick.Resolve(status.Value * status.DamagePerTurn, armour, resistance);
 
-                        float decay = GetAcidDecayForSlot(status, slot, actor, resistance);
+                        float decay = GetAcidDecayForSlot(status, slot, actor);
 
                         limbs.Add(new LimbAcid
                         {
@@ -197,15 +197,25 @@ namespace TFTV
         /// LowerDamageOverTimeLevel a second time for bionic limbs and vehicles, which doubles it
         /// again for those slots only.
         /// </summary>
-        internal static float GetAcidDecayForSlot(AcidStatus status, ItemSlot slot, TacticalActor actor, float resistance)
+        internal static float GetAcidDecayForSlot(AcidStatus status, ItemSlot slot, TacticalActor actor)
         {
             float perTurn = status.DamageOverTimeStatusDef.LowerLevelPerTurn;
 
-            if (resistance < 1f)
+            // Deliberately actor-wide, and deliberately not the slot figure used for the damage.
+            // LowerDamageOverTimeLevel doubles the step on GetDamageMultiplier(), which reads
+            // TacticalActorBase.GetDamageMultiplierFor - the overload that drops slot-targeted
+            // statuses. A resistance scoped to one limb therefore reduces that limb's damage
+            // without speeding up its burn-off, and reusing the slot figure here would predict a
+            // drop of 20 where the status really drops by 10. Read from the status def rather than
+            // the cached type so it matches whatever GetDamageMultiplier itself looks up.
+            DamageTypeBaseEffectDef damageType = status.DamageOverTimeStatusDef.DamageTypeDef;
+
+            if (damageType != null && actor != null && actor.GetDamageMultiplierFor(damageType) < 1f)
             {
                 perTurn *= 2f;
             }
 
+            // Only the workshop bonus is slot-specific: it is applied per body part.
             if (AircraftReworkTacticalModules.WorkshopModule.LowersAcidOnSlot(actor, slot))
             {
                 perTurn *= 2f;
