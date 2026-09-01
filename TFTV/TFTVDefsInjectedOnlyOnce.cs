@@ -6773,7 +6773,7 @@ namespace TFTV
                 //Adjusting GooSpray
                 AINonHealthDamageAttackPositionConsiderationDef gooSprayConsideration = DefCache.GetDef<AINonHealthDamageAttackPositionConsiderationDef>("Acheron_GooSprayAttackPosition_AIConsiderationDef");
                 gooSprayConsideration.EnemyMask = PhoenixPoint.Tactical.AI.ActorType.Combatant;
-                gooSprayConsideration.DamageTypeStatusDef = acidStatus;
+                gooSprayConsideration.DamageTypeStatusDef = DefCache.GetDef<GooedStatusDef>("Gooed_StatusDef");
 
 
 
