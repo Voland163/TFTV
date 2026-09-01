@@ -74,6 +74,7 @@ namespace TFTV
             internal float Armour;
             internal float ArmourAfter;
             internal float HealthDamage;
+            internal float Decay;
 
             internal bool WillCostHealth => HealthDamage > 1E-05f;
         }
@@ -91,6 +92,25 @@ namespace TFTV
             }
 
             return actor.GetDamageMultiplierFor(AcidDamageTypeDef);
+        }
+
+        /// <summary>
+        /// The acid multiplier as the damage path resolves it for one body part.
+        ///
+        /// This is not the same as the actor-wide figure. ItemSlot.GetDamageMultiplierFor keeps a
+        /// slot-targeted TacStatus only for the slot it targets, while the actor-wide overload drops
+        /// every slot-targeted status outright - so a resistance scoped to one limb makes limbs take
+        /// different damage, and a forecast built on the actor-wide number would report them alike.
+        /// ApplyAddedDamage_Default uses this slot-level figure for the Hit Point hit.
+        /// </summary>
+        internal static float GetAcidResistanceForSlot(ItemSlot slot, TacticalActorBase actor)
+        {
+            if (slot == null)
+            {
+                return GetAcidResistance(actor);
+            }
+
+            return slot.GetDamageMultiplierFor(AcidDamageTypeDef);
         }
 
         /// <summary>
@@ -127,12 +147,6 @@ namespace TFTV
                     return limbs;
                 }
 
-                float resistance = GetAcidResistance(actor);
-
-                // Any resistance at all doubles the burn-off; the engine tests the multiplier
-                // against 1 rather than scaling by it, so a second source adds nothing here.
-                float decayFactor = resistance < 1f ? 2f : 1f;
-
                 foreach (AcidStatus status in actor.Status.GetStatuses<AcidStatus>())
                 {
                     foreach (string slotName in status.GetTargetSlotsNames())
@@ -144,12 +158,13 @@ namespace TFTV
                         }
 
                         float armour = (float)slot.GetArmor().Value;
+                        float resistance = GetAcidResistanceForSlot(slot, actor);
 
                         // Status.Value is the number the UI prints; the accumulation carries it
                         // scaled by the effect's per-point damage, which is what a tick spends.
                         AcidTick tick = AcidTick.Resolve(status.Value * status.DamagePerTurn, armour, resistance);
 
-                        float decay = status.DamageOverTimeStatusDef.LowerLevelPerTurn * decayFactor;
+                        float decay = GetAcidDecayForSlot(status, slot, actor, resistance);
 
                         limbs.Add(new LimbAcid
                         {
@@ -160,6 +175,7 @@ namespace TFTV
                             Armour = armour,
                             ArmourAfter = Mathf.Max(0f, armour - tick.ArmourDamage),
                             HealthDamage = tick.HealthDamage,
+                            Decay = decay,
                         });
                     }
                 }
@@ -173,21 +189,48 @@ namespace TFTV
         }
 
         /// <summary>
-        /// How far the acid level drops at the end of each turn. Any resistance at all doubles it -
-        /// the engine tests the multiplier rather than scaling by it, so a second source of
-        /// resistance buys more damage reduction but no extra burn-off.
+        /// How far the acid on one body part drops at the end of the turn.
+        ///
+        /// Any resistance at all doubles the step - LowerDamageOverTimeLevel tests the multiplier
+        /// against 1 rather than scaling by it, so a second source of resistance buys more damage
+        /// reduction but no extra burn-off. Two Thunderbird workshop modules then call
+        /// LowerDamageOverTimeLevel a second time for bionic limbs and vehicles, which doubles it
+        /// again for those slots only.
         /// </summary>
-        internal static float GetAcidDecayPerTurn(TacticalActor actor)
+        internal static float GetAcidDecayForSlot(AcidStatus status, ItemSlot slot, TacticalActor actor, float resistance)
         {
-            AcidStatus status = actor?.Status?.GetStatuses<AcidStatus>()?.FirstOrDefault();
-            if (status == null)
+            float perTurn = status.DamageOverTimeStatusDef.LowerLevelPerTurn;
+
+            if (resistance < 1f)
+            {
+                perTurn *= 2f;
+            }
+
+            if (AircraftReworkTacticalModules.WorkshopModule.LowersAcidOnSlot(actor, slot))
+            {
+                perTurn *= 2f;
+            }
+
+            return perTurn;
+        }
+
+        /// <summary>
+        /// The decay every affected limb shares, or NaN when they differ - a character with one
+        /// bionic limb under two workshop modules burns acid off that limb twice as fast as the
+        /// rest, so no single number describes them all.
+        /// </summary>
+        internal static float GetUniformAcidDecay(TacticalActor actor)
+        {
+            List<LimbAcid> limbs = GetLimbAcid(actor);
+
+            if (limbs.Count == 0)
             {
                 return 0f;
             }
 
-            float perTurn = status.DamageOverTimeStatusDef.LowerLevelPerTurn;
+            float first = limbs[0].Decay;
 
-            return GetAcidResistance(actor) < 1f ? perTurn * 2f : perTurn;
+            return limbs.All(limb => Mathf.Approximately(limb.Decay, first)) ? first : float.NaN;
         }
 
 
