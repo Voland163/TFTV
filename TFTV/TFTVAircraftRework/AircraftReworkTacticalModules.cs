@@ -573,6 +573,37 @@ namespace TFTV
         internal class WorkshopModule
         {
 
+            /// <summary>
+            /// Whether two workshop modules are shortening acid on this particular body part.
+            ///
+            /// Shared with the acid readout so the projected "acid x to y" cannot disagree with the
+            /// extra LowerDamageOverTimeLevel call below: the bonus applies per slot, so a character
+            /// with one bionic limb burns acid off that limb twice as fast as the rest.
+            /// </summary>
+            internal static bool LowersAcidOnSlot(TacticalActor actor, ItemSlot itemSlot)
+            {
+                if (!AircraftReworkOn
+                    || _thunderbirdWorkshopPresent < 2
+                    || actor == null
+                    || !actor.IsControlledByPlayer
+                    || itemSlot == null)
+                {
+                    return false;
+                }
+
+                if (actor.HasGameTag(Shared.SharedGameTags.VehicleTag))
+                {
+                    return true;
+                }
+
+                IEnumerable<TacticalItem> items = itemSlot.GetAllDirectItems(false);
+
+                return items != null && items.Any(ti =>
+                    ti.GameTags.Contains(Shared.SharedGameTags.BionicalTag)
+                    || (ti.GetTopMainAddon() != null
+                        && ti.GetTopMainAddon().GameTags.Contains(Shared.SharedGameTags.BionicalTag)));
+            }
+
             public static void WorkshopModuleLowerAcidApplyAffectCheck(DamageOverTimeStatus damageOverTimeStatus)
             {
                 try
@@ -588,21 +619,14 @@ namespace TFTV
 
                     ItemSlot itemSlot = damageOverTimeStatus.Target as ItemSlot;
 
-                    if (itemSlot == null)
+                    if (!LowersAcidOnSlot(tacticalActor, itemSlot))
                     {
                         return;
                     }
 
+                    TFTVLogger.Always($"Lowering acid status for {damageOverTimeStatus.TacticalActor.DisplayName}.");
 
-                    if (itemSlot.GetAllDirectItems(false) != null && (itemSlot.GetAllDirectItems(false).
-                        Any(ti => ti.GameTags.Contains(Shared.SharedGameTags.BionicalTag) ||
-                        ti.GetTopMainAddon() != null && ti.GetTopMainAddon().GameTags.Contains(Shared.SharedGameTags.BionicalTag))
-                        || tacticalActor.HasGameTag(Shared.SharedGameTags.VehicleTag)))
-                    {
-                        TFTVLogger.Always($"Lowering acid status for {damageOverTimeStatus.TacticalActor.DisplayName}.");
-
-                        damageOverTimeStatus.LowerDamageOverTimeLevel(damageOverTimeStatus.DamageOverTimeStatusDef.LowerLevelPerTurn);
-                    }
+                    damageOverTimeStatus.LowerDamageOverTimeLevel(damageOverTimeStatus.DamageOverTimeStatusDef.LowerLevelPerTurn);
 
                 }
                 catch (Exception e)
