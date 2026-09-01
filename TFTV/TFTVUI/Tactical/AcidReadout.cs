@@ -135,9 +135,14 @@ namespace TFTV.TFTVUI.Tactical
             // limb, and a character with acid on many parts would not fit.
             builder.Append(TFTVCommonMethods.ConvertKeyToString("TFTV_ACID_CARD_BODY"));
             builder.Append(" ");
-            builder.AppendLine(TFTVCommonMethods.FormatKey(
-                "TFTV_ACID_CARD_DECAY",
-                Mathf.RoundToInt(TFTVAcid.GetAcidDecayPerTurn(actor))));
+
+            // Limbs can decay at different rates - two workshop modules halve the burn-off time on
+            // bionics only - so the sentence commits to a number only when they all agree.
+            float decay = TFTVAcid.GetUniformAcidDecay(actor);
+
+            builder.AppendLine(float.IsNaN(decay)
+                ? TFTVCommonMethods.ConvertKeyToString("TFTV_ACID_CARD_DECAY_VARIES")
+                : TFTVCommonMethods.FormatKey("TFTV_ACID_CARD_DECAY", Mathf.RoundToInt(decay)));
 
             string note = ResistanceNote(actor);
             if (note != null)
