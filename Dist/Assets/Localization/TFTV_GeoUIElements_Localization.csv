@@ -278,9 +278,8 @@ KEY_TFTV_HAVEN_RECRUITS_DETAILS_PLACEHOLDER,Text,,Select a recruit to view detai
 KEY_TFTV_HAVEN_RECRUITS_DELIRIUM,Text,,Delirium {0},,,,,,,,
 KEY_TFTV_HAVEN_RECRUITS_UNKNOWN_NAME,Text,,Unknown,,,,,,,,
 KEY_TFTV_INCIDENT_NO_ELIGIBLE_OPERATIVE,Text,,No eligible operative available.,,,,,,,,
-KEY_TFTV_INCIDENT_SELECT_LEADER,Text,,Select Leading Operative for the Incident.,,,,,,,,
-KEY_TFTV_INCIDENT_CHOICE_GAIN_LABEL,Text,,Choice {0}: Leading operative will gain:,,,,,,,,
-KEY_TFTV_INCIDENT_APPROACH_HOURS,Text,,{0} ({1}),,,,,,,,
+KEY_TFTV_INCIDENT_SELECT_LEADER,Text,,CHOOSE OPERATIVE,,,,,,,,
+KEY_TFTV_INCIDENT_HOURS,Text,,{0}h,,,,,,,,
 KEY_TFTV_INCIDENT_REWARD_AFFINITY,Text,,Affinity gained/increased: {0},,,,,,,,
 KEY_TFTV_INCIDENT_REWARD_PERSONNEL,Text,,Personnel obtained: {0},,,,,,,,
 KEY_TFTV_INCIDENT_EXPLORATION_TIME,Text,,"{0}
