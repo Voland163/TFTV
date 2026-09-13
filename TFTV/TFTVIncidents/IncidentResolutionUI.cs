@@ -32,48 +32,122 @@ namespace TFTV.TFTVIncidents
             static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
             private const string CrewRootName = "[Mod]EventCrewListRoot";
             private const string HeaderName = "[Mod]EventCrewListHeader";
-            private const string CrewGridName = "[Mod]EventCrewListGrid";
-            private const string AffinityTagDefName = "Affinity_SkillTagDef";
-            private const string InlineAffinityIconName = "[Mod]AffinityAbilityIcon";
-            private const string CrewRowHighlightName = "[Mod]CrewRowHighlight";
 
             private const string ChoiceIconsRootName = "[Mod]ChoiceApproachIcons";
             private const string ChoiceIconNamePrefix = "[Mod]ChoiceApproachIcon_";
+            private const string ChoicePayoffRootName = "[Mod]ChoicePayoffRow";
+            private const string ApproachArrowName = "[Mod]ApproachLevelUpArrow";
+            private const string ApproachGlyphName = "[Mod]ApproachGlyph";
+
+            /// <summary>
+            /// How much of an approach icon's box the affinity glyph fills.
+            ///
+            /// The box keeps the button's full height - it is the click target, and the space the
+            /// icon occupies in the layout - while the glyph is drawn smaller inside it, which is how
+            /// the mockup has them. This is a fraction of the box, and the glyph also keeps its
+            /// aspect ratio, so a mark that is wider than it is tall ends up shorter again than this
+            /// number alone suggests: at an even half the glyphs read as though the whole icon had
+            /// been shrunk rather than the picture in it.
+            /// </summary>
+            private const float ApproachGlyphFraction = 0.55f;
 
             private const string NoEligibleOperativeKey = "KEY_TFTV_INCIDENT_NO_ELIGIBLE_OPERATIVE";
             private const string SelectLeaderKey = "KEY_TFTV_INCIDENT_SELECT_LEADER";
-            private const string ChoiceGainLabelKey = "KEY_TFTV_INCIDENT_CHOICE_GAIN_LABEL";
-            private const string ApproachHoursKey = "KEY_TFTV_INCIDENT_APPROACH_HOURS";
+            private const string HoursKey = "KEY_TFTV_INCIDENT_HOURS";
 
             private const float CrewPanelTopPadding = 8f;
-            private const float GridSpacingX = 10f;
-            private const float GridSpacingY = 6f;
             private const float HeaderToGridSpacing = 50f;
-            private const float MaxGridWidth = 1000f;
-            private const float FallbackGridWidth = 900f;
-            private const float MinCellHeight = 42f;
-            private const int MaxVisibleEntries = 8;
-            private const int GridColumns = 2;
 
-            private const float ApproachIconSize = 72f;
-            private const float ApproachIconSpacing = 8f;
-            private const float ApproachIconButtonGap = 14f;
+            /// <summary>
+            /// Ceiling on the crew panel's width. The encounter's description column is wider than
+            /// this on a wide screen, and a row of cards stretched the whole way across stops reading
+            /// as a group.
+            /// </summary>
+            private const float MaxGridWidth = 1700f;
+
+            private const float FallbackGridWidth = 900f;
+
+            /// <summary>
+            /// How large an approach icon is drawn when the response button has room for it. The
+            /// buttons are the game's own and their height is not ours to assume, so this is a
+            /// ceiling rather than a size - see <see cref="ResolveApproachIconSize"/>.
+            /// </summary>
+            private const float ApproachIconSize = 80f;
+
+            /// <summary>Floor for that, below which an affinity glyph is no longer recognisable.</summary>
+            private const float MinApproachIconSize = 40f;
+
+            /// <summary>
+            /// Gap between two approach icons on the same response. None: their plates are the same
+            /// black, so a gap between them only breaks up what reads better as one strip.
+            /// </summary>
+            private const float ApproachIconSpacing = 0f;
+
             private const float ApproachIconOutlineWidth = 3f;
 
-            private const string GainRowName = "[Mod]EventCrewGainRow";
-            private const float GainIconSize = 52f;
-            private const float GainRowSpacing = 8f;
-            private const float ButtonShrinkMultiplier = 2f;
+            /// <summary>Gap between the button's left edge and its approach icons.</summary>
+            private const float ApproachIconInset = 8f;
 
-            private static readonly Color ApproachSelectedOutlineColor = new Color(1f, 0.84f, 0f, 1f);
-            private static readonly Color ApproachLockedTint = new Color(1f, 1f, 1f, 0.3f);
-            private static readonly Color ApproachUnselectedTint = new Color(1f, 1f, 1f, 0.55f);
+            /// <summary>Gap between the approach icons and the response text beside them.</summary>
+            private const float ApproachIconTextGap = 44f;
 
-            public static Func<SoldierSlotController> SoldierSlotPrefabProvider;
-            public static Func<GeoCharacter, Sprite> ExtraIconResolver;
+            /// <summary>Clear space kept at the response text's right edge.</summary>
+            private const float ChoiceTextRightPadding = 20f;
+
+            /// <summary>
+            /// Height of the hours-and-payoff strip along the bottom of a response. Tall enough for a
+            /// line of the response's own text, which is the size the strip is set in.
+            /// </summary>
+            private const float PayoffRowHeight = 56f;
+
+            /// <summary>The mark repeated once per step of a payoff's one-to-three scale.</summary>
+            private const char TierMark = '+';
+
+            private const float PayoffIconSize = 42f;
+            private const float PayoffEntrySpacing = 18f;
+            private const float PayoffIconLabelSpacing = 3f;
+
+            /// <summary>
+            /// The level-up arrow badge on an approach icon: big enough to read the rank off at the
+            /// size the icons are drawn.
+            /// </summary>
+            private const float ApproachArrowSize = 38f;
+
+            /// <summary>
+            /// Responses per row. The mockup puts the two side by side, which is what makes them a
+            /// pair to choose between rather than a list to read down - and with the walk-away choice
+            /// off the grid there are exactly two left to place.
+            /// </summary>
+            private const int ChoiceColumns = 2;
+
+            /// <summary>Gap between the two responses.</summary>
+            private const float ChoiceColumnSpacing = 76f;
+
+            /// <summary>
+            /// Clear space left at each side of the responses, as a fraction of the container - which
+            /// is the whole screen width. Matches where the mockup puts the outer edges of the pair.
+            /// </summary>
+            private const float ChoiceRowSideMargin = 0.12f;
+
+            /// <summary>
+            /// Clear space above and below an approach icon inside its response. The plate runs
+            /// nearly the response's full height, but stops short of its border rather than sitting
+            /// on it - at zero the black ran over the button's own edge.
+            /// </summary>
+            private const float ApproachIconVerticalInset = 8f;
+
+            /// <summary>Clear space above the response text, so it does not sit on the button's edge.</summary>
+            private const float TextTopPadding = 20f;
+
+            /// <summary>
+            /// Clear space below the payoff strip. With the response text against the top and the
+            /// strip against the bottom, the two lines were each pressed into a border; pulling both
+            /// in closes the gap between them and opens one against the edges instead.
+            /// </summary>
+            private const float PayoffBottomPadding = 16f;
+
             public static Func<GeoCharacter, bool> CrewFilter;
 
-            private static SoldierSlotController _selectedRow;
             private static int _selectedLeaderId = -1;
             private static int _selectedVehicleId = -1;
             private static string _selectedEventId = string.Empty;
@@ -88,29 +162,47 @@ namespace TFTV.TFTVIncidents
             private static readonly Dictionary<int, bool> _approachSelectionLocked =
                 new Dictionary<int, bool>();
 
-            // Replace the per-choice gain fields and methods with these:
+            // Whether the selected operative's existing affinity is one this choice's approaches
+            // call for - what makes a response worth giving to this operative rather than another,
+            // and the only thing the green response text claims.
+            private static readonly Dictionary<int, bool> _choiceAffinityMatch =
+                new Dictionary<int, bool>();
 
-            // In the field declarations section, replace the single gain fields with arrays:
-            private static readonly Text[] _choiceGainLabel = new Text[2];
-            private static readonly Image[] _choiceGainIcon = new Image[2];
-            private static readonly Text[] _choiceGainDetail = new Text[2];
-            private static readonly ApproachIconTooltipTrigger[] _choiceGainTooltip = new ApproachIconTooltipTrigger[2];
+            // The rank the selected operative would come back from this choice at, or 0 when it
+            // would not raise them - what the level-up arrow on the approach icon carries.
+            private static readonly Dictionary<int, int> _approachArrowRank =
+                new Dictionary<int, int>();
+
+            /// <summary>Top affinity rank, past which a matching response grants no further rank.</summary>
+            private const int MaxAffinityRank = 3;
+
+            /// <summary>The shipped arrow image the level-up badge is drawn with, tinted at runtime.</summary>
+            private const string LevelUpArrowImageName = "incident_affinity_up.png";
+
+            private static Sprite _levelUpArrowSprite;
+            private static bool _levelUpArrowResolved;
 
             private static GeoCharacter _currentSelectedCharacter;
 
-            private sealed class CrewRowHighlightState : MonoBehaviour
-            {
-                public Image Background;
-                public Outline Border;
-                public Color BackgroundNormal;
-                public Color BorderNormal;
-                public bool Initialized;
-            }
-
+            /// <summary>
+            /// A response button's own text, and the layout it was found in.
+            ///
+            /// The label is restyled and repositioned to make room for the approach icons beside it
+            /// and the payoff strip beneath it, and these buttons outlive the incident that borrowed
+            /// them - so what they looked like before has to be recorded somewhere to put back.
+            /// </summary>
             private sealed class ChoiceButtonVisualState : MonoBehaviour
             {
                 public Text Label;
                 public string BaseText;
+
+                public bool LayoutCaptured;
+                public Vector2 LabelAnchorMin;
+                public Vector2 LabelAnchorMax;
+                public Vector2 LabelOffsetMin;
+                public Vector2 LabelOffsetMax;
+                public TextAnchor LabelAlignment;
+                public Color LabelColor;
             }
 
             private sealed class ApproachIconState : MonoBehaviour
@@ -125,12 +217,13 @@ namespace TFTV.TFTVIncidents
             private sealed class ApproachIconTooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
             {
                 public LeaderSelection.AffinityApproach Approach;
-                public int ChoiceIndex = -1;
 
                 private const string TooltipObjectName = "[Mod]ApproachIconTooltip";
                 private const float TooltipWidth = 700f;
                 private const float TooltipOffsetY = 16f;
-                private const float TooltipOffsetX = 100f;
+
+                /// <summary>Clear space kept between the tooltip and the edge of the screen.</summary>
+                private const float TooltipEdgeMargin = 24f;
                 private const int TooltipFontSize = 36;
                 private const float TooltipPadH = 18f;
                 private const float TooltipPadV = 14f;
@@ -184,7 +277,7 @@ namespace TFTV.TFTVIncidents
                     LayoutRebuilder.ForceRebuildLayoutImmediate(_tooltipLabel.rectTransform);
                     LayoutRebuilder.ForceRebuildLayoutImmediate(tooltip);
 
-                    PositionAbove(tooltip, trigger.transform as RectTransform, trigger.ChoiceIndex);
+                    PositionAbove(tooltip, trigger.transform as RectTransform);
 
                     tooltip.gameObject.SetActive(true);
                     tooltip.transform.SetAsLastSibling();
@@ -282,7 +375,7 @@ namespace TFTV.TFTVIncidents
                     return _tooltipRect;
                 }
 
-                private static void PositionAbove(RectTransform tooltip, RectTransform iconRect, int choiceIndex)
+                private static void PositionAbove(RectTransform tooltip, RectTransform iconRect)
                 {
                     if (tooltip == null || iconRect == null)
                     {
@@ -311,8 +404,17 @@ namespace TFTV.TFTVIncidents
                     if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
                         canvasRect, screenPoint, cam, out Vector2 localPoint))
                     {
-                        float offsetX = (choiceIndex == 0) ? TooltipOffsetX : 0f;
-                        tooltip.anchoredPosition = new Vector2(localPoint.x + offsetX, localPoint.y + TooltipOffsetY);
+                        // Centred over the icon and then pulled back inside the screen. The icons used
+                        // to hang off the outer edges of the two responses, where a fixed nudge was
+                        // enough to keep the left one on screen; inside the buttons they can be
+                        // anywhere along the row, so the tooltip is clamped rather than nudged.
+                        float halfCanvas = canvasRect.rect.width * 0.5f;
+                        float halfTooltip = tooltip.rect.width * 0.5f;
+                        float limit = Mathf.Max(0f, halfCanvas - halfTooltip - TooltipEdgeMargin);
+
+                        tooltip.anchoredPosition = new Vector2(
+                            Mathf.Clamp(localPoint.x, -limit, limit),
+                            localPoint.y + TooltipOffsetY);
                     }
                 }
 
@@ -354,12 +456,38 @@ namespace TFTV.TFTVIncidents
                         UnityEngine.Object.DestroyImmediate(iconRoot.gameObject); // was Destroy — deferred destroy caused reuse in same frame
                     }
 
+                    Transform payoffRoot = button.transform.Find(ChoicePayoffRootName);
+                    if (payoffRoot != null)
+                    {
+                        UnityEngine.Object.DestroyImmediate(payoffRoot.gameObject);
+                    }
+
                     ChoiceButtonVisualState state = button.GetComponent<ChoiceButtonVisualState>();
                     if (state != null)
                     {
+                        // The label's own rect and colour were changed to make room for the icons and
+                        // the payoff strip, and this button outlives the incident that borrowed it.
+                        RestoreChoiceLayout(state);
                         UnityEngine.Object.DestroyImmediate(state); // was Destroy — deferred destroy caused stale BaseText to persist
                     }
                 }
+            }
+
+            /// <summary>
+            /// Hands the choices row back to the game: the grid at the size it ships at, the response
+            /// buttons without the icons and payoff strips put inside them, and the walk-away choice
+            /// visible again in place of the cancel button.
+            ///
+            /// Called both before an encounter is shown and as one is closed. The closing screen is
+            /// the one that needs it: an incident that is cancelled answers with an outcome screen
+            /// drawn on these same buttons, and without this it inherits a row grown to fit decoration
+            /// that is no longer there.
+            /// </summary>
+            internal static void RestoreVanillaChoiceLayout(UIModuleSiteEncounters module)
+            {
+                RestoreChoiceButtons(module);
+                CleanupChoiceButtonDecorations(module);
+                IncidentCancelButton.Remove(module);
             }
 
             public static void Postfix(UIModuleSiteEncounters __instance, GeoscapeEvent geoEvent, bool pagingEvent)
@@ -383,9 +511,8 @@ namespace TFTV.TFTVIncidents
                 RemovePreviousRows(parent);
                 IncidentIntroTutorialPanel.ClearPanel(parent);   // ADD THIS LINE
                 ApproachIconTooltipTrigger.DestroyTooltip();
-                RestoreChoiceButtons(__instance);
-                CleanupChoiceButtonDecorations(__instance);
-                _selectedRow = null;
+                RestoreVanillaChoiceLayout(__instance);
+                OperativeCards.Clear();
                 ResetSelectedLeaderContext(null, null);
 
                 if (!IsIncidentIntroEvent(geoEvent))
@@ -401,20 +528,14 @@ namespace TFTV.TFTVIncidents
 
                 ResetSelectedLeaderContext(geoEvent, vehicle);
                 PortraitGenerator.ClearCache();
+                PortraitGenerator.ClearCardCache();
+                ChoicePayoff.ClearCaches();
                 LeaderAbilityIcons.Clear();
 
                 List<GeoCharacter> crew = ResolveCrew(vehicle);
                 if (crew.Count == 0)
                 {
                     DisableChoiceButtons(__instance, TFTVCommonMethods.ConvertKeyToString(NoEligibleOperativeKey));
-                    return;
-                }
-                // Resolve SoldierSlotController prefab
-                SoldierSlotController rowPrefab = vehicle.GeoLevel.View.GeoscapeModules.SoldierEquipModule.SoldierSlotPrefab;
-
-                if (rowPrefab == null)
-                {
-                    Debug.LogWarning("[GeoscapeEventCrewListPatch] SoldierSlotController prefab could not be resolved.");
                     return;
                 }
 
@@ -446,7 +567,6 @@ namespace TFTV.TFTVIncidents
                 rootFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
                 Text header = CreateHeader(root.transform, __instance.EncounterDescriptionText);
-                CreateGainRow(root.transform, __instance.EncounterDescriptionText);
                 GameObject headerSpacer = new GameObject("[Mod]CrewHeaderSpacer", typeof(RectTransform), typeof(LayoutElement));
                 headerSpacer.transform.SetParent(root.transform, false);
                 LayoutElement spacerLayout = headerSpacer.GetComponent<LayoutElement>();
@@ -454,86 +574,50 @@ namespace TFTV.TFTVIncidents
 
                 float panelWidth = ResolvePanelWidth(__instance.EncounterDescriptionText);
 
-                GameObject grid = new GameObject(CrewGridName, typeof(RectTransform), typeof(GridLayoutGroup), typeof(ContentSizeFitter));
-                grid.transform.SetParent(root.transform, false);
-                ConfigureGrid(
-                    grid.GetComponent<RectTransform>(),
-                    grid.GetComponent<GridLayoutGroup>(),
-                    grid.GetComponent<ContentSizeFitter>(),
-                    panelWidth,
-                    rowPrefab);
+                // The cancel choice becomes a cancel button before the responses are decorated, so
+                // the two that remain are the only ones the decoration has to lay out - and the grid
+                // is resized before that, because how much room the icons and the payoff strip get
+                // is decided by the size of the button they are going into.
+                IncidentCancelButton.Install(__instance);
+                AdjustChoiceButtons(__instance, geoEvent);
 
-                int entriesToShow = Math.Min(crew.Count, MaxVisibleEntries);
-                List<SoldierSlotController> rows = new List<SoldierSlotController>(entriesToShow);
-                Dictionary<int, SoldierSlotController> rowsById = new Dictionary<int, SoldierSlotController>();
-
-                for (int i = 0; i < entriesToShow; i++)
+                Action<GeoCharacter> selectOperative = character =>
                 {
-                    GeoCharacter character = crew[i];
-                    SoldierSlotController row = UnityEngine.Object.Instantiate(rowPrefab, grid.transform, false);
-                    row.gameObject.name = $"[Mod]CrewRow_{character.GetName()}";
-                    row.gameObject.SetActive(true);
+                    OperativeCards.SetSelected(character);
+                    SetSelectedLeader(character, geoEvent, vehicle);
+                    PortraitGenerator.RequestLeaderPortrait(__instance, character);
+                    LeaderAbilityIcons.Show(__instance, character);
+                    UpdateHeaderForSelectedOperative(header, character, geoEvent, vehicle);
+                    UpdateChoiceButtonsForSelectedOperative(__instance, geoEvent, vehicle, character);
+                };
 
-                    NormalizeRowRect(row.transform as RectTransform);
-                    row.SetSoldierData((ICommonActor)character);
-                    ApplyShortNameToRow(row, character);
-                    ResetRowSelectionVisualState(row);
+                List<Selectable> cards = OperativeCards.Build(
+                    root.transform,
+                    crew,
+                    panelWidth,
+                    _cachedFont,
+                    __instance.EncounterDescriptionText != null ? __instance.EncounterDescriptionText.fontSize : 40,
+                    selectOperative);
 
-                    Sprite abilityIcon = ResolveAbilityIcon(character);
-                    SetAffinityIconAfterName(row, abilityIcon);
-
-                    if (character != null && character.Id > 0)
-                    {
-                        rowsById[character.Id] = row;
-                    }
-
-                    GeoCharacter selectedCharacter = character;
-                    SoldierSlotController selectedRow = row;
-                    row.ActorSelected = (ICommonActor _) =>
-                    {
-                        SetSelectedRow(selectedRow);
-                        SetSelectedLeader(selectedCharacter, geoEvent, vehicle);
-                        PortraitGenerator.RequestLeaderPortrait(__instance, selectedCharacter);
-                        LeaderAbilityIcons.Show(__instance, selectedCharacter);
-                        UpdateHeaderForSelectedOperative(header, selectedCharacter, geoEvent, vehicle);
-                        UpdateChoiceButtonsForSelectedOperative(__instance, geoEvent, vehicle, selectedCharacter);
-                        RefreshHeaderGainDisplay();
-                    };
-
-                    rows.Add(row);
-                }
-
-                if (rows.Count > 0)
+                if (cards.Count > 0)
                 {
                     GeoCharacter selectedCharacter = initialLeader;
-                    SoldierSlotController selectedRow = null;
-
-                    if (selectedCharacter != null && selectedCharacter.Id > 0)
+                    if (selectedCharacter == null || !crew.Take(OperativeCards.MaxCards).Any(c => c != null && c.Id == selectedCharacter.Id))
                     {
-                        rowsById.TryGetValue(selectedCharacter.Id, out selectedRow);
-                    }
-
-                    if (selectedRow == null)
-                    {
-                        selectedRow = rows[0];
+                        // The suggested leader is not one of the crew the row has room for, so the
+                        // selection has to fall to somebody the player can actually see selected.
                         selectedCharacter = crew[0];
                     }
 
-                    SetSelectedRow(selectedRow);
-                    SetSelectedLeader(selectedCharacter, geoEvent, vehicle);
-                    PortraitGenerator.RequestLeaderPortrait(__instance, selectedCharacter);
-                    LeaderAbilityIcons.Show(__instance, selectedCharacter);
-                    UpdateHeaderForSelectedOperative(header, selectedCharacter, geoEvent, vehicle);
-                    UpdateChoiceButtonsForSelectedOperative(__instance, geoEvent, vehicle, selectedCharacter);
-                    RefreshHeaderGainDisplay();
-
-                    // Shrink choice buttons after approach data is populated to make room for icons.
-                    AdjustChoiceButtons(__instance, geoEvent);
-
+                    selectOperative(selectedCharacter);
                     SetupApproachIconNavigation(__instance);
+
+                    // Last, because it measures the response buttons: their size is settled by the
+                    // grid above and their contents by the selection just made.
+                    IncidentCancelButton.PositionUnderChoices(__instance);
                 }
 
-                IncidentIntroTutorialPanel.TryShowPanel(__instance, geoEvent);   // ADD THIS LINE after crew list is built, before AdjustChoiceButtons
+                IncidentIntroTutorialPanel.TryShowPanel(__instance, geoEvent);   // ADD THIS LINE after crew list is built
             }
 
             /// <summary>
@@ -559,11 +643,14 @@ namespace TFTV.TFTVIncidents
                     List<IList<Selectable>> rows = new List<IList<Selectable>>();
                     List<int> heads = new List<int>();
 
-                    // Crew list first - it sits above the choices, and picking the operative is the first
-                    // decision. Without it the leader can only be chosen with a mouse.
+                    // Crew cards first - they sit above the choices, and picking the operative is the
+                    // first decision. Without them the leader can only be chosen with a mouse.
                     AddCrewRows(module, rows, heads);
 
                     bool anyIcons = AddChoiceRows(module, rows, heads);
+
+                    // Cancel last, below the choices, which is where it is on screen.
+                    AddCancelRow(rows, heads);
 
                     // Nothing mod-specific to reach: leave vanilla's own grid layout completely alone.
                     if (!anyIcons && rows.Count == 0)
@@ -577,106 +664,76 @@ namespace TFTV.TFTVIncidents
             }
 
             /// <summary>
-            /// The crew grid, chunked into navigation rows the same way it is laid out on screen.
+            /// The crew cards as one navigation row, which is what they are on screen: left and right
+            /// walk the crew, down leaves for the responses.
+            ///
+            /// Read back out of the hierarchy rather than from the list the cards were built into,
+            /// because this runs again on every leader change and has to survive the row being rebuilt
+            /// underneath it.
+            ///
+            /// Deliberately not gated on activeInHierarchy: the row is built here but its container is
+            /// not switched on until the encounter is actually presented, so requiring it to be live at
+            /// this point drops every card. Listing not-yet-active elements is what the game's own
+            /// holders do - the navigation code skips inactive ones at selection time and picks them up
+            /// once they appear.
             /// </summary>
             private static void AddCrewRows(
                 UIModuleSiteEncounters module,
                 List<IList<Selectable>> rows,
                 List<int> heads)
             {
-                Transform grid = FindDeepChild(module.transform, CrewGridName);
-
-                // Deliberately not gated on activeInHierarchy: the crew list is built here but its
-                // container is not switched on until the encounter is actually presented, so requiring it
-                // to be live at this point drops every row. Listing not-yet-active elements is what the
-                // game's own holders do - the navigation code skips inactive ones at selection time and
-                // picks them up once they appear.
-                if (grid == null)
+                Transform cardRow = FindDeepChild(module.transform, OperativeCards.RowName);
+                if (cardRow == null)
                 {
                     return;
                 }
 
-                List<Selectable> current = new List<Selectable>();
+                List<Selectable> cards = new List<Selectable>();
 
-                for (int i = 0; i < grid.childCount; i++)
+                for (int i = 0; i < cardRow.childCount; i++)
                 {
-                    Transform child = grid.GetChild(i);
+                    Transform child = cardRow.GetChild(i);
                     if (child == null || !child.gameObject.activeSelf)
                     {
                         continue;
                     }
 
-                    SoldierSlotController slot = child.GetComponent<SoldierSlotController>();
-                    if (slot == null)
+                    Selectable selectable = child.GetComponent<Selectable>();
+                    if (selectable != null)
                     {
-                        continue;
-                    }
-
-                    Selectable selectable = EnsureCrewRowSelectable(slot);
-                    if (selectable == null)
-                    {
-                        continue;
-                    }
-
-                    current.Add(selectable);
-
-                    if (current.Count == GridColumns)
-                    {
-                        rows.Add(current);
-                        heads.Add(0);
-                        current = new List<Selectable>();
+                        cards.Add(selectable);
                     }
                 }
 
-                if (current.Count > 0)
+                if (cards.Count > 0)
                 {
-                    rows.Add(current);
+                    rows.Add(cards);
                     heads.Add(0);
                 }
             }
 
             /// <summary>
-            /// Returns the Selectable the cursor should snap to for a crew row, which has to be the row
-            /// root so the cursor lands on the whole row rather than some sub-element of the vanilla
-            /// prefab. If the root carries no Selectable of its own, one is added and wired straight to
-            /// the row's ActorSelected callback - the prefab's own click handler is private, so relying on
-            /// it being reachable from wherever the cursor happens to land is not safe.
+            /// Cancel, on its own row under the responses. Nothing is added when the encounter kept its
+            /// cancel choice, since that choice is then already a button the navigation picks up.
             /// </summary>
-            private static Selectable EnsureCrewRowSelectable(SoldierSlotController slot)
+            private static void AddCancelRow(List<IList<Selectable>> rows, List<int> heads)
             {
-                Selectable existing = slot.GetComponent<Selectable>();
-                if (existing != null)
+                Selectable cancel = IncidentCancelButton.CancelSelectable;
+                if (cancel == null)
                 {
-                    return existing;
+                    return;
                 }
 
-                Button button = slot.gameObject.AddComponent<Button>();
-                button.transition = Selectable.Transition.None;
-
-                Graphic graphic = slot.GetComponent<Graphic>();
-                if (graphic != null)
-                {
-                    button.targetGraphic = graphic;
-                }
-
-                SoldierSlotController captured = slot;
-                button.onClick.AddListener(() =>
-                {
-                    try
-                    {
-                        captured.ActorSelected?.Invoke(captured.Soldier);
-                    }
-                    catch (Exception ex) { TFTVLogger.Error(ex); }
-                });
-
-                return button;
+                rows.Add(new List<Selectable> { cancel });
+                heads.Add(0);
             }
 
             /// <summary>
             /// One row per choice: the choice button plus its approach icons, ordered by where they
-            /// actually sit on screen. Choice 0 wears its icons on the left and choice 1 on the right, so
-            /// a fixed order would send the stick the wrong way for one of them. The choice button stays
-            /// the row's head regardless, so vertical movement always lands back on the choice itself.
+            /// actually sit on screen rather than by which button owns what - the icons now sit inside
+            /// their response's left edge, so a response and the icons of the response beside it can
+            /// share a line. The choice button stays the row's head, so vertical movement always lands
+            /// back on a response rather than on one of the icons inside it.
             /// </summary>
             /// <returns>True if any approach icon was found.</returns>
             private static bool AddChoiceRows(
@@ -789,6 +846,10 @@ namespace TFTV.TFTVIncidents
 
                 int max = Math.Min(2, Math.Min(geoEvent.EventData.Choices.Count, buttons.Length));
 
+                // Measured once per pass from the buttons the game actually gave us, so everything
+                // laid out inside them agrees about how much room the icons take.
+                float iconSize = CurrentApproachIconSize(module);
+
                 for (int i = 0; i < max; i++)
                 {
                     SiteBaseChoiceButton button = buttons[i];
@@ -817,10 +878,24 @@ namespace TFTV.TFTVIncidents
                     }
 
                     string baseText = string.IsNullOrEmpty(state.BaseText) ? (state.Label.text ?? string.Empty) : state.BaseText;
-                    string hoursText = ResolveApproachHoursText(geoEvent, vehicle, i, selectedCharacter);
-                    state.Label.text = TFTVCommonMethods.FormatKey(ApproachHoursKey, baseText, hoursText);
 
-                    ApplyChoiceIcons(button, i);
+                    // Green is the whole point of picking this operative for this response: their
+                    // affinity applies here and not to the other one. The hours underneath drop with
+                    // it, but a shorter number is only a signal next to the number it is shorter
+                    // than, and the two responses are read one at a time - the colour is not.
+                    //
+                    // Written as markup rather than set on the Text, because the button recolours its
+                    // own label as the pointer moves over it; markup is applied under that tint, so
+                    // the response still lights up on hover and still reads as the matching one.
+                    _choiceAffinityMatch.TryGetValue(i, out bool matches);
+                    state.Label.supportRichText = true;
+                    state.Label.text = matches
+                        ? $"<color=#{ColorUtility.ToHtmlStringRGB(IncidentUIStyle.AffinityMatch)}>{baseText}</color>"
+                        : baseText;
+
+                    ApplyChoiceIcons(button, i, iconSize);
+                    ApplyChoiceLayout(state, i, iconSize);
+                    ApplyChoicePayoff(button, geoEvent, vehicle, i, selectedCharacter, iconSize, state.Label.fontSize);
                 }
 
                 // ApplyChoiceIcons resets every icon's navigation to Mode.None, which strips the row links
@@ -851,17 +926,28 @@ namespace TFTV.TFTVIncidents
                     state.BaseText = state.Label.text;
                 }
 
+                if (state.Label != null && !state.LayoutCaptured)
+                {
+                    RectTransform labelRect = state.Label.rectTransform;
+                    state.LabelAnchorMin = labelRect.anchorMin;
+                    state.LabelAnchorMax = labelRect.anchorMax;
+                    state.LabelOffsetMin = labelRect.offsetMin;
+                    state.LabelOffsetMax = labelRect.offsetMax;
+                    state.LabelAlignment = state.Label.alignment;
+                    state.LabelColor = state.Label.color;
+                    state.LayoutCaptured = true;
+                }
+
                 return state;
             }
 
-            // ── Choice button sizing ─────────────────────────────────────
+            // ── Choice button layout ─────────────────────────────────────
 
             /// <summary>
-            /// Computes the horizontal space (in pixels) needed for approach icons
-            /// on the given choice side: total icon width + inter-icon spacing + gap
-            /// between icons and the button edge. Returns 0 if no icons are needed.
+            /// Width of the approach icon strip that sits inside a response's left edge, spacing
+            /// included. Zero for a response with no approaches, which then keeps the full button.
             /// </summary>
-            private static float ComputeApproachPadding(int choiceIndex)
+            private static float ComputeApproachStripWidth(int choiceIndex, float iconSize)
             {
                 if (!_choiceApproaches.TryGetValue(choiceIndex, out List<LeaderSelection.AffinityApproach> approaches)
                     || approaches == null || approaches.Count == 0)
@@ -870,8 +956,63 @@ namespace TFTV.TFTVIncidents
                 }
 
                 int count = approaches.Count;
-                float totalIconWidth = (count * ApproachIconSize) + (Mathf.Max(0, count - 1) * ApproachIconSpacing);
-                return totalIconWidth + ApproachIconButtonGap;
+                return (count * iconSize) + (Mathf.Max(0, count - 1) * ApproachIconSpacing);
+            }
+
+            /// <summary>
+            /// Where a response's text and its payoff strip start: clear of the approach icons when
+            /// there are any, at the normal margin when there are not.
+            /// </summary>
+            private static float ComputeChoiceContentLeft(int choiceIndex, float iconSize)
+            {
+                float strip = ComputeApproachStripWidth(choiceIndex, iconSize);
+                return strip <= 0f
+                    ? ChoiceTextRightPadding
+                    : ApproachIconInset + strip + ApproachIconTextGap;
+            }
+
+            /// <summary>
+            /// Moves a response's own text out of the way of what has been put inside the button with
+            /// it - right of the approach icons, above the payoff strip - and left-aligns it, since a
+            /// line centred in what is left of the button no longer lines up with the strip under it.
+            /// </summary>
+            private static void ApplyChoiceLayout(ChoiceButtonVisualState state, int choiceIndex, float iconSize)
+            {
+                if (state?.Label == null)
+                {
+                    return;
+                }
+
+                RectTransform labelRect = state.Label.rectTransform;
+                labelRect.anchorMin = Vector2.zero;
+                labelRect.anchorMax = Vector2.one;
+                labelRect.offsetMin = new Vector2(ComputeChoiceContentLeft(choiceIndex, iconSize), PayoffBottomPadding + PayoffRowHeight);
+                labelRect.offsetMax = new Vector2(-ChoiceTextRightPadding, -TextTopPadding);
+
+                // Along the top of the band above the payoff strip, not centred in it. Centring put a
+                // single line halfway down the button, which reads as floating; against the top the
+                // response and its payoff strip sit as two lines of one block, and a response long
+                // enough to wrap grows down into the band rather than pushing anything about.
+                state.Label.alignment = TextAnchor.UpperLeft;
+            }
+
+            /// <summary>
+            /// Puts a response's text back the way the button shipped it.
+            /// </summary>
+            private static void RestoreChoiceLayout(ChoiceButtonVisualState state)
+            {
+                if (state?.Label == null || !state.LayoutCaptured)
+                {
+                    return;
+                }
+
+                RectTransform labelRect = state.Label.rectTransform;
+                labelRect.anchorMin = state.LabelAnchorMin;
+                labelRect.anchorMax = state.LabelAnchorMax;
+                labelRect.offsetMin = state.LabelOffsetMin;
+                labelRect.offsetMax = state.LabelOffsetMax;
+                state.Label.alignment = state.LabelAlignment;
+                state.Label.color = state.LabelColor;
             }
 
             /// <summary>
@@ -883,13 +1024,24 @@ namespace TFTV.TFTVIncidents
             {
                 public Vector2 OriginalCellSize;
                 public RectOffset OriginalPadding;
+                public Vector2 OriginalSpacing;
+                public GridLayoutGroup.Constraint OriginalConstraint;
+                public int OriginalConstraintCount;
             }
 
             /// <summary>
-            /// Shrinks choice buttons by modifying the parent
-            /// <see cref="GridLayoutGroup"/>'s <c>cellSize</c> and <c>padding</c>.
-            /// Individual button resizing is impossible because the GridLayoutGroup
-            /// overrides all child RectTransforms to its cellSize.
+            /// Lays the two responses out side by side and makes room inside them for what has been
+            /// put there.
+            ///
+            /// The encounter ships its choices as a column of full-width buttons, which is right for
+            /// an event with a list of answers and wrong for this screen: an incident asks the player
+            /// to weigh two responses against each other, and a pair is compared side by side, not
+            /// read down. With the walk-away choice moved to its own button there are exactly two
+            /// left to place.
+            ///
+            /// Everything is set on the parent <see cref="GridLayoutGroup"/> rather than per button,
+            /// because the grid overrides every child RectTransform to its own cell size - a button
+            /// resized directly is resized straight back on the next layout pass.
             /// </summary>
             private static void AdjustChoiceButtons(UIModuleSiteEncounters module, GeoscapeEvent geoEvent)
             {
@@ -904,13 +1056,6 @@ namespace TFTV.TFTVIncidents
                     return;
                 }
 
-                float pad0 = ComputeApproachPadding(0);
-                float pad1 = ComputeApproachPadding(1);
-                if (pad0 <= 0f && pad1 <= 0f)
-                {
-                    return;
-                }
-
                 GridPaddingState state = grid.GetComponent<GridPaddingState>();
                 if (state == null)
                 {
@@ -919,19 +1064,70 @@ namespace TFTV.TFTVIncidents
                     state.OriginalPadding = new RectOffset(
                         grid.padding.left, grid.padding.right,
                         grid.padding.top, grid.padding.bottom);
+                    state.OriginalSpacing = grid.spacing;
+                    state.OriginalConstraint = grid.constraint;
+                    state.OriginalConstraintCount = grid.constraintCount;
                 }
 
-                // Double the shrink so buttons are visually smaller than the icon strip alone requires.
-                float shrunkPad0 = pad0 * ButtonShrinkMultiplier;
-                float shrunkPad1 = pad1 * ButtonShrinkMultiplier;
+                RectTransform containerRect = module.ChoiceButtonsContainer.GetComponent<RectTransform>();
+                float containerWidth = containerRect != null ? containerRect.rect.width : 0f;
 
-                float newCellWidth = state.OriginalCellSize.x - (shrunkPad0 + shrunkPad1) * 0.5f;
-                grid.cellSize = new Vector2(newCellWidth, state.OriginalCellSize.y);
-                grid.padding = new RectOffset(
-                    state.OriginalPadding.left + Mathf.CeilToInt(shrunkPad0),
-                    state.OriginalPadding.right + Mathf.CeilToInt(shrunkPad1),
-                    state.OriginalPadding.top,
-                    state.OriginalPadding.bottom);
+                // The container runs the full width of the screen, and the choices are not meant to.
+                // Vanilla fills about half of it with one column; two responses side by side want
+                // more than that and nowhere near all of it - edge to edge they stop reading as a
+                // pair of cards and start reading as two bands across the screen.
+                float available = (containerWidth * (1f - (ChoiceRowSideMargin * 2f))) - ChoiceColumnSpacing;
+
+                float cellWidth = available > 0f
+                    ? available / ChoiceColumns
+                    : state.OriginalCellSize.x;
+
+                grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+                grid.constraintCount = ChoiceColumns;
+                grid.spacing = new Vector2(ChoiceColumnSpacing, state.OriginalSpacing.y);
+
+                // The button keeps the height the game gave it, and the payoff strip is fitted inside
+                // that rather than added to it. Growing the row pushed it down the screen and left
+                // the responses looking like two empty boxes with a line of text at the bottom; the
+                // space a centred single line was wasting is exactly where the strip goes.
+                grid.cellSize = new Vector2(cellWidth, state.OriginalCellSize.y);
+
+                float icon = ResolveApproachIconSize(state);
+                TFTVLogger.Always(
+                    $"[IncidentUI] Choice grid: container {available:0}w, cell {cellWidth:0}x{grid.cellSize.y:0} " +
+                    $"(was {state.OriginalCellSize.x:0}x{state.OriginalCellSize.y:0}), icon box {icon:0}, " +
+                    $"glyph {icon * ApproachGlyphFraction:0}, payoff row {PayoffRowHeight:0}.");
+            }
+
+            /// <summary>
+            /// How big an approach icon is drawn inside a response: as tall as the button leaves it.
+            ///
+            /// An affinity is the single thing that makes one response better for this operative than
+            /// the other, so the icon saying which affinity is not an annotation on the response - it
+            /// is half of what the response is. Sized to the button rather than to a constant, since
+            /// the button's height is the game's to decide and changes with what is put in it.
+            /// </summary>
+            private static float ResolveApproachIconSize(GridPaddingState state)
+            {
+                if (state == null)
+                {
+                    return ApproachIconSize;
+                }
+
+                return Mathf.Max(MinApproachIconSize, state.OriginalCellSize.y - (ApproachIconVerticalInset * 2f));
+            }
+
+            /// <summary>
+            /// The icon size the response buttons are currently drawn with, or the configured size
+            /// when the grid has not been measured yet.
+            /// </summary>
+            private static float CurrentApproachIconSize(UIModuleSiteEncounters module)
+            {
+                GridLayoutGroup grid = module?.ChoiceButtonsContainer != null
+                    ? module.ChoiceButtonsContainer.GetComponent<GridLayoutGroup>()
+                    : null;
+
+                return ResolveApproachIconSize(grid != null ? grid.GetComponent<GridPaddingState>() : null);
             }
 
             /// <summary>
@@ -974,6 +1170,8 @@ namespace TFTV.TFTVIncidents
                 _choiceApproaches.Clear();
                 _selectedApproach.Clear();
                 _approachSelectionLocked.Clear();
+                _choiceAffinityMatch.Clear();
+                _approachArrowRank.Clear();
 
                 List<GeoEventChoice> choices = geoEvent?.EventData?.Choices;
                 if (choices == null)
@@ -998,6 +1196,8 @@ namespace TFTV.TFTVIncidents
                     {
                         _selectedApproach[i] = null;
                         _approachSelectionLocked[i] = true;
+                        _choiceAffinityMatch[i] = false;
+                        _approachArrowRank[i] = 0;
                         continue;
                     }
 
@@ -1008,19 +1208,31 @@ namespace TFTV.TFTVIncidents
                             // Operative has a matching affinity → auto-select, lock.
                             _selectedApproach[i] = charApproach;
                             _approachSelectionLocked[i] = true;
+                            _choiceAffinityMatch[i] = true;
+
+                            // An operative already at the top of their affinity has nothing left to
+                            // gain from this response, so it is not promised one - the response is
+                            // still theirs to take, it just stops claiming a level-up it cannot give.
+                            _approachArrowRank[i] = charRank < MaxAffinityRank ? charRank + 1 : 0;
                         }
                         else
                         {
                             // Operative has a non-matching affinity → no selection possible, lock.
                             _selectedApproach[i] = null;
                             _approachSelectionLocked[i] = true;
+                            _choiceAffinityMatch[i] = false;
+                            _approachArrowRank[i] = 0;
                         }
                     }
                     else
                     {
-                        // No affinity → either selectable, first selected by default.
+                        // No affinity → either selectable, first selected by default. Whichever is
+                        // selected when the response is taken is the one that develops, so both are
+                        // worth a level-up mark and neither is worth colouring the response for.
                         _selectedApproach[i] = approaches[0];
                         _approachSelectionLocked[i] = false;
+                        _choiceAffinityMatch[i] = false;
+                        _approachArrowRank[i] = 1;
                     }
                 }
             }
@@ -1043,9 +1255,17 @@ namespace TFTV.TFTVIncidents
 
                 _selectedApproach[choiceIndex] = approach;
                 RefreshApproachIconVisuals(parentButton, choiceIndex);
-                RefreshHeaderGainDisplay();
             }
 
+            /// <summary>
+            /// Restates what each approach icon means for the operative currently selected.
+            ///
+            /// Three states, and every one of them is about this operative rather than about the
+            /// approach: the approach they bring an affinity to is at full strength with an amber
+            /// outline, an approach still open to them (a rookie choosing what to develop) is legible
+            /// but unlit, and one they can do nothing with is dimmed almost out. The level-up arrow
+            /// rides the lit icon and carries the rank they would come back at.
+            /// </summary>
             private static void RefreshApproachIconVisuals(SiteBaseChoiceButton button, int choiceIndex)
             {
                 if (button == null)
@@ -1061,6 +1281,7 @@ namespace TFTV.TFTVIncidents
 
                 _selectedApproach.TryGetValue(choiceIndex, out LeaderSelection.AffinityApproach? selected);
                 _approachSelectionLocked.TryGetValue(choiceIndex, out bool locked);
+                _approachArrowRank.TryGetValue(choiceIndex, out int arrowRank);
 
                 for (int i = 0; i < root.childCount; i++)
                 {
@@ -1071,8 +1292,8 @@ namespace TFTV.TFTVIncidents
                         continue;
                     }
 
-                    Image img = child.GetComponent<Image>();
-                    Outline outline = child.GetComponent<Outline>();
+                    Image img = FindApproachGlyph(child);
+                    Outline outline = img != null ? img.GetComponent<Outline>() : null;
                     bool isSelected = selected.HasValue && selected.Value == state.Approach;
 
                     if (img != null)
@@ -1083,19 +1304,148 @@ namespace TFTV.TFTVIncidents
                         }
                         else if (locked)
                         {
-                            img.color = ApproachLockedTint;
+                            img.color = IncidentUIStyle.ApproachInactive;
                         }
                         else
                         {
-                            img.color = ApproachUnselectedTint;
+                            img.color = IncidentUIStyle.ApproachSelectable;
                         }
                     }
 
                     if (outline != null)
                     {
-                        outline.effectColor = isSelected ? ApproachSelectedOutlineColor : Color.clear;
+                        outline.effectColor = isSelected ? IncidentUIStyle.Amber : Color.clear;
+                    }
+
+                    SetApproachArrow(child, isSelected ? arrowRank : 0);
+                }
+            }
+
+            /// <summary>
+            /// Shows or hides an approach icon's level-up arrow, and sets the rank it promises.
+            ///
+            /// The arrow is what turns the icon from a label into an offer: without it the player
+            /// can see that an operative's affinity fits a response, but not that taking it is how
+            /// that affinity grows. The rank rides on the arrow rather than in a line of prose above
+            /// the crew, so the whole claim - which response, whose affinity, to what rank - is made
+            /// in one place and is read by looking at the response being considered.
+            /// </summary>
+            private static void SetApproachArrow(Transform icon, int rank)
+            {
+                Transform existing = icon.Find(ApproachArrowName);
+
+                if (rank <= 0)
+                {
+                    if (existing != null)
+                    {
+                        existing.gameObject.SetActive(false);
+                    }
+
+                    return;
+                }
+
+                GameObject arrowObject;
+                if (existing == null)
+                {
+                    arrowObject = new GameObject(ApproachArrowName, typeof(RectTransform), typeof(HorizontalLayoutGroup));
+                    arrowObject.transform.SetParent(icon, false);
+
+                    RectTransform arrowRect = arrowObject.GetComponent<RectTransform>();
+
+                    // Centred on the top of its own icon. In the corner it fell in the gap between
+                    // two icons and there was no telling which of them it was promising - and which
+                    // one it belongs to is the whole point of it.
+                    arrowRect.anchorMin = new Vector2(0.5f, 1f);
+                    arrowRect.anchorMax = new Vector2(0.5f, 1f);
+                    arrowRect.pivot = new Vector2(0.5f, 0.5f);
+                    arrowRect.anchoredPosition = new Vector2(0f, -ApproachArrowSize * 0.5f);
+                    arrowRect.sizeDelta = new Vector2(ApproachArrowSize * 1.8f, ApproachArrowSize);
+
+                    HorizontalLayoutGroup arrowLayout = arrowObject.GetComponent<HorizontalLayoutGroup>();
+                    arrowLayout.childAlignment = TextAnchor.MiddleCenter;
+                    arrowLayout.childControlWidth = true;
+                    arrowLayout.childControlHeight = true;
+                    arrowLayout.childForceExpandWidth = false;
+                    arrowLayout.childForceExpandHeight = false;
+                    arrowLayout.spacing = 1f;
+
+                    CreateArrowGlyph(arrowObject.transform);
+                    CreateArrowRankLabel(arrowObject.transform);
+                }
+                else
+                {
+                    arrowObject = existing.gameObject;
+                }
+
+                Text label = arrowObject.GetComponentInChildren<Text>(true);
+                if (label != null)
+                {
+                    label.text = rank.ToString(CultureInfo.InvariantCulture);
+                }
+
+                arrowObject.SetActive(true);
+            }
+
+            private static void CreateArrowGlyph(Transform parent)
+            {
+                GameObject glyphObject = new GameObject("Glyph", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+                glyphObject.transform.SetParent(parent, false);
+
+                LayoutElement glyphLayout = glyphObject.GetComponent<LayoutElement>();
+                glyphLayout.preferredWidth = ApproachArrowSize * 0.72f;
+                glyphLayout.preferredHeight = ApproachArrowSize * 0.72f;
+                glyphLayout.minWidth = ApproachArrowSize * 0.72f;
+                glyphLayout.minHeight = ApproachArrowSize * 0.72f;
+
+                Image glyph = glyphObject.GetComponent<Image>();
+                glyph.sprite = ResolveLevelUpArrowSprite();
+                glyph.color = IncidentUIStyle.AffinityMatch;
+                glyph.preserveAspect = true;
+                glyph.raycastTarget = false;
+                glyph.enabled = glyph.sprite != null;
+            }
+
+            private static void CreateArrowRankLabel(Transform parent)
+            {
+                GameObject labelObject = new GameObject("Rank", typeof(RectTransform), typeof(Text), typeof(Outline));
+                labelObject.transform.SetParent(parent, false);
+
+                Text label = labelObject.GetComponent<Text>();
+                label.font = _cachedFont;
+                label.fontSize = Mathf.RoundToInt(ApproachArrowSize * 0.85f);
+                label.fontStyle = FontStyle.Bold;
+                label.alignment = TextAnchor.MiddleLeft;
+                label.horizontalOverflow = HorizontalWrapMode.Overflow;
+                label.verticalOverflow = VerticalWrapMode.Overflow;
+                label.raycastTarget = false;
+                label.color = IncidentUIStyle.AffinityMatch;
+
+                // The badge sits over a bright glyph on a button that is not a flat colour, so both
+                // halves of it are outlined rather than trusted to contrast.
+                Outline outline = labelObject.GetComponent<Outline>();
+                outline.effectColor = new Color(0f, 0f, 0f, 0.9f);
+                outline.effectDistance = new Vector2(1.5f, -1.5f);
+                outline.useGraphicAlpha = false;
+            }
+
+            /// <summary>
+            /// The level-up arrow, loaded once. A shipped image rather than a character, because the
+            /// game's UI font has no arrow glyph and a missing one draws nothing at all.
+            /// </summary>
+            private static Sprite ResolveLevelUpArrowSprite()
+            {
+                if (!_levelUpArrowResolved)
+                {
+                    _levelUpArrowResolved = true;
+                    _levelUpArrowSprite = Helper.CreateSpriteFromImageFile(LevelUpArrowImageName);
+
+                    if (_levelUpArrowSprite == null)
+                    {
+                        TFTVLogger.Always($"[IncidentUI] {LevelUpArrowImageName} could not be loaded; level-up badges show the rank only.");
                     }
                 }
+
+                return _levelUpArrowSprite;
             }
 
             /// <summary>
@@ -1130,7 +1480,7 @@ namespace TFTV.TFTVIncidents
 
             // ── Approach icons on choice buttons ─────────────────────────
 
-            private static void ApplyChoiceIcons(SiteBaseChoiceButton button, int choiceIndex)
+            private static void ApplyChoiceIcons(SiteBaseChoiceButton button, int choiceIndex, float iconSize)
             {
                 if (button == null)
                 {
@@ -1167,15 +1517,17 @@ namespace TFTV.TFTVIncidents
                 h.childForceExpandWidth = false;
                 h.spacing = ApproachIconSpacing;
 
-                float totalWidth = (count * ApproachIconSize) + (Mathf.Max(0, count - 1) * h.spacing);
-                rootRect.sizeDelta = new Vector2(count > 0 ? totalWidth : 0f, ApproachIconSize + 4f);
+                float totalWidth = (count * iconSize) + (Mathf.Max(0, count - 1) * h.spacing);
+                rootRect.sizeDelta = new Vector2(count > 0 ? totalWidth : 0f, iconSize);
 
-                // Choice 0 => left side outside; Choice 1 => right side outside.
-                bool leftSide = (choiceIndex == 0);
-                rootRect.anchorMin = new Vector2(leftSide ? 0f : 1f, 0.5f);
-                rootRect.anchorMax = new Vector2(leftSide ? 0f : 1f, 0.5f);
-                rootRect.pivot = new Vector2(leftSide ? 1f : 0f, 0.5f);
-                rootRect.anchoredPosition = new Vector2(leftSide ? -ApproachIconButtonGap : ApproachIconButtonGap, 0f);
+                // Inside the response's left edge, level with its text. The icons used to flank the
+                // buttons, which read as decoration alongside them; inside, they are part of what the
+                // response says - this is what taking it asks of the operative - and both responses
+                // carry theirs in the same place, so the pair can be compared at a glance.
+                rootRect.anchorMin = new Vector2(0f, 0.5f);
+                rootRect.anchorMax = new Vector2(0f, 0.5f);
+                rootRect.pivot = new Vector2(0f, 0.5f);
+                rootRect.anchoredPosition = new Vector2(ApproachIconInset, 0f);
 
                 _approachSelectionLocked.TryGetValue(choiceIndex, out bool locked);
 
@@ -1188,7 +1540,7 @@ namespace TFTV.TFTVIncidents
 
                     if (iconTransform == null)
                     {
-                        iconObject = new GameObject(iconName, typeof(RectTransform), typeof(Image), typeof(LayoutElement), typeof(Outline));
+                        iconObject = new GameObject(iconName, typeof(RectTransform), typeof(Image), typeof(LayoutElement));
                         iconObject.transform.SetParent(rootObject.transform, false);
                     }
                     else
@@ -1198,17 +1550,28 @@ namespace TFTV.TFTVIncidents
 
                     LayoutElement le = iconObject.GetComponent<LayoutElement>();
                     if (le == null) le = iconObject.AddComponent<LayoutElement>();
-                    le.preferredWidth = ApproachIconSize;
-                    le.preferredHeight = ApproachIconSize;
-                    le.minWidth = ApproachIconSize;
-                    le.minHeight = ApproachIconSize;
+                    le.preferredWidth = iconSize;
+                    le.preferredHeight = iconSize;
+                    le.minWidth = iconSize;
+                    le.minHeight = iconSize;
 
+                    // The icon's box is a black plate running the response's full height, and the
+                    // affinity mark is drawn smaller on top of it. The artwork is already an orange
+                    // mark on a black plate of its own, so scaling the artwork scales its plate with
+                    // it - which is why shrinking the mark shrank the whole icon. Painting the plate
+                    // here instead separates the two: the mark is sized on its own, and the black it
+                    // sits on is the box.
                     Image img = iconObject.GetComponent<Image>();
                     if (img == null) img = iconObject.AddComponent<Image>();
+                    img.sprite = null;
+                    img.color = IncidentUIStyle.ApproachPlate;
                     img.raycastTarget = true;
+                    img.enabled = true;
 
-                    Outline outline = iconObject.GetComponent<Outline>();
-                    if (outline == null) outline = iconObject.AddComponent<Outline>();
+                    Image glyph = EnsureApproachGlyph(iconObject.transform, iconSize);
+
+                    Outline outline = glyph.GetComponent<Outline>();
+                    if (outline == null) outline = glyph.gameObject.AddComponent<Outline>();
                     outline.effectDistance = new Vector2(ApproachIconOutlineWidth, ApproachIconOutlineWidth);
                     outline.useGraphicAlpha = false;
 
@@ -1222,8 +1585,8 @@ namespace TFTV.TFTVIncidents
 
                     LeaderSelection.AffinityApproach approach = approaches[i];
                     Sprite sprite = GetApproachSprite(approach);
-                    img.sprite = sprite;
-                    img.enabled = sprite != null;
+                    glyph.sprite = sprite;
+                    glyph.enabled = sprite != null;
 
                     ApproachIconState iconState = iconObject.GetComponent<ApproachIconState>();
                     if (iconState == null) iconState = iconObject.AddComponent<ApproachIconState>();
@@ -1234,7 +1597,6 @@ namespace TFTV.TFTVIncidents
                     ApproachIconTooltipTrigger tooltipTrigger = iconObject.GetComponent<ApproachIconTooltipTrigger>();
                     if (tooltipTrigger == null) tooltipTrigger = iconObject.AddComponent<ApproachIconTooltipTrigger>();
                     tooltipTrigger.Approach = approach;
-                    tooltipTrigger.ChoiceIndex = choiceIndex;
 
                     if (!locked)
                     {
@@ -1261,6 +1623,181 @@ namespace TFTV.TFTVIncidents
                 RefreshApproachIconVisuals(button, choiceIndex);
             }
 
+            /// <summary>
+            /// The affinity glyph drawn inside an approach icon's box, at half the box's size and
+            /// centred in it - the proportion the mockup draws them at.
+            /// </summary>
+            private static Image EnsureApproachGlyph(Transform icon, float iconSize)
+            {
+                Transform existing = icon.Find(ApproachGlyphName);
+                GameObject glyphObject;
+
+                if (existing == null)
+                {
+                    glyphObject = new GameObject(ApproachGlyphName, typeof(RectTransform), typeof(Image));
+                    glyphObject.transform.SetParent(icon, false);
+                }
+                else
+                {
+                    glyphObject = existing.gameObject;
+                }
+
+                RectTransform glyphRect = glyphObject.GetComponent<RectTransform>();
+                glyphRect.anchorMin = new Vector2(0.5f, 0.5f);
+                glyphRect.anchorMax = new Vector2(0.5f, 0.5f);
+                glyphRect.pivot = new Vector2(0.5f, 0.5f);
+                glyphRect.anchoredPosition = Vector2.zero;
+                glyphRect.sizeDelta = new Vector2(iconSize * ApproachGlyphFraction, iconSize * ApproachGlyphFraction);
+
+                Image glyph = glyphObject.GetComponent<Image>();
+                glyph.preserveAspect = true;
+                glyph.raycastTarget = false;
+                return glyph;
+            }
+
+            /// <summary>
+            /// The glyph inside an approach icon's box, or null for a box that has none yet.
+            /// </summary>
+            private static Image FindApproachGlyph(Transform icon)
+            {
+                Transform glyph = icon != null ? icon.Find(ApproachGlyphName) : null;
+                return glyph != null ? glyph.GetComponent<Image>() : null;
+            }
+
+            // ── Payoff strip ─────────────────────────────────────────────
+
+            /// <summary>
+            /// The strip along the bottom of a response: how long it takes this operative, and what
+            /// it pays if it works.
+            ///
+            /// The hours were appended to the response's own text before, which put a number in the
+            /// middle of a sentence and left the two responses with nothing comparable about them but
+            /// prose. On its own line with the payoff icons, the hours become one of two axes the
+            /// player is choosing along - how long, and for what - and the pair of responses can be
+            /// read against each other a column at a time.
+            /// </summary>
+            private static void ApplyChoicePayoff(
+                SiteBaseChoiceButton button,
+                GeoscapeEvent geoEvent,
+                GeoVehicle vehicle,
+                int choiceIndex,
+                GeoCharacter leader,
+                float iconSize,
+                int fontSize)
+            {
+                if (button == null)
+                {
+                    return;
+                }
+
+                Transform existing = button.transform.Find(ChoicePayoffRootName);
+                GameObject root;
+                if (existing == null)
+                {
+                    root = new GameObject(ChoicePayoffRootName, typeof(RectTransform), typeof(HorizontalLayoutGroup));
+                    root.transform.SetParent(button.transform, false);
+                }
+                else
+                {
+                    root = existing.gameObject;
+
+                    // Rebuilt from scratch on every leader change: the hours move with the operative,
+                    // and reusing entries in place means matching up two lists that need not be the
+                    // same length.
+                    for (int i = root.transform.childCount - 1; i >= 0; i--)
+                    {
+                        UnityEngine.Object.DestroyImmediate(root.transform.GetChild(i).gameObject);
+                    }
+                }
+
+                RectTransform rootRect = root.GetComponent<RectTransform>();
+                rootRect.anchorMin = new Vector2(0f, 0f);
+                rootRect.anchorMax = new Vector2(1f, 0f);
+                rootRect.pivot = new Vector2(0f, 0f);
+                rootRect.offsetMin = new Vector2(ComputeChoiceContentLeft(choiceIndex, iconSize), PayoffBottomPadding);
+                rootRect.offsetMax = new Vector2(-ChoiceTextRightPadding, PayoffBottomPadding + PayoffRowHeight);
+
+                HorizontalLayoutGroup layout = root.GetComponent<HorizontalLayoutGroup>();
+                layout.childAlignment = TextAnchor.MiddleLeft;
+                layout.childControlWidth = true;
+                layout.childControlHeight = true;
+                layout.childForceExpandWidth = false;
+                layout.childForceExpandHeight = false;
+                layout.spacing = PayoffEntrySpacing;
+
+                bool anything = false;
+
+                string hours = ResolveApproachHoursText(geoEvent, vehicle, choiceIndex, leader);
+                if (!string.IsNullOrEmpty(hours))
+                {
+                    _choiceAffinityMatch.TryGetValue(choiceIndex, out bool matches);
+                    AddPayoffLabel(root.transform, hours, matches ? IncidentUIStyle.AffinityMatch : IncidentUIStyle.Payoff, fontSize);
+                    anything = true;
+                }
+
+                foreach (ChoicePayoff.Entry entry in ChoicePayoff.Resolve(geoEvent, choiceIndex))
+                {
+                    AddPayoffEntry(root.transform, entry, fontSize);
+                    anything = true;
+                }
+
+                root.SetActive(anything);
+            }
+
+            private static void AddPayoffEntry(Transform parent, ChoicePayoff.Entry entry, int fontSize)
+            {
+                GameObject group = new GameObject("Payoff", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+                group.transform.SetParent(parent, false);
+
+                HorizontalLayoutGroup layout = group.GetComponent<HorizontalLayoutGroup>();
+                layout.childAlignment = TextAnchor.MiddleLeft;
+                layout.childControlWidth = true;
+                layout.childControlHeight = true;
+                layout.childForceExpandWidth = false;
+                layout.childForceExpandHeight = false;
+                layout.spacing = PayoffIconLabelSpacing;
+
+                GameObject iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+                iconObject.transform.SetParent(group.transform, false);
+
+                LayoutElement iconLayout = iconObject.GetComponent<LayoutElement>();
+                iconLayout.preferredWidth = PayoffIconSize;
+                iconLayout.preferredHeight = PayoffIconSize;
+                iconLayout.minWidth = PayoffIconSize;
+                iconLayout.minHeight = PayoffIconSize;
+
+                Image icon = iconObject.GetComponent<Image>();
+                icon.sprite = entry.Icon;
+                icon.color = entry.Tint;
+                icon.preserveAspect = true;
+                icon.raycastTarget = false;
+
+                // One plus per step of the scale. A number here would be a promise the incident does
+                // not make - it can still fail, and the size is what is being compared, not the total.
+                AddPayoffLabel(group.transform, new string(TierMark, Mathf.Clamp(entry.Tier, 1, ChoicePayoff.MaxTier)), entry.Tint, fontSize);
+            }
+
+            private static void AddPayoffLabel(Transform parent, string text, Color color, int fontSize)
+            {
+                GameObject labelObject = new GameObject("Label", typeof(RectTransform), typeof(Text));
+                labelObject.transform.SetParent(parent, false);
+
+                Text label = labelObject.GetComponent<Text>();
+                label.text = text;
+                label.font = _cachedFont;
+
+                // The same size as the response it belongs to. The hours and the payoff are not a
+                // footnote on the response - they are the half of it the player is comparing - and
+                // set smaller they read as small print.
+                label.fontSize = fontSize;
+                label.fontStyle = FontStyle.Bold;
+                label.alignment = TextAnchor.MiddleLeft;
+                label.horizontalOverflow = HorizontalWrapMode.Overflow;
+                label.verticalOverflow = VerticalWrapMode.Overflow;
+                label.raycastTarget = false;
+                label.color = color;
+            }
+
             // ── Unchanged helpers below ──────────────────────────────────
 
             private static bool IsIncidentIntroEvent(GeoscapeEvent geoEvent)
@@ -1277,116 +1814,6 @@ namespace TFTV.TFTVIncidents
                         && string.Equals(i.IntroEvent.EventID, geoEvent.EventID, StringComparison.OrdinalIgnoreCase));
             }
 
-            private static CrewRowHighlightState EnsureHighlightState(SoldierSlotController row)
-            {
-                if (row == null)
-                {
-                    return null;
-                }
-
-                CrewRowHighlightState state = row.GetComponent<CrewRowHighlightState>();
-                if (state == null)
-                {
-                    state = row.gameObject.AddComponent<CrewRowHighlightState>();
-                }
-
-                if (!state.Initialized)
-                {
-                    Transform existing = row.transform.Find(CrewRowHighlightName);
-                    GameObject highlightObject;
-                    if (existing == null)
-                    {
-                        highlightObject = new GameObject(CrewRowHighlightName, typeof(RectTransform), typeof(Image), typeof(Outline));
-                        highlightObject.transform.SetParent(row.transform, false);
-                        highlightObject.transform.SetAsFirstSibling();
-                    }
-                    else
-                    {
-                        highlightObject = existing.gameObject;
-                    }
-
-                    RectTransform highlightRect = highlightObject.GetComponent<RectTransform>();
-                    highlightRect.anchorMin = Vector2.zero;
-                    highlightRect.anchorMax = Vector2.one;
-                    highlightRect.offsetMin = Vector2.zero;
-                    highlightRect.offsetMax = Vector2.zero;
-                    highlightRect.localScale = Vector3.one;
-
-                    state.Background = highlightObject.GetComponent<Image>();
-                    if (state.Background != null)
-                    {
-                        state.Background.raycastTarget = false;
-                        state.Background.color = Color.clear;
-                    }
-
-                    state.Border = highlightObject.GetComponent<Outline>();
-                    if (state.Border != null)
-                    {
-                        state.Border.effectDistance = new Vector2(2f, 2f);
-                        state.Border.useGraphicAlpha = false;
-                        state.Border.effectColor = Color.clear;
-                    }
-
-                    state.BackgroundNormal = state.Background != null ? state.Background.color : Color.clear;
-                    state.BorderNormal = state.Border != null ? state.Border.effectColor : Color.clear;
-                    state.Initialized = true;
-                }
-
-                return state;
-            }
-
-            private static Color EnsureVisibleAlpha(Color color, float minAlpha)
-            {
-                if (color.a < minAlpha)
-                {
-                    color.a = minAlpha;
-                }
-                return color;
-            }
-
-            private static void SetRowHighlight(SoldierSlotController row, bool selected)
-            {
-                if (row == null || row.GetComponent<Button>() == null)
-                {
-                    return;
-                }
-
-                Button button = row.GetComponent<Button>();
-                CrewRowHighlightState state = EnsureHighlightState(row);
-                if (state == null)
-                {
-                    return;
-                }
-
-                ColorBlock colors = button.colors;
-                Color selectedFill = EnsureVisibleAlpha(colors.selectedColor, 0.35f);
-                Color selectedBorder = EnsureVisibleAlpha(colors.highlightedColor, 0.35f);
-
-                if (state.Background != null)
-                {
-                    state.Background.color = selected ? selectedFill : state.BackgroundNormal;
-                }
-
-                if (state.Border != null)
-                {
-                    state.Border.effectColor = selected ? selectedBorder : state.BorderNormal;
-                }
-            }
-
-            private static void SetSelectedRow(SoldierSlotController row)
-            {
-                if (_selectedRow != null && _selectedRow != row)
-                {
-                    SetRowHighlight(_selectedRow, false);
-                }
-
-                _selectedRow = row;
-                if (_selectedRow != null)
-                {
-                    SetRowHighlight(_selectedRow, true);
-                }
-            }
-
             private static void ResetSelectedLeaderContext(GeoscapeEvent geoEvent, GeoVehicle vehicle)
             {
                 _selectedEventId = geoEvent?.EventID ?? string.Empty;
@@ -1397,14 +1824,8 @@ namespace TFTV.TFTVIncidents
                 _choiceApproaches.Clear();
                 _selectedApproach.Clear();
                 _approachSelectionLocked.Clear();
-
-                for (int i = 0; i < 2; i++)
-                {
-                    _choiceGainLabel[i] = null;
-                    _choiceGainIcon[i] = null;
-                    _choiceGainDetail[i] = null;
-                    _choiceGainTooltip[i] = null;
-                }
+                _choiceAffinityMatch.Clear();
+                _approachArrowRank.Clear();
             }
 
             private static void SetSelectedLeader(GeoCharacter character, GeoscapeEvent geoEvent, GeoVehicle vehicle)
@@ -1547,35 +1968,6 @@ namespace TFTV.TFTVIncidents
                 }
             }
 
-            private static void ResetRowSelectionVisualState(SoldierSlotController row)
-            {
-                if (row == null)
-                {
-                    return;
-                }
-
-                Button button = row.GetComponent<Button>();
-                if (button == null)
-                {
-                    return;
-                }
-
-                if (button.targetGraphic != null)
-                {
-                    Color baseColor = button.IsInteractable() ? button.colors.normalColor : button.colors.disabledColor;
-                    button.targetGraphic.canvasRenderer.SetColor(baseColor);
-                    button.targetGraphic.CrossFadeColor(baseColor, 0f, true, true);
-                }
-
-                if (button.animator != null)
-                {
-                    button.animator.Rebind();
-                    button.animator.Update(0f);
-                }
-
-                SetRowHighlight(row, false);
-            }
-
             private static Text CreateHeader(Transform parent, Text styleSource)
             {
 
@@ -1620,365 +2012,21 @@ namespace TFTV.TFTVIncidents
                 _currentSelectedCharacter = selectedCharacter;
             }
 
-            private static void CreateGainRow(Transform parent, Text styleSource)
-            {
-                // Outer container
-                GameObject outerRow = new GameObject(GainRowName, typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(LayoutElement));
-                outerRow.transform.SetParent(parent, false);
-
-                VerticalLayoutGroup vlg = outerRow.GetComponent<VerticalLayoutGroup>();
-                vlg.childAlignment = TextAnchor.UpperCenter;
-                vlg.childControlWidth = true;
-                vlg.childControlHeight = true;
-                vlg.childForceExpandWidth = false;
-                vlg.childForceExpandHeight = false;
-                vlg.spacing = 4f;
-
-                LayoutElement outerLE = outerRow.GetComponent<LayoutElement>();
-                outerLE.minHeight = (GainIconSize + 8f) * 2 + 4f;
-                outerLE.preferredHeight = (GainIconSize + 8f) * 2 + 4f;
-
-                int fontSize = styleSource != null ? Mathf.RoundToInt(styleSource.fontSize * 0.85f) : 38;
-
-                for (int i = 0; i < 2; i++)
-                {
-                    int capturedIndex = i;
-                    string choiceLabel = TFTVCommonMethods.FormatKey(ChoiceGainLabelKey, i + 1);
-
-                    GameObject subRow = new GameObject($"[Mod]GainSubRow_{i}", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
-                    subRow.transform.SetParent(outerRow.transform, false);
-
-                    HorizontalLayoutGroup hlg = subRow.GetComponent<HorizontalLayoutGroup>();
-                    hlg.childAlignment = TextAnchor.MiddleCenter;
-                    hlg.childControlWidth = true;
-                    hlg.childControlHeight = true;
-                    hlg.childForceExpandWidth = false;
-                    hlg.childForceExpandHeight = false;
-                    hlg.spacing = GainRowSpacing;
-
-                    LayoutElement subLE = subRow.GetComponent<LayoutElement>();
-                    subLE.minHeight = GainIconSize + 8f;
-                    subLE.preferredHeight = GainIconSize + 8f;
-
-                    // "Choice X: Leading operative will gain:"
-                    GameObject labelGO = new GameObject($"[Mod]GainLabel_{i}", typeof(RectTransform), typeof(Text));
-                    labelGO.transform.SetParent(subRow.transform, false);
-                    _choiceGainLabel[i] = labelGO.GetComponent<Text>();
-                    _choiceGainLabel[i].text = choiceLabel;
-                    _choiceGainLabel[i].alignment = TextAnchor.MiddleRight;
-                    _choiceGainLabel[i].horizontalOverflow = HorizontalWrapMode.Overflow;
-                    _choiceGainLabel[i].verticalOverflow = VerticalWrapMode.Overflow;
-                    _choiceGainLabel[i].raycastTarget = false;
-                    if (styleSource != null)
-                    {
-                        _choiceGainLabel[i].font = styleSource.font;
-                        _choiceGainLabel[i].fontSize = fontSize;
-                        _choiceGainLabel[i].color = styleSource.color;
-                    }
-
-                    // Icon
-                    GameObject iconGO = new GameObject($"[Mod]GainIcon_{i}", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
-                    iconGO.transform.SetParent(subRow.transform, false);
-                    _choiceGainIcon[i] = iconGO.GetComponent<Image>();
-                    _choiceGainIcon[i].raycastTarget = true;
-                    _choiceGainIcon[i].enabled = false;
-
-                    LayoutElement iconLE = iconGO.GetComponent<LayoutElement>();
-                    iconLE.preferredWidth = GainIconSize;
-                    iconLE.preferredHeight = GainIconSize;
-                    iconLE.minWidth = GainIconSize;
-                    iconLE.minHeight = GainIconSize;
-
-                    _choiceGainTooltip[i] = iconGO.AddComponent<ApproachIconTooltipTrigger>();
-                    _choiceGainTooltip[i].ChoiceIndex = i;
-
-                    // Detail: "Exploration  Rank: 2"
-                    GameObject detailGO = new GameObject($"[Mod]GainDetail_{i}", typeof(RectTransform), typeof(Text));
-                    detailGO.transform.SetParent(subRow.transform, false);
-                    _choiceGainDetail[i] = detailGO.GetComponent<Text>();
-                    _choiceGainDetail[i].text = string.Empty;
-                    _choiceGainDetail[i].alignment = TextAnchor.MiddleLeft;
-                    _choiceGainDetail[i].horizontalOverflow = HorizontalWrapMode.Overflow;
-                    _choiceGainDetail[i].verticalOverflow = VerticalWrapMode.Overflow;
-                    _choiceGainDetail[i].raycastTarget = false;
-                    if (styleSource != null)
-                    {
-                        _choiceGainDetail[i].font = styleSource.font;
-                        _choiceGainDetail[i].fontSize = fontSize;
-                        _choiceGainDetail[i].color = styleSource.color;
-                        _choiceGainDetail[i].fontStyle = FontStyle.Bold;
-                    }
-
-                    subRow.SetActive(false);
-                }
-
-                outerRow.SetActive(false);
-            }
-
-            private static void RefreshHeaderGainDisplay()
-            {
-                if (_currentSelectedCharacter == null)
-                {
-                    return;
-                }
-
-                bool hasAffinity = LeaderSelection.TryGetCurrentAffinity(
-                    _currentSelectedCharacter,
-                    out LeaderSelection.AffinityApproach charApproach,
-                    out int charRank);
-
-                bool anyVisible = false;
-
-                // Outer container is the parent of the two sub-rows.
-                Transform outerRow = _choiceGainIcon[0] != null ? _choiceGainIcon[0].transform.parent?.parent : null;
-
-                for (int i = 0; i < 2; i++)
-                {
-                    if (_choiceGainIcon[i] == null || _choiceGainDetail[i] == null)
-                    {
-                        continue;
-                    }
-
-                    Transform subRow = _choiceGainIcon[i].transform.parent;
-
-                    LeaderSelection.AffinityApproach? gainApproach = null;
-                    int gainRank = 0;
-                    bool alreadyMax = false;
-
-                    if (_selectedApproach.TryGetValue(i, out LeaderSelection.AffinityApproach? sel) && sel.HasValue)
-                    {
-                        if (hasAffinity)
-                        {
-                            // Only show a gain if this choice's selected approach matches the operative's affinity.
-                            if (sel.Value == charApproach)
-                            {
-                                gainApproach = charApproach;
-                                if (charRank >= 3)
-                                {
-                                    gainRank = 3;
-                                    alreadyMax = true;
-                                }
-                                else
-                                {
-                                    gainRank = charRank + 1;
-                                }
-                            }
-                            // else: operative has a different affinity; no gain from this choice — leave hidden.
-                        }
-                        else
-                        {
-                            // No affinity yet — gaining this approach would grant rank 1.
-                            gainApproach = sel.Value;
-                            gainRank = 1;
-                        }
-                    }
-
-                    if (!gainApproach.HasValue || gainRank <= 0)
-                    {
-                        if (subRow != null)
-                        {
-                            subRow.gameObject.SetActive(false);
-                        }
-                        continue;
-                    }
-
-                    PassiveModifierAbilityDef ability = LeaderSelection.GetAffinityAbility(gainApproach.Value, gainRank);
-                    Sprite icon = ability?.ViewElementDef?.SmallIcon;
-
-                    _choiceGainIcon[i].sprite = icon;
-                    _choiceGainIcon[i].enabled = icon != null;
-
-                    if (_choiceGainTooltip[i] != null)
-                    {
-                        _choiceGainTooltip[i].Approach = gainApproach.Value;
-                    }
-
-                    string name = GetApproachDisplayName(gainApproach.Value);
-                    _choiceGainDetail[i].text = alreadyMax
-                        ? $"{name}  Rank: 3 (max)"
-                        : $"{name}  Rank: {gainRank}";
-
-                    if (subRow != null)
-                    {
-                        subRow.gameObject.SetActive(true);
-                    }
-
-                    anyVisible = true;
-                }
-
-                if (outerRow != null)
-                {
-                    outerRow.gameObject.SetActive(anyVisible);
-                }
-            }
-            private static string GetApproachDisplayName(LeaderSelection.AffinityApproach approach)
-            {
-                switch (approach)
-                {
-                    case LeaderSelection.AffinityApproach.PsychoSociology: return "Psycho-Sociology";
-                    case LeaderSelection.AffinityApproach.Exploration: return "Exploration";
-                    case LeaderSelection.AffinityApproach.Occult: return "Occult";
-                    case LeaderSelection.AffinityApproach.Biotech: return "Biotech";
-                    case LeaderSelection.AffinityApproach.Machinery: return "Machinery";
-                    case LeaderSelection.AffinityApproach.Compute: return "Compute";
-                    default: return approach.ToString();
-                }
-            }
-
-            private static string ResolveApproachHoursText(GeoscapeEvent geoEvent, GeoVehicle vehicle, int choiceIndex, GeoCharacter leader)
-            {
-                if (Resolution.IncidentController.TryComputeIncidentHours(geoEvent, vehicle, choiceIndex, leader, out float hours))
-                {
-                    return FormatHours(hours);
-                }
-
-                return "N/A";
-            }
-
-            private static string FormatHours(float hours)
-            {
-                TFTVLogger.Always($"[FormatHours] Computed hours: {hours}");
-
-                if (hours <= 0f)
-                {
-                    return "N/A";
-                }
-
-                return hours.ToString("0", CultureInfo.InvariantCulture) + "h";
-            }
-
-            private static Sprite ResolveAbilityIcon(GeoCharacter character)
-            {
-                if (ExtraIconResolver != null)
-                {
-                    Sprite external = ExtraIconResolver(character);
-                    if (external != null)
-                    {
-                        return external;
-                    }
-                }
-
-                TacticalAbilityDef affinityAbility = GetAffinityAbility(character);
-                return affinityAbility?.ViewElementDef?.SmallIcon;
-            }
-
-            private static TacticalAbilityDef GetAffinityAbility(GeoCharacter character)
-            {
-                if (character == null)
-                {
-                    return null;
-                }
-
-                List<TacticalAbilityDef> abilities = character.GetTacticalAbilities();
-                for (int i = 0; i < abilities.Count; i++)
-                {
-                    TacticalAbilityDef ability = abilities[i];
-                    if (ability?.SkillTags == null)
-                    {
-                        continue;
-                    }
-
-                    for (int j = 0; j < ability.SkillTags.Length; j++)
-                    {
-                        if (ability.SkillTags[j] != null && ability.SkillTags[j].name == AffinityTagDefName)
-                        {
-                            return ability;
-                        }
-                    }
-                }
-
-                return null;
-            }
 
             /// <summary>
-            /// SetSoldierData writes the full "Firstname Lastname" into the slot, which overflows the
-            /// crew boxes for longer names. Reuse the same shortening the incident texts use, so an
-            /// operative is called the same thing in the crew list and in the outcome prose.
+            /// How long this response takes the given operative, or empty when that cannot be worked
+            /// out. Empty rather than a placeholder: the payoff strip simply leaves the hours out, which
+            /// says nothing, where a placeholder would say the incident takes an unknown length of time.
             /// </summary>
-            private static void ApplyShortNameToRow(SoldierSlotController row, GeoCharacter character)
+            private static string ResolveApproachHoursText(GeoscapeEvent geoEvent, GeoVehicle vehicle, int choiceIndex, GeoCharacter leader)
             {
-                try
+                if (!Resolution.IncidentController.TryComputeIncidentHours(geoEvent, vehicle, choiceIndex, leader, out float hours)
+                    || hours <= 0f)
                 {
-                    if (row?.NameLabel == null || character == null)
-                    {
-                        return;
-                    }
-
-                    string shortName = LeaderSelection.ShortenOperativeName(character.DisplayName, character.Id);
-                    if (string.IsNullOrEmpty(shortName))
-                    {
-                        return;
-                    }
-
-                    row.NameLabel.text = row.CapitalizedName ? shortName.ToUpper() : shortName;
-                }
-                catch (Exception e)
-                {
-                    TFTVLogger.Error(e);
-                }
-            }
-
-            private static void SetAffinityIconAfterName(SoldierSlotController row, Sprite icon)
-            {
-                if (row == null || row.NameLabel == null)
-                {
-                    return;
+                    return string.Empty;
                 }
 
-                Transform existing = row.NameLabel.transform.parent.Find(InlineAffinityIconName);
-                Image iconImage;
-                RectTransform iconRect;
-
-                if (existing == null)
-                {
-                    GameObject iconObject = new GameObject(InlineAffinityIconName, typeof(RectTransform), typeof(Image));
-                    iconObject.transform.SetParent(row.NameLabel.transform.parent, false);
-                    iconRect = iconObject.GetComponent<RectTransform>();
-                    iconImage = iconObject.GetComponent<Image>();
-                }
-                else
-                {
-                    iconRect = existing as RectTransform;
-                    iconImage = existing.GetComponent<Image>();
-                }
-
-                if (iconRect == null || iconImage == null)
-                {
-                    return;
-                }
-
-                iconImage.sprite = icon;
-                bool show = icon != null;
-                iconImage.enabled = show;
-                iconImage.gameObject.SetActive(show);
-
-                if (!show)
-                {
-                    return;
-                }
-
-                float classIconSize = 18f;
-                if (row.IconElement != null)
-                {
-                    RectTransform classIconRect = row.IconElement.GetComponent<RectTransform>();
-                    if (classIconRect != null)
-                    {
-                        classIconSize = Mathf.Max(classIconRect.rect.width, classIconRect.rect.height);
-                        if (classIconSize < 18f)
-                        {
-                            classIconSize = 18f;
-                        }
-                    }
-                }
-
-                float nameWidth = row.NameLabel.preferredWidth;
-                iconRect.anchorMin = new Vector2(0f, 0.5f);
-                iconRect.anchorMax = new Vector2(0f, 0.5f);
-                iconRect.pivot = new Vector2(0f, 0.5f);
-                iconRect.anchoredPosition = new Vector2(
-                    row.NameLabel.rectTransform.anchoredPosition.x + nameWidth + 10f,
-                    row.NameLabel.rectTransform.anchoredPosition.y);
-                iconRect.sizeDelta = new Vector2(classIconSize, classIconSize);
+                return TFTVCommonMethods.FormatKey(HoursKey, hours.ToString("0", CultureInfo.InvariantCulture));
             }
 
             private static void ConfigureRootRect(RectTransform rootRect, Text descriptionText)
@@ -2023,58 +2071,6 @@ namespace TFTV.TFTVIncidents
                 return Mathf.Min(width, MaxGridWidth);
             }
 
-            private static void ConfigureGrid(RectTransform gridRect, GridLayoutGroup grid, ContentSizeFitter gridFitter, float panelWidth, SoldierSlotController rowPrefab)
-            {
-                if (gridRect != null)
-                {
-                    gridRect.anchorMin = new Vector2(0.5f, 1f);
-                    gridRect.anchorMax = new Vector2(0.5f, 1f);
-                    gridRect.pivot = new Vector2(0.5f, 1f);
-                    gridRect.anchoredPosition = Vector2.zero;
-                    gridRect.sizeDelta = new Vector2(panelWidth, 0f);
-                }
-
-                float rowHeight = MinCellHeight;
-                RectTransform prefabRect = rowPrefab.transform as RectTransform;
-                if (prefabRect != null && prefabRect.rect.height > MinCellHeight)
-                {
-                    rowHeight = prefabRect.rect.height;
-                }
-
-                float cellWidth = (panelWidth - GridSpacingX) / GridColumns;
-
-                grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-                grid.constraintCount = GridColumns;
-                grid.startCorner = GridLayoutGroup.Corner.UpperLeft;
-                grid.startAxis = GridLayoutGroup.Axis.Horizontal;
-                grid.childAlignment = TextAnchor.UpperCenter;
-                grid.cellSize = new Vector2(cellWidth, rowHeight);
-                grid.spacing = new Vector2(GridSpacingX, GridSpacingY);
-
-                gridFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-                gridFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-            }
-
-            private static void NormalizeRowRect(RectTransform rowRect)
-            {
-                if (rowRect == null)
-                {
-                    return;
-                }
-
-                rowRect.anchorMin = new Vector2(0.5f, 0.5f);
-                rowRect.anchorMax = new Vector2(0.5f, 0.5f);
-                rowRect.pivot = new Vector2(0.5f, 0.5f);
-                rowRect.localScale = Vector3.one;
-                rowRect.anchoredPosition = Vector2.zero;
-
-                LayoutElement layoutElement = rowRect.GetComponent<LayoutElement>();
-                if (layoutElement != null)
-                {
-                    UnityEngine.Object.Destroy(layoutElement);
-                }
-            }
-
             private static void RemovePreviousRows(Transform parent)
             {
                 List<Transform> toRemove = new List<Transform>();
@@ -2088,7 +2084,40 @@ namespace TFTV.TFTVIncidents
 
                 for (int i = 0; i < toRemove.Count; i++)
                 {
-                    UnityEngine.Object.Destroy(toRemove[i].gameObject);
+                    // Immediate, not deferred: the rendered heads these cards are drawing are freed
+                    // in the same pass, and a deferred destroy would leave the outgoing row holding
+                    // textures that no longer exist for the rest of the frame.
+                    UnityEngine.Object.DestroyImmediate(toRemove[i].gameObject);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Undecorates the choices row as an encounter closes.
+        ///
+        /// Choosing a response or cancelling out of an incident answers on a closing screen drawn on
+        /// the same buttons the incident borrowed, and that screen is not shown through SetEncounter -
+        /// so without this it inherits the grown grid and whatever was put inside the buttons.
+        /// </summary>
+        [HarmonyPatch(typeof(UIModuleSiteEncounters), "SetClosingEncounter")]
+        internal static class GeoscapeEventClosingEncounterPatch
+        {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
+
+            public static void Prefix(UIModuleSiteEncounters __instance)
+            {
+                try
+                {
+                    if (!TFTVBaseRework.BaseReworkCheck.BaseReworkEnabled)
+                    {
+                        return;
+                    }
+
+                    GeoscapeEventCrewListPatch.RestoreVanillaChoiceLayout(__instance);
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
                 }
             }
         }

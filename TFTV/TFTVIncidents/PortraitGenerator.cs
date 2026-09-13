@@ -24,6 +24,7 @@ using System.Linq;
 using TFTV.TFTVUI.Personnel;
 
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace TFTV.TFTVIncidents
 {
@@ -360,6 +361,244 @@ namespace TFTV.TFTVIncidents
                 }
 
                 Cache.Clear();
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        // ── Crew card portraits ──────────────────────────────────────────────
+
+        /// <summary>
+        /// The operative cards' framing: a head and shoulders, between the leader picture's bust and
+        /// the recruit panel's face crop.
+        ///
+        /// A card is a fraction of the leader slot's width, so the leader's bust would leave the face
+        /// too small to tell two operatives apart - which is the only thing the row is there for. A
+        /// bare face crop overcorrects: the armour under the chin is what makes the row read as a row
+        /// of soldiers rather than a row of mugshots, and it is the shape the tactical squad portraits
+        /// have.
+        ///
+        /// At this lens a half-frame reaches 0.60 * tan(9.5) = 0.10m, so the frame covers about 0.20m
+        /// at the subject - a face and a jaw, with the collar only just in at the bottom.
+        ///
+        /// Closer than it first shipped, which framed a head and most of a chest: at card size that
+        /// left the face a small part of a picture mostly made of armour, and the armour is the part
+        /// every operative in a squad has in common.
+        ///
+        /// The aim point sits well above the nose, which drops the head in the frame. That is not
+        /// only composition here - the affinity badge straddles the top edge of the card, and a head
+        /// centred in the frame had its crown behind it.
+        /// </summary>
+        internal static PortraitFraming CardFraming = new PortraitFraming
+        {
+            NoseDistance = 0.60f,
+            HeadDistance = 0.66f,
+            FieldOfView = 19f,
+            YawDegrees = -20f,
+            Height = 0.05f,
+            LookAtVerticalOffset = 0.055f,
+        };
+
+        // Rendered card portraits per GeoCharacter id, valid for the currently shown incident. Kept
+        // apart from the leader cache above because the two are rendered at different sizes and
+        // different framings - a card is not a shrunk leader picture.
+        private static readonly Dictionary<int, Sprite> CardCache = new Dictionary<int, Sprite>();
+
+        // Cards still waiting for a render, oldest first, and the Image each one is for.
+        private static readonly List<CardRequest> CardQueue = new List<CardRequest>();
+        private static bool _cardLoopRunning;
+
+        private sealed class CardRequest
+        {
+            public GeoCharacter Character;
+            public Image Target;
+            public Vector2Int Resolution;
+        }
+
+        /// <summary>
+        /// Shows the given operative's head in a crew card, rendering it if it is not cached yet.
+        ///
+        /// A crew of eight is eight rigs to build, which is why these are queued and drained one per
+        /// pass rather than started together: the row appears immediately with empty cards and fills
+        /// in over the next few frames, instead of the encounter window stalling until the last head
+        /// is ready.
+        /// </summary>
+        internal static void RequestCardPortrait(GeoCharacter character, Image target, Vector2Int resolution)
+        {
+            try
+            {
+                if (character == null || character.Id <= 0 || target == null)
+                {
+                    return;
+                }
+
+                if (CardCache.TryGetValue(character.Id, out Sprite cached))
+                {
+                    // Cached null is a render that was already tried and produced nothing. Asking
+                    // again would rebuild the same rig for the same empty result once per encounter.
+                    if (cached != null)
+                    {
+                        ApplyCardPortrait(target, cached);
+                    }
+
+                    return;
+                }
+
+                CardQueue.Add(new CardRequest
+                {
+                    Character = character,
+                    Target = target,
+                    Resolution = resolution,
+                });
+
+                if (!_cardLoopRunning)
+                {
+                    _cardLoopRunning = true;
+                    if (RunPortraitCoroutine(DrainCardQueue()) == null)
+                    {
+                        // No geoscape to render on - drop the queue rather than leave the flag set,
+                        // which would stop every later request from ever starting a loop.
+                        _cardLoopRunning = false;
+                        CardQueue.Clear();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// Moves the given operative's card to the front of the render queue, if it is still waiting.
+        ///
+        /// A crew of five is several seconds of rendering, most of it spent loading the armour each
+        /// operative is wearing, and the card the player is looking at is the selected one. Without
+        /// this the selected card can be last in line behind four faces nobody asked for - including
+        /// when the player clicks a card precisely because they want to see that face.
+        /// </summary>
+        internal static void PrioritiseCardPortrait(int characterId)
+        {
+            try
+            {
+                if (characterId <= 0 || CardQueue.Count < 2)
+                {
+                    return;
+                }
+
+                int index = CardQueue.FindIndex(r => r != null && r.Character != null && r.Character.Id == characterId);
+                if (index <= 0)
+                {
+                    return;
+                }
+
+                CardRequest request = CardQueue[index];
+                CardQueue.RemoveAt(index);
+                CardQueue.Insert(0, request);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static IEnumerator DrainCardQueue()
+        {
+            try
+            {
+                while (CardQueue.Count > 0)
+                {
+                    CardRequest request = CardQueue[0];
+                    CardQueue.RemoveAt(0);
+
+                    if (request?.Character == null)
+                    {
+                        continue;
+                    }
+
+                    int characterId = request.Character.Id;
+
+                    // Another card may have asked for the same operative while this one waited.
+                    if (CardCache.TryGetValue(characterId, out Sprite done))
+                    {
+                        if (done != null)
+                        {
+                            ApplyCardPortrait(request.Target, done);
+                        }
+
+                        continue;
+                    }
+
+                    Sprite portrait = null;
+                    yield return RenderPortrait(
+                        new UnitDisplayData(request.Character, GameUtl.GameComponent<SharedData>()),
+                        request.Character,
+                        request.Resolution,
+                        CardFraming,
+                        requireFaceBone: false,
+                        dumpToDisk: false,
+                        onDone: s => portrait = s);
+
+                    // Stored even when null, so a subject that cannot be rendered is not retried for
+                    // every card that asks for it.
+                    CardCache[characterId] = portrait;
+
+                    if (portrait != null)
+                    {
+                        ApplyCardPortrait(request.Target, portrait);
+                    }
+                }
+            }
+            finally
+            {
+                _cardLoopRunning = false;
+            }
+        }
+
+        /// <summary>
+        /// Unity's own null test, not C#'s: the card this render was started for may have been torn
+        /// down while it ran, and a destroyed Image is still a live C# reference.
+        /// </summary>
+        private static void ApplyCardPortrait(Image target, Sprite portrait)
+        {
+            if (target == null || portrait == null)
+            {
+                return;
+            }
+
+            target.sprite = portrait;
+            target.preserveAspect = true;
+            target.enabled = true;
+        }
+
+        /// <summary>
+        /// Frees the rendered crew cards. Called alongside <see cref="ClearCache"/> whenever a new
+        /// incident is shown.
+        /// </summary>
+        internal static void ClearCardCache()
+        {
+            try
+            {
+                CardQueue.Clear();
+
+                foreach (Sprite sprite in CardCache.Values)
+                {
+                    if (sprite == null)
+                    {
+                        continue;
+                    }
+
+                    if (sprite.texture != null)
+                    {
+                        UnityEngine.Object.Destroy(sprite.texture);
+                    }
+
+                    UnityEngine.Object.Destroy(sprite);
+                }
+
+                CardCache.Clear();
             }
             catch (Exception e)
             {
@@ -795,6 +1034,13 @@ namespace TFTV.TFTVIncidents
         /// Builds the subject, renders it and hands back the sprite. The one place a portrait is
         /// actually made; every caller above is a way of describing the subject to it.
         /// </summary>
+        // True while a subject is built and captured. Every portrait is staged at the same spot in
+        // the world and shot with a camera aimed at it, so two renders running at once put two
+        // characters in the same place and each camera photographs both of them - the second face
+        // arrives wearing pieces of the first. The leader picture and the crew cards are started by
+        // separate coroutines, so the two really can overlap; this is what keeps them in single file.
+        private static bool _renderInFlight;
+
         private static IEnumerator RenderPortrait(
             UnitDisplayData displayData,
             GeoCharacter character,
@@ -810,6 +1056,13 @@ namespace TFTV.TFTVIncidents
                 onDone?.Invoke(null);
                 yield break;
             }
+
+            while (_renderInFlight)
+            {
+                yield return null;
+            }
+
+            _renderInFlight = true;
 
             AddonsCharacterBuilder builder = CreateSubjectBuilder();
             try
@@ -847,7 +1100,11 @@ namespace TFTV.TFTVIncidents
             }
             finally
             {
-                UnityEngine.Object.Destroy(builder.gameObject);
+                // Immediate, not deferred: the next render stages its own subject at the same spot
+                // as soon as the flag drops, and a deferred destroy would leave this one standing
+                // there for the rest of the frame to be photographed alongside it.
+                UnityEngine.Object.DestroyImmediate(builder.gameObject);
+                _renderInFlight = false;
             }
         }
 

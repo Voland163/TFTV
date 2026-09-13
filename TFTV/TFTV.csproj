@@ -219,11 +219,15 @@
     <Compile Include="TFTVIncidents\AffinityInheritance.cs" />
     <Compile Include="TFTVIncidents\AffinityTacticalEffects.cs" />
     <Compile Include="TFTVIncidents\BiotechMedkit.cs" />
+    <Compile Include="TFTVIncidents\ChoicePayoff.cs" />
     <Compile Include="TFTVIncidents\ComputeMountedAbility.cs" />
     <Compile Include="TFTVIncidents\GeoscapeEvents.cs" />
     <Compile Include="TFTVIncidents\GeoUIAdjustments.cs" />
+    <Compile Include="TFTVIncidents\IncidentCancelButton.cs" />
     <Compile Include="TFTVIncidents\IncidentOutcomeSummaryUI.cs" />
     <Compile Include="TFTVIncidents\IncidentResolutionUI.cs" />
+    <Compile Include="TFTVIncidents\IncidentUIStyle.cs" />
+    <Compile Include="TFTVIncidents\OperativeCards.cs" />
     <Compile Include="TFTVIncidents\LeaderAbilityIcons.cs" />
     <Compile Include="TFTVIncidents\LeaderSelection.cs" />
     <Compile Include="TFTVIncidents\MachineryRepairDefs.cs" />
