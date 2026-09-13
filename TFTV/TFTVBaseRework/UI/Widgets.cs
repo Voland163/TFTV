@@ -29,6 +29,12 @@ namespace TFTV.TFTVBaseRework
         internal static readonly Color ButtonFillDisabledColor = new Color(0.10f, 0.11f, 0.13f, 0.85f);
         internal static readonly Color ButtonFillDangerColor = new Color(0.45f, 0.18f, 0.14f, 0.95f);
 
+        internal static readonly Color ScrollTrackColor = new Color(0.06f, 0.08f, 0.11f, 0.90f);
+        internal static readonly Color ScrollHandleColor = new Color(0.34f, 0.41f, 0.50f, 0.95f);
+
+        /// <summary>In canvas units, which this screen draws at roughly twice screen scale.</summary>
+        internal const float ScrollbarWidth = 24f;
+
         internal const int TitleFontSize = 34;
         internal const int BodyFontSize = 26;
         internal const int SmallFontSize = 20;
@@ -161,10 +167,11 @@ namespace TFTV.TFTVBaseRework
 
         /// <summary>
         /// Vertical scroll list. The returned content transform stacks rows top-down; the viewport
-        /// clips them.
+        /// clips them. A scrollbar is drawn down the right-hand gutter and hides itself whenever the
+        /// rows already fit, so a list that has run past the bottom of its panel says so.
         /// </summary>
         internal static ScrollRect CreateScrollList(Transform parent, string name, out Transform content,
-            float spacing = 3f, int padding = 3)
+            float spacing = 3f, int padding = 3, bool scrollbar = true)
         {
             GameObject scrollGO = CreateUIObject(name, parent);
             LayoutElement scrollElement = scrollGO.AddComponent<LayoutElement>();
@@ -177,7 +184,14 @@ namespace TFTV.TFTVBaseRework
             mask.showMaskGraphic = false;
             var viewportImage = viewport.AddComponent<Image>();
             viewportImage.color = new Color(0f, 0f, 0f, 0.01f);
-            Stretch(viewport.GetComponent<RectTransform>());
+            // The gutter is held open whether or not the bar is currently showing: letting the
+            // ScrollRect resize the viewport instead would reflow every row the moment one more
+            // arrived, and the rows would jitter sideways as the list filled up.
+            RectTransform viewportRect = viewport.GetComponent<RectTransform>();
+            viewportRect.anchorMin = Vector2.zero;
+            viewportRect.anchorMax = Vector2.one;
+            viewportRect.offsetMin = Vector2.zero;
+            viewportRect.offsetMax = new Vector2(scrollbar ? -ScrollbarWidth : 0f, 0f);
 
             GameObject contentGO = CreateUIObject("Content", viewport.transform);
             RectTransform contentRect = contentGO.GetComponent<RectTransform>();
@@ -197,15 +211,59 @@ namespace TFTV.TFTVBaseRework
             var fitter = contentGO.AddComponent<ContentSizeFitter>();
             fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-            scrollRect.viewport = viewport.GetComponent<RectTransform>();
+            scrollRect.viewport = viewportRect;
             scrollRect.content = contentRect;
             scrollRect.horizontal = false;
             scrollRect.vertical = true;
             scrollRect.movementType = ScrollRect.MovementType.Clamped;
             scrollRect.scrollSensitivity = 30f;
 
+            if (scrollbar)
+            {
+                scrollRect.verticalScrollbar = CreateVerticalScrollbar(scrollGO.transform);
+                scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
+            }
+
             content = contentGO.transform;
             return scrollRect;
+        }
+
+        /// <summary>
+        /// The bar itself: a track down the right edge of the scroll area with a handle the
+        /// <see cref="ScrollRect"/> drives. Built by hand rather than from a prefab so it carries
+        /// the same palette as the panels it sits in.
+        /// </summary>
+        private static Scrollbar CreateVerticalScrollbar(Transform parent)
+        {
+            GameObject barGO = CreateUIObject("Scrollbar", parent);
+            barGO.AddComponent<Image>().color = ScrollTrackColor;
+
+            RectTransform barRect = barGO.GetComponent<RectTransform>();
+            barRect.anchorMin = new Vector2(1f, 0f);
+            barRect.anchorMax = new Vector2(1f, 1f);
+            barRect.pivot = new Vector2(1f, 0.5f);
+            barRect.offsetMin = new Vector2(-ScrollbarWidth, 0f);
+            barRect.offsetMax = Vector2.zero;
+
+            GameObject slidingArea = CreateUIObject("SlidingArea", barGO.transform);
+            Stretch(slidingArea.GetComponent<RectTransform>(), 2f);
+
+            GameObject handleGO = CreateUIObject("Handle", slidingArea.transform);
+            var handleImage = handleGO.AddComponent<Image>();
+            handleImage.color = ScrollHandleColor;
+
+            RectTransform handleRect = handleGO.GetComponent<RectTransform>();
+            // The scrollbar drives the handle's anchors every frame; its offsets have to start at
+            // zero or the handle is drawn inset from wherever it was left.
+            handleRect.offsetMin = Vector2.zero;
+            handleRect.offsetMax = Vector2.zero;
+
+            var scrollbar = barGO.AddComponent<Scrollbar>();
+            scrollbar.direction = Scrollbar.Direction.BottomToTop;
+            scrollbar.handleRect = handleRect;
+            scrollbar.targetGraphic = handleImage;
+
+            return scrollbar;
         }
 
         #endregion

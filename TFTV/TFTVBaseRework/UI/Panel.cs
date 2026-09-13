@@ -24,6 +24,7 @@ namespace TFTV.TFTVBaseRework
         private static void RefreshPanel()
         {
             if (_personnelPanel != null) { Object.Destroy(_personnelPanel); _personnelPanel = null; }
+            ResetRosterView();
             if (_cachedState != null)
             {
                 CreatePersonnelPanel(_cachedState);
@@ -77,7 +78,7 @@ namespace TFTV.TFTVBaseRework
                 FacilitySlotPools pools = ResearchManufacturingSlotsManager.RecalculateSlots(phoenix);
                 SoldierSlotController slotPrefab = level.View.GeoscapeModules.SoldierEquipModule.SoldierSlotPrefab;
 
-                CreateRosterColumn(_personnelPanel.transform, level, phoenix, slotPrefab);
+                CreateRosterColumn(_personnelPanel.transform, level, phoenix, slotPrefab, pools);
 
                 GameObject workColumn = CreateUIObject("WorkColumn", _personnelPanel.transform);
                 var workLayout = workColumn.AddComponent<VerticalLayoutGroup>();
@@ -93,7 +94,22 @@ namespace TFTV.TFTVBaseRework
                 CreateWorkPanel(workColumn.transform, PersonnelAssignment.Research, level, phoenix, slotPrefab, pools);
                 CreateWorkPanel(workColumn.transform, PersonnelAssignment.Manufacturing, level, phoenix, slotPrefab, pools);
 
-                CreateTrainingPanel(_personnelPanel.transform, level, phoenix, slotPrefab);
+                // Training and deployment are related enough to sit together, but deploying someone
+                // is the decision this screen exists to lead up to, so it gets the bottom-right
+                // corner to itself rather than being read as one more training control.
+                GameObject deployColumn = CreateUIObject("DeployColumn", _personnelPanel.transform);
+                var deployLayout = deployColumn.AddComponent<VerticalLayoutGroup>();
+                deployLayout.spacing = 16f;
+                deployLayout.childControlWidth = true;
+                deployLayout.childControlHeight = true;
+                deployLayout.childForceExpandWidth = true;
+                deployLayout.childForceExpandHeight = false;
+                LayoutElement deployElement = deployColumn.AddComponent<LayoutElement>();
+                deployElement.flexibleWidth = 26f;
+                deployElement.flexibleHeight = 1f;
+
+                CreateTrainingPanel(deployColumn.transform, level, phoenix, slotPrefab);
+                CreateDeployButton(deployColumn.transform, level, phoenix);
             }
             catch (Exception e)
             {
