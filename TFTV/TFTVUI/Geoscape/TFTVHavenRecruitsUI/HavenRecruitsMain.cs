@@ -2046,27 +2046,30 @@ namespace TFTV
                     RecycleActiveCards();
                     RecruitOverlayManagerHelpers.ClearTransformChildren(_recruitListRoot);
 
-                    var factionRecruits = new Dictionary<FactionFilter, List<RecruitAtSite>>
-                    {  { FactionFilter.Anu, geoLevelController.AnuFaction != null ? HavenRecruitsUtils.GetRecruitsForFaction(geoLevelController.AnuFaction) : new List<RecruitAtSite>() },
-                        { FactionFilter.NewJericho, geoLevelController.NewJerichoFaction != null ? HavenRecruitsUtils.GetRecruitsForFaction(geoLevelController.NewJerichoFaction) : new List<RecruitAtSite>() },
-                        { FactionFilter.Synedrion, geoLevelController.SynedrionFaction != null ? HavenRecruitsUtils.GetRecruitsForFaction(geoLevelController.SynedrionFaction) : new List<RecruitAtSite>() }
-                    };
-                    foreach (var kvp in factionRecruits)
+                    var factions = new Dictionary<FactionFilter, GeoFaction>
                     {
+                        { FactionFilter.Anu, geoLevelController.AnuFaction },
+                        { FactionFilter.NewJericho, geoLevelController.NewJerichoFaction },
+                        { FactionFilter.Synedrion, geoLevelController.SynedrionFaction }
+                    };
+
+                    // Only the tab that is open needs its recruits built; the other two tabs want a
+                    // number, and counting does not have to allocate a card's worth of data per
+                    // recruit or sort what nobody is going to look at.
+                    int totalRecruits = 0;
+                    foreach (var kvp in factions)
+                    {
+                        int factionCount = HavenRecruitsUtils.CountRecruitsForFaction(kvp.Value);
+                        totalRecruits += factionCount;
+
                         if (_factionTabs.TryGetValue(kvp.Key, out var tab) && tab.CountLabel != null)
                         {
-                            tab.CountLabel.text = kvp.Value.Count.ToString();
+                            tab.CountLabel.text = factionCount.ToString();
                         }
-
                     }
 
-                    int totalRecruits = factionRecruits.Sum(kvp => kvp.Value.Count);
-
-                    if (!factionRecruits.TryGetValue(_activeFactionFilter, out var recruits))
-                    {
-                        recruits = new List<RecruitAtSite>();
-
-                    }
+                    factions.TryGetValue(_activeFactionFilter, out GeoFaction activeFaction);
+                    List<RecruitAtSite> recruits = HavenRecruitsUtils.GetRecruitsForFaction(activeFaction);
 
 
                     if (_totalRecruitsLabel != null)

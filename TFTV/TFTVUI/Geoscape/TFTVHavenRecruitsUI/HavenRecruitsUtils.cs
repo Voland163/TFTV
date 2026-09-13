@@ -184,66 +184,110 @@ namespace TFTV.TFTVHavenRecruitsUI
             }
         }
 
+        /// <summary>
+        /// Orders the list for the current sort mode.
+        ///
+        /// Every mode falls back to the name, because List.Sort is not stable: the recruits this
+        /// screen shows are mostly of the same level, and without a tie-break their order would come
+        /// out of whichever havens happened to be walked first and change under the player between
+        /// refreshes. Keys are read once per recruit rather than once per comparison.
+        /// </summary>
         internal static void SortRecruits(List<RecruitAtSite> list)
         {
+            if (list == null || list.Count < 2)
+            {
+                return;
+            }
+
+            var names = new Dictionary<RecruitAtSite, string>(list.Count);
+            foreach (RecruitAtSite entry in list)
+            {
+                names[entry] = entry.Recruit?.GetName() ?? string.Empty;
+            }
+
             switch (_sortMode)
             {
                 case SortMode.Class:
-                    list.Sort((a, b) => string.Compare(GetClassName(a.Recruit), GetClassName(b.Recruit), StringComparison.Ordinal));
-                    break;
-                case SortMode.Level:
-                    list.Sort((a, b) => b.Recruit.Level.CompareTo(a.Recruit.Level)); // high to low
-                    break;
-                case SortMode.Distance:
+                    var classNames = new Dictionary<RecruitAtSite, string>(list.Count);
+                    foreach (RecruitAtSite entry in list)
+                    {
+                        classNames[entry] = GetClassName(entry.Recruit) ?? string.Empty;
+                    }
+
                     list.Sort((a, b) =>
                     {
-                        float ta = RecruitOverlayManager.GetDistanceScore(a.Site);
-                        float tb = RecruitOverlayManager.GetDistanceScore(b.Site);
+                        int cmp = string.Compare(classNames[a], classNames[b], StringComparison.Ordinal);
+                        return cmp != 0 ? cmp : string.Compare(names[a], names[b], StringComparison.Ordinal);
+                    });
+                    break;
+
+                case SortMode.Level:
+                    list.Sort((a, b) =>
+                    {
+                        int cmp = b.Recruit.Level.CompareTo(a.Recruit.Level); // high to low
+                        return cmp != 0 ? cmp : string.Compare(names[a], names[b], StringComparison.Ordinal);
+                    });
+                    break;
+
+                case SortMode.Distance:
+                    var distances = new Dictionary<RecruitAtSite, float>(list.Count);
+                    foreach (RecruitAtSite entry in list)
+                    {
+                        distances[entry] = RecruitOverlayManager.GetDistanceScore(entry.Site);
+                    }
+
+                    list.Sort((a, b) =>
+                    {
+                        float ta = distances[a];
+                        float tb = distances[b];
 
                         // Put unreachable (+∞) at the end
                         bool aInf = float.IsPositiveInfinity(ta);
                         bool bInf = float.IsPositiveInfinity(tb);
-                        if (aInf && !bInf) return 1;
-                        if (!aInf && bInf) return -1;
+                        if (aInf != bInf)
+                        {
+                            return aInf ? 1 : -1;
+                        }
 
                         int cmp = ta.CompareTo(tb);
-                        if (cmp != 0) return cmp;
-
-                        // Tie-breakers
-                        return string.Compare(a.Recruit?.GetName(), b.Recruit?.GetName(), StringComparison.Ordinal);
+                        return cmp != 0 ? cmp : string.Compare(names[a], names[b], StringComparison.Ordinal);
                     });
                     break;
-
             }
         }
 
 
-        internal static List<RecruitAtSite> GetRecruitsForFaction(GeoFaction faction)
+        /// <summary>
+        /// The faction's havens that are actually offering someone the player can hire: revealed,
+        /// recruiting, and with a leader willing to deal. Counting and listing share this so the two
+        /// can never disagree about who is on offer.
+        /// </summary>
+        private static IEnumerable<GeoHaven> GetRecruitingHavens(GeoFaction faction)
         {
-            var list = new List<RecruitAtSite>();
-            try
+            if (faction == null)
             {
-                if (faction == null)
-                {
-                    return list;
-                }
+                return Enumerable.Empty<GeoHaven>();
+            }
 
+            GeoPhoenixFaction geoPhoenixFaction = faction.GeoLevel.PhoenixFaction; // player faction wrapper
 
-                GeoPhoenixFaction geoPhoenixFaction = faction.GeoLevel.PhoenixFaction; // player faction wrapper
-                                                                                       // All sites with havens, owned by factionDef, revealed to player
-                List<GeoHaven> havens = faction.Havens.Where(s => s != null
+            return faction.Havens.Where(s => s != null
                 && s.AvailableRecruit != null
                 && s.Site.GetInspected(geoPhoenixFaction)
                 && s.Leader.CanRecruitWithFaction(geoPhoenixFaction)
                 && s.Zones.Any((GeoHavenZone z) =>
                     z?.Def != null
                     && (z.Def.ProvidesRecruitment || z.Def.ProvidesEliteRecruitment)
-                    && (z.IsOperational || z.State == GeoHavenZoneState.Building))
-               ).ToList();
+                    && (z.IsOperational || z.State == GeoHavenZoneState.Building)));
+        }
 
-                foreach (var haven in havens)
+        internal static List<RecruitAtSite> GetRecruitsForFaction(GeoFaction faction)
+        {
+            var list = new List<RecruitAtSite>();
+            try
+            {
+                foreach (GeoHaven haven in GetRecruitingHavens(faction))
                 {
-
                     list.Add(new RecruitAtSite
                     {
                         Recruit = haven.AvailableRecruit,
@@ -254,7 +298,28 @@ namespace TFTV.TFTVHavenRecruitsUI
                 }
             }
             catch (Exception ex) { TFTVLogger.Error(ex); }
-            return list.OrderBy(r => r.Recruit?.GetName()).ToList();
+
+            // Deliberately unordered: every caller hands the list straight to SortRecruits, which
+            // orders it in full.
+            return list;
+        }
+
+        /// <summary>
+        /// How many recruits a faction is offering. The tab counters need this for the two factions
+        /// that are not on screen, and asking for it used to mean building and sorting their lists
+        /// in full on every refresh.
+        /// </summary>
+        internal static int CountRecruitsForFaction(GeoFaction faction)
+        {
+            try
+            {
+                return GetRecruitingHavens(faction).Count();
+            }
+            catch (Exception ex)
+            {
+                TFTVLogger.Error(ex);
+                return 0;
+            }
         }
 
         internal static string GetClassName(GeoUnitDescriptor recruit)

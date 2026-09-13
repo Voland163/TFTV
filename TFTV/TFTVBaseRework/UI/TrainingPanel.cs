@@ -27,7 +27,7 @@ namespace TFTV.TFTVBaseRework
 
             GameObject panel = CreateFramedPanel(parent, "TrainingPanel", out Transform content);
             LayoutElement panelElement = panel.GetComponent<LayoutElement>() ?? panel.AddComponent<LayoutElement>();
-            panelElement.flexibleWidth = 26f;
+            panelElement.flexibleWidth = 1f;
             panelElement.flexibleHeight = 1f;
 
             CreateSectionHeader(content, PersonnelText.Get(PersonnelText.TrainingTitle),
@@ -67,10 +67,18 @@ namespace TFTV.TFTVBaseRework
                 () => ShowTrainingCandidateSelection(level, phoenix),
                 height: 76f, fontSize: TitleFontSize, enabled: trainingSlotFree,
                 fillColor: ButtonFillColor);
+        }
 
-            CreateTextButton(content, "DeployButton", PersonnelText.Get(PersonnelText.ButtonDeploy),
+        /// <summary>
+        /// Sending someone into the field is the biggest thing that happens on this screen, so it is
+        /// its own control in the bottom-right corner - next to training, which it follows on from,
+        /// but outside the training panel so the two are not read as one setting.
+        /// </summary>
+        internal static void CreateDeployButton(Transform parent, GeoLevelController level, GeoPhoenixFaction phoenix)
+        {
+            CreateTextButton(parent, "DeployButton", PersonnelText.Get(PersonnelText.ButtonDeploy),
                 () => ShowDeployCandidateSelection(level, phoenix),
-                height: 92f, fontSize: 44,
+                height: 118f, fontSize: 48,
                 fillColor: AccentOrangeColor, captionColor: Color.black);
         }
 

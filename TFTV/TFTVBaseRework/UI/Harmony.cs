@@ -1,4 +1,4 @@
-﻿using Base.Core;
+using Base.Core;
 using Base.Serialization.General;
 using HarmonyLib;
 using PhoenixPoint.Common.Entities;
@@ -91,6 +91,72 @@ namespace TFTV.TFTVBaseRework
         private static Sprite _researchSprite = null;
         private static Sprite _manufacturingSprite = null;
         private static Sprite _deployTrainSprite = null;
+        private static Sprite _dismissSprite = null;
+        private static bool _dismissSpriteReported;
+
+        /// <summary>Part of the sprite name the geoscape gives its dismiss control.</summary>
+        private const string DismissIconNameFragment = "CharacterDismiss";
+
+        /// <summary>
+        /// The stop sign the geoscape's own edit-unit controls dismiss an operative with, read back
+        /// off that button rather than copied into the mod's textures, so dismissing from this
+        /// screen is marked with the same icon as dismissing from the edit screen.
+        /// </summary>
+        internal static Sprite GetDismissIconSprite()
+        {
+            if (_dismissSprite != null)
+            {
+                return _dismissSprite;
+            }
+
+            try
+            {
+                var dismissButton = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()
+                    ?.View?.GeoscapeModules?.ActorCycleModule?.EditUnitButtonsController?.DismissButton;
+
+                if (dismissButton != null)
+                {
+                    // The module is not on screen while this panel is, so its own objects are
+                    // inactive and have to be included in the search.
+                    Image[] images = dismissButton.GetComponentsInChildren<Image>(true);
+
+                    _dismissSprite = images.FirstOrDefault(image => IsDismissSprite(image?.sprite))?.sprite
+                        // The button's own image is its frame; the icon is one of its children.
+                        ?? images.FirstOrDefault(image => image?.sprite != null
+                            && image.gameObject != dismissButton.gameObject)?.sprite;
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+            if (_dismissSprite != null)
+            {
+                TFTVLogger.Always($"{LogPrefix} Dismiss icon resolved to '{_dismissSprite.name}'.");
+                return _dismissSprite;
+            }
+
+            if (!_dismissSpriteReported)
+            {
+                _dismissSpriteReported = true;
+                TFTVLogger.Always($"{LogPrefix} Dismiss icon not found on the edit-unit button; the button falls back to its caption.");
+            }
+
+            return null;
+        }
+
+        private static bool IsDismissSprite(Sprite sprite)
+        {
+            if (sprite == null)
+            {
+                return false;
+            }
+
+            return sprite.name.IndexOf(DismissIconNameFragment, StringComparison.OrdinalIgnoreCase) >= 0
+                || (sprite.texture != null
+                    && sprite.texture.name.IndexOf(DismissIconNameFragment, StringComparison.OrdinalIgnoreCase) >= 0);
+        }
 
         private static Sprite GetColumnIconSprite(PersonnelAssignment assignment)
         {
@@ -399,7 +465,7 @@ namespace TFTV.TFTVBaseRework
                     if (_personnelPanel != null) { Object.Destroy(_personnelPanel); _personnelPanel = null; }
                     CloseModal();
                     _deploymentUIActive = false;
-                    _expandedCharacterId = 0;
+                    ResetRosterView();
                     _cachedState = null;
                     _cachedLevel = null;
                     _puristaSemibold = null; // reset so it re-resolves from live level on next open

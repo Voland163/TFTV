@@ -23,9 +23,9 @@ namespace TFTV.TFTVBaseRework
         internal const string RosterTitle = "KEY_TFTV_PERSONNEL_ROSTER_TITLE";
         internal const string RosterEmpty = "KEY_TFTV_PERSONNEL_ROSTER_EMPTY";
         internal const string FilterAll = "KEY_TFTV_PERSONNEL_FILTER_ALL";
-        internal const string FilterAssigned = "KEY_TFTV_PERSONNEL_FILTER_ASSIGNED";
-        internal const string FilterUnassigned = "KEY_TFTV_PERSONNEL_FILTER_UNASSIGNED";
-        internal const string FilterCount = "KEY_TFTV_PERSONNEL_FILTER_COUNT";
+        internal const string FilterFieldDuty = "KEY_TFTV_PERSONNEL_FILTER_FIELD_DUTY";
+        internal const string FilterDismissed = "KEY_TFTV_PERSONNEL_FILTER_DISMISSED";
+        internal const string FilterCivilians = "KEY_TFTV_PERSONNEL_FILTER_CIVILIANS";
         internal const string AutoAssign = "KEY_TFTV_PERSONNEL_AUTO_ASSIGN";
 
         internal const string StatusFieldDuty = "KEY_TFTV_PERSONNEL_STATUS_FIELD_DUTY";
