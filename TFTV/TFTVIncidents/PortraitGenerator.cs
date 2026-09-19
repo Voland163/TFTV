@@ -330,6 +330,10 @@ namespace TFTV.TFTVIncidents
                     return;
                 }
 
+                // Before InProgress is trusted: a render abandoned by a save load never takes its
+                // operative back out, and would otherwise block their leader picture for good.
+                EnsureRenderLevel();
+
                 if (InProgress.Contains(character.Id))
                 {
                     return;
@@ -430,9 +434,11 @@ namespace TFTV.TFTVIncidents
         /// </summary>
         private const int MaxCachedCards = 24;
 
-        // The geoscape the cache belongs to. A new one - a load, or a return from tactical - means
-        // every character object is new, so nothing the cache holds can be trusted to match.
-        private static GeoLevelController _cardCacheLevel;
+        // The geoscape the render bookkeeping - card cache, card workers, staging slots, leader
+        // renders in progress - belongs to, and a count that moves on whenever that changes. See
+        // EnsureRenderLevel.
+        private static GeoLevelController _renderLevel;
+        private static int _renderGeneration;
 
         // Cards still waiting for a render, oldest first, and the Image each one is for.
         private static readonly List<CardRequest> CardQueue = new List<CardRequest>();
@@ -478,7 +484,7 @@ namespace TFTV.TFTVIncidents
                     return;
                 }
 
-                EnsureCardCacheLevel();
+                EnsureRenderLevel();
                 // The size is part of what makes a cached head reusable: after a resolution change
                 // the old one would be drawn blurred or wastefully large.
                 string signature = BuildCardSignature(character) + "@" + resolution.x + "x" + resolution.y;
@@ -556,10 +562,12 @@ namespace TFTV.TFTVIncidents
         /// </summary>
         private static void StartCardWorkers()
         {
+            EnsureRenderLevel();
+
             while (_cardWorkers < MaxCardWorkers && CardQueue.Count > 0)
             {
                 _cardWorkers++;
-                if (RunPortraitCoroutine(CardWorker()) == null)
+                if (RunPortraitCoroutine(CardWorker(_renderGeneration)) == null)
                 {
                     // No geoscape to render on, so the worker never ran: take back the count it would
                     // have given up, and fail what is waiting rather than leave it waiting forever.
@@ -573,12 +581,16 @@ namespace TFTV.TFTVIncidents
         /// <summary>
         /// Renders waiting cards one after another until the queue is empty. Several run at once;
         /// each render stands in its own staging slot, so their loads overlap safely.
+        ///
+        /// Belongs to the geoscape it was started on. A worker from an earlier one - which in
+        /// practice never gets this far, being abandoned with its runner - stops rather than take
+        /// the new geoscape's work, and does not count itself off a pool it is no longer part of.
         /// </summary>
-        private static IEnumerator CardWorker()
+        private static IEnumerator CardWorker(int generation)
         {
             try
             {
-                while (CardQueue.Count > 0)
+                while (generation == _renderGeneration && CardQueue.Count > 0)
                 {
                     CardRequest request = CardQueue[0];
                     CardQueue.RemoveAt(0);
@@ -609,6 +621,14 @@ namespace TFTV.TFTVIncidents
                         dumpToDisk: false,
                         onDone: s => portrait = s);
 
+                    // The geoscape changed while this was rendering: the head is of a character that
+                    // no longer exists, and the cache and cards it would go to belong to the new one.
+                    if (generation != _renderGeneration)
+                    {
+                        DestroyCardSprite(portrait);
+                        yield break;
+                    }
+
                     // Stored even when null, so a subject that cannot be rendered is not retried for
                     // every card that asks for it.
                     StoreCachedCard(characterId, request.Signature, portrait);
@@ -631,7 +651,10 @@ namespace TFTV.TFTVIncidents
             }
             finally
             {
-                _cardWorkers--;
+                if (generation == _renderGeneration)
+                {
+                    _cardWorkers--;
+                }
             }
         }
 
@@ -745,18 +768,41 @@ namespace TFTV.TFTVIncidents
         }
 
         /// <summary>
-        /// Drops the cache when the geoscape it was filled on is no longer the current one.
+        /// Starts the render bookkeeping afresh when the geoscape it was kept for is no longer the
+        /// current one. Called before anything reads that bookkeeping.
+        ///
+        /// Every render runs as a coroutine on a runner that lives on the geoscape level. Loading a
+        /// save or leaving the geoscape destroys that level, and Unity abandons the coroutines on it
+        /// without running their finally blocks - so whatever a render in flight at that moment was
+        /// going to give back in its finally is never given back:
+        ///  - its card worker is never counted off, and with the pool left looking full the next
+        ///    geoscape never starts a worker, so every card waits out the reveal backstop and stays
+        ///    blank;
+        ///  - its staging slot is never released;
+        ///  - a leader render never leaves InProgress, and that operative's leader picture is never
+        ///    rendered again for the rest of the session.
+        /// Nothing can be recovered from a dead coroutine, so all of it is reset here instead, and the
+        /// generation moves on so that a render from the old geoscape that does reach its finally
+        /// cannot give back a slot or a worker that now belongs to the new one.
+        ///
+        /// The card cache goes with it: every character object on the new geoscape is new, so
+        /// nothing the cache holds can be trusted to match.
         /// </summary>
-        private static void EnsureCardCacheLevel()
+        private static void EnsureRenderLevel()
         {
             GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
-            if (level == _cardCacheLevel)
+            if (level == _renderLevel)
             {
                 return;
             }
 
+            _renderLevel = level;
+            _renderGeneration++;
+
+            _cardWorkers = 0;
+            StagingSlotsInUse.Clear();
+            InProgress.Clear();
             ClearCardCache();
-            _cardCacheLevel = level;
         }
 
         /// <summary>
@@ -992,6 +1038,7 @@ namespace TFTV.TFTVIncidents
         {
             int characterId = character.Id;
             Vector2Int resolution = ResolvePortraitResolution(module);
+            int generation = _renderGeneration;
             InProgress.Add(characterId);
             try
             {
@@ -1000,6 +1047,13 @@ namespace TFTV.TFTVIncidents
 
                 if (portrait == null)
                 {
+                    yield break;
+                }
+
+                // Rendered on a geoscape that has since gone: the character is not this one's.
+                if (generation != _renderGeneration)
+                {
+                    DestroyCardSprite(portrait);
                     yield break;
                 }
 
@@ -1013,7 +1067,11 @@ namespace TFTV.TFTVIncidents
             }
             finally
             {
-                InProgress.Remove(characterId);
+                // Only from this geoscape's set: the new one may be rendering the same operative.
+                if (generation == _renderGeneration)
+                {
+                    InProgress.Remove(characterId);
+                }
             }
         }
 
@@ -1231,6 +1289,10 @@ namespace TFTV.TFTVIncidents
         /// </summary>
         private static int AcquireStagingSlot()
         {
+            // Every render comes through here - the recruit panel's too, which may be the first on a
+            // new geoscape - so this is where stale slots from an abandoned one are cleared.
+            EnsureRenderLevel();
+
             int slot = 0;
             while (StagingSlotsInUse.Contains(slot))
             {
@@ -1262,6 +1324,7 @@ namespace TFTV.TFTVIncidents
             }
 
             int slot = AcquireStagingSlot();
+            int generation = _renderGeneration;
 
             AddonsCharacterBuilder builder = CreateSubjectBuilder(slot);
             try
@@ -1303,7 +1366,13 @@ namespace TFTV.TFTVIncidents
                 // deferred destroy would leave this subject standing in it for the rest of the frame
                 // to be photographed alongside whoever takes it next.
                 UnityEngine.Object.DestroyImmediate(builder.gameObject);
-                StagingSlotsInUse.Remove(slot);
+
+                // Only while the slot is still this geoscape's to give back. After a change of
+                // geoscape the same slot number may already be standing a new subject.
+                if (generation == _renderGeneration)
+                {
+                    StagingSlotsInUse.Remove(slot);
+                }
             }
         }
 
