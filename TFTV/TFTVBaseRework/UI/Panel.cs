@@ -21,19 +21,98 @@ namespace TFTV.TFTVBaseRework
     {
         #region Panel Construction
 
+        /// <summary>
+        /// Brings the screen into line with the records after anything has changed. The panel is
+        /// built once, when the screen opens; from then on this updates what it shows in place,
+        /// building only the rows of people who have just arrived in a list and destroying only
+        /// those who have just left one. Rebuilding everything on each click - three dozen rows,
+        /// each an instance of the vanilla soldier slot, under a fresh canvas - was the stutter.
+        /// </summary>
         private static void RefreshPanel()
         {
-            if (_personnelPanel != null) { Object.Destroy(_personnelPanel); _personnelPanel = null; }
-            ResetRosterView();
-            if (_cachedState != null)
+            if (_personnelPanel == null)
             {
-                CreatePersonnelPanel(_cachedState);
+                if (_cachedState != null)
+                {
+                    CreatePersonnelPanel(_cachedState);
+                }
+
+                return;
             }
+
+            CloseModal();
+            SyncPanel();
+        }
+
+        /// <summary>
+        /// Runs a change to the records and then refreshes the screen, holding the info bar back
+        /// until the change is complete so the game recalculates production once for the action
+        /// rather than once for every counter it touches.
+        /// </summary>
+        private static void RunPanelAction(Action action, bool refresh = true)
+        {
+            using (DeferInfoBarUpdates())
+            {
+                try
+                {
+                    action?.Invoke();
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            if (refresh)
+            {
+                RefreshPanel();
+            }
+        }
+
+        private static void SyncPanel(bool rosterOnly = false)
+        {
+            try
+            {
+                GeoLevelController level = _cachedLevel;
+                GeoPhoenixFaction phoenix = level?.PhoenixFaction;
+                if (phoenix == null || _personnelPanel == null)
+                {
+                    return;
+                }
+
+                FacilitySlotPools pools = ResearchManufacturingSlotsManager.RecalculateSlots(phoenix);
+                SoldierSlotController slotPrefab = level.View.GeoscapeModules.SoldierEquipModule.SoldierSlotPrefab;
+
+                SyncRoster(level, phoenix, slotPrefab, pools);
+
+                if (rosterOnly)
+                {
+                    return;
+                }
+
+                SyncWorkPanel(_researchPanel, phoenix, slotPrefab, pools);
+                SyncWorkPanel(_manufacturingPanel, phoenix, slotPrefab, pools);
+                SyncTrainingPanel(level, phoenix, slotPrefab);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        /// <summary>Forgets every view the panel held, once the panel itself is gone.</summary>
+        internal static void ResetPanelViews()
+        {
+            ResetRosterView();
+            _researchPanel = null;
+            _manufacturingPanel = null;
+            _trainingView = null;
         }
 
         /// <summary>
         /// Three regions across the recruits screen: the roster on the left, the two work panels
-        /// stacked in the middle, and training on the right.
+        /// stacked in the middle, and training on the right. Only the frame is built here; the
+        /// contents are filled in by the same sync every later change goes through.
         /// </summary>
         private static void CreatePersonnelPanel(UIStateRosterRecruits state)
         {
@@ -51,6 +130,14 @@ namespace TFTV.TFTVBaseRework
 
             try
             {
+                if (_personnelPanel != null)
+                {
+                    Object.Destroy(_personnelPanel);
+                    _personnelPanel = null;
+                }
+
+                ResetPanelViews();
+
                 _personnelPanel = new GameObject(PersonnelContainerName, typeof(RectTransform));
                 _personnelPanel.transform.SetParent(recruitsModule.transform, false);
 
@@ -75,10 +162,8 @@ namespace TFTV.TFTVBaseRework
                 panelLayout.childForceExpandHeight = true;
 
                 GeoPhoenixFaction phoenix = level.PhoenixFaction;
-                FacilitySlotPools pools = ResearchManufacturingSlotsManager.RecalculateSlots(phoenix);
-                SoldierSlotController slotPrefab = level.View.GeoscapeModules.SoldierEquipModule.SoldierSlotPrefab;
 
-                CreateRosterColumn(_personnelPanel.transform, level, phoenix, slotPrefab, pools);
+                CreateRosterColumn(_personnelPanel.transform, level, phoenix);
 
                 GameObject workColumn = CreateUIObject("WorkColumn", _personnelPanel.transform);
                 var workLayout = workColumn.AddComponent<VerticalLayoutGroup>();
@@ -91,8 +176,8 @@ namespace TFTV.TFTVBaseRework
                 workElement.flexibleWidth = 44f;
                 workElement.flexibleHeight = 1f;
 
-                CreateWorkPanel(workColumn.transform, PersonnelAssignment.Research, level, phoenix, slotPrefab, pools);
-                CreateWorkPanel(workColumn.transform, PersonnelAssignment.Manufacturing, level, phoenix, slotPrefab, pools);
+                _researchPanel = CreateWorkPanel(workColumn.transform, PersonnelAssignment.Research, level, phoenix);
+                _manufacturingPanel = CreateWorkPanel(workColumn.transform, PersonnelAssignment.Manufacturing, level, phoenix);
 
                 // Training and deployment are related enough to sit together, but deploying someone
                 // is the decision this screen exists to lead up to, so it gets the bottom-right
@@ -108,8 +193,10 @@ namespace TFTV.TFTVBaseRework
                 deployElement.flexibleWidth = 26f;
                 deployElement.flexibleHeight = 1f;
 
-                CreateTrainingPanel(deployColumn.transform, level, phoenix, slotPrefab);
+                CreateTrainingPanel(deployColumn.transform, level, phoenix);
                 CreateDeployButton(deployColumn.transform, level, phoenix);
+
+                SyncPanel();
             }
             catch (Exception e)
             {
@@ -165,9 +252,12 @@ namespace TFTV.TFTVBaseRework
 
         private static void OnPlusClicked(PersonnelAssignment targetColumn, GeoLevelController level, GeoPhoenixFaction phoenix)
         {
-            // Find the first Unassigned personnel and move them to the target column
+            // The first free person who can actually do the work: a grunt heading the list used to
+            // make the button do nothing at all.
             var candidate = Assignments.Values
-                .Where(p => p != null && p.Character != null && p.Assignment == PersonnelAssignment.Unassigned)
+                .Where(p => p != null && p.Character != null && p.Character.Faction == phoenix
+                    && p.Assignment == PersonnelAssignment.Unassigned
+                    && PersonnelRestrictions.CanBeAssignedToManufacturingOrResearch(p.Character))
                 .OrderBy(p => GetPersonnelName(p))
                 .FirstOrDefault();
 
@@ -177,13 +267,10 @@ namespace TFTV.TFTVBaseRework
                 return;
             }
 
-            MovePersonnelToColumn(candidate, targetColumn, level, phoenix);
-
-            // Don't refresh here if a modal was opened (Training column opens a modal)
-            if (targetColumn != PersonnelAssignment.Training)
-            {
-                RefreshPanel();
-            }
+            // Training opens a modal and refreshes through its own callback; refreshing here would
+            // close that modal the moment it appeared.
+            RunPanelAction(() => MovePersonnelToColumn(candidate, targetColumn, level, phoenix),
+                refresh: targetColumn != PersonnelAssignment.Training);
         }
 
         private static void OnMinusClicked(PersonnelAssignment sourceColumn, GeoLevelController level, GeoPhoenixFaction phoenix)
@@ -195,7 +282,8 @@ namespace TFTV.TFTVBaseRework
 
             // Find the first personnel in the source column and move them to Unassigned
             var candidate = Assignments.Values
-                .Where(p => p != null && p.Character != null && p.Assignment == sourceColumn)
+                .Where(p => p != null && p.Character != null && p.Character.Faction == phoenix
+                    && p.Assignment == sourceColumn)
                 .OrderBy(p => GetPersonnelName(p))
                 .FirstOrDefault();
 
@@ -205,8 +293,7 @@ namespace TFTV.TFTVBaseRework
                 return;
             }
 
-            UnassignFromWork(candidate, phoenix);
-            RefreshPanel();
+            RunPanelAction(() => UnassignFromWork(candidate, phoenix));
         }
 
         internal static void MovePersonnelToColumn(PersonnelInfo person, PersonnelAssignment targetColumn, GeoLevelController level, GeoPhoenixFaction phoenix)

@@ -93,6 +93,36 @@ namespace TFTV.TFTVBaseRework
         private static Sprite _deployTrainSprite = null;
         private static Sprite _dismissSprite = null;
         private static bool _dismissSpriteReported;
+        private static Sprite _deploySprite = null;
+
+        /// <summary>
+        /// The Phoenix base glyph, for the control that sends someone to a base: the faction's own
+        /// base icon first, and failing that the one the edit screen shows beside an operative's
+        /// name to say where they are stationed.
+        /// </summary>
+        internal static Sprite GetDeployIconSprite()
+        {
+            if (_deploySprite != null)
+            {
+                return _deploySprite;
+            }
+
+            try
+            {
+                GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+                GeoFactionDef phoenixDef = level?.PhoenixFaction?.Def;
+
+                _deploySprite = phoenixDef?.SmallBaseIcon
+                    ?? phoenixDef?.DefaultBaseIcon
+                    ?? level?.View?.GeoscapeModules?.ActorCycleModule?.PhoenixBaseIcon?.sprite;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+            return _deploySprite;
+        }
 
         /// <summary>Part of the sprite name the geoscape gives its dismiss control.</summary>
         private const string DismissIconNameFragment = "CharacterDismiss";
@@ -465,7 +495,7 @@ namespace TFTV.TFTVBaseRework
                     if (_personnelPanel != null) { Object.Destroy(_personnelPanel); _personnelPanel = null; }
                     CloseModal();
                     _deploymentUIActive = false;
-                    ResetRosterView();
+                    ResetPanelViews();
                     _cachedState = null;
                     _cachedLevel = null;
                     _puristaSemibold = null; // reset so it re-resolves from live level on next open
