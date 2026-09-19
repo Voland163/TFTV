@@ -380,13 +380,91 @@ namespace TFTV.TFTVBaseRework
             TryUpdateInfoBar(faction);
         }
 
+        /// <summary>
+        /// Redraws the info bar's labels without recalculating production, for callers that only
+        /// changed what the labels read. Held back like everything else while a deferral is open.
+        /// </summary>
+        internal static void RefreshInfoBarLabels(GeoPhoenixFaction faction)
+        {
+            if (faction == null)
+            {
+                return;
+            }
+
+            if (_infoBarDeferrals > 0)
+            {
+                _deferredInfoBarFaction = faction;
+                return;
+            }
+
+            try
+            {
+                UIModuleInfoBar infoBar = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>()
+                    ?.View?.GeoscapeModules?.ResourcesModule;
+                if (infoBar != null)
+                {
+                    UpdateResourceInfoMethod?.Invoke(infoBar, new object[] { faction, false });
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static int _infoBarDeferrals;
+        private static GeoPhoenixFaction _deferredInfoBarFaction;
+
+        /// <summary>
+        /// Holds info bar refreshes back until the returned scope is disposed, then runs one.
+        ///
+        /// Every slot counter change recalculates the faction's production and redraws the bar, and
+        /// a single move between duties changes two counters and then asks for the bar a third time
+        /// - on top of which Unassign All does it once per worker. The personnel screen opens one of
+        /// these around each action so the game does that work once, with the final numbers.
+        /// </summary>
+        internal static IDisposable DeferInfoBarUpdates()
+        {
+            _infoBarDeferrals++;
+            return new InfoBarDeferral();
+        }
+
+        private sealed class InfoBarDeferral : IDisposable
+        {
+            private bool _disposed;
+
+            public void Dispose()
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                _disposed = true;
+                _infoBarDeferrals = Math.Max(0, _infoBarDeferrals - 1);
+
+                if (_infoBarDeferrals == 0 && _deferredInfoBarFaction != null)
+                {
+                    GeoPhoenixFaction faction = _deferredInfoBarFaction;
+                    _deferredInfoBarFaction = null;
+                    TryUpdateInfoBar(faction);
+                }
+            }
+        }
+
         private static void TryUpdateInfoBar(GeoPhoenixFaction faction)
         {
             if (faction == null)
             {
                 return;
             }
-         
+
+            if (_infoBarDeferrals > 0)
+            {
+                _deferredInfoBarFaction = faction;
+                return;
+            }
+
             MethodInfo updateProductionMethod = AccessTools.Method(typeof(GeoFaction), "UpdateProduction");
 
             try

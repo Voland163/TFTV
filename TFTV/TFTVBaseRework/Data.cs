@@ -1077,10 +1077,7 @@ namespace TFTV.TFTVBaseRework
 
             ReleaseWorkSlotIfNeeded(faction, previous);
 
-            GeoLevelController level = GameUtl.CurrentLevel().GetComponent<GeoLevelController>();
-            UIModuleInfoBar infoBar = level.View.GeoscapeModules.ResourcesModule;
-            var update = AccessTools.Method(typeof(UIModuleInfoBar), "UpdateResourceInfo");
-            update.Invoke(infoBar, new object[] { faction, false });
+            Workers.RefreshInfoBarLabels(faction);
             return true;
         }
 
@@ -1631,17 +1628,7 @@ namespace TFTV.TFTVBaseRework
 
             TFTVLogger.Always($"{LogPrefix} Unassigned {person.Character.DisplayName} from {previous} to Unassigned.");
 
-            try
-            {
-                GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
-                UIModuleInfoBar infoBar = level?.View?.GeoscapeModules?.ResourcesModule;
-                var update = AccessTools.Method(typeof(UIModuleInfoBar), "UpdateResourceInfo");
-                if (infoBar != null && update != null)
-                {
-                    update.Invoke(infoBar, new object[] { faction, false });
-                }
-            }
-            catch (Exception e) { TFTVLogger.Error(e); }
+            Workers.RefreshInfoBarLabels(faction);
         }
 
 
