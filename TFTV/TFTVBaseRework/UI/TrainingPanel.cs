@@ -19,11 +19,25 @@ namespace TFTV.TFTVBaseRework
     {
         private const float TrainingRowHeight = 62f;
 
-        internal static void CreateTrainingPanel(Transform parent, GeoLevelController level, GeoPhoenixFaction phoenix,
-            SoldierSlotController slotPrefab)
+        /// <summary>Everything in the training panel that changes as people come and go.</summary>
+        private sealed class TrainingPanelView
         {
-            int provided = TrainingFacilityRework.GetProvidedTrainingSlots(phoenix);
-            int used = TrainingFacilityRework.GetUsedTrainingSlots();
+            internal Text Counter;
+            internal Text Skillpoints;
+            internal Button Train;
+            internal readonly KeyedRows<TraineeRowView> Trainees = new KeyedRows<TraineeRowView>();
+        }
+
+        private sealed class TraineeRowView : RowView
+        {
+            internal Text Remaining;
+        }
+
+        private static TrainingPanelView _trainingView;
+
+        internal static void CreateTrainingPanel(Transform parent, GeoLevelController level, GeoPhoenixFaction phoenix)
+        {
+            var view = new TrainingPanelView();
 
             GameObject panel = CreateFramedPanel(parent, "TrainingPanel", out Transform content);
             LayoutElement panelElement = panel.GetComponent<LayoutElement>() ?? panel.AddComponent<LayoutElement>();
@@ -33,11 +47,42 @@ namespace TFTV.TFTVBaseRework
             CreateSectionHeader(content, PersonnelText.Get(PersonnelText.TrainingTitle),
                 GetColumnIconSprite(PersonnelAssignment.Training), TextPrimaryColor);
 
-            Text counter = CreateLabel(content, "Counter", $"{used} / {provided}", 84,
-                provided > 0 ? AccentOrangeColor : TextDisabledColor, TextAnchor.MiddleCenter);
-            SetSize(counter.gameObject, 0f, 104f);
+            view.Counter = CreateLabel(content, "Counter", string.Empty, 84, AccentOrangeColor, TextAnchor.MiddleCenter);
+            SetSize(view.Counter.gameObject, 0f, 104f);
 
             CreateScrollList(content, "TraineeList", out Transform list);
+            view.Trainees.Content = list;
+
+            Text empty = CreateLabel(list, "Empty", PersonnelText.Get(PersonnelText.TrainingEmpty), BodyFontSize,
+                TextDimColor, TextAnchor.MiddleCenter);
+            SetSize(empty.gameObject, 0f, TrainingRowHeight);
+            view.Trainees.Empty = empty.gameObject;
+
+            view.Skillpoints = CreateSkillpointsReadout(content);
+
+            view.Train = CreateTextButton(content, "TrainButton", PersonnelText.Get(PersonnelText.ButtonTrain),
+                () => ShowTrainingCandidateSelection(level, phoenix),
+                height: 76f, fontSize: TitleFontSize, fillColor: ButtonFillColor);
+
+            _trainingView = view;
+        }
+
+        private static void SyncTrainingPanel(GeoLevelController level, GeoPhoenixFaction phoenix,
+            SoldierSlotController slotPrefab)
+        {
+            TrainingPanelView view = _trainingView;
+            if (view == null)
+            {
+                return;
+            }
+
+            int provided = TrainingFacilityRework.GetProvidedTrainingSlots(phoenix);
+            int used = TrainingFacilityRework.GetUsedTrainingSlots();
+
+            view.Counter.text = $"{used} / {provided}";
+            view.Counter.color = provided > 0 ? AccentOrangeColor : TextDisabledColor;
+            view.Skillpoints.text = phoenix.Skillpoints.ToString();
+            SetButtonEnabled(view.Train, used < provided);
 
             List<PersonnelInfo> trainees = Assignments.Values
                 .Where(p => p != null && p.Character != null && p.Character.Faction == phoenix
@@ -45,28 +90,11 @@ namespace TFTV.TFTVBaseRework
                 .OrderBy(p => GetPersonnelName(p))
                 .ToList();
 
-            if (trainees.Count == 0)
-            {
-                Text empty = CreateLabel(list, "Empty", PersonnelText.Get(PersonnelText.TrainingEmpty), BodyFontSize,
-                    TextDimColor, TextAnchor.MiddleCenter);
-                SetSize(empty.gameObject, 0f, TrainingRowHeight);
-            }
-            else
-            {
-                int index = 0;
-                foreach (PersonnelInfo trainee in trainees)
-                {
-                    CreateTraineeRow(list, trainee, index++, level, slotPrefab);
-                }
-            }
+            SyncRows(view.Trainees, trainees, person => person.Id,
+                person => CreateTraineeRow(view.Trainees.Content, person, slotPrefab),
+                (person, row) => UpdateTraineeRow(person, row, level));
 
-            CreateSkillpointsReadout(content, phoenix);
-
-            bool trainingSlotFree = used < provided;
-            CreateTextButton(content, "TrainButton", PersonnelText.Get(PersonnelText.ButtonTrain),
-                () => ShowTrainingCandidateSelection(level, phoenix),
-                height: 76f, fontSize: TitleFontSize, enabled: trainingSlotFree,
-                fillColor: ButtonFillColor);
+            Restripe(view.Trainees.Ordered);
         }
 
         /// <summary>
@@ -82,7 +110,7 @@ namespace TFTV.TFTVBaseRework
                 fillColor: AccentOrangeColor, captionColor: Color.black);
         }
 
-        private static void CreateSkillpointsReadout(Transform parent, GeoPhoenixFaction phoenix)
+        private static Text CreateSkillpointsReadout(Transform parent)
         {
             GameObject box = CreateUIObject("Skillpoints", parent);
             box.AddComponent<Image>().color = RowFillColor;
@@ -103,18 +131,17 @@ namespace TFTV.TFTVBaseRework
             LayoutElement captionElement = SetSize(caption.gameObject, 0f, 80f);
             captionElement.flexibleWidth = 1f;
 
-            Text value = CreateLabel(box.transform, "Value", phoenix.Skillpoints.ToString(), 56, AccentOrangeColor,
+            Text value = CreateLabel(box.transform, "Value", string.Empty, 56, AccentOrangeColor,
                 TextAnchor.MiddleLeft);
             SetSize(value.gameObject, 130f, 80f);
+            return value;
         }
 
-        private static void CreateTraineeRow(Transform parent, PersonnelInfo person, int index, GeoLevelController level,
+        private static TraineeRowView CreateTraineeRow(Transform parent, PersonnelInfo person,
             SoldierSlotController slotPrefab)
         {
-            bool complete = TrainingFacilityRework.IsRecruitTrainingComplete(person.Character, level);
-
             GameObject row = CreateUIObject($"Trainee_{person.Id}", parent);
-            row.AddComponent<Image>().color = index % 2 == 0 ? RowFillColor : RowFillAltColor;
+            var view = new TraineeRowView { Row = row, Background = row.AddComponent<Image>() };
 
             var layout = row.AddComponent<HorizontalLayoutGroup>();
             layout.spacing = 6f;
@@ -129,17 +156,26 @@ namespace TFTV.TFTVBaseRework
             var entry = new RosterEntry { Character = person.Character, Personnel = person };
             CreateNameCell(row.transform, entry, slotPrefab);
 
-            string remaining = complete
-                ? PersonnelText.Get(PersonnelText.TrainingReady)
-                : FormatDuration(TrainingFacilityRework.GetRecruitRemainingHours(person.Character, level));
-            Text time = CreateLabel(row.transform, "Remaining", remaining, BodyFontSize,
-                complete ? AccentOrangeColor : AccentCyanColor, TextAnchor.MiddleRight);
-            SetSize(time.gameObject, 170f, TrainingRowHeight);
+            view.Remaining = CreateLabel(row.transform, "Remaining", string.Empty, BodyFontSize,
+                AccentCyanColor, TextAnchor.MiddleRight);
+            SetSize(view.Remaining.gameObject, 170f, TrainingRowHeight);
 
             // Pulling someone out of training finalises them early and takes them straight to the
             // deployment prompt, with the partial refund the deployment flow already calculates.
             CreateIconButton(row.transform, "Finalize", null, () => ShowSlotContextMenu(person),
                 size: 48f, fallbackCaption: "X");
+
+            return view;
+        }
+
+        private static void UpdateTraineeRow(PersonnelInfo person, TraineeRowView view, GeoLevelController level)
+        {
+            bool complete = TrainingFacilityRework.IsRecruitTrainingComplete(person.Character, level);
+
+            view.Remaining.text = complete
+                ? PersonnelText.Get(PersonnelText.TrainingReady)
+                : FormatDuration(TrainingFacilityRework.GetRecruitRemainingHours(person.Character, level));
+            view.Remaining.color = complete ? AccentOrangeColor : AccentCyanColor;
         }
 
         #region Candidate pickers

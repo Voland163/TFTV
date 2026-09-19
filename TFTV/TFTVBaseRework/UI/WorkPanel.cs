@@ -18,24 +18,30 @@ namespace TFTV.TFTVBaseRework
     {
         private const float WorkRowHeight = 58f;
 
-        internal static void CreateWorkPanel(Transform parent, PersonnelAssignment assignment, GeoLevelController level,
-            GeoPhoenixFaction phoenix, SoldierSlotController slotPrefab, FacilitySlotPools pools)
+        /// <summary>Everything in a work panel that changes when someone is seated or unseated.</summary>
+        private sealed class WorkPanelView
+        {
+            internal PersonnelAssignment Assignment;
+            internal Text Boost;
+            internal Text Counter;
+            internal Text Facilities;
+            internal Button Remove;
+            internal Button Add;
+            internal Button UnassignAll;
+            internal readonly KeyedRows<RowView> Workers = new KeyedRows<RowView>();
+        }
+
+        private static WorkPanelView _researchPanel;
+        private static WorkPanelView _manufacturingPanel;
+
+        private static WorkPanelView CreateWorkPanel(Transform parent, PersonnelAssignment assignment,
+            GeoLevelController level, GeoPhoenixFaction phoenix)
         {
             bool isResearch = assignment == PersonnelAssignment.Research;
+            var view = new WorkPanelView { Assignment = assignment };
 
             string title = PersonnelText.Get(isResearch ? PersonnelText.ResearchTitle : PersonnelText.FabricationTitle);
             Color accent = isResearch ? AccentCyanColor : AccentOrangeColor;
-            FacilitySlotPool pool = isResearch ? pools.Research : pools.Manufacturing;
-            int occupied = ResearchAndManufacturing.GetOccupiedSlots(phoenix, assignment);
-
-            ResearchAndManufacturing.GetOutputBonuses(phoenix, out float researchBonus, out float productionBonus);
-            float bonus = isResearch ? researchBonus : productionBonus;
-
-            ResearchManufacturingSlotsManager.CountFacilityProviders(phoenix, out int researchFacilities, out int manufacturingFacilities);
-            int facilities = isResearch ? researchFacilities : manufacturingFacilities;
-            string facilityLine = isResearch
-                ? PersonnelText.Format(PersonnelText.LabsBuilt, researchFacilities)
-                : PersonnelText.Format(PersonnelText.PlantsBuilt, manufacturingFacilities);
 
             GameObject panel = CreateFramedPanel(parent, $"WorkPanel_{assignment}", out Transform content);
             LayoutElement panelElement = panel.GetComponent<LayoutElement>() ?? panel.AddComponent<LayoutElement>();
@@ -43,9 +49,9 @@ namespace TFTV.TFTVBaseRework
             panelElement.flexibleHeight = 1f;
 
             Transform header = CreateSectionHeader(content, title, GetColumnIconSprite(assignment), accent);
-            CreateTextButton(header, "UnassignAll", PersonnelText.Get(PersonnelText.UnassignAll),
-                () => UnassignAllFrom(assignment, phoenix),
-                width: 240f, height: 44f, fontSize: SmallFontSize, enabled: occupied > 0);
+            view.UnassignAll = CreateTextButton(header, "UnassignAll", PersonnelText.Get(PersonnelText.UnassignAll),
+                () => RunPanelAction(() => UnassignAllFrom(assignment, phoenix)),
+                width: 240f, height: 44f, fontSize: SmallFontSize);
 
             GameObject body = CreateUIObject("Body", content.transform);
             var bodyLayout = body.AddComponent<HorizontalLayoutGroup>();
@@ -57,13 +63,17 @@ namespace TFTV.TFTVBaseRework
             LayoutElement bodyElement = body.AddComponent<LayoutElement>();
             bodyElement.flexibleHeight = 1f;
 
-            CreateWorkControls(body.transform, assignment, level, phoenix, accent, bonus, occupied, pool.ProvidedSlots, facilityLine, facilities);
-            CreateWorkerList(body.transform, assignment, level, phoenix, slotPrefab);
+            CreateWorkControls(body.transform, view, level, phoenix, accent);
+            CreateWorkerList(body.transform, view);
+
+            return view;
         }
 
-        private static void CreateWorkControls(Transform parent, PersonnelAssignment assignment, GeoLevelController level,
-            GeoPhoenixFaction phoenix, Color accent, float bonus, int occupied, int provided, string facilityLine, int facilities)
+        private static void CreateWorkControls(Transform parent, WorkPanelView view, GeoLevelController level,
+            GeoPhoenixFaction phoenix, Color accent)
         {
+            PersonnelAssignment assignment = view.Assignment;
+
             GameObject column = CreateUIObject("Controls", parent);
             var layout = column.AddComponent<VerticalLayoutGroup>();
             layout.spacing = 6f;
@@ -76,12 +86,8 @@ namespace TFTV.TFTVBaseRework
             LayoutElement columnElement = column.AddComponent<LayoutElement>();
             columnElement.flexibleWidth = 1f;
 
-            string boostText = PersonnelText.Format(
-                assignment == PersonnelAssignment.Research ? PersonnelText.ResearchBoost : PersonnelText.ManufacturingBoost,
-                bonus.ToString("0.#"));
-
-            Text boost = CreateLabel(column.transform, "Boost", boostText, 46, accent, TextAnchor.MiddleCenter);
-            SetSize(boost.gameObject, 0f, 62f);
+            view.Boost = CreateLabel(column.transform, "Boost", string.Empty, 46, accent, TextAnchor.MiddleCenter);
+            SetSize(view.Boost.gameObject, 0f, 62f);
 
             GameObject buttons = CreateUIObject("SlotButtons", column.transform);
             var buttonsLayout = buttons.AddComponent<HorizontalLayoutGroup>();
@@ -93,32 +99,21 @@ namespace TFTV.TFTVBaseRework
             buttonsLayout.childForceExpandHeight = false;
             SetSize(buttons, 0f, 112f);
 
-            bool canRemove = occupied > 0;
-            bool canAdd = occupied < provided && Assignments.Values.Any(p => p != null && p.Character != null
-                && p.Assignment == PersonnelAssignment.Unassigned
-                && PersonnelRestrictions.CanBeAssignedToManufacturingOrResearch(p.Character));
+            view.Remove = CreateStepperButton(buttons.transform, "Remove", "-",
+                () => OnMinusClicked(assignment, level, phoenix), size: 104f);
 
-            CreateStepperButton(buttons.transform, "Remove", "-", () =>
-            {
-                OnMinusClicked(assignment, level, phoenix);
-            }, size: 104f, enabled: canRemove);
+            view.Add = CreateStepperButton(buttons.transform, "Add", "+",
+                () => OnPlusClicked(assignment, level, phoenix), size: 104f);
 
-            CreateStepperButton(buttons.transform, "Add", "+", () =>
-            {
-                OnPlusClicked(assignment, level, phoenix);
-            }, size: 104f, enabled: canAdd);
+            view.Counter = CreateLabel(column.transform, "Counter", string.Empty, 84, TextPrimaryColor, TextAnchor.MiddleCenter);
+            SetSize(view.Counter.gameObject, 0f, 104f);
 
-            Text counter = CreateLabel(column.transform, "Counter", $"{occupied} / {provided}", 84,
-                occupied > 0 ? AccentOrangeColor : TextPrimaryColor, TextAnchor.MiddleCenter);
-            SetSize(counter.gameObject, 0f, 104f);
-
-            Text facilityLabel = CreateLabel(column.transform, "Facilities", facilityLine, BodyFontSize,
-                facilities > 0 ? TextDimColor : TextDisabledColor, TextAnchor.MiddleCenter);
-            SetSize(facilityLabel.gameObject, 0f, 40f);
+            view.Facilities = CreateLabel(column.transform, "Facilities", string.Empty, BodyFontSize, TextDimColor,
+                TextAnchor.MiddleCenter);
+            SetSize(view.Facilities.gameObject, 0f, 40f);
         }
 
-        private static void CreateWorkerList(Transform parent, PersonnelAssignment assignment, GeoLevelController level,
-            GeoPhoenixFaction phoenix, SoldierSlotController slotPrefab)
+        private static void CreateWorkerList(Transform parent, WorkPanelView view)
         {
             GameObject column = CreateUIObject("Workers", parent);
             var layout = column.AddComponent<VerticalLayoutGroup>();
@@ -130,33 +125,73 @@ namespace TFTV.TFTVBaseRework
             LayoutElement columnElement = column.AddComponent<LayoutElement>();
             columnElement.flexibleWidth = 1.2f;
 
-            CreateScrollList(column.transform, $"WorkerList_{assignment}", out Transform list);
+            CreateScrollList(column.transform, $"WorkerList_{view.Assignment}", out Transform list);
+            view.Workers.Content = list;
+
+            Text empty = CreateLabel(list, "Empty", PersonnelText.Get(PersonnelText.NoWorkers), BodyFontSize,
+                TextDimColor, TextAnchor.MiddleCenter);
+            SetSize(empty.gameObject, 0f, WorkRowHeight);
+            view.Workers.Empty = empty.gameObject;
+        }
+
+        private static void SyncWorkPanel(WorkPanelView view, GeoPhoenixFaction phoenix,
+            SoldierSlotController slotPrefab, FacilitySlotPools pools)
+        {
+            if (view == null)
+            {
+                return;
+            }
+
+            PersonnelAssignment assignment = view.Assignment;
+            bool isResearch = assignment == PersonnelAssignment.Research;
+
+            FacilitySlotPool pool = isResearch ? pools.Research : pools.Manufacturing;
+            int occupied = ResearchAndManufacturing.GetOccupiedSlots(phoenix, assignment);
+
+            ResearchAndManufacturing.GetOutputBonuses(phoenix, out float researchBonus, out float productionBonus);
+            float bonus = isResearch ? researchBonus : productionBonus;
+
+            ResearchManufacturingSlotsManager.CountFacilityProviders(phoenix, out int researchFacilities, out int manufacturingFacilities);
+            int facilities = isResearch ? researchFacilities : manufacturingFacilities;
+
+            view.Boost.text = PersonnelText.Format(
+                isResearch ? PersonnelText.ResearchBoost : PersonnelText.ManufacturingBoost,
+                bonus.ToString("0.#"));
+
+            view.Counter.text = $"{occupied} / {pool.ProvidedSlots}";
+            view.Counter.color = occupied > 0 ? AccentOrangeColor : TextPrimaryColor;
+
+            view.Facilities.text = isResearch
+                ? PersonnelText.Format(PersonnelText.LabsBuilt, researchFacilities)
+                : PersonnelText.Format(PersonnelText.PlantsBuilt, manufacturingFacilities);
+            view.Facilities.color = facilities > 0 ? TextDimColor : TextDisabledColor;
+
+            bool canAdd = occupied < pool.ProvidedSlots && Assignments.Values.Any(p => p != null && p.Character != null
+                && p.Character.Faction == phoenix
+                && p.Assignment == PersonnelAssignment.Unassigned
+                && PersonnelRestrictions.CanBeAssignedToManufacturingOrResearch(p.Character));
+
+            SetButtonEnabled(view.Remove, occupied > 0);
+            SetButtonEnabled(view.Add, canAdd);
+            SetButtonEnabled(view.UnassignAll, occupied > 0);
 
             List<PersonnelInfo> workers = Assignments.Values
                 .Where(p => p != null && p.Character != null && p.Character.Faction == phoenix && p.Assignment == assignment)
                 .OrderBy(p => GetPersonnelName(p))
                 .ToList();
 
-            if (workers.Count == 0)
-            {
-                Text empty = CreateLabel(list, "Empty", PersonnelText.Get(PersonnelText.NoWorkers), BodyFontSize,
-                    TextDimColor, TextAnchor.MiddleCenter);
-                SetSize(empty.gameObject, 0f, WorkRowHeight);
-                return;
-            }
+            SyncRows(view.Workers, workers, person => person.Id,
+                person => CreateWorkerRow(view.Workers.Content, person, phoenix, slotPrefab),
+                null);
 
-            int index = 0;
-            foreach (PersonnelInfo person in workers)
-            {
-                CreateWorkerRow(list, person, index++, phoenix, slotPrefab);
-            }
+            Restripe(view.Workers.Ordered);
         }
 
-        private static void CreateWorkerRow(Transform parent, PersonnelInfo person, int index, GeoPhoenixFaction phoenix,
+        private static RowView CreateWorkerRow(Transform parent, PersonnelInfo person, GeoPhoenixFaction phoenix,
             SoldierSlotController slotPrefab)
         {
             GameObject row = CreateUIObject($"Worker_{person.Id}", parent);
-            row.AddComponent<Image>().color = index % 2 == 0 ? RowFillColor : RowFillAltColor;
+            var view = new RowView { Row = row, Background = row.AddComponent<Image>() };
 
             var layout = row.AddComponent<HorizontalLayoutGroup>();
             layout.spacing = 6f;
@@ -175,11 +210,11 @@ namespace TFTV.TFTVBaseRework
             SetSize(affinityCell, 48f, WorkRowHeight);
             AddAffinityBadge(affinityCell, person.Character, 42f);
 
-            CreateIconButton(row.transform, "Unassign", null, () =>
-            {
-                UnassignFromWork(person, phoenix);
-                RefreshPanel();
-            }, size: 48f, fallbackCaption: "X");
+            CreateIconButton(row.transform, "Unassign", null,
+                () => RunPanelAction(() => UnassignFromWork(person, phoenix)),
+                size: 48f, fallbackCaption: "X");
+
+            return view;
         }
 
         private static void UnassignAllFrom(PersonnelAssignment assignment, GeoPhoenixFaction phoenix)
@@ -194,7 +229,6 @@ namespace TFTV.TFTVBaseRework
             }
 
             TFTVLogger.Always($"{LogPrefix} Unassigned all {workers.Count} personnel from {assignment}.");
-            RefreshPanel();
         }
     }
 }

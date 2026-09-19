@@ -1007,7 +1007,11 @@ namespace TFTV.TFTVBaseRework
             return grid.transform;
         }
 
-        private static void AddTextTooltip(GameObject target, string content)
+        /// <summary>
+        /// Returns the trigger so a caller whose explanation changes - why a button is greyed out,
+        /// say - can rewrite it later.
+        /// </summary>
+        private static PersonnelTooltipTrigger AddTextTooltip(GameObject target, string content)
         {
             Image raycastTarget = target.GetComponent<Image>();
             if (raycastTarget != null)
@@ -1017,6 +1021,7 @@ namespace TFTV.TFTVBaseRework
 
             var trigger = target.AddComponent<PersonnelTooltipTrigger>();
             trigger.Content = content;
+            return trigger;
         }
 
         #endregion

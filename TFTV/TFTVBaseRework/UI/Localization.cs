@@ -22,19 +22,23 @@ namespace TFTV.TFTVBaseRework
 
         internal const string RosterTitle = "KEY_TFTV_PERSONNEL_ROSTER_TITLE";
         internal const string RosterEmpty = "KEY_TFTV_PERSONNEL_ROSTER_EMPTY";
+        internal const string FilterUnassigned = "KEY_TFTV_PERSONNEL_FILTER_UNASSIGNED";
+        internal const string FilterFieldOperatives = "KEY_TFTV_PERSONNEL_FILTER_FIELD_OPERATIVES";
         internal const string FilterAll = "KEY_TFTV_PERSONNEL_FILTER_ALL";
-        internal const string FilterFieldDuty = "KEY_TFTV_PERSONNEL_FILTER_FIELD_DUTY";
-        internal const string FilterDismissed = "KEY_TFTV_PERSONNEL_FILTER_DISMISSED";
-        internal const string FilterCivilians = "KEY_TFTV_PERSONNEL_FILTER_CIVILIANS";
         internal const string AutoAssign = "KEY_TFTV_PERSONNEL_AUTO_ASSIGN";
 
-        internal const string StatusFieldDuty = "KEY_TFTV_PERSONNEL_STATUS_FIELD_DUTY";
-        internal const string StatusResearch = "KEY_TFTV_PERSONNEL_STATUS_RESEARCH";
-        internal const string StatusFabrication = "KEY_TFTV_PERSONNEL_STATUS_FABRICATION";
+        internal const string SortLabel = "KEY_TFTV_PERSONNEL_SORT_LABEL";
+        internal const string SortAffinity = "KEY_TFTV_PERSONNEL_SORT_AFFINITY";
+        internal const string SortClass = "KEY_TFTV_PERSONNEL_SORT_CLASS";
+        internal const string SortLevel = "KEY_TFTV_PERSONNEL_SORT_LEVEL";
+
         internal const string StatusDismissed = "KEY_TFTV_PERSONNEL_STATUS_DISMISSED";
-        internal const string StatusIdle = "KEY_TFTV_PERSONNEL_STATUS_IDLE";
         internal const string StatusUnknownName = "KEY_TFTV_PERSONNEL_STATUS_UNKNOWN_NAME";
 
+        internal const string ActionResearch = "KEY_TFTV_PERSONNEL_ACTION_RESEARCH";
+        internal const string ActionManufacturing = "KEY_TFTV_PERSONNEL_ACTION_MANUFACTURING";
+        internal const string ActionTrain = "KEY_TFTV_PERSONNEL_ACTION_TRAIN";
+        internal const string ActionTrainFieldOperative = "KEY_TFTV_PERSONNEL_ACTION_TRAIN_FIELD_OPERATIVE";
         internal const string ActionDismiss = "KEY_TFTV_PERSONNEL_ACTION_DISMISS";
         internal const string ActionDeploy = "KEY_TFTV_PERSONNEL_ACTION_DEPLOY";
 
@@ -108,6 +112,9 @@ namespace TFTV.TFTVBaseRework
         internal const string TrainOptionUnaffordable = "KEY_TFTV_PERSONNEL_TRAIN_OPTION_UNAFFORDABLE";
         internal const string TrainConfirm = "KEY_TFTV_PERSONNEL_TRAIN_CONFIRM";
         internal const string TrainConfirmDismissed = "KEY_TFTV_PERSONNEL_TRAIN_CONFIRM_DISMISSED";
+        internal const string TrainFieldOperative = "KEY_TFTV_PERSONNEL_TRAIN_FIELD_OPERATIVE";
+        internal const string TrainQueueFailed = "KEY_TFTV_PERSONNEL_TRAIN_QUEUE_FAILED";
+        internal const string TrainCapped = "KEY_TFTV_PERSONNEL_TRAIN_CAPPED";
 
         internal const string LivingQuartersFull = "KEY_TFTV_PERSONNEL_LIVING_QUARTERS_FULL";
         internal const string DutyResearch = "KEY_TFTV_PERSONNEL_DUTY_RESEARCH";

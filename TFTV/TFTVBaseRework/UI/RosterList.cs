@@ -1,3 +1,4 @@
+using Base.Audio;
 using PhoenixPoint.Common.Entities;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
@@ -6,6 +7,7 @@ using PhoenixPoint.Geoscape.Levels.Factions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TFTV.TFTVIncidents;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -17,8 +19,8 @@ namespace TFTV.TFTVBaseRework
 {
     /// <summary>
     /// The roster column: the pool of people Phoenix has not put to work yet, plus the operatives on
-    /// field duty, who are here so they can be dismissed back into that pool. Anyone researching,
-    /// fabricating or training is listed by the panel that owns them instead of being repeated here.
+    /// field duty, who are here so they can be dismissed back into that pool or sent to train.
+    /// Anyone researching, fabricating or training is listed by the panel that owns them instead.
     /// </summary>
     public static partial class PersonnelManagementUI
     {
@@ -26,20 +28,26 @@ namespace TFTV.TFTVBaseRework
 
         internal enum RosterFilter
         {
-            All,
-            FieldDuty,
-            Dismissed,
-            Civilians
+            Unassigned,
+            FieldOperatives,
+            All
         }
 
-        private static RosterFilter _rosterFilter = RosterFilter.All;
+        internal enum RosterSort
+        {
+            Affinity,
+            Class,
+            Level
+        }
+
+        private static RosterFilter _rosterFilter = RosterFilter.Unassigned;
+        private static RosterSort _rosterSort = RosterSort.Level;
 
         internal const string RosterPanelName = "RosterPanel";
 
         private const float RosterRowHeight = 68f;
         private const float RosterActionSize = 64f;
         private const float RosterBadgeSize = 46f;
-        private const float RosterStatusWidth = 260f;
 
         /// <summary>The vanilla slot's class icon is drawn for a much larger row than this one.</summary>
         private const float ClassIconScale = 0.6f;
@@ -52,56 +60,80 @@ namespace TFTV.TFTVBaseRework
 
             public string Name => Character?.DisplayName ?? PersonnelText.Get(PersonnelText.StatusUnknownName);
 
-            public PersonnelAssignment Assignment =>
-                Personnel?.Assignment ?? PersonnelAssignment.Unassigned;
-
             /// <summary>An operative who was taken off field duty: they keep their class and level.</summary>
             public bool IsDismissed => PersonnelRestrictions.IsDismissedOperative(Character);
+
+            /// <summary>Civilians have no class or level to speak of until they are trained.</summary>
+            public bool HasClass => IsFieldOperative || IsDismissed;
+
+            // Sort keys, read once per refresh rather than once per comparison.
+            public string SortName;
+            public string SortClass;
+            public int SortLevel;
+            public int SortAffinity;
+            public int SortAffinityRank;
         }
 
-        /// <summary>
-        /// A built row and the two facts the tabs sort on, so switching tabs is a pass over this
-        /// list rather than a rebuild of every row.
-        /// </summary>
-        private sealed class RosterRowView
+        private sealed class RosterRowView : RowView
         {
-            public GameObject Row;
-            public Image Background;
-            public bool IsFieldOperative;
-            public bool IsDismissed;
+            internal bool IsFieldOperative;
+            internal bool IsDismissed;
+
+            internal Button Research;
+            internal Button Manufacturing;
+            internal Button Training;
+            internal Button Deploy;
+            internal Button Dismiss;
+
+            // The hover text of the buttons that can be unavailable for a reason worth giving.
+            internal PersonnelTooltipTrigger TrainingTooltip;
+            internal PersonnelTooltipTrigger DeployTooltip;
         }
 
         private sealed class RosterTabView
         {
             public RosterFilter Filter;
-            public Image Background;
-            public Text Caption;
+            public ButtonLook Look;
             public int Count;
         }
 
-        private static readonly List<RosterRowView> _rosterRows = new List<RosterRowView>();
+        private sealed class RosterSortView
+        {
+            public RosterSort Sort;
+            public ButtonLook Look;
+        }
+
+        /// <summary>Which duties have room this refresh, so each row's buttons can say so.</summary>
+        private struct RosterAvailability
+        {
+            public GeoPhoenixFaction Phoenix;
+            public bool ResearchFree;
+            public bool ManufacturingFree;
+            public bool TrainingFree;
+        }
+
+        private static readonly KeyedRows<RosterRowView> _rosterRows = new KeyedRows<RosterRowView>();
         private static readonly List<RosterTabView> _rosterTabViews = new List<RosterTabView>();
+        private static readonly List<RosterSortView> _rosterSortViews = new List<RosterSortView>();
         private static Text _rosterCountLabel;
-        private static GameObject _rosterEmptyLabel;
+        private static CheckboxLook _autoAssignLook;
 
         #endregion
 
         #region Column
 
-        internal static GameObject CreateRosterColumn(Transform parent, GeoLevelController level, GeoPhoenixFaction phoenix,
-            SoldierSlotController slotPrefab, FacilitySlotPools pools)
+        /// <summary>
+        /// Builds the parts of the column that do not change - header, tabs, sort buttons, the list
+        /// and the auto-assign option. The rows are filled in by <see cref="SyncRoster"/>.
+        /// </summary>
+        internal static GameObject CreateRosterColumn(Transform parent, GeoLevelController level, GeoPhoenixFaction phoenix)
         {
+            ResetRosterView();
+
             GameObject panel = CreateFramedPanel(parent, RosterPanelName, out Transform content);
             LayoutElement panelElement = panel.GetComponent<LayoutElement>() ?? panel.AddComponent<LayoutElement>();
             panelElement.flexibleWidth = 30f;
             panelElement.flexibleHeight = 1f;
-
-            _rosterRows.Clear();
-            _rosterTabViews.Clear();
-
-            // Every row is built once, for everyone. The tabs then only change which of them are
-            // shown, which is why switching one costs nothing.
-            List<RosterEntry> entries = BuildRosterEntries(phoenix);
 
             Transform header = CreateSectionHeader(content, PersonnelText.Get(PersonnelText.RosterTitle),
                 GetColumnIconSprite(PersonnelAssignment.Unassigned), TextPrimaryColor);
@@ -109,23 +141,18 @@ namespace TFTV.TFTVBaseRework
                 TextAnchor.MiddleRight);
             SetSize(_rosterCountLabel.gameObject, 90f, 0f);
 
-            CreateFilterTabs(content, entries);
+            CreateFilterTabs(content);
+            CreateSortButtons(content);
 
             CreateScrollList(content, "RosterList", out Transform list);
-
-            foreach (RosterEntry entry in entries)
-            {
-                CreateRosterRow(list, entry, level, phoenix, slotPrefab, pools);
-            }
+            _rosterRows.Content = list;
 
             Text empty = CreateLabel(list, "Empty", PersonnelText.Get(PersonnelText.RosterEmpty), BodyFontSize,
                 TextDimColor, TextAnchor.MiddleCenter);
             SetSize(empty.gameObject, 0f, RosterRowHeight);
-            _rosterEmptyLabel = empty.gameObject;
+            _rosterRows.Empty = empty.gameObject;
 
             CreateRosterOptions(content, level, phoenix);
-
-            ApplyRosterFilter();
 
             return panel;
         }
@@ -133,97 +160,69 @@ namespace TFTV.TFTVBaseRework
         /// <summary>Drops what the roster column left behind, once it has been destroyed.</summary>
         internal static void ResetRosterView()
         {
-            RosterRowActions.Forget();
-            _rosterRows.Clear();
+            _rosterRows.Views.Clear();
+            _rosterRows.Ordered.Clear();
+            _rosterRows.Content = null;
+            _rosterRows.Empty = null;
             _rosterTabViews.Clear();
+            _rosterSortViews.Clear();
             _rosterCountLabel = null;
-            _rosterEmptyLabel = null;
+            _autoAssignLook = null;
         }
 
         /// <summary>
-        /// Shows the rows the current tab asks for and hides the rest, restriping what is left so
-        /// the banding still alternates, and retitles the tabs and the count to match.
+        /// Brings the rows into line with the records: people who have been assigned elsewhere lose
+        /// their row, people who have become free gain one, and everyone else is re-sorted and has
+        /// their buttons re-enabled or disabled for the slots that are now free. Only the rows that
+        /// actually came or went are built or destroyed.
         /// </summary>
-        private static void ApplyRosterFilter()
+        private static void SyncRoster(GeoLevelController level, GeoPhoenixFaction phoenix,
+            SoldierSlotController slotPrefab, FacilitySlotPools pools)
         {
-            RosterRowActions.CloseOpen();
-
-            int visible = 0;
-            foreach (RosterRowView view in _rosterRows)
+            if (_rosterRows.Content == null)
             {
-                if (view.Row == null)
-                {
-                    continue;
-                }
-
-                bool show = MatchesFilter(view, _rosterFilter);
-                if (view.Row.activeSelf != show)
-                {
-                    view.Row.SetActive(show);
-                }
-
-                if (!show)
-                {
-                    continue;
-                }
-
-                if (view.Background != null)
-                {
-                    view.Background.color = visible % 2 == 0 ? RowFillColor : RowFillAltColor;
-                }
-
-                visible++;
+                return;
             }
 
-            if (_rosterCountLabel != null)
-            {
-                _rosterCountLabel.text = visible.ToString();
-            }
+            List<RosterEntry> entries = BuildRosterEntries(phoenix);
+            SortRosterEntries(entries);
 
-            if (_rosterEmptyLabel != null)
+            var availability = new RosterAvailability
             {
-                _rosterEmptyLabel.SetActive(visible == 0);
-            }
+                Phoenix = phoenix,
+                ResearchFree = pools.Research.ProvidedSlots
+                    - ResearchAndManufacturing.GetOccupiedSlots(phoenix, PersonnelAssignment.Research) > 0,
+                ManufacturingFree = pools.Manufacturing.ProvidedSlots
+                    - ResearchAndManufacturing.GetOccupiedSlots(phoenix, PersonnelAssignment.Manufacturing) > 0,
+                TrainingFree = TrainingFacilityRework.GetUsedTrainingSlots()
+                    < TrainingFacilityRework.GetProvidedTrainingSlots(phoenix)
+            };
+
+            // A dismissed operative keeps their character id but becomes a different kind of row, so
+            // the kind is part of the key and the old row is replaced rather than reused.
+            SyncRows(_rosterRows, entries,
+                entry => entry.Character.Id * 2 + (entry.IsFieldOperative ? 1 : 0),
+                entry => CreateRosterRow(_rosterRows.Content, entry, level, phoenix, slotPrefab),
+                (entry, view) => UpdateRosterRow(entry, view, availability));
 
             foreach (RosterTabView tab in _rosterTabViews)
             {
-                bool active = tab.Filter == _rosterFilter;
-
-                if (tab.Background != null)
-                {
-                    tab.Background.color = active ? AccentOrangeColor : ButtonFillColor;
-                }
-
-                if (tab.Caption != null)
-                {
-                    tab.Caption.color = active
-                        ? Color.black
-                        : (tab.Count > 0 ? TextDimColor : TextDisabledColor);
-                }
+                tab.Count = entries.Count(entry => MatchesFilter(entry.IsFieldOperative, tab.Filter));
             }
-        }
 
-        private static bool MatchesFilter(RosterRowView view, RosterFilter filter)
-        {
-            switch (filter)
+            if (_autoAssignLook != null)
             {
-                case RosterFilter.FieldDuty:
-                    return view.IsFieldOperative;
-                case RosterFilter.Dismissed:
-                    return !view.IsFieldOperative && view.IsDismissed;
-                case RosterFilter.Civilians:
-                    return !view.IsFieldOperative && !view.IsDismissed;
-                default:
-                    return true;
+                _autoAssignLook.SetValue(AutoAssignEnabled);
             }
+
+            ApplyRosterFilter();
         }
 
         /// <summary>
-        /// The tabs sort the pool into the three kinds of people in it - operatives still in the
-        /// field, operatives who have been dismissed, and civilians - rather than into assigned and
-        /// unassigned, which the panels on the right already answer.
+        /// UNASSIGNED is the pool you assign from, FIELD OPERATIVES the people you can take off
+        /// field duty, and ALL both at once.
         /// </summary>
-        private static void CreateFilterTabs(Transform parent, List<RosterEntry> entries)
+        private static void CreateFilterTabs(Transform parent)
         {
             GameObject row = CreateUIObject("FilterTabs", parent);
             var layout = row.AddComponent<HorizontalLayoutGroup>();
@@ -235,16 +234,12 @@ namespace TFTV.TFTVBaseRework
             layout.childForceExpandHeight = false;
             SetSize(row, 0f, 48f);
 
-            CreateFilterTab(row.transform, RosterFilter.All, PersonnelText.FilterAll, entries.Count);
-            CreateFilterTab(row.transform, RosterFilter.FieldDuty, PersonnelText.FilterFieldDuty,
-                entries.Count(e => e.IsFieldOperative));
-            CreateFilterTab(row.transform, RosterFilter.Dismissed, PersonnelText.FilterDismissed,
-                entries.Count(e => !e.IsFieldOperative && e.IsDismissed));
-            CreateFilterTab(row.transform, RosterFilter.Civilians, PersonnelText.FilterCivilians,
-                entries.Count(e => !e.IsFieldOperative && !e.IsDismissed));
+            CreateFilterTab(row.transform, RosterFilter.Unassigned, PersonnelText.FilterUnassigned);
+            CreateFilterTab(row.transform, RosterFilter.FieldOperatives, PersonnelText.FilterFieldOperatives);
+            CreateFilterTab(row.transform, RosterFilter.All, PersonnelText.FilterAll);
         }
 
-        private static void CreateFilterTab(Transform parent, RosterFilter filter, string captionKey, int count)
+        private static void CreateFilterTab(Transform parent, RosterFilter filter, string captionKey)
         {
             Button button = CreateTextButton(parent, $"Tab_{filter}", PersonnelText.Get(captionKey), () =>
             {
@@ -257,13 +252,53 @@ namespace TFTV.TFTVBaseRework
             LayoutElement element = button.gameObject.GetComponent<LayoutElement>();
             element.flexibleWidth = 1f;
 
-            // Colours are left to ApplyRosterFilter, which is also what repaints them on a switch.
             _rosterTabViews.Add(new RosterTabView
             {
                 Filter = filter,
-                Background = button.targetGraphic as Image,
-                Caption = button.GetComponentInChildren<Text>(true),
-                Count = count
+                Look = button.GetComponent<ButtonLook>()
+            });
+        }
+
+        private static void CreateSortButtons(Transform parent)
+        {
+            GameObject row = CreateUIObject("SortButtons", parent);
+            var layout = row.AddComponent<HorizontalLayoutGroup>();
+            layout.spacing = 4f;
+            layout.padding = new RectOffset(4, 4, 2, 2);
+            layout.childAlignment = TextAnchor.MiddleLeft;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = false;
+            layout.childForceExpandHeight = false;
+            SetSize(row, 0f, 44f);
+
+            Text caption = CreateLabel(row.transform, "Caption", PersonnelText.Get(PersonnelText.SortLabel), SmallFontSize,
+                TextDimColor, TextAnchor.MiddleLeft);
+            SetSize(caption.gameObject, 130f, 40f);
+
+            CreateSortButton(row.transform, RosterSort.Affinity, PersonnelText.SortAffinity);
+            CreateSortButton(row.transform, RosterSort.Class, PersonnelText.SortClass);
+            CreateSortButton(row.transform, RosterSort.Level, PersonnelText.SortLevel);
+        }
+
+        private static void CreateSortButton(Transform parent, RosterSort sort, string captionKey)
+        {
+            Button button = CreateTextButton(parent, $"Sort_{sort}", PersonnelText.Get(captionKey), () =>
+            {
+                _rosterSort = sort;
+                // Nobody has come or gone, so this only reorders the rows that are already built.
+                SyncPanel(rosterOnly: true);
+            },
+            height: 40f,
+            fontSize: SmallFontSize);
+
+            LayoutElement element = button.gameObject.GetComponent<LayoutElement>();
+            element.flexibleWidth = 1f;
+
+            _rosterSortViews.Add(new RosterSortView
+            {
+                Sort = sort,
+                Look = button.GetComponent<ButtonLook>()
             });
         }
 
@@ -271,15 +306,83 @@ namespace TFTV.TFTVBaseRework
         {
             EnsureAutoAssignSettingInitialized(level);
 
-            CreateCheckbox(parent, "AutoAssignToggle", PersonnelText.Get(PersonnelText.AutoAssign), AutoAssignEnabled, () =>
+            Button checkbox = CreateCheckbox(parent, "AutoAssignToggle", PersonnelText.Get(PersonnelText.AutoAssign),
+                AutoAssignEnabled, () => RunPanelAction(() =>
                 {
                     SetAutoAssignEnabled(level, !AutoAssignEnabled);
                     if (AutoAssignEnabled)
                     {
                         TryAutoAssignUnassignedPersonnel(phoenix, "AutoAssignToggle");
                     }
-                    RefreshPanel();
-                }, height: 58f, fontSize: TitleFontSize);
+                }), height: 58f, fontSize: TitleFontSize);
+
+            _autoAssignLook = checkbox.GetComponent<CheckboxLook>();
+        }
+
+        /// <summary>
+        /// Shows the rows the current tab asks for and hides the rest, restriping what is left so
+        /// the banding still alternates, and redraws the tabs, sort buttons and count to match.
+        /// </summary>
+        private static void ApplyRosterFilter()
+        {
+            int visible = 0;
+            foreach (RosterRowView view in _rosterRows.Ordered)
+            {
+                if (view?.Row == null)
+                {
+                    continue;
+                }
+
+                bool show = MatchesFilter(view.IsFieldOperative, _rosterFilter);
+                if (view.Row.activeSelf != show)
+                {
+                    view.Row.SetActive(show);
+                }
+
+                if (show)
+                {
+                    visible++;
+                }
+            }
+
+            Restripe(_rosterRows.Ordered);
+
+            if (_rosterCountLabel != null)
+            {
+                _rosterCountLabel.text = visible.ToString();
+            }
+
+            if (_rosterRows.Empty != null)
+            {
+                _rosterRows.Empty.SetActive(visible == 0);
+            }
+
+            foreach (RosterTabView tab in _rosterTabViews)
+            {
+                bool active = tab.Filter == _rosterFilter;
+                tab.Look?.SetColors(active ? AccentOrangeColor : ButtonFillColor,
+                    active ? Color.black : (tab.Count > 0 ? TextDimColor : TextDisabledColor));
+            }
+
+            foreach (RosterSortView sort in _rosterSortViews)
+            {
+                bool active = sort.Sort == _rosterSort;
+                sort.Look?.SetColors(active ? AccentOrangeColor : ButtonFillColor,
+                    active ? Color.black : TextDimColor);
+            }
+        }
+
+        private static bool MatchesFilter(bool isFieldOperative, RosterFilter filter)
+        {
+            switch (filter)
+            {
+                case RosterFilter.Unassigned:
+                    return !isFieldOperative;
+                case RosterFilter.FieldOperatives:
+                    return isFieldOperative;
+                default:
+                    return true;
+            }
         }
 
         #endregion
@@ -309,8 +412,7 @@ namespace TFTV.TFTVBaseRework
                 managed.Add(person.Character.Id);
 
                 // Whoever is researching, fabricating or training is listed in that panel, with the
-                // control that ends the assignment. Repeating them here made the roster twice as
-                // long as it needed to be and left the same person on screen in two places.
+                // control that ends the assignment.
                 if (person.Assignment != PersonnelAssignment.Unassigned)
                 {
                     continue;
@@ -336,36 +438,122 @@ namespace TFTV.TFTVBaseRework
                 entries.Add(new RosterEntry { Character = soldier, IsFieldOperative = true });
             }
 
-            return entries.OrderBy(e => e.Name).ToList();
+            return entries;
+        }
+
+        /// <summary>
+        /// Orders the roster for the chosen sort.
+        ///
+        /// Operatives, serving or dismissed, always come first and civilians after them: they are
+        /// the people with a class and a level to compare, and the ones the player is usually
+        /// looking for. Within each group the chosen sort decides, then level, highest first, so
+        /// operatives without an affinity follow straight on from those with one; the name settles
+        /// anything left, so the order holds still between refreshes.
+        /// </summary>
+        private static void SortRosterEntries(List<RosterEntry> entries)
+        {
+            foreach (RosterEntry entry in entries)
+            {
+                entry.SortName = entry.Name;
+
+                bool hasClass = entry.HasClass;
+                entry.SortLevel = hasClass ? entry.Character.LevelProgression?.Level ?? 1 : 0;
+                entry.SortClass = hasClass ? GetClassName(entry.Character) : null;
+
+                entry.SortAffinity = int.MaxValue;
+                entry.SortAffinityRank = 0;
+
+                try
+                {
+                    if (LeaderSelection.TryGetCurrentAffinity(entry.Character, out LeaderSelection.AffinityApproach approach, out int rank))
+                    {
+                        entry.SortAffinity = (int)approach;
+                        entry.SortAffinityRank = rank;
+                    }
+                }
+                catch (Exception e)
+                {
+                    // One unreadable affinity sorts that person last rather than emptying the list.
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            entries.Sort((a, b) =>
+            {
+                // Operatives, current and past, before civilians.
+                int cmp = b.HasClass.CompareTo(a.HasClass);
+                if (cmp != 0)
+                {
+                    return cmp;
+                }
+
+                switch (_rosterSort)
+                {
+                    case RosterSort.Affinity:
+                        cmp = a.SortAffinity.CompareTo(b.SortAffinity);
+                        if (cmp == 0)
+                        {
+                            cmp = b.SortAffinityRank.CompareTo(a.SortAffinityRank);
+                        }
+                        break;
+
+                    case RosterSort.Class:
+                        cmp = string.Compare(a.SortClass, b.SortClass, StringComparison.CurrentCulture);
+                        break;
+                }
+
+                if (cmp == 0)
+                {
+                    cmp = b.SortLevel.CompareTo(a.SortLevel);
+                }
+
+                return cmp != 0 ? cmp : string.Compare(a.SortName, b.SortName, StringComparison.CurrentCulture);
+            });
+        }
+
+        private static string GetClassName(GeoCharacter character)
+        {
+            try
+            {
+                return character?.GetClassViewElementDefs()?.FirstOrDefault()?.DisplayName1?.Localize() ?? string.Empty;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+                return string.Empty;
+            }
         }
 
         #endregion
 
         #region Rows
 
-        private static void CreateRosterRow(Transform parent, RosterEntry entry, GeoLevelController level,
-            GeoPhoenixFaction phoenix, SoldierSlotController slotPrefab, FacilitySlotPools pools)
+        /// <summary>
+        /// One line per person: name, affinity, then their actions. The actions sit in four fixed
+        /// columns so the training button lines up down the whole list - research, fabrication,
+        /// training and deployment for the free pool; dismiss-and-train and dismiss for field
+        /// operatives, with dismissal at the edge where deployment sits for everyone else.
+        /// </summary>
+        private static RosterRowView CreateRosterRow(Transform parent, RosterEntry entry, GeoLevelController level,
+            GeoPhoenixFaction phoenix, SoldierSlotController slotPrefab)
         {
             if (entry?.Character == null)
             {
-                return;
+                return null;
             }
 
             GameObject row = CreateUIObject($"RosterRow_{entry.Character.Id}", parent);
-            var background = row.AddComponent<Image>();
-
-            _rosterRows.Add(new RosterRowView
+            var view = new RosterRowView
             {
                 Row = row,
-                Background = background,
+                Background = row.AddComponent<Image>(),
                 IsFieldOperative = entry.IsFieldOperative,
                 IsDismissed = entry.IsDismissed
-            });
+            };
 
-            // One line per person, so the list does not grow a row taller when its actions open.
             var rowLayout = row.AddComponent<HorizontalLayoutGroup>();
             rowLayout.spacing = 6f;
-            rowLayout.padding = new RectOffset(2, 2, 2, 2);
+            rowLayout.padding = new RectOffset(2, 6, 2, 2);
             rowLayout.childAlignment = TextAnchor.MiddleLeft;
             rowLayout.childControlWidth = true;
             rowLayout.childControlHeight = true;
@@ -375,33 +563,126 @@ namespace TFTV.TFTVBaseRework
 
             CreateNameCell(row.transform, entry, slotPrefab);
 
-            Text status = CreateLabel(row.transform, "Status", GetRosterStatusText(entry), BodyFontSize,
-                GetRosterStatusColor(entry), TextAnchor.MiddleRight);
-            SetSize(status.gameObject, RosterStatusWidth, RosterRowHeight);
-
             // The badge centres itself on its parent, so it gets a cell of its own rather than being
-            // laid out as a sibling of the name and status.
+            // laid out as a sibling of the name.
             GameObject affinityCell = CreateUIObject("AffinityCell", row.transform);
             SetSize(affinityCell, RosterBadgeSize + 6f, RosterRowHeight);
             AddAffinityBadge(affinityCell, entry.Character, RosterBadgeSize);
 
             if (entry.IsFieldOperative)
             {
-                // Field operatives have exactly one thing that can be done to them from here, so
-                // they get that control directly instead of a "+" that opens a strip of one.
-                Button dismiss = CreateIconButton(row.transform, "Dismiss", GetDismissIconSprite(),
-                    () => ConfirmDismissFromFieldDuty(entry.Character, level, phoenix),
+                GeoCharacter character = entry.Character;
+
+                for (int column = 0; column < 2; column++)
+                {
+                    GameObject spacer = CreateUIObject("Spacer", row.transform);
+                    SetSize(spacer, RosterActionSize, RosterActionSize);
+                }
+
+                view.Training = CreateIconButton(row.transform, "DismissAndTrain", GetColumnIconSprite(PersonnelAssignment.Training),
+                    () => ShowFieldOperativeTrainingSelection(level, character),
+                    size: RosterActionSize);
+                view.TrainingTooltip = AddTextTooltip(view.Training.gameObject,
+                    PersonnelText.Get(PersonnelText.ActionTrainFieldOperative));
+
+                view.Dismiss = CreateIconButton(row.transform, "Dismiss", GetDismissIconSprite(),
+                    () => ConfirmDismissFromFieldDuty(character, level, phoenix),
                     size: RosterActionSize, fillColor: ButtonFillDangerColor, fallbackCaption: "X");
-                AddTextTooltip(dismiss.gameObject, PersonnelText.Get(PersonnelText.ActionDismiss));
+                AddTextTooltip(view.Dismiss.gameObject, PersonnelText.Get(PersonnelText.ActionDismiss));
+
+                return view;
+            }
+
+            PersonnelInfo person = entry.Personnel;
+
+            view.Research = CreateIconButton(row.transform, "ToResearch", GetColumnIconSprite(PersonnelAssignment.Research),
+                () => RunPanelAction(() => MovePersonnelToColumn(person, PersonnelAssignment.Research, level, phoenix)),
+                size: RosterActionSize);
+            AddTextTooltip(view.Research.gameObject, PersonnelText.Get(PersonnelText.ActionResearch));
+
+            view.Manufacturing = CreateIconButton(row.transform, "ToManufacturing", GetColumnIconSprite(PersonnelAssignment.Manufacturing),
+                () => RunPanelAction(() => MovePersonnelToColumn(person, PersonnelAssignment.Manufacturing, level, phoenix)),
+                size: RosterActionSize);
+            AddTextTooltip(view.Manufacturing.gameObject, PersonnelText.Get(PersonnelText.ActionManufacturing));
+
+            view.Training = CreateIconButton(row.transform, "ToTraining", GetColumnIconSprite(PersonnelAssignment.Training),
+                () => StartRosterTraining(level, phoenix, person),
+                size: RosterActionSize);
+            view.TrainingTooltip = AddTextTooltip(view.Training.gameObject, PersonnelText.Get(PersonnelText.ActionTrain));
+
+            // Deploying opens the base picker, which takes a civilian on to choosing a class and
+            // charges a dismissed operative the redeploy fee.
+            view.Deploy = CreateIconButton(row.transform, "Deploy", GetDeployIconSprite(),
+                () => ShowSlotContextMenu(person),
+                size: RosterActionSize, fallbackCaption: "D");
+            view.DeployTooltip = AddTextTooltip(view.Deploy.gameObject, PersonnelText.Get(PersonnelText.ActionDeploy));
+
+            return view;
+        }
+
+        private static void UpdateRosterRow(RosterEntry entry, RosterRowView view, RosterAvailability availability)
+        {
+            UpdateTrainingButton(entry, view, availability);
+
+            if (view.IsFieldOperative)
+            {
                 return;
             }
 
-            var actions = row.AddComponent<RosterRowActions>();
-            Button expand = CreateIconButton(row.transform, "Expand", null, () => actions.Toggle(),
-                size: RosterActionSize, fallbackCaption: RosterRowActions.ExpandCaption);
+            bool canWork = PersonnelRestrictions.CanBeAssignedToManufacturingOrResearch(entry.Character);
+            SetButtonEnabled(view.Research, canWork && availability.ResearchFree);
+            SetButtonEnabled(view.Manufacturing, canWork && availability.ManufacturingFree);
 
-            actions.Initialize(status.gameObject, affinityCell, expand,
-                () => CreateRowActionStrip(row.transform, entry, level, phoenix, pools));
+            // Only a dismissed operative's deployment costs anything, and it cannot go ahead short.
+            int redeployCost = entry.IsDismissed ? PersonnelRestrictions.GetRedeployCost(entry.Character) : 0;
+            int skillpoints = availability.Phoenix?.Skillpoints ?? 0;
+            bool affordable = skillpoints >= redeployCost;
+
+            SetButtonEnabled(view.Deploy, affordable);
+            SetTooltip(view.DeployTooltip, affordable
+                ? PersonnelText.Get(PersonnelText.ActionDeploy)
+                : PersonnelText.Format(PersonnelText.NotEnoughSpRedeploy, entry.Name, redeployCost, skillpoints));
+        }
+
+        /// <summary>
+        /// Training is greyed out when it cannot happen, and the hover says why: either the person
+        /// is already as high as training can take them - which depends on research and on their
+        /// affinity - or every training slot is taken. The cap is the reason given when both apply,
+        /// since a free slot would not help.
+        /// </summary>
+        private static void UpdateTrainingButton(RosterEntry entry, RosterRowView view, RosterAvailability availability)
+        {
+            // Civilians train up from level 1; operatives, serving or dismissed, from where they are.
+            int currentLevel = entry.HasClass ? entry.Character.LevelProgression?.Level ?? 1 : 1;
+            int maxLevel = TrainingFacilityRework.GetMaxTargetLevel(availability.Phoenix, entry.Character);
+            bool capped = Math.Max(2, currentLevel + 1) > maxLevel;
+
+            string tooltip;
+            if (capped)
+            {
+                tooltip = PersonnelText.Format(PersonnelText.TrainCapped, entry.Name, currentLevel);
+            }
+            else if (!availability.TrainingFree)
+            {
+                tooltip = PersonnelText.Get(PersonnelText.NoFacilitySlot);
+            }
+            else
+            {
+                tooltip = PersonnelText.Get(view.IsFieldOperative
+                    ? PersonnelText.ActionTrainFieldOperative
+                    : PersonnelText.ActionTrain);
+            }
+
+            SetButtonEnabled(view.Training, !capped && availability.TrainingFree);
+            SetTooltip(view.TrainingTooltip, tooltip);
+        }
+
+        private static void SetTooltip(PersonnelTooltipTrigger trigger, string content)
+        {
+            if (trigger != null)
+            {
+                trigger.Content = content;
+            }
         }
 
         /// <summary>
@@ -426,8 +707,23 @@ namespace TFTV.TFTVBaseRework
                     slotButton.interactable = false;
                 }
 
-                bool showsClass = entry.IsFieldOperative || entry.IsDismissed;
-                if (!showsClass)
+                // The slot is a button in its own screen and brings that screen's sounds along; here
+                // it is only a label, and hovering a list of names should not click at the player.
+                foreach (UIButtonSounds sounds in slot.GetComponentsInChildren<UIButtonSounds>(true))
+                {
+                    sounds.enabled = false;
+                }
+
+                // Whatever still listens for pointer events on it would otherwise eat the mouse wheel.
+                foreach (EventTrigger trigger in slot.GetComponentsInChildren<EventTrigger>(true))
+                {
+                    if (trigger.GetComponent<ScrollPassthrough>() == null)
+                    {
+                        trigger.gameObject.AddComponent<ScrollPassthrough>();
+                    }
+                }
+
+                if (!entry.HasClass)
                 {
                     if (slot.IconElement != null)
                     {
@@ -445,9 +741,8 @@ namespace TFTV.TFTVBaseRework
                     slot.IconElement.transform.localScale = new Vector3(ClassIconScale, ClassIconScale, 1f);
                 }
 
-                // Serving operatives are the one group on this screen that cannot be put to work, so
-                // their names carry the same orange as their status rather than only the status
-                // doing the telling - a dismissed operative reads the same at a glance otherwise.
+                // Serving operatives are the one group on this screen that cannot be put to work
+                // directly, and the only thing that marks them out now there is no status column.
                 if (entry.IsFieldOperative && slot.NameLabel != null)
                 {
                     slot.NameLabel.color = AccentOrangeColor;
@@ -472,86 +767,28 @@ namespace TFTV.TFTVBaseRework
             element.flexibleWidth = 1f;
         }
 
-        private static string GetRosterStatusText(RosterEntry entry)
-        {
-            if (entry.IsFieldOperative)
-            {
-                return PersonnelText.Get(PersonnelText.StatusFieldDuty);
-            }
-
-            return PersonnelText.Get(entry.IsDismissed
-                ? PersonnelText.StatusDismissed
-                : PersonnelText.StatusIdle);
-        }
-
-        private static Color GetRosterStatusColor(RosterEntry entry)
-        {
-            return entry.IsFieldOperative ? AccentOrangeColor : TextDimColor;
-        }
-
         #endregion
 
         #region Row actions
 
         /// <summary>
-        /// The strip of duties a free person can be put on, built on demand when their row is opened
-        /// and thrown away when it closes. It takes the place of the status and affinity cells on the
-        /// same line, so opening a row never moves the rows under it.
+        /// Straight into training: a class and then a level for a civilian, a level alone for a
+        /// dismissed operative, who keeps the class they had.
         /// </summary>
-        private static GameObject CreateRowActionStrip(Transform parent, RosterEntry entry, GeoLevelController level,
-            GeoPhoenixFaction phoenix, FacilitySlotPools pools)
+        private static void StartRosterTraining(GeoLevelController level, GeoPhoenixFaction phoenix, PersonnelInfo person)
         {
-            GameObject strip = CreateUIObject("Actions", parent);
-            var layout = strip.AddComponent<HorizontalLayoutGroup>();
-            layout.spacing = 6f;
-            layout.padding = new RectOffset(0, 6, 0, 0);
-            layout.childAlignment = TextAnchor.MiddleRight;
-            layout.childControlWidth = true;
-            layout.childControlHeight = true;
-            layout.childForceExpandWidth = false;
-            layout.childForceExpandHeight = false;
-            SetSize(strip, 0f, RosterRowHeight);
-
-            PersonnelInfo person = entry.Personnel;
             if (person == null)
             {
-                return strip;
+                return;
             }
 
-            bool canWork = PersonnelRestrictions.CanBeAssignedToManufacturingOrResearch(entry.Character);
-            int researchFree = pools.Research.ProvidedSlots - ResearchAndManufacturing.GetOccupiedSlots(phoenix, PersonnelAssignment.Research);
-            int manufacturingFree = pools.Manufacturing.ProvidedSlots - ResearchAndManufacturing.GetOccupiedSlots(phoenix, PersonnelAssignment.Manufacturing);
-
-            CreateIconButton(strip.transform, "ToResearch", GetColumnIconSprite(PersonnelAssignment.Research),
-                () => ApplyRowAssignment(person, PersonnelAssignment.Research, level, phoenix),
-                size: RosterActionSize,
-                enabled: canWork && researchFree > 0);
-
-            CreateIconButton(strip.transform, "ToManufacturing", GetColumnIconSprite(PersonnelAssignment.Manufacturing),
-                () => ApplyRowAssignment(person, PersonnelAssignment.Manufacturing, level, phoenix),
-                size: RosterActionSize,
-                enabled: canWork && manufacturingFree > 0);
-
-            CreateIconButton(strip.transform, "ToTraining", GetColumnIconSprite(PersonnelAssignment.Training),
-                () => ApplyRowAssignment(person, PersonnelAssignment.Training, level, phoenix),
-                size: RosterActionSize);
-
-            return strip;
-        }
-
-        private static void ApplyRowAssignment(PersonnelInfo person, PersonnelAssignment target,
-            GeoLevelController level, GeoPhoenixFaction phoenix)
-        {
-            // Training opens a modal and refreshes through its own callback; refreshing here would
-            // destroy that modal the moment it appeared.
-            bool opensModal = target == PersonnelAssignment.Training;
-
-            MovePersonnelToColumn(person, target, level, phoenix);
-
-            if (!opensModal)
+            if (PersonnelData.IsLivingCapacityFull(phoenix))
             {
-                RefreshPanel();
+                ShowLivingQuartersFull(PersonnelText.DutyTraining);
+                return;
             }
+
+            StartTrainingFlow(level, person);
         }
 
         #endregion
@@ -595,14 +832,12 @@ namespace TFTV.TFTVBaseRework
                 details => CreateCharacterSummary(details, character, returnedToStorage),
                 () =>
                 {
-                    bool dismissed = DismissFromFieldDuty(character, phoenix);
-
-                    CloseModal();
-                    RefreshPanel();
+                    bool dismissed = false;
+                    RunPanelAction(() => dismissed = DismissFromFieldDuty(character, phoenix));
 
                     if (!dismissed)
                     {
-                        // Refreshing the panel destroys the modal it owns, so the report comes after.
+                        // The refresh closes the modal it owns, so the report comes after.
                         ShowMessage(PersonnelText.Format(PersonnelText.DismissFailed, name));
                     }
                 },
@@ -633,167 +868,139 @@ namespace TFTV.TFTVBaseRework
         }
 
         #endregion
-    }
 
-    /// <summary>
-    /// Opens and closes one roster row's action strip, in the row itself rather than by rebuilding
-    /// the screen: the strip takes the place of the status and affinity cells, only one row's strip
-    /// is open at a time, and the strip closes again as soon as the pointer leaves the row - the
-    /// same way the base construction menus behave.
-    /// </summary>
-    internal sealed class RosterRowActions : MonoBehaviour, IPointerExitHandler
-    {
-        internal const string ExpandCaption = "+";
-        private const string CollapseCaption = "-";
+        #region Dismiss and train
 
-        private static RosterRowActions _open;
-
-        private GameObject _status;
-        private GameObject _affinity;
-        private Button _toggle;
-        private Text _toggleCaption;
-        private Image _toggleBackground;
-        private Func<GameObject> _buildStrip;
-        private GameObject _strip;
-
-        /// <summary>Forgets the open row, for when the screen the rows lived on has gone away.</summary>
-        internal static void Forget()
+        /// <summary>
+        /// Sends a serving operative to training in one go - the same as dismissing them and then
+        /// assigning them to training, but decided together: the level is chosen first and a single
+        /// confirmation covers both, so backing out part way never leaves them dismissed and idle.
+        /// </summary>
+        private static void ShowFieldOperativeTrainingSelection(GeoLevelController level, GeoCharacter character)
         {
-            _open = null;
-        }
-
-        /// <summary>Closes whichever row is open, leaving the rows themselves standing.</summary>
-        internal static void CloseOpen()
-        {
-            if (_open != null)
+            GeoPhoenixFaction faction = level?.PhoenixFaction;
+            if (faction == null || character == null)
             {
-                _open.Collapse();
-            }
-        }
-
-        internal void Initialize(GameObject status, GameObject affinity, Button toggle, Func<GameObject> buildStrip)
-        {
-            _status = status;
-            _affinity = affinity;
-            _toggle = toggle;
-            _buildStrip = buildStrip;
-            _toggleBackground = toggle != null ? toggle.targetGraphic as Image : null;
-            _toggleCaption = toggle != null ? toggle.GetComponentInChildren<Text>(true) : null;
-        }
-
-        internal void Toggle()
-        {
-            if (_strip != null)
-            {
-                Collapse();
                 return;
             }
 
-            Expand();
-        }
-
-        public void OnPointerExit(PointerEventData eventData)
-        {
-            // Children of the row - the strip's own buttons included - do not count as leaving it,
-            // so this only fires once the pointer is genuinely off the row.
-            Collapse();
-        }
-
-        private void OnDisable()
-        {
-            if (_open == this)
+            SpecializationDef spec = ResolveExistingSpecialization(character);
+            if (spec == null)
             {
-                _open = null;
+                ShowMessage(PersonnelText.Format(PersonnelText.ClassUnknown, character.DisplayName));
+                return;
             }
+
+            if (TrainingFacilityRework.GetUsedTrainingSlots() >= TrainingFacilityRework.GetProvidedTrainingSlots(faction))
+            {
+                ShowMessage(PersonnelText.Get(PersonnelText.NoFacilitySlot));
+                return;
+            }
+
+            int currentLevel = character.LevelProgression?.Level ?? 1;
+            int maxLevel = TrainingFacilityRework.GetMaxTargetLevel(faction, character);
+            int minTargetLevel = Math.Max(2, currentLevel + 1);
+
+            if (minTargetLevel > maxLevel)
+            {
+                ShowMessage(PersonnelText.Format(PersonnelText.AlreadyMaxLevel, character.DisplayName, currentLevel));
+                return;
+            }
+
+            CloseModal();
+            _modalRoot = CreateModalRoot("FieldOperativeTrainingModal");
+            AddModalHeader(PersonnelText.Get(PersonnelText.SelectLevel));
+            Transform content = CreateModalContentArea();
+
+            for (int targetLevel = minTargetLevel; targetLevel <= maxLevel; targetLevel++)
+            {
+                int levelsGained = targetLevel - currentLevel;
+                int spCost = TrainingFacilityRework.GetTrainingSpCost(targetLevel);
+                float duration = TrainingFacilityRework.GetEffectiveDurationHours(faction, targetLevel, currentLevel);
+                string statGains = TrainingFacilityRework.GetStatGainDescription(levelsGained);
+                string label = PersonnelText.Format(PersonnelText.TrainOption, targetLevel, spCost,
+                    FormatDuration(duration), statGains);
+
+                bool canAfford = faction.Skillpoints >= spCost;
+                int chosenLevel = targetLevel;
+
+                AddModalOptionButton(content,
+                    canAfford ? label : PersonnelText.Format(PersonnelText.TrainOptionUnaffordable, label), () =>
+                    {
+                        if (!canAfford)
+                        {
+                            ShowMessage(PersonnelText.Format(PersonnelText.NotEnoughSp, spCost, faction.Skillpoints));
+                            return;
+                        }
+
+                        ConfirmFieldOperativeTraining(level, character, spec, chosenLevel, spCost, duration,
+                            statGains, levelsGained);
+                    });
+            }
+
+            AddModalCloseButton();
         }
 
-        private void Expand()
+        private static void ConfirmFieldOperativeTraining(GeoLevelController level, GeoCharacter character,
+            SpecializationDef spec, int targetLevel, int spCost, float duration, string statGains, int levelsGained)
         {
-            try
-            {
-                if (_buildStrip == null || _toggle == null)
+            GeoPhoenixFaction faction = level.PhoenixFaction;
+            string name = character.DisplayName;
+
+            // Completing training for a dismissed operative charges the redeploy fee at their
+            // current level, so that is the figure the player is told now.
+            string message = PersonnelText.Format(PersonnelText.TrainConfirm, name,
+                    spec.ViewElementDef.DisplayName1.Localize(), targetLevel, spCost, FormatDuration(duration), statGains)
+                + "\n\n"
+                + PersonnelText.Format(PersonnelText.TrainFieldOperative, name,
+                    PersonnelRestrictions.GetRedeployCost(character));
+
+            List<GeoItem> returnedToStorage = PersonnelDismissal.GetLoadoutReturnedToStorage(character);
+            ProjectedStats projected = BuildProjectedStats(character, levelsGained);
+
+            ShowConfirmation(message,
+                details => CreateCharacterSummary(details, character, returnedToStorage, projected,
+                    showClassAndAbilities: true),
+                () =>
                 {
-                    return;
-                }
+                    if (faction.Skillpoints < spCost)
+                    {
+                        ShowMessage(PersonnelText.Format(PersonnelText.NotEnoughSp, spCost, faction.Skillpoints));
+                        return;
+                    }
 
-                if (_open != null && _open != this)
-                {
-                    _open.Collapse();
-                }
+                    string failure = null;
 
-                SetCellsVisible(false);
+                    RunPanelAction(() =>
+                    {
+                        if (!DismissFromFieldDuty(character, faction))
+                        {
+                            failure = PersonnelText.Format(PersonnelText.DismissFailed, name);
+                            return;
+                        }
 
-                _strip = _buildStrip();
-                if (_strip != null)
-                {
-                    _strip.transform.SetSiblingIndex(_toggle.transform.GetSiblingIndex());
-                }
+                        // Training is queued for base personnel, which the dismissal has just made
+                        // them; the record is looked up again because it did not exist until now.
+                        PersonnelInfo person = PersonnelData.GetPersonnelByUnitId(character.Id);
+                        if (person != null
+                            && TrainingFacilityRework.QueueCharacterTrainingAutoFacility(level, character, spec, targetLevel))
+                        {
+                            AssignPersonnelToTraining(person, faction, spec);
+                            return;
+                        }
 
-                SetToggleOpen(true);
-                _open = this;
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
+                        failure = PersonnelText.Format(PersonnelText.TrainQueueFailed, name);
+                    });
+
+                    if (failure != null)
+                    {
+                        TFTVLogger.Always($"{LogPrefix} Dismiss-and-train for {name} did not complete: {failure}");
+                        ShowMessage(failure);
+                    }
+                },
+                () => CloseModal());
         }
 
-        private void Collapse()
-        {
-            try
-            {
-                if (_strip == null)
-                {
-                    return;
-                }
-
-                // Destroy() runs at the end of the frame, and until then the strip would still be
-                // laid out beside the cells coming back; deactivating takes it out of the row now.
-                _strip.SetActive(false);
-                Destroy(_strip);
-                _strip = null;
-
-                SetCellsVisible(true);
-                SetToggleOpen(false);
-
-                if (_open == this)
-                {
-                    _open = null;
-                }
-            }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
-        }
-
-        private void SetCellsVisible(bool visible)
-        {
-            if (_status != null)
-            {
-                _status.SetActive(visible);
-            }
-
-            if (_affinity != null)
-            {
-                _affinity.SetActive(visible);
-            }
-        }
-
-        private void SetToggleOpen(bool open)
-        {
-            if (_toggleCaption != null)
-            {
-                _toggleCaption.text = open ? CollapseCaption : ExpandCaption;
-                _toggleCaption.color = open ? Color.black : PersonnelManagementUI.TextPrimaryColor;
-            }
-
-            if (_toggleBackground != null)
-            {
-                _toggleBackground.color = open
-                    ? PersonnelManagementUI.AccentOrangeColor
-                    : PersonnelManagementUI.ButtonFillColor;
-            }
-        }
+        #endregion
     }
 }
