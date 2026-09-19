@@ -46,8 +46,9 @@ namespace TFTV.TFTVHavenRecruitsUI
         private const float PortraitAnchorMaxY = 0.905f;
 
         /// <summary>
-        /// How long a recruit has to stay selected before its portrait is rendered. Long enough that
-        /// scrolling the list with a controller costs nothing, short enough not to be felt on a click.
+        /// How long a recruit selected by controller or keyboard has to stay selected before its
+        /// portrait is rendered - long enough that scrolling the list costs nothing. A mouse click
+        /// skips it: once rendering got fast, this wait was most of the delay a click saw.
         /// </summary>
         private const float DebounceSeconds = 0.2f;
 
@@ -91,7 +92,11 @@ namespace TFTV.TFTVHavenRecruitsUI
         // The recruit the panel currently wants shown. The render loop reads this every time it is
         // about to commit to work, so a newer selection always wins over an older one.
         private static GeoUnitDescriptor _requested;
+        private static bool _requestedByClick;
         private static bool _renderLoopRunning;
+
+        /// <summary>How long a freshly rendered portrait takes to fade in.</summary>
+        private const float FadeInSeconds = 0.15f;
 
         /// <summary>
         /// The recruit detail panel, or null if there is not one right now. Unity's own null test,
@@ -146,8 +151,6 @@ namespace TFTV.TFTVHavenRecruitsUI
                 _holderRect = holderRT;
                 _holder.SetActive(false);
 
-                TFTVLogger.Always($"{LogPrefix} Portrait slot created.");
-
                 // A fresh panel means a fresh session. Reaching here proves there was no slot, so any
                 // loop still believing it is running belongs to a level that is gone.
                 _renderLoopRunning = false;
@@ -181,6 +184,11 @@ namespace TFTV.TFTVHavenRecruitsUI
 
                 _requested = recruit;
 
+                // A mouse click is a deliberate choice of this recruit, not a cursor passing over it
+                // on the way somewhere else, so it does not need to hold still before it is rendered.
+                // Controller and keyboard selection still wait - see DebounceSeconds.
+                _requestedByClick = Input.GetMouseButtonUp(0) || Input.GetMouseButtonDown(0);
+
                 if (recruit == null)
                 {
                     Detach();
@@ -211,10 +219,8 @@ namespace TFTV.TFTVHavenRecruitsUI
                         TFTVLogger.Always($"{LogPrefix} Could not start the render loop for {recruit.GetName()}.");
                     }
                 }
-                else
-                {
-                    TFTVLogger.Always($"{LogPrefix} {recruit.GetName()} queued behind a render loop already running.");
-                }
+
+                // Otherwise a loop is already running, and picks this recruit up from _requested.
             }
             catch (Exception ex) { TFTVLogger.Error(ex); }
         }
@@ -291,8 +297,6 @@ namespace TFTV.TFTVHavenRecruitsUI
                     GeoUnitDescriptor target = _requested;
                     if (target == null || _holder == null)
                     {
-                        TFTVLogger.Always($"{LogPrefix} Render loop stopping: " +
-                            $"{(target == null ? "nothing selected" : "no slot")}.");
                         yield break;
                     }
 
@@ -304,8 +308,10 @@ namespace TFTV.TFTVHavenRecruitsUI
                     }
 
                     // Let the selection settle. A player running down the list with a controller
-                    // passes over every recruit in it, and none of those are worth a render.
-                    float deadline = Time.realtimeSinceStartup + DebounceSeconds;
+                    // passes over every recruit in it, and none of those are worth a render. A mouse
+                    // click skips the wait: it was always most of the delay on a click, once the
+                    // render behind it got fast.
+                    float deadline = Time.realtimeSinceStartup + (_requestedByClick ? 0f : DebounceSeconds);
                     while (Time.realtimeSinceStartup < deadline && _requested == target)
                     {
                         yield return null;
@@ -333,7 +339,7 @@ namespace TFTV.TFTVHavenRecruitsUI
 
                     if (_requested == target)
                     {
-                        Apply(portrait);
+                        Apply(portrait, fadeIn: true);
                         yield break;
                     }
                 }
@@ -359,7 +365,13 @@ namespace TFTV.TFTVHavenRecruitsUI
             return new Vector2Int(FallbackResolution, FallbackResolution);
         }
 
-        private static void Apply(Sprite portrait)
+        /// <summary>
+        /// Puts a portrait in the slot. <paramref name="fadeIn"/> fades a freshly rendered one in, as
+        /// the incident screen's crew cards do, instead of letting it pop in some fraction of a second
+        /// after the rest of the panel. A cached portrait - a recruit already looked at - is shown at
+        /// once: it is ready with the panel, and fading it would only add a delay.
+        /// </summary>
+        private static void Apply(Sprite portrait, bool fadeIn = false)
         {
             if (_portraitImage == null || _holder == null)
             {
@@ -368,6 +380,24 @@ namespace TFTV.TFTVHavenRecruitsUI
 
             _portraitImage.sprite = portrait;
             _holder.SetActive(portrait != null);
+
+            if (portrait == null)
+            {
+                return;
+            }
+
+            // Unscaled: the geoscape clock can be paused while the panel is open.
+            if (fadeIn)
+            {
+                _portraitImage.canvasRenderer.SetAlpha(0f);
+                _portraitImage.CrossFadeAlpha(1f, FadeInSeconds, ignoreTimeScale: true);
+            }
+            else
+            {
+                // Also cancels a fade still running from the previous recruit.
+                _portraitImage.CrossFadeAlpha(1f, 0f, ignoreTimeScale: true);
+                _portraitImage.canvasRenderer.SetAlpha(1f);
+            }
         }
 
         /// <summary>

@@ -7,6 +7,7 @@ using PhoenixPoint.Geoscape.Events;
 using PhoenixPoint.Geoscape.Levels;
 using PhoenixPoint.Geoscape.View.ViewControllers.SiteEncounters;
 using PhoenixPoint.Geoscape.View.ViewModules;
+using PhoenixPoint.Geoscape.View.ViewStates;
 using System;
 using System.Reflection;
 using UnityEngine;
@@ -286,11 +287,6 @@ namespace TFTV.TFTVIncidents
         /// </summary>
         internal static void PositionUnderChoices(UIModuleSiteEncounters module)
         {
-            PositionUnderChoices(module, log: true);
-        }
-
-        private static void PositionUnderChoices(UIModuleSiteEncounters module, bool log)
-        {
             try
             {
                 if (_cancelButtonObject == null || module?.ChoiceButtonsContainer == null)
@@ -332,14 +328,6 @@ namespace TFTV.TFTVIncidents
                 }
 
                 rect.anchoredPosition = placed;
-
-                if (log)
-                {
-                    TFTVLogger.Always(
-                        $"[IncidentCancelButton] Placed at {placed.x:0},{placed.y:0} " +
-                        $"size {rect.sizeDelta.x:0}x{rect.sizeDelta.y:0}; response bottom left {local.x:0},{local.y:0}, " +
-                        $"parent corner {anchorInLocalSpace.x:0},{anchorInLocalSpace.y:0}.");
-                }
             }
             catch (Exception e)
             {
@@ -416,7 +404,7 @@ namespace TFTV.TFTVIncidents
                         return;
                     }
 
-                    PositionUnderChoices(_module, log: false);
+                    PositionUnderChoices(_module);
                 }
                 catch (Exception e)
                 {
@@ -475,6 +463,8 @@ namespace TFTV.TFTVIncidents
             {
                 try
                 {
+                    // The pad's back button. Escape did not cancel through here when this was the only
+                    // route, so it is also read off the keyboard in Update.
                     if (_cancelButtonObject == null || ev.Type != InputEventType.Pressed || ev.Name != "Cancel")
                     {
                         return false;
@@ -498,7 +488,11 @@ namespace TFTV.TFTVIncidents
                         return;
                     }
 
-                    if (Input.GetMouseButtonDown(1))
+                    // Right-click, and Escape read off the keyboard directly. Escape also goes to the
+                    // encounter state's own cancel, which is patched below; reading the key here as
+                    // well means it works however the game routes it, and the in-flight guard in
+                    // TryCancel stops the two from selecting the choice twice.
+                    if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
                     {
                         TryCancel();
                     }
@@ -506,6 +500,38 @@ namespace TFTV.TFTVIncidents
                 catch (Exception e)
                 {
                     TFTVLogger.Error(e);
+                }
+            }
+        }
+
+        /// <summary>
+        /// The encounter screen's own "back" - the view state's cancel hook, which is where the game
+        /// sends a back action for the screen it owns.
+        ///
+        /// While a cancel button is installed it is routed to the walk-away choice instead, and the
+        /// original skipped. Every other encounter is left exactly as vanilla has it.
+        /// </summary>
+        [HarmonyPatch(typeof(UIStateGeoscapeEvent), "OnCancel")]
+        internal static class UIStateGeoscapeEvent_OnCancel_Patch
+        {
+            static bool Prepare() => TFTVAircraftReworkMain.AircraftReworkOn;
+
+            public static bool Prefix()
+            {
+                try
+                {
+                    if (_cancelButtonObject == null)
+                    {
+                        return true;
+                    }
+
+                    TryCancel();
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    return true;
                 }
             }
         }

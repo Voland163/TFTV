@@ -1,4 +1,6 @@
-﻿using Base.Core;
+﻿using Base.Audio;
+using Base.Core;
+using Base.UI;
 using PhoenixPoint.Common.Core;
 using PhoenixPoint.Common.View.ViewControllers;
 using PhoenixPoint.Geoscape.Entities;
@@ -78,8 +80,38 @@ namespace TFTV.TFTVIncidents
         private const float ClassIconSize = 69f;
         private const float ClassIconInset = 8f;
 
-        private const float SelectedBorderWidth = 4f;
-        private const float NormalBorderWidth = 1.5f;
+        /// <summary>
+        /// The corner shade's size relative to the class mark it sits under - enough to reach past
+        /// the mark on every side, not so much that it reads as a dark corner on the card.
+        /// </summary>
+        private const float CornerShadeScale = 1.9f;
+
+        private const string CornerShadeImageName = "incident_corner_shade.png";
+        private static Sprite _cornerShadeSprite;
+        private static bool _cornerShadeResolved;
+
+        private static UIButtonSounds _buttonSoundSource;
+        private static GeoLevelController _buttonSoundLevel;
+
+        /// <summary>
+        /// Layout units per screen pixel on this canvas, measured at 1080p (it draws at about half a
+        /// pixel per unit). Border widths are specified in pixels, which is how the design gives them.
+        /// </summary>
+        private const float UnitsPerPixel = 1.92f;
+
+        // Borders, in screen pixels. The unselected one is the portrait's own frame; the selected one
+        // is the same frame one pixel heavier and amber.
+        private const float NormalBorderPixels = 2f;
+        private const float SelectedBorderPixels = 3f;
+
+        private const float SelectedBorderWidth = SelectedBorderPixels * UnitsPerPixel;
+        private const float NormalBorderWidth = NormalBorderPixels * UnitsPerPixel;
+
+        /// <summary>
+        /// Gap between the bottom of the portrait and the name under it: about ten screen pixels,
+        /// so the name reads as a caption rather than as part of the picture.
+        /// </summary>
+        private const float NameGap = 10f * UnitsPerPixel;
 
         /// <summary>
         /// Ceiling on a rendered card's pixel size. A card is small; past this the extra pixels are
@@ -89,6 +121,24 @@ namespace TFTV.TFTVIncidents
 
         private static readonly List<CardState> Cards = new List<CardState>();
         private static int _selectedCharacterId = -1;
+
+        /// <summary>How long the row's heads take to fade in once they are all ready.</summary>
+        private const float RevealFadeSeconds = 0.25f;
+
+        /// <summary>
+        /// The longest the row waits for its slowest head before showing the rest anyway. A cold
+        /// first render of a crew can take several seconds; this is a backstop for one that never
+        /// finishes, not a target.
+        /// </summary>
+        private const float MaxRevealWaitSeconds = 12f;
+
+        // The row being revealed: its heads, how many are still rendering, and which row it is -
+        // renders outlive the row they were started for and must not count against the next one.
+        private static readonly List<Image> _heads = new List<Image>();
+        private static int _pendingPortraits;
+        private static int _rowGeneration;
+        private static bool _building;
+        private static RowReveal _reveal;
 
         /// <summary>
         /// Everything a card needs to be restyled when the selection moves, kept on the card itself
@@ -112,7 +162,8 @@ namespace TFTV.TFTVIncidents
             float panelWidth,
             Font font,
             int baseFontSize,
-            Action<GeoCharacter> onSelected)
+            Action<GeoCharacter> onSelected,
+            Action onFacesShown)
         {
             List<Selectable> selectables = new List<Selectable>();
             Clear();
@@ -125,10 +176,14 @@ namespace TFTV.TFTVIncidents
             int count = Mathf.Min(crew.Count, MaxCards);
             float cardWidth = ResolveCardWidth(count, panelWidth);
             float portraitHeight = cardWidth / PortraitAspect;
-            float cardHeight = portraitHeight + NameRowHeight;
+            float cardHeight = portraitHeight + NameGap + NameRowHeight;
 
             GameObject row = new GameObject(RowName, typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
             row.transform.SetParent(parent, false);
+
+            _reveal = row.AddComponent<RowReveal>();
+            _reveal.FacesShown = onFacesShown;
+            _building = true;
 
             HorizontalLayoutGroup layout = row.GetComponent<HorizontalLayoutGroup>();
             layout.childAlignment = TextAnchor.UpperCenter;
@@ -142,11 +197,8 @@ namespace TFTV.TFTVIncidents
             rowLayout.minHeight = cardHeight;
             rowLayout.preferredHeight = cardHeight;
 
-            Vector2Int renderResolution = ResolveRenderResolution(cardWidth, portraitHeight);
-
-            TFTVLogger.Always(
-                $"[IncidentUI] Crew row: {count} cards, panel {panelWidth:0}w, card {cardWidth:0}x{cardHeight:0}, " +
-                $"render {renderResolution.x}x{renderResolution.y}, base font {baseFontSize}.");
+            float pixelsPerUnit = MeasurePixelsPerUnit(parent);
+            Vector2Int renderResolution = ResolveRenderResolution(cardWidth, portraitHeight, pixelsPerUnit);
 
             for (int i = 0; i < count; i++)
             {
@@ -173,7 +225,138 @@ namespace TFTV.TFTVIncidents
                 }
             }
 
+            // Every head was cached, or every render failed straight away - nothing to wait for.
+            _building = false;
+            RevealIfSettled();
+
             return selectables;
+        }
+
+        /// <summary>
+        /// One card's portrait has arrived, or will not. Ignored for a row that has since been
+        /// replaced - its renders carry on after the row is gone, and report back to whatever is
+        /// current by then.
+        /// </summary>
+        private static void OnPortraitSettled(int generation)
+        {
+            if (generation != _rowGeneration)
+            {
+                return;
+            }
+
+            _pendingPortraits = Mathf.Max(0, _pendingPortraits - 1);
+            RevealIfSettled();
+        }
+
+        private static void RevealIfSettled()
+        {
+            // Not while the row is still being built: a cached head reports back on the spot, and
+            // the count would reach zero after the first card with the rest still to be asked for.
+            if (!_building && _pendingPortraits <= 0 && _reveal != null)
+            {
+                _reveal.Begin(_heads);
+            }
+        }
+
+        /// <summary>
+        /// Shows the row's heads all at once, with a short fade, when the last of them is ready.
+        ///
+        /// The renders take different times - most of each is loading that operative's armour, and
+        /// what is already loaded from an earlier render costs nothing - so shown as they arrived the
+        /// heads came in one at a time, in a different order and at a different pace every time the
+        /// screen opened. Held back and shown together, the row appears as one thing. The total wait
+        /// is the same: it is the last head that decides it either way.
+        ///
+        /// Unscaled time, because the geoscape clock is stopped while an event is on screen.
+        /// </summary>
+        private sealed class RowReveal : MonoBehaviour
+        {
+            private readonly List<Image> _images = new List<Image>();
+            private float _builtAt;
+            private bool _revealing;
+
+            private void Awake()
+            {
+                _builtAt = Time.unscaledTime;
+            }
+
+            /// <summary>
+            /// Run once, as the faces start to show. The incident screen holds the large leader
+            /// picture back until then, so the row arrives first and the leader picture after it -
+            /// and by then the selected operative's armour is already loaded, which makes the
+            /// leader picture a fraction of a second instead of a load of its own. Lives on the row,
+            /// so a row torn down before it is shown never fires it for the screen that replaced it.
+            /// </summary>
+            internal Action FacesShown;
+
+            internal void Begin(List<Image> images)
+            {
+                if (_revealing)
+                {
+                    return;
+                }
+
+                _images.Clear();
+                _images.AddRange(images);
+                _revealing = true;
+
+                Action shown = FacesShown;
+                FacesShown = null;
+
+                try
+                {
+                    shown?.Invoke();
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                }
+            }
+
+            private void Update()
+            {
+                try
+                {
+                    if (!_revealing)
+                    {
+                        // A render that never reports back must not hold the whole row hostage.
+                        if (Time.unscaledTime - _builtAt < MaxRevealWaitSeconds)
+                        {
+                            return;
+                        }
+
+                        Begin(_heads);
+                    }
+
+                    float step = Time.unscaledDeltaTime / RevealFadeSeconds;
+                    bool done = true;
+
+                    foreach (Image image in _images)
+                    {
+                        if (image == null)
+                        {
+                            continue;
+                        }
+
+                        Color color = image.color;
+                        color.a = Mathf.Min(1f, color.a + step);
+                        image.color = color;
+                        done &= color.a >= 1f;
+                    }
+
+                    // A head still missing when the timeout forced the reveal is already at full
+                    // alpha by now, so it simply appears the moment its sprite does.
+                    if (done)
+                    {
+                        enabled = false;
+                    }
+                }
+                catch (Exception e)
+                {
+                    TFTVLogger.Error(e);
+                    enabled = false;
+                }
+            }
         }
 
         /// <summary>
@@ -209,6 +392,13 @@ namespace TFTV.TFTVIncidents
         {
             Cards.Clear();
             _selectedCharacterId = -1;
+
+            // A new generation, so renders still reporting back for the old row are ignored.
+            _rowGeneration++;
+            _heads.Clear();
+            _pendingPortraits = 0;
+            _building = false;
+            _reveal = null;
         }
 
         private static float ResolveCardWidth(int count, float panelWidth)
@@ -224,24 +414,60 @@ namespace TFTV.TFTVIncidents
         }
 
         /// <summary>
-        /// Render size for one card, from its layout size rather than its on-screen size: the row is
-        /// built before it has had a layout pass, so there is nothing on screen to measure yet. The
-        /// factor covers the card being drawn on a display denser than the layout's own units.
+        /// Render size for one card: its layout size converted to the screen pixels it is actually
+        /// drawn at.
         ///
-        /// No oversampling on top of that. The renderer supersamples every portrait four times over
-        /// already, so asking it for more pixels than the card is drawn at buys nothing and is paid
-        /// for sixteen times.
+        /// Layout units are not pixels on this canvas - it draws at about half a pixel per unit at
+        /// 1080p - and this used to treat them as though they were, so every card was rendered at
+        /// about twice the size it is shown at before the renderer's own four-times supersampling was
+        /// applied on top: some sixty samples per displayed pixel where sixteen already smooth every
+        /// edge. The texture keeps mipmaps, so a card drawn slightly smaller than it was rendered
+        /// still filters cleanly.
         /// </summary>
-        private static Vector2Int ResolveRenderResolution(float cardWidth, float portraitHeight)
+        private static Vector2Int ResolveRenderResolution(float cardWidth, float portraitHeight, float pixelsPerUnit)
         {
-            float scale = Mathf.Max(1f, Screen.height / 1080f);
-            float width = cardWidth * scale;
-            float height = portraitHeight * scale;
+            float width = cardWidth * pixelsPerUnit;
+            float height = portraitHeight * pixelsPerUnit;
 
             float fit = Mathf.Min(1f, MaxCardRenderResolution / Mathf.Max(width, height));
             return new Vector2Int(
                 Mathf.RoundToInt(width * fit),
                 Mathf.RoundToInt(height * fit));
+        }
+
+        /// <summary>
+        /// Screen pixels per layout unit where the row is drawn, measured by projecting a span of
+        /// the row's parent onto the screen. The row has not been laid out yet, but its parent's
+        /// scale already is what it will be, and that is all this needs. Works whether the canvas
+        /// draws straight to the screen or through a camera.
+        /// </summary>
+        private static float MeasurePixelsPerUnit(Transform reference)
+        {
+            try
+            {
+                Canvas canvas = reference != null ? reference.GetComponentInParent<Canvas>() : null;
+                if (canvas != null)
+                {
+                    Camera camera = canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+
+                    const float span = 100f;
+                    Vector2 from = RectTransformUtility.WorldToScreenPoint(camera, reference.TransformPoint(Vector3.zero));
+                    Vector2 to = RectTransformUtility.WorldToScreenPoint(camera, reference.TransformPoint(new Vector3(span, 0f, 0f)));
+
+                    float measured = Vector2.Distance(from, to) / span;
+                    if (measured > 0.05f && measured < 20f)
+                    {
+                        return measured;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+
+            // The ratio measured on this canvas at 1080p, scaled to the current screen.
+            return (1f / UnitsPerPixel) * (Screen.height / 1080f);
         }
 
         private static Selectable BuildCard(
@@ -299,6 +525,8 @@ namespace TFTV.TFTVIncidents
                     catch (Exception ex) { TFTVLogger.Error(ex); }
                 });
 
+                AddButtonSounds(card);
+
                 Cards.Add(state);
                 ApplySelectionVisual(state, character.Id == _selectedCharacterId);
                 return button;
@@ -353,10 +581,146 @@ namespace TFTV.TFTVIncidents
             portrait.preserveAspect = true;
             portrait.enabled = false;
 
-            PortraitGenerator.RequestCardPortrait(character, portrait, renderResolution);
+            // Invisible until the whole row is ready - see RowReveal.
+            portrait.color = new Color(1f, 1f, 1f, 0f);
+            _heads.Add(portrait);
 
+            _pendingPortraits++;
+            int generation = _rowGeneration;
+            PortraitGenerator.RequestCardPortrait(character, portrait, renderResolution, _ => OnPortraitSettled(generation));
+
+            AddCornerShade(box.transform);
             AddClassIcon(box.transform, character);
             AddAffinityBadge(box.transform, character, font, cardWidth * BadgeWidthFraction);
+        }
+
+        /// <summary>
+        /// Gives a card the game's own button sounds - the click, and the hover in and out - copied
+        /// from a vanilla button rather than chosen here, so selecting an operative sounds like
+        /// pressing any other button on the geoscape.
+        ///
+        /// The crew slot the cards replaced is the first choice of source, since selecting a soldier
+        /// is what it was for; the encounter's own choice buttons and trade's exit button are there in
+        /// case a patch ever moves the sounds off it.
+        /// </summary>
+        private static void AddButtonSounds(GameObject card)
+        {
+            try
+            {
+                UIButtonSounds source = ResolveButtonSoundSource();
+                if (source == null)
+                {
+                    return;
+                }
+
+                // Added after the Button, which it finds on Awake and hooks its pointer events to.
+                UIButtonSounds sounds = card.AddComponent<UIButtonSounds>();
+                sounds.Click = source.Click;
+                sounds.Enter = source.Enter;
+                sounds.Exit = source.Exit;
+                sounds.ClickDisabled = source.ClickDisabled;
+                sounds.EnterDisabled = source.EnterDisabled;
+                sounds.ExitDisabled = source.ExitDisabled;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static UIButtonSounds ResolveButtonSoundSource()
+        {
+            GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+
+            // Per geoscape: the source is a component on a prefab or a live module of that level.
+            if (_buttonSoundSource != null && _buttonSoundLevel == level)
+            {
+                return _buttonSoundSource;
+            }
+
+            _buttonSoundLevel = level;
+            _buttonSoundSource = null;
+
+            GeoscapeModulesData modules = level?.View?.GeoscapeModules;
+            if (modules == null)
+            {
+                return null;
+            }
+
+            Component[] candidates =
+            {
+                modules.SoldierEquipModule?.SoldierSlotPrefab,
+                modules.SiteEncountersModule?.ChoiceButtonsContainer != null
+                    ? modules.SiteEncountersModule.ChoiceButtonsContainer.transform
+                    : null,
+                modules.TradeModule?.ExitBtn,
+            };
+
+            foreach (Component candidate in candidates)
+            {
+                if (candidate == null)
+                {
+                    continue;
+                }
+
+                UIButtonSounds found = candidate.GetComponentInChildren<UIButtonSounds>(true);
+                if (found != null && found.Click != null)
+                {
+                    _buttonSoundSource = found;
+                    return found;
+                }
+            }
+
+            TFTVLogger.Always("[IncidentUI] No vanilla button sounds found; crew cards will be silent.");
+            return null;
+        }
+
+        /// <summary>
+        /// A dark radial falloff out of the bottom right corner, under the class mark. The mark is a
+        /// light glyph and the corner of a portrait is whatever armour happens to be there, often
+        /// light too; this gives it something dark to sit on without boxing it in.
+        /// </summary>
+        private static void AddCornerShade(Transform box)
+        {
+            Sprite shade = ResolveCornerShadeSprite();
+            if (shade == null)
+            {
+                return;
+            }
+
+            GameObject shadeObject = new GameObject("ClassIconShade", typeof(RectTransform), typeof(Image));
+            shadeObject.transform.SetParent(box, false);
+
+            RectTransform shadeRect = shadeObject.GetComponent<RectTransform>();
+            shadeRect.anchorMin = new Vector2(1f, 0f);
+            shadeRect.anchorMax = new Vector2(1f, 0f);
+            shadeRect.pivot = new Vector2(1f, 0f);
+            shadeRect.anchoredPosition = Vector2.zero;
+            float size = ClassIconSize * CornerShadeScale;
+            shadeRect.sizeDelta = new Vector2(size, size);
+
+            Image image = shadeObject.GetComponent<Image>();
+            image.sprite = shade;
+            image.raycastTarget = false;
+        }
+
+        /// <summary>
+        /// The corner shade, loaded once. A shipped image, since a UI Image has no gradient of its own.
+        /// </summary>
+        private static Sprite ResolveCornerShadeSprite()
+        {
+            if (!_cornerShadeResolved)
+            {
+                _cornerShadeResolved = true;
+                _cornerShadeSprite = Helper.CreateSpriteFromImageFile(CornerShadeImageName);
+
+                if (_cornerShadeSprite == null)
+                {
+                    TFTVLogger.Always($"[IncidentUI] {CornerShadeImageName} could not be loaded; class icons go unshaded.");
+                }
+            }
+
+            return _cornerShadeSprite;
         }
 
         /// <summary>
@@ -470,6 +834,13 @@ namespace TFTV.TFTVIncidents
             plateImage.color = IncidentUIStyle.BadgePlate;
             plateImage.raycastTarget = false;
 
+            // The portrait's own frame, carried onto the badge that straddles it, so the badge
+            // reads as part of the card rather than as a sticker on it.
+            Outline plateFrame = plate.AddComponent<Outline>();
+            plateFrame.effectColor = IncidentUIStyle.CardBorder;
+            plateFrame.effectDistance = new Vector2(NormalBorderWidth, NormalBorderWidth);
+            plateFrame.useGraphicAlpha = false;
+
             GameObject glyphObject = new GameObject("Glyph", typeof(RectTransform), typeof(Image));
             glyphObject.transform.SetParent(plate.transform, false);
 
@@ -544,7 +915,7 @@ namespace TFTV.TFTVIncidents
             nameRect.anchorMin = new Vector2(0.5f, 1f);
             nameRect.anchorMax = new Vector2(0.5f, 1f);
             nameRect.pivot = new Vector2(0.5f, 1f);
-            nameRect.anchoredPosition = new Vector2(0f, -portraitHeight - 2f);
+            nameRect.anchoredPosition = new Vector2(0f, -portraitHeight - NameGap);
             nameRect.sizeDelta = new Vector2(cardWidth, NameRowHeight);
 
             int preferredSize = Mathf.Max(MinNameFontSize, Mathf.RoundToInt(baseFontSize * NameFontScale));
@@ -607,7 +978,7 @@ namespace TFTV.TFTVIncidents
 
             if (card.NameLabel != null)
             {
-                card.NameLabel.fontStyle = selected ? FontStyle.Bold : FontStyle.Normal;
+                card.NameLabel.color = selected ? IncidentUIStyle.SelectedName : card.NameNormal;
             }
         }
     }
