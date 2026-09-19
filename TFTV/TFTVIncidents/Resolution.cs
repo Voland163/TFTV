@@ -57,8 +57,6 @@ namespace TFTV.TFTVIncidents
             {
                 int soldiers = vehicle?.Soldiers?.Count() ?? 0;
 
-                TFTVLogger.Always($"[Incidents] Computing hours, base={BaseHours} soldiers={soldiers} bonusPerSoldier={PerSoldierSpeedBonusHours}");
-
                 float hours = BaseHours - soldiers * PerSoldierSpeedBonusHours;
                 return Mathf.Clamp(hours, MinHours, MaxHours);
             }
@@ -564,8 +562,6 @@ namespace TFTV.TFTVIncidents
                 }
 
                 hours = definition.ComputeDurationHours(vehicle);
-
-                TFTVLogger.Always($"[Incidents] Base hours={hours:0.#}, soldiers={vehicle.Soldiers?.Count() ?? 0}");
 
                 GeoEventChoice choice = choices[choiceIndex];
                 string approachTokens = LeaderSelection.ExtractApproachTokens(choice?.Text?.LocalizationKey, choiceIndex);
