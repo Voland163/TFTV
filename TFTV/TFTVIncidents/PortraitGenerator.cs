@@ -65,9 +65,12 @@ namespace TFTV.TFTVIncidents
         private const int MinPortraitResolution = 128;
         private const int FallbackPortraitResolution = 512;
 
-        // Hard ceiling on what a single supersampled render may cost. 4096 x 4096 is 64MB of
-        // readback and about a tenth of a second of downsampling - past that it stops being free.
-        private const int MaxRenderDimension = 4096;
+        // Ceiling on a supersampled render's size, which brings the factor down for large portraits.
+        // Small ones - the crew cards, the recruit panel - stay at four times; the incident leader
+        // picture, over 800px, drops to two times. At four times that picture is 3284px square and
+        // its capture measured 450ms in a single frame, a visible freeze as the incident opens; at
+        // two times it is a quarter of the pixels, still four samples per pixel along every edge.
+        private const int MaxRenderDimension = 2048;
 
         // ---------------------------------------------------------------------------------------
         // Tunables. All of these are live: the portrait_* console commands write them and re-render,
@@ -289,9 +292,18 @@ namespace TFTV.TFTVIncidents
         // Generous: the first build of a session waits on addon assets being loaded from disk.
         private const float RebuildTimeoutSeconds = 20f;
 
-        // Where the subject stands while it builds - far from anything the geoscape camera sees.
-        // The renderer moves it to its own staging origin for the actual render.
+        // Where subjects stand while they are built and photographed - far from anything the
+        // geoscape camera sees. Each subject in flight has its own slot along X, StagingSlotSpacing
+        // apart; see AcquireStagingSlot.
         private static readonly Vector3 SubjectStagingPosition = new Vector3(1000f, 1000f, 1000f);
+
+        /// <summary>
+        /// Distance between staging slots. The portrait camera's far plane is 2.5m and its shadows
+        /// reach 3m, so at this spacing no subject can appear in, or cast into, another's picture.
+        /// </summary>
+        private const float StagingSlotSpacing = 50f;
+
+        private static readonly HashSet<int> StagingSlotsInUse = new HashSet<int>();
 
         // Shader property the corruption (Delirium) face effect is driven by.
         private const string CorruptionShaderPropertyName = "_MaskContrast";
@@ -401,83 +413,106 @@ namespace TFTV.TFTVIncidents
             LookAtVerticalOffset = 0.055f,
         };
 
-        // Rendered card portraits per GeoCharacter id, valid for the currently shown incident. Kept
+        // Rendered card portraits, kept across incidents for as long as the geoscape lasts. Kept
         // apart from the leader cache above because the two are rendered at different sizes and
         // different framings - a card is not a shrunk leader picture.
-        private static readonly Dictionary<int, Sprite> CardCache = new Dictionary<int, Sprite>();
+        //
+        // Across incidents rather than per incident because nearly all of the wait is loading each
+        // operative's armour into a rig, which is paid once per operative per render: the crew of
+        // the aircraft that has just resolved one incident is usually the crew that opens the next,
+        // and a cache that was dropped between the two made them sit through the same loads again.
+        private static readonly Dictionary<int, CardEntry> CardCache = new Dictionary<int, CardEntry>();
+        private static readonly List<int> CardCacheOrder = new List<int>();
+
+        /// <summary>
+        /// Rendered cards kept at once. Twenty-four heads at card size is a few megabytes, and covers
+        /// every aircraft crew a campaign has in rotation at a time.
+        /// </summary>
+        private const int MaxCachedCards = 24;
+
+        // The geoscape the cache belongs to. A new one - a load, or a return from tactical - means
+        // every character object is new, so nothing the cache holds can be trusted to match.
+        private static GeoLevelController _cardCacheLevel;
 
         // Cards still waiting for a render, oldest first, and the Image each one is for.
         private static readonly List<CardRequest> CardQueue = new List<CardRequest>();
-        private static bool _cardLoopRunning;
+        private static int _cardWorkers;
+
+        /// <summary>
+        /// Card renders in flight at once. Each is mostly waiting on its operative's armour to load,
+        /// so running several overlaps those waits; four covers most crews in one pass without
+        /// putting a whole aircraft's worth of rigs in memory at the same moment.
+        /// </summary>
+        private const int MaxCardWorkers = 4;
 
         private sealed class CardRequest
         {
             public GeoCharacter Character;
+            public string Signature;
             public Image Target;
             public Vector2Int Resolution;
+            public Action<bool> OnDone;
+        }
+
+        private sealed class CardEntry
+        {
+            public string Signature;
+            public Sprite Sprite;
         }
 
         /// <summary>
         /// Shows the given operative's head in a crew card, rendering it if it is not cached yet.
+        /// <paramref name="onDone"/> runs once the card has its picture, or once it is certain it
+        /// will not get one - on the spot for a cached head, later for a render.
         ///
-        /// A crew of eight is eight rigs to build, which is why these are queued and drained one per
-        /// pass rather than started together: the row appears immediately with empty cards and fills
-        /// in over the next few frames, instead of the encounter window stalling until the last head
-        /// is ready.
+        /// A crew of eight is eight rigs to build, which is why renders are queued and drained one
+        /// at a time rather than started together.
         /// </summary>
-        internal static void RequestCardPortrait(GeoCharacter character, Image target, Vector2Int resolution)
+        internal static void RequestCardPortrait(GeoCharacter character, Image target, Vector2Int resolution, Action<bool> onDone)
         {
             try
             {
                 if (character == null || character.Id <= 0 || target == null)
                 {
+                    onDone?.Invoke(false);
                     return;
                 }
 
-                if (CardCache.TryGetValue(character.Id, out Sprite cached))
-                {
-                    // Cached null is a render that was already tried and produced nothing. Asking
-                    // again would rebuild the same rig for the same empty result once per encounter.
-                    if (cached != null)
-                    {
-                        ApplyCardPortrait(target, cached);
-                    }
+                EnsureCardCacheLevel();
+                // The size is part of what makes a cached head reusable: after a resolution change
+                // the old one would be drawn blurred or wastefully large.
+                string signature = BuildCardSignature(character) + "@" + resolution.x + "x" + resolution.y;
 
+                if (TryGetCachedCard(character.Id, signature, out Sprite cached))
+                {
+                    // A cached null is a render that was already tried and produced nothing.
+                    // Asking again would rebuild the same rig for the same empty result.
+                    ApplyCardPortrait(target, cached);
+                    onDone?.Invoke(cached != null);
                     return;
                 }
 
                 CardQueue.Add(new CardRequest
                 {
                     Character = character,
+                    Signature = signature,
                     Target = target,
                     Resolution = resolution,
+                    OnDone = onDone,
                 });
 
-                if (!_cardLoopRunning)
-                {
-                    _cardLoopRunning = true;
-                    if (RunPortraitCoroutine(DrainCardQueue()) == null)
-                    {
-                        // No geoscape to render on - drop the queue rather than leave the flag set,
-                        // which would stop every later request from ever starting a loop.
-                        _cardLoopRunning = false;
-                        CardQueue.Clear();
-                    }
-                }
+                StartCardWorkers();
             }
             catch (Exception e)
             {
                 TFTVLogger.Error(e);
+                onDone?.Invoke(false);
             }
         }
 
         /// <summary>
         /// Moves the given operative's card to the front of the render queue, if it is still waiting.
-        ///
-        /// A crew of five is several seconds of rendering, most of it spent loading the armour each
-        /// operative is wearing, and the card the player is looking at is the selected one. Without
-        /// this the selected card can be last in line behind four faces nobody asked for - including
-        /// when the player clicks a card precisely because they want to see that face.
+        /// The selected card is the one being looked at, and without this it can be last in line.
         /// </summary>
         internal static void PrioritiseCardPortrait(int characterId)
         {
@@ -504,7 +539,42 @@ namespace TFTV.TFTVIncidents
             }
         }
 
-        private static IEnumerator DrainCardQueue()
+        /// <summary>
+        /// Drops the renders still waiting for cards that are going away, without touching what is
+        /// already cached. A render already under way finishes and is kept - it is most of the way
+        /// to being useful to the next incident, and abandoning it throws the load away.
+        /// </summary>
+        internal static void CancelPendingCardPortraits()
+        {
+            CardQueue.Clear();
+        }
+
+        /// <summary>
+        /// Starts workers for waiting cards, up to <see cref="MaxCardWorkers"/> at once. A worker
+        /// takes its first request before its first pause, so the queue shrinks as each one starts
+        /// and this never starts more workers than there is work for.
+        /// </summary>
+        private static void StartCardWorkers()
+        {
+            while (_cardWorkers < MaxCardWorkers && CardQueue.Count > 0)
+            {
+                _cardWorkers++;
+                if (RunPortraitCoroutine(CardWorker()) == null)
+                {
+                    // No geoscape to render on, so the worker never ran: take back the count it would
+                    // have given up, and fail what is waiting rather than leave it waiting forever.
+                    _cardWorkers--;
+                    FailPendingCardPortraits();
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Renders waiting cards one after another until the queue is empty. Several run at once;
+        /// each render stands in its own staging slot, so their loads overlap safely.
+        /// </summary>
+        private static IEnumerator CardWorker()
         {
             try
             {
@@ -520,14 +590,12 @@ namespace TFTV.TFTVIncidents
 
                     int characterId = request.Character.Id;
 
-                    // Another card may have asked for the same operative while this one waited.
-                    if (CardCache.TryGetValue(characterId, out Sprite done))
+                    // The same operative may have been asked for twice - two cards for one operative -
+                    // and the first of them has already done the work.
+                    if (TryGetCachedCard(characterId, request.Signature, out Sprite done))
                     {
-                        if (done != null)
-                        {
-                            ApplyCardPortrait(request.Target, done);
-                        }
-
+                        ApplyCardPortrait(request.Target, done);
+                        InvokeCardDone(request, done != null);
                         continue;
                     }
 
@@ -543,18 +611,152 @@ namespace TFTV.TFTVIncidents
 
                     // Stored even when null, so a subject that cannot be rendered is not retried for
                     // every card that asks for it.
-                    CardCache[characterId] = portrait;
+                    StoreCachedCard(characterId, request.Signature, portrait);
 
-                    if (portrait != null)
+                    ApplyCardPortrait(request.Target, portrait);
+                    InvokeCardDone(request, portrait != null);
+
+                    // Any other request for the same operative that queued up behind this one.
+                    for (int i = CardQueue.Count - 1; i >= 0; i--)
                     {
-                        ApplyCardPortrait(request.Target, portrait);
+                        CardRequest waiting = CardQueue[i];
+                        if (waiting?.Character != null && waiting.Character.Id == characterId && waiting.Signature == request.Signature)
+                        {
+                            CardQueue.RemoveAt(i);
+                            ApplyCardPortrait(waiting.Target, portrait);
+                            InvokeCardDone(waiting, portrait != null);
+                        }
                     }
                 }
             }
             finally
             {
-                _cardLoopRunning = false;
+                _cardWorkers--;
             }
+        }
+
+        private static void InvokeCardDone(CardRequest request, bool success)
+        {
+            try
+            {
+                request?.OnDone?.Invoke(success);
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+            }
+        }
+
+        private static void FailPendingCardPortraits()
+        {
+            List<CardRequest> pending = new List<CardRequest>(CardQueue);
+            CardQueue.Clear();
+
+            foreach (CardRequest request in pending)
+            {
+                InvokeCardDone(request, false);
+            }
+        }
+
+        /// <summary>
+        /// What the head is made of, as a string: the armour on it, the appearance tags, and how far
+        /// Delirium has marked the face. A cached head is only reused while this is unchanged, so an
+        /// operative who has been re-armoured or recoloured since their last incident is rendered
+        /// again rather than shown as they were.
+        /// </summary>
+        private static string BuildCardSignature(GeoCharacter character)
+        {
+            try
+            {
+                UnitDisplayData data = new UnitDisplayData(character, GameUtl.GameComponent<SharedData>());
+
+                IEnumerable<string> armour = data.ArmourItems != null
+                    ? data.ArmourItems.Where(i => i != null).Select(i => i.name).OrderBy(n => n, StringComparer.Ordinal)
+                    : Enumerable.Empty<string>();
+
+                IEnumerable<string> tags = data.GameTags != null
+                    ? data.GameTags.Where(t => t != null).Select(t => t.name).OrderBy(n => n, StringComparer.Ordinal)
+                    : Enumerable.Empty<string>();
+
+                int corruption = character.CharacterStats != null
+                    ? Mathf.RoundToInt(character.CharacterStats.Corruption)
+                    : 0;
+
+                return string.Join("|", armour) + "#" + string.Join("|", tags) + "#" + corruption;
+            }
+            catch (Exception e)
+            {
+                TFTVLogger.Error(e);
+
+                // Unique, so a signature that could not be worked out never matches a cached head.
+                return Guid.NewGuid().ToString();
+            }
+        }
+
+        private static bool TryGetCachedCard(int characterId, string signature, out Sprite sprite)
+        {
+            sprite = null;
+
+            if (!CardCache.TryGetValue(characterId, out CardEntry entry) || entry == null)
+            {
+                return false;
+            }
+
+            if (!string.Equals(entry.Signature, signature, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            // Unity's own null test: a texture freed from under the sprite leaves a live reference
+            // to a dead object, and applying it would draw garbage.
+            if (entry.Sprite != null && entry.Sprite.texture == null)
+            {
+                return false;
+            }
+
+            sprite = entry.Sprite;
+            CardCacheOrder.Remove(characterId);
+            CardCacheOrder.Add(characterId);
+            return true;
+        }
+
+        private static void StoreCachedCard(int characterId, string signature, Sprite sprite)
+        {
+            if (CardCache.TryGetValue(characterId, out CardEntry previous) && previous != null && previous.Sprite != sprite)
+            {
+                DestroyCardSprite(previous.Sprite);
+            }
+
+            CardCache[characterId] = new CardEntry { Signature = signature, Sprite = sprite };
+            CardCacheOrder.Remove(characterId);
+            CardCacheOrder.Add(characterId);
+
+            while (CardCacheOrder.Count > MaxCachedCards)
+            {
+                int oldest = CardCacheOrder[0];
+                CardCacheOrder.RemoveAt(0);
+
+                if (CardCache.TryGetValue(oldest, out CardEntry evicted))
+                {
+                    CardCache.Remove(oldest);
+                    DestroyCardSprite(evicted?.Sprite);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Drops the cache when the geoscape it was filled on is no longer the current one.
+        /// </summary>
+        private static void EnsureCardCacheLevel()
+        {
+            GeoLevelController level = GameUtl.CurrentLevel()?.GetComponent<GeoLevelController>();
+            if (level == _cardCacheLevel)
+            {
+                return;
+            }
+
+            ClearCardCache();
+            _cardCacheLevel = level;
         }
 
         /// <summary>
@@ -573,32 +775,38 @@ namespace TFTV.TFTVIncidents
             target.enabled = true;
         }
 
+        private static void DestroyCardSprite(Sprite sprite)
+        {
+            if (sprite == null)
+            {
+                return;
+            }
+
+            if (sprite.texture != null)
+            {
+                UnityEngine.Object.Destroy(sprite.texture);
+            }
+
+            UnityEngine.Object.Destroy(sprite);
+        }
+
         /// <summary>
-        /// Frees the rendered crew cards. Called alongside <see cref="ClearCache"/> whenever a new
-        /// incident is shown.
+        /// Frees every rendered card and drops the queue. Called when the geoscape changes - not per
+        /// incident, which is the whole point of the cache.
         /// </summary>
         internal static void ClearCardCache()
         {
             try
             {
-                CardQueue.Clear();
+                FailPendingCardPortraits();
 
-                foreach (Sprite sprite in CardCache.Values)
+                foreach (CardEntry entry in CardCache.Values)
                 {
-                    if (sprite == null)
-                    {
-                        continue;
-                    }
-
-                    if (sprite.texture != null)
-                    {
-                        UnityEngine.Object.Destroy(sprite.texture);
-                    }
-
-                    UnityEngine.Object.Destroy(sprite);
+                    DestroyCardSprite(entry?.Sprite);
                 }
 
                 CardCache.Clear();
+                CardCacheOrder.Clear();
             }
             catch (Exception e)
             {
@@ -817,7 +1025,6 @@ namespace TFTV.TFTVIncidents
             Vector2Int measured = ResolveSlotResolution(module?.EncounterLeaderImage?.rectTransform, DisplayScale, MaxPortraitResolution);
             if (measured.x > 0 && measured.y > 0)
             {
-                TFTVLogger.Always($"{LogPrefix} Leader slot -> portrait {measured.x}x{measured.y}.");
                 return measured;
             }
 
@@ -926,7 +1133,6 @@ namespace TFTV.TFTVIncidents
 
             UnitDisplayData displayData = new UnitDisplayData(recruit, GameUtl.GameComponent<SharedData>());
             displayData.GameTags = ApplyPortraitArmourColours(displayData.GameTags);
-            LogRecruitCustomization(recruit);
 
             yield return RenderPortrait(
                 displayData,
@@ -1011,36 +1217,34 @@ namespace TFTV.TFTVIncidents
         }
 
         /// <summary>
-        /// The colours a recruit's portrait is about to be built with. Worth a line each: a portrait
-        /// whose armour looks wrong is otherwise indistinguishable from one that rendered wrongly.
+        /// The lowest staging slot no subject is standing in.
+        ///
+        /// Renders run side by side: most of one is waiting for that operative's armour to load, and
+        /// those waits overlap instead of adding up. What must not overlap is two subjects occupying
+        /// the same place - every portrait camera is aimed at its own subject, and a second character
+        /// standing in the same spot is photographed along with it, which is how faces once came back
+        /// wearing pieces of each other. A slot each keeps them apart.
+        ///
+        /// The capture itself needs no such care: it runs start to finish within one call, so two
+        /// captures can never interleave, and the scene lighting it swaps out is put back before it
+        /// returns.
         /// </summary>
-        private static void LogRecruitCustomization(GeoUnitDescriptor recruit)
+        private static int AcquireStagingSlot()
         {
-            try
+            int slot = 0;
+            while (StagingSlotsInUse.Contains(slot))
             {
-                CharacterIdentity identity = recruit.GetIdentity();
-                TFTVLogger.Always($"{LogPrefix} {recruit.GetName()} customization: " +
-                    $"armour {PortraitPrimaryColorDefName}/{PortraitSecondaryColorDefName} (fixed) | " +
-                    $"pattern {identity?.PatternTag?.name ?? "-"} | conditional {identity?.ConditionalCustiomizationTag?.name ?? "-"} | " +
-                    $"own armour was {identity?.PrimaryColorTag?.name ?? "-"}/{identity?.SecondaryColorTag?.name ?? "-"}");
+                slot++;
             }
-            catch (Exception e)
-            {
-                TFTVLogger.Error(e);
-            }
+
+            StagingSlotsInUse.Add(slot);
+            return slot;
         }
 
         /// <summary>
         /// Builds the subject, renders it and hands back the sprite. The one place a portrait is
         /// actually made; every caller above is a way of describing the subject to it.
         /// </summary>
-        // True while a subject is built and captured. Every portrait is staged at the same spot in
-        // the world and shot with a camera aimed at it, so two renders running at once put two
-        // characters in the same place and each camera photographs both of them - the second face
-        // arrives wearing pieces of the first. The leader picture and the crew cards are started by
-        // separate coroutines, so the two really can overlap; this is what keeps them in single file.
-        private static bool _renderInFlight;
-
         private static IEnumerator RenderPortrait(
             UnitDisplayData displayData,
             GeoCharacter character,
@@ -1057,14 +1261,9 @@ namespace TFTV.TFTVIncidents
                 yield break;
             }
 
-            while (_renderInFlight)
-            {
-                yield return null;
-            }
+            int slot = AcquireStagingSlot();
 
-            _renderInFlight = true;
-
-            AddonsCharacterBuilder builder = CreateSubjectBuilder();
+            AddonsCharacterBuilder builder = CreateSubjectBuilder(slot);
             try
             {
                 bool built = false;
@@ -1100,11 +1299,11 @@ namespace TFTV.TFTVIncidents
             }
             finally
             {
-                // Immediate, not deferred: the next render stages its own subject at the same spot
-                // as soon as the flag drops, and a deferred destroy would leave this one standing
-                // there for the rest of the frame to be photographed alongside it.
+                // Immediate, not deferred: the slot is handed straight to the next render, and a
+                // deferred destroy would leave this subject standing in it for the rest of the frame
+                // to be photographed alongside whoever takes it next.
                 UnityEngine.Object.DestroyImmediate(builder.gameObject);
-                _renderInFlight = false;
+                StagingSlotsInUse.Remove(slot);
             }
         }
 
@@ -1218,12 +1417,12 @@ namespace TFTV.TFTVIncidents
         /// last showing - and those copies belong to no addons manager, so nothing ever removes them
         /// and they end up in the portrait alongside the operative.
         /// </summary>
-        private static AddonsCharacterBuilder CreateSubjectBuilder()
+        private static AddonsCharacterBuilder CreateSubjectBuilder(int slot)
         {
             // Inactive first: Awake runs on activation, and it must see the fields below.
             GameObject host = new GameObject("[TFTV]PortraitSubject");
             host.SetActive(false);
-            host.transform.position = SubjectStagingPosition;
+            host.transform.position = SubjectStagingPosition + (Vector3.right * (slot * StagingSlotSpacing));
 
             AddonsCharacterBuilder builder = host.AddComponent<AddonsCharacterBuilder>();
             builder.AddonsManagerDef = null;   // DisplayCharacter installs the operative's own rig.
@@ -1300,13 +1499,6 @@ namespace TFTV.TFTVIncidents
                 HideCoveredAddonVisuals(manager);
                 ApplyFaceCorruption(builder, character, level);
                 CommonCharacterUtils.ResetCharacterAnimation(builder);
-
-                // One line per portrait: what the operative is actually made of. Anything unexpected
-                // in here (a bare body part next to the armour that covers it, a missing armour piece)
-                // is what a wrong-looking portrait will be made of too.
-                TFTVLogger.Always($"{LogPrefix} {displayData.Name} built from {string.Join(", ", VisibleItemNames(manager))} " +
-                    $"| identity {IdentityCustomization(character)} " +
-                    $"| customization {string.Join(", ", CustomizationTagNames(manager))}");
 
                 // Let the skinned meshes settle into the pose before the render.
                 yield return null;
@@ -1385,53 +1577,6 @@ namespace TFTV.TFTVIncidents
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Item defs the subject actually shows, for the build log line.
-        /// </summary>
-        private static string[] VisibleItemNames(AddonsManager manager)
-        {
-            if (manager?.RootAddon == null)
-            {
-                return new string[0];
-            }
-
-            return manager.RootAddon
-                .OfType<Item>()
-                .Where(item => item.VisualRoot != null && item.VisualRoot.gameObject.activeSelf)
-                .Select(item => item.ItemDef?.name ?? "?")
-                .ToArray();
-        }
-
-        /// <summary>
-        /// Colour 1, colour 2 and the pattern as they stand on the character's identity - the values
-        /// the customization screen edits. If these read as defaults while the screen shows something
-        /// else, the portrait is reading a different identity than that screen is.
-        /// </summary>
-        private static string IdentityCustomization(GeoCharacter character)
-        {
-            CharacterIdentity identity = character?.Identity;
-            if (identity == null)
-            {
-                return "none";
-            }
-
-            return $"{identity.PrimaryColorTag?.name ?? "-"}/{identity.SecondaryColorTag?.name ?? "-"}/{identity.PatternTag?.name ?? "-"}";
-        }
-
-        /// <summary>
-        /// Customization tags the subject was built with, for the build log line. A portrait that
-        /// comes out uncustomized is a portrait whose tags were the template's defaults.
-        /// </summary>
-        private static string[] CustomizationTagNames(AddonsManager manager)
-        {
-            return manager.MergeWithAddonsTags
-                .Where(tag => tag is CustomizationColorTagDef
-                    || tag is CustomizationPatternTagDef
-                    || tag is ConditionalCustomizationTagDef)
-                .Select(tag => tag.name)
-                .ToArray();
         }
 
         /// <summary>
@@ -1569,7 +1714,10 @@ namespace TFTV.TFTVIncidents
             {
                 if (lightRig != null)
                 {
-                    UnityEngine.Object.Destroy(lightRig);
+                    // Immediate: with renders running side by side, another capture can come in the
+                    // same frame, and a light rig left standing until the frame ends would light that
+                    // subject too.
+                    UnityEngine.Object.DestroyImmediate(lightRig);
                 }
 
                 foreach (Light light in disabledLights)
@@ -1699,6 +1847,14 @@ namespace TFTV.TFTVIncidents
 
                 camera.Render();
 
+                // A power-of-two factor is averaged down on the GPU and only the finished portrait
+                // is read back. Anything else - no supersampling at all, or an odd factor forced by
+                // the render-size cap - takes the CPU path below.
+                if (factor > 1 && (factor & (factor - 1)) == 0)
+                {
+                    return DownsampleOnGpu(renderTexture, resolution, factor);
+                }
+
                 RenderTexture.active = renderTexture;
                 // At factor 1 this texture is the portrait itself, so it wants the mip chain the UI
                 // samples from; at higher factors it is a scratch buffer the downsample reads once.
@@ -1738,9 +1894,12 @@ namespace TFTV.TFTVIncidents
             int factor = Mathf.Clamp(Supersample, 1, 4);
             int longest = Mathf.Max(resolution.x, resolution.y);
 
+            // Halved rather than stepped down one at a time, so the cap lands on 2 rather than 3.
+            // Only power-of-two factors can be averaged on the GPU; a 3 fell back to the CPU loop,
+            // which is what every operative switch was paying for on the leader picture.
             while (factor > 1 && longest * factor > MaxRenderDimension)
             {
-                factor--;
+                factor /= 2;
             }
 
             return factor;
@@ -1759,6 +1918,111 @@ namespace TFTV.TFTVIncidents
             }
 
             return MsaaSamples >= 2 ? 2 : 1;
+        }
+
+        /// <summary>
+        /// Averages a supersampled render down to the portrait's size on the GPU, then reads back
+        /// only the finished portrait.
+        ///
+        /// The CPU version below reads the whole supersampled render back - sixteen samples per
+        /// portrait pixel, about 43MB for the leader picture - and averages it in a managed loop on
+        /// the main thread. That was most of what a render cost apart from building the character,
+        /// and it bought nothing the GPU does not do for free: halving a texture with bilinear
+        /// filtering, sampling each output pixel at the centre of a 2x2 block, is an exact 2x2 box
+        /// filter, so two halvings are exactly the 4x4 box the CPU loop computed.
+        ///
+        /// The CPU loop's two refinements carry over:
+        ///  - Linear-light averaging comes from the render textures themselves. In a linear-space
+        ///    game they are sRGB, so sampling decodes to linear before filtering and writing encodes
+        ///    again - the averaging happens in linear light without being asked for.
+        ///  - The alpha weighting that keeps the black background from bleeding a dark fringe into
+        ///    the silhouette. At full size every pixel is either character, fully opaque, or cleared
+        ///    background, (0,0,0,0) - so the render is already premultiplied, and averaging it gives
+        ///    premultiplied colour. Dividing by alpha afterwards turns it back into the straight
+        ///    colour the CPU loop produced. Only edge pixels are partially transparent, and only
+        ///    those need the division, which keeps the one CPU pass over the result cheap.
+        /// </summary>
+        private static Texture2D DownsampleOnGpu(RenderTexture source, Vector2Int resolution, int factor)
+        {
+            List<RenderTexture> halves = new List<RenderTexture>();
+            RenderTexture previouslyActive = RenderTexture.active;
+            RenderTextureReadWrite readWrite = source.sRGB ? RenderTextureReadWrite.sRGB : RenderTextureReadWrite.Linear;
+
+            try
+            {
+                RenderTexture current = source;
+                current.filterMode = FilterMode.Bilinear;
+
+                for (int remaining = factor; remaining > 1; remaining /= 2)
+                {
+                    RenderTexture next = RenderTexture.GetTemporary(
+                        current.width / 2, current.height / 2, 0, source.format, readWrite);
+                    next.filterMode = FilterMode.Bilinear;
+                    halves.Add(next);
+
+                    Graphics.Blit(current, next);
+                    current = next;
+                }
+
+                RenderTexture.active = current;
+                Texture2D portrait = new Texture2D(current.width, current.height, TextureFormat.RGBA32, mipChain: true);
+                portrait.ReadPixels(new Rect(0f, 0f, current.width, current.height), 0, 0, recalculateMipMaps: false);
+
+                UnpremultiplyEdges(portrait);
+                portrait.Apply(updateMipmaps: true);
+                return portrait;
+            }
+            finally
+            {
+                RenderTexture.active = previouslyActive;
+
+                foreach (RenderTexture half in halves)
+                {
+                    RenderTexture.ReleaseTemporary(half);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Turns premultiplied colour back into straight colour on the pixels that need it - the
+        /// partially transparent ones along the silhouette. Opaque and empty pixels are the same
+        /// either way and are skipped, which is nearly all of them.
+        ///
+        /// In a linear-space game the stored bytes are sRGB-encoded linear light, and the division
+        /// has to happen on the linear value, as the averaging did.
+        /// </summary>
+        private static void UnpremultiplyEdges(Texture2D texture)
+        {
+            Color32[] pixels = texture.GetPixels32();
+            bool linear = QualitySettings.activeColorSpace == ColorSpace.Linear;
+            float[] toLinear = linear ? SrgbToLinearTable() : null;
+
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                Color32 p = pixels[i];
+                if (p.a == 0 || p.a == 255)
+                {
+                    continue;
+                }
+
+                float alpha = p.a / 255f;
+                pixels[i] = new Color32(
+                    Unpremultiply(p.r, alpha, toLinear),
+                    Unpremultiply(p.g, alpha, toLinear),
+                    Unpremultiply(p.b, alpha, toLinear),
+                    p.a);
+            }
+
+            texture.SetPixels32(pixels);
+        }
+
+        private static byte Unpremultiply(byte value, float alpha, float[] toLinear)
+        {
+            float straight = toLinear != null
+                ? LinearToSrgb(Mathf.Min(1f, toLinear[value] / alpha))
+                : Mathf.Min(1f, (value / 255f) / alpha);
+
+            return (byte)Mathf.Clamp(Mathf.RoundToInt(straight * 255f), 0, 255);
         }
 
         /// <summary>

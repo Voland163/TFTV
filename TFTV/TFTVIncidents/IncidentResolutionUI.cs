@@ -528,7 +528,7 @@ namespace TFTV.TFTVIncidents
 
                 ResetSelectedLeaderContext(geoEvent, vehicle);
                 PortraitGenerator.ClearCache();
-                PortraitGenerator.ClearCardCache();
+                PortraitGenerator.CancelPendingCardPortraits();
                 ChoicePayoff.ClearCaches();
                 LeaderAbilityIcons.Clear();
 
@@ -581,11 +581,26 @@ namespace TFTV.TFTVIncidents
                 IncidentCancelButton.Install(__instance);
                 AdjustChoiceButtons(__instance, geoEvent);
 
+                // The large leader picture waits for the crew row: the row is what the player looks
+                // at first, and rendered after it the leader picture finds the selected operative's
+                // armour already loaded. Until then the latest selection is held, not rendered.
+                bool facesShown = false;
+                GeoCharacter leaderAwaitingFaces = null;
+
                 Action<GeoCharacter> selectOperative = character =>
                 {
                     OperativeCards.SetSelected(character);
                     SetSelectedLeader(character, geoEvent, vehicle);
-                    PortraitGenerator.RequestLeaderPortrait(__instance, character);
+
+                    if (facesShown)
+                    {
+                        PortraitGenerator.RequestLeaderPortrait(__instance, character);
+                    }
+                    else
+                    {
+                        leaderAwaitingFaces = character;
+                    }
+
                     LeaderAbilityIcons.Show(__instance, character);
                     UpdateHeaderForSelectedOperative(header, character, geoEvent, vehicle);
                     UpdateChoiceButtonsForSelectedOperative(__instance, geoEvent, vehicle, character);
@@ -597,7 +612,16 @@ namespace TFTV.TFTVIncidents
                     panelWidth,
                     _cachedFont,
                     __instance.EncounterDescriptionText != null ? __instance.EncounterDescriptionText.fontSize : 40,
-                    selectOperative);
+                    selectOperative,
+                    () =>
+                    {
+                        facesShown = true;
+                        if (leaderAwaitingFaces != null)
+                        {
+                            PortraitGenerator.RequestLeaderPortrait(__instance, leaderAwaitingFaces);
+                            leaderAwaitingFaces = null;
+                        }
+                    });
 
                 if (cards.Count > 0)
                 {
@@ -1091,12 +1115,6 @@ namespace TFTV.TFTVIncidents
                 // the responses looking like two empty boxes with a line of text at the bottom; the
                 // space a centred single line was wasting is exactly where the strip goes.
                 grid.cellSize = new Vector2(cellWidth, state.OriginalCellSize.y);
-
-                float icon = ResolveApproachIconSize(state);
-                TFTVLogger.Always(
-                    $"[IncidentUI] Choice grid: container {available:0}w, cell {cellWidth:0}x{grid.cellSize.y:0} " +
-                    $"(was {state.OriginalCellSize.x:0}x{state.OriginalCellSize.y:0}), icon box {icon:0}, " +
-                    $"glyph {icon * ApproachGlyphFraction:0}, payoff row {PayoffRowHeight:0}.");
             }
 
             /// <summary>
@@ -1189,8 +1207,6 @@ namespace TFTV.TFTVIncidents
                     string tokens = LeaderSelection.ExtractApproachTokens(choice?.Text?.LocalizationKey, i);
                     List<LeaderSelection.AffinityApproach> approaches = LeaderSelection.ParseApproachTokens(tokens);
                     _choiceApproaches[i] = approaches;
-
-                    TFTVLogger.Always($"[IncidentUI] Choice {i}: key='{choice?.Text?.LocalizationKey}' tokens='{tokens}' approachCount={approaches.Count}");
 
                     if (approaches.Count == 0)
                     {
@@ -1298,16 +1314,24 @@ namespace TFTV.TFTVIncidents
 
                     if (img != null)
                     {
+                        Sprite original = GetApproachSprite(state.Approach);
+
                         if (isSelected)
                         {
+                            img.sprite = original;
                             img.color = Color.white;
                         }
                         else if (locked)
                         {
-                            img.color = IncidentUIStyle.ApproachInactive;
+                            // An approach this operative can do nothing with. Greyed, not faded: a
+                            // faded orange mark still reads as orange, and so as available.
+                            Sprite grey = GreyscaleSprites.For(original);
+                            img.sprite = grey != null ? grey : original;
+                            img.color = grey != null ? Color.white : IncidentUIStyle.ApproachInactive;
                         }
                         else
                         {
+                            img.sprite = original;
                             img.color = IncidentUIStyle.ApproachSelectable;
                         }
                     }

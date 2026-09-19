@@ -16,8 +16,18 @@ namespace TFTV.TFTVIncidents
         /// <summary>Selection: the chosen card's border, the chosen approach's outline.</summary>
         internal static readonly Color Amber = new Color(1f, 0.72f, 0.15f, 1f);
 
-        /// <summary>The border every unselected card carries, so the row reads as a row of slots.</summary>
-        internal static readonly Color CardBorder = new Color(1f, 1f, 1f, 0.22f);
+        /// <summary>
+        /// The frame every portrait carries, and the affinity badge on top of it: #56606e, the
+        /// designer's slate. Opaque - a frame that lets the artwork behind show through changes
+        /// colour with every incident.
+        /// </summary>
+        internal static readonly Color CardBorder = new Color(0x56 / 255f, 0x60 / 255f, 0x6e / 255f, 1f);
+
+        /// <summary>
+        /// The selected operative's name. Colour rather than weight marks the selection: bold
+        /// changes the name's width, so the selected label reflowed against its neighbours.
+        /// </summary>
+        internal static readonly Color SelectedName = new Color(1f, 0.86f, 0.25f, 1f);
 
         /// <summary>
         /// Behind a card while its head is still rendering, and behind every head after.
