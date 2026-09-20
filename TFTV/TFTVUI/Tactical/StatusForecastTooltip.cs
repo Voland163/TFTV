@@ -3,6 +3,7 @@ using PhoenixPoint.Tactical.Entities.Statuses;
 using PhoenixPoint.Tactical.View.ViewModules;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -369,16 +370,38 @@ namespace TFTV.TFTVUI.Tactical
         private const float Gap = 10f;
         private static readonly Color WarningColor = new Color(0.93f, 0.24f, 0.24f, 1f);
 
-        private static Sprite _skull;
+        private const string SkullFileName = "TFTV_LethalDoT.png";
 
+        private static Sprite _skull;
+        private static bool _skullLoaded;
+
+        /// <summary>
+        /// The skull, or null when the mod's textures are older than its code - an install that has
+        /// a new TFTV.dll beside an Assets folder without this file. Helper.CreateSpriteFromImageFile
+        /// throws on a missing file, and TFTVLogger.Error puts the mod's error dialog on screen, so
+        /// the file is checked first and the attempt is made only once: this runs every time a
+        /// character status screen opens.
+        /// </summary>
         private static Sprite Skull
         {
             get
             {
-                if (_skull == null)
+                if (_skullLoaded)
                 {
-                    _skull = Helper.CreateSpriteFromImageFile("TFTV_LethalDoT.png");
+                    return _skull;
                 }
+
+                _skullLoaded = true;
+                string path = Path.Combine(TFTVMain.TexturesDirectory ?? string.Empty, SkullFileName);
+
+                if (!File.Exists(path))
+                {
+                    TFTVLogger.Always($"[NextTurnWarningMarkers] no {SkullFileName} in the mod's textures;"
+                        + " the lethal damage-over-time marker is off for this install.");
+                    return null;
+                }
+
+                _skull = Helper.CreateSpriteFromImageFile(SkullFileName);
                 return _skull;
             }
         }
@@ -434,7 +457,9 @@ namespace TFTV.TFTVUI.Tactical
 
                 Transform existing = barText.transform.Find(markerName);
 
-                if (forecast == null)
+                // An Image with no sprite draws a white box, so a marker whose icon is missing is
+                // not shown at all.
+                if (forecast == null || icon == null)
                 {
                     if (existing != null)
                     {
